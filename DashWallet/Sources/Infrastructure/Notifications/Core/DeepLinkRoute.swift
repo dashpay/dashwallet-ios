@@ -24,8 +24,6 @@ import Foundation
 enum DeepLinkRoute: Codable, Equatable {
     case home
     case transactionDetail(txid: Data)
-    /// CrowdNode.
-    case staking
     case swapOrder(id: String)
     /// The DashPay bell screen.
     case dashPayNotifications

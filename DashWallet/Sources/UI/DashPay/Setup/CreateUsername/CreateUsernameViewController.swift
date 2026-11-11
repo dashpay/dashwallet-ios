@@ -713,7 +713,7 @@ struct CreateUsernameView: View {
                     if !newValue {
                         registrationErrorMessage = nil
                         registrationRefusalTitle = nil
-                        screenLockedAfterAuth = false
+                        screenLockedAfterAuth = viewModel.purchaseSubmissionUnconfirmed
                     }
                 }
             )
@@ -721,7 +721,7 @@ struct CreateUsernameView: View {
             Button(NSLocalizedString("OK", comment: "")) {
                 registrationErrorMessage = nil
                 registrationRefusalTitle = nil
-                screenLockedAfterAuth = false
+                screenLockedAfterAuth = viewModel.purchaseSubmissionUnconfirmed
             }
         } message: {
             Text(registrationErrorMessage ?? "")
@@ -1236,7 +1236,7 @@ struct CreateUsernameView: View {
         purchasedUsername = viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines)
         Task {
             inProgress = true
-            screenLockedAfterAuth = false
+            screenLockedAfterAuth = viewModel.purchaseSubmissionUnconfirmed
             let outcome = await viewModel.purchaseListedUsername(name: purchasedUsername)
             inProgress = false
             switch outcome {
@@ -1248,6 +1248,10 @@ struct CreateUsernameView: View {
                 showPurchaseSuccess = true
             case .cancelled:
                 break
+            case .submittedUnconfirmed(let message):
+                screenLockedAfterAuth = true
+                registrationRefusalTitle = NSLocalizedString("Confirmation pending", comment: "Username purchase result unknown")
+                registrationErrorMessage = message
             case .failure(let message):
                 viewModel.refreshRegistrationRecoveryState()
                 registrationErrorMessage = message
@@ -1593,7 +1597,7 @@ struct CreateUsernameView: View {
             // it also holds the screen alive for the whole registration and the
             // bridge completion resolves the outcome at the terminal phase.
             inProgress = true
-            screenLockedAfterAuth = false
+            screenLockedAfterAuth = viewModel.purchaseSubmissionUnconfirmed
             var didHandOff = false
             let outcome = await viewModel.submitUsernameRequest(temporaryUsername: temporaryUsername) {
                 isTextInputFocused = false
@@ -1634,8 +1638,12 @@ struct CreateUsernameView: View {
                 failedTemporaryUsername = temporaryError != nil ? temporaryUsername : nil
                 showVotingSubmitted = true
             case .cancelled:
-                screenLockedAfterAuth = false
+                screenLockedAfterAuth = viewModel.purchaseSubmissionUnconfirmed
                 break // user backed out of the PIN — stay on screen, allow retry
+            case .submittedUnconfirmed(let message):
+                screenLockedAfterAuth = true
+                registrationRefusalTitle = NSLocalizedString("Confirmation pending", comment: "Username purchase result unknown")
+                registrationErrorMessage = message
             case .failure(let message):
                 viewModel.refreshRegistrationRecoveryState()
                 registrationErrorMessage = message
@@ -1644,7 +1652,7 @@ struct CreateUsernameView: View {
                 registrationFailureDialog = dialog
             case .needsCoinConsolidation(let check):
                 viewModel.refreshRegistrationRecoveryState()
-                screenLockedAfterAuth = false
+                screenLockedAfterAuth = viewModel.purchaseSubmissionUnconfirmed
                 coinConsolidationCheck = check
             }
         }

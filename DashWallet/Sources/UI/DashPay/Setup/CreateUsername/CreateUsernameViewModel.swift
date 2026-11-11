@@ -161,13 +161,16 @@ class CreateUsernameViewModel: ObservableObject {
     /// owner, fiat price) is visible before committing that much.
     static let directPurchaseMaxDuffs: UInt64 = 10 * 100_000_000
 
+    /// Prevent another purchase on this form while its result is unknown.
+    @Published private(set) var purchaseSubmissionUnconfirmed = false
+
     /// The typed name's listing can be bought right here: priced under
     /// the direct-purchase ceiling, with a wallet balance that covers
     /// the price plus the identity fee headroom. Not offered in
     /// invitation mode (the voucher funds a registration, not a trade)
     /// or while a registration recovery is pending.
     var canPurchaseListedNameDirectly: Bool {
-        guard let credits = takenNameSalePriceCredits,
+        guard !purchaseSubmissionUnconfirmed, let credits = takenNameSalePriceCredits,
               !isInvitationMode,
               !hasPendingRegistrationRecovery else { return false }
         let priceDuffs = credits / 1_000
@@ -942,6 +945,7 @@ class CreateUsernameViewModel: ObservableObject {
     enum UsernameRegistrationOutcome {
         case success
         case completedInOriginalContext(String)
+        case submittedUnconfirmed(String)
         case submittedForVoting(temporaryUsername: String?, temporaryUsernameError: String?)
         case cancelled
         case failure(String)
@@ -1171,6 +1175,9 @@ class CreateUsernameViewModel: ObservableObject {
     /// change is refused by consensus and surfaces as a typed failure,
     /// as does a price/name mismatch from a mid-flight edit.
     func purchaseListedUsername(name: String) async -> UsernameRegistrationOutcome {
+        guard !purchaseSubmissionUnconfirmed else {
+            return .submittedUnconfirmed(DWIdentityRegistrationCoordinator.CoordinatorError.platformWriteUnconfirmed.localizedDescription)
+        }
         guard let credits = takenNameSalePriceCredits else {
             // The gate (`canPurchaseListedNameDirectly`) shouldn't let a
             // priceless state reach here; answer with the marketplace's
@@ -1188,12 +1195,22 @@ class CreateUsernameViewModel: ObservableObject {
         } catch DWIdentityRegistrationCoordinator.CoordinatorError.authCancelled {
             return .cancelled
         } catch {
-            DWLogger.log("CreateUsername: purchase failed for '\(name)': \(error.localizedDescription)")
-            if let check = AssetLockInputLimit.check(for: error) {
-                return .needsCoinConsolidation(check)
-            }
-            return .failure(error.localizedDescription)
+            return purchaseFailureOutcome(error)
         }
+    }
+
+    /// Keep an uncertain purchase blocked for the lifetime of this form.
+    func purchaseFailureOutcome(_ error: Error) -> UsernameRegistrationOutcome {
+        if let error = error as? DWIdentityRegistrationCoordinator.CoordinatorError,
+           error.isSubmissionUnconfirmed {
+            purchaseSubmissionUnconfirmed = true
+            return .submittedUnconfirmed(error.localizedDescription)
+        }
+        DWLogger.log("CreateUsername: purchase failed: \(error.localizedDescription)")
+        if let check = AssetLockInputLimit.check(for: error) {
+            return .needsCoinConsolidation(check)
+        }
+        return .failure(error.localizedDescription)
     }
 
     /// Human wording for a failed registration — the shared mapping

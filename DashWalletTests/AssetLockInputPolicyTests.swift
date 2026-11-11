@@ -116,7 +116,7 @@ final class AssetLockInputPolicyTests: XCTestCase {
         XCTAssertGreaterThan(Policy.minimumFeeDuffs(inputCount: 101), Policy.minimumFeeDuffs(inputCount: 100))
         XCTAssertGreaterThan(
             Policy.estimatedFeeDuffs(inputCount: 1),
-            SwiftDashSDKTransactionSender.estimatedSignalFee(inputCount: 1))
+            SwiftDashSDKTransactionSender.estimatedFee(inputCount: 1))
     }
 
     func testTheLowestFeeIsTheNoChangeAssetLock() {
@@ -196,7 +196,7 @@ final class AssetLockInputPolicyTests: XCTestCase {
     }
 
     func testTheConsolidationFeeCoversEveryTransaction() {
-        let fee = SwiftDashSDKTransactionSender.estimatedSignalFee
+        let fee = SwiftDashSDKTransactionSender.estimatedFee
         XCTAssertEqual(Policy.consolidationFeeDuffs(coinCount: 150), fee(150))
         XCTAssertEqual(Policy.consolidationFeeDuffs(coinCount: 1_200), 3 * fee(400))
         XCTAssertEqual(Policy.consolidationFeeDuffs(coinCount: 1), 0)
@@ -215,7 +215,7 @@ final class AssetLockInputPolicyTests: XCTestCase {
         let combined = Policy.combinedValues(coins(1_200))
         XCTAssertEqual(combined.count, 3)
         XCTAssertEqual(combined, Array(
-            repeating: 400 * coin - SwiftDashSDKTransactionSender.estimatedSignalFee(inputCount: 400), count: 3))
+            repeating: 400 * coin - SwiftDashSDKTransactionSender.estimatedFee(inputCount: 400), count: 3))
         XCTAssertEqual(Policy.combinedValues([coin]), [coin])
     }
 

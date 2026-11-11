@@ -278,7 +278,7 @@ final class CreateUsernameShieldedCostTests: XCTestCase {
             notes: notes, requiredCredits: Readiness.standardDenominationCredits,
             poolNoteCount: Readiness.minimumPoolNotes, now: now)
         XCTAssertEqual(below.state, .poolTooSmall(current: Readiness.minimumPoolNotes - 1))
-        XCTAssertEqual(CreateUsernameViewModel.shieldedCostBlocker(for: below.state), .poolTooSmall(current: 249))
+        XCTAssertEqual(CreateUsernameViewModel.shieldedCostBlocker(for: below.state), .poolTooSmall(current: Readiness.minimumPoolNotes - 1))
         XCTAssertEqual(atMinimum.state, .ready)
         XCTAssertNil(CreateUsernameViewModel.shieldedCostBlocker(for: atMinimum.state))
     }

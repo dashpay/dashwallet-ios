@@ -25,10 +25,15 @@ struct ConnectionsScreenMessage: Identifiable, Equatable {
     enum Kind: String {
         case error
         case success
+        /// A question the user answers from the message itself.
+        case question
     }
 
     let kind: Kind
     let text: String
+    /// A connection the user can also turn its unrecorded keys off for,
+    /// from the same message.
+    var unrecordedKeysOf: DAppConnection? = nil
 
     var id: String {
         "\(kind.rawValue):\(text)"
@@ -40,6 +45,8 @@ struct ConnectionsScreenMessage: Identifiable, Equatable {
             return NSLocalizedString("Error", comment: "")
         case .success:
             return NSLocalizedString("Success", comment: "DashConnect")
+        case .question:
+            return NSLocalizedString("Keys left on your identity", comment: "DashConnect: title of the question after a disconnect")
         }
     }
 }
@@ -94,8 +101,8 @@ final class ConnectionsViewModel: ObservableObject {
     private var requestGeneration = 0
 
     /// Whether a request is mid-flight. A newer request may supersede one that
-    /// is still resolving, but nothing may interrupt an approval or a key
-    /// registration, which are already committing to the network.
+    /// is still resolving, but nothing may interrupt an approval, which is
+    /// already committing to the network.
     private var isResolvingRequest = false
 
     init(
@@ -187,11 +194,6 @@ final class ConnectionsViewModel: ObservableObject {
                     defer { isProcessingStateTransition = false }
 
                     switch try await dataSource.handleStateTransition(request) {
-                    case .keyRegistrationCompleted:
-                        message = ConnectionsScreenMessage(
-                            kind: .success,
-                            text: NSLocalizedString("DashConnect key registration completed.", comment: "DashConnect")
-                        )
                     case let .tokenPurchaseApprovalRequired(purchase):
                         pendingTokenPurchase = purchase
                     }
@@ -253,6 +255,7 @@ final class ConnectionsViewModel: ObservableObject {
                 // instead of Approve; when it can again, the note says why
                 // the approval did not go through.
                 let rebuilt = await dataSource.makeConnectionRequest(from: pendingLoginRequest)
+                self.pendingFailureStatus = nil
                 self.pendingRequest = rebuilt
                 self.approveError = rebuilt.login == .unresolved
                     ? nil : DashConnectPlatformError.loginUnresolved.localizedDescription
@@ -376,18 +379,69 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     func disconnect(_ connection: DAppConnection) {
-        // Disconnecting a one-QR connection signs an identity update, which
-        // takes seconds. It must not overlap anything else that signs one or
-        // touches the same records: a second tap, an approval on screen or in
-        // flight, a request still resolving, a `dash-st:` in progress.
+        disconnect(connection, includingUnrecorded: false)
+    }
+
+    /// `includingUnrecorded`: also turn off the live keys of the app, and the
+    /// DashPay profile keys, that no approval of this wallet names. The user
+    /// is asked for that separately, after a disconnect left some.
+    func disconnect(_ connection: DAppConnection, includingUnrecorded: Bool) {
+        // Disconnecting an App Connect connection signs an identity update,
+        // which takes seconds. It must not overlap anything else that signs
+        // one or touches the same records: a second tap, an approval on
+        // screen or in flight, a request still resolving, a `dash-st:` in
+        // progress.
         guard !isDisconnecting, !isProcessingStateTransition, !isApproving, !isApprovingPurchase,
-              !isResolvingRequest, pendingRequest == nil, pendingTokenPurchase == nil else { return }
+              !isResolvingRequest, pendingRequest == nil, pendingTokenPurchase == nil else {
+            // Asked for from the message after a disconnect: say why nothing
+            // happened rather than nothing.
+            if includingUnrecorded {
+                message = ConnectionsScreenMessage(
+                    kind: .error,
+                    text: NSLocalizedString(
+                        "Finish the request on screen, then disconnect the app again.",
+                        comment: "DashConnect: turning off unrecorded keys while another request is in progress"))
+            }
+            return
+        }
         isDisconnecting = true
         Task { [weak self] in
             guard let self else { return }
             defer { self.isDisconnecting = false }
             do {
-                try await self.dataSource.disconnect(id: connection.id, scope: connection.scope)
+                let result = try await self.dataSource.disconnect(
+                    id: connection.id, scope: connection.scope, includingUnrecorded: includingUnrecorded)
+                if result.unrecordedKeysLeft > 0 {
+                    let text = result.keysTurnedOff > 0
+                        ? NSLocalizedString(
+                            "Disconnected. Keys this wallet did not record giving are still on your identity (%d): keys of this app from another device or from before a restore, or DashPay profile keys no connection holds. Turn them off too?",
+                            comment: "DashConnect: after a disconnect that left keys no approval of this wallet names")
+                        : NSLocalizedString(
+                            "This wallet did not record giving the keys this app holds on your identity (%d): they come from another device, from before a restore, or are DashPay profile keys no connection holds. Turn them off?",
+                            comment: "DashConnect: a disconnect of an app whose keys no approval of this wallet names")
+                    self.message = ConnectionsScreenMessage(
+                        kind: .question,
+                        text: String.localizedStringWithFormat(text, result.unrecordedKeysLeft),
+                        unrecordedKeysOf: connection)
+                } else if result.keysOnAnotherIdentity || result.keysNotChecked > 0 {
+                    var texts: [String] = []
+                    if result.keysNotChecked > 0 {
+                        texts.append(String.localizedStringWithFormat(
+                            NSLocalizedString(
+                                "This wallet could not tell yet which app holds some keys on your identity (%d). The connection stays listed; open Connections again later to check them.",
+                                comment: "DashConnect: after a disconnect that found keys whose app is not known yet"),
+                            result.keysNotChecked))
+                    }
+                    if result.keysOnAnotherIdentity {
+                        texts.append(DashConnectPlatformError.grantOnAnotherIdentity.localizedDescription)
+                    }
+                    // Nothing turned off here and the app still has keys
+                    // elsewhere: as when its approval on another identity is
+                    // open, that is not a success.
+                    self.message = ConnectionsScreenMessage(
+                        kind: result.keysOnAnotherIdentity && result.keysTurnedOff == 0 ? .error : .success,
+                        text: texts.joined(separator: "\n\n"))
+                }
             } catch {
                 self.message = ConnectionsScreenMessage(
                     kind: .error,
@@ -396,6 +450,15 @@ final class ConnectionsViewModel: ObservableObject {
                         error.localizedDescription))
             }
         }
+    }
+
+    /// Reads the active identity again when the screen shows, so a
+    /// connection whose update landed or was turned off elsewhere shows as it
+    /// is. Skipped while anything else is running.
+    func refreshConnections() async {
+        guard !featureUnavailable, !isDisconnecting, !isApproving, !isApprovingPurchase,
+              !isProcessingStateTransition else { return }
+        await dataSource.refreshConnections()
     }
 
     func removeConnection(_ connection: DAppConnection) {

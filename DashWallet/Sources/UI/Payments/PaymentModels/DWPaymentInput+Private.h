@@ -19,13 +19,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class DWPaymentIntent;
-
 @interface DWPaymentInput ()
 
 @property (nullable, nonatomic, strong) DWParsedPaymentURI *parsedURI;
-/// App-side send carrier projected from `parsedURI`. The processor consumes THIS for a
-/// plain-`dash:` send (C8 step 4).
 @property (nullable, nonatomic, strong) DWPaymentIntent *paymentIntent;
 @property (nullable, nonatomic, strong) id bip70Confirmation;
 

@@ -33,7 +33,7 @@ The question is how far the wallet trusts the request: which keys it registers, 
 - **Freshness.** A request more than 10 minutes old, or dated in the future, is refused.
 - **Owners.** Every binding must be on a contract (or contract group) owned by the owner of the app's contract; the one exception is the DashPay `profile` document type. A Platform system contract is never the app nor a binding target. An encryption binding must name the app's contract, and that contract must accept bounded keys of the purpose. The owners and the identity hint are read from Platform with proofs before the sheet is shown.
 - **Levels and limits.** CRITICAL only on a group key, HIGH on every other auth key, MEDIUM on encryption keys. A proposed budget is capped at 5 DASH and a lifetime at 365 days; a binding without an expiry gets 90 days. No limit the app asked for is dropped, and none it did not ask for is added.
-- **Keys.** Each auth key is derived from the app's ephemeral key and the binding's index, so keys are distinct per binding and stable across retries of one request. The encryption key is the DIP-13 application encryption key for the app's contract, at rotation 0; it is sent again while it is the identity's current key for the app, and never rotated by this change.
+- **Keys.** Each auth key is derived from the app's ephemeral key and the binding's index, so keys are distinct per binding and stable across retries of one request. The encryption key is the DIP-13 application encryption key for the app's contract, chosen by the DIP "Encryption Keys" rules. The wallet derives rotation `0'` at the path with the `rotation'` level, then each next rotation while the previous one is on the identity, and stops at the first that is not; on testnet and devnet only, it also derives the key at the earlier path without that level. A live current key is sent when it is one of these keys and left out otherwise (rule 1); a disabled current key leaves the slot out and registers nothing (rule 2); with no key for the binding, rotation `0'` at the new path is registered (rule 3). A login never rotates a key.
 - **One update.** The new keys are added, and the keys of this wallet's earlier grant with the same connection id are disabled, in one identity update the wallet signs.
 - **The answer.** The keys are sealed to the app's ephemeral key and published on the App Connect contract; the callback named in the request opens only after the user has answered the sheet.
 - **Networks.** A v2 request for mainnet is refused by the parser.
@@ -54,7 +54,6 @@ The question is how far the wallet trusts the request: which keys it registers, 
 
 **Neutral**
 - The caps (5 DASH, 365 days, 90 days) are the profile's and can be lowered by a later decision without changing the shape of this one.
-- Encryption-key rotation, and keys from before the DIP-13 rotation level, are handled in a later change (#1258).
 
 ## Links
 

@@ -142,7 +142,7 @@ The SDK wiper deletes SDK-owned mnemonics and managed-wallet state through a
 manager bound to each wallet's mainnet/testnet store. It reports success only
 after the global SDK mnemonic inventory is empty.
 
-PIN removal, metadata deletion, app/global preference reset, CrowdNode cleanup,
+PIN removal, metadata deletion, app/global preference reset,
 active-wallet registry cleanup, and runtime teardown happen only after that
 success point and before the serial-queue completion barrier fires. A failed
 full wipe preserves those app-owned stores so the user can retry. Per-wallet

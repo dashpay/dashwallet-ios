@@ -311,9 +311,11 @@ enum ShieldedCreateFailureKind: Equatable {
         if case .shieldedCreateUnconfirmed? = error as? DWIdentityRegistrationCoordinator.CoordinatorError {
             return .unknownOutcome
         }
+        if case .stateTransitionResultUnconfirmed? = error as? SDKError { return .unknownOutcome }
         switch error as? PlatformWalletError {
         case .shieldedIdentityCreateInputsConsumed?: return .charged
-        case .shieldedBroadcastUnconfirmed?: return .unknownOutcome
+        case .shieldedBroadcastUnconfirmed?, .transactionBroadcastUnconfirmed?, .shieldedSpendUnconfirmed?:
+            return .unknownOutcome
         default: return .notClassified
         }
     }
