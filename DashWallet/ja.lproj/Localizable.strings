@@ -1774,6 +1774,9 @@
 /* DashConnect: after turning off the keys a question listed, keys of the app found since stay on */
 "Disconnected. Some keys of this app are still on your identity (%d). Disconnect it again to turn them off." = "Disconnected. Some keys of this app are still on your identity (%d). Disconnect it again to turn them off.";
 
+/* DashConnect: after a disconnect, keys of the app stay on and now show under another app's row; %2$@ is that app's name */
+"Disconnected. Some keys of this app are still on your identity (%1$d). They now show under %2$@ in Connections: disconnect it there to turn them off." = "Disconnected. Some keys of this app are still on your identity (%1$d). They now show under %2$@ in Connections: disconnect it there to turn them off.";
+
 /* DashSpend confirmation */
 "Discount" = "割引";
 

@@ -1060,27 +1060,29 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// change to the rows and what stays on (`remaining`), both from one read
     /// of the owners. Owners read apart could differ, a failed read being
     /// tried again, and the result could then name a row the list no longer
-    /// has, or call a key unchecked that the rows place.
+    /// has, or call a key unchecked that the rows place. After the question
+    /// (`unrecordedKeyIds` set), every offered key still on is left on,
+    /// listed or not: a listed key a failed owner read kept out of the
+    /// update is on too. `holder`: another app whose row shows some of those
+    /// keys, so the user can be sent there when the app's own row is gone.
     static func settledDisconnect(
         appId: Data, after: AppConnect.IdentitySnapshot, intents: [AppConnect.ConnectionIntent],
         unrecordedKeyIds: Set<UInt32>?, owners reader: OwnerReader, at updatedAt: Date
-    ) async -> (rows: ([DAppConnection]) -> [DAppConnection], remaining: PlannedDisconnect) {
+    ) async -> (rows: ([DAppConnection]) -> [DAppConnection], remaining: PlannedDisconnect, holder: Data?) {
         let known = await reader.knownOwners(for: after, intents: intents)
+        let projection = AppConnect.project([after], intents: intents, owners: known)
+        let elsewhere = intents.filter { $0.identityId != after.identityId && $0.closedAt == nil }
+        var remaining = plannedDisconnect(
+            appId: appId, snapshot: after, intents: intents, unrecordedKeyIds: unrecordedKeyIds, fences: [],
+            knownOwners: known)
+        if unrecordedKeyIds != nil { remaining.leftAfterQuestion = remaining.offered.count }
+        let left = unrecordedKeyIds == nil ? [] : remaining.offered
+        let holder = projection.connections.first {
+            $0.appId != appId && !left.isDisjoint(with: $0.unrecordedKeyIds[after.identityId] ?? [])
+        }?.appId
         return (
-            refreshedRows(snapshot: after, intents: intents, knownOwners: known, at: updatedAt),
-            plannedDisconnect(
-                appId: appId, snapshot: after, intents: intents, unrecordedKeyIds: unrecordedKeyIds, fences: [],
-                knownOwners: known))
-    }
-
-    /// `refreshedRows` with owners already read (`knownOwners`).
-    static func refreshedRows(
-        snapshot: AppConnect.IdentitySnapshot, intents all: [AppConnect.ConnectionIntent], knownOwners: [Data: Data],
-        at updatedAt: Date
-    ) -> ([DAppConnection]) -> [DAppConnection] {
-        let projection = AppConnect.project([snapshot], intents: all, owners: knownOwners)
-        let elsewhere = all.filter { $0.identityId != snapshot.identityId && $0.closedAt == nil }
-        return { rows($0, after: projection, of: snapshot.identityId, intents: elsewhere, at: updatedAt) }
+            { rows($0, after: projection, of: after.identityId, intents: elsewhere, at: updatedAt) },
+            remaining, holder)
     }
 
     /// `rows` with the App Connect connections of `projection`, the read of
@@ -2226,10 +2228,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // What stays on is told from the read after the update, as the rows
         // are, and from the same owners. A key that landed during the update
         // is reported too.
-        let (rowsAfter, remaining) = await Self.settledDisconnect(
+        let (rowsAfter, remaining, holder) = await Self.settledDisconnect(
             appId: appId, after: after, intents: stores.intents.load(), unrecordedKeyIds: unrecordedKeyIds,
             owners: Self.ownerReader(context: context), at: now())
         await updateRows(in: stores, rowsAfter)
+        let rowsNow = rows(in: stores)
 
         // A key turned off is checked on the read after the update; one that
         // still shows live means that read is behind, or a new key landed.
@@ -2245,11 +2248,21 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }) {
             throw DashConnectPlatformError.grantOnAnotherIdentity
         }
-        return Self.disconnectResult(
+        var result = Self.disconnectResult(
             of: planned, remaining: remaining, listed: unrecordedKeyIds, identityId: context.identityId,
             // Keys a read of another identity saw stay, and so does the row.
-            keysOnAnotherIdentity: rows(in: stores).first { $0.id == id }?.seenOn
+            keysOnAnotherIdentity: rowsNow.first { $0.id == id }?.seenOn
                 .subtracting([context.identityId.toBase58String()]).isEmpty == false)
+        result.keysLeftUnder = Self.keysLeftUnder(app: id, holder: holder, rows: rowsNow)
+        return result
+    }
+
+    /// The name of the row the keys left on show under, when the app's own
+    /// row is gone: a second disconnect of the app could no longer be asked
+    /// for. Nil while the app's row is there.
+    static func keysLeftUnder(app id: String, holder: Data?, rows: [DAppConnection]) -> String? {
+        guard let holder, !rows.contains(where: { $0.id == id }) else { return nil }
+        return rows.first { $0.id == holder.toBase58String() }?.name
     }
 
     /// Throws `walletChanged` when keys offered on one identity would be

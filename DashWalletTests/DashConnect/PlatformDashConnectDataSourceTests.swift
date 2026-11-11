@@ -664,6 +664,18 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         XCTAssertTrue(message?.text.contains("(1)") == true)
     }
 
+    /// Keys left on whose app's row is gone are sent to the row that shows
+    /// them, by its name, never to a second disconnect of the app.
+    func testKeysLeftUnderAnotherRowNameThatRow() async {
+        let message = await message(after: DashConnectDisconnectResult(
+            keysTurnedOff: 1, keysLeftAfterQuestion: 2, keysLeftUnder: "Other App"))
+        XCTAssertEqual(message?.kind, .warning)
+        XCTAssertEqual(Self.paragraphs(message).count, 1)
+        XCTAssertTrue(message?.text.contains("(2)") == true)
+        XCTAssertTrue(message?.text.contains("show under Other App in Connections") == true)
+        XCTAssertFalse(message?.text.contains(Self.leftAfterQuestion) == true)
+    }
+
     /// SCR-04 combined: not checked, not attributable, left after the
     /// question, another identity, in that order; a finding besides the
     /// other identity keeps the success heading.
@@ -2060,7 +2072,7 @@ extension AppConnectRefreshOwnersTests {
             await Self.refresh(store, [own, onY], intents, memory: .init(), reader: reader)
             reader.failing = ownerReads || failsOnce ? [] : [Self.sibling]
             reader.failingOnce = failsOnce ? [Self.sibling] : []
-            let (change, remaining) = await PlatformDashConnectDataSource.settledDisconnect(
+            let (change, remaining, _) = await PlatformDashConnectDataSource.settledDisconnect(
                 appId: Self.app, after: after, intents: intents, unrecordedKeyIds: [],
                 owners: Self.ownerReader(.init(), reader), at: Date(timeIntervalSince1970: 0))
             let rows = Set(change(store.load()).compactMap { Data.identifier(fromBase58: $0.id) })
@@ -2073,6 +2085,55 @@ extension AppConnectRefreshOwnersTests {
                 XCTAssertEqual(rows, [Self.sibling], "the key keeps its own row")
             }
         }
+    }
+
+    /// A key the question listed that a failed owner read kept out of the
+    /// update is still on: once the owner reads on the read after it, the
+    /// result says so, as it does for a key found since the question.
+    func testAListedKeyKeptOutOfTheUpdateIsReportedAsStillOn() async {
+        let own = Self.key(10, on: Self.app), onY = Self.key(20, on: Self.sibling)
+        let intents = [Self.intent(own)]
+        let memory = PlatformDashConnectDataSource.OwnerMemory(), reader = Reader()
+        reader.failing = [Self.sibling]
+        let confirmed = await Self.planned([own, onY], intents, listed: [20], memory: memory, reader: reader)
+        XCTAssertEqual(confirmed.plan.disable, [10], "the listed key is not submitted while its owner is unread")
+        reader.failing = []
+        let after = AppConnect.IdentitySnapshot(
+            identityId: Self.identity, revision: 2, keys: [Self.disabled(own), onY], platformTime: nil)
+        let (_, remaining, _) = await PlatformDashConnectDataSource.settledDisconnect(
+            appId: Self.app, after: after, intents: intents, unrecordedKeyIds: [20],
+            owners: Self.ownerReader(memory, reader), at: Date(timeIntervalSince1970: 0))
+        XCTAssertEqual(remaining.leftAfterQuestion, 1, "the listed key that stayed on is reported")
+    }
+
+    /// A row with no intent whose owner reads on the read after its
+    /// disconnect is gone, its keys now under the app of the same owner: a
+    /// key that arrived after the question is reported under that app's row,
+    /// the one the user can still disconnect.
+    func testKeysLeftOnARowThatIsGoneAreReportedUnderTheRowThatShowsThem() async {
+        let store = makeStore(), reader = Reader()
+        let own = Self.key(10, on: Self.app), listed = Self.key(20, on: Self.sibling), arrived = Self.key(21, on: Self.sibling)
+        let intents = [Self.intent(own)]
+        reader.failing = [Self.sibling]
+        let shown = await Self.refresh(store, [own, listed], intents, memory: .init(), reader: reader)
+        XCTAssertNotNil(shown[Self.sibling], "an unread owner gives Y its own row")
+        reader.failing = []
+        let after = AppConnect.IdentitySnapshot(
+            identityId: Self.identity, revision: 2, keys: [own, Self.disabled(listed), arrived], platformTime: nil)
+        let (change, remaining, holder) = await PlatformDashConnectDataSource.settledDisconnect(
+            appId: Self.sibling, after: after, intents: intents, unrecordedKeyIds: [20],
+            owners: Self.ownerReader(.init(), reader), at: Date(timeIntervalSince1970: 0))
+        XCTAssertEqual(remaining.leftAfterQuestion, 1, "the key that arrived after the question stays on")
+        XCTAssertEqual(holder, Self.app)
+        let rows = change(store.load())
+        XCTAssertFalse(rows.contains { $0.id == Self.sibling.toBase58String() }, "Y's row is gone")
+        let appRow = rows.first { $0.id == Self.app.toBase58String() }
+        XCTAssertNotNil(appRow)
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.keysLeftUnder(app: Self.sibling.toBase58String(), holder: holder, rows: rows), appRow?.name)
+        XCTAssertNil(
+            PlatformDashConnectDataSource.keysLeftUnder(app: Self.app.toBase58String(), holder: holder, rows: rows),
+            "nil while the app's own row is there")
     }
 
     /// A key id is unique only within an identity: keys offered on one

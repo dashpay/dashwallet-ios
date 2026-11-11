@@ -224,9 +224,12 @@ struct DashConnectDisconnectResult: Equatable {
     /// Live keys of the app's owner that another app with an approval here
     /// has too: they may be that app's, and none was turned off.
     var keysNotAttributable = 0
-    /// Keys the disconnect found on the app's row that the user's question
-    /// did not list: none was turned off.
+    /// Keys of the app still on after the user answered the question: found
+    /// since it, or listed but kept out of the update because whose they
+    /// are could not be read then. None was turned off.
     var keysLeftAfterQuestion = 0
+    /// The row those keys now show under, when the app's own row is gone.
+    var keysLeftUnder: String? = nil
     /// A read of another identity of this wallet saw keys of the app no
     /// approval names. They can be turned off only while that identity is
     /// the active one.

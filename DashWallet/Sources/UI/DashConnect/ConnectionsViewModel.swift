@@ -388,6 +388,26 @@ final class ConnectionsViewModel: ObservableObject {
         disconnect(connection, unrecordedKeys: nil)
     }
 
+    /// Keys of the app left on after the question: a second disconnect of
+    /// the app turns them off, or, when its row is gone, the row that shows
+    /// them now (`holder`).
+    private static func keysLeftText(_ count: Int, under holder: String?) -> String {
+        // swiftlint:disable line_length
+        guard let holder else {
+            return String.localizedStringWithFormat(
+                NSLocalizedString(
+                    "Disconnected. Some keys of this app are still on your identity (%d). Disconnect it again to turn them off.",
+                    comment: "DashConnect: after turning off the keys a question listed, keys of the app found since stay on"),
+                count)
+        }
+        return String.localizedStringWithFormat(
+            NSLocalizedString(
+                "Disconnected. Some keys of this app are still on your identity (%1$d). They now show under %2$@ in Connections: disconnect it there to turn them off.",
+                comment: "DashConnect: after a disconnect, keys of the app stay on and now show under another app's row; %2$@ is that app's name"),
+            count, holder)
+        // swiftlint:enable line_length
+    }
+
     /// `unrecordedKeys`: also turn off these live keys of the app, and
     /// DashPay profile keys, that no approval of this wallet names. The user
     /// is asked for that separately, after a disconnect offered them.
@@ -453,11 +473,7 @@ final class ConnectionsViewModel: ObservableObject {
                 }
                 var texts = warnings
                 if result.keysLeftAfterQuestion > 0 {
-                    texts.append(String.localizedStringWithFormat(
-                        NSLocalizedString(
-                            "Disconnected. Some keys of this app are still on your identity (%d). Disconnect it again to turn them off.",
-                            comment: "DashConnect: after turning off the keys a question listed, keys of the app found since stay on"),
-                        result.keysLeftAfterQuestion))
+                    texts.append(Self.keysLeftText(result.keysLeftAfterQuestion, under: result.keysLeftUnder))
                 }
                 if result.keysOnAnotherIdentity {
                     texts.append(DashConnectPlatformError.grantOnAnotherIdentity.localizedDescription)
