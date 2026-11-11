@@ -74,6 +74,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "BA913BE91BD57E4D005A7C0E"
             BuildableName = "WatchApp Extension.appex"
+            BlueprintName = "WatchApp Extension"
             ReferencedContainer = "container:DashWallet.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -90,6 +91,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "BA913BE91BD57E4D005A7C0E"
             BuildableName = "WatchApp Extension.appex"
+            BlueprintName = "WatchApp Extension"
             ReferencedContainer = "container:DashWallet.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
