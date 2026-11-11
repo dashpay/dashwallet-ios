@@ -465,6 +465,19 @@ final class PaymentsLandingViewModel: ObservableObject {
         return candidateAddress(for: network)
     }
 
+    /// Specify amount is offered on every option that has an address or ID to
+    /// put the amount on.
+    var canSpecifyAmount: Bool {
+        currentAddress != nil
+    }
+
+    /// The request for `amount` on the selected option, or nil on Core —
+    /// which keeps `DWReceiveModel` — and when there is no address or ID.
+    func optionAmountRequest(amount: UInt64) -> OptionAmountRequestModel? {
+        guard network != .core, let address = currentAddress else { return nil }
+        return OptionAmountRequestModel(address: address, amount: amount, option: network)
+    }
+
     var canViewTransaction: Bool {
         allowsTransactionDetails && receipt?.transactionId != nil
     }

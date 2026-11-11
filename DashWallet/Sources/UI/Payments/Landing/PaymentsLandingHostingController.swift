@@ -681,9 +681,23 @@ extension PaymentsLandingHostingController: SpecifyAmountViewControllerDelegate 
         // for. Nothing is lost either way — the session's baseline survives a
         // suspend — but the sheet could not say it was watching, and could not
         // get out of the way when the payment landed.
+        //
+        // Core's request follows the next unused address and carries fiat and
+        // username; the other options put the amount on the address or ID the
+        // card shows.
+        let model: DWReceiveModelProtocol
+        let addressCaption: String?
+        if let optionRequest = viewModel.optionAmountRequest(amount: amount) {
+            model = optionRequest
+            addressCaption = optionRequest.addressCaption
+        } else {
+            model = DWReceiveModel(amount: amount)
+            addressCaption = nil
+        }
         let requestController = RequestAmountHostingController.present(
             from: self,
-            model: DWReceiveModel(amount: amount),
+            model: model,
+            addressCaption: addressCaption,
             delegate: self)
         requestAmountController = requestController
         requestController.setWatchingForReceipt(viewModel.isWatchingForReceipt)

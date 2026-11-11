@@ -36,6 +36,9 @@ struct RequestAmountScreen: View {
     let fiatAmount: String
     let qrCodeImage: UIImage?
     let paymentAddress: String?
+    /// The caption over the address: Core's by default, the option's own
+    /// (the same as on its Receive card) for Shielded, Platform and Identity.
+    var addressCaption: String = RequestAmountScreen.coreAddressCaption
     /// DashPay only; `nil` everywhere else, and the row is dropped.
     var username: String? = nil
 
@@ -63,6 +66,10 @@ struct RequestAmountScreen: View {
     }
 
     private var hasAddress: Bool { paymentAddress != nil }
+
+    static var coreAddressCaption: String {
+        NSLocalizedString("Your DASH address", comment: "Receive screen")
+    }
 
     var body: some View {
         VStack(spacing: 20) {
@@ -118,7 +125,7 @@ struct RequestAmountScreen: View {
 
                 if let paymentAddress {
                     addressRow(
-                        caption: NSLocalizedString("Your DASH address", comment: "Receive screen"),
+                        caption: addressCaption,
                         value: paymentAddress,
                         action: onCopyAddress)
                 }
@@ -250,6 +257,7 @@ private func requestAmountSheet(
     amountDuffs: UInt64 = 125_000_000,
     fiatAmount: String = "$32.75",
     address: String? = "XyZ8kFqW3nR5tHmB2vJcL7pQaS4dEuG9wN",
+    addressCaption: String = RequestAmountScreen.coreAddressCaption,
     username: String? = nil
 ) -> some View {
     DashUIKit.BottomSheet(
@@ -261,6 +269,7 @@ private func requestAmountSheet(
             fiatAmount: fiatAmount,
             qrCodeImage: address.flatMap { QRCodeGenerator.image(for: $0) },
             paymentAddress: address,
+            addressCaption: addressCaption,
             username: username,
             onCopyAddress: {},
             onCopyQRCode: {},
@@ -303,6 +312,29 @@ private func requestAmountSheet(
 @available(iOS 17, *)
 #Preview("Fractional · no rate") {
     requestAmountSheet(amountDuffs: 12_345_678, fiatAmount: "")
+}
+
+/// Shielded: the bech32m address is twice a Core address's length and wraps
+/// under the card's caption. No username row: only Core's request names one.
+@available(iOS 17, *)
+#Preview("Shielded") {
+    requestAmountSheet(
+        address: "dash1zqqgqrsn5x0cdlh6pxwswpk4uqrhx5jmq7v0nd2a8mrtq9fucyw6a2t7j4zvsq2xknhul8g0xe5e3mjl")
+}
+
+@available(iOS 17, *)
+#Preview("Platform") {
+    requestAmountSheet(address: "dash1krma5z3ttj75la4m93xcndna9ullamq9y5e9n5rs")
+}
+
+/// Identity: the Base58 Identity ID under its own caption, the smallest amount.
+@available(iOS 17, *)
+#Preview("Identity") {
+    requestAmountSheet(
+        amountDuffs: 1,
+        fiatAmount: "$0.00",
+        address: "4EfA9Jrvv3nnCFdSf7fad59851iiTRZ6Wcu6YVJ4iSeF",
+        addressCaption: NSLocalizedString("Identity ID", comment: ""))
 }
 
 #endif
