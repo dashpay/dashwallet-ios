@@ -167,7 +167,7 @@ final class BIP70PaymentService {
     /// always blocked regardless of this flag.
     private let allowUntrustedUnsigned: Bool
 
-    init(transport: PaymentProtocolTransporting = PaymentProtocolTransport(),
+    init(transport: PaymentProtocolTransporting = PaymentProtocolTransport(requiresHTTPS: false),
          verifier: PaymentRequestVerifier = PaymentRequestVerifier(),
          wallet: WalletSending,
          receiveAddress: ReceiveAddressProviding,

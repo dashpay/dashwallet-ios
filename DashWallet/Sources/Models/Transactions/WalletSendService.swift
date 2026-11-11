@@ -759,6 +759,19 @@ final class WalletSendService: NSObject {
         }
     }
 
+    /// `authenticateSpend(completion:)` with the amount being spent, so the biometric spending
+    /// limit applies: over the remaining allowance the PIN is asked for, and a biometric
+    /// approval counts against the allowance.
+    @objc(authenticateSpendOfAmount:completion:)
+    static func authenticateSpend(amount: UInt64, completion: @escaping (_ authenticated: Bool, _ cancelled: Bool) -> Void) {
+        Task { @MainActor in
+            let outcome = await AuthenticationGate.authenticate(
+                biometric: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
+                spendAmount: amount)
+            completion(outcome == .ok, outcome == .cancelled)
+        }
+    }
+
     /// Tag sweep txids (wire order) so the home screen groups them into the
     /// single "CoinJoin Withdrawals" cell — the unknown-outcome chunks too,
     /// which may still land.

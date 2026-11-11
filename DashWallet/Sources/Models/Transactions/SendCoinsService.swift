@@ -84,7 +84,7 @@ public final class SendCoinsService: NSObject {
         }
 
         let network = try PaymentNetworkResolver.current()
-        let service = BIP70PaymentService.makeForCurrentWallet()
+        let service = BIP70PaymentService.makeForCurrentWallet(requiresHTTPS: false)
         let result: SendResult
         do {
             result = try await service.confirmAndSendHeadless(

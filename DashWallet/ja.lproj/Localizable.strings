@@ -6311,6 +6311,9 @@
 /* Log export */
 "Unlock with your wallet PIN to export logs." = "Unlock with your wallet PIN to export logs.";
 
+/* Payment confirmation: note supplied by an unsigned payment request */
+"Unverified note: %@" = "Unverified note: %@";
+
 /* Payment confirmation: unsigned payment request without a name */
 "Unverified recipient" = "Unverified recipient";
 

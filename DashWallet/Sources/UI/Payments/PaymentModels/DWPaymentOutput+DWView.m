@@ -32,6 +32,23 @@ static NSString *sanitizeString(NSString *s) {
 }
 
 
+/// Longest note shown from an unsigned payment request.
+static const NSUInteger kUnverifiedNoteMaxLength = 140;
+
+/// One line, capped: line breaks and runs of whitespace become a single space before the
+/// text is sanitized, then the result is cut to `maxLength`.
+static NSString *singleLineString(NSString *s, NSUInteger maxLength) {
+    NSArray<NSString *> *parts = [s componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    NSArray<NSString *> *words = [parts filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"length > 0"]];
+    NSString *line = sanitizeString([words componentsJoinedByString:@" "]);
+    if (line.length > maxLength) {
+        NSRange range = [line rangeOfComposedCharacterSequencesForRange:NSMakeRange(0, maxLength)];
+        line = [[line substringWithRange:range] stringByAppendingString:@"…"];
+    }
+    return line;
+}
+
+
 @implementation DWPaymentOutput (DWView)
 
 //- (id<DWTitleDetailItem> _Nullable)addressWith:(UIFont * _Nonnull)font tintColor:(UIColor * _Nonnull)tintColor {
@@ -186,7 +203,7 @@ static NSString *sanitizeString(NSString *s) {
     return nil;
 }
 
-/// Number of outputs a BIP70 request pays; 0 for a non-BIP70 output.
+/// Number of different addresses a BIP70 request pays; 0 for a non-BIP70 output.
 - (NSInteger)merchantRecipientCount {
     if (![self.bip70Confirmation isKindOfClass:[DWBIP70ConfirmationBox class]]) {
         return 0;
@@ -198,13 +215,21 @@ static NSString *sanitizeString(NSString *s) {
     BOOL hasInfo = NO;
     NSString *info = @"";
     if (self.memo.length > 0) {
-        info = sanitizeString(self.memo);
+        if (self.isMerchantRequest && !self.isSecure) {
+            // The note of an unsigned request is the issuer's own text: shown on one line,
+            // capped, and labelled, so it cannot pass for the app's wording.
+            NSString *note = singleLineString(self.memo, kUnverifiedNoteMaxLength);
+            info = [NSString stringWithFormat:NSLocalizedString(@"Unverified note: %@", @"Payment confirmation: note supplied by an unsigned payment request"), note];
+        }
+        else {
+            info = sanitizeString(self.memo);
+        }
         hasInfo = YES;
     }
 
     const NSInteger recipientCount = [self merchantRecipientCount];
     if (recipientCount > 1) {
-        // The confirm screen names one recipient, but the request pays every output it lists.
+        // The confirm screen names one recipient, but the request pays every address it lists.
         if (info.length > 0) {
             info = [info stringByAppendingString:@"\n"];
         }
