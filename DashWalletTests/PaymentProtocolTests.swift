@@ -983,6 +983,19 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertFalse(BIP70InteractiveCoordinator.isRefusal(BIP70InteractiveCoordinator.nsError(BIP70Error.expired)))
     }
 
+    func testCoordinatorRefusesAPaymentURLThatDoesNotParse() async throws {
+        let details = PaymentDetails(network: "test", outputs: [PaymentOutput(amount: 100_000, script: p2pkh)],
+                                     expires: futureExpiry, memo: nil, paymentURL: "https://[h/pay", merchantData: nil)
+        XCTAssertNil(URL(string: "https://[h/pay"))
+        let request = PaymentRequest(pkiType: "none", pkiData: nil, serializedDetails: details.encoded())
+        do {
+            _ = try await prepare(request, allowsInsecureTransport: true)
+            XCTFail("expected a refusal")
+        } catch {
+            XCTAssertEqual(error as? BIP70Error, .malformedRequest)
+        }
+    }
+
     func testUnsignedNoteIsLabelledFlattenedAndCapped() async throws {
         let details = PaymentDetails(network: "test", outputs: [PaymentOutput(amount: 100_000, script: p2pkh)],
                                      expires: futureExpiry, memo: "Verified merchant:\n  Coffee Shop\n" + String(repeating: "x", count: 300),
@@ -992,7 +1005,8 @@ final class BIP70PaymentServiceTests: XCTestCase {
         let unsignedNote = try XCTUnwrap(try rows(of: unsignedOutput).generalInfo?.plainDetail)
         XCTAssertEqual(String(unsignedNote.prefix(49)), "Unverified note: Verified merchant: Coffee Shop x")
         XCTAssertFalse(unsignedNote.contains("\n"))
-        XCTAssertEqual(unsignedNote.count, "Unverified note: ".count + 140 + 1)
+        XCTAssertEqual(unsignedNote.count, "Unverified note: ".count + 140)
+        XCTAssertTrue(unsignedNote.hasSuffix("…"))
 
         let signedOutput = try await paymentOutput(for: request, isSecure: true)
         let signedNote = try XCTUnwrap(try rows(of: signedOutput).generalInfo?.plainDetail)

@@ -752,11 +752,7 @@ final class WalletSendService: NSObject {
     /// never calling back.
     @objc(authenticateSpendWithCompletion:)
     static func authenticateSpend(completion: @escaping (_ authenticated: Bool, _ cancelled: Bool) -> Void) {
-        Task { @MainActor in
-            let outcome = await AuthenticationGate.authenticate(
-                biometric: DWGlobalOptions.sharedInstance().biometricAuthEnabled)
-            completion(outcome == .ok, outcome == .cancelled)
-        }
+        authenticateSpend(spendAmount: nil, completion: completion)
     }
 
     /// `authenticateSpend(completion:)` with the amount being spent, so the biometric spending
@@ -764,10 +760,16 @@ final class WalletSendService: NSObject {
     /// approval counts against the allowance.
     @objc(authenticateSpendOfAmount:completion:)
     static func authenticateSpend(amount: UInt64, completion: @escaping (_ authenticated: Bool, _ cancelled: Bool) -> Void) {
+        authenticateSpend(spendAmount: amount, completion: completion)
+    }
+
+    /// The one gate call behind both Objective-C selectors.
+    private static func authenticateSpend(spendAmount: UInt64?,
+                                          completion: @escaping (_ authenticated: Bool, _ cancelled: Bool) -> Void) {
         Task { @MainActor in
             let outcome = await AuthenticationGate.authenticate(
                 biometric: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
-                spendAmount: amount)
+                spendAmount: spendAmount)
             completion(outcome == .ok, outcome == .cancelled)
         }
     }

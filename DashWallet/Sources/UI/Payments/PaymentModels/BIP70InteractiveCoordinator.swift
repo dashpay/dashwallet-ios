@@ -69,10 +69,15 @@ enum BIP70InteractivePolicy {
     /// Checked on the fetched and verified request, before the confirm screen. The screen shows
     /// one address, and an unsigned request has no signer answering for the others. The
     /// `payment_url` is checked here so an http one is refused before anything is built; the
-    /// request URL and its hops are the transport's (`requiresHTTPS`).
+    /// request URL and its hops are the transport's (`requiresHTTPS`). A `payment_url` that is
+    /// present but does not parse is refused, so the request is never paid without the Payment
+    /// message it asks for.
     static func check(_ confirmation: Confirmation, allowsInsecureTransport: Bool) throws {
         if !confirmation.isSecure, addressCount(of: confirmation) > 1 {
             throw Violation.unsignedMultipleRecipients
+        }
+        if confirmation.paymentURL == nil, let raw = confirmation.request.details.paymentURL, !raw.isEmpty {
+            throw BIP70Error.malformedRequest
         }
         if !allowsInsecureTransport, let paymentURL = confirmation.paymentURL,
            !PaymentProtocolTransport.isHTTPS(paymentURL) {

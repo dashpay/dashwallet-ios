@@ -36,14 +36,15 @@ static NSString *sanitizeString(NSString *s) {
 static const NSUInteger kUnverifiedNoteMaxLength = 140;
 
 /// One line, capped: line breaks and runs of whitespace become a single space before the
-/// text is sanitized, then the result is cut to `maxLength`.
+/// text is sanitized, then the result is cut to `maxLength` UTF-16 units, the ellipsis included,
+/// without splitting a composed character.
 static NSString *singleLineString(NSString *s, NSUInteger maxLength) {
     NSArray<NSString *> *parts = [s componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     NSArray<NSString *> *words = [parts filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"length > 0"]];
     NSString *line = sanitizeString([words componentsJoinedByString:@" "]);
     if (line.length > maxLength) {
-        NSRange range = [line rangeOfComposedCharacterSequencesForRange:NSMakeRange(0, maxLength)];
-        line = [[line substringWithRange:range] stringByAppendingString:@"…"];
+        NSUInteger cut = [line rangeOfComposedCharacterSequenceAtIndex:maxLength - 1].location;
+        line = [[line substringToIndex:cut] stringByAppendingString:@"…"];
     }
     return line;
 }
