@@ -149,7 +149,7 @@ struct ShieldedSyncInfoScreen: View {
                     .foregroundColor(.dash.primaryText)
                 Spacer()
                 if let elapsed = monitor.currentSyncElapsed {
-                    Text(String(format: "%.1f s", elapsed))
+                    Text(String.localizedStringWithFormat(NSLocalizedString("%.1f s", comment: "Seconds, abbreviated"), elapsed))
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(Color.dash.secondaryText)
                         .monospacedDigit()
@@ -179,11 +179,11 @@ struct ShieldedSyncInfoScreen: View {
         VStack(alignment: .leading, spacing: 8) {
             if let last = monitor.lastSyncDuration {
                 row(title: NSLocalizedString("Last Sync Duration", comment: "Sync diagnostics"),
-                    value: String(format: "%.2f s", last))
+                    value: String.localizedStringWithFormat(NSLocalizedString("%.2f s", comment: "Seconds, abbreviated"), last))
                 // Only worth a row when it meaningfully exceeds the last pass.
                 if let longest = monitor.longestSyncDuration, longest > last + 0.05 {
                     row(title: NSLocalizedString("Longest Pass", comment: "Sync diagnostics"),
-                        value: String(format: "%.2f s", longest))
+                        value: String.localizedStringWithFormat(NSLocalizedString("%.2f s", comment: "Seconds, abbreviated"), longest))
                 }
             }
         }

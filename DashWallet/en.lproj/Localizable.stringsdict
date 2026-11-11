@@ -117,7 +117,7 @@
 	<key>%d of %d masternodes voted</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d of %#@nodes@ voted</string>
+		<string>%1$d of %2$#@nodes@ voted</string>
 		<key>nodes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -133,7 +133,7 @@
 	<key>%d of %d nodes voted</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d of %#@nodes@ voted</string>
+		<string>%1$d of %2$#@nodes@ voted</string>
 		<key>nodes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -149,7 +149,7 @@
 	<key>%d of %d usernames voted on</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>%1$d of %#@names@ voted on</string>
+		<string>%1$d of %2$#@names@ voted on</string>
 		<key>names</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -384,6 +384,671 @@
 			<string>%1$@ note</string>
 			<key>other</key>
 			<string>%1$@ notes</string>
+		</dict>
+	</dict>
+	<key>%d masternodes that vote with this key are registered to a wallet in this app and were not added. Their voting key cannot be added separately.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d masternode that votes with this key is registered to a wallet in this app and was not added. Its voting key cannot be added separately.</string>
+			<key>other</key>
+			<string>%d masternodes that vote with this key are registered to a wallet in this app and were not added. Their voting key cannot be added separately.</string>
+		</dict>
+	</dict>
+	<key>Added %1$d of %2$d masternodes that vote with this key. Enter the key again to add the rest.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>Added %1$d of %2$#@nodes@. Enter the key again to add the rest.</string>
+		<key>nodes</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%2$d masternode that votes with this key</string>
+			<key>other</key>
+			<string>%2$d masternodes that vote with this key</string>
+		</dict>
+	</dict>
+	<key>All %d nodes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>All %d node</string>
+			<key>other</key>
+			<string>All %d nodes</string>
+		</dict>
+	</dict>
+	<key>%d of your nodes already voted this way and are not listed. Any node voting differently is listed — its vote will be replaced.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d of your nodes already voted this way and is not listed. Any node voting differently is listed — its vote will be replaced.</string>
+			<key>other</key>
+			<string>%d of your nodes already voted this way and are not listed. Any node voting differently is listed — its vote will be replaced.</string>
+		</dict>
+	</dict>
+	<key>%d of your nodes have used all 5 votes Dash Platform allows on one contest.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d of your nodes has used all 5 votes Dash Platform allows on one contest.</string>
+			<key>other</key>
+			<string>%d of your nodes have used all 5 votes Dash Platform allows on one contest.</string>
+		</dict>
+	</dict>
+	<key>%1$d of these masternodes already voted “%2$@” on names you selected. Voting “%3$@” replaces those votes.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@nodes@ already voted “%2$@” on names you selected. Voting “%3$@” replaces those votes.</string>
+		<key>nodes</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%1$d of these masternodes</string>
+			<key>other</key>
+			<string>%1$d of these masternodes</string>
+		</dict>
+	</dict>
+	<key>%1$d of these masternodes already voted differently on names you selected. Voting “%2$@” replaces those votes.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@nodes@ already voted differently on names you selected. Voting “%2$@” replaces those votes.</string>
+		<key>nodes</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%1$d of these masternodes</string>
+			<key>other</key>
+			<string>%1$d of these masternodes</string>
+		</dict>
+	</dict>
+	<key>%1$d already voted “%2$@” and will be left as they are.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%1$d already voted “%2$@” and will be left as it is.</string>
+			<key>other</key>
+			<string>%1$d already voted “%2$@” and will be left as they are.</string>
+		</dict>
+	</dict>
+	<key>%d have used all 5 votes Dash Platform allows on one contest and will be skipped.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d has used all 5 votes Dash Platform allows on one contest and will be skipped.</string>
+			<key>other</key>
+			<string>%d have used all 5 votes Dash Platform allows on one contest and will be skipped.</string>
+		</dict>
+	</dict>
+	<key>Continue with %1$d vote(s) across %2$d username(s)?</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>Continue with %1$#@votes@ across %2$#@names@?</string>
+		<key>votes</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%1$d vote</string>
+			<key>other</key>
+			<string>%1$d votes</string>
+		</dict>
+		<key>names</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%2$d username</string>
+			<key>other</key>
+			<string>%2$d usernames</string>
+		</dict>
+	</dict>
+	<key>This applies one choice to all %d selected usernames.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>This applies one choice to %d selected username.</string>
+			<key>other</key>
+			<string>This applies one choice to all %d selected usernames.</string>
+		</dict>
+	</dict>
+	<key>A vote is cast with %d of these nodes, worth %u votes. Choose which ones under “Voting with”.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>A vote is cast with %1$#@nodes@, worth %2$#@votes@. Choose which ones under “Voting with”.</string>
+		<key>nodes</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%1$d of these nodes</string>
+			<key>other</key>
+			<string>%1$d of these nodes</string>
+		</dict>
+		<key>votes</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>u</string>
+			<key>one</key>
+			<string>%2$u vote</string>
+			<key>other</key>
+			<string>%2$u votes</string>
+		</dict>
+	</dict>
+	<key>%ld attempt(s) left before your wallet is disabled</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld attempt left before your wallet is disabled</string>
+			<key>other</key>
+			<string>%ld attempts left before your wallet is disabled</string>
+		</dict>
+	</dict>
+	<key>%ld attempt(s) remaining</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld attempt remaining</string>
+			<key>other</key>
+			<string>%ld attempts remaining</string>
+		</dict>
+	</dict>
+	<key>This access ends after %d days, or when you disconnect the app.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>This access ends after %d day, or when you disconnect the app.</string>
+			<key>other</key>
+			<string>This access ends after %d days, or when you disconnect the app.</string>
+		</dict>
+	</dict>
+	<key>Merchant has only %d cards available</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Merchant has only %d card available</string>
+			<key>other</key>
+			<string>Merchant has only %d cards available</string>
+		</dict>
+	</dict>
+	<key>Your device time is %@ by %d seconds. You cannot use CoinJoin due to this difference.
+
+The time settings on your device needs to be changed to “Set time automatically” to use CoinJoin.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>Your device time is %1$@ by %2$#@seconds@. You cannot use CoinJoin due to this difference.
+
+The time settings on your device needs to be changed to “Set time automatically” to use CoinJoin.</string>
+		<key>seconds</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%2$d second</string>
+			<key>other</key>
+			<string>%2$d seconds</string>
+		</dict>
+	</dict>
+	<key>Your device time is off by %d minutes. You probably cannot send or receive Dash due to this problem.
+
+You should check and if necessary correct your date, time and timezone settings.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>Your device time is off by %#@minutes@. You probably cannot send or receive Dash due to this problem.
+
+You should check and if necessary correct your date, time and timezone settings.</string>
+		<key>minutes</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d minute</string>
+			<key>other</key>
+			<string>%d minutes</string>
+		</dict>
+	</dict>
+	<key>Could not refresh %d identities</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Could not refresh %d identity</string>
+			<key>other</key>
+			<string>Could not refresh %d identities</string>
+		</dict>
+	</dict>
+	<key>Found %d new identities</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Found %d new identity</string>
+			<key>other</key>
+			<string>Found %d new identities</string>
+		</dict>
+	</dict>
+	<key>%d used</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d used</string>
+			<key>other</key>
+			<string>%d used</string>
+		</dict>
+	</dict>
+	<key>%d total</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d total</string>
+			<key>other</key>
+			<string>%d total</string>
+		</dict>
+	</dict>
+	<key>%d receive</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d receive</string>
+			<key>other</key>
+			<string>%d receive</string>
+		</dict>
+	</dict>
+	<key>%d change</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d change</string>
+			<key>other</key>
+			<string>%d change</string>
+		</dict>
+	</dict>
+	<key>%d finished</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d finished</string>
+			<key>other</key>
+			<string>%d finished</string>
+		</dict>
+	</dict>
+	<key>%d already spent</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d already spent</string>
+			<key>other</key>
+			<string>%d already spent</string>
+		</dict>
+	</dict>
+	<key>%d waiting for the network</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d waiting for the network</string>
+			<key>other</key>
+			<string>%d waiting for the network</string>
+		</dict>
+	</dict>
+	<key>%d could not be reached</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d could not be reached</string>
+			<key>other</key>
+			<string>%d could not be reached</string>
+		</dict>
+	</dict>
+	<key>Dropped %d unconfirmed transaction(s) — rescanning filters, watch the Filters row.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Dropped %d unconfirmed transaction — rescanning filters, watch the Filters row.</string>
+			<key>other</key>
+			<string>Dropped %d unconfirmed transactions — rescanning filters, watch the Filters row.</string>
+		</dict>
+	</dict>
+	<key>Dropped %d unconfirmed transaction(s), but the filter rescan couldn't start — run Rescan Filters above.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Dropped %d unconfirmed transaction, but the filter rescan couldn't start — run Rescan Filters above.</string>
+			<key>other</key>
+			<string>Dropped %d unconfirmed transactions, but the filter rescan couldn't start — run Rescan Filters above.</string>
+		</dict>
+	</dict>
+	<key>Dropped %d unconfirmed transaction(s), but the wallet stopped and the filter rescan never ran. Restart the wallet (reopen the app, or Sync Now in Platform sync), then run Rescan Filters above.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Dropped %d unconfirmed transaction, but the wallet stopped and the filter rescan never ran. Restart the wallet (reopen the app, or Sync Now in Platform sync), then run Rescan Filters above.</string>
+			<key>other</key>
+			<string>Dropped %d unconfirmed transactions, but the wallet stopped and the filter rescan never ran. Restart the wallet (reopen the app, or Sync Now in Platform sync), then run Rescan Filters above.</string>
+		</dict>
+	</dict>
+	<key>%d bytes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d byte</string>
+			<key>other</key>
+			<string>%d bytes</string>
+		</dict>
+	</dict>
+	<key>%ld second(s)</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%ld second</string>
+			<key>other</key>
+			<string>%ld seconds</string>
+		</dict>
+	</dict>
+	<key>The shared privacy pool is still growing (%ld of %ld deposits). Try again once it reaches the minimum.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>The shared privacy pool is still growing (%1$ld of %2$#@deposits@). Try again once it reaches the minimum.</string>
+		<key>deposits</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>%2$ld deposit</string>
+			<key>other</key>
+			<string>%2$ld deposits</string>
+		</dict>
+	</dict>
+	<key>%@ ~ %lu contacts / %lu profile updates</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$@ ~ %2$#@contacts@ / %3$#@updates@</string>
+		<key>contacts</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lu</string>
+			<key>one</key>
+			<string>%2$lu contact</string>
+			<key>other</key>
+			<string>%2$lu contacts</string>
+		</dict>
+		<key>updates</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lu</string>
+			<key>one</key>
+			<string>%3$lu profile update</string>
+			<key>other</key>
+			<string>%3$lu profile updates</string>
+		</dict>
+	</dict>
+	<key>Maximum %ld characters</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>one</key>
+			<string>Maximum %ld character</string>
+			<key>other</key>
+			<string>Maximum %ld characters</string>
+		</dict>
+	</dict>
+	<key>%d votes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d vote</string>
+			<key>other</key>
+			<string>%d votes</string>
+		</dict>
+	</dict>
+	<key>Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Write down this %d word and keep it somewhere safe. It is the ONLY way to recover this wallet. Anyone with it can spend your funds.</string>
+			<key>other</key>
+			<string>Write down these %d words in order and keep them somewhere safe. They are the ONLY way to recover this wallet. Anyone with them can spend your funds.</string>
+		</dict>
+	</dict>
+	<key>%d UTXOs</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d UTXO</string>
+			<key>other</key>
+			<string>%d UTXOs</string>
 		</dict>
 	</dict>
 </dict>

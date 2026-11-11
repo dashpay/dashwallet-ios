@@ -271,12 +271,12 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
         }
         let remaining = LockoutPolicy.maxFailCount - count
         if count > 0, remaining <= LockoutPolicy.permanentLockWarningThreshold {
-            let message = String(format: NSLocalizedString("%ld attempt(s) left before your wallet is disabled", comment: ""), Int(remaining))
+            let message = String.localizedStringWithFormat(NSLocalizedString("%ld attempt(s) left before your wallet is disabled", comment: ""), Int(remaining))
             return Precheck(shouldContinueAuthentication: true, shouldLockout: false, attemptsMessage: message)
         }
         if count > 0, count < LockoutPolicy.allowedFailCount {
             let untilCooldown = LockoutPolicy.allowedFailCount - count
-            let message = String(format: NSLocalizedString("%ld attempt(s) remaining", comment: "PIN attempts before temporary lockout"), Int(untilCooldown))
+            let message = String.localizedStringWithFormat(NSLocalizedString("%ld attempt(s) remaining", comment: "PIN attempts before temporary lockout"), Int(untilCooldown))
             return Precheck(shouldContinueAuthentication: true, shouldLockout: false, attemptsMessage: message)
         }
         return Precheck(shouldContinueAuthentication: true, shouldLockout: false, attemptsMessage: nil)

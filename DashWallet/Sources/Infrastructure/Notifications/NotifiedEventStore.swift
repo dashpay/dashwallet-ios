@@ -75,6 +75,20 @@ struct AddNotifiedEventsTable: Migration {
     }
 }
 
+/// Marks seen the unseen events of topics the app no longer posts, so the
+/// badge never counts an event that has nowhere to open. The rows stay, so
+/// their ids keep deduplicating until the store prunes them.
+struct MarkRetiredNotificationTopicsSeen: Migration {
+    var version: Int64 = 20261030120000
+
+    func migrateDatabase(_ db: Connection) throws {
+        typealias S = NotifiedEventSchema
+        try db.run(S.table
+            .filter(NotificationTopic.retiredRawValues.contains(S.colTopic) && S.colSeenAt == nil)
+            .update(S.colSeenAt <- Int64(Date().timeIntervalSince1970)))
+    }
+}
+
 // MARK: - NotifiedEventStore
 
 /// SQLite-backed store over the app's shared `store.db` (or any injected
@@ -183,8 +197,8 @@ actor NotifiedEventStore: NotifiedEventStoring {
         typealias S = NotifiedEventSchema
         // Re-arms the id on both paths `markIfNew` can admit it through —
         // otherwise, while the database is failing, a caller that unmarks
-        // to post the same id again (CrowdNode's single result id) would see
-        // every later result refused as a duplicate.
+        // to post the same id again would see every later post refused as
+        // a duplicate.
         admittedWithoutRecord.remove(id)
         do {
             try connection.run(S.table.filter(S.colId == id).delete())

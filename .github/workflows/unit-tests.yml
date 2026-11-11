@@ -29,8 +29,11 @@ on:
 permissions:
   contents: read
 
+# Pull request runs share a group per branch, so a new push cancels the old
+# run. Every other run (a develop push, a dispatch) gets its own group per
+# commit, so each develop commit keeps its own test result.
 concurrency:
-  group: unit-tests-${{ github.ref }}
+  group: unit-tests-${{ github.ref }}${{ github.event_name != 'pull_request' && format('-{0}', github.sha) || '' }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -39,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
       - run: python3 scripts/ci/check_test_target_membership.py
@@ -63,7 +66,7 @@ jobs:
       # package, so both repositories must be siblings in the Actions
       # workspace.
       - name: Checkout dashwallet-ios
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           path: dashwallet-ios
           fetch-depth: 1
@@ -81,7 +84,7 @@ jobs:
           echo "platform: $platform_sha"
 
       - name: Checkout platform
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           repository: dashpay/platform
           ref: ${{ env.PLATFORM_SHA }}
@@ -89,10 +92,36 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
-      - name: Select Xcode 26.6
-        uses: maxim-lobanov/setup-xcode@v1
+      - name: Select Xcode from .xcode-version
+        id: xcode
+        uses: ./dashwallet-ios/.github/actions/select-xcode
         with:
-          xcode-version: "26.6"
+          app-path: ${{ github.workspace }}/dashwallet-ios
+
+      # Rust comes from platform's own pin (rust-toolchain.toml at the platform
+      # commit), the version cargo uses inside the platform checkout anyway.
+      - name: Read Rust version from platform
+        id: rust
+        working-directory: ${{ github.workspace }}/platform
+        run: |
+          set -euo pipefail
+          version=""
+          if [ -f rust-toolchain.toml ]; then
+            version="$(python3 - <<'TOML'
+          import re
+          text = open("rust-toolchain.toml").read()
+          section = re.search(r"^\[toolchain\][^\n]*\n(.*?)(?=^\[|\Z)", text, re.M | re.S)
+          channel = section and re.search(r'^\s*channel\s*=\s*"([^"]+)"', section.group(1), re.M)
+          print(channel.group(1) if channel else "")
+          TOML
+          )"
+          fi
+          if [ -z "$version" ]; then
+            echo "::error::rust_toolchain.not_found: no [toolchain] channel in platform's rust-toolchain.toml at $PLATFORM_SHA."
+            exit 1
+          fi
+          echo "Rust $version from platform's rust-toolchain.toml at $PLATFORM_SHA"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Show toolchain versions
         run: |
@@ -105,32 +134,38 @@ jobs:
           python3 scripts/test_protocol_compatibility.py
           python3 scripts/test_protocol_compatibility.py --testflight
 
+      - name: Test recovery bookkeeping and uncertain top-up outcomes
+        run: |
+          python3 scripts/test_asset_lock_recovery.py
+          python3 scripts/test_identity_top_up_compatibility.py
+
       # Same key as release-dashpay-testflight.yml so the two workflows share
       # one cached artifact per platform commit.
       - name: Restore release XCFramework cache
         id: xcframework-cache
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: ${{ github.workspace }}/platform/packages/swift-sdk/DashSDKFFI.xcframework
-          key: dash-sdk-xcframework-v1-${{ runner.os }}-${{ runner.arch }}-xcode-26.6-rust-1.92-ios-sim-release-${{ env.PLATFORM_SHA }}
+          key: dash-sdk-xcframework-v1-${{ runner.os }}-${{ runner.arch }}-xcode-${{ steps.xcode.outputs.version }}-rust-${{ steps.rust.outputs.version }}-ios-sim-release-${{ env.PLATFORM_SHA }}
 
-      - name: Set up Rust 1.92
-        if: steps.xcframework-cache.outputs.cache-hit != 'true'
-        uses: dtolnay/rust-toolchain@1.92.0
-        with:
-          targets: aarch64-apple-ios,aarch64-apple-ios-sim
-
-      - name: Ensure iOS Rust targets for platform toolchain
+      - name: Install Rust from platform's pin
         if: steps.xcframework-cache.outputs.cache-hit != 'true'
         working-directory: ${{ github.workspace }}/platform
+        env:
+          RUST_VERSION: ${{ steps.rust.outputs.version }}
         run: |
           set -euo pipefail
-          rustup target add aarch64-apple-ios aarch64-apple-ios-sim
+          if ! rustup toolchain install "$RUST_VERSION" --profile minimal \
+            --target aarch64-apple-ios --target aarch64-apple-ios-sim; then
+            echo "::error::rust_toolchain.not_found: Rust $RUST_VERSION from platform's rust-toolchain.toml at $PLATFORM_SHA could not be installed."
+            exit 1
+          fi
+          rustc --version
 
       - name: Restore Cargo dependencies cache
         id: cargo-cache
         if: steps.xcframework-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: |
             ~/.cargo/registry
@@ -141,7 +176,7 @@ jobs:
 
       - name: Install protoc
         if: steps.xcframework-cache.outputs.cache-hit != 'true'
-        uses: arduino/setup-protoc@v3
+        uses: arduino/setup-protoc@c65c819552d16ad3c9b72d9dfd5ba5237b9c906b # v3.0.0
         with:
           version: "32.x"
           repo-token: ${{ github.token }}
@@ -159,7 +194,7 @@ jobs:
 
       - name: Save Cargo dependencies cache
         if: steps.xcframework-cache.outputs.cache-hit != 'true' && steps.cargo-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: |
             ~/.cargo/registry
@@ -168,7 +203,7 @@ jobs:
 
       - name: Save release XCFramework cache
         if: steps.xcframework-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: ${{ github.workspace }}/platform/packages/swift-sdk/DashSDKFFI.xcframework
           key: ${{ steps.xcframework-cache.outputs.cache-primary-key }}
@@ -177,13 +212,13 @@ jobs:
         run: test -d ../platform/packages/swift-sdk/DashSDKFFI.xcframework
 
       - name: Set up CocoaPods 1.15.2
-        uses: maxim-lobanov/setup-cocoapods@v1
+        uses: maxim-lobanov/setup-cocoapods@8e97e1e98e6ccf42564fdf5622c8feec74199377 # v1
         with:
           version: "1.15.2"
 
       - name: Restore CocoaPods dependencies cache
         id: cocoapods-cache
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: |
             ~/Library/Caches/CocoaPods
@@ -197,7 +232,7 @@ jobs:
 
       - name: Save CocoaPods dependencies cache
         if: steps.cocoapods-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: |
             ~/Library/Caches/CocoaPods
@@ -257,6 +292,19 @@ jobs:
             -default-test-execution-time-allowance 120 \
             -maximum-test-execution-time-allowance 600
 
+      # A test step can succeed without running a test (an emptied test plan,
+      # every test skipped). Only after a successful test step: a build or
+      # runner failure keeps its own reason instead of reading as an empty run.
+      - name: Fail on an empty test run
+        run: |
+          set -euo pipefail
+          bundle="$RUNNER_TEMP/DashWalletTests.xcresult"
+          if ! xcrun xcresulttool get test-results summary --path "$bundle" > "$RUNNER_TEMP/test-summary.json"; then
+            echo "::error::missing or unreadable summary: xcresulttool could not read $bundle"
+            exit 2
+          fi
+          python3 scripts/ci/check_test_count.py "$RUNNER_TEMP/test-summary.json"
+
       - name: Test summary
         if: always()
         run: |
@@ -280,7 +328,7 @@ jobs:
 
       - name: Upload test results
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: DashWalletTests.xcresult
           path: ${{ runner.temp }}/DashWalletTests.xcresult

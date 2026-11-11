@@ -51,26 +51,16 @@ final class ProvideAmountViewController: SendAmountViewController {
 
     override func actionButtonAction(sender: UIView) {
         guard validateInputAmount() else { return }
-        // Cheap rejection before the leftover-balance alert: no reason to ask
-        // the user to confirm emptying their wallet for an amount that cannot
-        // be funded anyway.
+        // This is the last statement before the amount leaves the screen, so
+        // this is where affordability has to be settled.
         guard amountIsStillAffordable() else { return }
 
-        checkLeftoverBalance { [weak self] canContinue in
-            guard canContinue, let wSelf = self else { return }
-            // ...and again here, because `checkLeftoverBalance` presents its own
-            // Continue/Cancel alert and the ceiling can drop while that alert is
-            // open. This is the last statement before the amount leaves the
-            // screen, so this is where affordability has to be settled.
-            guard wSelf.amountIsStillAffordable() else { return }
+        showActivityIndicator()
+        let paymentCurrency: DWPaymentCurrency = sendAmountModel.activeAmountType == .main ? .dash : .fiat
+        DWGlobalOptions.sharedInstance().selectedPaymentCurrency = paymentCurrency
 
-            wSelf.showActivityIndicator()
-            let paymentCurrency: DWPaymentCurrency = wSelf.sendAmountModel.activeAmountType == .main ? .dash : .fiat
-            DWGlobalOptions.sharedInstance().selectedPaymentCurrency = paymentCurrency
-
-            wSelf.delegate?.provideAmountViewControllerDidInput(amount: wSelf.model.amount.plainAmount,
-                                                                selectedCurrency: wSelf.model.supplementaryCurrencyCode)
-        }
+        delegate?.provideAmountViewControllerDidInput(amount: model.amount.plainAmount,
+                                                      selectedCurrency: model.supplementaryCurrencyCode)
     }
 
     /// Whether the entered amount is still within what the funding pool can

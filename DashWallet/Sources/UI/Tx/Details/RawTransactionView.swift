@@ -143,7 +143,7 @@ struct RawTransactionView: View {
             }
             divider
             plainRow(label: NSLocalizedString("Size", comment: "Raw transaction inspector"),
-                     value: String(format: NSLocalizedString("%d bytes", comment: "Raw transaction inspector"), details.sizeBytes))
+                     value: String.localizedStringWithFormat(NSLocalizedString("%d bytes", comment: "Raw transaction inspector"), details.sizeBytes))
             divider
             plainRow(label: NSLocalizedString("Locktime", comment: "Raw transaction inspector"), value: "\(details.lockTime)")
             if let height = details.blockHeight {
@@ -224,7 +224,7 @@ struct RawTransactionView: View {
                 divider
             }
             plainRow(label: NSLocalizedString("Size", comment: "Raw transaction inspector"),
-                     value: String(format: NSLocalizedString("%d bytes", comment: "Raw transaction inspector"), payload.count))
+                     value: String.localizedStringWithFormat(NSLocalizedString("%d bytes", comment: "Raw transaction inspector"), payload.count))
             ForEach(Array(details.payloadFields.enumerated()), id: \.offset) { _, field in
                 divider
                 plainRow(label: field.label, value: field.value)

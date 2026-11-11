@@ -59,17 +59,17 @@ final class WalletPreparationSupportViewModel: ObservableObject {
         let subject: String
         let body: String
         if kind == .legacyMigration {
-            subject = "Dash Wallet — unable to move wallet"
+            subject = NSLocalizedString("Dash Wallet — unable to move wallet", comment: "Wallet support message subject")
             body = String(format: NSLocalizedString(
                 "To: %@\n\nI couldn't move my wallet from the previous version of the app.\n\nWhat happened before the error:\n",
                 comment: "Editable wallet support message"), recipient)
         } else if kind == .keychain {
-            subject = "Dash Wallet — unable to read wallet keys"
+            subject = NSLocalizedString("Dash Wallet — unable to read wallet keys", comment: "Wallet support message subject")
             body = String(format: NSLocalizedString(
                 "To: %@\n\nI couldn't open my wallet. The app says my wallet keys could not be read.\n\nWhat happened before the error:\n",
                 comment: "Editable wallet support message"), recipient)
         } else {
-            subject = "Dash Wallet — unable to open wallet"
+            subject = NSLocalizedString("Dash Wallet — unable to open wallet", comment: "Wallet support message subject")
             body = String(format: NSLocalizedString(
                 "To: %@\n\nI couldn't open my wallet.\n\nWhat happened before the error:\n",
                 comment: "Editable wallet support message"), recipient)
@@ -130,11 +130,11 @@ struct WalletPreparationSupportView: View {
                         comment: "Wallet preparation support"))
                 }
             }
-            .navigationTitle(Text("Help"))
+            .navigationTitle(Text(NSLocalizedString("Help", comment: "Wallet preparation support")))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
+                    Button(NSLocalizedString("Done", comment: "Wallet preparation support")) { dismiss() }
                 }
             }
             .sheet(item: $viewModel.draft) { draft in
@@ -145,7 +145,7 @@ struct WalletPreparationSupportView: View {
                 }
             }
             .alert(NSLocalizedString("Couldn't prepare the support message", comment: "Wallet preparation support"), isPresented: $viewModel.showError) {
-                Button("OK", role: .cancel) {}
+                Button(NSLocalizedString("OK", comment: "Wallet preparation support"), role: .cancel) {}
             } message: {
                 Text(NSLocalizedString("Try again or copy the support address and write to us from your mail app.", comment: "Wallet preparation support"))
             }

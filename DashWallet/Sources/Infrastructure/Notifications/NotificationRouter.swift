@@ -45,13 +45,6 @@ final class NotificationRouter: NotificationRouting {
             // destination: home is the root screen, nothing to present.
             break
 
-        case .staking:
-            // CrowdNode needs a synced wallet; before that, the tap just
-            // opens the app.
-            guard SyncingActivityMonitor.shared.state == .syncDone else { return }
-            let controller = CrowdNodeModelObjcWrapper.getRootVC()
-            presentingController()?.present(controller, animated: true)
-
         case .url(let url):
             UIApplication.shared.open(url)
 

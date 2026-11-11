@@ -4,11 +4,14 @@
 /* Voting */
 " or " = " 或 ";
 
-/* CrowdNode */
-" Privacy Policy " = "隐私政策";
+/* Evonode status: duration */
+"%.0f s" = "%.0f s";
 
-/* CrowdNode */
-" Terms of Use " = "使用条款";
+/* Seconds, abbreviated */
+"%.1f s" = "%.1f s";
+
+/* Seconds, abbreviated */
+"%.2f s" = "%.2f s";
 
 /* No comment provided by engineer. */
 "%.3f s" = "%.3f 秒";
@@ -175,6 +178,9 @@
 /* Voting */
 "%d selected" = "%d selected";
 
+/* SPV diagnostics */
+"%d still in progress" = "%d still in progress";
+
 /* Sync diagnostics - number of syncs since app launch */
 "%d syncs" = "%d syncs";
 
@@ -183,6 +189,9 @@
 
 /* Wallet accounts — address pool */
 "%d used" = "%d used";
+
+/* CoinJoin */
+"%d UTXOs" = "%d UTXOs";
 
 /* Username marketplace: masternode vote tally for one contest row */
 "%d votes" = "%d 票";
@@ -304,9 +313,6 @@
 /* No comment provided by engineer. */
 "A key doesn't match this masternode — fix or clear it to continue." = "有密钥与该主节点不匹配——请更正或清除后继续。";
 
-/* CrowdNode */
-"A Masternode needs 1000 Dash as collateral and each Masternode is currently rewarded approximately %@ per year." = "一个主节点需要 1000 Dash作为抵押, 每个主节点目前每年获得大约%@的奖励.";
-
 /* Usernames */
 "A masternode vote ended with this username locked, so nobody can register it. Choose a different one." = "A masternode vote ended with this username locked, so nobody can register it. Choose a different one.";
 
@@ -328,17 +334,14 @@
 /* Core drain recovery */
 "A previous Max transfer is still pending. Check its status or resume it before starting another. Resume pays the address it was started with." = "A previous Max transfer is still pending. Check its status or resume it before starting another. Resume pays the address it was started with.";
 
-/* DashConnect */
-"A sign-in to this app may still add a key to your identity, so the app cannot be turned off yet. Try again later, or approve the app's sign-in code again." = "A sign-in to this app may still add a key to your identity, so the app cannot be turned off yet. Try again later, or approve the app's sign-in code again.";
-
-/* DashConnect */
-"A sign-in to this app with another identity of this wallet may still add a key to that identity, so the app cannot be turned off here yet. Switch to that identity to check it." = "A sign-in to this app with another identity of this wallet may still add a key to that identity, so the app cannot be turned off here yet. Switch to that identity to check it.";
-
 /* No comment provided by engineer. */
 "A single wallet's recovery phrase cannot authorize deleting multiple different wallets." = "单个钱包的助记词无法授权删除多个不同的钱包。";
 
 /* Usernames: unfinished identity top-up */
 "A top-up hasn't finished" = "A top-up hasn't finished";
+
+/* Remove never-accepted transaction: refused while a transfer is running */
+"A transfer is still in progress. Try again when it has finished, or restart the app if it never does." = "A transfer is still in progress. Try again when it has finished, or restart the app if it never does.";
 
 /* Voting */
 "A vote is cast with %d of these nodes, worth %u votes. Choose which ones under “Voting with”." = "A vote is cast with %1$d of these nodes, worth %2$u votes. Choose which ones under “Voting with”.";
@@ -374,14 +377,8 @@
 /* DashSpend */
 "Accept terms and\nconditions" = "接受条款和\n条件";
 
-/* CrowdNode */
-"Accept Terms Of Use" = "接受使用条款";
-
 /* DashPay Contacts */
 "Accepting" = "Accepting";
-
-/* CrowdNode */
-"Accepting terms of use…" = "接受使用条款...";
 
 /* Wallet accounts */
 "Account" = "Account";
@@ -391,9 +388,6 @@
 
 /* Wallet accounts */
 "Account Not Found" = "Account Not Found";
-
-/* CrowdNode */
-"Account Recovery" = "账号恢复";
 
 /* Wallet accounts */
 "Accounts" = "Accounts";
@@ -409,9 +403,6 @@
 
 /* DashConnect App Connect v2: the placeholder is the app's name */
 "Act as you in one of %@'s contracts" = "Act as you in one of %@'s contracts";
-
-/* DashPay username registration recovery */
-"Act as you in this app without asking each time" = "Act as you in this app without asking each time";
 
 /* Masternode status */
 "Active" = "已激活";
@@ -433,6 +424,7 @@
 
 /* DashPay Contacts */
 "Add %@ as a contact to pay them directly by username and keep a shared history of your payments." = "Add %@ as a contact to pay them directly by username and keep a shared history of your payments.";
+"Add %@ Dash to your Shielded balance to create this username" = "Add %@ Dash to your Shielded balance to create this username";
 
 /* No comment provided by engineer. */
 "Add a New Contact" = "添加新朋友";
@@ -510,6 +502,9 @@
 /* No comment provided by engineer. */
 "After this transfer, it can take up to 10 minutes before you can use your Dash. This delay is part of how your privacy is protected." = "After this transfer, it can take up to 10 minutes before you can use your Dash. This delay is part of how your privacy is protected.";
 
+/* SPV diagnostics */
+"Aggregate Progress" = "Aggregate Progress";
+
 /* No comment provided by engineer. */
 "Agree" = "同意";
 
@@ -539,9 +534,6 @@
 
 /* Shortcut selection empty state */
 "All shortcuts are already in use" = "All shortcuts are already in use";
-
-/* CrowdNode */
-"All transfers to and from CrowdNode from this device will be performed with the below Dash address from this device." = "从此设备与CrowdNode之间的所有来往交易都会使用此设备下方的Dash地址.";
 
 /* ZenLedger */
 "Allow" = "允许";
@@ -618,9 +610,6 @@
 /* CTXSpend error */
 "An unknown error occurred. Please try again later." = "发生了一个未知错误. 请稍后再试.";
 
-/* CrowdNode */
-"and" = "和";
-
 /* DashConnect: a second request arrived while one was on screen */
 "Another DashConnect request arrived. Finish this one first, then try again." = "Another DashConnect request arrived. Finish this one first, then try again.";
 
@@ -676,9 +665,6 @@
 /* DashConnect token purchase */
 "Approve token purchase?" = "Approve token purchase?";
 
-/* DashConnect */
-"Approved" = "Approved";
-
 /* DashConnect token purchase */
 "Approving pays the total price from this identity's Platform credits." = "Approving pays the total price from this identity's Platform credits.";
 
@@ -687,9 +673,6 @@
 
 /* Coinbase/Buy Dash/Cancel Order */
 "Are you sure you want to cancel this transaction?" = "您确定要取消此交易吗?";
-
-/* CrowdNode */
-"As most people do not have exactly 1000 Dash at hand, Crowdnode has made a service where, by pooling deposits from members, they can achieve the benefits of owning a Masternode." = "由于大多数人手中没有 1000个 Dash, CrowdNode提供了一项服务, 他们通过汇集成员的存款来帮助成员获得主节点的收益.";
 
 /* DashSpend */
 "As soon as your code is generated, it will be displayed here" = "As soon as your code is generated, it will be displayed here";
@@ -798,17 +781,11 @@
 /* Translate it as short as possible! (24 symbols max) */
 "Backup" = "备份";
 
-/* No comment provided by engineer. */
-"Backup Passphrase" = "备份密码";
-
 /* Wallet preparation */
 "Backup recovery phrase" = "Backup recovery phrase";
 
 /* A noun. Used as a title. */
 "Backup Wallet" = "备份钱包";
-
-/* No comment provided by engineer. */
-"Backup your passphrase to create a CrowdNode account" = "备份您的密码以创建CrowdNode账户";
 
 /* Back up wallet */
 "Backup your recovery phrase" = "备份您的助记词";
@@ -819,11 +796,8 @@
 /* Send Screen: to address */
 "Balance" = "余额";
 
-/* CrowdNode */
+/* Platform address payment detail */
 "Balance after" = "之后余额";
-
-/* CrowdNode */
-"Balance On CrowdNode" = "CrowdNode 的余额";
 
 /* Balance not restored
    Max requires a known source balance
@@ -832,9 +806,6 @@
 
 /* Send screen: the funding balance */
 "Balance:" = "Balance:";
-
-/* CrowdNode */
-"Balance: " = "余额:";
 
 /* Balance info sheet */
 "Balances and transfers are not publicly visible" = "余额和转账不会公开可见";
@@ -848,14 +819,11 @@
 /* Devnet */
 "Base URL of the devnet's quorum-list server. SPV peers and Platform (DAPI) nodes are both auto-discovered from {Quorum URL}/masternodes — no manual peer entry." = "Base URL of the devnet's quorum-list server. SPV peers and Platform (DAPI) nodes are both auto-discovered from {Quorum URL}/masternodes — no manual peer entry.";
 
-/* Devnet */
-"Base58 identifier (optional)" = "Base58 identifier (optional)";
-
-/* CrowdNode */
-"Become part of a Dash Masternode with CrowdNode" = "通过CrowdNode成为Dash主节点的一部分";
-
 /* TimeSkew */
 "behind" = "后面";
+
+/* SPV diagnostics */
+"Best peer height" = "Best peer height";
 
 /* Validation rule: Between 3 and 24 characters */
 "Between %ld and %ld characters" = "在 %1$ld 和 %2$ld 个字符之间";
@@ -1149,9 +1117,6 @@
 /* Dash DEX */
 "Close and notify me" = "Close and notify me";
 
-/* CrowdNode */
-"Close and notify when it’s done" = "完成后关闭并发送通知";
-
 /* Wallet preparation: reset requires a fresh process */
 "Close and reopen the app, then try resetting wallet data again. This session may still have background tasks using the wallet files. No wallet data was deleted." = "Close and reopen the app, then try resetting wallet data again. This session may still have background tasks using the wallet files. No wallet data was deleted.";
 
@@ -1242,14 +1207,23 @@
 /* No comment provided by engineer. */
 "Confirm withdrawal" = "确认提款";
 
+/* Username purchase result unknown */
+"Confirmation pending" = "Confirmation pending";
+
 /* SPV diagnostics */
 "Confirmed" = "已确认";
 
 /* Receive payment status */
 "Confirmed in block" = "Confirmed in block";
 
+/* DashConnect: an approval whose identity update may still land */
+"Confirming" = "Confirming";
+
 /* SPV diagnostics */
 "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. Fully close and relaunch the app to start; the in-app Restart button does not apply this reset." = "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. Fully close and relaunch the app to start; the in-app Restart button does not apply this reset.";
+
+/* DashConnect */
+"Connect an app" = "Connect an app";
 
 /* ZenLedger */
 "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions." = "将您的加密数字货币钱包连接至 ZenLedger 平台. 了解更多信息并开始使用您的 Dash 钱包进行交易.";
@@ -1261,11 +1235,11 @@
    Coinbase Entry Point */
 "Connected" = "已连接";
 
-/* CrowdNode */
-"Connected Dash address" = "连接的 Dash地址";
-
 /* SPV sync */
 "Connected peers" = "已连接节点";
+
+/* SPV diagnostics */
+"Connected Peers" = "Connected Peers";
 
 /* DashConnect re-login */
 "Connected since %@" = "Connected since %@";
@@ -1396,6 +1370,10 @@
 
 /* No comment provided by engineer. */
 "Core chain-locked height" = "Core 链锁定高度";
+
+/* SPV diagnostics
+   Sync Info */
+"Core Sync Status" = "Core Sync Status";
 
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "无法自动恢复缺失或错误单词";
@@ -1535,9 +1513,6 @@
 /* DashPay Invitations */
 "Create a username and say goodbye to numerical addresses" = "Create a username and say goodbye to numerical addresses";
 
-/* CrowdNode */
-"Create Account" = "创建账户";
-
 /* Create DashSpend account */
 "Create account" = "创建账户";
 
@@ -1547,9 +1522,6 @@
 /* Usernames */
 "Create an instant username" = "Create an instant username";
 
-/* CrowdNode */
-"Create an online CrowdNode account" = "创建一个线上CrowdNode账户";
-
 /* Usernames */
 "Create instant username" = "Create instant username";
 
@@ -1558,10 +1530,6 @@
 
 /* Wallets */
 "Create New Wallet" = "Create New Wallet";
-
-/* CrowdNode
-   CrowdNode Portal */
-"Create Online Account" = "创建线上账户";
 
 /* Usernames */
 "Create username" = "Create username";
@@ -1578,29 +1546,11 @@
 /* Coinbase/Payment Methods */
 "Credit Card" = "信用卡";
 
-/* Translate it as short as possible! (24 symbols max) */
-"CrowdNode" = "CrowdNode";
+/* Raw transaction */
+"Credit output %d" = "Credit output %d";
 
-/* CrowdNode */
-"CrowdNode benefits" = "CrowdNode 的福利";
-
-/* CrowdNode */
-"CrowdNode sign-up and deposits are temporarily unavailable." = "CrowdNode sign-up and deposits are temporarily unavailable.";
-
-/* CrowdNode Portal */
-"CrowdNode Support" = "CrowdNode帮助";
-
-/* CrowdNode */
-"CrowdNode uses this address as your account ID. You will lose access to your funds within this wallet and your CrowdNode account if you lose the passphrase associated to this address." = "CrowdNode使用此地址作为您的账户ID. 若您丢失了与此地址关联的密码, 您将无法访问此钱包和您CrowdNode账户中的资金.";
-
-/* CrowdNode */
-"CrowdNode withdrawal limits" = "CrowdNode 提款限额";
-
-/* No comment provided by engineer. */
-"CrowdNode · Account" = "CrowdNode · 账户";
-
-/* CrowdNode Portal */
-"CrowdNode ➝ DashWallet" = "CrowdNode ➝ Dash钱包";
+/* Raw transaction */
+"Credit outputs" = "Credit outputs";
 
 /* No comment provided by engineer. */
 "CSV Export" = "导出CSV文件";
@@ -1610,12 +1560,6 @@
 
 /* Explore Dash: Filters */
 "CTX gift cards" = "CTX 礼品卡";
-
-/* Crowdnode */
-"Current APY = %@" = "目前的年利率 = %@";
-
-/* CrowdNode */
-"Current APY is %@" = "目前的年利率是%@";
 
 /* Explore Dash: Filters */
 "Current location" = "当前位置";
@@ -1643,9 +1587,6 @@
 
 /* No comment provided by engineer. */
 "Dash address" = "达世币地址";
-
-/* CrowdNode */
-"Dash address designated for your CrowdNode account in the Dash Wallet on this device " = "此设备上Dash钱包中为您的CrowdNode账户指定Dash地址";
 
 /* No comment provided by engineer. */
 "Dash balance" = "Dash余额";
@@ -1696,11 +1637,17 @@
 /* Buy Dash */
 "Dash Wallet on this device" = "此设备的 Dash钱包";
 
-/* Devnet */
-"DashConnect Contract ID" = "DashConnect Contract ID";
+/* Wallet support message subject */
+"Dash Wallet — unable to move wallet" = "Dash Wallet — unable to move wallet";
 
-/* DashConnect */
-"DashConnect key registration completed." = "DashConnect key registration completed.";
+/* Wallet support message subject */
+"Dash Wallet — unable to open wallet" = "Dash Wallet — unable to open wallet";
+
+/* Wallet support message subject */
+"Dash Wallet — unable to read wallet keys" = "Dash Wallet — unable to read wallet keys";
+
+/* Identity top-up stopped after successful unshield */
+"Dash was moved to your Platform balance. Finish the top-up from Platform after reviewing the amount again." = "Dash was moved to your Platform balance. Finish the top-up from Platform after reviewing the amount again.";
 
 /* DashConnect */
 "DashConnect login is not yet available on mainnet" = "DashConnect login is not yet available on mainnet";
@@ -1725,9 +1672,6 @@
 
 /* No comment provided by engineer. */
 "DashPay Upgrade Fee" = "DashPay升级费用";
-
-/* CrowdNode Portal */
-"DashWallet ➝ CrowdNode" = "Dash钱包 ➝ CrowdNode";
 
 /* No comment provided by engineer. */
 "Date" = "日期";
@@ -1765,24 +1709,8 @@
 /* DashConnect */
 "Deny" = "Deny";
 
-/* CrowdNode
-   CrowdNode Portal */
-"Deposit" = "存款";
-
-/* CrowdNode Portal */
-"Deposit %@ to start earning" = "存入 %@ 来开始赚取收益";
-
 /* Dash DEX */
 "Deposit address is missing. Please refresh and try again." = "Deposit address is missing. Please refresh and try again.";
-
-/* CrowdNode */
-"Deposit at least %@ Dash on your Dash Wallet to complete a withdrawal" = "向您Dash钱包存储至少%@ Dash以完成提币";
-
-/* CrowdNode Portal */
-"Deposit at least %@ to start earning" = "存入至少 %@ 来开始赚取收益";
-
-/* CrowdNode */
-"Deposit sent" = "存款已发送";
 
 /* Identities: BIP-32 style derivation path of this key */
 "Derivation path" = "派生路径";
@@ -1838,6 +1766,9 @@
 /* Buy Sell Portal
    Coinbase Entry Point */
 "Disconnected" = "连接断开";
+
+/* DashConnect: after a disconnect that left keys no approval of this wallet names */
+"Disconnected. Keys this wallet did not record giving are still on your identity (%d): keys of this app from another device or from before a restore, or DashPay profile keys no connection holds. Turn them off too?" = "Disconnected. Keys this wallet did not record giving are still on your identity (%d): keys of this app from another device or from before a restore, or DashPay profile keys no connection holds. Turn them off too?";
 
 /* DashSpend confirmation */
 "Discount" = "折扣";
@@ -1918,17 +1849,11 @@
 /* SPV diagnostics */
 "Dropping…" = "正在丢弃…";
 
-/* CrowdNode */
-"Due to CrowdNode’s terms of service users can withdraw no more than:" = "由于 CrowdNode的服务条款, 用户的提款额不能超过:";
-
 /* Geoblock */
 "Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features." = "由于法律限制, 我们需要验证您不在英国. 我们只会在您使用 Coinbase 功能时验证您的位置.";
 
 /* Geoblock */
 "Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK" = "由于法律限制, 当您身在英国时无法使用Coinbase功能";
-
-/* CrowdNode */
-"e.g. johndoe@mail.com" = "例 johndoe@mail.com";
 
 /* Devnet */
 "e.g. moutai (matches dashd -devnet=<name>)" = "e.g. moutai (matches dashd -devnet=<name>)";
@@ -1948,12 +1873,6 @@
 /* No comment provided by engineer. */
 "Earliest block height" = "最早区块高度";
 
-/* CrowdNode */
-"Easily stake Dash and earn passive income with a few simple clicks" = "Easily stake Dash and earn passive income with a few simple clicks";
-
-/* No comment provided by engineer. */
-"Easily stake Dash and earn passive income with a few simple clicks." = "只需点击几下, 即可轻松质押Dash并赚取被动收益.";
-
 /* SPV diagnostics */
 "Edit birth height" = "编辑起始区块高度";
 
@@ -1969,7 +1888,7 @@
 /* Input username textfield placeholder */
 "eg: johndoe" = "例: johndoe";
 
-/* CrowdNode */
+/* DashSpend */
 "Email" = "邮箱";
 
 /* DashPay: confirm button of the Enable DashPay sheet */
@@ -1983,6 +1902,9 @@
 
 /* No comment provided by engineer. */
 "Enable Touch ID" = "启用指纹识别";
+
+/* Voting */
+"Enable Voting" = "Enable Voting";
 
 /* DashPay FAQ */
 "Enabling DashPay costs a small one-time network fee, paid from your identity's credit balance. The exact estimate is shown before you confirm. Sending contact requests and payments costs the usual network fees." = "启用 DashPay 需要一笔小额的一次性网络手续费，从您身份的积分余额中支付。确认前会显示确切的预估金额。发送联系人请求和支付则收取通常的网络手续费。";
@@ -2170,6 +2092,9 @@
 /* SPV sync phase */
 "Filter headers" = "过滤器区块头";
 
+/* SPV diagnostics */
+"Filter Headers" = "Filter Headers";
+
 /* No comment provided by engineer. */
 "Filter transactions" = "过滤交易";
 
@@ -2227,6 +2152,9 @@
 /* DashConnect: a second request arrived during key registration */
 "Finish the current DashConnect request first, then try again." = "Finish the current DashConnect request first, then try again.";
 
+/* DashConnect: turning off unrecorded keys while another request is in progress */
+"Finish the request on screen, then disconnect the app again." = "Finish the request on screen, then disconnect the app again.";
+
 /* SPV diagnostics */
 "Finish Transfers" = "Finish Transfers";
 
@@ -2241,12 +2169,6 @@
 
 /* SPV diagnostics */
 "Finishing…" = "Finishing…";
-
-/* CrowdNode */
-"First deposit should be more than %@" = "首次存款应超过 %@";
-
-/* CrowdNode */
-"First minimum deposit" = "首次最低存款";
 
 /* DashSpend */
 "Fixed amounts" = "固定金额";
@@ -2295,12 +2217,6 @@
 
 /* Dash DEX Portal */
 "From any crypto to your Dash Wallet" = "From any crypto to your Dash Wallet";
-
-/* from CrowdNode */
-"from CrowdNode" = "来自CrowdNode";
-
-/* from Dash Wallet */
-"from Dash Wallet" = "来自Dash钱包";
 
 /* Swap portal */
 "From Dash Wallet to any crypto" = "From Dash Wallet to any crypto";
@@ -2353,9 +2269,6 @@
 /* Usernames */
 "Funds will be traceable to your username" = "Funds will be traceable to your username";
 
-/* CrowdNode */
-"Gain rewards from deposits in Dash Masternodes with as little as 0.5 Dash." = "仅需 0.5 Dash的存款即可从Dash主节点中获得奖励.";
-
 /* Wallets */
 "Generate a new recovery phrase" = "Generate a new recovery phrase";
 
@@ -2376,9 +2289,6 @@
 /* Coinbase/Convert Crypto */
 "Get Quote" = "获得报价";
 
-/* CrowdNode */
-"Get Rewards Instantly" = "立即获得奖励";
-
 /* No comment provided by engineer. */
 "Get Started" = "开始使用";
 
@@ -2390,9 +2300,6 @@
 
 /* No comment provided by engineer. */
 "Get your Username" = "获取您的用户名";
-
-/* CrowdNode */
-"Getting started with CrowdNode" = "开始使用CrowdNode";
 
 /* No comment provided by engineer. */
 "Gift card" = "礼品卡";
@@ -2414,9 +2321,6 @@
 
 /* DashSpend */
 "Gift card · %@" = "礼品卡 · %@";
-
-/* No comment provided by engineer. */
-"Go to CrowdNode website" = "访问CrowdNode网站";
 
 /* No comment provided by engineer. */
 "Go to Website" = "进入网站";
@@ -2447,9 +2351,6 @@
 
 /* No comment provided by engineer. */
 "Help" = "Help";
-
-/* CrowdNode */
-"Here is a Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "这是在此设备上的 Dash钱包中为您的 CrowdNode账户指定的 Dash地址";
 
 /* DashPay Contacts */
 "Hidden" = "Hidden";
@@ -2484,9 +2385,6 @@
 /* Shortcut banner */
 "Hold any button above to replace it with the function you need" = "长按上方任意按钮将其替换为您需要的功能";
 
-/* CrowdNode */
-"How CrowdNode staking works" = "CrowdNode 质押的运作原理";
-
 /* No comment provided by engineer. */
 "How do I get Test Dash?" = "我如何获得 Test Dash?";
 
@@ -2502,9 +2400,6 @@
 /* DashPay FAQ */
 "How private is DashPay?" = "DashPay 的隐私性如何？";
 
-/* CrowdNode */
-"How to confirm your API Dash address" = "如何确认您的API Dash地址";
-
 /* No comment provided by engineer. */
 "How to use your gift card" = "如何使用您的礼品卡";
 
@@ -2519,9 +2414,6 @@
 
 /* No comment provided by engineer. */
 "I accept that I will lose my coins if I no longer possess the recovery phrase" = "我同意如果我丢失助记词, 我会丢失我的Dash";
-
-/* CrowdNode */
-"I agree to CrowdNode" = "我同意 CrowdNode";
 
 /* No comment provided by engineer. */
 "I got it" = "I got it";
@@ -2580,6 +2472,9 @@
 /* Usernames */
 "If enough of the network determines that a username is inappropriate, they can block it" = "If enough of the network determines that a username is inappropriate, they can block it";
 
+/* Send confirm sheet: an unconfirmed Core to Shielded send can be resumed */
+"If it does not arrive, Resume continues this same transfer to the same recipient. It cannot pay twice." = "If it does not arrive, Resume continues this same transfer to the same recipient. It cannot pay twice.";
+
 /* Usernames */
 "If somebody else requests the same username as you, we will let the network decide whom to give this username" = "If somebody else requests the same username as you, we will let the network decide whom to give this username";
 
@@ -2588,12 +2483,6 @@
 
 /* Geoblock */
 "If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase" = "如果您选择之后授予权限并且您不在英国, 您可以使用Coinbase";
-
-/* CrowdNode */
-"If you ever lose your passphrase, you can verify yourself by other means to regain access to your CrowdNode funds." = "如果您丢失了密码, 您可以通过其他方式验证自己以重新获得对您CrowdNode资金的访问权限.";
-
-/* No comment provided by engineer. */
-"If you lose your passphrase for this wallet and lose this device or uninstall Dash Wallet, you will lose access to your funds on CrowdNode and the funds within this wallet." = "如果您丢失此钱包的密码并丢失此设备或卸载Dash钱包, 您将无法访问CrowdNode上和此钱包中的资金.";
 
 /* No comment provided by engineer. */
 "Ignore" = "忽略";
@@ -2637,17 +2526,11 @@
 /* Maya */
 "In addition to the displayed Maya fee, we include a spread in the price. \nCryptocurrency markets are volatile, and this allows us to temporary lock in a price for trade execution." = "In addition to the displayed Maya fee, we include a spread in the price. \nCryptocurrency markets are volatile, and this allows us to temporary lock in a price for trade execution.";
 
-/* CrowdNode */
-"In case of larger withdrawals CrowdNode will pay withdrawals within two weeks. This is due to their security protocols and will most often be handled much faster." = "在提款额度较大的情况下, CrowdNode将在两周内支付该提款. 这是由于它们的安全协议, 并且通常处理得比这个时间要快.";
-
 /* Usernames */
 "In case you lose your passphrase you will lose your right to your requested username" = "In case you lose your passphrase you will lose your right to your requested username";
 
 /* Username marketplace: section of contested-name requests awaiting the masternode vote */
 "In network vote" = "网络投票中";
-
-/* CrowdNode Portal */
-"In process…" = "正在进行...";
 
 /* Dash DEX */
 "In progress" = "In progress";
@@ -2673,9 +2556,6 @@
 /* Wallet accounts */
 "Index" = "Index";
 
-/* CrowdNode */
-"Information about your online account" = "有关您线上账户的信息";
-
 /* Buy Sell Portal */
 "Initializing" = "正在初始化";
 
@@ -2690,6 +2570,9 @@
 
 /* Raw transaction inspector */
 "Inputs (%d)" = "输入 (%d)";
+
+/* Raw transaction */
+"Inputs hash" = "Inputs hash";
 
 /* Receive payment status */
 "InstantSend confirmed" = "InstantSend confirmed";
@@ -2715,9 +2598,6 @@
 /* No comment provided by engineer. */
 "Internally moved to" = "内部移动至";
 
-/* CrowdNode */
-"Introducing Staking" = "介绍质押";
-
 /* Invalid transaction */
 "Invalid" = "无效";
 
@@ -2729,9 +2609,6 @@
 
 /* No comment provided by engineer. */
 "Invalid Dash address" = "无效的Dash地址";
-
-/* CrowdNode Online */
-"Invalid Email" = "无效的电子邮箱";
 
 /* No comment provided by engineer. */
 "Invalid email or password." = "无效的电子邮箱或密码.";
@@ -2769,12 +2646,6 @@
 /* No comment provided by engineer. */
 "IP address, proTxHash or private key" = "IP 地址、proTxHash 或私钥";
 
-/* CrowdNode */
-"It can take a minute for your balance to be updated." = "您的余额可能需要一分钟后才能被更新.";
-
-/* CrowdNode */
-"It can take a minute for your funds to arrive." = "您的资金可能需要一分钟后才能到账.";
-
 /* Dash DEX */
 "It can take up to a few minutes for your %@ to arrive at the destination address using %@" = "It can take up to a few minutes for your %1$@ to arrive at the destination address using %2$@";
 
@@ -2808,9 +2679,6 @@
 /* Username marketplace: the contest's join window has passed — value of the New contenders row */
 "joining closed" = "报名已截止";
 
-/* CrowdNode */
-"Joining the pool" = "加入资金池";
-
 /* Settings: advanced mode */
 "Keep credits to pay for on-chain actions and Platform apps" = "Keep credits to pay for on-chain actions and Platform apps";
 
@@ -2843,6 +2711,9 @@
 
 /* No comment provided by engineer. */
 "Keys are stored in this device's keychain and never leave it except to sign the action you request." = "密钥存储在本设备的钥匙串中，除了为你请求的操作签名外，绝不会离开设备。";
+
+/* DashConnect: title of the question after a disconnect */
+"Keys left on your identity" = "Keys left on your identity";
 
 /* No comment provided by engineer. */
 "Keys on this device" = "本设备上的密钥";
@@ -2911,8 +2782,8 @@
 /* Wallets */
 "Leave the name empty to reset it to the default." = "Leave the name empty to reset it to the default.";
 
-/* CrowdNode */
-"Leaving the pool" = "离开资金池";
+/* DashConnect */
+"Leave them" = "Leave them";
 
 /* DashPay Contacts: caption under the user's own QR code */
 "Let another Dash Wallet user scan this code to add you as a contact." = "让另一位 Dash Wallet 用户扫描此二维码，即可把你加为联系人。";
@@ -2934,12 +2805,6 @@
 
 /* Dash Service Overview */
 "Link Coinbase Account" = "关联Coinbase账户";
-
-/* CrowdNode */
-"Link Existing Account" = "连接现有账户";
-
-/* CrowdNode */
-"Link Existing CrowdNode Account" = "连接现有的CrowdNode账户";
 
 /* No comment provided by engineer. */
 "Link Uphold Account" = "关联Uphold账号";
@@ -3044,9 +2909,6 @@
 /* Maya */
 "Log In" = "Log In";
 
-/* CrowdNode WebView */
-"Log in to CrowdNode" = "登录到CrowdNode";
-
 /* DashSpend */
 "Log in to your account" = "登录您的账户";
 
@@ -3082,9 +2944,6 @@
 
 /* Sync diagnostics */
 "Longest Pass" = "Longest Pass";
-
-/* Leftover balance warning */
-"Looks like you are emptying your Dash Wallet" = "看起来您正在清空Dash钱包";
 
 /* adjective, security level */
 "Low" = "低";
@@ -3125,6 +2984,9 @@
 /* No comment provided by engineer. */
 "masternode list #%d of %d" = "主节点列表 #%2$d 分之  %1$d";
 
+/* Raw transaction */
+"Masternode list merkle root" = "Masternode list merkle root";
+
 /* About screen tech info */
 "Masternode list: %u of %u" = "Masternode list: %1$u of %2$u";
 
@@ -3142,6 +3004,9 @@
 
 /* No comment provided by engineer. */
 "Masternode Revocation" = "主节点撤销";
+
+/* Raw transaction */
+"Masternode type" = "Masternode type";
 
 /* No comment provided by engineer. */
 "Masternode Update" = "主节点升级";
@@ -3203,9 +3068,6 @@
 
 /* adjective, security level */
 "Medium" = "中等";
-
-/* CrowdNode */
-"Members are free to leave the pool and can most often leave immediately." = "会员可以自由离开资金池, 并且通常可以立刻离开.";
 
 /* Receive receipt memo */
 "Memo" = "Memo";
@@ -3368,9 +3230,6 @@
 /* Username marketplace: until when other identities can join the contest */
 "New contenders" = "新竞争者";
 
-/* CrowdNode */
-"New CrowdNode Account" = "新的CrowdNode账户";
-
 /* Start a separate transfer */
 "New transfer" = "New transfer";
 
@@ -3484,6 +3343,9 @@
 
 /* DashPay Contacts */
 "No payments with this contact yet" = "No payments with this contact yet";
+
+/* SPV diagnostics */
+"No peers connected" = "No peers connected";
 
 /* SPV diagnostics */
 "No persisted wallet row found for the bound wallet." = "未找到所绑定钱包的已保存记录。";
@@ -3629,6 +3491,9 @@
 /* Dash DEX / tx history row title */
 "Not converted · %@" = "Not converted · %@";
 
+/* DashConnect: keys are on the identity, but the app never got its response */
+"Not delivered" = "Not delivered";
+
 /* Location Service Status */
 "Not Determined" = "尚未确定";
 
@@ -3730,9 +3595,6 @@
 
 /* Online */
 "Online" = "线上";
-
-/* CrowdNode Portal */
-"Online Account" = "线上账户";
 
 /* Online Merchant */
 "Online Merchant" = "在线商户";
@@ -3905,6 +3767,9 @@
 /* Raw transaction inspector */
 "Payload hex" = "载荷十六进制";
 
+/* Raw transaction */
+"Payload version" = "Payload version";
+
 /* Coinbase/Buy Dash */
 "Payment method" = "付款方式";
 
@@ -3941,9 +3806,6 @@
 /* No comment provided by engineer. */
 "Payout address key" = "付款地址密钥";
 
-/* CrowdNode */
-"Payout Options" = "支付选项";
-
 /* Coinbase/Payment Methods */
 "PayPal" = "PayPal";
 
@@ -3962,14 +3824,8 @@
 /* InternalTransfer recovery */
 "Pending — tap to finish" = "Pending — tap to finish";
 
-/* CrowdNode */
-"per 24 hours" = "每24小时";
-
-/* CrowdNode */
-"per hour" = "每小时";
-
-/* CrowdNode */
-"per transaction" = "每笔交易";
+/* SPV diagnostics */
+"Per-Phase Progress" = "Per-Phase Progress";
 
 /* No comment provided by engineer. */
 "Personalize" = "个性化";
@@ -4024,6 +3880,9 @@
 
 /* No comment provided by engineer. */
 "Platform fee" = "Platform 手续费";
+
+/* Raw transaction */
+"Platform HTTP port" = "Platform HTTP port";
 
 /* Masternodes */
 "Platform node" = "Platform 节点";
@@ -4085,17 +3944,11 @@
 /* Wallet preparation */
 "Please keep the app open." = "Please keep the app open.";
 
-/* CrowdNode */
-"Please note that the email is not saved by the Dash Wallet and is only sent to CrowdNode" = "请注意, Dash钱包不保存电子邮件, 仅发送至 CrowdNode";
-
 /* Usernames */
 "Please note that the username can NOT be changed once it is registered." = "请注意用户名一旦注册, 便无法再更改.";
 
 /* Usernames */
 "Please note that you will not be able to change it in the future" = "Please note that you will not be able to change it in the future";
-
-/* Leftover balance warning */
-"Please note, you will not be able to withdraw your funds from CowdNode to this wallet until you increase your balance to %@ Dash." = "请注意, 您需要增加余额至 %@ Dash才能够从CrowdNode账户中提币到此钱包.";
 
 /* No comment provided by engineer. */
 "Please place your phone near NFC device." = "请将您的手机靠近NFC设备.";
@@ -4120,9 +3973,6 @@
 
 /* No comment provided by engineer. */
 "Please wait" = "请稍等";
-
-/* CrowdNode */
-"Please wait before initiating the next withdrawal" = "请稍等片刻再开始下次提现";
 
 /* No comment provided by engineer. */
 "Please wait until the wallet is fully synced before exporting your transaction history" = "请等钱包完全同步后再导出您的交易记录";
@@ -4181,9 +4031,6 @@
 /* Stale rates */
 "Prices weren't retrieved. Fiat values may be incorrect." = "价格未被检索到. 法币价值或许错误.";
 
-/* CrowdNode */
-"Primary Dash address" = "主要Dash地址";
-
 /* Usernames */
 "Privacy pool too small" = "Privacy pool too small";
 
@@ -4225,9 +4072,6 @@
 
 /* Balance info sheet section */
 "Pros" = "优点";
-
-/* CrowdNode Portal */
-"Protect your savings" = "保护您的存款";
 
 /* No comment provided by engineer. */
 "Protocol versions" = "协议版本";
@@ -4286,6 +4130,9 @@
 /* Devnet */
 "Quorum URL, name and contract ids" = "Quorum URL, name and contract ids";
 
+/* Raw transaction */
+"Quorums merkle root" = "Quorums merkle root";
+
 /* Dash DEX */
 "Quote expires" = "Quote expires";
 
@@ -4306,9 +4153,6 @@
 
 /* SPV diagnostics */
 "Re-checks the compact block filters from the chosen height for this wallet's transactions, re-downloading and re-matching them. Rescans are floored at the wallet's creation height and at the locally stored chain data — to recover history below that, lower the wallet birth height instead." = "从所选高度开始，重新检查紧凑区块过滤器中属于此钱包的交易，重新下载并重新匹配。重新扫描的下限为钱包的创建高度以及本地存储的链数据——若要恢复更早的记录，请改为降低钱包起始区块高度。";
-
-/* CrowdNode */
-"Read Withdrawal Policy" = "阅读提款政策";
 
 /* Identities: key visible to the wallet but not usable for signing */
 "Read-only" = "只读";
@@ -4343,9 +4187,6 @@
 /* Masternode unban */
 "Receive some DASH to this wallet, or fund its shielded balance, then return here." = "Receive some DASH to this wallet, or fund its shielded balance, then return here.";
 
-/* CrowdNode */
-"Receive your share of rewards daily." = "每天接收属于您份额的奖励.";
-
 /* Received transaction */
 "Received" = "已接收";
 
@@ -4360,9 +4201,6 @@
 
 /* DashPay payment row — sender's display name */
 "Received from %@" = "收自 %@";
-
-/* CrowdNode */
-"Receiving rewards" = "领取奖励";
 
 /* Sync diagnostics */
 "Recent" = "Recent";
@@ -4652,6 +4490,9 @@
 /* Usernames — when a username vote closes */
 "Results on %@" = "Results on %@";
 
+/* InternalTransfer */
+"Resume" = "Resume";
+
 /* Resume the same asset lock */
 "Resume transfer" = "Resume transfer";
 
@@ -4687,9 +4528,6 @@
 
 /* SPV diagnostics */
 "Rewind this wallet's filter scan to re-download and re-match compact block filters, rediscovering any missed transactions." = "Rewind this wallet's filter scan to re-download and re-match compact block filters, rediscovering any missed transactions.";
-
-/* DashConnect re-login */
-"Same permissions as before" = "Same permissions as before";
 
 /* No comment provided by engineer. */
 "Save" = "保存";
@@ -4729,9 +4567,6 @@
 
 /* (Send by) Scanning QR code */
 "Scan QR code" = "扫描二维码";
-
-/* DashConnect */
-"Scan the QR code to complete the login process" = "Scan the QR code to complete the login process";
 
 /* No comment provided by engineer. */
 "Scan to Send" = "扫描发送";
@@ -4882,18 +4717,11 @@
 /* Dash DEX */
 "Send %@ (%@) to this address" = "Send %1$@ (%2$@) to this address";
 
-/* CrowdNode Confirm */
-"Send %@ from your primary Dash address that you currently use for your CrowdNode account" = "从您当前用于CrowdNode账户的Dash主地址发送%@";
-
 /* Dash DEX */
 "Send %@ to this address" = "Send %@ to this address";
 
 /* No comment provided by engineer. */
 "Send Contact Request" = "发送朋友申请";
-
-/* Coinbase
-   CrowdNode */
-"Send Report" = "发送报告";
 
 /* Username marketplace: transfer sheet body */
 "Send this name to another identity for free. The transfer also removes any sale listing. This can't be undone — the new owner would have to transfer it back." = "免费将该名称发送给另一个身份。转移同时会撤下所有出售挂牌。此操作无法撤销——需由新持有者转回。";
@@ -4936,12 +4764,6 @@
 
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "正在发送";
-
-/* CrowdNode */
-"Sending to CrowdNode account" = "发送到CrowdNode账户";
-
-/* CrowdNode */
-"Sending to Dash Wallet on this device" = "发送到此设备上的Dash钱包";
 
 /* Buy Dash */
 "Sending to:" = "正在发送至:";
@@ -5006,7 +4828,7 @@
 /* Voting */
 "Several people requested this name — open it to choose between them." = "Several people requested this name — open it to choose between them.";
 
-/* CrowdNode */
+/* Receive screen */
 "Share" = "分享";
 
 /* Receive screen */
@@ -5078,9 +4900,6 @@
 /* DashPay Contacts: expands the network search into the full add-contact flow */
 "Show more results" = "显示更多结果";
 
-/* CrowdNode */
-"Show QR" = "显示二维码";
-
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "显示助记词";
 
@@ -5089,15 +4908,6 @@
 
 /* DashConnect re-login */
 "Sign in to %@ again?" = "Sign in to %@ again?";
-
-/* CrowdNode */
-"Sign up error" = "注册时发生错误";
-
-/* CrowdNode */
-"Sign up to CrowdNode" = "注册CrowdNode";
-
-/* CrowdNode Portal */
-"Sign up to finish setting up account" = "注册以完成账户设置";
 
 /* No comment provided by engineer. */
 "Signed with" = "签名密钥";
@@ -5192,9 +5002,6 @@
 /* Shortcut button on Home screen */
 "Spend" = "消费";
 
-/* DashConnect one-QR login: the placeholder is an amount with its unit, e.g. 0.05 DASH */
-"Spend up to %@ of your identity's credits on those actions. Each sign-in has its own limit." = "Spend up to %@ of your identity's credits on those actions. Each sign-in has its own limit.";
-
 /* No comment provided by engineer. */
 "Spending Confirmation" = "支出确认";
 
@@ -5206,9 +5013,6 @@
 
 /* ex., SPV: syncing (87%) */
 "SPV: %@ (%d%%)" = "SPV: %1$@ (%2$d%%)";
-
-/* No comment provided by engineer. */
-"Staking" = "质押";
 
 /* Platform Clear requires a bound wallet
    Sync diagnostics - why the Clear button is disabled */
@@ -5373,9 +5177,6 @@
 /* Explore Dash */
 "Synced" = "Synced";
 
-/* CrowdNode Portal */
-"Synced with current Dash Wallet" = "已与当前Dash钱包同步";
-
 /* No comment provided by engineer. */
 "Syncing" = "正在同步";
 
@@ -5496,12 +5297,6 @@
 /* DashConnect App Connect v2 */
 "The app's encryption key on this identity changed after this sign-in was first approved. Ask the app to sign in again." = "The app's encryption key on this identity changed after this sign-in was first approved. Ask the app to sign in again.";
 
-/* DashConnect */
-"The app's key was added to your identity, but this wallet could not record it. Turn the app off in Connections to remove the key." = "The app's key was added to your identity, but this wallet could not record it. Turn the app off in Connections to remove the key.";
-
-/* DashConnect */
-"The app's keys on this identity are off, but this wallet could not check its other identities. Try again." = "The app's keys on this identity are off, but this wallet could not check its other identities. Try again.";
-
 /* No comment provided by engineer. */
 "The chain is syncing…" = "区块链正在同步...";
 
@@ -5538,9 +5333,6 @@
 /* Usernames */
 "The Dash network has to vote to approve some usernames before they are created" = "在用户创建用户名前, Dash 网络需要投票批准某些用户名";
 
-/* CrowdNode */
-"The Dash Network is driven by a number of Masternodes which are an essential part of facilitating payments." = "Dash 网络由众多主节点驱动, 这是令支付更便捷的重要组成部分.";
-
 /* Usernames */
 "The Dash network will vote on this username." = "The Dash network will vote on this username.";
 
@@ -5558,9 +5350,6 @@
 
 /* Devnet */
 "The devnet chain name. It is embedded in the sync user agent (devnet.devnet-<name>) — devnet nodes reject connections without it. Each devnet keeps its own chain state, so naming a different one does not reinterpret this one's history." = "The devnet chain name. It is embedded in the sync user agent (devnet.devnet-<name>) — devnet nodes reject connections without it. Each devnet keeps its own chain state, so naming a different one does not reinterpret this one's history.";
-
-/* DashConnect */
-"The devnet DashConnect contract id is not set or is not a valid identifier. Enter it in Settings → Devnet Settings." = "The devnet DashConnect contract id is not set or is not a valid identifier. Enter it in Settings → Devnet Settings.";
 
 /* Devnet */
 "The devnet name cannot contain a slash." = "The devnet name cannot contain a slash.";
@@ -5586,6 +5375,9 @@
 /* CSV Export */
 "The full transaction history will be exported as a CSV file" = "The full transaction history will be exported as a CSV file";
 
+/* Identity top-up second leg cancelled */
+"The identity top-up result could not be confirmed. Check your balances before continuing." = "The identity top-up result could not be confirmed. Check your balances before continuing.";
+
 /* Don't translate 'Imgur' */
 "The image you select will be uploaded to Imgur anonymously." = "您选择的图片将匿名上传到 Imgur.";
 
@@ -5603,9 +5395,6 @@
 
 /* Usernames: proof-of-identity link visibility */
 "The link is published on Dash Platform with your identity and the name you requested. Anyone can read it, not only masternode owners." = "The link is published on Dash Platform with your identity and the name you requested. Anyone can read it, not only masternode owners.";
-
-/* Devnet */
-"The loginKeyResponse data contract id registered on this devnet. Only needed for DashConnect logins; leave empty otherwise." = "The loginKeyResponse data contract id registered on this devnet. Only needed for DashConnect logins; leave empty otherwise.";
 
 /* Identities */
 "The main identity can only be chosen from the active wallet" = "只能从当前钱包中选择主要身份";
@@ -5643,6 +5432,9 @@
 /* DashPay registration context changed */
 "The name request succeeded for the original identity. Switch back to the original wallet and network to see its status." = "The name request succeeded for the original identity. Switch back to the original wallet and network to see its status.";
 
+/* DashConnect */
+"The network answered with an older copy of your identity. Try again in a moment." = "The network answered with an older copy of your identity. Try again in a moment.";
+
 /* DashConnect App Connect v2 */
 "The network has not caught up with your identity's keys yet. Try again in a moment." = "The network has not caught up with your identity's keys yet. Try again in a moment.";
 
@@ -5657,6 +5449,9 @@
 
 /* Wallets */
 "The old wallet data could not be removed. Please try again." = "The old wallet data could not be removed. Please try again.";
+
+/* DashPay registration or purchase result unknown */
+"The operation may have been submitted, but its result could not be confirmed. Wait for the wallet to sync and check your identity and balances before continuing. Do not fund another identity or repeat the payment." = "The operation may have been submitted, but its result could not be confirmed. Wait for the wallet to sync and check your identity and balances before continuing. Do not fund another identity or repeat the payment.";
 
 /* Masternode unban */
 "The operator key is missing from the keychain — re-add it and try again." = "The operator key is missing from the keychain — re-add it and try again.";
@@ -5742,6 +5537,9 @@
 /* No comment provided by engineer. */
 "The transfer is instant" = "The transfer is instant";
 
+/* Identity transfer result unknown */
+"The transfer may have been submitted, but its result could not be confirmed. Wait for the wallet to sync and check your balances and history before making another transfer." = "The transfer may have been submitted, but its result could not be confirmed. Wait for the wallet to sync and check your balances and history before making another transfer.";
+
 /* Masternode unban */
 "The transfer settles through the network's withdrawal queue — usually a few minutes. You can close this sheet and come back; the unban resumes where it left off." = "The transfer settles through the network's withdrawal queue — usually a few minutes. You can close this sheet and come back; the unban resumes where it left off.";
 
@@ -5768,6 +5566,9 @@
 
 /* Masternode unban */
 "The wallet has no spendable DASH for the network fee." = "The wallet has no spendable DASH for the network fee.";
+
+/* Refused while the wallet reloads after a removed transaction */
+"The wallet is reloading after a transaction was removed. Try again in a moment, or restart the app if it never finishes." = "The wallet is reloading after a transaction was removed. Try again in a moment, or restart the app if it never finishes.";
 
 /* Wallets */
 "The wallet is still stored on this device. Please try again." = "The wallet is still stored on this device. Please try again.";
@@ -5829,14 +5630,8 @@
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";
 
-/* CrowdNode */
-"These funds should be withdrawn from CrowdNode. You can transfer these funds to this wallet or via your online account on some other device." = "These funds should be withdrawn from CrowdNode. You can transfer these funds to this wallet or via your online account on some other device.";
-
 /* Voting */
 "These nodes vote together, which publicly links them to each other. Choosing fewer nodes keeps them unlinked, at less voting weight." = "These nodes vote together, which publicly links them to each other. Choosing fewer nodes keeps them unlinked, at less voting weight.";
-
-/* DashConnect one-QR login */
-"This access ends after %d days, or when you disconnect the app." = "This access ends after %d days, or when you disconnect the app.";
 
 /* Wallet accounts */
 "This account derives masternode keys. It has no on-chain addresses or balance." = "This account derives masternode keys. It has no on-chain addresses or balance.";
@@ -5862,14 +5657,23 @@
 /* Dash DEX / dex_error_amount_too_small */
 "This amount is below the minimum for this swap. Please enter a larger amount." = "This amount is below the minimum for this swap. Please enter a larger amount.";
 
+/* DashConnect App Connect v2 */
+"This app asks for more keys than one approval can add. Ask the app to ask for fewer." = "This app asks for more keys than one approval can add. Ask the app to ask for fewer.";
+
 /* DashConnect */
 "This app has a key on another identity of this wallet. Switch to that identity to turn it off." = "This app has a key on another identity of this wallet. Switch to that identity to turn it off.";
+
+/* DashConnect App Connect v1 */
+"This app uses an older sign-in that this wallet no longer supports. Ask the app for a new code." = "This app uses an older sign-in that this wallet no longer supports. Ask the app for a new code.";
 
 /* DashConnect */
 "This app will be able to:" = "This app will be able to:";
 
 /* DashConnect */
 "This app will NOT have access to:" = "This app will NOT have access to:";
+
+/* DashConnect App Connect v2 */
+"This app's earlier sign-ins left more keys than one approval can replace. Disconnect the app, then sign in again." = "This app's earlier sign-ins left more keys than one approval can replace. Disconnect the app, then sign in again.";
 
 /* Voting */
 "This applies one choice to all %d selected usernames." = "这会将同一个选择应用于全部 %d 个所选用户名。";
@@ -5940,6 +5744,9 @@
 /* DashPay Contacts: scanned QR is a payment/invitation/foreign code */
 "This isn't a DashPay user QR code." = "这不是 DashPay 用户二维码。";
 
+/* No comment provided by engineer. */
+"This link needs a newer version of the wallet." = "This link needs a newer version of the wallet.";
+
 /* Masternodes */
 "This masternode has no Platform identity yet." = "此主节点尚无 Platform 身份。";
 
@@ -5991,9 +5798,6 @@
 /* Username marketplace: listing price exceeds the representable maximum */
 "This price is too high to list." = "该价格过高，无法挂牌。";
 
-/* CrowdNode Confirm */
-"This QR already contains the payment request for %@" = "此二维码已包含 %@的付款申请";
-
 /* Receive screen */
 "This QR contains the specified amount" = "This QR contains the specified amount";
 
@@ -6002,9 +5806,6 @@
 
 /* Wallets */
 "This removes this wallet from this device on every network where it is stored, including its private keys and synced data. Other wallets are not affected. Your funds are NOT deleted — they remain on the Dash network and can only be recovered with this wallet's recovery phrase. If you have not backed up the phrase, you will lose access to these funds." = "This removes this wallet from this device on every network where it is stored, including its private keys and synced data. Other wallets are not affected. Your funds are NOT deleted — they remain on the Dash network and can only be recovered with this wallet's recovery phrase. If you have not backed up the phrase, you will lose access to these funds.";
-
-/* CrowdNode */
-"This represents the current Annual Percentage Yield of a full Masternode less the 15% CrowdNode fee. It is not a guaranteed rate of return and may go up or down based on the size of the CrowdNode pools and the Dash price." = "这代表完整主节点当前年度百分比收益减去15%的CrowdNode费用. 这不是保证回报率, 可能会根据CrowdNode资金池的大小和Dash价格而上下浮动.";
 
 /* DashConnect App Connect v2: the placeholder is the app's website, e.g. yap.pr */
 "This request does not return to %@. It may not come from the app's website." = "This request does not return to %@. It may not come from the app's website.";
@@ -6039,8 +5840,14 @@
 /* Raw transaction inspector */
 "This transaction's raw bytes are not stored on this device." = "此交易的原始字节未存储在此设备上。";
 
+/* InternalTransfer recovery: resume recipient differs from the recorded one */
+"This transfer can only be finished to the recipient it was started with. Nothing was sent. Your funds remain locked and safe." = "This transfer can only be finished to the recipient it was started with. Nothing was sent. Your funds remain locked and safe.";
+
 /* Asset-lock retry: unsupported funding route */
 "This transfer can't be retried from here." = "无法从此处重试该转移。";
+
+/* A resume was refused because the same transfer is still running */
+"This transfer is still in progress. Check its status again in a few minutes." = "This transfer is still in progress. Check its status again in a few minutes.";
 
 /* Asset-lock input limit */
 "This transfer needs more separate coins than the network accepts in one transfer. Combine your coins first (a small network fee applies), then try again." = "This transfer needs more separate coins than the network accepts in one transfer. Combine your coins first (a small network fee applies), then try again.";
@@ -6087,6 +5894,15 @@
 /* Voting */
 "This wallet could not derive the voting key for this node." = "此钱包无法为该节点派生投票密钥。";
 
+/* DashConnect */
+"This wallet could not save the approval, so nothing was sent. Try again." = "This wallet could not save the approval, so nothing was sent. Try again.";
+
+/* DashConnect: after a disconnect that found keys whose app is not known yet */
+"This wallet could not tell yet which app holds some keys on your identity (%d). The connection stays listed; open Connections again later to check them." = "This wallet could not tell yet which app holds some keys on your identity (%d). The connection stays listed; open Connections again later to check them.";
+
+/* DashConnect: a disconnect of an app whose keys no approval of this wallet names */
+"This wallet did not record giving the keys this app holds on your identity (%d): they come from another device, from before a restore, or are DashPay profile keys no connection holds. Turn them off?" = "This wallet did not record giving the keys this app holds on your identity (%d): they come from another device, from before a restore, or are DashPay profile keys no connection holds. Turn them off?";
+
 /* DashConnect App Connect v2 */
 "This wallet does not know this app, so it cannot confirm the name shown or where the request came from." = "This wallet does not know this app, so it cannot confirm the name shown or where the request came from.";
 
@@ -6098,6 +5914,9 @@
 
 /* Usernames */
 "This wallet has no Platform identity yet." = "This wallet has no Platform identity yet.";
+
+/* DashConnect */
+"This wallet holds DashConnect records a newer version wrote. Update the wallet, then try again." = "This wallet holds DashConnect records a newer version wrote. Update the wallet, then try again.";
 
 /* No comment provided by engineer. */
 "This wallet holds neither the owner key nor the payout address key of this evonode, so its balance can't be withdrawn from here." = "该钱包既不持有此 evonode 的所有者密钥，也不持有其付款地址密钥，因此无法从这里提取其余额。";
@@ -6138,6 +5957,9 @@
 /* No comment provided by engineer. */
 "Time" = "时间";
 
+/* SPV diagnostics */
+"Tip height" = "Tip height";
+
 /* Send Screen: to address */
 "to" = "到";
 
@@ -6149,12 +5971,6 @@
 
 /* Usernames */
 "To help keep your payment activity private, we recommend paying for the username from your shielded balance" = "To help keep your payment activity private, we recommend paying for the username from your shielded balance";
-
-/* CrowdNode */
-"To start staking, create an account on CrowdNode or connect to an existing one." = "开始质押前, 需要创建一个CrowdNode账户或连接到现有账户.";
-
-/* CrowdNode */
-"to the Dash address designated for your CrowdNode account in the Dash Wallet on this device" = "在此设备上的Dash钱包上为您CrowdNode账户指定的Dash地址";
 
 /* Editable wallet support message */
 "To: %@\n\nI couldn't move my wallet from the previous version of the app.\n\nWhat happened before the error:\n" = "To: %@\n\nI couldn't move my wallet from the previous version of the app.\n\nWhat happened before the error:\n";
@@ -6240,9 +6056,6 @@
 /* DashPay Contacts */
 "Transaction" = "Transaction";
 
-/* CrowdNode */
-"Transaction History" = "交易记录";
-
 /* Balance info sheet */
 "Transaction history isn't available" = "交易记录不可用";
 
@@ -6293,9 +6106,6 @@
 /* Coinbase */
 "Transfer DASH" = "Transfer DASH";
 
-/* CrowdNode */
-"Transfer Error" = "转账发生错误";
-
 /* Coinbase */
 "Transfer Failed" = "转账失败";
 
@@ -6311,8 +6121,8 @@
 /* No comment provided by engineer. */
 "Transfer Out" = "转出";
 
-/* Internal transfer accepted but not yet confirmed */
-"Transfer sent — waiting for the network to confirm it" = "Transfer sent — waiting for the network to confirm it";
+/* The transfer may have reached the network; avoid sending twice */
+"Transfer result unconfirmed. Don't resend it; wait for the wallet to sync and check its status." = "Transfer result unconfirmed. Don't resend it; wait for the wallet to sync and check its status.";
 
 /* Internal transfer handed to the background runner */
 "Transfer started" = "Transfer started";
@@ -6379,6 +6189,9 @@
 
 /* Alert title */
 "Turn device passcode on" = "打开设备密码";
+
+/* DashConnect */
+"Turn them off" = "Turn them off";
 
 /* Notifications */
 "Turned off in iOS Settings" = "Turned off in iOS Settings";
@@ -6597,17 +6410,11 @@
 /* Balance info sheet */
 "Uses one of the most audited and tested zero-knowledge libraries (Orchard)" = "使用经过最充分审计和测试的零知识库之一 (Orchard)";
 
-/* CrowdNode Portal */
-"Validating address…" = "正在确认地址...";
-
 /* No comment provided by engineer. */
 "Validating username failed" = "验证用户名失败";
 
 /* No comment provided by engineer. */
 "Validating username…" = "正在验证用户名...";
-
-/* CrowdNode Portal */
-"Verification Required" = "需要验证";
 
 /* No comment provided by engineer. */
 "Verified Successfully" = "验证成功";
@@ -6617,9 +6424,6 @@
 
 /* Usernames */
 "Verify Now" = "Verify Now";
-
-/* CrowdNode */
-"Verify your API Dash address" = "验证您的API Dash地址";
 
 /* Usernames */
 "Verify your identity" = "验证您的身份";
@@ -6644,9 +6448,6 @@
 
 /* adjective, security level */
 "Very High" = "非常高";
-
-/* CrowdNode */
-"Very small amounts of Dash will be sent to and from CrowdNode to verify that you are the owner of this wallet address." = "将会向CrowdNode发送非常少的Dash用以验证您是该钱包地址的所有者.";
 
 /* No comment provided by engineer. */
 "View in Block Explorer" = "在浏览器中查看";
@@ -6768,18 +6569,12 @@
 /* DashPay Invitations */
 "Wait until syncing is finished to create a username" = "Wait until syncing is finished to create a username";
 
-/* CrowdNode */
-"Wait until the chain is fully synced before using CrowdNode." = "Wait until the chain is fully synced before using CrowdNode.";
-
 /* Core drain
    Transfer blocked during a restored wallet's initial sync */
 "Wait until the chain is fully synced to make transfers" = "Wait until the chain is fully synced to make transfers";
 
 /* ZenLedger */
 "Wait until the chain is fully synced, so we can review your transaction history." = "等待区块链完全同步, 我们便可以回顾您的交易历史.";
-
-/* No comment provided by engineer. */
-"Wait until the chain is fully synced, so we can review your transaction history. Visit CrowdNode website to log in or sign up." = "等待区块链完全同步后, 我们才能查看您的交易记录. 访问CrowdNode网站登录或注册.";
 
 /* Send screen */
 "Wait until wallet is synced to complete the transaction" = "等待钱包同步以完成此交易";
@@ -6883,23 +6678,11 @@
 /* Dash DEX / dex_error_validation */
 "We couldn't set up your swap. Please check the amount and address, then try again." = "We couldn't set up your swap. Please check the amount and address, then try again.";
 
-/* CrowdNode */
-"We couldn’t create your CrowdNode account." = "我们无法创建您的CrowdNode账户.";
-
-/* CrowdNode */
-"We couldn’t make a deposit to your CrowdNode account." = "我们无法向您的CrowdNode账户存款.";
-
-/* CrowdNode */
-"We couldn’t withdraw from your CrowdNode account." = "我们无法从您的CrowdNode提款.";
-
 /* Explore */
 "We have two types of merchants" = "我们有两种类型的商户";
 
 /* No comment provided by engineer. */
 "We Upgraded" = "我们升级了";
-
-/* CrowdNode */
-"We will automatically detect this transaction and transfer the same amount to your CrowdNode account. After that you will be able to make deposits and withdrawals in Dash Wallet on this device." = "我们将自动检测到此交易并将相同的额度转移到您的CrowdNode账户. 之后, 您将能够在此设备上的Dash钱包中进行存款和提款.";
 
 /* Usernames */
 "We will notify you when voting ends." = "We will notify you when voting ends.";
@@ -6952,11 +6735,8 @@
 /* DashPay FAQ */
 "Why do I need to enable it?" = "为什么我需要启用它？";
 
-/* Crowdnode */
+/* Grouped Transactions */
 "Why do I see all these transactions?" = "为什么我看到所有这些交易?";
-
-/* CrowdNode */
-"Why do you need an online account?" = "为什么您需要线上账户?";
 
 /* No comment provided by engineer. */
 "Why I should not take a screenshot?" = "为什么我不应该截屏?";
@@ -6976,21 +6756,14 @@
 /* No comment provided by engineer. */
 "with Dash blockchain" = "以Dash区块链";
 
-/* CrowdNode
-   CrowdNode Portal */
+/* Evonode withdrawal */
 "Withdraw" = "提款";
 
-/* CrowdNode */
+/* DashConnect */
 "Withdraw funds" = "Withdraw funds";
 
 /* No comment provided by engineer. */
 "Withdraw to" = "提款至";
-
-/* CrowdNode */
-"Withdraw without limits with an online account on CrowdNode website." = "使用 CrowdNode网站上的在线账户可以无限制地提款.";
-
-/* CrowdNode */
-"Withdrawal requested" = "提款申请";
 
 /* No comment provided by engineer. */
 "Withdrawal submitted" = "提款已提交";
@@ -7070,9 +6843,6 @@
 /* DashSpend */
 "You can buy up to %@ in gift cards per order" = "You can buy up to %@ in gift cards per order";
 
-/* CrowdNode */
-"You can change how / when your reward earnings are paid to you." = "您可以更改向您支付奖励收入的方式 / 时间.";
-
 /* No comment provided by engineer. */
 "You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance" = "您可以继续使用 DashPay 进行支付, 但在充值积分余额之前您无法更新个人资料或添加更多联系人";
 
@@ -7081,9 +6851,6 @@
 
 /* Explore */
 "You can pay with Dash at the cashier." = "您可以在收银台支付 Dash.";
-
-/* CrowdNode */
-"You can see detailed information about your deposits, withdrawals and reward earnings." = "您可以查看有关您的存款, 提款和奖励收入的详细信息.";
 
 /* No comment provided by engineer. */
 "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "您可以指定任何在网络上公开可用的链接, 以便其他用户可以在 Dash网络上看到它.";
@@ -7117,12 +6884,10 @@
 
 /* Usernames */
 "You have %@ Dash available (network fee reserved).\nSome usernames cost up to %@ Dash." = "You have %1$@ Dash available (network fee reserved).\nSome usernames cost up to %2$@ Dash.";
+"You have %@ Dash in Shielded (enough for a standard username).\nSome usernames cost up to %@ Dash." = "You have %1$@ Dash in Shielded (enough for a standard username).\nSome usernames cost up to %2$@ Dash.";
 
 /* CoinJoin */
 "You have %@ in CoinJoin mixed coins. CoinJoin is no longer supported — move them to your spendable balance." = "You have %@ in CoinJoin mixed coins. CoinJoin is no longer supported — move them to your spendable balance.";
-
-/* CrowdNode */
-"You have a balance on CrowdNode" = "You have a balance on CrowdNode";
 
 /* Voting */
 "You have already entered this masternode key" = "You have already entered this masternode key";
@@ -7163,17 +6928,12 @@
 /* Voting */
 "You have entered an uncompressed private key. This app can only vote with a compressed voting key. Here is an example (%@)" = "You have entered an uncompressed private key. This app can only vote with a compressed voting key. Here is an example (%@)";
 
-/* No comment provided by engineer. */
-"You have insufficient funds to proceed" = "您没有足够的资金来继续操作";
-
 /* DashPay Notifications */
 "You have no notifications" = "You have no notifications";
 
-/* CrowdNode */
-"You have to backup your passphrase in Dash Wallet" = "您必须在Dash钱包重备份您的密码";
-
 /* Backup */
 "You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?" = "You haven't backed up your recovery phrase yet. Would you like to back up now before removing this shortcut?";
+"You need at least %@ Dash to create this username" = "You need at least %@ Dash to create this username";
 
 /* Identity transfer source without a registered identity */
 "You need a DashPay identity before you can move credits out of it." = "You need a DashPay identity before you can move credits out of it.";
@@ -7181,20 +6941,10 @@
 /* Identity transfer destination without a registered identity */
 "You need a DashPay identity before you can top up its balance." = "You need a DashPay identity before you can top up its balance.";
 
-/* CrowdNode */
-"You need at least %@ on your Dash Wallet" = "您的Dash钱包中至少需要有%@ Dash";
-
 /* Usernames */
-"You need to have more %@ Dash to create this username" = "您需要拥有超过 %@ DASH 来创建此用户名";
 
 /* DashSpend */
 "You need to sign in to DashSpend to purchase gift cards." = "您需要登录 DashSpend 以购买礼品卡.";
-
-/* CrowdNode */
-"You need to wait 5 minutes before initiating another withdrawal" = "您需要等待5分钟才能再次发起提现";
-
-/* CrowdNode */
-"You only need %@ to join the pool." = "您至少需要%@来加入资金池.";
 
 /* DashSpend confirmation */
 "You pay" = "您支付";
@@ -7211,14 +6961,8 @@
 /* DashPay Notifications */
 "You sent a contact request to %@" = "You sent a contact request to %@";
 
-/* CrowdNode */
-"You should have a positive balance on Dash Wallet" = "您Dash钱包的余额应该是正的";
-
 /* Usernames */
 "You should have at least %@ Dash to create a username" = "You should have at least %@ Dash to create a username";
-
-/* No comment provided by engineer. */
-"You should have at least %@ to proceed with the CrowdNode verification." = "您至少需要有%@才能进行CrowdNode验证.";
 
 /* Dash DEX */
 "You successfully converted DASH to %@" = "You successfully converted DASH to %@";
@@ -7237,9 +6981,6 @@
 
 /* Coinbase/Buy Dash/Confirm Order */
 "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer." = "您将会在此设备的钱包中收到%@Dash. 请注意, 完成转账最多可能需要2-3分钟.";
-
-/* CrowdNode */
-"You will receive fractional payments automatically and they will by default be reinvested, however, it is also easy to set up automatic withdrawals to receive recurring payouts." = "您将自动收到小额付款, 默认下它们将被再次投资, 但是设置自动提款以接收定期付款也很容易.";
 
 /* No comment provided by engineer. */
 "You will transfer" = "You will transfer";
@@ -7307,21 +7048,6 @@
 /* No comment provided by engineer. */
 "Your credit balance is low" = "您的积分余额不足";
 
-/* CrowdNode */
-"Your CrowdNode account is creating…" = "正在创建您的CrowdNode账户...";
-
-/* CrowdNode */
-"Your CrowdNode account is set up and ready to use!" = "您的CrowdNode账户已设置好并可以使用了!";
-
-/* Crowdnode */
-"Your CrowdNode account was created using these transactions." = "您的CrowdNode账户是以这些交易创建的.";
-
-/* CrowdNode */
-"Your CrowdNode address has been confirmed." = "您的CrowdNode地址已确认.";
-
-/* CrowdNode */
-"Your CrowdNode address has been validated, but verification is required." = "您的CrowdNode地址已经被确认, 但需要验证.";
-
 /* No comment provided by engineer. */
 "Your DASH address" = "Your DASH address";
 
@@ -7348,9 +7074,6 @@
 
 /* No comment provided by engineer. */
 "Your DashPay Username is ready to use" = "您的DashPay用户名已经可以使用了";
-
-/* CrowdNode */
-"Your deposit to CrowdNode is received." = "您向CrowdNode的存款已收到.";
 
 /* TimeSkew */
 "Your device time is %@ by %d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin." = "您的设备时间为 %1$@  %2$d 秒. 由于此差异, 您无法使用 CoinJoin.\n\n您设备上的时间设置需要变更为“自动设定时间”才能使用CoinJoin.";
@@ -7439,14 +7162,12 @@
 /* Maya/SwapKit */
 "Your previous swap is still locking in. Please wait a few seconds before starting another one." = "Your previous swap is still locking in. Please wait a few seconds before starting another one.";
 
-/* CrowdNode */
-"Your primary Dash address that you currently use for your CrowdNode account" = "您当前用于CrowdNode账户的主要Dash地址";
-
 /* Balance info sheet */
 "Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential." = "您的私密余额。金额和地址在链上均已加密，因此您的持有量和记录都保持机密。";
 
-/* DashConnect */
-"Your private keys" = "Your private keys";
+/* Usernames */
+"Your recently shielded Dash can be used for this username at %@" = "Your recently shielded Dash can be used for this username at %@";
+"Your recently shielded Dash can be used for this username tomorrow at %@" = "Your recently shielded Dash can be used for this username tomorrow at %@";
 
 /* DashConnect one-QR login */
 "Your recovery phrase or wallet keys" = "Your recovery phrase or wallet keys";
@@ -7508,11 +7229,11 @@
 /* No comment provided by engineer. */
 "Your transaction was sent and the amount should appear in your wallet in a few minutes." = "您的交易已被发送, 金额将几分钟内出现在您的钱包.";
 
+/* InternalTransfer */
+"Your transfer may have reached the network, but its result is not confirmed yet. Don't resend it. Wait for the wallet to sync and check its status." = "Your transfer may have reached the network, but its result is not confirmed yet. Don't resend it. Wait for the wallet to sync and check its status.";
+
 /* Dash DEX / dex_receive_memo_warning */
 "Your transfer must include this memo. Funds sent without it cannot be matched to your swap and will be lost." = "Your transfer must include this memo. Funds sent without it cannot be matched to your swap and will be lost.";
-
-/* InternalTransfer */
-"Your transfer was broadcast and is confirming on the network. Don't resend it — it will appear once the network confirms it." = "Your transfer was broadcast and is confirming on the network. Don't resend it — it will appear once the network confirms it.";
 
 /* No comment provided by engineer. */
 "Your Transparent balance" = "您的透明余额";

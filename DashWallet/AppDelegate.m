@@ -145,7 +145,6 @@ NS_ASSUME_NONNULL_BEGIN
     [ExploreDashObjcWrapper configure];
     [CurrencyExchangerObjcWrapper startExchangeRateFetching];
     [CoinbaseObjcWrapper start];
-    [CrowdNodeObjcWrapper start];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(applicationTerminationRequestNotification:)
@@ -232,6 +231,11 @@ NS_ASSUME_NONNULL_BEGIN
     // DWNotificationsBootstrap's NotificationLifecycle, which observes
     // UIApplicationDidBecomeActiveNotification itself.
 
+    // Retired CrowdNode data: retried on every activation until done. It
+    // touches only UserDefaults, so it is safe while the migration runs;
+    // once done it costs one flag read.
+    [DWRetiredCrowdNodeDefaults removeAllOnce];
+
     // Check geo-restriction for PiggyCards (if available)
     // This logs location info each time the app becomes active for debugging
     SEL checkGeoRestrictionSelector = NSSelectorFromString(@"checkGeoRestriction");
@@ -293,9 +297,14 @@ NS_ASSUME_NONNULL_BEGIN
     }
     
     if (![DWURLParser canHandleURL:url]) {
+        // A dashpay:// verb this version does not know (e.g. sign) is a link from
+        // a newer app, not a malformed one.
+        BOOL needsNewerWallet = [DWDashConnectDeepLink isUnsupportedDashpayVerbURL:url];
         UIAlertController * alert = [UIAlertController
-                                     alertControllerWithTitle:NSLocalizedString(@"Not a Dash URL", nil)
-                                     message:url.absoluteString
+                                     alertControllerWithTitle:needsNewerWallet
+                                         ? NSLocalizedString(@"This link needs a newer version of the wallet.", nil)
+                                         : NSLocalizedString(@"Not a Dash URL", nil)
+                                     message:needsNewerWallet ? nil : url.absoluteString
                                      preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction* okAction = [UIAlertAction
                                        actionWithTitle:NSLocalizedString(@"OK", nil)

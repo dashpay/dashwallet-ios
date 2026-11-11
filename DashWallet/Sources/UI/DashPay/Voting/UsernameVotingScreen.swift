@@ -299,7 +299,7 @@ private struct VoterCapacityHeader: View {
             return NSLocalizedString("Select nodes", comment: "Voting")
         }
         if chosen.count == nodes.count {
-            return String(format: NSLocalizedString(
+            return String.localizedStringWithFormat(NSLocalizedString(
                 "All %d nodes", comment: "Voting"), chosen.count)
         }
         return chosen.map(\.displayName).joined(separator: ", ")
@@ -310,17 +310,17 @@ private struct VoterCapacityHeader: View {
         let regularNodes = nodes.count - evonodes
         var parts: [String] = []
         if evonodes > 0 {
-            parts.append(String(format: NSLocalizedString("%d evonodes", comment: "Voting"), evonodes))
+            parts.append(String.localizedStringWithFormat(NSLocalizedString("%d evonodes", comment: "Voting"), evonodes))
         }
         if regularNodes > 0 {
-            parts.append(String(format: NSLocalizedString("%d masternodes", comment: "Voting"), regularNodes))
+            parts.append(String.localizedStringWithFormat(NSLocalizedString("%d masternodes", comment: "Voting"), regularNodes))
         }
         return parts.joined(separator: ", ")
     }
 
     private var weightSummary: String {
-        String(
-            format: NSLocalizedString(
+        String.localizedStringWithFormat(
+            NSLocalizedString(
                 "%u votes per contest — evonodes count as 4, masternodes as 1",
                 comment: "Voting"),
             totalWeight)
@@ -354,7 +354,7 @@ struct ContestRow: View {
 
             HStack(spacing: 12) {
                 Label(
-                    String(format: NSLocalizedString("%d requests", comment: "Voting"),
+                    String.localizedStringWithFormat(NSLocalizedString("%d requests", comment: "Voting"),
                            contest.contenders.count),
                     systemImage: "person.2")
                 if contest.lockVotes > 0 {
@@ -364,7 +364,7 @@ struct ContestRow: View {
                     Label("\(contest.abstainVotes)", systemImage: "minus.circle")
                 }
                 Spacer()
-                Text(String(format: NSLocalizedString("%u votes", comment: "Voting"),
+                Text(String.localizedStringWithFormat(NSLocalizedString("%u votes", comment: "Voting"),
                             contest.totalVotes))
             }
             .font(.caption)

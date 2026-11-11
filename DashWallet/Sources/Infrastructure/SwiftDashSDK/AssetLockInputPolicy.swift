@@ -66,7 +66,7 @@ enum AssetLockInputPolicy {
     /// output: the 1 duff/byte size model of a regular send plus the payload.
     /// An upper estimate, used where a shortfall would cost the user a fee.
     static func estimatedFeeDuffs(inputCount: Int) -> UInt64 {
-        SwiftDashSDKTransactionSender.estimatedSignalFee(inputCount: inputCount) + payloadAllowanceBytes
+        SwiftDashSDKTransactionSender.estimatedFee(inputCount: inputCount) + payloadAllowanceBytes
     }
 
     /// The lowest fee an asset lock spending `inputCount` inputs can pay at
@@ -132,7 +132,7 @@ enum AssetLockInputPolicy {
         guard coinCount >= 2 else { return 0 }
         return SwiftDashSDKTransactionSender.balancedChunks(
             Array(repeating: 0, count: coinCount), maxPerChunk: SwiftDashSDKTransactionSender.maxInputsPerSweep
-        ).reduce(0) { $0 + SwiftDashSDKTransactionSender.estimatedSignalFee(inputCount: $1.count) }
+        ).reduce(0) { $0 + SwiftDashSDKTransactionSender.estimatedFee(inputCount: $1.count) }
     }
 
     /// The coins the consolidation leaves for `values`: one per transaction
@@ -148,7 +148,7 @@ enum AssetLockInputPolicy {
                 let (next, overflow) = sum.addingReportingOverflow(value)
                 return overflow ? .max : next
             }
-            let fee = SwiftDashSDKTransactionSender.estimatedSignalFee(inputCount: chunk.count)
+            let fee = SwiftDashSDKTransactionSender.estimatedFee(inputCount: chunk.count)
             return total > fee ? total - fee : 0
         }
     }
@@ -210,7 +210,9 @@ enum AssetLockInputLimit {
     }
 
     /// The error the coordinators' wrappers carry, unwrapped all the way.
-    private static func innermost(_ error: Error) -> Error {
+    /// `ShieldedTransferCoordinator.failureMessage(for:)` unwraps the
+    /// recipient-mismatch refusal through it too.
+    static func innermost(_ error: Error) -> Error {
         switch error {
         case ShieldedTransferCoordinator.CoordinatorError.transferFailed(let underlying):
             return innermost(underlying)

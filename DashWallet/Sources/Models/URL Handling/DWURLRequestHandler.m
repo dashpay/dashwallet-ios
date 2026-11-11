@@ -45,15 +45,9 @@ NS_ASSUME_NONNULL_BEGIN
                               if (authenticatedOrSuccess) {
                                   NSString *receiveAddress = [DWSwiftDashSDKReceiveAddressReader receiveAddress];
 
-                                  NSString *urlString =
-                                      [NSString stringWithFormat:
-                                                    @"%@://callback=%@&address=%@&source=dashwallet",
-                                                    action.sender,
-                                                    action.request,
-                                                    receiveAddress];
-
-                                  NSURL *url = [NSURL URLWithString:urlString];
-                                  NSParameterAssert(url);
+                                  NSURL *url = [DWCallbackScheme addressRequestURLWithScheme:action.sender
+                                                                                     request:action.request
+                                                                                     address:receiveAddress];
                                   if (!url) {
                                       return;
                                   }

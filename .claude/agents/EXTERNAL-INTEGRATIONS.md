@@ -112,47 +112,6 @@ extension UpholdClient {
 }
 ```
 
-### CrowdNode Staking Integration
-**Files**: `DashWallet/Sources/Models/CrowdNode/`
-**Pattern**: Transaction-based API with web interface
-
-**API Integration:**
-```swift
-class CrowdNodeWebService {
-    func createAccount(email: String) async throws -> CrowdNodeAccount {
-        let endpoint = CrowdNodeEndpoint.createAccount
-        let request = CreateAccountRequest(email: email)
-        return try await httpClient.post(endpoint, body: request)
-    }
-    
-    func getStakingInfo() async throws -> StakingInfo {
-        return try await httpClient.get(.stakingInfo)
-    }
-}
-```
-
-**Transaction Monitoring:**
-```swift
-class TransactionObserver {
-    func observeTransactions() {
-        NotificationCenter.default.addObserver(
-            forName: .DSWalletBalanceDidChangeNotification,
-            object: nil,
-            queue: .main
-        ) { [weak self] notification in
-            self?.handleBalanceChange(notification)
-        }
-    }
-    
-    private func handleBalanceChange(_ notification: Notification) {
-        // Check for CrowdNode-related transactions
-        if let crowdNodeTx = identifyCrowdNodeTransaction() {
-            updateStakingStatus(crowdNodeTx)
-        }
-    }
-}
-```
-
 ## Third-Party Libraries
 
 ### Networking Stack

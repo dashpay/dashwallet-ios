@@ -32,3 +32,4 @@
 
 **For repository code-owners and collaborators only**
 - [ ] I have assigned this pull request to a milestone
+- [ ] If workflow-lint warned that a release-only step or `.xcode-version` changed, or a `.platform-ref` bump changed platform's Rust version, I ran the affected workflow by hand from this branch on the final commit (`release-dashpay-testflight.yml` with `wallet_ref` = that commit and `release_channel: internal-only`; `appstore-schema-release.yml` with `dry_run: true`) and linked the run here; a later push needs a new run

@@ -23,14 +23,11 @@ public final class SendCoinsService: NSObject {
     /// - Returns: the wire-order txid of the broadcast transaction
     ///   (`Transaction.txHashData` convention).
     func sendCoins(address: String, amount: UInt64,
-                   inputSelector: SingleInputAddressSelector? = nil, adjustAmountDownwards: Bool = false,
                    sessionAuthSufficient: Bool = false) async throws
         -> Data {
         return try await walletSendService.send(
             address: address,
             amount: amount,
-            inputSelector: inputSelector,
-            adjustAmountDownwards: adjustAmountDownwards,
             sessionAuthSufficient: sessionAuthSufficient
         )
     }

@@ -3,11 +3,11 @@
 # Enable once per clone:  git config core.hooksPath .githooks
 #
 # Requires gitleaks:  brew install gitleaks
-# If gitleaks isn't installed, the hook warns and lets the commit through — CI
-# (.github/workflows/gitleaks.yml) is the non-bypassable backstop.
+# If gitleaks isn't installed, the hook warns and lets the commit through. No CI
+# job scans for secrets, so this hook is the only secret scan before a push.
 
 if ! command -v gitleaks >/dev/null 2>&1; then
-    echo "⚠️  gitleaks not installed — skipping local secret scan (CI will still check)."
+    echo "⚠️  gitleaks not installed — skipping local secret scan."
     echo "    Install with: brew install gitleaks"
     exit 0
 fi

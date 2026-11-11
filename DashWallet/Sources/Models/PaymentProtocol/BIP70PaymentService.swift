@@ -417,8 +417,6 @@ final class BIP70PaymentService {
     /// Builds the x-callback-url string L6 opens after a good send. Matches the legacy
     /// `DWPaymentProcessor` format. nil unless both a callback scheme and a primary address exist.
     static func makeCallbackURL(scheme: String?, address: String?, txidHexDisplay: String) -> URL? {
-        guard let scheme, let address else { return nil }
-        let encoded = address.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? address
-        return URL(string: "\(scheme)://callback=payack&address=\(encoded)&txid=\(txidHexDisplay)")
+        CallbackScheme.payAckURL(scheme: scheme, address: address, txid: txidHexDisplay)
     }
 }

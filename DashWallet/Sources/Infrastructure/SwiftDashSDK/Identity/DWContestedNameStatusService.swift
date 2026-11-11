@@ -85,7 +85,15 @@ public final class DWContestedNameStatusService: NSObject {
     /// between leaves a marker from an earlier launch, which proves nothing
     /// was submitted and must be reconciled with Platform before it may read
     /// as "Voting" (or ever resolve to Blocked/Rejected).
+    // An empty token marks an ended, unconfirmed attempt: eligible for the
+    // same reconciliation as an earlier launch, without confirming submission.
     private static let provisionalField = "provisional"
+    /// When an attempt's DPNS write ended with an unknown result. Platform may
+    /// not have indexed that write yet, so the marker is not read as "never
+    /// submitted" until `unconfirmedSubmissionGrace` has passed.
+    private static let unconfirmedAtField = "unconfirmedAt"
+    /// Far longer than the few blocks an accepted transition needs.
+    static let unconfirmedSubmissionGrace: TimeInterval = 10 * 60
 
     /// Protocol vote-poll durations in the Platform v2 settings. The fallback
     /// starts at OUR submission time, which is at or after the first contender's
@@ -164,7 +172,12 @@ public final class DWContestedNameStatusService: NSObject {
     /// `provisional` marks a write made BEFORE the DPNS submission. Any later
     /// non-provisional upsert confirms the entry; a provisional upsert never
     /// downgrades an entry that is already confirmed.
+    ///
+    /// Returns whether this call created the entry. An attempt that fails
+    /// may only delete a marker it created: one it found says an earlier
+    /// attempt may have been submitted (`releaseProvisionalMarker`).
     @nonobjc
+    @discardableResult
     func recordSubmission(
         label: String,
         network: Network,
@@ -173,24 +186,26 @@ public final class DWContestedNameStatusService: NSObject {
         submittedAt: Date = Date(),
         promoteOnWin: Bool = false,
         provisional: Bool = false
-    ) {
+    ) -> Bool {
         guard let identityId, let key = Self.entriesKey(for: network, walletId: walletId) else {
             // A submission is always made by an active wallet, so this cannot
             // happen — but recording it under no wallet would write a bookmark
             // nothing can ever own or clear.
             Self.logger.error(
                 "🪪 CONTEST-SVC :: cannot record submission with no active wallet")
-            return
+            return false
         }
         let fallbackEnd = Self.fallbackVotingEndTime(
             submittedAt: submittedAt,
             network: network)
         var entries = Self.entries(for: network, walletId: walletId)
         let canonical = Self.canonicalLabel(label)
+        let created = entries[canonical] == nil
         if var existing = entries[canonical] {
             existing[Self.endField] = existing[Self.endField] ?? fallbackEnd.timeIntervalSince1970
             if !provisional {
                 existing.removeValue(forKey: Self.provisionalField)
+                existing.removeValue(forKey: Self.unconfirmedAtField)
             } else if existing[Self.provisionalField] != nil {
                 // A retry in this launch owns the marker now.
                 existing[Self.provisionalField] = launchToken
@@ -212,6 +227,59 @@ public final class DWContestedNameStatusService: NSObject {
         UserDefaults.standard.set(entries, forKey: key)
         Self.logger.info(
             "🪪 CONTEST-SVC :: recordSubmission label=\(canonical, privacy: .public) network=\(network.rawValue, privacy: .public) promoteOnWin=\(promoteOnWin, privacy: .public) provisional=\(provisional, privacy: .public) inFlight=\(entries.count, privacy: .public)")
+        return created
+    }
+
+    /// Release this launch's active marker for reconciliation after an unknown result.
+    /// Keep its provisional status, deadline and promotion intent intact.
+    /// Starts the grace period in which Platform may not show the write yet
+    /// (`isAwaitingUnconfirmedSubmission`).
+    @nonobjc
+    func markSubmissionUnconfirmed(
+        label: String, network: Network, identityId: Data, walletId: Data, at date: Date = Date()
+    ) {
+        releaseMarker(label: label, network: network, identityId: identityId, walletId: walletId, unknownResultAt: date)
+    }
+
+    /// Hands back a marker this attempt found and took over, after the
+    /// attempt failed without submitting. Its own failure says nothing about
+    /// the earlier attempt that wrote the marker, so the entry, its deadline,
+    /// its promotion intent and any running grace period are kept for
+    /// reconciliation. No-op for a confirmed bookmark.
+    @nonobjc
+    func releaseProvisionalMarker(label: String, network: Network, identityId: Data, walletId: Data) {
+        releaseMarker(label: label, network: network, identityId: identityId, walletId: walletId, unknownResultAt: nil)
+    }
+
+    private func releaseMarker(
+        label: String, network: Network, identityId: Data, walletId: Data, unknownResultAt: Date?
+    ) {
+        guard let key = Self.entriesKey(for: network, walletId: walletId) else { return }
+        var entries = Self.entries(for: network, walletId: walletId)
+        let canonical = Self.canonicalLabel(label)
+        let identityHex = identityId.map { String(format: "%02x", $0) }.joined()
+        guard var entry = entries[canonical],
+              entry[Self.identityField] as? String == identityHex,
+              entry[Self.provisionalField] as? String == launchToken else { return }
+        entry[Self.provisionalField] = ""
+        if let unknownResultAt {
+            entry[Self.unconfirmedAtField] = unknownResultAt.timeIntervalSince1970
+        }
+        entries[canonical] = entry
+        UserDefaults.standard.set(entries, forKey: key)
+    }
+
+    /// Whether an unknown-result write for `label` is recent enough that
+    /// Platform may not show it yet. A lookup that still reads the name as
+    /// available must not drop the marker during this time.
+    @nonobjc
+    func isAwaitingUnconfirmedSubmission(
+        label: String, network: Network, walletId: Data? = nil, now: Date = Date()
+    ) -> Bool {
+        guard let entry = Self.entries(for: network, walletId: walletId)[Self.canonicalLabel(label)],
+              entry[Self.provisionalField] != nil,
+              let unconfirmedAt = entry[Self.unconfirmedAtField] as? Double else { return false }
+        return now.timeIntervalSince1970 - unconfirmedAt < Self.unconfirmedSubmissionGrace
     }
 
     /// Cache the real contest deadline for one label once Platform exposes
@@ -393,7 +461,8 @@ public final class DWContestedNameStatusService: NSObject {
     /// Retired entries without an owner remain available for migration, but
     /// cannot be assigned to whichever identity happens to be selected.
     ///
-    /// A marker from an earlier launch is left out: nothing proves that
+    /// A marker from an earlier launch or an ended, unconfirmed attempt is
+    /// left out: nothing proves that
     /// submission happened (see `provisionalField`). This launch's marker is
     /// kept — its registration is still running — unless `confirmedOnly`,
     /// which is what outcome decisions (won / lost / blocked) use.
@@ -407,8 +476,8 @@ public final class DWContestedNameStatusService: NSObject {
         }
     }
 
-    /// Pre-submission markers an earlier launch left behind: the app ended
-    /// between the marker and the DPNS write's result. Still filtered from
+    /// Markers left by an earlier launch or an ended, unconfirmed attempt.
+    /// The DPNS write's result remains unknown. Still filtered from
     /// owned names, never reported as a request, and reconciled with Platform
     /// by `DWIdentityRegistrationCoordinator.checkPendingContestResolution()`.
     @nonobjc
