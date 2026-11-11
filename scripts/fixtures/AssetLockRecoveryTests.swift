@@ -386,6 +386,102 @@ final class AssetLockRecoveryTests: XCTestCase {
         XCTAssertFalse(AssetLockProbeStore.shared.contains(txid, vout: 2, walletIdHex: walletHex))
     }
 
+    func testUnconfirmedSendResumesRecordedLockToSameRecipient() async {
+        let wallet = Data(repeating: 0x44, count: 32)
+        let txid = Data(repeating: 0x45, count: 32)
+        let recipient = Data(repeating: 6, count: 43)
+        let manager = TestManager()
+        let coordinator = ShieldedTransferCoordinator(environment: .init(
+            manager: manager, walletId: wallet, shieldedRecipient: Data(repeating: 1, count: 43)))
+        // What a fresh send leaves after an unknown broadcast result.
+        coordinator.phase = .submittedUnconfirmed
+        coordinator.lastAssetLockOutPoint = .init(txidWire: txid, vout: 1)
+        coordinator.lastAssetLockContext = .init(walletId: wallet, networkScope: "testnet")
+        CoreShieldedDrainService.resolveManager = { _ in manager }
+        defer { CoreShieldedDrainService.resolveManager = nil }
+        let caller = SendRetryHarness(coordinator)
+        caller.route = .coreToShielded
+        caller.destinationRaw43 = recipient
+        XCTAssertTrue(caller.canResumeUnconfirmedLock)
+
+        await coordinator.retryLastAssetLock(recipientRaw43: recipient)
+
+        XCTAssertEqual(coordinator.authorizations, 1)
+        XCTAssertEqual(manager.calls, 1)
+        XCTAssertEqual(manager.receivedTxid, txid)
+        XCTAssertEqual(manager.receivedVout, 1)
+        XCTAssertEqual(manager.receivedRecipients.map(\.recipientRaw43), [recipient])
+        XCTAssertEqual(coordinator.phase, .success)
+        XCTAssertEqual(coordinator.newAssetLockCalls, 0)
+        XCTAssertEqual(caller.confirmations, 0)
+    }
+
+    func testUnconfirmedResumeStaysAvailableUntilPlatformReportsTheLockConsumed() async {
+        let wallet = Data(repeating: 0x46, count: 32)
+        let walletHex = wallet.map { String(format: "%02x", $0) }.joined()
+        let txid = Data(repeating: 0x47, count: 32)
+        let recipient = Data(repeating: 6, count: 43)
+        defer {
+            AssetLockProbeStore.shared.clearForWallet(walletIdHex: walletHex)
+            CoreShieldedDrainService.resolveManager = nil
+        }
+        let manager = TestManager()
+        manager.error = PlatformWalletError.transactionBroadcastUnconfirmed("lost acknowledgement")
+        let coordinator = ShieldedTransferCoordinator(environment: .init(
+            manager: manager, walletId: wallet, shieldedRecipient: Data(repeating: 1, count: 43)))
+        coordinator.phase = .submittedUnconfirmed
+        coordinator.lastAssetLockOutPoint = .init(txidWire: txid, vout: 1)
+        coordinator.lastAssetLockContext = .init(walletId: wallet, networkScope: "testnet")
+        CoreShieldedDrainService.resolveManager = { _ in manager }
+        let caller = SendRetryHarness(coordinator)
+        caller.route = .coreToShielded
+        caller.destinationRaw43 = recipient
+
+        // Still unknown: the same lock stays resumable.
+        await coordinator.retryLastAssetLock(recipientRaw43: recipient)
+        XCTAssertEqual(coordinator.phase, .submittedUnconfirmed)
+        XCTAssertEqual(coordinator.lastAssetLockOutPoint?.txidWire, txid)
+        XCTAssertTrue(caller.canResumeUnconfirmedLock)
+
+        // Reported consumed: nothing is left to resume.
+        manager.error = PlatformWalletError.assetLockAlreadyConsumed
+        await coordinator.retryLastAssetLock(recipientRaw43: recipient)
+        XCTAssertEqual(manager.calls, 2)
+        XCTAssertEqual(coordinator.phase, .submittedUnconfirmed)
+        XCTAssertEqual(coordinator.lastResumeReport, .alreadyConsumed)
+        XCTAssertFalse(caller.canResumeUnconfirmedLock)
+        await coordinator.retryLastAssetLock(recipientRaw43: recipient)
+        XCTAssertEqual(manager.calls, 2)
+        XCTAssertEqual(coordinator.newAssetLockCalls, 0)
+    }
+
+    func testUnconfirmedSendWithoutRecordedLockOffersNoResume() async {
+        let wallet = Data(repeating: 0x48, count: 32)
+        let manager = TestManager()
+        let coordinator = ShieldedTransferCoordinator(environment: .init(
+            manager: manager, walletId: wallet, shieldedRecipient: Data(repeating: 1, count: 43)))
+        coordinator.phase = .submittedUnconfirmed
+        coordinator.lastAssetLockContext = .init(walletId: wallet, networkScope: "testnet")
+        let caller = SendRetryHarness(coordinator)
+        caller.route = .coreToShielded
+        caller.destinationRaw43 = Data(repeating: 6, count: 43)
+        XCTAssertFalse(caller.canResumeUnconfirmedLock)
+
+        await coordinator.retryLastAssetLock(recipientRaw43: caller.destinationRaw43)
+        XCTAssertEqual(coordinator.authorizations, 0)
+        XCTAssertEqual(manager.calls, 0)
+        XCTAssertEqual(coordinator.phase, .submittedUnconfirmed)
+
+        // A Max drain and the other routes keep their own recovery.
+        coordinator.lastAssetLockOutPoint = .init(txidWire: Data(repeating: 0x49, count: 32), vout: 0)
+        XCTAssertTrue(caller.canResumeUnconfirmedLock)
+        caller.isCoreDrain = true
+        XCTAssertFalse(caller.canResumeUnconfirmedLock)
+        caller.isCoreDrain = false
+        caller.route = .platformToShielded
+        XCTAssertFalse(caller.canResumeUnconfirmedLock)
+    }
+
     func testDefiniteFailureRemainsFailure() async {
         let manager = TestManager()
         manager.error = PlatformWalletError.walletOperation("preflight refusal")

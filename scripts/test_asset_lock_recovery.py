@@ -18,6 +18,7 @@ with tempfile.TemporaryDirectory(prefix="asset-lock-recovery-tests-") as directo
     production = (repository / "DashWallet/Sources/UI/Payments/InternalTransfer/Shielded/ShieldedTransferCoordinator.swift").read_text()
     methods = []
     for marker in ("    func resumeFundPlatform(", "    func resumeAssetLock(", "    static func alreadyConsumedAssetLockResumePhase(",
+                   "    var canResumeUnconfirmedAssetLock: Bool",
                    "    func retryLastAssetLock(", "    func reset()", "    private func handleSpendError(",
                    "    private func handlePlatformSpendError(", "    private func isStillBound(",
                    "    private func beginTransfer()", "    private func beginTransfer(\n",
@@ -66,8 +67,10 @@ with tempfile.TemporaryDirectory(prefix="asset-lock-recovery-tests-") as directo
                    "    nonisolated static var unresumedLockStage:"):
         helpers.append(caller_method(coinjoin, marker).replace("private var", "var", 1))
     harness = harness.replace("// COINJOIN_HELPERS", "\n".join(helpers))
-    harness = harness.replace("// SEND_RETRY", caller_method(
-        "DashWallet/Sources/UI/Payments/Pay/SendScreen.swift", "    private func tryAgain()"))
+    send = "DashWallet/Sources/UI/Payments/Pay/SendScreen.swift"
+    harness = harness.replace("// SEND_RETRY", "\n".join((
+        caller_method(send, "    private func tryAgain()"),
+        caller_method(send, "    private var canResumeUnconfirmedLock: Bool").replace("private var", "var", 1))))
     (source / "Coordinator.swift").write_text(harness)
     (tests / "RecoveryTests.swift").symlink_to(repository / "scripts/fixtures/AssetLockRecoveryTests.swift")
     (package / "Package.swift").write_text('''// swift-tools-version: 5.9

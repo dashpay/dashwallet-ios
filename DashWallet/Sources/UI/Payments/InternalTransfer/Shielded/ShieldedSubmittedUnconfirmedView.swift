@@ -12,6 +12,9 @@ struct ShieldedSubmittedUnconfirmedView: View {
     /// Where this transfer's status can be checked later, when the surface
     /// that started it has a place for that.
     var detail: String? = nil
+    /// Continues this same transfer on its recorded asset lock, when the
+    /// surface that started it still holds the recipient.
+    var onResume: (() -> Void)? = nil
 
     var body: some View {
         VStack(spacing: 16) {
@@ -47,13 +50,25 @@ struct ShieldedSubmittedUnconfirmedView: View {
 
             Spacer(minLength: 12)
 
-            DashButton(
-                text: NSLocalizedString("Done", comment: ""),
-                style: .filled,
-                stretch: true,
-                action: onDone)
-                .padding(.horizontal, 16)
-                .padding(.bottom, 16)
+            if let onResume {
+                ButtonsGroup(
+                    orientation: .horizontal,
+                    size: .large,
+                    positiveButtonText: NSLocalizedString("Resume", comment: "InternalTransfer"),
+                    positiveButtonAction: onResume,
+                    negativeButtonText: NSLocalizedString("Done", comment: ""),
+                    negativeButtonAction: onDone)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 16)
+            } else {
+                DashButton(
+                    text: NSLocalizedString("Done", comment: ""),
+                    style: .filled,
+                    stretch: true,
+                    action: onDone)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 16)
+            }
         }
     }
 }

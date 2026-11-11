@@ -957,7 +957,7 @@ struct IdentityTopUpSheet: View {
                     }
                 }
                 .disabled(!viewModel.canTopUp(from: source) || effectiveDuffs == nil)
-                .opacity(effectiveDuffs == nil ? 0.55 : 1)
+                .opacity(!viewModel.canTopUp(from: source) || effectiveDuffs == nil ? 0.55 : 1)
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
 

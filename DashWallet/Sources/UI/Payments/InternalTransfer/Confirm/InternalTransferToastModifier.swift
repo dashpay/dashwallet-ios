@@ -37,6 +37,8 @@ private struct InternalTransferToastModifier: ViewModifier {
     /// timer: its reason is the one thing the history will not show, so it
     /// stays until the user closes it.
     private static let duration: TimeInterval = 3
+    /// Longer: it tells the user not to send again, which must not be missed.
+    private static let submittedDuration: TimeInterval = 8
 
     func body(content: Content) -> some View {
         content
@@ -68,7 +70,7 @@ private struct InternalTransferToastModifier: ViewModifier {
             .animation(.easeInOut(duration: 0.3), value: runner.notice)
             .task(id: runner.notice) {
                 guard let remaining = runner.notice?.remainingDisplayTime(
-                    raisedAt: runner.noticeRaisedAt, now: Date(), duration: runner.notice == .submitted ? 8 : Self.duration)
+                    raisedAt: runner.noticeRaisedAt, now: Date(), duration: runner.notice == .submitted ? Self.submittedDuration : Self.duration)
                 else { return }
 
                 guard remaining > 0 else {

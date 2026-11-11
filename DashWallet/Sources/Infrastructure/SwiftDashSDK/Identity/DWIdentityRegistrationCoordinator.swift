@@ -1496,14 +1496,22 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         newController.enterInFlight()
     }
 
-    /// Drops the step-2.9 bookmark for a submission that never reached the
-    /// network. Safe to call when none was written.
+    /// Withdraws the step-2.9 bookmark of an attempt that never reached the
+    /// network. Safe to call when none was written. Only a bookmark this
+    /// attempt created is dropped: one it found belongs to an earlier attempt
+    /// that may have been submitted, so it is handed back for reconciliation.
     private func withdrawPrematureBookmark(
-        _ username: String, isContested: Bool, network: Network, wallet: ManagedPlatformWallet
+        _ username: String, isContested: Bool, createdByThisAttempt: Bool,
+        identityId: Identifier, network: Network, wallet: ManagedPlatformWallet
     ) {
         guard isContested else { return }
-        DWContestedNameStatusService.shared.clearPending(
-            label: username, for: network, walletId: wallet.walletId)
+        if createdByThisAttempt {
+            DWContestedNameStatusService.shared.clearPending(
+                label: username, for: network, walletId: wallet.walletId)
+        } else {
+            DWContestedNameStatusService.shared.releaseProvisionalMarker(
+                label: username, network: network, identityId: identityId, walletId: wallet.walletId)
+        }
     }
 
     private func registerNames(
@@ -1543,8 +1551,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // write returns never reaches either path, and a marker from an earlier
         // launch must not read as a submitted request (see
         // `reconcileProvisionalSubmission`).
+        var createdBookmark = false
         if isContestedSubmission {
-            DWContestedNameStatusService.shared.recordSubmission(
+            createdBookmark = DWContestedNameStatusService.shared.recordSubmission(
                 label: username, network: network, identityId: identityId, walletId: wallet.walletId,
                 promoteOnWin: true, provisional: true)
         }
@@ -1595,13 +1604,15 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             }
         } catch DWIdentityAuthorizer.AuthError.cancelled {
             withdrawPrematureBookmark(
-                username, isContested: isContestedSubmission, network: network, wallet: wallet)
+                username, isContested: isContestedSubmission, createdByThisAttempt: createdBookmark,
+                identityId: identityId, network: network, wallet: wallet)
             throw DWIdentityAuthorizer.AuthError.cancelled
         } catch let error as CoordinatorError where error.isIdentityTopUp {
             // Nothing reached DPNS; keep the typed error so the failure is
             // reported at the payment step.
             withdrawPrematureBookmark(
-                username, isContested: isContestedSubmission, network: network, wallet: wallet)
+                username, isContested: isContestedSubmission, createdByThisAttempt: createdBookmark,
+                identityId: identityId, network: network, wallet: wallet)
             throw error
         } catch {
             Self.logger.error("🪪 IDENT-COORD :: DPNS registration failed: \(String(describing: error))")
@@ -1614,7 +1625,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 throw CoordinatorError.dpnsRegistration(error)
             }
             withdrawPrematureBookmark(
-                username, isContested: isContestedSubmission, network: network, wallet: wallet)
+                username, isContested: isContestedSubmission, createdByThisAttempt: createdBookmark,
+                identityId: identityId, network: network, wallet: wallet)
             throw CoordinatorError.dpnsRegistration(error)
         }
 
@@ -2612,6 +2624,14 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 username: label, network: expectedNetwork, identityId: identityId, walletId: wallet.walletId)
             return // finalizeWon announces the change itself
         case .available, nil:
+            // An unknown-result write may not be indexed yet: reading the
+            // name as available this soon does not prove it was never sent.
+            guard !service.isAwaitingUnconfirmedSubmission(
+                label: label, network: expectedNetwork, walletId: wallet.walletId)
+            else {
+                Self.logger.info("🪪 IDENT-COORD :: provisional \(label) not visible yet after an unknown result — marker kept")
+                return
+            }
             Self.logger.info("🪪 IDENT-COORD :: provisional \(label) was never submitted — marker dropped")
             service.clearPending(label: label, for: expectedNetwork, walletId: wallet.walletId)
         }
