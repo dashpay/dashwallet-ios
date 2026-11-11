@@ -2,7 +2,6 @@
 
 - **Status:** Proposed
 - **Date:** 2026-11-10
-- **Feature record:** [../features/app-connect-owner-attribution/adr/0001-pass-owners-read-from-platform-into-the-pure-projection.md](../features/app-connect-owner-attribution/adr/0001-pass-owners-read-from-platform-into-the-pure-projection.md)
 - **Deciders:** romchornyi (owner), with Claude during the design pass
 
 ## Context
