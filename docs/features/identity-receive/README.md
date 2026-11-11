@@ -38,7 +38,9 @@ where a Payer is pointed to, and gave no feedback when credits landed.
   the identity from this wallet while Receive is open.
 - **AC-07** After a Receipt, Identities and Internal transfer already show the new balance.
 - **AC-08** Without Platform, the QR, ID, username, Copy and Share still work and the card does
-  not say it is watching; credits that land during a gap show at the next successful check.
+  not say it is watching; credits that land during a gap after the starting balance was read show at
+  the next successful check, while credits that land before the first successful read become part
+  of the starting balance and raise no Receipt.
 - **AC-09** With Advanced Mode off, Receive is unchanged and shows no Identity ID.
 - **AC-10** Without an identity, a username, or with a registration in progress, there is no
   Identity option.

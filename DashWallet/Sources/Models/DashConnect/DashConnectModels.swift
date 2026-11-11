@@ -23,17 +23,14 @@ import SwiftDashSDK
 enum DashConnectQr: Equatable {
     case login(DashKeyRequest)
     /// A `dash-st:` payload — a serialized state transition whose kind is
-    /// only known once the wallet parses it (key registration or token
-    /// purchase).
+    /// only known once the wallet parses it (a token purchase is the only
+    /// one it takes).
     case stateTransition(DashStRequest)
 }
 
 /// What the wallet did — or still needs the user to do — with a scanned
 /// `dash-st:` state transition.
 enum DashConnectStAction: Equatable {
-    /// Key registration was validated and published (or the derived keys
-    /// were already on the identity).
-    case keyRegistrationCompleted
     /// The payload is a token purchase; nothing was signed or sent yet — it
     /// awaits explicit user approval via `approveTokenPurchase(_:)`.
     case tokenPurchaseApprovalRequired(DashConnectTokenPurchaseRequest)
@@ -143,21 +140,17 @@ extension DashConnectTokenPurchaseRequest {
     }
 }
 
-/// Lifecycle of an app connection.
-///
-/// `approved` means the wallet knows about the app, but it may not be ready to
-/// sign in yet: either the required login keys are not on the identity yet, or
-/// the user locally turned the connection off from the wallet UI.
-///
-/// `active` means the app's login keys are registered on the identity and the
-/// wallet has already published the matching `loginKeyResponse`. For a one-QR
-/// connection it means the app holds a session key on an identity of this
-/// wallet that this wallet has not disabled: the row is made once the key is
-/// seen on the identity, before its response is published, and stays
-/// whether or not the publish is confirmed.
+/// Lifecycle of an app connection. `active` means an approval's keys are
+/// live on an identity of this wallet; `undelivered` means they are live but
+/// the app never got its response; `confirming` means an identity update may
+/// still land.
 enum ConnectionStatus: String, Codable, CaseIterable {
-    case approved
+    /// An App Connect approval whose identity update may still land.
+    case confirming
     case active
+    /// The app's keys are live, but its response was never published: the
+    /// app holds keys it cannot use. Only a disconnect or a new QR helps.
+    case undelivered
 
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -177,22 +170,34 @@ enum ConnectionStatus: String, Codable, CaseIterable {
     }
 }
 
-/// Which login made a connection. It decides what turning it off means:
-/// a one-QR connection has a session key on the identity to disable, a
-/// two-QR connection does not (see `DashConnectDataSource.disconnect`).
-enum DashConnectLoginKind: String, Codable {
-    case twoQR
-    case oneQR
-}
-
 /// A connected app identified by its stable contract id.
 struct DAppConnection: Identifiable, Equatable, Hashable {
+    init(id: String, name: String, url: String, status: ConnectionStatus, updatedAt: Date, seenOn: Set<String> = []) {
+        self.id = id
+        self.name = name
+        self.url = url
+        self.status = status
+        self.updatedAt = updatedAt
+        self.seenOn = seenOn
+    }
+
+    /// `row` with another status, as of `updatedAt`, and `seenOn`.
+    init(_ row: DAppConnection, status: ConnectionStatus? = nil, seenOn: Set<String>, at updatedAt: Date? = nil) {
+        self.init(
+            id: row.id, name: row.name, url: row.url, status: status ?? row.status,
+            updatedAt: updatedAt ?? row.updatedAt, seenOn: seenOn)
+        scope = row.scope
+    }
+
     let id: String
     let name: String
     let url: String
     let status: ConnectionStatus
     let updatedAt: Date
-    var loginKind: DashConnectLoginKind = .twoQR
+    /// The identities (Base58) whose last read showed the app live keys no
+    /// approval of this wallet names. The wallet reads one identity at a
+    /// time, so access seen on another stays known until that one is read.
+    let seenOn: Set<String>
     /// Names the wallet and network a data source published this row for;
     /// `nil` on a row that was built or read from a store. Not stored. It
     /// goes back with a disconnect or a remove, so a row picked from a list
@@ -200,14 +205,23 @@ struct DAppConnection: Identifiable, Equatable, Hashable {
     var scope: String? = nil
 }
 
-/// What a disconnect did with the active identity's DashPay profile keys
-/// that no grant record names, besides turning off the app's own keys.
+/// What a disconnect left on the active identity besides the app's keys it
+/// turned off.
 struct DashConnectDisconnectResult: Equatable {
-    /// How many of them it turned off.
-    var profileKeysTurnedOff = 0
-    /// They could not be told apart, so none was turned off; the app's own
-    /// keys were.
-    var profileKeysUnchecked = false
+    /// How many of the app's keys it turned off.
+    var keysTurnedOff = 0
+    /// Live keys no approval of this wallet names that a disconnect turns
+    /// off only when the user asks: keys bound to the app's contracts, given
+    /// on another device or before a restore, and DashPay profile keys no
+    /// app can be told to hold.
+    var unrecordedKeysLeft = 0
+    /// Live App Connect keys whose app the wallet could not tell yet: its key
+    /// store does not hold their bound. None of them was turned off.
+    var keysNotChecked = 0
+    /// A read of another identity of this wallet saw keys of the app no
+    /// approval names. They can be turned off only while that identity is
+    /// the active one.
+    var keysOnAnotherIdentity = false
 }
 
 /// A pending request derived from a scanned login QR code.
@@ -275,17 +289,5 @@ extension ConnectionRequest {
     /// identity, wallet and network an approval is about to run for.
     func wasResolved(forIdentityId identityId: String, scope: String) -> Bool {
         walletIdentityId == identityId && self.scope == scope
-    }
-}
-
-extension AppConnect.SessionKeyTerms {
-    /// The budget as DASH at full credit precision, e.g. "0.05 DASH".
-    var budgetText: String {
-        PlatformCreditsFormatter.dashString(budgetCredits)
-    }
-
-    /// The lifetime in whole days.
-    var lifetimeDays: Int {
-        Int(lifetime / (24 * 60 * 60))
     }
 }

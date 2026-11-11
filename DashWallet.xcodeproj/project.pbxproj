@@ -984,6 +984,7 @@
 		7C1177A230A1000000000002 /* InternalTransferNoticeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1177A130A1000000000001 /* InternalTransferNoticeTests.swift */; };
 		727FF6515F1B4A62A03534AD /* CoreShieldedDrainStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4911E48CD7945E7B78664F7 /* CoreShieldedDrainStoreTests.swift */; };
 		7C0DE5A1B2C34D5E6F708196 /* CoreShieldedDrainRecipientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C0DE5A1B2C34D5E6F708195 /* CoreShieldedDrainRecipientTests.swift */; };
+		5762A1B2C3D4E5F600000002 /* ShieldedResumeRecipientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5762A1B2C3D4E5F600000001 /* ShieldedResumeRecipientTests.swift */; };
 		7A30001430A1000000000014 /* ShieldedRecoveryTapActionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30001330A1000000000013 /* ShieldedRecoveryTapActionTests.swift */; };
 		7A30001630A1000000000016 /* ShieldedAssetLocksInFlightTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30001530A1000000000015 /* ShieldedAssetLocksInFlightTests.swift */; };
 		7A30001830A1000000000018 /* ShieldedTxLookupConsumedOverlayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30001730A1000000000017 /* ShieldedTxLookupConsumedOverlayTests.swift */; };
@@ -1171,10 +1172,10 @@
 		AA0031032FD0000000000013 /* IconName+DashIconSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0031012FD0000000000011 /* IconName+DashIconSource.swift */; };
 		AA00F1012FF0A10000A1B402 /* ExchangeAddressLookupContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00F1002FF0A10000A1B402 /* ExchangeAddressLookupContextTests.swift */; };
 		AA03A0012FF3000000000001 /* KeyExchangeCryptoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA03A0032FF3000000000003 /* KeyExchangeCryptoTests.swift */; };
-		AA03A0022FF3000000000002 /* LoginKeyDerivationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA03A0042FF3000000000004 /* LoginKeyDerivationTests.swift */; };
 		AA04A0012FF4000000000001 /* DashConnectDataSourceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA04A0032FF4000000000003 /* DashConnectDataSourceTests.swift */; };
 		AA05A0012FF5000000000001 /* DashConnectStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA05A0032FF5000000000003 /* DashConnectStoreTests.swift */; };
 		AA06A0112FF6000000000011 /* AppConnectV2LoginTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA06A0132FF6000000000013 /* AppConnectV2LoginTests.swift */; };
+		AA06A0F12FF60000000000F1 /* AppConnectProjectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA06A0F32FF60000000000F3 /* AppConnectProjectionTests.swift */; };
 		AA06A0212FF6000000000021 /* AppConnectEncryptionRotationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA06A0232FF6000000000023 /* AppConnectEncryptionRotationTests.swift */; };
 		AA06A0012FF6000000000001 /* PlatformDashConnectDataSourceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA06A0032FF6000000000003 /* PlatformDashConnectDataSourceTests.swift */; };
 		AA22BB33CC44DD55EE66FF78 /* BuyReceiveFlowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA22BB33CC44DD55EE66FF77 /* BuyReceiveFlowUITests.swift */; };
@@ -2044,6 +2045,7 @@
 		BABA10000000000000000203 /* IdentityTopUpsInFlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000201 /* IdentityTopUpsInFlight.swift */; };
 		F44028CBF49F4A2FE6268874 /* UsernameRegistrationRecoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 701E95B66E2409DD2F80D7AB /* UsernameRegistrationRecoveryTests.swift */; };
 		C0F1E5ED0A14B2C3D4E5F603 /* ContestedUsernameFeeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F1E5ED0A14B2C3D4E5F604 /* ContestedUsernameFeeTests.swift */; };
+		4046F707D79B443DF65A4A1B /* CreateUsernameShieldedCostTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D352A3186395D1462939197 /* CreateUsernameShieldedCostTests.swift */; };
 		B17E5A0C9D3F4E21A6C80B01 /* BulkVotePlanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17E5A0C9D3F4E21A6C80B02 /* BulkVotePlanTests.swift */; };
 		C0F7A1D2E3B4C5D6E7F80901 /* CountedPhrasePluralTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F7A1D2E3B4C5D6E7F80902 /* CountedPhrasePluralTests.swift */; };
 		BABA10000000000000000004 /* IdentityBalanceRefreshTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000003 /* IdentityBalanceRefreshTests.swift */; };
@@ -3206,6 +3208,7 @@
 		7C1177A130A1000000000001 /* InternalTransferNoticeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InternalTransferNoticeTests.swift; sourceTree = "<group>"; };
 		D4911E48CD7945E7B78664F7 /* CoreShieldedDrainStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreShieldedDrainStoreTests.swift; sourceTree = "<group>"; };
 		7C0DE5A1B2C34D5E6F708195 /* CoreShieldedDrainRecipientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreShieldedDrainRecipientTests.swift; sourceTree = "<group>"; };
+		5762A1B2C3D4E5F600000001 /* ShieldedResumeRecipientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedResumeRecipientTests.swift; sourceTree = "<group>"; };
 		7A30001330A1000000000013 /* ShieldedRecoveryTapActionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedRecoveryTapActionTests.swift; sourceTree = "<group>"; };
 		7A30001530A1000000000015 /* ShieldedAssetLocksInFlightTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedAssetLocksInFlightTests.swift; sourceTree = "<group>"; };
 		7A30001730A1000000000017 /* ShieldedTxLookupConsumedOverlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedTxLookupConsumedOverlayTests.swift; sourceTree = "<group>"; };
@@ -3311,10 +3314,10 @@
 		AA0031012FD0000000000011 /* IconName+DashIconSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IconName+DashIconSource.swift"; sourceTree = "<group>"; };
 		AA00F1002FF0A10000A1B402 /* ExchangeAddressLookupContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeAddressLookupContextTests.swift; sourceTree = "<group>"; };
 		AA03A0032FF3000000000003 /* KeyExchangeCryptoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = KeyExchangeCryptoTests.swift; path = DashConnect/KeyExchangeCryptoTests.swift; sourceTree = "<group>"; };
-		AA03A0042FF3000000000004 /* LoginKeyDerivationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LoginKeyDerivationTests.swift; path = DashConnect/LoginKeyDerivationTests.swift; sourceTree = "<group>"; };
 		AA04A0032FF4000000000003 /* DashConnectDataSourceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DashConnectDataSourceTests.swift; path = DashConnect/DashConnectDataSourceTests.swift; sourceTree = "<group>"; };
 		AA05A0032FF5000000000003 /* DashConnectStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DashConnectStoreTests.swift; path = DashConnect/DashConnectStoreTests.swift; sourceTree = "<group>"; };
 		AA06A0132FF6000000000013 /* AppConnectV2LoginTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppConnectV2LoginTests.swift; path = DashConnect/AppConnectV2LoginTests.swift; sourceTree = "<group>"; };
+		AA06A0F32FF60000000000F3 /* AppConnectProjectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppConnectProjectionTests.swift; path = DashConnect/AppConnectProjectionTests.swift; sourceTree = "<group>"; };
 		AA06A0232FF6000000000023 /* AppConnectEncryptionRotationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppConnectEncryptionRotationTests.swift; path = DashConnect/AppConnectEncryptionRotationTests.swift; sourceTree = "<group>"; };
 		AA06A0032FF6000000000003 /* PlatformDashConnectDataSourceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PlatformDashConnectDataSourceTests.swift; path = DashConnect/PlatformDashConnectDataSourceTests.swift; sourceTree = "<group>"; };
 		AA22BB33CC44DD55EE66FF77 /* BuyReceiveFlowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuyReceiveFlowUITests.swift; sourceTree = "<group>"; };
@@ -3917,6 +3920,7 @@
 		BABA10000000000000000201 /* IdentityTopUpsInFlight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityTopUpsInFlight.swift; sourceTree = "<group>"; };
 		701E95B66E2409DD2F80D7AB /* UsernameRegistrationRecoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRegistrationRecoveryTests.swift; sourceTree = "<group>"; };
 		C0F1E5ED0A14B2C3D4E5F604 /* ContestedUsernameFeeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContestedUsernameFeeTests.swift; sourceTree = "<group>"; };
+		4D352A3186395D1462939197 /* CreateUsernameShieldedCostTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateUsernameShieldedCostTests.swift; sourceTree = "<group>"; };
 		B17E5A0C9D3F4E21A6C80B02 /* BulkVotePlanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BulkVotePlanTests.swift; sourceTree = "<group>"; };
 		C0F7A1D2E3B4C5D6E7F80902 /* CountedPhrasePluralTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountedPhrasePluralTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000003 /* IdentityBalanceRefreshTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityBalanceRefreshTests.swift; sourceTree = "<group>"; };
@@ -7363,6 +7367,7 @@
 				951941B18660622D41D4C1FA /* DWRegistrationPhaseAdapterTests.swift */,
 				701E95B66E2409DD2F80D7AB /* UsernameRegistrationRecoveryTests.swift */,
 				C0F1E5ED0A14B2C3D4E5F604 /* ContestedUsernameFeeTests.swift */,
+				4D352A3186395D1462939197 /* CreateUsernameShieldedCostTests.swift */,
 				B17E5A0C9D3F4E21A6C80B02 /* BulkVotePlanTests.swift */,
 				C0F7A1D2E3B4C5D6E7F80902 /* CountedPhrasePluralTests.swift */,
 				BABA10000000000000000003 /* IdentityBalanceRefreshTests.swift */,
@@ -7381,10 +7386,10 @@
 				2A7CAFFF191922CBF6075212 /* DashConnectUriTests.swift */,
 				7C172F43568AE0A5AFDB5349 /* Secp256k1Tests.swift */,
 				AA03A0032FF3000000000003 /* KeyExchangeCryptoTests.swift */,
-				AA03A0042FF3000000000004 /* LoginKeyDerivationTests.swift */,
 				AA04A0032FF4000000000003 /* DashConnectDataSourceTests.swift */,
 				AA05A0032FF5000000000003 /* DashConnectStoreTests.swift */,
 				AA06A0132FF6000000000013 /* AppConnectV2LoginTests.swift */,
+				AA06A0F32FF60000000000F3 /* AppConnectProjectionTests.swift */,
 				AA06A0232FF6000000000023 /* AppConnectEncryptionRotationTests.swift */,
 				AA06A0032FF6000000000003 /* PlatformDashConnectDataSourceTests.swift */,
 				47976E492987772700612988 /* AmountObjectTests.swift */,
@@ -7421,6 +7426,7 @@
 				7C1177A130A1000000000001 /* InternalTransferNoticeTests.swift */,
 				D4911E48CD7945E7B78664F7 /* CoreShieldedDrainStoreTests.swift */,
 				7C0DE5A1B2C34D5E6F708195 /* CoreShieldedDrainRecipientTests.swift */,
+				5762A1B2C3D4E5F600000001 /* ShieldedResumeRecipientTests.swift */,
 				7A30001330A1000000000013 /* ShieldedRecoveryTapActionTests.swift */,
 				7A30001530A1000000000015 /* ShieldedAssetLocksInFlightTests.swift */,
 				7A30001730A1000000000017 /* ShieldedTxLookupConsumedOverlayTests.swift */,
@@ -10696,6 +10702,7 @@
 				17E47391430C11AC728B69A3 /* DWRegistrationPhaseAdapterTests.swift in Sources */,
 				F44028CBF49F4A2FE6268874 /* UsernameRegistrationRecoveryTests.swift in Sources */,
 				C0F1E5ED0A14B2C3D4E5F603 /* ContestedUsernameFeeTests.swift in Sources */,
+				4046F707D79B443DF65A4A1B /* CreateUsernameShieldedCostTests.swift in Sources */,
 				B17E5A0C9D3F4E21A6C80B01 /* BulkVotePlanTests.swift in Sources */,
 				C0F7A1D2E3B4C5D6E7F80901 /* CountedPhrasePluralTests.swift in Sources */,
 				BABA10000000000000000004 /* IdentityBalanceRefreshTests.swift in Sources */,
@@ -10714,10 +10721,10 @@
 				0438F3D117619B14594F95E6 /* DashConnectUriTests.swift in Sources */,
 				8D66A1B0E97F5B50411765B4 /* Secp256k1Tests.swift in Sources */,
 				AA03A0012FF3000000000001 /* KeyExchangeCryptoTests.swift in Sources */,
-				AA03A0022FF3000000000002 /* LoginKeyDerivationTests.swift in Sources */,
 				AA04A0012FF4000000000001 /* DashConnectDataSourceTests.swift in Sources */,
 				AA05A0012FF5000000000001 /* DashConnectStoreTests.swift in Sources */,
 				AA06A0112FF6000000000011 /* AppConnectV2LoginTests.swift in Sources */,
+				AA06A0F12FF60000000000F1 /* AppConnectProjectionTests.swift in Sources */,
 				AA06A0212FF6000000000021 /* AppConnectEncryptionRotationTests.swift in Sources */,
 				AA06A0012FF6000000000001 /* PlatformDashConnectDataSourceTests.swift in Sources */,
 				47976E4A2987772700612988 /* AmountObjectTests.swift in Sources */,
@@ -10754,6 +10761,7 @@
 				7C1177A230A1000000000002 /* InternalTransferNoticeTests.swift in Sources */,
 				727FF6515F1B4A62A03534AD /* CoreShieldedDrainStoreTests.swift in Sources */,
 				7C0DE5A1B2C34D5E6F708196 /* CoreShieldedDrainRecipientTests.swift in Sources */,
+				5762A1B2C3D4E5F600000002 /* ShieldedResumeRecipientTests.swift in Sources */,
 				7A30001430A1000000000014 /* ShieldedRecoveryTapActionTests.swift in Sources */,
 				7A30001630A1000000000016 /* ShieldedAssetLocksInFlightTests.swift in Sources */,
 				7A30001830A1000000000018 /* ShieldedTxLookupConsumedOverlayTests.swift in Sources */,

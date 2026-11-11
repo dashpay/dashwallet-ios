@@ -285,6 +285,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// Consumed) without burning CPU.
     private static let assetLockPollInterval: TimeInterval = 0.5
 
+    private var lastAssetLockContext: CoreShieldedDrainContext?
+
     private let authorizer = DWIdentityAuthorizer()
     private var assetLockPollingTask: Task<Void, Never>?
 
@@ -342,6 +344,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case drainRecipientUnknown
         /// A Max drain's marker could not be read right now.
         case drainRecipientUnavailable
+        /// A resume named a different recipient than the one its lock was
+        /// built for. Nothing was sent; the lock stays tracked.
+        case resumeRecipientMismatch
         /// An external Max would now sweep more than the user confirmed.
         case drainBalanceChanged
         case transferFailed(Error)
@@ -423,6 +428,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
                     comment: "InternalTransfer recovery: drain recipient unknown")
             case .drainRecipientUnavailable:
                 return NSLocalizedString("Wallet unavailable. Try again.", comment: "Core drain")
+            case .resumeRecipientMismatch:
+                return NSLocalizedString(
+                    "This transfer can only be finished to the recipient it was started with. Nothing was sent. Your funds remain locked and safe.",
+                    comment: "InternalTransfer recovery: resume recipient differs from the recorded one")
             case .drainBalanceChanged:
                 return NSLocalizedString(
                     "Your Transparent balance changed after you reviewed this transfer. Go back and tap Max again.",
@@ -556,8 +565,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
     /// Whole eligible-wallet intent. Correlation uses this call's durable UUID,
     /// never the newest asset lock or a timestamp shared with another caller.
-    /// `recipient` is written into that marker before dispatch: the SDK does
-    /// not persist it, and every resume reads it back from there.
+    /// `recipient` is written into that marker before dispatch. The SDK also
+    /// records it on the lock's row before broadcast; a resume reads the
+    /// marker's only for a row the SDK tracked before it recorded recipients.
     func performWalletDrain(_ confirmation: CoreShieldedDrainConfirmation, recipient: CoreShieldedDrainRecipient = .ownWallet) async {
         guard beginTransfer() else { return }
         lastAssetLockOutPoint = nil
@@ -809,6 +819,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
 
+        lastAssetLockContext = CoreShieldedDrainContext(walletId: env.walletId, networkScope: env.network.persistenceScope)
         phase = .locking
         let (newLock, onAssetLockBuilt) = beginNewAssetLock(modelContainer: env.modelContainer)
 
@@ -863,22 +874,28 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// never landed. Picks up the existing outpoint and drives the remaining stages
     /// via `shieldedResumeFundFromAssetLock` — instead of building a SECOND
     /// asset lock (which is what a fresh `performAssetLock` would do, stranding
-    /// the first). The recipient must match the original attempt —
-    /// re-derived (the wallet's own default shielded address) for the
-    /// internal transfer, or the same external `recipientRaw43` for a
-    /// Send-screen retry; the SDK re-derives an identical `shield_amount`
-    /// from the on-chain lock value, so a resume cannot desync funds and is
-    /// safe to retry. Re-authorizes — this moves real funds.
+    /// the first). The recipient is the one the original attempt was built
+    /// for, resolved by `ShieldedResumeRecipient`: the recipient the SDK
+    /// recorded on the lock's row, or — for a row tracked before the SDK
+    /// recorded recipients — the Max drain marker's, the caller's
+    /// `recipientRaw43`, or the wallet's own default shielded address. The
+    /// SDK re-derives an identical `shield_amount` from the on-chain lock
+    /// value, so a resume cannot desync funds and is safe to retry.
+    /// Re-authorizes — this moves real funds.
     ///
     /// Used by both confirm sheets' "Try again" (in-session) and the
     /// home-screen recovery sheet (after relaunch).
-    /// - Parameter binding: as for `performAssetLock(funding:recipientRaw43:expecting:)`.
+    /// - Parameters:
+    ///   - recipientOverride: the recipient the calling surface knows; it
+    ///     must agree with the recorded one, or the resume is refused.
+    ///   - binding: as for `performAssetLock(funding:recipientRaw43:expecting:)`.
     func resumeAssetLock(
         outPointTxidWire: Data,
         outPointVout: UInt32,
         recipientRaw43 recipientOverride: Data? = nil,
         expecting binding: SwiftDashSDKTransactionSender.CoinJoinWalletBinding? = nil,
-        expectedDrainContext: CoreShieldedDrainContext? = nil
+        expectedDrainContext: CoreShieldedDrainContext? = nil,
+        retryUnverifiedConsumption: Bool = false
     ) async {
         // Read before the resume moves it, for the outcome lines below.
         let lockInfo = ShieldedTxLookup.shared
@@ -950,24 +967,34 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
 
-        // Every resume of a Max drain's lock is decided here, whichever
-        // surface asked: the SDK pays whatever recipient this call passes and
-        // does not record the drain's own. A drain row pays its marker's
-        // recipient; a caller's explicit recipient must agree with it.
-        // Resolved before the PIN prompt, so a refusal asks for nothing.
-        var recipientRaw43 = recipientOverride
-        var drainContext = expectedDrainContext
-        guard let row = Self.drainRowIdentity(
+        // Capture the runtime's wallet before any suspension. Both the recovery
+        // sheet and the bulk service enter here; neither may lose this advisory
+        // result when its presenter closes or file it under a newly active wallet.
+        let probeWalletIdHex = env.walletId.map { String(format: "%02x", $0) }.joined()
+        if !retryUnverifiedConsumption,
+           AssetLockProbeStore.shared.contains(outPointTxidWire, vout: outPointVout, walletIdHex: probeWalletIdHex) {
+            logResumeOutcome("outcome=skippedConsumedReport")
+            lastResumeReport = .alreadyConsumed
+            phase = .submittedUnconfirmed
+            return
+        }
+
+        // Every resume's recipient is decided here, whichever surface asked,
+        // before the PIN prompt so a refusal asks for nothing. The SDK pays
+        // only the recipient it recorded on the row; a row tracked before it
+        // recorded one falls back to the Max drain marker, the caller's
+        // recipient, then the wallet's own address (`ShieldedResumeRecipient`).
+        guard let row = Self.resumeRow(
             outPointTxidWire: outPointTxidWire, vout: outPointVout,
             walletId: env.walletId, in: env.modelContainer)
         else {
             failBeforeResume(CoordinatorError.drainRecipientUnavailable)
             return
         }
-        Self.logger.info("🛡️ SHIELD-TX :: resume drain row=\(String(describing: row), privacy: .public)")
+        Self.logger.info("🛡️ SHIELD-TX :: resume drain row=\(String(describing: row.identity), privacy: .public) recorded=\(row.recordedRecipientRaw43 != nil)")
         // The gate read the drain id from the lookup snapshot, which can lag
         // the row; the row read here is authoritative.
-        if case .operation(let id) = row,
+        if case .operation(let id) = row.identity,
            ShieldedAssetLocksInFlight.shared.isDrainClaimed(id) {
             Self.logger.info("🛡️ SHIELD-TX :: resume refused vout=\(outPointVout): the Max drain that built the lock still holds it")
             lastAssetLockOutPoint = .init(txidWire: outPointTxidWire, vout: outPointVout)
@@ -981,32 +1008,45 @@ final class ShieldedTransferCoordinator: ObservableObject {
         // does, so no other attempt starts on it. Every return before
         // `finishResumedAssetLock` hands the claim over releases it at once.
         var drainClaim: UUID?
-        if case .operation(let id) = row {
+        if case .operation(let id) = row.identity {
             ShieldedAssetLocksInFlight.shared.claimDrain(id)
             drainClaim = id
         }
         defer { if let drainClaim { Self.releaseDrainClaim(drainClaim, completed: false) } }
-        if row != .none {
-            let (lookup, markerContext) = CoreShieldedDrainService().markerLookup()
-            let resolved: Data?
-            switch CoreShieldedDrainResumeTarget.resolve(row: row, marker: lookup) {
-            case .ownWallet: resolved = nil
-            case .external(let raw43): resolved = raw43
-            case .refuse:
-                Self.logger.error("🛡️ SHIELD-TX :: resume refused — drain recipient unknown")
-                failBeforeResume(CoordinatorError.drainRecipientUnknown)
-                return
-            case .retryLater:
+        var markerContext: CoreShieldedDrainContext?
+        let resolution = ShieldedResumeRecipient.resolve(
+            recordedRaw43: row.recordedRecipientRaw43,
+            row: row.identity,
+            marker: {
+                let (lookup, context) = CoreShieldedDrainService().markerLookup()
+                markerContext = context
+                return lookup
+            },
+            callerRaw43: recipientOverride,
+            ownRaw43: env.shieldedRecipient)
+        let recipientRaw43: Data
+        switch resolution {
+        case .pay(let raw43, let source):
+            Self.logger.info("🛡️ SHIELD-TX :: resume recipient=\(source.rawValue, privacy: .public)")
+            recipientRaw43 = raw43
+        case .refuse(let refusal):
+            Self.logger.error("🛡️ SHIELD-TX :: resume refused — recipient \(String(describing: refusal), privacy: .public)")
+            switch refusal {
+            case .mismatch: failBeforeResume(CoordinatorError.resumeRecipientMismatch)
+            case .drainRecipientUnknown: failBeforeResume(CoordinatorError.drainRecipientUnknown)
+            case .drainRecipientUnavailable: failBeforeResume(CoordinatorError.drainRecipientUnavailable)
+            }
+            return
+        }
+        // A drain row is resumed only while the wallet and network it was
+        // resolved under are still active; checked again after the PIN.
+        var drainContext = expectedDrainContext
+        if row.identity != .none, drainContext == nil {
+            drainContext = markerContext ?? (try? CoreShieldedDrainService.currentContext())
+            guard drainContext != nil else {
                 failBeforeResume(CoordinatorError.drainRecipientUnavailable)
                 return
             }
-            if let recipientOverride, recipientOverride != (resolved ?? env.shieldedRecipient) {
-                Self.logger.error("🛡️ SHIELD-TX :: resume refused — caller recipient disagrees with the drain marker")
-                failBeforeResume(CoordinatorError.drainRecipientUnknown)
-                return
-            }
-            recipientRaw43 = resolved
-            drainContext = drainContext ?? markerContext
         }
 
         do {
@@ -1040,7 +1080,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         let terminalPhase: Phase
         do {
             let recipient = ShieldedFundFromAssetLockRecipient(
-                recipientRaw43: recipientRaw43 ?? env.shieldedRecipient,
+                recipientRaw43: recipientRaw43,
                 credits: nil)
             try await env.manager.shieldedResumeFundFromAssetLock(
                 walletId: env.walletId,
@@ -1051,11 +1091,13 @@ final class ShieldedTransferCoordinator: ObservableObject {
             logResumeOutcome("outcome=completed")
         } catch {
             guard let mappedPhase = Self.alreadyConsumedAssetLockResumePhase(for: error) else {
-                // `shieldedSpendUnconfirmed` was accepted by relay, so it is
-                // not a failure of this lock and is not stored as one.
-                if case PlatformWalletError.shieldedSpendUnconfirmed = error {
+                // An ambiguous submission is not a proven failure of this lock.
+                switch error {
+                case PlatformWalletError.shieldedSpendUnconfirmed,
+                     SDKError.stateTransitionResultUnconfirmed,
+                     PlatformWalletError.transactionBroadcastUnconfirmed:
                     logResumeOutcome("outcome=submittedUnconfirmed")
-                } else {
+                default:
                     recordResumeFailure(error)
                 }
                 handleSpendError(error, manager: env.manager)
@@ -1065,9 +1107,11 @@ final class ShieldedTransferCoordinator: ObservableObject {
             // A DAPI endpoint reported this exact outpoint as consumed, but
             // rejection responses are not quorum-authenticated. Rust retains
             // the ChainLock proof and records nonterminal consumption-unknown
-            // state, so suppress retries without claiming verified success.
+            // state, so suppress bulk retries without claiming verified success.
+            // A later explicit action can authorize another probe of this outpoint.
             terminalPhase = mappedPhase
             lastResumeReport = .alreadyConsumed
+            AssetLockProbeStore.shared.record(txid: outPointTxidWire, vout: outPointVout, walletIdHex: probeWalletIdHex)
             Self.logger.info("🛡️ SHIELD-TX :: resume found asset lock reported consumed — completion remains unconfirmed")
         }
 
@@ -1112,19 +1156,27 @@ final class ShieldedTransferCoordinator: ObservableObject {
         return nil
     }
 
-    /// What the SDK row for this outpoint says about the Max drain that built
-    /// it. `nil` when the row cannot be read or is missing: unknown is not
-    /// "no drain". Every resume surface found its lock through this store, so
-    /// a missing row is never a legitimate own-address resume. The row must
-    /// belong to the wallet doing the resume: the store holds every wallet's
-    /// locks, and another wallet's row would be read against this wallet's
-    /// marker.
-    private static func drainRowIdentity(
+    /// What a resume reads from the SDK row of the lock it resumes.
+    struct ResumeRow: Equatable {
+        /// What the row says about the Max drain that built it.
+        let identity: CoreShieldedDrainRowIdentity
+        /// The recipient the SDK recorded before broadcasting the lock;
+        /// `nil` for a row tracked before the SDK recorded recipients.
+        let recordedRecipientRaw43: Data?
+    }
+
+    /// The SDK row for this outpoint. `nil` when the row cannot be read or is
+    /// missing: unknown is not "no drain" and not "no recipient". Every resume
+    /// surface found its lock through this store, so a missing row is never a
+    /// legitimate own-address resume. The row must belong to the wallet doing
+    /// the resume: the store holds every wallet's locks, and another wallet's
+    /// row would be read against this wallet's marker and address.
+    static func resumeRow(
         outPointTxidWire: Data,
         vout: UInt32,
         walletId: Data,
         in modelContainer: ModelContainer
-    ) -> CoreShieldedDrainRowIdentity? {
+    ) -> ResumeRow? {
         let outPointHex = outPointTxidWire.reversed().map { String(format: "%02x", $0) }.joined() + ":\(vout)"
         var descriptor = FetchDescriptor<PersistentAssetLock>(
             predicate: #Predicate { row in row.outPointHex == outPointHex && row.walletId == walletId })
@@ -1134,7 +1186,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 logger.error("🛡️ SHIELD-TX :: asset-lock row missing for resume")
                 return nil
             }
-            return CoreShieldedDrainRowIdentity(operationIdBytes: row.operationId)
+            return ResumeRow(
+                identity: CoreShieldedDrainRowIdentity(operationIdBytes: row.operationId),
+                recordedRecipientRaw43: row.shieldedRecipientRaw43)
         } catch {
             logger.error("🛡️ SHIELD-TX :: asset-lock row unreadable \(String(describing: error), privacy: .public)")
             return nil
@@ -1585,7 +1639,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             }
         } catch {
             finishNewAssetLock(newLock)
-            handleFailure(CoordinatorError.transferFailed(error))
+            handlePlatformSpendError(error)
             return
         }
 
@@ -1604,7 +1658,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
     func resumeFundPlatform(
         outPointTxidWire: Data,
         outPointVout: UInt32,
-        recipientAmountDuffs: UInt64
+        recipientAmountDuffs: UInt64,
+        retryUnverifiedConsumption: Bool = true
     ) async {
         let statusBeforeRaw = ShieldedTxLookup.shared
             .platformFundingInfo(forTxidHex: AssetLockFailureStore.displayHex(txidWire: outPointTxidWire))?.statusRaw
@@ -1615,6 +1670,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                     refusal, event: "resume core→platform", txidWire: outPointTxidWire, vout: outPointVout,
                     fundingTypeRaw: Self.addressAssetLockFundingType, statusBeforeRaw: statusBeforeRaw)
             }) else { return }
+        lastAssetLockOutPoint = .init(txidWire: outPointTxidWire, vout: outPointVout)
         Self.logger.info("🛡️ SHIELD-TX :: resume core→platform fund vout=\(outPointVout)")
 
         guard recipientAmountDuffs > 0 else {
@@ -1622,10 +1678,19 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
 
+        let env: BasicEnvironment
         do {
-            _ = try resolveBasicEnvironment()
+            env = try resolveBasicEnvironment()
         } catch {
             handleFailure(error)
+            return
+        }
+
+        let probeWalletIdHex = env.walletId.map { String(format: "%02x", $0) }.joined()
+        if !retryUnverifiedConsumption,
+           AssetLockProbeStore.shared.contains(outPointTxidWire, vout: outPointVout, walletIdHex: probeWalletIdHex) {
+            lastResumeReport = .alreadyConsumed
+            phase = .submittedUnconfirmed
             return
         }
 
@@ -1633,6 +1698,13 @@ final class ShieldedTransferCoordinator: ObservableObject {
             try await authorize()
         } catch {
             handleFailure(error)
+            return
+        }
+
+        guard let current = try? resolveBasicEnvironment(),
+              current.walletId == env.walletId, current.network == env.network,
+              current.manager === env.manager else {
+            handleFailure(CoordinatorError.noWallet)
             return
         }
 
@@ -1645,16 +1717,30 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 outPointVout: outPointVout,
                 recipientAmountDuffs: recipientAmountDuffs)
         } catch {
-            AssetLockRetryLog.recordFailure(
-                error,
-                prefix: AssetLockRetryLog.shieldPrefix,
-                event: "resume core→platform",
-                txidWire: outPointTxidWire,
-                vout: outPointVout,
-                fundingTypeRaw: Self.addressAssetLockFundingType,
-                statusBeforeRaw: statusBeforeRaw,
-                store: failureStore)
-            handleFailure(CoordinatorError.transferFailed(error))
+            if let consumedPhase = Self.alreadyConsumedAssetLockResumePhase(for: error) {
+                lastResumeReport = .alreadyConsumed
+                AssetLockProbeStore.shared.record(
+                    txid: outPointTxidWire, vout: outPointVout, walletIdHex: probeWalletIdHex)
+                phase = consumedPhase
+                schedulePlatformResync()
+                return
+            }
+            switch error {
+            case SDKError.stateTransitionResultUnconfirmed, PlatformWalletError.transactionBroadcastUnconfirmed,
+                 PlatformWalletError.shieldedSpendUnconfirmed:
+                break
+            default:
+                AssetLockRetryLog.recordFailure(
+                    error,
+                    prefix: AssetLockRetryLog.shieldPrefix,
+                    event: "resume core→platform",
+                    txidWire: outPointTxidWire,
+                    vout: outPointVout,
+                    fundingTypeRaw: Self.addressAssetLockFundingType,
+                    statusBeforeRaw: statusBeforeRaw,
+                    store: failureStore)
+            }
+            handlePlatformSpendError(error)
             return
         }
 
@@ -1719,7 +1805,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                     feeHeadroomCredits: feeHeadroomCredits)
             }
         } catch {
-            handleFailure(CoordinatorError.transferFailed(error))
+            handlePlatformSpendError(error)
             return
         }
 
@@ -1820,13 +1906,61 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 destination: destination,
                 amount: amountCredits)
         } catch {
-            handleFailure(CoordinatorError.transferFailed(error))
+            handlePlatformSpendError(error)
             return
         }
 
         Self.logger.info("🛡️ SHIELD-TX :: platform→platform send completed")
         phase = .success
         schedulePlatformResync()
+    }
+
+    /// An unknown result that left this attempt's asset lock recorded. The
+    /// unknown part may be the lock's own broadcast, before any shield was
+    /// sent, so waiting for sync does not always finish the transfer. Resuming
+    /// that outpoint pays the recipient the caller passes and cannot pay
+    /// twice: consensus consumes a lock once. False once Platform reported
+    /// the lock consumed.
+    var canResumeUnconfirmedAssetLock: Bool {
+        phase == .submittedUnconfirmed && lastAssetLockOutPoint != nil
+            && lastAssetLockContext != nil && lastResumeReport == nil
+    }
+
+    /// Retry the existing lock after fresh authorization. Retain its outpoint
+    /// even when the PIN is cancelled, so the next tap cannot fund a second lock.
+    /// Also continues an unconfirmed attempt whose lock is still recorded
+    /// (`canResumeUnconfirmedAssetLock`).
+    func retryLastAssetLock(recipientRaw43: Data? = nil) async {
+        let continuesUnconfirmed = canResumeUnconfirmedAssetLock
+        let retryable: Bool
+        if case .failed = phase { retryable = true } else { retryable = continuesUnconfirmed }
+        guard retryable, let outpoint = lastAssetLockOutPoint,
+              let context = lastAssetLockContext else { return }
+        do {
+            _ = try CoreShieldedDrainService().manager(for: context)
+        } catch {
+            // The earlier result is still unknown; a refused resume must not
+            // turn it into a failure the sheet answers with a fresh payment.
+            if !continuesUnconfirmed { handleFailure(error) }
+            return
+        }
+        reset()
+        lastAssetLockOutPoint = outpoint
+        lastAssetLockContext = context
+        await resumeAssetLock(
+            outPointTxidWire: outpoint.txidWire,
+            outPointVout: outpoint.vout,
+            recipientRaw43: recipientRaw43,
+            expectedDrainContext: context,
+            retryUnverifiedConsumption: true)
+        // A resume that stopped or failed says nothing new about the earlier
+        // submission: keep the unknown-result state and its recorded lock, so
+        // closing the sheet still ends the send flow.
+        if continuesUnconfirmed, case .failed = phase {
+            lastAssetLockOutPoint = outpoint
+            lastAssetLockContext = context
+            phase = .submittedUnconfirmed
+        }
     }
 
     /// Reset to `.idle` so the user can retry from a `.failed` state.
@@ -1843,6 +1977,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
         stopAssetLockPolling()
         lastAssetLockOutPoint = nil
+        lastAssetLockContext = nil
         lastFailure = nil
         lastResumeReport = nil
         phase = .idle
@@ -2050,17 +2185,41 @@ final class ShieldedTransferCoordinator: ObservableObject {
     }
 
     private func handleFailure(_ error: Error) {
-        Self.logger.error("🛡️ SHIELD-TX :: failure \(String(describing: error), privacy: .public)")
+        // The SDK's recipient-mismatch payload names both Orchard addresses;
+        // its failure record keeps the case name without them.
+        let logged = Self.isRecipientMismatch(error)
+            ? AssetLockFailureRecord.describe(error).logDescription
+            : String(describing: error)
+        Self.logger.error("🛡️ SHIELD-TX :: failure \(logged, privacy: .public)")
         lastFailure = error
-        let message: String
-        if AssetLockInputLimit.isTooManyInputs(error) {
-            message = AssetLockInputLimit.message
-        } else if let local = error as? LocalizedError, let description = local.errorDescription {
-            message = description
-        } else {
-            message = error.localizedDescription
+        phase = .failed(Self.failureMessage(for: error))
+    }
+
+    /// Whether `error` refused a resume's recipient: the app's own check or
+    /// the SDK's error 61, bare or inside `transferFailed`.
+    static func isRecipientMismatch(_ error: Error) -> Bool {
+        switch AssetLockInputLimit.innermost(error) {
+        case PlatformWalletError.assetLockRecipientMismatch, CoordinatorError.resumeRecipientMismatch:
+            return true
+        default:
+            return false
         }
-        phase = .failed(message)
+    }
+
+    /// The text a `.failed` phase shows for `error`. The SDK's own text for a
+    /// recipient mismatch names both Orchard addresses, so the app's message
+    /// replaces it wherever it surfaces.
+    static func failureMessage(for error: Error) -> String {
+        if AssetLockInputLimit.isTooManyInputs(error) {
+            return AssetLockInputLimit.message
+        }
+        if isRecipientMismatch(error) {
+            return CoordinatorError.resumeRecipientMismatch.localizedDescription
+        }
+        if let local = error as? LocalizedError, let description = local.errorDescription {
+            return description
+        }
+        return error.localizedDescription
     }
 
     /// Map a shielded-spend FFI error to the right terminal phase. The SDK
@@ -2075,6 +2234,22 @@ final class ShieldedTransferCoordinator: ObservableObject {
             phase = .submittedUnconfirmed
             scheduleShieldedResync(manager: manager)
         } else {
+            handlePlatformSpendError(error)
+        }
+    }
+
+    /// An ambiguous broadcast cannot prove the dispatch did not execute.
+    /// Keep the submitted state so this sheet never offers a fresh payment.
+    private func handlePlatformSpendError(_ error: Error) {
+        switch error {
+        case SDKError.stateTransitionResultUnconfirmed, PlatformWalletError.transactionBroadcastUnconfirmed,
+             PlatformWalletError.shieldedSpendUnconfirmed:
+            phase = .submittedUnconfirmed
+            schedulePlatformResync()
+            if let manager = SwiftDashSDKHost.shared.manager {
+                scheduleShieldedResync(manager: manager)
+            }
+        default:
             handleFailure(CoordinatorError.transferFailed(error))
         }
     }
