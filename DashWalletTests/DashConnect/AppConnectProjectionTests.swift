@@ -1101,24 +1101,33 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertEqual(rows, [row])
     }
 
-    /// A disconnect that left a key of unknown bound keeps the app's row as
-    /// it is, so Disconnect stays reachable; without it the row goes.
-    func testARowKeptForAKeyOfUnknownBoundStaysAsItIs() {
+    /// While the read has a key of unknown bound, no row goes, whether its
+    /// intent was turned off, never landed or there is no intent at all: it
+    /// is Confirming, not Active. Once every key is placed, the row goes.
+    func testNoRowGoesWhileAKeyHasAnUnknownBound() {
         let key = Self.authKey(10)
         let row = DAppConnection(
             id: Self.app.toBase58String(), name: "App", url: "", status: .active,
             updatedAt: Date(timeIntervalSince1970: 1))
-        let off = Self.snapshot([Self.onPlatform(key, disabledAt: 1), Self.onPlatform(Self.authKey(20), boundKnown: false)])
-        let projection = AppConnect.project([off], intents: [Self.intent([key])])
-        XCTAssertEqual(projection.connections.first?.status, .disconnected)
-        XCTAssertEqual(
-            PlatformDashConnectDataSource.rows(
-                [row], after: projection, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 2),
-                keeping: [row.id]),
-            [row])
-        XCTAssertEqual(
-            PlatformDashConnectDataSource.rows([row], after: projection, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 2)),
-            [])
+        let unplaced = Self.onPlatform(Self.authKey(20, bound: .singleContract(Self.otherApp)), boundKnown: false)
+        let off = Self.onPlatform(key, disabledAt: 1)
+        let taken = Self.onPlatform(Self.authKey(10, data: 9, bound: .singleContract(Self.otherApp)))
+        let cases: [(String, [AppConnect.PlatformKey], [Intent], AppConnect.IntentStatus?)] = [
+            ("turned off", [off], [Self.intent([key])], .disconnected),
+            ("never landed", [taken], [Self.intent([key])], .neverLanded),
+            ("no intent", [], [], nil),
+        ]
+        for (name, keys, intents, status) in cases {
+            let rows = { (keys: [AppConnect.PlatformKey]) in
+                let projection = AppConnect.project([Self.snapshot(keys)], intents: intents)
+                XCTAssertEqual(projection.connections.first { $0.appId == Self.app }?.status, status, name)
+                return PlatformDashConnectDataSource.rows(
+                    [row], after: projection, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 2))
+                    .filter { $0.id == row.id }
+            }
+            XCTAssertEqual(rows(keys + [unplaced]).map(\.status), [.confirming], name)
+            XCTAssertEqual(rows(keys), [], name)
+        }
     }
 
     // MARK: Retry
