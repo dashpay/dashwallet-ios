@@ -223,9 +223,13 @@ struct DashConnectDisconnectResult: Equatable {
     /// that landed under an id the disconnect meant to fence counts here too.
     /// The connection stays and Disconnect can run again.
     var keysStillLive = 0
-    /// Live App Connect keys whose app the wallet could not tell yet: its key
-    /// store does not hold their bound. None of them was turned off.
+    /// Live App Connect keys that may be the app's but could not be checked:
+    /// their bound is not in the key store yet, or an owner that decides
+    /// whose they are could not be read. None of them was turned off.
     var keysNotChecked = 0
+    /// Live keys of the app's owner that another app with an approval here
+    /// has too: they may be that app's, and none was turned off.
+    var keysNotAttributable = 0
     /// Fence keys of the wallet that a disconnect placed (the read after it
     /// shows the wallet's own fence key live, or with no read the submission
     /// reports it added) and did not turn off. The sign-in they guard can no
