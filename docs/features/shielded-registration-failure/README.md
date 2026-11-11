@@ -14,9 +14,10 @@ money came back or where, and a retry from Platform Payment failed because 0.029
 ## What changed
 
 - **A charged failure is recognised.** The failure of the Type-20 call is classified as charged,
-  unknown outcome or other. Charged means the SDK's result-wait verdict, the only rejection that
-  spends the exit at the pinned platform.
-  [ADR-0035](../../adr/0035-classify-a-charged-shielded-registration-failure-by-the-verdict-text.md).
+  unknown outcome or other. Charged means the platform wallet SDK proved, at the node the create
+  went to, that its inputs are spent and its identity was not created
+  ([dashpay/platform#5853](https://github.com/dashpay/platform/pull/5853)). A node's rejection
+  text is never trusted. [ADR-0035](../../adr/0035-classify-a-charged-shielded-registration-failure-by-the-sdks-proven-outcome.md).
 - **The registration's row explains it.** On Home and More the row says "The registration did not
   go through." and "Checking where the money went…" until Platform address sync sees the funds.
   Then it states the returned amount, names the Platform balance as where it went, and says how
@@ -51,6 +52,6 @@ money came back or where, and a retry from Platform Payment failed because 0.029
 ## Operational notes
 
 - No migration, no feature flag. The failure record is a new key in the app's defaults.
-- ADR-0035 depends on the SDK's display text: re-check the classifier test on every `.platform-ref`
-  bump.
+- Needs a platform pin with dashpay/platform#5853; until it merges, `.platform-ref` points at that
+  PR's head and moves to the merged commit before this PR merges.
 - Rollback: revert the PR; a left-over record key is ignored by builds without this change.

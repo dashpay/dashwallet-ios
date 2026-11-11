@@ -6,13 +6,13 @@
 
 ## Context
 
-After a charged Shielded registration failure ([ADR-0035](0035-classify-a-charged-shielded-registration-failure-by-the-verdict-text.md)) the wallet must state exactly how much came back to the Platform Payment balance. The network does not tell the client: the penalty is a flat 10 000 000 credits plus a verification fee plus the processing fee metered so far, and DAPI drops `gas_used` and the address balance changes from the result it forwards. The app itself names the address that receives the remainder — the lowest-indexed Platform Payment address, passed as `sendToAddressOnCreationFailure` — and Platform address sync reports that address's balance.
+After a charged Shielded registration failure ([ADR-0035](0035-classify-a-charged-shielded-registration-failure-by-the-sdks-proven-outcome.md)) the wallet must state exactly how much came back to the Platform Payment balance. The network does not tell the client: the penalty is a flat 10 000 000 credits plus a verification fee plus the processing fee metered so far, and DAPI drops `gas_used` and the address balance changes from the result it forwards. The app itself names the address that receives the remainder — the lowest-indexed Platform Payment address, passed as `sendToAddressOnCreationFailure` — and Platform address sync reports that address's balance.
 
 ## Decision drivers
 
 - The stated amount is the amount that reached the Platform Payment balance; where the network gives no figure, the increase on the address that received it, rounded down to the duff.
 - Until the funds are seen, no amount and no advice to try again; the amount, once stated, never changes.
-- No platform change (ADR-0035).
+- The SDK proves only that the create's inputs are spent and its identity was not created, not where the money went (ADR-0035).
 
 ## Considered options
 
@@ -40,5 +40,5 @@ After a charged Shielded registration failure ([ADR-0035](0035-classify-a-charge
 ## Links
 
 - Feature summary: [docs/features/shielded-registration-failure/README.md](../features/shielded-registration-failure/README.md)
-- Related ADR: [0035 — Classify a charged Shielded registration failure by the verdict text](0035-classify-a-charged-shielded-registration-failure-by-the-verdict-text.md)
+- Related ADR: [0035 — Classify a charged Shielded registration failure by the SDK's proven outcome](0035-classify-a-charged-shielded-registration-failure-by-the-sdks-proven-outcome.md)
 - Issue: #1265.

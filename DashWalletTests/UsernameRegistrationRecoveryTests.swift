@@ -380,18 +380,31 @@ extension UsernameRegistrationRecoveryTests {
 
     // MARK: - Type-20 create failure classifier
 
-    // The Swift text of an in-block (charged) rejection at platform
-    // 1721ca7a8b: the FFI wrapper (rs-platform-wallet-ffi shielded_send.rs),
-    // `PlatformWalletError::ShieldedBroadcastFailed`'s Display, then the
-    // result-wait verdict `StateTransitionBroadcastError` (rs-sdk error.rs).
+    // The node's verdict text of an in-block rejection. Since platform v5.1-dev
+    // it proves nothing on its own: a free rejection (anchor, nullifier, pool,
+    // identity exists) reads the same as the paid key-state one.
     private var chargedText: String {
         "shielded identity-create-from-pool failed: Shielded broadcast failed: "
             + "state transition broadcast error: Identity public key with id 0 is already registered"
     }
 
-    func testInBlockVerdictIsCharged() {
-        let error = PlatformWalletError.shieldedBroadcastFailed(chargedText)
-        XCTAssertEqual(ShieldedCreateFailureKind.classify(error), .charged)
+    /// What the SDK throws once its proven reads show the inputs spent and no identity.
+    private var chargedError: PlatformWalletError { .shieldedIdentityCreateInputsConsumed(chargedText) }
+
+    func testProvenSpentInputsWithoutIdentityIsCharged() {
+        XCTAssertEqual(ShieldedCreateFailureKind.classify(chargedError), .charged)
+    }
+
+    func testVerdictTextAloneIsNotCharged() {
+        // A free in-block rejection carries the same text: no record, no "money came back".
+        XCTAssertEqual(
+            ShieldedCreateFailureKind.classify(PlatformWalletError.shieldedBroadcastFailed(chargedText)),
+            .notClassified)
+        for text in ["anchor not found", "nullifier already spent", "identity already exists"] {
+            XCTAssertEqual(ShieldedCreateFailureKind.classify(PlatformWalletError.shieldedBroadcastFailed(
+                "shielded identity-create-from-pool failed: Shielded broadcast failed: "
+                    + "state transition broadcast error: " + text)), .notClassified, text)
+        }
     }
 
     func testCheckTxRejectionIsNotClassified() {
@@ -405,14 +418,15 @@ extension UsernameRegistrationRecoveryTests {
     func testUnconfirmedCreateIsUnknownOutcomeNeverCharged() {
         let error = DWIdentityRegistrationCoordinator.CoordinatorError.shieldedCreateUnconfirmed
         XCTAssertEqual(ShieldedCreateFailureKind.classify(error), .unknownOutcome)
+        XCTAssertEqual(
+            ShieldedCreateFailureKind.classify(PlatformWalletError.shieldedBroadcastUnconfirmed(chargedText)),
+            .unknownOutcome)
     }
 
     func testOtherErrorsAreNotClassified() {
         XCTAssertEqual(ShieldedCreateFailureKind.classify(PlatformWalletError.walletOperation(chargedText)),
-                       .notClassified, "Only the broadcast-failed case can be charged")
+                       .notClassified, "Only the proven charged case can be charged")
         XCTAssertEqual(ShieldedCreateFailureKind.classify(Failure.unavailable), .notClassified)
-        XCTAssertEqual(ShieldedCreateFailureKind.classify(
-            PlatformWalletError.shieldedBroadcastFailed(" " + chargedText.uppercased())), .notClassified)
     }
 
     // MARK: - Charged failure record store
@@ -689,7 +703,7 @@ extension UsernameRegistrationRecoveryTests {
         XCTAssertNotEqual(mainnet, recordNetwork, "The active scope must be another network")
 
         let thrown = coordinator.shieldedCreateFailureError(
-            PlatformWalletError.shieldedBroadcastFailed(chargedText), chargedRecord: record,
+            chargedError, chargedRecord: record,
             walletId: Data([1]), network: .mainnet)
 
         guard case .shieldedRegistrationCharged? = thrown as? Coordinator.CoordinatorError else {
@@ -740,7 +754,7 @@ extension UsernameRegistrationRecoveryTests {
     }
 
     func testChargedVerdictMapsToChargedCaseWithPlainTextAndNoRawSdkText() throws {
-        let error = PlatformWalletError.shieldedBroadcastFailed(chargedText)
+        let error = chargedError
         let mapped = try XCTUnwrap(Coordinator.shieldedCreateFailure(error))
         guard case .shieldedRegistrationCharged = mapped else {
             return XCTFail("Expected shieldedRegistrationCharged, got \(mapped)")

@@ -292,35 +292,30 @@ enum UsernameRegistrationFailureWording {
 /// What a failed Type-20 create (`shieldedIdentityCreateFromPool`, after the
 /// readiness pre-flight passed) means for the money that left the pool.
 ///
-/// Only an in-block rejection on the result-wait stream is charged: the exit's
-/// nullifiers are spent and the rest is credited to the fallback address. It
-/// reaches Swift as `shieldedBroadcastFailed` carrying the verdict text behind
-/// two wrappers (ADR-0035). A CheckTx rejection is the same Swift case without
-/// that text and spends nothing. A miss can only fall to `.notClassified`,
-/// never to a wrong "money came back".
+/// Charged when the platform wallet SDK proved, at the node the create went to,
+/// that its inputs are spent and its identity was not created
+/// (`PlatformWalletError.shieldedIdentityCreateInputsConsumed`, ADR-0035). The
+/// usual cause is the paid failure path, which credits the rest to the fallback
+/// address; the returned amount is stated only once that address is seen to rise
+/// (ADR-0036). A node's rejection text proves nothing and is never read. A miss
+/// can only fall to `.notClassified` or `.unknownOutcome`, never to a wrong
+/// "money came back".
 enum ShieldedCreateFailureKind: Equatable {
     /// No decided result yet: keeps the existing "still confirming" handling.
     case unknownOutcome
     case charged
     case notClassified
 
-    /// rs-platform-wallet-ffi `shielded_send.rs` ("shielded identity-create-from-pool
-    /// failed: {e}"), then `PlatformWalletError::ShieldedBroadcastFailed`'s Display,
-    /// then rs-sdk `StateTransitionBroadcastError`'s Display — platform 1721ca7a8b.
-    /// Re-check on every `.platform-ref` bump.
-    static let chargedVerdictPrefix = "shielded identity-create-from-pool failed: "
-        + "Shielded broadcast failed: state transition broadcast error: "
-
     static func classify(_ error: Error) -> ShieldedCreateFailureKind {
         if error is ShieldedIdentityCreateUnconfirmedError { return .unknownOutcome }
         if case .shieldedCreateUnconfirmed? = error as? DWIdentityRegistrationCoordinator.CoordinatorError {
             return .unknownOutcome
         }
-        if case let .shieldedBroadcastFailed(text)? = error as? PlatformWalletError,
-           text.hasPrefix(chargedVerdictPrefix) {
-            return .charged
+        switch error as? PlatformWalletError {
+        case .shieldedIdentityCreateInputsConsumed?: return .charged
+        case .shieldedBroadcastUnconfirmed?: return .unknownOutcome
+        default: return .notClassified
         }
-        return .notClassified
     }
 }
 
