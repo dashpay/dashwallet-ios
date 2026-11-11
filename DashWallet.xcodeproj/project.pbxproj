@@ -982,6 +982,7 @@
 		7C1177A230A1000000000002 /* InternalTransferNoticeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1177A130A1000000000001 /* InternalTransferNoticeTests.swift */; };
 		727FF6515F1B4A62A03534AD /* CoreShieldedDrainStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4911E48CD7945E7B78664F7 /* CoreShieldedDrainStoreTests.swift */; };
 		7C0DE5A1B2C34D5E6F708196 /* CoreShieldedDrainRecipientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C0DE5A1B2C34D5E6F708195 /* CoreShieldedDrainRecipientTests.swift */; };
+		5762A1B2C3D4E5F600000002 /* ShieldedResumeRecipientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5762A1B2C3D4E5F600000001 /* ShieldedResumeRecipientTests.swift */; };
 		7A30001430A1000000000014 /* ShieldedRecoveryTapActionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30001330A1000000000013 /* ShieldedRecoveryTapActionTests.swift */; };
 		7A30001630A1000000000016 /* ShieldedAssetLocksInFlightTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30001530A1000000000015 /* ShieldedAssetLocksInFlightTests.swift */; };
 		7A30001830A1000000000018 /* ShieldedTxLookupConsumedOverlayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30001730A1000000000017 /* ShieldedTxLookupConsumedOverlayTests.swift */; };
@@ -3196,6 +3197,7 @@
 		7C1177A130A1000000000001 /* InternalTransferNoticeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InternalTransferNoticeTests.swift; sourceTree = "<group>"; };
 		D4911E48CD7945E7B78664F7 /* CoreShieldedDrainStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreShieldedDrainStoreTests.swift; sourceTree = "<group>"; };
 		7C0DE5A1B2C34D5E6F708195 /* CoreShieldedDrainRecipientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreShieldedDrainRecipientTests.swift; sourceTree = "<group>"; };
+		5762A1B2C3D4E5F600000001 /* ShieldedResumeRecipientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedResumeRecipientTests.swift; sourceTree = "<group>"; };
 		7A30001330A1000000000013 /* ShieldedRecoveryTapActionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedRecoveryTapActionTests.swift; sourceTree = "<group>"; };
 		7A30001530A1000000000015 /* ShieldedAssetLocksInFlightTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedAssetLocksInFlightTests.swift; sourceTree = "<group>"; };
 		7A30001730A1000000000017 /* ShieldedTxLookupConsumedOverlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedTxLookupConsumedOverlayTests.swift; sourceTree = "<group>"; };
@@ -7403,6 +7405,7 @@
 				7C1177A130A1000000000001 /* InternalTransferNoticeTests.swift */,
 				D4911E48CD7945E7B78664F7 /* CoreShieldedDrainStoreTests.swift */,
 				7C0DE5A1B2C34D5E6F708195 /* CoreShieldedDrainRecipientTests.swift */,
+				5762A1B2C3D4E5F600000001 /* ShieldedResumeRecipientTests.swift */,
 				7A30001330A1000000000013 /* ShieldedRecoveryTapActionTests.swift */,
 				7A30001530A1000000000015 /* ShieldedAssetLocksInFlightTests.swift */,
 				7A30001730A1000000000017 /* ShieldedTxLookupConsumedOverlayTests.swift */,
@@ -10728,6 +10731,7 @@
 				7C1177A230A1000000000002 /* InternalTransferNoticeTests.swift in Sources */,
 				727FF6515F1B4A62A03534AD /* CoreShieldedDrainStoreTests.swift in Sources */,
 				7C0DE5A1B2C34D5E6F708196 /* CoreShieldedDrainRecipientTests.swift in Sources */,
+				5762A1B2C3D4E5F600000002 /* ShieldedResumeRecipientTests.swift in Sources */,
 				7A30001430A1000000000014 /* ShieldedRecoveryTapActionTests.swift in Sources */,
 				7A30001630A1000000000016 /* ShieldedAssetLocksInFlightTests.swift in Sources */,
 				7A30001830A1000000000018 /* ShieldedTxLookupConsumedOverlayTests.swift in Sources */,

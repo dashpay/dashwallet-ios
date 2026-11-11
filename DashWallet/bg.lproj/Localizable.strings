@@ -5861,6 +5861,9 @@
 /* Raw transaction inspector */
 "This transaction's raw bytes are not stored on this device." = "Суровите байтове на тази транзакция не се съхраняват на това устройство.";
 
+/* InternalTransfer recovery: resume recipient differs from the recorded one */
+"This transfer can only be finished to the recipient it was started with. Nothing was sent. Your funds remain locked and safe." = "This transfer can only be finished to the recipient it was started with. Nothing was sent. Your funds remain locked and safe.";
+
 /* Asset-lock retry: unsupported funding route */
 "This transfer can't be retried from here." = "Това прехвърляне не може да бъде повторено оттук.";
 

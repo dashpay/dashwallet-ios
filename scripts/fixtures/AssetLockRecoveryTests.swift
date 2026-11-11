@@ -7,8 +7,93 @@ final class AssetLockRecoveryTests: XCTestCase {
     override func setUp() async throws {
         PlatformAddressSyncCoordinator.shared.resume = nil
         ShieldedTransferCoordinator.rowLookup = { .none as CoreShieldedDrainRowIdentity }
+        ShieldedTransferCoordinator.recordedRecipient = nil
         CoreShieldedDrainService.marker = .unavailable
+        CoreShieldedDrainService.context = nil
+        CoreShieldedDrainService.operation = nil
+        CoreShieldedDrainService.statusReads = []
         SwiftDashSDKTransactionSender.CoinJoinWalletBinding.selected = nil
+    }
+
+    func testDrainRunnerKeepsARecipientRefusalWhetherTheStatusStaysPendingOrCannotBeRead() async {
+        for statusRead in [Result<WalletDrainOutcome, Error>.success(Self.pendingDrain(0x91)),
+                           .failure(CoreShieldedDrainService.TestError.contextChanged)] {
+            let (runner, manager) = drainRunner(
+                recorded: Data(repeating: 7, count: 43), markerRecipient: Data(repeating: 8, count: 43),
+                statusRead: statusRead)
+            _ = await runner.resumeCoreDrain(context: Self.drainContext)
+            XCTAssertEqual(manager.calls, 0)
+            XCTAssertEqual(runner.phase, .failed("test failure"), "\(statusRead)")
+            XCTAssertEqual(runner.notice, .failed("test failure"), "\(statusRead)")
+        }
+    }
+
+    func testDrainRunnerStillReportsAFailedResumeOfAPendingDrainAsPending() async {
+        let recipient = Data(repeating: 7, count: 43)
+        let (runner, manager) = drainRunner(
+            recorded: recipient, markerRecipient: recipient, statusRead: .success(Self.pendingDrain(0x92)))
+        manager.error = PlatformWalletError.walletOperation("operation failed")
+        _ = await runner.resumeCoreDrain(context: Self.drainContext)
+        XCTAssertEqual(manager.calls, 1)
+        XCTAssertEqual(runner.phase, .submittedUnconfirmed)
+        XCTAssertEqual(runner.notice, .drainPending)
+    }
+
+    private static let drainContext = CoreShieldedDrainContext(
+        walletId: Data(repeating: 0x61, count: 32), networkScope: "testnet")
+
+    private static func pendingDrain(_ txidByte: UInt8) -> WalletDrainOutcome {
+        WalletDrainOutcome(state: .pending, outpoint: .init(txidWire: Data(repeating: txidByte, count: 32), vout: 0))
+    }
+
+    /// A pending external drain whose lock row records `recorded` and whose
+    /// marker names `markerRecipient`; the status re-read after the resume
+    /// returns `statusRead`.
+    private func drainRunner(recorded: Data, markerRecipient: Data, statusRead: Result<WalletDrainOutcome, Error>)
+        -> (InternalTransferRunner, TestManager) {
+        let manager = TestManager()
+        let coordinator = ShieldedTransferCoordinator(environment: .init(
+            manager: manager, walletId: Self.drainContext.walletId, shieldedRecipient: Data(repeating: 1, count: 43)))
+        let operation = CoreShieldedDrainOperation(
+            id: UUID(), context: Self.drainContext, recipient: .external(raw43: markerRecipient))
+        let outcome = (try? statusRead.get()) ?? Self.pendingDrain(0x90)
+        ShieldedTransferCoordinator.rowLookup = { .operation(operation.id) }
+        ShieldedTransferCoordinator.recordedRecipient = recorded
+        CoreShieldedDrainService.marker = .loaded(operation)
+        CoreShieldedDrainService.context = Self.drainContext
+        CoreShieldedDrainService.resolveManager = { _ in manager }
+        CoreShieldedDrainService.operation = (operation, outcome)
+        CoreShieldedDrainService.statusReads = [statusRead]
+        addTeardownBlock { @MainActor in CoreShieldedDrainService.resolveManager = nil }
+        return (InternalTransferRunner(coordinator), manager)
+    }
+
+    func testResumePaysTheRecipientTheSDKRecordedNotTheWalletsOwn() async {
+        let wallet = Data(repeating: 0x51, count: 32)
+        let recorded = Data(repeating: 7, count: 43)
+        let manager = TestManager()
+        let coordinator = ShieldedTransferCoordinator(environment: .init(
+            manager: manager, walletId: wallet, shieldedRecipient: Data(repeating: 1, count: 43)))
+        ShieldedTransferCoordinator.recordedRecipient = recorded
+        await coordinator.resumeAssetLock(outPointTxidWire: Data(repeating: 0x81, count: 32), outPointVout: 0)
+        XCTAssertEqual(coordinator.authorizations, 1)
+        XCTAssertEqual(manager.calls, 1)
+        XCTAssertEqual(manager.receivedRecipients.map(\.recipientRaw43), [recorded])
+        XCTAssertEqual(coordinator.phase, .success)
+    }
+
+    func testResumeRefusesACallerRecipientThatDiffersFromTheRecordedOne() async {
+        let wallet = Data(repeating: 0x52, count: 32)
+        let manager = TestManager()
+        let coordinator = ShieldedTransferCoordinator(environment: .init(
+            manager: manager, walletId: wallet, shieldedRecipient: Data(repeating: 1, count: 43)))
+        ShieldedTransferCoordinator.recordedRecipient = Data(repeating: 7, count: 43)
+        await coordinator.resumeAssetLock(
+            outPointTxidWire: Data(repeating: 0x82, count: 32), outPointVout: 0,
+            recipientRaw43: Data(repeating: 8, count: 43))
+        XCTAssertEqual(coordinator.authorizations, 0)
+        XCTAssertEqual(manager.calls, 0)
+        XCTAssertEqual(coordinator.phase, .failed("test failure"))
     }
 
     func testPlatformResumePreservesConsumedReportAndRequiresExplicitRecheck() async {

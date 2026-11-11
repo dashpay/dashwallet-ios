@@ -5,10 +5,10 @@ struct CoreShieldedDrainContext: Codable, Equatable, Sendable {
     let networkScope: String
 }
 
-/// Who the drain pays. The SDK does not persist the Orchard recipient of an
-/// asset lock: a resume submits to whatever recipient is passed on that call,
-/// so this is the only durable record of where the lock must go. Every resume
-/// of a drain operation reads it from here.
+/// Who the drain pays. The SDK records the Orchard recipient on the lock's row
+/// before broadcast and enforces it on resume; this marker copy is what a
+/// resume uses for a drain row the SDK tracked before it recorded recipients
+/// (`ShieldedResumeRecipient`), and what the drain toasts read.
 enum CoreShieldedDrainRecipient: Equatable, Sendable {
     /// The wallet's own default Orchard address, re-derived at resume time.
     case ownWallet

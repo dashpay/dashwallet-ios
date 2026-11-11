@@ -5859,6 +5859,9 @@
 /* Raw transaction inspector */
 "This transaction's raw bytes are not stored on this device." = "この取引の生のバイトデータはこの端末に保存されていません。";
 
+/* InternalTransfer recovery: resume recipient differs from the recorded one */
+"This transfer can only be finished to the recipient it was started with. Nothing was sent. Your funds remain locked and safe." = "This transfer can only be finished to the recipient it was started with. Nothing was sent. Your funds remain locked and safe.";
+
 /* Asset-lock retry: unsupported funding route */
 "This transfer can't be retried from here." = "この送金はここから再試行できません。";
 

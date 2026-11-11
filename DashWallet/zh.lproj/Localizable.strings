@@ -5859,6 +5859,9 @@
 /* Raw transaction inspector */
 "This transaction's raw bytes are not stored on this device." = "此交易的原始字节未存储在此设备上。";
 
+/* InternalTransfer recovery: resume recipient differs from the recorded one */
+"This transfer can only be finished to the recipient it was started with. Nothing was sent. Your funds remain locked and safe." = "This transfer can only be finished to the recipient it was started with. Nothing was sent. Your funds remain locked and safe.";
+
 /* Asset-lock retry: unsupported funding route */
 "This transfer can't be retried from here." = "无法从此处重试该转移。";
 

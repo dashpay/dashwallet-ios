@@ -296,6 +296,10 @@ final class InternalTransferRunner: ObservableObject {
         defer { isAwaitingAuthorization = false }
         let service = CoreShieldedDrainService()
         var attemptedResume = false
+        // A refused recipient keeps the failure `apply` showed, whatever the
+        // status re-read says or throws: nothing was sent, and the next resume
+        // is refused the same way.
+        var refusedRecipient = false
         do {
             let lookup: (operation: CoreShieldedDrainOperation, outcome: WalletDrainOutcome)?
             if let operation {
@@ -330,15 +334,17 @@ final class InternalTransferRunner: ObservableObject {
             coordinator.reset()
             phase = .inFlight
             attemptedResume = true
-            // The recipient is the marker's, never re-derived: an external
-            // drain resumed to the wallet's own address would pay the wrong
-            // party, and the SDK does not keep the recipient itself.
+            // The recipient passed is the marker's, never re-derived: the
+            // coordinator refuses it unless it matches the recipient the SDK
+            // recorded on the lock, and pays the marker's for a drain started
+            // before the SDK recorded one.
             await DWIdentityAuthorizer.preauthorized {
                 await coordinator.resumeAssetLock(
                     outPointTxidWire: outpoint.txidWire, outPointVout: outpoint.vout,
                     recipientRaw43: pending.operation.recipient.externalRaw43,
                     expectedDrainContext: context, retryUnverifiedConsumption: true)
             }
+            refusedRecipient = coordinator.lastFailure.map(ShieldedTransferCoordinator.isRecipientMismatch) ?? false
             let status = try await service.status(for: pending.operation)
             if status.drainVerdict == .completed {
                 // A concurrent resume can consume the lock while authorization
@@ -349,15 +355,17 @@ final class InternalTransferRunner: ObservableObject {
                 // (#1230).
                 phase = .success
                 notice = .succeeded
-            } else if case .pending = status.drainVerdict {
+            } else if case .pending = status.drainVerdict, !refusedRecipient {
                 phase = .submittedUnconfirmed
                 notice = .drainPending
             }
             return status
         } catch {
             if attemptedResume {
-                phase = .submittedUnconfirmed
-                notice = .drainPending
+                if !refusedRecipient {
+                    phase = .submittedUnconfirmed
+                    notice = .drainPending
+                }
             } else {
                 phase = .failed(error.localizedDescription)
                 notice = .failed(error.localizedDescription)

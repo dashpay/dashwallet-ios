@@ -14,6 +14,16 @@ enum PlatformWalletError: Error {
     case shieldedSpendUnconfirmed
     case transactionBroadcastUnconfirmed(String)
     case walletOperation(String)
+    case assetLockRecipientMismatch(String)
+}
+struct WalletDrainOutpoint: Sendable {
+    let txidWire: Data
+    let vout: UInt32
+}
+struct WalletDrainOutcome: Sendable {
+    enum State: UInt8, Sendable { case notSent, pending, completed }
+    let state: State
+    let outpoint: WalletDrainOutpoint?
 }
 struct ShieldedFundFromAssetLockRecipient {
     let recipientRaw43: Data
@@ -48,11 +58,29 @@ final class TestManager {
 struct CoreShieldedDrainService {
     enum TestError: Error { case contextChanged }
     static var marker: CoreShieldedDrainMarkerLookup = .unavailable
-    func markerLookup() -> (CoreShieldedDrainMarkerLookup, CoreShieldedDrainContext?) { (Self.marker, nil) }
+    /// The wallet/network context the service reports; `nil` reads as a
+    /// wallet that is not ready, as in production.
+    static var context: CoreShieldedDrainContext?
+    func markerLookup() -> (CoreShieldedDrainMarkerLookup, CoreShieldedDrainContext?) { (Self.marker, Self.context) }
+    static func currentContext() throws -> CoreShieldedDrainContext {
+        guard let context else { throw TestError.contextChanged }
+        return context
+    }
     static var resolveManager: ((CoreShieldedDrainContext) throws -> TestManager)?
     func manager(for context: CoreShieldedDrainContext) throws -> TestManager {
         guard let resolveManager = Self.resolveManager else { throw TestError.contextChanged }
         return try resolveManager(context)
+    }
+    /// The drain the runner looks up, and what each later status read returns.
+    static var operation: (operation: CoreShieldedDrainOperation, outcome: WalletDrainOutcome)?
+    static var statusReads: [Result<WalletDrainOutcome, Error>] = []
+    func operationStatus(_ context: CoreShieldedDrainContext) async throws
+        -> (operation: CoreShieldedDrainOperation, outcome: WalletDrainOutcome)? {
+        Self.operation
+    }
+    func status(for operation: CoreShieldedDrainOperation) async throws -> WalletDrainOutcome {
+        guard !Self.statusReads.isEmpty else { preconditionFailure("Test must supply each drain status read") }
+        return try Self.statusReads.removeFirst().get()
     }
 }
 @MainActor
@@ -71,12 +99,12 @@ extension Notification.Name {
 @MainActor
 final class ShieldedTransferCoordinator {
     enum CoordinatorError: Error {
-        case transferFailed(Error), assetLockInFlight, walletReloading, authCancelled, drainRecipientUnavailable, drainRecipientUnknown, noWallet, addressFundingFeeUnavailable
+        case transferFailed(Error), assetLockInFlight, walletReloading, authCancelled, drainRecipientUnavailable, drainRecipientUnknown, resumeRecipientMismatch, noWallet, addressFundingFeeUnavailable
         var errorDescription: String? { "Authentication cancelled" }
     }
     enum Phase: Equatable {
-        case idle, signing, proving, broadcasting, success, submittedUnconfirmed, failed(String)
-        var isInFlight: Bool { self == .signing || self == .proving || self == .broadcasting }
+        case idle, signing, locking, proving, broadcasting, success, submittedUnconfirmed, failed(String)
+        var isInFlight: Bool { self == .signing || self == .locking || self == .proving || self == .broadcasting }
     }
     enum ResumeReport { case alreadyConsumed }
     struct Environment {
@@ -86,10 +114,17 @@ final class ShieldedTransferCoordinator {
         var network: String { "testnet" }
         var modelContainer: Void { () }
     }
+    struct ResumeRow {
+        let identity: CoreShieldedDrainRowIdentity
+        let recordedRecipientRaw43: Data?
+    }
     static var rowLookup: (() -> CoreShieldedDrainRowIdentity?)?
-    static func drainRowIdentity(outPointTxidWire: Data, vout: UInt32, walletId: Data, in container: Void) -> CoreShieldedDrainRowIdentity? {
+    /// The recipient the SDK recorded on the row; `nil` for a row tracked
+    /// before the SDK recorded recipients.
+    static var recordedRecipient: Data?
+    static func resumeRow(outPointTxidWire: Data, vout: UInt32, walletId: Data, in container: Void) -> ResumeRow? {
         guard let rowLookup else { preconditionFailure("Test must configure the asset-lock row") }
-        return rowLookup()
+        return rowLookup().map { ResumeRow(identity: $0, recordedRecipientRaw43: recordedRecipient) }
     }
     typealias BasicEnvironment = Environment
     var basicEnvironmentOverride: Environment?
@@ -99,8 +134,13 @@ final class ShieldedTransferCoordinator {
     let failureStore = AssetLockFailureStore(defaults: UserDefaults(suiteName: "RecoveryHarness." + UUID().uuidString)!)
     static let logger = Logger(subsystem: "RecoveryHarness", category: "test")
     var phase: Phase = .idle {
-        didSet { if !phase.isInFlight { releaseInFlightOutPoint() } }
+        didSet {
+            if !phase.isInFlight { releaseInFlightOutPoint() }
+            onPhaseChange?(phase)
+        }
     }
+    var onPhaseChange: ((Phase) -> Void)?
+    var inputLimitCheck: AssetLockInputLimit.Check? { nil }
     var inFlightOutPoint: ShieldedAssetLocksInFlight.OutPoint?
     static let drainSettleTimeout: TimeInterval = 30
     var lastResumeReport: ResumeReport?
@@ -120,6 +160,7 @@ final class ShieldedTransferCoordinator {
     }
     func stopAssetLockPolling() {}
     func handleFailure(_ error: Error) {
+        lastFailure = error
         phase = .failed(error is CancellationError ? CoordinatorError.authCancelled.errorDescription! : "test failure")
     }
     enum Funding { case coinJoinDrain }
@@ -186,6 +227,48 @@ final class ShieldedTransferCoordinator {
     func onCancel() { cancellations += 1 }
     func confirm() { confirmations += 1 }
     // SEND_RETRY
+}
+
+// The Max drain runner's resume and its mirroring of the coordinator's phase
+// are production methods; authorization and request metadata are fakes.
+struct InternalTransferRequest {
+    enum Kind { case route(Int) }
+    let kind: Kind
+    var coreShieldedDrain: Int?
+}
+@MainActor final class RunnerAuthorizer {
+    var authorizations = 0
+    func authorize() async throws { authorizations += 1 }
+}
+enum DWIdentityAuthorizer {
+    static func preauthorized<T>(_ body: () async -> T) async -> T { await body() }
+}
+@MainActor final class InternalTransferRunner {
+    var phase: Phase = .idle
+    var notice: Notice?
+    var request: InternalTransferRequest?
+    var isAwaitingAuthorization = false
+    var isCoreDrainRecovery = false
+    let coordinator: ShieldedTransferCoordinator
+    let authorizer = RunnerAuthorizer()
+    init(_ coordinator: ShieldedTransferCoordinator) {
+        self.coordinator = coordinator
+        coordinator.onPhaseChange = { [weak self] in self?.apply($0) }
+    }
+    func notePlatformShieldCapacityChange() {}
+    // RUNNER_RESUME
+}
+
+// Input-limit edge: no recovery test exceeds it, and the coordinator's only
+// envelope is `transferFailed`.
+enum AssetLockInputLimit {
+    struct Check: Equatable {}
+    static func innermost(_ error: Error) -> Error {
+        if case ShieldedTransferCoordinator.CoordinatorError.transferFailed(let underlying) = error {
+            return innermost(underlying)
+        }
+        return error
+    }
 }
 
 @MainActor enum SwiftDashSDKTransactionSender {
