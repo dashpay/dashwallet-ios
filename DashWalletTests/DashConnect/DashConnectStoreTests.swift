@@ -22,29 +22,14 @@ final class DashConnectStoreTests: XCTestCase {
     func testRoundTripPreservesConnections() {
         let store = makeStore(network: .testnet, walletIdHex: "wallet-a")
         let connections = [
-            sampleConnection(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", status: .approved, updatedAt: Date(timeIntervalSince1970: 10)),
+            sampleConnection(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", status: .confirming, updatedAt: Date(timeIntervalSince1970: 10)),
             sampleConnection(id: "7W6u4NgW63FPUuW8EnTbYzD4KybNQD5n7CUDWydJY234", name: "DashGet", url: "dashget.app", status: .active, updatedAt: Date(timeIntervalSince1970: 20)),
-            sampleConnection(id: "AaC695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNgA9Z", name: "PayKit", url: "paykit.dev", status: .approved, updatedAt: Date(timeIntervalSince1970: 30)),
+            sampleConnection(id: "AaC695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNgA9Z", name: "PayKit", url: "paykit.dev", status: .confirming, updatedAt: Date(timeIntervalSince1970: 30)),
         ]
 
         store.save(connections)
 
         XCTAssertEqual(store.load(), connections)
-    }
-
-    func testRoundTripKeepsWhichLoginMadeAConnection() {
-        let store = makeStore(network: .testnet, walletIdHex: "wallet-a")
-        var oneQR = sampleConnection(
-            id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", status: .active,
-            updatedAt: Date(timeIntervalSince1970: 10))
-        oneQR.loginKind = .oneQR
-        let twoQR = sampleConnection(
-            id: "7W6u4NgW63FPUuW8EnTbYzD4KybNQD5n7CUDWydJY234", status: .active,
-            updatedAt: Date(timeIntervalSince1970: 20))
-
-        store.save([oneQR, twoQR])
-
-        XCTAssertEqual(store.load().map(\.loginKind), [.oneQR, .twoQR])
     }
 
     func testUnknownStatusDropsOnlyThatRow() throws {
@@ -54,7 +39,7 @@ final class DashConnectStoreTests: XCTestCase {
                 "contractId": "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F",
                 "label": "Yappr",
                 "url": "yap.pr",
-                "status": "approved",
+                "status": "confirming",
                 "updatedAt": 1_773_132_300_000
             ],
             [
@@ -70,8 +55,37 @@ final class DashConnectStoreTests: XCTestCase {
 
         XCTAssertEqual(
             store.load(),
-            [sampleConnection(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", status: .approved, updatedAt: Date(timeIntervalSince1970: 1_773_132_300))]
+            [sampleConnection(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", status: .confirming, updatedAt: Date(timeIntervalSince1970: 1_773_132_300))]
         )
+    }
+
+    func testWhereAccessWasSeenRoundTripsAndAnOlderRowReadsWithNone() throws {
+        let store = makeStore(network: .testnet, walletIdHex: "wallet-a")
+        let row = DAppConnection(
+            id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", name: "Yappr", url: "yap.pr", status: .active,
+            updatedAt: Date(timeIntervalSince1970: 10), seenOn: ["identity-a"])
+        store.save([row])
+        XCTAssertEqual(store.load().first?.seenOn, ["identity-a"])
+
+        let older: [[String: Any]] = [
+            ["contractId": "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", "label": "Yappr", "url": "yap.pr",
+             "status": "active", "updatedAt": 1_773_132_300_000],
+        ]
+        defaults.set(try JSONSerialization.data(withJSONObject: older), forKey: try XCTUnwrap(store.storageKey))
+        XCTAssertEqual(store.load().map(\.seenOn), [[]])
+    }
+
+    func testARowOfTheRemovedApprovedStatusIsDroppedAndTheOthersKept() throws {
+        let store = makeStore(network: .testnet, walletIdHex: "wallet-a")
+        let payload: [[String: Any]] = [
+            ["contractId": "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", "label": "Yappr", "url": "yap.pr",
+             "status": "approved", "updatedAt": 1_773_132_300_000],
+            ["contractId": "7W6u4NgW63FPUuW8EnTbYzD4KybNQD5n7CUDWydJY234", "label": "DashGet", "url": "dashget.app",
+             "status": "active", "updatedAt": 1_773_218_700_000],
+        ]
+        defaults.set(try JSONSerialization.data(withJSONObject: payload), forKey: try XCTUnwrap(store.storageKey))
+
+        XCTAssertEqual(store.load().map(\.id), ["7W6u4NgW63FPUuW8EnTbYzD4KybNQD5n7CUDWydJY234"])
     }
 
     func testMalformedRowIsDropped() throws {
@@ -81,13 +95,13 @@ final class DashConnectStoreTests: XCTestCase {
                 "contractId": "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F",
                 "label": "Yappr",
                 "url": "yap.pr",
-                "status": "approved",
+                "status": "confirming",
                 "updatedAt": 1_773_132_300_000
             ],
             [
                 "label": "Broken",
                 "url": "broken.app",
-                "status": "approved",
+                "status": "confirming",
                 "updatedAt": 1_773_132_300_000
             ],
         ]
@@ -120,7 +134,7 @@ final class DashConnectStoreTests: XCTestCase {
 
     func testSavingEmptyArrayClearsStore() throws {
         let store = makeStore(network: .testnet, walletIdHex: "wallet-a")
-        store.save([sampleConnection(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", status: .approved, updatedAt: Date(timeIntervalSince1970: 10))])
+        store.save([sampleConnection(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", status: .confirming, updatedAt: Date(timeIntervalSince1970: 10))])
 
         store.save([])
 
@@ -131,7 +145,7 @@ final class DashConnectStoreTests: XCTestCase {
     func testNetworksAreIsolated() throws {
         let testnetStore = makeStore(network: .testnet, walletIdHex: "wallet-a")
         let mainnetStore = makeStore(network: .mainnet, walletIdHex: "wallet-a")
-        let testnetConnection = sampleConnection(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", status: .approved, updatedAt: Date(timeIntervalSince1970: 10))
+        let testnetConnection = sampleConnection(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", status: .confirming, updatedAt: Date(timeIntervalSince1970: 10))
         let mainnetConnection = sampleConnection(id: "7W6u4NgW63FPUuW8EnTbYzD4KybNQD5n7CUDWydJY234", status: .active, updatedAt: Date(timeIntervalSince1970: 20))
 
         testnetStore.save([testnetConnection])
@@ -147,7 +161,7 @@ final class DashConnectStoreTests: XCTestCase {
     func testWalletIdsAreIsolated() {
         let walletAStore = makeStore(network: .testnet, walletIdHex: "wallet-a")
         let walletBStore = makeStore(network: .testnet, walletIdHex: "wallet-b")
-        let walletAConnection = sampleConnection(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", status: .approved, updatedAt: Date(timeIntervalSince1970: 10))
+        let walletAConnection = sampleConnection(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", status: .confirming, updatedAt: Date(timeIntervalSince1970: 10))
 
         walletAStore.save([walletAConnection])
 
@@ -167,7 +181,7 @@ final class DashConnectStoreTests: XCTestCase {
 
         XCTAssertEqual(second.connectionsSnapshot.count, 1)
         XCTAssertEqual(second.connectionsSnapshot.first?.id, "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F")
-        XCTAssertEqual(second.connectionsSnapshot.first?.status, .approved)
+        XCTAssertEqual(second.connectionsSnapshot.first?.status, .active)
     }
 
     func testRemovePersistsAcrossFreshMockInstances() async throws {
@@ -182,7 +196,7 @@ final class DashConnectStoreTests: XCTestCase {
         XCTAssertEqual(second.connectionsSnapshot, [])
     }
 
-    func testDisconnectPersistsApprovedStatusAcrossFreshMockInstances() async throws {
+    func testDisconnectRemovesTheRowAcrossFreshMockInstances() async throws {
         let store = makeStore(network: .testnet, walletIdHex: "wallet-a")
         let first = MockDashConnectDataSource(
             initial: [
@@ -195,12 +209,10 @@ final class DashConnectStoreTests: XCTestCase {
             store: store
         )
 
-        try await first.disconnect(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", scope: nil)
+        try await first.disconnect(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", scope: nil, includingUnrecorded: false)
 
         let second = MockDashConnectDataSource(store: store)
-        XCTAssertEqual(second.connectionsSnapshot.count, 1)
-        XCTAssertEqual(second.connectionsSnapshot.first?.id, "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F")
-        XCTAssertEqual(second.connectionsSnapshot.first?.status, .approved)
+        XCTAssertEqual(second.connectionsSnapshot, [])
     }
 
     func testMainnetAndTestnetKeysAreUnchanged() {
@@ -215,7 +227,7 @@ final class DashConnectStoreTests: XCTestCase {
         let devnetB = makeStore(network: .devnet, walletIdHex: "wallet-a", devnetName: "paloma")
         let connection = sampleConnection(
             id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F",
-            status: .approved,
+            status: .confirming,
             updatedAt: Date(timeIntervalSince1970: 10))
 
         devnetA.save([connection])
@@ -264,7 +276,7 @@ final class DashConnectStoreTests: XCTestCase {
         let store = makeStore(network: .devnet, walletIdHex: "wallet-a", devnetName: nil)
         store.save([sampleConnection(
             id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F",
-            status: .approved,
+            status: .confirming,
             updatedAt: Date(timeIntervalSince1970: 10))])
 
         XCTAssertNil(store.storageKey)

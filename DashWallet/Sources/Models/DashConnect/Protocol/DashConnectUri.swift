@@ -80,17 +80,15 @@ enum DashConnectUri {
     /// `dash-key:` is fully specified: version + compressed point + contract id
     /// + label length + label.
     ///
-    /// `dash-st:` carries one `IdentityUpdateTransition` that adds the two
-    /// login keys: identity id, revision, nonce, two key entries with their
-    /// contract bounds and per-key signatures, and the transition signature —
-    /// well under a kilobyte. The ceiling is deliberately not Platform's own
-    /// state-transition limit, which is far larger than this format ever needs
-    /// and which the decode below cannot afford: its cost is quadratic in the
-    /// encoded length, so a 32 KiB ceiling would admit a ~44,800-character body
-    /// worth ~1.5 billion inner iterations — seconds of CPU per link, from any
-    /// installed app. 4 KiB costs ~23 million, tens of milliseconds, and still
-    /// leaves several times the headroom a longer key form or an added field
-    /// would need.
+    /// `dash-st:` carries the one state transition the wallet takes, a token
+    /// purchase — well under a kilobyte. The ceiling is deliberately not
+    /// Platform's own state-transition limit, which is far larger than this
+    /// format ever needs and which the decode below cannot afford: its cost
+    /// is quadratic in the encoded length, so a 32 KiB ceiling would admit a
+    /// ~44,800-character body worth ~1.5 billion inner iterations — seconds
+    /// of CPU per link, from any installed app. 4 KiB costs ~23 million, tens
+    /// of milliseconds, and still leaves several times the headroom an added
+    /// field would need.
     private static let maxKeyPayloadLength = minKeyPayloadLength + maxLabelLength
     private static let maxStPayloadLength = 4 * 1024
     /// The largest App Connect request the format defines today (a 64-byte

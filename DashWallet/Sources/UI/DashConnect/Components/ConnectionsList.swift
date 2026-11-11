@@ -20,12 +20,10 @@
 import DashUIKit
 import SwiftUI
 
-/// The populated state: every connection stacked in one card. Rows carry their
-/// own status-specific content, so this only owns the card chrome and scroll.
+/// The populated state: every connection stacked in one card. This owns the
+/// card chrome and scroll.
 struct ConnectionsList: View {
     let connections: [DAppConnection]
-    let onScanQR: () -> Void
-    let onMockScan: () -> Void
     let onDisconnect: (DAppConnection) -> Void
 
     var body: some View {
@@ -34,8 +32,6 @@ struct ConnectionsList: View {
                 ForEach(connections) { connection in
                     ConnectionRow(
                         connection: connection,
-                        onPrimaryAction: onScanQR,
-                        onMockScan: onMockScan,
                         onDisconnect: { onDisconnect(connection) }
                     )
                 }
@@ -56,8 +52,6 @@ struct ConnectionsList: View {
                 updatedAt: Date()
             )
         },
-        onScanQR: {},
-        onMockScan: {},
         onDisconnect: { _ in }
     )
     .padding(20)
