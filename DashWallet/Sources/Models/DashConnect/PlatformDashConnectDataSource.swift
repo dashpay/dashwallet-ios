@@ -679,7 +679,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         do {
             // The request's age is judged by the block time of a proved read.
             let (snapshot, _) = try await identitySnapshot(context: context)
-            var plan = try AppConnect.grantPlan(for: uri, now: now(), blockTimeMs: snapshot.platformTime)
+            var plan = try AppConnect.grantPlan(for: uri, blockTimeMs: snapshot.platformTime)
             plan.brandHost = DashConnectFallbackAppMetadata.brandHost(contractId: plan.appId.toBase58String())
             if let hint = plan.identityHint, hint != context.identityId {
                 return (.refused(AppConnect.Refusal(.invalid, NSLocalizedString(
@@ -987,20 +987,30 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     }
 
     /// Throws `identityReadBehind` when the proved keys lack a key of the
-    /// wallet's copy, or show enabled a key the copy has turned off: a node
-    /// that answered from before the change the copy already has. Newer keys
-    /// in the proved read are fine.
+    /// wallet's copy, show enabled a key the copy has turned off, or show a
+    /// lower budget or an earlier expiry than the copy: a node that answered
+    /// from before the change the copy already has. Platform only ever raises
+    /// a key's limits, and without a new identity revision, so the revision
+    /// cannot tell. Newer keys in the proved read are fine.
     static func requireKeysNotBehind(
         copy: [ManagedIdentity.IdentityPublicKeyInfo],
         proved: [ManagedIdentity.IdentityPublicKeyInfo]
     ) throws {
         let provedById = Dictionary(proved.map { ($0.keyId, $0) }, uniquingKeysWith: { first, _ in first })
         for key in copy {
-            guard let seen = provedById[key.keyId], key.disabledAt == nil || seen.disabledAt != nil else {
+            guard let seen = provedById[key.keyId], key.disabledAt == nil || seen.disabledAt != nil,
+                  !Self.isLower(seen.totalBudget, than: key.totalBudget),
+                  !Self.isLower(seen.expiresAt, than: key.expiresAt) else {
                 Self.logger.error("🔗 DASHCONNECT :: the keys read is behind the wallet's copy")
                 throw DashConnectPlatformError.identityReadBehind
             }
         }
+    }
+
+    /// Whether the limit `proved` is below `copy`, both set.
+    private static func isLower<Limit: Comparable>(_ proved: Limit?, than copy: Limit?) -> Bool {
+        guard let proved, let copy else { return false }
+        return proved < copy
     }
 
     /// The snapshot of one proved keys read: every key Platform holds for the

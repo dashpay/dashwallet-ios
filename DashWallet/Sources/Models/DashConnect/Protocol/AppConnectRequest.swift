@@ -19,7 +19,7 @@ enum AppConnectRequestError: Error, Equatable {
 /// the known types only the two bindings repeat. Integers are big-endian.
 ///
 /// This type only decodes and checks the format. The rules a wallet applies
-/// before it grants what a request asks for are `AppConnect.grantPlan(for:now:)`.
+/// before it grants what a request asks for are `AppConnect.grantPlan(for:blockTimeMs:)`.
 struct AppConnectRequest: Equatable {
     /// Wire tags, equal to Platform's `ContractBounds` bincode tags.
     enum BindingKind: UInt8 {
