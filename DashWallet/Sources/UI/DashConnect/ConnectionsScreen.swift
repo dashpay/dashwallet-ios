@@ -34,8 +34,6 @@ struct ConnectionsScreen: View {
         _viewModel = StateObject(wrappedValue: viewModel ?? ConnectionsViewModel())
     }
 
-    @State private var showsFundingLimitsInfo = false
-
     var body: some View {
         ZStack {
             VStack(alignment: .leading, spacing: 0) {
@@ -90,7 +88,6 @@ struct ConnectionsScreen: View {
             }
         }
         .sheet(item: shownConnectionBinding, onDismiss: {
-            showsFundingLimitsInfo = false
             viewModel.connectionSheetDismissed()
         }) { item in
             connectionSheet(for: item)
@@ -142,10 +139,7 @@ struct ConnectionsScreen: View {
             item: item,
             details: viewModel.shownDetails,
             detailsFailed: viewModel.shownDetailsFailed,
-            granted: viewModel.shownGrantedLines,
             withheld: viewModel.shownWithheldLines,
-            funding: viewModel.shownFundingLines,
-            fundingFailed: viewModel.shownFundingFailed,
             connectedAt: viewModel.shownConnectedAt,
             isBusy: viewModel.isDisconnecting,
             message: viewModel.connectionSheetMessage,
@@ -156,17 +150,9 @@ struct ConnectionsScreen: View {
                 viewModel.hideConnection()
             },
             takeDisconnectQuestion: viewModel.takeDisconnectQuestion,
-            disconnectQuestion: viewModel.disconnectQuestion,
-            onShowFundingLimitsInfo: { showsFundingLimitsInfo = true }
+            disconnectQuestion: viewModel.disconnectQuestion
         )
         .presentationDragIndicator(.visible)
-        .sheet(isPresented: $showsFundingLimitsInfo) {
-            FundingLimitsInfoSheet(onClose: { showsFundingLimitsInfo = false })
-                // Starts at the tallest it may be, so the first measurement
-                // is of the whole text; the sheet then settles at its height.
-                .selfSizingSheet(fallback: .greatestFiniteMagnitude, background: Color.dash.secondaryBackground)
-                .presentationDragIndicator(.visible)
-        }
     }
 
     private func approveSheet(for request: ConnectionRequest) -> some View {

@@ -106,17 +106,15 @@ extension AppConnect {
         }
     }
 
-    /// What an approval gives an app, as the approval sheet and the
-    /// connection sheet list it.
+    /// What an approval gives an app, as the approval sheet lists it.
     struct GrantedAccess: Equatable {
         struct Key: Equatable {
             let bound: StoredBound
             let isCritical: Bool
             /// `nil` for a key with no spending limit.
             let totalBudget: UInt64?
-            /// Milliseconds since the epoch; `nil` for a key with no expiry,
-            /// which only a key no intent names can be.
-            let expiresAt: UInt64?
+            /// Milliseconds since the epoch.
+            let expiresAt: UInt64
             /// The key's group has administrators who can add contracts to it.
             let isAdministered: Bool
         }
@@ -140,59 +138,6 @@ extension AppConnect {
                         expiresAt: $0.expiresAt, isAdministered: plan.administeredGroupIds.contains($0.binding.id))
                 },
                 receivesMessages: receivesMessages)
-        }
-
-        /// What `intents` gave, in their order: the auth keys each one adds,
-        /// with the terms it submitted them with, a key two intents name
-        /// once. An intent always names a bound and an expiry for an auth
-        /// key; one without is not listed.
-        init(intents: [ConnectionIntent]) {
-            self.init(intents: intents, snapshot: nil)
-        }
-
-        /// `init(intents:)` as the keys on Platform give it, when `snapshot`
-        /// read them: a key that landed gives the limits Platform holds now,
-        /// which an authorized limits update may have raised; a disabled key,
-        /// or one whose id another key holds, gives nothing; a key not there
-        /// yet gives its submitted terms while its intent may still land.
-        /// `unrecorded`: keys on `snapshot` the projection gives the app that
-        /// no intent names, with the limits Platform holds; a group's admins
-        /// are not known for them, so not said.
-        init(intents: [ConnectionIntent], snapshot: IdentitySnapshot?, unrecorded: [PlatformKey] = []) {
-            var listed = Set<UInt32>()
-            self.init(
-                keys: intents.flatMap { intent in
-                    let mayLand = snapshot.map { AppConnect.status(of: intent, in: $0) == .confirming } ?? true
-                    return intent.authKeys.compactMap { key -> Key? in
-                        guard let bound = key.bound, let submittedExpiry = key.expiresAt else { return nil }
-                        var expiresAt: UInt64? = submittedExpiry
-                        var totalBudget = key.totalBudget
-                        if let snapshot {
-                            switch AppConnect.presence(of: key, in: snapshot) {
-                            case .live, .expired:
-                                let actual = snapshot.keys.first { $0.id == key.id }
-                                totalBudget = actual?.totalBudget
-                                expiresAt = actual?.expiresAt
-                            case .missing:
-                                guard mayLand else { return nil }
-                            case .disabled, .conflicting:
-                                return nil
-                            }
-                        }
-                        guard listed.insert(key.id).inserted else { return nil }
-                        return Key(
-                            bound: bound, isCritical: key.securityLevel == .critical, totalBudget: totalBudget,
-                            expiresAt: expiresAt, isAdministered: intent.isAdministered(bound))
-                    }
-                } + unrecorded.compactMap { key -> Key? in
-                    guard let bound = key.bound, listed.insert(key.id).inserted else { return nil }
-                    return Key(
-                        bound: bound, isCritical: key.securityLevel == .critical, totalBudget: key.totalBudget,
-                        expiresAt: key.expiresAt, isAdministered: false)
-                },
-                receivesMessages: intents.contains { intent in
-                    !intent.sentEncryptionKeyIds.isEmpty || intent.keys.contains { !$0.isAuthentication }
-                })
         }
     }
 

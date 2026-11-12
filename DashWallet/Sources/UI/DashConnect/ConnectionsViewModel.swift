@@ -75,42 +75,6 @@ final class ConnectionsViewModel: ObservableObject {
     /// it could not be read (`shownDetailsFailed`).
     @Published private(set) var shownDetails: ConnectionDetails?
     @Published private(set) var shownDetailsFailed = false
-    /// The lines of what the shown connection's app was given and was not;
-    /// `nil` while unknown.
-    var shownGrantedLines: [String]? {
-        guard let item = shownConnection, let access = shownDetails?.access else { return nil }
-        return DashConnectPermissionText.granted(access.granted, appLabel: item.name)
-    }
-
-    /// Each of the shown connection's keys with what is left of its budget,
-    /// as the sheet lists them; `nil` while unknown or not read.
-    var shownFundingLines: [(title: String, value: String)]? {
-        guard let funding = shownDetails?.keyFunding else { return nil }
-        return funding.map { key in
-            let title = key.isProfileKey
-                ? NSLocalizedString("DashPay profile key", comment: "DashConnect connection sheet: a key's budget line")
-                : NSLocalizedString("App key", comment: "DashConnect connection sheet: a key's budget line")
-            guard let total = key.totalBudget else {
-                return (title, NSLocalizedString(
-                    "No limit", comment: "DashConnect connection sheet: a key with no spending limit"))
-            }
-            guard let remaining = key.remaining else {
-                return (title, String(
-                    format: NSLocalizedString(
-                        "Maximum of %@", comment: "DashConnect connection sheet: an amount with its unit, e.g. 0.5 DASH"),
-                    PlatformCreditsFormatter.dashString(total)))
-            }
-            return (title, String(
-                format: NSLocalizedString(
-                    "%1$@ left of %2$@",
-                    comment: "DashConnect connection sheet: what is left of a key's budget, then the budget; amounts with units"),
-                PlatformCreditsFormatter.dashString(remaining), PlatformCreditsFormatter.dashString(total)))
-        }
-    }
-
-    /// Platform could not be read for what is left of the keys' budgets.
-    var shownFundingFailed: Bool { shownDetails?.fundingReadFailed == true }
-
     /// When the shown connection was made.
     var shownConnectedAt: Date? {
         shownDetails?.connectedAt

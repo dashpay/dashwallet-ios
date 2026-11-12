@@ -1451,39 +1451,16 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
         }
     }
 
-    func testTheSheetListsWhatIsLeftOfEachKey() async {
-        let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)])
-        spy.details = ConnectionDetails(
-            appId: "app", identityId: "identity", username: nil, access: nil,
-            connectedAt: Date(timeIntervalSince1970: 1_000),
-            keyFunding: [
-                KeyFunding(isProfileKey: false, totalBudget: 50_000_000_000, remaining: 20_000_000_000),
-                KeyFunding(isProfileKey: true, totalBudget: 200_000_000, remaining: nil),
-                KeyFunding(isProfileKey: false, totalBudget: nil, remaining: nil),
-            ])
-        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
-        await waitUntil { !viewModel.connections.isEmpty }
-        viewModel.showConnection(viewModel.rows[0])
-        await waitUntil { viewModel.shownDetails != nil }
-        let lines = viewModel.shownFundingLines
-        XCTAssertEqual(lines?.map(\.title), ["App key", "DashPay profile key", "App key"])
-        let dash: (UInt64) -> String = PlatformCreditsFormatter.dashString
-        XCTAssertEqual(lines?[0].value, "\(dash(20_000_000_000)) left of \(dash(50_000_000_000))")
-        XCTAssertEqual(lines?[1].value, "Maximum of \(dash(200_000_000))", "Platform did not say what is left")
-        XCTAssertEqual(lines?[2].value, "No limit")
-        XCTAssertEqual(viewModel.shownConnectedAt, Date(timeIntervalSince1970: 1_000))
-    }
-
     func testADetailsReadFromBeforeTheSheetOpenedAgainIsNotShown() async {
         let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)])
-        spy.details = ConnectionDetails(appId: "app", identityId: "identity", username: "before", access: nil)
+        spy.details = ConnectionDetails(appId: "app", identityId: "identity", username: "before")
         spy.detailsDelay = 200_000_000
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
         await waitUntil { !viewModel.connections.isEmpty }
         viewModel.showConnection(viewModel.rows[0])
         viewModel.hideConnection()
 
-        spy.details = ConnectionDetails(appId: "app", identityId: "identity", username: "after", access: nil)
+        spy.details = ConnectionDetails(appId: "app", identityId: "identity", username: "after")
         spy.detailsDelay = 0
         viewModel.showConnection(viewModel.rows[0])
         await waitUntil { viewModel.shownDetails != nil }
@@ -1495,13 +1472,13 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
 
     func testTheSheetReadsItsDetailsAgainWhenTheRowsArePublishedUnchanged() async {
         let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)])
-        spy.details = ConnectionDetails(appId: "app", identityId: "identity", username: "before", access: nil)
+        spy.details = ConnectionDetails(appId: "app", identityId: "identity", username: "before")
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
         await waitUntil { !viewModel.connections.isEmpty }
         viewModel.showConnection(viewModel.rows[0])
         await waitUntil { viewModel.shownDetails?.username == "before" }
 
-        spy.details = ConnectionDetails(appId: "app", identityId: "identity", username: "renewed", access: nil)
+        spy.details = ConnectionDetails(appId: "app", identityId: "identity", username: "renewed")
         spy.sendRows([Self.row("app", .active)])
         await waitUntil { viewModel.shownDetails?.username == "renewed" }
         XCTAssertEqual(viewModel.shownDetails?.username, "renewed", "another grant of the same app, same status")
@@ -1583,7 +1560,7 @@ private final class ConnectionStatusSpy: DashConnectDataSource {
         // started.
         let (answer, delay) = lock.withLock { storedDetailReads += 1; return (details, detailsDelay) }
         if delay > 0 { try? await Task.sleep(nanoseconds: delay) }
-        return answer ?? ConnectionDetails(appId: id, identityId: "identity", username: "bob", access: nil)
+        return answer ?? ConnectionDetails(appId: id, identityId: "identity", username: "bob")
     }
 
     func sendRows(_ value: [DAppConnection]) { rows.send(value) }
