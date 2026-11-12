@@ -2126,20 +2126,40 @@ class SwiftDashSDKWalletSource: TransactionSource {
         coreTransactions: [Transaction] = []
     ) -> [ShieldedActivityItem] {
         guard let (container, walletId) = hostHandles() else { return [] }
-        let ownShieldedRaw43: Data? = onMain {
-            guard let manager = SwiftDashSDKHost.shared.manager else { return nil }
-            return ((try? manager.shieldedDefaultAddress(walletId: walletId)) ?? nil)
-        }
-        return fetchShieldedActivity(container: container, walletId: walletId,
-                                     coreTransactions: coreTransactions, ownShieldedRaw43: ownShieldedRaw43)
+        return fetchShieldedActivity(
+            container: container, walletId: walletId, coreTransactions: coreTransactions,
+            ownShieldedRecipients: { recipients in
+                // One main-thread hop per fetch: the SDK manager is main-actor
+                // isolated and each answer blocks on the FFI.
+                onMain {
+                    guard let manager = SwiftDashSDKHost.shared.manager else { return [] }
+                    return recipients.filter {
+                        (try? manager.isOwnShieldedAddress(
+                            walletId: walletId, account: $0.account, raw43: $0.raw43)) == true
+                    }
+                }
+            })
+    }
+
+    /// A shielded Sent row's recipient on the account that sent it — what the
+    /// own-address check answers for.
+    struct ShieldedRecipient: Hashable {
+        let account: UInt32
+        let raw43: Data
     }
 
     /// Explicit snapshot inputs keep the persistence reader usable without starting the wallet runtime.
+    ///
+    /// `ownShieldedRecipients` is called at most once per fetch, with every
+    /// distinct 43-byte recipient of a Sent row that no Received row matches,
+    /// and returns those that are one of the wallet's own shielded addresses
+    /// (default or fresh) on that account. A recipient left out — not own, or
+    /// unknown — shows its rows as external.
     static func fetchShieldedActivity(
         container: ModelContainer,
         walletId: Data,
         coreTransactions: [Transaction] = [],
-        ownShieldedRaw43: Data? = nil,
+        ownShieldedRecipients: (Set<ShieldedRecipient>) -> Set<ShieldedRecipient> = { _ in [] },
         withdrawalStore: ShieldedWithdrawalStore = .shared
     ) -> [ShieldedActivityItem] {
         let context = ModelContext(container)
@@ -2165,6 +2185,15 @@ class SwiftDashSDKWalletSource: TransactionSource {
                 byEntry[row.entryId] = row
             }
         }
+
+        let unmatchedRecipients = Set(byEntry.values.lazy
+            .filter {
+                $0.kindTag == ShieldedActivityItem.Kind.sent.rawValue
+                    && !receivedEntryIds.contains($0.entryId)
+                    && $0.counterparty.count == 43
+            }
+            .map { ShieldedRecipient(account: $0.accountIndex, raw43: $0.counterparty) })
+        let ownRecipients = unmatchedRecipients.isEmpty ? [] : ownShieldedRecipients(unmatchedRecipients)
 
         let noteValueByCmx = shieldedNoteValueByCmx(in: context, walletId: walletId)
         let outgoingNoteValueByCmx = outgoingShieldedNoteValueByCmx(in: context, walletId: walletId)
@@ -2295,11 +2324,13 @@ class SwiftDashSDKWalletSource: TransactionSource {
                 // name where the money went instead of a bare "Sent /
                 // Shielded". External only when the destination is provably
                 // not the wallet's own: an intra-wallet transfer leaves a
-                // Received row under the same entry id, and a send to the
-                // wallet's default Orchard address is its own funds either way.
+                // Received row under the same entry id, and a send to any of
+                // the wallet's own Orchard addresses (default or fresh, asked
+                // through `ownShieldedRecipients`) is its own funds either way.
                 let address = shieldedDestinationAddress(counterparty: row.counterparty)
                 let isOwnDestination = receivedEntryIds.contains(row.entryId)
-                    || (ownShieldedRaw43 != nil && row.counterparty == ownShieldedRaw43)
+                    || ownRecipients.contains(
+                        ShieldedRecipient(account: row.accountIndex, raw43: row.counterparty))
                 items.append(ShieldedActivityItem(
                     row: row,
                     amountCreditsOverride: reconstructedAmountCredits,
@@ -2498,7 +2529,7 @@ class SwiftDashSDKWalletSource: TransactionSource {
     /// Decode a shielded send's counterparty (43-byte raw Orchard address) to
     /// its DIP-0018 display form: HRP `dash`/`tdash`, payload = 0x10 type
     /// byte + the raw address bytes (same encoding as
-    /// `PaymentsLandingViewModel.reloadShieldedAddress`). Nil for empty /
+    /// `SDKShieldedReceiveAddressSource.encode(raw:mainnet:)`). Nil for empty /
     /// non-43-byte counterparties.
     private static func shieldedDestinationAddress(counterparty: Data) -> String? {
         guard counterparty.count == 43 else { return nil }

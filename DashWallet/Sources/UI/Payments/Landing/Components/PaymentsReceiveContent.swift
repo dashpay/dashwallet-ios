@@ -312,15 +312,40 @@ struct PaymentsReceiveContent: View {
                     .padding(10)
                     .background(Color.dash.white)
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+
+                if viewModel.network == .shielded && viewModel.isShowingShieldedFallback {
+                    // The default address is shown only because a fresh one
+                    // could not be derived, and only with this warning (AC-07).
+                    DashUIKit.SystemMessageView(
+                        title: NSLocalizedString(
+                            "This is your permanent shielded address.",
+                            comment: "Receive: shielded fallback warning title"),
+                        subtitle: NSLocalizedString(
+                            "People who pay to it can be linked to each other.",
+                            comment: "Receive: shielded fallback warning subtitle"),
+                        icon: DashIcon.SystemMessage.warningTriangle.source,
+                        backgroundColor: Color.dash.yellowAlpha10)
+                }
             } else if viewModel.network == .platform && !viewModel.platformIsReady {
                 placeholder(NSLocalizedString("Platform sync starting…", comment: ""))
             } else if viewModel.network == .shielded {
-                // Nil only until the shielded sub-wallet binds at startup
-                // (the view model retries as the platform stack comes up).
-                placeholder(NSLocalizedString("Shielded wallet starting…", comment: ""))
+                placeholder(shieldedPlaceholderMessage)
             } else {
                 placeholder(NSLocalizedString("No address available", comment: ""))
             }
+        }
+    }
+
+    /// What the Shielded QR slot says while the Receive session has no
+    /// address to show.
+    private var shieldedPlaceholderMessage: String {
+        switch viewModel.shieldedReceiveState {
+        case .deriving:
+            return NSLocalizedString("Preparing a new address…", comment: "Receive: shielded address being derived")
+        case .ready(.unavailable):
+            return NSLocalizedString("No address available", comment: "")
+        case .idle, .ready(.notReady), .ready(.fresh), .ready(.fallback):
+            return NSLocalizedString("Shielded wallet starting…", comment: "")
         }
     }
 
@@ -334,6 +359,9 @@ struct PaymentsReceiveContent: View {
                 .foregroundColor(Color.dash.secondaryText)
         }
         .frame(width: 220, height: 220)
+        // One element, read as the message: the spinner alone says nothing.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(message))
     }
 
 }
@@ -447,10 +475,12 @@ struct ReceiveWatchingIndicator: View {
 @MainActor
 private func receiveSample(
     network: ChainNetwork = .core,
-    coreAddress: String? = "XyZ8kFqW3nR5tHmB2vJcL7pQaS4dEuG9wN"
+    coreAddress: String? = "XyZ8kFqW3nR5tHmB2vJcL7pQaS4dEuG9wN",
+    shieldedState: ShieldedReceiveSessionState = .ready(.notReady)
 ) -> some View {
     PaymentsReceiveContent(
-        viewModel: .makeForPreview(activeTab: .receive, network: network, coreAddress: coreAddress),
+        viewModel: .makeForPreview(
+            activeTab: .receive, network: network, coreAddress: coreAddress, shieldedState: shieldedState),
         onCopyAddress: {},
         onShareAddress: {},
         onSpecifyAmount: {})
@@ -468,6 +498,35 @@ private func receiveSample(
 @available(iOS 17, *)
 #Preview("No address") {
     receiveSample(coreAddress: nil)
+}
+
+/// A placeholder string, not a real address.
+private let previewShieldedAddress = "dash1zq8m4placeholderplaceholderplaceholderplaceholderplaceholderk7x2rv"
+
+@available(iOS 17, *)
+#Preview("Shielded — fresh address") {
+    receiveSample(network: .shielded, shieldedState: .ready(.fresh(previewShieldedAddress)))
+}
+
+@available(iOS 17, *)
+#Preview("Shielded — preparing") {
+    receiveSample(network: .shielded, shieldedState: .deriving)
+}
+
+/// The default address after a failed derivation, always with the warning.
+@available(iOS 17, *)
+#Preview("Shielded — fallback warning") {
+    receiveSample(network: .shielded, shieldedState: .ready(.fallback(previewShieldedAddress)))
+}
+
+@available(iOS 17, *)
+#Preview("Shielded — wallet starting") {
+    receiveSample(network: .shielded, shieldedState: .ready(.notReady))
+}
+
+@available(iOS 17, *)
+#Preview("Shielded — unavailable") {
+    receiveSample(network: .shielded, shieldedState: .ready(.unavailable))
 }
 
 #endif
