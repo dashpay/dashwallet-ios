@@ -144,16 +144,9 @@ extension POIDetailsViewController {
     private func makeDetailsView() -> POIDetailsView? {
         if case .unknown = pointOfUse.category { return nil }
 
-        // Get current search radius from parent controller if available
-        let effectiveRadius: Double
-        if let searchRadius = searchRadius, searchRadius == Double.greatestFiniteMagnitude {
-            // If explicit infinite radius is passed (from All tab), use that
-            effectiveRadius = searchRadius
-        } else if let parentVC = navigationController?.viewControllers.dropLast().last as? ExplorePointOfUseListViewController {
-            effectiveRadius = parentVC.model.filters?.currentRadius ?? searchRadius ?? kDefaultRadius
-        } else {
-            effectiveRadius = searchRadius ?? kDefaultRadius
-        }
+        // The opener passes the list's current radius, or the infinite radius
+        // from the merchant list's All tab.
+        let effectiveRadius = searchRadius ?? kDefaultRadius
 
         var detailsView = POIDetailsView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden, searchRadius: effectiveRadius, searchCenterCoordinate: searchCenterCoordinate)
         detailsView.payWithDashHandler = { [weak self] in
@@ -169,17 +162,12 @@ extension POIDetailsViewController {
         detailsView.showAllLocationsActionBlock = { [weak self] in
             guard let wSelf = self else { return }
 
-            // Check if we're coming from the "All" tab (tag = 2)
-            let isFromAllTab = (wSelf.navigationController?.viewControllers.dropLast().last as? ExplorePointOfUseListViewController)?.currentSegment.tag == 2
-
-            // For "All" tab, don't apply radius filtering - show all locations for the merchant
-            // For other tabs (Online, Nearby), use the current radius filtering
-            let searchRadiusToUse = isFromAllTab ? Double.greatestFiniteMagnitude : effectiveRadius
-
+            // From the All tab `effectiveRadius` is infinite, so every location
+            // of the merchant is shown; from Nearby it keeps the list's radius.
             wSelf.performAfterDismissingDetailsSheetIfNeeded {
                 let vc = AllMerchantLocationsViewController(
                     pointOfUse: wSelf.pointOfUse,
-                    searchRadius: searchRadiusToUse,
+                    searchRadius: effectiveRadius,
                     searchCenterCoordinate: wSelf.searchCenterCoordinate,
                     currentFilters: wSelf.currentFilters
                 )
