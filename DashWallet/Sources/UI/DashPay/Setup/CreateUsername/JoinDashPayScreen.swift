@@ -165,14 +165,25 @@ public struct JoinDashPayScreen: View {
     ///   any source. The user picks the name on the NEXT screen, and by then
     ///   a short balance reads as the name being refused rather than as a
     ///   price they were never told.
+    /// - When only Shielded can pay, it names the Shielded balance: the Dash
+    ///   balance is empty or short, and naming it would read as nothing to
+    ///   spend over a button that offers to spend.
     private var balanceNote: String? {
-        if !canProceed {
+        let note = CreateUsernameViewModel.joinBalanceNote(
+            canProceed: canProceed,
+            transparentCoversEveryName: viewModel.hasRecommendedBalance,
+            shieldedOnlyFunding: viewModel.shieldedOnlyFunding)
+        switch note {
+        case .minimum:
             return String.localizedStringWithFormat(
                 NSLocalizedString("You should have at least %@ Dash to create a username", comment: "Usernames"),
                 viewModel.minimumRequiredBalance)
-        }
-
-        if !viewModel.hasRecommendedBalance {
+        case .shielded(let matureDuffs):
+            return String.localizedStringWithFormat(
+                NSLocalizedString("You have %@ Dash in Shielded (enough for a standard username).\nSome usernames cost up to %@ Dash.", comment: "Usernames"),
+                matureDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol,
+                viewModel.recommendedBalance)
+        case .dashBalance:
             // "available", not "you have": the figure is what can actually be
             // spent — `coreSpendableDuffs`, i.e. confirmed inputs less the
             // miner fee an ordinary send still needs. Home's header shows the
@@ -182,9 +193,9 @@ public struct JoinDashPayScreen: View {
                 NSLocalizedString("You have %@ Dash available (network fee reserved).\nSome usernames cost up to %@ Dash.", comment: "Usernames"),
                 viewModel.balance,
                 viewModel.recommendedBalance)
+        case nil:
+            return nil
         }
-
-        return nil
     }
 }
 
@@ -227,6 +238,20 @@ public struct JoinDashPayScreen: View {
                 requiredCredits: ShieldedIdentityFundingReadiness.standardDenominationCredits,
                 matureCredits: 0,
                 unspentCredits: 0,
+                poolNoteCount: nil)),
+        onClaimInvitation: {})
+}
+
+/// Nothing in the Dash balance, a standard name's worth ready in Shielded:
+/// Continue enabled, and the info line names the Shielded balance.
+#Preview("Shielded only — standard name") {
+    JoinDashPayScreen(
+        previewViewModel: .makeForPreview(
+            shieldedReadiness: ShieldedIdentityFundingReadiness.Snapshot(
+                state: .ready,
+                requiredCredits: ShieldedIdentityFundingReadiness.standardDenominationCredits,
+                matureCredits: ShieldedIdentityFundingReadiness.standardDenominationCredits,
+                unspentCredits: ShieldedIdentityFundingReadiness.standardDenominationCredits,
                 poolNoteCount: nil)),
         onClaimInvitation: {})
 }

@@ -29,9 +29,9 @@ protocol DashConnectDataSource {
     /// that would give the app something else, or act for another identity,
     /// wallet or network than it was resolved for, is refused.
     func approveLogin(_ request: DashKeyRequest, consent: ConnectionRequest) async throws -> DAppConnection
-    /// Parses a scanned `dash-st:` payload and either completes key
-    /// registration immediately or returns a token purchase that awaits
-    /// explicit user approval via `approveTokenPurchase(_:)`.
+    /// Parses a scanned `dash-st:` payload and returns the token purchase it
+    /// carries, which awaits explicit user approval via
+    /// `approveTokenPurchase(_:)`. Any other transition is refused.
     func handleStateTransition(_ request: DashStRequest) async throws -> DashConnectStAction
     /// Rebuilds, signs and submits a token purchase the user approved.
     ///
@@ -39,21 +39,31 @@ protocol DashConnectDataSource {
     /// transition could already have reached Platform — the caller must not
     /// offer a retry when it could have.
     func approveTokenPurchase(_ request: DashConnectTokenPurchaseRequest) async throws
-    /// Turns a connection off. For a one-QR connection this disables the key
-    /// the app was given on the identity and deletes the published response,
-    /// and throws when the key could not be disabled — the connection then
-    /// stays as it was. The connection also stays, and that is thrown, while
-    /// the app holds a key on another identity of the wallet. For a two-QR
-    /// connection it only changes the local status: that login derives the
-    /// same key every time and Platform never re-adds a disabled key, so
-    /// disabling it would lock the app out for good. Turning off a one-QR
-    /// connection that replaced a two-QR one does disable those keys too.
+    /// Turns a connection off. For an App Connect connection this turns off
+    /// every key the wallet's approvals of the app gave on the active
+    /// identity, puts a key of the wallet's own under each id an approval
+    /// may still land on so it never does, and deletes the published
+    /// responses; it throws when a key could not be shown off, and the
+    /// connection then stays. Keys no approval of this wallet names (the
+    /// app's from another device or from before a restore, DashPay profile
+    /// keys no app can be told to hold) are turned off only with
+    /// `includingUnrecorded`; the result says how many are left. The
+    /// connection also stays, and that is thrown, while an approval of the
+    /// app on another identity of the wallet is not done.
     ///
     /// `scope` is the `DAppConnection.scope` of the row that was picked:
     /// both calls act only while it still names the wallet they would act
     /// on.
-    func disconnect(id: String, scope: String?) async throws
+    @discardableResult
+    func disconnect(id: String, scope: String?, includingUnrecorded: Bool) async throws -> DashConnectDisconnectResult
     func remove(id: String, scope: String?) async
+    /// Puts the App Connect rows in step with the active identity's keys on
+    /// Platform. Best effort: a failed read leaves the rows as they were.
+    func refreshConnections() async
+}
+
+extension DashConnectDataSource {
+    func refreshConnections() async {}
 }
 
 /// Why a token purchase failed, and — the part that decides what the UI may
@@ -139,7 +149,9 @@ final class MockDashConnectDataSource: DashConnectDataSource {
     static let sampleLoginQRCode = DashConnectSampleQR.keyUri(for: sampleLoginRequest)
     static let sampleRequest: ConnectionRequest = {
         var request = ConnectionRequest(loginRequest: sampleLoginRequest)
-        request.login = .twoQR
+        request.login = .appConnect(AppConnect.GrantPlan(
+            appId: sampleLoginRequest.contractId, appEphemeralPubKeyHash: Data(repeating: 0, count: 20),
+            auth: [], encryption: [], connectionId: nil, identityHint: nil, createdAt: 0, callbackHost: nil))
         return request
     }()
 
@@ -156,7 +168,7 @@ final class MockDashConnectDataSource: DashConnectDataSource {
     #if DEBUG
     static func previewMixed() -> MockDashConnectDataSource {
         MockDashConnectDataSource(initial: [
-            sample(.approved),
+            sample(.confirming),
             DAppConnection(
                 id: "7W6u4NgW63FPUuW8EnTbYzD4KybNQD5n7CUDWydJY234",
                 name: "DashGet",
@@ -205,7 +217,7 @@ final class MockDashConnectDataSource: DashConnectDataSource {
         if DashConnectUri.isKeyUri(trimmed) {
             let request = try DashConnectUri.parseKeyRequest(trimmed)
             try validateNetwork(request.network)
-            return .login(request)
+            throw AppConnect.v1Refusal
         }
 
         if DashConnectUri.isStUri(trimmed) {
@@ -224,13 +236,14 @@ final class MockDashConnectDataSource: DashConnectDataSource {
             shouldFailNextApprove = false
             throw DashConnectMockError.approveFailed
         }
+        guard consent.login.isApprovable else { throw DashConnectPlatformError.approvalOutOfDate }
 
         let connectionRequest = await makeConnectionRequest(from: request)
         let connection = DAppConnection(
             id: connectionRequest.appContractId,
             name: connectionRequest.appLabel.isEmpty ? NSLocalizedString("Unknown app", comment: "DashConnect") : connectionRequest.appLabel,
             url: connectionRequest.appUrl,
-            status: .approved,
+            status: .active,
             updatedAt: Date()
         )
 
@@ -249,7 +262,7 @@ final class MockDashConnectDataSource: DashConnectDataSource {
             walletUsername: nil,
             walletIdentityId: nil,
             existingConnection: existingConnection(for: fallback.appContractId),
-            login: .twoQR
+            login: .refused(AppConnect.v1Refusal)
         )
     }
 
@@ -263,18 +276,10 @@ final class MockDashConnectDataSource: DashConnectDataSource {
             DashConnectMockError.stateTransitionNotSupported)
     }
 
-    func disconnect(id: String, scope: String?) async throws {
-        let disconnectedAt = Date()
-        persistAndSend(subject.value.map { connection in
-            guard connection.id == id else { return connection }
-            return DAppConnection(
-                id: connection.id,
-                name: connection.name,
-                url: connection.url,
-                status: .approved,
-                updatedAt: disconnectedAt
-            )
-        })
+    @discardableResult
+    func disconnect(id: String, scope: String?, includingUnrecorded: Bool) async throws -> DashConnectDisconnectResult {
+        persistAndSend(subject.value.filter { $0.id != id })
+        return DashConnectDisconnectResult()
     }
 
     func remove(id: String, scope: String?) async {

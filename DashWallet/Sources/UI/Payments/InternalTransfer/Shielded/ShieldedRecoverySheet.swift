@@ -176,7 +176,8 @@ final class ShieldedRecoveryViewModel: ObservableObject {
             // report both land on unconfirmed rather than false success.
             await coordinator.resumeAssetLock(
                 outPointTxidWire: outPoint.txidWire,
-                outPointVout: outPoint.vout)
+                outPointVout: outPoint.vout,
+                retryUnverifiedConsumption: true)
 
             // The shield consumed the lock; refresh so the history row flips
             // pending → completed without waiting for the next sync pass.

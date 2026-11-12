@@ -34,7 +34,6 @@ struct ContactCandidate: Identifiable, Equatable {
 }
 
 struct AddContactScreen: View {
-    @Environment(\.dismiss) private var dismiss
     @FocusState private var isSearchFocused: Bool
 
     @State private var query: String
@@ -96,7 +95,7 @@ struct AddContactScreen: View {
     @ObservedObject private var service = SwiftDashSDKContactsService.shared
 
     var body: some View {
-        NavigationStack {
+        DashUIKit.BottomSheet(showBackButton: .constant(false)) {
             ZStack {
                 Color.dash.primaryBackground.ignoresSafeArea()
                 GeometryReader { geometry in
@@ -142,13 +141,6 @@ struct AddContactScreen: View {
                             }
                         }
                     }
-                }
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button(NSLocalizedString("Cancel", comment: "")) { dismiss() }
-                        .foregroundColor(.dash.blue)
                 }
             }
             .fullScreenCover(isPresented: $showScanner) {
@@ -661,13 +653,11 @@ struct AddContactPreviewSheet: View {
     let onSend: () -> Void
     let onAccept: () -> Void
 
-    @Environment(\.dismiss) private var dismiss
-
     private var username: String { result.fullName.withoutDashSuffix }
     private var title: String { contact?.displayTitle ?? username }
 
     var body: some View {
-        NavigationStack {
+        DashUIKit.BottomSheet(showBackButton: .constant(false)) {
             ZStack {
                 Color.dash.primaryBackground.ignoresSafeArea()
                 VStack(spacing: 12) {
@@ -711,15 +701,9 @@ struct AddContactPreviewSheet: View {
                         .padding(.bottom, 24)
                 }
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(NSLocalizedString("Close", comment: "")) { dismiss() }
-                        .foregroundColor(.dash.blue)
-                }
-            }
         }
         .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.hidden)
     }
 
     /// State-appropriate framing copy — the persuasive "pay directly by
@@ -800,11 +784,10 @@ struct MyDashPayUserQRSheet: View {
     let link: DashPayUserLink
     let displayName: String?
 
-    @Environment(\.dismiss) private var dismiss
     @State private var qrImage: UIImage?
 
     var body: some View {
-        NavigationStack {
+        DashUIKit.BottomSheet(showBackButton: .constant(false)) {
             ZStack {
                 Color.dash.primaryBackground.ignoresSafeArea()
                 VStack(spacing: 6) {
@@ -846,14 +829,9 @@ struct MyDashPayUserQRSheet: View {
                     Spacer()
                 }
             }
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(NSLocalizedString("Close", comment: "")) { dismiss() }
-                        .foregroundColor(.dash.blue)
-                }
-            }
         }
         .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.hidden)
         .onAppear {
             if qrImage == nil {
                 qrImage = QRCodeGenerator.dashStyledImage(for: link.uriString, size: 240)

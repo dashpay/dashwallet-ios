@@ -303,11 +303,17 @@ struct CreateUsernameView: View {
     /// Pops this screen. Wired to the `NavigationBar`'s back element, which
     /// replaced the UIKit bar's own button.
     var onBack: () -> Void = {}
+    /// The bar's leading element while the main form is showing: `.back` when
+    /// pushed, `.close` when the form is the root of a cover. The instant-name
+    /// pass always shows `.back`, since it returns to the form.
+    var leadingElement: DashUIKit.NavigationBarElement = .back
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             DashUIKit.NavigationBar(
-                leading: { DashUIKit.NavigationBarElement.back.button(action: goBack) })
+                leading: {
+                    (isNamingInstantUsername ? .back : leadingElement).button(action: goBack)
+                })
 
             // The companion pass replaces the form rather than sitting under it:
             // it asks for a different name, by different rules, and the requested
@@ -710,7 +716,7 @@ struct CreateUsernameView: View {
                     if !newValue {
                         registrationErrorMessage = nil
                         registrationRefusalTitle = nil
-                        screenLockedAfterAuth = false
+                        screenLockedAfterAuth = viewModel.purchaseSubmissionUnconfirmed
                     }
                 }
             )
@@ -718,7 +724,7 @@ struct CreateUsernameView: View {
             Button(NSLocalizedString("OK", comment: "")) {
                 registrationErrorMessage = nil
                 registrationRefusalTitle = nil
-                screenLockedAfterAuth = false
+                screenLockedAfterAuth = viewModel.purchaseSubmissionUnconfirmed
             }
         } message: {
             Text(registrationErrorMessage ?? "")
@@ -857,12 +863,18 @@ struct CreateUsernameView: View {
             text: NSLocalizedString("Numbers 2-9", comment: "DashPay Invitations"),
             rule: viewModel.nonContestedRule)
 
-        add(
-            id: "cost",
-            text: String.localizedStringWithFormat(
-                NSLocalizedString("You need to have more %@ Dash to create this username", comment: "Usernames"),
-                viewModel.uiState.requiredDash.dashAmount.formattedDashAmountWithoutCurrencySymbol),
-            rule: viewModel.uiState.costRule)
+        if viewModel.uiState.costRule == .invalid, let blocker = viewModel.shieldedCostBlocker {
+            // Shielded is short of time or of notes, not of a price the
+            // user can read off this line; say which. Waiting is not a
+            // mistake, so only a real shortfall wears the red cross.
+            let (text, state) = blocker.criterion()
+            items.append(DashUIKit.Criterion(id: "cost", text: text, state: state))
+        } else {
+            add(
+                id: "cost",
+                text: CreateUsernameViewModel.minimumCostMessage(requiredDuffs: viewModel.uiState.requiredDash),
+                rule: viewModel.uiState.costRule)
+        }
 
         add(
             id: "availability",
@@ -1219,7 +1231,7 @@ struct CreateUsernameView: View {
         purchasedUsername = viewModel.username.trimmingCharacters(in: .whitespacesAndNewlines)
         Task {
             inProgress = true
-            screenLockedAfterAuth = false
+            screenLockedAfterAuth = viewModel.purchaseSubmissionUnconfirmed
             let outcome = await viewModel.purchaseListedUsername(name: purchasedUsername)
             inProgress = false
             switch outcome {
@@ -1231,6 +1243,10 @@ struct CreateUsernameView: View {
                 showPurchaseSuccess = true
             case .cancelled:
                 break
+            case .submittedUnconfirmed(let message):
+                screenLockedAfterAuth = true
+                registrationRefusalTitle = NSLocalizedString("Confirmation pending", comment: "Username purchase result unknown")
+                registrationErrorMessage = message
             case .failure(let message):
                 viewModel.refreshRegistrationRecoveryState()
                 registrationErrorMessage = message
@@ -1575,7 +1591,7 @@ struct CreateUsernameView: View {
             // it also holds the screen alive for the whole registration and the
             // bridge completion resolves the outcome at the terminal phase.
             inProgress = true
-            screenLockedAfterAuth = false
+            screenLockedAfterAuth = viewModel.purchaseSubmissionUnconfirmed
             var didHandOff = false
             let outcome = await viewModel.submitUsernameRequest(temporaryUsername: temporaryUsername) {
                 isTextInputFocused = false
@@ -1616,14 +1632,18 @@ struct CreateUsernameView: View {
                 failedTemporaryUsername = temporaryError != nil ? temporaryUsername : nil
                 showVotingSubmitted = true
             case .cancelled:
-                screenLockedAfterAuth = false
+                screenLockedAfterAuth = viewModel.purchaseSubmissionUnconfirmed
                 break // user backed out of the PIN — stay on screen, allow retry
+            case .submittedUnconfirmed(let message):
+                screenLockedAfterAuth = true
+                registrationRefusalTitle = NSLocalizedString("Confirmation pending", comment: "Username purchase result unknown")
+                registrationErrorMessage = message
             case .failure(let message):
                 viewModel.refreshRegistrationRecoveryState()
                 registrationErrorMessage = message
             case .needsCoinConsolidation(let check):
                 viewModel.refreshRegistrationRecoveryState()
-                screenLockedAfterAuth = false
+                screenLockedAfterAuth = viewModel.purchaseSubmissionUnconfirmed
                 coinConsolidationCheck = check
             }
         }
@@ -1893,3 +1913,36 @@ private struct InstantUsernameForm: View {
     }
 }
 
+
+extension CreateUsernameViewModel.ShieldedCostBlocker {
+    /// The cost row's text and mark. The maturity window is at most a few
+    /// hours, so a resting note is ready today or tomorrow.
+    func criterion(
+        now: Date = Date(),
+        calendar: Calendar = .current
+    ) -> (text: String, state: DashUIKit.CriterionState) {
+        switch self {
+        case .resting(let readyAt):
+            let time = DWDateFormatter.sharedInstance.timeOnly(from: readyAt)
+            let format = calendar.isDate(readyAt, inSameDayAs: now) || readyAt < now
+                ? NSLocalizedString("Your recently shielded Dash can be used for this username at %@", comment: "Usernames")
+                : NSLocalizedString("Your recently shielded Dash can be used for this username tomorrow at %@", comment: "Usernames")
+            return (String.localizedStringWithFormat(format, time), .pending)
+
+        case .short(let shortfallDuffs):
+            let amount = shortfallDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol
+            let format = NSLocalizedString(
+                "Add %@ Dash to your Shielded balance to create this username", comment: "Usernames")
+            return (String.localizedStringWithFormat(format, amount), .failed)
+
+        case .poolTooSmall(let current):
+            return (CreateUsernameViewModel.shieldedPoolTooSmallMessage(current: current), .pending)
+
+        case .cannotTopUp(let topUpDuffs):
+            // The words the registration refuses with, so the row and the
+            // refusal point the same way.
+            let error = DWIdentityRegistrationCoordinator.CoordinatorError.shieldedTopUpUnavailable(neededDuffs: topUpDuffs)
+            return (error.errorDescription ?? "", .failed)
+        }
+    }
+}
