@@ -35,13 +35,13 @@ enum DashConnectPermissionText {
         bound: AppConnect.StoredBound,
         isCritical: Bool,
         totalBudget: UInt64?,
-        expiresAt: UInt64,
+        expiresAt: UInt64?,
         isAdministered: Bool,
         appLabel: String,
         tense: Tense = .present
     ) -> String {
-        let expiry = expiryFormatter.string(from: Date(timeIntervalSince1970: TimeInterval(expiresAt) / 1000))
-        if case .contractGroup = bound, isCritical, let totalBudget {
+        let expiry = expiresAt.map { expiryFormatter.string(from: Date(timeIntervalSince1970: TimeInterval($0) / 1000)) }
+        if case .contractGroup = bound, isCritical, let totalBudget, let expiry {
             return criticalGroupKey(
                 appLabel: appLabel, budget: PlatformCreditsFormatter.dashString(totalBudget), expiry: expiry,
                 isAdministered: isAdministered, tense: tense)
@@ -78,13 +78,14 @@ enum DashConnectPermissionText {
             }
         }
         var text: String
-        if let totalBudget {
+        switch (totalBudget, expiry) {
+        case let (totalBudget?, expiry?):
             text = String(
                 format: NSLocalizedString(
                     "%1$@, spending up to %2$@ of your identity's credits until %3$@",
                     comment: "DashConnect App Connect v2: what a key can do, an amount with its unit (0.5 DASH), a date"),
                 action, PlatformCreditsFormatter.dashString(totalBudget), expiry)
-        } else {
+        case let (nil, expiry?):
             // No budget was asked for, and the wallet adds none: the key can
             // spend the identity's credits without a cap.
             text = String(
@@ -92,6 +93,20 @@ enum DashConnectPermissionText {
                     "%1$@, with no limit on spending your identity's credits, until %2$@",
                     comment: "DashConnect App Connect v2: what a key can do, a date"),
                 action, expiry)
+        // Only a key no intent names can have no expiry (an earlier login,
+        // or another wallet's): it lasts until it is turned off.
+        case let (totalBudget?, nil):
+            text = String(
+                format: NSLocalizedString(
+                    "%1$@, spending up to %2$@ of your identity's credits, with no end date",
+                    comment: "DashConnect App Connect v2: what a key with no expiry can do, an amount with its unit (0.5 DASH)"),
+                action, PlatformCreditsFormatter.dashString(totalBudget))
+        case (nil, nil):
+            text = String(
+                format: NSLocalizedString(
+                    "%@, with no limit on spending your identity's credits and no end date",
+                    comment: "DashConnect App Connect v2: what a key with no expiry and no budget can do"),
+                action)
         }
         // A budget is in credits: Platform checks a token transfer against
         // the token balance, not against the key's credit budget.

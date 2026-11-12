@@ -2672,30 +2672,56 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 }
             }
         } ?? open
+        // Keys the row shows that no intent names (another device's, or
+        // attributed by owner) are the app's access too, from the same
+        // projection, with the owners it reads.
+        var unrecorded: [AppConnect.PlatformKey] = []
+        if let snapshot {
+            unrecorded = await Self.unrecordedKeys(of: appId, on: snapshot, intents: stores.intents.load(), context: context)
+        }
         // The app's row is held by another identity of the wallet: its
         // intents are not the active identity's to show.
-        guard !held.isEmpty else {
+        guard !held.isEmpty || !unrecorded.isEmpty else {
             return ConnectionDetails(appId: appId, identityId: nil, username: nil, access: nil)
         }
         let identityId = context.identityId.toBase58String()
         var details = ConnectionDetails(
             appId: appId, identityId: identityId, username: context.storedUsername,
-            access: ConnectionAccess(intents: held, snapshot: snapshot), connectedAt: held.map(\.createdAt).max())
+            // Without a read of the identity nothing is known to be the
+            // app's access: the sheet shows none rather than what the
+            // intents submitted, which may never have landed.
+            access: snapshot.flatMap { ConnectionAccess(intents: held, snapshot: $0, unrecorded: unrecorded) },
+            connectedAt: held.map(\.createdAt).max())
         // Funding is read only for keys that landed and are not disabled:
         // an intent that may still land names ids another key may hold.
         guard let snapshot else { return details }
         let landed = held.filter { AppConnect.hasLanded($0, in: snapshot) }
-        let keyIds = KeyFunding.keyIds(of: landed, snapshot: snapshot)
+        let keyIds = KeyFunding.keyIds(of: landed, snapshot: snapshot, unrecorded: unrecorded)
         if !keyIds.isEmpty {
-            // A read-only query: it does not touch the identity copy the
-            // operations that sign use, so it does not wait on them.
-            if let remaining = try? await context.sdk.fetchKeysRemainingBudgets(identityId: identityId, keyIds: keyIds) {
-                details.keyFunding = KeyFunding.of(intents: landed, snapshot: snapshot, remaining: remaining)
+            // A read-only query, off the main actor: it does not touch the
+            // identity copy the operations that sign use, so it does not wait
+            // on them, and the UI does not wait on the network.
+            if let remaining = try? await DashConnectPlatformQueries.keysRemainingBudgets(
+                sdk: context.sdk, identityId: identityId, keyIds: keyIds) {
+                details.keyFunding = KeyFunding.of(
+                    intents: landed, snapshot: snapshot, unrecorded: unrecorded, remaining: remaining)
             } else {
                 details.fundingReadFailed = true
             }
         }
         return details
+    }
+
+    /// The keys on `snapshot` that the projection, with the owners it needs
+    /// that are known, shows under `appId` and no intent names.
+    private static func unrecordedKeys(
+        of appId: String, on snapshot: AppConnect.IdentitySnapshot, intents: [AppConnect.ConnectionIntent], context: Context
+    ) async -> [AppConnect.PlatformKey] {
+        let owners = await ownerReader(context: context).knownOwners(for: snapshot, intents: intents)
+        let connection = AppConnect.project([snapshot], intents: intents, owners: owners).connections
+            .first { $0.appId.toBase58String() == appId }
+        let ids = Set(connection?.unrecordedKeyIds[snapshot.identityId] ?? [])
+        return snapshot.keys.filter { ids.contains($0.id) }
     }
 
     @discardableResult
@@ -3369,7 +3395,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return DisconnectedConnection(
             id: row.id, name: row.name, url: row.url,
             identityId: ended.first?.identityId.toBase58String(), username: nil,
-            disconnectedAt: disconnectedAt, access: ConnectionAccess(intents: ended),
+            disconnectedAt: disconnectedAt, access: ConnectionAccess(recorded: ended),
             connectedAt: ended.map(\.createdAt).min())
     }
 
@@ -3721,7 +3747,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 }
 
 /// Platform reads the Swift SDK offers only on the main actor (the current
-/// epoch and an identity's contract keys), where their blocking FFI calls
+/// epoch, an identity's contract keys, and what is left of keys' budgets), where their blocking FFI calls
 /// would hold the UI for a network round trip. They run here on queues of
 /// their own instead, with the SDK kept alive for the call; each copies the
 /// native result and releases it before returning.
@@ -3735,6 +3761,47 @@ enum DashConnectPlatformQueries {
     /// stopped, and must not hold back the next login's read.
     private static let contractKeysQueue = DispatchQueue(
         label: "org.dashfoundation.dash.dashconnect.contract-keys-query", attributes: .concurrent)
+
+    /// Concurrent, like the contract-keys reads: a sheet's read it no longer
+    /// waits for must not hold back the next one.
+    private static let budgetsQueue = DispatchQueue(
+        label: "org.dashfoundation.dash.dashconnect.key-budgets-query", attributes: .concurrent)
+
+    /// `SDK.fetchKeysRemainingBudgets(identityId:keyIds:)` off the main
+    /// actor: what is left of each key's budget in credits, `nil` for a key
+    /// with no budget or that the identity does not have.
+    static func keysRemainingBudgets(sdk: SDK, identityId: String, keyIds: [UInt32]) async throws -> [UInt32: UInt64?] {
+        guard !keyIds.isEmpty else { throw SDKError.invalidParameter("At least one key id is required") }
+        let answer = try await run(sdk, on: budgetsQueue) { handle in
+            try keyIds.withUnsafeBufferPointer { buffer in
+                try json(from: dash_sdk_identity_fetch_keys_remaining_budgets(
+                    handle, identityId, buffer.baseAddress, UInt(buffer.count)))
+            }
+        }
+        return try remainingBudgets(answer)
+    }
+
+    /// The remaining-budgets answer: a JSON object keyed by key id whose
+    /// values are decimal strings (credits are `u64`, which JSON numbers
+    /// cannot carry losslessly) or null.
+    static func remainingBudgets(_ answer: [String: Any]) throws -> [UInt32: UInt64?] {
+        var budgets: [UInt32: UInt64?] = [:]
+        for (rawKeyId, value) in answer {
+            guard let keyId = UInt32(rawKeyId) else {
+                throw SDKError.serializationError("Unparseable key id in remaining-budgets answer: \(rawKeyId)")
+            }
+            if value is NSNull {
+                // `updateValue`: assigning `nil` through the subscript removes the entry.
+                budgets.updateValue(nil, forKey: keyId)
+                continue
+            }
+            guard let text = value as? String, let credits = UInt64(text) else {
+                throw SDKError.serializationError("Unparseable remaining budget for key \(keyId)")
+            }
+            budgets.updateValue(credits, forKey: keyId)
+        }
+        return budgets
+    }
 
     /// The protocol version the network runs, from a proved read of the
     /// current epoch. It throws when that read fails: there is no fallback

@@ -266,10 +266,24 @@ struct ConnectionAccess: Equatable {
     /// The connection can receive messages encrypted to this identity.
     let receivesMessages: Bool
 
-    /// `nil` when `intents` add no auth key; with `snapshot`, no auth key
-    /// that gives access on it (`GrantedAccess(intents:snapshot:)`).
-    init?(intents: [AppConnect.ConnectionIntent], snapshot: AppConnect.IdentitySnapshot? = nil) {
-        let access = AppConnect.GrantedAccess(intents: intents, snapshot: snapshot)
+    /// `nil` when no auth key of `intents` or `unrecorded` gives access on
+    /// `snapshot` (`GrantedAccess(intents:snapshot:unrecorded:)`). It needs a
+    /// read of the identity: without one, what the intents submitted is not
+    /// known to be the app's access.
+    init?(
+        intents: [AppConnect.ConnectionIntent], snapshot: AppConnect.IdentitySnapshot,
+        unrecorded: [AppConnect.PlatformKey] = []
+    ) {
+        let access = AppConnect.GrantedAccess(intents: intents, snapshot: snapshot, unrecorded: unrecorded)
+        guard !access.keys.isEmpty else { return nil }
+        self.init(access)
+    }
+
+    /// What `intents` gave as the wallet recorded it, with no read of the
+    /// identity: for a connection that ended, whose keys are off, the sheet
+    /// tells what the app was able to do. `nil` when they add no auth key.
+    init?(recorded intents: [AppConnect.ConnectionIntent]) {
+        let access = AppConnect.GrantedAccess(intents: intents)
         guard !access.keys.isEmpty else { return nil }
         self.init(access)
     }
@@ -282,7 +296,10 @@ struct ConnectionAccess: Equatable {
             return overflow ? .max : total
         }
         hasUnlimitedKey = access.keys.contains { $0.totalBudget == nil }
-        expiresAt = access.keys.map(\.expiresAt).max().map { Date(timeIntervalSince1970: TimeInterval($0) / 1000) }
+        // A key with no expiry leaves the connection with no end date.
+        let expiries = access.keys.map(\.expiresAt)
+        expiresAt = expiries.contains(nil) ? nil
+            : expiries.compactMap { $0 }.max().map { Date(timeIntervalSince1970: TimeInterval($0) / 1000) }
         receivesMessages = access.receivesMessages
     }
 
@@ -318,29 +335,40 @@ struct KeyFunding: Equatable {
     let remaining: UInt64?
 
     /// The auth keys of `intents` that are on `snapshot` and not disabled,
-    /// in their order, each with its budget as Platform holds it now and
-    /// what `remaining` (by key id) says is left. A key two intents name is
-    /// listed once.
+    /// then the `unrecorded` keys the projection gives the app, in their
+    /// order, each with its budget as Platform holds it now and what
+    /// `remaining` (by key id) says is left. A key is listed once.
     static func of(
-        intents: [AppConnect.ConnectionIntent], snapshot: AppConnect.IdentitySnapshot, remaining: [UInt32: UInt64?]
+        intents: [AppConnect.ConnectionIntent], snapshot: AppConnect.IdentitySnapshot,
+        unrecorded: [AppConnect.PlatformKey] = [], remaining: [UInt32: UInt64?]
     ) -> [KeyFunding] {
-        var listed = Set<UInt32>()
-        return intents.flatMap(\.authKeys).compactMap { key in
-            guard [.live, .expired].contains(AppConnect.presence(of: key, in: snapshot)),
-                  let actual = snapshot.keys.first(where: { $0.id == key.id }),
-                  listed.insert(key.id).inserted else { return nil }
-            return KeyFunding(
+        landedKeys(of: intents, snapshot: snapshot, unrecorded: unrecorded).map { key in
+            KeyFunding(
                 isProfileKey: key.bound.map(AppConnect.isProfileBound) ?? false,
-                totalBudget: actual.totalBudget,
+                totalBudget: key.totalBudget,
                 remaining: remaining[key.id] ?? nil)
         }
     }
 
-    /// The ids `of(intents:snapshot:remaining:)` lists, whose remaining
-    /// budgets are read from Platform.
-    static func keyIds(of intents: [AppConnect.ConnectionIntent], snapshot: AppConnect.IdentitySnapshot) -> [UInt32] {
-        Array(Set(intents.flatMap(\.authKeys)
-            .filter { [.live, .expired].contains(AppConnect.presence(of: $0, in: snapshot)) }.map(\.id))).sorted()
+    /// The ids `of(intents:snapshot:unrecorded:remaining:)` lists, whose
+    /// remaining budgets are read from Platform.
+    static func keyIds(
+        of intents: [AppConnect.ConnectionIntent], snapshot: AppConnect.IdentitySnapshot,
+        unrecorded: [AppConnect.PlatformKey] = []
+    ) -> [UInt32] {
+        landedKeys(of: intents, snapshot: snapshot, unrecorded: unrecorded).map(\.id).sorted()
+    }
+
+    private static func landedKeys(
+        of intents: [AppConnect.ConnectionIntent], snapshot: AppConnect.IdentitySnapshot,
+        unrecorded: [AppConnect.PlatformKey]
+    ) -> [AppConnect.PlatformKey] {
+        var listed = Set<UInt32>()
+        let recorded = intents.flatMap(\.authKeys).compactMap { key -> AppConnect.PlatformKey? in
+            guard [.live, .expired].contains(AppConnect.presence(of: key, in: snapshot)) else { return nil }
+            return snapshot.keys.first { $0.id == key.id }
+        }
+        return (recorded + unrecorded).filter { listed.insert($0.id).inserted }
     }
 }
 
