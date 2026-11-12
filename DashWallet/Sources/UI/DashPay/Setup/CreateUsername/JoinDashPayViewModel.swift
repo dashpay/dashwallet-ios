@@ -43,18 +43,41 @@ class JoinDashPayViewModel: ObservableObject {
     /// with `.creationFailed`, and only while the failure is in memory — after
     /// a relaunch the attempt reads as `.interrupted`, which has no reason.
     @Published private(set) var failureReason: String?
+    /// The charged Shielded failure's explanation (both blocks) when the current wallet and
+    /// network have a failure record. Set only with `.creationFailed`, where it replaces the
+    /// step line and the raw failure text.
+    @Published private(set) var failureExplanation: String?
 
     private var cancellableBag = Set<AnyCancellable>()
+    private var explanation: ShieldedChargedFailureExplanationModel?
+    private var addressSyncUpdates: AnyCancellable?
+    /// Previews show a fixed state and never read the wallet, the SDK or stored records.
+    private let isPreview: Bool
 
     init(initialState: JoinDashPayState, username: String = "") {
         self.initialState = initialState
         self.state = initialState
         self.username = username
+        self.isPreview = false
         observeRegistration()
+    }
+
+    /// A fixed row for previews: no observation, and `checkUsername()` leaves it as built.
+    init(
+        previewState: JoinDashPayState, username: String,
+        failureReason: String? = nil, failureExplanation: String? = nil
+    ) {
+        self.initialState = previewState
+        self.state = previewState
+        self.username = username
+        self.failureReason = failureReason
+        self.failureExplanation = failureExplanation
+        self.isPreview = true
     }
 
     @MainActor
     func checkUsername() {
+        guard !isPreview else { return }
         let identity = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
         guard !identity.isLoading else {
             state = DWCurrentUserIdentityInfo.shared.isCurrentNetworkContextReady ? .loading : .callToAction
@@ -63,13 +86,31 @@ class JoinDashPayViewModel: ObservableObject {
         }
 
         failureReason = nil
+        failureExplanation = nil
+        // Rebuilt on every check so a wallet or network switch reads the new scope's record.
+        let explanation = ShieldedChargedFailureExplanationModel.forCurrentScope()
+        explanation.refresh()
+        self.explanation = explanation
+        updateAddressSyncSubscription(isNeeded: explanation.hasRecord || explanation.hasUnresolvedAttempt)
         if let report = registrationReport() {
+            let shown = Self.rowFailure(
+                state: report.state, failureReason: report.failureReason,
+                explanation: explanation.text.map(Self.joined))
             // A registration this wallet started outranks everything else the
             // row could say: it is the only surface reporting on it.
-            self.state = report.state
+            self.state = shown.state
             self.username = report.username
             self.registrationStep = report.step
-            self.failureReason = report.failureReason
+            self.failureReason = shown.failureReason
+            self.failureExplanation = shown.failureExplanation
+        } else if let recorded = Self.recordRow(
+            recordUsername: explanation.username, explanation: explanation.text.map(Self.joined)) {
+            // Closing the row while the registration ran drops the handoff marker, but the
+            // record of its charged failure stays: the record alone reports it.
+            self.state = recorded.row.state
+            self.username = recorded.username
+            self.registrationStep = .processingPayment
+            self.failureExplanation = recorded.row.failureExplanation
         } else if let lost = UsernamePrefs.shared.lostContestUsername, !lost.isEmpty {
             // The vote went against this wallet. Reported until the user acts
             // on it — a lost request that silently became "request a username"
@@ -117,7 +158,9 @@ class JoinDashPayViewModel: ObservableObject {
     /// nothing, a Core-funded attempt's recovery lock is persisted SDK-side
     /// and the create screen still surfaces it through
     /// `hasPendingRegistrationRecovery` on the next visit. For the call to
-    /// action it is the persisted per-wallet dismissal, as before.
+    /// action it is the persisted per-wallet dismissal, as before. A charged
+    /// failure's record is never cleared here: its explanation stays until the
+    /// next registration starts or one succeeds.
     @MainActor
     func markAsDismissed() {
         let prefs = UsernamePrefs.shared
@@ -251,6 +294,68 @@ class JoinDashPayViewModel: ObservableObject {
         // claim. Resuming is the user's call — it re-enters the PIN gate,
         // which must never fire on its own at launch.
         return RegistrationReport(state: .interrupted, username: pending, step: .processingPayment)
+    }
+
+    /// What the row shows for a registration report, given the failure record's `explanation` of
+    /// this scope (nil without a record). A record outranks `.interrupted` and the bridge's failure
+    /// text, so the row says the same before and after a relaunch; other states are left as they are.
+    static func rowFailure(state: JoinDashPayState, failureReason: String?, explanation: String?) -> RowFailure {
+        guard let explanation, state == .creationFailed || state == .interrupted else {
+            return RowFailure(state: state, failureReason: failureReason, failureExplanation: nil)
+        }
+        return RowFailure(state: .creationFailed, failureReason: nil, failureExplanation: explanation)
+    }
+
+    /// The row for a failure record of this scope when no registration report exists, e.g.
+    /// after the running row was closed; nil without a record.
+    static func recordRow(recordUsername: String?, explanation: String?) -> (row: RowFailure, username: String)? {
+        guard let recordUsername, !recordUsername.isEmpty, let explanation else { return nil }
+        return (RowFailure(state: .creationFailed, failureReason: nil, failureExplanation: explanation), recordUsername)
+    }
+
+    struct RowFailure: Equatable {
+        let state: JoinDashPayState
+        let failureReason: String?
+        let failureExplanation: String?
+    }
+
+    private static func joined(_ text: (block1: String, block2: String?)) -> String {
+        guard let block2 = text.block2 else { return text.block1 }
+        return text.block1 + "\n" + block2
+    }
+
+    /// While a failure record exists, every Platform address sync may change the returned
+    /// amount (still unknown) or the amount to add, so the explanation is read again on each.
+    /// While a create's outcome is unresolved, a sync may have proven it charged: once the
+    /// explanation's read turns it into a record, the row is checked again.
+    /// Set up again on each check, which is also what restores it after a relaunch.
+    @MainActor
+    private func updateAddressSyncSubscription(isNeeded: Bool) {
+        guard isNeeded else {
+            addressSyncUpdates = nil
+            return
+        }
+        guard addressSyncUpdates == nil else { return }
+        let coordinator = PlatformAddressSyncCoordinator.shared
+        addressSyncUpdates = coordinator.$lastSyncTime.dropFirst().map { _ in () }
+            .merge(with: coordinator.$platformBalance.dropFirst().map { _ in () },
+                   coordinator.$derivedAddresses.dropFirst().map { _ in () })
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] in
+                MainActor.assumeIsolated {
+                    guard let self, let explanation = self.explanation else { return }
+                    let hadRecord = explanation.hasRecord
+                    explanation.refresh()
+                    if !hadRecord, explanation.hasRecord {
+                        self.checkUsername()
+                        return
+                    }
+                    // Only the text can change here; the row's state is rechecked on its own triggers.
+                    if self.failureExplanation != nil, let text = explanation.text {
+                        self.failureExplanation = Self.joined(text)
+                    }
+                }
+            }
     }
 
     /// The in-flight record becomes the completed one: the bridge drops

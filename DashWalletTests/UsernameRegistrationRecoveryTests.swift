@@ -1,5 +1,6 @@
 import XCTest
 @testable import dashpay
+import SwiftDashSDK
 import SwiftUI
 import SwiftDashSDK
 
@@ -381,7 +382,7 @@ extension UsernameRegistrationRecoveryTests {
         defer { defaults.removePersistentDomain(forName: suite) }
 
         let bases = UsernamePrefs.registrationRecordKeys
-        XCTAssertEqual(bases.count, 5)
+        XCTAssertEqual(bases.count, 7)
         let removed = Data([0xaa, 0x11]), kept = Data([0xbb, 0x22])
         func keys(_ wallet: Data) -> [String] {
             WalletEnvironment.NetworkKind.allCases.flatMap { network in
@@ -424,4 +425,800 @@ extension UsernameRegistrationRecoveryTests {
         XCTAssertEqual(snapshot.registrationRecovery, .none)
     }
 
+    // MARK: - Type-20 create failure classifier
+
+    // The node's verdict text of an in-block rejection. Since platform v5.1-dev
+    // it proves nothing on its own: a free rejection (anchor, nullifier, pool,
+    // identity exists) reads the same as the paid key-state one.
+    private var chargedText: String {
+        "shielded identity-create-from-pool failed: Shielded broadcast failed: "
+            + "state transition broadcast error: Identity public key with id 0 is already registered"
+    }
+
+    /// What the SDK throws once its proven reads show the inputs spent and no identity.
+    private var chargedError: PlatformWalletError { .shieldedIdentityCreateInputsConsumed(chargedText) }
+
+    func testProvenSpentInputsWithoutIdentityIsCharged() {
+        XCTAssertEqual(ShieldedCreateFailureKind.classify(chargedError), .charged)
+    }
+
+    func testVerdictTextAloneIsNotCharged() {
+        // A free in-block rejection carries the same text: no record, no "money came back".
+        XCTAssertEqual(
+            ShieldedCreateFailureKind.classify(PlatformWalletError.shieldedBroadcastFailed(chargedText)),
+            .notClassified)
+        for text in ["anchor not found", "nullifier already spent", "identity already exists"] {
+            XCTAssertEqual(ShieldedCreateFailureKind.classify(PlatformWalletError.shieldedBroadcastFailed(
+                "shielded identity-create-from-pool failed: Shielded broadcast failed: "
+                    + "state transition broadcast error: " + text)), .notClassified, text)
+        }
+    }
+
+    func testUnconfirmedSubmissionIsUnknownOutcome() {
+        // A submission whose result is unknown is never "did not go through".
+        for error: Error in [
+            SDKError.stateTransitionResultUnconfirmed("unknown"),
+            PlatformWalletError.transactionBroadcastUnconfirmed("unknown"),
+            PlatformWalletError.shieldedSpendUnconfirmed("unknown"),
+        ] {
+            XCTAssertEqual(ShieldedCreateFailureKind.classify(error), .unknownOutcome, "\(error)")
+            XCTAssertNil(DWIdentityRegistrationCoordinator.shieldedCreateFailure(error), "\(error)")
+        }
+    }
+
+    func testCheckTxRejectionIsNotClassified() {
+        // Same Swift case, built from `Error::Protocol` before any block: nothing was spent.
+        let error = PlatformWalletError.shieldedBroadcastFailed(
+            "shielded identity-create-from-pool failed: Shielded broadcast failed: "
+                + "Protocol error: consensus error: Identity public key with id 0 is already registered")
+        XCTAssertEqual(ShieldedCreateFailureKind.classify(error), .notClassified)
+    }
+
+    func testUnconfirmedCreateIsUnknownOutcomeNeverCharged() {
+        let error = DWIdentityRegistrationCoordinator.CoordinatorError.shieldedCreateUnconfirmed
+        XCTAssertEqual(ShieldedCreateFailureKind.classify(error), .unknownOutcome)
+        XCTAssertEqual(
+            ShieldedCreateFailureKind.classify(PlatformWalletError.shieldedBroadcastUnconfirmed(chargedText)),
+            .unknownOutcome)
+    }
+
+    func testOtherErrorsAreNotClassified() {
+        XCTAssertEqual(ShieldedCreateFailureKind.classify(PlatformWalletError.walletOperation(chargedText)),
+                       .notClassified, "Only the proven charged case can be charged")
+        XCTAssertEqual(ShieldedCreateFailureKind.classify(Failure.unavailable), .notClassified)
+    }
+
+    // MARK: - Charged failure record store
+
+    private func chargedFailureDefaults() throws -> (UserDefaults, String) {
+        let suite = "ShieldedChargedFailureStoreTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        addTeardownBlock { defaults.removePersistentDomain(forName: suite) }
+        return (defaults, suite)
+    }
+
+    private func chargedFailureRecord(
+        _ username: String = "alice", contested: Bool = false
+    ) -> ShieldedChargedFailureStore.Record {
+        .init(username: username, isContested: contested,
+              exitDenominationDuffs: contested ? 25_000_000 : 3_000_000,
+              fallbackAddress: Data([0, 1, 2]), snapshotCredits: 5_000, returnedDuffs: nil)
+    }
+
+    func testChargedFailureRecordSurvivesStoreRecreationAndIsScopedToNetworkAndWallet() throws {
+        let (defaults, suite) = try chargedFailureDefaults()
+        let record = chargedFailureRecord()
+        ShieldedChargedFailureStore(defaults: defaults).save(record, networkRawValue: 1, walletIdHex: "aa11")
+
+        let restored = ShieldedChargedFailureStore(defaults: try XCTUnwrap(UserDefaults(suiteName: suite)))
+        XCTAssertEqual(restored.record(networkRawValue: 1, walletIdHex: "aa11"), record)
+        XCTAssertNil(restored.record(networkRawValue: 0, walletIdHex: "aa11"), "Other network (AC-07)")
+        XCTAssertNil(restored.record(networkRawValue: 1, walletIdHex: "bb22"), "Other wallet (AC-07)")
+        XCTAssertNotNil(defaults.data(forKey: JoinDashPayDismissalScope.scopedKey(
+            "shieldedChargedFailureRecord", networkRawValue: 1, walletIdHex: "aa11")))
+
+        restored.clear(networkRawValue: 1, walletIdHex: "aa11")
+        XCTAssertNil(restored.record(networkRawValue: 1, walletIdHex: "aa11"))
+        restored.clear(networkRawValue: 1, walletIdHex: "aa11")
+    }
+
+    func testChargedFailureStoreIgnoresTheUnboundScopeAndUndecodableValues() throws {
+        let (defaults, _) = try chargedFailureDefaults()
+        let store = ShieldedChargedFailureStore(defaults: defaults)
+        for wallet in [nil, ""] as [String?] {
+            store.save(chargedFailureRecord(), networkRawValue: 1, walletIdHex: wallet)
+            XCTAssertNil(store.record(networkRawValue: 1, walletIdHex: wallet))
+        }
+        let base = ShieldedChargedFailureStore.baseKey
+        XCTAssertFalse(defaults.dictionaryRepresentation().keys.contains { $0.hasPrefix(base) })
+
+        defaults.set(Data("not json".utf8), forKey: JoinDashPayDismissalScope.scopedKey(
+            "shieldedChargedFailureRecord", networkRawValue: 1, walletIdHex: "aa11"))
+        XCTAssertNil(store.record(networkRawValue: 1, walletIdHex: "aa11"))
+    }
+
+    func testSecondChargedFailureReplacesTheRecordAndReturnedAmountIsWriteOnce() throws {
+        let (defaults, _) = try chargedFailureDefaults()
+        let store = ShieldedChargedFailureStore(defaults: defaults)
+        store.fixReturnedAmount(2_900_000, networkRawValue: 1, walletIdHex: "aa11")
+        XCTAssertNil(store.record(networkRawValue: 1, walletIdHex: "aa11"), "No record: nothing to fix")
+
+        store.save(chargedFailureRecord(), networkRawValue: 1, walletIdHex: "aa11")
+        store.fixReturnedAmount(2_900_000, networkRawValue: 1, walletIdHex: "aa11")
+        store.fixReturnedAmount(1_000, networkRawValue: 1, walletIdHex: "aa11")
+        XCTAssertEqual(store.record(networkRawValue: 1, walletIdHex: "aa11")?.returnedDuffs, 2_900_000,
+                       "The first returned amount wins (AC-04)")
+
+        let second = chargedFailureRecord("bob", contested: true)
+        store.save(second, networkRawValue: 1, walletIdHex: "aa11")
+        XCTAssertEqual(store.record(networkRawValue: 1, walletIdHex: "aa11"), second,
+                       "A second failure replaces the first, never sums")
+        XCTAssertNil(store.record(networkRawValue: 1, walletIdHex: "aa11")?.returnedDuffs)
+    }
+
+    func testWalletDeletionAndFullWipeRemoveTheChargedFailureRecord() throws {
+        let (defaults, _) = try chargedFailureDefaults()
+        let store = ShieldedChargedFailureStore(defaults: defaults)
+        for network in WalletEnvironment.NetworkKind.allCases {
+            store.save(chargedFailureRecord(), networkRawValue: network.rawValue, walletIdHex: "aa11")
+            store.save(chargedFailureRecord(), networkRawValue: network.rawValue, walletIdHex: "bb22")
+        }
+        UsernamePrefs.clearRegistrationRecords(walletIdHex: "aa11", defaults: defaults)
+        for network in WalletEnvironment.NetworkKind.allCases {
+            XCTAssertNil(store.record(networkRawValue: network.rawValue, walletIdHex: "aa11"))
+            XCTAssertNotNil(store.record(networkRawValue: network.rawValue, walletIdHex: "bb22"))
+        }
+        UsernamePrefs.clearAllRegistrationRecords(defaults: defaults)
+        for network in WalletEnvironment.NetworkKind.allCases {
+            XCTAssertNil(store.record(networkRawValue: network.rawValue, walletIdHex: "bb22"))
+        }
+    }
+
+    // MARK: - Charged failure explanation texts
+
+    private func dash(_ duffs: UInt64) -> String { duffs.dashAmount.formattedDashAmountWithoutCurrencySymbol }
+
+    private func assertNoForbiddenWording(_ texts: [String], file: StaticString = #filePath, line: UInt = #line) {
+        for text in texts {
+            XCTAssertFalse(text.lowercased().contains("contest fee"), "No 'contest fee' wording: \(text)",
+                           file: file, line: line)
+            XCTAssertFalse(text.contains("Error"), "No technical error text: \(text)", file: file, line: line)
+            XCTAssertFalse(text.contains("FFI"), "No technical error text: \(text)", file: file, line: line)
+        }
+    }
+
+    func testChargedFailurePlainTextIsTheShortFirstBlock() {
+        XCTAssertEqual(ShieldedChargedFailureExplanation.plain, "The registration did not go through.")
+    }
+
+    func testChargedFailureExplanationWhileReturnedAmountIsUnknownIsChecking() {
+        let text = ShieldedChargedFailureExplanation.text(returnedDuffs: nil, amountToAddDuffs: nil)
+        XCTAssertEqual(text.block1, ShieldedChargedFailureExplanation.plain)
+        XCTAssertEqual(text.block2, "Checking where the money went\u{2026}")
+        let block2 = text.block2 ?? ""
+        XCTAssertFalse(block2.contains("Dash"), "No figures yet (AC-01)")
+        XCTAssertFalse(block2.lowercased().contains("try again"), "No advice yet (AC-01)")
+        assertNoForbiddenWording([text.block1, block2])
+    }
+
+    func testChargedFailureExplanationWithAmountToAddNamesBothFiguresInOrder() throws {
+        let text = ShieldedChargedFailureExplanation.text(returnedDuffs: 2_900_000, amountToAddDuffs: 100_000)
+        XCTAssertEqual(text.block1, ShieldedChargedFailureExplanation.plain)
+        let block2 = try XCTUnwrap(text.block2)
+        XCTAssertEqual(block2, "\(dash(2_900_000)) Dash came back to your Platform balance. "
+            + "Add \(dash(100_000)) Dash there to try again.")
+        assertNoForbiddenWording([text.block1, block2])
+    }
+
+    func testChargedFailureExplanationWithNothingToAddSaysRegisterNow() throws {
+        let text = ShieldedChargedFailureExplanation.text(returnedDuffs: 2_900_000, amountToAddDuffs: 0)
+        XCTAssertEqual(text.block1, ShieldedChargedFailureExplanation.plain)
+        let block2 = try XCTUnwrap(text.block2)
+        XCTAssertEqual(block2, "\(dash(2_900_000)) Dash came back to your Platform balance "
+            + "\u{2014} enough to register this username from it now.")
+        XCTAssertFalse(block2.contains("Add "), "Nothing to add (AC-02)")
+        assertNoForbiddenWording([text.block1, block2])
+    }
+
+    func testChargedFailureExplanationForContestedFiguresUsesTheSameShapeWithItsOwnFigures() throws {
+        let text = ShieldedChargedFailureExplanation.text(returnedDuffs: 24_900_000, amountToAddDuffs: 100_000)
+        let block2 = try XCTUnwrap(text.block2)
+        XCTAssertEqual(block2, "\(dash(24_900_000)) Dash came back to your Platform balance. "
+            + "Add \(dash(100_000)) Dash there to try again.")
+        assertNoForbiddenWording([text.block1, block2])
+    }
+
+    /// A returned amount once stated stays stated (AC-04); while the amount to add is unknown it gets no
+    /// advice, and it never reads as still checking.
+    func testChargedFailureExplanationWithUnknownAmountToAddStatesReturnedAmountWithoutAdvice() throws {
+        let text = ShieldedChargedFailureExplanation.text(returnedDuffs: 2_900_000, amountToAddDuffs: nil)
+        XCTAssertEqual(text.block1, ShieldedChargedFailureExplanation.plain)
+        let block2 = try XCTUnwrap(text.block2)
+        XCTAssertEqual(block2, "\(dash(2_900_000)) Dash came back to your Platform balance.")
+        assertNoForbiddenWording([text.block1, block2])
+    }
+
+    // MARK: - Charged failure coordinator seams
+
+    private typealias Coordinator = DWIdentityRegistrationCoordinator
+    private var rawSdkText: String {
+        "state transition broadcast error: Identity public key with id 0 is already registered"
+    }
+
+    func testChargedRecordBuilderForStandardNameConvertsCreditsToDuffs() {
+        let record = ShieldedChargedFailureStore.Record.charged(
+            username: "alice", isContested: false, denominationCredits: 3_000_000_000,
+            fallbackAddress: Data([0, 1, 2]), snapshotCredits: 7_000)
+        let expected = ShieldedChargedFailureStore.Record(
+            username: "alice", isContested: false, exitDenominationDuffs: 3_000_000,
+            fallbackAddress: Data([0, 1, 2]), snapshotCredits: 7_000, returnedDuffs: nil)
+        XCTAssertEqual(record, expected)
+    }
+
+    func testChargedRecordBuilderForContestedNameUsesTheContestedDenomination() {
+        let record = ShieldedChargedFailureStore.Record.charged(
+            username: "bob", isContested: true, denominationCredits: 25_000_000_000,
+            fallbackAddress: Data([0, 9]), snapshotCredits: 0)
+        XCTAssertEqual(record.exitDenominationDuffs, 25_000_000)
+        XCTAssertTrue(record.isContested)
+        XCTAssertEqual(record.snapshotCredits, 0)
+        XCTAssertNil(record.returnedDuffs, "Returned amount is unknown when the record is written")
+    }
+
+    // MARK: - Charged failure record lifecycle (AC-04)
+
+    private var recordNetwork: Int { 1 }
+    private var recordWalletHex: String { "01" }
+
+    private func makeFailureStore() throws -> ShieldedChargedFailureStore {
+        let suite = "ShieldedChargedFailureLifecycle-\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        addTeardownBlock { defaults.removePersistentDomain(forName: suite) }
+        return ShieldedChargedFailureStore(defaults: defaults)
+    }
+
+    private func saveChargedRecord(_ store: ShieldedChargedFailureStore, walletIdHex: String) {
+        store.save(
+            .charged(username: "alice", isContested: false, denominationCredits: 3_000_000_000,
+                     fallbackAddress: Data([0, 1]), snapshotCredits: 0),
+            networkRawValue: recordNetwork, walletIdHex: walletIdHex)
+    }
+
+    @MainActor
+    private func makeCoordinator(_ store: ShieldedChargedFailureStore) -> DWIdentityRegistrationCoordinator {
+        let network = recordNetwork
+        let walletHex = recordWalletHex
+        return DWIdentityRegistrationCoordinator(collaborators: .init(
+            contestedNames: NoOpContestedNames(), draftStore: NoOpDraftStore(), isActiveContext: { _, _ in true },
+            shieldedFailureStore: store, activeFailureRecordScope: { (network, walletHex) }))
+    }
+
+    /// The next registration in this wallet starting is enough, whatever it later fails on.
+    @MainActor
+    func testStartingACreateRegistrationClearsTheChargedFailureRecord() async throws {
+        let store = try makeFailureStore()
+        saveChargedRecord(store, walletIdHex: recordWalletHex)
+        let coordinator = makeCoordinator(store)
+        do {
+            // A companion beside a non-contested name is refused before anything else runs.
+            try await coordinator.startCreateUsername("alice123", fundingSource: .core, temporaryUsername: "bob")
+            XCTFail("Expected the companion pairing to be refused")
+        } catch {}
+        XCTAssertNil(store.record(networkRawValue: recordNetwork, walletIdHex: recordWalletHex))
+    }
+
+    @MainActor
+    func testStartingAPurchaseClearsTheChargedFailureRecord() async throws {
+        try XCTSkipIf(SwiftDashSDKHost.shared.wallet != nil, "A loaded wallet would let the purchase go on")
+        let store = try makeFailureStore()
+        saveChargedRecord(store, walletIdHex: recordWalletHex)
+        let coordinator = makeCoordinator(store)
+        do {
+            try await coordinator.startPurchaseUsername(name: "alice", priceCredits: 1)
+            XCTFail("Expected the purchase to stop without a wallet")
+        } catch {}
+        XCTAssertNil(store.record(networkRawValue: recordNetwork, walletIdHex: recordWalletHex))
+    }
+
+    @MainActor
+    func testResumingARegistrationClearsTheChargedFailureRecord() async throws {
+        try XCTSkipIf(SwiftDashSDKHost.shared.wallet != nil, "A loaded wallet would let the registration go on")
+        let store = try makeFailureStore()
+        saveChargedRecord(store, walletIdHex: recordWalletHex)
+        let coordinator = makeCoordinator(store)
+        do {
+            try await coordinator.resumeUsernameRegistration(identityId: Data([7]), username: "alice")
+            XCTFail("Expected the registration to stop without a wallet")
+        } catch {}
+        XCTAssertNil(store.record(networkRawValue: recordNetwork, walletIdHex: recordWalletHex))
+    }
+
+    @MainActor
+    func testACompletedNameRegistrationClearsTheRegisteringWalletsRecordOnly() async throws {
+        let store = try makeFailureStore()
+        saveChargedRecord(store, walletIdHex: recordWalletHex)
+        saveChargedRecord(store, walletIdHex: "02")
+        let coordinator = makeCoordinator(store)
+        let identityId = Data([2])
+        let walletId = Data([1])
+        _ = coordinator.completeNameRegistration(
+            identityId: identityId, username: "alice", nameState: .owned,
+            draftScope: .init(network: "testnet", walletId: walletId, identityId: identityId),
+            walletId: walletId, network: .testnet, newController: DWIdentityRegistrationController()
+        ) {}
+        XCTAssertNil(store.record(networkRawValue: recordNetwork, walletIdHex: recordWalletHex))
+        XCTAssertNotNil(store.record(networkRawValue: recordNetwork, walletIdHex: "02"), "Another wallet keeps its own")
+    }
+
+    /// A network switch during the attempt must not file the record under the network now active.
+    @MainActor
+    func testAChargedFailureIsSavedUnderTheRegisteringNetworkOnly() throws {
+        let store = try makeFailureStore()
+        let coordinator = makeCoordinator(store)
+        let record = ShieldedChargedFailureStore.Record.charged(
+            username: "alice", isContested: false, denominationCredits: 3_000_000_000,
+            fallbackAddress: Data([0, 1]), snapshotCredits: 7_000)
+        let mainnet = WalletEnvironment.NetworkKind.mainnet.rawValue
+        XCTAssertNotEqual(mainnet, recordNetwork, "The active scope must be another network")
+
+        let thrown = coordinator.shieldedCreateFailureError(
+            chargedError, chargedRecord: record,
+            walletId: Data([1]), network: .mainnet)
+
+        guard case .shieldedRegistrationCharged? = thrown as? Coordinator.CoordinatorError else {
+            return XCTFail("Expected shieldedRegistrationCharged, got \(thrown)")
+        }
+        XCTAssertEqual(store.record(networkRawValue: mainnet, walletIdHex: recordWalletHex), record)
+        XCTAssertNil(store.record(networkRawValue: recordNetwork, walletIdHex: recordWalletHex))
+    }
+
+    @MainActor
+    func testAnUnclassifiedFailureSavesNoRecord() throws {
+        let store = try makeFailureStore()
+        let coordinator = makeCoordinator(store)
+        let record = ShieldedChargedFailureStore.Record.charged(
+            username: "alice", isContested: false, denominationCredits: 3_000_000_000,
+            fallbackAddress: Data([0, 1]), snapshotCredits: 0)
+
+        let thrown = coordinator.shieldedCreateFailureError(
+            PlatformWalletError.shieldedBroadcastFailed("CheckTx rejected"), chargedRecord: record,
+            walletId: Data([1]), network: .testnet)
+
+        guard case .shieldedRegistrationNotClassified? = thrown as? Coordinator.CoordinatorError else {
+            return XCTFail("Expected shieldedRegistrationNotClassified, got \(thrown)")
+        }
+        XCTAssertNil(store.record(networkRawValue: recordNetwork, walletIdHex: recordWalletHex))
+    }
+
+    @MainActor
+    func testACompletedNameRegistrationClearsTheRegisteringNetworksRecordOnly() throws {
+        let store = try makeFailureStore()
+        let mainnet = WalletEnvironment.NetworkKind.mainnet.rawValue
+        let record = ShieldedChargedFailureStore.Record.charged(
+            username: "alice", isContested: false, denominationCredits: 3_000_000_000,
+            fallbackAddress: Data([0, 1]), snapshotCredits: 0)
+        store.save(record, networkRawValue: mainnet, walletIdHex: recordWalletHex)
+        saveChargedRecord(store, walletIdHex: recordWalletHex)
+        let coordinator = makeCoordinator(store)
+        let identityId = Data([2])
+        let walletId = Data([1])
+        _ = coordinator.completeNameRegistration(
+            identityId: identityId, username: "alice", nameState: .owned,
+            draftScope: .init(network: "mainnet", walletId: walletId, identityId: identityId),
+            walletId: walletId, network: .mainnet, newController: DWIdentityRegistrationController()
+        ) {}
+        XCTAssertNil(store.record(networkRawValue: mainnet, walletIdHex: recordWalletHex))
+        XCTAssertNotNil(store.record(networkRawValue: recordNetwork, walletIdHex: recordWalletHex),
+                        "The active network's record is another failure's")
+    }
+
+    func testChargedVerdictMapsToChargedCaseWithPlainTextAndNoRawSdkText() throws {
+        let error = chargedError
+        let mapped = try XCTUnwrap(Coordinator.shieldedCreateFailure(error))
+        guard case .shieldedRegistrationCharged = mapped else {
+            return XCTFail("Expected shieldedRegistrationCharged, got \(mapped)")
+        }
+        XCTAssertEqual(mapped.localizedDescription, ShieldedChargedFailureExplanation.plain)
+        XCTAssertFalse(mapped.localizedDescription.contains(rawSdkText))
+    }
+
+    func testNotClassifiedFailureMapsToNotClassifiedCaseWithPlainTextAndNoRawSdkText() throws {
+        let error = PlatformWalletError.shieldedBroadcastFailed(
+            "shielded identity-create-from-pool failed: Shielded broadcast failed: Protocol error: " + rawSdkText)
+        let mapped = try XCTUnwrap(Coordinator.shieldedCreateFailure(error))
+        guard case .shieldedRegistrationNotClassified = mapped else {
+            return XCTFail("Expected shieldedRegistrationNotClassified, got \(mapped)")
+        }
+        XCTAssertEqual(mapped.localizedDescription, ShieldedChargedFailureExplanation.plain)
+        XCTAssertFalse(mapped.localizedDescription.contains(rawSdkText))
+    }
+
+    func testUnknownOutcomeIsNotRemappedSoTheExistingStillConfirmingPathStays() {
+        // nil = the caller keeps the existing `.shieldedCreateUnconfirmed` handling (AC-03).
+        XCTAssertNil(Coordinator.shieldedCreateFailure(Coordinator.CoordinatorError.shieldedCreateUnconfirmed))
+    }
+
+    // MARK: - Name-step failure wording
+
+    private typealias Wording = UsernameRegistrationFailureWording
+
+    /// Real consensus texts, platform 1721ca7a8b (rs-dpp errors/consensus/state/document), placeholders filled in.
+    private var nameTakenDuplicateRaw: String {
+        "Document 4vJ7xQe2 has duplicate unique properties "
+        + "[\"normalizedLabel\", \"normalizedParentDomainName\"] with other documents"
+    }
+    private var nameTakenPresentRaw: String {
+        "Document 4vJ7xQe2 is already present"
+    }
+    private var contestClosedRaw: String {
+        "Document Contest for vote_poll ContestedDocumentResourceVotePoll { } "
+        + "is not joinable NotStarted, it started 1700000000000 and it is now 1701000000000, "
+        + "and you can only join for 1209600000"
+    }
+    private var contestFullRaw: String {
+        "The vote poll ContestedDocumentResourceVotePoll { } already has 3 contenders, "
+        + "the most a contest accepts"
+    }
+    private var alreadyRequestedRaw: String {
+        "An Identity with the id 9fKq1Zr is already a contestant for the vote_poll "
+        + "ContestedDocumentResourceVotePoll { }"
+    }
+    private var deviceClockRaw: String {
+        "Document 4vJ7xQe2 $createdAt timestamp 1700000000000 are out of block time window "
+        + "from 1700000100000 and 1700000200000"
+    }
+
+    private func assertWording(_ raw: String, _ expected: String, file: StaticString = #filePath, line: UInt = #line) {
+        for shielded in [false, true] {
+            let text = Wording.message(forRaw: "Platform error: " + raw, username: "alice", paidFromShielded: shielded)
+            XCTAssertEqual(text, expected, "paidFromShielded=\(shielded)", file: file, line: line)
+        }
+    }
+
+    func testNameTakenDuplicateUniquePropertiesWording() {
+        assertWording(nameTakenDuplicateRaw,
+                      "\u{201C}alice\u{201D} was just taken. Please choose a different username.")
+    }
+
+    func testNameTakenAlreadyPresentWording() {
+        assertWording(nameTakenPresentRaw,
+                      "\u{201C}alice\u{201D} was just taken. Please choose a different username.")
+    }
+
+    func testContestClosedWording() {
+        assertWording(contestClosedRaw,
+                      "Requests for \u{201C}alice\u{201D} are closed \u{2014} its vote has started. "
+                          + "Please choose a different username.")
+    }
+
+    func testContestFullWording() {
+        assertWording(contestFullRaw,
+                      "\u{201C}alice\u{201D} already has the most requests a vote accepts. "
+                          + "Please choose a different username.")
+    }
+
+    func testAlreadyRequestedWording() {
+        assertWording(alreadyRequestedRaw, "You have already requested \u{201C}alice\u{201D}.")
+    }
+
+    func testDeviceClockWording() {
+        assertWording(deviceClockRaw, "Check the date and time on your device, then try again.")
+    }
+
+    func testUnknownCauseShieldedPaidGetsPlainTextWithoutRawText() {
+        let raw = "Something unforeseen: ContestedDocumentResourceVotePoll { index_name: \"parentNameAndLabel\" }"
+        let text = Wording.message(forRaw: raw, username: "alice", paidFromShielded: true)
+        XCTAssertEqual(text, ShieldedChargedFailureExplanation.plain)
+        XCTAssertFalse(text.contains(raw))
+        XCTAssertFalse(text.contains("ContestedDocumentResourceVotePoll"))
+    }
+
+    func testUnknownCauseOtherSourceKeepsRawTextUnchanged() {
+        let raw = "Something unforeseen: ContestedDocumentResourceVotePoll { }"
+        XCTAssertEqual(Wording.message(forRaw: raw, username: "alice"), raw)
+        XCTAssertEqual(Wording.message(forRaw: raw, username: "alice", paidFromShielded: false), raw)
+    }
+
+    func testLockedTextUnchangedWhenPaidFromShielded() {
+        let raw = "vote_poll_status: Locked"
+        XCTAssertEqual(Wording.message(forRaw: raw, username: "alice", paidFromShielded: true),
+                       Wording.message(forRaw: raw, username: "alice"))
+        XCTAssertTrue(Wording.message(forRaw: raw, username: "alice", paidFromShielded: true)
+            .contains("was locked by a masternode vote"))
+    }
+
+    func testInsufficientCreditsTextUnchangedWhenPaidFromShielded() {
+        let raw = "Insufficient identity balance: required 100, available 1"
+        let text = Wording.message(forRaw: raw, username: "alice", paidFromShielded: true)
+        XCTAssertEqual(text, Wording.message(forRaw: raw, username: "alice"))
+        XCTAssertTrue(text.hasPrefix("Not enough identity credits"))
+    }
+
+    func testTwoCausesInOneRawTextFirstInTableOrderWins() {
+        let raw = deviceClockRaw + "; " + nameTakenPresentRaw
+        XCTAssertEqual(Wording.message(forRaw: raw, username: "alice", paidFromShielded: true),
+                       "\u{201C}alice\u{201D} was just taken. Please choose a different username.")
+    }
+
+    // MARK: - Typed coordinator errors vs raw platform text (the row and the form)
+
+    private typealias CoordinatorError = DWIdentityRegistrationCoordinator.CoordinatorError
+
+    /// The coordinator's own texts survive a Shielded attempt: the unknown outcome keeps its
+    /// "still confirming" text (AC-03) and a refusal before anything was sent keeps its reason.
+    func testTypedCoordinatorErrorKeepsItsOwnTextWhenPaidFromShielded() throws {
+        let typed: [CoordinatorError] = [
+            .shieldedCreateUnconfirmed, .noShieldedFallbackAddress, .shieldedPoolTooSmall(currentNotes: 3),
+            .insufficientShieldedBalance(requiredCredits: 3_000_000_000, availableCredits: 1_000),
+            .alreadyInFlight, .authFailed, .noWallet,
+        ]
+        for error in typed {
+            let own = try XCTUnwrap(error.errorDescription)
+            XCTAssertEqual(Wording.message(for: error, username: "alice", paidFromShielded: true), own, "\(error)")
+            XCTAssertEqual(Wording.message(for: error as NSError, username: "alice", paidFromShielded: true), own,
+                           "bridged \(error)")
+        }
+    }
+
+    /// Texts the app writes itself are not raw platform text, also inside a name-step wrapper.
+    func testAppWrittenTextsKeepTheirWordsWhenPaidFromShielded() throws {
+        XCTAssertEqual(CoordinatorError.usernameAvailabilityUnknown.errorDescription,
+                       "Could not check username availability. Please try again.")
+        XCTAssertEqual(CoordinatorError.contestFundUnavailable.errorDescription,
+                       "Network error. Please check your connection and try again.")
+        let appWritten: [CoordinatorError] = [
+            .dpnsRegistration(CoordinatorError.usernameAvailabilityUnknown), .contestFundUnavailable,
+        ]
+        for error in appWritten {
+            XCTAssertEqual(Wording.message(for: error, username: "alice", paidFromShielded: true),
+                           try XCTUnwrap(error.errorDescription), "\(error)")
+        }
+    }
+
+    func testAnUnresolvableContestFundBecomesItsOwnCoordinatorError() {
+        let mapped = DWIdentityRegistrationCoordinator.contestFundFailure(
+            ContestedUsernameFee.UnresolvedProtocolVersion())
+        guard case .contestFundUnavailable? = mapped as? CoordinatorError else {
+            return XCTFail("Expected contestFundUnavailable, got \(mapped)")
+        }
+        let other = NSError(domain: "Test", code: 3)
+        XCTAssertIdentical(DWIdentityRegistrationCoordinator.contestFundFailure(other) as NSError, other,
+                           "Any other fund error is passed on as it is")
+    }
+
+    func testRawPlatformTextReadsPlainWhenPaidFromShielded() {
+        let raw = NSError(domain: "Test", code: 1, userInfo: [NSLocalizedDescriptionKey: "Something unforeseen { }"])
+        let plain = ShieldedChargedFailureExplanation.plain
+        XCTAssertEqual(Wording.message(for: raw, username: "alice", paidFromShielded: true), plain)
+        XCTAssertEqual(Wording.message(for: CoordinatorError.identityRegistration(raw), username: "alice",
+                                       paidFromShielded: true), plain)
+        XCTAssertEqual(Wording.message(for: CoordinatorError.dpnsRegistration(raw), username: "alice",
+                                       paidFromShielded: true), plain)
+        // These describe themselves with the wrapped error's raw text too.
+        for wrapper in [CoordinatorError.keyDerivation(raw), .identityTopUp(raw), .availabilityCheck(raw)] {
+            XCTAssertEqual(Wording.message(for: wrapper, username: "alice", paidFromShielded: true), plain,
+                           "\(wrapper)")
+        }
+        XCTAssertEqual(Wording.message(for: raw, username: "alice", paidFromShielded: false),
+                       "Something unforeseen { }")
+    }
+}
+
+@MainActor
+private final class NoOpContestedNames: ContestedNamePendingClearing {
+    func clearPending(label: String, for network: Network, walletId: Data?) {}
+}
+
+private struct NoOpDraftStore: UsernameRegistrationDraftClearing {
+    func clear(for scope: UsernameRegistrationDraftStore.Scope) {}
+}
+
+// MARK: - DashPay row with a charged failure record (AC-04)
+
+extension UsernameRegistrationRecoveryTests {
+    private var explanation: String {
+        "The registration did not go through.\n0.029 Dash came back to your Platform balance."
+    }
+
+    func testARecordTurnsAnInterruptedRowIntoTheExplainedFailure() {
+        let shown = JoinDashPayViewModel.rowFailure(state: .interrupted, failureReason: nil, explanation: explanation)
+        XCTAssertEqual(shown.state, .creationFailed, "Not \"Registration was interrupted\" after a relaunch")
+        XCTAssertEqual(shown.failureExplanation, explanation)
+        XCTAssertNil(shown.failureReason)
+    }
+
+    func testARecordReplacesTheBridgesFailureText() {
+        let shown = JoinDashPayViewModel.rowFailure(
+            state: .creationFailed, failureReason: "The registration did not go through.", explanation: explanation)
+        XCTAssertEqual(shown.state, .creationFailed)
+        XCTAssertEqual(shown.failureExplanation, explanation)
+        XCTAssertNil(shown.failureReason)
+    }
+
+    func testARecordLeavesOtherStatesAlone() {
+        for state in [JoinDashPayState.creating, .registered, .voting] {
+            let shown = JoinDashPayViewModel.rowFailure(state: state, failureReason: nil, explanation: explanation)
+            XCTAssertEqual(shown.state, state)
+            XCTAssertNil(shown.failureExplanation, "\(state)")
+        }
+    }
+
+    func testWithoutARecordTheReportIsUnchanged() {
+        let interrupted = JoinDashPayViewModel.rowFailure(state: .interrupted, failureReason: nil, explanation: nil)
+        XCTAssertEqual(interrupted.state, .interrupted)
+        let failed = JoinDashPayViewModel.rowFailure(state: .creationFailed, failureReason: "raw", explanation: nil)
+        XCTAssertEqual(failed.state, .creationFailed)
+        XCTAssertEqual(failed.failureReason, "raw")
+        XCTAssertNil(failed.failureExplanation)
+    }
+
+    func testRecordBackedRowShowsTheExplanationAloneAndNoX() {
+        let copy = JoinDashPayCopy(
+            state: .creationFailed, username: "alice123", shieldedSnapshot: nil,
+            registrationStep: .registrationUsername, failureReason: "raw", failureExplanation: explanation)
+        XCTAssertEqual(copy.subtitle, explanation, "No step line, no bridge text")
+        XCTAssertTrue(copy.isRecordBackedFailure, "The row hides its X while the record explains the failure")
+    }
+
+    func testWithoutAReportTheRecordAloneIsTheExplainedFailure() {
+        let shown = JoinDashPayViewModel.recordRow(recordUsername: "alice", explanation: explanation)
+        XCTAssertEqual(shown?.row.state, .creationFailed)
+        XCTAssertEqual(shown?.row.failureExplanation, explanation)
+        XCTAssertNil(shown?.row.failureReason)
+        XCTAssertEqual(shown?.username, "alice")
+        XCTAssertNil(JoinDashPayViewModel.recordRow(recordUsername: nil, explanation: nil))
+    }
+
+    /// The row was closed while the registration ran, which drops the handoff marker; the charged
+    /// failure that follows is still reported from its record, and again after a relaunch.
+    @MainActor
+    func testClosingTheRunningRowThenAChargedFailureStillShowsTheRecordAfterRelaunch() throws {
+        let prefs = UsernamePrefs.shared
+        let saved = prefs.inFlightRegistrationUsername
+        defer { prefs.inFlightRegistrationUsername = saved }
+        prefs.inFlightRegistrationUsername = "alice"
+        JoinDashPayViewModel(previewState: .creating, username: "alice").markAsDismissed()
+        XCTAssertNil(prefs.inFlightRegistrationUsername)
+
+        let store = try makeFailureStore()
+        saveChargedRecord(store, walletIdHex: "aa")
+        func relaunchedRow() -> (row: JoinDashPayViewModel.RowFailure, username: String)? {
+            let model = ShieldedChargedFailureExplanationModel(
+                store: store, networkRawValue: recordNetwork, walletIdHex: "aa",
+                candidates: { nil }, nextReceive: { nil }, fundingDuffs: { _ in 0 })
+            model.refresh()
+            return JoinDashPayViewModel.recordRow(recordUsername: model.username, explanation: model.text?.block1)
+        }
+        for shown in [relaunchedRow(), relaunchedRow()] {
+            XCTAssertEqual(shown?.row.state, .creationFailed)
+            XCTAssertEqual(shown?.username, "alice")
+            XCTAssertEqual(
+                shown?.row.failureExplanation,
+                ShieldedChargedFailureExplanation.text(returnedDuffs: nil, amountToAddDuffs: nil).block1)
+        }
+    }
+
+    func testFailedRowWithoutARecordKeepsTodaysText() {
+        let copy = JoinDashPayCopy(
+            state: .creationFailed, username: "alice123", shieldedSnapshot: nil,
+            registrationStep: .registrationUsername, failureReason: "raw")
+        XCTAssertTrue(copy.subtitle.hasSuffix("\nraw"), copy.subtitle)
+        XCTAssertNotEqual(copy.subtitle, explanation)
+        XCTAssertFalse(copy.isRecordBackedFailure)
+    }
+}
+
+// MARK: - A create left unconfirmed, proven charged later
+
+extension UsernameRegistrationRecoveryTests {
+    private var unresolvedIdentityId: Data { Data(repeating: 9, count: 32) }
+
+    /// The create call's outcome reads were unavailable: the attempt is kept for the SDK to
+    /// settle, under the registering network, with no charged record and no explanation yet.
+    @MainActor
+    func testAnUnconfirmedCreateKeepsItsAttemptUnderTheRegisteringNetworkWithoutARecord() throws {
+        let store = try makeFailureStore()
+        let coordinator = makeCoordinator(store)
+        let record = chargedFailureRecord()
+        let mainnet = WalletEnvironment.NetworkKind.mainnet.rawValue
+
+        let thrown = coordinator.shieldedCreateFailureError(
+            ShieldedIdentityCreateUnconfirmedError(identityId: unresolvedIdentityId, message: "wait timed out"),
+            chargedRecord: record, walletId: Data([1]), network: .mainnet)
+
+        guard case .shieldedCreateUnconfirmed? = thrown as? Coordinator.CoordinatorError else {
+            return XCTFail("Expected shieldedCreateUnconfirmed, got \(thrown)")
+        }
+        XCTAssertEqual(
+            store.unresolvedAttempt(networkRawValue: mainnet, walletIdHex: recordWalletHex),
+            .init(identityId: unresolvedIdentityId, record: record))
+        XCTAssertNil(store.unresolvedAttempt(networkRawValue: recordNetwork, walletIdHex: recordWalletHex))
+        XCTAssertNil(store.record(networkRawValue: mainnet, walletIdHex: recordWalletHex), "Amount-free until proven")
+    }
+
+    func testAnUnresolvedAttemptBecomesItsChargedRecordOnlyOnceItsInputsAreProvenConsumed() throws {
+        let store = try makeFailureStore()
+        let attempt = ShieldedChargedFailureStore.UnresolvedAttempt(
+            identityId: unresolvedIdentityId, record: chargedFailureRecord())
+        store.saveUnresolved(attempt, networkRawValue: recordNetwork, walletIdHex: recordWalletHex)
+
+        XCTAssertFalse(store.reconcileUnresolved(
+            networkRawValue: recordNetwork, walletIdHex: recordWalletHex, inputsConsumed: { _ in false }))
+        XCTAssertEqual(store.unresolvedAttempt(networkRawValue: recordNetwork, walletIdHex: recordWalletHex), attempt)
+        XCTAssertNil(store.record(networkRawValue: recordNetwork, walletIdHex: recordWalletHex))
+
+        var asked: [Data] = []
+        XCTAssertTrue(store.reconcileUnresolved(
+            networkRawValue: recordNetwork, walletIdHex: recordWalletHex,
+            inputsConsumed: { asked.append($0); return true }))
+        XCTAssertEqual(asked, [unresolvedIdentityId], "Asked about the attempt's own create")
+        XCTAssertEqual(store.record(networkRawValue: recordNetwork, walletIdHex: recordWalletHex), attempt.record)
+        XCTAssertNil(store.unresolvedAttempt(networkRawValue: recordNetwork, walletIdHex: recordWalletHex))
+    }
+
+    func testStartingAgainAndWipingDropTheUnresolvedAttempt() throws {
+        let (defaults, _) = try chargedFailureDefaults()
+        let store = ShieldedChargedFailureStore(defaults: defaults)
+        let attempt = ShieldedChargedFailureStore.UnresolvedAttempt(
+            identityId: unresolvedIdentityId, record: chargedFailureRecord())
+        store.saveUnresolved(attempt, networkRawValue: 1, walletIdHex: "aa11")
+        store.clear(networkRawValue: 1, walletIdHex: "aa11")
+        XCTAssertNil(store.unresolvedAttempt(networkRawValue: 1, walletIdHex: "aa11"))
+
+        for network in WalletEnvironment.NetworkKind.allCases {
+            store.saveUnresolved(attempt, networkRawValue: network.rawValue, walletIdHex: "aa11")
+        }
+        UsernamePrefs.clearRegistrationRecords(walletIdHex: "aa11", defaults: defaults)
+        for network in WalletEnvironment.NetworkKind.allCases {
+            XCTAssertNil(store.unresolvedAttempt(networkRawValue: network.rawValue, walletIdHex: "aa11"))
+        }
+    }
+
+    /// The create's outcome reads were unavailable, so the row reported the attempt
+    /// unconfirmed; a later sync proves its inputs consumed. The explanation reads that proof,
+    /// after a relaunch too, and the row then explains the charged failure instead.
+    @MainActor
+    func testAFailureProvenDuringALaterSyncIsExplainedAfterRelaunch() throws {
+        let store = try makeFailureStore()
+        let coordinator = makeCoordinator(store)
+        _ = coordinator.shieldedCreateFailureError(
+            ShieldedIdentityCreateUnconfirmedError(identityId: unresolvedIdentityId, message: "wait timed out"),
+            chargedRecord: chargedFailureRecord(), walletId: Data([1]), network: .testnet)
+        let network = WalletEnvironment.NetworkKind.testnet.rawValue
+        var proven = false
+        func relaunchedModel() -> ShieldedChargedFailureExplanationModel {
+            let model = ShieldedChargedFailureExplanationModel(
+                store: store, networkRawValue: network, walletIdHex: recordWalletHex,
+                candidates: { nil }, nextReceive: { nil }, fundingDuffs: { _ in 0 },
+                inputsConsumed: { [unresolvedIdentityId] in proven && $0 == unresolvedIdentityId })
+            model.refresh()
+            return model
+        }
+
+        let before = relaunchedModel()
+        XCTAssertTrue(before.hasUnresolvedAttempt)
+        XCTAssertFalse(before.hasRecord)
+        XCTAssertNil(before.text, "Unresolved: no charged explanation")
+        XCTAssertEqual(
+            JoinDashPayViewModel.rowFailure(state: .interrupted, failureReason: nil, explanation: nil).state,
+            .interrupted)
+
+        proven = true
+        for model in [relaunchedModel(), relaunchedModel()] {
+            XCTAssertFalse(model.hasUnresolvedAttempt)
+            XCTAssertTrue(model.hasRecord)
+            XCTAssertEqual(model.username, "alice")
+            let text = try XCTUnwrap(model.text)
+            XCTAssertEqual(text.block2, "Checking where the money went\u{2026}")
+            let shown = JoinDashPayViewModel.rowFailure(
+                state: .interrupted, failureReason: nil, explanation: text.block1 + "\n" + (text.block2 ?? ""))
+            XCTAssertEqual(shown.state, .creationFailed)
+            XCTAssertNotNil(shown.failureExplanation)
+        }
+    }
+
+    func testOnlyTheInputsConsumedStatusIsAProvenChargedFailure() {
+        XCTAssertEqual(ShieldedActivityItem.Status.inputsConsumed.rawValue, 4, "The SDK's InputsConsumed status")
+        XCTAssertEqual(ShieldedActivityItem.Status.failed.rawValue, 2)
+    }
 }

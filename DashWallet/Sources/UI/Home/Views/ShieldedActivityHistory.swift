@@ -65,6 +65,8 @@ struct ShieldedActivityItem: Identifiable {
         case confirmed = 1
         case failed = 2
         case unknown = 3
+        /// Proven unable to execute with its inputs spent (an identity create from the pool).
+        case inputsConsumed = 4
     }
 
     let entryId: Data
@@ -297,7 +299,7 @@ struct ShieldedActivityItem: Identifiable {
     var trailingStatusText: String? {
         switch status {
         case .pending: return NSLocalizedString("Pending", comment: "")
-        case .failed: return NSLocalizedString("Failed", comment: "")
+        case .failed, .inputsConsumed: return NSLocalizedString("Failed", comment: "")
         case .unknown: return NSLocalizedString("Unknown", comment: "")
         case .confirmed: return nil
         }

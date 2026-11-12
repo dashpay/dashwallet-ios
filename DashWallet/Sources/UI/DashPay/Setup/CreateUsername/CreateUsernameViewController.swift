@@ -272,6 +272,9 @@ struct CreateUsernameView: View {
     /// human-readable failure message. OK clears it and keeps the
     /// screen up so the user can edit or retry.
     @State private var registrationErrorMessage: String? = nil
+    /// Non-nil drives the modal dialog of a Shielded-paid failure; its text was fixed when the
+    /// failure arrived. OK clears it and keeps the screen up, as the alert's OK does.
+    @State private var registrationFailureDialog: CreateUsernameViewModel.RegistrationFailureDialog?
     /// The Core asset lock `CoreCoinConsolidationSheet` is up for: the
     /// registration or purchase was refused over the input limit, before
     /// anything was sent.
@@ -731,6 +734,14 @@ struct CreateUsernameView: View {
         }
         // Nothing was sent; the user submits again once the coins are combined.
         .coreCoinConsolidationSheet(check: $coinConsolidationCheck)
+        .overlay {
+            if let dialog = registrationFailureDialog {
+                RegistrationFailureDialogView(dialog: dialog) {
+                    registrationFailureDialog = nil
+                    screenLockedAfterAuth = false
+                }
+            }
+        }
     }
 
     /// Label, field and the rules the field is judged by, in one card.
@@ -1253,9 +1264,10 @@ struct CreateUsernameView: View {
             case .needsCoinConsolidation(let check):
                 viewModel.refreshRegistrationRecoveryState()
                 coinConsolidationCheck = check
-            case .submittedForVoting:
-                // A purchase never enters a vote; the outcome enum is
-                // shared with registration, this arm is unreachable.
+            case .submittedForVoting, .shieldedFailure:
+                // A purchase never enters a vote and is never paid from
+                // Shielded; the outcome enum is shared with registration,
+                // this arm is unreachable.
                 break
             }
         }
@@ -1641,6 +1653,9 @@ struct CreateUsernameView: View {
             case .failure(let message):
                 viewModel.refreshRegistrationRecoveryState()
                 registrationErrorMessage = message
+            case .shieldedFailure(let dialog):
+                viewModel.refreshRegistrationRecoveryState()
+                registrationFailureDialog = dialog
             case .needsCoinConsolidation(let check):
                 viewModel.refreshRegistrationRecoveryState()
                 screenLockedAfterAuth = viewModel.purchaseSubmissionUnconfirmed
@@ -1945,4 +1960,61 @@ extension CreateUsernameViewModel.ShieldedCostBlocker {
             return (error.errorDescription ?? "", .failed)
         }
     }
+}
+
+// MARK: - RegistrationFailureDialogView
+
+/// The modal dialog over the Create Username form for a failed Shielded-paid registration.
+private struct RegistrationFailureDialogView: View {
+    let dialog: CreateUsernameViewModel.RegistrationFailureDialog
+    let onOK: () -> Void
+
+    var body: some View {
+        ModalDialog(
+            style: dialog.style,
+            icon: .system("exclamationmark.triangle.fill"),
+            heading: dialog.heading,
+            textBlock1: dialog.block1,
+            textBlock2: dialog.block2,
+            positiveButtonText: NSLocalizedString("OK", comment: ""),
+            positiveButtonAction: onOK
+        )
+        .accessibilityElement(children: .contain)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.dash.backgroundOverlay)
+        .edgesIgnoringSafeArea(.all)
+    }
+}
+
+#Preview("Checking") {
+    let text = ShieldedChargedFailureExplanation.text(returnedDuffs: nil, amountToAddDuffs: nil)
+    RegistrationFailureDialogView(
+        dialog: .init(
+            style: .warning, heading: "Registration failed", block1: text.block1, block2: text.block2),
+        onOK: {})
+}
+
+#Preview("Explained") {
+    let text = ShieldedChargedFailureExplanation.text(returnedDuffs: 2_900_000, amountToAddDuffs: 100_000)
+    RegistrationFailureDialogView(
+        dialog: .init(
+            style: .error, heading: "Registration failed", block1: text.block1, block2: text.block2),
+        onOK: {})
+}
+
+#Preview("Plain") {
+    RegistrationFailureDialogView(
+        dialog: .init(
+            style: .error, heading: "Registration failed",
+            block1: ShieldedChargedFailureExplanation.plain, block2: nil),
+        onOK: {})
+}
+
+#Preview("Outcome unknown") {
+    RegistrationFailureDialogView(
+        dialog: .init(
+            style: .warning, heading: "Registration failed",
+            block1: DWIdentityRegistrationCoordinator.CoordinatorError.shieldedCreateUnconfirmed.errorDescription ?? "",
+            block2: nil),
+        onOK: {})
 }

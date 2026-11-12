@@ -64,6 +64,15 @@
 /* Username marketplace: contested request cost value — the vote-resolution fund amount */
 "%@ DASH + network fee" = "%@ DASH + رسوم الشبكة";
 
+/* Usernames */
+"%@ Dash came back to your Platform balance — enough to register this username from it now." = "%@ Dash came back to your Platform balance — enough to register this username from it now.";
+
+/* Usernames */
+"%@ Dash came back to your Platform balance." = "%@ Dash came back to your Platform balance.";
+
+/* Usernames */
+"%@ Dash came back to your Platform balance. Add %@ Dash there to try again." = "%@ Dash came back to your Platform balance. Add %@ Dash there to try again.";
+
 /* Shielded sweep pending change */
 "%@ DASH is still confirming. Try again once it settles." = "%@ DASH is still confirming. Try again once it settles.";
 
@@ -1049,6 +1058,9 @@
 /* Read-only drain lookup */
 "Check status" = "Check status";
 
+/* Usernames */
+"Check the date and time on your device, then try again." = "Check the date and time on your device, then try again.";
+
 /* Send confirm sheet: drain outcome pending */
 "Check the Max transfer's status from the pending transaction in History, or by tapping Max again." = "Check the Max transfer's status from the pending transaction in History, or by tapping Max again.";
 
@@ -1075,6 +1087,9 @@
 
 /* Usernames */
 "Checking the contest…" = "Checking the contest…";
+
+/* Usernames */
+"Checking where the money went…" = "Checking where the money went…";
 
 /* Usernames
    Voting */
@@ -4425,6 +4440,9 @@
 /* Usernames — Home row title while a contested username is being submitted */
 "Requesting – %@" = "Requesting – %@";
 
+/* Usernames */
+"Requests for “%@” are closed — its vote has started. Please choose a different username." = "Requests for “%@” are closed — its vote has started. Please choose a different username.";
+
 /* An action */
 "Rescan" = "إعادة تفحص";
 
@@ -5496,6 +5514,9 @@
 
 /* Dash DEX */
 "The refund address is required" = "The refund address is required";
+
+/* Usernames */
+"The registration did not go through." = "The registration did not go through.";
 
 /* DashPay */
 "The registration was submitted but its result couldn't be confirmed. Wait a minute for the wallet to sync, then try again — don't resubmit immediately." = "أُرسل التسجيل لكن تعذّر تأكيد نتيجته. انتظر دقيقة حتى تتزامن المحفظة ثم حاول مجددًا — ولا تعِد الإرسال فورًا.";
@@ -6894,6 +6915,9 @@
 /* Voting */
 "You have already entered this masternode key" = "You have already entered this masternode key";
 
+/* Usernames */
+"You have already requested “%@”." = "You have already requested “%@”.";
+
 /* No comment provided by engineer. */
 "You have chose \"%@\" as your username. Username cannot be changed once it is registered." = "You have chose \"%@\" as your username. Username cannot be changed once it is registered.";
 
@@ -7300,6 +7324,9 @@
 /* Usernames */
 "“%1$@” will be purchased for %2$@ Dash. The price is paid from your wallet balance." = "سيُشترى «%1$@» مقابل %2$@ Dash. ويُدفع السعر من رصيد محفظتك.";
 
+/* Usernames */
+"“%@” already has the most requests a vote accepts. Please choose a different username." = "“%@” already has the most requests a vote accepts. Please choose a different username.";
+
 /* Voting */
 "“%@” could not be read as a Dash username." = "تعذّرت قراءة ”%@“ كاسم مستخدم داش.";
 
@@ -7314,6 +7341,9 @@
 
 /* Usernames */
 "“%@” is now your username." = "«%@» هو اسم المستخدم الخاص بك الآن.";
+
+/* Usernames */
+"“%@” was just taken. Please choose a different username." = "“%@” was just taken. Please choose a different username.";
 
 /* Usernames */
 "“%@” was locked by a masternode vote, so it cannot be registered by anyone. Please choose a different username." = "“%@” was locked by a masternode vote, so it cannot be registered by anyone. Please choose a different username.";

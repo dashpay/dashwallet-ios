@@ -286,6 +286,8 @@ class UsernamePrefs {
         kLostContestUsername,
         kLostContestWasBlocked,
         kFailedCompanion,
+        ShieldedChargedFailureStore.baseKey,
+        ShieldedChargedFailureStore.unresolvedBaseKey,
     ]
 
     /// Drops `walletIdHex`'s registration reports, and its form drafts, on

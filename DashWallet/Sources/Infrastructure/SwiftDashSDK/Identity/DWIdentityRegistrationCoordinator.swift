@@ -205,6 +205,64 @@ enum PlatformPaymentIdentityFundingPolicy {
         return (availableCredits - feeHeadroomCredits) / creditsPerDuff
     }
 
+    /// The increase from `snapshotCredits` to `currentCredits` in whole duffs
+    /// (rounded down). `nil` when the increase is under one duff or exceeds the
+    /// exit denomination.
+    static func returnedDuffs(
+        snapshotCredits: UInt64,
+        currentCredits: UInt64,
+        exitDenominationDuffs: UInt64
+    ) -> UInt64? {
+        guard currentCredits > snapshotCredits else { return nil }
+        let increase = currentCredits - snapshotCredits
+        let (maximumIncrease, overflow) =
+            exitDenominationDuffs.multipliedReportingOverflow(by: creditsPerDuff)
+        guard overflow || increase <= maximumIncrease else { return nil }
+        let duffs = increase / creditsPerDuff
+        return duffs > 0 ? duffs : nil
+    }
+
+    /// The smallest whole-duff top-up to the `nextReceive` address after which
+    /// `canFund` accepts `fundingDuffs`; 0 when it already accepts. Binary
+    /// search over `canFund`, which is monotone in the top-up: more balance on
+    /// one address never shrinks the usable suffix or its total. The upper
+    /// bound puts more than the required credits on `nextReceive` alone, which
+    /// is always inside the usable suffix. `UInt64.max` when `fundingDuffs`
+    /// can never be accepted (credit overflow).
+    static func amountToAddDuffs(
+        candidates: [Candidate],
+        nextReceive: Candidate,
+        fundingDuffs: UInt64
+    ) -> UInt64 {
+        guard !canFund(candidates: candidates, fundingDuffs: fundingDuffs) else { return 0 }
+
+        func accepts(_ addedDuffs: UInt64) -> Bool {
+            let (addedCredits, overflow) = addedDuffs.multipliedReportingOverflow(by: creditsPerDuff)
+            let added = overflow ? UInt64.max : addedCredits
+            var plan = candidates
+            let index = plan.firstIndex {
+                $0.addressType == nextReceive.addressType && $0.hash == nextReceive.hash
+            }
+            let (sum, sumOverflow) = (index.map { plan[$0].balance } ?? nextReceive.balance)
+                .addingReportingOverflow(added)
+            let toppedUp = Candidate(
+                addressType: nextReceive.addressType,
+                hash: nextReceive.hash,
+                balance: sumOverflow ? .max : sum)
+            if let index { plan[index] = toppedUp } else { plan.append(toppedUp) }
+            return canFund(candidates: plan, fundingDuffs: fundingDuffs)
+        }
+
+        var high = requiredAvailableCredits(fundingDuffs: fundingDuffs) / creditsPerDuff + 1
+        guard accepts(high) else { return .max }
+        var low: UInt64 = 0 // rejected
+        while high - low > 1 {
+            let middle = low + (high - low) / 2
+            if accepts(middle) { high = middle } else { low = middle }
+        }
+        return high
+    }
+
     /// Builds inputs from the usable selection above.
     static func makeInputs(
         candidates: [Candidate],
@@ -283,6 +341,12 @@ extension DWIdentityRegistrationCoordinator {
         /// `isActiveContext(walletId:network:)`: the host runs `walletId` on
         /// `network` and both are the selected ones.
         var isActiveContext: @MainActor (Data, Network) -> Bool
+        /// Where a charged Shielded registration failure is recorded.
+        var shieldedFailureStore = ShieldedChargedFailureStore()
+        /// The active network and wallet: the scope a registration start clears the record in.
+        var activeFailureRecordScope: @MainActor () -> (networkRawValue: Int, walletIdHex: String?) = {
+            (WalletEnvironment.networkKind.rawValue, WalletEnvironment.activeWalletIdHex as String?)
+        }
 
         @MainActor
         static var production: Collaborators {
@@ -432,9 +496,13 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// 3-state error copies are accurate to where the chain broke.
     private(set) var failedAtPhase: DWDPRegistrationState?
 
-    /// Last error description, for surfacing to the registration UI
-    /// when phase is `.failed`.
-    private(set) var lastErrorMessage: String?
+    /// Last failure, for surfacing to the registration UI when phase is
+    /// `.failed`: the error the attempt threw, so its wording can tell a
+    /// coordinator text from raw platform text.
+    private(set) var lastError: Error?
+
+    /// `lastError`'s description.
+    var lastErrorMessage: String? { lastError?.localizedDescription }
 
     /// Username being registered. Stashed at submit time so the
     /// `.completed` mirror can write DWGlobalOptions.dashpayUsername.
@@ -538,6 +606,14 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         case shieldedPoolTooSmall(currentNotes: UInt64)
         case noShieldedFallbackAddress
         case shieldedCreateUnconfirmed
+        /// A Shielded Type-20 create the network rejected after the exit left the pool.
+        case shieldedRegistrationCharged
+        /// A Shielded Type-20 create that failed without a decided charge verdict.
+        case shieldedRegistrationNotClassified
+        /// The name's availability could not be read; nothing was submitted for it.
+        case usernameAvailabilityUnknown
+        /// No contest fund can be stated for the network; nothing was asked for or spent.
+        case contestFundUnavailable
         case platformWriteUnconfirmed
         case missingInvitation
         case alreadyInFlight
@@ -633,6 +709,15 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 return NSLocalizedString("No Platform address is available yet for the shielded registration fallback. Try again after the wallet finishes syncing.", comment: "DashPay")
             case .shieldedCreateUnconfirmed:
                 return NSLocalizedString("The registration was submitted but its result couldn't be confirmed. Wait a minute for the wallet to sync, then try again — don't resubmit immediately.", comment: "DashPay")
+            case .shieldedRegistrationCharged, .shieldedRegistrationNotClassified:
+                return ShieldedChargedFailureExplanation.plain
+            case .usernameAvailabilityUnknown:
+                return NSLocalizedString(
+                    "Could not check username availability. Please try again.",
+                    comment: "DashPay registration recovery")
+            case .contestFundUnavailable:
+                return NSLocalizedString(
+                    "Network error. Please check your connection and try again.", comment: "DashPay")
             case .platformWriteUnconfirmed:
                 return NSLocalizedString(
                     "The operation may have been submitted, but its result could not be confirmed. Wait for the wallet to sync and check your identity and balances before continuing. Do not fund another identity or repeat the payment.",
@@ -740,6 +825,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         guard !isAttemptActive else {
             throw CoordinatorError.alreadyInFlight
         }
+        clearShieldedChargedFailureRecord()
         pendingVerificationURL = verificationURL
 
         // A companion label only makes sense next to a contested main
@@ -831,7 +917,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // second funding operation.
         currentFundingSource = recoveryLock == nil ? fundingSource : .core
         failedAtPhase = nil
-        lastErrorMessage = nil
+        lastError = nil
         let isContestedSubmission = DWContestedNameStatusService.isContestedLabel(username)
 
         let newController = DWIdentityRegistrationController()
@@ -887,7 +973,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             resetState()
             throw CoordinatorError.authCancelled
         } catch {
-            lastErrorMessage = CoordinatorError.authFailed.localizedDescription
+            lastError = CoordinatorError.authFailed
             newController.enterFailed(lastErrorMessage ?? "")
             throw CoordinatorError.authFailed
         }
@@ -921,7 +1007,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         } catch {
             Self.logger.error("🪪 IDENT-COORD :: key derivation failed: \(String(describing: error))")
             failedAtPhase = .processingPayment
-            lastErrorMessage = error.localizedDescription
+            lastError = CoordinatorError.keyDerivation(error)
             newController.enterFailed(error.localizedDescription)
             throw CoordinatorError.keyDerivation(error)
         }
@@ -1005,7 +1091,6 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         let modelContainer = context.modelContainer
         let signer = context.signer
         let pubkeys = context.pubkeys
-        let username = context.username
         let invitationURI = context.invitationURI
         let requiredIdentityFundingDuffs = context.requiredIdentityFundingDuffs
         let identityId: Identifier
@@ -1054,12 +1139,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             }
 
         case .shielded:
-            identityId = try await createIdentityFromShieldedPool(
-                username: username,
-                walletId: wallet.walletId,
-                modelContainer: modelContainer,
-                pubkeys: pubkeys,
-                signer: signer)
+            identityId = try await createIdentityFromShieldedPool(context)
 
         case .invitation:
             // DIP-13 claim: register the invitee's identity funded
@@ -1178,7 +1258,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             default:
                 failedAtPhase = .processingPayment
             }
-            lastErrorMessage = coordError.localizedDescription
+            lastError = coordError
             controller.enterFailed(coordError.localizedDescription)
             return coordError
         }
@@ -1188,7 +1268,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         case .platformPayment, .shielded, .invitation:
             failedAtPhase = .creatingID
         }
-        lastErrorMessage = error.localizedDescription
+        lastError = error
         controller.enterFailed(error.localizedDescription)
         return CoordinatorError.identityRegistration(error)
     }
@@ -1208,6 +1288,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         guard !isAttemptActive else {
             throw CoordinatorError.alreadyInFlight
         }
+        clearShieldedChargedFailureRecord()
         guard let wallet = SwiftDashSDKHost.shared.wallet,
               let network = SwiftDashSDKHost.shared.runningNetwork,
               let container = SwiftDashSDKHost.shared.modelContainer,
@@ -1248,7 +1329,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             resetState()
             throw CoordinatorError.authCancelled
         } catch {
-            lastErrorMessage = CoordinatorError.authFailed.localizedDescription
+            lastError = CoordinatorError.authFailed
             newController.enterFailed(lastErrorMessage ?? "")
             throw CoordinatorError.authFailed
         }
@@ -1262,7 +1343,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             try wallet.prePersistIdentityKeysForRegistration(
                 identityIndex: index, keyCount: Self.defaultKeyCount, network: network)
         } catch {
-            lastErrorMessage = error.localizedDescription
+            lastError = CoordinatorError.keyDerivation(error)
             newController.enterFailed(error.localizedDescription)
             throw CoordinatorError.keyDerivation(error)
         }
@@ -1338,10 +1419,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                     throw CoordinatorError.usernameUnavailable
                 }
             case .unknown:
-                throw CoordinatorError.availabilityCheck(NSError(
-                    domain: "DWIdentityRegistrationCoordinator", code: -1,
-                    userInfo: [NSLocalizedDescriptionKey: NSLocalizedString(
-                        "Could not check username availability. Please try again.", comment: "DashPay registration recovery")]))
+                throw CoordinatorError.usernameAvailabilityUnknown
             case .fresh:
                 break
             }
@@ -1380,7 +1458,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             isFundingExistingIdentity = false
             let isTopUpFailure = (error as? CoordinatorError)?.isIdentityTopUp == true
             failedAtPhase = isTopUpFailure ? .processingPayment : .registrationUsername
-            lastErrorMessage = error.localizedDescription
+            lastError = error
             newController.enterFailed(error.localizedDescription)
             throw error
         }
@@ -1397,10 +1475,11 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         do {
             return try await ContestedUsernameFee.shared.contestFundCeilingCredits(scope: network.persistenceScope)
         } catch {
+            let failure = Self.contestFundFailure(error)
             failedAtPhase = .registrationUsername
-            lastErrorMessage = error.localizedDescription
-            controller.enterFailed(error.localizedDescription)
-            throw error
+            lastError = failure
+            controller.enterFailed(failure.localizedDescription)
+            throw failure
         }
     }
 
@@ -1812,6 +1891,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         if temporaryUsernameError == nil {
             collaborators.draftStore.clear(for: draftScope)
         }
+        // A registration succeeded: the registering wallet's charged failure is explained no more.
+        collaborators.shieldedFailureStore.clear(
+            networkRawValue: WalletEnvironment.networkKind(for: network).rawValue,
+            walletIdHex: walletId.hexEncodedString())
         do {
             try validateRegistrationContext(walletId: walletId, network: network)
         } catch {
@@ -1902,6 +1985,12 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     @discardableResult
     func startPurchaseUsername(name: String, priceCredits: UInt64) async throws -> Identifier {
         Self.logger.info("🪪 IDENT-COORD :: startPurchaseUsername name=\(name) priceCredits=\(priceCredits)")
+        // A purchase is the next registration in this wallet, so it ends a charged
+        // failure's explanation like `startCreateUsername` does, before its pre-flight;
+        // an overlapping one is refused below and leaves the record alone.
+        if !isAttemptActive {
+            clearShieldedChargedFailureRecord()
+        }
 
         guard let wallet = SwiftDashSDKHost.shared.wallet else {
             throw CoordinatorError.noWallet
@@ -1968,7 +2057,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             resetState()
             throw CoordinatorError.authCancelled
         } catch {
-            lastErrorMessage = CoordinatorError.authFailed.localizedDescription
+            lastError = CoordinatorError.authFailed
             newController.enterFailed(lastErrorMessage ?? "")
             throw CoordinatorError.authFailed
         }
@@ -2034,7 +2123,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             Self.logger.error("🪪 IDENT-COORD :: purchase funding failed: \(String(describing: error))")
             let error = Self.preservingUnconfirmedOutcome(error)
             failedAtPhase = assetLockStatus < 2 ? .processingPayment : .creatingID
-            lastErrorMessage = error.localizedDescription
+            lastError = error
             newController.enterFailed(error.localizedDescription)
             throw CoordinatorError.identityRegistration(error)
         }
@@ -2059,7 +2148,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             Self.logger.error("🪪 IDENT-COORD :: purchase failed: \(String(describing: error))")
             failedAtPhase = .registrationUsername
             let coordError = CoordinatorError.purchase(Self.preservingUnconfirmedOutcome(error))
-            lastErrorMessage = coordError.localizedDescription
+            lastError = coordError
             newController.enterFailed(lastErrorMessage ?? "")
             throw coordError
         }
@@ -2782,7 +2871,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         phase = .idle
         assetLockStatus = 0
         failedAtPhase = nil
-        lastErrorMessage = nil
+        lastError = nil
         currentUsername = nil
         registrationWalletId = nil
         registrationNetwork = nil
@@ -3045,13 +3134,13 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// pending-spend redrive persists the identity row on a later sync
     /// and the next attempt resumes past IdentityCreate via
     /// `lookupExistingIdentityId`.
-    private func createIdentityFromShieldedPool(
-        username: String,
-        walletId: Data,
-        modelContainer: ModelContainer,
-        pubkeys: [ManagedPlatformWallet.IdentityPubkey],
-        signer: KeychainSigner
-    ) async throws -> Identifier {
+    private func createIdentityFromShieldedPool(_ context: IdentityCreationContext) async throws -> Identifier {
+        let username = context.username
+        let walletId = context.wallet.walletId
+        let network = context.network
+        let modelContainer = context.modelContainer
+        let pubkeys = context.pubkeys
+        let signer = context.signer
         guard let manager = SwiftDashSDKHost.shared.manager else {
             throw CoordinatorError.noSDK
         }
@@ -3081,11 +3170,18 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // at this address (bound into the transition sighash). Same
         // encoding the address-funded inputs use: 1-byte variant tag +
         // 20-byte hash.
-        guard let fallbackAddressBytes = shieldedFallbackAddressBytes(
+        guard let fallbackRow = shieldedFallbackAddressRow(
             walletId: walletId,
             modelContainer: modelContainer) else {
             throw CoordinatorError.noShieldedFallbackAddress
         }
+        let fallbackAddressBytes = Data([fallbackRow.addressType]) + fallbackRow.addressHash
+        // The fallback address's synced balance just before the Type-20 call; the
+        // returned funds are the rise above it.
+        let snapshotCredits = fallbackRow.balance
+        let chargedRecord = ShieldedChargedFailureStore.Record.charged(
+            username: username, isContested: contested, denominationCredits: denomination,
+            fallbackAddress: fallbackAddressBytes, snapshotCredits: snapshotCredits)
 
         Self.logger.info("🪪 IDENT-COORD :: shielded create denomination=\(denomination) contested=\(contested)")
         do {
@@ -3108,19 +3204,76 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             Self.logger.warning("🪪 IDENT-COORD :: shielded create unconfirmed id=\(unconfirmed.identityId.map { String(format: "%02x", $0) }.joined().prefix(8))…")
             PlatformAddressSyncCoordinator.shared
                 .refreshShieldedBalanceAfterSpend(using: manager)
-            throw CoordinatorError.shieldedCreateUnconfirmed
+            throw shieldedCreateFailureError(
+                unconfirmed, chargedRecord: chargedRecord, walletId: walletId, network: network)
+        } catch {
+            Self.logger.warning("🪪 IDENT-COORD :: shielded create failed snapshotCredits=\(snapshotCredits)")
+            throw shieldedCreateFailureError(
+                error, chargedRecord: chargedRecord, walletId: walletId, network: network)
         }
     }
 
-    /// Lowest-indexed Platform Payment address as raw 21-byte
-    /// `PlatformAddress` storage bytes (`[addressType] + addressHash`)
-    /// for the Type-20 creation-failure fallback. Deterministic — the
-    /// same wallet always produces the same fallback. nil when no
-    /// Platform address row exists yet (pre-first-platform-sync).
-    private func shieldedFallbackAddressBytes(
+    /// The error a failed Type-20 create throws. A charged failure first saves
+    /// `chargedRecord` for `walletId` on `network`, the network the attempt ran
+    /// on. A create the SDK reports unconfirmed saves `chargedRecord` as its
+    /// unresolved attempt there instead, for the explanation to settle once the
+    /// SDK proves its outcome during a later sync
+    /// (`ShieldedChargedFailureStore.reconcileUnresolved`), and throws
+    /// `.shieldedCreateUnconfirmed`. Any other unknown outcome is rethrown as it is.
+    func shieldedCreateFailureError(
+        _ error: Error,
+        chargedRecord: @autoclosure () -> ShieldedChargedFailureStore.Record,
+        walletId: Data,
+        network: Network
+    ) -> Error {
+        let kind = ShieldedCreateFailureKind.classify(error)
+        Self.logger.error("🪪 IDENT-COORD :: shielded create failed kind=\(kind) error=\(String(describing: error))")
+        let networkRawValue = WalletEnvironment.networkKind(for: network).rawValue
+        if let unconfirmed = error as? ShieldedIdentityCreateUnconfirmedError {
+            collaborators.shieldedFailureStore.saveUnresolved(
+                .init(identityId: unconfirmed.identityId, record: chargedRecord()),
+                networkRawValue: networkRawValue, walletIdHex: walletId.hexEncodedString())
+            return CoordinatorError.shieldedCreateUnconfirmed
+        }
+        guard let mapped = Self.shieldedCreateFailure(error) else { return error }
+        if case .charged = kind {
+            collaborators.shieldedFailureStore.save(
+                chargedRecord(), networkRawValue: networkRawValue, walletIdHex: walletId.hexEncodedString())
+        }
+        return mapped
+    }
+
+    /// The coordinator error for a failed Type-20 create, or nil for an unknown
+    /// outcome, which keeps the `.shieldedCreateUnconfirmed` handling.
+    nonisolated static func shieldedCreateFailure(_ error: Error) -> CoordinatorError? {
+        switch ShieldedCreateFailureKind.classify(error) {
+        case .unknownOutcome: return nil
+        case .charged: return .shieldedRegistrationCharged
+        case .notClassified: return .shieldedRegistrationNotClassified
+        }
+    }
+
+    /// The error a contest fund lookup fails the attempt with.
+    nonisolated static func contestFundFailure(_ error: Error) -> Error {
+        guard error is ContestedUsernameFee.UnresolvedProtocolVersion else { return error }
+        return CoordinatorError.contestFundUnavailable
+    }
+
+    /// Drops the active wallet's charged-failure record on the active network:
+    /// a registration is starting there.
+    private func clearShieldedChargedFailureRecord() {
+        let scope = collaborators.activeFailureRecordScope()
+        collaborators.shieldedFailureStore.clear(networkRawValue: scope.networkRawValue, walletIdHex: scope.walletIdHex)
+    }
+
+    /// Lowest-indexed Platform Payment address row, the Type-20
+    /// creation-failure fallback (its bytes are `[addressType] + addressHash`).
+    /// Deterministic — the same wallet always produces the same fallback. nil
+    /// when no Platform address row exists yet (pre-first-platform-sync).
+    private func shieldedFallbackAddressRow(
         walletId: Data,
         modelContainer: ModelContainer
-    ) -> Data? {
+    ) -> PersistentPlatformAddress? {
         let accountDescriptor = FetchDescriptor<PersistentAccount>(
             predicate: #Predicate { account in
                 account.accountType == 14
@@ -3130,12 +3283,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         guard let accounts = try? modelContainer.mainContext.fetch(accountDescriptor) else {
             return nil
         }
-        guard let row = accounts
+        return accounts
             .flatMap({ $0.platformAddresses })
-            .min(by: { $0.addressIndex < $1.addressIndex }) else {
-            return nil
-        }
-        return Data([row.addressType]) + row.addressHash
+            .min(by: { $0.addressIndex < $1.addressIndex })
     }
 }
 

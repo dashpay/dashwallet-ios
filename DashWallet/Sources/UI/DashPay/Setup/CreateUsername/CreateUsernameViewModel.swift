@@ -949,6 +949,9 @@ class CreateUsernameViewModel: ObservableObject {
         case submittedForVoting(temporaryUsername: String?, temporaryUsernameError: String?)
         case cancelled
         case failure(String)
+        /// A failure of a Shielded-paid registration, shown as a modal dialog
+        /// with the failure record's text instead of the system alert.
+        case shieldedFailure(RegistrationFailureDialog)
         /// Nothing was sent: the Core asset lock would need more inputs than
         /// the network accepts. The screen offers `CoreCoinConsolidationSheet`
         /// for this lock.
@@ -1134,9 +1137,28 @@ class CreateUsernameViewModel: ObservableObject {
                         DWLogger.log("CreateUsername: registration refused over the asset-lock input limit for '\(submittedUsername)'")
                         continuation.resume(returning: .needsCoinConsolidation(check))
                     } else {
-                        continuation.resume(
-                            returning: .failure(
-                                Self.registrationFailureMessage(error, username: submittedUsername)))
+                        let coordinator = DWIdentityRegistrationCoordinator.shared
+                        let paidFromShielded = coordinator.currentFundingSource == .shielded
+                        // The text is fixed here, when the dialog opens; it is not redrawn
+                        // when the returned funds are seen later.
+                        var explanation: (block1: String, block2: String?)?
+                        if paidFromShielded {
+                            let model = ShieldedChargedFailureExplanationModel.forCurrentScope()
+                            model.refresh()
+                            explanation = model.text
+                        }
+                        if let dialog = Self.failureDialog(
+                            paidFromShielded: paidFromShielded, error: error, explanation: explanation) {
+                            DWLogger.log(
+                                "CreateUsername: registration failed for '\(submittedUsername)': "
+                                    + error.localizedDescription)
+                            continuation.resume(returning: .shieldedFailure(dialog))
+                        } else {
+                            continuation.resume(
+                                returning: .failure(
+                                    Self.registrationFailureMessage(
+                                        error, username: submittedUsername, paidFromShielded: paidFromShielded)))
+                        }
                     }
                 }
             }
@@ -1194,13 +1216,62 @@ class CreateUsernameViewModel: ObservableObject {
     /// Human wording for a failed registration — the shared mapping
     /// (`UsernameRegistrationFailureWording`) the Home / More row reports with
     /// too. The raw text always reaches the log.
-    private static func registrationFailureMessage(
+    static func registrationFailureMessage(
         _ error: Error,
-        username: String
+        username: String,
+        paidFromShielded: Bool = false
     ) -> String {
         let raw = error.localizedDescription
         DWLogger.log("CreateUsername: registration failed for '\(username)': \(raw)")
-        return UsernameRegistrationFailureWording.message(forRaw: raw, username: username)
+        return UsernameRegistrationFailureWording.message(
+            for: error, username: username, paidFromShielded: paidFromShielded)
+    }
+
+    /// The modal dialog the form opens for a failure of a Shielded-paid registration.
+    struct RegistrationFailureDialog: Equatable {
+        let style: ModalDialog.Style
+        let heading: String
+        let block1: String
+        let block2: String?
+    }
+
+    /// The dialog for a failed registration, or nil when the system alert stays: a registration
+    /// not paid from Shielded, an error with a text of its own (the typed refusals before anything
+    /// was sent among them), and a cause the wording recognises. `explanation` is the failure
+    /// record's text at the moment the dialog opens.
+    static func failureDialog(
+        paidFromShielded: Bool,
+        error: Error,
+        explanation: (block1: String, block2: String?)?
+    ) -> RegistrationFailureDialog? {
+        guard paidFromShielded else { return nil }
+        let heading = NSLocalizedString("Registration failed", comment: "Usernames")
+        let plain = ShieldedChargedFailureExplanation.plain
+        if let coordinatorError = error as? DWIdentityRegistrationCoordinator.CoordinatorError {
+            switch coordinatorError {
+            case .shieldedCreateUnconfirmed:
+                // Nothing is known about the money: never figures.
+                guard let text = coordinatorError.errorDescription else { return nil }
+                return RegistrationFailureDialog(style: .warning, heading: heading, block1: text, block2: nil)
+            case .shieldedRegistrationCharged:
+                let checking = ShieldedChargedFailureExplanation.text(returnedDuffs: nil, amountToAddDuffs: nil)
+                let text = explanation ?? checking
+                return RegistrationFailureDialog(
+                    style: text.block2 == checking.block2 ? .warning : .error,
+                    heading: heading, block1: text.block1, block2: text.block2)
+            case .shieldedRegistrationNotClassified:
+                return RegistrationFailureDialog(style: .error, heading: heading, block1: plain, block2: nil)
+            default:
+                break
+            }
+        }
+        // An error with a text of its own (a refusal before anything was sent among them) keeps the
+        // alert; so does a cause the wording recognises. The same rule the wording reads plain by.
+        guard !UsernameRegistrationFailureWording.hasOwnText(error) else { return nil }
+        let wording = UsernameRegistrationFailureWording.message(
+            forRaw: error.localizedDescription, username: "", paidFromShielded: true)
+        guard wording == plain else { return nil }
+        return RegistrationFailureDialog(style: .error, heading: heading, block1: plain, block2: nil)
     }
 
     private func registrationOutcome(for username: String) -> UsernameRegistrationOutcome {

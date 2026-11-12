@@ -278,7 +278,7 @@ final class CreateUsernameShieldedCostTests: XCTestCase {
             notes: notes, requiredCredits: Readiness.standardDenominationCredits,
             poolNoteCount: Readiness.minimumPoolNotes, now: now)
         XCTAssertEqual(below.state, .poolTooSmall(current: Readiness.minimumPoolNotes - 1))
-        XCTAssertEqual(CreateUsernameViewModel.shieldedCostBlocker(for: below.state), .poolTooSmall(current: 249))
+        XCTAssertEqual(CreateUsernameViewModel.shieldedCostBlocker(for: below.state), .poolTooSmall(current: Readiness.minimumPoolNotes - 1))
         XCTAssertEqual(atMinimum.state, .ready)
         XCTAssertNil(CreateUsernameViewModel.shieldedCostBlocker(for: atMinimum.state))
     }
@@ -355,5 +355,139 @@ final class CreateUsernameShieldedCostTests: XCTestCase {
 
     private static func date(hour: Int, minute: Int) -> Date {
         calendar.date(from: DateComponents(year: 2026, month: 10, day: 30, hour: hour, minute: minute))!
+    }
+}
+
+/// Which failures of the Create Username form open the modal dialog instead of the system alert,
+/// and with what style and text. The signal is the error the registration threw: the form's
+/// completion receives it as an `NSError` bridged from the coordinator's `CoordinatorError`.
+@MainActor
+final class CreateUsernameFailureDialogTests: XCTestCase {
+    private typealias Coordinator = DWIdentityRegistrationCoordinator.CoordinatorError
+    private typealias Explanation = ShieldedChargedFailureExplanation
+
+    private var heading: String { NSLocalizedString("Registration failed", comment: "Usernames") }
+    private var checking: (block1: String, block2: String?) { Explanation.text(returnedDuffs: nil, amountToAddDuffs: nil) }
+    private var explained: (block1: String, block2: String?) { Explanation.text(returnedDuffs: 2_900_000, amountToAddDuffs: 100_000) }
+
+    private func dialog(
+        shielded: Bool = true, _ error: Error, explanation: (block1: String, block2: String?)?
+    ) -> CreateUsernameViewModel.RegistrationFailureDialog? {
+        CreateUsernameViewModel.failureDialog(paidFromShielded: shielded, error: error, explanation: explanation)
+    }
+
+    func testChargedWhileCheckingIsWarningWithCheckingText() {
+        XCTAssertEqual(
+            dialog(Coordinator.shieldedRegistrationCharged, explanation: checking),
+            .init(style: .warning, heading: heading, block1: Explanation.plain, block2: checking.block2))
+    }
+
+    func testChargedExplainedIsErrorWithTheFigures() {
+        let result = dialog(Coordinator.shieldedRegistrationCharged, explanation: explained)
+        XCTAssertEqual(result, .init(style: .error, heading: heading, block1: explained.block1, block2: explained.block2))
+    }
+
+    func testChargedNothingToAddIsError() {
+        let text = Explanation.text(returnedDuffs: 3_000_000, amountToAddDuffs: 0)
+        XCTAssertEqual(
+            dialog(Coordinator.shieldedRegistrationCharged, explanation: text),
+            .init(style: .error, heading: heading, block1: text.block1, block2: text.block2))
+    }
+
+    func testContestedFiguresAreErrorAndNeverMentionTheContestFee() {
+        let text = Explanation.text(returnedDuffs: 24_900_000, amountToAddDuffs: 2_000_000)
+        let result = dialog(Coordinator.shieldedRegistrationCharged, explanation: text)
+        XCTAssertEqual(result?.style, .error)
+        XCTAssertEqual(result?.block2, text.block2)
+        XCTAssertFalse((result?.block1 ?? "").localizedCaseInsensitiveContains("contest fee"))
+        XCTAssertFalse((result?.block2 ?? "").localizedCaseInsensitiveContains("contest fee"))
+    }
+
+    func testNotClassifiedIsErrorWithPlainTextOnly() {
+        XCTAssertEqual(
+            dialog(Coordinator.shieldedRegistrationNotClassified, explanation: nil),
+            .init(style: .error, heading: heading, block1: Explanation.plain, block2: nil))
+    }
+
+    func testUnrecognisedNameStepCauseIsErrorWithPlainTextOnly() {
+        let error = NSError(domain: "Test", code: 1, userInfo: [NSLocalizedDescriptionKey: "some opaque platform text"])
+        XCTAssertEqual(
+            dialog(error, explanation: nil),
+            .init(style: .error, heading: heading, block1: Explanation.plain, block2: nil))
+    }
+
+    /// The name step's failure reaches the form wrapped in the coordinator's DPNS / identity cases.
+    func testWrappedNameStepCauseIsJudgedByItsUnderlyingText() {
+        let opaque = NSError(
+            domain: "Test", code: 1, userInfo: [NSLocalizedDescriptionKey: "some opaque platform text"])
+        let plainDialog = CreateUsernameViewModel.RegistrationFailureDialog(
+            style: .error, heading: heading, block1: Explanation.plain, block2: nil)
+        XCTAssertEqual(dialog(Coordinator.dpnsRegistration(opaque), explanation: nil), plainDialog)
+        XCTAssertEqual(dialog(Coordinator.identityRegistration(opaque), explanation: nil), plainDialog)
+        let taken = NSError(domain: "Test", code: 1, userInfo: [
+            NSLocalizedDescriptionKey: "Document 4vJ7 has duplicate unique properties [\"label\"] with other docs"])
+        XCTAssertNil(
+            dialog(Coordinator.dpnsRegistration(taken), explanation: nil), "A recognised cause keeps the alert")
+    }
+
+    /// AC-03: never a returned amount or an amount to add, even when a record of an earlier failure exists.
+    func testUnconfirmedIsWarningWithTheExistingTextAndNoFigures() throws {
+        let existing = try XCTUnwrap(Coordinator.shieldedCreateUnconfirmed.errorDescription)
+        let result = dialog(Coordinator.shieldedCreateUnconfirmed, explanation: explained)
+        XCTAssertEqual(result, .init(style: .warning, heading: heading, block1: existing, block2: nil))
+    }
+
+    /// The form's completion receives the error as an NSError; the signal must survive that.
+    func testBridgedNSErrorKeepsTheSignal() {
+        let bridged = Coordinator.shieldedRegistrationCharged as NSError
+        XCTAssertEqual(dialog(bridged, explanation: checking)?.style, .warning)
+        let unconfirmed = Coordinator.shieldedCreateUnconfirmed as NSError
+        XCTAssertEqual(dialog(unconfirmed, explanation: nil)?.style, .warning)
+    }
+
+    func testDashOrPlatformPaymentSourceKeepsTheAlert() {
+        XCTAssertNil(dialog(shielded: false, Coordinator.shieldedRegistrationCharged, explanation: explained))
+        XCTAssertNil(dialog(shielded: false, Coordinator.shieldedCreateUnconfirmed, explanation: nil))
+        XCTAssertNil(dialog(shielded: false, NSError(domain: "Test", code: 1), explanation: nil))
+    }
+
+    /// A cause with its own wording keeps the alert and that wording; so does a refusal before anything was sent.
+    func testRecognisedCauseAndPreflightRefusalKeepTheAlert() {
+        let taken = NSError(domain: "Test", code: 2, userInfo: [NSLocalizedDescriptionKey: "has duplicate unique properties"])
+        XCTAssertNil(dialog(taken, explanation: nil))
+        XCTAssertNil(dialog(Coordinator.noShieldedFallbackAddress, explanation: nil))
+    }
+
+    /// A key-derivation failure carries raw text: after a Shielded payment it is the plain dialog.
+    func testKeyDerivationWithRawTextIsErrorWithPlainTextOnly() throws {
+        let raw = NSError(domain: "Test", code: 1, userInfo: [NSLocalizedDescriptionKey: "keychain item { }"])
+        let shown = try XCTUnwrap(dialog(Coordinator.keyDerivation(raw) as NSError, explanation: nil))
+        XCTAssertEqual(shown.style, .error)
+        XCTAssertEqual(shown.block1, Explanation.plain)
+        XCTAssertNil(shown.block2)
+    }
+
+    /// The contest fund is resolved before the PIN: its refusal keeps the alert and its own words.
+    func testContestFundRefusalKeepsTheAlertWithItsOwnText() {
+        let refusal = DWIdentityRegistrationCoordinator.contestFundFailure(
+            ContestedUsernameFee.UnresolvedProtocolVersion()) as NSError
+        XCTAssertNil(dialog(refusal, explanation: nil))
+        XCTAssertEqual(
+            CreateUsernameViewModel.registrationFailureMessage(refusal, username: "alice", paidFromShielded: true),
+            "Network error. Please check your connection and try again.")
+    }
+
+    /// A refusal that keeps the alert keeps its own reason in it, also after a Shielded attempt.
+    func testPreflightRefusalAlertKeepsItsOwnTextWhenPaidFromShielded() throws {
+        let refusals: [Coordinator] = [
+            .noShieldedFallbackAddress, .shieldedPoolTooSmall(currentNotes: 3), .alreadyInFlight, .noWallet,
+        ]
+        for refusal in refusals {
+            XCTAssertNil(dialog(refusal as NSError, explanation: nil), "\(refusal)")
+            XCTAssertEqual(
+                CreateUsernameViewModel.registrationFailureMessage(
+                    refusal as NSError, username: "alice", paidFromShielded: true),
+                try XCTUnwrap(refusal.errorDescription), "\(refusal)")
+        }
     }
 }

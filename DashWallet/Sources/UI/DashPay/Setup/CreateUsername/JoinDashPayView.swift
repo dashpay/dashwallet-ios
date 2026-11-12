@@ -93,6 +93,13 @@ struct JoinDashPayCopy {
     /// Can't register username") left the user nothing to act on once the
     /// create screen, whose alert used to carry the reason, had stepped aside.
     var failureReason: String? = nil
+    /// The failure record's explanation. When set, `.creationFailed` shows it alone.
+    var failureExplanation: String?
+
+    /// The row reports a failure from the failure record rather than from the bridge.
+    var isRecordBackedFailure: Bool {
+        state == .creationFailed && failureExplanation != nil
+    }
 
     /// The legacy status object that owns the "(1/3) Processing Payment" copy
     /// and its failure variants in all 43 locales. Built rather than
@@ -190,6 +197,7 @@ struct JoinDashPayCopy {
         case .creating where surface == .more:
             return NSLocalizedString("Submitting username to the Dash network. It might take a few minutes.", comment: "Usernames")
         case .creationFailed:
+            if let failureExplanation { return failureExplanation }
             // The step, then the reason on its own line — the same shape as the
             // voting subtitle's deadline.
             guard let failureReason, !failureReason.isEmpty else {
@@ -318,7 +326,8 @@ struct JoinDashPayMenuItem: View {
             surface: surface,
             shieldedSnapshot: shieldedReadiness.standardSnapshot,
             registrationStep: viewModel.registrationStep,
-            failureReason: viewModel.failureReason)
+            failureReason: viewModel.failureReason,
+            failureExplanation: viewModel.failureExplanation)
     }
 
     var body: some View {
@@ -360,7 +369,8 @@ struct JoinDashPayMenuItem: View {
             }
         }
         .overlay(alignment: .topTrailing) {
-            if let onDismiss {
+            // A record-backed failure goes only when the next registration starts or one succeeds.
+            if let onDismiss, !copy.isRecordBackedFailure {
                 Button {
                     onDismiss(viewModel.state)
                 } label: {
@@ -620,3 +630,40 @@ struct JoinDashPayMenuItem: View {
     }
 }
 
+/// The registration row after a charged Shielded failure, with the texts the failure record gives.
+#Preview("Failure record - checking") {
+    failureRecordRow(
+        "The registration did not go through.\nChecking where the money went…")
+}
+
+#Preview("Failure record - explained") {
+    failureRecordRow(
+        "The registration did not go through.\n"
+            + "0.03 Dash came back to your Platform balance. Add 0.01 Dash there to try again.")
+}
+
+#Preview("Failure record - nothing to add") {
+    failureRecordRow(
+        "The registration did not go through.\n"
+            + "0.03 Dash came back to your Platform balance — enough to register this username from it now.")
+}
+
+#Preview("Failure record - plain") {
+    JoinDashPayMenuItem(
+        viewModel: JoinDashPayViewModel(
+            previewState: .creationFailed, username: "jordan12345",
+            failureReason: "The registration did not go through."),
+        onTap: { _ in },
+        onDismiss: { _ in })
+        .padding(20)
+}
+
+@MainActor
+private func failureRecordRow(_ text: String) -> some View {
+    JoinDashPayMenuItem(
+        viewModel: JoinDashPayViewModel(
+            previewState: .creationFailed, username: "jordan12345", failureExplanation: text),
+        onTap: { _ in },
+        onDismiss: { _ in })
+        .padding(20)
+}

@@ -24,6 +24,8 @@ where they disagree, ADR-0001 wins.
 | [0029](0029-allow-a-new-app-connect-approval-while-another-is-confirming.md) | Allow a new App Connect approval while another one is still confirming | platform | Proposed | |
 | [0030](0030-show-an-app-connect-connection-whose-response-was-not-published-as-not-delivered.md) | Show an App Connect connection whose response was not published as Not delivered | platform | Proposed | |
 | [0031](0031-turn-off-unattributed-dashpay-profile-keys-with-any-disconnect.md) | Turn off unattributed DashPay profile keys with any disconnect | keys | Proposed | |
+| [0035](0035-classify-a-charged-shielded-registration-failure-by-the-sdks-proven-outcome.md) | Classify a charged Shielded registration failure by the SDK's proven outcome | platform | Proposed | |
+| [0036](0036-measure-returned-funds-as-the-fallback-address-increase.md) | Measure returned funds as the fallback address increase | platform | Proposed | |
 
 Areas: `spv`, `platform`, `keys`, `storage`, `coinjoin`, `payments`, `ui`, `build`, `process`. Each ADR takes one; a new
 Area is added to this list in the PR that first needs it.

@@ -151,12 +151,16 @@ class CurrentUserProfileModel: NSObject, ObservableObject {
             // wallet/network-scoped ones the row itself reads. A lost vote
             // counts too: its companion keeps `hasRegisteredUsername` true and
             // the bookmark behind `hasVotePending` is gone, so without it the
-            // rejection was never shown on a wallet that took a companion.
+            // rejection was never shown on a wallet that took a companion. A charged
+            // failure's record counts as well: it outlives a closed running row.
             reportsRegistration: MainActor.assumeIsolated {
                 let prefs = UsernamePrefs.shared
                 return prefs.inFlightRegistrationUsername?.isEmpty == false
                     || prefs.completedTileUsername?.isEmpty == false
                     || prefs.lostContestUsername?.isEmpty == false
+                    || ShieldedChargedFailureStore().record(
+                        networkRawValue: WalletEnvironment.networkKind.rawValue,
+                        walletIdHex: WalletEnvironment.activeWalletIdHex as String?) != nil
             })
     }
 

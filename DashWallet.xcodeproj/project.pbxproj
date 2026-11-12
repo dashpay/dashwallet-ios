@@ -715,6 +715,7 @@
 		751B61C52ADFFD0700D1C2EF /* IntegrationViewController+Uphold.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F51AAC2ABD8C800057B499 /* IntegrationViewController+Uphold.swift */; };
 		751B61C62ADFFD0A00D1C2EF /* IntegrationViewController+Coinbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F51AAE2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift */; };
 		751C05D92D3BB6AA00475E52 /* CurrentUserProfileModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751C05D82D3BB6A200475E52 /* CurrentUserProfileModel.swift */; };
+		751C05DB2D3D0E8C00475E5A /* ShieldedChargedFailureExplanationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751C05DA2D3D0E7C00475E5A /* ShieldedChargedFailureExplanationModel.swift */; };
 		751C05DB2D3D0E8C00475E52 /* JoinDashPayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751C05DA2D3D0E7C00475E52 /* JoinDashPayViewModel.swift */; };
 		751C05DD2D3E39A800475E52 /* TransactionListDataItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751C05DC2D3E39A600475E52 /* TransactionListDataItem.swift */; };
 		751C05DE2D3E39A800475E52 /* TransactionListDataItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751C05DC2D3E39A600475E52 /* TransactionListDataItem.swift */; };
@@ -2015,6 +2016,7 @@
 		7843C0A14DF4CBD4FFA605CD /* DWUsernameRegistrationRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF36BF1A7ACD652EDDA7D25D /* DWUsernameRegistrationRecovery.swift */; };
 		BABA10000000000000000002 /* DWIdentityBalanceRefresh.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000001 /* DWIdentityBalanceRefresh.swift */; };
 		F44028CBF49F4A2FE6268874 /* UsernameRegistrationRecoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 701E95B66E2409DD2F80D7AB /* UsernameRegistrationRecoveryTests.swift */; };
+		A7C3E91D5B2F4086A1D4E7F2 /* ShieldedChargedFailureFiguresTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C3E91D5B2F4086A1D4E7F1 /* ShieldedChargedFailureFiguresTests.swift */; };
 		C0F1E5ED0A14B2C3D4E5F603 /* ContestedUsernameFeeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F1E5ED0A14B2C3D4E5F604 /* ContestedUsernameFeeTests.swift */; };
 		4046F707D79B443DF65A4A1B /* CreateUsernameShieldedCostTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D352A3186395D1462939197 /* CreateUsernameShieldedCostTests.swift */; };
 		B17E5A0C9D3F4E21A6C80B01 /* BulkVotePlanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17E5A0C9D3F4E21A6C80B02 /* BulkVotePlanTests.swift */; };
@@ -2971,6 +2973,7 @@
 		7513DA8B2AB9643F005D55F6 /* BaseIntegrationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseIntegrationModel.swift; sourceTree = "<group>"; };
 		751B61C72AE0EDD000D1C2EF /* CoinJoinLevelsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinLevelsViewController.swift; sourceTree = "<group>"; };
 		751C05D82D3BB6A200475E52 /* CurrentUserProfileModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentUserProfileModel.swift; sourceTree = "<group>"; };
+		751C05DA2D3D0E7C00475E5A /* ShieldedChargedFailureExplanationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedChargedFailureExplanationModel.swift; sourceTree = "<group>"; };
 		751C05DA2D3D0E7C00475E52 /* JoinDashPayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JoinDashPayViewModel.swift; sourceTree = "<group>"; };
 		751C05DC2D3E39A600475E52 /* TransactionListDataItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionListDataItem.swift; sourceTree = "<group>"; };
 		5A1EC0FE2E29A30000000001 /* CoinJoinMoveFundsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinJoinMoveFundsSheet.swift; sourceTree = "<group>"; };
@@ -3854,6 +3857,7 @@
 		CF36BF1A7ACD652EDDA7D25D /* DWUsernameRegistrationRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWUsernameRegistrationRecovery.swift; sourceTree = "<group>"; };
 		BABA10000000000000000001 /* DWIdentityBalanceRefresh.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWIdentityBalanceRefresh.swift; sourceTree = "<group>"; };
 		701E95B66E2409DD2F80D7AB /* UsernameRegistrationRecoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRegistrationRecoveryTests.swift; sourceTree = "<group>"; };
+		A7C3E91D5B2F4086A1D4E7F1 /* ShieldedChargedFailureFiguresTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedChargedFailureFiguresTests.swift; sourceTree = "<group>"; };
 		C0F1E5ED0A14B2C3D4E5F604 /* ContestedUsernameFeeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContestedUsernameFeeTests.swift; sourceTree = "<group>"; };
 		4D352A3186395D1462939197 /* CreateUsernameShieldedCostTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateUsernameShieldedCostTests.swift; sourceTree = "<group>"; };
 		B17E5A0C9D3F4E21A6C80B02 /* BulkVotePlanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BulkVotePlanTests.swift; sourceTree = "<group>"; };
@@ -7099,6 +7103,7 @@
 			isa = PBXGroup;
 			children = (
 				751C05DA2D3D0E7C00475E52 /* JoinDashPayViewModel.swift */,
+				751C05DA2D3D0E7C00475E5A /* ShieldedChargedFailureExplanationModel.swift */,
 				756FE7052CDCBB1900E6C195 /* CreateUsernameViewModel.swift */,
 				750CEFA32CCA712E00E87A32 /* CreateUsernameViewController.swift */,
 				759AFDE22CC67E89007072D2 /* VotingInfoScreen.swift */,
@@ -7267,6 +7272,7 @@
 				2A2120EB22145CAE009906DC /* DWAmountInputValidatorTests.m */,
 				951941B18660622D41D4C1FA /* DWRegistrationPhaseAdapterTests.swift */,
 				701E95B66E2409DD2F80D7AB /* UsernameRegistrationRecoveryTests.swift */,
+				A7C3E91D5B2F4086A1D4E7F1 /* ShieldedChargedFailureFiguresTests.swift */,
 				C0F1E5ED0A14B2C3D4E5F604 /* ContestedUsernameFeeTests.swift */,
 				4D352A3186395D1462939197 /* CreateUsernameShieldedCostTests.swift */,
 				B17E5A0C9D3F4E21A6C80B02 /* BulkVotePlanTests.swift */,
@@ -10587,6 +10593,7 @@
 				2A2120EC22145CAE009906DC /* DWAmountInputValidatorTests.m in Sources */,
 				17E47391430C11AC728B69A3 /* DWRegistrationPhaseAdapterTests.swift in Sources */,
 				F44028CBF49F4A2FE6268874 /* UsernameRegistrationRecoveryTests.swift in Sources */,
+				A7C3E91D5B2F4086A1D4E7F2 /* ShieldedChargedFailureFiguresTests.swift in Sources */,
 				C0F1E5ED0A14B2C3D4E5F603 /* ContestedUsernameFeeTests.swift in Sources */,
 				4046F707D79B443DF65A4A1B /* CreateUsernameShieldedCostTests.swift in Sources */,
 				B17E5A0C9D3F4E21A6C80B01 /* BulkVotePlanTests.swift in Sources */,
@@ -11213,6 +11220,7 @@
 				D6AFA6FAFF1346319AABA03B /* WalletLifecycleOverlay.swift in Sources */,
 				50D990AF98D54A2889473BE1 /* WalletPreparationSupport.swift in Sources */,
 				751C05DB2D3D0E8C00475E52 /* JoinDashPayViewModel.swift in Sources */,
+				751C05DB2D3D0E8C00475E5A /* ShieldedChargedFailureExplanationModel.swift in Sources */,
 				C9D2C80E2A320AA000D15901 /* NumberFormatter+DashWallet.swift in Sources */,
 				C9D2C8102A320AA000D15901 /* BaseAmountModel.swift in Sources */,
 				C9D2C8132A320AA000D15901 /* DWPinField.m in Sources */,
