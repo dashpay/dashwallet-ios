@@ -61,7 +61,7 @@ import SwiftDashSDK
 /// transition builder. Only the actual transition fee is deducted; unused
 /// reserve remains in the Platform-Payment address.
 enum PlatformPaymentIdentityFundingPolicy {
-    static let creditsPerDuff: UInt64 = 1_000
+    static let creditsPerDuff = PlatformCreditsFormatter.creditsPerDuff
 
     /// 0.002 DASH of headroom reserved on the fee-source (BTreeMap input 0)
     /// address. The observed identity-from-addresses base fee is ~0.0004 DASH
@@ -1464,21 +1464,29 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 }
                 let inputCheck = Self.coreInputCheck(amountDuffs: topUpDuffs)
                 try AssetLockInputLimit.requireFits(inputCheck)
-                _ = try await AssetLockInputLimit.mappingRefusal(inputCheck) {
-                    try await wallet.topUpIdentityWithFunding(
-                        identityId: identityId,
-                        amountDuffs: topUpDuffs,
-                        accountIndex: Self.defaultAccountIndex)
+                _ = try await IdentityTopUpDidComplete.announcing(
+                    walletId: wallet.walletId, network: network, identityId: identityId,
+                    suppliedCredits: topUpDuffs * PlatformPaymentIdentityFundingPolicy.creditsPerDuff) {
+                    try await AssetLockInputLimit.mappingRefusal(inputCheck) {
+                        try await wallet.topUpIdentityWithFunding(
+                            identityId: identityId,
+                            amountDuffs: topUpDuffs,
+                            accountIndex: Self.defaultAccountIndex)
+                    }
                 }
             case .platformPayment:
                 let inputs = try buildPlatformPaymentInputs(
                     walletId: wallet.walletId,
                     modelContainer: plan.modelContainer,
                     targetCredits: topUpDuffs * PlatformPaymentIdentityFundingPolicy.creditsPerDuff)
-                _ = try await wallet.topUpFromAddresses(
-                    identityId: identityId,
-                    inputs: inputs,
-                    addressSigner: signer)
+                _ = try await IdentityTopUpDidComplete.announcing(
+                    walletId: wallet.walletId, network: network, identityId: identityId,
+                    suppliedCredits: topUpDuffs * PlatformPaymentIdentityFundingPolicy.creditsPerDuff) {
+                    try await wallet.topUpFromAddresses(
+                        identityId: identityId,
+                        inputs: inputs,
+                        addressSigner: signer)
+                }
                 SwiftDashSDKWalletState.shared.refreshPlatformPaymentCredits()
             case .shielded:
                 throw CoordinatorError.shieldedTopUpUnavailable(neededDuffs: topUpDuffs)
@@ -1996,11 +2004,15 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 let shortfallDuffs = Self.purchaseTopUpDuffs(priceCredits: priceCredits, heldCredits: heldCredits)
                 if shortfallDuffs > 0 {
                     Self.logger.info("🪪 IDENT-COORD :: purchase top-up shortfallDuffs=\(shortfallDuffs)")
-                    _ = try await AssetLockInputLimit.mappingRefusal(Self.coreInputCheck(amountDuffs: shortfallDuffs)) {
-                        try await wallet.topUpIdentityWithFunding(
-                            identityId: existingId,
-                            amountDuffs: shortfallDuffs,
-                            accountIndex: Self.defaultAccountIndex)
+                    _ = try await IdentityTopUpDidComplete.announcing(
+                        walletId: wallet.walletId, network: network, identityId: existingId,
+                        suppliedCredits: shortfallDuffs * PlatformPaymentIdentityFundingPolicy.creditsPerDuff) {
+                        try await AssetLockInputLimit.mappingRefusal(Self.coreInputCheck(amountDuffs: shortfallDuffs)) {
+                            try await wallet.topUpIdentityWithFunding(
+                                identityId: existingId,
+                                amountDuffs: shortfallDuffs,
+                                accountIndex: Self.defaultAccountIndex)
+                        }
                     }
                 }
             } else {

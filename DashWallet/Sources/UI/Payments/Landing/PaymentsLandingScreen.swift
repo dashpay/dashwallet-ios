@@ -194,8 +194,9 @@ struct PaymentsLandingScreen: View {
     ///
     /// Off in the balance-row sheets (`including: .subviews` above): there a
     /// tab is a whole form with a keypad, and paging away mid-entry would drop
-    /// what the user typed. The picker tabs have nothing to lose and no scroll
-    /// view of their own to fight over the gesture.
+    /// what the user typed. The picker tabs have nothing to lose. Receive's
+    /// vertical scroll view takes only vertical drags, so a sideways swipe over
+    /// it still changes tab.
     private var tabSwipe: some Gesture {
         DragGesture(minimumDistance: Layout.swipeMinimumDistance)
             .onEnded { value in
@@ -269,7 +270,10 @@ struct PaymentsLandingScreen: View {
     private var tabContent: some View {
         switch viewModel.activeTab {
         case .receive:
-            pickerLayout {
+            // Scrolls only when the card is taller than the page: the Identity
+            // card is, and squeezed into the page its warning collapsed to one
+            // truncated line per sentence and Close was pushed off the top.
+            ScrollView(.vertical) {
                 PaymentsReceiveContent(
                     viewModel: viewModel,
                     onCopyAddress: {
@@ -278,6 +282,10 @@ struct PaymentsLandingScreen: View {
                     },
                     onShareAddress: onShareAddress,
                     onSpecifyAmount: onSpecifyAmount,
+                    onCopyUsername: {
+                        viewModel.copyUsernameToPasteboard()
+                        showsCopiedToast = true
+                    },
                     onViewTransaction: onViewTransaction,
                     onDone: {
                         viewModel.finishReceiving()
@@ -286,6 +294,8 @@ struct PaymentsLandingScreen: View {
                 )
                 .padding(.horizontal, Layout.cardHorizontalPadding)
             }
+            .scrollBounceBehavior(.basedOnSize)
+            .scrollIndicators(.hidden)
 
         case .internalTransfer:
             switch mode {
@@ -314,7 +324,8 @@ struct PaymentsLandingScreen: View {
                     viewModel: embeddedTransferViewModel,
                     onCompleted: onTransferCompleted,
                     showsHeader: false,
-                    receiveInto: viewModel.network
+                    // Identity is not a chain: the form keeps the route's pinned target.
+                    receiveInto: viewModel.network.chainNetwork ?? embeddedTransferViewModel.receiveTarget
                 )
                 .padding(.top, Layout.embeddedFormTopPadding)
             }
@@ -386,12 +397,13 @@ struct PaymentsLandingScreen: View {
 @MainActor
 private func landingSample(
     activeTab: PaymentsLandingTab = .internalTransfer,
-    network: ChainNetwork = .core,
+    network: ReceiveOption = .core,
     visibleTabs: [PaymentsLandingTab] = PaymentsLandingTab.allCases,
     coreAddress: String? = "XyZ8kFqW3nR5tHmB2vJcL7pQaS4dEuG9wN",
     transferAmount: String = "0",
     transferSendFrom: ChainNetwork? = nil,
     transferReceivePinned: Bool = false,
+    transferReceiveInto: ChainNetwork? = nil,
     showsHeader: Bool = true
 ) -> some View {
 
@@ -408,7 +420,7 @@ private func landingSample(
         onSpecifyAmount: {},
         onViewTransaction: { _ in },
         onScanQR: {},
-        embeddedTransferViewModel: .makeForPreview(amountText: transferAmount),
+        embeddedTransferViewModel: .makeForPreview(receiveInto: transferReceiveInto, amountText: transferAmount),
         transferSendFrom: transferSendFrom,
         transferReceivePinned: transferReceivePinned,
         embeddedSendViewModel: .makeForPreview(pinnedSource: transferSendFrom),
@@ -468,6 +480,19 @@ private func landingSample(
         visibleTabs: [.receive, .internalTransfer],
         transferAmount: "0.5",
         transferReceivePinned: true,
+        showsHeader: false)
+}
+
+/// Balance-row receive sheet with Identity picked on Receive: Identity is not
+/// a chain, so the transfer form keeps the To card the route is pinned to.
+@available(iOS 17, *)
+#Preview("Receive sheet · Identity picked, pinned To kept") {
+    landingSample(
+        network: .identity,
+        visibleTabs: [.receive, .internalTransfer],
+        transferAmount: "0.5",
+        transferReceivePinned: true,
+        transferReceiveInto: .platform,
         showsHeader: false)
 }
 

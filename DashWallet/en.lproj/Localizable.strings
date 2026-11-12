@@ -1349,6 +1349,9 @@
 /* No comment provided by engineer. */
 "Copy" = "Copy";
 
+/* Receive, Identity option */
+"Copy Identity ID" = "Copy Identity ID";
+
 /* Log export */
 "Copy Logs" = "Copy Logs";
 
@@ -1360,6 +1363,9 @@
 
 /* No comment provided by engineer. */
 "Copy text" = "Copy text";
+
+/* Receive, Identity option */
+"Copy username" = "Copy username";
 
 /* AboutDash */
 "Copyright © 2026 Dash Core Group" = "Copyright © 2026 Dash Core Group";
@@ -2274,6 +2280,9 @@
 /* CoinJoin */
 "Funds moved" = "Funds moved";
 
+/* Receive, Identity option warning */
+"Funds sent to your identity pay for Dash apps and usernames." = "Funds sent to your identity pay for Dash apps and usernames.";
+
 /* Usernames */
 "Funds will be traceable to your username" = "Funds will be traceable to your username";
 
@@ -3106,6 +3115,9 @@
 
 /* No comment provided by engineer. */
 "More Control" = "More Control";
+
+/* Receive, Identity option warning */
+"Most exchanges and many wallets can send only to Core addresses" = "Most exchanges and many wallets can send only to Core addresses";
 
 /* Voting */
 "Most lock votes" = "Most lock votes";
@@ -4846,6 +4858,9 @@
 
 /* Receive screen */
 "Share address" = "Share address";
+
+/* Receive, Identity option */
+"Share ID" = "Share ID";
 
 /* Share key */
 "Share key" = "Share key";

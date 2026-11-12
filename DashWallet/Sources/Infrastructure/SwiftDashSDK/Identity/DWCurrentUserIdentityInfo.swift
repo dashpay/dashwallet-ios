@@ -307,10 +307,14 @@ public final class DWCurrentUserIdentityInfo: NSObject {
     /// Fetch Platform credits and let the SDK persist them before invalidating UI.
     /// Capturing the wallet instance prevents a late response being applied to a
     /// newly selected wallet/network, even if the wallet IDs happen to match.
+    ///
+    /// Returns the credits read, or the failure; a failed read leaves the stored
+    /// balance as it was.
+    @discardableResult
     @nonobjc
     func refreshBalanceFromNetwork(
         identityId: Data, wallet: ManagedPlatformWallet, network: Network
-    ) async {
+    ) async -> Result<UInt64, Error> {
         await IdentityBalanceRefresh.run(
             isCurrent: {
                 let host = SwiftDashSDKHost.shared

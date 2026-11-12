@@ -84,6 +84,8 @@
 		11E47BAB28EB38510097CFA0 /* SendCoinsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E47BAA28EB38510097CFA0 /* SendCoinsService.swift */; };
 		12BD10DCCEFF4142EA3BA0CA /* SwiftDashSDKWalletSending.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4BAA92B00D4109567DF870F /* SwiftDashSDKWalletSending.swift */; };
 		12DE15416F9F7A0B8749CAF1 /* PaymentsLandingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE64C10DA9C338D408982EBE /* PaymentsLandingViewModel.swift */; };
+		8820AD0A74800EDA9BBE4481 /* IdentityCreditsWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06171096D5D5ACB796FB3D68 /* IdentityCreditsWatcher.swift */; };
+		DAE070BBE395099DE28F91E4 /* ReceiveOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5686334C0BC09D6EC6968F6A /* ReceiveOption.swift */; };
 		15F9C3B621487500E2919619 /* SendViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6FAA6524ACE5F315B57AC3 /* SendViewModel.swift */; };
 		16AA1B384A9758C1DA97676A /* SwiftDashSDKHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = E181EB71C8803101EA789AA4 /* SwiftDashSDKHost.swift */; };
 		17ED79A8B56522CD03A8CD5E /* ShieldedTransferCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D2C8F8102C5C603DB63569F /* ShieldedTransferCoordinator.swift */; };
@@ -1099,6 +1101,10 @@
 		AA0003032CA0F58E00B1B401 /* EnterAddressViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003012CA0F58E00B1B401 /* EnterAddressViewModel.swift */; };
 		AA0003042CA0F58E00A1B402 /* SwapAddressValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003032CA0F58E00A1B402 /* SwapAddressValidatorTests.swift */; };
 		5A7E0C1D2E3F405162738495 /* VotingKeyFormatTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A7E0C1D2E3F405162738496 /* VotingKeyFormatTests.swift */; };
+		BD63CE371BCBDC6C6C2B3E89 /* IdentityCreditsWatcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40915328799E60EFF1DED4BF /* IdentityCreditsWatcherTests.swift */; };
+		28B18F23C7ECDF7E68211209 /* PaymentsLandingIdentityOptionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC7EB895CF26FDCD2F8F324F /* PaymentsLandingIdentityOptionTests.swift */; };
+		5E423E4BDA2BBE9C7B3803BE /* IdentityTopUpEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3DE67DD53D3C7DB015A5F93 /* IdentityTopUpEventTests.swift */; };
+		C36C1205E79FC632A5DE3F4D /* ReceiveOptionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20DFEF115C5EB3AFFC86490A /* ReceiveOptionTests.swift */; };
 		5A7E0C1D2E3F405162738497 /* VotingKeyImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A7E0C1D2E3F405162738498 /* VotingKeyImportTests.swift */; };
 		AA0003052CA0F58E00B1B402 /* EnterAddressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003042CA0F58E00B1B402 /* EnterAddressView.swift */; };
 		AA0003062CA0F58E00B1B402 /* EnterAddressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0003042CA0F58E00B1B402 /* EnterAddressView.swift */; };
@@ -1271,6 +1277,8 @@
 		C5745FA476F615D2C1E378F3 /* SwiftDashSDKReceiveAddressReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A876A874736D422F781F797F /* SwiftDashSDKReceiveAddressReader.swift */; };
 		C5906424C3D379AF0CB83370 /* SendScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1F21A7592E99814A800518 /* SendScreen.swift */; };
 		C6138156317BAF449AA76861 /* PaymentsLandingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE64C10DA9C338D408982EBE /* PaymentsLandingViewModel.swift */; };
+		7DB78A53395396AAFA0395F1 /* IdentityCreditsWatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06171096D5D5ACB796FB3D68 /* IdentityCreditsWatcher.swift */; };
+		6EC85D43A6748BD1D7497C6F /* ReceiveOption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5686334C0BC09D6EC6968F6A /* ReceiveOption.swift */; };
 		C017200000000000000CA2 /* ShieldedRecoverySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000000CA1 /* ShieldedRecoverySheet.swift */; };
 		C017200000000000000CA3 /* ShieldedRecoverySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000000CA1 /* ShieldedRecoverySheet.swift */; };
 		C017200000000000000DA2 /* ShieldedTransferStepList.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000000DA1 /* ShieldedTransferStepList.swift */; };
@@ -2021,6 +2029,9 @@
 		553696A24F315D361BC86231 /* VoteHistoryDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFB72236D79932EAE7A38E2 /* VoteHistoryDAO.swift */; };
 		7843C0A14DF4CBD4FFA605CD /* DWUsernameRegistrationRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF36BF1A7ACD652EDDA7D25D /* DWUsernameRegistrationRecovery.swift */; };
 		BABA10000000000000000002 /* DWIdentityBalanceRefresh.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000001 /* DWIdentityBalanceRefresh.swift */; };
+		BABA10000000000000000102 /* IdentityTopUpDidComplete.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000101 /* IdentityTopUpDidComplete.swift */; };
+		BABA10000000000000000202 /* IdentityTopUpsInFlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000201 /* IdentityTopUpsInFlight.swift */; };
+		BABA10000000000000000203 /* IdentityTopUpsInFlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000201 /* IdentityTopUpsInFlight.swift */; };
 		F44028CBF49F4A2FE6268874 /* UsernameRegistrationRecoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 701E95B66E2409DD2F80D7AB /* UsernameRegistrationRecoveryTests.swift */; };
 		C0F1E5ED0A14B2C3D4E5F603 /* ContestedUsernameFeeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F1E5ED0A14B2C3D4E5F604 /* ContestedUsernameFeeTests.swift */; };
 		4046F707D79B443DF65A4A1B /* CreateUsernameShieldedCostTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D352A3186395D1462939197 /* CreateUsernameShieldedCostTests.swift */; };
@@ -3226,6 +3237,10 @@
 		AA0003012CA0F58E00B1B401 /* EnterAddressViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterAddressViewModel.swift; sourceTree = "<group>"; };
 		AA0003032CA0F58E00A1B402 /* SwapAddressValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapAddressValidatorTests.swift; sourceTree = "<group>"; };
 		5A7E0C1D2E3F405162738496 /* VotingKeyFormatTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingKeyFormatTests.swift; sourceTree = "<group>"; };
+		40915328799E60EFF1DED4BF /* IdentityCreditsWatcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityCreditsWatcherTests.swift; sourceTree = "<group>"; };
+		EC7EB895CF26FDCD2F8F324F /* PaymentsLandingIdentityOptionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsLandingIdentityOptionTests.swift; sourceTree = "<group>"; };
+		A3DE67DD53D3C7DB015A5F93 /* IdentityTopUpEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityTopUpEventTests.swift; sourceTree = "<group>"; };
+		20DFEF115C5EB3AFFC86490A /* ReceiveOptionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiveOptionTests.swift; sourceTree = "<group>"; };
 		5A7E0C1D2E3F405162738498 /* VotingKeyImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingKeyImportTests.swift; sourceTree = "<group>"; };
 		AA0003042CA0F58E00B1B402 /* EnterAddressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterAddressView.swift; sourceTree = "<group>"; };
 		AA0003072CA0F58E00B1B403 /* EnterAddressHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterAddressHostingController.swift; sourceTree = "<group>"; };
@@ -3838,6 +3853,8 @@
 		FBF3F4301E42B02800C7248E /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
 		FE0000000000000000000061 /* ExtendedPublicKeysView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ExtendedPublicKeysView.swift; path = DashWallet/Sources/UI/Menu/Tools/ExtendedKeys/ExtendedPublicKeysView.swift; sourceTree = SOURCE_ROOT; };
 		FE64C10DA9C338D408982EBE /* PaymentsLandingViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaymentsLandingViewModel.swift; sourceTree = "<group>"; };
+		06171096D5D5ACB796FB3D68 /* IdentityCreditsWatcher.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IdentityCreditsWatcher.swift; sourceTree = "<group>"; };
+		5686334C0BC09D6EC6968F6A /* ReceiveOption.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ReceiveOption.swift; sourceTree = "<group>"; };
 		FF0000042DUMMYID001234567 /* DashSpend/PiggyCardsConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/PiggyCardsConstants.swift; sourceTree = "<group>"; };
 		FF0000062DUMMYID001234567 /* PiggyCardsModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiggyCardsModels.swift; sourceTree = "<group>"; };
 		FF0000092DUMMYID001234567 /* BarcodeScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarcodeScanner.swift; sourceTree = "<group>"; };
@@ -3865,6 +3882,8 @@
 		0AFB72236D79932EAE7A38E2 /* VoteHistoryDAO.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VoteHistoryDAO.swift; sourceTree = "<group>"; };
 		CF36BF1A7ACD652EDDA7D25D /* DWUsernameRegistrationRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWUsernameRegistrationRecovery.swift; sourceTree = "<group>"; };
 		BABA10000000000000000001 /* DWIdentityBalanceRefresh.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWIdentityBalanceRefresh.swift; sourceTree = "<group>"; };
+		BABA10000000000000000101 /* IdentityTopUpDidComplete.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityTopUpDidComplete.swift; sourceTree = "<group>"; };
+		BABA10000000000000000201 /* IdentityTopUpsInFlight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityTopUpsInFlight.swift; sourceTree = "<group>"; };
 		701E95B66E2409DD2F80D7AB /* UsernameRegistrationRecoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRegistrationRecoveryTests.swift; sourceTree = "<group>"; };
 		C0F1E5ED0A14B2C3D4E5F604 /* ContestedUsernameFeeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContestedUsernameFeeTests.swift; sourceTree = "<group>"; };
 		4D352A3186395D1462939197 /* CreateUsernameShieldedCostTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateUsernameShieldedCostTests.swift; sourceTree = "<group>"; };
@@ -6923,6 +6942,8 @@
 				E735446F9E918618E97EDD38 /* PaymentsLandingScreen.swift */,
 				C0172000000000000003A1 /* PaymentsTabRootController.swift */,
 				FE64C10DA9C338D408982EBE /* PaymentsLandingViewModel.swift */,
+				06171096D5D5ACB796FB3D68 /* IdentityCreditsWatcher.swift */,
+				5686334C0BC09D6EC6968F6A /* ReceiveOption.swift */,
 				B401E660599FEF6B18087F91 /* PaymentsLandingHostingController.swift */,
 			);
 			path = Landing;
@@ -7355,6 +7376,10 @@
 				C5A11E0000000000000000F6 /* SelectCoinViewModelTests.swift */,
 				C5A11E0000000000000000F4 /* SwapKitFailureDetailTests.swift */,
 				5A7E0C1D2E3F405162738496 /* VotingKeyFormatTests.swift */,
+				40915328799E60EFF1DED4BF /* IdentityCreditsWatcherTests.swift */,
+				EC7EB895CF26FDCD2F8F324F /* PaymentsLandingIdentityOptionTests.swift */,
+				A3DE67DD53D3C7DB015A5F93 /* IdentityTopUpEventTests.swift */,
+				20DFEF115C5EB3AFFC86490A /* ReceiveOptionTests.swift */,
 				5A7E0C1D2E3F405162738498 /* VotingKeyImportTests.swift */,
 				AA00F1002FF0A10000A1B402 /* ExchangeAddressLookupContextTests.swift */,
 				AA00100D2CA0B10001A0B10D /* SwapKitQuoteDecodingTests.swift */,
@@ -7458,6 +7483,8 @@
 				D826C39F49D5CD6EC19C8C8E /* DWIdentityRegistrationCoordinator.swift */,
 				CF36BF1A7ACD652EDDA7D25D /* DWUsernameRegistrationRecovery.swift */,
 				BABA10000000000000000001 /* DWIdentityBalanceRefresh.swift */,
+				BABA10000000000000000101 /* IdentityTopUpDidComplete.swift */,
+				BABA10000000000000000201 /* IdentityTopUpsInFlight.swift */,
 				D54F8E662513F09BA840FB94 /* DWIdentityRegistrationBridge.swift */,
 				5B30DA60B985C3CC3ED05B64 /* DWCurrentUserIdentityInfo.swift */,
 				82926C69F3BB675BEF1A1FFD /* DWProfileUpdateCoordinator.swift */,
@@ -10495,6 +10522,9 @@
 				15F9C3B621487500E2919619 /* SendViewModel.swift in Sources */,
 				8B8898971DC24152E171DABC /* PaymentsLandingScreen.swift in Sources */,
 				12DE15416F9F7A0B8749CAF1 /* PaymentsLandingViewModel.swift in Sources */,
+				8820AD0A74800EDA9BBE4481 /* IdentityCreditsWatcher.swift in Sources */,
+				BABA10000000000000000203 /* IdentityTopUpsInFlight.swift in Sources */,
+				DAE070BBE395099DE28F91E4 /* ReceiveOption.swift in Sources */,
 				908AB7EFCC69D3828BBD70A8 /* PaymentsLandingHostingController.swift in Sources */,
 				C029D3337FF6DAD231B33C4B /* SendToContactScreen.swift in Sources */,
 				1F2E9228002A59F638346E1F /* SendToContactViewController.swift in Sources */,
@@ -10682,6 +10712,10 @@
 				C5A11E0000000000000000F7 /* SelectCoinViewModelTests.swift in Sources */,
 				C5A11E0000000000000000F5 /* SwapKitFailureDetailTests.swift in Sources */,
 				5A7E0C1D2E3F405162738495 /* VotingKeyFormatTests.swift in Sources */,
+				BD63CE371BCBDC6C6C2B3E89 /* IdentityCreditsWatcherTests.swift in Sources */,
+				28B18F23C7ECDF7E68211209 /* PaymentsLandingIdentityOptionTests.swift in Sources */,
+				5E423E4BDA2BBE9C7B3803BE /* IdentityTopUpEventTests.swift in Sources */,
+				C36C1205E79FC632A5DE3F4D /* ReceiveOptionTests.swift in Sources */,
 				5A7E0C1D2E3F405162738497 /* VotingKeyImportTests.swift in Sources */,
 				AA00F1012FF0A10000A1B402 /* ExchangeAddressLookupContextTests.swift in Sources */,
 				AA00100E2CA0B10001A0B10E /* SwapKitQuoteDecodingTests.swift in Sources */,
@@ -11549,6 +11583,8 @@
 				F4202BDB27E7066201C23A58 /* DWIdentityRegistrationCoordinator.swift in Sources */,
 				7843C0A14DF4CBD4FFA605CD /* DWUsernameRegistrationRecovery.swift in Sources */,
 				BABA10000000000000000002 /* DWIdentityBalanceRefresh.swift in Sources */,
+				BABA10000000000000000102 /* IdentityTopUpDidComplete.swift in Sources */,
+				BABA10000000000000000202 /* IdentityTopUpsInFlight.swift in Sources */,
 				A11E57A70006C0DE0006B006 /* DWInvitationLinkNormalizer.swift in Sources */,
 				A11E57A70007C0DE0007B007 /* DWInvitationService.swift in Sources */,
 				C85067CBF3243AC0B42E9A2C /* InvitationValidation.swift in Sources */,
@@ -11605,6 +11641,8 @@
 				E932B50D2C8449B6C2A8A6E0 /* SendToContactViewModel.swift in Sources */,
 				6D5D6EFD5F40D11B2FB6E8A1 /* PaymentsLandingScreen.swift in Sources */,
 				C6138156317BAF449AA76861 /* PaymentsLandingViewModel.swift in Sources */,
+				7DB78A53395396AAFA0395F1 /* IdentityCreditsWatcher.swift in Sources */,
+				6EC85D43A6748BD1D7497C6F /* ReceiveOption.swift in Sources */,
 				72F0556F329AE232966A8B4A /* PaymentsLandingHostingController.swift in Sources */,
 				1C2999FF1FC854E7DB138250 /* TransferTimingSheet.swift in Sources */,
 				FF4A426923D0CF755AE981FB /* InternalTransferViewModel.swift in Sources */,
