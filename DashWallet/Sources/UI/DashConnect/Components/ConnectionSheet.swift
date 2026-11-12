@@ -428,7 +428,7 @@ struct ConnectionSheet: View {
         if access.hasUnlimitedKey {
             return NSLocalizedString("No limit", comment: "DashConnect connection sheet: a key with no spending limit")
         }
-        guard let budget = access.largestBudget else {
+        guard let budget = access.budgetLimit else {
             return NSLocalizedString("Not known", comment: "DashConnect connection sheet")
         }
         return String(

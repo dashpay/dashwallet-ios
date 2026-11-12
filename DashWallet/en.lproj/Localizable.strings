@@ -4294,6 +4294,9 @@
 /* DashConnect App Connect v2: the placeholder is the app's name */
 "Receive messages encrypted to you in %@" = "Receive messages encrypted to you in %@";
 
+/* DashConnect App Connect v2: before approval, whether the app gets a key for messages is not known yet; the placeholder is the app's name */
+"May receive messages encrypted to you in %@" = "May receive messages encrypted to you in %@";
+
 /* Masternode unban */
 "Receive some DASH to this wallet, or fund its shielded balance, then return here." = "Receive some DASH to this wallet, or fund its shielded balance, then return here.";
 
