@@ -2728,6 +2728,16 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return snapshot.keys.filter { ids.contains($0.id) }
     }
 
+    /// Whether the projection of `snapshot`, with the owners known, shows
+    /// keys no intent names under `appId` on the snapshot's identity.
+    static func showsUnrecordedKeys(
+        of appId: String, on snapshot: AppConnect.IdentitySnapshot, intents: [AppConnect.ConnectionIntent], owners: [Data: Data]
+    ) -> Bool {
+        AppConnect.project([snapshot], intents: intents, owners: owners).connections
+            .first { $0.appId.toBase58String() == appId }?
+            .unrecordedKeyIds[snapshot.identityId]?.isEmpty == false
+    }
+
     @discardableResult
     func disconnect(id: String, scope: String?) async throws -> DashConnectDisconnectResult {
         try await gated { try await disconnectInTurn(id: id, scope: scope) }

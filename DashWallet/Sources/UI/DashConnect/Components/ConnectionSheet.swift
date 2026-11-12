@@ -24,7 +24,8 @@ import SwiftUI
 /// given, and the action that fits its status.
 struct ConnectionSheet: View {
     let item: ConnectionSheetItem
-    /// `nil` while it is read, or when it could not be read (`detailsFailed`).
+    /// `nil` while it is read, or when it could not be read (`detailsFailed`,
+    /// which with details shown says a refresh of them failed).
     let details: ConnectionDetails?
     let detailsFailed: Bool
     /// What the app was given; `nil` while unknown.
@@ -73,6 +74,13 @@ struct ConnectionSheet: View {
                     detailsCard
                     if details == nil {
                         detailsPlaceholder
+                    } else if detailsFailed {
+                        Text(NSLocalizedString(
+                            "The details of this connection could not be read again and may be out of date.",
+                            comment: "DashConnect connection sheet: a refresh of details already shown failed"))
+                            .dashFont(.footnote)
+                            .foregroundColor(Color.dash.secondaryText)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     limitsCard
                     if let granted {

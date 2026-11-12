@@ -1498,6 +1498,9 @@
 /* No comment provided by engineer. */
 "Couldn't get the evonode's status." = "Nie udało się pobrać statusu evonode.";
 
+/* Swap: Select coin, the coin list failed to load */
+"Couldn't load the coin list. Please try again, or try a different network." = "Couldn't load the coin list. Please try again, or try a different network.";
+
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Nie można dokonać płatności";
 
@@ -5483,6 +5486,9 @@
 
 /* DashConnect connection sheet */
 "The details of this connection could not be read." = "The details of this connection could not be read.";
+
+/* DashConnect connection sheet: a refresh of details already shown failed */
+"The details of this connection could not be read again and may be out of date." = "The details of this connection could not be read again and may be out of date.";
 
 /* DashConnect */
 "The details of this sign-in changed while it was on screen. Check them and approve again." = "The details of this sign-in changed while it was on screen. Check them and approve again.";
