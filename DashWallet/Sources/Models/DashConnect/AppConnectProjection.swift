@@ -718,6 +718,24 @@ extension AppConnect {
         } && outstandingDisables(of: intent, in: snapshot).isEmpty
     }
 
+    /// Whether `intent`'s encryption keys give the app message access on
+    /// `snapshot`, as the connection sheet says it: every key it re-sends is
+    /// live, and every key it adds is live, or not there yet while the
+    /// intent may still land. One that is off, expired, or whose id another
+    /// key holds gives none.
+    static func encryptionKeysGiveAccess(_ intent: ConnectionIntent, in snapshot: IdentitySnapshot) -> Bool {
+        let mayLand = status(of: intent, in: snapshot) == .confirming
+        return intent.sentEncryptionKeyIds.allSatisfy { id in
+            snapshot.keys.contains { $0.id == id && isLive($0, at: snapshot.platformTime) }
+        } && intent.keys.filter { !$0.isAuthentication }.allSatisfy { key in
+            switch presence(of: key, in: snapshot) {
+            case .live: return true
+            case .missing: return mayLand
+            case .conflicting, .expired, .disabled: return false
+            }
+        }
+    }
+
     /// Whether the encryption keys `intent`'s response carries can still be
     /// used: those it re-sends are live, and those it adds are not off.
     static func encryptionKeysUsable(_ intent: ConnectionIntent, in snapshot: IdentitySnapshot) -> Bool {
