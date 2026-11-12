@@ -34,7 +34,8 @@ struct SecurityMenuScreen: View {
     
     init(vc: UINavigationController?, wipeDelegate: DWWipeDelegate? = nil) {
         self.vc = vc
-        self.delegateInternal = DelegateInternal(onHide: {
+        // `[weak vc]`: `vc` here is the init parameter, not the weak property.
+        self.delegateInternal = DelegateInternal(onHide: { [weak vc] in
             vc?.popViewController(animated: true)
         }, wipeDelegate: wipeDelegate)
     }

@@ -106,16 +106,18 @@ class MainMenuViewController: UIViewController {
             dashPayModel: dashPayModel,
             dashPayReady: dashPayReady,
             userProfileModel: userProfileModel
-        ) {
-            self.presentSupportEmailController()
+        ) { [weak self] in
+            // Weak: the screen this closure is stored in is hosted by `self`.
+            self?.presentSupportEmailController()
         }
         #else
         let swiftUIView = MainMenuScreen(
             vc: navigationController!,
             delegate: delegate as? MainMenuViewControllerDelegate,
             wipeDelegate: delegate
-        ) {
-            self.presentSupportEmailController()
+        ) { [weak self] in
+            // Weak: the screen this closure is stored in is hosted by `self`.
+            self?.presentSupportEmailController()
         }
         #endif
         
