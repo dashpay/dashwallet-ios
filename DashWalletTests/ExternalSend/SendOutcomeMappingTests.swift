@@ -343,11 +343,26 @@ final class SendOutcomeMappingTests: XCTestCase {
             CoordinatorError.shieldedSweepWaiting(1000),
             PlatformWalletError.coreInsufficientFunds(Self.rawSdkText),
             PlatformWalletError.identityNotFound(Self.rawSdkText),
+            PlatformWalletError.shieldedPlanChanged(Self.rawSdkText),
+            PlatformWalletError.shieldedWithdrawalAmountOutOfRange(Self.rawSdkText),
         ]
         for error in errors {
             guard let reason = assertNotSent(error) else { continue }
             XCTAssertFalse(reason.localizedMessage.isEmpty, "\(error)")
             XCTAssertFalse(reason.localizedMessage.contains(Self.rawSdkText), "raw SDK text leaked for \(error)")
+        }
+    }
+
+    func testShieldedPlanRefusalsAreNotSent() {
+        let changed = PlatformWalletError.shieldedPlanChanged(Self.rawSdkText)
+        let cases: [(Error, String)] = [
+            (changed, "balanceChanged"),
+            (CoordinatorError.transferFailed(changed), "balanceChanged"),
+            (PlatformWalletError.shieldedWithdrawalAmountOutOfRange(Self.rawSdkText), "amountOutOfRange"),
+            (PlatformWalletError.shieldedSpendTooManyNotes(Self.rawSdkText), "failed")
+        ]
+        for (error, category) in cases {
+            XCTAssertEqual(assertNotSent(error)?.category, category, "\(error)")
         }
     }
 

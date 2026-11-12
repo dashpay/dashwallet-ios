@@ -47,7 +47,8 @@ extension SendRoute {
         }
     }
 
-    /// Whether the fee prepared at Continue is the fee the send pays (ADR-0043). Only Core → Core, which also carries
-    /// BIP70 payment requests, is built and signed at Continue; every other route's fee is an estimate.
-    var isFeeExact: Bool { self == .coreToCore }
+    /// Whether the fee prepared at Continue is the fee the send pays (ADR-0043): Core → Core (which also carries
+    /// BIP70 payment requests) is built and signed at Continue, and a Shielded source runs the SDK plan made there.
+    /// Every other route's fee is an estimate.
+    var isFeeExact: Bool { self == .coreToCore || source == .shielded }
 }
