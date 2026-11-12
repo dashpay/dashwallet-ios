@@ -400,7 +400,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private let store: any DashConnectStore
     private let intentStore: any AppConnectIntentStore
     /// The newest read of each identity this process has seen; a read
-    /// behind it is not used (`AppConnect.IdentitySnapshot.mayReplace`).
+    /// behind it is not used (`AppConnect.IdentitySnapshot.admitted`).
     private static let newestSnapshots = OSAllocatedUnfairLock<[Data: AppConnect.IdentitySnapshot]>(initialState: [:])
     /// The owners of contracts and contract groups this process has read,
     /// for every data source of the app's run: Platform never changes one.
@@ -966,15 +966,20 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let (read, keys) = try Self.identitySnapshot(
             identityId: context.identityId, revision: revision, fetched: fetched, bindings: bindings)
         try Self.requireKeysNotBehind(copy: copyKeys, proved: keys)
-        let newest = Self.newestSnapshots.withLock { $0[context.identityId] }
-        guard read.mayReplace(newest) else {
+        // Held against the newest read and stored in one step, so two reads
+        // at once cannot both pass against the same newest one.
+        let admitted = Self.newestSnapshots.withLock { newest -> AppConnect.IdentitySnapshot? in
+            guard let admitted = read.admitted(after: newest[context.identityId]) else { return nil }
+            newest[context.identityId] = admitted
+            return admitted
+        }
+        guard let admitted else {
             // The SDK's copy of the identity is now that older one too, so
             // nothing is built on it: the user tries again.
             Self.logger.error("🔗 DASHCONNECT :: the identity read is behind one already seen")
             throw DashConnectPlatformError.identityReadBehind
         }
-        Self.newestSnapshots.withLock { $0[context.identityId] = read }
-        return (read, keys)
+        return (admitted, keys)
     }
 
     /// Throws `identityReadBehind` when the proved keys lack a key of the
@@ -1077,9 +1082,16 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private static func ownerReader(context: Context) -> OwnerReader {
         let sdk = context.sdk
         return OwnerReader(
-            network: "\(context.network)", memory: ownerMemory,
+            network: ownerScope(context.network.persistenceScope, context.stores.endpoint), memory: ownerMemory,
             readContract: { try await sdk.dataContractGetOffMain(id: $0.toBase58String()) },
             readGroup: { try await sdk.getContractGroupInfo(contractGroupId: $0.toBase58String()) })
+    }
+
+    /// The Platform an owner is remembered for: the network's persistence
+    /// scope, which names a devnet, and the endpoint it is reached at, since
+    /// devnets of one name at other nodes are other chains.
+    static func ownerScope(_ persistenceScope: String, _ endpoint: String?) -> String {
+        "\(persistenceScope) \(endpoint ?? "")"
     }
 
     /// Puts the App Connect rows of `stores` in step with what `snapshot`
@@ -2730,7 +2742,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 
         // An intent is done once none of its keys can still be live or land;
         // it is then closed and marked as one a disconnect ran on. While a
-        // key's bound is unknown (`planned.unplaced`) the app's newest intent
+        // key's bound is unknown (`unplaced`, told from the read after the
+        // update, or from the plan's read when that read failed, so a key
+        // that landed during the update counts) the app's newest intent
         // stays open, and is marked when none of its keys can still be live
         // or land either, so its row keeps its status and Disconnect (AC-18). An intent left live is
         // marked, and stays open, only when a stopped run sent one of its
@@ -2742,13 +2756,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // closed without the mark, and is never the newest left open: its
         // row does not name the disconnected entry.
         let closedAt = now()
+        let unplaced = afterRead.map { Self.unplacedKeyCount(of: $0, intents: stores.intents.load()) } ?? planned.unplaced
         let ownFences = Set(planned.ownFenceIds)
         let neverLandedBefore = Set(stores.intents.load().filter { intent in
             AppConnect.status(of: intent, in: planned.snapshot) == .neverLanded && intent.keys.contains {
                 !ownFences.contains($0.id) && AppConnect.presence(of: $0, in: planned.snapshot) == .conflicting
             }
         }.map(\.id))
-        let newestOpen = planned.unplaced > 0
+        let newestOpen = unplaced > 0
             ? stores.intents.load().filter {
                 $0.appId == appId && $0.identityId == identityId && $0.closedAt == nil
                     && !neverLandedBefore.contains($0.id)
@@ -2821,7 +2836,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
         let ownIntents = stores.intents.load().filter { $0.appId == appId && $0.identityId == identityId }
         let unfinished = result.keysStillLive + result.fencesNotPlaced
-        guard stopped || unfinished > 0 || planned.unplaced > 0 || ownIntents.allSatisfy({ $0.closedAt != nil }) else {
+        guard stopped || unfinished > 0 || unplaced > 0 || ownIntents.allSatisfy({ $0.closedAt != nil }) else {
             throw DashConnectPlatformError.identityKeysOutOfDate
         }
         // The app's intents on another identity of this wallet can only be
