@@ -2691,7 +2691,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let identityId = context.identityId.toBase58String()
         var details = ConnectionDetails(
             appId: appId, identityId: identityId, username: context.storedUsername,
-            access: ConnectionAccess(intents: held, snapshot: snapshot, unrecorded: unrecorded),
+            // Without a read of the identity nothing is known to be the
+            // app's access: the sheet shows none rather than what the
+            // intents submitted, which may never have landed.
+            access: snapshot.flatMap { ConnectionAccess(intents: held, snapshot: $0, unrecorded: unrecorded) },
             connectedAt: held.map(\.createdAt).max())
         // Funding is read only for keys that landed and are not disabled:
         // an intent that may still land names ids another key may hold.

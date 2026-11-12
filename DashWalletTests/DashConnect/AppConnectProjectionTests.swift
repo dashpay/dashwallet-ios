@@ -71,7 +71,8 @@ final class AppConnectProjectionTests: XCTestCase {
         let profile = Self.authKey(11, bound: .documentType(contractId: Self.dashPay, name: "profile"))
         var group = Self.intent([Self.authKey(12, bound: .contractGroup(Self.appGroup), expiresAt: Self.now + 5000)])
         group.administeredGroupIds = [Self.appGroup]
-        let access = ConnectionAccess(intents: [Self.intent([Self.authKey(10), profile, Self.encryptionKey(13)]), group])
+        let access = ConnectionAccess(
+            intents: [Self.intent([Self.authKey(10), profile, Self.encryptionKey(13)]), group], snapshot: Self.snapshot([]))
 
         XCTAssertEqual(access?.keys.map(\.bound), [.singleContract(Self.app), profile.bound!, .contractGroup(Self.appGroup)])
         XCTAssertEqual(access?.keys.map(\.isAdministered), [false, false, true])
@@ -79,18 +80,18 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertEqual(access?.hasUnlimitedKey, false)
         XCTAssertEqual(access?.expiresAt, Date(timeIntervalSince1970: TimeInterval(Self.now + 5000) / 1000))
         XCTAssertEqual(access?.receivesMessages, true, "an encryption key it added")
-        XCTAssertNil(ConnectionAccess(intents: [Self.intent([Self.encryptionKey(13)])]), "no auth key, nothing to show")
+        XCTAssertNil(ConnectionAccess(intents: [Self.intent([Self.encryptionKey(13)])], snapshot: Self.snapshot([])), "no auth key, nothing to show")
     }
 
     func testAConnectionReceivesMessagesWhenItsResponseCarriesAnEncryptionKey() {
-        let added = ConnectionAccess(intents: [Self.intent([Self.authKey(10)])])
+        let added = ConnectionAccess(intents: [Self.intent([Self.authKey(10)])], snapshot: Self.snapshot([]))
         XCTAssertEqual(added?.receivesMessages, false)
         var sent = Self.intent([Self.authKey(10)])
         sent = Intent(
             id: sent.id, identityId: sent.identityId, appId: sent.appId, appLabel: sent.appLabel, appUrl: sent.appUrl,
             requestHash: sent.requestHash, connectionId: nil, keys: sent.keys, sentEncryptionKeyIds: [3], disables: [],
             response: sent.response, responseDocumentId: nil, responseRemoved: true, createdAt: sent.createdAt, closedAt: nil)
-        XCTAssertEqual(ConnectionAccess(intents: [sent])?.receivesMessages, true, "the identity's key, sent again")
+        XCTAssertEqual(ConnectionAccess(intents: [sent], snapshot: Self.snapshot([]))?.receivesMessages, true, "the identity's key, sent again")
     }
 
     func testEachAuthKeyIsListedOnceWithWhatIsLeftOfItsBudget() {
@@ -150,7 +151,7 @@ final class AppConnectProjectionTests: XCTestCase {
     func testTheFundingLimitIsTheSumOfTheKeysBudgets() {
         let first = Self.authKey(10, budget: 500)
         let second = Self.authKey(11, bound: .contractGroup(Self.appGroup), budget: 500)
-        let access = ConnectionAccess(intents: [Self.intent([first, second]), Self.intent([first])])
+        let access = ConnectionAccess(intents: [Self.intent([first, second]), Self.intent([first])], snapshot: Self.snapshot([]))
         XCTAssertEqual(access?.budgetLimit, 1000)
         XCTAssertEqual(access?.hasUnlimitedKey, false)
     }

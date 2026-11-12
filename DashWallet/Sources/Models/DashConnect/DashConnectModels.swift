@@ -266,10 +266,12 @@ struct ConnectionAccess: Equatable {
     /// The connection can receive messages encrypted to this identity.
     let receivesMessages: Bool
 
-    /// `nil` when `intents` add no auth key; with `snapshot`, no auth key
-    /// that gives access on it (`GrantedAccess(intents:snapshot:)`).
+    /// `nil` when no auth key of `intents` or `unrecorded` gives access on
+    /// `snapshot` (`GrantedAccess(intents:snapshot:unrecorded:)`). It needs a
+    /// read of the identity: without one, what the intents submitted is not
+    /// known to be the app's access.
     init?(
-        intents: [AppConnect.ConnectionIntent], snapshot: AppConnect.IdentitySnapshot? = nil,
+        intents: [AppConnect.ConnectionIntent], snapshot: AppConnect.IdentitySnapshot,
         unrecorded: [AppConnect.PlatformKey] = []
     ) {
         let access = AppConnect.GrantedAccess(intents: intents, snapshot: snapshot, unrecorded: unrecorded)
