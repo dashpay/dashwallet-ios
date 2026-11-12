@@ -35,27 +35,48 @@ struct CoinDisplayItem: Identifiable {
 
 @MainActor
 class SelectCoinViewModel: ObservableObject {
-    private var swapProvider: SwapProvider
+    private let swapProvider: SwapProvider
     private let direction: SwapDirection
     private var lastLoadedCoinSignature: [String] = []
+    /// What the last successful load fetched, so a live-availability change re-labels the list
+    /// without fetching pools again.
+    private var loadedPools: [SwapPool]?
+    private var loadedInboundAddresses: [SwapInboundAddress] = []
+    /// The loaded pools in display order — the order the live checks walk.
+    private var displayedPools: [SwapPool] = []
     private let networkStatus: NetworkStatusProviding
     private var networkCancellable: AnyCancellable?
+    private var routeAvailabilityCancellable: AnyCancellable?
+    /// The halted toast is shown once per picker: live answers keep re-rendering the list, and a
+    /// dismissed toast must not come back with them.
+    private var haltedToastShown = false
+    /// Identifies the `keepRouteAvailabilityFresh` run of the picker on screen; 0 when none runs.
+    /// A run that ends after a newer one started must not stop the newer one's checks.
+    private var routeFreshnessRun = 0
+    private var routeFreshnessRuns = 0
+    /// Identifies the latest render, so a slower older one does not publish over it.
+    private var renderGeneration = 0
+    /// Identifies the latest load: loads can overlap (the view's `.task` and a reconnect), and only
+    /// the latest one commits what it fetched.
+    private var loadGeneration = 0
+
+    /// How often the live checks are re-run while the picker is on screen. Only answers that are due
+    /// are asked again, so most ticks send nothing.
+    private let routeRefreshInterval: UInt64 = 60_000_000_000
 
     init(swapProvider: SwapProvider = MayaSwapProvider(), direction: SwapDirection = .sell, networkStatus: NetworkStatusProviding = NetworkStatusService.shared) {
         self.swapProvider = swapProvider
         self.direction = direction
         self.networkStatus = networkStatus
         self.isOnline = networkStatus.isOnline
-        if direction == .buy {
-            self.swapProvider.onBuyRoutabilityChanged = { [weak self] in
-                Task { await self?.loadCoins(force: true) }
+        // Answers arrive one by one while a refresh runs; re-render once they pause.
+        routeAvailabilityCancellable = swapProvider.routeAvailabilityChanges
+            .filter { $0 == direction }
+            .debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
+            .sink { [weak self] _ in
+                Task { await self?.reloadRouteAvailability() }
             }
-        }
         subscribeToNetworkStatus()
-    }
-
-    deinit {
-        swapProvider.onBuyRoutabilityChanged = nil
     }
     // MARK: - Published State
 
@@ -110,13 +131,15 @@ class SelectCoinViewModel: ObservableObject {
     func loadCoins(force: Bool = false) async {
         guard isOnline else { return }
         guard force || coins.isEmpty || errorMessage != nil else { return }
+        loadGeneration += 1
+        let generation = loadGeneration
         let shouldShowLoading = coins.isEmpty || errorMessage != nil
         if shouldShowLoading {
             isLoading = true
         }
         errorMessage = nil
         defer {
-            if shouldShowLoading {
+            if shouldShowLoading, generation == loadGeneration {
                 isLoading = false
             }
         }
@@ -127,31 +150,92 @@ class SelectCoinViewModel: ObservableObject {
             // would then filter out every pool via inboundChains.
             let pools = try await swapProvider.fetchPools(direction: direction)
             let inboundAddresses = try await swapProvider.fetchInboundAddresses()
-
-            let fiatCurrency = App.fiatCurrency
-            let formatter = makePriceFormatter(for: fiatCurrency)
-            let networkLabels = await swapProvider.networkLabels(for: pools)
-            let haltedAssets = await swapProvider.haltedAssets(from: inboundAddresses, pools: pools)
-            let items = makeCoinItems(
-                pools: pools,
-                inboundAddresses: inboundAddresses,
-                fiatCurrency: fiatCurrency,
-                formatter: formatter,
-                networkLabels: networkLabels,
-                haltedAssets: haltedAssets
-            )
-
-            let disambiguated = appendChainLabels(items)
-            let sorted = sortCoins(disambiguated)
-            let signature = coinSignature(sorted)
-            guard signature != lastLoadedCoinSignature else { return }
-            lastLoadedCoinSignature = signature
-            coins = sorted
-            hasHaltedCoins = sorted.contains { $0.isHalted }
-            showHaltedToast = hasHaltedCoins
+            guard generation == loadGeneration else { return }
+            loadedPools = pools
+            loadedInboundAddresses = inboundAddresses
+            let sorted = await render(pools: pools, inboundAddresses: inboundAddresses)
+            guard generation == loadGeneration else { return }
+            let poolsByAsset = Dictionary(pools.map { ($0.asset.uppercased(), $0) }, uniquingKeysWith: { first, _ in first })
+            displayedPools = sorted.compactMap { poolsByAsset[$0.coin.swapAsset.uppercased()] }
+            // A load that lands while the picker is on screen (after reconnecting, say) starts the
+            // checks now rather than at the next tick.
+            if routeFreshnessRun != 0 {
+                swapProvider.refreshRouteAvailability(for: displayedPools, direction: direction)
+            }
         } catch {
+            let detail = SwapKitFailureDetail.describe(error)
+            DWLogger.log("Swap: \(type(of: swapProvider)) coin list (\(direction)) failed to load — \(detail)")
+            guard generation == loadGeneration else { return }
             errorMessage = error.localizedDescription
         }
+    }
+
+    /// Keeps the live route checks running while the picker is on screen: once now, then every
+    /// `routeRefreshInterval`. Runs until the calling task is cancelled — the view's `.task`, which
+    /// SwiftUI cancels when the picker leaves the screen — and then stops the checks, so they do
+    /// not spend the SwapKit quota while the user is on another screen.
+    func keepRouteAvailabilityFresh() async {
+        // A `.task` cancelled while its load was still running must not stop the refresh that the
+        // re-shown picker's own `.task` has started meanwhile.
+        guard !Task.isCancelled else { return }
+        routeFreshnessRuns += 1
+        let run = routeFreshnessRuns
+        routeFreshnessRun = run
+        defer {
+            if routeFreshnessRun == run {
+                routeFreshnessRun = 0
+                swapProvider.stopRouteAvailabilityRefresh(direction: direction)
+            }
+        }
+        while !Task.isCancelled {
+            if !displayedPools.isEmpty {
+                swapProvider.refreshRouteAvailability(for: displayedPools, direction: direction)
+            }
+            try? await Task.sleep(nanoseconds: routeRefreshInterval)
+        }
+    }
+
+    /// Re-labels the loaded coins after live route answers changed. Nothing loaded yet (or a failed
+    /// load) means there is nothing to re-label: the next load renders the current answers.
+    private func reloadRouteAvailability() async {
+        guard let pools = loadedPools, errorMessage == nil else { return }
+        await render(pools: pools, inboundAddresses: loadedInboundAddresses)
+    }
+
+    /// Builds the rows for `pools` with the provider's current labels and halts and publishes them
+    /// when they changed. Returns the rows in display order.
+    @discardableResult
+    private func render(pools: [SwapPool], inboundAddresses: [SwapInboundAddress]) async -> [CoinDisplayItem] {
+        renderGeneration += 1
+        let generation = renderGeneration
+        let fiatCurrency = App.fiatCurrency
+        let formatter = makePriceFormatter(for: fiatCurrency)
+        let networkLabels = await swapProvider.networkLabels(for: pools, direction: direction)
+        let haltedAssets = await swapProvider.haltedAssets(from: inboundAddresses, pools: pools, direction: direction)
+        let items = makeCoinItems(
+            pools: pools,
+            inboundAddresses: inboundAddresses,
+            fiatCurrency: fiatCurrency,
+            formatter: formatter,
+            networkLabels: networkLabels,
+            haltedAssets: haltedAssets
+        )
+
+        let disambiguated = appendChainLabels(items)
+        let sorted = sortCoins(disambiguated)
+
+        let signature = coinSignature(sorted)
+        guard generation == renderGeneration, signature != lastLoadedCoinSignature else { return sorted }
+        lastLoadedCoinSignature = signature
+        coins = sorted
+        hasHaltedCoins = sorted.contains { $0.isHalted }
+        if !hasHaltedCoins {
+            showHaltedToast = false
+        } else if !haltedToastShown {
+            haltedToastShown = true
+            showHaltedToast = true
+        }
+        return sorted
     }
 
     // MARK: - Private: Item Creation

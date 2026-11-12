@@ -134,13 +134,12 @@ private final class RefundAddressPreviewSwapProvider: SwapProvider {
     var displayName: String { "Preview" }
     var usesGenericFeeLabel: Bool { true }
     var buildsSwapKitDeposit: Bool { true }
-    var onBuyRoutabilityChanged: (() -> Void)?
 
     func fetchPools() async throws -> [SwapPool] { [] }
     func fetchInboundAddresses() async throws -> [SwapInboundAddress] { [] }
     func fetchPools(direction: SwapDirection) async throws -> [SwapPool] { [] }
-    func networkLabels(for pools: [SwapPool]) async -> [String: String] { [:] }
-    func haltedAssets(from inboundAddresses: [SwapInboundAddress], pools: [SwapPool]) async -> Set<String> { [] }
+    func networkLabels(for pools: [SwapPool], direction: SwapDirection) async -> [String: String] { [:] }
+    func haltedAssets(from inboundAddresses: [SwapInboundAddress], pools: [SwapPool], direction: SwapDirection) async -> Set<String> { [] }
     func validateAddress(destination: String, toAsset: String) async -> String? { nil }
     func fetchQuote(dashSatoshis: Int64, toAsset: String, destination: String) async throws -> SwapQuoteResult {
         SwapQuoteResult(error: nil, expectedAmountOut: "1000000", fees: nil, inboundAddress: nil, memo: nil, executionNetwork: nil)

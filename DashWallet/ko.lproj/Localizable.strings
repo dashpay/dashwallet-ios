@@ -5522,6 +5522,9 @@
 /* Dash DEX */
 "The status of your %@ swap could not be confirmed" = "The status of your %@ swap could not be confirmed";
 
+/* SwapKit */
+"The swap service isn't responding. Please try again later." = "The swap service isn't responding. Please try again later.";
+
 /* Usernames */
 "The temporary username must not itself require voting." = "임시 사용자 이름 자체가 투표를 필요로 해서는 안 됩니다.";
 
