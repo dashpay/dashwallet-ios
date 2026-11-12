@@ -209,7 +209,7 @@ final class DashConnectStoreTests: XCTestCase {
             store: store
         )
 
-        try await first.disconnect(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", scope: nil, includingUnrecorded: false)
+        try await first.disconnect(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", scope: nil, unrecordedKeys: nil)
 
         let second = MockDashConnectDataSource(store: store)
         XCTAssertEqual(second.connectionsSnapshot, [])
