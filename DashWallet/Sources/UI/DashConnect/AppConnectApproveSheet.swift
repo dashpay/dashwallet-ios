@@ -40,69 +40,77 @@ struct AppConnectApproveSheet: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            DashConnectSheetGrabber()
-
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    header
-                    // One box for what to check before approving
-                    // (`approvalCaution`). A re-login, which replaces the
-                    // app's row and turns off keys an earlier sign-in holds
-                    // on the same connection (`AppConnect.supersededKeyIds`),
-                    // leads with that, then since when and that the wallet
-                    // does not know the app; otherwise the wallet does not
-                    // know the app (and where it returns), then a first
-                    // connection.
-                    if let caution = viewModel.approvalCaution {
-                        SystemMessageView(
-                            title: caution.title,
-                            subtitle: caution.subtitle,
-                            backgroundColor: Color.dash.yellowAlpha10)
-                    }
-                    detailsCard
-                    // A plan of encryption keys only has no limit or expiry
-                    // to set.
-                    if viewModel.approvalHasTerms {
-                        termsCard
-                    }
-                    if let granted = viewModel.approvalGrantedLines {
+        // No title in the bar: the intro block below names the request. The
+        // close button denies, as a swipe-down does through the presenter's
+        // binding; both are blocked while an approval is in flight.
+        DashUIKit.BottomSheet(
+            showBackButton: .constant(false),
+            isDismissalEnabled: .constant(!viewModel.isApproving),
+            isCloseButtonEnabled: !viewModel.isApproving,
+            onClose: { viewModel.denyPendingRequest(asksToReturn: true) },
+            background: Color.dash.secondaryBackground
+        ) {
+            VStack(spacing: 0) {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        header
+                        // One box for what to check before approving
+                        // (`approvalCaution`). A re-login, which replaces the
+                        // app's row and turns off keys an earlier sign-in holds
+                        // on the same connection (`AppConnect.supersededKeyIds`),
+                        // leads with that, then since when and that the wallet
+                        // does not know the app; otherwise the wallet does not
+                        // know the app (and where it returns), then a first
+                        // connection.
+                        if let caution = viewModel.approvalCaution {
+                            SystemMessageView(
+                                title: caution.title,
+                                subtitle: caution.subtitle,
+                                backgroundColor: Color.dash.yellowAlpha10)
+                        }
+                        detailsCard
+                        // A plan of encryption keys only has no limit or expiry
+                        // to set.
+                        if viewModel.approvalHasTerms {
+                            termsCard
+                        }
+                        if let granted = viewModel.approvalGrantedLines {
+                            DashConnectCollapsibleCard(
+                                title: String(
+                                    format: NSLocalizedString(
+                                        "See what %@ will be able to do", comment: "DashConnect: the app's name"),
+                                    request.resolvedAppLabel),
+                                isExpanded: $showsGranted) {
+                                    ForEach(Array(granted.enumerated()), id: \.offset) {
+                                        PermissionRow(icon: .custom("dashconnect.check.circle", maxHeight: 18), text: $0.element)
+                                    }
+                                }
+                        }
                         DashConnectCollapsibleCard(
                             title: String(
                                 format: NSLocalizedString(
-                                    "See what %@ will be able to do", comment: "DashConnect: the app's name"),
+                                    "See what %@ will NOT have access to", comment: "DashConnect: the app's name"),
                                 request.resolvedAppLabel),
-                            isExpanded: $showsGranted) {
-                                ForEach(Array(granted.enumerated()), id: \.offset) {
-                                    PermissionRow(icon: .custom("dashconnect.check.circle", maxHeight: 18), text: $0.element)
+                            isExpanded: $showsWithheld) {
+                                ForEach(DashConnectPermissionText.withheld, id: \.self) {
+                                    PermissionRow(icon: .custom("dashconnect.xmark.circle", maxHeight: 18), text: $0)
                                 }
+                                spendableRow
                             }
                     }
-                    DashConnectCollapsibleCard(
-                        title: String(
-                            format: NSLocalizedString(
-                                "See what %@ will NOT have access to", comment: "DashConnect: the app's name"),
-                            request.resolvedAppLabel),
-                        isExpanded: $showsWithheld) {
-                            ForEach(DashConnectPermissionText.withheld, id: \.self) {
-                                PermissionRow(icon: .custom("dashconnect.xmark.circle", maxHeight: 18), text: $0)
-                            }
-                            spendableRow
-                        }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 20)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 20)
-            }
-            // Room under the content for the toast, so nothing stays under it.
-            .contentMargins(
-                .bottom, (viewModel.approveError ?? viewModel.approveDisabledReason) == nil ? 0 : 72,
-                for: .scrollContent)
-            // Over the end of the scrolling content, above the buttons.
-            .dashConnectErrorToast(viewModel.approveError ?? viewModel.approveDisabledReason)
+                // Room under the content for the toast, so nothing stays under it.
+                .contentMargins(
+                    .bottom, (viewModel.approveError ?? viewModel.approveDisabledReason) == nil ? 0 : 72,
+                    for: .scrollContent)
+                // Over the end of the scrolling content, above the buttons.
+                .dashConnectErrorToast(viewModel.approveError ?? viewModel.approveDisabledReason)
 
-            footer
+                footer
+            }
         }
-        .background(Color.dash.secondaryBackground)
         // Every terms sheet is as tall as what it shows. The info sheets
         // start at the tallest they may be, so the first measurement is of
         // all of it; the funding and expiry sheets switch between presets and
@@ -289,47 +297,52 @@ struct DashConnectReturnStep: View {
     let onStay: () -> Void
 
     var body: some View {
-        VStack(spacing: 0) {
-            DashConnectSheetGrabber()
-
-            ScrollView {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(String(
-                        format: NSLocalizedString(
-                            "Return to %@?",
-                            comment: "DashConnect: asks before returning to an app the wallet does not know; the placeholder is a website, e.g. yap.pr"),
-                        host))
-                        .dashFont(.title1)
-                        .foregroundColor(Color.dash.primaryText)
-                    Text(NSLocalizedString(
-                        "This wallet does not know this app, so it cannot confirm where this address leads. Open it only if you started this on that website.",
-                        comment: "DashConnect: asks before returning to an app the wallet does not know"))
-                        .dashFont(.subhead)
-                        .foregroundColor(Color.dash.secondaryText)
+        // The close button stays in the wallet, as a swipe-down does
+        // through the presenter's binding.
+        DashUIKit.BottomSheet(
+            showBackButton: .constant(false),
+            onClose: onStay,
+            background: Color.dash.secondaryBackground
+        ) {
+            VStack(spacing: 0) {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(String(
+                            format: NSLocalizedString(
+                                "Return to %@?",
+                                comment: "DashConnect: asks before returning to an app the wallet does not know; the placeholder is a website, e.g. yap.pr"),
+                            host))
+                            .dashFont(.title1)
+                            .foregroundColor(Color.dash.primaryText)
+                        Text(NSLocalizedString(
+                            "This wallet does not know this app, so it cannot confirm where this address leads. Open it only if you started this on that website.",
+                            comment: "DashConnect: asks before returning to an app the wallet does not know"))
+                            .dashFont(.subhead)
+                            .foregroundColor(Color.dash.secondaryText)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 20)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 20)
-            }
 
-            VStack(spacing: 10) {
-                DashConnectInlineErrorToast(message: note)
-                DashUIKit.DashButton(
-                    text: String(
-                        format: NSLocalizedString(
-                            "Open %@",
-                            comment: "DashConnect: return to an app the wallet does not know; the placeholder is a website, e.g. yap.pr"),
-                        host),
-                    fillsWidth: true, size: .large, style: .filledBlue, action: onOpen)
-                DashUIKit.DashButton(
-                    text: NSLocalizedString(
-                        "Stay in the wallet", comment: "DashConnect: do not return to an app the wallet does not know"),
-                    fillsWidth: true, size: .large, style: .tintedGray, action: onStay)
+                VStack(spacing: 10) {
+                    DashConnectInlineErrorToast(message: note)
+                    DashUIKit.DashButton(
+                        text: String(
+                            format: NSLocalizedString(
+                                "Open %@",
+                                comment: "DashConnect: return to an app the wallet does not know; the placeholder is a website, e.g. yap.pr"),
+                            host),
+                        fillsWidth: true, size: .large, style: .filledBlue, action: onOpen)
+                    DashUIKit.DashButton(
+                        text: NSLocalizedString(
+                            "Stay in the wallet", comment: "DashConnect: do not return to an app the wallet does not know"),
+                        fillsWidth: true, size: .large, style: .tintedGray, action: onStay)
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
+                .padding(.bottom, 20)
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 12)
-            .padding(.bottom, 20)
         }
-        .background(Color.dash.secondaryBackground)
     }
 }
 

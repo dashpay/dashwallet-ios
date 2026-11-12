@@ -30,13 +30,13 @@ final class CreateUsernameShieldedCostTests: XCTestCase {
     }
 
     func testReadyStateBlocksNothing() {
-        XCTAssertNil(CreateUsernameViewModel.shieldedCostBlocker(for: .ready, dashBalanceCovers: false))
+        XCTAssertNil(CreateUsernameViewModel.shieldedCostBlocker(for: .ready))
     }
 
     func testRestingFundsReportWhenTheyAreReady() {
         let readyAt = Date(timeIntervalSinceNow: 600)
         XCTAssertEqual(
-            CreateUsernameViewModel.shieldedCostBlocker(for: .maturing(readyAt: readyAt), dashBalanceCovers: true),
+            CreateUsernameViewModel.shieldedCostBlocker(for: .maturing(readyAt: readyAt)),
             .resting(readyAt: readyAt))
     }
 
@@ -45,13 +45,13 @@ final class CreateUsernameShieldedCostTests: XCTestCase {
     func testShortfallIsStatedInDuffsRoundedUp() {
         XCTAssertEqual(
             CreateUsernameViewModel.shieldedCostBlocker(
-                for: .needsFunding(shortfallCredits: 5_000_000_001), dashBalanceCovers: false),
-            .short(shortfallDuffs: 5_000_001, dashBalanceCovers: false))
+                for: .needsFunding(shortfallCredits: 5_000_000_001)),
+            .short(shortfallDuffs: 5_000_001))
     }
 
     func testPoolBelowMinimumIsItsOwnBlocker() {
         XCTAssertEqual(
-            CreateUsernameViewModel.shieldedCostBlocker(for: .poolTooSmall(current: 120), dashBalanceCovers: false),
+            CreateUsernameViewModel.shieldedCostBlocker(for: .poolTooSmall(current: 120)),
             .poolTooSmall(current: 120))
     }
 
@@ -62,18 +62,18 @@ final class CreateUsernameShieldedCostTests: XCTestCase {
         let maturing = ShieldedIdentityFundingReadiness.State.maturing(readyAt: Date(timeIntervalSince1970: 0))
         XCTAssertEqual(
             CreateUsernameViewModel.shieldedCostBlocker(
-                source: .shielded, identityTopUpDuffs: nil, readiness: maturing, dashBalanceCovers: false),
+                source: .shielded, identityTopUpDuffs: nil, readiness: maturing),
             .resting(readyAt: Date(timeIntervalSince1970: 0)))
         XCTAssertNil(CreateUsernameViewModel.shieldedCostBlocker(
-            source: .core, identityTopUpDuffs: nil, readiness: maturing, dashBalanceCovers: false))
+            source: .core, identityTopUpDuffs: nil, readiness: maturing))
         XCTAssertNil(CreateUsernameViewModel.shieldedCostBlocker(
-            source: .shielded, identityTopUpDuffs: 0, readiness: maturing, dashBalanceCovers: false))
+            source: .shielded, identityTopUpDuffs: 0, readiness: maturing))
         XCTAssertEqual(
             CreateUsernameViewModel.shieldedCostBlocker(
-                source: .shielded, identityTopUpDuffs: 50_000, readiness: maturing, dashBalanceCovers: false),
+                source: .shielded, identityTopUpDuffs: 50_000, readiness: maturing),
             .cannotTopUp(topUpDuffs: 50_000))
         XCTAssertNil(CreateUsernameViewModel.shieldedCostBlocker(
-            source: .shielded, identityTopUpDuffs: nil, readiness: nil, dashBalanceCovers: false))
+            source: .shielded, identityTopUpDuffs: nil, readiness: nil))
     }
 
     func testRestingTodayNamesTheTimeWithoutAnError() {
@@ -100,16 +100,15 @@ final class CreateUsernameShieldedCostTests: XCTestCase {
         XCTAssertEqual(text, "Your recently shielded Dash can be used for this username at \(Self.time(readyAt))")
     }
 
-    func testShortfallOffersTheDashBalanceOnlyWhenItCovers() {
+    /// The source is chosen once, on the privacy page: a short Shielded
+    /// balance asks for the shortfall and never points at the Dash balance,
+    /// whatever that balance holds.
+    func testShortfallNeverOffersTheDashBalance() {
         let amount = UInt64(5_000_000).dashAmount.formattedDashAmountWithoutCurrencySymbol
-        let covered = Blocker.short(shortfallDuffs: 5_000_000, dashBalanceCovers: true).criterion()
-        let uncovered = Blocker.short(shortfallDuffs: 5_000_000, dashBalanceCovers: false).criterion()
-        XCTAssertEqual(
-            covered.text,
-            "Add \(amount) Dash to your Shielded balance to create this username, or pay from your Dash balance")
-        XCTAssertEqual(uncovered.text, "Add \(amount) Dash to your Shielded balance to create this username")
-        XCTAssertEqual(covered.state, .failed)
-        XCTAssertEqual(uncovered.state, .failed)
+        let (text, state) = Blocker.short(shortfallDuffs: 5_000_000).criterion()
+        XCTAssertEqual(text, "Add \(amount) Dash to your Shielded balance to create this username")
+        XCTAssertFalse(text.contains("Dash balance"))
+        XCTAssertEqual(state, .failed)
     }
 
     /// The row says what the registration would refuse with.
@@ -258,6 +257,91 @@ final class CreateUsernameShieldedCostTests: XCTestCase {
         XCTAssertTrue(none.hasReadyShieldedFunding)
         XCTAssertNil(none.identityTopUpDuffsOrStandard)
     }
+
+    /// Rounding up adds nothing to a shortfall that is already whole duffs.
+    func testWholeDuffShortfallGainsNoExtraDuff() {
+        XCTAssertEqual(
+            CreateUsernameViewModel.shieldedCostBlocker(for: .needsFunding(shortfallCredits: 5_000_000_000)),
+            .short(shortfallDuffs: 5_000_000))
+    }
+
+    /// The shared pool reaching its minimum clears the row by itself.
+    func testPoolAtMinimumBlocksNothing() {
+        let notes = [
+            Readiness.Note(value: Readiness.standardDenominationCredits, createdAt: Self.date(hour: 0, minute: 0)),
+        ]
+        let now = Self.date(hour: 12, minute: 0)
+        let below = Readiness.snapshot(
+            notes: notes, requiredCredits: Readiness.standardDenominationCredits,
+            poolNoteCount: Readiness.minimumPoolNotes - 1, now: now)
+        let atMinimum = Readiness.snapshot(
+            notes: notes, requiredCredits: Readiness.standardDenominationCredits,
+            poolNoteCount: Readiness.minimumPoolNotes, now: now)
+        XCTAssertEqual(below.state, .poolTooSmall(current: Readiness.minimumPoolNotes - 1))
+        XCTAssertEqual(CreateUsernameViewModel.shieldedCostBlocker(for: below.state), .poolTooSmall(current: 249))
+        XCTAssertEqual(atMinimum.state, .ready)
+        XCTAssertNil(CreateUsernameViewModel.shieldedCostBlocker(for: atMinimum.state))
+    }
+
+    /// Ready notes that add up to exactly the denomination pay for the name.
+    func testRestedNotesOfExactlyTheDenominationAreReady() {
+        let now = Self.date(hour: 12, minute: 0)
+        let rested = now.addingTimeInterval(-Readiness.maturityWindow)
+        let notes = [
+            Readiness.Note(value: 1_000_000_000, createdAt: rested.addingTimeInterval(-60)),
+            Readiness.Note(value: 2_000_000_000, createdAt: rested),
+        ]
+        let snapshot = Readiness.snapshot(
+            notes: notes, requiredCredits: Readiness.standardDenominationCredits, poolNoteCount: nil, now: now)
+        XCTAssertEqual(snapshot.state, .ready)
+        XCTAssertEqual(snapshot.matureCredits, 3_000_000_000)
+
+        let oneCreditShort = Readiness.snapshot(
+            notes: notes, requiredCredits: Readiness.standardDenominationCredits + 1, poolNoteCount: nil, now: now)
+        XCTAssertEqual(oneCreditShort.state, .needsFunding(shortfallCredits: 1))
+    }
+
+    /// A ready snapshot wakes the service when the oldest still-resting note
+    /// matures, and not at all once every note has rested.
+    func testReadySnapshotWakesWhenTheNextNoteMatures() {
+        let now = Self.date(hour: 12, minute: 0)
+        let rested = Readiness.Note(
+            value: Readiness.standardDenominationCredits,
+            createdAt: now.addingTimeInterval(-Readiness.maturityWindow - 60))
+        let resting = Readiness.Note(value: 1_000_000_000, createdAt: now.addingTimeInterval(-60))
+        let younger = Readiness.Note(value: 1_000_000_000, createdAt: now)
+
+        let snapshot = Readiness.snapshot(
+            notes: [rested, resting, younger], requiredCredits: Readiness.standardDenominationCredits,
+            poolNoteCount: nil, now: now)
+        XCTAssertEqual(snapshot.state, .ready)
+        XCTAssertEqual(snapshot.nextMaturityAt, resting.createdAt.addingTimeInterval(Readiness.maturityWindow))
+
+        let allRested = Readiness.snapshot(
+            notes: [rested], requiredCredits: Readiness.standardDenominationCredits, poolNoteCount: nil, now: now)
+        XCTAssertNil(allRested.nextMaturityAt)
+    }
+
+    /// A pass that reports no count, or the same count, keeps the last one:
+    /// the pool never reads as "0 of the 250 notes".
+    func testPoolCountLatchesOnlyANewPositiveTotal() {
+        XCTAssertNil(Readiness.poolCountToLatch(reported: 0, latched: 120))
+        XCTAssertNil(Readiness.poolCountToLatch(reported: nil, latched: 120))
+        XCTAssertNil(Readiness.poolCountToLatch(reported: 120, latched: 120))
+        XCTAssertNil(Readiness.poolCountToLatch(reported: 0, latched: nil))
+        XCTAssertEqual(Readiness.poolCountToLatch(reported: 300, latched: 120), 300)
+        XCTAssertEqual(Readiness.poolCountToLatch(reported: 5, latched: nil), 5)
+    }
+
+    /// The Dash balance and Platform Payment sources name the price as a minimum.
+    func testGenericCostLineNamesThePriceAsAMinimum() {
+        let amount = UInt64(3_000_000).dashAmount.formattedDashAmountWithoutCurrencySymbol
+        XCTAssertEqual(
+            CreateUsernameViewModel.minimumCostMessage(requiredDuffs: 3_000_000),
+            "You need at least \(amount) Dash to create this username")
+    }
+
+    private typealias Readiness = ShieldedIdentityFundingReadiness
 
     private static func time(_ date: Date) -> String {
         DWDateFormatter.sharedInstance.timeOnly(from: date)

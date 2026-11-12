@@ -46,6 +46,10 @@ extension AppConnect {
     ]
     /// The owner of every system contract. No identity has this id.
     static let systemContractOwnerId = Data(count: 32)
+    /// What a contract group with admins is remembered as owned by: its
+    /// admins may add their own contracts to it, so no single owner holds
+    /// what is bound to it. No identity has this id.
+    static let administeredGroupOwnerId = Data(repeating: 0xFF, count: 32)
 
     // MARK: What an approval grants
 

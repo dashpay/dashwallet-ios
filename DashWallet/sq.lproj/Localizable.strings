@@ -440,7 +440,6 @@
 /* DashPay Contacts */
 "Add %@ as a contact to pay them directly by username and keep a shared history of your payments." = "Add %@ as a contact to pay them directly by username and keep a shared history of your payments.";
 "Add %@ Dash to your Shielded balance to create this username" = "Add %@ Dash to your Shielded balance to create this username";
-"Add %@ Dash to your Shielded balance to create this username, or pay from your Dash balance" = "Add %@ Dash to your Shielded balance to create this username, or pay from your Dash balance";
 
 /* No comment provided by engineer. */
 "Add a New Contact" = "Add a New Contact";
@@ -5745,6 +5744,9 @@
 
 /* Dash DEX */
 "The status of your %@ swap could not be confirmed" = "The status of your %@ swap could not be confirmed";
+
+/* SwapKit */
+"The swap service isn't responding. Please try again later." = "The swap service isn't responding. Please try again later.";
 
 /* Usernames */
 "The temporary username must not itself require voting." = "Emri i përkohshëm i përdoruesit nuk duhet të kërkojë vetë votim.";

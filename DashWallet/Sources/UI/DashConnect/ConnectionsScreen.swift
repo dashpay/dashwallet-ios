@@ -114,7 +114,7 @@ struct ConnectionsScreen: View {
                     note: viewModel.returnStepNote,
                     onOpen: { viewModel.openPendingReturn() },
                     onStay: { viewModel.stayInWallet() })
-                    .approveSheetPresentation(isLoading: false)
+                    .approveSheetPresentation()
             }
         }
         .sheet(isPresented: isTokenPurchaseSheetPresented) {
@@ -285,7 +285,7 @@ struct ConnectionsScreen: View {
         if request.login.grantPlan != nil {
             AppConnectApproveSheet(
                 viewModel: viewModel, request: request, onTopUp: onTopUpIdentity)
-                .approveSheetPresentation(isLoading: viewModel.isApproving, isTall: true)
+                .approveSheetPresentation(isTall: true)
         } else {
             legacyApproveSheet(for: request)
         }
@@ -302,7 +302,7 @@ struct ConnectionsScreen: View {
         )
         // Only a request that cannot be answered comes here: its sheet is
         // short.
-        .approveSheetPresentation(isLoading: viewModel.isApproving, isTall: false)
+        .approveSheetPresentation(isTall: false)
     }
 
     private func tokenPurchaseSheet(for purchase: DashConnectTokenPurchaseRequest) -> some View {
@@ -313,7 +313,7 @@ struct ConnectionsScreen: View {
             onApprove: { viewModel.approvePendingTokenPurchase() },
             onDeny: { viewModel.denyPendingTokenPurchase() }
         )
-        .approveSheetPresentation(isLoading: viewModel.isApprovingPurchase)
+        .approveSheetPresentation()
     }
 
     // MARK: - Presentation bindings
