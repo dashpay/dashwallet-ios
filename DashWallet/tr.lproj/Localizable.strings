@@ -313,6 +313,9 @@
 /* Balance info sheet */
 "A credit balance on Dash Platform used for instant payments between Platform addresses and for features like usernames." = "Platform adresleri arasındaki anlık ödemelerde ve kullanıcı adı gibi özelliklerde kullanılan, Dash Platform üzerindeki kredi bakiyesi.";
 
+/* DashConnect token purchase */
+"The wallet could not check your DashPay username. Open the link again." = "The wallet could not check your DashPay username. Open the link again.";
+
 /* DashConnect */
 "A DashPay username is needed to buy tokens. Create one, then open the link again." = "A DashPay username is needed to buy tokens. Create one, then open the link again.";
 
@@ -5097,6 +5100,9 @@
 
 /* Maya */
 "Some coins are not available because of the halted chain" = "Some coins are not available because of the halted chain";
+
+/* DashConnect: after a disconnect that turned off keys no approval in this wallet names */
+"This also turned off keys on your identity that this wallet has no record of giving (%d), such as keys given on another device or DashPay profile keys." = "This also turned off keys on your identity that this wallet has no record of giving (%d), such as keys given on another device or DashPay profile keys.";
 
 /* DashConnect: after a disconnect that left keys another app of the same developer may hold */
 "Some keys on your identity (%d) may belong to another app of the same developer, so this wallet left them on. Each one shows on its own row in Connections; disconnect it there if you no longer need it." = "Some keys on your identity (%d) may belong to another app of the same developer, so this wallet left them on. Each one shows on its own row in Connections; disconnect it there if you no longer need it.";

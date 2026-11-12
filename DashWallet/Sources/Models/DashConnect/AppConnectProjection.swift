@@ -102,7 +102,7 @@ extension AppConnect {
         }
     }
 
-    /// The data model's «Refusal» (ADR 0012): the consensus error code with
+    /// The data model's «Refusal» (ADR-0021): the consensus error code with
     /// which Platform refused an identity update for good, and when the wallet
     /// learned of it. Platform's message text is not stored.
     struct ConsensusRefusal: Codable, Equatable {
@@ -812,6 +812,9 @@ extension AppConnect {
         /// Keys of the app's owner that another app here has too: they stay
         /// on, since they may be the other app's.
         var notAttributable: [UInt32] = []
+        /// The keys of `disable` no intent names: live keys on the app's row
+        /// and DashPay profile keys that no record of this wallet gave.
+        var unrecorded: [UInt32] = []
 
         var isEmpty: Bool { disable.isEmpty && fence.isEmpty && deleteResponses.isEmpty }
 
@@ -938,6 +941,7 @@ extension AppConnect {
             }.map(\.id))
         }
         let profile = projection.unrecordedProfileKeyIds[snapshot.identityId] ?? []
+        plan.unrecorded = others.union(profile).subtracting(plan.disable).sorted()
         plan.disable = disableOrder(appKeyIds: plan.disable + others, otherKeyIds: profile)
         // The keys that may be the app's but stay on, by the same owner rule
         // that places them on rows.
