@@ -18,6 +18,8 @@ where they disagree, ADR-0001 wins.
 | [0010](0010-probe-live-swap-routes-with-address-free-forced-quotes.md) | Probe live routes with address-free quotes forced to one provider | swap | Proposed | |
 | [0011](0011-keep-live-swap-route-answers-in-one-shared-in-memory-store.md) | Keep live route answers in one shared in-memory store with two-step ageing | swap | Proposed | |
 | [0012](0012-detect-a-near-outage-from-sentinel-coins.md) | Detect a NEAR outage from sentinel coins before per-coin checks | swap | Proposed | |
+| [0013](0013-treat-dashuikit-and-swiftdashsdk-as-library-surfaces.md) | Treat DashUIKit and SwiftDashSDK as library surfaces of this feature | ui | Proposed | |
+| [0014](0014-split-voting-state-into-a-shared-store-and-per-screen-view-models.md) | Split voting state into a shared store and per-screen view models | ui | Proposed | |
 | [0015](0015-fence-a-pending-sign-in-on-disconnect.md) | Fence a pending sign-in on disconnect and recover forward only | platform | Proposed | |
 | [0016](0016-turn-off-unrecorded-keys-on-disconnect-without-asking.md) | Turn off unrecorded keys on disconnect without asking | platform | Proposed | |
 | [0017](0017-answer-an-app-connect-request-at-most-once.md) | Answer an App Connect request at most once | platform | Proposed | |

@@ -35,15 +35,23 @@ struct UsernameVotingScreen: View {
     /// explicitly — SwiftUI cannot see the UIKit stack underneath it.
     let onClose: () -> Void
 
-    @StateObject private var viewModel = VotingViewModel()
+    @StateObject private var viewModel: VotingViewModel
     @State private var showingNodePicker = false
     @State private var showingFilters = false
     /// Where the voting-key flow opens, while it is shown.
     @State private var keyFlowStart: VotingKeysFlow.Start?
     /// A vote started from a pill, handed to ``View/voteFlow(_:viewModel:)``.
     @State private var voteRequest: VoteFlowRequest?
-    /// The contest opened from a row.
+    /// The contest opened from a row's context menu.
     @State private var openedContest: OpenedContest?
+    /// The request opened from a row.
+    @State private var openedRequest: OpenedRequest?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private struct OpenedRequest: Hashable {
+        let normalizedLabel: String
+        let identityId: String
+    }
 
     /// A contest pushed from the list, identified by its label so the
     /// destination keeps its snapshot while it pops.
@@ -52,6 +60,14 @@ struct UsernameVotingScreen: View {
         static func == (lhs: Self, rhs: Self) -> Bool { lhs.contest.normalizedLabel == rhs.contest.normalizedLabel }
         func hash(into hasher: inout Hasher) { hasher.combine(contest.normalizedLabel) }
     }
+
+    init(onClose: @escaping () -> Void, viewModel: VotingViewModel? = nil) {
+        self.onClose = onClose
+        _viewModel = StateObject(wrappedValue: viewModel ?? VotingViewModel())
+    }
+
+    private var store: VotingStore { viewModel.store }
+    private var list: VotingListViewModel { viewModel.list }
 
     private var screenTitle: String { NSLocalizedString("Username Voting", comment: "Voting") }
 
@@ -73,7 +89,7 @@ struct UsernameVotingScreen: View {
                     .padding(.top, 20)
 
                 DashUIKit.SearchBar(
-                    text: $viewModel.searchQuery,
+                    text: Binding(get: { list.searchQuery }, set: { list.searchQuery = $0 }),
                     placeholder: NSLocalizedString("Search by username", comment: "Voting"))
                     .padding(.top, 20)
 
@@ -111,18 +127,22 @@ struct UsernameVotingScreen: View {
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             DashUIKit.FilterBar(
-                value: viewModel.filter.sort.title,
+                value: list.filter.sort.title,
                 title: NSLocalizedString("Filtered by", comment: "Voting"),
                 filterAccessibilityLabel: NSLocalizedString("Filter", comment: "Voting"),
-                replacement: viewModel.toast.map(\.view)) {
+                replacement: list.toast.map(\.view)) {
                 showingFilters = true
             }
         }
         .sheet(isPresented: $showingFilters) {
-            VotingFiltersSheet(filter: viewModel.filter) { viewModel.filter = $0 }
+            VotingFiltersSheet(filter: list.filter) { list.filter = $0 }
         }
         .navigationDestination(item: $openedContest) { opened in
             ContestDetailScreen(contest: opened.contest, viewModel: viewModel)
+        }
+        .navigationDestination(item: $openedRequest) { opened in
+            RequestDetailsScreen(
+                voting: viewModel, normalizedLabel: opened.normalizedLabel, identityId: opened.identityId)
         }
         .voteFlow($voteRequest, viewModel: viewModel)
         .sheet(isPresented: $showingNodePicker) {
@@ -138,17 +158,17 @@ struct UsernameVotingScreen: View {
                 viewModel: viewModel,
                 onFinish: { _ in keyFlowStart = nil })
         }
-        .task { await viewModel.refreshIfNeeded() }
-        .refreshable { await viewModel.refresh() }
+        .task { await store.refreshIfNeeded() }
+        .refreshable { await store.refresh() }
         // "Voting ends today / in N days" is relative to today.
         // Midnight and time-zone changes, delivered on return if they happened
         // while the app was suspended.
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
-            viewModel.recomputeVisible()
+            list.recomputeVisible()
         }
         // The toast appears where VoiceOver is not looking; say it.
-        .onChange(of: viewModel.toast?.id) {
-            if let message = viewModel.toast?.message {
+        .onChange(of: list.toast?.id) {
+            if let message = list.toast?.message {
                 AccessibilityNotification.Announcement(message).post()
             }
         }
@@ -161,15 +181,15 @@ struct UsernameVotingScreen: View {
             VStack(alignment: .leading, spacing: 1) {
                 // The filter's type and how many open contests it keeps,
                 // whatever the search narrows the list to.
-                Text(viewModel.filter.title)
+                Text(list.filter.title)
                     .dashFont(.headline)
                     .foregroundStyle(Color.dash.primaryText)
                 // No count while the type reads this wallet's votes and they
                 // are not known for every contest: it would not be a count.
-                if !viewModel.filter.type.readsMyVotes || viewModel.myVotesKnownForList {
+                if !list.filter.type.readsMyVotes || list.myVotesKnownForList {
                     Text(String.localizedStringWithFormat(
                         NSLocalizedString("%d usernames", comment: "Voting"),
-                        viewModel.filterMatchCount))
+                        list.filterMatchCount))
                         .dashFont(.footnote)
                         .foregroundStyle(Color.dash.tertiaryText)
                 }
@@ -214,12 +234,12 @@ struct UsernameVotingScreen: View {
     /// No node to vote with, and the node list is complete — while it may be
     /// incomplete, its own banner says so instead of "no voting keys".
     private var showsBrowseOnly: Bool {
-        viewModel.hasLoadedOnce && !viewModel.canVote && !viewModel.nodeListMayBeIncomplete
+        store.hasLoadedOnce && !viewModel.canVote && !store.nodeListMayBeIncomplete
     }
 
     private var hasBanners: Bool {
-        showsBrowseOnly || viewModel.nodeListMayBeIncomplete || viewModel.loadError != nil
-            || viewModel.historyUnavailable
+        showsBrowseOnly || store.nodeListMayBeIncomplete || list.loadState == .contests(refreshFailed: true)
+            || store.historyUnavailable
     }
 
     private var banners: some View {
@@ -236,7 +256,7 @@ struct UsernameVotingScreen: View {
                     action: (NSLocalizedString("Add masternode voting key", comment: "Voting"), { keyFlowStart = .addKey }),
                     isRounded: true)
             }
-            if viewModel.nodeListMayBeIncomplete {
+            if store.nodeListMayBeIncomplete {
                 VotingBanner(
                     text: NSLocalizedString(
                         "Some of your masternodes may be missing from this list — the wallet could not read your full voting-key pool. Finish syncing and reopen this screen.",
@@ -244,12 +264,21 @@ struct UsernameVotingScreen: View {
                     tone: .warning,
                     isRounded: true)
             }
-            if let loadError = viewModel.loadError {
-                VotingBanner(text: loadError, tone: .error, isRounded: true)
+            // Rows are on screen: keep them and offer a retry above them. With
+            // nothing cached the full-screen message says it instead.
+            // No Try again while the retry runs; it comes back if that fails too.
+            if let refreshFailed = list.refreshFailedText {
+                VotingBanner(
+                    text: refreshFailed,
+                    tone: .error,
+                    action: store.isRefreshing
+                        ? nil
+                        : (NSLocalizedString("Try again", comment: "Voting"), { retryLoad() }),
+                    isRounded: true)
             }
             // Without the history the list cannot tell which votes are cast,
             // so it holds the vote controls back; say why.
-            if viewModel.historyUnavailable {
+            if store.historyUnavailable {
                 VotingBanner(
                     text: NSLocalizedString(
                         "Couldn't read your vote history, so voting is paused. Pull down to try again.",
@@ -289,69 +318,62 @@ struct UsernameVotingScreen: View {
         }
     }
 
+    private func retryLoad() {
+        Task { await store.retry() }
+    }
+
     @ViewBuilder
     private var contestList: some View {
-        if !viewModel.hasLoadedOnce {
+        switch list.emptyState {
+        case .loading:
             SwiftUI.ProgressView()
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 40)
-        } else if viewModel.visibleContests.isEmpty && viewModel.loadError != nil && viewModel.contests.isEmpty {
+        case .couldNotLoad:
             // The load failed and nothing is cached: say so, rather than that
             // nothing is being contested — that was never checked.
             VotingEmptyState(
                 icon: "exclamationmark.triangle",
                 title: NSLocalizedString("Couldn't load the contests", comment: "Voting"),
-                message: NSLocalizedString("Pull down to try again.", comment: "Voting"))
+                message: NSLocalizedString("Pull down to try again.", comment: "Voting"),
+                action: (
+                    title: NSLocalizedString("Try again", comment: "Voting"),
+                    perform: { retryLoad() }))
                 .padding(.vertical, 40)
-        } else if viewModel.visibleContests.isEmpty && !viewModel.contests.isEmpty
-                    && viewModel.filter.type.readsMyVotes,
-                  let reason = viewModel.myVotesUnavailableReason {
-            // The type needs this wallet's votes, which cannot be told right
-            // now. Not the filter's fault.
+        case .cannotFilterByMyVotes(let reason):
             VotingEmptyState(
                 icon: "exclamationmark.triangle",
                 title: NSLocalizedString("Can't filter by your votes right now", comment: "Voting"),
                 message: reason,
                 action: (
                     title: NSLocalizedString("Reset filters", comment: "Voting"),
-                    perform: { viewModel.filter = .default }))
+                    perform: { list.filter = .default }))
                 .padding(.vertical, 40)
-        } else if viewModel.visibleContests.isEmpty && !viewModel.contests.isEmpty
-                    && viewModel.filter.type.readsMyVotes && !viewModel.myVotesKnownForList {
-            // This wallet's history is still loading for some contests, so
-            // neither the filter nor a search can say yet that nothing matches.
-            SwiftUI.ProgressView()
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 40)
-        } else if viewModel.visibleContests.isEmpty && !viewModel.contests.isEmpty
-                    && viewModel.filterMatchCount == 0
-                    && (!viewModel.filter.type.readsMyVotes || viewModel.myVotesKnownForList) {
-            // Open contests exist and the filter alone hides them all; when it
-            // is the search, the search's empty state below says so.
+        case .filterMatchesNothing:
             VotingEmptyState(
                 icon: "line.3.horizontal.decrease.circle",
                 title: NSLocalizedString("No usernames match this filter", comment: "Voting"),
                 message: NSLocalizedString("Change the filter or reset it to see every open contest.", comment: "Voting"),
                 action: (
                     title: NSLocalizedString("Reset filters", comment: "Voting"),
-                    perform: { viewModel.filter = .default }))
+                    perform: { list.filter = .default }))
                 .padding(.vertical, 40)
-        } else if viewModel.visibleContests.isEmpty {
+        case .noContests:
             VotingEmptyState(
                 icon: "checkmark.seal",
-                title: viewModel.searchQuery.isEmpty
-                    ? NSLocalizedString("No open contests", comment: "Voting")
-                    : NSLocalizedString("No matching contests", comment: "Voting"),
-                message: viewModel.searchQuery.isEmpty
-                    ? NSLocalizedString(
-                        "No usernames are being contested right now. Contests open when two or more people request the same name.",
-                        comment: "Voting")
-                    : NSLocalizedString(
-                        "No open contest matches that search.",
-                        comment: "Voting"))
+                title: NSLocalizedString("No open contests", comment: "Voting"),
+                message: NSLocalizedString(
+                    "No usernames are being contested right now. Contests open when two or more people request the same name.",
+                    comment: "Voting"))
                 .padding(.vertical, 40)
-        } else {
-            ForEach(viewModel.sections) { section in
+        case .searchMatchesNothing:
+            VotingEmptyState(
+                icon: "checkmark.seal",
+                title: NSLocalizedString("No matching contests", comment: "Voting"),
+                message: NSLocalizedString("No open contest matches that search.", comment: "Voting"))
+                .padding(.vertical, 40)
+        case nil:
+            ForEach(list.sections) { section in
                 Text(section.title)
                     .dashFont(.footnote)
                     .foregroundStyle(Color.dash.tertiaryText)
@@ -372,11 +394,31 @@ struct UsernameVotingScreen: View {
         let label = contest.normalizedLabel
         return VotingContestCard(
             contest: contest,
-            myChoices: viewModel.myChoices(on: label),
-            isCasting: viewModel.castingLabels.contains(label),
-            canStartVote: { viewModel.canStartVote($0, on: label) },
-            onVote: { choice in voteRequest = VoteFlowRequest(contest: contest, choice: choice) },
-            onOpen: { openedContest = OpenedContest(contest: contest) })
+            myChoices: store.myChoices(on: label),
+            isCasting: store.isSending(normalizedLabel: label),
+            canTapPill: { list.canTapPill($0, on: label) },
+            onVote: { voteRequest = list.voteRequest(for: $0, on: contest) },
+            onOpenRequest: { openedRequest = OpenedRequest(normalizedLabel: label, identityId: $0) },
+            onOpenOutcomes: { openedContest = OpenedContest(contest: contest) },
+            headerHint: list.headerAccessibilityHint(for: contest),
+            expansion: list.isExpandable(contest) ? expansion(for: contest) : nil)
+    }
+
+    private func expansion(for contest: DPNSContest) -> VotingContestCard.Expansion {
+        let label = contest.normalizedLabel
+        let isExpanded = list.isExpanded(label)
+        return VotingContestCard.Expansion(
+            isExpanded: isExpanded,
+            countText: list.requestCountText(for: contest),
+            pillLabel: list.expandAccessibilityLabel(for: contest, isExpanded: isExpanded),
+            pillValue: list.expandAccessibilityValue(for: contest),
+            requests: list.requestRows(for: contest),
+            // The card grows or shrinks while the requests fade, in one
+            // transaction with the chevron and «You voted»; under Reduce
+            // Motion the row opens and closes at once.
+            onToggle: {
+                withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.25)) { list.toggleExpanded(label) }
+            })
     }
 }
 
@@ -494,3 +536,148 @@ struct VotingBanner: View {
         }
     }
 }
+
+// MARK: - Previews
+
+#if DEBUG
+// Shared by the voting screens' previews (CastVoteSheet too).
+struct PreviewContests: VotingContestReading {
+    let contests: [DPNSContest]
+    var failure: Error?
+    /// Answers the first load, then fails every later one.
+    var failAfterFirstLoad = false
+    private let loaded = PreviewLoadCounter()
+
+    init(contests: [DPNSContest], failure: Error? = nil, failAfterFirstLoad: Bool = false) {
+        self.contests = contests
+        self.failure = failure
+        self.failAfterFirstLoad = failAfterFirstLoad
+    }
+
+    func activeContests() async throws -> [DPNSContest] {
+        if let failure { throw failure }
+        if failAfterFirstLoad, loaded.next() > 1 { throw VotingPreviewError.unavailable }
+        return contests
+    }
+
+    func voteState(normalizedLabel: String) async throws -> DPNSContestVoteState? { nil }
+}
+
+private final class PreviewLoadCounter {
+    private var count = 0
+    func next() -> Int { count += 1; return count }
+}
+
+struct PreviewNodes: VotableMasternodeResolving {
+    var nodes: [VoterNode] = []
+    var mayBeIncomplete = false
+
+    func votableNodes() -> MasternodeVoterRegistry.Resolution {
+        .init(nodes: nodes, mayBeIncomplete: mayBeIncomplete)
+    }
+}
+
+struct PreviewCaster: VoteCasting {
+    func cast(choice: VoteChoice, onNormalizedLabel normalizedLabel: String, with nodes: [VoterNode]) async throws
+        -> VoteCastReport {
+        throw VotingPreviewError.unavailable
+    }
+}
+
+final class PreviewHistory: VoteHistoryDAO {
+    private let records: [CastVoteRecord]
+
+    init(records: [CastVoteRecord] = []) {
+        self.records = records
+    }
+
+    func record(_ record: CastVoteRecord, network: String) async throws {}
+    func votes(forContest normalizedLabel: String, network: String) async -> [CastVoteRecord]? {
+        records.filter { $0.normalizedLabel == normalizedLabel }
+    }
+    func votes(forContests normalizedLabels: Set<String>, network: String) async -> [CastVoteRecord]? {
+        records.filter { normalizedLabels.contains($0.normalizedLabel) }
+    }
+    func deleteAll() {}
+}
+
+final class PreviewPrefs: VotingSelectionStoring {
+    var votingNodeSelection: Set<Data>
+
+    init(selection: Set<Data> = []) {
+        votingNodeSelection = selection
+    }
+}
+
+private enum VotingPreviewError: LocalizedError {
+    case unavailable
+
+    var errorDescription: String? { "Dash Platform is not connected yet." }
+}
+
+@MainActor
+private func previewScreen(
+    contests: [DPNSContest],
+    nodes: [VoterNode] = [],
+    mayBeIncomplete: Bool = false,
+    failure: Error? = nil,
+    failAfterFirstLoad: Bool = false,
+    filterType: VotingTypeFilter = .all
+) -> some View {
+    let store = VotingStore(
+        contests: PreviewContests(contests: contests, failure: failure, failAfterFirstLoad: failAfterFirstLoad),
+        nodes: PreviewNodes(nodes: nodes, mayBeIncomplete: mayBeIncomplete),
+        caster: PreviewCaster(),
+        history: PreviewHistory(),
+        prefs: PreviewPrefs())
+    let viewModel = VotingViewModel(store: store)
+    viewModel.list.filter.type = filterType
+    return NavigationStack {
+        UsernameVotingScreen(onClose: {}, viewModel: viewModel)
+    }
+    // A second load, queued behind the screen's own first one, which fails.
+    .task { if failAfterFirstLoad { await store.refresh() } }
+}
+
+private let previewEnd = Date(timeIntervalSince1970: 1_800_000_000)
+
+private let previewContests: [DPNSContest] = [
+    DPNSContest(normalizedLabel: "johndoe", endTime: previewEnd, hasWinner: false,
+                abstainVotes: 0, lockVotes: 2, contenders: []),
+    DPNSContest(normalizedLabel: "a11ce", endTime: previewEnd.addingTimeInterval(3 * 86_400), hasWinner: false,
+                abstainVotes: 1, lockVotes: 0, contenders: []),
+    DPNSContest(normalizedLabel: "somelongusernamethatkeepsgoingandgoing", endTime: nil, hasWinner: false,
+                abstainVotes: 0, lockVotes: 0, contenders: []),
+]
+
+private let previewNode = VoterNode(
+    proTxHash: Data([1]), isEvonode: false, typeIndex: 1, serviceAddress: nil, keySource: .walletIndex(0))
+
+#Preview("Loaded") {
+    previewScreen(contests: previewContests, nodes: [previewNode])
+}
+
+#Preview("No open contests") {
+    previewScreen(contests: [], nodes: [previewNode])
+}
+
+#Preview("Node list may be incomplete") {
+    previewScreen(contests: previewContests, mayBeIncomplete: true)
+}
+
+#Preview("Load failed") {
+    previewScreen(contests: [], failure: VotingPreviewError.unavailable)
+}
+
+#Preview("Refresh failed with rows") {
+    previewScreen(contests: previewContests, nodes: [previewNode], failAfterFirstLoad: true)
+}
+
+#Preview("Filter matches nothing") {
+    previewScreen(contests: previewContests, nodes: [previewNode], filterType: .approved)
+}
+
+#Preview("Can't filter by your votes") {
+    previewScreen(contests: previewContests, filterType: .notVoted)
+}
+#endif

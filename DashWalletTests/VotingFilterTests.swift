@@ -82,11 +82,25 @@ final class VotingFilterTests: XCTestCase {
         XCTAssertEqual(labels(filter), ["approved"])
     }
 
-    /// Any recorded vote counts, block and abstain included.
-    func testIHaveNotVotedKeepsOnlyNamesWithoutAVote() {
+    /// AC-07: a block or an approve counts as voted; no record, or abstain
+    /// only, does not.
+    func testIHaveNotVotedKeepsNamesWithNoVoteOrOnlyAnAbstain() {
         var filter = VotingFilter.default
         filter.type = .notVoted
-        XCTAssertEqual(labels(filter), ["untouched"])
+        XCTAssertEqual(labels(filter), ["abstained", "untouched"])
+    }
+
+    /// An abstain next to a block or an approve is still a vote.
+    func testIHaveNotVotedDropsANameWithAbstainAndAnotherVote() {
+        let mixed: [String: Set<VoteChoice>] = [
+            "approved": [.abstain, .towards(identityId: "approved-0")],
+            "blocked": [.abstain, .lock],
+        ]
+        var filter = VotingFilter.default
+        filter.type = .notVoted
+        XCTAssertEqual(
+            filter.apply(to: contests) { mixed[$0] ?? [] }.map(\.normalizedLabel),
+            ["abstained", "untouched"])
     }
 
     func testHasBlockedVotesReadsTheTallyNotThisWalletsVote() {
@@ -101,7 +115,7 @@ final class VotingFilterTests: XCTestCase {
         XCTAssertEqual(labels(filter), ["abstained", "untouched"])
 
         filter.type = .notVoted
-        XCTAssertEqual(labels(filter), ["untouched"])
+        XCTAssertEqual(labels(filter), ["abstained", "untouched"])
     }
 
     /// Days stay soonest first whatever the sort; the sort orders names inside a day.
