@@ -1495,6 +1495,24 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
     /// A row that turns Refused or Disconnected while its sheet asks about
     /// a disconnect no longer offers one: neither the question nor its
     /// confirmation runs it, and the sheet says why.
+    /// A refresh of a sheet's details that fails keeps the details shown
+    /// and says they could not be read again.
+    func testARefreshThatFailsKeepsTheDetailsAndSaysSo() async {
+        let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { !viewModel.connections.isEmpty }
+        viewModel.showConnection(viewModel.rows(for: .active)[0])
+        await waitUntil { viewModel.shownDetails != nil }
+        XCTAssertFalse(viewModel.shownDetailsFailed)
+
+        spy.failsDetails = true
+        // The same app and status, published again: the sheet reads anew.
+        spy.sendRows([DAppConnection(
+            id: "app", name: "app", url: "app.app", status: .active, updatedAt: Date(timeIntervalSince1970: 20))])
+        await waitUntil { viewModel.shownDetailsFailed }
+        XCTAssertEqual(viewModel.shownDetails?.username, "bob", "the details already read stay")
+    }
+
     func testAConfirmedDisconnectDoesNotRunOnceTheRowNoLongerOffersOne() async throws {
         for status in [ConnectionStatus.refused, .disconnected] {
             let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)])
@@ -1633,6 +1651,8 @@ private final class ConnectionStatusSpy: DashConnectDataSource {
     /// What the details read answers; a fixed connection on `identity` when
     /// unset.
     var details: ConnectionDetails?
+    /// Reads of the details fail, as when the identity cannot be read.
+    var failsDetails = false
     private var storedDisconnectFailure: Error?
     /// Thrown by every disconnect while set, before anything runs.
     var disconnectFailure: Error? {
@@ -1655,8 +1675,12 @@ private final class ConnectionStatusSpy: DashConnectDataSource {
     func connectionDetails(id: String, scope: String?) async -> ConnectionDetails? {
         // What the read answers, and how long it takes, as they were when it
         // started.
-        let (answer, delay) = lock.withLock { storedDetailReads += 1; return (details, detailsDelay) }
+        let (answer, delay, fails) = lock.withLock {
+            storedDetailReads += 1
+            return (details, detailsDelay, failsDetails)
+        }
         if delay > 0 { try? await Task.sleep(nanoseconds: delay) }
+        if fails { return nil }
         return answer ?? ConnectionDetails(appId: id, identityId: "identity", username: "bob", access: nil)
     }
 

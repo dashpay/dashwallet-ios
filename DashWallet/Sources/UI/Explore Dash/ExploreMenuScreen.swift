@@ -19,6 +19,9 @@ import SwiftUI
 import DashUIKit
 import UIKit
 
+/// Set once the merchant-types explainer has been shown before Where to Spend.
+private let kMerchantTypesShown = "merchantTypesInfoDialogShownKey"
+
 struct ExploreMenuScreen: View {
     private let vc: UINavigationController
     private let showBackButton: Bool
@@ -152,6 +155,10 @@ struct ExploreMenuScreen: View {
 
     private func showMerchants() {
         let merchantVC = MerchantListViewController()
+        merchantVC.customNavBar = MerchantListViewController.CustomNavBarConfiguration(
+            title: NSLocalizedString("Where to Spend", comment: ""),
+            onBack: { [weak merchantVC] in merchantVC?.closeOrPop() },
+            onInfo: nil)
         merchantVC.payWithDashHandler = { onShowSendPayment() }
         merchantVC.onGiftCardPurchased = { txId in
             vc.popToRootViewController(animated: false)

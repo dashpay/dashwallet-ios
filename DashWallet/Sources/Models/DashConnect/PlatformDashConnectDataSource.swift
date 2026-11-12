@@ -2676,8 +2676,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // attributed by owner) are the app's access too, from the same
         // projection, with the owners it reads.
         var unrecorded: [AppConnect.PlatformKey] = []
+        var administeredGroups: Set<Data> = []
         if let snapshot {
-            unrecorded = await Self.unrecordedKeys(of: appId, on: snapshot, intents: stores.intents.load(), context: context)
+            let all = stores.intents.load()
+            let owners = await Self.ownerReader(context: context).knownOwners(for: snapshot, intents: all)
+            unrecorded = Self.unrecordedKeys(of: appId, on: snapshot, intents: all, owners: owners)
+            administeredGroups = Self.mayBeAdministered(unrecorded, owners: owners)
         }
         // The app's row is held by another identity of the wallet: its
         // intents are not the active identity's to show.
@@ -2690,13 +2694,16 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             // Without a read of the identity nothing is known to be the
             // app's access: the sheet shows none rather than what the
             // intents submitted, which may never have landed.
-            access: snapshot.flatMap { ConnectionAccess(intents: held, snapshot: $0, unrecorded: unrecorded) },
+            access: snapshot.flatMap {
+                ConnectionAccess(intents: held, snapshot: $0, unrecorded: unrecorded, administeredGroups: administeredGroups)
+            },
             connectedAt: held.map(\.createdAt).max())
         // Funding is read only for keys that landed and are not disabled:
         // an intent that may still land names ids another key may hold.
         guard let snapshot else { return details }
-        let landed = held.filter { AppConnect.hasLanded($0, in: snapshot) }
-        let keyIds = KeyFunding.keyIds(of: landed, snapshot: snapshot, unrecorded: unrecorded)
+        // Chosen key by key: a live key keeps its line when another key of
+        // its intent never landed.
+        let keyIds = KeyFunding.keyIds(of: held, snapshot: snapshot, unrecorded: unrecorded)
         if !keyIds.isEmpty {
             // A read-only query, off the main actor: it does not touch the
             // identity copy the operations that sign use, so it does not wait
@@ -2704,7 +2711,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             if let remaining = try? await DashConnectPlatformQueries.keysRemainingBudgets(
                 sdk: context.sdk, identityId: identityId, keyIds: keyIds) {
                 details.keyFunding = KeyFunding.of(
-                    intents: landed, snapshot: snapshot, unrecorded: unrecorded, remaining: remaining)
+                    intents: held, snapshot: snapshot, unrecorded: unrecorded, remaining: remaining)
             } else {
                 details.fundingReadFailed = true
             }
@@ -2712,16 +2719,36 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return details
     }
 
-    /// The keys on `snapshot` that the projection, with the owners it needs
-    /// that are known, shows under `appId` and no intent names.
+    /// The groups of `keys` that may have administrators: the owner read
+    /// as administered, or not read. Unknown is not said to be absent.
+    static func mayBeAdministered(_ keys: [AppConnect.PlatformKey], owners: [Data: Data]) -> Set<Data> {
+        Set(keys.compactMap { key -> Data? in
+            guard case .contractGroup(let id) = key.bound else { return nil }
+            let owner = owners[id]
+            return owner == nil || owner == AppConnect.administeredGroupOwnerId ? id : nil
+        })
+    }
+
+    /// The keys on `snapshot` that the projection, with the `owners` known,
+    /// shows under `appId` and no intent names.
     private static func unrecordedKeys(
-        of appId: String, on snapshot: AppConnect.IdentitySnapshot, intents: [AppConnect.ConnectionIntent], context: Context
-    ) async -> [AppConnect.PlatformKey] {
-        let owners = await ownerReader(context: context).knownOwners(for: snapshot, intents: intents)
+        of appId: String, on snapshot: AppConnect.IdentitySnapshot, intents: [AppConnect.ConnectionIntent],
+        owners: [Data: Data]
+    ) -> [AppConnect.PlatformKey] {
         let connection = AppConnect.project([snapshot], intents: intents, owners: owners).connections
             .first { $0.appId.toBase58String() == appId }
         let ids = Set(connection?.unrecordedKeyIds[snapshot.identityId] ?? [])
         return snapshot.keys.filter { ids.contains($0.id) }
+    }
+
+    /// Whether the projection of `snapshot`, with the owners known, shows
+    /// keys no intent names under `appId` on the snapshot's identity.
+    static func showsUnrecordedKeys(
+        of appId: String, on snapshot: AppConnect.IdentitySnapshot, intents: [AppConnect.ConnectionIntent], owners: [Data: Data]
+    ) -> Bool {
+        AppConnect.project([snapshot], intents: intents, owners: owners).connections
+            .first { $0.appId.toBase58String() == appId }?
+            .unrecordedKeyIds[snapshot.identityId]?.isEmpty == false
     }
 
     @discardableResult
@@ -3751,8 +3778,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 /// would hold the UI for a network round trip. They run here on queues of
 /// their own instead, with the SDK kept alive for the call; each copies the
 /// native result and releases it before returning.
-/// TODO(dashconnect-off-main-queries): use the SDK's own off-main reads once
-/// it has them for these, as it has for `documentList`.
+/// TODO(dashconnect-off-main-queries): use the SDK's own off-main reads for
+/// these once dashpay/platform#5867 provides them (the remaining budgets
+/// included), as it has for `documentList`; then remove these wrappers and
+/// the budgets parser.
 enum DashConnectPlatformQueries {
     /// One queue per kind of read, so a slow contract-keys read does not hold
     /// back the protocol-version read a sheet waits for.
