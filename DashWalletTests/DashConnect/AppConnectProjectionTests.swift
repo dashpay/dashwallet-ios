@@ -218,6 +218,13 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertEqual(ConnectionAccess(intents: [intent], snapshot: Self.snapshot([
             Self.onPlatform(auth), Self.onPlatform(encryption, disabledAt: Self.now - 10),
         ]))?.receivesMessages, false, "its encryption key is off")
+        XCTAssertEqual(ConnectionAccess(intents: [intent], snapshot: Self.snapshot([
+            Self.onPlatform(auth), Self.onPlatform(encryption, data: Data(repeating: 0x77, count: 33)),
+        ]))?.receivesMessages, false, "another key holds its encryption key's id: it never lands")
+        XCTAssertEqual(ConnectionAccess(intents: [intent], snapshot: Self.snapshot([Self.onPlatform(auth)]))?.receivesMessages,
+                       false, "the update landed without it")
+        XCTAssertEqual(ConnectionAccess(intents: [intent], snapshot: Self.snapshot([]))?.receivesMessages,
+                       true, "not landed yet: it may still")
     }
 
     /// Funding lines are chosen key by key: a live key keeps its line when

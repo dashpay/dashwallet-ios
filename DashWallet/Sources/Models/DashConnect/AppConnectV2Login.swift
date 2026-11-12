@@ -202,7 +202,7 @@ extension AppConnect {
                 receivesMessages: intents.contains { intent in
                     let hasMessageKey = !intent.sentEncryptionKeyIds.isEmpty || intent.keys.contains { !$0.isAuthentication }
                     guard hasMessageKey else { return false }
-                    return snapshot.map { AppConnect.encryptionKeysUsable(intent, in: $0) } ?? true
+                    return snapshot.map { AppConnect.encryptionKeysGiveAccess(intent, in: $0) } ?? true
                 })
         }
     }
