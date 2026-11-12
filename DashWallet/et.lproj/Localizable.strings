@@ -28,14 +28,8 @@
 /* DashConnect App Connect v2: what a key can do, an amount with its unit (0.5 DASH), a date */
 "%1$@, spending up to %2$@ of your identity's credits until %3$@" = "%1$@, spending up to %2$@ of your identity's credits until %3$@";
 
-/* DashConnect App Connect v2: what a key with no expiry can do, an amount with its unit (0.5 DASH) */
-"%1$@, spending up to %2$@ of your identity's credits, with no end date" = "%1$@, spending up to %2$@ of your identity's credits, with no end date";
-
 /* DashConnect App Connect v2: what a key can do, a date */
 "%1$@, with no limit on spending your identity's credits, until %2$@" = "%1$@, with no limit on spending your identity's credits, until %2$@";
-
-/* DashConnect App Connect v2: what a key with no expiry and no budget can do */
-"%@, with no limit on spending your identity's credits and no end date" = "%@, with no limit on spending your identity's credits and no end date";
 
 /* DashConnect connection sheet: a key's name, then its budget */
 "%1$@: %2$@" = "%1$@: %2$@";
@@ -1500,6 +1494,9 @@
 
 /* No comment provided by engineer. */
 "Couldn't get the evonode's status." = "Evonode'i olekut ei õnnestunud saada.";
+
+/* Swap: Select coin, the coin list failed to load */
+"Couldn't load the coin list. Please try again, or try a different network." = "Couldn't load the coin list. Please try again, or try a different network.";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Couldn't make payment";
@@ -5506,6 +5503,9 @@
 
 /* DashConnect connection sheet */
 "The details of this connection could not be read." = "The details of this connection could not be read.";
+
+/* DashConnect connection sheet: a refresh of details already shown failed */
+"The details of this connection could not be read again and may be out of date." = "The details of this connection could not be read again and may be out of date.";
 
 /* DashConnect */
 "The details of this sign-in changed while it was on screen. Check them and approve again." = "The details of this sign-in changed while it was on screen. Check them and approve again.";

@@ -140,7 +140,6 @@ class MainTabbarController: UITabBarController {
     private var moreTabIndex: Int?
 
     #if DASHPAY
-    weak var exploreNavigationController: ExploreViewController?
     private var pendingDashPayTabReconfiguration = false
     #endif
 
@@ -304,9 +303,9 @@ extension MainTabbarController {
         #endif
 
         // Payment. A real tab, not a modal: the landing is where the send /
-        // receive / transfer flows start, and the tab bar stays visible on it.
-        // The screens it pushes set `hidesBottomBarWhenPushed`, so the bar is
-        // gone from the first step that asks for an amount.
+        // receive / transfer flows start. The landing hides the tab bar while
+        // it is up, and `BaseNavigationController` hides it on every screen
+        // pushed above the landing.
         let paymentImage = Self.makePaymentTabImage()
         item = MainTabbarTabs.payment.tabBarItem(image: paymentImage, selectedImage: paymentImage)
 

@@ -25,6 +25,7 @@ import XCTest
 @MainActor
 private final class ScriptedPoolsProvider: SwapProvider {
     var poolAnswers: [[String]] = []
+    var poolsError: Error?
     private(set) var refreshed: [[String]] = []
     private var held: CheckedContinuation<Void, Never>?
     var holdsNextFetch = false
@@ -39,6 +40,7 @@ private final class ScriptedPoolsProvider: SwapProvider {
     }
 
     func fetchPools() async throws -> [SwapPool] {
+        if let poolsError { throw poolsError }
         let assets = poolAnswers.removeFirst()
         if holdsNextFetch {
             holdsNextFetch = false
@@ -73,6 +75,11 @@ private final class ScriptedPoolsProvider: SwapProvider {
     }
 }
 
+/// Fails the way the HTTP client's non-2xx error describes itself.
+private struct RefusedLoad: LocalizedError {
+    var errorDescription: String? { "Status Code: 403, Data Length: 4545" }
+}
+
 /// Online, and silent: no status event starts a load the test did not ask for.
 private final class SilentOnlineStatus: NetworkStatusProviding {
     var currentStatus: NetworkStatus { .online }
@@ -103,5 +110,18 @@ final class SelectCoinViewModelTests: XCTestCase {
         XCTAssertEqual(model.coins.map { $0.coin.swapAsset.uppercased() }, ["ETH.ETH"])
         XCTAssertEqual(provider.refreshed.last, ["ETH.ETH"])
         XCTAssertFalse(model.isLoading)
+    }
+
+    /// A coin list the service refuses (an HTML 403 from the edge in front of it, say) shows the
+    /// plain message, not the HTTP client's "Status Code: 403, Data Length: …" text.
+    func testAFailedLoadShowsAPlainMessage() async {
+        let provider = ScriptedPoolsProvider()
+        provider.poolsError = RefusedLoad()
+        let model = SelectCoinViewModel(swapProvider: provider, direction: .sell, networkStatus: SilentOnlineStatus())
+
+        await model.loadCoins()
+
+        XCTAssertEqual(model.errorMessage, SelectCoinViewModel.loadFailedMessage)
+        XCTAssertFalse(model.errorMessage?.contains("Status Code") ?? true)
     }
 }
