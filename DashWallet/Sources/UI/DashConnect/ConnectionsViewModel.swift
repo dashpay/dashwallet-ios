@@ -816,10 +816,8 @@ final class ConnectionsViewModel: ObservableObject {
     var approvalGrantedLines: [String]? {
         guard let plan = termsAppliedPlan, let request = pendingRequest else { return nil }
         // What the app asks for: a response that leaves an encryption slot out
-        // is only known once it is sealed.
-        return DashConnectPermissionText.granted(
-            AppConnect.GrantedAccess(plan: plan, receivesMessages: !plan.encryption.isEmpty),
-            appLabel: request.resolvedAppLabel)
+        // is only known once it is sealed, so messages are said as a maybe.
+        return DashConnectPermissionText.requested(plan, appLabel: request.resolvedAppLabel)
     }
 
     /// How long ago the pending v2 request was made.

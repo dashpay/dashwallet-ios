@@ -142,15 +142,41 @@ extension AppConnect {
         }
 
         /// What `intents` gave, in their order: the auth keys each one adds,
-        /// with the terms it submitted them with. An intent always names a
-        /// bound and an expiry for an auth key; one without is not listed.
+        /// with the terms it submitted them with, a key two intents name
+        /// once. An intent always names a bound and an expiry for an auth
+        /// key; one without is not listed.
         init(intents: [ConnectionIntent]) {
+            self.init(intents: intents, snapshot: nil)
+        }
+
+        /// `init(intents:)` as the keys on Platform give it, when `snapshot`
+        /// read them: a key that landed gives the limits Platform holds now,
+        /// which an authorized limits update may have raised; a disabled key,
+        /// or one whose id another key holds, gives nothing; a key not there
+        /// yet gives its submitted terms while its intent may still land.
+        init(intents: [ConnectionIntent], snapshot: IdentitySnapshot?) {
+            var listed = Set<UInt32>()
             self.init(
                 keys: intents.flatMap { intent in
-                    intent.authKeys.compactMap { key -> Key? in
-                        guard let bound = key.bound, let expiresAt = key.expiresAt else { return nil }
+                    let mayLand = snapshot.map { AppConnect.status(of: intent, in: $0) == .confirming } ?? true
+                    return intent.authKeys.compactMap { key -> Key? in
+                        guard let bound = key.bound, var expiresAt = key.expiresAt else { return nil }
+                        var totalBudget = key.totalBudget
+                        if let snapshot {
+                            switch AppConnect.presence(of: key, in: snapshot) {
+                            case .live, .expired:
+                                let actual = snapshot.keys.first { $0.id == key.id }
+                                totalBudget = actual?.totalBudget
+                                expiresAt = actual?.expiresAt ?? expiresAt
+                            case .missing:
+                                guard mayLand else { return nil }
+                            case .disabled, .conflicting:
+                                return nil
+                            }
+                        }
+                        guard listed.insert(key.id).inserted else { return nil }
                         return Key(
-                            bound: bound, isCritical: key.securityLevel == .critical, totalBudget: key.totalBudget,
+                            bound: bound, isCritical: key.securityLevel == .critical, totalBudget: totalBudget,
                             expiresAt: expiresAt, isAdministered: intent.isAdministered(bound))
                     }
                 },

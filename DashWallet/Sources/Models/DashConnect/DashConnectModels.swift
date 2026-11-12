@@ -251,9 +251,10 @@ struct DashConnectDisconnectResult: Equatable {
 struct ConnectionAccess: Equatable {
     /// What each key can do.
     let keys: [AppConnect.GrantedAccess.Key]
-    /// The largest budget among the keys, in credits; `nil` when no key has
-    /// one (see `hasUnlimitedKey`).
-    let largestBudget: UInt64?
+    /// The most the keys can spend together, in credits: Platform counts
+    /// each key's budget apart, so it is their sum. `nil` when no key has a
+    /// budget (see `hasUnlimitedKey`).
+    let budgetLimit: UInt64?
     /// A key with no spending limit.
     let hasUnlimitedKey: Bool
     /// When the last of the keys stops working.
@@ -261,16 +262,21 @@ struct ConnectionAccess: Equatable {
     /// The connection can receive messages encrypted to this identity.
     let receivesMessages: Bool
 
-    /// `nil` when `intents` add no auth key.
-    init?(intents: [AppConnect.ConnectionIntent]) {
-        let access = AppConnect.GrantedAccess(intents: intents)
+    /// `nil` when `intents` add no auth key; with `snapshot`, no auth key
+    /// that gives access on it (`GrantedAccess(intents:snapshot:)`).
+    init?(intents: [AppConnect.ConnectionIntent], snapshot: AppConnect.IdentitySnapshot? = nil) {
+        let access = AppConnect.GrantedAccess(intents: intents, snapshot: snapshot)
         guard !access.keys.isEmpty else { return nil }
         self.init(access)
     }
 
     init(_ access: AppConnect.GrantedAccess) {
         keys = access.keys
-        largestBudget = access.keys.compactMap(\.totalBudget).max()
+        let budgets = access.keys.compactMap(\.totalBudget)
+        budgetLimit = budgets.isEmpty ? nil : budgets.reduce(0) { sum, budget in
+            let (total, overflow) = sum.addingReportingOverflow(budget)
+            return overflow ? .max : total
+        }
         hasUnlimitedKey = access.keys.contains { $0.totalBudget == nil }
         expiresAt = access.keys.map(\.expiresAt).max().map { Date(timeIntervalSince1970: TimeInterval($0) / 1000) }
         receivesMessages = access.receivesMessages
@@ -307,18 +313,30 @@ struct KeyFunding: Equatable {
     /// What is left of it; `nil` with no limit, or when Platform did not say.
     let remaining: UInt64?
 
-    /// The auth keys of `intents` in their order, each with its budget as
-    /// the intent submitted it and what `remaining` (by key id) says is
-    /// left. A key two intents name is listed once.
-    static func of(intents: [AppConnect.ConnectionIntent], remaining: [UInt32: UInt64?]) -> [KeyFunding] {
+    /// The auth keys of `intents` that are on `snapshot` and not disabled,
+    /// in their order, each with its budget as Platform holds it now and
+    /// what `remaining` (by key id) says is left. A key two intents name is
+    /// listed once.
+    static func of(
+        intents: [AppConnect.ConnectionIntent], snapshot: AppConnect.IdentitySnapshot, remaining: [UInt32: UInt64?]
+    ) -> [KeyFunding] {
         var listed = Set<UInt32>()
         return intents.flatMap(\.authKeys).compactMap { key in
-            guard listed.insert(key.id).inserted else { return nil }
+            guard [.live, .expired].contains(AppConnect.presence(of: key, in: snapshot)),
+                  let actual = snapshot.keys.first(where: { $0.id == key.id }),
+                  listed.insert(key.id).inserted else { return nil }
             return KeyFunding(
                 isProfileKey: key.bound.map(AppConnect.isProfileBound) ?? false,
-                totalBudget: key.totalBudget,
+                totalBudget: actual.totalBudget,
                 remaining: remaining[key.id] ?? nil)
         }
+    }
+
+    /// The ids `of(intents:snapshot:remaining:)` lists, whose remaining
+    /// budgets are read from Platform.
+    static func keyIds(of intents: [AppConnect.ConnectionIntent], snapshot: AppConnect.IdentitySnapshot) -> [UInt32] {
+        Array(Set(intents.flatMap(\.authKeys)
+            .filter { [.live, .expired].contains(AppConnect.presence(of: $0, in: snapshot)) }.map(\.id))).sorted()
     }
 }
 

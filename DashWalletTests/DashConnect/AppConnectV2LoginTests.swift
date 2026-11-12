@@ -933,6 +933,20 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertFalse(AppConnect.Login.unresolved.isApprovable)
         XCTAssertFalse(AppConnect.Login.refused(.init(.stale, "old")).isApprovable)
     }
+
+    /// Before an approval the wallet does not know yet whether it can give
+    /// the app a key for messages (the current key may not be this
+    /// wallet's, or none is live): the approve sheet says it may.
+    func testTheApproveSheetSaysMessagesMayBeGivenNotThatTheyAre() throws {
+        let plan = try Self.vectorPlan()
+        XCTAssertFalse(plan.encryption.isEmpty)
+        let lines = DashConnectPermissionText.requested(plan, appLabel: "App")
+        XCTAssertTrue(lines.contains(DashConnectPermissionText.mayReceiveMessages(appLabel: "App")))
+        XCTAssertFalse(lines.contains(DashConnectPermissionText.receivesMessages(appLabel: "App")))
+        let noMessages = try AppConnect.grantPlan(for: Self.uri(authBindings: [Self.groupBinding()]), blockTimeMs: Self.blockTimeMs)
+        XCTAssertFalse(DashConnectPermissionText.requested(noMessages, appLabel: "App")
+            .contains(DashConnectPermissionText.mayReceiveMessages(appLabel: "App")))
+    }
 }
 
 private extension AppConnect.KeyBinding {
