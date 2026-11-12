@@ -960,16 +960,17 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private static func ownerReader(context: Context) -> OwnerReader {
         let sdk = context.sdk
         return OwnerReader(
-            network: ownerScope(context.network.persistenceScope, context.stores.endpoint), memory: ownerMemory,
+            network: ownerScope(context.stores.connections.scopeKey, context.stores.endpoint), memory: ownerMemory,
             readContract: { try await sdk.dataContractGetOffMain(id: $0.toBase58String()) },
             readGroup: { try await sdk.getContractGroupInfo(contractGroupId: $0.toBase58String()) })
     }
 
-    /// The Platform an owner is remembered for: the network's persistence
-    /// scope, which names a devnet, and the endpoint it is reached at, since
-    /// devnets of one name at other nodes are other chains.
-    static func ownerScope(_ persistenceScope: String, _ endpoint: String?) -> String {
-        "\(persistenceScope) \(endpoint ?? "")"
+    /// The Platform an owner is remembered for, both halves from the stores
+    /// the operation is pinned to: their scope, which names the network (and
+    /// a devnet by name), and the endpoint it is reached at, since devnets of
+    /// one name at other nodes are other chains.
+    static func ownerScope(_ storeScope: String?, _ endpoint: String?) -> String {
+        "\(storeScope ?? "") \(endpoint ?? "")"
     }
 
     /// The projection of `snapshot` with the owners it needs that are known.
@@ -2215,7 +2216,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             : try await identitySnapshot(context: context).snapshot
 
         // An intent is done once none of its keys can still be live or land.
-        // A key whose bound is unknown (`planned.unplaced`) keeps the row,
+        // A key whose bound is unknown (`planned.notChecked`) keeps the row,
         // with its Disconnect, through `rows(_:after:of:intents:at:)`.
         let closedAt = now()
         updateIntents(in: stores) { intents in

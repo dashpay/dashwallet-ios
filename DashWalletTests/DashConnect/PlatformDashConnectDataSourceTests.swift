@@ -1717,16 +1717,16 @@ final class AppConnectOwnerMemoryTests: XCTestCase {
         reads.answer = { _ in ["ownerId": Self.owner.toBase58String()] }
         let scope = PlatformDashConnectDataSource.ownerScope
         for network in [
-            scope("devnet-alpha", "https://alpha.example:1443"),
-            scope("devnet-beta", "https://alpha.example:1443"),
-            scope("devnet-alpha", "https://other.example:1443"),
+            scope("dashconnect.connections.v1.devnet-alpha.ab12", "https://alpha.example:1443"),
+            scope("dashconnect.connections.v1.devnet-beta.ab12", "https://alpha.example:1443"),
+            scope("dashconnect.connections.v1.devnet-alpha.ab12", "https://other.example:1443"),
         ] {
             _ = await owners(memory, reads, network: network)
         }
         XCTAssertEqual(reads.count(Self.contract), 3)
-        _ = await owners(memory, reads, network: scope("devnet-alpha", "https://alpha.example:1443"))
+        _ = await owners(memory, reads, network: scope("dashconnect.connections.v1.devnet-alpha.ab12", "https://alpha.example:1443"))
         XCTAssertEqual(reads.count(Self.contract), 3, "the same devnet at the same endpoint reads no owner again")
-        XCTAssertEqual(scope("testnet", nil), scope("testnet", nil))
+        XCTAssertEqual(scope("dashconnect.connections.v1.testnet.ab12", nil), scope("dashconnect.connections.v1.testnet.ab12", nil))
     }
 }
 

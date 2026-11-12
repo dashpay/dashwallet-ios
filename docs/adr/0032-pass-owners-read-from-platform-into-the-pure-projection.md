@@ -44,6 +44,7 @@ Since #1301 the wallet links an unrecorded key to an App Connect app only throug
 **Negative**
 - The data source needs one more pure step, listing the ids to read, before it can project.
 - A Connections refresh waits for the owner reads it needs, within the spec §6 budget (≤ 1 s p95 for up to 4 distinct contracts and contract groups).
+- A key on the own contract of another app of the same owner, approved only on another device (no intent for that app here), is attributed by owner to the one app here with an intent: it shows under that app's row, not its own, and that app's question offers to turn it off. The wallet cannot tell it from the app's own key on a sibling contract (the AC-03 shape); the user's confirm in the question is the safeguard, and AC-07 covers only two apps with an intent here.
 
 **Neutral**
 - The projection's result grows two counts (could not be checked, cannot attribute to this app alone) that the result alert and the question word separately.
