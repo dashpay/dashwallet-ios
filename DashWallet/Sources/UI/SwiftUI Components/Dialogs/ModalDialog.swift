@@ -18,7 +18,9 @@
 import SwiftUI
 import DashUIKit
 
-struct ModalDialog: View {
+/// The app's own dialog, kept for the screens that already use it. New screens use
+/// DashUIKit's `ModalDialog`; moving these is dashpay/dashwallet-ios#1355.
+struct LegacyModalDialog: View {
     enum Style {
         case regular
         case warning
@@ -139,7 +141,7 @@ struct ModalDialog: View {
 
 extension UIViewController {
     func showModalDialog(
-        style: ModalDialog.Style = .regular,
+        style: LegacyModalDialog.Style = .regular,
         icon: IconName? = nil,
         heading: String,
         textBlock1: String? = nil,
@@ -154,7 +156,7 @@ extension UIViewController {
         buttonsOrientation: Axis = .vertical,
         buttonsStyle: ButtonsGroup.Style = .regular
     ) { 
-        let dialog = ModalDialog(
+        let dialog = LegacyModalDialog(
             style: style,
             icon: icon,
             heading: heading,
@@ -192,7 +194,7 @@ extension UIViewController {
     @MainActor
     @discardableResult
     func showModalDialog(
-        style: ModalDialog.Style = .regular,
+        style: LegacyModalDialog.Style = .regular,
         icon: IconName? = nil,
         heading: String,
         textBlock1: String? = nil,
@@ -206,7 +208,7 @@ extension UIViewController {
         buttonsStyle: ButtonsGroup.Style = .regular
     ) async -> Bool {
         await withCheckedContinuation { continuation in
-            let dialog = ModalDialog(
+            let dialog = LegacyModalDialog(
                 style: style,
                 icon: icon,
                 heading: heading,

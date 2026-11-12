@@ -267,61 +267,38 @@ extension AppConnect {
     /// Every connection the wallet can show for these identities. An app
     /// with no intent appears when one of its contracts carries a live auth
     /// key no intent names.
-    static func project(_ snapshots: [IdentitySnapshot], intents: [ConnectionIntent]) -> Projection {
+    static func project(_ snapshots: [IdentitySnapshot], intents: [ConnectionIntent], owners: [Data: Data] = [:]) -> Projection {
         let byIdentity = Dictionary(snapshots.map { ($0.identityId, $0) }, uniquingKeysWith: { a, b in
             b.revision >= a.revision ? b : a
         })
-        // An id an intent names is that intent's only while the key under
-        // it is the one the intent submits: one held by another key is that
-        // key's.
-        let named = Set(intents.flatMap { intent in
-            intent.keys.filter { key in
-                byIdentity[intent.identityId].map { presence(of: key, in: $0) != .conflicting } ?? true
-            }.map { IdentityKey(intent.identityId, $0.id) }
-        })
-
-        // The contracts each app's intents on each identity bind keys to.
-        var contractsOfApp: [Data: [Data: Set<Data>]] = [:]
-        for intent in intents {
-            contractsOfApp[intent.identityId, default: [:]][intent.appId, default: [intent.appId]]
-                .formUnion(intent.authKeys.compactMap(\.bound).filter { !isProfileBound($0) }.map(contractId(of:)))
-        }
+        let placing = UnrecordedPlacing(snapshots: Array(byIdentity.values), intents: intents)
 
         var unrecorded: [Data: [Data: [UInt32]]] = [:]
         var profile: [Data: [UInt32]] = [:]
         var unplaced: [Data: [UInt32]] = [:]
         for snapshot in snapshots {
-            for key in snapshot.keys where isAppConnectAuthKey(key)
-                && !named.contains(IdentityKey(snapshot.identityId, key.id)) {
-                guard let bound = key.bound else {
-                    // The store does not hold the key's bound yet: whose it
-                    // is cannot be told, and it is reported as such.
-                    if !key.boundKnown { unplaced[snapshot.identityId, default: []].append(key.id) }
+            for key in snapshot.keys {
+                switch placing.placement(of: key, on: snapshot.identityId) {
+                case nil, .system:
                     continue
-                }
-                if isProfileBound(bound) {
-                    // No app can be told to hold it. It is offered with any
-                    // app's disconnect, and stands as a connection of its
-                    // own, so it can be turned off whatever other rows there
-                    // are.
+                case .unplaced:
+                    unplaced[snapshot.identityId, default: []].append(key.id)
+                case .profile:
                     profile[snapshot.identityId, default: []].append(key.id)
                     if let dashPay = dashPayContractIdData {
                         unrecorded[dashPay, default: [:]][snapshot.identityId, default: []].append(key.id)
                     }
-                    continue
-                }
-                // A key bound to a system contract is no app's. One bound to
-                // a contract the intents of several apps bind (on this
-                // identity first) cannot be told to be any one of theirs:
-                // each of them shows it, and a disconnect of any of them
-                // turns it off with the user's confirm.
-                let contract = contractId(of: bound)
-                guard !systemContractIds.contains(contract.toBase58String()) else { continue }
-                func binding(_ contracts: [Data: Set<Data>]) -> [Data] { contracts.filter { $0.value.contains(contract) }.map(\.key) }
-                var apps = binding(contractsOfApp[snapshot.identityId] ?? [:])
-                if apps.isEmpty { apps = Array(Set(contractsOfApp.values.flatMap(binding))) }
-                for app in apps.isEmpty ? [contract] : apps {
-                    unrecorded[app, default: [:]][snapshot.identityId, default: []].append(key.id)
+                case .apps(let apps):
+                    for app in apps {
+                        unrecorded[app, default: [:]][snapshot.identityId, default: []].append(key.id)
+                    }
+                case .noApp(let contract):
+                    // It joins an app here only when attributed to it by
+                    // owner; otherwise it stands on its own contract's row.
+                    let apps = placing.apps(on: snapshot.identityId)
+                    let attributed = apps.filter { ownerOutcome(of: contract, for: $0, among: apps, owners: owners) == .attributed }
+                    let row = (attributed.count == 1 ? attributed.first : nil) ?? contract
+                    unrecorded[row, default: [:]][snapshot.identityId, default: []].append(key.id)
                 }
             }
         }
@@ -348,6 +325,119 @@ extension AppConnect {
             connections: connections.sorted { $0.appId.lexicographicallyPrecedes($1.appId) },
             unrecordedProfileKeyIds: profile,
             unplacedKeyIds: unplaced)
+    }
+
+    /// The ids whose owner the projection needs for `snapshot`: the contract
+    /// of every app with an intent on its identity, and the bound (contract,
+    /// or contract group) of every unrecorded key no intent names by
+    /// contract. Empty when there is no such key, or no app has an intent on
+    /// the identity: then no owner decides anything.
+    static func ownerIdsNeeded(snapshot: IdentitySnapshot, intents: [ConnectionIntent]) -> Set<Data> {
+        let placing = UnrecordedPlacing(snapshots: [snapshot], intents: intents)
+        let apps = placing.apps(on: snapshot.identityId)
+        guard !apps.isEmpty else { return [] }
+        let bounds = snapshot.keys.compactMap { key -> Data? in
+            guard case .noApp(let contract) = placing.placement(of: key, on: snapshot.identityId) else { return nil }
+            return contract
+        }
+        guard !bounds.isEmpty else { return [] }
+        return Set(bounds).union(apps)
+    }
+
+    /// How an unrecorded key bound to a contract no intent names stands
+    /// against one app, by owner.
+    enum OwnerOutcome: Equatable {
+        /// The bound's known owner is the app's, and no other app here has
+        /// that owner or an unknown one.
+        case attributed
+        /// The bound's known owner is the app's, and another app here has it
+        /// too, or the bound is a contract group with admins, who may add
+        /// their own contracts to it: whose the key is cannot be told.
+        case notAttributable
+        /// It may be the app's, but an owner that decides it is unknown.
+        case notChecked
+        /// It is not the app's: a known other owner, or the system's.
+        case notThisApp
+    }
+
+    /// The owner rule, the only place it lives. `apps` are the apps with an
+    /// intent on the identity, `app` among them; `owners` holds the owners
+    /// read, and an id it lacks has an unknown owner, which is never a match
+    /// or a mismatch.
+    static func ownerOutcome(
+        of bound: Data, for app: Data, among apps: Set<Data>, owners: [Data: Data]
+    ) -> OwnerOutcome {
+        let boundOwner = owners[bound]
+        if boundOwner == systemContractOwnerId { return .notThisApp }
+        if boundOwner == administeredGroupOwnerId { return .notAttributable }
+        guard let boundOwner, let appOwner = owners[app] else { return .notChecked }
+        guard boundOwner == appOwner else { return .notThisApp }
+        let others = apps.subtracting([app]).map { owners[$0] }
+        if others.contains(appOwner) { return .notAttributable }
+        return others.contains(nil) ? .notChecked : .attributed
+    }
+
+    /// Where an unrecorded key goes, before any owner is asked.
+    private enum UnrecordedPlacement: Equatable {
+        /// The store does not hold the key's bound yet: whose it is cannot be
+        /// told, and it is reported as such.
+        case unplaced
+        /// Bound to the DashPay profile. No app can be told to hold it. It is
+        /// offered with any app's disconnect, and stands as a connection of
+        /// its own, so it can be turned off whatever other rows there are.
+        case profile
+        /// Bound to a system contract: no app's.
+        case system
+        /// Bound to a contract the intents of these apps bind (on this
+        /// identity first). With several, it cannot be told to be any one
+        /// of theirs: each of them shows it, and a disconnect of any of them
+        /// turns it off with the user's confirm.
+        case apps([Data])
+        /// Bound to a contract no intent binds; `contract` is the bound's
+        /// contract, or contract group.
+        case noApp(contract: Data)
+    }
+
+    /// Which keys intents name, and the contracts their apps bind, for one
+    /// set of reads.
+    private struct UnrecordedPlacing {
+        private let named: Set<IdentityKey>
+        /// The contracts each app's intents on each identity bind keys to.
+        private let contractsOfApp: [Data: [Data: Set<Data>]]
+
+        init(snapshots: [IdentitySnapshot], intents: [ConnectionIntent]) {
+            let byIdentity = Dictionary(snapshots.map { ($0.identityId, $0) }, uniquingKeysWith: { a, _ in a })
+            // An id an intent names is that intent's only while the key
+            // under it is the one the intent submits: one held by another
+            // key is that key's.
+            named = Set(intents.flatMap { intent in
+                intent.keys.filter { key in
+                    byIdentity[intent.identityId].map { presence(of: key, in: $0) != .conflicting } ?? true
+                }.map { IdentityKey(intent.identityId, $0.id) }
+            })
+            var contractsOfApp: [Data: [Data: Set<Data>]] = [:]
+            for intent in intents {
+                contractsOfApp[intent.identityId, default: [:]][intent.appId, default: [intent.appId]]
+                    .formUnion(intent.authKeys.compactMap(\.bound).filter { !isProfileBound($0) }.map(contractId(of:)))
+            }
+            self.contractsOfApp = contractsOfApp
+        }
+
+        /// The apps with an intent on `identityId`.
+        func apps(on identityId: Data) -> Set<Data> { Set(contractsOfApp[identityId].map { Array($0.keys) } ?? []) }
+
+        /// Nil for a key that is not an unrecorded App Connect key.
+        func placement(of key: PlatformKey, on identityId: Data) -> UnrecordedPlacement? {
+            guard isAppConnectAuthKey(key), !named.contains(IdentityKey(identityId, key.id)) else { return nil }
+            guard let bound = key.bound else { return key.boundKnown ? nil : .unplaced }
+            if isProfileBound(bound) { return .profile }
+            let contract = contractId(of: bound)
+            guard !systemContractIds.contains(contract.toBase58String()) else { return .system }
+            func binding(_ contracts: [Data: Set<Data>]) -> [Data] { contracts.filter { $0.value.contains(contract) }.map(\.key) }
+            var apps = binding(contractsOfApp[identityId] ?? [:])
+            if apps.isEmpty { apps = Array(Set(contractsOfApp.values.flatMap(binding))) }
+            return apps.isEmpty ? .noApp(contract: contract) : .apps(apps)
+        }
     }
 
     private struct IdentityKey: Hashable {
@@ -480,6 +570,20 @@ extension AppConnect {
         var fence: [UInt32] = []
         /// Intents whose response may be on Platform.
         var deleteResponses: [UUID] = []
+        /// The live keys no intent names on the app's row, or, for an app
+        /// with no intent on the identity, every one placed on its contract:
+        /// those a disconnect asks the user to turn off with it.
+        var offeredUnrecorded: [UInt32] = []
+        /// Keys that may be the app's whose owner, or the app's or another
+        /// app's owner, is unknown, and keys whose bound the store does not
+        /// hold: they stay on, and no access left cannot be claimed.
+        var notChecked: [UInt32] = []
+        /// Keys of the app's owner that another app here has too: they stay
+        /// on, since they may be the other app's.
+        var notAttributable: [UInt32] = []
+        /// Offered keys the user's question did not list: they stay on for a
+        /// later disconnect.
+        var leftAfterQuestion: [UInt32] = []
 
         var isEmpty: Bool { disable.isEmpty && fence.isEmpty && deleteResponses.isEmpty }
     }
@@ -504,10 +608,14 @@ extension AppConnect {
         return Set(otherKeyIds).subtracting(app).sorted() + app.sorted()
     }
 
-    /// `includeUnrecorded`: also turn off the app's live keys no intent
-    /// names; the user confirms that separately.
+    /// `owners`: the owners read, an absent id unknown. `listedUnrecordedKeyIds`:
+    /// the unrecorded keys the user's question listed and confirmed, nil
+    /// before the question. Of those, only the ones still offered
+    /// (`DisconnectPlan.offeredUnrecorded`) are turned off: never a key the
+    /// question did not count.
     static func disconnectPlan(
-        appId: Data, snapshot: IdentitySnapshot, intents: [ConnectionIntent], includeUnrecorded: Bool
+        appId: Data, snapshot: IdentitySnapshot, intents: [ConnectionIntent], owners: [Data: Data],
+        listedUnrecordedKeyIds: Set<UInt32>?
     ) -> DisconnectPlan {
         var plan = DisconnectPlan()
         let own = intents.filter { $0.appId == appId && $0.identityId == snapshot.identityId }
@@ -519,11 +627,41 @@ extension AppConnect {
             }
             if !intent.responseRemoved { plan.deleteResponses.append(intent.id) }
         }
-        if includeUnrecorded {
-            let projection = project([snapshot], intents: intents)
-            let others = projection.connections.first { $0.appId == appId }?.unrecordedKeyIds[snapshot.identityId] ?? []
-            plan.disable += others
+        let placing = UnrecordedPlacing(snapshots: [snapshot], intents: intents)
+        let apps = placing.apps(on: snapshot.identityId)
+        var offered = Set(project([snapshot], intents: intents, owners: owners).connections
+            .first { $0.appId == appId }?.unrecordedKeyIds[snapshot.identityId] ?? [])
+        if !apps.contains(appId) {
+            // A row with no intent here is the contract the user named: its
+            // keys stay its own even when an owner read since attributes
+            // them to an app here.
+            offered.formUnion(snapshot.keys.filter {
+                placing.placement(of: $0, on: snapshot.identityId) == .noApp(contract: appId)
+            }.map(\.id))
         }
+        plan.offeredUnrecorded = offered.sorted()
+        if let listed = listedUnrecordedKeyIds {
+            plan.disable += offered.intersection(listed)
+            plan.leftAfterQuestion = offered.subtracting(listed).sorted()
+        }
+        // The keys that may be the app's but stay on, by the same owner rule
+        // that places them on rows.
+        for key in snapshot.keys {
+            switch placing.placement(of: key, on: snapshot.identityId) {
+            case .unplaced:
+                plan.notChecked.append(key.id)
+            case .noApp(let contract) where apps.contains(appId):
+                switch ownerOutcome(of: contract, for: appId, among: apps, owners: owners) {
+                case .notChecked: plan.notChecked.append(key.id)
+                case .notAttributable: plan.notAttributable.append(key.id)
+                case .attributed, .notThisApp: break
+                }
+            default:
+                break
+            }
+        }
+        plan.notChecked.sort()
+        plan.notAttributable.sort()
         plan.disable = Array(Set(plan.disable)).sorted()
         plan.fence = Array(Set(plan.fence)).sorted()
         return plan

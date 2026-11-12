@@ -27,10 +27,11 @@ import UIKit
 /// Withdraw (claim) an evonode's Platform credits: amount keypad, the
 /// destination — the registered payout address, editable only when this
 /// wallet holds the payout key — and a confirmation sheet that runs the
-/// claim. Pushed from `MasternodeDetailScreen` inside its `NavigationStack`.
+/// claim. Pushed on the UIKit navigation stack from `MasternodeDetailScreen`.
 struct EvonodeWithdrawalScreen: View {
+    /// Weak: this page sits in `vc`'s own stack.
+    weak var vc: UINavigationController?
     @StateObject private var viewModel: EvonodeWithdrawalViewModel
-    @Environment(\.dismiss) private var dismiss
 
     /// Fired after a successful claim with the identity's remaining
     /// claimable balance, so the detail screen can update without refetching.
@@ -41,9 +42,13 @@ struct EvonodeWithdrawalScreen: View {
     private let onOutcomeUnconfirmed: () -> Void
 
     @State private var showConfirmation = false
+    /// Set when the confirmation sheet closes the flow: the page pops once
+    /// the sheet has finished dismissing, never while it is still on screen.
+    @State private var popsAfterConfirmation = false
     @State private var showScanner = false
 
     init(
+        vc: UINavigationController?,
         masternode: PlatformMasternode,
         keys: MasternodeWithdrawalKeys,
         claimableCredits: UInt64,
@@ -51,6 +56,7 @@ struct EvonodeWithdrawalScreen: View {
         onWithdrawn: @escaping (UInt64) -> Void,
         onOutcomeUnconfirmed: @escaping () -> Void
     ) {
+        self.vc = vc
         _viewModel = StateObject(wrappedValue: EvonodeWithdrawalViewModel(
             masternode: masternode,
             keys: keys,
@@ -62,6 +68,20 @@ struct EvonodeWithdrawalScreen: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            DashUIKit.NavigationBar(
+                leading: {
+                    DashUIKit.NavigationBarElement.back.button {
+                        vc?.popViewController(animated: true)
+                    }
+                },
+                central: {
+                    Text(NSLocalizedString("Withdraw", comment: "Evonode withdrawal"))
+                        .dashFont(.subheadMedium)
+                        .foregroundColor(.dash.primaryText)
+                        .lineLimit(1)
+                        .padding(.horizontal, 60)
+                })
+
             ScrollView {
                 VStack(spacing: 16) {
                     amountRow
@@ -81,21 +101,24 @@ struct EvonodeWithdrawalScreen: View {
             keyboardSection
         }
         .background(Color.dash.primaryBackground)
-        .navigationTitle(NSLocalizedString("Withdraw", comment: "Evonode withdrawal"))
-        .navigationBarTitleDisplayMode(.inline)
-        .sheet(isPresented: $showConfirmation) {
+        .navigationBarHidden(true)
+        .sheet(isPresented: $showConfirmation, onDismiss: {
+            guard popsAfterConfirmation else { return }
+            popsAfterConfirmation = false
+            vc?.popViewController(animated: true)
+        }) {
             EvonodeWithdrawalConfirmSheet(
                 viewModel: viewModel,
                 onCancel: { showConfirmation = false },
                 onCompleted: { remaining in
-                    showConfirmation = false
                     onWithdrawn(remaining)
-                    dismiss()
+                    popsAfterConfirmation = true
+                    showConfirmation = false
                 },
                 onUnconfirmedAcknowledged: {
-                    showConfirmation = false
                     onOutcomeUnconfirmed()
-                    dismiss()
+                    popsAfterConfirmation = true
+                    showConfirmation = false
                 })
                 .presentationDetents([.large])
                 .presentationDragIndicator(.hidden)
