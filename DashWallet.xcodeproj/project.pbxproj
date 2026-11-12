@@ -2037,6 +2037,7 @@
 		BABA1000000000000000001A /* PlatformProtocolVersionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000019 /* PlatformProtocolVersionTests.swift */; };
 		BABA10000000000000000016 /* AutomaticPreparationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000015 /* AutomaticPreparationTests.swift */; };
 		BABA10000000000000000018 /* AuthenticationGateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000017 /* AuthenticationGateTests.swift */; };
+		BABA10000000000000000038 /* BiometricAllowanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000037 /* BiometricAllowanceTests.swift */; };
 		17E47391430C11AC728B69A3 /* DWRegistrationPhaseAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 951941B18660622D41D4C1FA /* DWRegistrationPhaseAdapterTests.swift */; };
 		A00CC68AE2499E4496BAECC6 /* UsernameRecoveryUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5C4244CC6C1E4DE4A7B0786 /* UsernameRecoveryUITests.swift */; };
 		21360CD4E679B2CFEBA61EC0 /* SettingsRowsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4105B7F65847F4A633063BD0 /* SettingsRowsUITests.swift */; };
@@ -3889,6 +3890,7 @@
 		BABA10000000000000000019 /* PlatformProtocolVersionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformProtocolVersionTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000015 /* AutomaticPreparationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomaticPreparationTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000017 /* AuthenticationGateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationGateTests.swift; sourceTree = "<group>"; };
+		BABA10000000000000000037 /* BiometricAllowanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometricAllowanceTests.swift; sourceTree = "<group>"; };
 		951941B18660622D41D4C1FA /* DWRegistrationPhaseAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWRegistrationPhaseAdapterTests.swift; sourceTree = "<group>"; };
 		C5C4244CC6C1E4DE4A7B0786 /* UsernameRecoveryUITests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UsernameRecoveryUITests.swift; sourceTree = "<group>"; };
 		4105B7F65847F4A633063BD0 /* SettingsRowsUITests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsRowsUITests.swift; sourceTree = "<group>"; };
@@ -7317,6 +7319,7 @@
 				BABA10000000000000000019 /* PlatformProtocolVersionTests.swift */,
 				BABA10000000000000000015 /* AutomaticPreparationTests.swift */,
 				BABA10000000000000000017 /* AuthenticationGateTests.swift */,
+				BABA10000000000000000037 /* BiometricAllowanceTests.swift */,
 				471DD1BB290AE30B00E030C8 /* String+DashWalletTests.swift */,
 				2A7CAFFF191922CBF6075212 /* DashConnectUriTests.swift */,
 				7C172F43568AE0A5AFDB5349 /* Secp256k1Tests.swift */,
@@ -10638,6 +10641,7 @@
 				BABA1000000000000000001A /* PlatformProtocolVersionTests.swift in Sources */,
 				BABA10000000000000000016 /* AutomaticPreparationTests.swift in Sources */,
 				BABA10000000000000000018 /* AuthenticationGateTests.swift in Sources */,
+				BABA10000000000000000038 /* BiometricAllowanceTests.swift in Sources */,
 				471DD1C0290AECE900E030C8 /* String+DashWalletTests.swift in Sources */,
 				0438F3D117619B14594F95E6 /* DashConnectUriTests.swift in Sources */,
 				8D66A1B0E97F5B50411765B4 /* Secp256k1Tests.swift in Sources */,
