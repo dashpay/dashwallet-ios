@@ -155,6 +155,58 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertEqual(access?.hasUnlimitedKey, false)
     }
 
+    /// Keys the projection gives the app that no intent names (granted on
+    /// another device, before a restore, or attributed by owner) count in
+    /// what its sheet says: their limits from Platform, a key with no budget
+    /// makes it unlimited, and one with no expiry leaves the connection with
+    /// no end date.
+    func testUnrecordedKeysTheAppHoldsCountInItsAccess() {
+        let recorded = Self.authKey(10, budget: 500)
+        let intent = Self.intent([recorded])
+        let unlimited = Self.onPlatform(Self.authKey(20, expiresAt: Self.now + 9000, budget: nil))
+        let noExpiry = Self.onPlatform(Self.authKey(21, expiresAt: nil, budget: 300))
+        let snapshot = Self.snapshot([Self.onPlatform(recorded), unlimited, noExpiry])
+
+        let withUnlimited = ConnectionAccess(intents: [intent], snapshot: snapshot, unrecorded: [unlimited])
+        XCTAssertEqual(withUnlimited?.keys.count, 2)
+        XCTAssertEqual(withUnlimited?.hasUnlimitedKey, true, "not 'Maximum of 500'")
+        XCTAssertEqual(withUnlimited?.expiresAt, Date(timeIntervalSince1970: TimeInterval(Self.now + 9000) / 1000))
+
+        let withNoExpiry = ConnectionAccess(intents: [intent], snapshot: snapshot, unrecorded: [noExpiry, noExpiry])
+        XCTAssertEqual(withNoExpiry?.budgetLimit, 800, "the unrecorded key once")
+        XCTAssertNil(withNoExpiry?.expiresAt, "a key with no expiry: the connection has no end date")
+        XCTAssertEqual(ConnectionAccess(intents: [], snapshot: snapshot, unrecorded: [noExpiry])?.keys.count, 1,
+                       "a row of unrecorded keys only")
+
+        XCTAssertEqual(
+            KeyFunding.of(intents: [intent], snapshot: snapshot, unrecorded: [unlimited], remaining: [10: 100, 20: nil]),
+            [KeyFunding(isProfileKey: false, totalBudget: 500, remaining: 100),
+             KeyFunding(isProfileKey: false, totalBudget: nil, remaining: nil)])
+        XCTAssertEqual(KeyFunding.keyIds(of: [intent], snapshot: snapshot, unrecorded: [unlimited]), [10, 20])
+    }
+
+    /// A key with no expiry is said to have no end date.
+    func testAKeyWithNoExpiryIsSaidToHaveNoEndDate() {
+        let budgeted = DashConnectPermissionText.key(
+            bound: .singleContract(Self.app), isCritical: false, totalBudget: 1000, expiresAt: nil,
+            isAdministered: false, appLabel: "App")
+        let unlimited = DashConnectPermissionText.key(
+            bound: .singleContract(Self.app), isCritical: false, totalBudget: nil, expiresAt: nil,
+            isAdministered: false, appLabel: "App")
+        XCTAssertTrue(budgeted.hasSuffix("with no end date"), budgeted)
+        XCTAssertTrue(unlimited.hasSuffix("and no end date"), unlimited)
+    }
+
+    /// What the remaining-budgets query answers: decimal strings, or null
+    /// for a key with no budget; anything else is refused.
+    func testRemainingBudgetsAreReadFromTheQueryAnswer() throws {
+        XCTAssertEqual(
+            try DashConnectPlatformQueries.remainingBudgets(["10": "400", "11": NSNull()]),
+            [10: 400, 11: nil])
+        XCTAssertThrowsError(try DashConnectPlatformQueries.remainingBudgets(["10": 400]))
+        XCTAssertThrowsError(try DashConnectPlatformQueries.remainingBudgets(["ten": "400"]))
+    }
+
     func testAnIntentWrittenBeforeItNotedAdministeredGroupsIsStillRead() throws {
         var intent = Self.intent([Self.authKey(12, bound: .contractGroup(Self.appGroup))])
         intent.administeredGroupIds = [Self.appGroup]
