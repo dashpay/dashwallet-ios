@@ -272,9 +272,10 @@ struct ConnectionAccess: Equatable {
     /// known to be the app's access.
     init?(
         intents: [AppConnect.ConnectionIntent], snapshot: AppConnect.IdentitySnapshot,
-        unrecorded: [AppConnect.PlatformKey] = []
+        unrecorded: [AppConnect.PlatformKey] = [], administeredGroups: Set<Data> = []
     ) {
-        let access = AppConnect.GrantedAccess(intents: intents, snapshot: snapshot, unrecorded: unrecorded)
+        let access = AppConnect.GrantedAccess(
+            intents: intents, snapshot: snapshot, unrecorded: unrecorded, administeredGroups: administeredGroups)
         guard !access.keys.isEmpty else { return nil }
         self.init(access)
     }
@@ -287,10 +288,7 @@ struct ConnectionAccess: Equatable {
             return overflow ? .max : total
         }
         hasUnlimitedKey = access.keys.contains { $0.totalBudget == nil }
-        // A key with no expiry leaves the connection with no end date.
-        let expiries = access.keys.map(\.expiresAt)
-        expiresAt = expiries.contains(nil) ? nil
-            : expiries.compactMap { $0 }.max().map { Date(timeIntervalSince1970: TimeInterval($0) / 1000) }
+        expiresAt = access.keys.map(\.expiresAt).max().map { Date(timeIntervalSince1970: TimeInterval($0) / 1000) }
         receivesMessages = access.receivesMessages
     }
 

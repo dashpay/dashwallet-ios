@@ -91,7 +91,9 @@ final class AppConnectProjectionTests: XCTestCase {
             id: sent.id, identityId: sent.identityId, appId: sent.appId, appLabel: sent.appLabel, appUrl: sent.appUrl,
             requestHash: sent.requestHash, connectionId: nil, keys: sent.keys, sentEncryptionKeyIds: [3], disables: [],
             response: sent.response, responseDocumentId: nil, responseRemoved: true, createdAt: sent.createdAt, closedAt: nil)
-        XCTAssertEqual(ConnectionAccess(intents: [sent], snapshot: Self.snapshot([]))?.receivesMessages, true, "the identity's key, sent again")
+        XCTAssertEqual(
+            ConnectionAccess(intents: [sent], snapshot: Self.snapshot([Self.onPlatform(Self.encryptionKey(3))]))?.receivesMessages, true,
+            "the identity's key, sent again and still live")
     }
 
     func testEachAuthKeyIsListedOnceWithWhatIsLeftOfItsBudget() {
@@ -158,25 +160,23 @@ final class AppConnectProjectionTests: XCTestCase {
 
     /// Keys the projection gives the app that no intent names (granted on
     /// another device, before a restore, or attributed by owner) count in
-    /// what its sheet says: their limits from Platform, a key with no budget
-    /// makes it unlimited, and one with no expiry leaves the connection with
-    /// no end date.
+    /// what its sheet says: their limits from Platform, and a key with no
+    /// budget makes it unlimited.
     func testUnrecordedKeysTheAppHoldsCountInItsAccess() {
         let recorded = Self.authKey(10, budget: 500)
         let intent = Self.intent([recorded])
         let unlimited = Self.onPlatform(Self.authKey(20, expiresAt: Self.now + 9000, budget: nil))
-        let noExpiry = Self.onPlatform(Self.authKey(21, expiresAt: nil, budget: 300))
-        let snapshot = Self.snapshot([Self.onPlatform(recorded), unlimited, noExpiry])
+        let budgeted = Self.onPlatform(Self.authKey(21, expiresAt: Self.now + 2000, budget: 300))
+        let snapshot = Self.snapshot([Self.onPlatform(recorded), unlimited, budgeted])
 
         let withUnlimited = ConnectionAccess(intents: [intent], snapshot: snapshot, unrecorded: [unlimited])
         XCTAssertEqual(withUnlimited?.keys.count, 2)
         XCTAssertEqual(withUnlimited?.hasUnlimitedKey, true, "not 'Maximum of 500'")
         XCTAssertEqual(withUnlimited?.expiresAt, Date(timeIntervalSince1970: TimeInterval(Self.now + 9000) / 1000))
 
-        let withNoExpiry = ConnectionAccess(intents: [intent], snapshot: snapshot, unrecorded: [noExpiry, noExpiry])
-        XCTAssertEqual(withNoExpiry?.budgetLimit, 800, "the unrecorded key once")
-        XCTAssertNil(withNoExpiry?.expiresAt, "a key with no expiry: the connection has no end date")
-        XCTAssertEqual(ConnectionAccess(intents: [], snapshot: snapshot, unrecorded: [noExpiry])?.keys.count, 1,
+        let withBudgeted = ConnectionAccess(intents: [intent], snapshot: snapshot, unrecorded: [budgeted, budgeted])
+        XCTAssertEqual(withBudgeted?.budgetLimit, 800, "the unrecorded key once")
+        XCTAssertEqual(ConnectionAccess(intents: [], snapshot: snapshot, unrecorded: [budgeted])?.keys.count, 1,
                        "a row of unrecorded keys only")
 
         XCTAssertEqual(
@@ -186,16 +186,51 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertEqual(KeyFunding.keyIds(of: [intent], snapshot: snapshot, unrecorded: [unlimited]), [10, 20])
     }
 
-    /// A key with no expiry is said to have no end date.
-    func testAKeyWithNoExpiryIsSaidToHaveNoEndDate() {
-        let budgeted = DashConnectPermissionText.key(
-            bound: .singleContract(Self.app), isCritical: false, totalBudget: 1000, expiresAt: nil,
-            isAdministered: false, appLabel: "App")
-        let unlimited = DashConnectPermissionText.key(
-            bound: .singleContract(Self.app), isCritical: false, totalBudget: nil, expiresAt: nil,
-            isAdministered: false, appLabel: "App")
-        XCTAssertTrue(budgeted.hasSuffix("with no end date"), budgeted)
-        XCTAssertTrue(unlimited.hasSuffix("and no end date"), unlimited)
+    /// An unrecorded key on a group gives the administrators' warning when
+    /// the group may have them: its owner reads as administered, or was not
+    /// read. Unknown is not said to be absent.
+    func testAnUnrecordedGroupKeyWarnsOfAdministratorsUnlessTheGroupHasNone() {
+        let groupKey = Self.onPlatform(Self.authKey(20, bound: .contractGroup(Self.appGroup)))
+        let snapshot = Self.snapshot([groupKey])
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.mayBeAdministered([groupKey], owners: [Self.appGroup: AppConnect.administeredGroupOwnerId]),
+            [Self.appGroup])
+        XCTAssertEqual(PlatformDashConnectDataSource.mayBeAdministered([groupKey], owners: [:]), [Self.appGroup], "not read")
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.mayBeAdministered([groupKey], owners: [Self.appGroup: Data(repeating: 0x0A, count: 32)]), [])
+        XCTAssertEqual(
+            ConnectionAccess(intents: [], snapshot: snapshot, unrecorded: [groupKey], administeredGroups: [Self.appGroup])?
+                .keys.map(\.isAdministered), [true])
+        XCTAssertEqual(
+            ConnectionAccess(intents: [], snapshot: snapshot, unrecorded: [groupKey], administeredGroups: [])?
+                .keys.map(\.isAdministered), [false])
+    }
+
+    /// Message access is what the snapshot still holds: an encryption key
+    /// the response added that is now off, or a re-sent one no longer live,
+    /// gives none.
+    func testMessageAccessNeedsTheEncryptionKeysStillUsable() {
+        let auth = Self.authKey(10), encryption = Self.encryptionKey(13)
+        let intent = Self.intent([auth, encryption])
+        XCTAssertEqual(ConnectionAccess(intents: [intent], snapshot: Self.snapshot([
+            Self.onPlatform(auth), Self.onPlatform(encryption),
+        ]))?.receivesMessages, true)
+        XCTAssertEqual(ConnectionAccess(intents: [intent], snapshot: Self.snapshot([
+            Self.onPlatform(auth), Self.onPlatform(encryption, disabledAt: Self.now - 10),
+        ]))?.receivesMessages, false, "its encryption key is off")
+    }
+
+    /// Funding lines are chosen key by key: a live key keeps its line when
+    /// another key of its intent never landed.
+    func testALiveKeyKeepsItsFundingLineWhenASiblingNeverLanded() {
+        let live = Self.authKey(10), taken = Self.authKey(11, bound: .contractGroup(Self.appGroup))
+        let intent = Self.intent([live, taken])
+        let snapshot = Self.snapshot([Self.onPlatform(live), Self.onPlatform(taken, data: Data(repeating: 0x77, count: 20))])
+        XCTAssertFalse(AppConnect.hasLanded(intent, in: snapshot))
+        XCTAssertEqual(KeyFunding.keyIds(of: [intent], snapshot: snapshot), [10])
+        XCTAssertEqual(
+            KeyFunding.of(intents: [intent], snapshot: snapshot, remaining: [10: 400]),
+            [KeyFunding(isProfileKey: false, totalBudget: 1000, remaining: 400)])
     }
 
     /// What the remaining-budgets query answers: decimal strings, or null
@@ -206,6 +241,8 @@ final class AppConnectProjectionTests: XCTestCase {
             [10: 400, 11: nil])
         XCTAssertThrowsError(try DashConnectPlatformQueries.remainingBudgets(["10": 400]))
         XCTAssertThrowsError(try DashConnectPlatformQueries.remainingBudgets(["ten": "400"]))
+    }
+
     /// A row of keys no intent names (a restore, another device's grant, the
     /// profile keys) is the active identity's when the projection shows them
     /// on it; a row only another identity's intents hold is not.
