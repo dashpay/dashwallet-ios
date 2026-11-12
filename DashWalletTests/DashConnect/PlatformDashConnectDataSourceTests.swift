@@ -4576,6 +4576,21 @@ final class AppConnectOwnersThroughSeamsTests: XCTestCase {
         XCTAssertEqual(h.rowIds, [Self.app])
     }
 
+    /// AC-18: a key of unknown bound that lands during the update keeps the
+    /// app's intent open, as one the plan's read showed would: the row keeps
+    /// its status and its Disconnect, and the key is reported unchecked.
+    func testAKeyOfUnknownBoundThatLandsDuringTheUpdateKeepsTheRow() async throws {
+        let own = Self.on(Self.app, 10)
+        let h = harness([own], [Self.intent(own)])
+        h.platform.landing = [Self.key(20, bound: nil, boundKnown: false)]
+        let result = try await h.disconnect(Self.app)
+        XCTAssertEqual(h.platform.disabled, [10])
+        XCTAssertEqual([result.keysTurnedOff, result.keysNotChecked], [1, 1])
+        let row = h.rows.load().first { $0.id == Self.app.toBase58String() }
+        XCTAssertNotNil(row, "the row is not lost")
+        XCTAssertNotEqual(row?.status, .disconnected, "the row keeps its Disconnect while a key's bound is unknown")
+    }
+
     /// An owner that could not be read before the update and reads after it
     /// places the key with the app for the rows and the result alike: the
     /// key is still on, not unchecked, and the app keeps its row.

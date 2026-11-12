@@ -157,6 +157,18 @@ extension AppConnect {
             }
         }
 
+        /// This read as it may replace `newest`, nil when it may not
+        /// (`mayReplace`). Its block time is never earlier than `newest`'s:
+        /// Platform's time only moves on, and a node a block behind may
+        /// answer with the same keys, so a key already seen expired stays
+        /// expired until a read shows its expiry raised.
+        func admitted(after newest: IdentitySnapshot?) -> IdentitySnapshot? {
+            guard mayReplace(newest) else { return nil }
+            guard let newest, newest.identityId == identityId, let seen = newest.platformTime else { return self }
+            return IdentitySnapshot(
+                identityId: identityId, revision: revision, keys: keys, platformTime: max(platformTime ?? seen, seen))
+        }
+
         /// Whether the limit `read` is below `seen`, both set.
         private static func isLower(_ read: UInt64?, than seen: UInt64?) -> Bool {
             guard let read, let seen else { return false }
