@@ -20,7 +20,6 @@ target 'dashwallet' do
   pod 'KVO-MVVM', '0.5.6'
   pod 'UIViewController-KeyboardAdditions', '1.2.1'
   pod 'MBProgressHUD', '1.1.0'
-  pod 'MMSegmentSlider', :git => 'https://github.com/podkovyrin/MMSegmentSlider', :commit => '2d91366'
   pod 'SDWebImage', '5.21.0', :modular_headers => true
   pod 'SDWebImageSwiftUI', '3.1.3', :modular_headers => true
   pod 'Moya', '~> 15.0'
@@ -51,7 +50,6 @@ target 'dashpay' do
   pod 'KVO-MVVM', '0.5.6'
   pod 'UIViewController-KeyboardAdditions', '1.2.1'
   pod 'MBProgressHUD', '1.1.0'
-  pod 'MMSegmentSlider', :git => 'https://github.com/podkovyrin/MMSegmentSlider', :commit => '2d91366'
   pod 'SDWebImage', '5.21.0', :modular_headers => true
   pod 'SDWebImageSwiftUI', '3.1.3', :modular_headers => true
   pod 'Moya', '~> 15.0'
