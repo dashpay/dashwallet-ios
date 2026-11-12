@@ -62,6 +62,27 @@ final class AmountObjectTests: XCTestCase {
     }
 
 
+    func testFiatBalanceUsesTheGivenCurrencyForRateAndFormat() throws {
+        let duffs: UInt64 = 2 * UInt64(kOneDash)
+        let formatter = NumberFormatter.fiatFormatter(currencyCode: "JPY")
+        formatter.locale = Locale(identifier: "en_US")
+
+        let jpy = BaseAmountModel.fiatFormatted(duffs: duffs, currencyCode: "JPY",
+                                                exchanger: currencyExchanger, formatter: formatter)
+        let expected = try currencyExchanger.convertDash(amount: duffs.dashAmount, to: "JPY")
+
+        XCTAssertEqual(jpy, formatter.string(from: expected as NSNumber))
+        // The USD value would be about 2; the JPY one about 262.
+        XCTAssertNotEqual(jpy, formatter.string(from: try currencyExchanger.convertDash(amount: duffs.dashAmount,
+                                                                                         to: "USD") as NSNumber))
+    }
+
+    func testFiatBalanceWithoutRateIsNil() {
+        let formatter = NumberFormatter.fiatFormatter(currencyCode: "XXX")
+        XCTAssertNil(BaseAmountModel.fiatFormatted(duffs: 1, currencyCode: "XXX",
+                                                   exchanger: currencyExchanger, formatter: formatter))
+    }
+
     func testPerformanceExample() throws {
         // This is an example of a performance test case.
         measure {

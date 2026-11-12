@@ -4626,7 +4626,7 @@ final class AppConnectOwnerMemoryTests: XCTestCase {
 
     func testAKnownOwnerIsNeverReadAgain() async {
         let memory = PlatformDashConnectDataSource.OwnerMemory(), reads = Reads()
-        reads.answer = { _ in ["ownerId": Self.owner.toBase58String()] }
+        reads.answer = { _ in ["ownerId": Self.owner.toBase58String(), "adminIds": [Any]()] }
         let first = await owners(memory, reads, groups: [Self.group])
         let second = await owners(memory, reads, groups: [Self.group])
         XCTAssertEqual(first, [Self.contract: Self.owner, Self.group: Self.owner])
@@ -4653,7 +4653,7 @@ final class AppConnectOwnerMemoryTests: XCTestCase {
             reads.answer = failure
             let unknown = await owners(memory, reads, groups: [Self.group])
             XCTAssertEqual(unknown, [:], name)
-            reads.answer = { _ in ["ownerId": Self.owner.toBase58String()] }
+            reads.answer = { _ in ["ownerId": Self.owner.toBase58String(), "adminIds": [Any]()] }
             let known = await owners(memory, reads, groups: [Self.group])
             XCTAssertEqual(known, [Self.contract: Self.owner, Self.group: Self.owner], name)
             XCTAssertEqual(reads.count(Self.contract), 2, name)
@@ -4663,7 +4663,7 @@ final class AppConnectOwnerMemoryTests: XCTestCase {
 
     func testAnOwnerKnownOnOneNetworkIsReadAgainOnAnother() async {
         let memory = PlatformDashConnectDataSource.OwnerMemory(), reads = Reads()
-        reads.answer = { _ in ["ownerId": Self.owner.toBase58String()] }
+        reads.answer = { _ in ["ownerId": Self.owner.toBase58String(), "adminIds": [Any]()] }
         _ = await owners(memory, reads, network: "testnet")
         _ = await owners(memory, reads, network: "mainnet")
         XCTAssertEqual(reads.count(Self.contract), 2)
@@ -4673,19 +4673,40 @@ final class AppConnectOwnerMemoryTests: XCTestCase {
     /// on a devnet of another name, or of the same name at another endpoint.
     func testAnOwnerKnownOnOneDevnetIsReadAgainOnAnotherNameOrEndpoint() async {
         let memory = PlatformDashConnectDataSource.OwnerMemory(), reads = Reads()
-        reads.answer = { _ in ["ownerId": Self.owner.toBase58String()] }
+        reads.answer = { _ in ["ownerId": Self.owner.toBase58String(), "adminIds": [Any]()] }
         let scope = PlatformDashConnectDataSource.ownerScope
         for network in [
-            scope("devnet-alpha", "https://alpha.example:1443"),
-            scope("devnet-beta", "https://alpha.example:1443"),
-            scope("devnet-alpha", "https://other.example:1443"),
+            scope("dashconnect.connections.v1.devnet-alpha.ab12", "https://alpha.example:1443"),
+            scope("dashconnect.connections.v1.devnet-beta.ab12", "https://alpha.example:1443"),
+            scope("dashconnect.connections.v1.devnet-alpha.ab12", "https://other.example:1443"),
         ] {
             _ = await owners(memory, reads, network: network)
         }
         XCTAssertEqual(reads.count(Self.contract), 3)
-        _ = await owners(memory, reads, network: scope("devnet-alpha", "https://alpha.example:1443"))
+        _ = await owners(memory, reads, network: scope("dashconnect.connections.v1.devnet-alpha.ab12", "https://alpha.example:1443"))
         XCTAssertEqual(reads.count(Self.contract), 3, "the same devnet at the same endpoint reads no owner again")
-        XCTAssertEqual(scope("testnet", nil), scope("testnet", nil))
+        XCTAssertEqual(scope("dashconnect.connections.v1.testnet.ab12", nil), scope("dashconnect.connections.v1.testnet.ab12", nil))
+    }
+
+    /// A contract group's admins may add their own contracts to it, so a
+    /// group with admins, or whose admins the read does not show, has no
+    /// single owner: it is remembered as administered, not as its owner's.
+    func testAGroupWithAdminsHasNoSingleOwner() async {
+        let admin = Data(repeating: 0x0B, count: 32).toBase58String()
+        for (name, admins, expected) in [
+            ("admins", [admin] as [Any]?, AppConnect.administeredGroupOwnerId),
+            ("admins not shown", nil, AppConnect.administeredGroupOwnerId),
+            ("no admins", [], Self.owner),
+        ] {
+            let memory = PlatformDashConnectDataSource.OwnerMemory(), reads = Reads()
+            reads.answer = { id in
+                var info: [String: Any] = ["ownerId": Self.owner.toBase58String()]
+                if id == Self.group, let admins { info["adminIds"] = admins }
+                return info
+            }
+            let known = await owners(memory, reads, groups: [Self.group])
+            XCTAssertEqual(known, [Self.contract: Self.owner, Self.group: expected], name)
+        }
     }
 }
 
@@ -4743,6 +4764,8 @@ final class AppConnectOwnersThroughSeamsTests: XCTestCase {
         /// Ids whose reads fail this many more times, then read.
         var failingTimes: [Data: Int] = [:]
         var owners: [Data: Data] = [:]
+        /// Groups that read with an admin; any other reads with none.
+        var administered: Set<Data> = []
 
         func read(_ id: Data) throws -> [String: Any] {
             try lock.withLock {
@@ -4752,7 +4775,10 @@ final class AppConnectOwnersThroughSeamsTests: XCTestCase {
                     failingTimes[id] = left - 1
                     throw SDKError.timeout("slow")
                 }
-                return ["ownerId": (owners[id] ?? AppConnectOwnersThroughSeamsTests.owner).toBase58String()]
+                return [
+                    "ownerId": (owners[id] ?? AppConnectOwnersThroughSeamsTests.owner).toBase58String(),
+                    "adminIds": administered.contains(id) ? [Data(repeating: 0x0B, count: 32).toBase58String()] as [Any] : [] as [Any],
+                ]
             }
         }
 
@@ -4966,6 +4992,19 @@ final class AppConnectOwnersThroughSeamsTests: XCTestCase {
         XCTAssertEqual(h.platform.disabled, [10])
         XCTAssertEqual([result.keysStillLive, result.keysNotChecked, result.keysNotAttributable], [1, 0, 0])
         XCTAssertEqual(h.rowIds, [Self.app], "the key shows under the app, not on its own row")
+    }
+
+    /// A key on a contract group of the app's owner whose admins may add
+    /// their own contracts to it may be another developer's app: it is not
+    /// turned off, and the result says it may be another app's.
+    func testAKeyOnAGroupWithAdminsIsNotAttributedByOwner() async throws {
+        let own = Self.on(Self.app, 10)
+        let reader = Reader()
+        reader.administered = [Self.group]
+        let h = harness([own, Self.key(20, bound: .contractGroup(Self.group))], [Self.intent(own)], reader: reader)
+        let result = try await h.disconnect(Self.app)
+        XCTAssertEqual(h.platform.disabled, [10])
+        XCTAssertEqual([result.keysTurnedOff, result.keysNotChecked, result.keysNotAttributable], [1, 0, 1])
     }
 
     /// AC-04, AC-11, AC-12: the disconnect still turns off the app's keys,
