@@ -1993,6 +1993,8 @@
 		EB88594208EAD0E9E1FA752F /* MasternodeVoterRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15D89828EC913714251D0B58 /* MasternodeVoterRegistry.swift */; };
 		F29CC1CE29F3544F9E2F9BE7 /* MasternodeVoteCaster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23AEFB2398EDA01C69E5A8F1 /* MasternodeVoteCaster.swift */; };
 		25C2103A3D2448AB40AB8485 /* UsernameVotingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33DEAFAEEDCA07D0A331911B /* UsernameVotingScreen.swift */; };
+		69AC3CC70250ABEB8C6AF3D9 /* VotingContestCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC1BA49D9FDBDFEE118C220F /* VotingContestCard.swift */; };
+		D3739D3958A3F0F5BAD4C27E /* VoteFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C53D16CE65DEA6123200EB2 /* VoteFlow.swift */; };
 		D0C564276BD8B9770F0E0499 /* ContestDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BA141C505AF0AE495DCAA37 /* ContestDetailScreen.swift */; };
 		1FED991A9D2D236582CE3C99 /* CastVoteSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF2C19E8480582798A0155E4 /* CastVoteSheet.swift */; };
 		8F0D34E5B93E7D2EB9062394 /* ContestedNamesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1426BD13E794C788646055 /* ContestedNamesService.swift */; };
@@ -2005,6 +2007,8 @@
 		5AEEB0012F9C00000000000C /* EvonodeProposalActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEEB0012F9C00000000000B /* EvonodeProposalActivity.swift */; };
 		5AEEB0012F9C00000000000D /* EvonodeProposalActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEEB0012F9C00000000000B /* EvonodeProposalActivity.swift */; };
 		12118430106B8A5EBB2FBC60 /* UsernameVotingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33DEAFAEEDCA07D0A331911B /* UsernameVotingScreen.swift */; };
+		66C8B99394A763E51EB1BEAA /* VotingContestCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC1BA49D9FDBDFEE118C220F /* VotingContestCard.swift */; };
+		D8808925848EFF2234755A55 /* VoteFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C53D16CE65DEA6123200EB2 /* VoteFlow.swift */; };
 		F34816414D829A45E0762757 /* ContestDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BA141C505AF0AE495DCAA37 /* ContestDetailScreen.swift */; };
 		AD24D88215A4E51186112B34 /* CastVoteSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF2C19E8480582798A0155E4 /* CastVoteSheet.swift */; };
 		6181C570B638E07D8B369CDB /* VotingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A8C1682AE6A1AC0042256E /* VotingViewModel.swift */; };
@@ -2028,6 +2032,7 @@
 		C0F1E5ED0A14B2C3D4E5F603 /* ContestedUsernameFeeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F1E5ED0A14B2C3D4E5F604 /* ContestedUsernameFeeTests.swift */; };
 		4046F707D79B443DF65A4A1B /* CreateUsernameShieldedCostTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D352A3186395D1462939197 /* CreateUsernameShieldedCostTests.swift */; };
 		B17E5A0C9D3F4E21A6C80B01 /* BulkVotePlanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17E5A0C9D3F4E21A6C80B02 /* BulkVotePlanTests.swift */; };
+		149D439536B3216FDAEEB975 /* VotingListSectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4C123B1612DD272D1371C17 /* VotingListSectionTests.swift */; };
 		C0F7A1D2E3B4C5D6E7F80901 /* CountedPhrasePluralTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F7A1D2E3B4C5D6E7F80902 /* CountedPhrasePluralTests.swift */; };
 		BABA10000000000000000004 /* IdentityBalanceRefreshTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000003 /* IdentityBalanceRefreshTests.swift */; };
 		BABA10000000000000000006 /* DashPayUserLinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000005 /* DashPayUserLinkTests.swift */; };
@@ -3860,6 +3865,8 @@
 		5AEEB0012F9C000000000005 /* EvonodeEpochBlocksMonitor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvonodeEpochBlocksMonitor.swift; sourceTree = "<group>"; };
 		5AEEB0012F9C00000000000B /* EvonodeProposalActivity.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvonodeProposalActivity.swift; sourceTree = "<group>"; };
 		33DEAFAEEDCA07D0A331911B /* UsernameVotingScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UsernameVotingScreen.swift; sourceTree = "<group>"; };
+		EC1BA49D9FDBDFEE118C220F /* VotingContestCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VotingContestCard.swift; sourceTree = "<group>"; };
+		2C53D16CE65DEA6123200EB2 /* VoteFlow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VoteFlow.swift; sourceTree = "<group>"; };
 		6BA141C505AF0AE495DCAA37 /* ContestDetailScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContestDetailScreen.swift; sourceTree = "<group>"; };
 		FF2C19E8480582798A0155E4 /* CastVoteSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CastVoteSheet.swift; sourceTree = "<group>"; };
 		ED4CB35186918CCBD2FFC49F /* UsernameRequestStatusScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UsernameRequestStatusScreen.swift; sourceTree = "<group>"; };
@@ -3875,6 +3882,7 @@
 		C0F1E5ED0A14B2C3D4E5F604 /* ContestedUsernameFeeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContestedUsernameFeeTests.swift; sourceTree = "<group>"; };
 		4D352A3186395D1462939197 /* CreateUsernameShieldedCostTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateUsernameShieldedCostTests.swift; sourceTree = "<group>"; };
 		B17E5A0C9D3F4E21A6C80B02 /* BulkVotePlanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BulkVotePlanTests.swift; sourceTree = "<group>"; };
+		A4C123B1612DD272D1371C17 /* VotingListSectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingListSectionTests.swift; sourceTree = "<group>"; };
 		C0F7A1D2E3B4C5D6E7F80902 /* CountedPhrasePluralTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountedPhrasePluralTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000003 /* IdentityBalanceRefreshTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityBalanceRefreshTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000005 /* DashPayUserLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashPayUserLinkTests.swift; sourceTree = "<group>"; };
@@ -6943,6 +6951,8 @@
 				BD137C764D3D63AB13D4A356 /* VotingKeyInputScreen.swift */,
 				43FC26DF2F2A4CF3ACD1F971 /* VotingKeysScreen.swift */,
 				33DEAFAEEDCA07D0A331911B /* UsernameVotingScreen.swift */,
+				EC1BA49D9FDBDFEE118C220F /* VotingContestCard.swift */,
+				2C53D16CE65DEA6123200EB2 /* VoteFlow.swift */,
 				6BA141C505AF0AE495DCAA37 /* ContestDetailScreen.swift */,
 				FF2C19E8480582798A0155E4 /* CastVoteSheet.swift */,
 				754495DB2AE91AF700492817 /* Cells */,
@@ -7288,6 +7298,7 @@
 				C0F1E5ED0A14B2C3D4E5F604 /* ContestedUsernameFeeTests.swift */,
 				4D352A3186395D1462939197 /* CreateUsernameShieldedCostTests.swift */,
 				B17E5A0C9D3F4E21A6C80B02 /* BulkVotePlanTests.swift */,
+				A4C123B1612DD272D1371C17 /* VotingListSectionTests.swift */,
 				C0F7A1D2E3B4C5D6E7F80902 /* CountedPhrasePluralTests.swift */,
 				BABA10000000000000000003 /* IdentityBalanceRefreshTests.swift */,
 				BABA10000000000000000005 /* DashPayUserLinkTests.swift */,
@@ -9787,6 +9798,8 @@
 				AD24D88215A4E51186112B34 /* CastVoteSheet.swift in Sources */,
 				F34816414D829A45E0762757 /* ContestDetailScreen.swift in Sources */,
 				12118430106B8A5EBB2FBC60 /* UsernameVotingScreen.swift in Sources */,
+				66C8B99394A763E51EB1BEAA /* VotingContestCard.swift in Sources */,
+				D8808925848EFF2234755A55 /* VoteFlow.swift in Sources */,
 				5A5F8C183D2C037FB350ACC9 /* MasternodeVoteCaster.swift in Sources */,
 				5AEEB0012F9C000000000002 /* EvonodeEpochBlocksService.swift in Sources */,
 				5AEEB0012F9C000000000006 /* EvonodeEpochBlocksMonitor.swift in Sources */,
@@ -10618,6 +10631,7 @@
 				C0F1E5ED0A14B2C3D4E5F603 /* ContestedUsernameFeeTests.swift in Sources */,
 				4046F707D79B443DF65A4A1B /* CreateUsernameShieldedCostTests.swift in Sources */,
 				B17E5A0C9D3F4E21A6C80B01 /* BulkVotePlanTests.swift in Sources */,
+				149D439536B3216FDAEEB975 /* VotingListSectionTests.swift in Sources */,
 				C0F7A1D2E3B4C5D6E7F80901 /* CountedPhrasePluralTests.swift in Sources */,
 				BABA10000000000000000004 /* IdentityBalanceRefreshTests.swift in Sources */,
 				BABA10000000000000000006 /* DashPayUserLinkTests.swift in Sources */,
@@ -10756,6 +10770,8 @@
 				1FED991A9D2D236582CE3C99 /* CastVoteSheet.swift in Sources */,
 				D0C564276BD8B9770F0E0499 /* ContestDetailScreen.swift in Sources */,
 				25C2103A3D2448AB40AB8485 /* UsernameVotingScreen.swift in Sources */,
+				69AC3CC70250ABEB8C6AF3D9 /* VotingContestCard.swift in Sources */,
+				D3739D3958A3F0F5BAD4C27E /* VoteFlow.swift in Sources */,
 				F29CC1CE29F3544F9E2F9BE7 /* MasternodeVoteCaster.swift in Sources */,
 				5AEEB0012F9C000000000003 /* EvonodeEpochBlocksService.swift in Sources */,
 				5AEEB0012F9C000000000007 /* EvonodeEpochBlocksMonitor.swift in Sources */,
