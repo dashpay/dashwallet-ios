@@ -1236,6 +1236,16 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                     existing, status: kept, seenOn: seenOn, at: existing.status == kept ? existing.updatedAt : updatedAt))
                 continue
             }
+            // Disconnected here while the read has a key of unknown bound,
+            // which may be the app's: a row that still showed access is
+            // Confirming, with its Disconnect, until a read places every key.
+            if status == .disconnected, hasUnplacedKey, let existing, existing.status != .disconnected {
+                result.removeAll { $0.id == id }
+                result.append(DAppConnection(
+                    existing, status: .confirming, seenOn: seenOn,
+                    at: existing.status == .confirming ? existing.updatedAt : updatedAt))
+                continue
+            }
             result.removeAll { $0.id == id }
             result.append(DAppConnection(
                 id: id,
@@ -2913,11 +2923,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// The app's live keys the plan on the read after the update would turn
     /// off that the disconnect's own plan did not have: a key that landed
     /// during the update, or one an owner read now places with the app. The
-    /// wallet's fences are not the app's.
+    /// wallet's fences are not the app's, and a key under an id the plan
+    /// fenced is counted already (`disconnectResult`).
     static func keysFoundAfter(
         plan: AppConnect.DisconnectPlan, remaining: AppConnect.DisconnectPlan, fenceIds: Set<UInt32>
     ) -> Int {
-        Set(remaining.disable).subtracting(plan.disable).subtracting(fenceIds).count
+        Set(remaining.disable).subtracting(plan.disable).subtracting(plan.fence).subtracting(fenceIds).count
     }
 
     /// What a disconnect of `appId` submits on the active identity, from a
