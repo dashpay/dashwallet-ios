@@ -299,7 +299,7 @@ struct PaymentsReceiveContent: View {
 
                     DashUIKit.DashButton(
                         text: NSLocalizedString("Specify amount", comment: "Payments"),
-                        isEnabled: hasAddress && viewModel.network == .core,
+                        isEnabled: viewModel.canSpecifyAmount,
                         size: .medium,
                         style: .tintedGray,
                         action: onSpecifyAmount
@@ -316,8 +316,8 @@ struct PaymentsReceiveContent: View {
     }
 
     /// The Identity option: the QR of the bare Identity ID, the username and
-    /// the ID with their copy buttons, Share ID, Specify amount (not offered
-    /// for an identity), and why most senders cannot pay here (AC-01 – AC-04).
+    /// the ID with their copy buttons, Share ID, Specify amount, and why most
+    /// senders cannot pay here (AC-01 – AC-04).
     private var identityCardBody: some View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .center, spacing: 20) {
@@ -353,13 +353,12 @@ struct PaymentsReceiveContent: View {
                     action: onShareAddress
                 )
 
-                // Shown and disabled: a request for an amount is not offered
-                // for an identity.
                 DashUIKit.DashButton(
                     text: NSLocalizedString("Specify amount", comment: "Payments"),
-                    isEnabled: false,
+                    isEnabled: viewModel.canSpecifyAmount,
                     size: .medium,
-                    style: .tintedGray
+                    style: .tintedGray,
+                    action: onSpecifyAmount
                 )
             }
             .frame(maxWidth: .infinity)
