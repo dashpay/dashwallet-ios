@@ -1491,6 +1491,9 @@
 /* Evonode status */
 "Couldn't get the evonode's status." = "Couldn't get the evonode's status.";
 
+/* Swap: Select coin, the coin list failed to load */
+"Couldn't load the coin list. Please try again, or try a different network." = "Couldn't load the coin list. Please try again, or try a different network.";
+
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Couldn't make payment";
 

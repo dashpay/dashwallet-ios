@@ -78,6 +78,13 @@ class SelectCoinViewModel: ObservableObject {
             }
         subscribeToNetworkStatus()
     }
+
+    /// What the picker shows when the coin list fails to load; the cause goes to the log.
+    static let loadFailedMessage = NSLocalizedString(
+        "Couldn't load the coin list. Please try again, or try a different network.",
+        comment: "Swap: Select coin, the coin list failed to load"
+    )
+
     // MARK: - Published State
 
     @Published var coins: [CoinDisplayItem] = []
@@ -166,7 +173,7 @@ class SelectCoinViewModel: ObservableObject {
             let detail = SwapKitFailureDetail.describe(error)
             DWLogger.log("Swap: \(type(of: swapProvider)) coin list (\(direction)) failed to load — \(detail)")
             guard generation == loadGeneration else { return }
-            errorMessage = error.localizedDescription
+            errorMessage = Self.loadFailedMessage
         }
     }
 
