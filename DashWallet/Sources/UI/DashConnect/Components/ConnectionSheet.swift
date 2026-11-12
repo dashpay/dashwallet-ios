@@ -340,7 +340,7 @@ struct ConnectionSheet: View {
                 .strokeBorder(Color.dash.gray300Alpha20, lineWidth: 2))
     }
 
-    /// The action the status allows (ADR 0010).
+    /// The action the status allows (ADR-0019).
     @ViewBuilder
     private var action: some View {
         let actions = AppConnect.StateActions.row(for: item.status).actions
@@ -389,7 +389,7 @@ struct ConnectionSheet: View {
     /// The connection's record is active.
     private var isLive: Bool { item.status == .active }
 
-    /// The status name from the state-to-actions table (ADR 0010).
+    /// The status name from the state-to-actions table (ADR-0019).
     private var statusText: String {
         ConnectionStatusBadge.label(for: item.status)
     }

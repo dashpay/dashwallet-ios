@@ -1,7 +1,7 @@
 import Foundation
 
 /// One Platform write of the App Connect flow, with the values it carries
-/// (ADR 0009).
+/// (ADR-0018).
 enum PlatformWrite {
     /// Add `add` and disable `disable` public keys of the wallet identity.
     case updateKeys(add: [UInt32], disable: [UInt32])
@@ -25,12 +25,12 @@ enum PlatformWrite {
 }
 
 /// Runs a `PlatformWrite` through the one place that logs and times it
-/// (ADR 0009): a start line before the write is submitted, one outcome line
+/// (ADR-0018): a start line before the write is submitted, one outcome line
 /// after, and a timeout that ends a write which never returns.
 ///
 /// The outcome says what the executor saw, not what Platform did. A write that
 /// failed or timed out may still have landed, and one that was submitted may
-/// not have; the caller's next read decides (spec AC-20, ADR 0004). The
+/// not have; the caller's next read decides (spec AC-20, ADR-0018). The
 /// executor never retries and never reports a write as landed or confirmed.
 ///
 /// The submit and the timer run as separate tasks and the first to finish

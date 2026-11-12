@@ -21,7 +21,7 @@ import DashUIKit
 import SwiftUI
 
 /// One app on the Connections page: its name and website, which open the
-/// connection's sheet, and the action its status allows (ADR 0010).
+/// connection's sheet, and the action its status allows (ADR-0019).
 /// Disconnect opens the sheet too, which asks first; Remove takes a Refused
 /// row off the list without a PIN.
 struct ConnectionRow: View {

@@ -25,6 +25,9 @@ struct ConnectionsScreenMessage: Identifiable, Equatable {
     enum Kind: String {
         case error
         case success
+        /// A disconnect that ended with something to tell: neither a
+        /// failure nor a plain success.
+        case notice
     }
 
     let kind: Kind
@@ -40,6 +43,8 @@ struct ConnectionsScreenMessage: Identifiable, Equatable {
             return NSLocalizedString("Error", comment: "")
         case .success:
             return NSLocalizedString("Success", comment: "DashConnect")
+        case .notice:
+            return NSLocalizedString("Disconnected", comment: "DashConnect")
         }
     }
 }
@@ -706,8 +711,18 @@ final class ConnectionsViewModel: ObservableObject {
             self.isDisconnecting = false
             self.updateShownConnection()
             let notTurnedOff = result.keysStillLive > 0 || result.fencesNotPlaced > 0
-            guard notTurnedOff || result.keysOnAnotherIdentity || result.keysNotChecked > 0 || result.keysNotAttributable > 0 else { return }
+            guard notTurnedOff || result.keysOnAnotherIdentity || result.keysNotChecked > 0 || result.keysNotAttributable > 0
+                || result.unrecordedKeysTurnedOff > 0 else { return }
             var texts: [String] = []
+            if result.unrecordedKeysTurnedOff > 0 {
+                // swiftlint:disable line_length
+                texts.append(String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        "This also turned off keys on your identity that this wallet has no record of giving (%d), such as keys given on another device or DashPay profile keys.",
+                        comment: "DashConnect: after a disconnect that turned off keys no approval in this wallet names"),
+                    result.unrecordedKeysTurnedOff))
+                // swiftlint:enable line_length
+            }
             if result.keysStillLive > 0 {
                 texts.append(String.localizedStringWithFormat(
                     NSLocalizedString(
@@ -745,7 +760,7 @@ final class ConnectionsViewModel: ObservableObject {
             // has keys elsewhere, is not a success.
             let failed = notTurnedOff || (result.keysOnAnotherIdentity && result.keysTurnedOff == 0)
             self.show(
-                ConnectionsScreenMessage(kind: failed ? .error : .success, text: texts.joined(separator: "\n\n")),
+                ConnectionsScreenMessage(kind: failed ? .error : .notice, text: texts.joined(separator: "\n\n")),
                 from: connection)
         }
     }

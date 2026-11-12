@@ -689,6 +689,21 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         XCTAssertEqual(spy.disconnectedIds, [Self.connection.id], "one call, no follow-up")
     }
 
+    /// A clean disconnect that also turned off keys no approval names says
+    /// how many, under a neutral title.
+    func testADisconnectThatTurnedOffUnrecordedKeysSaysHowMany() async {
+        let spy = PurchaseApprovalSpy()
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+
+        spy.disconnectResult = DashConnectDisconnectResult(keysTurnedOff: 5, unrecordedKeysTurnedOff: 2)
+        viewModel.disconnect(Self.connection)
+        await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 1 }
+
+        XCTAssertEqual(viewModel.message?.kind, .notice)
+        let text = viewModel.message?.text ?? ""
+        XCTAssertTrue(text.contains("no record of giving (2)"), text)
+    }
+
     /// A disconnect that stopped part-way says what is still live, and
     /// Disconnect can run again.
     func testADisconnectThatStoppedPartWayNamesWhatIsStillLiveAndCanRunAgain() async {
@@ -768,7 +783,8 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 1 }
 
         let text = viewModel.message?.text ?? ""
-        XCTAssertEqual(viewModel.message?.kind, .success)
+        XCTAssertEqual(viewModel.message?.kind, .notice)
+        XCTAssertEqual(viewModel.message?.title, "Disconnected", "not titled Success over keys left on")
         XCTAssertTrue(text.contains("may belong to another app of the same developer"), text)
         XCTAssertTrue(text.contains("its own row"), text)
         XCTAssertFalse(text.contains("again later"), text)
@@ -1405,7 +1421,7 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
         XCTAssertNil(viewModel.message, "not over the sheet")
         XCTAssertNil(viewModel.connectionSheetMessage)
         viewModel.connectionSheetDismissed()
-        XCTAssertEqual(viewModel.message?.kind, .success)
+        XCTAssertEqual(viewModel.message?.kind, .notice)
         XCTAssertEqual(viewModel.message?.text.contains("2"), true)
     }
 
@@ -2815,6 +2831,25 @@ final class AppConnectWriteTimeoutTests: XCTestCase {
         XCTAssertEqual(result.keysTurnedOff, 1)
     }
 
+    /// Of the keys turned off, those no intent names are counted on their
+    /// own; one the read still shows live is not.
+    func testUnrecordedKeysTurnedOffAreCountedFromTheFreshRead() {
+        var plan = AppConnect.DisconnectPlan(disable: [30, 10, 20], fence: [])
+        plan.unrecorded = [20, 30]
+        var progress = AppConnect.DisconnectProgress()
+        progress.stopped = true
+        progress.stillLive = [10, 20, 30]
+        let submission = PlatformDashConnectDataSource.DisconnectSubmission(
+            progress: progress, fencesLeftOn: [], failure: AppConnectWriteTimedOut())
+        let after = Self.read([Self.liveKey(10, disabledAt: 1), Self.liveKey(20), Self.liveKey(30, disabledAt: 1)])
+
+        let result = PlatformDashConnectDataSource.disconnectResult(
+            plan: plan, appKeysOff: 3, leftoverFenceIds: [], keysNotChecked: 0, fenceKeyIds: [], after: after, submission: submission)
+
+        XCTAssertEqual(result.keysTurnedOff, 2)
+        XCTAssertEqual(result.unrecordedKeysTurnedOff, 1, "key 30 is off; key 20 still shows live")
+    }
+
     /// R11/R16: only when the fresh read failed does `progress.stillLive` stand.
     func testStillLiveKeysComeFromTheProgressOnlyWhenTheFreshReadFailed() {
         let plan = AppConnect.DisconnectPlan(disable: [10, 11], fence: [])
@@ -3431,14 +3466,26 @@ extension PlatformDashConnectDataSourceTests {
     /// is refused before any sheet is built.
     func testATokenPurchaseWithoutAResolvedUsernameIsRefused() {
         for resolved in [nil, "", "   "] as [String?] {
-            XCTAssertThrowsError(try PlatformDashConnectDataSource.requireTokenPurchaseUsername(resolved), "\(String(describing: resolved))") {
+            XCTAssertThrowsError(
+                try PlatformDashConnectDataSource.requireTokenPurchaseUsername(resolved, lookupFailed: false),
+                "\(String(describing: resolved))") {
                 XCTAssertEqual($0 as? DashConnectPlatformError, .tokenPurchaseNeedsUsername)
             }
         }
     }
 
+    /// A failed DPNS read with no stored name does not tell the user to
+    /// create a name they may already have.
+    func testATokenPurchaseWhoseUsernameLookupFailedIsNotToldToCreateOne() {
+        XCTAssertThrowsError(try PlatformDashConnectDataSource.requireTokenPurchaseUsername(nil, lookupFailed: true)) {
+            XCTAssertEqual($0 as? DashConnectPlatformError, .tokenPurchaseUsernameUncheckable)
+        }
+    }
+
     func testATokenPurchaseWithAResolvedUsernameCarriesItToTheSheet() throws {
-        XCTAssertEqual(try PlatformDashConnectDataSource.requireTokenPurchaseUsername("dashuser"), "dashuser")
+        XCTAssertEqual(try PlatformDashConnectDataSource.requireTokenPurchaseUsername("dashuser", lookupFailed: false), "dashuser")
+        XCTAssertEqual(try PlatformDashConnectDataSource.requireTokenPurchaseUsername("dashuser", lookupFailed: true), "dashuser",
+                       "a stored name stands in when the DPNS read fails")
     }
 
     /// R12a / AC-09: after the PIN, a request dated in the future is not
