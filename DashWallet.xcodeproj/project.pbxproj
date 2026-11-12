@@ -2031,6 +2031,7 @@
 		BABA10000000000000000002 /* DWIdentityBalanceRefresh.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000001 /* DWIdentityBalanceRefresh.swift */; };
 		BABA10000000000000000102 /* IdentityTopUpDidComplete.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000101 /* IdentityTopUpDidComplete.swift */; };
 		BABA10000000000000000202 /* IdentityTopUpsInFlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000201 /* IdentityTopUpsInFlight.swift */; };
+		BABA10000000000000000203 /* IdentityTopUpsInFlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000201 /* IdentityTopUpsInFlight.swift */; };
 		F44028CBF49F4A2FE6268874 /* UsernameRegistrationRecoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 701E95B66E2409DD2F80D7AB /* UsernameRegistrationRecoveryTests.swift */; };
 		C0F1E5ED0A14B2C3D4E5F603 /* ContestedUsernameFeeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F1E5ED0A14B2C3D4E5F604 /* ContestedUsernameFeeTests.swift */; };
 		4046F707D79B443DF65A4A1B /* CreateUsernameShieldedCostTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D352A3186395D1462939197 /* CreateUsernameShieldedCostTests.swift */; };
@@ -10522,6 +10523,7 @@
 				8B8898971DC24152E171DABC /* PaymentsLandingScreen.swift in Sources */,
 				12DE15416F9F7A0B8749CAF1 /* PaymentsLandingViewModel.swift in Sources */,
 				8820AD0A74800EDA9BBE4481 /* IdentityCreditsWatcher.swift in Sources */,
+				BABA10000000000000000203 /* IdentityTopUpsInFlight.swift in Sources */,
 				DAE070BBE395099DE28F91E4 /* ReceiveOption.swift in Sources */,
 				908AB7EFCC69D3828BBD70A8 /* PaymentsLandingHostingController.swift in Sources */,
 				C029D3337FF6DAD231B33C4B /* SendToContactScreen.swift in Sources */,
