@@ -155,6 +155,10 @@ struct ExploreMenuScreen: View {
 
     private func showMerchants() {
         let merchantVC = MerchantListViewController()
+        merchantVC.customNavBar = MerchantListViewController.CustomNavBarConfiguration(
+            title: NSLocalizedString("Where to Spend", comment: ""),
+            onBack: { [weak merchantVC] in merchantVC?.closeOrPop() },
+            onInfo: nil)
         merchantVC.payWithDashHandler = { onShowSendPayment() }
         merchantVC.onGiftCardPurchased = { txId in
             vc.popToRootViewController(animated: false)

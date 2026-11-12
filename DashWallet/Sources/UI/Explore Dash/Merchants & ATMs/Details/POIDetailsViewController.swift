@@ -37,6 +37,8 @@ class POIDetailsViewController: UIViewController {
     private weak var detailsSheetViewController: UIViewController?
     private var didPresentDetailsSheet = false
     private let defaultBottomSheetHeight: CGFloat = 450
+    /// DashUIKit's bar, in place of the system one; content sits below it.
+    private var navigationBarHost: UIViewController!
 
     init(
         pointOfUse: ExplorePointOfUse,
@@ -67,6 +69,11 @@ class POIDetailsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         title = pointOfUse.name
+        navigationBarHost = installExploreNavigationBar(
+            title: pointOfUse.name,
+            leading: .back,
+            onBack: { [weak self] in self?.navigationController?.popViewController(animated: true) },
+            onInfo: nil)
         configureHierarchy()
         refreshTokenAndMerchantInfo()
     }
@@ -109,7 +116,7 @@ extension POIDetailsViewController {
         view.addSubview(mapView)
 
         NSLayoutConstraint.activate([
-            mapView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            mapView.topAnchor.constraint(equalTo: navigationBarHost.view.bottomAnchor),
             mapView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             mapView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             mapView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -134,7 +141,7 @@ extension POIDetailsViewController {
         view.addSubview(contentView)
 
         NSLayoutConstraint.activate([
-            contentView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            contentView.topAnchor.constraint(equalTo: navigationBarHost.view.bottomAnchor),
             contentView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             contentView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -450,6 +457,11 @@ extension ExplorePointOfUse {
             return nil
         }
     }
+}
+
+extension POIDetailsViewController: NavigationBarDisplayable {
+    var isBackButtonHidden: Bool { true }
+    var isNavigationBarHidden: Bool { true }
 }
 
 extension UIHostingController: NavigationBarDisplayable {
