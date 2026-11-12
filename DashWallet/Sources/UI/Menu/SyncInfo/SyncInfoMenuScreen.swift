@@ -101,7 +101,6 @@ struct SyncInfoMenuScreen: View {
 
     private func push<Content: View>(_ screen: Content) {
         let hosting = UIHostingController(rootView: screen)
-        hosting.hidesBottomBarWhenPushed = true
         vc.pushViewController(hosting, animated: true)
     }
 }

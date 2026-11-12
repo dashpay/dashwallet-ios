@@ -57,7 +57,6 @@ final class SendScreenViewController: DWBasePayViewController {
         let controller = makeExternalSendSource(
             viewModel: sendViewModel,
             onSendCompleted: { [weak self] in self?.finishSendFlow() })
-        controller.hidesBottomBarWhenPushed = true
         return controller
     }
 

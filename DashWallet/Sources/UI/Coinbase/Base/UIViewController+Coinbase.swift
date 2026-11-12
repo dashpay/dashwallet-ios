@@ -46,7 +46,6 @@ extension BaseViewController {
         vc.headerText = NSLocalizedString("Transfer successful", comment: "Coinbase")
         vc.descriptionText = text
 
-        vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
     }
 
@@ -64,7 +63,6 @@ extension BaseViewController {
             wSelf.navigationController?.popToViewController(wSelf.previousControllerOnNavigationStack!, animated: true)
         }
         vc.supportHandler = { UIApplication.shared.open(kCoinbaseContactURL) }
-        vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
     }
 }
@@ -90,7 +88,6 @@ extension CoinbaseCodeConfirmationPreviewing where Self: BaseViewController {
         vc.cancelHandler = { [weak self] in
             self?.codeConfirmationControllerDidCancel()
         }
-        vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
 
         codeConfirmationController = vc

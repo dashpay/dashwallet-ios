@@ -86,7 +86,6 @@ struct WalletAccountsScreen: View {
     private func showDetail(_ row: WalletAccountRow) {
         let controller = UIHostingController(
             rootView: WalletAccountDetailScreen(vc: vc, walletId: walletId, account: row))
-        controller.hidesBottomBarWhenPushed = true
         vc.pushViewController(controller, animated: true)
     }
 

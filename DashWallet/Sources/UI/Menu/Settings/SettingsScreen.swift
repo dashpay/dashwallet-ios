@@ -240,19 +240,16 @@ struct SettingsScreen: View {
             }
         )
         let controller = LocalCurrencyHostingViewController(rootView: view)
-        controller.hidesBottomBarWhenPushed = true
         vc.pushViewController(controller, animated: true)
     }
     
     private func showAboutController() {
         let controller = AboutDashHostingViewController()
-        controller.hidesBottomBarWhenPushed = true
         vc.pushViewController(controller, animated: true)
     }
 
     private func showDevnetSettings() {
         let controller = DevnetSettingsHostingViewController(vc: vc)
-        controller.hidesBottomBarWhenPushed = true
         vc.pushViewController(controller, animated: true)
     }
     
