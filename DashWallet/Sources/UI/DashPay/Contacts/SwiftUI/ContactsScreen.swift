@@ -278,11 +278,10 @@ struct ContactsScreen: View {
                 Color.dash.primaryBackground.ignoresSafeArea()
                 content
             }
-            .navigationTitle(NSLocalizedString("DashPay", comment: "DashPay"))
             // The enabled state draws its own Dash-blue identity banner
-            // (title, add-contact, and profile entry live inside it);
-            // the system bar only fronts the pre-enable intro.
-            .toolbar(viewModel.needsDashPayEnable ? .visible : .hidden, for: .navigationBar)
+            // (title, add-contact, and profile entry live inside it); the
+            // pre-enable intro draws the design-system bar itself.
+            .toolbar(.hidden, for: .navigationBar)
             .sheet(isPresented: $showingAddContact) {
                 AddContactScreen(initialQuery: addContactInitialQuery)
             }
@@ -340,9 +339,16 @@ struct ContactsScreen: View {
             // DashPay pitch: what it is, why enable it, and the one CTA.
             // The contacts UI (and its add affordances) appear only once
             // requests can actually be exchanged.
-            DashPayIntroView(
-                viewModel: viewModel,
-                showingEnableDashPay: $showingEnableDashPay)
+            VStack(spacing: 0) {
+                DashUIKit.NavigationBar(central: {
+                    Text(NSLocalizedString("DashPay", comment: "DashPay"))
+                        .dashFont(.subheadMedium)
+                        .foregroundColor(.dash.primaryText)
+                })
+                DashPayIntroView(
+                    viewModel: viewModel,
+                    showingEnableDashPay: $showingEnableDashPay)
+            }
                 .sheet(isPresented: $showingEnableDashPay) {
                     DashUIKit.BottomSheet(showBackButton: .constant(false)) {
                         EnableDashPayConfirmSheet(viewModel: viewModel)
@@ -746,6 +752,7 @@ private struct DashPayIntroView: View {
         }
         .sheet(isPresented: $showingFAQ) {
             DashPayFAQSheet()
+                .presentationDragIndicator(.hidden)
         }
     }
 
@@ -780,8 +787,6 @@ private struct DashPayIntroView: View {
 /// "Learn More" FAQ for the DashPay intro: what DashPay is, why enabling
 /// is needed, privacy, cost, and what's coming next.
 private struct DashPayFAQSheet: View {
-    @Environment(\.dismiss) private var dismiss
-
     private struct Item: Identifiable {
         let question: String
         let answer: String
@@ -844,7 +849,10 @@ private struct DashPayFAQSheet: View {
     }
 
     var body: some View {
-        NavigationStack {
+        DashUIKit.BottomSheet(
+            title: NSLocalizedString("About DashPay", comment: "DashPay FAQ title"),
+            showBackButton: .constant(false)
+        ) {
             ScrollView {
                 VStack(spacing: 10) {
                     ForEach(items) { item in
@@ -872,13 +880,6 @@ private struct DashPayFAQSheet: View {
                 .padding(.bottom, 24)
             }
             .background(Color.dash.primaryBackground)
-            .navigationTitle(NSLocalizedString("About DashPay", comment: "DashPay FAQ title"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(NSLocalizedString("Done", comment: "")) { dismiss() }
-                }
-            }
         }
     }
 }

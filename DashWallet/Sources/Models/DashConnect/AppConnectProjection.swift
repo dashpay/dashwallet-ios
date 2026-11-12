@@ -565,7 +565,8 @@ extension AppConnect {
         /// that owner or an unknown one.
         case attributed
         /// The bound's known owner is the app's, and another app here has it
-        /// too: whose the key is cannot be told.
+        /// too, or the bound is a contract group with admins, who may add
+        /// their own contracts to it: whose the key is cannot be told.
         case notAttributable
         /// It may be the app's, but an owner that decides it is unknown.
         case notChecked
@@ -582,6 +583,7 @@ extension AppConnect {
     ) -> OwnerOutcome {
         let boundOwner = owners[bound]
         if boundOwner == systemContractOwnerId { return .notThisApp }
+        if boundOwner == administeredGroupOwnerId { return .notAttributable }
         guard let boundOwner, let appOwner = owners[app] else { return .notChecked }
         guard boundOwner == appOwner else { return .notThisApp }
         let others = apps.subtracting([app]).map { owners[$0] }

@@ -715,6 +715,15 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         (info["ownerId"] as? String).flatMap(decodeIdentifier)
     }
 
+    /// The owner a key bound to a contract group is attributed by: the
+    /// group's, unless its admins may add their own contracts to it (read
+    /// as administered unless the read shows none, as for an approval);
+    /// then `AppConnect.administeredGroupOwnerId`.
+    static func groupOwnerForAttribution(_ info: [String: Any]) -> Data? {
+        guard let owner = groupOwnerId(info) else { return nil }
+        return (info["adminIds"] as? [Any])?.isEmpty == true ? owner : AppConnect.administeredGroupOwnerId
+    }
+
     /// The owners of contracts and contract groups, read from Platform and
     /// remembered in memory, never on disk: Platform never changes an
     /// owner. A read that fails, finds nothing, or names no readable owner
@@ -745,7 +754,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 for id in unknown {
                     group.addTask {
                         if groups.contains(id) {
-                            return (id, (try? await readGroup(id)).flatMap(PlatformDashConnectDataSource.groupOwnerId))
+                            return (id, (try? await readGroup(id)).flatMap(PlatformDashConnectDataSource.groupOwnerForAttribution))
                         }
                         return (id, (try? await readContract(id)).flatMap(PlatformDashConnectDataSource.contractOwnerId))
                     }
@@ -1077,21 +1086,23 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
     }
 
-    /// Owners from the process-wide memory, the rest read from Platform off
-    /// the main actor.
+    /// Owners from the memory every data source shares, kept apart per
+    /// wallet, network and endpoint (`ownerScope`), the rest read from
+    /// Platform off the main actor.
     private static func ownerReader(context: Context) -> OwnerReader {
         let sdk = context.sdk
         return OwnerReader(
-            network: ownerScope(context.network.persistenceScope, context.stores.endpoint), memory: ownerMemory,
+            network: ownerScope(context.stores.connections.scopeKey, context.stores.endpoint), memory: ownerMemory,
             readContract: { try await sdk.dataContractGetOffMain(id: $0.toBase58String()) },
             readGroup: { try await sdk.getContractGroupInfo(contractGroupId: $0.toBase58String()) })
     }
 
-    /// The Platform an owner is remembered for: the network's persistence
-    /// scope, which names a devnet, and the endpoint it is reached at, since
-    /// devnets of one name at other nodes are other chains.
-    static func ownerScope(_ persistenceScope: String, _ endpoint: String?) -> String {
-        "\(persistenceScope) \(endpoint ?? "")"
+    /// The Platform an owner is remembered for, both halves from the stores
+    /// the operation is pinned to: their scope, which names the network (and
+    /// a devnet by name), and the endpoint it is reached at, since devnets of
+    /// one name at other nodes are other chains.
+    static func ownerScope(_ storeScope: String?, _ endpoint: String?) -> String {
+        "\(storeScope ?? "") \(endpoint ?? "")"
     }
 
     /// Puts the App Connect rows of `stores` in step with what `snapshot`
