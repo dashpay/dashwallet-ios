@@ -526,6 +526,9 @@
         }
       }
     },
+    "The amount is outside the limits for a withdrawal to Core. Your funds were not sent." : {
+      "comment" : "External send"
+    },
     "—" : {
 
     },
