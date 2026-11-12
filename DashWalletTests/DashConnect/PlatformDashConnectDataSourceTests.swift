@@ -1509,6 +1509,9 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
         await waitUntil { !viewModel.connections.isEmpty }
         viewModel.showConnection(viewModel.rows(for: .active)[0])
+        // The first read has its answer ("before", slow) before the sheet
+        // closes; it ends after the second one.
+        await waitUntil { spy.detailReads == 1 }
         viewModel.hideConnection()
 
         spy.details = ConnectionDetails(appId: "app", identityId: "identity", username: "after", access: nil)
