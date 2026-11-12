@@ -4680,6 +4680,25 @@ final class AppConnectOwnerMemoryTests: XCTestCase {
         _ = await owners(memory, reads, network: "mainnet")
         XCTAssertEqual(reads.count(Self.contract), 2)
     }
+
+    /// "devnet" is not one chain: an owner known on one devnet is read again
+    /// on a devnet of another name, or of the same name at another endpoint.
+    func testAnOwnerKnownOnOneDevnetIsReadAgainOnAnotherNameOrEndpoint() async {
+        let memory = PlatformDashConnectDataSource.OwnerMemory(), reads = Reads()
+        reads.answer = { _ in ["ownerId": Self.owner.toBase58String()] }
+        let scope = PlatformDashConnectDataSource.ownerScope
+        for network in [
+            scope("devnet-alpha", "https://alpha.example:1443"),
+            scope("devnet-beta", "https://alpha.example:1443"),
+            scope("devnet-alpha", "https://other.example:1443"),
+        ] {
+            _ = await owners(memory, reads, network: network)
+        }
+        XCTAssertEqual(reads.count(Self.contract), 3)
+        _ = await owners(memory, reads, network: scope("devnet-alpha", "https://alpha.example:1443"))
+        XCTAssertEqual(reads.count(Self.contract), 3, "the same devnet at the same endpoint reads no owner again")
+        XCTAssertEqual(scope("testnet", nil), scope("testnet", nil))
+    }
 }
 
 
@@ -4928,6 +4947,21 @@ final class AppConnectOwnersThroughSeamsTests: XCTestCase {
         XCTAssertEqual(h.platform.disabled, [10])
         XCTAssertEqual([result.keysTurnedOff, result.keysStillLive, result.keysNotChecked], [1, 1, 0])
         XCTAssertEqual(h.rowIds, [Self.app])
+    }
+
+    /// AC-18: a key of unknown bound that lands during the update keeps the
+    /// app's intent open, as one the plan's read showed would: the row keeps
+    /// its status and its Disconnect, and the key is reported unchecked.
+    func testAKeyOfUnknownBoundThatLandsDuringTheUpdateKeepsTheRow() async throws {
+        let own = Self.on(Self.app, 10)
+        let h = harness([own], [Self.intent(own)])
+        h.platform.landing = [Self.key(20, bound: nil, boundKnown: false)]
+        let result = try await h.disconnect(Self.app)
+        XCTAssertEqual(h.platform.disabled, [10])
+        XCTAssertEqual([result.keysTurnedOff, result.keysNotChecked], [1, 1])
+        let row = h.rows.load().first { $0.id == Self.app.toBase58String() }
+        XCTAssertNotNil(row, "the row is not lost")
+        XCTAssertNotEqual(row?.status, .disconnected, "the row keeps its Disconnect while a key's bound is unknown")
     }
 
     /// An owner that could not be read before the update and reads after it
