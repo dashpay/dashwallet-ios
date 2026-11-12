@@ -17,6 +17,7 @@
 //  limitations under the License.
 //
 
+import DashUIKit
 import SwiftDashSDK
 import SwiftUI
 
@@ -66,11 +67,14 @@ struct BulkSelectionBar: View {
             .padding(.bottom, 8)
         }
         .background(.bar)
-        .sheet(isPresented: $showSheet) {
+        // A swipe-down skips the sheet's close button, so the result it
+        // leaves behind is cleared here as well.
+        .sheet(isPresented: $showSheet, onDismiss: { viewModel.dismissCastResult() }) {
             BulkVoteSheet(viewModel: viewModel) {
                 showSheet = false
                 viewModel.endSelecting()
             }
+            .presentationDragIndicator(.hidden)
         }
     }
 }
@@ -103,28 +107,26 @@ struct BulkVoteSheet: View {
     }
 
     var body: some View {
-        NavigationView {
-            Group {
-                if let reports = viewModel.bulkReports {
-                    BulkResultView(reports: reports) {
-                        viewModel.dismissCastResult()
-                        dismiss()
-                        onFinished()
-                    }
-                } else {
-                    form
+        DashUIKit.BottomSheet(
+            title: NSLocalizedString("Vote on several", comment: "Voting"),
+            showBackButton: .constant(false),
+            // No swipe-down while a vote is being cast, same as the close button.
+            isDismissalEnabled: .constant(!viewModel.isCasting),
+            isCloseButtonEnabled: !viewModel.isCasting,
+            onClose: {
+                viewModel.dismissCastResult()
+                dismiss()
+            },
+            background: Color(UIColor.systemGroupedBackground)
+        ) {
+            if let reports = viewModel.bulkReports {
+                BulkResultView(reports: reports) {
+                    viewModel.dismissCastResult()
+                    dismiss()
+                    onFinished()
                 }
-            }
-            .navigationTitle(NSLocalizedString("Vote on several", comment: "Voting"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(NSLocalizedString("Cancel", comment: "")) {
-                        viewModel.dismissCastResult()
-                        dismiss()
-                    }
-                    .disabled(viewModel.isCasting)
-                }
+            } else {
+                form
             }
         }
         .onAppear {

@@ -262,6 +262,25 @@ extension UINavigationController {
             popToViewController(controller, animated: animated)
         }
     }
+
+    /// Pops the top page once anything presented over the stack (an alert,
+    /// a confirmation dialog) has gone, so the pop never starts while that
+    /// presentation is still being dismissed.
+    func popAfterPresentationEnds(animated: Bool = true) {
+        guard let presented = presentedViewController else {
+            popViewController(animated: animated)
+            return
+        }
+        if presented.isBeingDismissed, let coordinator = presented.transitionCoordinator {
+            coordinator.animate(alongsideTransition: nil) { [weak self] _ in
+                self?.popViewController(animated: animated)
+            }
+        } else {
+            dismiss(animated: animated) { [weak self] in
+                self?.popViewController(animated: animated)
+            }
+        }
+    }
 }
 
 extension UIViewController {
