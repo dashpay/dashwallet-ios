@@ -791,6 +791,27 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertTrue(Self.snapshot([higher, Self.onPlatform(Self.authKey(11))], revision: 7).mayReplace(newest))
     }
 
+    /// A read whose proof is older than one already seen keeps the later
+    /// block time: a key already seen expired is not Active again, unless
+    /// the read shows its expiry raised.
+    func testAnOlderProofDoesNotReviveAnExpiredConnection() throws {
+        let key = Self.onPlatform(Self.authKey(10, expiresAt: Self.now + 1000))
+        let expiredRead = Self.snapshot([key], revision: 7, time: Self.now + 2000)
+        let older = try XCTUnwrap(Self.snapshot([key], revision: 7, time: Self.now).admitted(after: expiredRead))
+        XCTAssertEqual(older.platformTime, Self.now + 2000)
+        XCTAssertEqual(AppConnect.presence(of: Self.authKey(10, expiresAt: Self.now + 1000), in: older), .expired)
+        let untimed = try XCTUnwrap(Self.snapshot([key], revision: 7, time: nil).admitted(after: expiredRead))
+        XCTAssertEqual(untimed.platformTime, Self.now + 2000)
+
+        let extended = Self.onPlatform(Self.authKey(10, expiresAt: Self.now + 5000))
+        let renewed = try XCTUnwrap(Self.snapshot([extended], revision: 7, time: Self.now + 2100).admitted(after: expiredRead))
+        XCTAssertEqual(renewed.platformTime, Self.now + 2100)
+        XCTAssertEqual(AppConnect.presence(of: Self.authKey(10, expiresAt: Self.now + 5000), in: renewed), .live)
+
+        XCTAssertNil(Self.snapshot([key], revision: 6, time: Self.now + 3000).admitted(after: expiredRead))
+        XCTAssertEqual(Self.snapshot([key], revision: 1).admitted(after: nil), Self.snapshot([key], revision: 1))
+    }
+
     // MARK: Key ids
 
     func testNewIdsSkipEveryIdAnIntentMayStillLandOn() {
