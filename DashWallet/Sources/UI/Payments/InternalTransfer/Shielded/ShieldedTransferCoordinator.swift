@@ -478,6 +478,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
     }
 
+    /// The Core fee rate, in duffs per byte, of a shielded withdrawal planned by the external send: its plan is made
+    /// at this rate and the withdrawal must run at the same one. 1 is the SDK's default rate.
+    static let withdrawalCoreFeePerByte: UInt32 = 1
+
     // MARK: - Full-balance shielded sweep
 
     /// Builds the Max plan from the active wallet's persisted unspent notes.
@@ -595,6 +599,18 @@ final class ShieldedTransferCoordinator: ObservableObject {
         else { return false }
         handleFailure(CoordinatorError.shieldedAmountExceedsBundle(ceiling))
         return true
+    }
+
+    /// The credits a Shielded spend submits. With an SDK plan the SDK checks the plan against the notes when it spends,
+    /// so the planned amount is submitted as is.
+    private func submittableAmount(
+        _ amountCredits: UInt64,
+        sweepAll: Bool,
+        feeKind: PlatformWalletManager.ShieldedFeeKind,
+        plan: ShieldedSpendPlan?
+    ) -> UInt64? {
+        if plan != nil { return amountCredits }
+        return submittableAmount(amountCredits, sweepAll: sweepAll, feeKind: feeKind)
     }
 
     /// The credits a Shielded spend submits: on a sweep, the plan re-priced against the notes as they stand now,
@@ -1442,10 +1458,14 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// transfer); an external Send passes the recipient's address. The
     /// withdrawal-store tag (which classifies the incoming L1 tx as
     /// "Shielded received") only applies to the own-wallet payout.
+    ///
+    /// `plan` (the external send's) is the SDK plan made for `amountCredits` at `withdrawalCoreFeePerByte`: the
+    /// withdrawal runs exactly it, or fails with `shieldedPlanChanged` and nothing reserved.
     func performWithdraw(
         amountCredits: UInt64,
         sweepAll: Bool = false,
-        toCoreAddress destinationOverride: String? = nil
+        toCoreAddress destinationOverride: String? = nil,
+        plan: ShieldedSpendPlan? = nil
     ) async {
         guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: withdraw route amount=\(amountCredits) credits external=\(destinationOverride != nil)")
@@ -1458,9 +1478,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
 
-        guard let submittedAmount = submittableAmount(amountCredits, sweepAll: sweepAll, feeKind: .withdrawal) else {
-            return
-        }
+        guard let submittedAmount = submittableAmount(
+            amountCredits, sweepAll: sweepAll, feeKind: .withdrawal, plan: plan)
+        else { return }
 
         // Destination Core (BIP44, Base58Check) address. For the internal
         // transfer, resolve the wallet's own receive address before advancing
@@ -1492,15 +1512,26 @@ final class ShieldedTransferCoordinator: ObservableObject {
         phase = .proving
 
         do {
-            try await env.manager.shieldedWithdraw(
-                walletId: env.walletId,
-                // Per-operation Orchard spend authority (seedless shielded
-                // bind, platform #4125/#4126); the SDK holds the resolver
-                // alive across the FFI call via withExtendedLifetime.
-                resolver: MnemonicResolver(),
-                account: 0,
-                toCoreAddress: coreAddress,
-                amount: submittedAmount)
+            if let plan {
+                try await env.manager.shieldedWithdraw(
+                    walletId: env.walletId,
+                    resolver: MnemonicResolver(),
+                    account: 0,
+                    toCoreAddress: coreAddress,
+                    amount: submittedAmount,
+                    coreFeePerByte: Self.withdrawalCoreFeePerByte,
+                    plan: plan)
+            } else {
+                try await env.manager.shieldedWithdraw(
+                    walletId: env.walletId,
+                    // Per-operation Orchard spend authority (seedless shielded
+                    // bind, platform #4125/#4126); the SDK holds the resolver
+                    // alive across the FFI call via withExtendedLifetime.
+                    resolver: MnemonicResolver(),
+                    account: 0,
+                    toCoreAddress: coreAddress,
+                    amount: submittedAmount)
+            }
         } catch {
             // shieldedSpendUnconfirmed means the spend may already be on
             // chain (non-retryable), so its payout can still arrive — tag
@@ -1535,10 +1566,14 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// `toPlatformAddress` nil = the wallet's own next receive address (the
     /// internal transfer); an external Send passes the recipient's bech32m
     /// Platform address.
+    ///
+    /// `plan` (the external send's) is the SDK plan made for `amountCredits`: the unshield runs exactly it, or fails
+    /// with `shieldedPlanChanged` and nothing reserved.
     func performUnshield(
         amountCredits: UInt64,
         sweepAll: Bool = false,
-        toPlatformAddress destinationOverride: String? = nil
+        toPlatformAddress destinationOverride: String? = nil,
+        plan: ShieldedSpendPlan? = nil
     ) async {
         guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: unshield route amount=\(amountCredits) credits external=\(destinationOverride != nil)")
@@ -1551,9 +1586,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
 
-        guard let submittedAmount = submittableAmount(amountCredits, sweepAll: sweepAll, feeKind: .unshield) else {
-            return
-        }
+        guard let submittedAmount = submittableAmount(
+            amountCredits, sweepAll: sweepAll, feeKind: .unshield, plan: plan)
+        else { return }
 
         // Destination Platform Payment (bech32m) address — for the internal
         // transfer, the wallet's own next receive address. Resolve before
@@ -1584,13 +1619,23 @@ final class ShieldedTransferCoordinator: ObservableObject {
         phase = .proving
 
         do {
-            try await env.manager.shieldedUnshield(
-                walletId: env.walletId,
-                // Per-operation Orchard spend authority — see above.
-                resolver: MnemonicResolver(),
-                account: 0,
-                toPlatformAddress: platformAddress,
-                amount: submittedAmount)
+            if let plan {
+                try await env.manager.shieldedUnshield(
+                    walletId: env.walletId,
+                    resolver: MnemonicResolver(),
+                    account: 0,
+                    toPlatformAddress: platformAddress,
+                    amount: submittedAmount,
+                    plan: plan)
+            } else {
+                try await env.manager.shieldedUnshield(
+                    walletId: env.walletId,
+                    // Per-operation Orchard spend authority — see above.
+                    resolver: MnemonicResolver(),
+                    account: 0,
+                    toPlatformAddress: platformAddress,
+                    amount: submittedAmount)
+            }
         } catch {
             // The transition may already have credited our Platform address.
             // There is no proof height on this ambiguous path, so never invent
@@ -1617,10 +1662,14 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// identity does not have to belong to this wallet; the pool fee
     /// (`.identityTopUpFromPool`) is spent from the notes on top of the
     /// amount. Stages: `.signing → .proving → .broadcasting → .success`.
+    ///
+    /// `plan` (the external send's) is the SDK plan made for `amountCredits`: the top-up runs exactly it, or fails
+    /// with `shieldedPlanChanged` and nothing reserved.
     func performIdentityTopUpFromPool(
         amountCredits: UInt64,
         sweepAll: Bool = false,
-        identityId: Data
+        identityId: Data,
+        plan: ShieldedSpendPlan? = nil
     ) async {
         guard beginTransfer() else { return }
         DWLogger.log("🛡️ SHIELD-TX :: shielded→identity top-up amount=\(amountCredits) credits")
@@ -1634,7 +1683,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
 
         guard let submittedAmount = submittableAmount(
-            amountCredits, sweepAll: sweepAll, feeKind: .identityTopUpFromPool)
+            amountCredits, sweepAll: sweepAll, feeKind: .identityTopUpFromPool, plan: plan)
         else { return }
 
         do {
@@ -1647,13 +1696,23 @@ final class ShieldedTransferCoordinator: ObservableObject {
         phase = .proving
 
         do {
-            try await env.manager.shieldedIdentityTopUpFromPool(
-                walletId: env.walletId,
-                // Per-operation Orchard spend authority — see `performWithdraw`.
-                resolver: MnemonicResolver(),
-                account: 0,
-                identityId: identityId,
-                amount: submittedAmount)
+            if let plan {
+                try await env.manager.shieldedIdentityTopUpFromPool(
+                    walletId: env.walletId,
+                    resolver: MnemonicResolver(),
+                    account: 0,
+                    identityId: identityId,
+                    amount: submittedAmount,
+                    plan: plan)
+            } else {
+                try await env.manager.shieldedIdentityTopUpFromPool(
+                    walletId: env.walletId,
+                    // Per-operation Orchard spend authority — see `performWithdraw`.
+                    resolver: MnemonicResolver(),
+                    account: 0,
+                    identityId: identityId,
+                    amount: submittedAmount)
+            }
         } catch {
             handleSpendError(error, manager: env.manager)
             return
@@ -1960,10 +2019,14 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// Orchard address, decoded from their bech32m display form). Stages:
     /// `.signing → .proving → .broadcasting → .success` — same opaque-call
     /// shape as `performWithdraw`/`performUnshield`.
+    ///
+    /// `plan` (the external send's) is the SDK plan made for `amountCredits`: the transfer runs exactly it, or fails
+    /// with `shieldedPlanChanged` and nothing reserved.
     func performShieldedTransfer(
         amountCredits: UInt64,
         sweepAll: Bool = false,
-        recipientRaw43: Data
+        recipientRaw43: Data,
+        plan: ShieldedSpendPlan? = nil
     ) async {
         guard beginTransfer() else { return }
         Self.logger.info("🛡️ SHIELD-TX :: shielded→shielded send amount=\(amountCredits) credits")
@@ -1980,9 +2043,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
         // guard as `performWithdraw`, so a note that was spent or discovered
         // between Max and confirm fails closed instead of building a bundle
         // the pool can no longer fund exactly.
-        guard let submittedAmount = submittableAmount(amountCredits, sweepAll: sweepAll, feeKind: .transfer) else {
-            return
-        }
+        guard let submittedAmount = submittableAmount(
+            amountCredits, sweepAll: sweepAll, feeKind: .transfer, plan: plan)
+        else { return }
 
         do {
             try await authorize()
@@ -1994,13 +2057,23 @@ final class ShieldedTransferCoordinator: ObservableObject {
         phase = .proving
 
         do {
-            try await env.manager.shieldedTransfer(
-                walletId: env.walletId,
-                // Per-operation Orchard spend authority — see `performWithdraw`.
-                resolver: MnemonicResolver(),
-                account: 0,
-                recipientRaw43: recipientRaw43,
-                amount: submittedAmount)
+            if let plan {
+                try await env.manager.shieldedTransfer(
+                    walletId: env.walletId,
+                    resolver: MnemonicResolver(),
+                    account: 0,
+                    recipientRaw43: recipientRaw43,
+                    amount: submittedAmount,
+                    plan: plan)
+            } else {
+                try await env.manager.shieldedTransfer(
+                    walletId: env.walletId,
+                    // Per-operation Orchard spend authority — see `performWithdraw`.
+                    resolver: MnemonicResolver(),
+                    account: 0,
+                    recipientRaw43: recipientRaw43,
+                    amount: submittedAmount)
+            }
         } catch {
             handleSpendError(error, manager: env.manager)
             return

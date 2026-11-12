@@ -17,6 +17,7 @@
 
 import Combine
 @testable import dashpay
+import SwiftDashSDK
 import XCTest
 
 /// The Send screen's ViewModel (SCR-04; AC-01, AC-01b, AC-04, AC-08, AC-09, AC-10, AC-11, AC-12, AC-12b, AC-14,
@@ -731,15 +732,35 @@ final class SendAmountViewModelTests: XCTestCase {
         XCTAssertEqual(coreToIdentity, 5_000_000 - 2_250)
     }
 
-    /// Shielded to an Identity ID is sized like the other Shielded routes, by the sweep plan of the pool top-up, so
-    /// the Send screen's fee estimate is never asked for it.
+    /// Shielded to an Identity ID is sized like the other Shielded routes, by the SDK's sweep plan of the pool top-up,
+    /// so the Send screen's fee estimate is never asked for it.
     func testTheLivePlannerSizesShieldedToIdentityByTheSweepPlanNotTheBalanceLessTheFee() async {
         balances.table = [.shielded: 3_000_000]
         estimator.results = [.shieldedToIdentity: .fee(13_001)]
-        let live = LiveSendMaxPlanner(fees: estimator, balances: balances, fundingCandidates: fundingCandidates)
+        let planner = SweepPlanner(sweepCredits: 2_900_000_500)
+        let live = LiveSendMaxPlanner(
+            fees: estimator, balances: balances, fundingCandidates: fundingCandidates, shieldedPlans: planner)
         let plan = await live.maxPlan(route: .shieldedToIdentity)
-        XCTAssertNotEqual(plan?.duffs, 3_000_000 - 13_001)
+        XCTAssertEqual(plan, SendMaxPlan(duffs: 2_900_000, sweepCredits: 2_900_000_500))
         XCTAssertTrue(estimator.calls.isEmpty, "\(estimator.calls)")
+    }
+
+    /// The SDK plans every Shielded Max as a sweep of the route's own spend; a sweep the notes cannot pay has no Max.
+    func testTheLivePlannerAsksTheSDKForASweepOnEveryShieldedRoute() async {
+        let routes: [SendRoute] = [.shieldedToCore, .shieldedToShielded, .shieldedToPlatform, .shieldedToIdentity]
+        let planner = SweepPlanner(sweepCredits: 50_000_000_000_000)
+        let live = LiveSendMaxPlanner(
+            fees: estimator, balances: balances, fundingCandidates: fundingCandidates, shieldedPlans: planner)
+        for route in routes {
+            let plan = await live.maxPlan(route: route)
+            XCTAssertEqual(plan?.sweepCredits, 50_000_000_000_000, "\(route)")
+        }
+        XCTAssertEqual(planner.calls.map(\.route), routes)
+        XCTAssertTrue(planner.calls.allSatisfy { $0.amount == .sweepAll })
+
+        planner.error = PlatformWalletError.walletOperation("notes cannot pay the fee")
+        let none = await live.maxPlan(route: .shieldedToCore)
+        XCTAssertNil(none)
     }
 
     func testTheLivePlannerHasNoMaxWithoutABalanceOrAFeeAndZeroWhenTheFeeEatsTheBalance() async {
@@ -1707,5 +1728,25 @@ final class SendAmountViewModelTests: XCTestCase {
         let vm = await makeVM(pinned: .shielded)
         await vm.pickSource(.platform)
         XCTAssertEqual(vm.source, .platform)
+    }
+}
+
+/// Stands for the SDK's Shielded planner: every sweep plans `sweepCredits`.
+private final class SweepPlanner: ShieldedSpendPlanning {
+    let sweepCredits: UInt64
+    var error: Error?
+    private(set) var calls: [(route: SendRoute, amount: ShieldedSpendAmount)] = []
+
+    init(sweepCredits: UInt64) {
+        self.sweepCredits = sweepCredits
+    }
+
+    func plan(route: SendRoute, amount: ShieldedSpendAmount) async throws -> PlannedShieldedSpend {
+        calls.append((route, amount))
+        if let error { throw error }
+        return PlannedShieldedSpend(
+            amountCredits: sweepCredits, recipientCredits: sweepCredits, feeCredits: 1,
+            totalDebitedCredits: sweepCredits + 1,
+            digest: Data(count: 32))
     }
 }

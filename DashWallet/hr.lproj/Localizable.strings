@@ -5869,6 +5869,9 @@
 "The amount is more than what you're sending." = "The amount is more than what you're sending.";
 
 /* External send */
+"The amount is outside the limits for a withdrawal to Core. Your funds were not sent." = "The amount is outside the limits for a withdrawal to Core. Your funds were not sent.";
+
+/* External send */
 "The amount is set by the payment request." = "The amount is set by the payment request.";
 
 /* InternalTransfer */

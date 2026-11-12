@@ -162,9 +162,12 @@ final class ConfirmViewModelTests: XCTestCase {
 
     // MARK: - Exact or estimated fee (ADR-0043)
 
+    private let shieldedRoutes: [SendRoute] = [
+        .shieldedToCore, .shieldedToShielded, .shieldedToPlatform, .shieldedToIdentity
+    ]
+
     private let estimateRoutes: [SendRoute] = [
         .coreToShielded, .coreToPlatform, .coreToIdentity,
-        .shieldedToCore, .shieldedToShielded, .shieldedToPlatform, .shieldedToIdentity,
         .platformToCore, .platformToShielded, .platformToPlatform, .platformToIdentity,
         .identityToCore, .identityToPlatform, .identityToIdentity
     ]
@@ -197,6 +200,28 @@ final class ConfirmViewModelTests: XCTestCase {
             XCTAssertEqual(vm.totalAccessibilityValue, "about " + (oneDash + feeDuffs).formattedDashAmount,
                            "\(route)")
         }
+    }
+
+    /// The Shielded spend runs the SDK plan whose fee Confirm shows (ADR-0009).
+    func testEveryShieldedRouteShowsThePlansFeeAsExact() async {
+        for route in shieldedRoutes {
+            let vm = await readyVM(route: route, amount: oneDash)
+            XCTAssertTrue(vm.isFeeExact, "\(route)")
+            XCTAssertEqual(vm.feeText, fee.formattedDashAmount, "\(route)")
+            XCTAssertEqual(vm.totalText, (oneDash + fee).formattedDashAmount, "\(route)")
+        }
+    }
+
+    /// A Shielded withdrawal reserves the amount for Core and the Core fee comes out of it: Confirm shows what the
+    /// recipient receives, and the total is still what leaves the pool.
+    func testAShieldedWithdrawalShowsWhatTheRecipientReceives() async {
+        let coreFee: UInt64 = 227
+        executor.preparedRecipientAmount = oneDash - coreFee
+        let vm = await readyVM(route: .shieldedToCore, amount: oneDash, feeToUse: fee + coreFee)
+        XCTAssertEqual(vm.amountText, (oneDash - coreFee).formattedDashAmount)
+        XCTAssertEqual(vm.amountDuffs, Int64(oneDash - coreFee))
+        XCTAssertEqual(vm.feeText, (fee + coreFee).formattedDashAmount)
+        XCTAssertEqual(vm.totalText, (oneDash + fee).formattedDashAmount)
     }
 
     func testAnEstimateRouteShowsNoTildeOrNoteWhilePreparing() {
@@ -565,6 +590,28 @@ final class ConfirmViewModelTests: XCTestCase {
         XCTAssertEqual(backToSend, [.balanceNotEnough])
     }
 
+    /// The notes moved between Continue and Confirm: nothing was sent, so there is no outcome screen; Send recomputes
+    /// Max.
+    func testAChangedShieldedPlanAtConfirmGoesBackToSendWithoutAnOutcome() async {
+        executor.sendOutcome = .notSent(.balanceChanged)
+        let vm = await readyVM(route: .shieldedToShielded)
+        await vm.confirm()
+        XCTAssertEqual(executor.sentCalls, 1)
+        XCTAssertTrue(outcomes.isEmpty, "\(outcomes)")
+        XCTAssertEqual(backToSend, [.balanceNotEnough])
+    }
+
+    /// A withdrawal amount outside Platform's bounds for its Core fee is refused before anything is built.
+    func testAWithdrawalAmountOutOfRangeAtContinueIsNotSent() async {
+        executor.prepareResults = [.failure(.amountOutOfRange)]
+        let vm = makeVM(route: .shieldedToCore)
+        await vm.start()
+        XCTAssertTrue(backToSend.isEmpty)
+        guard case .notSent(.amountOutOfRange)? = outcomes.first else { return XCTFail("got \(outcomes)") }
+        XCTAssertEqual(outcomes.count, 1)
+        XCTAssertEqual(executor.sentCalls, 0)
+    }
+
     func testNotSentOutcomeIsHandedOnUnchanged() async {
         executor.sendOutcome = .notSent(.offline)
         let vm = await readyVM(route: .coreToCore)
@@ -616,6 +663,8 @@ private final class FakeExecutor: ExternalSendExecuting {
 
     var prepareResults: [Result<UInt64, ExternalSendError>] = []
     var sendOutcome: SendOutcome = .sent
+    /// What the prepared send pays the recipient; nil pays the amount.
+    var preparedRecipientAmount: UInt64?
     var holdSend = false
     /// The send reports a late lock proof (as the executor does past its delay) before it holds.
     var reportsSlowNetwork = false
@@ -633,7 +682,8 @@ private final class FakeExecutor: ExternalSendExecuting {
         switch prepareResults.removeFirst() {
         case .success(let fee):
             return PreparedExternalSend(
-                route: route, amount: amount, fee: fee, isMax: isMax, plan: .routed(destination: destination))
+                route: route, amount: amount, recipientAmount: preparedRecipientAmount ?? amount, fee: fee,
+                isMax: isMax, plan: .routed(destination: destination))
         case .failure(let error):
             throw error
         }

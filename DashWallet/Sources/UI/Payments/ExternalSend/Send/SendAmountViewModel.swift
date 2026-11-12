@@ -81,34 +81,33 @@ struct LiveSendAmountConverter: SendAmountConverting {
 }
 
 /// Today's per-route Max of the old Send, asked once per route: the fee-aware Core maximum, the Core drain
-/// preview, the Platform and Shielded planners the internal transfer shares. Platform to an Identity is the most the
-/// top-up's input planning can fund (`PlatformPaymentIdentityFundingPolicy.maxFundableDuffs`); Shielded to an Identity
-/// is the sweep plan of the pool top-up. The other routes the old Send has no Max for (Core to a Platform address or
-/// an Identity) send exactly the amount, so their Max is the source balance less the Send screen's fee estimate.
+/// preview, the Platform planners the internal transfer shares. Platform to an Identity is the most the
+/// top-up's input planning can fund (`PlatformPaymentIdentityFundingPolicy.maxFundableDuffs`). A Shielded source's Max
+/// is the SDK's sweep plan for the route's spend (a withdrawal's capped at Platform's largest withdrawal), which
+/// Continue plans again for exactly those credits. The other routes the old Send has no Max for (Core to a Platform
+/// address or an Identity) send exactly the amount, so their Max is the source balance less the Send screen's fee
+/// estimate.
 /// The Identity source's Max is the ViewModel's (`AmountRules.identityMax`).
 struct LiveSendMaxPlanner: SendMaxPlanning {
     private let fees: SendFeeEstimating
     private let balances: ExternalSendBalanceReading
     private let fundingCandidates: PlatformFundingCandidatesReading
+    private let shieldedPlans: ShieldedSpendPlanning
 
     nonisolated init(fees: SendFeeEstimating = ExternalSendFeeEstimator(),
                      balances: ExternalSendBalanceReading = LiveExternalSendBalances(),
-                     fundingCandidates: PlatformFundingCandidatesReading = LivePlatformFundingCandidates()) {
+                     fundingCandidates: PlatformFundingCandidatesReading = LivePlatformFundingCandidates(),
+                     shieldedPlans: ShieldedSpendPlanning = LiveShieldedSpendPlanner()) {
         self.fees = fees
         self.balances = balances
         self.fundingCandidates = fundingCandidates
+        self.shieldedPlans = shieldedPlans
     }
 
     func maxPlan(route: SendRoute) async -> SendMaxPlan? {
         switch route {
-        case .shieldedToCore:
-            return await sweepPlan(.withdrawal)
-        case .shieldedToPlatform:
-            return await sweepPlan(.unshield)
-        case .shieldedToShielded:
-            return await sweepPlan(.transfer)
-        case .shieldedToIdentity:
-            return await sweepPlan(.identityTopUpFromPool)
+        case .shieldedToCore, .shieldedToPlatform, .shieldedToShielded, .shieldedToIdentity:
+            return await sweepPlan(route)
         default:
             return await maxDuffs(route: route).map { SendMaxPlan(duffs: $0, sweepCredits: nil) }
         }
@@ -184,12 +183,12 @@ struct LiveSendMaxPlanner: SendMaxPlanning {
         }
     }
 
-    @MainActor
-    private func sweepPlan(_ kind: PlatformWalletManager.ShieldedFeeKind) -> SendMaxPlan? {
-        guard case .ready(let plan) = ShieldedTransferCoordinator.sweepAvailability(feeKind: kind) else {
-            return nil
-        }
-        return SendMaxPlan(duffs: plan.amountCredits / 1000, sweepCredits: plan.amountCredits)
+    /// nil when the notes cannot pay a sweep's fee or the plan cannot be read.
+    private func sweepPlan(_ route: SendRoute) async -> SendMaxPlan? {
+        guard let plan = try? await shieldedPlans.plan(route: route, amount: .sweepAll) else { return nil }
+        return SendMaxPlan(
+            duffs: plan.amountCredits / PlatformPaymentIdentityFundingPolicy.creditsPerDuff,
+            sweepCredits: plan.amountCredits)
     }
 }
 
