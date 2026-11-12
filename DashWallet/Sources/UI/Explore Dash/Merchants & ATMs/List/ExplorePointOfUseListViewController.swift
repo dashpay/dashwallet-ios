@@ -455,12 +455,19 @@ extension ExplorePointOfUseListViewController {
                                      target: self, action: #selector(showFiltersAction))
         filter.tintColor = .dw_dashBlue()
 
-        let fakeFilter = UIBarButtonItem(image: .init(systemName: "line.3.horizontal.decrease.circle.fill"), style: .plain,
-                                         target: self, action: nil)
-        fakeFilter.tintColor = .clear
+        // A clear copy of the filter button keeps the applied filters centred. The
+        // toolbar draws a glass circle around every button, visible or not, so the
+        // copy opts out of it.
+        let filterBalance = UIBarButtonItem(image: .init(systemName: "line.3.horizontal.decrease.circle.fill"), style: .plain,
+                                            target: nil, action: nil)
+        filterBalance.tintColor = .clear
+        filterBalance.isAccessibilityElement = false
+        if #available(iOS 26.0, *) {
+            filterBalance.hidesSharedBackground = true
+        }
 
         let spacer = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: self, action: nil)
-        toolbarItems = [filter, spacer, appliedFilters, spacer, fakeFilter]
+        toolbarItems = [filter, spacer, appliedFilters, spacer, filterBalance]
 
         let standardAppearance = UIToolbarAppearance()
         standardAppearance.configureWithDefaultBackground()
