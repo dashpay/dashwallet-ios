@@ -287,7 +287,7 @@ final class ConnectionsViewModel: ObservableObject {
     /// Whether the shown sheet may ask about a disconnect now; when it may
     /// not, the sheet says why.
     func disconnectQuestion() -> Bool {
-        guard shownConnection?.connection != nil else {
+        guard shownDisconnectable != nil else {
             connectionSheetMessage = Self.noLongerDisconnectableMessage
             return false
         }
@@ -713,10 +713,19 @@ final class ConnectionsViewModel: ObservableObject {
         purchaseApproveError = nil
     }
 
+    /// The shown sheet's row, while its status still offers a disconnect
+    /// (`StateActions`): a row that turned Refused or Disconnected while the
+    /// sheet asked no longer does.
+    private var shownDisconnectable: DAppConnection? {
+        guard let shown = shownConnection, let connection = shown.connection,
+              AppConnect.StateActions.row(for: shown.status).actions.contains(.disconnect) else { return nil }
+        return connection
+    }
+
     /// A disconnect confirmed on the shown sheet. It runs only if the sheet
     /// still offers one; otherwise the sheet says why nothing ran.
     func disconnectShown() {
-        guard let connection = shownConnection?.connection else {
+        guard let connection = shownDisconnectable else {
             connectionSheetMessage = Self.noLongerDisconnectableMessage
             return
         }
