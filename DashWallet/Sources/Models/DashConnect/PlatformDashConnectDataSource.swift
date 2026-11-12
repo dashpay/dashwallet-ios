@@ -2675,14 +2675,34 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 }
             }
         } ?? open
-        // The app's row is held by another identity of the wallet: its
-        // intents are not the active identity's to show.
         guard !held.isEmpty else {
+            // A row of keys no intent names (a restore, another device's
+            // grant, the profile keys) is the active identity's when the
+            // projection shows them on it; when it was made is not known.
+            let all = stores.intents.load()
+            if let snapshot, Self.showsUnrecordedKeys(
+                of: appId, on: snapshot, intents: all,
+                owners: await Self.ownerReader(context: context).knownOwners(for: snapshot, intents: all)) {
+                return ConnectionDetails(
+                    appId: appId, identityId: context.identityId.toBase58String(), username: context.storedUsername)
+            }
+            // The app's row is held by another identity of the wallet: its
+            // intents are not the active identity's to show.
             return ConnectionDetails(appId: appId, identityId: nil, username: nil)
         }
         return ConnectionDetails(
             appId: appId, identityId: context.identityId.toBase58String(), username: context.storedUsername,
             connectedAt: held.map(\.createdAt).max())
+    }
+
+    /// Whether the projection of `snapshot`, with the owners known, shows
+    /// keys no intent names under `appId` on the snapshot's identity.
+    static func showsUnrecordedKeys(
+        of appId: String, on snapshot: AppConnect.IdentitySnapshot, intents: [AppConnect.ConnectionIntent], owners: [Data: Data]
+    ) -> Bool {
+        AppConnect.project([snapshot], intents: intents, owners: owners).connections
+            .first { $0.appId.toBase58String() == appId }?
+            .unrecordedKeyIds[snapshot.identityId]?.isEmpty == false
     }
 
     @discardableResult

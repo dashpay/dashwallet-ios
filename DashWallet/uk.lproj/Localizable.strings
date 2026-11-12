@@ -5481,6 +5481,9 @@
 /* DashConnect connection sheet */
 "The details of this connection could not be read." = "The details of this connection could not be read.";
 
+/* DashConnect connection sheet: a refresh of details already shown failed */
+"The details of this connection could not be read again and may be out of date." = "The details of this connection could not be read again and may be out of date.";
+
 /* DashConnect */
 "The details of this sign-in changed while it was on screen. Check them and approve again." = "The details of this sign-in changed while it was on screen. Check them and approve again.";
 

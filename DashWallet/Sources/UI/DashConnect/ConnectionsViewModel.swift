@@ -72,7 +72,8 @@ final class ConnectionsViewModel: ObservableObject {
     /// The connection whose sheet is up.
     @Published var shownConnection: ConnectionSheetItem?
     /// What that sheet shows beyond the row; `nil` while it is read, or when
-    /// it could not be read (`shownDetailsFailed`).
+    /// it could not be read (`shownDetailsFailed`, which also says a refresh
+    /// of details already shown failed).
     @Published private(set) var shownDetails: ConnectionDetails?
     @Published private(set) var shownDetailsFailed = false
     /// When the shown connection was made.
@@ -261,7 +262,12 @@ final class ConnectionsViewModel: ObservableObject {
             // the sheet closed, opened again or read again tells of a
             // connection as it was then.
             guard number == self.detailsReadNumber, self.shownConnection != nil else { return }
-            if details == nil, keepingShown, self.shownDetails != nil { return }
+            // A refresh that fails keeps what the sheet shows, and says it
+            // could not be read again.
+            if details == nil, keepingShown, self.shownDetails != nil {
+                self.shownDetailsFailed = true
+                return
+            }
             self.shownDetails = details
             self.shownDetailsFailed = details == nil
         }
