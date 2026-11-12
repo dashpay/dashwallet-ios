@@ -1435,6 +1435,32 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
             "its keys are still on")
     }
 
+    /// A row that turns Refused or Disconnected while its sheet asks about
+    /// a disconnect no longer offers one: neither the question nor its
+    /// confirmation runs it, and the sheet says why.
+    func testAConfirmedDisconnectDoesNotRunOnceTheRowNoLongerOffersOne() async throws {
+        for status in [ConnectionStatus.refused, .disconnected] {
+            let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)])
+            spy.disconnectSucceeds = true
+            let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+            await waitUntil { !viewModel.connections.isEmpty }
+            viewModel.showConnection(viewModel.rows(for: .active)[0])
+            XCTAssertTrue(viewModel.disconnectQuestion(), "\(status)")
+
+            spy.sendRows([Self.row("app", status)])
+            await waitUntil { viewModel.shownConnection?.status == status }
+            XCTAssertFalse(viewModel.disconnectQuestion(), "\(status)")
+            XCTAssertNotNil(viewModel.connectionSheetMessage, "\(status)")
+            viewModel.connectionSheetMessage = nil
+
+            viewModel.disconnectShown()
+            XCTAssertFalse(viewModel.isDisconnecting, "\(status)")
+            XCTAssertNotNil(viewModel.connectionSheetMessage, "\(status)")
+            try? await Task.sleep(nanoseconds: 50_000_000)
+            XCTAssertEqual(viewModel.connections.map(\.id), ["app"], "nothing was disconnected: \(status)")
+        }
+    }
+
     func testTheSheetListsWhatIsLeftOfEachKey() async {
         let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)], history: [])
         spy.details = ConnectionDetails(
