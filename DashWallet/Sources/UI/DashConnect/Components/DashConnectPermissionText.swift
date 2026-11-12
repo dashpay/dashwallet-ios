@@ -106,6 +106,23 @@ enum DashConnectPermissionText {
             + (access.receivesMessages ? [receivesMessages(appLabel: appLabel)] : [])
     }
 
+    /// What an approval of `plan` would give, one line each, as the approve
+    /// sheet lists it. Whether the app gets a key for messages is known only
+    /// once the approval reads the identity's current key, so it is said as
+    /// a maybe.
+    static func requested(_ plan: AppConnect.GrantPlan, appLabel: String) -> [String] {
+        granted(AppConnect.GrantedAccess(plan: plan, receivesMessages: false), appLabel: appLabel)
+            + (plan.encryption.isEmpty ? [] : [mayReceiveMessages(appLabel: appLabel)])
+    }
+
+    static func mayReceiveMessages(appLabel: String) -> String {
+        String(
+            format: NSLocalizedString(
+                "May receive messages encrypted to you in %@",
+                comment: "DashConnect App Connect v2: before approval, whether the app gets a key for messages is not known yet; the placeholder is the app's name"),
+            appLabel)
+    }
+
     static func receivesMessages(appLabel: String) -> String {
         String(
             format: NSLocalizedString(

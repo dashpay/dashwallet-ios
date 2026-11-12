@@ -231,9 +231,7 @@ struct ApproveConnectionSheet: View {
     private func appConnectPermissions(_ plan: AppConnect.GrantPlan) -> some View {
         VStack(alignment: .leading, spacing: 20) {
             permissions(
-                granted: DashConnectPermissionText.granted(
-                    AppConnect.GrantedAccess(plan: plan, receivesMessages: !plan.encryption.isEmpty),
-                    appLabel: resolvedAppLabel),
+                granted: DashConnectPermissionText.requested(plan, appLabel: resolvedAppLabel),
                 withheld: DashConnectPermissionText.withheld
             )
 
