@@ -46,4 +46,4 @@ The Identity option raises a Receipt when the Current identity's credits rise ab
 
 - Feature summary (acceptance criteria and known limits): [identity-receive](../features/identity-receive/README.md)
 - Android counterpart: [dashpay/dash-wallet#1677](https://github.com/dashpay/dash-wallet/pull/1677)
-- Related ADR: [0033 — Model Receive options as a Receive-only enum](0033-model-receive-options-as-a-receive-only-enum.md)
+- Related ADR: [0035 — Model Receive options as a Receive-only enum](0035-model-receive-options-as-a-receive-only-enum.md)

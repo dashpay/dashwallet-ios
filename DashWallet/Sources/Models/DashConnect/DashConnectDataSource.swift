@@ -46,8 +46,10 @@ protocol DashConnectDataSource {
     /// responses; it throws when a key could not be shown off, and the
     /// connection then stays. Keys no approval of this wallet names (the
     /// app's from another device or from before a restore, DashPay profile
-    /// keys no app can be told to hold) are turned off only with
-    /// `includingUnrecorded`; the result says how many are left. The
+    /// keys no app can be told to hold) are turned off only when listed in
+    /// `unrecordedKeys`, what the result of a disconnect without them
+    /// offered (nil: none listed); only those still the app's go, and none
+    /// when the active identity is not the one they were offered on. The
     /// connection also stays, and that is thrown, while an approval of the
     /// app on another identity of the wallet is not done.
     ///
@@ -55,7 +57,7 @@ protocol DashConnectDataSource {
     /// both calls act only while it still names the wallet they would act
     /// on.
     @discardableResult
-    func disconnect(id: String, scope: String?, includingUnrecorded: Bool) async throws -> DashConnectDisconnectResult
+    func disconnect(id: String, scope: String?, unrecordedKeys: DashConnectOfferedKeys?) async throws -> DashConnectDisconnectResult
     func remove(id: String, scope: String?) async
     /// Puts the App Connect rows in step with the active identity's keys on
     /// Platform. Best effort: a failed read leaves the rows as they were.
@@ -277,7 +279,7 @@ final class MockDashConnectDataSource: DashConnectDataSource {
     }
 
     @discardableResult
-    func disconnect(id: String, scope: String?, includingUnrecorded: Bool) async throws -> DashConnectDisconnectResult {
+    func disconnect(id: String, scope: String?, unrecordedKeys: DashConnectOfferedKeys?) async throws -> DashConnectDisconnectResult {
         persistAndSend(subject.value.filter { $0.id != id })
         return DashConnectDisconnectResult()
     }

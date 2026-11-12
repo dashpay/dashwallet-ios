@@ -206,7 +206,7 @@ class SecurityMenuViewModel: ObservableObject {
                     self.biometricAuthModel.enableBiometricAuth { success in
                         if success {
                             DWGlobalOptions.sharedInstance().biometricAuthEnabled = true
-                            let limit = DW_DEFAULT_BIOMETRICS_SPENDING_LIMIT
+                            let limit = AdvancedSecurityViewModel.defaultSpendingLimit
                             self.authenticationManager.setBiometricSpendingLimitIfAuthenticated(limit)
                         }
                         completion(success)

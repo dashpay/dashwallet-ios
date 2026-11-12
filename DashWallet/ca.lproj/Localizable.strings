@@ -1465,6 +1465,9 @@
 /* No comment provided by engineer. */
 "Couldn't get the evonode's status." = "No s'ha pogut obtenir l'estat de l'evonode.";
 
+/* Swap: Select coin, the coin list failed to load */
+"Couldn't load the coin list. Please try again, or try a different network." = "Couldn't load the coin list. Please try again, or try a different network.";
+
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Couldn't make payment";
 
@@ -1775,6 +1778,12 @@
 
 /* DashConnect: after a disconnect that left keys no approval of this wallet names */
 "Disconnected. Keys this wallet did not record giving are still on your identity (%d): keys of this app from another device or from before a restore, or DashPay profile keys no connection holds. Turn them off too?" = "Disconnected. Keys this wallet did not record giving are still on your identity (%d): keys of this app from another device or from before a restore, or DashPay profile keys no connection holds. Turn them off too?";
+
+/* DashConnect: after turning off the keys a question listed, keys of the app found since stay on */
+"Disconnected. Some keys of this app are still on your identity (%d). Disconnect it again to turn them off." = "Disconnected. Some keys of this app are still on your identity (%d). Disconnect it again to turn them off.";
+
+/* DashConnect: after a disconnect, keys of the app stay on and now show under another app's row; %2$@ is that app's name */
+"Disconnected. Some keys of this app are still on your identity (%1$d). They now show under %2$@ in Connections: disconnect it there to turn them off." = "Disconnected. Some keys of this app are still on your identity (%1$d). They now show under %2$@ in Connections: disconnect it there to turn them off.";
 
 /* DashSpend confirmation */
 "Discount" = "Discount";
@@ -4971,6 +4980,9 @@
 /* Maya */
 "Some coins are not available because of the halted chain" = "Some coins are not available because of the halted chain";
 
+/* DashConnect: after a disconnect that left keys another app of the same developer may hold */
+"Some keys on your identity (%d) may belong to another app of the same developer, so this wallet left them on. Each one shows on its own row in Connections; disconnect it there if you no longer need it." = "Some keys on your identity (%d) may belong to another app of the same developer, so this wallet left them on. Each one shows on its own row in Connections; disconnect it there if you no longer need it.";
+
 /* CoinJoin */
 "Some of your CoinJoin funds were moved. Please try again to move the rest." = "Some of your CoinJoin funds were moved. Please try again to move the rest.";
 
@@ -5539,6 +5551,9 @@
 /* Dash DEX */
 "The status of your %@ swap could not be confirmed" = "The status of your %@ swap could not be confirmed";
 
+/* SwapKit */
+"The swap service isn't responding. Please try again later." = "The swap service isn't responding. Please try again later.";
+
 /* Usernames */
 "The temporary username must not itself require voting." = "El nom d'usuari temporal no ha de requerir votació ell mateix.";
 
@@ -5915,7 +5930,7 @@
 "This wallet could not save the approval, so nothing was sent. Try again." = "This wallet could not save the approval, so nothing was sent. Try again.";
 
 /* DashConnect: after a disconnect that found keys whose app is not known yet */
-"This wallet could not tell yet which app holds some keys on your identity (%d). The connection stays listed; open Connections again later to check them." = "This wallet could not tell yet which app holds some keys on your identity (%d). The connection stays listed; open Connections again later to check them.";
+"This wallet could not tell yet which app holds some keys on your identity (%d), so it left them on. Open Connections again later to check them." = "This wallet could not tell yet which app holds some keys on your identity (%d), so it left them on. Open Connections again later to check them.";
 
 /* DashConnect: a disconnect of an app whose keys no approval of this wallet names */
 "This wallet did not record giving the keys this app holds on your identity (%d): they come from another device, from before a restore, or are DashPay profile keys no connection holds. Turn them off?" = "This wallet did not record giving the keys this app holds on your identity (%d): they come from another device, from before a restore, or are DashPay profile keys no connection holds. Turn them off?";

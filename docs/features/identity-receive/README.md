@@ -6,7 +6,7 @@
 
 A Wallet holder could be paid to their identity by its ID, but the wallet never showed that ID
 where a Payer is pointed to, and gave no feedback when credits landed.
-[ADR-0033](../../adr/0033-model-receive-options-as-a-receive-only-enum.md),
+[ADR-0035](../../adr/0035-model-receive-options-as-a-receive-only-enum.md),
 [ADR-0034](../../adr/0034-subtract-own-top-ups-via-a-typed-top-up-event.md).
 
 ## What changed
@@ -14,7 +14,7 @@ where a Payer is pointed to, and gave no feedback when credits landed.
 - **A fourth Receive option, Identity**, with Advanced Mode on and a username on the Current
   identity, on both Receive presentations (Payments and the sheet from a balance row) and nowhere
   else. Receive options are a Receive-only enum; Send and Internal transfer keep their own type.
-  [ADR-0033](../../adr/0033-model-receive-options-as-a-receive-only-enum.md).
+  [ADR-0035](../../adr/0035-model-receive-options-as-a-receive-only-enum.md).
 - **The Identity card:** a QR of the bare Base58 Identity ID, the ID as text, the username, Copy,
   Share ID, Specify amount unavailable, and a warning that identity funds pay for Dash apps and
   usernames and that most exchanges and many wallets send only to Core.
@@ -35,7 +35,9 @@ where a Payer is pointed to, and gave no feedback when credits landed.
 - **AC-05** A check that finds the credits higher than at opening shows a Receipt for the
   increase; payments between two checks give one Receipt for their sum.
 - **AC-06** Credits that stay the same or go down raise no Receipt, and neither does a top-up of
-  the identity from this wallet while Receive is open.
+  the identity from this wallet while Receive is open. A lower balance becomes the new starting
+  balance, so a later rise is measured from it, even while the credits stay below the balance at
+  opening.
 - **AC-07** After a Receipt, Identities and Internal transfer already show the new balance.
 - **AC-08** Without Platform, the QR, ID, username, Copy and Share still work and the card does
   not say it is watching; credits that land during a gap after the starting balance was read show at

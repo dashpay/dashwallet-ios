@@ -58,6 +58,14 @@ final class AppConnectProjectionTests: XCTestCase {
         Snapshot(identityId: identity, revision: revision, keys: keys, platformTime: time)
     }
 
+    /// The plan of a disconnect whose question listed every unrecorded key
+    /// it offered, as the user confirms it.
+    private static func planTurningOffOffered(appId: Data, snapshot: Snapshot, intents: [Intent]) -> AppConnect.DisconnectPlan {
+        let asked = AppConnect.disconnectPlan(appId: appId, snapshot: snapshot, intents: intents, owners: [:], listedUnrecordedKeyIds: nil)
+        return AppConnect.disconnectPlan(
+            appId: appId, snapshot: snapshot, intents: intents, owners: [:], listedUnrecordedKeyIds: Set(asked.offeredUnrecorded))
+    }
+
     // MARK: Status of one intent
 
     func testStatusOfAnIntentFollowsItsAuthKeysOnPlatform() {
@@ -162,7 +170,7 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertEqual(projection.connections.first?.unrecordedKeyIds, [Self.identity: [20]])
         XCTAssertEqual(projection.unrecordedProfileKeyIds, [Self.identity: [20]])
         XCTAssertEqual(
-            AppConnect.disconnectPlan(appId: Self.dashPay, snapshot: snapshot, intents: [], includeUnrecorded: true).disable,
+            Self.planTurningOffOffered(appId: Self.dashPay, snapshot: snapshot, intents: []).disable,
             [20])
     }
 
@@ -211,7 +219,7 @@ final class AppConnectProjectionTests: XCTestCase {
             Self.onPlatform(Self.authKey(14), data: Data(repeating: 9, count: 20)),
         ])
         let plan = AppConnect.disconnectPlan(
-            appId: Self.app, snapshot: snapshot, intents: [landed, waiting, dead], includeUnrecorded: false)
+            appId: Self.app, snapshot: snapshot, intents: [landed, waiting, dead], owners: [:], listedUnrecordedKeyIds: nil)
         XCTAssertEqual(plan.disable, [10, 11])
         XCTAssertEqual(plan.fence, [12])
         XCTAssertEqual(plan.deleteResponses, [landed.id])
@@ -221,7 +229,7 @@ final class AppConnectProjectionTests: XCTestCase {
         let intent = Self.intent([Self.authKey(10), Self.authKey(11)])
         let plan = AppConnect.disconnectPlan(
             appId: Self.app, snapshot: Self.snapshot([Self.onPlatform(Self.authKey(10))]), intents: [intent],
-            includeUnrecorded: false)
+            owners: [:], listedUnrecordedKeyIds: nil)
         XCTAssertEqual(plan.disable, [10])
         XCTAssertEqual(plan.fence, [11])
     }
@@ -231,10 +239,10 @@ final class AppConnectProjectionTests: XCTestCase {
         let stray = Self.onPlatform(Self.authKey(20))
         let snapshot = Self.snapshot([Self.onPlatform(Self.authKey(10)), stray])
         XCTAssertEqual(
-            AppConnect.disconnectPlan(appId: Self.app, snapshot: snapshot, intents: [intent], includeUnrecorded: false).disable,
+            AppConnect.disconnectPlan(appId: Self.app, snapshot: snapshot, intents: [intent], owners: [:], listedUnrecordedKeyIds: nil).disable,
             [10])
         XCTAssertEqual(
-            AppConnect.disconnectPlan(appId: Self.app, snapshot: snapshot, intents: [intent], includeUnrecorded: true).disable,
+            Self.planTurningOffOffered(appId: Self.app, snapshot: snapshot, intents: [intent]).disable,
             [10, 20])
     }
 
@@ -244,7 +252,7 @@ final class AppConnectProjectionTests: XCTestCase {
         let otherIdentity = Self.intent([Self.authKey(12)], identity: Self.otherIdentity)
         let snapshot = Self.snapshot([Self.onPlatform(Self.authKey(10)), Self.onPlatform(Self.authKey(11))])
         let plan = AppConnect.disconnectPlan(
-            appId: Self.app, snapshot: snapshot, intents: [mine, otherApps, otherIdentity], includeUnrecorded: false)
+            appId: Self.app, snapshot: snapshot, intents: [mine, otherApps, otherIdentity], owners: [:], listedUnrecordedKeyIds: nil)
         XCTAssertEqual(plan, AppConnect.DisconnectPlan(disable: [10]))
     }
 
@@ -456,7 +464,7 @@ final class AppConnectProjectionTests: XCTestCase {
         for app in [Self.app, Self.otherApp] {
             XCTAssertEqual(projection.connections.first { $0.appId == app }?.unrecordedKeyIds[Self.identity], [20])
             XCTAssertEqual(
-                AppConnect.disconnectPlan(appId: app, snapshot: snapshot, intents: [mine, theirs], includeUnrecorded: true).disable,
+                Self.planTurningOffOffered(appId: app, snapshot: snapshot, intents: [mine, theirs]).disable,
                 [20])
         }
     }
@@ -473,7 +481,7 @@ final class AppConnectProjectionTests: XCTestCase {
         }
         for app in [Self.app, Self.otherApp] {
             XCTAssertEqual(
-                AppConnect.disconnectPlan(appId: app, snapshot: Self.snapshot([stray]), intents: [mine, gone], includeUnrecorded: true).disable,
+                Self.planTurningOffOffered(appId: app, snapshot: Self.snapshot([stray]), intents: [mine, gone]).disable,
                 [20], "a disconnect of either app turns it off")
         }
     }
@@ -484,7 +492,7 @@ final class AppConnectProjectionTests: XCTestCase {
         let snapshot = Self.snapshot([Self.onPlatform(a), Self.onPlatform(b, data: Data(repeating: 9, count: 20))])
         let projection = AppConnect.project([snapshot], intents: [intent])
         XCTAssertEqual(projection.connections.first?.status, .active(expiresAt: Self.now + 1000), "the app keeps a row")
-        let plan = AppConnect.disconnectPlan(appId: Self.app, snapshot: snapshot, intents: [intent], includeUnrecorded: false)
+        let plan = AppConnect.disconnectPlan(appId: Self.app, snapshot: snapshot, intents: [intent], owners: [:], listedUnrecordedKeyIds: nil)
         XCTAssertEqual(plan.disable, [10])
         XCTAssertEqual(plan.fence, [])
     }
@@ -523,7 +531,7 @@ final class AppConnectProjectionTests: XCTestCase {
         let snapshot = Self.snapshot([Self.onPlatform(a), Self.onPlatform(b, data: Data(repeating: 9, count: 20))])
         XCTAssertEqual(AppConnect.status(of: intent, in: snapshot), .expired)
         XCTAssertEqual(
-            AppConnect.disconnectPlan(appId: Self.app, snapshot: snapshot, intents: [intent], includeUnrecorded: false).disable,
+            AppConnect.disconnectPlan(appId: Self.app, snapshot: snapshot, intents: [intent], owners: [:], listedUnrecordedKeyIds: nil).disable,
             [10])
         let off = Self.snapshot([Self.onPlatform(a, disabledAt: 1), Self.onPlatform(b, data: Data(repeating: 9, count: 20))])
         XCTAssertEqual(AppConnect.status(of: intent, in: off), .neverLanded, "nothing enabled is left")
@@ -637,7 +645,7 @@ final class AppConnectProjectionTests: XCTestCase {
         let snapshot = Self.snapshot([other])
         XCTAssertEqual(AppConnect.status(of: intent, in: snapshot), .neverLanded)
         XCTAssertEqual(
-            AppConnect.disconnectPlan(appId: Self.app, snapshot: snapshot, intents: [intent], includeUnrecorded: false).fence,
+            AppConnect.disconnectPlan(appId: Self.app, snapshot: snapshot, intents: [intent], owners: [:], listedUnrecordedKeyIds: nil).fence,
             [])
     }
 
@@ -740,6 +748,223 @@ final class AppConnectProjectionTests: XCTestCase {
         let ids = AppConnect.responsesLeft(identityId: Self.identity, intents: [left, deleted, open, otherIdentity, otherApp])
 
         XCTAssertEqual(Set(ids), [left.id, otherApp.id], "closed and not removed, on this identity, of any app")
+    }
+
+    // MARK: Owners
+
+    private static let sibling = Data(repeating: 0xC1, count: 32)
+    private static let siblingGroup = Data(repeating: 0xC2, count: 32)
+    private static let withdrawals = Data.identifier(fromBase58: "4fJLR2GYTPFdomuTVvNy3VRrvWgvkKPzqehEBpNf2nk6")!
+
+    /// The owners asked about are those of the apps with an intent on the
+    /// identity and of the bounds of unrecorded keys no intent names by
+    /// contract, never of a system contract.
+    func testTheOwnersNeededAreTheAppsHereAndTheBoundsOfUnrecordedKeysNoIntentNames() {
+        let own = Self.authKey(10)
+        let x = Self.intent([own])
+        let z = Self.intent([Self.authKey(11, bound: .singleContract(Self.sibling))], app: Self.otherApp)
+        let elsewhere = Self.intent([Self.authKey(12, bound: .singleContract(Self.sibling))], identity: Self.otherIdentity)
+        func stray(_ bound: AppConnect.StoredBound, boundKnown: Bool = true, expiresAt: UInt64? = AppConnectProjectionTests.now + 1000) -> AppConnect.PlatformKey {
+            Self.onPlatform(Self.authKey(20, bound: bound, expiresAt: expiresAt), boundKnown: boundKnown)
+        }
+        struct Case {
+            let name: String
+            let keys: [AppConnect.PlatformKey]
+            let intents: [Intent]
+            let expected: Set<Data>
+            init(_ name: String, _ keys: [AppConnect.PlatformKey], _ intents: [Intent], _ expected: Set<Data>) {
+                (self.name, self.keys, self.intents, self.expected) = (name, keys, intents, expected)
+            }
+        }
+        let cases: [Case] = [
+            Case("a key on a sibling contract", [Self.onPlatform(own), stray(.singleContract(Self.sibling))], [x], [Self.app, Self.sibling]),
+            Case("a key on a contract an intent of another app here names", [stray(.singleContract(Self.sibling))], [x, z], []),
+            Case("a key on a contract only an intent on another identity names", [stray(.singleContract(Self.sibling))], [x, elsewhere], []),
+            Case("a key on a document type of a sibling", [stray(.documentType(contractId: Self.sibling, name: "note"))], [x], [Self.app, Self.sibling]),
+            Case("a key on a contract group", [stray(.contractGroup(Self.siblingGroup))], [x], [Self.app, Self.siblingGroup]),
+            Case("a DashPay profile key", [stray(.documentType(contractId: Self.dashPay, name: "profile"))], [x], []),
+            Case("a key on another system contract", [stray(.singleContract(Self.withdrawals))], [x], []),
+            Case("a key whose bound the store does not hold", [stray(.singleContract(Self.sibling), boundKnown: false)], [x], []),
+            Case("a key not in an App Connect shape", [stray(.singleContract(Self.sibling), expiresAt: nil)], [x], []),
+            Case("no unrecorded key", [Self.onPlatform(own)], [x], []),
+            Case("a key on the contract of an app whose intent is on another identity", [stray(.singleContract(Self.app))], [Self.intent([own], identity: Self.otherIdentity)], []),
+            Case("an app with an intent only on another identity", [stray(.singleContract(Self.sibling))], [Self.intent([own], identity: Self.otherIdentity)], []),
+            Case("no intent at all", [stray(.singleContract(Self.sibling))], [], []),
+        ]
+        for c in cases {
+            XCTAssertEqual(AppConnect.ownerIdsNeeded(snapshot: Self.snapshot(c.keys), intents: c.intents), c.expected, c.name)
+        }
+    }
+
+    private static let ownerX = Data(repeating: 0x0A, count: 32)
+    private static let ownerW = Data(repeating: 0x0B, count: 32)
+    private static let sibling2 = Data(repeating: 0xC3, count: 32)
+
+    /// The one owner rule: a key joins app X only on a known match no other
+    /// app here shares, and an unknown owner is never a match or a mismatch.
+    func testTheOwnerRuleAttributesOnlyOnAKnownMatchNoOtherAppShares() {
+        let x = Self.app, z = Self.otherApp, y = Self.sibling, system = AppConnect.systemContractOwnerId
+        struct Case {
+            let name: String
+            let owners: [Data: Data]
+            let apps: Set<Data>
+            let expected: AppConnect.OwnerOutcome
+            init(_ name: String, _ owners: [Data: Data], _ apps: Set<Data>, _ expected: AppConnect.OwnerOutcome) {
+                (self.name, self.owners, self.apps, self.expected) = (name, owners, apps, expected)
+            }
+        }
+        let cases: [Case] = [
+            Case("known match, no other app", [y: Self.ownerX, x: Self.ownerX], [x], .attributed),
+            Case("known match, other app of another owner", [y: Self.ownerX, x: Self.ownerX, z: Self.ownerW], [x, z], .attributed),
+            Case("known mismatch", [y: Self.ownerW, x: Self.ownerX], [x], .notThisApp),
+            Case("bound owner unknown", [x: Self.ownerX], [x], .notChecked),
+            Case("app owner unknown", [y: Self.ownerX], [x], .notChecked),
+            Case("app owner unknown, bound of another known owner", [y: Self.ownerW], [x], .notChecked),
+            Case("both unknown", [:], [x], .notChecked),
+            Case("another app here has the same owner", [y: Self.ownerX, x: Self.ownerX, z: Self.ownerX], [x, z], .notAttributable),
+            Case("another app here has an unknown owner", [y: Self.ownerX, x: Self.ownerX], [x, z], .notChecked),
+            Case("bound owned by the system", [y: system, x: system], [x], .notThisApp),
+            Case("bound owned by the system, app owner unknown", [y: system], [x], .notThisApp),
+        ]
+        for c in cases {
+            XCTAssertEqual(AppConnect.ownerOutcome(of: y, for: x, among: c.apps, owners: c.owners), c.expected, c.name)
+        }
+    }
+
+    /// An unrecorded key no intent names by contract shows on the row of the
+    /// one app it is attributed to, and on its own contract's row otherwise.
+    func testAnUnrecordedKeyShowsUnderTheAppItIsAttributedToAndOnItsOwnRowOtherwise() {
+        let x = Self.intent([Self.authKey(10)])
+        let z = Self.intent([Self.authKey(11, bound: .singleContract(Self.otherApp))], app: Self.otherApp)
+        let onY = Self.onPlatform(Self.authKey(20, bound: .singleContract(Self.sibling)))
+        let onYDoc = Self.onPlatform(Self.authKey(20, bound: .documentType(contractId: Self.sibling, name: "note")))
+        let onGroup = Self.onPlatform(Self.authKey(20, bound: .contractGroup(Self.siblingGroup)))
+        let onY2 = Self.onPlatform(Self.authKey(21, bound: .singleContract(Self.sibling2)))
+        let onWithdrawals = Self.onPlatform(Self.authKey(20, bound: .singleContract(Self.withdrawals)))
+        let match: [Data: Data] = [Self.sibling: Self.ownerX, Self.app: Self.ownerX]
+        struct Case {
+            let name: String
+            let keys: [AppConnect.PlatformKey]
+            let intents: [Intent]
+            let owners: [Data: Data]
+            let rows: [Data: [UInt32]]
+            init(_ name: String, _ keys: [AppConnect.PlatformKey], _ intents: [Intent], _ owners: [Data: Data], _ rows: [Data: [UInt32]]) {
+                (self.name, self.keys, self.intents, self.owners, self.rows) = (name, keys, intents, owners, rows)
+            }
+        }
+        let cases: [Case] = [
+            Case("no owners: as today", [onY], [x], [:], [Self.sibling: [20]]),
+            Case("known match (AC-03)", [onY], [x], match, [Self.app: [20]]),
+            Case("known match on a document type", [onYDoc], [x], match, [Self.app: [20]]),
+            Case("known match on a contract group", [onGroup], [x], [Self.siblingGroup: Self.ownerX, Self.app: Self.ownerX], [Self.app: [20]]),
+            Case("bound owner unknown (AC-05)", [onY], [x], [Self.app: Self.ownerX], [Self.sibling: [20]]),
+            Case("known mismatch (AC-06)", [onY], [x], [Self.sibling: Self.ownerW, Self.app: Self.ownerX], [Self.sibling: [20]]),
+            Case("two apps of one owner (AC-07)", [onY], [x, z], match.merging([Self.otherApp: Self.ownerX]) { a, _ in a }, [Self.sibling: [20]]),
+            Case("another app's owner unknown (AC-12)", [onY], [x, z], match, [Self.sibling: [20]]),
+            Case("other app of another owner", [onY], [x, z], match.merging([Self.otherApp: Self.ownerW]) { a, _ in a }, [Self.app: [20]]),
+            Case("bound owned by the system (AC-09)", [onY], [x], [Self.sibling: AppConnect.systemContractOwnerId, Self.app: Self.ownerX], [Self.sibling: [20]]),
+            Case("no intent of that owner (AC-10)", [onY, onY2], [], [Self.sibling: Self.ownerX, Self.sibling2: Self.ownerX], [Self.sibling: [20], Self.sibling2: [21]]),
+            Case("system contract of the app's owner (AC-09)", [onWithdrawals], [x], [Self.withdrawals: Self.ownerX, Self.app: Self.ownerX], [:]),
+        ]
+        for c in cases {
+            let projection = AppConnect.project([Self.snapshot(c.keys)], intents: c.intents, owners: c.owners)
+            let rows = Dictionary(uniqueKeysWithValues: projection.connections.compactMap { row in
+                row.unrecordedKeyIds[Self.identity].map { (row.appId, $0) }
+            })
+            XCTAssertEqual(rows, c.rows, c.name)
+        }
+    }
+
+    /// A disconnect of X turns off only its intent keys and the unrecorded
+    /// keys the question listed that are still X's, and sorts every other
+    /// key that may be X's into what the result reports.
+    func testADisconnectTurnsOffOnlyListedKeysStillTheAppsAndReportsTheRest() {
+        let own = Self.authKey(10)
+        let x = Self.intent([own]), z = Self.intent([Self.authKey(11, bound: .singleContract(Self.otherApp))], app: Self.otherApp)
+        func onY(_ bound: AppConnect.StoredBound = .singleContract(AppConnectProjectionTests.sibling), disabledAt: UInt64? = nil, boundKnown: Bool = true) -> AppConnect.PlatformKey {
+            Self.onPlatform(Self.authKey(20, bound: bound), disabledAt: disabledAt, boundKnown: boundKnown)
+        }
+        let match: [Data: Data] = [Self.sibling: Self.ownerX, Self.app: Self.ownerX]
+        struct Case {
+            let name: String
+            let keys: [AppConnect.PlatformKey]
+            let intents: [Intent]
+            let owners: [Data: Data]
+            let listed: Set<UInt32>?
+            /// disable, offered, notChecked, notAttributable, leftAfterQuestion
+            let expected: [[UInt32]]
+            init(_ name: String, _ keys: [AppConnect.PlatformKey], _ intents: [Intent], _ owners: [Data: Data],
+                 _ listed: Set<UInt32>?, _ expected: [[UInt32]]) {
+                (self.name, self.keys, self.intents, self.owners, self.listed, self.expected) = (name, keys, intents, owners, listed, expected)
+            }
+        }
+        let cases: [Case] = [
+            Case("AC-01 question: offered, none turned off", [Self.onPlatform(own), onY()], [x], match, nil, [[10], [20], [], [], []]),
+            Case("AC-01 confirmed", [Self.onPlatform(own), onY()], [x], match, [20], [[10, 20], [20], [], [], []]),
+            Case("AC-01 document type", [Self.onPlatform(own), onY(.documentType(contractId: Self.sibling, name: "note"))], [x], match, [20],
+                 [[10, 20], [20], [], [], []]),
+            Case("AC-02 contract group", [Self.onPlatform(own), onY(.contractGroup(Self.siblingGroup))], [x],
+                 [Self.siblingGroup: Self.ownerX, Self.app: Self.ownerX], [20], [[10, 20], [20], [], [], []]),
+            Case("AC-04 owner unread", [Self.onPlatform(own), onY()], [x], [Self.app: Self.ownerX], nil, [[10], [], [20], [], []]),
+            Case("AC-04 owner unread after the question listed it", [Self.onPlatform(own), onY()], [x], [Self.app: Self.ownerX], [20],
+                 [[10], [], [20], [], []]),
+            Case("AC-06 another owner", [Self.onPlatform(own), onY()], [x], [Self.sibling: Self.ownerW, Self.app: Self.ownerX], [20],
+                 [[10], [], [], [], []]),
+            Case("AC-07 two apps of one owner", [Self.onPlatform(own), onY()], [x, z], match.merging([Self.otherApp: Self.ownerX]) { a, _ in a }, nil,
+                 [[10], [], [], [20], []]),
+            Case("AC-08 attributed only after the question", [Self.onPlatform(own), onY()], [x], match, [], [[10], [20], [], [], [20]]),
+            Case("AC-11 unplaced key", [Self.onPlatform(own), onY(boundKnown: false)], [x], match, [20], [[10], [], [20], [], []]),
+            Case("AC-12 another app's owner unknown", [Self.onPlatform(own), onY()], [x, z], match, nil, [[10], [], [20], [], []]),
+            Case("a listed key no longer live", [Self.onPlatform(own), onY(disabledAt: 1)], [x], match, [20], [[10], [], [], [], []]),
+            Case("a listed id no key has", [Self.onPlatform(own)], [x], match, [20, 99], [[10], [], [], [], []]),
+            Case("only unknown owners still turn off the app's keys", [Self.onPlatform(own), onY()], [x], [:], [20], [[10], [], [20], [], []]),
+            Case("AC-09 system contract of the app's owner", [Self.onPlatform(own), onY(.singleContract(Self.withdrawals))], [x],
+                 [Self.withdrawals: Self.ownerX, Self.app: Self.ownerX], [20], [[10], [], [], [], []]),
+        ]
+        for c in cases {
+            let plan = AppConnect.disconnectPlan(
+                appId: Self.app, snapshot: Self.snapshot(c.keys), intents: c.intents, owners: c.owners, listedUnrecordedKeyIds: c.listed)
+            XCTAssertEqual(
+                [plan.disable, plan.offeredUnrecorded, plan.notChecked, plan.notAttributable, plan.leftAfterQuestion], c.expected, c.name)
+            XCTAssertTrue(Set(plan.disable).isSubset(of: Set(x.keys.map(\.id)).union(c.listed ?? [])), "\(c.name): nothing beyond the list")
+        }
+    }
+
+    /// A row whose app has no intent on the identity is the contract the
+    /// user named: its disconnect offers every key placed on that contract,
+    /// whatever owner has been read since the row was shown, and turns off
+    /// only the listed ones.
+    func testADisconnectOfARowWithoutAnIntentOffersItsKeysWhateverTheirOwner() {
+        let own = Self.authKey(10)
+        let x = Self.intent([own])
+        let onY = Self.onPlatform(Self.authKey(20, bound: .singleContract(Self.sibling)))
+        let onY2 = Self.onPlatform(Self.authKey(21, bound: .singleContract(Self.sibling2)))
+        let match: [Data: Data] = [Self.sibling: Self.ownerX, Self.app: Self.ownerX]
+        struct Case {
+            let name: String
+            let keys: [AppConnect.PlatformKey]
+            let intents: [Intent]
+            let owners: [Data: Data]
+            let listed: Set<UInt32>?
+            /// disable, offered
+            let expected: [[UInt32]]
+            init(_ name: String, _ keys: [AppConnect.PlatformKey], _ intents: [Intent], _ owners: [Data: Data],
+                 _ listed: Set<UInt32>?, _ expected: [[UInt32]]) {
+                (self.name, self.keys, self.intents, self.owners, self.listed, self.expected) = (name, keys, intents, owners, listed, expected)
+            }
+        }
+        let cases: [Case] = [
+            Case("owner unread when shown, read now: question", [Self.onPlatform(own), onY], [x], match, nil, [[], [20]]),
+            Case("owner unread when shown, read now: confirmed", [Self.onPlatform(own), onY], [x], match, [20], [[20], [20]]),
+            Case("owner still unread", [Self.onPlatform(own), onY], [x], [Self.app: Self.ownerX], [20], [[20], [20]]),
+            Case("another owner", [Self.onPlatform(own), onY], [x], [Self.sibling: Self.ownerW, Self.app: Self.ownerX], [20], [[20], [20]]),
+            Case("no intent here (AC-10)", [onY, onY2], [], [:], [20], [[20], [20]]),
+        ]
+        for c in cases {
+            let plan = AppConnect.disconnectPlan(
+                appId: Self.sibling, snapshot: Self.snapshot(c.keys), intents: c.intents, owners: c.owners, listedUnrecordedKeyIds: c.listed)
+            XCTAssertEqual([plan.disable, plan.offeredUnrecorded], c.expected, c.name)
+        }
     }
 
     /// A key on the identity whose bound the store does not hold may be
