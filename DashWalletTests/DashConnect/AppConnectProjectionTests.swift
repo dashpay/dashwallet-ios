@@ -957,6 +957,7 @@ final class AppConnectProjectionTests: XCTestCase {
         ])
         let plan = AppConnect.disconnectPlan(appId: Self.app, snapshot: snapshot, intents: [intent, otherApps], owners: [:])
         XCTAssertEqual(plan.disable, [30, 10, 20], "the unattributed profile key first, then recorded and live unrecorded; not the other app's")
+        XCTAssertEqual(plan.unrecorded, [20, 30], "the keys no intent names: the live unrecorded key and the profile key")
     }
 
     func testAnUnattributedProfileKeyGoesWithTheDisconnectOfAnyApp() {

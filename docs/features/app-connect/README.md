@@ -30,13 +30,17 @@ one-scan login possible, and with it DashConnect on mainnet once mainnet runs pr
   [ADR-0030](../../adr/0030-show-an-app-connect-connection-whose-response-was-not-published-as-not-delivered.md).
 - **The approval sheet shows what is approved**: what the session key can do, its budget and its
   lifetime. An unknown protocol version offers a retry, never an approval.
-- **Disconnect is real**: it turns off the app's keys on the identity and deletes its responses,
-  then removes the row. An update of the app that may still land is closed off first: the wallet
-  adds a key of its own at each id that update would take, then turns it off. Keys this wallet did
-  not record giving (another device, a restore, an orphaned DashPay profile key) are turned off
-  only after the user confirms.
-  [ADR-0031](../../adr/0031-turn-off-unattributed-dashpay-profile-keys-with-any-disconnect.md).
-  A failure keeps the row and says so.
+- **Disconnect is real**: it turns off the app's keys on the identity and deletes its responses;
+  the row then shows Disconnected. An update of the app that may still land is closed off first:
+  the wallet adds a key of its own at each id that update would take, then turns it off. Keys this
+  wallet did not record giving (another device, a restore, an orphaned DashPay profile key) are
+  turned off with it, without a question
+  ([ADR-0016](../../adr/0016-turn-off-unrecorded-keys-on-disconnect-without-asking.md), which
+  supersedes the confirmation in
+  [ADR-0031](../../adr/0031-turn-off-unattributed-dashpay-profile-keys-with-any-disconnect.md)),
+  and the result says how many there were. Keys it could not check, keys another app of the same
+  owner may hold, and keys still live after a failed write are left on and named in the result; a
+  failure keeps the row and Disconnect can run again.
 - **Mainnet stays off** in this change: the Connections page uses its mock data source there.
 - **App Connect request v2** ([#1210](https://github.com/dashpay/dashwallet-ios/pull/1210)). A `v=2`
   code can name up to four auth bindings (a contract, a contract group or one document type) and

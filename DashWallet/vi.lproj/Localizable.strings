@@ -1576,6 +1576,9 @@
 /* DashPay Invitations */
 "Create a username and say goodbye to numerical addresses" = "Create a username and say goodbye to numerical addresses";
 
+/* DashConnect: a token purchase arrived and the username lookup failed */
+"This wallet could not check your username. Ask the app again." = "This wallet could not check your username. Ask the app again.";
+
 /* DashConnect: a token purchase arrived while the wallet has no username */
 "Create a username to buy tokens in apps, then ask the app again." = "Create a username to buy tokens in apps, then ask the app again.";
 
@@ -5157,6 +5160,9 @@
 
 /* Maya */
 "Some coins are not available because of the halted chain" = "Some coins are not available because of the halted chain";
+
+/* DashConnect: after a disconnect that turned off keys no approval in this wallet names */
+"This also turned off keys on your identity that this wallet has no record of giving (%d), such as keys given on another device or DashPay profile keys." = "This also turned off keys on your identity that this wallet has no record of giving (%d), such as keys given on another device or DashPay profile keys.";
 
 /* DashConnect: after a disconnect that left keys another app of the same developer may hold */
 "Some keys on your identity (%d) may belong to another app of the same developer, so this wallet left them on. Each one shows on its own row in Connections; disconnect it there if you no longer need it." = "Some keys on your identity (%d) may belong to another app of the same developer, so this wallet left them on. Each one shows on its own row in Connections; disconnect it there if you no longer need it.";

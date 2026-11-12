@@ -55,6 +55,9 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
     /// A token purchase that came while the wallet has no username, refused
     /// before anything about it is read from the network.
     case tokenPurchaseNeedsUsername
+    /// The DPNS read failed and no stored name stands in: whether the
+    /// identity has a username is not known.
+    case tokenPurchaseUsernameUncheckable
     case loginUnresolved
     case grantNotRecorded
     case noFreeKeyId
@@ -150,6 +153,10 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
             return NSLocalizedString(
                 "Create a username to buy tokens in apps, then ask the app again.",
                 comment: "DashConnect: a token purchase arrived while the wallet has no username")
+        case .tokenPurchaseUsernameUncheckable:
+            return NSLocalizedString(
+                "This wallet could not check your username. Ask the app again.",
+                comment: "DashConnect: a token purchase arrived and the username lookup failed")
         case .loginUnresolved:
             return NSLocalizedString(
                 "This wallet could not check what this sign-in would give the app.",
@@ -588,7 +595,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         // alongside the two below.
         async let resolvedProtocolVersion = Self.networkProtocolVersion(sdk: context.sdk, network: context.network)
         let appName = await resolveAppName(for: loginRequest, sdk: context.sdk)
-        let walletUsername = await resolveWalletUsername(context: context)
+        let walletUsername = await resolveWalletUsername(context: context).name
         let protocolVersion: UInt32?
         var unresolvedLoginReason: String?
         do {
@@ -1273,9 +1280,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     }
 
     /// A token purchase is shown only with the wallet's DashPay username.
-    static func requireTokenPurchaseUsername(_ resolved: String?) throws -> String {
+    /// With no name, a failed DPNS read means the name is not known, not
+    /// that there is none.
+    static func requireTokenPurchaseUsername(_ resolved: String?, lookupFailed: Bool) throws -> String {
         guard let name = resolved?.trimmingCharacters(in: .whitespacesAndNewlines), !name.isEmpty else {
-            throw DashConnectPlatformError.tokenPurchaseNeedsUsername
+            throw lookupFailed
+                ? DashConnectPlatformError.tokenPurchaseUsernameUncheckable
+                : DashConnectPlatformError.tokenPurchaseNeedsUsername
         }
         return name
     }
@@ -1483,7 +1494,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     }
 
     /// The one list of errors that make an identity update's refusal
-    /// permanent (ADR 0012): a consensus rejection, which is Platform's own
+    /// permanent (ADR-0021): a consensus rejection, which is Platform's own
     /// verdict from validating the state transition, from the SDK or from the
     /// wallet layer, of any family. Everything else is not, because the update
     /// may have landed or may still: a timeout, a transport error or a
@@ -2436,7 +2447,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             contractId: purchase.dataContractId,
             position: Int(purchase.tokenContractPosition))
 
-        let username = try Self.requireTokenPurchaseUsername(await resolveWalletUsername(context: context))
+        let resolved = await resolveWalletUsername(context: context)
+        let username = try Self.requireTokenPurchaseUsername(resolved.name, lookupFailed: resolved.lookupFailed)
 
         return DashConnectTokenPurchaseRequest(
             // A connection approved earlier for the same contract names the
@@ -2974,7 +2986,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
         return DashConnectDisconnectResult(
             keysTurnedOff: keysTurnedOff, keysStillLive: stillLiveApp.count + stillLiveUnderFenceIds,
-            keysNotChecked: keysNotChecked, fencesLeftOn: fencesLeftOn, fencesNotPlaced: fencesNotPlaced)
+            keysNotChecked: keysNotChecked, fencesLeftOn: fencesLeftOn, fencesNotPlaced: fencesNotPlaced,
+            unrecordedKeysTurnedOff: Set(plan.unrecorded).subtracting(stillLiveApp).count)
     }
 
     /// The app's live keys the plan on the read after the update would turn
@@ -3531,16 +3544,23 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return nil
     }
 
-    private func resolveWalletUsername(context: Context) async -> String? {
+    /// The identity's DPNS name, else the stored one; `lookupFailed` when the
+    /// DPNS read failed rather than found no name.
+    private func resolveWalletUsername(context: Context) async -> (name: String?, lookupFailed: Bool) {
         let identityId = context.identityId.toBase58String()
 
-        if let usernames = try? await context.sdk.dpnsGetUsername(identityId: identityId, limit: 1),
-           let label = usernames.first?["label"] as? String,
+        let usernames: [[String: Any]]
+        do {
+            usernames = try await context.sdk.dpnsGetUsername(identityId: identityId, limit: 1)
+        } catch {
+            return (context.storedUsername, true)
+        }
+        if let label = usernames.first?["label"] as? String,
            !label.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return label
+            return (label, false)
         }
 
-        return context.storedUsername
+        return (context.storedUsername, false)
     }
 
     private func selectDocumentSigningKeyId(

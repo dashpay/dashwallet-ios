@@ -365,7 +365,7 @@ struct ConnectionSheet: View {
     /// The connection's record is active.
     private var isLive: Bool { item.status == .active }
 
-    /// The status name from the state-to-actions table (ADR 0010).
+    /// The status name from the state-to-actions table (ADR-0019).
     private var statusText: String {
         ConnectionStatusBadge.label(for: item.status)
     }
