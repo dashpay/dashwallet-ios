@@ -145,7 +145,9 @@ extension MainMenuViewController: MFMailComposeViewControllerDelegate {
 }
 
 struct MainMenuScreen: View {
-    private let vc: UINavigationController
+    /// Weak: the menu is the root of `vc`'s own stack, so a strong reference
+    /// would keep that stack alive after the tab bar drops it.
+    private weak var vc: UINavigationController?
     private let delegateInternal: DelegateInternal
     private let onContactSupport: () -> ()
     
@@ -165,7 +167,7 @@ struct MainMenuScreen: View {
     private let joinDPViewModel = JoinDashPayViewModel(initialState: .none)
     
     init(
-        vc: UINavigationController,
+        vc: UINavigationController?,
         delegate: MainMenuViewControllerDelegate? = nil,
         wipeDelegate: DWWipeDelegate? = nil,
         dashPayModel: DWDashPayProtocol? = nil,
@@ -189,7 +191,7 @@ struct MainMenuScreen: View {
     #else
     
     init(
-        vc: UINavigationController,
+        vc: UINavigationController?,
         delegate: MainMenuViewControllerDelegate? = nil,
         wipeDelegate: DWWipeDelegate? = nil,
         onContactSupport: @escaping () -> ()
@@ -302,7 +304,7 @@ struct MainMenuScreen: View {
             
             NavigationLink(
                 destination: SettingsScreen(vc: vc, onDidRescan: {
-                    self.vc.popToRootViewController(animated: false)
+                    self.vc?.popToRootViewController(animated: false)
                     self.delegateInternal.mainMenuViewControllerOpenHomeScreen()
                 }),
                 isActive: $openSettings
@@ -424,14 +426,13 @@ struct MainMenuScreen: View {
         else { return }
         let screen = UsernameRequestStatusScreen(
             viewModel: UsernameRequestStatusViewModel(label: label),
-            // `MainMenuScreen` is a struct and `vc` is the stack it lives in,
-            // so the pop is captured directly — there is no reference cycle
-            // for a `weak self` to break here.
-            onBack: { vc.popViewController(animated: true) },
+            // `MainMenuScreen` is a struct and `vc` is already weak, so the
+            // pop is captured directly — there is no `self` to weaken.
+            onBack: { vc?.popViewController(animated: true) },
             onRetryCompanion: { name in openCreateUsernameForRecovery(username: name) })
         let controller = UIHostingController(rootView: screen)
         controller.hidesBottomBarWhenPushed = true
-        vc.pushViewController(controller, animated: true)
+        vc?.pushViewController(controller, animated: true)
     }
     
     /// Where a tap on the DashPay menu row goes. The row replaced a card with
@@ -548,7 +549,7 @@ struct MainMenuScreen: View {
         )
         let controller = UIHostingController(rootView: screen)
         controller.hidesBottomBarWhenPushed = true
-        vc.pushViewController(controller, animated: true)
+        vc?.pushViewController(controller, animated: true)
     }
 
     #if DASHPAY
@@ -559,7 +560,7 @@ struct MainMenuScreen: View {
         }
         let hosting = UIHostingController(rootView: UsernameVotingScreen(vc: vc, onClose: popRoot))
         hosting.hidesBottomBarWhenPushed = true
-        vc.pushViewController(hosting, animated: true)
+        vc?.pushViewController(hosting, animated: true)
     }
     #endif
 
@@ -577,13 +578,14 @@ struct MainMenuScreen: View {
         controller.delegate = delegateInternal
         let navigation = BaseNavigationController(rootViewController: controller)
         navigation.modalPresentationStyle = .fullScreen
-        vc.present(navigation, animated: true)
+        vc?.present(navigation, animated: true)
     }
     
     #if DASHPAY
     /// "Scan invitation QR" on the Join DashPay sheet: a scanned invitation
     /// is stored and offered on Home's card, so that is where it leads.
     private func scanInvitation() {
+        guard let vc else { return }
         InvitationEntry.presentScanner(from: vc) { [weak navigation = vc] in
             (navigation?.tabBarController as? MainTabbarController)?.showHomeForInvitation()
         }
@@ -594,7 +596,7 @@ struct MainMenuScreen: View {
     private func shieldFunds() {
         let controller = InternalTransferHostingController(transferTo: .balance(.shielded))
         controller.hidesBottomBarWhenPushed = true
-        vc.pushViewController(controller, animated: true)
+        vc?.pushViewController(controller, animated: true)
     }
     #endif
 
@@ -620,6 +622,7 @@ struct MainMenuScreen: View {
         // Not reached through the Join DashPay sheet, so no funding pick
         // belongs to this visit: the form pins a source the recovery can use.
         CreateUsernameViewModel.discardChosenFundingSource()
+        guard let vc else { return }
         let trimmed = username.trimmingCharacters(in: .whitespacesAndNewlines)
         Self.pushCreateUsernameForm(
             on: vc,
@@ -629,6 +632,7 @@ struct MainMenuScreen: View {
 
 
     private func pushCreateUsernameForm(dashPayModel: DWDashPayProtocol) {
+        guard let vc else { return }
         Self.pushCreateUsernameForm(on: vc, dashPayModel: dashPayModel)
     }
 

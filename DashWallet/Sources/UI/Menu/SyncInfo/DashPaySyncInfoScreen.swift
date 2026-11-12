@@ -129,11 +129,12 @@ final class DashPaySyncInfoViewModel: ObservableObject {
 // MARK: - Screen
 
 struct DashPaySyncInfoScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
 
     @StateObject private var viewModel = DashPaySyncInfoViewModel()
 
-    init(vc: UINavigationController) {
+    init(vc: UINavigationController?) {
         self.vc = vc
     }
 
@@ -141,7 +142,7 @@ struct DashPaySyncInfoScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             // Back button
             DashUIKit.NavigationBar(leading: {
-                DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
+                DashUIKit.NavigationBarElement.back.button { vc?.popViewController(animated: true) }
             })
 
             // Header

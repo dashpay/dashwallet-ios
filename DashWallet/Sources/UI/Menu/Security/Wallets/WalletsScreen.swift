@@ -28,7 +28,8 @@ import DashUIKit
 import UIKit
 
 struct WalletsScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
     private let resetDelegate: ResetDelegate
 
     @StateObject private var viewModel = WalletsViewModel()
@@ -42,7 +43,7 @@ struct WalletsScreen: View {
     /// True while the "Add Wallet" sheet (create / import) is presented.
     @State private var showAddWallet = false
 
-    init(vc: UINavigationController, wipeDelegate: DWWipeDelegate? = nil) {
+    init(vc: UINavigationController?, wipeDelegate: DWWipeDelegate? = nil) {
         self.vc = vc
         self.resetDelegate = ResetDelegate(onFinish: { [weak vc] in
             vc?.popViewController(animated: true)
@@ -214,7 +215,7 @@ struct WalletsScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             DashUIKit.NavigationBar(
                 leading: {
-                    DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
+                    DashUIKit.NavigationBarElement.back.button { vc?.popViewController(animated: true) }
                 },
                 trailing: {
                     DashUIKit.NavigationBarElement.plus.button { showAddWallet = true }
@@ -241,7 +242,7 @@ struct WalletsScreen: View {
         let controller = UIHostingController(
             rootView: WalletAccountsScreen(vc: vc, walletId: row.walletId, walletName: row.displayName))
         controller.hidesBottomBarWhenPushed = true
-        vc.pushViewController(controller, animated: true)
+        vc?.pushViewController(controller, animated: true)
     }
 
     // MARK: - Recovery phrase
@@ -255,8 +256,9 @@ struct WalletsScreen: View {
                 onCancel: { [weak vc] in
                     vc?.popViewController(animated: true)
                 })
-            vc.pushViewController(controller, animated: true)
+            vc?.pushViewController(controller, animated: true)
         case .phrase(let presentation):
+            guard let vc else { break }
             RecoveryPhraseNavigation.showPhrase(
                 presentation,
                 in: vc,
@@ -282,7 +284,7 @@ struct WalletsScreen: View {
     private func beginRemove(_ row: WalletRow) {
         if viewModel.removalRoutesToFullReset(walletId: row.walletId) {
             let controller = ResetWalletInfoHostingController(wipeDelegate: resetDelegate)
-            vc.pushViewController(controller, animated: true)
+            vc?.pushViewController(controller, animated: true)
         } else if viewModel.rows.contains(where: { $0.walletId != row.walletId }) {
             removeTarget = row
         } else {

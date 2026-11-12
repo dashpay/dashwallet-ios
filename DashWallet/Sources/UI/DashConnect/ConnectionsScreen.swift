@@ -25,11 +25,12 @@ import DashUIKit
 /// `Components/`; this type owns navigation, the QR scanner and the approval
 /// sheet.
 struct ConnectionsScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
 
     @StateObject private var viewModel: ConnectionsViewModel
 
-    init(vc: UINavigationController, viewModel: ConnectionsViewModel? = nil) {
+    init(vc: UINavigationController?, viewModel: ConnectionsViewModel? = nil) {
         self.vc = vc
         _viewModel = StateObject(wrappedValue: viewModel ?? ConnectionsViewModel())
     }
@@ -39,7 +40,7 @@ struct ConnectionsScreen: View {
             VStack(alignment: .leading, spacing: 0) {
                 DashUIKit.NavigationBar(
                     leading: {
-                        DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
+                        DashUIKit.NavigationBarElement.back.button { vc?.popViewController(animated: true) }
                     },
                     trailing: {
                         // The empty state has its own scan button; a list
@@ -176,15 +177,15 @@ struct ConnectionsScreen: View {
         let scanner = GenericQRScannerController()
 
         scanner.onQRCodeScanned = { value in
-            vc.dismiss(animated: true) {
+            vc?.dismiss(animated: true) {
                 viewModel.onQRScanned(value)
             }
         }
         scanner.onCancel = {
-            vc.dismiss(animated: true)
+            vc?.dismiss(animated: true)
         }
 
-        vc.present(scanner, animated: true)
+        vc?.present(scanner, animated: true)
     }
 
     private func mockScan() {
