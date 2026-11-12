@@ -140,7 +140,6 @@ class MainTabbarController: UITabBarController {
     private var moreTabIndex: Int?
 
     #if DASHPAY
-    weak var exploreNavigationController: ExploreViewController?
     private var pendingDashPayTabReconfiguration = false
     #endif
 
