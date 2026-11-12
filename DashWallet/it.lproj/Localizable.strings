@@ -175,9 +175,6 @@
 /* Voting */
 "%d requests" = "%d requests";
 
-/* Voting */
-"%d selected" = "%d selected";
-
 /* SPV diagnostics */
 "%d still in progress" = "%d still in progress";
 
@@ -222,9 +219,6 @@
 
 /* Voting */
 "%u votes counted for “%@”" = "%1$u votes counted for “%2$@”";
-
-/* Voting */
-"%u votes in total" = "%u votes in total";
 
 /* Voting */
 "%u votes per contest — evonodes count as 4, masternodes as 1" = "%u votes per contest — evonodes count as 4, masternodes as 1";
@@ -1936,9 +1930,6 @@
 /* DashPay FAQ */
 "Enabling DashPay costs a small one-time network fee, paid from your identity's credit balance. The exact estimate is shown before you confirm. Sending contact requests and payments costs the usual network fees." = "Attivare DashPay costa una piccola commissione di rete una tantum, pagata dal saldo di credito della tua identità. La stima esatta viene mostrata prima della conferma. Inviare richieste di contatto e pagamenti costa le normali commissioni di rete.";
 
-/* Voting */
-"Ending soonest" = "In scadenza prima";
-
 /* Usernames */
 "Ends around %@" = "Ends around %@";
 
@@ -3138,12 +3129,6 @@
 /* No comment provided by engineer. */
 "More Control" = "Più Controllo";
 
-/* Voting */
-"Most lock votes" = "Più voti di blocco";
-
-/* Voting */
-"Most votes" = "Più voti";
-
 /* Masternode unban */
 "Move %@ from shielded balance" = "Move %@ from shielded balance";
 
@@ -3228,9 +3213,6 @@
 
 /* Coinbase Two Factor Auth */
 "Need help? " = "Ho bisogno di aiuto?";
-
-/* Voting */
-"Needs attention" = "Richiede attenzione";
 
 /* No comment provided by engineer. */
 "Network" = "Network";
@@ -4707,9 +4689,6 @@
 /* Buy Sell Dash */
 "Select a service to buy, sell, convert and transfer Dash" = "Seleziona un servizio per acquistare, vendere, convertire e trasferire Dash";
 
-/* Voting */
-"Select all" = "Seleziona tutto";
-
 /* DashSpend denomination selection */
 "Select amount" = "Seleziona l'importo";
 
@@ -5005,9 +4984,6 @@
 /* Username marketplace: departed-name line — buyer identity */
 "Sold to %@" = "Venduto a %@";
 
-/* Voting */
-"Sole Requester" = "Sole Requester";
-
 /* Maya */
 "Some coins are not available because of the halted chain" = "Some coins are not available because of the halted chain";
 
@@ -5028,9 +5004,6 @@
 
 /* Usernames */
 "Some usernames can be blocked" = "Alcuni nomi utente possono essere bloccati";
-
-/* Voting */
-"Some votes already cast" = "Some votes already cast";
 
 /* No comment provided by engineer. */
 "Something went wrong" = "Qualcosa è andato storto";
@@ -6586,12 +6559,6 @@
 "Vote in progress" = "Votazione in corso";
 
 /* Voting */
-"Vote on %d usernames" = "Vote on %d usernames";
-
-/* Voting */
-"Vote on several" = "Vota su più nomi";
-
-/* Voting */
 "Vote with" = "Vota con";
 
 /* Voting */
@@ -7450,3 +7417,42 @@
 
 /* No comment provided by engineer. */
 "Filtered by" = "Filtrato per";
+
+"Reset filters" = "Reset filters";
+
+"No usernames match this filter" = "No usernames match this filter";
+
+"Change the filter or reset it to see every open contest." = "Change the filter or reset it to see every open contest.";
+
+"Can't filter by your votes right now" = "Can't filter by your votes right now";
+
+"This wallet's masternode voting keys aren't available right now, so it has no votes to filter by." = "This wallet's masternode voting keys aren't available right now, so it has no votes to filter by.";
+
+"%@ · only duplicates" = "%@ · only duplicates";
+
+/* No comment provided by engineer. */
+"Date: New to old" = "Data: dal Nuovo al vecchio";
+
+/* No comment provided by engineer. */
+"Date: Old to new" = "Data: dal Vecchio al nuovo";
+
+/* No comment provided by engineer. */
+"Has blocked votes" = "Ha voti di blocco";
+
+/* No comment provided by engineer. */
+"I have approved" = "Ho approvato";
+
+/* No comment provided by engineer. */
+"I have not voted" = "Non ho votato";
+
+/* No comment provided by engineer. */
+"Only duplicates" = "Solo duplicati";
+
+/* No comment provided by engineer. */
+"Only requests with links" = "Solo richieste con link";
+
+/* No comment provided by engineer. */
+"Votes: High to low" = "Voti: da alto a basso";
+
+/* No comment provided by engineer. */
+"Votes: Low to high" = "Voti: da basso a alto";

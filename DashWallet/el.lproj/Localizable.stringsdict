@@ -194,22 +194,6 @@
 			<string>%d evonodes</string>
 		</dict>
 	</dict>
-	<key>%u votes in total</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>u</string>
-			<key>one</key>
-			<string>%u ψήφος συνολικά</string>
-			<key>other</key>
-			<string>%u ψήφοι συνολικά</string>
-		</dict>
-	</dict>
 	<key>%d masternodes</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -224,22 +208,6 @@
 			<string>%d masternode</string>
 			<key>other</key>
 			<string>%d masternodes</string>
-		</dict>
-	</dict>
-	<key>%d selected</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>%d επιλεγμένο</string>
-			<key>other</key>
-			<string>%d επιλεγμένα</string>
 		</dict>
 	</dict>
 	<key>%d of your nodes already voted here and are not listed.</key>
@@ -272,22 +240,6 @@
 			<string>%u ψήφος ανά διαμάχη — τα evonodes μετρούν ως 4, τα masternodes ως 1</string>
 			<key>other</key>
 			<string>%u ψήφοι ανά διαμάχη — τα evonodes μετρούν ως 4, τα masternodes ως 1</string>
-		</dict>
-	</dict>
-	<key>Vote on %d usernames</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>Ψηφίστε για %d όνομα χρήστη</string>
-			<key>other</key>
-			<string>Ψηφίστε για %d ονόματα χρήστη</string>
 		</dict>
 	</dict>
 	<key>%u votes</key>

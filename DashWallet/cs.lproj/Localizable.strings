@@ -175,9 +175,6 @@
 /* Voting */
 "%d requests" = "%d requests";
 
-/* Voting */
-"%d selected" = "%d selected";
-
 /* SPV diagnostics */
 "%d still in progress" = "%d still in progress";
 
@@ -222,9 +219,6 @@
 
 /* Voting */
 "%u votes counted for “%@”" = "%1$u votes counted for “%2$@”";
-
-/* Voting */
-"%u votes in total" = "%u votes in total";
 
 /* Voting */
 "%u votes per contest — evonodes count as 4, masternodes as 1" = "%u votes per contest — evonodes count as 4, masternodes as 1";
@@ -1936,9 +1930,6 @@
 /* DashPay FAQ */
 "Enabling DashPay costs a small one-time network fee, paid from your identity's credit balance. The exact estimate is shown before you confirm. Sending contact requests and payments costs the usual network fees." = "Povolení DashPay stojí malý jednorázový síťový poplatek, který se hradí z kreditního zůstatku vaší identity. Přesný odhad se zobrazí před potvrzením. Za odesílání žádostí o kontakt a plateb se účtují běžné síťové poplatky.";
 
-/* Voting */
-"Ending soonest" = "Končí nejdříve";
-
 /* Usernames */
 "Ends around %@" = "Ends around %@";
 
@@ -3138,12 +3129,6 @@
 /* No comment provided by engineer. */
 "More Control" = "Lepší správa";
 
-/* Voting */
-"Most lock votes" = "Nejvíce uzamykacích hlasů";
-
-/* Voting */
-"Most votes" = "Nejvíce hlasů";
-
 /* Masternode unban */
 "Move %@ from shielded balance" = "Move %@ from shielded balance";
 
@@ -3228,9 +3213,6 @@
 
 /* Coinbase Two Factor Auth */
 "Need help? " = "Need help? ";
-
-/* Voting */
-"Needs attention" = "Vyžaduje pozornost";
 
 /* No comment provided by engineer. */
 "Network" = "Síť";
@@ -4709,9 +4691,6 @@
    Buy Sell Portal */
 "Select a service to buy, sell, convert and transfer Dash" = "Select a service to buy, sell, convert and transfer Dash";
 
-/* Voting */
-"Select all" = "Vybrat vše";
-
 /* DashSpend denomination selection */
 "Select amount" = "Select amount";
 
@@ -5007,9 +4986,6 @@
 /* Username marketplace: departed-name line — buyer identity */
 "Sold to %@" = "Prodáno uživateli %@";
 
-/* Voting */
-"Sole Requester" = "Sole Requester";
-
 /* Maya */
 "Some coins are not available because of the halted chain" = "Some coins are not available because of the halted chain";
 
@@ -5030,9 +5006,6 @@
 
 /* Usernames */
 "Some usernames can be blocked" = "Some usernames can be blocked";
-
-/* Voting */
-"Some votes already cast" = "Some votes already cast";
 
 /* No comment provided by engineer. */
 "Something went wrong" = "Něco se pokazilo";
@@ -6588,12 +6561,6 @@
 "Vote in progress" = "Probíhá hlasování";
 
 /* Voting */
-"Vote on %d usernames" = "Vote on %d usernames";
-
-/* Voting */
-"Vote on several" = "Hlasovat o více";
-
-/* Voting */
 "Vote with" = "Hlasovat s";
 
 /* Voting */
@@ -7452,3 +7419,42 @@
 
 /* No comment provided by engineer. */
 "Filtered by" = "Filtered by";
+
+"Reset filters" = "Reset filters";
+
+"No usernames match this filter" = "No usernames match this filter";
+
+"Change the filter or reset it to see every open contest." = "Change the filter or reset it to see every open contest.";
+
+"Can't filter by your votes right now" = "Can't filter by your votes right now";
+
+"This wallet's masternode voting keys aren't available right now, so it has no votes to filter by." = "This wallet's masternode voting keys aren't available right now, so it has no votes to filter by.";
+
+"%@ · only duplicates" = "%@ · only duplicates";
+
+/* No comment provided by engineer. */
+"Date: New to old" = "Date: New to old";
+
+/* No comment provided by engineer. */
+"Date: Old to new" = "Date: Old to new";
+
+/* No comment provided by engineer. */
+"Has blocked votes" = "Has blocked votes";
+
+/* No comment provided by engineer. */
+"I have approved" = "I have approved";
+
+/* No comment provided by engineer. */
+"I have not voted" = "I have not voted";
+
+/* No comment provided by engineer. */
+"Only duplicates" = "Only duplicates";
+
+/* No comment provided by engineer. */
+"Only requests with links" = "Only requests with links";
+
+/* No comment provided by engineer. */
+"Votes: High to low" = "Votes: High to low";
+
+/* No comment provided by engineer. */
+"Votes: Low to high" = "Votes: Low to high";

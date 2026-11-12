@@ -175,9 +175,6 @@
 /* Voting */
 "%d requests" = "%d requests";
 
-/* Voting */
-"%d selected" = "%d selected";
-
 /* SPV diagnostics */
 "%d still in progress" = "%d still in progress";
 
@@ -222,9 +219,6 @@
 
 /* Voting */
 "%u votes counted for “%@”" = "%1$u votes counted for “%2$@”";
-
-/* Voting */
-"%u votes in total" = "%u votes in total";
 
 /* Voting */
 "%u votes per contest — evonodes count as 4, masternodes as 1" = "%u votes per contest — evonodes count as 4, masternodes as 1";
@@ -1936,9 +1930,6 @@
 /* DashPay FAQ */
 "Enabling DashPay costs a small one-time network fee, paid from your identity's credit balance. The exact estimate is shown before you confirm. Sending contact requests and payments costs the usual network fees." = "DashPay를 활성화하려면 소액의 일회성 네트워크 수수료가 들며, 아이덴티티의 크레딧 잔액에서 지불됩니다. 정확한 예상액은 확인 전에 표시됩니다. 연락처 요청과 결제를 보낼 때는 일반적인 네트워크 수수료가 듭니다.";
 
-/* Voting */
-"Ending soonest" = "가장 먼저 종료";
-
 /* Usernames */
 "Ends around %@" = "Ends around %@";
 
@@ -3138,12 +3129,6 @@
 /* No comment provided by engineer. */
 "More Control" = "보다 큰 제어";
 
-/* Voting */
-"Most lock votes" = "잠금 투표 최다";
-
-/* Voting */
-"Most votes" = "득표 최다";
-
 /* Masternode unban */
 "Move %@ from shielded balance" = "Move %@ from shielded balance";
 
@@ -3228,9 +3213,6 @@
 
 /* Coinbase Two Factor Auth */
 "Need help? " = "도움이 필요하신가요?";
-
-/* Voting */
-"Needs attention" = "확인 필요";
 
 /* No comment provided by engineer. */
 "Network" = "네트워크";
@@ -4707,9 +4689,6 @@
 /* Buy Sell Dash */
 "Select a service to buy, sell, convert and transfer Dash" = "대시의 매수, 매도, 환전 및 송금을 위한 서비스를 선택하세요";
 
-/* Voting */
-"Select all" = "전체 선택";
-
 /* DashSpend denomination selection */
 "Select amount" = "금액 선택하기";
 
@@ -5005,9 +4984,6 @@
 /* Username marketplace: departed-name line — buyer identity */
 "Sold to %@" = "%@ 님에게 판매";
 
-/* Voting */
-"Sole Requester" = "Sole Requester";
-
 /* Maya */
 "Some coins are not available because of the halted chain" = "Some coins are not available because of the halted chain";
 
@@ -5028,9 +5004,6 @@
 
 /* Usernames */
 "Some usernames can be blocked" = "어떤 사용자 이름은 블록될 수 있습니다";
-
-/* Voting */
-"Some votes already cast" = "Some votes already cast";
 
 /* No comment provided by engineer. */
 "Something went wrong" = "뭔가 잘못되었습니다";
@@ -6586,12 +6559,6 @@
 "Vote in progress" = "투표 진행 중";
 
 /* Voting */
-"Vote on %d usernames" = "Vote on %d usernames";
-
-/* Voting */
-"Vote on several" = "여러 건에 투표";
-
-/* Voting */
 "Vote with" = "투표에 사용할 노드";
 
 /* Voting */
@@ -7450,3 +7417,42 @@
 
 /* No comment provided by engineer. */
 "Filtered by" = "다음으로 필터";
+
+"Reset filters" = "Reset filters";
+
+"No usernames match this filter" = "No usernames match this filter";
+
+"Change the filter or reset it to see every open contest." = "Change the filter or reset it to see every open contest.";
+
+"Can't filter by your votes right now" = "Can't filter by your votes right now";
+
+"This wallet's masternode voting keys aren't available right now, so it has no votes to filter by." = "This wallet's masternode voting keys aren't available right now, so it has no votes to filter by.";
+
+"%@ · only duplicates" = "%@ · only duplicates";
+
+/* No comment provided by engineer. */
+"Date: New to old" = "날짜: 현재부터 과거";
+
+/* No comment provided by engineer. */
+"Date: Old to new" = "날짜: 과거부터 현재";
+
+/* No comment provided by engineer. */
+"Has blocked votes" = "차단 투표 있음";
+
+/* No comment provided by engineer. */
+"I have approved" = "승인하였습니다";
+
+/* No comment provided by engineer. */
+"I have not voted" = "투표하지 않았습니다";
+
+/* No comment provided by engineer. */
+"Only duplicates" = "중복 요청만";
+
+/* No comment provided by engineer. */
+"Only requests with links" = "링크를 가진 요청만";
+
+/* No comment provided by engineer. */
+"Votes: High to low" = "투표: 높음부터 낮음";
+
+/* No comment provided by engineer. */
+"Votes: Low to high" = "투표: 낮음부터 높음";

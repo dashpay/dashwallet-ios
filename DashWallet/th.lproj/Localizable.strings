@@ -175,9 +175,6 @@
 /* Voting */
 "%d requests" = "%d requests";
 
-/* Voting */
-"%d selected" = "%d selected";
-
 /* SPV diagnostics */
 "%d still in progress" = "%d still in progress";
 
@@ -222,9 +219,6 @@
 
 /* Voting */
 "%u votes counted for “%@”" = "%1$u votes counted for “%2$@”";
-
-/* Voting */
-"%u votes in total" = "%u votes in total";
 
 /* Voting */
 "%u votes per contest — evonodes count as 4, masternodes as 1" = "%u votes per contest — evonodes count as 4, masternodes as 1";
@@ -1936,9 +1930,6 @@
 /* DashPay FAQ */
 "Enabling DashPay costs a small one-time network fee, paid from your identity's credit balance. The exact estimate is shown before you confirm. Sending contact requests and payments costs the usual network fees." = "การเปิดใช้ DashPay มีค่าธรรมเนียมเครือข่ายเล็กน้อยครั้งเดียว หักจากยอดเครดิตของตัวตนคุณ ค่าประมาณที่แน่นอนจะแสดงก่อนที่คุณยืนยัน ส่วนการส่งคำขอการติดต่อและการชำระเงินจะเสียค่าธรรมเนียมเครือข่ายตามปกติ";
 
-/* Voting */
-"Ending soonest" = "สิ้นสุดเร็วที่สุด";
-
 /* Usernames */
 "Ends around %@" = "Ends around %@";
 
@@ -3138,12 +3129,6 @@
 /* No comment provided by engineer. */
 "More Control" = "ควบคุมมากขึ้น";
 
-/* Voting */
-"Most lock votes" = "คะแนนล็อกมากที่สุด";
-
-/* Voting */
-"Most votes" = "คะแนนมากที่สุด";
-
 /* Masternode unban */
 "Move %@ from shielded balance" = "Move %@ from shielded balance";
 
@@ -3228,9 +3213,6 @@
 
 /* Coinbase Two Factor Auth */
 "Need help? " = "ต้องการความช่วยเหลือ?";
-
-/* Voting */
-"Needs attention" = "ต้องดำเนินการ";
 
 /* No comment provided by engineer. */
 "Network" = "เครือข่าย";
@@ -4707,9 +4689,6 @@
 /* Buy Sell Dash */
 "Select a service to buy, sell, convert and transfer Dash" = "เลือกบริการที่จะซื้อ ขาย แปลงและโอน Dash";
 
-/* Voting */
-"Select all" = "เลือกทั้งหมด";
-
 /* DashSpend denomination selection */
 "Select amount" = "Select amount";
 
@@ -5005,9 +4984,6 @@
 /* Username marketplace: departed-name line — buyer identity */
 "Sold to %@" = "ขายให้ %@";
 
-/* Voting */
-"Sole Requester" = "Sole Requester";
-
 /* Maya */
 "Some coins are not available because of the halted chain" = "Some coins are not available because of the halted chain";
 
@@ -5028,9 +5004,6 @@
 
 /* Usernames */
 "Some usernames can be blocked" = "Some usernames can be blocked";
-
-/* Voting */
-"Some votes already cast" = "Some votes already cast";
 
 /* No comment provided by engineer. */
 "Something went wrong" = "มีบางอย่างผิดพลาด";
@@ -6586,12 +6559,6 @@
 "Vote in progress" = "การโหวตกำลังดำเนินอยู่";
 
 /* Voting */
-"Vote on %d usernames" = "Vote on %d usernames";
-
-/* Voting */
-"Vote on several" = "โหวตหลายรายการ";
-
-/* Voting */
 "Vote with" = "โหวตด้วย";
 
 /* Voting */
@@ -7450,3 +7417,42 @@
 
 /* No comment provided by engineer. */
 "Filtered by" = "กรองโดย";
+
+"Reset filters" = "Reset filters";
+
+"No usernames match this filter" = "No usernames match this filter";
+
+"Change the filter or reset it to see every open contest." = "Change the filter or reset it to see every open contest.";
+
+"Can't filter by your votes right now" = "Can't filter by your votes right now";
+
+"This wallet's masternode voting keys aren't available right now, so it has no votes to filter by." = "This wallet's masternode voting keys aren't available right now, so it has no votes to filter by.";
+
+"%@ · only duplicates" = "%@ · only duplicates";
+
+/* No comment provided by engineer. */
+"Date: New to old" = "วันที่: ใหม่ไปเก่า";
+
+/* No comment provided by engineer. */
+"Date: Old to new" = "วันที่: เก่าไปใหม่";
+
+/* No comment provided by engineer. */
+"Has blocked votes" = "Has blocked votes";
+
+/* No comment provided by engineer. */
+"I have approved" = "ฉันได้อนุมัติแล้ว";
+
+/* No comment provided by engineer. */
+"I have not voted" = "I have not voted";
+
+/* No comment provided by engineer. */
+"Only duplicates" = "ซ้ำกันเท่านั้น";
+
+/* No comment provided by engineer. */
+"Only requests with links" = "คำขอที่มีลิงก์เท่านั้น";
+
+/* No comment provided by engineer. */
+"Votes: High to low" = "โหวต: สูงไปต่ำ";
+
+/* No comment provided by engineer. */
+"Votes: Low to high" = "โหวต: ต่ำไปสูง";

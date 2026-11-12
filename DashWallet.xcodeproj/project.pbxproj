@@ -1994,6 +1994,8 @@
 		F29CC1CE29F3544F9E2F9BE7 /* MasternodeVoteCaster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23AEFB2398EDA01C69E5A8F1 /* MasternodeVoteCaster.swift */; };
 		25C2103A3D2448AB40AB8485 /* UsernameVotingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33DEAFAEEDCA07D0A331911B /* UsernameVotingScreen.swift */; };
 		69AC3CC70250ABEB8C6AF3D9 /* VotingContestCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC1BA49D9FDBDFEE118C220F /* VotingContestCard.swift */; };
+		116F82B7E314D4A50CA59ED0 /* VotingFiltersSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233DB5DCD2710E94707CB86B /* VotingFiltersSheet.swift */; };
+		BB2A1715C0E4288D764E3BA2 /* VotingFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C63541C349FC5F48131A14D /* VotingFilter.swift */; };
 		D3739D3958A3F0F5BAD4C27E /* VoteFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C53D16CE65DEA6123200EB2 /* VoteFlow.swift */; };
 		D0C564276BD8B9770F0E0499 /* ContestDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BA141C505AF0AE495DCAA37 /* ContestDetailScreen.swift */; };
 		1FED991A9D2D236582CE3C99 /* CastVoteSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF2C19E8480582798A0155E4 /* CastVoteSheet.swift */; };
@@ -2008,13 +2010,14 @@
 		5AEEB0012F9C00000000000D /* EvonodeProposalActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEEB0012F9C00000000000B /* EvonodeProposalActivity.swift */; };
 		12118430106B8A5EBB2FBC60 /* UsernameVotingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33DEAFAEEDCA07D0A331911B /* UsernameVotingScreen.swift */; };
 		66C8B99394A763E51EB1BEAA /* VotingContestCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC1BA49D9FDBDFEE118C220F /* VotingContestCard.swift */; };
+		B869850A814147C9DDE972A6 /* VotingFiltersSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 233DB5DCD2710E94707CB86B /* VotingFiltersSheet.swift */; };
+		1FF1C72A7C80771250F472F0 /* VotingFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C63541C349FC5F48131A14D /* VotingFilter.swift */; };
 		D8808925848EFF2234755A55 /* VoteFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C53D16CE65DEA6123200EB2 /* VoteFlow.swift */; };
 		F34816414D829A45E0762757 /* ContestDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BA141C505AF0AE495DCAA37 /* ContestDetailScreen.swift */; };
 		AD24D88215A4E51186112B34 /* CastVoteSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF2C19E8480582798A0155E4 /* CastVoteSheet.swift */; };
 		6181C570B638E07D8B369CDB /* VotingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75A8C1682AE6A1AC0042256E /* VotingViewModel.swift */; };
 		E503EDEA94E656CAE70E5A11 /* UsernameRequestStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED4CB35186918CCBD2FFC49F /* UsernameRequestStatusScreen.swift */; };
 		D19A81C4F6103AC513D737AA /* UsernameRequestStatusScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED4CB35186918CCBD2FFC49F /* UsernameRequestStatusScreen.swift */; };
-		63C3BBEF4EE77A6F02144B2D /* BulkVoteSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3E5E523355F3EEC5CDEB00A /* BulkVoteSheet.swift */; };
 		A1B2C3D40002VOTINGNODESEL /* VotingNodeSelectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40001VOTINGNODESEL /* VotingNodeSelectionSheet.swift */; };
 		A1B2C3D40003VOTINGNODESEL /* VotingNodeSelectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D40001VOTINGNODESEL /* VotingNodeSelectionSheet.swift */; };
 		7DFE0229E495EDB4DCBF1135 /* VotingKeyInputViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A43D7FC28090A77E0368DA67 /* VotingKeyInputViewModel.swift */; };
@@ -2023,7 +2026,6 @@
 		C23DCB2DF08950815BCDAE16 /* VotingKeyInputScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD137C764D3D63AB13D4A356 /* VotingKeyInputScreen.swift */; };
 		8A1A54FAF3A2D664815EE39B /* VotingKeysScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43FC26DF2F2A4CF3ACD1F971 /* VotingKeysScreen.swift */; };
 		A15BD917294003C8A262FEC6 /* VotingKeysScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43FC26DF2F2A4CF3ACD1F971 /* VotingKeysScreen.swift */; };
-		25B84141680B6A9F225C995C /* BulkVoteSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3E5E523355F3EEC5CDEB00A /* BulkVoteSheet.swift */; };
 		7062FCF792F292D84A0B819B /* VoteHistoryDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFB72236D79932EAE7A38E2 /* VoteHistoryDAO.swift */; };
 		553696A24F315D361BC86231 /* VoteHistoryDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFB72236D79932EAE7A38E2 /* VoteHistoryDAO.swift */; };
 		7843C0A14DF4CBD4FFA605CD /* DWUsernameRegistrationRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF36BF1A7ACD652EDDA7D25D /* DWUsernameRegistrationRecovery.swift */; };
@@ -2031,9 +2033,10 @@
 		F44028CBF49F4A2FE6268874 /* UsernameRegistrationRecoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 701E95B66E2409DD2F80D7AB /* UsernameRegistrationRecoveryTests.swift */; };
 		C0F1E5ED0A14B2C3D4E5F603 /* ContestedUsernameFeeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F1E5ED0A14B2C3D4E5F604 /* ContestedUsernameFeeTests.swift */; };
 		4046F707D79B443DF65A4A1B /* CreateUsernameShieldedCostTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D352A3186395D1462939197 /* CreateUsernameShieldedCostTests.swift */; };
-		B17E5A0C9D3F4E21A6C80B01 /* BulkVotePlanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17E5A0C9D3F4E21A6C80B02 /* BulkVotePlanTests.swift */; };
 		149D439536B3216FDAEEB975 /* VotingListSectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4C123B1612DD272D1371C17 /* VotingListSectionTests.swift */; };
 		C0F7A1D2E3B4C5D6E7F80901 /* CountedPhrasePluralTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F7A1D2E3B4C5D6E7F80902 /* CountedPhrasePluralTests.swift */; };
+		9D097D529CF2AF9A63A649DE /* VotingFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2ED90B9CB9B2FB3E1259FEA6 /* VotingFilterTests.swift */; };
+		B17E5A0C9D3F4E21A6C80B01 /* VoteHistoryPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17E5A0C9D3F4E21A6C80B02 /* VoteHistoryPersistenceTests.swift */; };
 		BABA10000000000000000004 /* IdentityBalanceRefreshTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000003 /* IdentityBalanceRefreshTests.swift */; };
 		BABA10000000000000000006 /* DashPayUserLinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000005 /* DashPayUserLinkTests.swift */; };
 		BABA10000000000000000008 /* DiagnosticLogExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000007 /* DiagnosticLogExporterTests.swift */; };
@@ -3866,11 +3869,12 @@
 		5AEEB0012F9C00000000000B /* EvonodeProposalActivity.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvonodeProposalActivity.swift; sourceTree = "<group>"; };
 		33DEAFAEEDCA07D0A331911B /* UsernameVotingScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UsernameVotingScreen.swift; sourceTree = "<group>"; };
 		EC1BA49D9FDBDFEE118C220F /* VotingContestCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VotingContestCard.swift; sourceTree = "<group>"; };
+		233DB5DCD2710E94707CB86B /* VotingFiltersSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VotingFiltersSheet.swift; sourceTree = "<group>"; };
+		1C63541C349FC5F48131A14D /* VotingFilter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VotingFilter.swift; sourceTree = "<group>"; };
 		2C53D16CE65DEA6123200EB2 /* VoteFlow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VoteFlow.swift; sourceTree = "<group>"; };
 		6BA141C505AF0AE495DCAA37 /* ContestDetailScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContestDetailScreen.swift; sourceTree = "<group>"; };
 		FF2C19E8480582798A0155E4 /* CastVoteSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CastVoteSheet.swift; sourceTree = "<group>"; };
 		ED4CB35186918CCBD2FFC49F /* UsernameRequestStatusScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UsernameRequestStatusScreen.swift; sourceTree = "<group>"; };
-		C3E5E523355F3EEC5CDEB00A /* BulkVoteSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BulkVoteSheet.swift; sourceTree = "<group>"; };
 		A1B2C3D40001VOTINGNODESEL /* VotingNodeSelectionSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VotingNodeSelectionSheet.swift; sourceTree = "<group>"; };
 		A43D7FC28090A77E0368DA67 /* VotingKeyInputViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VotingKeyInputViewModel.swift; sourceTree = "<group>"; };
 		BD137C764D3D63AB13D4A356 /* VotingKeyInputScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VotingKeyInputScreen.swift; sourceTree = "<group>"; };
@@ -3881,9 +3885,10 @@
 		701E95B66E2409DD2F80D7AB /* UsernameRegistrationRecoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameRegistrationRecoveryTests.swift; sourceTree = "<group>"; };
 		C0F1E5ED0A14B2C3D4E5F604 /* ContestedUsernameFeeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContestedUsernameFeeTests.swift; sourceTree = "<group>"; };
 		4D352A3186395D1462939197 /* CreateUsernameShieldedCostTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateUsernameShieldedCostTests.swift; sourceTree = "<group>"; };
-		B17E5A0C9D3F4E21A6C80B02 /* BulkVotePlanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BulkVotePlanTests.swift; sourceTree = "<group>"; };
 		A4C123B1612DD272D1371C17 /* VotingListSectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingListSectionTests.swift; sourceTree = "<group>"; };
 		C0F7A1D2E3B4C5D6E7F80902 /* CountedPhrasePluralTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountedPhrasePluralTests.swift; sourceTree = "<group>"; };
+		2ED90B9CB9B2FB3E1259FEA6 /* VotingFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingFilterTests.swift; sourceTree = "<group>"; };
+		B17E5A0C9D3F4E21A6C80B02 /* VoteHistoryPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoteHistoryPersistenceTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000003 /* IdentityBalanceRefreshTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityBalanceRefreshTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000005 /* DashPayUserLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashPayUserLinkTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000007 /* DiagnosticLogExporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticLogExporterTests.swift; sourceTree = "<group>"; };
@@ -6945,13 +6950,14 @@
 		7502A4852AE401DA00ACDDD3 /* Voting */ = {
 			isa = PBXGroup;
 			children = (
-				C3E5E523355F3EEC5CDEB00A /* BulkVoteSheet.swift */,
 				A1B2C3D40001VOTINGNODESEL /* VotingNodeSelectionSheet.swift */,
 				A43D7FC28090A77E0368DA67 /* VotingKeyInputViewModel.swift */,
 				BD137C764D3D63AB13D4A356 /* VotingKeyInputScreen.swift */,
 				43FC26DF2F2A4CF3ACD1F971 /* VotingKeysScreen.swift */,
 				33DEAFAEEDCA07D0A331911B /* UsernameVotingScreen.swift */,
 				EC1BA49D9FDBDFEE118C220F /* VotingContestCard.swift */,
+				233DB5DCD2710E94707CB86B /* VotingFiltersSheet.swift */,
+				1C63541C349FC5F48131A14D /* VotingFilter.swift */,
 				2C53D16CE65DEA6123200EB2 /* VoteFlow.swift */,
 				6BA141C505AF0AE495DCAA37 /* ContestDetailScreen.swift */,
 				FF2C19E8480582798A0155E4 /* CastVoteSheet.swift */,
@@ -7297,9 +7303,10 @@
 				701E95B66E2409DD2F80D7AB /* UsernameRegistrationRecoveryTests.swift */,
 				C0F1E5ED0A14B2C3D4E5F604 /* ContestedUsernameFeeTests.swift */,
 				4D352A3186395D1462939197 /* CreateUsernameShieldedCostTests.swift */,
-				B17E5A0C9D3F4E21A6C80B02 /* BulkVotePlanTests.swift */,
 				A4C123B1612DD272D1371C17 /* VotingListSectionTests.swift */,
 				C0F7A1D2E3B4C5D6E7F80902 /* CountedPhrasePluralTests.swift */,
+				2ED90B9CB9B2FB3E1259FEA6 /* VotingFilterTests.swift */,
+				B17E5A0C9D3F4E21A6C80B02 /* VoteHistoryPersistenceTests.swift */,
 				BABA10000000000000000003 /* IdentityBalanceRefreshTests.swift */,
 				BABA10000000000000000005 /* DashPayUserLinkTests.swift */,
 				BABA10000000000000000007 /* DiagnosticLogExporterTests.swift */,
@@ -9788,7 +9795,6 @@
 				E64A1C72095A9DD989E8379B /* SwiftDashSDKProtocolCompatibilityClient.swift in Sources */,
 				A976B61C558151C1AC300A54 /* ProtocolCompatibilityBanner.swift in Sources */,
 				553696A24F315D361BC86231 /* VoteHistoryDAO.swift in Sources */,
-				25B84141680B6A9F225C995C /* BulkVoteSheet.swift in Sources */,
 				A1B2C3D40003VOTINGNODESEL /* VotingNodeSelectionSheet.swift in Sources */,
 				13B96E9292E7F7FCAE569B14 /* VotingKeyInputViewModel.swift in Sources */,
 				C23DCB2DF08950815BCDAE16 /* VotingKeyInputScreen.swift in Sources */,
@@ -9799,6 +9805,8 @@
 				F34816414D829A45E0762757 /* ContestDetailScreen.swift in Sources */,
 				12118430106B8A5EBB2FBC60 /* UsernameVotingScreen.swift in Sources */,
 				66C8B99394A763E51EB1BEAA /* VotingContestCard.swift in Sources */,
+				B869850A814147C9DDE972A6 /* VotingFiltersSheet.swift in Sources */,
+				1FF1C72A7C80771250F472F0 /* VotingFilter.swift in Sources */,
 				D8808925848EFF2234755A55 /* VoteFlow.swift in Sources */,
 				5A5F8C183D2C037FB350ACC9 /* MasternodeVoteCaster.swift in Sources */,
 				5AEEB0012F9C000000000002 /* EvonodeEpochBlocksService.swift in Sources */,
@@ -10630,9 +10638,10 @@
 				F44028CBF49F4A2FE6268874 /* UsernameRegistrationRecoveryTests.swift in Sources */,
 				C0F1E5ED0A14B2C3D4E5F603 /* ContestedUsernameFeeTests.swift in Sources */,
 				4046F707D79B443DF65A4A1B /* CreateUsernameShieldedCostTests.swift in Sources */,
-				B17E5A0C9D3F4E21A6C80B01 /* BulkVotePlanTests.swift in Sources */,
 				149D439536B3216FDAEEB975 /* VotingListSectionTests.swift in Sources */,
 				C0F7A1D2E3B4C5D6E7F80901 /* CountedPhrasePluralTests.swift in Sources */,
+				9D097D529CF2AF9A63A649DE /* VotingFilterTests.swift in Sources */,
+				B17E5A0C9D3F4E21A6C80B01 /* VoteHistoryPersistenceTests.swift in Sources */,
 				BABA10000000000000000004 /* IdentityBalanceRefreshTests.swift in Sources */,
 				BABA10000000000000000006 /* DashPayUserLinkTests.swift in Sources */,
 				BABA10000000000000000008 /* DiagnosticLogExporterTests.swift in Sources */,
@@ -10761,7 +10770,6 @@
 				104ED77DD2298A025814CF83 /* SwiftDashSDKProtocolCompatibilityClient.swift in Sources */,
 				C25AD4D28CA0532D65F80780 /* ProtocolCompatibilityBanner.swift in Sources */,
 				7062FCF792F292D84A0B819B /* VoteHistoryDAO.swift in Sources */,
-				63C3BBEF4EE77A6F02144B2D /* BulkVoteSheet.swift in Sources */,
 				A1B2C3D40002VOTINGNODESEL /* VotingNodeSelectionSheet.swift in Sources */,
 				7DFE0229E495EDB4DCBF1135 /* VotingKeyInputViewModel.swift in Sources */,
 				77D07752F23A1DBB84EF533A /* VotingKeyInputScreen.swift in Sources */,
@@ -10771,6 +10779,8 @@
 				D0C564276BD8B9770F0E0499 /* ContestDetailScreen.swift in Sources */,
 				25C2103A3D2448AB40AB8485 /* UsernameVotingScreen.swift in Sources */,
 				69AC3CC70250ABEB8C6AF3D9 /* VotingContestCard.swift in Sources */,
+				116F82B7E314D4A50CA59ED0 /* VotingFiltersSheet.swift in Sources */,
+				BB2A1715C0E4288D764E3BA2 /* VotingFilter.swift in Sources */,
 				D3739D3958A3F0F5BAD4C27E /* VoteFlow.swift in Sources */,
 				F29CC1CE29F3544F9E2F9BE7 /* MasternodeVoteCaster.swift in Sources */,
 				5AEEB0012F9C000000000003 /* EvonodeEpochBlocksService.swift in Sources */,

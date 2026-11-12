@@ -242,26 +242,6 @@
 			<string>%d evonode</string>
 		</dict>
 	</dict>
-	<key>%u votes in total</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>u</string>
-			<key>one</key>
-			<string>всего %u голос</string>
-			<key>few</key>
-			<string>всего %u голоса</string>
-			<key>many</key>
-			<string>всего %u голосов</string>
-			<key>other</key>
-			<string>всего %u голоса</string>
-		</dict>
-	</dict>
 	<key>%d masternodes</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -280,26 +260,6 @@
 			<string>%d мастернод</string>
 			<key>other</key>
 			<string>%d мастерноды</string>
-		</dict>
-	</dict>
-	<key>%d selected</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>%d выбран</string>
-			<key>few</key>
-			<string>%d выбрано</string>
-			<key>many</key>
-			<string>%d выбрано</string>
-			<key>other</key>
-			<string>%d выбрано</string>
 		</dict>
 	</dict>
 	<key>%d of your nodes already voted here and are not listed.</key>
@@ -340,26 +300,6 @@
 			<string>%u голосов за спор — evonode считаются как 4, мастерноды как 1</string>
 			<key>other</key>
 			<string>%u голосов за спор — evonode считаются как 4, мастерноды как 1</string>
-		</dict>
-	</dict>
-	<key>Vote on %d usernames</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>Голосовать за %d имя пользователя</string>
-			<key>few</key>
-			<string>Голосовать за %d имени пользователя</string>
-			<key>many</key>
-			<string>Голосовать за %d имён пользователей</string>
-			<key>other</key>
-			<string>Голосовать за %d имён пользователей</string>
 		</dict>
 	</dict>
 	<key>%u votes</key>

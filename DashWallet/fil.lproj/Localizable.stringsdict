@@ -194,22 +194,6 @@
 			<string>%d na evonode</string>
 		</dict>
 	</dict>
-	<key>%u votes in total</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>u</string>
-			<key>one</key>
-			<string>%u boto sa kabuuan</string>
-			<key>other</key>
-			<string>%u na boto sa kabuuan</string>
-		</dict>
-	</dict>
 	<key>%d masternodes</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -224,22 +208,6 @@
 			<string>%d masternode</string>
 			<key>other</key>
 			<string>%d na masternode</string>
-		</dict>
-	</dict>
-	<key>%d selected</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>%d ang napili</string>
-			<key>other</key>
-			<string>%d ang napili</string>
 		</dict>
 	</dict>
 	<key>%d of your nodes already voted here and are not listed.</key>
@@ -272,22 +240,6 @@
 			<string>%u boto bawat paligsahan — ang evonode ay bilang 4, ang masternode ay 1</string>
 			<key>other</key>
 			<string>%u na boto bawat paligsahan — ang evonode ay bilang 4, ang masternode ay 1</string>
-		</dict>
-	</dict>
-	<key>Vote on %d usernames</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>Bumoto sa %d username</string>
-			<key>other</key>
-			<string>Bumoto sa %d na username</string>
 		</dict>
 	</dict>
 	<key>%u votes</key>

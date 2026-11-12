@@ -37,7 +37,7 @@ struct UsernameVotingScreen: View {
 
     @StateObject private var viewModel = VotingViewModel()
     @State private var showingNodePicker = false
-    @State private var showingSort = false
+    @State private var showingFilters = false
     /// Where the voting-key flow opens, while it is shown.
     @State private var keyFlowStart: VotingKeysFlow.Start?
     /// A vote started from a pill, handed to ``View/voteFlow(_:viewModel:)``.
@@ -65,7 +65,8 @@ struct UsernameVotingScreen: View {
                         comment: "Voting"),
                     secondaryDescription: NSLocalizedString(
                         "You can block the creation of the usernames that you feel inappropriate.",
-                        comment: "Voting"))
+                        comment: "Voting"),
+                    descriptionColor: Color.dash.secondaryText)
                     .padding(.top, 10)
 
                 header
@@ -105,33 +106,20 @@ struct UsernameVotingScreen: View {
                 .accessibilityLabel(NSLocalizedString("Back", comment: ""))
             }
             ToolbarItem(placement: .navigationBarTrailing) {
-                if viewModel.isSelecting {
-                    Button(NSLocalizedString("Done", comment: "")) { viewModel.endSelecting() }
-                } else {
-                    votingMenu
-                }
+                votingMenu
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            if viewModel.isSelecting {
-                BulkSelectionBar(viewModel: viewModel)
-            } else {
-                DashUIKit.FilterBar(
-                    value: viewModel.sort.title,
-                    title: NSLocalizedString("Filtered by", comment: "Voting"),
-                    filterAccessibilityLabel: NSLocalizedString("Filter", comment: "Voting"),
-                    replacement: viewModel.toast.map(\.view)) {
-                    showingSort = true
-                }
+            DashUIKit.FilterBar(
+                value: viewModel.filter.sort.title,
+                title: NSLocalizedString("Filtered by", comment: "Voting"),
+                filterAccessibilityLabel: NSLocalizedString("Filter", comment: "Voting"),
+                replacement: viewModel.toast.map(\.view)) {
+                showingFilters = true
             }
         }
-        .confirmationDialog(
-            NSLocalizedString("Sort by", comment: "Voting"),
-            isPresented: $showingSort,
-            titleVisibility: .visible) {
-            ForEach(ContestSort.allCases) { option in
-                Button(option.title) { viewModel.sort = option }
-            }
+        .sheet(isPresented: $showingFilters) {
+            VotingFiltersSheet(filter: viewModel.filter) { viewModel.filter = $0 }
         }
         .navigationDestination(item: $openedContest) { opened in
             ContestDetailScreen(contest: opened.contest, viewModel: viewModel)
@@ -171,15 +159,20 @@ struct UsernameVotingScreen: View {
     private var header: some View {
         HStack(alignment: .center, spacing: 20) {
             VStack(alignment: .leading, spacing: 1) {
-                // Every open contest, whatever the search narrows the list to.
-                Text(NSLocalizedString("All", comment: "Voting"))
+                // The filter's type and how many open contests it keeps,
+                // whatever the search narrows the list to.
+                Text(viewModel.filter.title)
                     .dashFont(.headline)
                     .foregroundStyle(Color.dash.primaryText)
-                Text(String.localizedStringWithFormat(
-                    NSLocalizedString("%d usernames", comment: "Voting"),
-                    viewModel.contests.count))
-                    .dashFont(.footnote)
-                    .foregroundStyle(Color.dash.tertiaryText)
+                // No count while the type reads this wallet's votes and they
+                // are not known for every contest: it would not be a count.
+                if !viewModel.filter.type.readsMyVotes || viewModel.myVotesKnownForList {
+                    Text(String.localizedStringWithFormat(
+                        NSLocalizedString("%d usernames", comment: "Voting"),
+                        viewModel.filterMatchCount))
+                        .dashFont(.footnote)
+                        .foregroundStyle(Color.dash.tertiaryText)
+                }
             }
             .accessibilityElement(children: .combine)
             Spacer(minLength: 0)
@@ -188,12 +181,12 @@ struct UsernameVotingScreen: View {
                 leadingIcon: DashUIKit.DashIcon.Common.filterS.source,
                 size: .small,
                 style: .plainBlack,
-                action: { showingSort = true })
+                action: { showingFilters = true })
         }
     }
 
-    /// Voting keys, the node choice and multi-select, which the design has no
-    /// place for yet. Labelled, so none of them hides behind a bare icon.
+    /// Voting keys and the node choice, which the design has no place for
+    /// yet. Labelled, so none of them hides behind a bare icon.
     private var votingMenu: some View {
         Menu {
             Button {
@@ -208,15 +201,6 @@ struct UsernameVotingScreen: View {
                     showingNodePicker = true
                 } label: {
                     Label(NSLocalizedString("Voting nodes", comment: "Voting"), systemImage: "server.rack")
-                }
-            }
-            // Voting on many contests at once replaces the old "Quick Voting"
-            // screen. Only offered when this wallet can actually vote.
-            if viewModel.canVote && !viewModel.visibleContests.isEmpty {
-                Button {
-                    viewModel.isSelecting = true
-                } label: {
-                    Label(NSLocalizedString("Vote on several", comment: "Voting"), systemImage: "checklist")
                 }
             }
         } label: {
@@ -281,7 +265,7 @@ struct UsernameVotingScreen: View {
     /// current choice stays visible without opening the picker.
     @ViewBuilder
     private var votingWithRow: some View {
-        if viewModel.votableNodes.count > 1 && !viewModel.isSelecting {
+        if viewModel.votableNodes.count > 1 {
             Button { showingNodePicker = true } label: {
                 HStack(spacing: 8) {
                     Text(NSLocalizedString("Voting with", comment: "Voting"))
@@ -319,6 +303,39 @@ struct UsernameVotingScreen: View {
                 title: NSLocalizedString("Couldn't load the contests", comment: "Voting"),
                 message: NSLocalizedString("Pull down to try again.", comment: "Voting"))
                 .padding(.vertical, 40)
+        } else if viewModel.visibleContests.isEmpty && !viewModel.contests.isEmpty
+                    && viewModel.filter.type.readsMyVotes,
+                  let reason = viewModel.myVotesUnavailableReason {
+            // The type needs this wallet's votes, which cannot be told right
+            // now. Not the filter's fault.
+            VotingEmptyState(
+                icon: "exclamationmark.triangle",
+                title: NSLocalizedString("Can't filter by your votes right now", comment: "Voting"),
+                message: reason,
+                action: (
+                    title: NSLocalizedString("Reset filters", comment: "Voting"),
+                    perform: { viewModel.filter = .default }))
+                .padding(.vertical, 40)
+        } else if viewModel.visibleContests.isEmpty && !viewModel.contests.isEmpty
+                    && viewModel.filter.type.readsMyVotes && !viewModel.myVotesKnownForList {
+            // This wallet's history is still loading for some contests, so
+            // neither the filter nor a search can say yet that nothing matches.
+            SwiftUI.ProgressView()
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 40)
+        } else if viewModel.visibleContests.isEmpty && !viewModel.contests.isEmpty
+                    && viewModel.filterMatchCount == 0
+                    && (!viewModel.filter.type.readsMyVotes || viewModel.myVotesKnownForList) {
+            // Open contests exist and the filter alone hides them all; when it
+            // is the search, the search's empty state below says so.
+            VotingEmptyState(
+                icon: "line.3.horizontal.decrease.circle",
+                title: NSLocalizedString("No usernames match this filter", comment: "Voting"),
+                message: NSLocalizedString("Change the filter or reset it to see every open contest.", comment: "Voting"),
+                action: (
+                    title: NSLocalizedString("Reset filters", comment: "Voting"),
+                    perform: { viewModel.filter = .default }))
+                .padding(.vertical, 40)
         } else if viewModel.visibleContests.isEmpty {
             VotingEmptyState(
                 icon: "checkmark.seal",
@@ -333,130 +350,33 @@ struct UsernameVotingScreen: View {
                         "No open contest matches that search.",
                         comment: "Voting"))
                 .padding(.vertical, 40)
-        } else if viewModel.isSelecting {
-            selectionList
         } else {
             ForEach(viewModel.sections) { section in
-                if section.isUngrouped {
-                    Spacer().frame(height: 12)
-                } else {
-                    Text(section.title)
-                        .dashFont(.footnote)
-                        .foregroundStyle(Color.dash.tertiaryText)
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, 12)
-                        .padding(.bottom, 8)
-                        .accessibilityAddTraits(.isHeader)
-                }
+                Text(section.title)
+                    .dashFont(.footnote)
+                    .foregroundStyle(Color.dash.tertiaryText)
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 12)
+                    .padding(.bottom, 8)
+                    .accessibilityAddTraits(.isHeader)
                 // Rows straight in the lazy stack, so only those on screen are built.
                 ForEach(section.contests) { contest in
-                    card(for: contest, showsDeadline: section.isUngrouped)
+                    card(for: contest)
                         .padding(.bottom, 10)
                 }
             }
         }
     }
 
-    private func card(for contest: DPNSContest, showsDeadline: Bool) -> some View {
+    private func card(for contest: DPNSContest) -> some View {
         let label = contest.normalizedLabel
         return VotingContestCard(
             contest: contest,
             myChoices: viewModel.myChoices(on: label),
             isCasting: viewModel.castingLabels.contains(label),
-            showsDeadline: showsDeadline,
             canStartVote: { viewModel.canStartVote($0, on: label) },
             onVote: { choice in voteRequest = VoteFlowRequest(contest: contest, choice: choice) },
             onOpen: { openedContest = OpenedContest(contest: contest) })
-    }
-
-    /// TODO(voting-quick-vote): multi-select keeps the old row layout; Quick
-    /// voting is to replace it.
-    private var selectionList: some View {
-        VStack(spacing: 10) {
-            ForEach(viewModel.visibleContests) { contest in
-                let eligible = viewModel.isBulkEligible(contest)
-                Button {
-                    viewModel.toggleSelection(contest)
-                } label: {
-                    HStack(spacing: 10) {
-                        // Contested names are shown but not selectable:
-                        // hiding them would make the list silently differ
-                        // from the browsing list, so say why instead.
-                        Image(systemName: !eligible
-                              ? "minus.circle"
-                              : (viewModel.isSelected(contest)
-                                 ? "checkmark.circle.fill" : "circle"))
-                            .foregroundColor(!eligible
-                                             ? Color.dash.tertiaryText
-                                             : (viewModel.isSelected(contest)
-                                                ? .accentColor : Color.dash.tertiaryText))
-                        VStack(alignment: .leading, spacing: 2) {
-                            ContestRow(contest: contest)
-                            if !eligible {
-                                Text(NSLocalizedString(
-                                    "Several people requested this name — open it to choose between them.",
-                                    comment: "Voting"))
-                                    .font(.caption2)
-                                    .foregroundColor(Color.dash.tertiaryText)
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                    .modifier(DashUIKit.MenuViewModifier(shadowRadius: 20))
-                }
-                .buttonStyle(.plain)
-                .disabled(!eligible)
-            }
-        }
-    }
-
-}
-
-// MARK: - ContestRow
-
-struct ContestRow: View {
-    let contest: DPNSContest
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(alignment: .firstTextBaseline) {
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(contest.displayTitle)
-                        .font(.headline)
-                    // Platform keys the contest by the homograph-normalized
-                    // form; keep it visible so the name being voted on is
-                    // never ambiguous, but behind the spelling people typed.
-                    if contest.displayTitleDiffersFromNormalized {
-                        Text(contest.normalizedLabel)
-                            .font(.caption2)
-                            .monospaced()
-                            .foregroundColor(Color.dash.tertiaryText)
-                    }
-                }
-                Spacer()
-                ContestDeadlineLabel(endTime: contest.endTime)
-            }
-
-            HStack(spacing: 12) {
-                Label(
-                    String.localizedStringWithFormat(NSLocalizedString("%d requests", comment: "Voting"),
-                           contest.contenders.count),
-                    systemImage: "person.2")
-                if contest.lockVotes > 0 {
-                    Label("\(contest.lockVotes)", systemImage: "lock")
-                }
-                if contest.abstainVotes > 0 {
-                    Label("\(contest.abstainVotes)", systemImage: "minus.circle")
-                }
-                Spacer()
-                Text(String.localizedStringWithFormat(NSLocalizedString("%u votes", comment: "Voting"),
-                            contest.totalVotes))
-            }
-            .font(.caption)
-            .foregroundColor(Color.dash.secondaryText)
-        }
-        .padding(.vertical, 4)
     }
 }
 
@@ -494,6 +414,8 @@ struct VotingEmptyState: View {
     let icon: String
     let title: String
     let message: String
+    /// A button under the message.
+    var action: (title: String, perform: () -> Void)? = nil
 
     var body: some View {
         VStack(spacing: 12) {
@@ -502,10 +424,18 @@ struct VotingEmptyState: View {
                 .foregroundColor(Color.dash.tertiaryText)
             Text(title)
                 .font(.headline)
+                .multilineTextAlignment(.center)
             Text(message)
                 .font(.caption)
                 .foregroundColor(Color.dash.secondaryText)
                 .multilineTextAlignment(.center)
+            if let action {
+                DashUIKit.DashButton(
+                    text: action.title,
+                    size: .small,
+                    style: .plainBlack,
+                    action: action.perform)
+            }
         }
         .padding(.horizontal, 32)
         .frame(maxWidth: .infinity)

@@ -175,9 +175,6 @@
 /* Voting */
 "%d requests" = "%d requests";
 
-/* Voting */
-"%d selected" = "%d selected";
-
 /* SPV diagnostics */
 "%d still in progress" = "%d still in progress";
 
@@ -222,9 +219,6 @@
 
 /* Voting */
 "%u votes counted for “%@”" = "%1$u votes counted for “%2$@”";
-
-/* Voting */
-"%u votes in total" = "%u votes in total";
 
 /* Voting */
 "%u votes per contest — evonodes count as 4, masternodes as 1" = "%u votes per contest — evonodes count as 4, masternodes as 1";
@@ -1936,9 +1930,6 @@
 /* DashPay FAQ */
 "Enabling DashPay costs a small one-time network fee, paid from your identity's credit balance. The exact estimate is shown before you confirm. Sending contact requests and payments costs the usual network fees." = "Mengaktifkan DashPay memerlukan satu biaya jaringan kecil sekali bayar, diambil dari saldo kredit identitas Anda. Perkiraan tepatnya ditampilkan sebelum Anda mengonfirmasi. Mengirim permintaan kontak dan pembayaran dikenakan biaya jaringan seperti biasa.";
 
-/* Voting */
-"Ending soonest" = "Berakhir paling cepat";
-
 /* Usernames */
 "Ends around %@" = "Ends around %@";
 
@@ -3138,12 +3129,6 @@
 /* No comment provided by engineer. */
 "More Control" = "Kontrol lebih lanjut";
 
-/* Voting */
-"Most lock votes" = "Suara kunci terbanyak";
-
-/* Voting */
-"Most votes" = "Suara terbanyak";
-
 /* Masternode unban */
 "Move %@ from shielded balance" = "Move %@ from shielded balance";
 
@@ -3228,9 +3213,6 @@
 
 /* Coinbase Two Factor Auth */
 "Need help? " = "Butuh bantuan?";
-
-/* Voting */
-"Needs attention" = "Perlu perhatian";
 
 /* No comment provided by engineer. */
 "Network" = "Jaringan";
@@ -4707,9 +4689,6 @@
 /* Buy Sell Dash */
 "Select a service to buy, sell, convert and transfer Dash" = "Pilih layanan untuk membeli, menjual, menukar dan mentransfer Dash";
 
-/* Voting */
-"Select all" = "Pilih semua";
-
 /* DashSpend denomination selection */
 "Select amount" = "Pilih jumlah";
 
@@ -5005,9 +4984,6 @@
 /* Username marketplace: departed-name line — buyer identity */
 "Sold to %@" = "Terjual kepada %@";
 
-/* Voting */
-"Sole Requester" = "Sole Requester";
-
 /* Maya */
 "Some coins are not available because of the halted chain" = "Some coins are not available because of the halted chain";
 
@@ -5028,9 +5004,6 @@
 
 /* Usernames */
 "Some usernames can be blocked" = "Beberapa nama pengguna dapat diblokir";
-
-/* Voting */
-"Some votes already cast" = "Some votes already cast";
 
 /* No comment provided by engineer. */
 "Something went wrong" = "Ada yang salah";
@@ -6586,12 +6559,6 @@
 "Vote in progress" = "Pemungutan suara berlangsung";
 
 /* Voting */
-"Vote on %d usernames" = "Vote on %d usernames";
-
-/* Voting */
-"Vote on several" = "Beri suara untuk beberapa";
-
-/* Voting */
 "Vote with" = "Beri suara dengan";
 
 /* Voting */
@@ -7450,3 +7417,42 @@
 
 /* No comment provided by engineer. */
 "Filtered by" = "Difilter menurut";
+
+"Reset filters" = "Reset filters";
+
+"No usernames match this filter" = "No usernames match this filter";
+
+"Change the filter or reset it to see every open contest." = "Change the filter or reset it to see every open contest.";
+
+"Can't filter by your votes right now" = "Can't filter by your votes right now";
+
+"This wallet's masternode voting keys aren't available right now, so it has no votes to filter by." = "This wallet's masternode voting keys aren't available right now, so it has no votes to filter by.";
+
+"%@ · only duplicates" = "%@ · only duplicates";
+
+/* No comment provided by engineer. */
+"Date: New to old" = "Tanggal: Baru ke lama";
+
+/* No comment provided by engineer. */
+"Date: Old to new" = "Tanggal: Lama ke baru";
+
+/* No comment provided by engineer. */
+"Has blocked votes" = "Memiliki suara untuk memblokir";
+
+/* No comment provided by engineer. */
+"I have approved" = "Saya telah menyetujui";
+
+/* No comment provided by engineer. */
+"I have not voted" = "Saya belum memilih";
+
+/* No comment provided by engineer. */
+"Only duplicates" = "Hanya duplikat";
+
+/* No comment provided by engineer. */
+"Only requests with links" = "Hanya permintaan dengan tautan";
+
+/* No comment provided by engineer. */
+"Votes: High to low" = "Votes: Tinggi ke rendah";
+
+/* No comment provided by engineer. */
+"Votes: Low to high" = "Votes: Rendah ke tinggi";
