@@ -53,8 +53,8 @@ enum DashAddressClassifier {
             return .platform
         }
         // DIP-0018 shielded display form: 0x10 type byte + 43 raw Orchard
-        // bytes (the encoding `PaymentsLandingViewModel.reloadShieldedAddress`
-        // produces for our own address).
+        // bytes (the encoding
+        // `SDKShieldedReceiveAddressSource.encode(raw:mainnet:)` produces for our own addresses).
         if decoded.data.count == 44, decoded.data[0] == 0x10 {
             return .shielded(raw43: decoded.data.subdata(in: 1..<44))
         }

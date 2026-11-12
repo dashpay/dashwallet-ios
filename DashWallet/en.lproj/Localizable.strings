@@ -3821,6 +3821,9 @@
 /* InternalTransfer recovery */
 "Pending — tap to finish" = "Pending — tap to finish";
 
+/* Receive: shielded fallback warning subtitle */
+"People who pay to it can be linked to each other." = "People who pay to it can be linked to each other.";
+
 /* SPV diagnostics */
 "Per-Phase Progress" = "Per-Phase Progress";
 
@@ -3991,6 +3994,9 @@
 
 /* Buy Sell Dash */
 "Powered by Uphold" = "Powered by Uphold";
+
+/* Receive: shielded address being derived */
+"Preparing a new address…" = "Preparing a new address…";
 
 /* Log export progress */
 "Preparing logs…" = "Preparing logs…";
@@ -5741,6 +5747,9 @@
 
 /* DashPay Contacts */
 "This is your own identity." = "This is your own identity.";
+
+/* Receive: shielded fallback warning title */
+"This is your permanent shielded address." = "This is your permanent shielded address.";
 
 /* DashPay Contacts: scanned QR is a payment/invitation/foreign code */
 "This isn't a DashPay user QR code." = "This isn't a DashPay user QR code.";

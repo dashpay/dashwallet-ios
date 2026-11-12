@@ -24,6 +24,9 @@ where they disagree, ADR-0001 wins.
 | [0029](0029-allow-a-new-app-connect-approval-while-another-is-confirming.md) | Allow a new App Connect approval while another one is still confirming | platform | Proposed | |
 | [0030](0030-show-an-app-connect-connection-whose-response-was-not-published-as-not-delivered.md) | Show an App Connect connection whose response was not published as Not delivered | platform | Proposed | |
 | [0031](0031-turn-off-unattributed-dashpay-profile-keys-with-any-disconnect.md) | Turn off unattributed DashPay profile keys with any disconnect | keys | Proposed | |
+| [0046](0046-build-fresh-shielded-addresses-across-the-app-and-swiftdashsdk.md) | Build fresh shielded addresses across the app and SwiftDashSDK | platform | Proposed | |
+| [0047](0047-draw-the-random-diversifier-index-inside-the-sdk.md) | Draw the random diversifier index inside the SDK | keys | Proposed | |
+| [0048](0048-recognise-own-shielded-recipients-through-an-sdk-predicate.md) | Recognise own shielded recipients through an SDK predicate | payments | Proposed | |
 
 Areas: `spv`, `platform`, `keys`, `storage`, `coinjoin`, `payments`, `ui`, `build`, `process`. Each ADR takes one; a new
 Area is added to this list in the PR that first needs it.
