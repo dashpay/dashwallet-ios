@@ -119,6 +119,14 @@ struct ReceiveIdentity: Equatable {
     }
 }
 
+/// Where a Specify-amount request goes. Core keeps `DWReceiveModel`, which
+/// follows the next unused address; every other option carries the address or
+/// ID its card shows.
+enum AmountRequestDestination: Equatable {
+    case core
+    case option(ReceiveOption, address: String)
+}
+
 enum ReceiveOptionPolicy {
     /// Which options the Receive tab offers.
     ///
@@ -468,14 +476,14 @@ final class PaymentsLandingViewModel: ObservableObject {
     /// Specify amount is offered on every option that has an address or ID to
     /// put the amount on.
     var canSpecifyAmount: Bool {
-        currentAddress != nil
+        amountRequestDestination != nil
     }
 
-    /// The request for `amount` on the selected option, or nil on Core —
-    /// which keeps `DWReceiveModel` — and when there is no address or ID.
-    func optionAmountRequest(amount: UInt64) -> OptionAmountRequestModel? {
-        guard network != .core, let address = currentAddress else { return nil }
-        return OptionAmountRequestModel(address: address, amount: amount, option: network)
+    /// Where a Specify-amount request for the selected option goes, or nil when
+    /// the option has no address or ID.
+    var amountRequestDestination: AmountRequestDestination? {
+        guard let address = currentAddress else { return nil }
+        return network == .core ? .core : .option(network, address: address)
     }
 
     var canViewTransaction: Bool {

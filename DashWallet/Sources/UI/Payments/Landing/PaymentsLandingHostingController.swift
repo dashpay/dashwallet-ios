@@ -73,6 +73,8 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     private var isSurfaceOnScreen = false
     /// The specify-amount sheet while it is up, so a receipt can dismiss it.
     private weak var requestAmountController: RequestAmountHostingController?
+    /// The destination the Specify-amount step was opened for.
+    private var specifyAmountDestination: AmountRequestDestination?
     /// Kept apart from `cancellables`: these live exactly as long as that sheet
     /// does, and are dropped with it rather than for the screen's lifetime.
     private var requestAmountObservers = Set<AnyCancellable>()
@@ -313,6 +315,7 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     }
 
     private func pushSpecifyAmount() {
+        specifyAmountDestination = viewModel.amountRequestDestination
         let specify = SpecifyAmountViewController.controller()
         specify.delegate = self
         isPushingReceiveStep = true
@@ -685,14 +688,25 @@ extension PaymentsLandingHostingController: SpecifyAmountViewControllerDelegate 
         // Core's request follows the next unused address and carries fiat and
         // username; the other options put the amount on the address or ID the
         // card shows.
+        //
+        // The request goes only to the destination the amount was typed for.
+        // If the option or its address changed while the step was open, the
+        // user is taken back to the card, which shows the current one.
+        guard let destination = specifyAmountDestination,
+              destination == viewModel.amountRequestDestination else {
+            returnToLandingFromReceiveStep()
+            return
+        }
         let model: DWReceiveModelProtocol
         let addressCaption: String?
-        if let optionRequest = viewModel.optionAmountRequest(amount: amount) {
-            model = optionRequest
-            addressCaption = optionRequest.addressCaption
-        } else {
+        switch destination {
+        case .core:
             model = DWReceiveModel(amount: amount)
             addressCaption = nil
+        case let .option(option, address):
+            let optionRequest = OptionAmountRequestModel(address: address, amount: amount, option: option)
+            model = optionRequest
+            addressCaption = optionRequest.addressCaption
         }
         let requestController = RequestAmountHostingController.present(
             from: self,

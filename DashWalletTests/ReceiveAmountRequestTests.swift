@@ -152,7 +152,7 @@ final class ReceiveAmountRequestTests: XCTestCase {
 
     // MARK: The request the landing builds
 
-    func testLandingBuildsTheRequestForTheSelectedOption() throws {
+    func testLandingSendsTheRequestToTheSelectedOption() throws {
         let shielded = try Self.shielded(hrp: "dash")
         let model = PaymentsLandingViewModel.makeForPreview(
             activeTab: .receive, platformAddress: Self.platformMainnet, shieldedAddress: shielded)
@@ -167,14 +167,33 @@ final class ReceiveAmountRequestTests: XCTestCase {
         ]
         for (option, address) in expected {
             model.network = option
-            let built = try XCTUnwrap(model.optionAmountRequest(amount: 100_000_000), "\(option)")
-            XCTAssertEqual(built.paymentAddressOrRequestToShare(), "dash:\(address)?amount=1", "\(option)")
+            XCTAssertEqual(model.amountRequestDestination, .option(option, address: address), "\(option)")
         }
     }
 
     /// Core keeps its own model, which adds the fiat and username parameters.
     func testLandingLeavesCoreToItsOwnModel() {
         let model = PaymentsLandingViewModel.makeForPreview(activeTab: .receive, network: .core)
-        XCTAssertNil(model.optionAmountRequest(amount: 100_000_000))
+        XCTAssertEqual(model.amountRequestDestination, .core)
+    }
+
+    /// The host compares the destination captured when the amount step opened
+    /// with the current one, and presents nothing when they differ. A Shielded
+    /// destination must never compare equal to Core, or a lost Shielded address
+    /// would become a Core request.
+    func testAChangedOrLostDestinationDoesNotMatchTheOneCaptured() throws {
+        let model = PaymentsLandingViewModel.makeForPreview(
+            activeTab: .receive, network: .shielded, shieldedAddress: try Self.shielded(hrp: "dash"))
+        let captured = try XCTUnwrap(model.amountRequestDestination)
+
+        model.network = .core
+        XCTAssertNotEqual(model.amountRequestDestination, captured)
+
+        model.network = .platform
+        XCTAssertNotEqual(model.amountRequestDestination, captured)
+
+        let withoutAddress = PaymentsLandingViewModel.makeForPreview(
+            activeTab: .receive, network: .shielded, shieldedAddress: nil)
+        XCTAssertNil(withoutAddress.amountRequestDestination)
     }
 }
