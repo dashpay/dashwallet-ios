@@ -28,7 +28,7 @@ struct ConnectionRow: View {
     /// Takes a Refused row off the list: no PIN, nothing written to Platform.
     let onRemove: () -> Void
 
-    /// What this row offers, read from the state-to-actions table (ADR 0010).
+    /// What this row offers, read from the state-to-actions table (ADR-0019).
     static func actions(for status: ConnectionStatus) -> Set<AppConnect.RowAction> {
         AppConnect.StateActions.row(for: status).actions
     }

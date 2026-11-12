@@ -240,6 +240,10 @@ struct DashConnectDisconnectResult: Equatable {
     /// they may not be placed yet, so the sign-in can still land. Disconnect
     /// can run again.
     var fencesNotPlaced = 0
+    /// Of `keysTurnedOff`, the keys no approval of this wallet names: keys
+    /// given on another device or before a restore, and DashPay profile
+    /// keys no record names.
+    var unrecordedKeysTurnedOff = 0
     /// A read of another identity of this wallet saw keys of the app no
     /// approval names. They can be turned off only while that identity is
     /// the active one.

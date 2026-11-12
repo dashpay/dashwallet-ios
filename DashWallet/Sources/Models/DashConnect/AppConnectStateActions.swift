@@ -1,6 +1,6 @@
 import Foundation
 
-/// The state-to-actions table (ADR 0010): for each `ConnectionStatus`, the tab
+/// The state-to-actions table (ADR-0019): for each `ConnectionStatus`, the tab
 /// its connection is listed on, the status badge, the text key of the status
 /// name and the actions it allows. Rows and sheets read this table.
 ///
