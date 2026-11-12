@@ -286,13 +286,8 @@ struct ConnectionSheet: View {
             text: NSLocalizedString("Disconnect", comment: "DashConnect"),
             // Enabled even when what it does is not known: the tap reads it
             // again, or says why it cannot ask.
-            isEnabled: !isBusy, isLoading: isBusy, fillsWidth: true, size: .large, style: .plainRed,
+            isEnabled: !isBusy, isLoading: isBusy, fillsWidth: true, size: .large, style: .tintedRed,
             action: askToDisconnect)
-            .background(Color.dash.redAlpha5)
-            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-            // DashUIKit has no tinted red style: the plain red one has a
-            // clear background, so only its title would take the tap.
-            .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
     /// Only when the view model lets it ask.
