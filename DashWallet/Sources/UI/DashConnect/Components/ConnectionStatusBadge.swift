@@ -53,7 +53,7 @@ struct ConnectionStatusBadge: View {
         }
     }
 
-    /// The dot colour of a status, from the state-to-actions table (ADR 0010):
+    /// The dot colour of a status, from the state-to-actions table (ADR-0019):
     /// green once live, orange while waiting or when the app never got its
     /// keys, red when refused, grey for a connection that is over or lapsed.
     static func dotColor(for status: ConnectionStatus) -> Color {
