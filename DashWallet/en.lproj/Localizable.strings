@@ -3283,6 +3283,9 @@
 /* No comment provided by engineer. */
 "No funded Platform address has enough balance to cover this amount plus fees." = "No funded Platform address has enough balance to cover this amount plus fees.";
 
+/* Advanced Security: no biometric spending limit stored */
+"No biometric spending limit is set" = "No biometric spending limit is set";
+
 /* Identities */
 "No Identities" = "No Identities";
 
