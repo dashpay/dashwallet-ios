@@ -1415,6 +1415,39 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertEqual(alone.map(\.status), [.disconnected], "with no access elsewhere it is Disconnected")
     }
 
+    /// An app whose intents here are all closed, renewed through keys no
+    /// intent names: a key of unknown bound on the read may be the app's,
+    /// so its row stays Confirming, with its Disconnect, not Disconnected.
+    func testAClosedIntentHereIsConfirmingWhileTheReadHasAKeyOfUnknownBound() {
+        var closed = Self.intent([Self.authKey(10)])
+        closed.closedAt = Date(timeIntervalSince1970: 1)
+        let unknown = Self.onPlatform(Self.authKey(20, bound: nil), boundKnown: false)
+        let off = Self.onPlatform(Self.authKey(10), disabledAt: 1)
+        let row = DAppConnection(
+            id: Self.app.toBase58String(), name: "App", url: "", status: .active,
+            updatedAt: Date(timeIntervalSince1970: 1), seenOn: [Self.identity.toBase58String()])
+        let at = Date(timeIntervalSince1970: 2)
+
+        let held = PlatformDashConnectDataSource.rows(
+            [row], after: AppConnect.project([Self.snapshot([off, unknown])], intents: [closed]),
+            of: Self.identity, intents: [], at: at)
+        XCTAssertEqual(held.map(\.status), [.confirming])
+
+        let placed = PlatformDashConnectDataSource.rows(
+            [row], after: AppConnect.project([Self.snapshot([off])], intents: [closed]),
+            of: Self.identity, intents: [], at: at)
+        XCTAssertEqual(placed.map(\.status), [.disconnected], "once every key is placed it is Disconnected")
+    }
+
+    /// A sign-in that beat its fence shows the app's key under the fenced
+    /// id: the result counts it once, from the plan's fence, not again as a
+    /// key the read after the update found.
+    func testAKeyUnderAFencedIdIsNotFoundAgainAfterTheUpdate() {
+        let plan = AppConnect.DisconnectPlan(disable: [10], fence: [7])
+        let remaining = AppConnect.DisconnectPlan(disable: [7, 30])
+        XCTAssertEqual(PlatformDashConnectDataSource.keysFoundAfter(plan: plan, remaining: remaining, fenceIds: []), 1)
+    }
+
     func testAFenceKeyCanSpendOneCreditAndNeverExpires() {
         let key = AppConnect.fenceKey(keyId: 7, publicKeyHash160: Data(repeating: 1, count: 20))
         XCTAssertEqual(key.totalBudget, 1)
