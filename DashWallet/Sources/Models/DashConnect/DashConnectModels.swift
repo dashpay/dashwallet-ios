@@ -250,15 +250,115 @@ struct DashConnectDisconnectResult: Equatable {
     var keysOnAnotherIdentity = false
 }
 
+/// What a connection gives its app, from the intents of one identity that
+/// hold it, as the connection sheet shows it.
+struct ConnectionAccess: Equatable {
+    /// What each key can do.
+    let keys: [AppConnect.GrantedAccess.Key]
+    /// The most the keys can spend together, in credits: Platform counts
+    /// each key's budget apart, so it is their sum. `nil` when no key has a
+    /// budget (see `hasUnlimitedKey`).
+    let budgetLimit: UInt64?
+    /// A key with no spending limit.
+    let hasUnlimitedKey: Bool
+    /// When the last of the keys stops working.
+    let expiresAt: Date?
+    /// The connection can receive messages encrypted to this identity.
+    let receivesMessages: Bool
+
+    /// `nil` when `intents` add no auth key; with `snapshot`, no auth key
+    /// that gives access on it (`GrantedAccess(intents:snapshot:)`).
+    init?(
+        intents: [AppConnect.ConnectionIntent], snapshot: AppConnect.IdentitySnapshot? = nil,
+        unrecorded: [AppConnect.PlatformKey] = []
+    ) {
+        let access = AppConnect.GrantedAccess(intents: intents, snapshot: snapshot, unrecorded: unrecorded)
+        guard !access.keys.isEmpty else { return nil }
+        self.init(access)
+    }
+
+    init(_ access: AppConnect.GrantedAccess) {
+        keys = access.keys
+        let budgets = access.keys.compactMap(\.totalBudget)
+        budgetLimit = budgets.isEmpty ? nil : budgets.reduce(0) { sum, budget in
+            let (total, overflow) = sum.addingReportingOverflow(budget)
+            return overflow ? .max : total
+        }
+        hasUnlimitedKey = access.keys.contains { $0.totalBudget == nil }
+        // A key with no expiry leaves the connection with no end date.
+        let expiries = access.keys.map(\.expiresAt)
+        expiresAt = expiries.contains(nil) ? nil
+            : expiries.compactMap { $0 }.max().map { Date(timeIntervalSince1970: TimeInterval($0) / 1000) }
+        receivesMessages = access.receivesMessages
+    }
+
+    var granted: AppConnect.GrantedAccess {
+        AppConnect.GrantedAccess(keys: keys, receivesMessages: receivesMessages)
+    }
+}
+
 /// A connection as its sheet shows it: the app, the identity it is
-/// connected on, and when it was made.
+/// connected on, and what it was given.
 struct ConnectionDetails: Equatable {
     let appId: String
     let identityId: String?
     let username: String?
+    let access: ConnectionAccess?
     /// When the connection was made: the latest of its approvals, so a
     /// renewal from a new code counts as the connection it made.
     var connectedAt: Date? = nil
+    /// What is left of each key's budget, read from Platform; `nil` when it
+    /// was not read (the connection is on another identity) or could not be
+    /// (`fundingReadFailed`).
+    var keyFunding: [KeyFunding]? = nil
+    var fundingReadFailed = false
+}
+
+/// One of a connection's keys, with what is left of its budget.
+struct KeyFunding: Equatable {
+    /// The key is bound to the DashPay profile, not to the app's data.
+    let isProfileKey: Bool
+    /// What the key may spend over its life; `nil` with no limit.
+    let totalBudget: UInt64?
+    /// What is left of it; `nil` with no limit, or when Platform did not say.
+    let remaining: UInt64?
+
+    /// The auth keys of `intents` that are on `snapshot` and not disabled,
+    /// then the `unrecorded` keys the projection gives the app, in their
+    /// order, each with its budget as Platform holds it now and what
+    /// `remaining` (by key id) says is left. A key is listed once.
+    static func of(
+        intents: [AppConnect.ConnectionIntent], snapshot: AppConnect.IdentitySnapshot,
+        unrecorded: [AppConnect.PlatformKey] = [], remaining: [UInt32: UInt64?]
+    ) -> [KeyFunding] {
+        landedKeys(of: intents, snapshot: snapshot, unrecorded: unrecorded).map { key in
+            KeyFunding(
+                isProfileKey: key.bound.map(AppConnect.isProfileBound) ?? false,
+                totalBudget: key.totalBudget,
+                remaining: remaining[key.id] ?? nil)
+        }
+    }
+
+    /// The ids `of(intents:snapshot:unrecorded:remaining:)` lists, whose
+    /// remaining budgets are read from Platform.
+    static func keyIds(
+        of intents: [AppConnect.ConnectionIntent], snapshot: AppConnect.IdentitySnapshot,
+        unrecorded: [AppConnect.PlatformKey] = []
+    ) -> [UInt32] {
+        landedKeys(of: intents, snapshot: snapshot, unrecorded: unrecorded).map(\.id).sorted()
+    }
+
+    private static func landedKeys(
+        of intents: [AppConnect.ConnectionIntent], snapshot: AppConnect.IdentitySnapshot,
+        unrecorded: [AppConnect.PlatformKey]
+    ) -> [AppConnect.PlatformKey] {
+        var listed = Set<UInt32>()
+        let recorded = intents.flatMap(\.authKeys).compactMap { key -> AppConnect.PlatformKey? in
+            guard [.live, .expired].contains(AppConnect.presence(of: key, in: snapshot)) else { return nil }
+            return snapshot.keys.first { $0.id == key.id }
+        }
+        return (recorded + unrecorded).filter { listed.insert($0.id).inserted }
+    }
 }
 
 /// A pending request derived from a scanned login QR code.

@@ -304,7 +304,7 @@ final class MockDashConnectDataSource: DashConnectDataSource {
     /// The mock grants no keys: no details beyond the row.
     func connectionDetails(id: String, scope: String?) async -> ConnectionDetails? {
         guard subject.value.contains(where: { $0.id == id }) else { return nil }
-        return ConnectionDetails(appId: id, identityId: nil, username: nil)
+        return ConnectionDetails(appId: id, identityId: nil, username: nil, access: nil)
     }
 
     private func validateNetwork(_ network: DashConnectNetwork) throws {
