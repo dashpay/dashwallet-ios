@@ -231,7 +231,7 @@ struct ConnectionsScreen: View {
         )
         // An App Connect plan makes the sheet longer than the fixed height
         // shows; who pays and when access ends must not sit below the fold.
-        .approveSheetPresentation(isLoading: viewModel.isApproving, isTall: request.login.grantPlan != nil)
+        .approveSheetPresentation(isTall: request.login.grantPlan != nil)
     }
 
     private func tokenPurchaseSheet(for purchase: DashConnectTokenPurchaseRequest) -> some View {
@@ -242,7 +242,7 @@ struct ConnectionsScreen: View {
             onApprove: { viewModel.approvePendingTokenPurchase() },
             onDeny: { viewModel.denyPendingTokenPurchase() }
         )
-        .approveSheetPresentation(isLoading: viewModel.isApprovingPurchase)
+        .approveSheetPresentation()
     }
 
     // MARK: - Presentation bindings

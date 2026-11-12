@@ -29,7 +29,6 @@ static const bool _SNAPSHOT = 0;
 #import "DWNumberKeyboardInputViewAudioFeedback.h"
 #import "DWInputValidator.h"
 #import "DWAmountInputValidator.h"
-#import "DWLocalCurrencyViewController.h"
 #import "DWDemoDelegate.h"
 #import "DWModalPopupTransition.h"
 #import "DWModalTransition.h"
@@ -132,13 +131,10 @@ static const bool _SNAPSHOT = 0;
 #import "DWSharedUIConstants.h"
 #import "DWDashPayReadyProtocol.h"
 #import "DWSetPinViewController.h"
-#import "DWAdvancedSecurityViewController.h"
 #import "DWBiometricAuthModel.h"
-#import "DWAdvancedSecurityModel.h"
 #import "DWRecoverModel.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWPreviewSeedPhraseViewController.h"
 #import "DWSecureWalletDelegate.h"
 #if SNAPSHOT
-#import "DWDemoAdvancedSecurityViewController.h"
 #endif
