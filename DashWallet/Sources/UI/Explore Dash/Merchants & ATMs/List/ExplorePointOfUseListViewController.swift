@@ -23,7 +23,8 @@ import DashUIKit
 private let kExploreWhereToSpendSectionCount = 5
 
 private let kHandlerHeight: CGFloat = 24.0
-internal let kDefaultOpenedMapPosition: CGFloat = 260.0
+/// Map visible above the opened sheet, below whatever bar covers the map's top.
+private let kDefaultOpenedMapPosition: CGFloat = 260.0
 private let kDefaultClosedMapPosition: CGFloat = -kHandlerHeight
 private let kSignificantLocationChange: CLLocationDistance = 500
 
@@ -124,6 +125,13 @@ class ExplorePointOfUseListViewController: UIViewController, NavigationBarDispla
         return fittingHeight > 0 ? fittingHeight : 74
     }
 
+    /// The opened sheet's top. The custom bar is drawn over the map, so the
+    /// sheet sits that much lower to keep `kDefaultOpenedMapPosition` of map
+    /// in view.
+    private var openedMapPosition: CGFloat {
+        kDefaultOpenedMapPosition + customNavBarHeight
+    }
+
     internal var isFiltered: Bool { model.hasFilters }
     internal var emptyResultsView: PointOfUseListEmptyResultsView!
 
@@ -156,8 +164,9 @@ class ExplorePointOfUseListViewController: UIViewController, NavigationBarDispla
         guard contentViewTopLayoutConstraint.constant == kDefaultClosedMapPosition else { return }
 
         UIView.animate(withDuration: 0.3, delay: 0, options: .curveLinear) {
-            self.contentViewTopLayoutConstraint.constant = kDefaultOpenedMapPosition
-            self.mapView.contentInset = self.mapContentInsets(sheetTop: kDefaultOpenedMapPosition)
+            let openedPosition = self.openedMapPosition
+            self.contentViewTopLayoutConstraint.constant = openedPosition
+            self.mapView.contentInset = self.mapContentInsets(sheetTop: openedPosition)
             self.view.layoutIfNeeded()
         } completion: { [weak self] _ in
             self?.updateTableViewInsetsForCurrentSheetPosition()
@@ -725,12 +734,12 @@ extension ExplorePointOfUseListViewController {
             let velocityY: CGFloat = 0.2*velocityInView.y
             var finalY: CGFloat = contentViewTopLayoutConstraint.constant + velocityY
 
-            if finalY < kDefaultOpenedMapPosition/2 {
+            if finalY < openedMapPosition/2 {
                 finalY = kDefaultClosedMapPosition
             } else if finalY > view.frame.size.height/2 {
                 finalY = mapView.frame.size.height - kHandlerHeight
             } else {
-                finalY = kDefaultOpenedMapPosition
+                finalY = openedMapPosition
             }
 
             let animationDuration: CGFloat = (abs(velocityY)*0.0002)+0.2;
