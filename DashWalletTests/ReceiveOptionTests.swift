@@ -22,7 +22,7 @@ import XCTest
 
 /// `ReceiveOption` is Receive's own option type: its chain cases map to
 /// `ChainNetwork` and back, and Identity maps to no chain, so it can never
-/// reach Send, Home or Internal transfer (ADR-0033).
+/// reach Send, Home or Internal transfer (ADR-0035).
 final class ReceiveOptionTests: XCTestCase {
     func testEveryChainNetworkRoundTripsThroughReceiveOption() {
         for network in ChainNetwork.allCases {

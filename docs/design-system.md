@@ -89,6 +89,7 @@ are legacy — qualify `DashUIKit.` where names clash.
 | TransactionView | `UIK: Components/Transaction/TransactionView.swift:29` | default | transaction row |
 | Criteria | `UIK: Components/Criteria.swift:107` | criterion states `:39` | validation checklist |
 | SystemMessageView | `UIK: Components/SystemMessageView.swift:20`; Figma `60:208` | with / without buttons, closable | inline notice |
+| ModalDialog | `UIK: Components/ModalDialog.swift:23`; Figma `Dialogue` (`110:3283` two buttons, `110:2968` one) | one / two buttons, destructive role, no icon, long text scrolls | dialog card the host presents over a dim; master only |
 | Toast | `UIK: Components/Toast.swift:53` | styles `:35` (warning / info / error / success / copied / loading / noInternet) | |
 | Error / Loading / Success illustrations | `UIK: Components/Illustrations/ErrorIllustration.swift:20`, `LoadingIllustration.swift:25`, `SuccessIllustration.swift:20` | — | result screens |
 | LoadingSpinner | `UIK: Components/Illustrations/LoadingIllustration.swift:54` | — | |
@@ -99,7 +100,7 @@ are legacy — qualify `DashUIKit.` where names clash.
 
 | Gap | Decision | Interim |
 |---|---|---|
-| Modal dialog | **Add to DashUIKit.** A screen that needs it declares `NEW: ModalDialog`. | app's `DashWallet/Sources/UI/SwiftUI Components/Dialogs/ModalDialog.swift:21` stays for existing screens only |
+| Modal dialog | **Closed:** DashUIKit `ModalDialog` (dashpay/DashUIKit#60). | the app's `LegacyModalDialog` (`DashWallet/Sources/UI/SwiftUI Components/Dialogs/ModalDialog.swift:23`) stays for existing screens; moving them is dashpay/dashwallet-ios#1355 |
 | Stepper | **Add to DashUIKit.** Colors exist (`UIK: Foundation/Color+DashUI.swift:161`, `stepper*`); the view does not. | — |
 | Generic text field | Open — no screen needs it yet. Decide when one does. | app's `DashWallet/Sources/UI/SwiftUI Components/TextInput.swift:21` |
 | Empty state | Feature-scoped in this repo, composed from DashUIKit parts (illustration + text + `DashButton`). | — |

@@ -647,6 +647,7 @@ struct AssetLockRecoveryService {
                     outPointTxid: txidWire,
                     outPointVout: vout)
             }
+            #if DASHPAY
             // Announced like every other own top-up (ADR-0034), so the watched
             // Identity card raises no Receipt for it. The lock's value is the
             // most it can add; without the lock row or a network it is not
@@ -662,6 +663,9 @@ struct AssetLockRecoveryService {
             } else {
                 _ = try await resume()
             }
+            #else
+            _ = try await resume()
+            #endif
         }
         DWCurrentUserIdentityInfo.shared.refreshFromSDK()
         return outcome

@@ -23,7 +23,7 @@ import Foundation
 ///
 /// Receive's own type, not `ChainNetwork`: the chain options map to their
 /// chain, and Identity maps to none, so Identity cannot reach Send, Home or
-/// Internal transfer, which keep using `ChainNetwork` (ADR-0033).
+/// Internal transfer, which keep using `ChainNetwork` (ADR-0035).
 enum ReceiveOption: String, CaseIterable, Identifiable {
     case core
     case shielded
