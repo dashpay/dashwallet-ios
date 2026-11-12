@@ -1,6 +1,6 @@
 # 0033 — Turn off only the unrecorded keys the question listed
 
-- **Status:** Proposed
+- **Status:** Superseded by ADR-0016
 - **Date:** 2026-11-10
 - **Deciders:** romchornyi (owner), with Claude during the design pass
 

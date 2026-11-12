@@ -72,27 +72,19 @@ struct ConnectionsScreen: View {
                     .background(Color.primaryBackground)
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
-
-            if let message = viewModel.message {
-                // The question and the result of a disconnect (SCR-03, SCR-04),
-                // and every other message, above the progress: a refusal while
-                // a request runs shows at once.
-                Color.dash.backgroundOverlay
-                    .ignoresSafeArea()
-
-                ConnectionsMessageDialog.dialog(
-                    for: message,
-                    turnOff: { connection, keys in
-                        viewModel.message = nil
-                        viewModel.disconnect(connection, unrecordedKeys: keys)
-                    },
-                    dismiss: { viewModel.message = nil })
-                    .padding(.horizontal, 20)
-            }
         }
         .background(Color.primaryBackground)
         .navigationBarHidden(true)
         .task { await viewModel.refreshConnections() }
+        .alert(item: messageBinding) { message in
+            return Alert(
+                title: Text(message.title),
+                message: Text(message.text),
+                dismissButton: .default(Text(NSLocalizedString("OK", comment: ""))) {
+                    viewModel.message = nil
+                }
+            )
+        }
         .sheet(isPresented: isApproveSheetPresented) {
             if let request = viewModel.pendingRequest {
                 approveSheet(for: request)
@@ -115,7 +107,8 @@ struct ConnectionsScreen: View {
         } else {
             ConnectionsList(
                 connections: viewModel.connections,
-                onDisconnect: viewModel.disconnect
+                onDisconnect: viewModel.disconnect,
+                onRemove: viewModel.removeConnection
             )
             .padding(.horizontal, 20)
         }
@@ -167,6 +160,13 @@ struct ConnectionsScreen: View {
                     viewModel.denyPendingTokenPurchase()
                 }
             }
+        )
+    }
+
+    private var messageBinding: Binding<ConnectionsScreenMessage?> {
+        Binding(
+            get: { viewModel.message },
+            set: { viewModel.message = $0 }
         )
     }
 
@@ -242,15 +242,4 @@ struct ConnectionsScreen: View {
             featureUnavailable: false
         )
     )
-}
-
-#Preview("Busy refusal over progress") {
-    let viewModel = ConnectionsViewModel(
-        dataSource: MockDashConnectDataSource(initial: [MockDashConnectDataSource.sample(.active)]),
-        featureUnavailable: false
-    )
-    viewModel.isProcessingStateTransition = true
-    viewModel.message = ConnectionsScreenMessage(
-        kind: .error, text: "Finish the current DashConnect request first, then try again.")
-    return ConnectionsScreen(vc: UINavigationController(), viewModel: viewModel)
 }

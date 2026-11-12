@@ -25,6 +25,13 @@ import SwiftUI
 struct ConnectionRow: View {
     let connection: DAppConnection
     let onDisconnect: () -> Void
+    /// Takes a Refused row off the list: no PIN, nothing written to Platform.
+    let onRemove: () -> Void
+
+    /// What this row offers, read from the state-to-actions table (ADR-0019).
+    static func actions(for status: ConnectionStatus) -> Set<AppConnect.RowAction> {
+        AppConnect.StateActions.row(for: status).actions
+    }
 
     private enum Layout {
         /// `SwitchView` is a fixed 64×28 from the design system and sets that
@@ -48,9 +55,17 @@ struct ConnectionRow: View {
             ConnectionStatusBadge(status: connection.status, updatedAt: connection.updatedAt)
                 .fixedSize(horizontal: true, vertical: false)
 
+            let actions = Self.actions(for: connection.status)
+
             // A confirming connection may get its keys yet: turning it off
             // makes sure it never does.
-            activeSwitch
+            if actions.contains(.disconnect) {
+                activeSwitch
+            }
+
+            if actions.contains(.remove) {
+                removeButton
+            }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
@@ -74,6 +89,14 @@ struct ConnectionRow: View {
         .frame(maxWidth: .infinity, alignment: .topLeading)
     }
 
+    private var removeButton: some View {
+        DashUIKit.DashButton(
+            text: NSLocalizedString("Remove", comment: "DashConnect: takes a refused connection off the list"),
+            size: .small, style: .tintedGray, action: onRemove)
+            .fixedSize()
+            .accessibilityLabel(Text(NSLocalizedString("Remove", comment: "DashConnect: takes a refused connection off the list")))
+    }
+
     /// Always reads as on: only the off direction is reachable from here.
     /// Turning it off turns the app's keys off on the identity and removes
     /// the row (see `DashConnectDataSource.disconnect`).
@@ -93,21 +116,36 @@ struct ConnectionRow: View {
     }
 }
 
-#Preview {
+private func previewConnection(_ status: ConnectionStatus, name: String = "A Very Long Application Name Indeed") -> DAppConnection {
+    DAppConnection(
+        id: status.rawValue,
+        name: name,
+        url: "https://example.org",
+        status: status,
+        updatedAt: Date(timeIntervalSince1970: 1_754_232_520)
+    )
+}
+
+#Preview("All statuses") {
     VStack(spacing: 2) {
         ForEach(ConnectionStatus.allCases, id: \.self) { status in
-            ConnectionRow(
-                connection: DAppConnection(
-                    id: status.rawValue,
-                    name: "A Very Long Application Name Indeed",
-                    url: "https://example.org",
-                    status: status,
-                    updatedAt: Date(timeIntervalSince1970: 1_754_232_520)
-                ),
-                onDisconnect: {}
-            )
+            ConnectionRow(connection: previewConnection(status), onDisconnect: {}, onRemove: {})
         }
     }
     .padding()
     .background(Color.primaryBackground)
+}
+
+#Preview("Refused") {
+    ConnectionRow(connection: previewConnection(.refused), onDisconnect: {}, onRemove: {})
+        .padding()
+        .background(Color.primaryBackground)
+}
+
+#Preview("Active, long name") {
+    ConnectionRow(
+        connection: previewConnection(.active, name: String(repeating: "Extremely Long Application Name ", count: 4)),
+        onDisconnect: {}, onRemove: {})
+        .padding()
+        .background(Color.primaryBackground)
 }

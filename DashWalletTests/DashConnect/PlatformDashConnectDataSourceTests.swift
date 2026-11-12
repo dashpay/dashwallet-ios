@@ -5,6 +5,72 @@ import XCTest
 @testable import SwiftDashSDK
 
 final class PlatformDashConnectDataSourceTests: XCTestCase {
+    // MARK: Consensus refusal of an identity update (AC-20b, ADR 0012)
+
+    private static let refusedAt = Date(timeIntervalSince1970: 1_773_132_300)
+    private static let consensusKinds: [PlatformConsensusError.Kind] = [.basic, .signature, .fee, .state]
+
+    func testASDKConsensusRejectionOfEveryFamilyIsARefusalWithItsCode() {
+        for (index, kind) in Self.consensusKinds.enumerated() {
+            let code = UInt32(10_000 + index * 10_000 + 212)
+            let error = SDKError.consensusRejection(PlatformConsensusError(code: code, kind: kind), "rendered text")
+            XCTAssertEqual(
+                PlatformDashConnectDataSource.consensusRefusal(from: error, at: Self.refusedAt),
+                AppConnect.ConsensusRefusal(code: code, at: Self.refusedAt), "SDKError \(kind)")
+        }
+    }
+
+    func testAPlatformWalletConsensusRejectionOfEveryFamilyIsARefusalWithItsCode() {
+        for (index, kind) in Self.consensusKinds.enumerated() {
+            let code = UInt32(10_000 + index * 10_000 + 407)
+            let error = PlatformWalletError.consensusRejection(PlatformConsensusError(code: code, kind: kind), "rendered text")
+            XCTAssertEqual(
+                PlatformDashConnectDataSource.consensusRefusal(from: error, at: Self.refusedAt),
+                AppConnect.ConsensusRefusal(code: code, at: Self.refusedAt), "PlatformWalletError \(kind)")
+        }
+    }
+
+    func testARefusalCarriesTheCodeAndTheDateAndNeverThePlatformMessage() throws {
+        let message = "identity 4Xh9 has insufficient balance"
+        let error = SDKError.consensusRejection(PlatformConsensusError(code: 10_212, kind: .basic), message)
+        let refusal = try XCTUnwrap(PlatformDashConnectDataSource.consensusRefusal(from: error, at: Self.refusedAt))
+        XCTAssertFalse(String(describing: refusal).contains(message))
+        XCTAssertFalse(String(decoding: try JSONEncoder().encode(refusal), as: UTF8.self).contains(message))
+    }
+
+    func testATimeoutOrATransportErrorIsNotARefusal() {
+        let errors: [(String, Error)] = [
+            ("SDK timeout", SDKError.timeout("deadline")),
+            ("SDK network error", SDKError.networkError("connection lost")),
+            ("URLError timed out", URLError(.timedOut)),
+            ("URLError offline", URLError(.notConnectedToInternet)),
+            ("cancelled", CancellationError()),
+            ("wallet shutdown barrier", PlatformWalletError.shutdownIncomplete("busy")),
+        ]
+        for (name, error) in errors {
+            XCTAssertNil(PlatformDashConnectDataSource.consensusRefusal(from: error, at: Self.refusedAt), name)
+        }
+    }
+
+    func testAnUnknownOrUnconfirmedErrorIsNotARefusal() {
+        let errors: [(String, Error)] = [
+            ("SDK unknown", SDKError.unknown("???")),
+            ("SDK internal", SDKError.internalError("oops")),
+            ("SDK protocol", SDKError.protocolError("bad reply")),
+            ("SDK invalid state", SDKError.invalidState("no sdk")),
+            ("SDK not found", SDKError.notFound("identity")),
+            ("SDK serialization", SDKError.serializationError("bad")),
+            ("wallet unknown", PlatformWalletError.unknown("???")),
+            ("wallet operation", PlatformWalletError.walletOperation("failed")),
+            ("wallet broadcast unconfirmed", PlatformWalletError.transactionBroadcastUnconfirmed("maybe on the network")),
+            ("wallet address nonce race (typed, no code)", PlatformWalletError.addressNonceMismatch("raced")),
+            ("an error of the app", DashConnectPlatformError.approvalOutOfDate),
+        ]
+        for (name, error) in errors {
+            XCTAssertNil(PlatformDashConnectDataSource.consensusRefusal(from: error, at: Self.refusedAt), name)
+        }
+    }
+
     func testSelectDocumentSigningKeyIdPrefersHighOverMaster() throws {
         let selected = try PlatformDashConnectDataSource.selectDocumentSigningKeyId(
             from: [
@@ -588,115 +654,139 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         XCTAssertNil(viewModel.message)
     }
 
-    /// A disconnect that left keys no approval names offers to turn them
-    /// off as well; one that left none says nothing.
-    func testADisconnectThatLeftUnrecordedKeysOffersToTurnThemOff() async {
+    /// One disconnect turns off everything it can; it asks no second
+    /// question, so the data source is called once and nothing is left on
+    /// screen to answer.
+    func testADisconnectAsksNoSecondQuestion() async {
         let spy = PurchaseApprovalSpy()
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
 
-        let offeredKeys = DashConnectOfferedKeys(identityId: Data(repeating: 0x01, count: 32), keyIds: [20, 21])
-        spy.disconnectResult = DashConnectDisconnectResult(offeredUnrecordedKeys: offeredKeys)
+        spy.disconnectResult = DashConnectDisconnectResult(keysTurnedOff: 5)
         viewModel.disconnect(Self.connection)
         await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 1 }
-        XCTAssertEqual(viewModel.message?.text.contains("2"), true)
-        XCTAssertEqual(viewModel.message?.unrecordedKeysOf, Self.connection)
-        XCTAssertEqual(viewModel.message?.unrecordedKeys, offeredKeys, "the message keeps the offered keys and their identity")
-        XCTAssertEqual(spy.disconnectedUnrecordedKeys, [nil])
 
-        let offered = viewModel.message?.unrecordedKeys
+        XCTAssertNil(viewModel.message, "nothing to answer after a disconnect that turned everything off")
+        XCTAssertEqual(spy.disconnectedIds, [Self.connection.id], "one call, no follow-up")
+    }
+
+    /// A clean disconnect that also turned off keys no approval names says
+    /// how many, under a neutral title.
+    func testADisconnectThatTurnedOffUnrecordedKeysSaysHowMany() async {
+        let spy = PurchaseApprovalSpy()
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+
+        spy.disconnectResult = DashConnectDisconnectResult(keysTurnedOff: 5, unrecordedKeysTurnedOff: 2)
+        viewModel.disconnect(Self.connection)
+        await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 1 }
+
+        XCTAssertEqual(viewModel.message?.kind, .notice)
+        let text = viewModel.message?.text ?? ""
+        XCTAssertTrue(text.contains("no record of giving (2)"), text)
+    }
+
+    /// A disconnect that stopped part-way says what is still live, and
+    /// Disconnect can run again.
+    func testADisconnectThatStoppedPartWayNamesWhatIsStillLiveAndCanRunAgain() async {
+        let spy = PurchaseApprovalSpy()
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+
+        spy.disconnectResult = DashConnectDisconnectResult(keysTurnedOff: 10, keysStillLive: 13)
+        viewModel.disconnect(Self.connection)
+        await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 1 }
+        XCTAssertEqual(viewModel.message?.text.contains("13"), true, "the message names how many keys are still live")
+
         viewModel.message = nil
-        spy.disconnectResult = DashConnectDisconnectResult()
-        viewModel.disconnect(Self.connection, unrecordedKeys: offered)
+        spy.disconnectResult = DashConnectDisconnectResult(keysTurnedOff: 13)
+        viewModel.disconnect(Self.connection)
         await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 2 }
-        XCTAssertEqual(spy.disconnectedUnrecordedKeys, [nil, offeredKeys], "the answer passes back exactly the offered keys, with their identity")
+        XCTAssertEqual(spy.disconnectedIds.count, 2, "Disconnect runs again")
         XCTAssertNil(viewModel.message)
     }
 
-    /// The message a disconnect result words, its paragraphs in order.
-    private func message(after result: DashConnectDisconnectResult) async -> ConnectionsScreenMessage? {
+    func testADisconnectThatCouldNotCheckSomeKeysSaysSo() async {
         let spy = PurchaseApprovalSpy()
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
-        spy.disconnectResult = result
+
+        spy.disconnectResult = DashConnectDisconnectResult(keysTurnedOff: 3, keysNotChecked: 4)
         viewModel.disconnect(Self.connection)
         await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 1 }
-        return viewModel.message
+
+        XCTAssertEqual(viewModel.message?.text.contains("4"), true)
     }
 
-    private static let notChecked = "could not tell yet which app holds some keys"
-    private static let notAttributable = "may belong to another app of the same developer"
-    private static let leftAfterQuestion = "Disconnect it again to turn them off"
+    /// AC-18: keys whose bounds are unknown stay on the identity; the text
+    /// must not claim the disconnect is complete.
+    func testADisconnectThatCouldNotCheckSomeKeysDoesNotSayDisconnected() async {
+        let spy = PurchaseApprovalSpy()
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
 
-    private static func paragraphs(_ message: ConnectionsScreenMessage?) -> [String] {
-        message?.text.components(separatedBy: "\n\n") ?? []
+        spy.disconnectResult = DashConnectDisconnectResult(keysTurnedOff: 3, keysNotChecked: 4)
+        viewModel.disconnect(Self.connection)
+        await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 1 }
+
+        XCTAssertEqual(viewModel.message?.text.hasPrefix("Disconnected.") == false, true, "text: \(viewModel.message?.text ?? "nil")")
     }
 
-    /// SCR-03 with-warnings: the question carries the warnings, so leaving
-    /// the keys still shows them.
-    func testTheQuestionCarriesTheWarnings() async {
-        let message = await message(after: DashConnectDisconnectResult(
-            keysTurnedOff: 1, offeredUnrecordedKeys: DashConnectOfferedKeys(identityId: Data(repeating: 0x01, count: 32), keyIds: [20]),
-            keysNotChecked: 2, keysNotAttributable: 3))
-        let paragraphs = Self.paragraphs(message)
-        XCTAssertEqual(message?.kind, .question)
-        guard paragraphs.count == 3 else { return XCTFail("paragraphs: \(paragraphs)") }
-        XCTAssertTrue(paragraphs[0].contains("Turn them off too?"))
-        XCTAssertTrue(paragraphs[1].contains(Self.notChecked) && paragraphs[1].contains("(2)"))
-        XCTAssertTrue(paragraphs[2].contains(Self.notAttributable) && paragraphs[2].contains("(3)"))
+    /// Keys a disconnect could not tell to be the app's are said to be left
+    /// on; the text claims nothing about the connection's row, which may go.
+    func testKeysThatCouldNotBeCheckedAreSaidToBeLeftOn() async {
+        let spy = PurchaseApprovalSpy()
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+
+        spy.disconnectResult = DashConnectDisconnectResult(keysTurnedOff: 1, keysNotChecked: 2)
+        viewModel.disconnect(Self.connection)
+        await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 1 }
+
+        let text = viewModel.message?.text ?? ""
+        XCTAssertTrue(text.contains("(2), so it left them on"), text)
+        XCTAssertFalse(text.contains("stays listed"), text)
     }
 
-    /// SCR-04 not-attributable: its own text, pointing to the key's row,
-    /// without a retry hint.
+    /// Keys another app of the same developer may hold: their own text,
+    /// pointing to the key's row, without a retry hint, and not an error.
     func testAKeyNotAttributableIsReportedWithoutARetryHint() async {
-        let message = await message(after: DashConnectDisconnectResult(keysTurnedOff: 1, keysNotAttributable: 1))
-        XCTAssertEqual(message?.kind, .warning)
-        XCTAssertEqual(Self.paragraphs(message).count, 1)
-        XCTAssertTrue(message?.text.contains(Self.notAttributable) == true)
-        XCTAssertTrue(message?.text.contains("its own row") == true)
-        XCTAssertFalse(message?.text.contains("again later") == true)
+        let spy = PurchaseApprovalSpy()
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+
+        spy.disconnectResult = DashConnectDisconnectResult(keysTurnedOff: 1, keysNotAttributable: 1)
+        viewModel.disconnect(Self.connection)
+        await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 1 }
+
+        let text = viewModel.message?.text ?? ""
+        XCTAssertEqual(viewModel.message?.kind, .notice)
+        XCTAssertEqual(viewModel.message?.title, "Disconnected", "not titled Success over keys left on")
+        XCTAssertTrue(text.contains("may belong to another app of the same developer"), text)
+        XCTAssertTrue(text.contains("its own row"), text)
+        XCTAssertFalse(text.contains("again later"), text)
     }
 
-    /// SCR-04 left-after-question: a key attributed only after the question
-    /// stays on, and the result says so.
-    func testAKeyLeftAfterTheQuestionIsReported() async {
-        let message = await message(after: DashConnectDisconnectResult(keysTurnedOff: 2, keysLeftAfterQuestion: 1))
-        XCTAssertEqual(message?.kind, .warning)
-        XCTAssertTrue(message?.text.contains(Self.leftAfterQuestion) == true)
-        XCTAssertTrue(message?.text.contains("(1)") == true)
+    /// R13: a fence left on can still let the sign-in land: an error.
+    func testADisconnectThatLeftAFenceOnIsReportedAsAFailure() async {
+        let spy = PurchaseApprovalSpy()
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+
+        spy.disconnectResult = DashConnectDisconnectResult(fencesNotPlaced: 1)
+        viewModel.disconnect(Self.connection)
+        await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 1 }
+
+        XCTAssertEqual(viewModel.message?.kind, .error)
+        let text = viewModel.message?.text.lowercased() ?? ""
+        XCTAssertTrue(text.contains("sign-in") && text.contains("may still"), "says the sign-in may still land: \(text)")
+        XCTAssertTrue(text.contains("disconnect") && text.contains("again"), "asks to disconnect again: \(text)")
     }
 
-    /// Keys left on whose app's row is gone are sent to the row that shows
-    /// them, by its name, never to a second disconnect of the app.
-    func testKeysLeftUnderAnotherRowNameThatRow() async {
-        let message = await message(after: DashConnectDisconnectResult(
-            keysTurnedOff: 1, keysLeftAfterQuestion: 2, keysLeftUnder: "Other App"))
-        XCTAssertEqual(message?.kind, .warning)
-        XCTAssertEqual(Self.paragraphs(message).count, 1)
-        XCTAssertTrue(message?.text.contains("(2)") == true)
-        XCTAssertTrue(message?.text.contains("show under Other App in Connections") == true)
-        XCTAssertFalse(message?.text.contains(Self.leftAfterQuestion) == true)
-    }
+    /// T32 (F3): a fence placed and left on cannot let the sign-in land; the
+    /// connection ends Disconnected and this is not an error.
+    func testADisconnectThatLeftOnlyPlacedFencesOnShowsNoError() async {
+        let spy = PurchaseApprovalSpy()
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
 
-    /// SCR-04 combined: not checked, not attributable, left after the
-    /// question, another identity, in that order; a finding besides the
-    /// other identity keeps the success heading.
-    func testSeveralFindingsAreWordedInOrder() async {
-        let message = await message(after: DashConnectDisconnectResult(
-            keysNotChecked: 1, keysNotAttributable: 1, keysLeftAfterQuestion: 1, keysOnAnotherIdentity: true))
-        let paragraphs = Self.paragraphs(message)
-        guard paragraphs.count == 4 else { return XCTFail("paragraphs: \(paragraphs)") }
-        XCTAssertTrue(paragraphs[0].contains(Self.notChecked))
-        XCTAssertTrue(paragraphs[1].contains(Self.notAttributable))
-        XCTAssertTrue(paragraphs[2].contains(Self.leftAfterQuestion))
-        XCTAssertEqual(paragraphs[3], DashConnectPlatformError.grantOnAnotherIdentity.localizedDescription)
-        XCTAssertEqual(message?.kind, .warning)
-        XCTAssertEqual(message?.title, "Success")
-    }
+        spy.disconnectResult = DashConnectDisconnectResult(keysTurnedOff: 3, fencesLeftOn: 2)
+        viewModel.disconnect(Self.connection)
+        await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 1 }
 
-    /// The error heading stays for keys on another identity alone with
-    /// nothing turned off.
-    func testKeysOnlyOnAnotherIdentityWithNothingTurnedOffAreAnError() async {
-        let message = await message(after: DashConnectDisconnectResult(keysOnAnotherIdentity: true))
-        XCTAssertEqual(message?.kind, .error)
+        XCTAssertNotEqual(viewModel.message?.kind, .error, "text: \(viewModel.message?.text ?? "nil")")
+        XCTAssertEqual(viewModel.message?.text.contains("stays listed") ?? false, false)
     }
 
     /// With the login unresolved the sheet's action asks again and approves
@@ -983,7 +1073,6 @@ private final class PurchaseApprovalSpy: DashConnectDataSource {
     private var storedDisconnectFailure: Error?
     private var storedDisconnectedIds: [String] = []
     private var storedDisconnectedScopes: [String?] = []
-    private var storedDisconnectedUnrecordedKeys: [DashConnectOfferedKeys?] = []
 
     var disconnectFailure: Error? {
         get { lock.withLock { storedDisconnectFailure } }
@@ -998,10 +1087,6 @@ private final class PurchaseApprovalSpy: DashConnectDataSource {
         lock.withLock { storedDisconnectedScopes }
     }
 
-    var disconnectedUnrecordedKeys: [DashConnectOfferedKeys?] {
-        lock.withLock { storedDisconnectedUnrecordedKeys }
-    }
-
     private var storedDisconnectResult = DashConnectDisconnectResult()
 
     /// What a successful disconnect reports.
@@ -1010,11 +1095,10 @@ private final class PurchaseApprovalSpy: DashConnectDataSource {
         set { lock.withLock { storedDisconnectResult = newValue } }
     }
 
-    func disconnect(id: String, scope: String?, unrecordedKeys: DashConnectOfferedKeys?) async throws -> DashConnectDisconnectResult {
+    func disconnect(id: String, scope: String?) async throws -> DashConnectDisconnectResult {
         let (failure, result) = lock.withLock { () -> (Error?, DashConnectDisconnectResult) in
             storedDisconnectedIds.append(id)
             storedDisconnectedScopes.append(scope)
-            storedDisconnectedUnrecordedKeys.append(unrecordedKeys)
             return (storedDisconnectFailure, storedDisconnectResult)
         }
         if let failure { throw failure }
@@ -1054,12 +1138,72 @@ private final class LoginApprovalSpy: DashConnectDataSource {
         lock.withLock { storedApprovedConsents }
     }
 
+    private var storedSuspendsApproval = false
+    private var storedIsApprovalSuspended = false
+    private var approvalGate: CheckedContinuation<Void, Never>?
+
+    /// When true, `approveLogin` suspends after recording its consent, until
+    /// `releaseApproval()`.
+    var suspendsApproval: Bool {
+        get { lock.withLock { storedSuspendsApproval } }
+        set { lock.withLock { storedSuspendsApproval = newValue } }
+    }
+
+    var isApprovalSuspended: Bool {
+        lock.withLock { storedIsApprovalSuspended }
+    }
+
+    /// Lets a suspended `approveLogin` finish.
+    func releaseApproval() {
+        let waiting = lock.withLock { () -> CheckedContinuation<Void, Never>? in
+            let waiting = approvalGate
+            approvalGate = nil
+            storedIsApprovalSuspended = false
+            return waiting
+        }
+        waiting?.resume()
+    }
+
     var connections: AnyPublisher<[DAppConnection], Never> {
         Just([DAppConnection]()).eraseToAnyPublisher()
     }
 
+    private var storedParseCount = 0
+    private var storedHoldsVersionRead = false
+    private var versionGate: CheckedContinuation<UInt32, Error>?
+
+    /// How many times a scanned or opened request was handed to the parser.
+    var parseCount: Int { lock.withLock { storedParseCount } }
+
+    /// When true, `protocolVersion()` suspends until `releaseVersionRead`.
+    var holdsVersionRead: Bool {
+        get { lock.withLock { storedHoldsVersionRead } }
+        set { lock.withLock { storedHoldsVersionRead = newValue } }
+    }
+
+    /// Whether a version read is suspended right now.
+    var isVersionReadPending: Bool { lock.withLock { versionGate != nil } }
+
+    /// Lets the suspended version read return `result`.
+    func releaseVersionRead(_ result: Result<UInt32, Error>) {
+        let waiting = lock.withLock { () -> CheckedContinuation<UInt32, Error>? in
+            let waiting = versionGate
+            versionGate = nil
+            return waiting
+        }
+        waiting?.resume(with: result)
+    }
+
+    func protocolVersion() async throws -> UInt32 {
+        guard holdsVersionRead else { throw PurchaseSpyError.unsupported }
+        return try await withCheckedThrowingContinuation { continuation in
+            lock.withLock { versionGate = continuation }
+        }
+    }
+
     func parseQR(_ content: String) async throws -> DashConnectQr {
-        .login(loginRequest)
+        lock.withLock { storedParseCount += 1 }
+        return .login(loginRequest)
     }
 
     func makeConnectionRequest(from loginRequest: DashKeyRequest) async -> ConnectionRequest {
@@ -1067,9 +1211,17 @@ private final class LoginApprovalSpy: DashConnectDataSource {
     }
 
     func approveLogin(_ request: DashKeyRequest, consent: ConnectionRequest) async throws -> DAppConnection {
-        let failure = lock.withLock { () -> Error? in
+        let (failure, suspends) = lock.withLock { () -> (Error?, Bool) in
             storedApprovedConsents.append(consent)
-            return storedApproveFailures.isEmpty ? nil : storedApproveFailures.removeFirst()
+            return (storedApproveFailures.isEmpty ? nil : storedApproveFailures.removeFirst(), storedSuspendsApproval)
+        }
+        if suspends {
+            await withCheckedContinuation { continuation in
+                lock.withLock {
+                    approvalGate = continuation
+                    storedIsApprovalSuspended = true
+                }
+            }
         }
         if let failure { throw failure }
         return MockDashConnectDataSource.sample(.active)
@@ -1083,11 +1235,21 @@ private final class LoginApprovalSpy: DashConnectDataSource {
         throw PurchaseSpyError.unsupported
     }
 
-    func disconnect(id: String, scope: String?, unrecordedKeys: DashConnectOfferedKeys?) async throws -> DashConnectDisconnectResult {
+    private var storedDisconnectCalls = 0
+    private var storedRemovedIds: [String] = []
+
+    /// How many times `disconnect` (the call that asks for the PIN and writes) was made.
+    var disconnectCallCount: Int { lock.withLock { storedDisconnectCalls } }
+    var removedIds: [String] { lock.withLock { storedRemovedIds } }
+
+    func disconnect(id: String, scope: String?) async throws -> DashConnectDisconnectResult {
+        lock.withLock { storedDisconnectCalls += 1 }
         throw PurchaseSpyError.unsupported
     }
 
-    func remove(id: String, scope: String?) async {}
+    func remove(id: String, scope: String?) async {
+        lock.withLock { storedRemovedIds.append(id) }
+    }
 }
 
 /// The URLs a view model asked to open, in order.
@@ -1213,7 +1375,7 @@ final class AppConnectLoginTests: XCTestCase {
         active.idHex = "wallet-b"
         connections.save([other])
 
-        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, unrecordedKeys: nil) }
+        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope) }
 
         XCTAssertEqual(Self.shownRows(dataSource).map(\.id), [other.id], "the list shows the wallet that is active")
         XCTAssertEqual(connections.load(), [other])
@@ -1229,7 +1391,7 @@ final class AppConnectLoginTests: XCTestCase {
         active.idHex = "wallet-b"
         connections.save([row])
 
-        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, unrecordedKeys: nil) }
+        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope) }
 
         XCTAssertEqual(connections.load().map(\.status), [.active])
     }
@@ -1253,14 +1415,14 @@ final class AppConnectLoginTests: XCTestCase {
         center.post(name: SwiftDashSDKWalletState.activeWalletDidChangeNotification, object: nil)
         await fulfillment(of: [moved], timeout: 2)
 
-        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, unrecordedKeys: nil) }
+        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope) }
         await dataSource.remove(id: shown[0].id, scope: shown[0].scope)
 
         XCTAssertEqual(connections.load(), [row], "the new wallet's row for the same app is untouched")
         // The row the new list shows is this wallet's own.
         let current = Self.shownRows(dataSource)
         await Self.expectNotWalletChanged {
-            try await dataSource.disconnect(id: current[0].id, scope: current[0].scope, unrecordedKeys: nil)
+            try await dataSource.disconnect(id: current[0].id, scope: current[0].scope)
         }
     }
 
@@ -1292,12 +1454,12 @@ final class AppConnectLoginTests: XCTestCase {
         // The same wallet and devnet name, pointed at other nodes.
         endpoint.url = "https://quorums.two.example"
 
-        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, unrecordedKeys: nil) }
+        await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope) }
         XCTAssertEqual(connections.load().map(\.status), [.active])
         let current = Self.shownRows(dataSource)
         XCTAssertNotEqual(current[0].scope, shown[0].scope)
         await Self.expectNotWalletChanged {
-            try await dataSource.disconnect(id: current[0].id, scope: current[0].scope, unrecordedKeys: nil)
+            try await dataSource.disconnect(id: current[0].id, scope: current[0].scope)
         }
     }
 
@@ -1306,7 +1468,7 @@ final class AppConnectLoginTests: XCTestCase {
         let row = Self.row(status: .active)
         let (dataSource, connections) = makeScopedDataSource(active: active, rows: [row])
 
-        await Self.expectWalletChanged { try await dataSource.disconnect(id: row.id, scope: nil, unrecordedKeys: nil) }
+        await Self.expectWalletChanged { try await dataSource.disconnect(id: row.id, scope: nil) }
         await dataSource.remove(id: row.id, scope: nil)
 
         XCTAssertEqual(connections.load(), [row])
@@ -1393,7 +1555,7 @@ final class AppConnectLoginTests: XCTestCase {
         // when it ends is what is checked.
         let log = OperationLog()
         let disconnect = Task {
-            _ = try? await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, unrecordedKeys: nil)
+            _ = try? await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope)
             await log.add("disconnect ended")
         }
         try await Task.sleep(nanoseconds: 100_000_000)
@@ -1426,7 +1588,7 @@ final class AppConnectLoginTests: XCTestCase {
         await fulfillment(of: [otherStarted], timeout: 2)
 
         let disconnect = Task {
-            await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope, unrecordedKeys: nil) }
+            await Self.expectWalletChanged { try await dataSource.disconnect(id: shown[0].id, scope: shown[0].scope) }
         }
         try? await Task.sleep(nanoseconds: 100_000_000)
         active.idHex = "wallet-b"
@@ -1482,7 +1644,7 @@ final class AppConnectLoginTests: XCTestCase {
         let (dataSource, _) = makeScopedDataSource(active: active)
 
         do {
-            try await dataSource.disconnect(id: Self.row(status: .active).id, scope: nil, unrecordedKeys: nil)
+            try await dataSource.disconnect(id: Self.row(status: .active).id, scope: nil)
             XCTFail("disconnected with no wallet")
         } catch {
             guard case DashConnectPlatformError.noWallet = error else {
@@ -1627,6 +1789,2508 @@ final class AppConnectLoginTests: XCTestCase {
     }
 }
 
+// MARK: - Identity snapshot from the proved keys read
+
+extension PlatformDashConnectDataSourceTests {
+    private static let snapshotIdentity = Data(repeating: 0x11, count: 32)
+
+    private static func keyInfo(
+        _ id: Int32, disabledAt: Int64? = nil, totalBudget: UInt64? = nil, expiresAt: Int64? = nil
+    ) -> ManagedIdentity.IdentityPublicKeyInfo {
+        ManagedIdentity.IdentityPublicKeyInfo(
+            keyId: id, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160, readOnly: false,
+            disabledAt: disabledAt, data: Data(repeating: UInt8(id), count: 20),
+            totalBudget: totalBudget, expiresAt: expiresAt)
+    }
+
+    func testTheSnapshotCarriesTheProvedBlockTime() throws {
+        let fetched = FetchedIdentityPublicKeys(
+            keys: [FetchedIdentityPublicKey(key: Self.keyInfo(0), expiredAtProofTime: false)],
+            blockTimeMs: 1_790_000_000_123)
+
+        let (snapshot, _) = try PlatformDashConnectDataSource.identitySnapshot(
+            identityId: Self.snapshotIdentity, revision: 3, fetched: fetched, bindings: [])
+
+        XCTAssertEqual(snapshot.platformTime, 1_790_000_000_123)
+        XCTAssertEqual(snapshot.revision, 3)
+    }
+
+    func testTheSnapshotKeepsADisabledKeyWithItsTime() throws {
+        let fetched = FetchedIdentityPublicKeys(
+            keys: [
+                FetchedIdentityPublicKey(key: Self.keyInfo(0), expiredAtProofTime: false),
+                FetchedIdentityPublicKey(key: Self.keyInfo(5, disabledAt: 1_780_000_000_000), expiredAtProofTime: false),
+            ],
+            blockTimeMs: 1_790_000_000_000)
+
+        let (snapshot, keys) = try PlatformDashConnectDataSource.identitySnapshot(
+            identityId: Self.snapshotIdentity, revision: 1, fetched: fetched, bindings: [])
+
+        XCTAssertEqual(snapshot.keys.map(\.id), [0, 5])
+        XCTAssertEqual(snapshot.keys.first { $0.id == 5 }?.disabledAt, 1_780_000_000_000)
+        XCTAssertEqual(keys.map(\.keyId), [0, 5])
+    }
+
+    func testAReadThatFindsNoIdentityIsNoSnapshot() {
+        let fetched = FetchedIdentityPublicKeys(keys: nil, blockTimeMs: 1_790_000_000_000)
+
+        XCTAssertThrowsError(try PlatformDashConnectDataSource.identitySnapshot(
+            identityId: Self.snapshotIdentity, revision: 1, fetched: fetched, bindings: [])
+        ) { error in
+            guard case DashConnectPlatformError.noIdentity = error else {
+                return XCTFail("expected noIdentity, got \(error)")
+            }
+        }
+    }
+}
+
+/// AC-11: a request answered before is refused before any PIN, whether this
+/// wallet's record, a response on Platform or the request's own auth keys on
+/// the identity tell it; a lookup that fails is never "not answered".
+final class AppConnectAnsweredTests: XCTestCase {
+    private static let identity = Data(repeating: 0x01, count: 32)
+    private static let app = Data(repeating: 0xA1, count: 32)
+    private static let otherApp = Data(repeating: 0xA2, count: 32)
+    private static let requestHash = Data(repeating: 0xEE, count: 20)
+    /// The hash160 of the auth key the request derives (`authKeyLeaf`).
+    private static let requestKeyHash = Data(repeating: 0x77, count: 20)
+
+    private struct LookupFailed: Error {}
+
+    private static func key(
+        id: UInt32 = 10, data: Data = requestKeyHash, purpose: KeyPurpose = .authentication,
+        keyType: KeyType = .ecdsaHash160, expiresAt: UInt64? = nil, disabledAt: UInt64? = nil
+    ) -> AppConnect.PlatformKey {
+        AppConnect.PlatformKey(
+            id: id, purpose: purpose, securityLevel: .high, keyType: keyType, data: data, readOnly: false,
+            bound: .singleContract(app), boundKnown: true, totalBudget: 1000, expiresAt: expiresAt, disabledAt: disabledAt)
+    }
+
+    private static func snapshot(_ keys: [AppConnect.PlatformKey]) -> AppConnect.IdentitySnapshot {
+        AppConnect.IdentitySnapshot(identityId: identity, revision: 5, keys: keys, platformTime: 1_800_000_000_000)
+    }
+
+    private static func intent(app: Data = app, requestHash: Data = requestHash) -> AppConnect.ConnectionIntent {
+        AppConnect.ConnectionIntent(
+            id: UUID(), identityId: identity, appId: app, appLabel: "App", appUrl: "", requestHash: requestHash,
+            connectionId: nil, keys: [], sentEncryptionKeyIds: [], disables: [],
+            response: AppConnect.ResponseValues(appEphemeralPubKeyHash: "ee", walletEphemeralPubKey: "02", encryptedPayload: "00"),
+            responseDocumentId: nil, responseRemoved: true, createdAt: Date(timeIntervalSince1970: 0), closedAt: nil)
+    }
+
+    private func state(
+        lookup: Result<Bool, Error>, keys: [AppConnect.PlatformKey] = [], tie: [Data] = [requestKeyHash],
+        intents: [AppConnect.ConnectionIntent] = []
+    ) -> AppConnect.AnsweredState {
+        AppConnect.answeredState(
+            responseLookup: lookup, requestAuthKeyHashes: tie, snapshot: Self.snapshot(keys), intents: intents,
+            appId: Self.app, requestHash: Self.requestHash)
+    }
+
+    // MARK: Response on Platform
+
+    func testAResponseOnPlatformMeansAnswered() {
+        XCTAssertEqual(state(lookup: .success(true)), .answered)
+    }
+
+    // MARK: Keys on Platform
+
+    func testTheRequestsAuthKeyOnTheIdentityMeansAnsweredEvenWithoutAResponse() {
+        XCTAssertEqual(state(lookup: .success(false), keys: [Self.key()]), .answered)
+    }
+
+    func testTheRequestsAuthKeyMeansAnsweredWhetherItIsOffOrExpired() {
+        XCTAssertEqual(state(lookup: .success(false), keys: [Self.key(disabledAt: 1)]), .answered, "disabled")
+        XCTAssertEqual(state(lookup: .success(false), keys: [Self.key(expiresAt: 1)]), .answered, "expired")
+    }
+
+    func testTheRequestsAuthKeyMeansAnsweredWhenTheResponseLookupFailed() {
+        XCTAssertEqual(state(lookup: .failure(LookupFailed()), keys: [Self.key()]), .answered)
+    }
+
+    func testAKeyThatIsNotTheRequestsAuthKeyDoesNotMeanAnswered() {
+        let other = Data(repeating: 0x55, count: 20)
+        XCTAssertEqual(state(lookup: .success(false), keys: [Self.key(data: other)]), .notAnswered, "other payload")
+        XCTAssertEqual(
+            state(lookup: .success(false), keys: [Self.key(purpose: .encryption, keyType: .ecdsaSecp256k1)]),
+            .notAnswered, "an encryption key")
+    }
+
+    func testARequestWithoutAuthKeysHasNoKeyTie() {
+        XCTAssertEqual(state(lookup: .success(false), keys: [Self.key()], tie: []), .notAnswered)
+    }
+
+    // MARK: This wallet's record (built; regression guard)
+
+    func testAnIntentOfThisWalletForTheRequestMeansAnswered() {
+        XCTAssertEqual(state(lookup: .success(false), intents: [Self.intent()]), .answered)
+    }
+
+    func testAnIntentOfThisWalletMeansAnsweredWhenTheLookupFailed() {
+        XCTAssertEqual(state(lookup: .failure(LookupFailed()), intents: [Self.intent()]), .answered)
+    }
+
+    func testAnIntentOfAnotherAppOrAnotherRequestDoesNotMeanAnswered() {
+        let intents = [Self.intent(app: Self.otherApp), Self.intent(requestHash: Data(repeating: 0x11, count: 20))]
+        XCTAssertEqual(state(lookup: .success(false), intents: intents), .notAnswered)
+    }
+
+    // MARK: Neither, and a lookup that fails
+
+    func testNeitherAResponseNorKeysNorAnIntentMeansNotAnswered() {
+        XCTAssertEqual(state(lookup: .success(false)), .notAnswered)
+    }
+
+    func testAFailedLookupWithNothingElseToGoOnIsUncheckableNeverNotAnswered() {
+        let result = state(lookup: .failure(LookupFailed()))
+        XCTAssertEqual(result, .uncheckable)
+        XCTAssertNotEqual(result, .notAnswered)
+    }
+
+    // MARK: Reading the document list
+
+    func testADocumentInTheListMeansAResponseExists() throws {
+        let list: [String: Any] = ["documents": [["$id": "someId"]]]
+        XCTAssertTrue(try AppConnect.responseExists(inDocumentList: list))
+    }
+
+    func testAnEmptyListMeansNoResponse() throws {
+        let none: [[String: Any]] = []
+        XCTAssertFalse(try AppConnect.responseExists(inDocumentList: ["documents": none]))
+    }
+
+    func testAListWithoutADocumentsArrayIsAFailureNotNoResponse() {
+        XCTAssertThrowsError(try AppConnect.responseExists(inDocumentList: [:]))
+        XCTAssertThrowsError(try AppConnect.responseExists(inDocumentList: ["documents": "nope"]))
+    }
+}
+
+// MARK: - Mainnet entry rules (AC-12, AC-24, AC-25, AC-26)
+
+/// `AppConnect.intakeRefusal(forCode:network:)` is the pure decision request
+/// intake takes before it parses a code: which codes the wallet refuses on
+/// which network. Codes are classified by scheme and `v=` only; whether the
+/// rest parses is `parseQR`'s business.
+extension PlatformDashConnectDataSourceTests {
+    private static let allNetworks: [DashConnectNetwork] = [.mainnet, .testnet, .devnet]
+
+    private static func dashKeyV2(on network: DashConnectNetwork) -> String { "dash-key:abc?n=\(network.rawValue)&v=2" }
+    private static func dashKeyV1(on network: DashConnectNetwork) -> String { "dash-key:abc?n=\(network.rawValue)&v=1" }
+    private static func connectLink(on network: DashConnectNetwork) -> String { "dashpay://connect?v=2&n=\(network.rawValue)&r=abc" }
+    private static func tokenPurchase(on network: DashConnectNetwork) -> String { "dash-st:abc?n=\(network.rawValue)&v=1" }
+
+    /// AC-25: a dash-key request on mainnet is refused, and the reason says
+    /// this kind of code is not accepted on mainnet.
+    func testADashKeyCodeIsRefusedOnMainnetWithATypedReason() throws {
+        let refusal = try XCTUnwrap(
+            AppConnect.intakeRefusal(forCode: Self.dashKeyV2(on: .mainnet), network: .mainnet),
+            "a dash-key code was taken on mainnet")
+        XCTAssertTrue(refusal.reason.localizedCaseInsensitiveContains("mainnet"), "reason: \(refusal.reason)")
+        XCTAssertNotEqual(refusal, AppConnect.v1Refusal, "a v2 dash-key code is not told to be a v1 code")
+    }
+
+    /// AC-25: on testnet (and devnet) a dash-key code is still answered.
+    func testADashKeyCodeIsNotRefusedOnTestnetOrDevnet() {
+        for network in [DashConnectNetwork.testnet, .devnet] {
+            XCTAssertNil(
+                AppConnect.intakeRefusal(forCode: Self.dashKeyV2(on: network), network: network),
+                "a dash-key code was refused on \(network)")
+        }
+    }
+
+    /// AC-26: a DashPay connect link works on every network, mainnet included.
+    func testADashpayConnectLinkIsNotRefusedOnAnyNetwork() {
+        for network in Self.allNetworks {
+            XCTAssertNil(
+                AppConnect.intakeRefusal(forCode: Self.connectLink(on: network), network: network),
+                "a dashpay://connect link was refused on \(network)")
+        }
+    }
+
+    /// AC-12: a v1 code is refused on every network, with the ask for a new code.
+    func testAVersion1CodeIsRefusedOnEveryNetwork() {
+        for network in Self.allNetworks {
+            XCTAssertEqual(
+                AppConnect.intakeRefusal(forCode: Self.dashKeyV1(on: network), network: network),
+                AppConnect.v1Refusal, "a v1 code on \(network)")
+        }
+    }
+
+    /// AC-12: a token purchase code is still a purchase, so intake refuses
+    /// nothing on any network. (Whether the wallet has a username is judged
+    /// later, when the purchase is built: AC-05.)
+    func testATokenPurchaseCodeIsNotRefusedOnAnyNetwork() {
+        for network in Self.allNetworks {
+            XCTAssertNil(
+                AppConnect.intakeRefusal(forCode: Self.tokenPurchase(on: network), network: network),
+                "a token purchase code was refused on \(network)")
+        }
+    }
+
+    /// A code that is none of the above is no concern of this decision: the
+    /// parser answers it.
+    func testAnUnrelatedCodeIsNotRefusedByTheIntakeDecision() {
+        for network in Self.allNetworks {
+            XCTAssertNil(AppConnect.intakeRefusal(forCode: "https://example.com", network: network))
+        }
+    }
+}
+
+// MARK: - Connections page availability (AC-24, AC-26)
+
+/// `ConnectionsViewModel.availability(protocolVersion:)` is the pure rule the
+/// Connections page is gated by: the protocol version read at runtime, and
+/// nothing else. The view model has no injected version read, so the rule is
+/// tested as a function of the read's result.
+extension ConnectionsViewModelPurchaseTests {
+    private struct VersionReadFailed: Error {}
+
+}
+
+// MARK: - Removing a Refused row (AC-20b, T27 R8)
+
+extension ConnectionsViewModelPurchaseTests {
+    func testRemovingARefusedRowAsksNoPinAndWritesNothing() async {
+        let spy = LoginApprovalSpy(shown: [])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        let refused = DAppConnection(
+            id: "refused-1", name: "Yap", url: "yap.pr", status: .refused, updatedAt: Date(timeIntervalSince1970: 1_800_000_000))
+
+        viewModel.removeConnection(refused)
+        await waitUntil { !spy.removedIds.isEmpty }
+
+        // `disconnect` is the call that asks for the PIN and writes to Platform.
+        XCTAssertEqual(spy.removedIds, ["refused-1"])
+        XCTAssertEqual(spy.disconnectCallCount, 0)
+        XCTAssertNil(viewModel.message)
+    }
+}
+
+// MARK: - Declining the approve sheet (AC-04)
+
+/// Deny and a cancelled PIN write nothing and do not spend the request: the
+/// data source's only writing entry point, `approveLogin`, is either never
+/// called or throws, nothing is added to the connections, and the same request
+/// opened again can be approved.
+extension ConnectionsViewModelPurchaseTests {
+    private static let callbackUri = [
+        "dash-key:",
+        "2fAANHHASdojyjV9Sqa2wf2nwZE8kLLqmeHpZWa8sBfaGsddVqyMG2ZVte7xJkTKsXvmFYbXzXbNnMo7bJQBxNcf79N8YWi7pLKyb39Rqv6b1KUmxw9UeJGYz2CV9hFGNUQtcyMYVq2Fg",
+        "6vAxtxpYays61H8gLMcWqaG8TfgGA3H7setGAYiBsM5YmdZgeuCdGAHSwfNfav5cfFjXNDkPWv37UNSgFxj6o58jfXc3kCLKqLJtc5ZPjm1thEGYxK8HVYBi8fRQeEVy76n27DXGrVTyHz94CfJRuM",
+        "nH76xGYbMgeuvurxjJMLrQgWUu53cjocYyzzNWdJrgs2D5?n=d&v=2&cb=https%3A%2F%2Fyap.pr%2Fconnect%3Fr%3Dd77dc0da9df83a47755a15c42c5d9db9d7a7fd62",
+    ].joined()
+
+    func testDenyingTheApproveSheetWritesNothingAndTheRequestCanBeApprovedWhenOpenedAgain() async {
+        let shown = Self.consent(identityId: "identity-a")
+        let spy = LoginApprovalSpy(shown: [shown])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        viewModel.denyPendingRequest()
+
+        XCTAssertNil(viewModel.pendingRequest)
+        XCTAssertNil(viewModel.approveError)
+        XCTAssertEqual(spy.approvedConsents, [], "Deny asks for no approval, so nothing is added to the identity or to history")
+        XCTAssertEqual(viewModel.connections, [])
+
+        // Not spent: while it is fresh, the user opens it again and approves.
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        XCTAssertEqual(viewModel.pendingRequest, shown)
+        viewModel.approvePendingRequest()
+        await waitUntil { viewModel.pendingRequest == nil }
+
+        XCTAssertEqual(spy.approvedConsents, [shown])
+    }
+
+    // MARK: - R2: a link received while the version read is out
+
+    /// An app that asked through a link is told the user declined; one that
+    /// asked through a scanned code is answered on the other screen.
+    func testDenyingALinkRequestTellsTheAppTheUserDeclinedAndAScannedOneOpensNothing() async throws {
+        var request = MockDashConnectDataSource.sampleLoginRequest
+        request.appConnect = try DashConnectUri.parseAppConnectRequest(Self.callbackUri)
+        let shown = Self.consent(identityId: "identity-a")
+
+        let linkSpy = LoginApprovalSpy(shown: [shown], loginRequest: request)
+        let linkOpened = OpenedURLs()
+        let linked = ConnectionsViewModel(dataSource: linkSpy, featureUnavailable: false, openURL: { linkOpened.urls.append($0) })
+        linked.onURIReceived("login")
+        await waitUntil { linked.pendingRequest != nil }
+        linked.denyPendingRequest()
+
+        XCTAssertEqual(linkOpened.urls.count, 1)
+        XCTAssertEqual(linkOpened.urls.first?.host, "yap.pr")
+        XCTAssertEqual(linkOpened.urls.first?.absoluteString.contains("ac=declined"), true)
+        XCTAssertEqual(linkSpy.approvedConsents, [])
+
+        let scanSpy = LoginApprovalSpy(shown: [shown], loginRequest: request)
+        let scanOpened = OpenedURLs()
+        let scanned = ConnectionsViewModel(dataSource: scanSpy, featureUnavailable: false, openURL: { scanOpened.urls.append($0) })
+        scanned.onQRScanned("login")
+        await waitUntil { scanned.pendingRequest != nil }
+        scanned.denyPendingRequest()
+
+        XCTAssertEqual(scanOpened.urls, [])
+        XCTAssertEqual(scanSpy.approvedConsents, [])
+    }
+
+    /// While the approval runs (the sheet's connecting state) Deny does
+    /// nothing: the sheet is not dismissed and the approval is not cut off.
+    func testDenyIsIgnoredWhileTheApprovalIsConnecting() async {
+        let shown = Self.consent(identityId: "identity-a")
+        let spy = LoginApprovalSpy(shown: [shown])
+        spy.suspendsApproval = true
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        viewModel.approvePendingRequest()
+        await waitUntil { spy.isApprovalSuspended }
+        XCTAssertTrue(viewModel.isApproving)
+
+        viewModel.denyPendingRequest()
+        XCTAssertEqual(viewModel.pendingRequest, shown, "dismissal is locked while connecting")
+
+        spy.releaseApproval()
+        await waitUntil { viewModel.pendingRequest == nil }
+        XCTAssertEqual(spy.approvedConsents, [shown])
+    }
+}
+
+// MARK: - A timed-out write, per write (T12, ADR 0009, AC-08 / AC-17 / AC-21)
+
+/// What the data source does after a Platform write the executor ended with
+/// `timedOut` (or `failed`), one test per write. The executor is the real one
+/// with a clock that fires at once and a submit that never returns; the
+/// decision is `AppConnect.nextStep(after:outcome:at:)`, the one function the
+/// four writes of `PlatformDashConnectDataSource` switch on after
+/// `AppConnectWriteExecutor.run`. A timeout says nothing of what Platform did
+/// (spec AC-20, ADR 0004): only the next read decides, so no timeout is ever a
+/// refusal and none is ever reported as published or deleted.
+final class AppConnectWriteTimeoutTests: XCTestCase {
+    private static let at = Date(timeIntervalSince1970: 1_773_132_300)
+
+    /// An executor whose submit runs `submit`. Its timer fires at once when
+    /// the write is meant to time out, and never otherwise, so a submit that
+    /// returns or throws is not raced by the timer.
+    private static func executor(
+        timesOut: Bool,
+        submit: @escaping @Sendable (PlatformWrite) async throws -> Void
+    ) -> AppConnectWriteExecutor {
+        AppConnectWriteExecutor(
+            sleep: { _ in if !timesOut { try await Task.sleep(for: .seconds(1_000_000)) } },
+            log: { _ in }, submit: submit)
+    }
+
+    /// A submit that never returns on its own.
+    private static let hang: @Sendable (PlatformWrite) async throws -> Void = { _ in
+        try await Task.sleep(for: .seconds(1_000_000))
+    }
+
+    /// With no `submit` the write hangs and times out; with one, it ends as
+    /// `submit` does.
+    private func nextStep(
+        after write: PlatformWrite, submit: (@Sendable (PlatformWrite) async throws -> Void)? = nil
+    ) async -> AppConnect.WriteNextStep {
+        let outcome = await Self.executor(timesOut: submit == nil, submit: submit ?? Self.hang).run(write)
+        return AppConnect.nextStep(after: write, outcome: outcome, at: Self.at)
+    }
+
+    // MARK: updateKeys (the approval's identity update)
+
+    func testAnIdentityUpdateThatTimedOutIsReadAgainAndNeverRecordedAsARefusal() async {
+        let step = await nextStep(after: .updateKeys(add: [10, 11], disable: [4]))
+        XCTAssertEqual(step, .readIdentity, "a timed-out update is not a verdict: the intent stays Confirming until a read decides")
+    }
+
+    func testAnIdentityUpdateThatFailedWithoutAVerdictIsReadAgain() async {
+        let step = await nextStep(after: .updateKeys(add: [10], disable: [])) { _ in
+            throw SDKError.networkError("connection lost")
+        }
+        XCTAssertEqual(step, .readIdentity)
+    }
+
+    func testAConsensusRejectionOfTheIdentityUpdateStillRecordsTheRefusal() async {
+        let rejection = SDKError.consensusRejection(PlatformConsensusError(code: 10_212, kind: .basic), "rendered text")
+        let step = await nextStep(after: .updateKeys(add: [10], disable: [])) { _ in throw rejection }
+        XCTAssertEqual(step, .recordRefusal(AppConnect.ConsensusRefusal(code: 10_212, at: Self.at)))
+    }
+
+    func testAnIdentityUpdateThatWasSubmittedNeedsNoRead() async {
+        let step = await nextStep(after: .updateKeys(add: [10], disable: [])) { _ in }
+        XCTAssertEqual(step, .done)
+    }
+
+    // MARK: publish
+
+    func testAPublishThatTimedOutIsNotReportedPublishedUntilTheResponseIsSeen() async {
+        let step = await nextStep(after: .publish(requestHash: Data([1, 2, 3])))
+        XCTAssertEqual(step, .lookUpResponse, "only a read of Platform's documents says the response is published")
+    }
+
+    func testAPublishThatFailedIsCheckedAgainstPlatformToo() async {
+        let step = await nextStep(after: .publish(requestHash: Data([1, 2, 3]))) { _ in
+            throw SDKError.networkError("connection lost")
+        }
+        XCTAssertEqual(step, .lookUpResponse)
+    }
+
+    // MARK: fence
+
+    func testAFenceThatTimedOutStopsTheDisconnect() async {
+        let step = await nextStep(after: .fence(keyIds: [7]))
+        XCTAssertEqual(step, .stop)
+    }
+
+    /// Through the real `submitDisconnect`, which sends what production sends
+    /// (`.updateKeys(add:disable:)`): the update that timed out ends the run,
+    /// the updates after it are not sent, and every key of the plan that was
+    /// not turned off is reported still live. The next run, with the write
+    /// going through, carries the whole plan.
+    func testADisconnectWhoseUpdateTimedOutStopsAndReportsKeysStillLiveThenRunsForward() async {
+        let disable = (0 ..< UInt32(AppConnect.maxKeysDisabledPerUpdate + 1)).map { 100 + $0 }
+        let plan = AppConnect.DisconnectPlan(disable: disable, fence: [7])
+        XCTAssertEqual(plan.updates.count, 2, "the plan needs two updates for the stop to leave one unsent")
+
+        let sent = WriteLog()
+        let hanging = Self.executor(timesOut: true) { write in
+            sent.record(write)
+            try await Self.hang(write)
+        }
+        let stopped = await PlatformDashConnectDataSource.submitDisconnect(plan, executor: hanging, now: { Self.at })
+        XCTAssertTrue(stopped.progress.stopped)
+        XCTAssertEqual(sent.kinds, ["updateKeys"], "the update after the timed-out one is not sent, and none is a fence")
+        XCTAssertEqual(stopped.progress.turnedOff, [])
+        XCTAssertEqual(stopped.progress.stillLive.sorted(), disable, "every key of the plan is still live")
+        XCTAssertNotNil(stopped.failure)
+
+        let going = Self.executor(timesOut: false) { _ in }
+        let next = await PlatformDashConnectDataSource.submitDisconnect(plan, executor: going, now: { Self.at })
+        XCTAssertFalse(next.progress.stopped)
+        XCTAssertEqual(next.progress.turnedOff.sorted(), disable)
+        XCTAssertEqual(next.progress.stillLive, [])
+        XCTAssertNil(next.failure)
+    }
+
+    // MARK: The disconnect's write path (T20: R9, R11, R13, R17)
+
+    /// An executor whose timer is real and short: a submit that returns is
+    /// never raced by it, one that hangs is ended after 100 ms.
+    private static func quickExecutor(
+        submit: @escaping @Sendable (PlatformWrite) async throws -> Void
+    ) -> AppConnectWriteExecutor {
+        AppConnectWriteExecutor(
+            timeout: .milliseconds(100), sleep: { try await Task.sleep(for: $0) }, log: { _ in }, submit: submit)
+    }
+
+    private static func liveKey(_ id: UInt32, disabledAt: UInt64? = nil) -> AppConnect.PlatformKey {
+        AppConnect.PlatformKey(
+            id: id, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160,
+            data: Data(repeating: UInt8(truncatingIfNeeded: id), count: 20), readOnly: false, bound: nil,
+            boundKnown: false, totalBudget: nil, expiresAt: nil, disabledAt: disabledAt)
+    }
+
+    private static func read(_ keys: [AppConnect.PlatformKey]) -> AppConnect.IdentitySnapshot {
+        AppConnect.IdentitySnapshot(
+            identityId: Data(repeating: 0x01, count: 32), revision: 9, keys: keys, platformTime: 1_800_000_000_000)
+    }
+
+    /// R13: a Confirming connection's disconnect plans only fences. When its
+    /// write times out the progress names the fence, so the result is not a
+    /// clean all-zero one.
+    func testAFenceOnlyDisconnectWhoseWriteTimedOutReportsTheFenceNotPlaced() async {
+        let log = WriteLog()
+        let plan = AppConnect.DisconnectPlan(disable: [], fence: [7])
+        let executor = Self.quickExecutor { write in
+            log.record(write)
+            try await Task.sleep(for: .seconds(1_000_000))
+        }
+
+        let submission = await PlatformDashConnectDataSource.submitDisconnect(plan, executor: executor, now: { Self.at })
+
+        XCTAssertTrue(submission.progress.stopped)
+        XCTAssertEqual(submission.progress.unplacedFences, [7], "the fence of the update that timed out is carried")
+        XCTAssertNotNil(submission.failure)
+        XCTAssertEqual(log.kinds, ["updateKeys"], "nothing else is sent after the stop")
+
+        let result = PlatformDashConnectDataSource.disconnectResult(
+            plan: plan, appKeysOff: 1, leftoverFenceIds: [], keysNotChecked: 0, fenceKeyIds: [], after: nil, submission: submission)
+        XCTAssertEqual(result.fencesNotPlaced, 1, "the sign-in can still land: this is not a clean result")
+        XCTAssertEqual(result.fencesLeftOn, 0, "no read shows the fence on the identity: it is not a placed fence")
+        XCTAssertEqual(result.keysStillLive, 0, "a fence is not an app key")
+        XCTAssertEqual(result.keysTurnedOff, 0)
+    }
+
+    /// R13 mixed case: 7 fences and 3 disables are two updates; the second is
+    /// fence-only and fails. The fence keys of the first were added and, with
+    /// phase 2 skipped, are left on as well.
+    func testADisconnectWhoseFenceOnlySecondUpdateFailedReportsEveryFenceLeft() async {
+        let log = WriteLog()
+        let fences: [UInt32] = [20, 21, 22, 23, 24, 25, 26]
+        let plan = AppConnect.DisconnectPlan(disable: [10, 11, 12], fence: fences)
+        XCTAssertEqual(plan.updates.map(\.disable), [[10, 11, 12], []])
+        let executor = Self.quickExecutor { write in
+            if log.record(write) == 2 { throw SDKError.networkError("connection lost") }
+        }
+
+        let submission = await PlatformDashConnectDataSource.submitDisconnect(plan, executor: executor, now: { Self.at })
+
+        XCTAssertTrue(submission.progress.stopped)
+        XCTAssertEqual(submission.progress.turnedOff, [10, 11, 12])
+        XCTAssertEqual(submission.progress.unplacedFences, [26])
+        XCTAssertEqual(submission.fencesLeftOn.sorted(), [20, 21, 22, 23, 24, 25], "added, and not turned off")
+        XCTAssertEqual(log.kinds, ["updateKeys", "updateKeys"])
+        XCTAssertEqual(
+            submission.markKeyIds, Set([10, 11, 12, 20, 21, 22, 23, 24, 25, 26]),
+            "T51 (L2): the done update's keys and fences, and the failed one's fence")
+
+        // The read shows the first update's six fences on the identity, live.
+        let after = Self.read([10, 11, 12].map { Self.liveKey($0, disabledAt: 1) } + [20, 21, 22, 23, 24, 25].map { Self.liveKey($0) })
+        let result = PlatformDashConnectDataSource.disconnectResult(
+            plan: plan, appKeysOff: 10, leftoverFenceIds: [], keysNotChecked: 0, fenceKeyIds: [20, 21, 22, 23, 24, 25], after: after, submission: submission)
+        XCTAssertEqual(result.fencesLeftOn, 6, "placed and still on")
+        XCTAssertEqual(result.fencesNotPlaced, 1, "the failed update's fence is not on the read")
+        XCTAssertEqual(result.keysStillLive, 0)
+        XCTAssertEqual(result.keysTurnedOff, 3)
+    }
+
+    /// T51 (L2, AC-16, AC-19): the same split, the fence-only second update
+    /// refused: the fences of the done update still mark, the refused one's
+    /// does not.
+    func testADisconnectWhoseFenceOnlySecondUpdateIsRefusedCountsTheDoneUpdatesFencesForTheMark() async {
+        let log = WriteLog()
+        let plan = AppConnect.DisconnectPlan(disable: [10, 11, 12], fence: [20, 21, 22, 23, 24, 25, 26])
+        let executor = Self.quickExecutor { write in
+            if log.record(write) == 2 {
+                throw SDKError.consensusRejection(PlatformConsensusError(code: 10_212, kind: .basic), "rendered text")
+            }
+        }
+
+        let submission = await PlatformDashConnectDataSource.submitDisconnect(
+            plan, executor: executor, now: { Self.at })
+
+        XCTAssertTrue(submission.progress.stopped)
+        XCTAssertEqual(submission.markKeyIds, Set([10, 11, 12, 20, 21, 22, 23, 24, 25]))
+    }
+
+    /// R17: phase 2 sends nothing when phase 1 stopped.
+    func testTurningFencesOffIsSkippedWhenTheFirstPhaseStopped() async {
+        let log = WriteLog()
+        let plan = AppConnect.DisconnectPlan(disable: [], fence: [20, 21, 22, 23, 24, 25, 26])
+        let executor = Self.quickExecutor { write in
+            if log.record(write) == 2 { throw SDKError.networkError("connection lost") }
+        }
+
+        _ = await PlatformDashConnectDataSource.submitDisconnect(plan, executor: executor, now: { Self.at })
+
+        XCTAssertFalse(log.kinds.contains("fence"), "sent: \(log.kinds)")
+    }
+
+    /// R17: phase 2 stops at its first step that is not `.done`.
+    func testTurningFencesOffStopsAtTheFirstBatchThatFailed() async {
+        let log = WriteLog()
+        let fences = (0 ..< UInt32(11)).map { 20 + $0 }
+        let plan = AppConnect.DisconnectPlan(disable: [], fence: fences)
+        XCTAssertEqual(plan.updates.count, 2)
+        let executor = Self.quickExecutor { write in
+            if case .fence = write { log.record(write); throw SDKError.networkError("connection lost") }
+            log.record(write)
+        }
+
+        let submission = await PlatformDashConnectDataSource.submitDisconnect(plan, executor: executor, now: { Self.at })
+
+        XCTAssertEqual(log.kinds, ["updateKeys", "updateKeys", "fence"], "the second fence batch is not sent")
+        XCTAssertFalse(submission.progress.stopped)
+        XCTAssertEqual(submission.fencesLeftOn.sorted(), fences, "the failed batch and the unsent one stay on")
+        XCTAssertNotNil(submission.failure)
+    }
+
+    /// T46 (K1, AC-16, AC-19): a run stopped by an update of unknown outcome
+    /// may have landed the keys of every update it sent: those of the updates
+    /// reported done, and those of the one that failed.
+    func testAStoppedRunWhoseLastUpdateHasAnUnknownOutcomeCountsTheKeysOfEveryUpdateItSent() async {
+        let disable = Array(1 ... UInt32(AppConnect.maxKeysDisabledPerUpdate + 1))
+        let plan = AppConnect.DisconnectPlan(disable: disable, fence: [])
+        XCTAssertEqual(plan.updates.count, 2)
+        let log = WriteLog()
+        let executor = Self.quickExecutor { write in
+            if log.record(write) == 2 { throw SDKError.networkError("connection lost") }
+        }
+
+        let submission = await PlatformDashConnectDataSource.submitDisconnect(
+            plan, executor: executor, now: { Self.at })
+
+        XCTAssertTrue(submission.progress.stopped)
+        XCTAssertEqual(submission.markKeyIds, Set(disable), "the done update's keys and the failed one's")
+    }
+
+    /// T46 (K1, AC-16, AC-19): a refused update did not land, but the updates
+    /// reported done before it did.
+    func testAStoppedRunWhoseLastUpdateIsRefusedCountsOnlyTheKeysOfTheUpdatesReportedDone() async {
+        let disable = Array(1 ... UInt32(AppConnect.maxKeysDisabledPerUpdate + 1))
+        let plan = AppConnect.DisconnectPlan(disable: disable, fence: [])
+        let log = WriteLog()
+        let executor = Self.quickExecutor { write in
+            if log.record(write) == 2 {
+                throw SDKError.consensusRejection(PlatformConsensusError(code: 10_212, kind: .basic), "rendered text")
+            }
+        }
+
+        let submission = await PlatformDashConnectDataSource.submitDisconnect(
+            plan, executor: executor, now: { Self.at })
+
+        XCTAssertTrue(submission.progress.stopped)
+        XCTAssertEqual(submission.markKeyIds, Set(plan.updates[0].disable), "only the done update's keys")
+    }
+
+    /// T46 (K1): a run that was not stopped and left no fence on leaves the
+    /// mark to the read after.
+    func testARunThatWasNotStoppedAndLeftNoFenceOnCountsNoKeyForTheMark() async {
+        let plan = AppConnect.DisconnectPlan(disable: [1, 2], fence: [])
+        let executor = Self.quickExecutor { _ in }
+
+        let submission = await PlatformDashConnectDataSource.submitDisconnect(
+            plan, executor: executor, now: { Self.at })
+
+        XCTAssertFalse(submission.progress.stopped)
+        XCTAssertEqual(submission.markKeyIds, [])
+    }
+
+    /// T50 (L1, AC-18, AC-19): phase 1 finished and the update that turns
+    /// the fences off failed: the fences left on hold the ids of the intents
+    /// the disconnect ran on, so they count for the mark.
+    func testARunWhoseFenceTurnOffFailedCountsTheFencesLeftOnForTheMark() async {
+        let plan = AppConnect.DisconnectPlan(disable: [1], fence: [20, 21])
+        let executor = Self.quickExecutor { write in
+            if case .fence = write { throw SDKError.networkError("connection lost") }
+        }
+
+        let submission = await PlatformDashConnectDataSource.submitDisconnect(
+            plan, executor: executor, now: { Self.at })
+
+        XCTAssertFalse(submission.progress.stopped)
+        XCTAssertEqual(submission.fencesLeftOn.sorted(), [20, 21])
+        XCTAssertEqual(submission.markKeyIds, [20, 21])
+    }
+
+    /// R11/R16: still-live app keys come from the fresh read, not from the
+    /// plan.
+    func testStillLiveKeysAreCountedFromTheFreshReadOfAStoppedDisconnect() {
+        let plan = AppConnect.DisconnectPlan(disable: [10, 11], fence: [])
+        var progress = AppConnect.DisconnectProgress()
+        progress.stopped = true
+        progress.stillLive = [10, 11]
+        let submission = PlatformDashConnectDataSource.DisconnectSubmission(
+            progress: progress, fencesLeftOn: [], failure: AppConnectWriteTimedOut())
+        // The update landed after all: key 10 shows disabled.
+        let after = Self.read([Self.liveKey(10, disabledAt: 1), Self.liveKey(11)])
+
+        let result = PlatformDashConnectDataSource.disconnectResult(
+            plan: plan, appKeysOff: 2, leftoverFenceIds: [], keysNotChecked: 0, fenceKeyIds: [], after: after, submission: submission)
+
+        XCTAssertEqual(result.keysStillLive, 1)
+        XCTAssertEqual(result.keysTurnedOff, 1)
+    }
+
+    /// Of the keys turned off, those no intent names are counted on their
+    /// own; one the read still shows live is not.
+    func testUnrecordedKeysTurnedOffAreCountedFromTheFreshRead() {
+        var plan = AppConnect.DisconnectPlan(disable: [30, 10, 20], fence: [])
+        plan.unrecorded = [20, 30]
+        var progress = AppConnect.DisconnectProgress()
+        progress.stopped = true
+        progress.stillLive = [10, 20, 30]
+        let submission = PlatformDashConnectDataSource.DisconnectSubmission(
+            progress: progress, fencesLeftOn: [], failure: AppConnectWriteTimedOut())
+        let after = Self.read([Self.liveKey(10, disabledAt: 1), Self.liveKey(20), Self.liveKey(30, disabledAt: 1)])
+
+        let result = PlatformDashConnectDataSource.disconnectResult(
+            plan: plan, appKeysOff: 3, leftoverFenceIds: [], keysNotChecked: 0, fenceKeyIds: [], after: after, submission: submission)
+
+        XCTAssertEqual(result.keysTurnedOff, 2)
+        XCTAssertEqual(result.unrecordedKeysTurnedOff, 1, "key 30 is off; key 20 still shows live")
+    }
+
+    /// R11/R16: only when the fresh read failed does `progress.stillLive` stand.
+    func testStillLiveKeysComeFromTheProgressOnlyWhenTheFreshReadFailed() {
+        let plan = AppConnect.DisconnectPlan(disable: [10, 11], fence: [])
+        var progress = AppConnect.DisconnectProgress()
+        progress.stopped = true
+        progress.stillLive = [10, 11]
+        let submission = PlatformDashConnectDataSource.DisconnectSubmission(
+            progress: progress, fencesLeftOn: [], failure: AppConnectWriteTimedOut())
+
+        let result = PlatformDashConnectDataSource.disconnectResult(
+            plan: plan, appKeysOff: 2, leftoverFenceIds: [], keysNotChecked: 0, fenceKeyIds: [], after: nil, submission: submission)
+
+        XCTAssertEqual(result.keysStillLive, 2)
+    }
+
+    /// R11/R16: a leftover fence key of the wallet is in `plan.disable` but is
+    /// not an app key; it is reported as a fence left on.
+    func testALeftoverFenceKeyIsNotCountedAsAnAppKey() {
+        let plan = AppConnect.DisconnectPlan(disable: [10, 50], fence: [])
+        var progress = AppConnect.DisconnectProgress()
+        progress.turnedOff = [10]
+        progress.stopped = true
+        progress.stillLive = [50]
+        let submission = PlatformDashConnectDataSource.DisconnectSubmission(
+            progress: progress, fencesLeftOn: [], failure: AppConnectWriteTimedOut())
+        let after = Self.read([Self.liveKey(10, disabledAt: 1), Self.liveKey(50)])
+
+        let result = PlatformDashConnectDataSource.disconnectResult(
+            plan: plan, appKeysOff: 1, leftoverFenceIds: [50], keysNotChecked: 0, fenceKeyIds: [50], after: after, submission: submission)
+
+        XCTAssertEqual(result.keysStillLive, 0)
+        XCTAssertEqual(result.fencesLeftOn, 1)
+        XCTAssertEqual(result.keysTurnedOff, 1)
+    }
+
+    /// T32 (F3): a fence the after-read shows live was placed and not turned
+    /// off: `fencesLeftOn` (no error). One the read does not show, or no read
+    /// at all, was never placed: `fencesNotPlaced` (an error).
+    func testAFenceTheAfterReadShowsOnIsPlacedAndOneItDoesNotShowIsNotPlaced() {
+        let plan = AppConnect.DisconnectPlan(disable: [10], fence: [20, 21])
+        var progress = AppConnect.DisconnectProgress()
+        progress.stopped = true
+        progress.turnedOff = [10]
+        progress.unplacedFences = [21]
+        let submission = PlatformDashConnectDataSource.DisconnectSubmission(
+            progress: progress, fencesLeftOn: [20], failure: AppConnectWriteTimedOut())
+        let after = Self.read([Self.liveKey(10, disabledAt: 1), Self.liveKey(20)])
+
+        let result = PlatformDashConnectDataSource.disconnectResult(
+            plan: plan, appKeysOff: 3, leftoverFenceIds: [], keysNotChecked: 0, fenceKeyIds: [20], after: after, submission: submission)
+
+        XCTAssertEqual(result.fencesLeftOn, 1, "fence 20 is live on the read: placed, not turned off")
+        XCTAssertEqual(result.fencesNotPlaced, 1, "fence 21 is not on the read: never placed")
+    }
+
+    /// T32 (F3): a fence whose update timed out but that the read shows live
+    /// was placed after all.
+    func testAnUnplacedFenceThatTheAfterReadShowsLiveIsReportedAsPlaced() {
+        let plan = AppConnect.DisconnectPlan(disable: [], fence: [7])
+        var progress = AppConnect.DisconnectProgress()
+        progress.stopped = true
+        progress.unplacedFences = [7]
+        let submission = PlatformDashConnectDataSource.DisconnectSubmission(
+            progress: progress, fencesLeftOn: [], failure: AppConnectWriteTimedOut())
+
+        let result = PlatformDashConnectDataSource.disconnectResult(
+            plan: plan, appKeysOff: 1, leftoverFenceIds: [], keysNotChecked: 0, fenceKeyIds: [7],
+            after: Self.read([Self.liveKey(7)]), submission: submission)
+
+        XCTAssertEqual(result.fencesLeftOn, 1)
+        XCTAssertEqual(result.fencesNotPlaced, 0)
+    }
+
+    /// T37 (G3): the intent's own key under a fence id is no fence: its
+    /// sign-in landed before the fence could be placed, so it is an app key
+    /// still live, and the user is told.
+    func testTheIntentsOwnKeyUnderAFenceIdIsAnAppKeyStillLiveNotAPlacedFence() {
+        let plan = AppConnect.DisconnectPlan(disable: [], fence: [7])
+        var progress = AppConnect.DisconnectProgress()
+        progress.stopped = true
+        progress.unplacedFences = [7]
+        let submission = PlatformDashConnectDataSource.DisconnectSubmission(
+            progress: progress, fencesLeftOn: [], failure: AppConnectWriteTimedOut())
+
+        let result = PlatformDashConnectDataSource.disconnectResult(
+            plan: plan, appKeysOff: 1, leftoverFenceIds: [], keysNotChecked: 0, fenceKeyIds: [],
+            after: Self.read([Self.liveKey(7)]), submission: submission)
+
+        XCTAssertEqual(result.keysStillLive, 1, "the sign-in landed: its key is live")
+        XCTAssertEqual(result.fencesLeftOn, 0)
+        XCTAssertEqual(result.fencesNotPlaced, 0)
+    }
+
+    /// T37 (G4), T42 (H5): with no read after a run that was not stopped and
+    /// whose update turning the fences off failed, a leftover fence the run
+    /// turned off counts as nothing and a fence added and not turned off as
+    /// placed and left on; no fence counts as not placed.
+    func testWithNoReadAfterARunFencesAreSortedFromTheSubmission() {
+        let plan = AppConnect.DisconnectPlan(disable: [10, 50], fence: [20])
+        var progress = AppConnect.DisconnectProgress()
+        progress.turnedOff = [10, 50]
+        let submission = PlatformDashConnectDataSource.DisconnectSubmission(
+            progress: progress, fencesLeftOn: [20], failure: AppConnectWriteTimedOut())
+
+        let result = PlatformDashConnectDataSource.disconnectResult(
+            plan: plan, appKeysOff: 2, leftoverFenceIds: [50], keysNotChecked: 0, fenceKeyIds: [],
+            after: nil, submission: submission)
+
+        XCTAssertEqual(result.fencesLeftOn, 1, "fence 20 was added and not turned off")
+        XCTAssertEqual(result.fencesNotPlaced, 0, "every fence was placed")
+        XCTAssertEqual(result.keysStillLive, 0)
+    }
+
+    /// T37 (G4): with no read after a stopped run, a leftover fence the
+    /// progress still has live is a placed fence left on, not an unplaced one.
+    func testWithNoReadAfterAStoppedRunALeftoverFenceStillLiveIsPlaced() {
+        let plan = AppConnect.DisconnectPlan(disable: [10, 50], fence: [])
+        var progress = AppConnect.DisconnectProgress()
+        progress.stopped = true
+        progress.stillLive = [10, 50]
+        let submission = PlatformDashConnectDataSource.DisconnectSubmission(
+            progress: progress, fencesLeftOn: [], failure: AppConnectWriteTimedOut())
+
+        let result = PlatformDashConnectDataSource.disconnectResult(
+            plan: plan, appKeysOff: 1, leftoverFenceIds: [50], keysNotChecked: 0, fenceKeyIds: [],
+            after: nil, submission: submission)
+
+        XCTAssertEqual(result.fencesLeftOn, 1)
+        XCTAssertEqual(result.fencesNotPlaced, 0)
+        XCTAssertEqual(result.keysStillLive, 1, "key 10 went out in the update that failed")
+    }
+
+    // MARK: deleteResponse
+
+    func testAResponseDeleteThatTimedOutIsNotMarkedRemovedUntilTheResponseIsGone() async {
+        let step = await nextStep(after: .deleteResponse(documentId: Data([0x0A, 0x0B])))
+        XCTAssertEqual(step, .lookUpResponse, "the response stays marked, and the next disconnect deletes it again unless a lookup finds it gone")
+    }
+
+    func testAResponseDeleteThatWasSubmittedIsDone() async {
+        let step = await nextStep(after: .deleteResponse(documentId: Data([0x0A, 0x0B]))) { _ in }
+        XCTAssertEqual(step, .done)
+    }
+}
+
+/// The writes an executor submitted, in order.
+private final class WriteLog: @unchecked Sendable {
+    private let lock = NSLock()
+    private var written: [PlatformWrite] = []
+
+    /// Records `write`; returns how many writes there are now.
+    @discardableResult
+    func record(_ write: PlatformWrite) -> Int {
+        lock.withLock { written.append(write); return written.count }
+    }
+
+    var kinds: [String] { lock.withLock { written.map(\.kind) } }
+}
+
+// MARK: - The data source's write paths (T21: R9; AC-08, AC-11, AC-20, AC-20b, AC-21)
+
+/// What the data source does around each Platform write, through the real
+/// code path with the real `AppConnectWriteExecutor` (a short real timer and
+/// a submit that hangs, throws or returns) and plain values in place of the
+/// live SDK. Each `PlatformDashConnectDataSource` static used here is the part
+/// of a private method that follows its SDK-bound step; the private method
+/// calls it with its context's stores, reads and signer.
+final class AppConnectDataSourceWriteTests: XCTestCase {
+    private static let at = Date(timeIntervalSince1970: 1_773_132_300)
+    private static let identity = Data(repeating: 0x01, count: 32)
+    private static let app = Data(repeating: 0xA1, count: 32)
+    private static let installA = Data(repeating: 0xC1, count: 32)
+    private static let installB = Data(repeating: 0xC2, count: 32)
+    private static let requestHash = Data(repeating: 0xEE, count: 20)
+    private static let documentId = Data(repeating: 0xDD, count: 32)
+
+    private struct ReadFailed: Error {}
+
+    /// A timer of 100 ms: a submit that returns is never raced by it, one that
+    /// hangs is ended by it.
+    private static func executor(
+        submit: @escaping @Sendable (PlatformWrite) async throws -> Void
+    ) -> AppConnectWriteExecutor {
+        AppConnectWriteExecutor(
+            timeout: .milliseconds(100), sleep: { try await Task.sleep(for: $0) }, log: { _ in }, submit: submit)
+    }
+
+    private static let hang: @Sendable (PlatformWrite) async throws -> Void = { _ in
+        try await Task.sleep(for: .seconds(1_000_000))
+    }
+
+    private static func authKey(_ id: UInt32) -> AppConnect.IntendedKey {
+        AppConnect.IntendedKey(
+            id: id, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160,
+            data: Data(repeating: UInt8(truncatingIfNeeded: id), count: 20), readOnly: false,
+            bound: .singleContract(app), totalBudget: 1000, expiresAt: nil)
+    }
+
+    private static func onPlatform(_ key: AppConnect.IntendedKey, disabledAt: UInt64? = nil) -> AppConnect.PlatformKey {
+        AppConnect.PlatformKey(
+            id: key.id, purpose: key.purpose, securityLevel: key.securityLevel, keyType: key.keyType, data: key.data,
+            readOnly: key.readOnly, bound: key.bound, boundKnown: true, totalBudget: key.totalBudget,
+            expiresAt: key.expiresAt, disabledAt: disabledAt)
+    }
+
+    private static func snapshot(_ keys: [AppConnect.PlatformKey] = []) -> AppConnect.IdentitySnapshot {
+        AppConnect.IdentitySnapshot(identityId: identity, revision: 5, keys: keys, platformTime: 1_800_000_000_000)
+    }
+
+    private static func intent(
+        keys: [UInt32], disables: [UInt32] = [], connectionId: Data? = installA, app: Data = app,
+        responseDocumentId: Data? = nil, responseRemoved: Bool = false, refusal: AppConnect.ConsensusRefusal? = nil
+    ) -> AppConnect.ConnectionIntent {
+        var intent = AppConnect.ConnectionIntent(
+            id: UUID(), identityId: identity, appId: app, appLabel: "App", appUrl: "", requestHash: requestHash,
+            connectionId: connectionId, keys: keys.map(authKey), sentEncryptionKeyIds: [], disables: disables,
+            response: AppConnect.ResponseValues(appEphemeralPubKeyHash: "ee", walletEphemeralPubKey: "02", encryptedPayload: "00"),
+            responseDocumentId: responseDocumentId, responseRemoved: responseRemoved,
+            createdAt: Date(timeIntervalSince1970: 0), closedAt: nil)
+        intent.refusal = refusal
+        return intent
+    }
+
+    /// Writes handed to the submit, whole.
+    private final class Sent: @unchecked Sendable {
+        private let lock = NSLock()
+        private var writes: [PlatformWrite] = []
+        func record(_ write: PlatformWrite) { lock.withLock { writes.append(write) } }
+        var all: [PlatformWrite] { lock.withLock { writes } }
+    }
+
+    private final class Calls: @unchecked Sendable {
+        private let lock = NSLock()
+        private var n = 0
+        func hit() { lock.withLock { n += 1 } }
+        var count: Int { lock.withLock { n } }
+    }
+
+    private final class MemoryIntentStore: AppConnectIntentStore, @unchecked Sendable {
+        private var intents: [AppConnect.ConnectionIntent]
+        let canPersist: Bool
+        init(_ intents: [AppConnect.ConnectionIntent] = [], canPersist: Bool = true) {
+            self.intents = intents
+            self.canPersist = canPersist
+        }
+        func load() -> [AppConnect.ConnectionIntent] { intents }
+        func save(_ intents: [AppConnect.ConnectionIntent]) { if canPersist { self.intents = intents } }
+        func pinned(toWalletIdHex walletIdHex: String) -> any AppConnectIntentStore { self }
+    }
+
+    // MARK: 1. The identity update times out (AC-20)
+
+    func testAnIdentityUpdateThatTimedOutLeavesTheIntentRecordedBeforeItConfirmingAndTheRequestSpent() async throws {
+        let intent = Self.intent(keys: [13])
+        let store = MemoryIntentStore()
+        let recordedAtSubmit = Calls()
+        let sent = Sent()
+        let afterRecording = Calls()
+        let executor = Self.executor { write in
+            if store.load().contains(where: { $0.id == intent.id }) { recordedAtSubmit.hit() }
+            sent.record(write)
+            try await Self.hang(write)
+        }
+
+        var thrown: Error?
+        do {
+            _ = try await PlatformDashConnectDataSource.recordAndSubmitIdentityUpdate(
+                intent, snapshot: Self.snapshot(), intents: store,
+                makeExecutor: { executor }, now: { Self.at },
+                afterRecording: { afterRecording.hit() },
+                // No read shows the update: the cause stands.
+                readAfterFailure: { throw $0 })
+        } catch {
+            thrown = error
+        }
+
+        XCTAssertTrue(thrown is AppConnectWriteTimedOut, "a timeout is not a verdict: \(String(describing: thrown))")
+        XCTAssertEqual(recordedAtSubmit.count, 1, "the intent is in the store when the update is sent")
+        XCTAssertEqual(afterRecording.count, 1)
+        XCTAssertEqual(sent.all.count, 1)
+        let stored = try XCTUnwrap(store.load().first { $0.id == intent.id })
+        XCTAssertNil(stored.closedAt)
+        XCTAssertNil(stored.refusal, "a timeout is never recorded as a refusal")
+        XCTAssertEqual(AppConnect.status(of: stored, in: Self.snapshot()), .confirming)
+        let failure = PlatformDashConnectDataSource.approvalFailure(after: try XCTUnwrap(thrown))
+        XCTAssertEqual((failure as? AppConnect.Refusal)?.status, .failed, "the request is spent: the app is told it failed")
+    }
+
+    func testAnIdentityUpdateThatTimedOutButLandedReturnsTheReadThatShowsIt() async throws {
+        let intent = Self.intent(keys: [13])
+        let landed = Self.snapshot([Self.onPlatform(Self.authKey(13))])
+
+        let result = try await PlatformDashConnectDataSource.recordAndSubmitIdentityUpdate(
+            intent, snapshot: Self.snapshot(), intents: MemoryIntentStore(),
+            makeExecutor: { Self.executor(submit: Self.hang) }, now: { Self.at },
+            afterRecording: {}, readAfterFailure: { _ in landed })
+
+        XCTAssertEqual(result, landed)
+    }
+
+    func testAnIdentityUpdateThatWasSubmittedNeedsNoRead() async throws {
+        let reads = Calls()
+        let result = try await PlatformDashConnectDataSource.recordAndSubmitIdentityUpdate(
+            Self.intent(keys: [13]), snapshot: Self.snapshot(), intents: MemoryIntentStore(),
+            makeExecutor: { Self.executor { _ in } }, now: { Self.at },
+            afterRecording: {}, readAfterFailure: { reads.hit(); throw $0 })
+
+        XCTAssertNil(result)
+        XCTAssertEqual(reads.count, 0)
+    }
+
+    func testNothingIsSentWhenTheIntentCannotBeRecorded() async {
+        let sent = Sent()
+        do {
+            _ = try await PlatformDashConnectDataSource.recordAndSubmitIdentityUpdate(
+                Self.intent(keys: [13]), snapshot: Self.snapshot(), intents: MemoryIntentStore(canPersist: false),
+                makeExecutor: { Self.executor { sent.record($0) } }, now: { Self.at },
+                afterRecording: {}, readAfterFailure: { throw $0 })
+            XCTFail("expected grantNotRecorded")
+        } catch {
+            XCTAssertEqual(error as? DashConnectPlatformError, .grantNotRecorded)
+        }
+        XCTAssertEqual(sent.all.count, 0, "keys no intent names are never submitted")
+    }
+
+    // MARK: 4. A consensus refusal of the identity update (AC-20b)
+
+    func testAConsensusRefusalOfTheIdentityUpdateIsRecordedOnTheIntentAndShowsRefused() async throws {
+        let intent = Self.intent(keys: [13])
+        let store = MemoryIntentStore()
+        let rejection = SDKError.consensusRejection(PlatformConsensusError(code: 10_212, kind: .basic), "rendered text")
+        let reads = Calls()
+
+        var thrown: Error?
+        do {
+            _ = try await PlatformDashConnectDataSource.recordAndSubmitIdentityUpdate(
+                intent, snapshot: Self.snapshot(), intents: store,
+                makeExecutor: { Self.executor { _ in throw rejection } }, now: { Self.at },
+                afterRecording: {}, readAfterFailure: { reads.hit(); throw $0 })
+        } catch {
+            thrown = error
+        }
+
+        XCTAssertEqual(thrown as? DashConnectPlatformError, .networkRefused(code: 10_212))
+        XCTAssertEqual(reads.count, 0, "a verdict needs no read")
+        let stored = try XCTUnwrap(store.load().first { $0.id == intent.id })
+        XCTAssertEqual(stored.refusal, AppConnect.ConsensusRefusal(code: 10_212, at: Self.at))
+        XCTAssertEqual(AppConnect.status(of: stored, in: Self.snapshot()), .refused)
+        let failure = PlatformDashConnectDataSource.approvalFailure(after: try XCTUnwrap(thrown))
+        XCTAssertEqual(failure as? DashConnectPlatformError, .networkRefused(code: 10_212), "typed, so the app is told for good")
+    }
+
+    func testAFailureWithoutAVerdictIsNotRecordedAsARefusal() async throws {
+        let intent = Self.intent(keys: [13])
+        let store = MemoryIntentStore()
+
+        _ = try? await PlatformDashConnectDataSource.recordAndSubmitIdentityUpdate(
+            intent, snapshot: Self.snapshot(), intents: store,
+            makeExecutor: { Self.executor { _ in throw SDKError.networkError("connection lost") } }, now: { Self.at },
+            afterRecording: {}, readAfterFailure: { throw $0 })
+
+        XCTAssertNil(try XCTUnwrap(store.load().first).refusal)
+    }
+
+    // MARK: 4b. An answered request is refused before any PIN (AC-11)
+
+    func testARequestAnsweredBeforeIsRefusedWithoutAskingForAPIN() async {
+        let pins = Calls()
+        do {
+            try await PlatformDashConnectDataSource.authorizeUnlessAnswered(
+                answered: { .answered }, authorize: { pins.hit() })
+            XCTFail("expected a refusal")
+        } catch {
+            XCTAssertEqual((error as? AppConnect.Refusal)?.status, .failed, "spent: the app asks anew")
+        }
+        XCTAssertEqual(pins.count, 0)
+    }
+
+    func testARequestThatCannotBeCheckedIsRefusedWithoutAskingForAPIN() async {
+        let pins = Calls()
+        do {
+            try await PlatformDashConnectDataSource.authorizeUnlessAnswered(
+                answered: { .uncheckable }, authorize: { pins.hit() })
+            XCTFail("expected answeredUncheckable")
+        } catch {
+            XCTAssertEqual(error as? DashConnectPlatformError, .answeredUncheckable)
+        }
+        XCTAssertEqual(pins.count, 0)
+    }
+
+    func testARequestNotAnsweredBeforeAsksForThePINOnce() async throws {
+        let pins = Calls()
+        try await PlatformDashConnectDataSource.authorizeUnlessAnswered(
+            answered: { .notAnswered }, authorize: { pins.hit() })
+        XCTAssertEqual(pins.count, 1)
+    }
+
+    // MARK: 2. The publish times out (AC-08, AC-20)
+
+    func testAPublishThatTimedOutIsNotDeliveredUntilALookupFindsTheResponse() async throws {
+        let intent = Self.intent(keys: [13])
+        let store = MemoryIntentStore([intent])
+
+        do {
+            try await PlatformDashConnectDataSource.publishAndRecord(
+                intent, intents: store, executor: Self.executor(submit: Self.hang), now: { Self.at },
+                createdDocumentId: { nil }, lookUp: { nil })
+            XCTFail("a publish nobody can find is not delivered")
+        } catch {
+            XCTAssertTrue(error is AppConnectWriteTimedOut, "\(error)")
+        }
+        XCTAssertNil(try XCTUnwrap(store.load().first).responseDocumentId, "never reported as published")
+    }
+
+    func testAPublishThatTimedOutIsDeliveredOnceALookupFindsTheResponse() async throws {
+        let intent = Self.intent(keys: [13])
+        let store = MemoryIntentStore([intent])
+
+        try await PlatformDashConnectDataSource.publishAndRecord(
+            intent, intents: store, executor: Self.executor(submit: Self.hang), now: { Self.at },
+            createdDocumentId: { nil }, lookUp: { Self.documentId })
+
+        let stored = try XCTUnwrap(store.load().first)
+        XCTAssertEqual(stored.responseDocumentId, Self.documentId)
+        XCTAssertFalse(stored.responseRemoved)
+    }
+
+    func testAPublishThatTimedOutWithAFailedLookupIsNotDelivered() async throws {
+        let intent = Self.intent(keys: [13])
+        let store = MemoryIntentStore([intent])
+
+        do {
+            try await PlatformDashConnectDataSource.publishAndRecord(
+                intent, intents: store, executor: Self.executor(submit: Self.hang), now: { Self.at },
+                createdDocumentId: { nil }, lookUp: { throw ReadFailed() })
+            XCTFail("a lookup that fails says nothing")
+        } catch {}
+        XCTAssertNil(try XCTUnwrap(store.load().first).responseDocumentId)
+    }
+
+    func testAPublishThatWasSubmittedRecordsTheCreatedDocumentWithoutALookup() async throws {
+        let intent = Self.intent(keys: [13])
+        let store = MemoryIntentStore([intent])
+        let lookups = Calls()
+
+        try await PlatformDashConnectDataSource.publishAndRecord(
+            intent, intents: store, executor: Self.executor { _ in }, now: { Self.at },
+            createdDocumentId: { Self.documentId }, lookUp: { lookups.hit(); return nil })
+
+        XCTAssertEqual(try XCTUnwrap(store.load().first).responseDocumentId, Self.documentId)
+        XCTAssertEqual(lookups.count, 0)
+    }
+
+    // MARK: 3. The response delete times out
+
+    func testAResponseDeleteThatTimedOutLeavesTheResponseMarkedWhileItIsStillThere() async throws {
+        let intent = Self.intent(keys: [13], responseDocumentId: Self.documentId)
+        let store = MemoryIntentStore([intent])
+
+        await PlatformDashConnectDataSource.deleteResponse(
+            documentId: Self.documentId, of: intent.id, intents: store,
+            executor: Self.executor(submit: Self.hang), now: { Self.at }, lookUp: { Self.documentId })
+
+        XCTAssertFalse(try XCTUnwrap(store.load().first).responseRemoved, "not reported deleted")
+    }
+
+    func testAResponseDeleteThatTimedOutAndWhoseLookupFailedLeavesTheResponseMarked() async throws {
+        let intent = Self.intent(keys: [13], responseDocumentId: Self.documentId)
+        let store = MemoryIntentStore([intent])
+
+        await PlatformDashConnectDataSource.deleteResponse(
+            documentId: Self.documentId, of: intent.id, intents: store,
+            executor: Self.executor(submit: Self.hang), now: { Self.at }, lookUp: { throw ReadFailed() })
+
+        XCTAssertFalse(try XCTUnwrap(store.load().first).responseRemoved)
+    }
+
+    func testAResponseDeleteThatTimedOutIsRemovedWhenALookupShowsItGone() async throws {
+        let intent = Self.intent(keys: [13], responseDocumentId: Self.documentId)
+        let store = MemoryIntentStore([intent])
+
+        await PlatformDashConnectDataSource.deleteResponse(
+            documentId: Self.documentId, of: intent.id, intents: store,
+            executor: Self.executor(submit: Self.hang), now: { Self.at }, lookUp: { nil })
+
+        XCTAssertTrue(try XCTUnwrap(store.load().first).responseRemoved, "it landed without confirming")
+    }
+
+    func testAResponseDeleteThatWasSubmittedIsRemovedWithoutALookup() async throws {
+        let intent = Self.intent(keys: [13], responseDocumentId: Self.documentId)
+        let store = MemoryIntentStore([intent])
+        let lookups = Calls()
+
+        await PlatformDashConnectDataSource.deleteResponse(
+            documentId: Self.documentId, of: intent.id, intents: store,
+            executor: Self.executor { _ in }, now: { Self.at }, lookUp: { lookups.hit(); return Self.documentId })
+
+        XCTAssertTrue(try XCTUnwrap(store.load().first).responseRemoved)
+        XCTAssertEqual(lookups.count, 0)
+    }
+
+    // MARK: 5. Remove of a Refused row (AC-20b)
+
+    func testRemoveHidesARefusedConnectionAndTouchesNothingElse() throws {
+        let refused = Self.intent(keys: [13], refusal: AppConnect.ConsensusRefusal(code: 10_212, at: Self.at))
+        let otherApp = Self.intent(keys: [20], app: Data(repeating: 0xA2, count: 32))
+        let store = MemoryIntentStore([refused, otherApp])
+
+        let removed = PlatformDashConnectDataSource.hideRefused(
+            appId: Self.app, intents: store, snapshot: Self.snapshot(), at: Self.at)
+
+        XCTAssertTrue(removed)
+        let loaded = store.load()
+        XCTAssertEqual(try XCTUnwrap(loaded.first { $0.id == refused.id }).removedAt, Self.at)
+        XCTAssertNil(try XCTUnwrap(loaded.first { $0.id == otherApp.id }).removedAt)
+    }
+
+    func testRemoveIgnoresAConnectionThatDoesNotShowRefused() throws {
+        // Confirming (no refusal, its key not on the identity yet), and a refusal whose key landed after all.
+        let confirming = Self.intent(keys: [13])
+        let landed = Self.intent(keys: [14], refusal: AppConnect.ConsensusRefusal(code: 10_212, at: Self.at))
+        for (name, intents, snapshot) in [
+            ("confirming", [confirming], Self.snapshot()),
+            ("landed", [landed], Self.snapshot([Self.onPlatform(Self.authKey(14))])),
+        ] {
+            let store = MemoryIntentStore(intents)
+            XCTAssertFalse(
+                PlatformDashConnectDataSource.hideRefused(appId: Self.app, intents: store, snapshot: snapshot, at: Self.at), name)
+            XCTAssertEqual(store.load(), intents, "\(name): nothing is written")
+        }
+    }
+
+    // MARK: 6. Supersede (AC-21)
+
+    func testTheEarlierConnectionOfTheSameInstallIsTurnedOffInTheUpdateThatAddsTheNewKeys() async throws {
+        let earlier = Self.intent(keys: [10, 11], connectionId: Self.installA)
+        let sameAppOtherInstall = Self.intent(keys: [12], connectionId: Self.installB)
+        let onIdentity = Self.snapshot([10, 11, 12].map { Self.onPlatform(Self.authKey($0)) })
+
+        let superseded = PlatformDashConnectDataSource.supersededKeys(
+            connectionId: Self.installA, appId: Self.app, snapshot: onIdentity,
+            intents: [earlier, sameAppOtherInstall])
+        XCTAssertEqual(superseded.disable, [10, 11], "the other install's key 12 stays")
+
+        let new = Self.intent(keys: [13, 14], disables: superseded.disable, connectionId: Self.installA)
+        let write = PlatformDashConnectDataSource.identityUpdateWrite(for: new, in: onIdentity)
+        guard case .updateKeys(let add, let disable) = write else { return XCTFail("expected updateKeys, got \(write.kind)") }
+        XCTAssertEqual(add, [13, 14])
+        XCTAssertEqual(disable, [10, 11], "one update adds the new keys and turns the earlier ones off")
+
+        // And it is that one update that is sent.
+        let sent = Sent()
+        _ = try await PlatformDashConnectDataSource.recordAndSubmitIdentityUpdate(
+            new, snapshot: onIdentity, intents: MemoryIntentStore(),
+            makeExecutor: { Self.executor { sent.record($0) } }, now: { Self.at },
+            afterRecording: {}, readAfterFailure: { throw $0 })
+        XCTAssertEqual(sent.all.map(\.kind), ["updateKeys"], "no separate update turns the earlier keys off")
+        guard case .updateKeys(let sentAdd, let sentDisable)? = sent.all.first else { return XCTFail("nothing sent") }
+        XCTAssertEqual(sentAdd, [13, 14])
+        XCTAssertEqual(sentDisable, [10, 11])
+    }
+
+    func testADifferentInstallOfTheSameAppIsNotSuperseded() {
+        let installA = Self.intent(keys: [10], connectionId: Self.installA)
+        let onIdentity = Self.snapshot([Self.onPlatform(Self.authKey(10))])
+
+        let superseded = PlatformDashConnectDataSource.supersededKeys(
+            connectionId: Self.installB, appId: Self.app, snapshot: onIdentity, intents: [installA])
+
+        XCTAssertEqual(superseded, AppConnect.DisconnectPlan(), "nothing to turn off, nothing to fence")
+        let new = Self.intent(keys: [13], disables: superseded.disable, connectionId: Self.installB)
+        guard case .updateKeys(_, let disable) = PlatformDashConnectDataSource.identityUpdateWrite(for: new, in: onIdentity) else {
+            return XCTFail("expected updateKeys")
+        }
+        XCTAssertEqual(disable, [])
+    }
+
+    func testARequestWithoutAnInstallSupersedesNothing() {
+        let installA = Self.intent(keys: [10], connectionId: Self.installA)
+        let onIdentity = Self.snapshot([Self.onPlatform(Self.authKey(10))])
+
+        let superseded = PlatformDashConnectDataSource.supersededKeys(
+            connectionId: nil, appId: Self.app, snapshot: onIdentity, intents: [installA])
+
+        XCTAssertEqual(superseded, AppConnect.DisconnectPlan())
+    }
+
+    func testAPendingEarlierConnectionOfTheSameInstallIsFencedFirst() {
+        let pending = Self.intent(keys: [10], connectionId: Self.installA)
+
+        let superseded = PlatformDashConnectDataSource.supersededKeys(
+            connectionId: Self.installA, appId: Self.app, snapshot: Self.snapshot(), intents: [pending])
+
+        XCTAssertEqual(superseded.fence, [10], "a pending update is made unable to land (AC-17)")
+        XCTAssertEqual(superseded.disable, [])
+    }
+
+    func testARefusedEarlierConnectionOfTheSameInstallIsNotFenced() {
+        // T22 (R8): its update can never land, so a fence would only cost two identity updates.
+        let refused = Self.intent(keys: [10], connectionId: Self.installA, refusal: AppConnect.ConsensusRefusal(code: 10_212, at: Self.at))
+
+        let superseded = PlatformDashConnectDataSource.supersededKeys(
+            connectionId: Self.installA, appId: Self.app, snapshot: Self.snapshot(), intents: [refused])
+
+        XCTAssertEqual(superseded.fence, [])
+        XCTAssertEqual(superseded.disable, [])
+    }
+}
+
+// MARK: - T23 (review R5, R12a)
+
+extension PlatformDashConnectDataSourceTests {
+    /// R5 / AC-05: a token purchase code opened by a wallet with no username
+    /// is refused before any sheet is built.
+    func testATokenPurchaseWithoutAResolvedUsernameIsRefused() {
+        for resolved in [nil, "", "   "] as [String?] {
+            XCTAssertThrowsError(
+                try PlatformDashConnectDataSource.requireTokenPurchaseUsername(resolved, lookupFailed: false),
+                "\(String(describing: resolved))") {
+                XCTAssertEqual($0 as? DashConnectPlatformError, .tokenPurchaseNeedsUsername)
+            }
+        }
+    }
+
+    /// A failed DPNS read with no stored name does not tell the user to
+    /// create a name they may already have.
+    func testATokenPurchaseWhoseUsernameLookupFailedIsNotToldToCreateOne() {
+        XCTAssertThrowsError(try PlatformDashConnectDataSource.requireTokenPurchaseUsername(nil, lookupFailed: true)) {
+            XCTAssertEqual($0 as? DashConnectPlatformError, .tokenPurchaseUsernameUncheckable)
+        }
+    }
+
+    func testATokenPurchaseWithAResolvedUsernameCarriesItToTheSheet() throws {
+        XCTAssertEqual(try PlatformDashConnectDataSource.requireTokenPurchaseUsername("dashuser", lookupFailed: false), "dashuser")
+        XCTAssertEqual(try PlatformDashConnectDataSource.requireTokenPurchaseUsername("dashuser", lookupFailed: true), "dashuser",
+                       "a stored name stands in when the DPNS read fails")
+    }
+
+    /// R12a / AC-09: after the PIN, a request dated in the future is not
+    /// reported as expired, and the stale case keeps its own text.
+    func testAFutureDatedRequestAfterThePinIsNotReportedAsExpired() {
+        XCTAssertNoThrow(try PlatformDashConnectDataSource.requireFreshRequest(age: .fresh))
+        XCTAssertThrowsError(try PlatformDashConnectDataSource.requireFreshRequest(age: .uncheckable)) {
+            XCTAssertEqual($0 as? DashConnectPlatformError, .requestAgeUncheckable)
+        }
+
+        var stale: AppConnect.Refusal?
+        XCTAssertThrowsError(try PlatformDashConnectDataSource.requireFreshRequest(age: .stale)) { stale = $0 as? AppConnect.Refusal }
+        XCTAssertEqual(stale?.status, .stale)
+        XCTAssertTrue(stale?.reason.lowercased().contains("expired") == true, "the stale case still says expired")
+
+        var future: AppConnect.Refusal?
+        XCTAssertThrowsError(try PlatformDashConnectDataSource.requireFreshRequest(age: .future)) { future = $0 as? AppConnect.Refusal }
+        XCTAssertNotNil(future, "a future-dated request is a typed refusal")
+        let text = future?.reason.lowercased() ?? ""
+        XCTAssertFalse(text.contains("expired"), text)
+        XCTAssertFalse(text.contains("clock"), text)
+        XCTAssertTrue(text.contains("new"), "it asks the app for a new code: \(text)")
+        XCTAssertNotEqual(future?.reason, stale?.reason)
+        XCTAssertTrue(text.contains("ahead"), "it gives the reason, the request is dated ahead: \(text)")
+        XCTAssertTrue(text.contains("network"), "it names the network's time: \(text)")
+    }
+}
+
+// MARK: - A keys read behind the wallet copy (T25, AC-15)
+
+extension PlatformDashConnectDataSourceTests {
+    private func assertReadBehind(
+        copy: [ManagedIdentity.IdentityPublicKeyInfo], proved: [ManagedIdentity.IdentityPublicKeyInfo],
+        file: StaticString = #filePath, line: UInt = #line
+    ) {
+        XCTAssertThrowsError(
+            try PlatformDashConnectDataSource.requireKeysNotBehind(copy: copy, proved: proved), file: file, line: line
+        ) { error in
+            XCTAssertEqual(error as? DashConnectPlatformError, .identityReadBehind, file: file, line: line)
+        }
+    }
+
+    func testAProvedReadMissingAKeyOfTheCopyIsBehind() {
+        assertReadBehind(copy: [Self.keyInfo(0), Self.keyInfo(1)], proved: [Self.keyInfo(0)])
+    }
+
+    func testAKeyDisabledInTheCopyButEnabledInTheProvedReadIsBehind() {
+        assertReadBehind(
+            copy: [Self.keyInfo(0), Self.keyInfo(1, disabledAt: 1_780_000_000_000)],
+            proved: [Self.keyInfo(0), Self.keyInfo(1)])
+    }
+
+    func testAProvedReadWithANewerKeyIsNotBehind() {
+        XCTAssertNoThrow(try PlatformDashConnectDataSource.requireKeysNotBehind(
+            copy: [Self.keyInfo(0)], proved: [Self.keyInfo(0), Self.keyInfo(2)]))
+    }
+
+    func testIdenticalKeysAreNotBehind() {
+        XCTAssertNoThrow(try PlatformDashConnectDataSource.requireKeysNotBehind(
+            copy: [Self.keyInfo(0), Self.keyInfo(1)], proved: [Self.keyInfo(0), Self.keyInfo(1)]))
+    }
+
+    func testAKeyDisabledInBothIsNotBehind() {
+        let disabled = Self.keyInfo(1, disabledAt: 1_780_000_000_000)
+        XCTAssertNoThrow(try PlatformDashConnectDataSource.requireKeysNotBehind(
+            copy: [Self.keyInfo(0), disabled], proved: [Self.keyInfo(0), disabled]))
+    }
+
+    /// Platform raises a key's limits without a new revision: a proved read
+    /// with the limits from before the raise is behind the copy.
+    func testALowerBudgetOrAnEarlierExpiryThanTheCopyIsBehind() {
+        assertReadBehind(
+            copy: [Self.keyInfo(1, totalBudget: 2_000, expiresAt: 1_800_000_000_000)],
+            proved: [Self.keyInfo(1, totalBudget: 1_000, expiresAt: 1_800_000_000_000)])
+        assertReadBehind(
+            copy: [Self.keyInfo(1, totalBudget: 1_000, expiresAt: 1_800_000_000_000)],
+            proved: [Self.keyInfo(1, totalBudget: 1_000, expiresAt: 1_790_000_000_000)])
+    }
+
+    /// The SDK gives an expiry as the bit pattern of an unsigned block time:
+    /// one past `Int64.max` is later than any ordinary one, not earlier.
+    func testAnExpiryPastInt64MaxIsComparedUnsigned() {
+        let farOff = Int64(bitPattern: UInt64(Int64.max) + 10)
+        assertReadBehind(
+            copy: [Self.keyInfo(1, expiresAt: farOff)], proved: [Self.keyInfo(1, expiresAt: 1_800_000_000_000)])
+        XCTAssertNoThrow(try PlatformDashConnectDataSource.requireKeysNotBehind(
+            copy: [Self.keyInfo(1, expiresAt: 1_800_000_000_000)], proved: [Self.keyInfo(1, expiresAt: farOff)]))
+    }
+
+    func testRaisedLimitsInTheProvedReadAreNotBehind() {
+        XCTAssertNoThrow(try PlatformDashConnectDataSource.requireKeysNotBehind(
+            copy: [Self.keyInfo(1, totalBudget: 1_000, expiresAt: 1_790_000_000_000)],
+            proved: [Self.keyInfo(1, totalBudget: 2_000, expiresAt: 1_800_000_000_000)]))
+    }
+
+    func testAKeyEnabledInTheCopyButDisabledInTheProvedReadIsNotBehind() {
+        XCTAssertNoThrow(try PlatformDashConnectDataSource.requireKeysNotBehind(
+            copy: [Self.keyInfo(1)], proved: [Self.keyInfo(1, disabledAt: 1_780_000_000_000)]))
+    }
+}
+
+// MARK: T29 (F11): a whole disconnect through the injected seams
+
+/// A whole `disconnect(id:scope:)` of the data source, with no live SDK: the
+/// platform is `DashConnectPlatformPort` (the seam T29 adds, which the data
+/// source takes as `platform:` and which stands for the wallet, the SDK and the
+/// PIN prompt), and every write goes through the injected `makeWriteExecutor`.
+/// The executor here never calls the `submit` it is given, so a write that
+/// still builds its own executor would reach the live SDK and fail.
+final class DashConnectDisconnectThroughSeamsTests: XCTestCase {
+    private static let at = Date(timeIntervalSince1970: 1_773_132_300)
+    private static let identity = Data(repeating: 0x01, count: 32)
+    private static let app = Data(repeating: 0xA1, count: 32)
+    private static let documentId = Data(repeating: 0xDD, count: 32)
+    private static let walletIdHex = "wallet"
+    /// `"\(walletIdHex) \(scopeKey ?? "") \(endpoint ?? "")"` of the pinned stores.
+    private static let scope = "wallet  "
+
+    private static let key = AppConnect.IntendedKey(
+        id: 13, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160,
+        data: Data(repeating: 13, count: 20), readOnly: false,
+        bound: .singleContract(app), totalBudget: 1000, expiresAt: nil)
+
+    private static func onPlatform(disabledAt: UInt64? = nil) -> AppConnect.PlatformKey {
+        AppConnect.PlatformKey(
+            id: key.id, purpose: key.purpose, securityLevel: key.securityLevel, keyType: key.keyType, data: key.data,
+            readOnly: key.readOnly, bound: key.bound, boundKnown: true, totalBudget: key.totalBudget,
+            expiresAt: key.expiresAt, disabledAt: disabledAt)
+    }
+
+    /// A live key of the wallet's auth shape that no intent names and whose
+    /// bound the key store does not hold yet: it is `unplaced` in the plan.
+    private static func unknownBoundKey() -> AppConnect.PlatformKey {
+        AppConnect.PlatformKey(
+            id: 14, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160,
+            data: Data(repeating: 14, count: 20), readOnly: false, bound: nil, boundKnown: false,
+            totalBudget: nil, expiresAt: 1_900_000_000_000, disabledAt: nil)
+    }
+
+    /// T44 (J3): a live key of another app or device under `id`, bound to no app.
+    private static func foreignKey(_ id: UInt32) -> AppConnect.PlatformKey {
+        AppConnect.PlatformKey(
+            id: id, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160,
+            data: Data(repeating: 0x77, count: 20), readOnly: false, bound: nil, boundKnown: true,
+            totalBudget: nil, expiresAt: nil, disabledAt: nil)
+    }
+
+    /// The fence key the fake platform derives for `keyId`: not the payload
+    /// of the intent's key under that id.
+    private static func fenceHash(_ keyId: UInt32) -> Data { Data(repeating: 0xF0 ^ UInt8(truncatingIfNeeded: keyId), count: 20) }
+
+    /// T56 (N1), T59 (P1): another app, whose intent's key id holds the
+    /// wallet's turned-off fence.
+    private static let otherApp = Data(repeating: 0xB2, count: 32)
+    private static let otherAppKey = AppConnect.IntendedKey(
+        id: 20, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160,
+        data: Data(repeating: 20, count: 20), readOnly: false,
+        bound: .singleContract(otherApp), totalBudget: 1000, expiresAt: nil)
+
+    /// T59 (P1): the key of this app's earlier intent, closed when a later
+    /// approval fenced it.
+    private static let closedIntentKey = AppConnect.IntendedKey(
+        id: 21, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160,
+        data: Data(repeating: 21, count: 20), readOnly: false,
+        bound: .singleContract(app), totalBudget: 1000, expiresAt: nil)
+
+    /// The wallet's turned-off fence under `key`'s id.
+    private static func turnedOffFence(under key: AppConnect.IntendedKey) -> AppConnect.PlatformKey {
+        AppConnect.PlatformKey(
+            id: key.id, purpose: key.purpose, securityLevel: key.securityLevel,
+            keyType: key.keyType, data: fenceHash(key.id), readOnly: false, bound: nil,
+            boundKnown: true, totalBudget: nil, expiresAt: nil, disabledAt: 1_700_000_000_000)
+    }
+
+    /// The wallet's fence under the intent's key id: turned off, or live.
+    private static func fence(live: Bool = false) -> AppConnect.PlatformKey {
+        AppConnect.PlatformKey(
+            id: key.id, purpose: key.purpose, securityLevel: key.securityLevel, keyType: key.keyType, data: fenceHash(key.id),
+            readOnly: false, bound: nil, boundKnown: true, totalBudget: nil, expiresAt: nil,
+            disabledAt: live ? nil : 1_800_000_000_000)
+    }
+
+    /// The identity as read. `disabled`: the disconnect's update landed.
+    /// `confirming`: the intent's key never landed, so a landed update shows
+    /// the fence that holds its id. `offElsewhere`: the key was turned off
+    /// without this wallet's disconnect. `liveFence`: with `confirming`, the
+    /// fence under its id is on. `otherAppFenceOff`: the identity holds the
+    /// wallet's turned-off fence under the other app's key id.
+    /// `closedIntentFenceOff`: the identity holds the wallet's turned-off
+    /// fence under the key id of this app's closed intent.
+    private static func snapshot(
+        disabled: Bool, withUnknownBoundKey: Bool = false, confirming: Bool = false, offElsewhere: Bool = false,
+        liveFence: Bool = false, foreignKeyId: UInt32? = nil, otherAppFenceOff: Bool = false,
+        closedIntentFenceOff: Bool = false
+    ) -> AppConnect.IdentitySnapshot {
+        let appKeys: [AppConnect.PlatformKey]
+        if confirming {
+            appKeys = disabled || liveFence ? [fence(live: liveFence)] : []
+        } else {
+            appKeys = [onPlatform(disabledAt: disabled || offElsewhere ? 1_800_000_000_000 : nil)]
+        }
+        return AppConnect.IdentitySnapshot(
+            identityId: identity, revision: disabled ? 6 : 5,
+            keys: appKeys + (withUnknownBoundKey ? [unknownBoundKey()] : [])
+                + (foreignKeyId.map { [foreignKey($0)] } ?? [])
+                + (otherAppFenceOff ? [turnedOffFence(under: otherAppKey)] : [])
+                + (closedIntentFenceOff ? [turnedOffFence(under: closedIntentKey)] : []),
+            platformTime: 1_800_000_000_000)
+    }
+
+    private static func intent(
+        app: Data = app, key: AppConnect.IntendedKey = key, closedAt: Date? = nil
+    ) -> AppConnect.ConnectionIntent {
+        AppConnect.ConnectionIntent(
+            id: UUID(), identityId: identity, appId: app, appLabel: "App", appUrl: "",
+            requestHash: Data(repeating: 0xEE, count: 20), connectionId: Data(repeating: 0xC1, count: 32),
+            keys: [key], sentEncryptionKeyIds: [], disables: [],
+            response: AppConnect.ResponseValues(appEphemeralPubKeyHash: "ee", walletEphemeralPubKey: "02", encryptedPayload: "00"),
+            responseDocumentId: documentId, responseRemoved: false,
+            createdAt: Date(timeIntervalSince1970: 0), closedAt: closedAt)
+    }
+
+    private final class MemoryIntents: AppConnectIntentStore, @unchecked Sendable {
+        private var intents: [AppConnect.ConnectionIntent]
+        let canPersist = true
+        init(_ intents: [AppConnect.ConnectionIntent]) { self.intents = intents }
+        func load() -> [AppConnect.ConnectionIntent] { intents }
+        func save(_ intents: [AppConnect.ConnectionIntent]) { self.intents = intents }
+        func pinned(toWalletIdHex walletIdHex: String) -> any AppConnectIntentStore { self }
+    }
+
+    private final class MemoryRows: DashConnectStore {
+        private var rows: [DAppConnection]
+        init(_ rows: [DAppConnection]) { self.rows = rows }
+        func load() -> [DAppConnection] { rows }
+        func save(_ connections: [DAppConnection]) { rows = connections }
+        var scopeKey: String? { nil }
+        func pinned(toWalletIdHex walletIdHex: String) -> any DashConnectStore { self }
+    }
+
+    /// What the executor saw, and whether the identity update, the update
+    /// that turns the fences off and the response delete landed: the reads
+    /// after them show them. A write whose kind is in `failing` is seen, does
+    /// not land and throws a network error (an unknown outcome: `landLate()`
+    /// lands the update afterwards); one in `refusing` is seen, does not land
+    /// and throws a consensus rejection (a permanent refusal).
+    private final class Chain: @unchecked Sendable {
+        private let lock = NSLock()
+        private var seen: [String] = []
+        private var landed = false
+        private var fencesOff = false
+        private var responseDeleted = false
+        private let failing: Set<String>
+        private let refusing: Set<String>
+        init(failing: Set<String> = [], refusing: Set<String> = []) {
+            self.failing = failing
+            self.refusing = refusing
+        }
+        func record(_ write: PlatformWrite) throws {
+            let refused = lock.withLock { () -> Bool in
+                seen.append(write.kind)
+                return refusing.contains(write.kind)
+            }
+            if refused {
+                throw SDKError.consensusRejection(PlatformConsensusError(code: 10_212, kind: .basic), "rendered text")
+            }
+            let fails = lock.withLock { () -> Bool in
+                guard !failing.contains(write.kind) else { return true }
+                if case .updateKeys = write { landed = true }
+                if case .fence = write { fencesOff = true }
+                if case .deleteResponse = write { responseDeleted = true }
+                return false
+            }
+            if fails { throw SDKError.networkError("connection lost") }
+        }
+        /// The identity update that failed with an unknown outcome lands now.
+        func landLate() { lock.withLock { landed = true } }
+        var kinds: [String] { lock.withLock { seen } }
+        var updateLanded: Bool { lock.withLock { landed } }
+        var fenceUpdateLanded: Bool { lock.withLock { fencesOff } }
+        var responseDeleteLanded: Bool { lock.withLock { responseDeleted } }
+    }
+
+    private final class FakePlatform: DashConnectPlatformPort, @unchecked Sendable {
+        let chain: Chain
+        let response: (documentId: Data, values: AppConnect.ResponseValues)
+        /// How many reads after the update landed throw `identityReadBehind`
+        /// (`nil`: every one), as a proved read that lags the wallet's copy does.
+        let behindReads: Int?
+        private let lock = NSLock()
+        private var unknownBound: Bool
+        private var keyOffElsewhere = false
+        private var behindNow = false
+        private var reads = 0
+        private var authorizations = 0
+        private var behindSoFar = 0
+        /// The intent's key never landed (see `snapshot(confirming:)`).
+        var confirming = false
+        /// With `confirming`: an earlier try left the fence on, so the plan's
+        /// read shows it live and the identity update turns it off.
+        var leftoverFence = false
+        /// T44 (J3): the identity holds a key of another device under this id.
+        var foreignKeyId: UInt32?
+        /// T50 (L1): with `confirming`, an earlier try placed the fence and it
+        /// was turned off later, so the plan's read shows it turned off.
+        var earlierFenceOff = false
+        /// T53 (M1): the wallet cannot derive a fence key.
+        var fenceHashFails = false
+        /// T56 (N1): the identity holds the wallet's turned-off fence under
+        /// the other app's key id.
+        var otherAppFenceOff = false
+        /// T59 (P1): the identity holds the wallet's turned-off fence under
+        /// the key id of this app's closed intent.
+        var closedIntentFenceOff = false
+        /// Whether the next reads show a key of unknown bound.
+        var withUnknownBoundKey: Bool {
+            get { lock.withLock { unknownBound } }
+            set { lock.withLock { unknownBound = newValue } }
+        }
+        /// Whether the next reads after the update landed throw
+        /// `identityReadBehind`, whatever `behindReads` says.
+        var readsBehind: Bool {
+            get { lock.withLock { behindNow } }
+            set { lock.withLock { behindNow = newValue } }
+        }
+        /// Whether the next reads show the app's key turned off by another device.
+        var offElsewhere: Bool {
+            get { lock.withLock { keyOffElsewhere } }
+            set { lock.withLock { keyOffElsewhere = newValue } }
+        }
+        var readCount: Int { lock.withLock { reads } }
+        /// How many times the PIN was asked for.
+        var authorizeCount: Int { lock.withLock { authorizations } }
+        init(chain: Chain, response: (documentId: Data, values: AppConnect.ResponseValues), behindReads: Int? = 0, withUnknownBoundKey: Bool = false) {
+            self.unknownBound = withUnknownBoundKey
+            self.chain = chain
+            self.response = response
+            self.behindReads = behindReads
+        }
+        var identityId: Data { DashConnectDisconnectThroughSeamsTests.identity }
+        var owners: PlatformDashConnectDataSource.OwnerReader { unreadOwners }
+
+        func authorize() async throws { lock.withLock { authorizations += 1 } }
+        func readIdentity() async throws -> AppConnect.IdentitySnapshot {
+            lock.withLock { reads += 1 }
+            if chain.updateLanded {
+                let behind = lock.withLock { () -> Bool in
+                    if behindNow { return true }
+                    if let behindReads, behindSoFar >= behindReads { return false }
+                    behindSoFar += 1
+                    return true
+                }
+                if behind { throw DashConnectPlatformError.identityReadBehind }
+            }
+            // A fence the identity update added stays on until the update
+            // that turns the fences off lands.
+            let liveFence = chain.updateLanded ? !(leftoverFence || chain.fenceUpdateLanded) : leftoverFence
+            return DashConnectDisconnectThroughSeamsTests.snapshot(
+                disabled: chain.updateLanded || earlierFenceOff, withUnknownBoundKey: withUnknownBoundKey,
+                confirming: confirming,
+                offElsewhere: offElsewhere, liveFence: liveFence, foreignKeyId: foreignKeyId,
+                otherAppFenceOff: otherAppFenceOff, closedIntentFenceOff: closedIntentFenceOff)
+        }
+        func fenceKeyHash(keyId: UInt32) async throws -> Data {
+            if fenceHashFails { throw FenceDerivationFailed() }
+            return DashConnectDisconnectThroughSeamsTests.fenceHash(keyId)
+        }
+        func findResponse(requestHash: Data) async throws -> (documentId: Data, values: AppConnect.ResponseValues)? {
+            chain.responseDeleteLanded ? nil : response
+        }
+    }
+
+    /// The wallet could not derive a fence key.
+    private struct FenceDerivationFailed: Error {}
+
+    private func makeDataSource(
+        chain: Chain, intents: MemoryIntents, rows: MemoryRows, behindReads: Int? = 0, withUnknownBoundKey: Bool = false,
+        platform: FakePlatform? = nil
+    ) -> PlatformDashConnectDataSource {
+        let intent = intents.load()[0]
+        return PlatformDashConnectDataSource(
+            supportedNetwork: .testnet,
+            store: rows,
+            intentStore: intents,
+            activeWalletIdHex: { Self.walletIdHex },
+            now: { Self.at },
+            makeWriteExecutor: { _ in
+                AppConnectWriteExecutor(
+                    timeout: .milliseconds(100), sleep: { try await Task.sleep(for: $0) }, log: { _ in },
+                    submit: { write in try chain.record(write) })
+            },
+            platform: platform ?? FakePlatform(chain: chain, response: (Self.documentId, intent.response), behindReads: behindReads,
+                withUnknownBoundKey: withUnknownBoundKey),
+            pauseForLaggingNode: { _ in })
+    }
+
+    private func connectedApp(status: ConnectionStatus = .active) -> (MemoryIntents, MemoryRows, AppConnect.ConnectionIntent) {
+        let intent = Self.intent()
+        let row = DAppConnection(
+            id: Self.app.toBase58String(), name: "App", url: "", status: status,
+            updatedAt: Date(timeIntervalSince1970: 0))
+        return (MemoryIntents([intent]), MemoryRows([row]), intent)
+    }
+
+    /// AC-17, AC-18: the app's keys are turned off, its intents closed, its
+    /// response deleted and its row shown as Disconnected.
+    func testAWholeDisconnectClosesTheIntentsDeletesTheResponseAndShowsTheRowDisconnected() async throws {
+        let chain = Chain()
+        let (intents, rows, intent) = connectedApp()
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows)
+
+        let result = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        XCTAssertEqual(result.keysTurnedOff, 1)
+        XCTAssertEqual(result.keysStillLive, 0)
+        XCTAssertEqual(intents.load().first { $0.id == intent.id }?.closedAt, Self.at, "the intent is closed")
+        XCTAssertEqual(intents.load().first { $0.id == intent.id }?.responseRemoved, true, "the response is marked removed")
+        XCTAssertEqual(rows.load().first?.status, .disconnected, "the row is refreshed to Disconnected")
+    }
+
+    /// T45 (J4, AC-16): a response delete that fails did not land, so the
+    /// lookup after it still finds the response and it is not marked removed.
+    func testAResponseDeleteThatFailsLeavesTheResponseNotMarkedRemoved() async throws {
+        let chain = Chain(failing: ["deleteResponse"])
+        let (intents, rows, intent) = connectedApp()
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows)
+
+        _ = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        XCTAssertEqual(chain.kinds, ["updateKeys", "deleteResponse"])
+        XCTAssertEqual(
+            intents.load().first { $0.id == intent.id }?.responseRemoved, false, "the response is still on Platform")
+    }
+
+    /// A response an earlier disconnect could not delete has no row left to
+    /// reach it: the next disconnect on the identity deletes it too.
+    func testADisconnectAlsoDeletesTheResponseAnEarlierDisconnectLeft() async throws {
+        let chain = Chain()
+        let (intents, rows, intent) = connectedApp()
+        let left = Self.intent(app: Self.otherApp, key: Self.otherAppKey, closedAt: Self.at)
+        intents.save(intents.load() + [left])
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows)
+
+        _ = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        XCTAssertEqual(intents.load().first { $0.id == intent.id }?.responseRemoved, true)
+        XCTAssertEqual(intents.load().first { $0.id == left.id }?.responseRemoved, true, "the response left before is gone too")
+    }
+
+    /// F11: the identity update and the response delete are written by the
+    /// executor the factory built, never by one the data source builds itself.
+    func testADisconnectSendsItsIdentityUpdateAndItsResponseDeleteThroughTheInjectedExecutor() async throws {
+        let chain = Chain()
+        let (intents, rows, _) = connectedApp()
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows)
+
+        _ = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        XCTAssertEqual(chain.kinds, ["updateKeys", "deleteResponse"])
+    }
+
+    /// T31 (F4, AC-16, AC-19): the read after writes that landed is behind
+    /// once; it is read again, and the disconnect finishes.
+    func testADisconnectWhoseReadAfterItsWritesIsBehindOnceReadsAgainAndFinishes() async throws {
+        let chain = Chain()
+        let (intents, rows, intent) = connectedApp()
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows, behindReads: 1)
+
+        let result = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        XCTAssertEqual(result.keysTurnedOff, 1)
+        XCTAssertEqual(intents.load().first { $0.id == intent.id }?.closedAt, Self.at, "the intent is closed")
+        XCTAssertEqual(chain.kinds, ["updateKeys", "deleteResponse"], "the response is deleted")
+        XCTAssertEqual(rows.load().first?.status, .disconnected)
+    }
+
+    /// T31 (F4): the read after the writes is behind every time; the update
+    /// landed (the executor said so), so the disconnect does not throw, the
+    /// intents are closed, the response deleted and the row kept Disconnected.
+    func testADisconnectWhoseReadAfterItsWritesIsAlwaysBehindStillClosesTheIntentsAndDeletesTheResponse() async throws {
+        let chain = Chain()
+        let (intents, rows, intent) = connectedApp()
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows, behindReads: nil)
+
+        do {
+            _ = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+        } catch {
+            XCTFail("the disconnect threw after its writes landed: \(error)")
+        }
+
+        XCTAssertEqual(intents.load().first { $0.id == intent.id }?.closedAt, Self.at, "the intent is closed")
+        XCTAssertEqual(chain.kinds, ["updateKeys", "deleteResponse"], "the response is deleted")
+        XCTAssertEqual(rows.load().first?.status, .disconnected, "the row is not lost")
+    }
+
+    /// T32 (F2, AC-18): a key on the identity whose bound is unknown stays
+    /// live, so the app's newest intent is not closed and its row keeps its
+    /// status and Disconnect; no row is re-added as Active.
+    func testADisconnectWithAKeyOfUnknownBoundDoesNotCloseTheIntentAndKeepsTheRowActive() async throws {
+        let chain = Chain()
+        let (intents, rows, intent) = connectedApp()
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows, withUnknownBoundKey: true)
+
+        let result = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        XCTAssertEqual(result.keysNotChecked, 1)
+        XCTAssertNil(intents.load().first { $0.id == intent.id }?.closedAt, "the intent stays open while a key's bound is unknown")
+        XCTAssertEqual(rows.load().first?.status, .active, "the row keeps its earlier status")
+        XCTAssertEqual(rows.load().count, 1)
+    }
+
+    /// T32 (AC-18): while the read shows a key of unknown bound, a refresh
+    /// keeps the row (status and Disconnect) of an open Disconnected intent;
+    /// once none is left, a refresh closes that intent and the row turns
+    /// Disconnected.
+    func testARefreshKeepsTheRowWhileAKeyOfUnknownBoundRemainsAndClosesTheIntentOnceNoneIsLeft() async throws {
+        let chain = Chain()
+        let (intents, rows, intent) = connectedApp()
+        let platform = FakePlatform(chain: chain, response: (Self.documentId, intent.response), withUnknownBoundKey: true)
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows, platform: platform)
+
+        _ = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+        XCTAssertNil(intents.load().first { $0.id == intent.id }?.closedAt)
+        XCTAssertEqual(rows.load().first?.status, .active)
+
+        let readsBefore = platform.readCount
+        await dataSource.refreshConnections()
+
+        XCTAssertGreaterThan(platform.readCount, readsBefore, "the refresh reads through the injected platform port")
+        XCTAssertEqual(rows.load().count, 1, "the row stays while a key's bound is unknown")
+        XCTAssertEqual(rows.load().first?.status, .active, "the row keeps its status")
+        XCTAssertNil(intents.load().first { $0.id == intent.id }?.closedAt, "the intent stays open")
+
+        platform.withUnknownBoundKey = false
+        await dataSource.refreshConnections()
+
+        XCTAssertEqual(intents.load().first { $0.id == intent.id }?.closedAt, Self.at, "the refresh closes the intent")
+        XCTAssertEqual(rows.load().first?.status, .disconnected, "the row turns Disconnected")
+    }
+
+    /// T35 (G1, AC-18): a Confirming connection disconnected while a key of
+    /// unknown bound is on the identity keeps its row, with its status and
+    /// Disconnect, although the fence now holds its key id.
+    func testADisconnectOfAConfirmingConnectionWithAKeyOfUnknownBoundKeepsTheRow() async throws {
+        let chain = Chain()
+        let (intents, rows, intent) = connectedApp(status: .confirming)
+        let platform = FakePlatform(chain: chain, response: (Self.documentId, intent.response), withUnknownBoundKey: true)
+        platform.confirming = true
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows, platform: platform)
+
+        let result = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        XCTAssertEqual(result.keysNotChecked, 1)
+        XCTAssertTrue(chain.kinds.contains("updateKeys"), "the fence was placed")
+        XCTAssertNil(intents.load().first { $0.id == intent.id }?.closedAt, "the intent stays open while a key's bound is unknown")
+        XCTAssertNotNil(intents.load().first { $0.id == intent.id }?.disconnectedAt, "the disconnect marks the intent it ran on")
+        XCTAssertEqual(rows.load().count, 1, "the row is not lost")
+        XCTAssertEqual(rows.load().first?.status, .confirming, "the row keeps its earlier status")
+    }
+
+    /// T35 (G1, AC-18): after such a disconnect a refresh keeps the
+    /// Confirming row while the key of unknown bound remains, then closes the
+    /// intent and the row turns Disconnected.
+    func testARefreshKeepsAFencedConfirmingRowWhileAKeyOfUnknownBoundRemainsThenShowsItDisconnected() async throws {
+        let chain = Chain()
+        let (intents, rows, intent) = connectedApp(status: .confirming)
+        let platform = FakePlatform(chain: chain, response: (Self.documentId, intent.response), withUnknownBoundKey: true)
+        platform.confirming = true
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows, platform: platform)
+        _ = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        await dataSource.refreshConnections()
+
+        XCTAssertEqual(rows.load().count, 1, "the row stays while a key's bound is unknown")
+        XCTAssertEqual(rows.load().first?.status, .confirming)
+        XCTAssertNil(intents.load().first { $0.id == intent.id }?.closedAt)
+
+        platform.withUnknownBoundKey = false
+        await dataSource.refreshConnections()
+
+        XCTAssertEqual(intents.load().first { $0.id == intent.id }?.closedAt, Self.at, "the refresh closes the intent")
+        XCTAssertEqual(rows.load().first?.status, .disconnected, "the row turns Disconnected")
+    }
+
+    /// T35 (G5, AC-19): keys turned off from another device are no disconnect
+    /// of this wallet: a refresh leaves the intent open and the app no row.
+    func testKeysTurnedOffElsewhereLeaveNoRowAndTheIntentOpen() async throws {
+        let chain = Chain()
+        let (intents, rows, intent) = connectedApp()
+        let platform = FakePlatform(chain: chain, response: (Self.documentId, intent.response))
+        platform.offElsewhere = true
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows, platform: platform)
+
+        await dataSource.refreshConnections()
+
+        XCTAssertNil(intents.load().first { $0.id == intent.id }?.closedAt, "no disconnect of this wallet closed it")
+        XCTAssertTrue(rows.load().isEmpty, "no Disconnected entry for a disconnect made elsewhere")
+    }
+
+    /// T35 (G5, AC-14): a key of unknown bound does not keep the row of an
+    /// app whose keys were turned off elsewhere Active: no key of it is live.
+    /// It keeps the row Confirming, with Disconnect, as the key may be the app's.
+    func testAKeyOfUnknownBoundDoesNotKeepTheRowOfAnAppTurnedOffElsewhere() async throws {
+        let chain = Chain()
+        let (intents, rows, intent) = connectedApp()
+        let platform = FakePlatform(chain: chain, response: (Self.documentId, intent.response), withUnknownBoundKey: true)
+        platform.offElsewhere = true
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows, platform: platform)
+
+        await dataSource.refreshConnections()
+
+        XCTAssertNil(intents.load().first { $0.id == intent.id }?.closedAt)
+        XCTAssertNil(rows.load().first { $0.status == .active }, "no Active row with no live key")
+        XCTAssertEqual(rows.load().map(\.status), [.confirming], "the row stays while a key's bound is unknown")
+    }
+
+    /// T43 (J1, H1, AC-19): a disconnect whose identity update was refused
+    /// for good did not land: it leaves the app's live intent unmarked, so
+    /// keys later turned off from another device leave no Disconnected entry.
+    func testADisconnectWhoseUpdateIsRefusedLeavesItsLiveIntentUnmarkedSoKeysTurnedOffElsewhereLeaveNoRow() async throws {
+        let chain = Chain(refusing: ["updateKeys"])
+        let (intents, rows, intent) = connectedApp()
+        let platform = FakePlatform(chain: chain, response: (Self.documentId, intent.response))
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows, platform: platform)
+
+        let result = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        XCTAssertEqual(result.keysStillLive, 1, "the update did not land")
+        XCTAssertNil(intents.load().first { $0.id == intent.id }?.closedAt)
+        XCTAssertNil(
+            intents.load().first { $0.id == intent.id }?.disconnectedAt, "a refused update leaves the live intent unmarked")
+
+        platform.offElsewhere = true
+        await dataSource.refreshConnections()
+
+        XCTAssertNil(intents.load().first { $0.id == intent.id }?.closedAt, "no disconnect of this wallet closed it")
+        XCTAssertTrue(rows.load().isEmpty, "no Disconnected entry for keys turned off elsewhere")
+    }
+
+    /// T43 (J1, AC-16, AC-19): a disconnect whose identity update has an
+    /// unknown outcome (a network error) while the read after still shows the
+    /// key live leaves the intent open and marked; once the update lands, a
+    /// refresh closes it and the app shows a Disconnected entry.
+    func testADisconnectWhoseUpdateHasAnUnknownOutcomeMarksTheIntentSoALateLandingShowsDisconnected() async throws {
+        let chain = Chain(failing: ["updateKeys"])
+        let (intents, rows, intent) = connectedApp()
+        let platform = FakePlatform(chain: chain, response: (Self.documentId, intent.response))
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows, platform: platform)
+
+        let result = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        XCTAssertEqual(result.keysStillLive, 1, "the read after still shows the key live")
+        XCTAssertNil(intents.load().first { $0.id == intent.id }?.closedAt, "the intent stays open")
+        XCTAssertNotNil(
+            intents.load().first { $0.id == intent.id }?.disconnectedAt, "an update of unknown outcome marks the intent it carried")
+
+        chain.landLate()
+        await dataSource.refreshConnections()
+
+        XCTAssertEqual(intents.load().first { $0.id == intent.id }?.closedAt, Self.at, "the refresh closes the intent")
+        XCTAssertEqual(rows.load().first?.status, .disconnected, "the app shows a Disconnected entry")
+    }
+
+    /// T48 (K4, AC-16, AC-19): a Confirming connection's disconnect whose
+    /// update (it adds the fence) has an unknown outcome: the fence id marks
+    /// the intent, so once the update lands a refresh shows Disconnected.
+    func testAConfirmingDisconnectWhoseFenceUpdateHasAnUnknownOutcomeMarksTheIntentSoALateLandingShowsDisconnected()
+        async throws {
+        let chain = Chain(failing: ["updateKeys"])
+        let (intents, rows, intent) = connectedApp(status: .confirming)
+        let platform = FakePlatform(chain: chain, response: (Self.documentId, intent.response))
+        platform.confirming = true
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows, platform: platform)
+
+        _ = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        XCTAssertNil(intents.load().first { $0.id == intent.id }?.closedAt, "the read after shows no fence yet")
+        XCTAssertNotNil(
+            intents.load().first { $0.id == intent.id }?.disconnectedAt,
+            "the update of unknown outcome carried its fence")
+
+        chain.landLate()
+        await dataSource.refreshConnections()
+
+        XCTAssertEqual(intents.load().first { $0.id == intent.id }?.closedAt, Self.at, "the refresh closes the intent")
+        XCTAssertEqual(rows.load().first?.status, .disconnected, "the app shows a Disconnected entry")
+    }
+
+    /// T43 (J2, AC-14, AC-18): a refused update with a key of unknown bound
+    /// on the identity leaves the app's newest intent live and unmarked.
+    func testARefusedUpdateWithAKeyOfUnknownBoundLeavesTheNewestLiveIntentUnmarked() async throws {
+        let chain = Chain(refusing: ["updateKeys"])
+        let (intents, rows, intent) = connectedApp()
+        let platform = FakePlatform(chain: chain, response: (Self.documentId, intent.response), withUnknownBoundKey: true)
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows, platform: platform)
+
+        _ = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        XCTAssertNil(intents.load().first { $0.id == intent.id }?.closedAt)
+        XCTAssertNil(
+            intents.load().first { $0.id == intent.id }?.disconnectedAt, "a refused update leaves the newest live intent unmarked")
+    }
+
+    /// T44 (J3, AC-13, AC-19): A «Yappr iOS» is Active, the newer C «Yappr
+    /// web» never landed (another key took its id). A disconnect closes C
+    /// without the mark, and the Disconnected entry is A's, not C's.
+    func testADisconnectClosesAnIntentThatNeverLandedWithoutTheMarkSoTheEntryNamesTheOneThatLanded() async throws {
+        let run = try await disconnectAppWithAnIntentThatNeverLanded()
+        let (landed, neverLanded, intents, rows) = (run.landed, run.neverLanded, run.intents, run.rows)
+
+        let storedLanded = intents.load().first { $0.id == landed }
+        let storedNever = intents.load().first { $0.id == neverLanded }
+        XCTAssertEqual(storedLanded?.closedAt, Self.at)
+        XCTAssertNotNil(storedLanded?.disconnectedAt, "the intent that landed is marked")
+        XCTAssertEqual(storedNever?.closedAt, Self.at, "the intent that never landed is closed")
+        XCTAssertNil(storedNever?.disconnectedAt, "and not marked: it never landed")
+        XCTAssertEqual(rows.load().first?.status, .disconnected)
+        XCTAssertEqual(rows.load().first?.name, "Yappr iOS")
+        XCTAssertEqual(rows.load().first?.url, "https://ios.yappr.example")
+    }
+
+    /// T48 (K3, AC-18): the same disconnect with a key of unknown bound on the
+    /// identity. The intent left open as the app's newest is A, which landed,
+    /// never the newer C, which never did: A stays open and marked, so the
+    /// row keeps its status, and C is closed unmarked.
+    func testWithAKeyOfUnknownBoundTheNewestIntentLeftOpenIsTheOneThatLanded() async throws {
+        let run = try await disconnectAppWithAnIntentThatNeverLanded(withUnknownBoundKey: true)
+        let (landed, neverLanded, intents, rows) = (run.landed, run.neverLanded, run.intents, run.rows)
+
+        let storedLanded = intents.load().first { $0.id == landed }
+        let storedNever = intents.load().first { $0.id == neverLanded }
+        XCTAssertNil(storedLanded?.closedAt, "A stays open while a key's bound is unknown")
+        XCTAssertNotNil(storedLanded?.disconnectedAt, "and is marked")
+        XCTAssertEqual(storedNever?.closedAt, Self.at, "C is closed")
+        XCTAssertNil(storedNever?.disconnectedAt, "and not marked")
+        XCTAssertEqual(rows.load().first?.name, "Yappr iOS")
+    }
+
+    private struct NeverLandedRun {
+        let landed: UUID
+        let neverLanded: UUID
+        let intents: MemoryIntents
+        let rows: MemoryRows
+    }
+
+    /// A «Yappr iOS» is Active, the newer C «Yappr web» never landed (another
+    /// key took its id); the app is disconnected.
+    private func disconnectAppWithAnIntentThatNeverLanded(withUnknownBoundKey: Bool = false) async throws
+        -> NeverLandedRun {
+        let chain = Chain()
+        let template = Self.intent()
+        let landed = AppConnect.ConnectionIntent(
+            id: UUID(), identityId: Self.identity, appId: Self.app, appLabel: "Yappr iOS", appUrl: "https://ios.yappr.example",
+            requestHash: template.requestHash, connectionId: template.connectionId, keys: [Self.key],
+            sentEncryptionKeyIds: [], disables: [], response: template.response, responseDocumentId: Self.documentId,
+            responseRemoved: false, createdAt: Date(timeIntervalSince1970: 0), closedAt: nil)
+        let neverLanded = AppConnect.ConnectionIntent(
+            id: UUID(), identityId: Self.identity, appId: Self.app, appLabel: "Yappr web", appUrl: "https://web.yappr.example",
+            requestHash: Data(repeating: 0xEF, count: 20), connectionId: nil,
+            keys: [AppConnect.IntendedKey(
+                id: 15, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160,
+                data: Data(repeating: 15, count: 20), readOnly: false,
+                bound: .singleContract(Self.app), totalBudget: 1000, expiresAt: nil)],
+            sentEncryptionKeyIds: [], disables: [], response: template.response, responseDocumentId: nil,
+            responseRemoved: true, createdAt: Date(timeIntervalSince1970: 100), closedAt: nil)
+        let intents = MemoryIntents([landed, neverLanded])
+        let rows = MemoryRows([DAppConnection(
+            id: Self.app.toBase58String(), name: "Yappr iOS", url: "https://ios.yappr.example", status: .active,
+            updatedAt: Date(timeIntervalSince1970: 0))])
+        let platform = FakePlatform(
+            chain: chain, response: (Self.documentId, landed.response), withUnknownBoundKey: withUnknownBoundKey)
+        platform.foreignKeyId = 15
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows, platform: platform)
+
+        _ = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+        return NeverLandedRun(landed: landed.id, neverLanded: neverLanded.id, intents: intents, rows: rows)
+    }
+
+    /// T42 (H4, G3, AC-17): the update that turns the fence off fails, and
+    /// the read after the writes shows the wallet's fence live under the
+    /// intent's id: it is a fence left on, not an app key still live.
+    func testAFenceTheReadAfterTheWritesShowsLiveIsAFenceLeftOnNotAnAppKey() async throws {
+        let chain = Chain(failing: ["fence"])
+        let (intents, rows, intent) = connectedApp(status: .confirming)
+        let platform = FakePlatform(chain: chain, response: (Self.documentId, intent.response))
+        platform.confirming = true
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows, platform: platform)
+
+        let result = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        XCTAssertEqual(chain.kinds, ["updateKeys", "fence", "deleteResponse"])
+        XCTAssertEqual(result.fencesLeftOn, 1, "the wallet's own fence is still on")
+        XCTAssertEqual(result.keysStillLive, 0, "no key of the app is live")
+        XCTAssertEqual(result.fencesNotPlaced, 0)
+    }
+
+    /// T42 (H4, G4, AC-18): with no read after the writes, a run that turned
+    /// a leftover fence off is finished, so the app's open intent on another
+    /// identity of the wallet is reported.
+    func testWithNoReadAfterTheWritesAFinishedRunReportsTheAppsGrantOnAnotherIdentity() async throws {
+        let chain = Chain()
+        let intent = Self.intent()
+        let elsewhere = AppConnect.ConnectionIntent(
+            id: UUID(), identityId: Data(repeating: 0x02, count: 32), appId: Self.app, appLabel: "App", appUrl: "",
+            requestHash: Data(repeating: 0xEF, count: 20), connectionId: nil, keys: [Self.key],
+            sentEncryptionKeyIds: [], disables: [], response: intent.response, responseDocumentId: nil,
+            responseRemoved: true, createdAt: Date(timeIntervalSince1970: 0), closedAt: nil)
+        let intents = MemoryIntents([intent, elsewhere])
+        let rows = MemoryRows([DAppConnection(
+            id: Self.app.toBase58String(), name: "App", url: "", status: .confirming,
+            updatedAt: Date(timeIntervalSince1970: 0))])
+        let platform = FakePlatform(chain: chain, response: (Self.documentId, intent.response), behindReads: nil)
+        platform.confirming = true
+        platform.leftoverFence = true
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows, platform: platform)
+
+        do {
+            _ = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+            XCTFail("the grant on another identity is reported")
+        } catch DashConnectPlatformError.grantOnAnotherIdentity {
+        }
+        XCTAssertEqual(chain.kinds.first, "updateKeys", "the leftover fence was turned off")
+        XCTAssertFalse(chain.kinds.contains("fence"), "no fence was added, so none is turned off")
+        XCTAssertNotNil(
+            intents.load().first { $0.id == intent.id }?.disconnectedAt,
+            "T47 (K2): the wallet's own fence is no conflict, so the disconnect marks the intent")
+    }
+
+    /// T47 (K2, AC-18, AC-19): an earlier disconnect left its fence on under
+    /// a Confirming intent's id without marking it. Disconnect again: the
+    /// wallet's own fence does not make the intent Never landed, so it is
+    /// closed and marked and the row reads Disconnected.
+    func testARetriedDisconnectOfAConfirmingIntentWhoseFenceAnEarlierRunLeftOnEndsDisconnected() async throws {
+        let chain = Chain()
+        let (intents, rows, intent) = connectedApp(status: .confirming)
+        let platform = FakePlatform(chain: chain, response: (Self.documentId, intent.response))
+        platform.confirming = true
+        platform.leftoverFence = true
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows, platform: platform)
+
+        _ = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        XCTAssertEqual(intents.load().first { $0.id == intent.id }?.closedAt, Self.at)
+        XCTAssertNotNil(intents.load().first { $0.id == intent.id }?.disconnectedAt, "closed and marked")
+        XCTAssertEqual(rows.load().first?.status, .disconnected)
+    }
+
+    /// T50 (L1, AC-18, AC-19): the fence went out and the update that turns
+    /// it off failed, and no read after the writes worked. The intent stays
+    /// open and marked; once a read shows the wallet's fence under its id a
+    /// refresh closes it and the row reads Disconnected.
+    func testAFenceLeftOnWithNoReadAfterMarksTheConfirmingIntentSoARefreshShowsDisconnected() async throws {
+        let chain = Chain(failing: ["fence"])
+        let (intents, rows, intent) = connectedApp(status: .confirming)
+        let platform = FakePlatform(chain: chain, response: (Self.documentId, intent.response))
+        platform.confirming = true
+        // Every read after the writes is behind; the refresh's is not.
+        platform.readsBehind = true
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows, platform: platform)
+
+        do {
+            _ = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+            XCTFail("no read shows the run's outcome yet")
+        } catch DashConnectPlatformError.identityKeysOutOfDate {
+            // «Try again later» (AC-18).
+        } catch {
+            XCTFail("\(error)")
+        }
+
+        XCTAssertEqual(chain.kinds.prefix(2), ["updateKeys", "fence"])
+        XCTAssertNil(intents.load().first { $0.id == intent.id }?.closedAt, "no read shows the fence yet")
+        XCTAssertNotNil(
+            intents.load().first { $0.id == intent.id }?.disconnectedAt, "the fence left on was placed under its id")
+        XCTAssertEqual(rows.load().first?.status, .confirming, "the row keeps its status and Disconnect until a read")
+
+        platform.readsBehind = false
+        await dataSource.refreshConnections()
+
+        XCTAssertEqual(intents.load().first { $0.id == intent.id }?.closedAt, Self.at, "the refresh closes the intent")
+        XCTAssertEqual(rows.load().first?.status, .disconnected, "the app shows a Disconnected entry")
+    }
+
+    /// T50 (L1, AC-18, AC-19): an earlier run placed the fence and left the
+    /// intent unmarked, and the fence was turned off later. Disconnect again:
+    /// the wallet's turned-off fence is its own, not another key, so the
+    /// intent is closed and marked and the row reads Disconnected.
+    func testARetriedDisconnectOfAConfirmingIntentWhoseFenceWasTurnedOffLaterEndsDisconnected() async throws {
+        let chain = Chain()
+        let (intents, rows, intent) = connectedApp(status: .confirming)
+        let platform = FakePlatform(chain: chain, response: (Self.documentId, intent.response))
+        platform.confirming = true
+        platform.earlierFenceOff = true
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows, platform: platform)
+
+        _ = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        XCTAssertEqual(intents.load().first { $0.id == intent.id }?.closedAt, Self.at)
+        XCTAssertNotNil(intents.load().first { $0.id == intent.id }?.disconnectedAt, "closed and marked")
+        XCTAssertEqual(rows.load().first?.status, .disconnected)
+    }
+
+    /// T53 (M1, AC-18, AC-19): an earlier try placed the fence under a
+    /// Confirming intent's id and it was turned off later, and the wallet
+    /// cannot derive the fence key now. The disconnect cannot tell its own
+    /// fence from another key, so it stops before the PIN and any write: the
+    /// intent and its row stay as they were, and Disconnect can run again.
+    func testADisconnectThatCannotDeriveTheOwnFenceStopsBeforeAnyWriteAndKeepsTheConfirmingRow() async {
+        let chain = Chain()
+        let (intents, rows, intent) = connectedApp(status: .confirming)
+        let platform = FakePlatform(chain: chain, response: (Self.documentId, intent.response))
+        platform.confirming = true
+        platform.earlierFenceOff = true
+        platform.fenceHashFails = true
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows, platform: platform)
+
+        do {
+            _ = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+            XCTFail("the disconnect cannot tell the wallet's fence from another key")
+        } catch {
+            XCTAssertTrue(error is FenceDerivationFailed, "\(error)")
+        }
+
+        XCTAssertEqual(platform.authorizeCount, 0, "no PIN is asked for")
+        XCTAssertEqual(chain.kinds, [], "nothing is written")
+        XCTAssertNil(intents.load().first { $0.id == intent.id }?.closedAt, "the intent stays open")
+        XCTAssertNil(intents.load().first { $0.id == intent.id }?.disconnectedAt, "and unmarked")
+        XCTAssertEqual(rows.load().first?.status, .confirming, "the row keeps its status and Disconnect")
+    }
+
+    /// T56 (N1, AC-16): the wallet cannot derive a fence key, and the
+    /// identity holds its turned-off fence under another app's closed
+    /// intent. Disconnecting an Active app has no fence to tell apart, so it
+    /// goes through.
+    func testADisconnectOfAnActiveAppGoesThroughWhenOnlyAnotherAppsTurnedOffFenceCannotBeDerived() async throws {
+        let chain = Chain()
+        let (intents, rows, intent) = connectedApp()
+        intents.save(intents.load() + [Self.intent(app: Self.otherApp, key: Self.otherAppKey, closedAt: Self.at)])
+        let platform = FakePlatform(chain: chain, response: (Self.documentId, intent.response))
+        platform.otherAppFenceOff = true
+        platform.fenceHashFails = true
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows, platform: platform)
+
+        let result = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        XCTAssertEqual(result.keysTurnedOff, 1)
+        XCTAssertEqual(platform.authorizeCount, 1, "the PIN is asked for once")
+        XCTAssertEqual(intents.load().first { $0.id == intent.id }?.closedAt, Self.at, "the intent is closed")
+        XCTAssertEqual(rows.load().first?.status, .disconnected)
+    }
+
+    /// T59 (P1, AC-16): the wallet cannot derive a fence key, and the
+    /// identity holds its turned-off fences under this app's closed intent
+    /// and under another app's open intent that reads Never landed. Neither
+    /// is an open intent of this app that a fence tells apart, so
+    /// disconnecting the Active app goes through.
+    func testADisconnectGoesThroughWithUnderivableFencesUnderThisAppsClosedAndAnotherAppsOpenIntent() async throws {
+        let chain = Chain()
+        let (intents, rows, intent) = connectedApp()
+        intents.save(intents.load() + [
+            Self.intent(key: Self.closedIntentKey, closedAt: Date(timeIntervalSince1970: 1)),
+            Self.intent(app: Self.otherApp, key: Self.otherAppKey),
+        ])
+        let platform = FakePlatform(chain: chain, response: (Self.documentId, intent.response))
+        platform.otherAppFenceOff = true
+        platform.closedIntentFenceOff = true
+        platform.fenceHashFails = true
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows, platform: platform)
+
+        let result = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        XCTAssertEqual(result.keysTurnedOff, 1)
+        XCTAssertEqual(intents.load().first { $0.id == intent.id }?.closedAt, Self.at, "the intent is closed")
+        XCTAssertNil(intents.load().first { $0.appId == Self.otherApp }?.closedAt, "the other app's intent stays open")
+        XCTAssertEqual(rows.load().first?.status, .disconnected)
+    }
+
+    // MARK: T46 (K1): a disconnect split over two identity updates
+
+    /// An identity whose app keys a disconnect turns off over two updates.
+    /// Writes land at once, but the reads show only what had landed when
+    /// `frozen` was set until `catchUp()`. The second identity update fails
+    /// with a network error (`refuseSecond`: a consensus rejection) and does
+    /// not land; `landLate()` lands it afterwards.
+    private final class SplitPlatform: DashConnectPlatformPort, @unchecked Sendable {
+        private let lock = NSLock()
+        private let keys: [AppConnect.IntendedKey]
+        private var off: Set<UInt32> = []
+        private var shown: Set<UInt32>?
+        private var updates = 0
+        private var failedDisable: [UInt32] = []
+        let refuseSecond: Bool
+
+        init(keys: [AppConnect.IntendedKey], refuseSecond: Bool) {
+            self.keys = keys
+            self.refuseSecond = refuseSecond
+        }
+
+        var identityId: Data { DashConnectDisconnectThroughSeamsTests.identity }
+        var owners: PlatformDashConnectDataSource.OwnerReader { unreadOwners }
+
+        func authorize() async throws {}
+        /// The reads stop showing new writes.
+        func freeze() { lock.withLock { shown = off } }
+        func catchUp() { lock.withLock { shown = nil } }
+        func landLate() { lock.withLock { off.formUnion(failedDisable) } }
+        func submit(_ write: PlatformWrite) throws {
+            guard case .updateKeys(_, let disable) = write else { return }
+            let second = lock.withLock { () -> Bool in
+                updates += 1
+                guard updates == 2 else { off.formUnion(disable); return false }
+                failedDisable = disable
+                return true
+            }
+            guard second else { return }
+            if refuseSecond {
+                throw SDKError.consensusRejection(PlatformConsensusError(code: 10_212, kind: .basic), "rendered text")
+            }
+            throw SDKError.networkError("connection lost")
+        }
+        func readIdentity() async throws -> AppConnect.IdentitySnapshot {
+            let disabled = lock.withLock { shown ?? off }
+            return AppConnect.IdentitySnapshot(
+                identityId: identityId, revision: 5 + UInt64(disabled.count), keys: keys.map { key in
+                    AppConnect.PlatformKey(
+                        id: key.id, purpose: key.purpose, securityLevel: key.securityLevel, keyType: key.keyType,
+                        data: key.data, readOnly: key.readOnly, bound: key.bound, boundKnown: true,
+                        totalBudget: key.totalBudget, expiresAt: key.expiresAt,
+                        disabledAt: disabled.contains(key.id) ? 1_800_000_000_000 : nil)
+                }, platformTime: 1_800_000_000_000)
+        }
+        func fenceKeyHash(keyId: UInt32) async throws -> Data {
+            DashConnectDisconnectThroughSeamsTests.fenceHash(keyId)
+        }
+        func findResponse(requestHash: Data) async throws -> (documentId: Data, values: AppConnect.ResponseValues)? {
+            nil
+        }
+    }
+
+    private static func appKey(_ id: UInt32) -> AppConnect.IntendedKey {
+        AppConnect.IntendedKey(
+            id: id, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160,
+            data: Data(repeating: UInt8(id), count: 20), readOnly: false,
+            bound: .singleContract(app), totalBudget: 1000, expiresAt: nil)
+    }
+
+    private struct Split {
+        let dataSource: PlatformDashConnectDataSource
+        let platform: SplitPlatform
+        let intents: MemoryIntents
+        let rows: MemoryRows
+        let older: UUID
+        let newer: UUID
+    }
+
+    /// A, the older intent, holds the keys of the first update; B, the newer,
+    /// the one key of the second.
+    private func splitDisconnect(refuseSecond: Bool) -> Split {
+        let template = Self.intent()
+        let olderKeys = (1 ... UInt32(AppConnect.maxKeysDisabledPerUpdate)).map(Self.appKey)
+        let newerKey = Self.appKey(UInt32(AppConnect.maxKeysDisabledPerUpdate + 1))
+        func intent(_ keys: [AppConnect.IntendedKey], createdAt: TimeInterval, hash: UInt8)
+            -> AppConnect.ConnectionIntent {
+            AppConnect.ConnectionIntent(
+                id: UUID(), identityId: Self.identity, appId: Self.app, appLabel: "App", appUrl: "",
+                requestHash: Data(repeating: hash, count: 20), connectionId: template.connectionId, keys: keys,
+                sentEncryptionKeyIds: [], disables: [], response: template.response, responseDocumentId: nil,
+                responseRemoved: true, createdAt: Date(timeIntervalSince1970: createdAt), closedAt: nil)
+        }
+        let older = intent(olderKeys, createdAt: 0, hash: 0xE1)
+        let newer = intent([newerKey], createdAt: 100, hash: 0xE2)
+        let intents = MemoryIntents([older, newer])
+        let rows = MemoryRows([DAppConnection(
+            id: Self.app.toBase58String(), name: "App", url: "", status: .active,
+            updatedAt: Date(timeIntervalSince1970: 0))])
+        let platform = SplitPlatform(keys: olderKeys + [newerKey], refuseSecond: refuseSecond)
+        let dataSource = PlatformDashConnectDataSource(
+            supportedNetwork: .testnet,
+            store: rows,
+            intentStore: intents,
+            activeWalletIdHex: { Self.walletIdHex },
+            now: { Self.at },
+            makeWriteExecutor: { _ in
+                AppConnectWriteExecutor(
+                    timeout: .milliseconds(100), sleep: { try await Task.sleep(for: $0) }, log: { _ in },
+                    submit: { write in try platform.submit(write) })
+            },
+            platform: platform,
+            pauseForLaggingNode: { _ in })
+        return Split(
+            dataSource: dataSource, platform: platform, intents: intents, rows: rows, older: older.id, newer: newer.id)
+    }
+
+    /// T46 (K1, AC-16, AC-19): the first update lands, the second has an
+    /// unknown outcome, and the read after still shows every key live. Both
+    /// intents may have been turned off, so both are marked and stay open;
+    /// once the second update lands and the reads catch up, a refresh closes
+    /// them and the app shows a Disconnected entry.
+    func testAStoppedSplitDisconnectMarksTheIntentOfItsDoneUpdateSoTheEntryShowsOnceReadsCatchUp() async throws {
+        let split = splitDisconnect(refuseSecond: false)
+        let (dataSource, platform, intents, rows) = (split.dataSource, split.platform, split.intents, split.rows)
+        let (older, newer) = (split.older, split.newer)
+        platform.freeze()
+
+        _ = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        XCTAssertNil(intents.load().first { $0.id == older }?.closedAt, "the read after still shows its keys live")
+        XCTAssertNotNil(intents.load().first { $0.id == older }?.disconnectedAt, "the done update carried its keys")
+        XCTAssertNotNil(
+            intents.load().first { $0.id == newer }?.disconnectedAt, "the update of unknown outcome carried its key")
+
+        platform.landLate()
+        platform.catchUp()
+        await dataSource.refreshConnections()
+
+        XCTAssertEqual(intents.load().first { $0.id == older }?.closedAt, Self.at)
+        XCTAssertEqual(intents.load().first { $0.id == newer }?.closedAt, Self.at)
+        XCTAssertEqual(rows.load().first?.status, .disconnected, "the app shows a Disconnected entry")
+    }
+
+    /// T46 (K1, AC-16, AC-19): the first update lands, the second is refused.
+    /// The intent of the done update is marked; the one whose only key the
+    /// refused update carried stays live and unmarked.
+    func testAStoppedSplitDisconnectWhoseSecondUpdateIsRefusedMarksOnlyTheIntentOfTheDoneUpdate() async throws {
+        let split = splitDisconnect(refuseSecond: true)
+        let (dataSource, platform, intents) = (split.dataSource, split.platform, split.intents)
+        let (older, newer) = (split.older, split.newer)
+        platform.freeze()
+
+        _ = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        XCTAssertNotNil(intents.load().first { $0.id == older }?.disconnectedAt, "the done update carried its keys")
+        XCTAssertNil(intents.load().first { $0.id == newer }?.disconnectedAt, "the refused update did not land")
+
+        platform.catchUp()
+        await dataSource.refreshConnections()
+
+        XCTAssertEqual(
+            intents.load().first { $0.id == older }?.closedAt, Self.at, "its keys are off: the refresh closes it")
+        XCTAssertNil(intents.load().first { $0.id == newer }?.closedAt, "its key is still live")
+    }
+}
+
 /// The owners of contracts and contract groups, read from Platform and
 /// remembered for the app's run: a known owner is never read again, and a
 /// read that fails leaves the owner unknown, to be read again.
@@ -1751,32 +4415,43 @@ final class AppConnectOwnerMemoryTests: XCTestCase {
     }
 }
 
-/// A Connections refresh and a disconnect read the owners they need and
-/// place unrecorded keys with the ones they know (`projectWithOwners`,
-/// `plannedDisconnect`).
-final class AppConnectRefreshOwnersTests: XCTestCase {
+
+/// An owner reader whose every read fails: no owner is known.
+private let unreadOwners = PlatformDashConnectDataSource.OwnerReader(
+    network: "testnet", memory: .init(),
+    readContract: { _ in throw SDKError.timeout("unread") },
+    readGroup: { _ in throw SDKError.timeout("unread") })
+
+/// A Connections refresh and a disconnect, through the platform port, read
+/// the owners they need and place, turn off and report unrecorded keys by
+/// the ones they know (spec AC-01…AC-12 of app-connect-owner-attribution).
+final class AppConnectOwnersThroughSeamsTests: XCTestCase {
+    private static let at = Date(timeIntervalSince1970: 1_773_132_300)
     private static let identity = Data(repeating: 0x01, count: 32)
     private static let app = Data(repeating: 0xA1, count: 32)
+    private static let otherApp = Data(repeating: 0xA2, count: 32)
     private static let sibling = Data(repeating: 0xC1, count: 32)
     private static let sibling2 = Data(repeating: 0xC3, count: 32)
-    private static let owner = Data(repeating: 0x0A, count: 32)
-    private static let otherApp = Data(repeating: 0xA2, count: 32)
     private static let group = Data(repeating: 0xC2, count: 32)
+    private static let owner = Data(repeating: 0x0A, count: 32)
+    private static let otherOwner = Data(repeating: 0x0B, count: 32)
 
-    private static func key(
-        _ id: UInt32, on contract: Data, bound: AppConnect.StoredBound? = nil, boundKnown: Bool = true, disabledAt: UInt64? = nil
-    ) -> AppConnect.PlatformKey {
+    private static func key(_ id: UInt32, bound: AppConnect.StoredBound?, boundKnown: Bool = true) -> AppConnect.PlatformKey {
         AppConnect.PlatformKey(
             id: id, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160,
             data: Data(repeating: UInt8(id), count: 20), readOnly: false,
-            bound: boundKnown ? bound ?? .singleContract(contract) : nil, boundKnown: boundKnown,
-            totalBudget: 1000, expiresAt: 1_800_000_001_000, disabledAt: disabledAt)
+            bound: boundKnown ? bound : nil, boundKnown: boundKnown,
+            totalBudget: 1000, expiresAt: 1_900_000_000_000, disabledAt: nil)
+    }
+
+    private static func on(_ contract: Data, _ id: UInt32 = 20) -> AppConnect.PlatformKey {
+        key(id, bound: .singleContract(contract))
     }
 
     private static func intent(_ key: AppConnect.PlatformKey, app: Data = app) -> AppConnect.ConnectionIntent {
         AppConnect.ConnectionIntent(
-            id: UUID(), identityId: identity, appId: app, appLabel: "App", appUrl: "", requestHash: Data(repeating: 0xEE, count: 20),
-            connectionId: nil,
+            id: UUID(), identityId: identity, appId: app, appLabel: "App", appUrl: "",
+            requestHash: Data(repeating: 0xEE, count: 20), connectionId: nil,
             keys: [AppConnect.IntendedKey(
                 id: key.id, purpose: key.purpose, securityLevel: key.securityLevel, keyType: key.keyType, data: key.data,
                 readOnly: false, bound: key.bound, totalBudget: key.totalBudget, expiresAt: key.expiresAt)],
@@ -1785,514 +4460,328 @@ final class AppConnectRefreshOwnersTests: XCTestCase {
             responseDocumentId: nil, responseRemoved: true, createdAt: Date(timeIntervalSince1970: 0), closedAt: nil)
     }
 
+    /// Counts owner reads per id; an id in `failing` fails, any other reads
+    /// as its entry in `owners`, or as `owner`.
     private final class Reader: @unchecked Sendable {
         private let lock = NSLock()
         private var reads: [Data: Int] = [:]
         var failing: Set<Data> = []
-        /// Ids whose next read fails, and only that one.
-        var failingOnce: Set<Data> = []
-        /// The owner each id reads as; any other id reads as `owner`.
+        /// Ids whose reads fail this many more times, then read.
+        var failingTimes: [Data: Int] = [:]
         var owners: [Data: Data] = [:]
         /// Groups that read with an admin; any other reads with none.
         var administered: Set<Data> = []
 
         func read(_ id: Data) throws -> [String: Any] {
-            lock.lock()
-            defer { lock.unlock() }
-            reads[id, default: 0] += 1
-            if failing.contains(id) { throw SDKError.timeout("slow") }
-            if failingOnce.remove(id) != nil { throw SDKError.timeout("slow") }
-            return [
-                "ownerId": (owners[id] ?? AppConnectRefreshOwnersTests.owner).toBase58String(),
-                "adminIds": administered.contains(id) ? [Data(repeating: 0x0B, count: 32).toBase58String()] as [Any] : [] as [Any],
-            ]
+            try lock.withLock {
+                reads[id, default: 0] += 1
+                if failing.contains(id) { throw SDKError.timeout("slow") }
+                if let left = failingTimes[id], left > 0 {
+                    failingTimes[id] = left - 1
+                    throw SDKError.timeout("slow")
+                }
+                return [
+                    "ownerId": (owners[id] ?? AppConnectOwnersThroughSeamsTests.owner).toBase58String(),
+                    "adminIds": administered.contains(id) ? [Data(repeating: 0x0B, count: 32).toBase58String()] as [Any] : [] as [Any],
+                ]
+            }
         }
 
-        var total: Int {
-            lock.lock()
-            defer { lock.unlock() }
-            return reads.values.reduce(0, +)
+        func count(_ id: Data) -> Int { lock.withLock { reads[id] ?? 0 } }
+        var total: Int { lock.withLock { reads.values.reduce(0, +) } }
+    }
+
+    /// The identity's keys; an identity update the executor lands turns the
+    /// keys it disables off. `disabled` is every key id submitted to be
+    /// turned off.
+    private final class Platform: DashConnectPlatformPort, @unchecked Sendable {
+        private let lock = NSLock()
+        private var keys: [AppConnect.PlatformKey]
+        private var revision: UInt64 = 5
+        private var submitted: [UInt32] = []
+        /// Keys that land with the next identity update, as a grant from
+        /// another device would during the disconnect.
+        var landing: [AppConnect.PlatformKey] = []
+        let reader: Reader
+        let memory = PlatformDashConnectDataSource.OwnerMemory()
+
+        init(keys: [AppConnect.PlatformKey], reader: Reader) {
+            self.keys = keys
+            self.reader = reader
+        }
+
+        var identityId: Data { AppConnectOwnersThroughSeamsTests.identity }
+        var owners: PlatformDashConnectDataSource.OwnerReader {
+            let reader = reader
+            return .init(network: "testnet", memory: memory, readContract: { try reader.read($0) }, readGroup: { try reader.read($0) })
+        }
+        var disabled: [UInt32] { lock.withLock { submitted } }
+
+        func submit(_ write: PlatformWrite) {
+            guard case .updateKeys(_, let disable) = write else { return }
+            lock.withLock {
+                submitted += disable
+                revision += 1
+                keys = keys.map { key in
+                    guard disable.contains(key.id) else { return key }
+                    return AppConnect.PlatformKey(
+                        id: key.id, purpose: key.purpose, securityLevel: key.securityLevel, keyType: key.keyType,
+                        data: key.data, readOnly: key.readOnly, bound: key.bound, boundKnown: key.boundKnown,
+                        totalBudget: key.totalBudget, expiresAt: key.expiresAt, disabledAt: 1_800_000_000_000)
+                } + landing
+                landing = []
+            }
+        }
+
+        func authorize() async throws {}
+        func readIdentity() async throws -> AppConnect.IdentitySnapshot {
+            lock.withLock {
+                AppConnect.IdentitySnapshot(identityId: identityId, revision: revision, keys: keys, platformTime: 1_800_000_000_000)
+            }
+        }
+        func fenceKeyHash(keyId: UInt32) async throws -> Data { Data(repeating: 0xF0, count: 20) }
+        func findResponse(requestHash: Data) async throws -> (documentId: Data, values: AppConnect.ResponseValues)? { nil }
+    }
+
+    private final class MemoryIntents: AppConnectIntentStore, @unchecked Sendable {
+        private var intents: [AppConnect.ConnectionIntent]
+        let canPersist = true
+        init(_ intents: [AppConnect.ConnectionIntent]) { self.intents = intents }
+        func load() -> [AppConnect.ConnectionIntent] { intents }
+        func save(_ intents: [AppConnect.ConnectionIntent]) { self.intents = intents }
+        func pinned(toWalletIdHex walletIdHex: String) -> any AppConnectIntentStore { self }
+    }
+
+    private final class MemoryRows: DashConnectStore {
+        private var rows: [DAppConnection] = []
+        func load() -> [DAppConnection] { rows }
+        func save(_ connections: [DAppConnection]) { rows = connections }
+        var scopeKey: String? { nil }
+        func pinned(toWalletIdHex walletIdHex: String) -> any DashConnectStore { self }
+    }
+
+    private struct Harness {
+        let dataSource: PlatformDashConnectDataSource
+        let platform: Platform
+        let rows: MemoryRows
+
+        /// The ids of the stored rows.
+        var rowIds: Set<Data> { Set(rows.load().compactMap { Data.identifier(fromBase58: $0.id) }) }
+
+        func refresh() async { await dataSource.refreshConnections() }
+
+        func disconnect(_ appId: Data) async throws -> DashConnectDisconnectResult {
+            await refresh()
+            return try await dataSource.disconnect(id: appId.toBase58String(), scope: "wallet  ")
         }
     }
 
-    private static func ownerReader(
-        _ memory: PlatformDashConnectDataSource.OwnerMemory, _ reader: Reader
-    ) -> PlatformDashConnectDataSource.OwnerReader {
-        .init(network: "testnet", memory: memory, readContract: { try reader.read($0) }, readGroup: { try reader.read($0) })
+    private func harness(
+        _ keys: [AppConnect.PlatformKey], _ intents: [AppConnect.ConnectionIntent], reader: Reader = Reader()
+    ) -> Harness {
+        let platform = Platform(keys: keys, reader: reader)
+        let rows = MemoryRows()
+        let dataSource = PlatformDashConnectDataSource(
+            supportedNetwork: .testnet,
+            store: rows,
+            intentStore: MemoryIntents(intents),
+            activeWalletIdHex: { "wallet" },
+            now: { Self.at },
+            makeWriteExecutor: { _ in
+                AppConnectWriteExecutor(
+                    timeout: .milliseconds(100), sleep: { try await Task.sleep(for: $0) }, log: { _ in },
+                    submit: { write in platform.submit(write) })
+            },
+            platform: platform,
+            pauseForLaggingNode: { _ in })
+        return Harness(dataSource: dataSource, platform: platform, rows: rows)
     }
 
-    private static func rows(
-        _ keys: [AppConnect.PlatformKey], _ intents: [AppConnect.ConnectionIntent],
-        memory: PlatformDashConnectDataSource.OwnerMemory, reader: Reader
-    ) async -> [Data: [UInt32]] {
-        let snapshot = AppConnect.IdentitySnapshot(identityId: identity, revision: 1, keys: keys, platformTime: nil)
-        let projection = await PlatformDashConnectDataSource.projectWithOwners(snapshot, intents: intents, owners: ownerReader(memory, reader))
-        return Dictionary(uniqueKeysWithValues: projection.connections.map { ($0.appId, $0.unrecordedKeyIds[identity] ?? []) })
-    }
+    // MARK: Refresh
 
-    func testAKeyOfTheAppsOwnerJoinsItsRow() async {
-        let own = Self.key(10, on: Self.app)
-        let rows = await Self.rows([own, Self.key(20, on: Self.sibling)], [Self.intent(own)], memory: .init(), reader: Reader())
-        XCTAssertEqual(rows, [Self.app: [20]], "AC-03: one row for the app, none for the sibling")
-    }
-
-    func testAKeyWhoseOwnerCouldNotBeReadMovesOnceALaterRefreshReadsIt() async {
-        let own = Self.key(10, on: Self.app)
-        let memory = PlatformDashConnectDataSource.OwnerMemory(), reader = Reader()
+    /// AC-03, AC-05: an unread owner keeps the key on its own row; once a
+    /// later refresh reads it as the app's owner, the key is the app's and no
+    /// row is named by Y. The app's owner is not read again.
+    func testARefreshShowsASiblingKeyUnderTheAppOnceItsOwnerIsRead() async {
+        let own = Self.on(Self.app, 10)
+        let reader = Reader()
         reader.failing = [Self.sibling]
-        let first = await Self.rows([own, Self.key(20, on: Self.sibling)], [Self.intent(own)], memory: memory, reader: reader)
-        XCTAssertEqual(first, [Self.app: [], Self.sibling: [20]], "AC-05: a separate row while unknown")
+        let h = harness([own, Self.on(Self.sibling)], [Self.intent(own)], reader: reader)
+        await h.refresh()
+        XCTAssertEqual(h.rowIds, [Self.app, Self.sibling], "AC-05: a separate row while the owner is unknown")
         reader.failing = []
-        let second = await Self.rows([own, Self.key(20, on: Self.sibling)], [Self.intent(own)], memory: memory, reader: reader)
-        XCTAssertEqual(second, [Self.app: [20]], "AC-05: moves once read")
-        XCTAssertEqual(reader.total, 3, "the app's owner is not read again")
+        await h.refresh()
+        XCTAssertEqual(h.rowIds, [Self.app], "AC-03: no row named by Y")
+        XCTAssertEqual(h.rows.load().first?.seenOn, [Self.identity.toBase58String()], "the key shows under the app")
+        XCTAssertEqual(reader.count(Self.app), 1, "a known owner is not read again")
+        XCTAssertEqual(reader.count(Self.sibling), 2, "an unread owner is read again")
     }
 
-    func testWithoutAnIntentKeysOfOneOwnerKeepTheirOwnRows() async {
-        let rows = await Self.rows([Self.key(20, on: Self.sibling), Self.key(21, on: Self.sibling2)], [], memory: .init(), reader: Reader())
-        XCTAssertEqual(rows, [Self.sibling: [20], Self.sibling2: [21]], "AC-10")
-    }
-
-    func testNoUnrecordedKeyReadsNoOwner() async {
-        let own = Self.key(10, on: Self.app), reader = Reader()
-        _ = await Self.rows([own], [Self.intent(own)], memory: .init(), reader: reader)
+    /// AC-10: with no intent here, keys of one owner keep their own rows,
+    /// and no owner is read.
+    func testWithoutAnIntentKeysOfOneOwnerKeepTheirOwnRowsAndNoOwnerIsRead() async {
+        let reader = Reader()
+        let h = harness([Self.on(Self.sibling, 20), Self.on(Self.sibling2, 21)], [], reader: reader)
+        await h.refresh()
+        XCTAssertEqual(h.rowIds, [Self.sibling, Self.sibling2])
         XCTAssertEqual(reader.total, 0)
     }
 
-    private static func planned(
-        _ keys: [AppConnect.PlatformKey], _ intents: [AppConnect.ConnectionIntent], listed: Set<UInt32>?,
-        memory: PlatformDashConnectDataSource.OwnerMemory = .init(), reader: Reader = Reader(), appId: Data = app
-    ) async -> PlatformDashConnectDataSource.PlannedDisconnect {
-        let snapshot = AppConnect.IdentitySnapshot(identityId: identity, revision: 1, keys: keys, platformTime: nil)
-        return await PlatformDashConnectDataSource.plannedDisconnect(
-            appId: appId, snapshot: snapshot, intents: intents, unrecordedKeyIds: listed, fences: [], owners: ownerReader(memory, reader))
+    func testNoUnrecordedKeyReadsNoOwner() async {
+        let own = Self.on(Self.app, 10)
+        let reader = Reader()
+        let h = harness([own], [Self.intent(own)], reader: reader)
+        await h.refresh()
+        XCTAssertEqual(reader.total, 0)
     }
 
-    /// QG-2: the question listed one key; an owner read that fails before the
-    /// PIN and succeeds after attributes a second key, which stays on.
-    func testADisconnectTurnsOffOnlyTheKeysTheQuestionListed() async {
-        let own = Self.key(10, on: Self.app)
-        let keys = [own, Self.key(20, on: Self.sibling), Self.key(21, on: Self.sibling2)]
-        let memory = PlatformDashConnectDataSource.OwnerMemory(), reader = Reader()
-        reader.failing = [Self.sibling2]
-        let beforePin = await Self.planned(keys, [Self.intent(own)], listed: [20], memory: memory, reader: reader)
-        XCTAssertEqual(Set(beforePin.plan.disable), [10, 20])
-        reader.failing = []
-        let afterPin = await Self.planned(keys, [Self.intent(own)], listed: [20], memory: memory, reader: reader)
-        XCTAssertEqual(Set(afterPin.plan.disable), [10, 20], "nothing beyond the listed keys")
-        XCTAssertEqual(afterPin.appKeysOff, 2, "the keys counted are the keys turned off")
-        XCTAssertEqual(afterPin.leftAfterQuestion, 1)
-    }
+    // MARK: Disconnect
 
     /// AC-01, AC-02: a key of the app's owner on a sibling contract, a
-    /// document type of it or a contract group is offered, then turned off
-    /// and counted.
-    func testAKeyOfTheAppsOwnerIsOfferedThenTurnedOffAndCounted() async {
-        let own = Self.key(10, on: Self.app)
+    /// document type of it or a contract group is turned off with the app's
+    /// keys and counted; nothing is reported left.
+    func testADisconnectTurnsOffAndCountsAKeyOfTheAppsOwner() async throws {
+        let own = Self.on(Self.app, 10)
         for (name, stray) in [
-            ("contract", Self.key(20, on: Self.sibling)),
-            ("document type", Self.key(20, on: Self.sibling, bound: .documentType(contractId: Self.sibling, name: "note"))),
-            ("contract group", Self.key(20, on: Self.group, bound: .contractGroup(Self.group))),
+            ("contract", Self.on(Self.sibling)),
+            ("document type", Self.key(20, bound: .documentType(contractId: Self.sibling, name: "note"))),
+            ("contract group", Self.key(20, bound: .contractGroup(Self.group))),
         ] {
-            let asked = await Self.planned([own, stray], [Self.intent(own)], listed: nil)
-            XCTAssertEqual(asked.offered, [20], name)
-            XCTAssertEqual(asked.plan.disable, [10], name)
-            let confirmed = await Self.planned([own, stray], [Self.intent(own)], listed: asked.offered)
-            XCTAssertEqual(Set(confirmed.plan.disable), [10, 20], name)
-            XCTAssertEqual(confirmed.appKeysOff, 2, name)
-            XCTAssertEqual([confirmed.notChecked, confirmed.notAttributable, confirmed.leftAfterQuestion], [0, 0, 0], name)
+            let h = harness([own, stray], [Self.intent(own)])
+            let result = try await h.disconnect(Self.app)
+            XCTAssertEqual(Set(h.platform.disabled), [10, 20], name)
+            XCTAssertEqual(result.keysTurnedOff, 2, name)
+            XCTAssertEqual([result.keysStillLive, result.keysNotChecked, result.keysNotAttributable], [0, 0, 0], name)
         }
+    }
+
+    /// A key of the app's owner that lands during the update is told from
+    /// the read after it, as the rows are: it is reported as still on, and
+    /// the app keeps the row a second disconnect needs.
+    func testAKeyThatLandsDuringTheUpdateIsReportedAsStillOn() async throws {
+        let own = Self.on(Self.app, 10)
+        let h = harness([own], [Self.intent(own)])
+        h.platform.landing = [Self.on(Self.sibling, 30)]
+        let result = try await h.disconnect(Self.app)
+        XCTAssertEqual(h.platform.disabled, [10])
+        XCTAssertEqual([result.keysTurnedOff, result.keysStillLive, result.keysNotChecked], [1, 1, 0])
+        XCTAssertEqual(h.rowIds, [Self.app])
+    }
+
+    /// AC-18: a key of unknown bound that lands during the update keeps the
+    /// app's intent open, as one the plan's read showed would: the row keeps
+    /// its status and its Disconnect, and the key is reported unchecked.
+    func testAKeyOfUnknownBoundThatLandsDuringTheUpdateKeepsTheRow() async throws {
+        let own = Self.on(Self.app, 10)
+        let h = harness([own], [Self.intent(own)])
+        h.platform.landing = [Self.key(20, bound: nil, boundKnown: false)]
+        let result = try await h.disconnect(Self.app)
+        XCTAssertEqual(h.platform.disabled, [10])
+        XCTAssertEqual([result.keysTurnedOff, result.keysNotChecked], [1, 1])
+        let row = h.rows.load().first { $0.id == Self.app.toBase58String() }
+        XCTAssertNotNil(row, "the row is not lost")
+        XCTAssertNotEqual(row?.status, .disconnected, "the row keeps its Disconnect while a key's bound is unknown")
+    }
+
+    /// An owner that could not be read before the update and reads after it
+    /// places the key with the app for the rows and the result alike: the
+    /// key is still on, not unchecked, and the app keeps its row.
+    func testAnOwnerReadAfterTheUpdateDecidesTheRowsAndTheResultAlike() async throws {
+        let own = Self.on(Self.app, 10)
+        let reader = Reader()
+        // The refresh, the plan and the plan after the PIN fail; the read
+        // after the update reads.
+        reader.failingTimes = [Self.sibling: 3]
+        let h = harness([own, Self.on(Self.sibling)], [Self.intent(own)], reader: reader)
+        let result = try await h.disconnect(Self.app)
+        XCTAssertEqual(h.platform.disabled, [10])
+        XCTAssertEqual([result.keysStillLive, result.keysNotChecked, result.keysNotAttributable], [1, 0, 0])
+        XCTAssertEqual(h.rowIds, [Self.app], "the key shows under the app, not on its own row")
     }
 
     /// A key on a contract group of the app's owner whose admins may add
     /// their own contracts to it may be another developer's app: it is not
-    /// offered or turned off, and the result says it may be another app's.
-    func testAKeyOnAGroupWithAdminsIsNotAttributedByOwner() async {
-        let own = Self.key(10, on: Self.app), stray = Self.key(20, on: Self.group, bound: .contractGroup(Self.group))
+    /// turned off, and the result says it may be another app's.
+    func testAKeyOnAGroupWithAdminsIsNotAttributedByOwner() async throws {
+        let own = Self.on(Self.app, 10)
         let reader = Reader()
         reader.administered = [Self.group]
-        let asked = await Self.planned([own, stray], [Self.intent(own)], listed: nil, memory: .init(), reader: reader)
-        XCTAssertEqual(asked.offered, [])
-        XCTAssertEqual(asked.plan.disable, [10])
-        XCTAssertEqual([asked.notChecked, asked.notAttributable], [0, 1])
+        let h = harness([own, Self.key(20, bound: .contractGroup(Self.group))], [Self.intent(own)], reader: reader)
+        let result = try await h.disconnect(Self.app)
+        XCTAssertEqual(h.platform.disabled, [10])
+        XCTAssertEqual([result.keysTurnedOff, result.keysNotChecked, result.keysNotAttributable], [1, 0, 1])
     }
 
     /// AC-04, AC-11, AC-12: the disconnect still turns off the app's keys,
-    /// and reports the key that could not be checked.
-    func testAKeyThatCouldNotBeCheckedStaysOnAndIsReported() async {
-        let own = Self.key(10, on: Self.app)
-        let z = Self.intent(Self.key(11, on: Self.otherApp), app: Self.otherApp)
-        struct Case {
-            let name: String
-            let keys: [AppConnect.PlatformKey]
-            let intents: [AppConnect.ConnectionIntent]
-            let failing: Set<Data>
-        }
-        let cases = [
-            Case(name: "AC-04 owner unread", keys: [own, Self.key(20, on: Self.sibling)], intents: [Self.intent(own)], failing: [Self.sibling]),
-            Case(name: "AC-11 unplaced", keys: [own, Self.key(20, on: Self.sibling, boundKnown: false)], intents: [Self.intent(own)], failing: []),
-            Case(name: "AC-12 other app's owner unread", keys: [own, Self.key(20, on: Self.sibling)], intents: [Self.intent(own), z],
-                 failing: [Self.otherApp]),
+    /// leaves the key that could not be checked on, and reports it.
+    func testAKeyThatCouldNotBeCheckedStaysOnAndIsReported() async throws {
+        let own = Self.on(Self.app, 10)
+        let z = Self.intent(Self.on(Self.otherApp, 11), app: Self.otherApp)
+        let cases: [(String, [AppConnect.PlatformKey], [AppConnect.ConnectionIntent], Set<Data>)] = [
+            ("AC-04 owner unread", [own, Self.on(Self.sibling)], [Self.intent(own)], [Self.sibling]),
+            ("AC-11 unplaced", [own, Self.key(20, bound: nil, boundKnown: false)], [Self.intent(own)], []),
+            ("AC-12 another app's owner unread", [own, Self.on(Self.otherApp, 11), Self.on(Self.sibling)], [Self.intent(own), z], [Self.otherApp]),
         ]
-        for c in cases {
-            let name = c.name
+        for (name, keys, intents, failing) in cases {
             let reader = Reader()
-            reader.failing = c.failing
-            let result = await Self.planned(c.keys, c.intents, listed: [20], reader: reader)
-            XCTAssertEqual(result.plan.disable, [10], name)
-            XCTAssertEqual(result.notChecked, 1, name)
-            XCTAssertEqual(result.appKeysOff, 1, name)
+            reader.failing = failing
+            let h = harness(keys, intents, reader: reader)
+            let result = try await h.disconnect(Self.app)
+            XCTAssertEqual(h.platform.disabled, [10], name)
+            XCTAssertEqual(result.keysTurnedOff, 1, name)
+            XCTAssertEqual(result.keysNotChecked, 1, name)
         }
     }
 
-    /// DashPay profile keys no intent names are offered with any app's
-    /// disconnect, and turned off only when listed.
-    func testAProfileKeyIsOfferedAndTurnedOffOnlyWhenListed() async {
-        let own = Self.key(10, on: Self.app)
-        let dashPay = Data.identifier(fromBase58: AppConnect.dashPayContractId)!
-        let profile = Self.key(30, on: dashPay, bound: .documentType(contractId: dashPay, name: "profile"))
-        let asked = await Self.planned([own, profile], [Self.intent(own)], listed: nil)
-        XCTAssertEqual(asked.offered, [30])
-        XCTAssertEqual(asked.plan.disable, [10])
-        let confirmed = await Self.planned([own, profile], [Self.intent(own)], listed: [30])
-        XCTAssertEqual(confirmed.plan.disable, [30, 10], "other keys before the app's")
-        XCTAssertEqual(confirmed.appKeysOff, 2)
-        let unlisted = await Self.planned([own, profile], [Self.intent(own)], listed: [])
-        XCTAssertEqual(unlisted.plan.disable, [10])
-        XCTAssertEqual(unlisted.leftAfterQuestion, 1)
-    }
-}
-
-/// The refresh and the disconnect of the data source on a real
-/// `UserDefaults` store, with owners scripted per id: what is stored, what
-/// is planned to be turned off, and what the result reports.
-extension AppConnectRefreshOwnersTests {
-    private static func disabled(_ key: AppConnect.PlatformKey) -> AppConnect.PlatformKey {
-        AppConnect.PlatformKey(
-            id: key.id, purpose: key.purpose, securityLevel: key.securityLevel, keyType: key.keyType, data: key.data,
-            readOnly: key.readOnly, bound: key.bound, boundKnown: key.boundKnown, totalBudget: key.totalBudget,
-            expiresAt: key.expiresAt, disabledAt: 1)
+    /// AC-06: a key of another owner is never submitted, and its row stays.
+    func testAKeyOfAnotherOwnerIsNeverTurnedOffAndItsRowStays() async throws {
+        let own = Self.on(Self.app, 10)
+        let reader = Reader()
+        reader.owners = [Self.sibling: Self.otherOwner]
+        let h = harness([own, Self.on(Self.sibling)], [Self.intent(own)], reader: reader)
+        let result = try await h.disconnect(Self.app)
+        XCTAssertEqual(h.platform.disabled, [10])
+        XCTAssertEqual([result.keysTurnedOff, result.keysNotChecked, result.keysNotAttributable], [1, 0, 0])
+        XCTAssertTrue(h.rowIds.contains(Self.sibling), "W's row stays")
     }
 
-    /// A store on a throwaway suite, removed when the test ends.
-    private func makeStore() -> UserDefaultsDashConnectStore {
-        let suiteName = "AppConnectRefreshOwnersTests.\(UUID().uuidString)"
-        let defaults = UserDefaults(suiteName: suiteName)!
-        addTeardownBlock { defaults.removePersistentDomain(forName: suiteName) }
-        return UserDefaultsDashConnectStore(
-            defaults: defaults, network: .testnet, walletIdHexProvider: { "wallet" }, devnetNameProvider: { nil })
+    /// AC-07: with two apps of one owner here, a key on a third contract of
+    /// that owner is left on and reported as not attributable.
+    func testAKeyTwoAppsOfOneOwnerMayHoldIsLeftOnAndReported() async throws {
+        let own = Self.on(Self.app, 10)
+        let z = Self.intent(Self.on(Self.otherApp, 11), app: Self.otherApp)
+        let h = harness([own, Self.on(Self.otherApp, 11), Self.on(Self.sibling)], [Self.intent(own), z])
+        let result = try await h.disconnect(Self.app)
+        XCTAssertEqual(h.platform.disabled, [10])
+        XCTAssertEqual([result.keysNotChecked, result.keysNotAttributable], [0, 1])
+        XCTAssertTrue(h.rowIds.contains(Self.sibling), "the key stays on its own row")
     }
 
-    /// Refreshes `store` from a read of `keys`, as the data source does, and
-    /// returns the stored rows by id.
-    @discardableResult
-    private static func refresh(
-        _ store: UserDefaultsDashConnectStore, _ keys: [AppConnect.PlatformKey], _ intents: [AppConnect.ConnectionIntent],
-        memory: PlatformDashConnectDataSource.OwnerMemory, reader: Reader
-    ) async -> [Data: DAppConnection] {
-        let snapshot = AppConnect.IdentitySnapshot(identityId: identity, revision: 1, keys: keys, platformTime: nil)
-        let change = await PlatformDashConnectDataSource.refreshedRows(
-            snapshot: snapshot, intents: intents, owners: ownerReader(memory, reader), at: Date(timeIntervalSince1970: 0))
-        store.save(change(store.load()))
-        return Dictionary(uniqueKeysWithValues: store.load().map { (Data.identifier(fromBase58: $0.id)!, $0) })
-    }
-
-    /// AC-03, AC-05: a failing owner read stores a row for Y; the next
-    /// refresh with the owner read stores the key under X and no row for Y.
-    func testARefreshStoresASiblingKeyUnderTheAppOnceItsOwnerIsRead() async {
-        let store = makeStore(), memory = PlatformDashConnectDataSource.OwnerMemory(), reader = Reader()
-        let own = Self.key(10, on: Self.app)
-        let keys = [own, Self.key(20, on: Self.sibling)]
-        reader.failing = [Self.sibling]
-        let before = await Self.refresh(store, keys, [Self.intent(own)], memory: memory, reader: reader)
-        XCTAssertEqual(Set(before.keys), [Self.app, Self.sibling], "AC-05: an unread owner keeps its own row")
-        reader.failing = []
-        let after = await Self.refresh(store, keys, [Self.intent(own)], memory: memory, reader: reader)
-        XCTAssertEqual(Set(after.keys), [Self.app], "AC-03: no row named by Y")
-        XCTAssertEqual(after[Self.app]?.seenOn, [Self.identity.toBase58String()], "the key shows under X")
-    }
-
-    /// AC-06: a key of another owner stays on its own stored row, and X's
-    /// disconnect never plans it.
-    func testADisconnectNeverPlansAKeyOfAnotherOwnerAndItsRowStays() async {
-        let store = makeStore(), memory = PlatformDashConnectDataSource.OwnerMemory(), reader = Reader()
-        reader.owners = [Self.sibling: Data(repeating: 0x0B, count: 32)]
-        let own = Self.key(10, on: Self.app), onW = Self.key(20, on: Self.sibling)
-        await Self.refresh(store, [own, onW], [Self.intent(own)], memory: memory, reader: reader)
-        let asked = await Self.planned([own, onW], [Self.intent(own)], listed: nil, memory: memory, reader: reader)
-        XCTAssertEqual(asked.offered, [])
-        let confirmed = await Self.planned([own, onW], [Self.intent(own)], listed: [20], memory: memory, reader: reader)
-        XCTAssertEqual(confirmed.plan.disable, [10], "the key on W is never submitted")
-        let after = await Self.refresh(store, [Self.disabled(own), onW], [Self.intent(own)], memory: memory, reader: reader)
-        XCTAssertEqual(Set(after.keys), [Self.sibling], "W's row stays stored")
-    }
-
-    /// AC-10: after a fresh-restore refresh both rows are stored; a
-    /// disconnect of one plans only its key, and the other row stays.
-    func testWithoutAnIntentADisconnectOfOneRowTurnsOffOnlyItsKey() async {
-        let store = makeStore(), memory = PlatformDashConnectDataSource.OwnerMemory(), reader = Reader()
-        let onY = Self.key(20, on: Self.sibling), onY2 = Self.key(21, on: Self.sibling2)
-        let rows = await Self.refresh(store, [onY, onY2], [], memory: memory, reader: reader)
-        XCTAssertEqual(Set(rows.keys), [Self.sibling, Self.sibling2])
-        let asked = await Self.planned([onY, onY2], [], listed: nil, memory: memory, reader: reader, appId: Self.sibling)
-        XCTAssertEqual(asked.offered, [20])
-        let confirmed = await Self.planned([onY, onY2], [], listed: asked.offered, memory: memory, reader: reader, appId: Self.sibling)
-        XCTAssertEqual(confirmed.plan.disable, [20])
-        let after = await Self.refresh(store, [Self.disabled(onY), onY2], [], memory: memory, reader: reader)
-        XCTAssertEqual(Set(after.keys), [Self.sibling2])
+    /// AC-10: with no intent here, a disconnect of one row turns off only
+    /// its key, reads no owner, and the other row stays.
+    func testWithoutAnIntentADisconnectOfOneRowTurnsOffOnlyItsKey() async throws {
+        let reader = Reader()
+        let h = harness([Self.on(Self.sibling, 20), Self.on(Self.sibling2, 21)], [], reader: reader)
+        let result = try await h.disconnect(Self.sibling)
+        XCTAssertEqual(h.platform.disabled, [20])
+        XCTAssertEqual(result.keysTurnedOff, 1)
+        XCTAssertEqual(h.rowIds, [Self.sibling2])
         XCTAssertEqual(reader.total, 0, "no owner decides anything without an intent")
     }
 
     /// The row the user saw for Y because its owner could not be read: its
-    /// disconnect still offers and turns off Y's key once the owner reads as
-    /// X's.
-    func testARowShownForAnUnreadOwnerStillTurnsOffItsKeyOnceTheOwnerIsRead() async {
-        let store = makeStore(), memory = PlatformDashConnectDataSource.OwnerMemory(), reader = Reader()
-        let own = Self.key(10, on: Self.app), onY = Self.key(20, on: Self.sibling)
-        reader.failing = [Self.sibling]
-        let shown = await Self.refresh(store, [own, onY], [Self.intent(own)], memory: memory, reader: reader)
-        XCTAssertNotNil(shown[Self.sibling])
-        reader.failing = []
-        let readsAtRefresh = reader.total
-        let asked = await Self.planned([own, onY], [Self.intent(own)], listed: nil, memory: memory, reader: reader, appId: Self.sibling)
-        XCTAssertEqual(asked.offered, [20])
-        let confirmed = await Self.planned(
-            [own, onY], [Self.intent(own)], listed: asked.offered, memory: memory, reader: reader, appId: Self.sibling)
-        XCTAssertEqual(confirmed.plan.disable, [20])
-        XCTAssertEqual(confirmed.appKeysOff, 1)
-        XCTAssertEqual(reader.total, readsAtRefresh, "no owner decides anything for a row with no intent")
-    }
-
-    /// What a disconnect reports from its plan: the offered keys only before
-    /// the question, and every count as planned.
-    func testTheDisconnectResultReportsThePlan() async {
-        let own = Self.key(10, on: Self.app)
-        let z = Self.intent(Self.key(11, on: Self.otherApp), app: Self.otherApp)
-        let keys = [own, Self.key(20, on: Self.sibling), Self.key(21, on: Self.sibling2, boundKnown: false)]
+    /// disconnect turns off Y's key once the owner reads as the app's, and
+    /// reads no owner for it.
+    func testARowShownForAnUnreadOwnerStillTurnsOffItsKey() async throws {
+        let own = Self.on(Self.app, 10)
         let reader = Reader()
-        reader.owners = [Self.otherApp: Data(repeating: 0x0B, count: 32)]
-        let asked = await Self.planned(keys, [Self.intent(own), z], listed: nil, reader: reader)
-        XCTAssertEqual(
-            PlatformDashConnectDataSource.disconnectResult(of: asked, remaining: asked, listed: nil, identityId: Self.identity, keysOnAnotherIdentity: true),
-            DashConnectDisconnectResult(
-                keysTurnedOff: 1, offeredUnrecordedKeys: DashConnectOfferedKeys(identityId: Self.identity, keyIds: [20]),
-                keysNotChecked: 1, keysNotAttributable: 0,
-                keysLeftAfterQuestion: 0, keysOnAnotherIdentity: true))
-        let confirmed = await Self.planned(keys, [Self.intent(own), z], listed: [], reader: reader)
-        XCTAssertEqual(
-            PlatformDashConnectDataSource.disconnectResult(of: confirmed, remaining: confirmed, listed: [], identityId: Self.identity, keysOnAnotherIdentity: false),
-            DashConnectDisconnectResult(
-                keysTurnedOff: 1, offeredUnrecordedKeys: nil, keysNotChecked: 1, keysNotAttributable: 0,
-                keysLeftAfterQuestion: 1, keysOnAnotherIdentity: false))
-    }
-
-    /// What stays on is told from the read after the update: a key of the
-    /// app that first shows there is reported, before the question as
-    /// offered and after it as left on, while the keys turned off are those
-    /// the plan before the update turned off.
-    func testAKeyFirstSeenOnTheReadAfterTheUpdateIsReportedAsStillOn() async {
-        let own = Self.key(10, on: Self.app)
-        let ownOff = Self.key(10, on: Self.app, disabledAt: 1)
-        let listedOff = Self.key(20, on: Self.app, disabledAt: 1)
-        let landed = Self.key(21, on: Self.app)
-        let intents = [Self.intent(own)]
-
-        let asked = await Self.planned([own], intents, listed: nil)
-        let askedAfter = await Self.planned([ownOff, landed], intents, listed: nil)
-        let first = PlatformDashConnectDataSource.disconnectResult(
-            of: asked, remaining: askedAfter, listed: nil, identityId: Self.identity, keysOnAnotherIdentity: false)
-        XCTAssertEqual(first.keysTurnedOff, 1)
-        XCTAssertEqual(first.offeredUnrecordedKeys, DashConnectOfferedKeys(identityId: Self.identity, keyIds: [21]))
-
-        let confirmed = await Self.planned([own, Self.key(20, on: Self.app)], intents, listed: [20])
-        let confirmedAfter = await Self.planned([ownOff, listedOff, landed], intents, listed: [20])
-        let second = PlatformDashConnectDataSource.disconnectResult(
-            of: confirmed, remaining: confirmedAfter, listed: [20], identityId: Self.identity, keysOnAnotherIdentity: false)
-        XCTAssertEqual(second.keysTurnedOff, 2, "the keys the update turned off")
-        XCTAssertEqual(second.keysLeftAfterQuestion, 1, "AC-08: the key that landed during the update stays on and is said")
-        XCTAssertNil(second.offeredUnrecordedKeys)
-    }
-
-    /// The rows and what stays on after a disconnect come from one read of
-    /// the owners: whether the owner of a key on a sibling contract reads,
-    /// does not, or fails once and then reads, a result that says a key of
-    /// the app stays on keeps the app's row, and a key the rows give a row of
-    /// its own is reported as not checked. The read here is also the one a
-    /// disconnect with nothing to submit settles on.
-    func testTheRowsAndWhatStaysOnAfterADisconnectComeFromTheSameOwners() async {
-        let own = Self.key(10, on: Self.app), onY = Self.key(20, on: Self.sibling)
-        let intents = [Self.intent(own)]
-        let after = AppConnect.IdentitySnapshot(
-            identityId: Self.identity, revision: 2, keys: [Self.disabled(own), onY], platformTime: nil)
-        for (ownerReads, failsOnce) in [(false, false), (true, false), (false, true)] {
-            let store = makeStore(), reader = Reader()
-            reader.failing = [Self.sibling]
-            await Self.refresh(store, [own, onY], intents, memory: .init(), reader: reader)
-            reader.failing = ownerReads || failsOnce ? [] : [Self.sibling]
-            reader.failingOnce = failsOnce ? [Self.sibling] : []
-            let (change, remaining, _) = await PlatformDashConnectDataSource.settledDisconnect(
-                appId: Self.app, after: after, intents: intents, unrecordedKeyIds: [],
-                owners: Self.ownerReader(.init(), reader), at: Date(timeIntervalSince1970: 0))
-            let rows = Set(change(store.load()).compactMap { Data.identifier(fromBase58: $0.id) })
-            if ownerReads {
-                XCTAssertEqual(remaining.leftAfterQuestion, 1, "the sibling key is the app's and stays on")
-                XCTAssertTrue(rows.contains(Self.app), "the row a second disconnect needs is there")
-            } else {
-                XCTAssertEqual(remaining.leftAfterQuestion, 0, "nothing of the app is said to stay on")
-                XCTAssertEqual(remaining.notChecked, 1, "the key with an unread owner is reported as not checked")
-                XCTAssertEqual(rows, [Self.sibling], "the key keeps its own row")
-            }
-        }
-    }
-
-    /// A key the question listed that a failed owner read kept out of the
-    /// update is still on: once the owner reads on the read after it, the
-    /// result says so, as it does for a key found since the question.
-    func testAListedKeyKeptOutOfTheUpdateIsReportedAsStillOn() async {
-        let own = Self.key(10, on: Self.app), onY = Self.key(20, on: Self.sibling)
-        let intents = [Self.intent(own)]
-        let memory = PlatformDashConnectDataSource.OwnerMemory(), reader = Reader()
         reader.failing = [Self.sibling]
-        let confirmed = await Self.planned([own, onY], intents, listed: [20], memory: memory, reader: reader)
-        XCTAssertEqual(confirmed.plan.disable, [10], "the listed key is not submitted while its owner is unread")
+        let h = harness([own, Self.on(Self.sibling)], [Self.intent(own)], reader: reader)
+        await h.refresh()
+        XCTAssertTrue(h.rowIds.contains(Self.sibling))
         reader.failing = []
-        let after = AppConnect.IdentitySnapshot(
-            identityId: Self.identity, revision: 2, keys: [Self.disabled(own), onY], platformTime: nil)
-        let (_, remaining, _) = await PlatformDashConnectDataSource.settledDisconnect(
-            appId: Self.app, after: after, intents: intents, unrecordedKeyIds: [20],
-            owners: Self.ownerReader(memory, reader), at: Date(timeIntervalSince1970: 0))
-        XCTAssertEqual(remaining.leftAfterQuestion, 1, "the listed key that stayed on is reported")
-    }
-
-    /// A row with no intent whose owner reads on the read after its
-    /// disconnect is gone, its keys now under the app of the same owner: a
-    /// key that arrived after the question is reported under that app's row,
-    /// the one the user can still disconnect.
-    func testKeysLeftOnARowThatIsGoneAreReportedUnderTheRowThatShowsThem() async {
-        let store = makeStore(), reader = Reader()
-        let own = Self.key(10, on: Self.app), listed = Self.key(20, on: Self.sibling), arrived = Self.key(21, on: Self.sibling)
-        let intents = [Self.intent(own)]
-        reader.failing = [Self.sibling]
-        let shown = await Self.refresh(store, [own, listed], intents, memory: .init(), reader: reader)
-        XCTAssertNotNil(shown[Self.sibling], "an unread owner gives Y its own row")
-        reader.failing = []
-        let after = AppConnect.IdentitySnapshot(
-            identityId: Self.identity, revision: 2, keys: [own, Self.disabled(listed), arrived], platformTime: nil)
-        let (change, remaining, holder) = await PlatformDashConnectDataSource.settledDisconnect(
-            appId: Self.sibling, after: after, intents: intents, unrecordedKeyIds: [20],
-            owners: Self.ownerReader(.init(), reader), at: Date(timeIntervalSince1970: 0))
-        XCTAssertEqual(remaining.leftAfterQuestion, 1, "the key that arrived after the question stays on")
-        XCTAssertEqual(holder, Self.app)
-        let rows = change(store.load())
-        XCTAssertFalse(rows.contains { $0.id == Self.sibling.toBase58String() }, "Y's row is gone")
-        let appRow = rows.first { $0.id == Self.app.toBase58String() }
-        XCTAssertNotNil(appRow)
-        XCTAssertEqual(
-            PlatformDashConnectDataSource.keysLeftUnder(app: Self.sibling.toBase58String(), holder: holder, rows: rows), appRow?.name)
-        XCTAssertNil(
-            PlatformDashConnectDataSource.keysLeftUnder(app: Self.app.toBase58String(), holder: holder, rows: rows),
-            "nil while the app's own row is there")
-    }
-
-    /// Keys left on can show under several rows: a DashPay profile key
-    /// under DashPay's, the app's own under the app of the same owner. The
-    /// user is sent to the row whose disconnect offers them all, the app's,
-    /// since every disconnect also offers the profile keys; not to DashPay's,
-    /// even when it sorts first.
-    func testKeysLeftUnderSeveralRowsAreReportedUnderTheRowThatOffersThemAll() async {
-        let store = makeStore(), reader = Reader()
-        let holderApp = Data(repeating: 0xB1, count: 32)
-        let dashPay = Data.identifier(fromBase58: AppConnect.dashPayContractId)!
-        XCTAssertTrue(dashPay.lexicographicallyPrecedes(holderApp), "DashPay's row sorts first")
-        let own = Self.key(10, on: holderApp), listed = Self.key(20, on: Self.sibling)
-        let arrived = Self.key(21, on: Self.sibling)
-        let profile = Self.key(30, on: dashPay, bound: .documentType(contractId: dashPay, name: "profile"))
-        let intents = [Self.intent(own, app: holderApp)]
-        reader.failing = [Self.sibling]
-        let shown = await Self.refresh(store, [own, listed], intents, memory: .init(), reader: reader)
-        XCTAssertNotNil(shown[Self.sibling], "an unread owner gives Y its own row")
-        reader.failing = []
-        let after = AppConnect.IdentitySnapshot(
-            identityId: Self.identity, revision: 2, keys: [own, Self.disabled(listed), arrived, profile], platformTime: nil)
-        let (change, remaining, holder) = await PlatformDashConnectDataSource.settledDisconnect(
-            appId: Self.sibling, after: after, intents: intents, unrecordedKeyIds: [20],
-            owners: Self.ownerReader(.init(), reader), at: Date(timeIntervalSince1970: 0))
-        XCTAssertEqual(remaining.leftAfterQuestion, 2, "the key and the profile key that arrived after the question stay on")
-        XCTAssertEqual(holder, holderApp)
-        let rows = change(store.load())
-        XCTAssertFalse(rows.contains { $0.id == Self.sibling.toBase58String() }, "Y's row is gone")
-    }
-
-    /// A key id is unique only within an identity: keys offered on one
-    /// identity are never turned off while another is active, even when it
-    /// has keys with the same ids. Checked before the PIN and after it.
-    func testOfferedKeysOfAnotherIdentityAreRefusedEvenWithTheSameKeyIds() {
-        let other = Data(repeating: 0x0E, count: 32)
-        let offered = DashConnectOfferedKeys(identityId: Self.identity, keyIds: [20])
-        XCTAssertNoThrow(try PlatformDashConnectDataSource.requireOffered(offered, on: Self.identity))
-        XCTAssertNoThrow(try PlatformDashConnectDataSource.requireOffered(nil, on: other), "nothing offered, nothing to check")
-        XCTAssertThrowsError(try PlatformDashConnectDataSource.requireOffered(offered, on: other)) { error in
-            guard case DashConnectPlatformError.walletChanged = error else { return XCTFail("\(error)") }
-        }
-    }
-}
-
-/// The disconnect question and result on Connections, as DashUIKit's
-/// `ModalDialog` (SCR-03, SCR-04).
-@MainActor
-final class ConnectionsMessageDialogTests: XCTestCase {
-    private static let connection = MockDashConnectDataSource.sample(.active)
-
-    /// SCR-03: «Leave them» above a destructive «Turn them off», which passes
-    /// back exactly the offered keys.
-    func testAQuestionOffersToTurnOffExactlyTheOfferedKeys() {
-        var turnedOff: (DAppConnection, DashConnectOfferedKeys)?
-        var dismissed = false
-        let offered = DashConnectOfferedKeys(identityId: Data(repeating: 0x01, count: 32), keyIds: [20, 21])
-        let message = ConnectionsScreenMessage(
-            kind: .question, text: "Question.\n\nWarning.", unrecordedKeysOf: Self.connection, unrecordedKeys: offered)
-
-        let dialog = ConnectionsMessageDialog.dialog(
-            for: message, turnOff: { turnedOff = ($0, $1) }, dismiss: { dismissed = true })
-
-        XCTAssertEqual(dialog.icon, .warning)
-        XCTAssertEqual(dialog.heading, message.title)
-        XCTAssertEqual(dialog.paragraphs, ["Question.", "Warning."])
-        XCTAssertEqual(dialog.primaryAction.title, "Turn them off")
-        XCTAssertEqual(dialog.primaryAction.role, .destructive)
-        XCTAssertEqual(dialog.secondaryAction?.title, "Leave them")
-        dialog.primaryAction.handler()
-        XCTAssertEqual(turnedOff?.0, Self.connection)
-        XCTAssertEqual(turnedOff?.1, offered)
-        XCTAssertFalse(dismissed)
-        dialog.secondaryAction?.handler()
-        XCTAssertTrue(dismissed)
-    }
-
-    /// SCR-04: one «OK», which only dismisses.
-    func testAResultHasOneOKButtonThatDismisses() {
-        var dismissed = false
-        let message = ConnectionsScreenMessage(kind: .warning, text: "Not checked.\n\nNot attributable.")
-
-        let dialog = ConnectionsMessageDialog.dialog(
-            for: message, turnOff: { _, _ in XCTFail("a result turns nothing off") }, dismiss: { dismissed = true })
-
-        XCTAssertEqual(dialog.icon, .warning)
-        XCTAssertEqual(dialog.heading, message.title)
-        XCTAssertEqual(dialog.paragraphs, ["Not checked.", "Not attributable."])
-        XCTAssertEqual(dialog.primaryAction.title, "OK")
-        XCTAssertEqual(dialog.primaryAction.role, .regular)
-        XCTAssertNil(dialog.secondaryAction)
-        dialog.primaryAction.handler()
-        XCTAssertTrue(dismissed)
-    }
-    /// Only a plain success comes without the warning icon: a token purchase
-    /// that completed is no warning.
-    func testTheIconFollowsTheKindOfTheMessage() {
-        let icons = [ConnectionsScreenMessage.Kind.success, .warning, .error, .question].map { kind in
-            ConnectionsMessageDialog.dialog(
-                for: ConnectionsScreenMessage(kind: kind, text: "Text."), turnOff: { _, _ in }, dismiss: {}).icon
-        }
-        XCTAssertEqual(icons, [nil, .warning, .warning, .warning])
+        let result = try await h.dataSource.disconnect(id: Self.sibling.toBase58String(), scope: "wallet  ")
+        XCTAssertEqual(h.platform.disabled, [20])
+        XCTAssertEqual(result.keysTurnedOff, 1)
     }
 }

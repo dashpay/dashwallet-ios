@@ -112,19 +112,33 @@ final class DashConnectStoreTests: XCTestCase {
         XCTAssertEqual(store.load().first?.id, "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F")
     }
 
-    func testLegacyDisconnectedStatusIsDropped() throws {
+    func testARowWithEachNewStatusRoundTrips() {
         let store = makeStore(network: .testnet, walletIdHex: "wallet-a")
-        let payload: [[String: Any]] = [[
-            "contractId": "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F",
-            "label": "Yappr",
-            "url": "yap.pr",
-            "status": "disconnected",
-            "updatedAt": 1_773_132_300_000
-        ]]
+        let connections = [
+            sampleConnection(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", status: .refused, updatedAt: Date(timeIntervalSince1970: 10)),
+            sampleConnection(id: "7W6u4NgW63FPUuW8EnTbYzD4KybNQD5n7CUDWydJY234", status: .expired, updatedAt: Date(timeIntervalSince1970: 20)),
+            sampleConnection(id: "AaC695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNgA9Z", status: .disconnected, updatedAt: Date(timeIntervalSince1970: 30)),
+        ]
 
+        store.save(connections)
+
+        XCTAssertEqual(store.load(), connections)
+        XCTAssertEqual(store.load().map(\.status), [.refused, .expired, .disconnected])
+    }
+
+    func testStoredRowsOfTheNewStatusesDecodeFromTheirRawValues() throws {
+        let store = makeStore(network: .testnet, walletIdHex: "wallet-a")
+        let ids = [
+            "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", "7W6u4NgW63FPUuW8EnTbYzD4KybNQD5n7CUDWydJY234",
+            "AaC695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNgA9Z",
+        ]
+        let payload: [[String: Any]] = zip(ids, ["refused", "expired", "disconnected"]).map { id, status in
+            ["contractId": id, "label": "App", "url": "app.example.test", "status": status,
+             "updatedAt": 1_773_132_300_000]
+        }
         defaults.set(try JSONSerialization.data(withJSONObject: payload), forKey: try XCTUnwrap(store.storageKey))
 
-        XCTAssertEqual(store.load(), [])
+        XCTAssertEqual(store.load().map(\.status), [.refused, .expired, .disconnected])
     }
 
     func testEmptyStoreLoadsAsEmptyArray() {
@@ -209,7 +223,7 @@ final class DashConnectStoreTests: XCTestCase {
             store: store
         )
 
-        try await first.disconnect(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", scope: nil, unrecordedKeys: nil)
+        try await first.disconnect(id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", scope: nil)
 
         let second = MockDashConnectDataSource(store: store)
         XCTAssertEqual(second.connectionsSnapshot, [])
@@ -281,6 +295,180 @@ final class DashConnectStoreTests: XCTestCase {
 
         XCTAssertNil(store.storageKey)
         XCTAssertEqual(store.load(), [])
+    }
+
+    // MARK: - Wallet wipe (AC-19)
+
+    private let wipedWalletHex = String(repeating: "a1", count: 32)
+    private let keptWalletHex = String(repeating: "b2", count: 32)
+
+    /// Writes the three key families a wallet has on one network scope - row
+    /// cache, intents, legacy grants - and returns their keys.
+    @discardableResult
+    private func seedDashConnectKeys(
+        in defaults: UserDefaults,
+        network: DashConnectNetwork,
+        devnetName: String? = nil,
+        walletIdHex: String
+    ) throws -> [String] {
+        let store = UserDefaultsDashConnectStore(
+            defaults: defaults,
+            network: network,
+            walletIdHexProvider: { walletIdHex },
+            devnetNameProvider: { devnetName })
+        let rowCacheKey = try XCTUnwrap(store.storageKey)
+        let keys = [
+            rowCacheKey,
+            "\(rowCacheKey).app-connect-intents.v1",
+            "\(rowCacheKey).app-connect-responses.v1",
+        ]
+        for key in keys {
+            defaults.set(Data("[]".utf8), forKey: key)
+        }
+        return keys
+    }
+
+    func testRemoveAllClearsEveryNetworkOfTheWalletAndKeepsTheOther() throws {
+        var wiped: [String] = []
+        var kept: [String] = []
+        for (network, devnetName) in [(DashConnectNetwork.mainnet, String?.none),
+                                      (.testnet, nil),
+                                      (.devnet, "devnet-a.b")] {
+            wiped += try seedDashConnectKeys(
+                in: defaults, network: network, devnetName: devnetName, walletIdHex: wipedWalletHex)
+            kept += try seedDashConnectKeys(
+                in: defaults, network: network, devnetName: devnetName, walletIdHex: keptWalletHex)
+        }
+        XCTAssertEqual(wiped.count, 9)
+
+        DashConnectStores.removeAll(walletIdHex: wipedWalletHex, in: defaults)
+
+        for key in wiped {
+            XCTAssertNil(defaults.object(forKey: key), "\(key) must be removed with its wallet")
+        }
+        for key in kept {
+            XCTAssertNotNil(defaults.object(forKey: key), "\(key) belongs to the other wallet")
+        }
+    }
+
+    func testRemoveAllMatchesTheWalletSegmentNotADevnetNameHoldingAHex() throws {
+        // Devnet names that hold a wallet id, with and without dots: the
+        // wallet segment is what follows the network segment.
+        let nameHoldingKeptHex = "x.\(keptWalletHex)"
+        let nameHoldingWipedHex = wipedWalletHex
+        let wipedOnNameHoldingKeptHex = try seedDashConnectKeys(
+            in: defaults, network: .devnet, devnetName: nameHoldingKeptHex, walletIdHex: wipedWalletHex)
+        let keptOnNameHoldingWipedHex = try seedDashConnectKeys(
+            in: defaults, network: .devnet, devnetName: nameHoldingWipedHex, walletIdHex: keptWalletHex)
+        let keptOnNameHoldingKeptHex = try seedDashConnectKeys(
+            in: defaults, network: .devnet, devnetName: nameHoldingKeptHex, walletIdHex: keptWalletHex)
+
+        DashConnectStores.removeAll(walletIdHex: wipedWalletHex, in: defaults)
+
+        for key in wipedOnNameHoldingKeptHex {
+            XCTAssertNil(defaults.object(forKey: key), "\(key) has the wiped wallet as its wallet segment")
+        }
+        for key in keptOnNameHoldingWipedHex + keptOnNameHoldingKeptHex {
+            XCTAssertNotNil(defaults.object(forKey: key), "\(key) has the other wallet as its wallet segment")
+        }
+
+        // The mirror: wiping the other wallet leaves what the first wipe
+        // left, apart from that wallet's own keys.
+        DashConnectStores.removeAll(walletIdHex: keptWalletHex, in: defaults)
+        for key in keptOnNameHoldingWipedHex + keptOnNameHoldingKeptHex {
+            XCTAssertNil(defaults.object(forKey: key))
+        }
+    }
+
+    func testRemoveAllLeavesUnrelatedKeys() throws {
+        let unrelated = [
+            "DashConnect.keptSharedProfileKeysRemoved",
+            "crowdnode.\(wipedWalletHex)",
+            "unrelated.dashconnect.connections.v1.m.\(wipedWalletHex)",
+            "dashconnect.connections.v1.m",
+        ]
+        for key in unrelated {
+            defaults.set("kept", forKey: key)
+        }
+        try seedDashConnectKeys(in: defaults, network: .mainnet, walletIdHex: wipedWalletHex)
+
+        DashConnectStores.removeAll(walletIdHex: wipedWalletHex, in: defaults)
+
+        for key in unrelated {
+            XCTAssertEqual(defaults.string(forKey: key), "kept", "\(key) is not a DashConnect key of the wallet")
+        }
+    }
+
+    /// The per-wallet deletion path (`deleteWalletFromSDK`, shared by the
+    /// Wallets screen's Remove and the full wipe's loop) runs on
+    /// `UserDefaults.standard`; the wipe's other app-state stores are not
+    /// injectable, so this seeds `.standard` under a random wallet id.
+    @MainActor
+    func testWalletDeletionPathClearsDashConnectKeysOfThatWallet() throws {
+        let walletId = Data((0..<32).map { _ in UInt8.random(in: 0...255) })
+        let otherWalletId = Data((0..<32).map { _ in UInt8.random(in: 0...255) })
+        let standard = UserDefaults.standard
+        let wiped = try seedDashConnectKeys(
+            in: standard, network: .testnet, walletIdHex: walletId.hexEncodedString())
+        let kept = try seedDashConnectKeys(
+            in: standard, network: .testnet, walletIdHex: otherWalletId.hexEncodedString())
+        defer { (wiped + kept).forEach { standard.removeObject(forKey: $0) } }
+
+        try SwiftDashSDKWalletWiper.deleteWalletFromSDK(
+            walletId,
+            deleteWallet: { _ in },
+            scope: "testnet")
+
+        for key in wiped {
+            XCTAssertNil(standard.object(forKey: key), "\(key) must go with the wallet")
+        }
+        for key in kept {
+            XCTAssertNotNil(standard.object(forKey: key), "\(key) belongs to another wallet")
+        }
+    }
+
+    /// The full wipe goes on after another devnet scope's deletion fails,
+    /// and the wallet's DashConnect records serve every scope: its deletion
+    /// of the configured scope leaves them to the wipe's commit point, which
+    /// runs only once every deletion succeeded.
+    @MainActor
+    func testTheFullWipesDeletionLeavesDashConnectKeysToItsCommitPoint() throws {
+        let walletId = Data((0..<32).map { _ in UInt8.random(in: 0...255) })
+        let standard = UserDefaults.standard
+        let kept = try seedDashConnectKeys(
+            in: standard, network: .devnet, devnetName: "moutai", walletIdHex: walletId.hexEncodedString())
+        defer { kept.forEach { standard.removeObject(forKey: $0) } }
+
+        try SwiftDashSDKWalletWiper.deleteWalletFromSDK(
+            walletId,
+            deleteWallet: { _ in },
+            leavesDashConnectToWipe: true,
+            scope: "devnet-b")
+
+        for key in kept {
+            XCTAssertNotNil(standard.object(forKey: key), "\(key) may still serve a scope whose deletion failed")
+        }
+    }
+
+    func testRemoveAllWalletsClearsEveryDashConnectKeyIncludingOrphansAndKeepsOthers() throws {
+        let current = Data((0..<32).map { _ in UInt8.random(in: 0...255) }).hexEncodedString()
+        let orphan = Data((0..<32).map { _ in UInt8.random(in: 0...255) }).hexEncodedString()
+        var dashConnectKeys = try seedDashConnectKeys(in: defaults, network: .testnet, walletIdHex: current)
+        dashConnectKeys += try seedDashConnectKeys(in: defaults, network: .mainnet, walletIdHex: orphan)
+        dashConnectKeys += try seedDashConnectKeys(
+            in: defaults, network: .devnet, devnetName: "moutai", walletIdHex: orphan)
+        let unrelated = "dashconnect.unrelated.\(UUID().uuidString)"
+        defaults.set("keep", forKey: unrelated)
+
+        DashConnectStores.removeAllWallets(in: defaults)
+
+        for key in dashConnectKeys {
+            XCTAssertNil(defaults.object(forKey: key), "\(key) must go on a full wipe")
+        }
+        let leftovers = defaults.dictionaryRepresentation().keys
+            .filter { $0.hasPrefix(UserDefaultsDashConnectStore.keyPrefix) }
+        XCTAssertTrue(leftovers.isEmpty, "no key under the prefix may survive: \(leftovers)")
+        XCTAssertEqual(defaults.string(forKey: unrelated), "keep")
     }
 
     private func makeStore(
