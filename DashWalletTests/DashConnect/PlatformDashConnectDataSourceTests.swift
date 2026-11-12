@@ -187,6 +187,26 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         XCTAssertEqual(found, existing)
     }
 
+    /// A sheet whose details could not be read says so: a failed read is
+    /// not details with only the app's id, which would replace the ones
+    /// shown.
+    func testConnectionDetailsThatCouldNotBeReadAreUnknown() async {
+        let existing = DAppConnection(
+            id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", name: "Yappr", url: "yap.pr", status: .active,
+            updatedAt: Date(timeIntervalSince1970: 1_773_132_300))
+        let dataSource = PlatformDashConnectDataSource(
+            supportedNetwork: .testnet,
+            store: TestDashConnectStore(initialConnections: [existing]),
+            activeWalletIdHex: { "wallet" }
+        )
+        let request = await dataSource.makeConnectionRequest(from: MockDashConnectDataSource.sampleLoginRequest)
+        let scope = request.existingConnection?.scope
+        XCTAssertNotNil(scope)
+        // No SDK runs in tests: the identity cannot be read.
+        let details = await dataSource.connectionDetails(id: existing.id, scope: scope)
+        XCTAssertNil(details)
+    }
+
     func testAVersion1LoginQRIsRefusedWhenScanned() async {
         let dataSource = PlatformDashConnectDataSource(
             supportedNetwork: .testnet,

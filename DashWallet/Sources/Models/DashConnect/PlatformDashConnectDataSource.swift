@@ -2649,10 +2649,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// are live, expired or may still land count, and what is left of each
     /// landed key's budget is read from Platform. Without one, every open
     /// intent counts and nothing is read.
-    private func details(of appId: String, stores: Stores) async -> ConnectionDetails {
-        guard let context = try? await requireContext(pinnedTo: stores) else {
-            return ConnectionDetails(appId: appId, identityId: nil, username: nil, access: nil)
-        }
+    private func details(of appId: String, stores: Stores) async -> ConnectionDetails? {
+        // Not read: the sheet says so and keeps details it already shows.
+        guard let context = try? await requireContext(pinnedTo: stores) else { return nil }
         let open = stores.intents.load().filter {
             $0.identityId == context.identityId && $0.appId.toBase58String() == appId && $0.closedAt == nil
         }
@@ -2673,16 +2672,17 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let identityId = context.identityId.toBase58String()
         var details = ConnectionDetails(
             appId: appId, identityId: identityId, username: context.storedUsername,
-            access: ConnectionAccess(intents: held), connectedAt: held.map(\.createdAt).max())
-        // Funding is read only for keys that landed: an intent that may
-        // still land names ids another key may hold.
-        let landed = snapshot.map { snapshot in held.filter { AppConnect.hasLanded($0, in: snapshot) } } ?? []
-        let keyIds = Array(Set(landed.flatMap(\.authKeys).map(\.id))).sorted()
+            access: ConnectionAccess(intents: held, snapshot: snapshot), connectedAt: held.map(\.createdAt).max())
+        // Funding is read only for keys that landed and are not disabled:
+        // an intent that may still land names ids another key may hold.
+        guard let snapshot else { return details }
+        let landed = held.filter { AppConnect.hasLanded($0, in: snapshot) }
+        let keyIds = KeyFunding.keyIds(of: landed, snapshot: snapshot)
         if !keyIds.isEmpty {
             // A read-only query: it does not touch the identity copy the
             // operations that sign use, so it does not wait on them.
             if let remaining = try? await context.sdk.fetchKeysRemainingBudgets(identityId: identityId, keyIds: keyIds) {
-                details.keyFunding = KeyFunding.of(intents: landed, remaining: remaining)
+                details.keyFunding = KeyFunding.of(intents: landed, snapshot: snapshot, remaining: remaining)
             } else {
                 details.fundingReadFailed = true
             }
