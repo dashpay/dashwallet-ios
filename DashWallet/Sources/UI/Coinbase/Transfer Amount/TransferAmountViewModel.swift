@@ -54,6 +54,8 @@ protocol TransferAmountViewModelProtocol: ObservableObject {
     /// Fiat value of `receiveAmount`, shown after it as `… ≈ <fiat>`.
     var receiveFiat: String? { get }
     var currencyOptions: [DashUIKit.CurrencyOption] { get }
+    /// The fiat currency of this transfer's amount (not necessarily the app's).
+    var fiatCurrencyCode: String { get }
 
     func setInput(_ raw: String)
     func setMax()
@@ -189,6 +191,7 @@ final class TransferAmountViewModel: ObservableObject, TransferAmountViewModelPr
     }
 
     var currencyOptions: [DashUIKit.CurrencyOption] { [.dash, .fiat(model.localCurrencyCode)] }
+    var fiatCurrencyCode: String { model.localCurrencyCode }
 
     // MARK: Private
 
@@ -258,11 +261,12 @@ final class TransferAmountViewModel: ObservableObject, TransferAmountViewModelPr
         receiveFiat = fiatString(forDuffs: duffs)
     }
 
-    /// Fiat value of a Dash amount (duffs), mirroring `BaseAmountModel.fiatWalletBalanceFormatted`.
+    /// Fiat value of a Dash amount (duffs) in the transfer's currency.
     private func fiatString(forDuffs duffs: UInt64) -> String? {
-        guard let fiatAmount = try? Coinbase.shared.currencyExchanger
-            .convertDash(amount: duffs.dashAmount, to: model.localCurrencyCode) else { return nil }
-        return model.supplementaryNumberFormatter.string(from: fiatAmount as NSNumber)
+        BaseAmountModel.fiatFormatted(duffs: duffs,
+                                      currencyCode: model.localCurrencyCode,
+                                      exchanger: Coinbase.shared.currencyExchanger,
+                                      formatter: model.supplementaryNumberFormatter)
     }
 
     /// Surfaces the model's validation error (e.g. insufficient balance) for inline display.

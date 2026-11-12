@@ -42,11 +42,10 @@ struct ContactProfileSheet: View {
     /// A payment absent here (H1 loss, or a received tx not yet synced)
     /// renders as a non-tappable row instead of a broken tx-detail push.
     @State private var resolvedByTxid: [String: Transaction] = [:]
-    /// Tapped payment's txid (display hex, Hashable) — drives the
-    /// tx-detail push via the NavigationStack-native
-    /// `navigationDestination(item:)`. The resolved `Transaction` is
-    /// looked up from `resolvedByTxid` in the destination builder
-    /// (`Transaction` itself isn't `Hashable`).
+    /// Tapped payment's txid (display hex) — swaps the sheet's content to
+    /// that payment's tx detail and shows the header's back button; clearing
+    /// it returns to the profile. The resolved `Transaction` is looked up
+    /// from `resolvedByTxid`.
     @State private var selectedPaymentId: String? = nil
     /// Transient confirmation shown at the bottom of the sheet — a saved edit
     /// or a copied identity id. One slot, so a second message replaces the
@@ -65,38 +64,22 @@ struct ContactProfileSheet: View {
     }
 
     var body: some View {
-        NavigationStack {
+        // Untitled on the profile itself; the tx detail gets the
+        // "Transaction" title and a back button that returns to the profile.
+        DashUIKit.BottomSheet(
+            title: selectedPaymentId == nil
+                ? "" : NSLocalizedString("Transaction", comment: "DashPay Contacts"),
+            showBackButton: Binding(
+                get: { selectedPaymentId != nil },
+                set: { _ in }),
+            onBackButtonPressed: { selectedPaymentId = nil },
+            onClose: { closeProfile() }
+        ) {
+            // BottomSheet has no navigation container, so the tx detail
+            // replaces the profile in place rather than being pushed.
             ZStack {
                 Color.dash.primaryBackground.ignoresSafeArea()
-                ScrollView {
-                    VStack(spacing: 20) {
-                        header
-                        // Sibling of `header` rather than part of it: the
-                        // header's tap toggles the contact-settings card, and
-                        // this row's tap copies.
-                        ContactIdentityIdView(
-                            identityId: contact.contactIdentityId,
-                            onCopy: { showToast(NSLocalizedString("Copied", comment: "")) })
-                        if let message = contact.publicMessage, !message.isEmpty {
-                            Text(message)
-                                .font(.system(size: 14))
-                                .foregroundColor(.dash.secondaryText)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal, 32)
-                        }
-                        actions
-                        Spacer(minLength: 0)
-                    }
-                    .padding(.top, 24)
-                }
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationDestination(item: $selectedPaymentId) { paymentId in
-                // Reuse the standard tx-detail screen. The SwiftUI
-                // NavigationStack supplies the back button (nav bar left
-                // visible), so we don't drive TXDetailVCWrapper's own
-                // programmatic pop.
-                if let tx = resolvedByTxid[paymentId] {
+                if let paymentId = selectedPaymentId, let tx = resolvedByTxid[paymentId] {
                     // This contact's row leads back to this profile, not to
                     // another one stacked on top.
                     TXDetailVCWrapper(
@@ -104,16 +87,13 @@ struct ContactProfileSheet: View {
                         navigateBack: .constant(false),
                         contactReturn: .init(identityId: contact.contactIdentityId,
                                              goBack: { selectedPaymentId = nil }))
-                        .navigationTitle(NSLocalizedString("Transaction", comment: "DashPay Contacts"))
-                        .navigationBarTitleDisplayMode(.inline)
+                        .transition(.move(edge: .trailing))
+                } else {
+                    profile
+                        .transition(.move(edge: .leading))
                 }
             }
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button(NSLocalizedString("Done", comment: "")) { closeProfile() }
-                        .foregroundColor(.dash.blue)
-                }
-            }
+            .animation(.easeInOut(duration: 0.3), value: selectedPaymentId)
             .alert(
                 NSLocalizedString("Error", comment: ""),
                 isPresented: Binding(
@@ -191,6 +171,32 @@ struct ContactProfileSheet: View {
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
+        }
+    }
+
+
+    /// The contact's profile: header, identity id, message and actions.
+    private var profile: some View {
+        ScrollView {
+            VStack(spacing: 20) {
+                header
+                // Sibling of `header` rather than part of it: the
+                // header's tap toggles the contact-settings card, and
+                // this row's tap copies.
+                ContactIdentityIdView(
+                    identityId: contact.contactIdentityId,
+                    onCopy: { showToast(NSLocalizedString("Copied", comment: "")) })
+                if let message = contact.publicMessage, !message.isEmpty {
+                    Text(message)
+                        .font(.system(size: 14))
+                        .foregroundColor(.dash.secondaryText)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 32)
+                }
+                actions
+                Spacer(minLength: 0)
+            }
+            .padding(.top, 24)
         }
     }
 
@@ -702,7 +708,9 @@ struct ContactProfileSheet: View {
         .padding(.vertical, 6)
         .contentShape(Rectangle())
         .onTapGesture {
-            if resolvedTx != nil { selectedPaymentId = payment.id }
+            if resolvedTx != nil {
+                selectedPaymentId = payment.id
+            }
         }
     }
 
