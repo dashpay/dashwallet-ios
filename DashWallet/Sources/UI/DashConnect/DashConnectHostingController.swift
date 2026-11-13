@@ -33,7 +33,7 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
     /// creating one; without it the page does not ask.
     init(navigationController: UINavigationController, uri: String? = nil, dashPayModel: DWDashPayProtocol? = nil) {
         let viewModel = ConnectionsViewModel(
-            hasUsername: { dashPayModel.map(Self.hasUsername) ?? true })
+            hasUsername: { dashPayModel == nil || Self.activeIdentityHasUsername() })
         self.viewModel = viewModel
         pendingURI = uri
 
@@ -44,9 +44,19 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
             onTopUpIdentity: Self.topUp(over: navigationController)))
     }
 
-    /// A username counts once its registration completed.
-    private static func hasUsername(_ model: DWDashPayProtocol) -> Bool {
-        model.registrationCompleted
+    /// Whether the active identity owns a username. `registrationCompleted`
+    /// is not asked: it is one flag for every wallet on the network, so
+    /// another wallet's name would count. Until the identity's names are
+    /// read it is not asked to create one.
+    @MainActor
+    private static func activeIdentityHasUsername() -> Bool {
+        #if DASHPAY
+        let identity = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
+        guard identity.hasIdentity else { return false }
+        return !identity.usernames.isEmpty || !identity.namesAreLoaded
+        #else
+        return true
+        #endif
     }
 
     private static func createUsername(

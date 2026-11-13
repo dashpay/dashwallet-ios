@@ -187,6 +187,28 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         XCTAssertEqual(found, existing)
     }
 
+    /// A Refused attempt connected nothing: the sheet of a new request does
+    /// not offer it as the connection to sign in to again.
+    func testMakeConnectionRequestDoesNotCarryARefusedAttempt() async {
+        let refused = DAppConnection(
+            id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F",
+            name: "Yappr",
+            url: "yap.pr",
+            status: .refused,
+            updatedAt: Date(timeIntervalSince1970: 1_773_132_300)
+        )
+        let dataSource = PlatformDashConnectDataSource(
+            supportedNetwork: .testnet,
+            store: TestDashConnectStore(initialConnections: [refused]),
+            activeWalletIdHex: { "wallet" }
+        )
+
+        let request = await dataSource.makeConnectionRequest(from: MockDashConnectDataSource.sampleLoginRequest)
+
+        XCTAssertEqual(request.appContractId, refused.id)
+        XCTAssertNil(request.existingConnection)
+    }
+
     /// A sheet whose details could not be read says so: a failed read is
     /// not details with only the app's id, which would replace the ones
     /// shown.

@@ -1572,6 +1572,9 @@
 /* DashPay Invitations */
 "Create a username and say goodbye to numerical addresses" = "Create a username and say goodbye to numerical addresses";
 
+/* DashConnect approve sheet */
+"The wallet could not read the network's time to check this connection's expiry. Try again." = "The wallet could not read the network's time to check this connection's expiry. Try again.";
+
 /* DashConnect: a token purchase arrived and the username lookup failed */
 "This wallet could not check your username. Ask the app again." = "This wallet could not check your username. Ask the app again.";
 

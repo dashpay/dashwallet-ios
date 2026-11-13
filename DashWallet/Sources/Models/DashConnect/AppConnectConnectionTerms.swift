@@ -136,22 +136,27 @@ extension AppConnect {
         return budgets.contains(0) ? nil : budgets
     }
 
-    /// How the app's own keys share `total`: in proportion to what each asked
-    /// for (each at most `v2BudgetCapCredits`). A key that asked for nothing
-    /// weighs as much as the smallest ask, and all of them evenly when none
-    /// asked. The remainder of the division goes to the first key.
+    /// How the app's own keys share `total`: one credit each first, since
+    /// Platform needs a budget on every key, then the rest in proportion to
+    /// what each asked for (each at most `v2BudgetCapCredits`). A key that
+    /// asked for nothing weighs as much as the smallest ask, and all of them
+    /// evenly when none asked. The remainder of the division goes to the
+    /// first key. A `total` below the number of keys gives each nothing.
     /// TODO(dashconnect-app-key-split): the product rule for several app keys
     /// is not decided yet; this is the one place to change it.
     static func appKeyBudgets(of total: UInt64, requested: [UInt64]) -> [UInt64] {
         guard !requested.isEmpty else { return [] }
+        let count = UInt64(requested.count)
+        guard total >= count else { return [UInt64](repeating: 0, count: requested.count) }
+        let rest = total - count
         let asked = requested.map { min($0, v2BudgetCapCredits) }
         let smallest = asked.filter { $0 > 0 }.min() ?? 1
         let weights = asked.map { $0 == 0 ? smallest : $0 }
         // At most a few keys at the cap each: no overflow.
         let weightTotal = weights.reduce(UInt64(0), +)
         var shares = weights.map { weight -> UInt64 in
-            let product = total.multipliedFullWidth(by: weight)
-            return weightTotal.dividingFullWidth((high: product.high, low: product.low)).quotient
+            let product = rest.multipliedFullWidth(by: weight)
+            return 1 + weightTotal.dividingFullWidth((high: product.high, low: product.low)).quotient
         }
         let given = shares.reduce(UInt64(0), +)
         if given < total { shares[0] += total - given }
@@ -206,20 +211,12 @@ extension AppConnect {
             ? .approvalTermsExpired : .approvalOutOfDate
     }
 
-    /// `authorize` (the PIN prompt), then `resolve` (the context to sign
-    /// with), then `plan`'s terms checked again at `now()`: the prompt can
-    /// outlast the expiry the user chose (a date ends at 23:59:59 of its
-    /// day). A `nil` plan has no terms to check.
-    static func afterAuthorization<Resolved>(
-        of plan: GrantPlan?,
-        now: () -> Date,
-        authorize: () async throws -> Void,
-        resolve: () async throws -> Resolved
-    ) async throws -> Resolved {
-        try await authorize()
-        let resolved = try await resolve()
-        if let plan, let failure = termsFailure(of: plan, now: now()) { throw failure }
-        return resolved
+    /// `termsFailure` at the proved Platform time `platformTimeMs`, the clock
+    /// the plan's expiries were made from; `approvalTermsUncheckable`
+    /// without one: the phone's clock does not stand in for it.
+    static func termsFailure(of plan: GrantPlan, platformTimeMs: UInt64?) -> DashConnectPlatformError? {
+        guard let platformTimeMs else { return .approvalTermsUncheckable }
+        return termsFailure(of: plan, now: Date(timeIntervalSince1970: TimeInterval(platformTimeMs) / 1000))
     }
 
     /// The sum of every key's budget, saturating.
@@ -230,6 +227,11 @@ extension AppConnect {
         }
     }
 
+    /// The consensus code of Platform's `IdentityInsufficientBalanceError`:
+    /// a refused identity update that topping up the identity would let
+    /// through.
+    static let identityInsufficientBalanceCode: UInt32 = 40210
+
     /// Whether Platform refused an identity update because the identity's
     /// balance cannot pay for it. The identity update reports the broadcast
     /// failure as text ("Failed to broadcast identity update: … Insufficient
@@ -237,6 +239,8 @@ extension AppConnect {
     /// `insufficientIdentityCredits` is matched for when it carries one.
     static func isInsufficientBalance(_ error: Error) -> Bool {
         if case .insufficientIdentityCredits? = error as? PlatformWalletError { return true }
+        if case .networkRefused(let code)? = error as? DashConnectPlatformError,
+           code == identityInsufficientBalanceCode { return true }
         let text = "\(error) \(error.localizedDescription)".lowercased()
         return text.contains("insufficient identity") || text.contains("identityinsufficientbalance")
     }

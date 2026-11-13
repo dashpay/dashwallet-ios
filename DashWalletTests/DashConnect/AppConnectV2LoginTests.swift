@@ -956,3 +956,86 @@ private extension AppConnect.KeyBinding {
         return binding
     }
 }
+
+/// What the approval checks of the terms the user set on the sheet: the
+/// expiry at Platform's time, a budget on every key, and a balance failure
+/// that a top-up would fix.
+final class AppConnectConnectionTermsTests: XCTestCase {
+    private static let app = Data(repeating: 0xA1, count: 32)
+    private static let platformTime: UInt64 = 1_791_676_800_000
+    private static let hour: UInt64 = 60 * 60 * 1000
+
+    private static func plan(budgets: [UInt64?], expiresAt: UInt64) -> AppConnect.GrantPlan {
+        let auth = budgets.enumerated().map { index, budget -> AppConnect.AuthGrant in
+            let binding = AppConnectRequest.AuthBinding(
+                kind: .singleContract, securityLevel: .high, id: app,
+                totalBudget: budget, expiresAt: expiresAt, documentTypeName: nil)
+            return AppConnect.AuthGrant(bindingIndex: index, binding: binding, totalBudget: budget, expiresAt: expiresAt)
+        }
+        return AppConnect.GrantPlan(
+            appId: app, appEphemeralPubKeyHash: Data(repeating: 0xEE, count: 20), auth: auth, encryption: [],
+            connectionId: nil, identityHint: nil, createdAt: 0)
+    }
+
+    // MARK: Expiry at Platform's time
+
+    func testAnExpiryPastAtPlatformTimeIsRefusedWhateverThePhoneClockSays() {
+        let expiry = Self.platformTime + Self.hour
+        let plan = Self.plan(budgets: [1000], expiresAt: expiry)
+
+        XCTAssertNil(AppConnect.termsFailure(of: plan, platformTimeMs: Self.platformTime))
+        XCTAssertEqual(AppConnect.termsFailure(of: plan, platformTimeMs: expiry), .approvalTermsExpired)
+        XCTAssertEqual(AppConnect.termsFailure(of: plan, platformTimeMs: expiry + 1), .approvalTermsExpired)
+    }
+
+    func testAnExpiryIsNotCheckedAgainstThePhoneClockWithoutPlatformTime() {
+        let plan = Self.plan(budgets: [1000], expiresAt: Self.platformTime + Self.hour)
+
+        XCTAssertEqual(AppConnect.termsFailure(of: plan, platformTimeMs: nil), .approvalTermsUncheckable)
+    }
+
+    // MARK: A budget on every key
+
+    func testEveryAppKeyGetsABudgetHoweverUnevenTheAsks() {
+        let cap = AppConnect.v2BudgetCapCredits
+        let shares = AppConnect.appKeyBudgets(of: cap, requested: [cap, 1])
+
+        XCTAssertEqual(shares.count, 2)
+        XCTAssertTrue(shares.allSatisfy { $0 > 0 }, "\(shares)")
+        XCTAssertEqual(shares.reduce(0, +), cap)
+    }
+
+    func testAPlanOfUnevenAsksCanBeApprovedFromTheSmallestLimit() {
+        let cap = AppConnect.v2BudgetCapCredits
+        let plan = Self.plan(budgets: [cap, 1], expiresAt: Self.platformTime + Self.hour)
+
+        XCTAssertNotNil(AppConnect.keyBudgets(for: plan, limit: cap))
+        XCTAssertEqual(AppConnect.smallestFundingLimit(for: plan), 2)
+        XCTAssertNil(AppConnect.keyBudgets(for: plan, limit: 1), "one credit cannot give two keys a budget")
+    }
+
+    func testTheSplitStillFollowsTheAsks() {
+        XCTAssertEqual(AppConnect.appKeyBudgets(of: 3002, requested: [2000, 1000]), [2001, 1001])
+        XCTAssertEqual(AppConnect.appKeyBudgets(of: 10, requested: [0, 0]), [5, 5])
+    }
+
+    // MARK: Balance
+
+    func testAConsensusRefusalForTheBalanceOffersATopUp() {
+        let refusal = DashConnectPlatformError.networkRefused(code: AppConnect.identityInsufficientBalanceCode)
+
+        XCTAssertTrue(AppConnect.isInsufficientBalance(refusal))
+        XCTAssertFalse(AppConnect.isInsufficientBalance(DashConnectPlatformError.networkRefused(code: 40_100)))
+        XCTAssertEqual(PlatformDashConnectDataSource.approvalFailure(after: refusal) as? DashConnectPlatformError, refusal)
+    }
+
+    func testABalanceFailureAfterTheUpdateStaysABalanceFailure() {
+        let failure = NSError(
+            domain: "test", code: 1, userInfo: [NSLocalizedDescriptionKey: "Insufficient identity balance"])
+
+        let returned = PlatformDashConnectDataSource.approvalFailure(after: failure)
+
+        XCTAssertFalse(returned is AppConnect.Refusal, "a refusal would hide the top-up")
+        XCTAssertTrue(AppConnect.isInsufficientBalance(returned))
+    }
+}

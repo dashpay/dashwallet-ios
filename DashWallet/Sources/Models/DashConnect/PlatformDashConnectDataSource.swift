@@ -52,6 +52,9 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
     /// gone by while the PIN prompt was up). Not shown: the approve sheet
     /// says why itself (`ConnectionsViewModel.approveDisabledReason`).
     case approvalTermsExpired
+    /// The approval could not read Platform's time to check the terms'
+    /// expiry against. Nothing was signed; trying again reads it again.
+    case approvalTermsUncheckable
     /// A token purchase that came while the wallet has no username, refused
     /// before anything about it is read from the network.
     case tokenPurchaseNeedsUsername
@@ -149,6 +152,10 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
                 comment: "DashConnect")
         case .approvalTermsExpired:
             return "The connection's expiry passed before the approval was signed."
+        case .approvalTermsUncheckable:
+            return NSLocalizedString(
+                "The wallet could not read the network's time to check this connection's expiry. Try again.",
+                comment: "DashConnect approve sheet")
         case .tokenPurchaseNeedsUsername:
             return NSLocalizedString(
                 "Create a username to buy tokens in apps, then ask the app again.",
@@ -567,7 +574,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         do {
             context = try await requireContext()
         } catch {
-            let existingConnection = await shownRow(id: fallback.appContractId)
+            // A Refused attempt connected nothing.
+            let existingConnection = await shownRow(id: fallback.appContractId).flatMap { $0.status == .refused ? nil : $0 }
             return ConnectionRequest(
                 loginRequest: loginRequest,
                 appLabel: fallback.appLabel,
@@ -585,8 +593,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let ownIntent = context.stores.intents.load().contains {
             $0.appId.toBase58String() == fallback.appContractId && $0.identityId == context.identityId && $0.closedAt == nil
         }
+        // A Refused attempt connected nothing.
         let existingConnection = rows(in: context.stores).first {
-            $0.id == fallback.appContractId && ($0.seenOn.isEmpty || $0.seenOn.contains(me) || ownIntent)
+            $0.id == fallback.appContractId && $0.status != .refused
+                && ($0.seenOn.isEmpty || $0.seenOn.contains(me) || ownIntent)
         }
 
         // Which login this network gets is settled here, so the sheet can
@@ -910,42 +920,36 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             Self.logger.error("🔗 DASHCONNECT :: the network now answers with another login than the one approved")
             throw DashConnectPlatformError.approvalOutOfDate
         }
-        // The plan carries the terms the user set on the sheet: whatever the
-        // sheet did, every key needs a budget and an expiry in bounds.
-        if let failure = AppConnect.termsFailure(of: plan, now: now()) {
-            throw failure
-        }
         // A request answered before is refused before the PIN is asked.
         let (answeredSnapshot, _) = try await identitySnapshot(context: context)
+        // The plan carries the terms the user set on the sheet: whatever the
+        // sheet did, every key needs a budget and an expiry in bounds, at
+        // Platform's time.
+        if let failure = AppConnect.termsFailure(of: plan, platformTimeMs: answeredSnapshot.platformTime) {
+            throw failure
+        }
         let shownContext = context
-        context = try await AppConnect.afterAuthorization(
-            of: plan,
-            now: now,
-            authorize: { [self] in
-                try await Self.authorizeUnlessAnswered(
-                    answered: { [self] in
-                        await answeredState(
-                            of: appConnect.request, plan: plan, snapshot: answeredSnapshot, context: shownContext)
-                    },
-                    authorize: { [self] in
-                        do {
-                            try await authorize()
-                        } catch {
-                            Self.logger.error("🔗 DASHCONNECT :: authorization failed — \(AppConnectWriteExecutor.logDescription(of: error), privacy: .public)")
-                            throw error
-                        }
-                    })
+        try await Self.authorizeUnlessAnswered(
+            answered: { [self] in
+                await answeredState(
+                    of: appConnect.request, plan: plan, snapshot: answeredSnapshot, context: shownContext)
             },
-            resolve: {
-                // The PIN prompt can outlast a wallet or identity switch:
-                // sign with what is active now, and only if it is still the
-                // identity that was shown.
+            authorize: { [self] in
                 do {
-                    return try await contextAfterAuthorization(matching: shownContext)
-                } catch DashConnectPlatformError.walletChanged {
-                    throw DashConnectPlatformError.approvalOutOfDate
+                    try await authorize()
+                } catch {
+                    Self.logger.error("🔗 DASHCONNECT :: authorization failed — \(AppConnectWriteExecutor.logDescription(of: error), privacy: .public)")
+                    throw error
                 }
             })
+        // The PIN prompt can outlast a wallet or identity switch: sign with
+        // what is active now, and only if it is still the identity that was
+        // shown.
+        do {
+            context = try await contextAfterAuthorization(matching: shownContext)
+        } catch DashConnectPlatformError.walletChanged {
+            throw DashConnectPlatformError.approvalOutOfDate
+        }
         Self.logger.info("🔗 DASHCONNECT :: authorized; App Connect request v2")
         return try await approveAppConnectV2Login(appConnect, plan: plan, consent: consent, context: context)
     }
@@ -1336,6 +1340,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let (snapshot, currentPublicKeys) = try await identitySnapshot(context: context)
         // The app stops looking for an answer ten minutes after it asked.
         try Self.requireFreshRequest(age: uri.request.age(blockTimeMs: snapshot.platformTime))
+        // The PIN prompt can outlast the expiry the user chose (a date ends
+        // at 23:59:59 of its day): checked again at Platform's time now,
+        // before any key is made.
+        if let failure = AppConnect.termsFailure(of: plan, platformTimeMs: snapshot.platformTime) {
+            throw failure
+        }
         // A request is answered at most once, by any identity of the wallet:
         // approving it again is refused, whether the first attempt answered
         // it or stopped. A sealed response is never published by a later
@@ -1558,10 +1568,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     }
 
     /// The error an approval that stopped ends with: a refusal that is for
-    /// good stays typed, so the caller can tell; anything else spends the
+    /// good, and a failure for the identity's balance, stay typed, so the
+    /// caller can tell them and offer a top-up; anything else spends the
     /// request.
     static func approvalFailure(after error: Error) -> Error {
-        isNetworkRefused(error) ? error : spentRequest(after: error)
+        isNetworkRefused(error) || AppConnect.isInsufficientBalance(error) ? error : spentRequest(after: error)
     }
 
     private static func isNetworkRefused(_ error: Error) -> Bool {
