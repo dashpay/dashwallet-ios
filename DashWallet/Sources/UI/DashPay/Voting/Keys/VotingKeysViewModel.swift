@@ -78,6 +78,15 @@ final class VotingKeysViewModel: ObservableObject {
 
     var rows: [VoterNode] { source.votableNodes }
 
+    /// What the screen watches to call ``rowsChanged()``: the rows, and
+    /// whether the list is complete, which decides what a hidden tick keeps.
+    struct RowsState: Equatable {
+        let ids: [Data]
+        let resolution: VotingStore.NodeResolution
+    }
+
+    var rowsState: RowsState { RowsState(ids: rows.map(\.proTxHash), resolution: source.nodeResolution) }
+
     func isTicked(_ node: VoterNode) -> Bool {
         ticked.contains(node.proTxHash)
     }
