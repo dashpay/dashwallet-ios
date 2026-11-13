@@ -19,6 +19,9 @@
 /* Contested usernames */
 "%1$@ at %2$@" = "%1$@ at %2$@";
 
+/* DashConnect connection sheet: what is left of a key's budget, then the budget; amounts with units */
+"%1$@ left of %2$@" = "%1$@ left of %2$@";
+
 /* Username marketplace: listing success — name, then price */
 "%1$@ listed for %2$@ DASH" = "Nakalista ang %1$@ sa halagang %2$@ DASH";
 
@@ -27,6 +30,9 @@
 
 /* DashConnect App Connect v2: what a key can do, a date */
 "%1$@, with no limit on spending your identity's credits, until %2$@" = "%1$@, with no limit on spending your identity's credits, until %2$@";
+
+/* DashConnect connection sheet: a key's name, then its budget */
+"%1$@: %2$@" = "%1$@: %2$@";
 
 /* Voting */
 "%1$d already voted “%2$@” and will be left as they are." = "%1$d already voted “%2$@” and will be left as they are.";
@@ -651,6 +657,9 @@
 /* DashConnect connection sheet */
 "App ID" = "App ID";
 
+/* DashConnect connection sheet: a key's budget line */
+"App key" = "App key";
+
 /* AboutDash */
 "App version" = "App version";
 
@@ -1267,6 +1276,9 @@
 /* DashSpend */
 "Connection Error" = "Connection Error";
 
+/* DashConnect connection sheet: the date its keys expire */
+"Connection expiry" = "Connection expiry";
+
 /* DashConnect */
 "Connections" = "Connections";
 
@@ -1680,6 +1692,9 @@
 
 /* DashPay FAQ */
 "DashPay is Dash's social payments experience, built on Dash Platform. You register a username, add other users as contacts, and pay them by name — no more copying addresses." = "Ang DashPay ang panlipunang karanasan sa pagbabayad ng Dash, nakabatay sa Dash Platform. Magrerehistro ka ng username, magdadagdag ng ibang user bilang kontak, at magbabayad sa kanila sa pangalan — wala nang kopyahang address.";
+
+/* DashConnect connection sheet: a key's budget line */
+"DashPay profile key" = "DashPay profile key";
 
 /* DashPay intro: pitch paragraph */
 "DashPay replaces long cryptic addresses with usernames. Add friends as contacts, send money to a name, and keep every payment organized by person." = "Pinapalitan ng DashPay ang mahahaba't magulong address ng username. Idagdag ang mga kaibigan bilang kontak, magpadala ng pera sa isang pangalan, at panatilihing nakaayos ayon sa tao ang bawat bayad.";
@@ -2277,6 +2292,9 @@
 /* Identity top-up sheet — linkability warning for transparent-side sources */
 "Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance." = "Ang pagpondo mula sa transparent na balanse ay hayagang iniuugnay ang mga barya na iyon sa iyong pagkakakilanlan sa Dash chain. Para sa privacy, magbayad mula sa iyong balanseng Shielded.";
 
+/* DashConnect connection sheet */
+"Funding left" = "Funding left";
+
 /* Masternode unban */
 "Funds are on the way…" = "Funds are on the way…";
 
@@ -2464,6 +2482,9 @@
 
 /* Destination of an identity funding asset lock */
 "Identity credits" = "Mga kredito ng pagkakakilanlan";
+
+/* DashConnect connection sheet */
+"Identity funding limits" = "Identity funding limits";
 
 /* SDK identity profile sheet */
 "Identity ID" = "Identity ID";
@@ -3079,6 +3100,9 @@
 /* Usernames */
 "Maximum %ld characters" = "Maximum %ld characters";
 
+/* DashConnect connection sheet: an amount with its unit, e.g. 0.5 DASH */
+"Maximum of %@" = "Maximum of %@";
+
 /* DashConnect token purchase */
 "Maximum price" = "Maximum price";
 
@@ -3328,6 +3352,9 @@
 /* Send blocked while the device is offline */
 "No internet connection. Reconnect to the network and try again." = "No internet connection. Reconnect to the network and try again.";
 
+/* DashConnect connection sheet: a key with no spending limit */
+"No limit" = "No limit";
+
 /* Explore Dash */
 "No locations found." = "No locations found.";
 
@@ -3555,6 +3582,9 @@
 
 /* Masternodes */
 "Not in wallet history" = "Wala sa kasaysayan ng wallet";
+
+/* DashConnect connection sheet */
+"Not known" = "Not known";
 
 /* Username marketplace: own unlisted name */
 "Not listed for sale" = "Hindi nakalista para ibenta";
@@ -4681,6 +4711,9 @@
 
 /* No comment provided by engineer. */
 "See on Uphold" = "Tingnan sa Uphold";
+
+/* DashConnect connection sheet: the app's name */
+"See what %@ will be able to do" = "See what %@ will be able to do";
 
 /* DashConnect connection sheet: the app's name */
 "See what %@ will NOT have access to" = "See what %@ will NOT have access to";
@@ -6784,6 +6817,9 @@
 
 /* DashPay FAQ */
 "What is DashPay?" = "Ano ang DashPay?";
+
+/* DashConnect connection sheet */
+"What is left of the keys' budgets could not be read." = "What is left of the keys' budgets could not be read.";
 
 /* Usernames */
 "What is username voting?" = "Ano ang pagboto ng username?";
