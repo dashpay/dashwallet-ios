@@ -2700,7 +2700,10 @@
 "Identity already found" = "Identity already found";
 
 /* External send */
-"Identity can't pay a Shielded address yet" = "Identity can't pay a Shielded address yet";
+"Identity can't pay a Shielded address until Shielded is set up" = "Identity can't pay a Shielded address until Shielded is set up";
+
+/* External send */
+"Identity can't pay this wallet's own Shielded address" = "Identity can't pay this wallet's own Shielded address";
 
 /* External send */
 "Identity can't top up itself" = "Identity can't top up itself";

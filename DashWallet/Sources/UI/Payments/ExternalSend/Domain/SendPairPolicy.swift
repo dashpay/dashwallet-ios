@@ -38,6 +38,14 @@ struct SendBalances: Equatable {
 struct SendPairFacts: Equatable {
     /// The Current identity's ID; nil when the wallet has none.
     let ownIdentityID: String?
+    /// The raw 43-byte Orchard address of the wallet's bound Shielded account (`shieldedDefaultAddress`); nil when
+    /// the wallet has no bound Shielded account.
+    let ownShieldedRaw43: Data?
+
+    init(ownIdentityID: String?, ownShieldedRaw43: Data? = nil) {
+        self.ownIdentityID = ownIdentityID
+        self.ownShieldedRaw43 = ownShieldedRaw43
+    }
 }
 
 enum UnavailableReason: Equatable, Hashable {
@@ -45,7 +53,9 @@ enum UnavailableReason: Equatable, Hashable {
     case coreToScriptFormPlatformAddress
     case platformToScriptFormPlatformAddress
     case identityToOwnIdentity
-    case notSupportedYet
+    /// The recipient shield records the payment under the wallet's Shielded account, so it needs one bound.
+    case identityWithoutShieldedAccount
+    case identityToOwnShieldedAddress
     case paymentRequestCoreOnly
 
     var localizedMessage: String {
@@ -58,8 +68,11 @@ enum UnavailableReason: Equatable, Hashable {
             return NSLocalizedString("Platform can't pay this kind of Platform address", comment: "External send")
         case .identityToOwnIdentity:
             return NSLocalizedString("Identity can't top up itself", comment: "External send")
-        case .notSupportedYet:
-            return NSLocalizedString("Identity can't pay a Shielded address yet", comment: "External send")
+        case .identityWithoutShieldedAccount:
+            return NSLocalizedString("Identity can't pay a Shielded address until Shielded is set up",
+                                     comment: "External send")
+        case .identityToOwnShieldedAddress:
+            return NSLocalizedString("Identity can't pay this wallet's own Shielded address", comment: "External send")
         case .paymentRequestCoreOnly:
             return NSLocalizedString("A payment request can only be paid from Core", comment: "External send")
         }
@@ -77,7 +90,8 @@ struct StartingSource: Equatable {
     let sourceChanged: Bool
 }
 
-/// The one rule set for every source and destination pair (ADR-0062, ADR-0041). Pure: no network, no state.
+/// The one rule set for every source and destination pair (ADR-0062; Identity to Shielded per the feature's ADR-0012,
+/// which supersedes ADR-0041). Pure: no network, no state.
 enum SendPairPolicy {
     private static let autoPickOrder: [SendSource] = [.core, .shielded, .platform]
 
@@ -112,7 +126,10 @@ enum SendPairPolicy {
     private static func decideFromIdentity(_ destination: Destination, _ facts: SendPairFacts) -> SendPairDecision {
         switch destination.type {
         case .coreAddress, .paymentRequest: return .route(.identityToCore)
-        case .shieldedAddress: return .unavailable(.notSupportedYet)
+        case .shieldedAddress:
+            guard let ownRaw43 = facts.ownShieldedRaw43 else { return .unavailable(.identityWithoutShieldedAccount) }
+            return isShieldedAddress(destination, ownRaw43)
+                ? .unavailable(.identityToOwnShieldedAddress) : .route(.identityToShielded)
         case .platformAddress: return .route(.identityToPlatform)
         case .identityID:
             let own = isOwnIdentity(destination, facts)
@@ -177,5 +194,9 @@ enum SendPairPolicy {
 
     private static func isOwnIdentity(_ destination: Destination, _ facts: SendPairFacts) -> Bool {
         facts.ownIdentityID == destination.text
+    }
+
+    private static func isShieldedAddress(_ destination: Destination, _ raw43: Data) -> Bool {
+        DashAddressClassifier.decodeBech32m(destination.text)?.form == .shielded(raw43: raw43)
     }
 }

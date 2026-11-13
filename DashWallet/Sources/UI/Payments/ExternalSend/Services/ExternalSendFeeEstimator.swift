@@ -43,7 +43,7 @@ extension SendRoute {
     var hasAmountIndependentFee: Bool {
         switch self {
         case .platformToCore, .platformToPlatform, .platformToIdentity, .identityToCore, .identityToPlatform,
-             .identityToIdentity:
+             .identityToIdentity, .identityToShielded:
             return true
         case .coreToCore, .coreToShielded, .coreToPlatform, .coreToIdentity, .shieldedToCore, .shieldedToShielded,
              .shieldedToPlatform, .shieldedToIdentity, .platformToShielded:
@@ -74,6 +74,9 @@ struct ExternalSendFeeEstimator: SendFeeEstimating {
             switch route {
             case .coreToShielded, .coreToPlatform, .coreToIdentity:
                 return try await assetLockEstimate(route: route, amount: amount)
+            case .identityToShielded:
+                // TODO(identity-to-shielded): the recipient shield's fee; until then Send cannot continue.
+                return .unavailable
             default:
                 guard let fee = try await fee(route: route, amount: amount), fee > 0 else { return .unavailable }
                 return .fee(fee)
@@ -98,8 +101,8 @@ struct ExternalSendFeeEstimator: SendFeeEstimating {
         switch route {
         case .coreToCore:
             return try await sources.coreSendFeeDuffs(amountDuffs: amount)
-        case .coreToShielded, .coreToPlatform, .coreToIdentity:
-            preconditionFailure("\(route) is estimated by assetLockEstimate")
+        case .coreToShielded, .coreToPlatform, .coreToIdentity, .identityToShielded:
+            preconditionFailure("\(route) is estimated in estimate(route:amount:)")
         case .shieldedToCore, .shieldedToShielded, .shieldedToPlatform, .shieldedToIdentity:
             return try await shieldedSourceFee(route: route)
         case .platformToCore:

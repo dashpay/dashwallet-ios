@@ -79,6 +79,14 @@ final class SendAmountViewModelTests: XCTestCase {
         }
     }
 
+    private final class FakeShieldedAccount: OwnShieldedAddressReading {
+        var raw43: Data? = Data(repeating: 0x5a, count: 43)
+
+        func ownShieldedAddress() async -> Data? {
+            raw43
+        }
+    }
+
     private final class FakeEstimator: SendFeeEstimating {
         var defaultResult: SendFeeEstimate = .fee(1_000)
         var results: [SendRoute: SendFeeEstimate] = [:]
@@ -202,6 +210,7 @@ final class SendAmountViewModelTests: XCTestCase {
 
     private let balances = FakeBalances()
     private let identity = FakeIdentity()
+    private let shieldedAccount = FakeShieldedAccount()
     private let estimator = FakeEstimator()
     private let planner = FakeMaxPlanner()
     private let converter = FakeConverter()
@@ -226,6 +235,7 @@ final class SendAmountViewModelTests: XCTestCase {
                                      recipient: recipient,
                                      balances: balances, feeEstimator: estimator, maxPlanner: planner,
                                      converter: converter, currentIdentity: identity,
+                                     ownShieldedAddress: shieldedAccount,
                                      initialRestoreSync: Just(restoreSyncBlocks).eraseToAnyPublisher())
         vm.onContinue = { [unowned self] request in continued.append(request) }
         if load { await vm.load() }
@@ -1512,6 +1522,37 @@ final class SendAmountViewModelTests: XCTestCase {
         XCTAssertEqual(continued.last?.amount, expected)
         XCTAssertEqual(continued.last?.isMax, true)
         XCTAssertEqual(continued.last?.route, .identityToCore)
+    }
+
+    /// ADR-0012: the Identity source pays someone else's Shielded address; its Max is the same Identity rule with the
+    /// recipient shield's fee (AC-09).
+    func testIdentityToShieldedMaxIsTheCreditsLessTheShieldFeeAndTheDashPayReserve() async {
+        let shieldFeeCredits: UInt64 = 150_000_000
+        estimator.results[.identityToShielded] = .fee(shieldFeeCredits)
+        let dest = destination(.shieldedAddress, text: "shielded-" + coreText)
+        let vm = await makeVM(dest, pinned: .identity)
+        XCTAssertEqual(vm.source, .identity)
+        XCTAssertNil(vm.sourceChangedNotice)
+        XCTAssertEqual(vm.route, .identityToShielded)
+        XCTAssertEqual(vm.fee, shieldFeeCredits)
+
+        await vm.tapMax()
+
+        let expected = AmountRules.dashValue(of: identityCredits - shieldFeeCredits - reserveCredits)
+        XCTAssertEqual(vm.amountDuffs, expected)
+        XCTAssertTrue(planner.requested.isEmpty, "the Identity Max is AmountRules.identityMax, not a route planner")
+        XCTAssertEqual(vm.state, .ready)
+        await vm.proceed()
+        XCTAssertEqual(continued.last, SendAmountRequest(route: .identityToShielded, destination: dest,
+                                                         amount: expected, isMax: true))
+    }
+
+    func testAPinnedIdentityWithoutAShieldedAccountIsReplacedWithTheReason() async {
+        shieldedAccount.raw43 = nil
+        let vm = await makeVM(destination(.shieldedAddress, text: "shielded-" + coreText), pinned: .identity)
+        XCTAssertEqual(vm.source, .core)
+        XCTAssertEqual(vm.sourceChangedNotice, "Identity can't pay a Shielded address until Shielded is set up, "
+            + "so the source was changed to Core.")
     }
 
     /// A Max carried from Core to Identity is planned with the Identity fee in credits, not the Core fee in duffs,
