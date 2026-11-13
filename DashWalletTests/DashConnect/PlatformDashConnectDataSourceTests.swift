@@ -1450,6 +1450,25 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
         XCTAssertNil(viewModel.shownFundingLines)
     }
 
+    /// A refresh whose funding read ends with nothing to read (no key gives
+    /// the app access any more, or no identity read) clears the lines and
+    /// any failure the earlier read showed.
+    func testAFundingRefreshWithNothingToReadClearsTheLines() async {
+        let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)])
+        spy.funding = .read([KeyFunding(isProfileKey: false, totalBudget: 1000, remaining: 400)])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { !viewModel.connections.isEmpty }
+        viewModel.showConnection(viewModel.rows[0])
+        await waitUntil { viewModel.shownFundingLines != nil }
+
+        spy.funding = .notRead
+        // The same app and status, published again: the sheet reads anew.
+        spy.sendRows([DAppConnection(
+            id: "app", name: "app", url: "app.app", status: .active, updatedAt: Date(timeIntervalSince1970: 20))])
+        await waitUntil { viewModel.shownFundingLines == nil }
+        XCTAssertFalse(viewModel.shownFundingFailed)
+    }
+
     /// A refresh of a sheet's details that fails keeps the details shown
     /// and says they could not be read again.
     func testARefreshThatFailsKeepsTheDetailsAndSaysSo() async {
@@ -1495,16 +1514,16 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
         let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)])
         spy.details = ConnectionDetails(
             appId: "app", identityId: "identity", username: nil, access: nil,
-            connectedAt: Date(timeIntervalSince1970: 1_000),
-            keyFunding: [
-                KeyFunding(isProfileKey: false, totalBudget: 50_000_000_000, remaining: 20_000_000_000),
-                KeyFunding(isProfileKey: true, totalBudget: 200_000_000, remaining: nil),
-                KeyFunding(isProfileKey: false, totalBudget: nil, remaining: nil),
-            ])
+            connectedAt: Date(timeIntervalSince1970: 1_000))
+        spy.funding = .read([
+            KeyFunding(isProfileKey: false, totalBudget: 50_000_000_000, remaining: 20_000_000_000),
+            KeyFunding(isProfileKey: true, totalBudget: 200_000_000, remaining: nil),
+            KeyFunding(isProfileKey: false, totalBudget: nil, remaining: nil),
+        ])
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
         await waitUntil { !viewModel.connections.isEmpty }
         viewModel.showConnection(viewModel.rows[0])
-        await waitUntil { viewModel.shownDetails != nil }
+        await waitUntil { viewModel.shownFundingLines != nil }
         let lines = viewModel.shownFundingLines
         XCTAssertEqual(lines?.map(\.title), ["App key", "DashPay profile key", "App key"])
         let dash: (UInt64) -> String = PlatformCreditsFormatter.dashString
