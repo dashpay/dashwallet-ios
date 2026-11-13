@@ -2235,7 +2235,6 @@
 		225383001C694D7400968BEE /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 		226154FFBC684D1FDFCA35E4 /* Pods-DashWalletScreenshotsUITests.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testflight.xcconfig"; path = "Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testflight.xcconfig"; sourceTree = "<group>"; };
 		22B6A4471C0E963900673913 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = usr/lib/libbz2.tbd; sourceTree = SDKROOT; };
-		22D3613C1C56F2CD0057CF76 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		22F45A0A1C30EAB700B07A15 /* BRAWKeypad.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRAWKeypad.swift; sourceTree = "<group>"; };
 		24DC91C11E382E22D1C17F05 /* DWParsedPaymentURI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DWParsedPaymentURI.swift; sourceTree = "<group>"; };
 		2537FCF252FB799EB4103150 /* Pods-dashwallet.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testnet.xcconfig"; path = "Target Support Files/Pods-dashwallet/Pods-dashwallet.testnet.xcconfig"; sourceTree = "<group>"; };
@@ -7216,7 +7215,6 @@
 				FBF3F42C1E42B00C00C7248E /* UIKit.framework */,
 				FBF3F42A1E42AF8F00C7248E /* QuartzCore.framework */,
 				225383001C694D7400968BEE /* CoreLocation.framework */,
-				22D3613C1C56F2CD0057CF76 /* libsqlite3.tbd */,
 				222E7F571C46E9BE009AB45D /* SystemConfiguration.framework */,
 				222E7F551C46E9B8009AB45D /* Security.framework */,
 				222040C51C1A1940005CE1C3 /* WebKit.framework */,
@@ -12222,7 +12220,6 @@
 					"-l\"iconv\"",
 					"-l\"nanopb\"",
 					"-l\"resolv\"",
-					"-l\"sqlite3\"",
 					"-l\"z\"",
 					"-framework",
 					"\"BackgroundTasks\"",
@@ -12350,7 +12347,6 @@
 					"-l\"iconv\"",
 					"-l\"nanopb\"",
 					"-l\"resolv\"",
-					"-l\"sqlite3\"",
 					"-l\"z\"",
 					"-framework",
 					"\"BackgroundTasks\"",
@@ -12689,7 +12685,6 @@
 					"-l\"iconv\"",
 					"-l\"nanopb\"",
 					"-l\"resolv\"",
-					"-l\"sqlite3\"",
 					"-l\"z\"",
 					"-framework",
 					"\"BackgroundTasks\"",
@@ -12806,7 +12801,6 @@
 					"-l\"iconv\"",
 					"-l\"nanopb\"",
 					"-l\"resolv\"",
-					"-l\"sqlite3\"",
 					"-l\"z\"",
 					"-framework",
 					"\"BackgroundTasks\"",
@@ -12934,7 +12928,6 @@
 					"-l\"iconv\"",
 					"-l\"nanopb\"",
 					"-l\"resolv\"",
-					"-l\"sqlite3\"",
 					"-l\"z\"",
 					"-framework",
 					"\"BackgroundTasks\"",
@@ -13061,7 +13054,6 @@
 					"-l\"iconv\"",
 					"-l\"nanopb\"",
 					"-l\"resolv\"",
-					"-l\"sqlite3\"",
 					"-l\"z\"",
 					"-framework",
 					"\"BackgroundTasks\"",
@@ -13251,7 +13243,6 @@
 					"-l\"iconv\"",
 					"-l\"nanopb\"",
 					"-l\"resolv\"",
-					"-l\"sqlite3\"",
 					"-l\"z\"",
 					"-framework",
 					"\"BackgroundTasks\"",
@@ -13548,7 +13539,6 @@
 					"-l\"iconv\"",
 					"-l\"nanopb\"",
 					"-l\"resolv\"",
-					"-l\"sqlite3\"",
 					"-l\"z\"",
 					"-framework",
 					"\"BackgroundTasks\"",
