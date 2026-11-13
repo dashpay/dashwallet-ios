@@ -495,7 +495,7 @@ private enum ConnectionSheetPreview {
             id: appId, name: "Yappr", url: "yap.pr", status: .disconnected, connection: nil,
             entry: DisconnectedConnection(
                 id: appId, name: "Yappr", url: "yap.pr", identityId: details.identityId, username: "alice",
-                disconnectedAt: Date(timeIntervalSince1970: 1_794_000_000), access: access,
+                disconnectedAt: Date(timeIntervalSince1970: 1_794_000_000), access: details.access,
                 connectedAt: Date(timeIntervalSince1970: 1_793_000_000)),
             scope: nil)
     }
@@ -570,5 +570,7 @@ private enum ConnectionSheetPreview {
 #Preview("Disconnected") {
     ConnectionSheetPreview.sheet(
         ConnectionSheetPreview.disconnected, details: ConnectionSheetPreview.details,
-        granted: DashConnectPermissionText.granted(ConnectionSheetPreview.access.granted, appLabel: "Yappr"))
+        granted: ConnectionSheetPreview.details.access.map {
+            DashConnectPermissionText.granted($0.granted, appLabel: "Yappr")
+        })
 }
