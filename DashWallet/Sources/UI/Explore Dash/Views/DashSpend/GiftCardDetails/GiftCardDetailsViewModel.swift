@@ -318,15 +318,14 @@ class GiftCardDetailsViewModel: ObservableObject {
                         pin: response.cardPin
                     )
 
-                    if !cardNumber.isEmpty {
-                        let cleanNumber = cardNumber.replacingOccurrences(of: " ", with: "")
-                            .replacingOccurrences(of: "-", with: "")
-                        await giftCardsDAO.updateBarcode(
-                            txId: txId,
-                            value: cleanNumber,
-                            format: "CODE128"
-                        )
-                    }
+                    let cleanNumber = cardNumber.replacingOccurrences(of: " ", with: "")
+                        .replacingOccurrences(of: "-", with: "")
+                    let barcodeValue = response.barcodeContent.flatMap { $0.isEmpty ? nil : $0 } ?? cleanNumber
+                    await giftCardsDAO.updateBarcode(
+                        txId: txId,
+                        value: barcodeValue,
+                        format: normalizeBarcodeFormat(response.barcodeType).rawValue
+                    )
                     stopTicker()
                     DWLogger.log("DashSpend: Gift card details fetched successfully")
                 } else if let redeemUrl = response.redeemUrl, !redeemUrl.isEmpty {
@@ -469,7 +468,7 @@ class GiftCardDetailsViewModel: ObservableObject {
                     .replacingOccurrences(of: "-", with: "")
 
                 var barcodeValue = cleanCode
-                var barcodeFormat = "CODE_128"
+                var barcodeFormat = BarcodeFormat.code128.rawValue
 
                 if let barcodeLink = card.barcodeLink, !barcodeLink.isEmpty {
                     if let parsed = parseBarcodePayload(from: barcodeLink) {
@@ -585,22 +584,28 @@ class GiftCardDetailsViewModel: ObservableObject {
         let normalizedValue = rawValue
             .replacingOccurrences(of: " ", with: "")
             .replacingOccurrences(of: "-", with: "")
-        return (normalizedValue, normalizeBarcodeFormat(formatCandidate))
+        return (normalizedValue, normalizeBarcodeFormat(formatCandidate).rawValue)
     }
 
-    private func normalizeBarcodeFormat(_ rawFormat: String?) -> String {
-        let normalized = (rawFormat ?? "CODE_128")
+    private func normalizeBarcodeFormat(_ rawFormat: String?) -> BarcodeFormat {
+        guard let rawFormat, !rawFormat.isEmpty else { return .code128 }
+        let normalized = rawFormat
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .uppercased()
             .replacingOccurrences(of: "-", with: "_")
 
+        if let format = BarcodeFormat(rawValue: normalized), format != .unknown {
+            return format
+        }
         switch normalized {
-        case "CODE128", "CODE_128": return "CODE_128"
-        case "QRCODE", "QR_CODE", "QR": return "QR_CODE"
-        case "PDF417", "PDF_417": return "PDF_417"
-        case "AZTEC", "AZTEC_CODE": return "AZTEC"
-        case "DATAMATRIX", "DATA_MATRIX": return "DATA_MATRIX"
-        default: return "CODE_128"
+        case "CODE128": return .code128
+        case "CODE39": return .code39
+        case "CODE93": return .code93
+        case "QR", "QRCODE": return .qrCode
+        case "PDF417": return .pdf417
+        case "AZTEC_CODE": return .aztec
+        case "DATAMATRIX": return .dataMatrix
+        default: return .code128
         }
     }
 
@@ -626,31 +631,22 @@ class GiftCardDetailsViewModel: ObservableObject {
 
     private func imageFromBarcode(value: String?, format: String?) -> UIImage? {
         guard let value, !value.isEmpty else { return nil }
-        let normalizedFormat = normalizeBarcodeFormat(format)
+        let barcodeFormat = normalizeBarcodeFormat(format)
+        let filterName = barcodeFormat.generatorFilterName
 
-        let filterName: String
         let transform: CGAffineTransform
-        switch normalizedFormat {
-        case "QR_CODE":
-            filterName = "CIQRCodeGenerator"
+        switch barcodeFormat {
+        case .qrCode, .aztec:
             transform = CGAffineTransform(scaleX: 6.0, y: 6.0)
-        case "PDF_417":
-            filterName = "CIPDF417BarcodeGenerator"
+        case .pdf417:
             transform = CGAffineTransform(scaleX: 3.0, y: 3.0)
-        case "AZTEC":
-            filterName = "CIAztecCodeGenerator"
-            transform = CGAffineTransform(scaleX: 6.0, y: 6.0)
-        case "DATA_MATRIX":
-            filterName = "CIDataMatrixCodeGenerator"
-            transform = CGAffineTransform(scaleX: 8.0, y: 8.0)
         default:
-            filterName = "CICode128BarcodeGenerator"
             transform = CGAffineTransform(scaleX: 3.0, y: 5.0)
         }
 
-        guard let filter = CIFilter(name: filterName) else { return nil }
+        guard let filterName, let filter = CIFilter(name: filterName) else { return nil }
         filter.setValue(value.data(using: .utf8), forKey: "inputMessage")
-        if normalizedFormat == "QR_CODE" {
+        if barcodeFormat == .qrCode {
             filter.setValue("M", forKey: "inputCorrectionLevel")
         }
 

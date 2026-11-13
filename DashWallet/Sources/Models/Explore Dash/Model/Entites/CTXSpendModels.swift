@@ -61,6 +61,8 @@ struct GiftCardResponse: Codable {
     let barcodeUrl: String?
     let cardNumber: String?
     let cardPin: String?
+    let barcodeType: String?
+    let barcodeContent: String?
 
     let cryptoAmount: String?
     let cryptoCurrency: String?
@@ -88,6 +90,8 @@ struct GiftCardResponse: Codable {
         case barcodeUrl
         case cardNumber = "number"
         case cardPin = "pin"
+        case barcodeType
+        case barcodeContent
         case cryptoAmount = "paymentCryptoAmount"
         case cryptoCurrency = "paymentCryptoCurrency"
         case paymentCryptoNetwork
