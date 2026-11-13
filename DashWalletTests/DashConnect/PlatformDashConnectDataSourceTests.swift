@@ -819,6 +819,96 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         XCTAssertEqual(viewModel.message?.text.contains("stays listed") ?? false, false)
     }
 
+    private static let responseMayAppearNote = "The app's keys are off. Its response may still appear; "
+        + "it is deleted with your next App Connect approval or disconnect on this identity."
+    /// The note behind a warning that keys stay on: it does not say they are off.
+    private static let responseMayAppearAfterWarning = "The app's response may still appear; "
+        + "it is deleted with your next App Connect approval or disconnect on this identity."
+
+    /// AC-02: the response was kept because its publish is unresolved; the
+    /// keys are off, so this is a notice carrying the note alone.
+    func testADisconnectThatKeptAResponseMayAppearSaysSoAsANotice() async {
+        let spy = PurchaseApprovalSpy()
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+
+        var result = DashConnectDisconnectResult(keysTurnedOff: 3)
+        result.responsesMayAppear = true
+        spy.disconnectResult = result
+        viewModel.disconnect(Self.connection)
+        await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 1 }
+
+        XCTAssertEqual(viewModel.message?.kind, .notice)
+        XCTAssertEqual(viewModel.message?.text, Self.responseMayAppearNote)
+    }
+
+    /// AC-02: the note comes last, after a blank line, behind the warning,
+    /// and does not say the keys are off when some stay on.
+    func testTheResponseMayAppearNoteComesLastAfterAWarning() async {
+        let spy = PurchaseApprovalSpy()
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+
+        var result = DashConnectDisconnectResult(keysTurnedOff: 10, keysStillLive: 2)
+        result.responsesMayAppear = true
+        spy.disconnectResult = result
+        viewModel.disconnect(Self.connection)
+        await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 1 }
+
+        let warning = "Not every key was turned off: 2 still on your identity. "
+            + "The connection stays listed; disconnect it again to turn them off."
+        XCTAssertEqual(viewModel.message?.kind, .error)
+        XCTAssertEqual(viewModel.message?.text, warning + "\n\n" + Self.responseMayAppearAfterWarning)
+    }
+
+    /// AC-02: the same behind the warning that some fences may not be placed.
+    func testTheResponseMayAppearNoteDoesNotSayTheKeysAreOffBehindAFenceWarning() async {
+        let spy = PurchaseApprovalSpy()
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+
+        var result = DashConnectDisconnectResult(keysTurnedOff: 3, fencesNotPlaced: 1)
+        result.responsesMayAppear = true
+        spy.disconnectResult = result
+        viewModel.disconnect(Self.connection)
+        await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 1 }
+
+        let text = viewModel.message?.text ?? ""
+        XCTAssertEqual(viewModel.message?.kind, .error)
+        XCTAssertTrue(text.hasSuffix("\n\n" + Self.responseMayAppearAfterWarning), text)
+        XCTAssertFalse(text.contains("keys are off"), text)
+    }
+
+    /// AC-08: no unresolved publish, no note: the message is what it was.
+    func testNoNoteWhenNoResponseMayAppear() async {
+        let spy = PurchaseApprovalSpy()
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+
+        spy.disconnectResult = DashConnectDisconnectResult(keysTurnedOff: 10, keysStillLive: 2)
+        viewModel.disconnect(Self.connection)
+        await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 1 }
+
+        let text = viewModel.message?.text ?? ""
+        XCTAssertEqual(viewModel.message?.kind, .error)
+        XCTAssertFalse(text.contains("may still appear"), text)
+        XCTAssertTrue(text.hasSuffix("to turn them off."), text)
+    }
+
+    /// A disconnect that threw reports the error only, no note.
+    func testAThrownDisconnectShowsNoResponseMayAppearNote() async {
+        let spy = PurchaseApprovalSpy()
+        spy.disconnectFailure = PurchaseSpyError.refused
+        var result = DashConnectDisconnectResult(keysTurnedOff: 1)
+        result.responsesMayAppear = true
+        spy.disconnectResult = result
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+
+        viewModel.disconnect(Self.connection)
+        await waitUntil { !viewModel.isDisconnecting }
+
+        let text = viewModel.message?.text ?? ""
+        XCTAssertEqual(viewModel.message?.kind, .error)
+        XCTAssertTrue(text.hasPrefix("Could not disconnect: "), text)
+        XCTAssertFalse(text.contains("may still appear"), text)
+    }
+
     /// With the login unresolved the sheet's action asks again and approves
     /// nothing.
     func testAnUnresolvedLoginIsAskedForAgainInsteadOfApproved() async {
@@ -3987,15 +4077,19 @@ final class DashConnectDisconnectThroughSeamsTests: XCTestCase {
     }
 
     private static func intent(
-        app: Data = app, key: AppConnect.IntendedKey = key, closedAt: Date? = nil
+        app: Data = app, key: AppConnect.IntendedKey = key, closedAt: Date? = nil,
+        responseDocumentId: Data? = documentId, publishStartBlockTimeMs: UInt64? = nil,
+        createdAt: Date = Date(timeIntervalSince1970: 0)
     ) -> AppConnect.ConnectionIntent {
-        AppConnect.ConnectionIntent(
+        var intent = AppConnect.ConnectionIntent(
             id: UUID(), identityId: identity, appId: app, appLabel: "App", appUrl: "",
             requestHash: Data(repeating: 0xEE, count: 20), connectionId: Data(repeating: 0xC1, count: 32),
             keys: [key], sentEncryptionKeyIds: [], disables: [],
             response: AppConnect.ResponseValues(appEphemeralPubKeyHash: "ee", walletEphemeralPubKey: "02", encryptedPayload: "00"),
-            responseDocumentId: documentId, responseRemoved: false,
-            createdAt: Date(timeIntervalSince1970: 0), closedAt: closedAt)
+            responseDocumentId: responseDocumentId, responseRemoved: false,
+            createdAt: createdAt, closedAt: closedAt)
+        intent.publishStartBlockTimeMs = publishStartBlockTimeMs
+        return intent
     }
 
     private final class MemoryIntents: AppConnectIntentStore, @unchecked Sendable {
@@ -4106,6 +4200,19 @@ final class DashConnectDisconnectThroughSeamsTests: XCTestCase {
             get { lock.withLock { keyOffElsewhere } }
             set { lock.withLock { keyOffElsewhere = newValue } }
         }
+        /// The lookup finds no response: it never landed, or is not visible yet.
+        var responseGone = false
+        /// The lookup throws instead of answering.
+        var lookupFails = false
+        /// Only the first lookup throws; the later ones answer.
+        var firstLookupFails = false
+        /// The identity read carries no proved block time.
+        var withoutPlatformTime = false
+        /// The identity read carries this proved block time instead of the fixed one.
+        var platformTimeOverride: UInt64?
+        private var lookupsMade = 0
+        /// How many times a response was looked up.
+        var lookupCount: Int { lock.withLock { lookupsMade } }
         var readCount: Int { lock.withLock { reads } }
         /// How many times the PIN was asked for.
         var authorizeCount: Int { lock.withLock { authorizations } }
@@ -4133,18 +4240,27 @@ final class DashConnectDisconnectThroughSeamsTests: XCTestCase {
             // A fence the identity update added stays on until the update
             // that turns the fences off lands.
             let liveFence = chain.updateLanded ? !(leftoverFence || chain.fenceUpdateLanded) : leftoverFence
-            return DashConnectDisconnectThroughSeamsTests.snapshot(
+            let read = DashConnectDisconnectThroughSeamsTests.snapshot(
                 disabled: chain.updateLanded || earlierFenceOff, withUnknownBoundKey: withUnknownBoundKey,
                 confirming: confirming,
                 offElsewhere: offElsewhere, liveFence: liveFence, foreignKeyId: foreignKeyId,
                 otherAppFenceOff: otherAppFenceOff, closedIntentFenceOff: closedIntentFenceOff)
+            guard withoutPlatformTime || platformTimeOverride != nil else { return read }
+            return AppConnect.IdentitySnapshot(
+                identityId: read.identityId, revision: read.revision, keys: read.keys,
+                platformTime: withoutPlatformTime ? nil : platformTimeOverride)
         }
         func fenceKeyHash(keyId: UInt32) async throws -> Data {
             if fenceHashFails { throw FenceDerivationFailed() }
             return DashConnectDisconnectThroughSeamsTests.fenceHash(keyId)
         }
         func findResponse(requestHash: Data) async throws -> (documentId: Data, values: AppConnect.ResponseValues)? {
-            chain.responseDeleteLanded ? nil : response
+            let first = lock.withLock { () -> Bool in
+                lookupsMade += 1
+                return lookupsMade == 1
+            }
+            if lookupFails || (firstLookupFails && first) { throw SDKError.networkError("connection lost") }
+            return responseGone || chain.responseDeleteLanded ? nil : response
         }
     }
 
@@ -4152,19 +4268,20 @@ final class DashConnectDisconnectThroughSeamsTests: XCTestCase {
     private struct FenceDerivationFailed: Error {}
 
     private func makeDataSource(
-        chain: Chain, intents: MemoryIntents, rows: MemoryRows, behindReads: Int? = 0, withUnknownBoundKey: Bool = false,
-        platform: FakePlatform? = nil
+        chain: Chain, intents: any AppConnectIntentStore, rows: MemoryRows, behindReads: Int? = 0,
+        withUnknownBoundKey: Bool = false, platform: FakePlatform? = nil, walletIdHex: String = walletIdHex,
+        log: @escaping @Sendable (String) -> Void = { _ in }
     ) -> PlatformDashConnectDataSource {
         let intent = intents.load()[0]
         return PlatformDashConnectDataSource(
             supportedNetwork: .testnet,
             store: rows,
             intentStore: intents,
-            activeWalletIdHex: { Self.walletIdHex },
+            activeWalletIdHex: { walletIdHex },
             now: { Self.at },
             makeWriteExecutor: { _ in
                 AppConnectWriteExecutor(
-                    timeout: .milliseconds(100), sleep: { try await Task.sleep(for: $0) }, log: { _ in },
+                    timeout: .milliseconds(100), sleep: { try await Task.sleep(for: $0) }, log: log,
                     submit: { write in try chain.record(write) })
             },
             platform: platform ?? FakePlatform(chain: chain, response: (Self.documentId, intent.response), behindReads: behindReads,
@@ -4196,6 +4313,41 @@ final class DashConnectDisconnectThroughSeamsTests: XCTestCase {
         XCTAssertEqual(rows.load().first?.status, .disconnected, "the row is refreshed to Disconnected")
     }
 
+    /// AC-12: a disconnect whose response delete did not land leaves the row
+    /// Disconnected with the mark; it goes on the first refresh after the
+    /// response is recorded removed.
+    func testARowDisconnectedWithItsResponseLeftIsMarkedUntilTheResponseIsRecordedRemoved() async throws {
+        let chain = Chain(failing: ["deleteResponse"])
+        let (intents, rows, intent) = connectedApp()
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows)
+
+        _ = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        XCTAssertEqual(rows.load().first?.status, .disconnected)
+        XCTAssertEqual(rows.load().first?.responseMayRemain, true, "the response may still be on Platform")
+
+        var stored = intents.load()
+        let index = try XCTUnwrap(stored.firstIndex { $0.id == intent.id })
+        stored[index].responseRemoved = true
+        intents.save(stored)
+        await dataSource.refreshConnections()
+
+        XCTAssertEqual(rows.load().first?.status, .disconnected)
+        XCTAssertEqual(rows.load().first?.responseMayRemain, false, "the mark goes on the first refresh after the removal")
+    }
+
+    /// AC-12: a disconnect that deleted the response leaves the row unmarked.
+    func testARowDisconnectedWithItsResponseDeletedHasNoMark() async throws {
+        let chain = Chain()
+        let (intents, rows, _) = connectedApp()
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows)
+
+        _ = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        XCTAssertEqual(rows.load().first?.status, .disconnected)
+        XCTAssertEqual(rows.load().first?.responseMayRemain, false)
+    }
+
     /// T45 (J4, AC-16): a response delete that fails did not land, so the
     /// lookup after it still finds the response and it is not marked removed.
     func testAResponseDeleteThatFailsLeavesTheResponseNotMarkedRemoved() async throws {
@@ -4224,6 +4376,396 @@ final class DashConnectDisconnectThroughSeamsTests: XCTestCase {
         XCTAssertEqual(intents.load().first { $0.id == intent.id }?.responseRemoved, true)
         XCTAssertEqual(intents.load().first { $0.id == left.id }?.responseRemoved, true, "the response left before is gone too")
     }
+
+    // MARK: - A Connections refresh finds late responses (response-publish-lifetime T7)
+
+    /// One refresh of a single stored intent through the seams.
+    private struct Refreshed {
+        let chain: Chain
+        let platform: FakePlatform
+        let intents: MemoryIntents
+        let intent: AppConnect.ConnectionIntent
+        let dataSource: PlatformDashConnectDataSource
+
+        var stored: AppConnect.ConnectionIntent? { intents.load().first { $0.id == intent.id } }
+    }
+
+    private func refreshed(
+        _ intent: AppConnect.ConnectionIntent, gone: Bool, lookupFails: Bool = false, noPlatformTime: Bool = false
+    ) async -> Refreshed {
+        let chain = Chain()
+        let platform = FakePlatform(chain: chain, response: (Self.documentId, intent.response))
+        platform.responseGone = gone
+        platform.lookupFails = lookupFails
+        platform.withoutPlatformTime = noPlatformTime
+        let intents = MemoryIntents([intent])
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: MemoryRows([]), platform: platform)
+        await dataSource.refreshConnections()
+        return Refreshed(chain: chain, platform: platform, intents: intents, intent: intent, dataSource: dataSource)
+    }
+
+    private static func closedIntent(start: UInt64?, removed: Bool = false) -> AppConnect.ConnectionIntent {
+        var intent = Self.intent(closedAt: at, responseDocumentId: nil, publishStartBlockTimeMs: start)
+        intent.responseRemoved = removed
+        return intent
+    }
+
+    /// AC-05, AC-09: a closed intent whose publish landed gets its document
+    /// recorded, with no PIN prompt and no write to Platform.
+    func testARefreshRecordsTheResponseOfAClosedIntentWhoseUnresolvedPublishLanded() async {
+        let run = await refreshed(Self.closedIntent(start: Self.freshStart), gone: false)
+
+        XCTAssertEqual(run.stored?.responseDocumentId, Self.documentId)
+        XCTAssertEqual(run.stored?.responseRemoved, false, "the delete waits for the PIN")
+        XCTAssertEqual(run.chain.kinds, [], "no write to Platform")
+        XCTAssertEqual(run.platform.authorizeCount, 0, "no PIN prompt")
+    }
+
+    /// AC-05: the same for a closed intent with no recorded start.
+    func testARefreshRecordsTheResponseOfAClosedIntentWithNoStartRecorded() async {
+        let run = await refreshed(Self.closedIntent(start: nil), gone: false)
+
+        XCTAssertEqual(run.stored?.responseDocumentId, Self.documentId)
+        XCTAssertEqual(run.stored?.responseRemoved, false)
+        XCTAssertEqual(run.chain.kinds, [])
+        XCTAssertEqual(run.platform.authorizeCount, 0)
+    }
+
+    /// AC-06: a resolved publish and no response: recorded removed, no write.
+    func testARefreshRecordsTheResponseRemovedWhenItsPublishIsOlderThanADayAndNoneIsFound() async {
+        let run = await refreshed(Self.closedIntent(start: Self.staleStart), gone: true)
+
+        XCTAssertEqual(run.stored?.responseRemoved, true)
+        XCTAssertNil(run.stored?.responseDocumentId)
+        XCTAssertEqual(run.chain.kinds, [])
+        XCTAssertEqual(run.platform.authorizeCount, 0)
+    }
+
+    /// AC-06: an intent written before this change (no start) is resolved.
+    func testARefreshRecordsTheResponseRemovedWhenNoStartWasRecordedAndNoneIsFound() async {
+        let run = await refreshed(Self.closedIntent(start: nil), gone: true)
+
+        XCTAssertEqual(run.stored?.responseRemoved, true)
+        XCTAssertEqual(run.chain.kinds, [])
+    }
+
+    /// AC-06: once recorded removed, no later refresh looks for it again.
+    func testARefreshDoesNotLookAgainForAResponseRecordedRemoved() async {
+        let run = await refreshed(Self.closedIntent(start: nil), gone: true)
+        let lookups = run.platform.lookupCount
+        XCTAssertEqual(lookups, 1, "the first refresh looked it up")
+
+        await run.dataSource.refreshConnections()
+
+        XCTAssertEqual(run.platform.lookupCount, lookups)
+    }
+
+    /// A closed intent already marked removed is not looked up at all.
+    func testARefreshDoesNotLookUpAClosedIntentAlreadyMarkedRemoved() async {
+        let run = await refreshed(Self.closedIntent(start: Self.freshStart, removed: true), gone: false)
+
+        XCTAssertEqual(run.platform.lookupCount, 0)
+        XCTAssertNil(run.stored?.responseDocumentId)
+    }
+
+    /// AC-07: an unresolved publish and no response: nothing is decided.
+    func testARefreshDecidesNothingWhenNoneIsFoundWhileThePublishIsUnresolved() async {
+        let run = await refreshed(Self.closedIntent(start: Self.freshStart), gone: true)
+
+        XCTAssertEqual(run.stored?.responseRemoved, false)
+        XCTAssertNil(run.stored?.responseDocumentId)
+        XCTAssertEqual(run.chain.kinds, [])
+    }
+
+    /// sad section 11: a read without a block time resolves nothing.
+    func testARefreshWithoutPlatformTimeRecordsNothingRemoved() async {
+        let run = await refreshed(Self.closedIntent(start: nil), gone: true, noPlatformTime: true)
+
+        XCTAssertEqual(run.stored?.responseRemoved, false)
+        XCTAssertNil(run.stored?.responseDocumentId)
+    }
+
+    /// A lookup that throws writes nothing for that intent.
+    func testARefreshWhoseLookupThrowsWritesNothingForTheIntent() async {
+        let run = await refreshed(Self.closedIntent(start: nil), gone: true, lookupFails: true)
+
+        XCTAssertEqual(run.platform.lookupCount, 1, "the lookup was tried")
+        XCTAssertEqual(run.stored?.responseRemoved, false)
+        XCTAssertNil(run.stored?.responseDocumentId)
+    }
+
+    /// AC-09: an open intent whose response landed without confirming gets
+    /// its document recorded by a refresh run through the injected port.
+    func testARefreshThroughThePortRecordsTheResponseOfAnOpenRecentIntent() async {
+        let open = Self.intent(responseDocumentId: nil, createdAt: Self.at.addingTimeInterval(-60))
+        let run = await refreshed(open, gone: false)
+
+        XCTAssertEqual(run.stored?.responseDocumentId, Self.documentId)
+        XCTAssertEqual(run.chain.kinds, [])
+        XCTAssertEqual(run.platform.authorizeCount, 0)
+    }
+
+    /// An open intent is only ever recorded found: a refresh that finds no
+    /// response leaves it not removed, so the next disconnect still looks.
+    func testARefreshThatFindsNoResponseOfAnOpenIntentDoesNotRecordItRemoved() async {
+        let open = Self.intent(responseDocumentId: nil, createdAt: Self.at.addingTimeInterval(-60))
+        let run = await refreshed(open, gone: true)
+
+        XCTAssertEqual(run.platform.lookupCount, 1, "the refresh looked for it")
+        XCTAssertEqual(run.stored?.responseRemoved, false)
+        XCTAssertNil(run.stored?.closedAt)
+    }
+
+    /// Spec section 7: the log counts only documents a refresh found that the
+    /// wallet did not know, open and closed intents apart.
+    func testTheRefreshCountsOnlyNewlyFoundDocumentsOpenAndClosedApart() {
+        let open = Self.intent(responseDocumentId: nil)
+        let late = Self.closedIntent(start: Self.freshStart)
+        let knownLeft = Self.intent(closedAt: Self.at, responseDocumentId: Self.documentId)
+        let absent = Self.closedIntent(start: nil)
+
+        let counts = PlatformDashConnectDataSource.newlyFound(
+            [open.id, late.id, knownLeft.id], among: [open, late, knownLeft, absent])
+
+        XCTAssertEqual(counts.open, 1)
+        XCTAssertEqual(counts.closed, 1, "the document a failed delete left is not found anew")
+    }
+
+    /// The 24 h `createdAt` filter stays for open intents.
+    func testARefreshDoesNotLookUpAnOpenIntentOlderThanADay() async {
+        let run = await refreshed(Self.intent(responseDocumentId: nil), gone: false)
+
+        XCTAssertEqual(run.platform.lookupCount, 0)
+        XCTAssertNil(run.stored?.responseDocumentId)
+    }
+
+    // MARK: - Response removed has one guarded write point (response-publish-lifetime T4)
+
+    /// A publish started 1000 s before the snapshot's block time: unresolved.
+    private static let freshStart: UInt64 = 1_800_000_000_000 - 1_000_000
+    /// A publish started more than 24 h before the snapshot's block time: resolved.
+    private static let staleStart: UInt64 = 1_800_000_000_000 - 90_000_000
+
+    /// One app disconnected through the seams, with what the test reads back.
+    private struct DisconnectedApp {
+        let chain: Chain
+        let intents: MemoryIntents
+        let intent: AppConnect.ConnectionIntent
+        let result: DashConnectDisconnectResult
+        let rows: MemoryRows
+        let platform: FakePlatform
+    }
+
+    private func disconnectedApp(
+        start: UInt64?, documentId: Data?, gone: Bool, chain: Chain = Chain(), others: [AppConnect.ConnectionIntent] = [],
+        lookupFails: Bool = false, firstLookupFails: Bool = false
+    ) async throws -> DisconnectedApp {
+        let intent = Self.intent(responseDocumentId: documentId, publishStartBlockTimeMs: start)
+        let row = DAppConnection(
+            id: Self.app.toBase58String(), name: "App", url: "", status: .active, updatedAt: Date(timeIntervalSince1970: 0))
+        let intents = MemoryIntents([intent] + others)
+        let platform = FakePlatform(chain: chain, response: (Self.documentId, intent.response))
+        platform.responseGone = gone
+        platform.lookupFails = lookupFails
+        platform.firstLookupFails = firstLookupFails
+        let rows = MemoryRows([row])
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: rows, platform: platform)
+        let result = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+        return DisconnectedApp(
+            chain: chain, intents: intents, intent: intent, result: result, rows: rows, platform: platform)
+    }
+
+    private func stored(_ intent: AppConnect.ConnectionIntent, in intents: MemoryIntents) -> AppConnect.ConnectionIntent? {
+        intents.load().first { $0.id == intent.id }
+    }
+
+    /// AC-03: no response found while the publish is unresolved is not "removed".
+    func testADisconnectDoesNotRecordTheResponseRemovedWhenNoneIsFoundWhileItsPublishIsUnresolved() async throws {
+        let result = try await disconnectedApp(start: Self.freshStart, documentId: nil, gone: true)
+
+        XCTAssertEqual(stored(result.intent, in: result.intents)?.responseRemoved, false)
+        XCTAssertNil(stored(result.intent, in: result.intents)?.responseDocumentId)
+    }
+
+    /// AC-03 via the cleanup of the responses left (the same loop the approval runs):
+    /// a closed intent of another app, unresolved, none found, stays not removed.
+    func testTheCleanupOfResponsesLeftDoesNotRecordAnUnresolvedPublishRemovedWhenNoneIsFound() async throws {
+        let left = Self.intent(
+            app: Self.otherApp, key: Self.otherAppKey, closedAt: Self.at,
+            responseDocumentId: nil, publishStartBlockTimeMs: Self.freshStart)
+        let result = try await disconnectedApp(start: nil, documentId: Self.documentId, gone: true, others: [left])
+
+        XCTAssertEqual(stored(left, in: result.intents)?.responseRemoved, false, "the publish may still land")
+    }
+
+    /// AC-08 path, unchanged: a start older than 24 h is resolved, so none found means removed.
+    func testADisconnectRecordsTheResponseRemovedWhenNoneIsFoundAndThePublishStartedOverADayAgo() async throws {
+        let result = try await disconnectedApp(start: Self.staleStart, documentId: nil, gone: true)
+
+        XCTAssertEqual(stored(result.intent, in: result.intents)?.responseRemoved, true)
+    }
+
+    /// Unchanged: an intent with no recorded start is never unresolved.
+    func testADisconnectRecordsTheResponseRemovedWhenNoneIsFoundAndNoPublishStartIsRecorded() async throws {
+        let result = try await disconnectedApp(start: nil, documentId: nil, gone: true)
+
+        XCTAssertEqual(stored(result.intent, in: result.intents)?.responseRemoved, true)
+    }
+
+    /// AC-11: found while unresolved, the document is recorded, deleted, and the response recorded removed.
+    func testADisconnectRecordsTheDocumentItFindsWhileUnresolvedThenDeletesItAndRecordsItRemoved() async throws {
+        let result = try await disconnectedApp(start: Self.freshStart, documentId: nil, gone: false)
+
+        let after = stored(result.intent, in: result.intents)
+        XCTAssertEqual(after?.responseDocumentId, Self.documentId, "the found document is recorded")
+        XCTAssertEqual(result.chain.kinds, ["updateKeys", "deleteResponse"])
+        XCTAssertEqual(after?.responseRemoved, true)
+    }
+
+    /// AC-11: the document is recorded before the delete, so a delete that fails keeps it.
+    func testAFoundDocumentIsRecordedEvenWhenItsDeleteFails() async throws {
+        let result = try await disconnectedApp(
+            start: Self.freshStart, documentId: nil, gone: false, chain: Chain(failing: ["deleteResponse"]))
+
+        let after = stored(result.intent, in: result.intents)
+        XCTAssertEqual(after?.responseDocumentId, Self.documentId, "recorded before the delete")
+        XCTAssertEqual(after?.responseRemoved, false, "the response is still on Platform")
+    }
+
+    /// AC-01, AC-04: a known document is deleted and recorded removed, whatever the recorded start.
+    func testADisconnectDeletesAKnownResponseAndRecordsItRemovedWhateverItsPublishStart() async throws {
+        let result = try await disconnectedApp(start: Self.freshStart, documentId: Self.documentId, gone: false)
+
+        let after = stored(result.intent, in: result.intents)
+        XCTAssertEqual(result.chain.kinds, ["updateKeys", "deleteResponse"])
+        XCTAssertEqual(after?.responseRemoved, true)
+    }
+
+    // MARK: - The disconnect reports a response that may still appear (response-publish-lifetime T6)
+
+    /// AC-02: own app unresolved, response not on Platform: keys off, row Disconnected, the flag is set.
+    func testADisconnectOfAnAppWithAnUnresolvedPublishAndNoResponseOnPlatformReportsItMayAppear() async throws {
+        let done = try await disconnectedApp(start: Self.freshStart, documentId: nil, gone: true)
+
+        XCTAssertTrue(done.result.responsesMayAppear)
+        XCTAssertEqual(done.result.keysTurnedOff, 1, "the keys are turned off")
+        XCTAssertEqual(done.rows.load().first?.status, .disconnected)
+        XCTAssertEqual(stored(done.intent, in: done.intents)?.responseRemoved, false)
+    }
+
+    /// AC-02, AC-03: a lookup that fails says nothing; while the app's publish
+    /// is unresolved its response may still appear, so the disconnect says so.
+    func testADisconnectWhoseLookupFailsWhileThePublishIsUnresolvedReportsItMayAppear() async throws {
+        let done = try await disconnectedApp(
+            start: Self.freshStart, documentId: nil, gone: true, lookupFails: true)
+
+        XCTAssertTrue(done.result.responsesMayAppear)
+        XCTAssertEqual(done.result.keysTurnedOff, 1)
+        XCTAssertEqual(stored(done.intent, in: done.intents)?.responseRemoved, false)
+    }
+
+    /// AC-11: a lookup that fails once and then finds the response ends the
+    /// unresolved publish: the response is recorded and deleted, with no note.
+    func testADisconnectWhoseRetriedLookupFindsTheResponseRecordsAndDeletesIt() async throws {
+        let done = try await disconnectedApp(
+            start: Self.freshStart, documentId: nil, gone: false, firstLookupFails: true)
+
+        let after = stored(done.intent, in: done.intents)
+        XCTAssertEqual(done.platform.lookupCount, 2, "the failed lookup is tried again")
+        XCTAssertEqual(done.chain.kinds, ["updateKeys", "deleteResponse"], "the found response is deleted")
+        XCTAssertEqual(after?.responseDocumentId, Self.documentId, "the found response is recorded")
+        XCTAssertEqual(after?.responseRemoved, true)
+        XCTAssertFalse(done.result.responsesMayAppear, "a found and deleted response cannot still appear")
+    }
+
+    /// A failed lookup of a resolved publish keeps the result a disconnect returned before.
+    func testADisconnectWhoseLookupFailsAfterThePublishResolvedSetsNoFlag() async throws {
+        let done = try await disconnectedApp(
+            start: Self.staleStart, documentId: nil, gone: true, lookupFails: true)
+
+        XCTAssertFalse(done.result.responsesMayAppear)
+        XCTAssertEqual(stored(done.intent, in: done.intents)?.responseRemoved, false, "a failed lookup decides nothing")
+    }
+
+    /// AC-02: the note is for the disconnected app only: another app's closed unresolved intent sets no flag.
+    func testAnotherAppsUnresolvedPublishDoesNotSetTheFlag() async throws {
+        let left = Self.intent(
+            app: Self.otherApp, key: Self.otherAppKey, closedAt: Self.at,
+            responseDocumentId: nil, publishStartBlockTimeMs: Self.freshStart)
+        let done = try await disconnectedApp(start: nil, documentId: Self.documentId, gone: true, others: [left])
+
+        XCTAssertEqual(stored(left, in: done.intents)?.responseRemoved, false, "kept: its publish may still land")
+        XCTAssertFalse(done.result.responsesMayAppear)
+    }
+
+    /// AC-11: own app unresolved but the response is found: deleted, removed, no flag.
+    func testADisconnectThatFindsTheResponseOfAnUnresolvedPublishDeletesItAndSetsNoFlag() async throws {
+        let done = try await disconnectedApp(start: Self.freshStart, documentId: nil, gone: false)
+
+        XCTAssertFalse(done.result.responsesMayAppear)
+        XCTAssertEqual(stored(done.intent, in: done.intents)?.responseRemoved, true)
+        XCTAssertEqual(done.chain.kinds, ["updateKeys", "deleteResponse"])
+    }
+
+    /// Keys update refused: the cleanup does not run, so no flag.
+    func testADisconnectWhoseKeysUpdateIsRefusedSetsNoFlagEvenWithAnUnresolvedPublish() async throws {
+        let done = try await disconnectedApp(
+            start: Self.freshStart, documentId: nil, gone: true, chain: Chain(refusing: ["updateKeys"]))
+
+        XCTAssertEqual(done.result.keysStillLive, 1)
+        XCTAssertFalse(done.result.responsesMayAppear)
+    }
+
+    /// Spec section 3: a delete of a found response that fails is today's best-effort path: no flag.
+    func testADeleteOfAFoundResponseThatFailsSetsNoFlag() async throws {
+        let done = try await disconnectedApp(
+            start: Self.freshStart, documentId: nil, gone: false, chain: Chain(failing: ["deleteResponse"]))
+
+        XCTAssertEqual(stored(done.intent, in: done.intents)?.responseRemoved, false)
+        XCTAssertFalse(done.result.responsesMayAppear)
+    }
+
+    /// AC-08: no unresolved publish: the result is the one a disconnect returns today.
+    func testADisconnectWithNoUnresolvedPublishReturnsTheResultItReturnedBefore() async throws {
+        let known = try await disconnectedApp(start: nil, documentId: Self.documentId, gone: false)
+        let noStart = try await disconnectedApp(start: nil, documentId: nil, gone: true)
+        let stale = try await disconnectedApp(start: Self.staleStart, documentId: nil, gone: true)
+
+        let today = DashConnectDisconnectResult(keysTurnedOff: 1)
+        XCTAssertEqual(known.result, today)
+        XCTAssertEqual(noStart.result, today)
+        XCTAssertEqual(stale.result, today)
+        XCTAssertFalse(known.result.responsesMayAppear)
+    }
+
+    /// NFR 0 s: a publish of the app is still suspended in its submit; the disconnect returns anyway.
+    func testADisconnectReturnsWhileThePublishOfTheAppIsStillSuspended() async throws {
+        let intent = Self.intent(responseDocumentId: nil, publishStartBlockTimeMs: Self.freshStart)
+        let row = DAppConnection(
+            id: Self.app.toBase58String(), name: "App", url: "", status: .active, updatedAt: Date(timeIntervalSince1970: 0))
+        let intents = MemoryIntents([intent])
+        let chain = Chain()
+        let platform = FakePlatform(chain: chain, response: (Self.documentId, intent.response))
+        platform.responseGone = true
+        let dataSource = makeDataSource(chain: chain, intents: intents, rows: MemoryRows([row]), platform: platform)
+        let suspended = AppConnectWriteExecutor(
+            sleep: { try await Task.sleep(for: $0) }, log: { _ in },
+            submit: { _ in try await Task.sleep(for: .seconds(3_600)) })
+        let publish = Task {
+            try await PlatformDashConnectDataSource.publishAndRecord(
+                intent, intents: intents, executor: suspended, now: { Self.at },
+                platformTime: Self.freshStart, walletIdHex: Self.walletIdHex, operationGate: DashConnectOperationGate(),
+                createdDocumentId: { nil }, lookUp: { nil })
+        }
+        defer { publish.cancel() }
+        try await Task.sleep(for: .milliseconds(100))
+
+        let result = try await dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        XCTAssertTrue(result.responsesMayAppear)
+        XCTAssertEqual(result.keysTurnedOff, 1)
+    }
+
 
     /// F11: the identity update and the response delete are written by the
     /// executor the factory built, never by one the data source builds itself.
@@ -4918,6 +5460,333 @@ final class DashConnectDisconnectThroughSeamsTests: XCTestCase {
     }
 }
 
+/// A submit the test holds and lets end, with the executor's log lines it saw.
+private final class HeldSubmit: @unchecked Sendable {
+    private let lock = NSLock()
+    private var continuation: CheckedContinuation<Void, Error>?
+    private var released: Result<Void, Error>?
+    private var lines: [String] = []
+
+    func wait() async throws {
+        try await withCheckedThrowingContinuation { (next: CheckedContinuation<Void, Error>) in
+            let ready = lock.withLock { () -> Result<Void, Error>? in
+                if let released { return released }
+                continuation = next
+                return nil
+            }
+            if let ready { next.resume(with: ready) }
+        }
+    }
+
+    func end(_ result: Result<Void, Error>) {
+        let next = lock.withLock { () -> CheckedContinuation<Void, Error>? in
+            released = result
+            defer { continuation = nil }
+            return continuation
+        }
+        next?.resume(with: result)
+    }
+
+    func log(_ line: String) { lock.withLock { lines.append(line) } }
+    var logged: [String] { lock.withLock { lines } }
+    func didLog(_ part: String) -> Bool { logged.contains { $0.contains(part) } }
+}
+
+private struct SubmitEndedBadly: Error {}
+
+/// The lifecycle of a response across the seams: a publish that times out, the disconnect, the late submit,
+/// the next signed operation, a restart and a wallet switch. The approval itself needs the live SDK, so its
+/// steps are composed from `publishAndRecord`, `disconnect` and `refreshConnections`.
+extension DashConnectDisconnectThroughSeamsTests {
+    private static let walletB = "wallet-b"
+    private static let aDay: UInt64 = 86_400_000
+
+    private struct Lifetime {
+        let defaults: UserDefaults
+        let intents: UserDefaultsAppConnectIntentStore
+        let intent: AppConnect.ConnectionIntent
+        let chain: Chain
+        let platform: FakePlatform
+        let rows: MemoryRows
+        let held: HeldSubmit
+        let dataSource: PlatformDashConnectDataSource
+    }
+
+    private func userDefaults() -> UserDefaults {
+        let suite = "ResponsePublishLifetimeEndToEnd.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        addTeardownBlock { defaults.removePersistentDomain(forName: suite) }
+        return defaults
+    }
+
+    private func intentStore(_ defaults: UserDefaults, _ wallet: String) -> UserDefaultsAppConnectIntentStore {
+        UserDefaultsAppConnectIntentStore(defaults: defaults, scope: .key { wallet })
+    }
+
+    private func lifetime(
+        defaults: UserDefaults? = nil, wallet: String = walletIdHex, intent: AppConnect.ConnectionIntent? = nil,
+        known: [AppConnect.ConnectionIntent] = []
+    ) -> Lifetime {
+        let defaults = defaults ?? userDefaults()
+        let intent = intent ?? Self.intent(responseDocumentId: nil)
+        let intents = intentStore(defaults, wallet)
+        intents.save([intent] + known)
+        let chain = Chain()
+        let platform = FakePlatform(chain: chain, response: (Self.documentId, intent.response))
+        platform.responseGone = true
+        let held = HeldSubmit()
+        let rows = MemoryRows([
+            DAppConnection(
+                id: Self.app.toBase58String(), name: "App", url: "", status: .active, updatedAt: Date(timeIntervalSince1970: 0))
+        ])
+        let dataSource = makeDataSource(
+            chain: chain, intents: intents, rows: rows, platform: platform, walletIdHex: wallet, log: { held.log($0) })
+        return Lifetime(
+            defaults: defaults, intents: intents, intent: intent, chain: chain, platform: platform, rows: rows,
+            held: held, dataSource: dataSource)
+    }
+
+    /// The approval's publish: its submit is held and its timer fires at once, so it times out.
+    private func publishThatTimesOut(
+        _ life: Lifetime, intent: AppConnect.ConnectionIntent? = nil, intents: (any AppConnectIntentStore)? = nil,
+        wallet: String = walletIdHex, start: UInt64 = freshStart
+    ) async {
+        let held = life.held
+        let executor = AppConnectWriteExecutor(
+            sleep: { _ in }, log: { held.log($0) }, submit: { _ in try await held.wait() })
+        do {
+            try await PlatformDashConnectDataSource.publishAndRecord(
+                intent ?? life.intent, intents: intents ?? life.intents, executor: executor, now: { Self.at },
+                platformTime: start, walletIdHex: wallet,
+                createdDocumentId: { Self.documentId }, lookUp: { nil })
+            XCTFail("a publish nobody can find is not delivered")
+        } catch {
+            XCTAssertTrue(error is AppConnectWriteTimedOut, "\(error)")
+        }
+    }
+
+    private func eventually(_ what: String, _ condition: () -> Bool) async {
+        for _ in 0 ..< 200 where !condition() { try? await Task.sleep(for: .milliseconds(10)) }
+        XCTAssertTrue(condition(), what)
+    }
+
+    private func current(_ life: Lifetime) -> AppConnect.ConnectionIntent? {
+        intentStore(life.defaults, Self.walletIdHex).load().first { $0.id == life.intent.id }
+    }
+
+    private func refreshAt(_ life: Lifetime, time: UInt64) async {
+        life.platform.platformTimeOverride = time
+        await life.dataSource.refreshConnections()
+    }
+
+    /// Critical flow 1: approve, time out, disconnect, late document, next signed operation.
+    func testEndToEndATimedOutPublishIsFoundLateAndDeletedByTheNextSignedOperation() async throws {
+        let life = lifetime()
+        await publishThatTimesOut(life)
+
+        let first = try await life.dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        XCTAssertTrue(first.responsesMayAppear, "the user is told the response may still appear")
+        XCTAssertEqual(first.keysTurnedOff, 1)
+        XCTAssertEqual(life.chain.kinds, ["updateKeys"], "no response delete is sent for a document nobody knows")
+        XCTAssertEqual(current(life)?.responseRemoved, false, "AC-03: not recorded removed while the publish is unresolved")
+        XCTAssertNil(current(life)?.responseDocumentId)
+        XCTAssertEqual(life.rows.load().first?.status, .disconnected)
+        XCTAssertEqual(life.rows.load().first?.responseMayRemain, true)
+
+        life.held.end(.success(()))
+        await eventually("the late document is recorded") { current(life)?.responseDocumentId != nil }
+        XCTAssertEqual(current(life)?.responseDocumentId, Self.documentId)
+        XCTAssertEqual(current(life)?.responseRemoved, false)
+
+        life.platform.responseGone = false
+        _ = try await life.dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        XCTAssertEqual(life.chain.kinds.filter { $0 == "deleteResponse" }.count, 1, "AC-04: the next operation deletes it")
+        XCTAssertEqual(current(life)?.responseRemoved, true)
+    }
+
+    /// AC-07: the app was closed during the publish; the stored start keeps it unresolved for a day.
+    func testEndToEndAPublishStaysUnresolvedAfterARestartForADayThenItsResponseIsRecordedRemoved() async throws {
+        let life = lifetime()
+        await publishThatTimesOut(life, start: 1_800_000_000_000)
+        _ = try await life.dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        // A restart: a new store over the same defaults and a new data source, with the closed intent in it.
+        let reloaded = intentStore(life.defaults, Self.walletIdHex)
+        XCTAssertEqual(reloaded.load().first?.publishStartBlockTimeMs, 1_800_000_000_000)
+        let restarted = Lifetime(
+            defaults: life.defaults, intents: reloaded, intent: life.intent, chain: life.chain,
+            platform: life.platform, rows: life.rows, held: life.held,
+            dataSource: makeDataSource(
+                chain: life.chain, intents: reloaded, rows: life.rows, platform: life.platform))
+
+        await refreshAt(restarted, time: 1_800_000_000_000 + Self.aDay - 1)
+        XCTAssertEqual(current(restarted)?.responseRemoved, false, "just under a day: still unresolved")
+        XCTAssertGreaterThan(life.platform.lookupCount, 0, "the refresh looked for the response")
+
+        await refreshAt(restarted, time: 1_800_000_000_000 + Self.aDay)
+        XCTAssertEqual(current(restarted)?.responseRemoved, true, "a day on, none found: removed")
+        life.held.end(.failure(SubmitEndedBadly()))
+    }
+
+    /// AC-09: the connection shows Not delivered after the publish timed out;
+    /// once the late submit records its document, a refresh shows it Active.
+    func testEndToEndALateDocumentTurnsANotDeliveredRowActive() async throws {
+        let life = lifetime(intent: Self.intent(responseDocumentId: nil, createdAt: Self.at.addingTimeInterval(-60)))
+        await publishThatTimesOut(life)
+        await life.dataSource.refreshConnections()
+        XCTAssertEqual(life.rows.load().first?.status, .undelivered, "nobody found the response yet")
+
+        life.held.end(.success(()))
+        await eventually("the late document is recorded") { current(life)?.responseDocumentId != nil }
+        await life.dataSource.refreshConnections()
+
+        XCTAssertEqual(life.rows.load().first?.status, .active)
+        XCTAssertEqual(life.chain.kinds, [], "nothing was written to Platform")
+    }
+
+    /// AC-09: the same when a refresh finds the response that landed late.
+    func testEndToEndARefreshThatFindsTheLateResponseTurnsANotDeliveredRowActive() async throws {
+        let life = lifetime(intent: Self.intent(responseDocumentId: nil, createdAt: Self.at.addingTimeInterval(-60)))
+        await publishThatTimesOut(life)
+        await life.dataSource.refreshConnections()
+        XCTAssertEqual(life.rows.load().first?.status, .undelivered)
+
+        life.platform.responseGone = false
+        await life.dataSource.refreshConnections()
+
+        XCTAssertEqual(current(life)?.responseDocumentId, Self.documentId)
+        XCTAssertEqual(life.rows.load().first?.status, .active)
+        XCTAssertEqual(life.platform.authorizeCount, 0, "no PIN prompt")
+        life.held.end(.failure(SubmitEndedBadly()))
+    }
+
+    /// AC-07: the app was closed during the publish; after the restart a
+    /// disconnect still treats the publish as unresolved.
+    func testEndToEndADisconnectAfterARestartKeepsTheResponseThatMayStillAppear() async throws {
+        let life = lifetime()
+        await publishThatTimesOut(life)
+
+        // A restart: a new store over the same defaults and a new data source.
+        let reloaded = intentStore(life.defaults, Self.walletIdHex)
+        let restarted = makeDataSource(chain: life.chain, intents: reloaded, rows: life.rows, platform: life.platform)
+
+        let result = try await restarted.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        XCTAssertTrue(result.responsesMayAppear)
+        XCTAssertEqual(result.keysTurnedOff, 1)
+        let stored = reloaded.load().first { $0.id == life.intent.id }
+        XCTAssertEqual(stored?.responseRemoved, false)
+        XCTAssertNotNil(stored?.closedAt)
+        XCTAssertEqual(life.rows.load().first?.responseMayRemain, true)
+        life.held.end(.failure(SubmitEndedBadly()))
+    }
+
+    /// AC-10: the user switched wallets; the document is the starting wallet's alone.
+    func testEndToEndALateDocumentAfterAWalletSwitchBelongsToTheStartingWalletOnly() async throws {
+        let life = lifetime()
+        let other = Self.intent(responseDocumentId: Self.documentId)
+        let storeB = intentStore(life.defaults, Self.walletB)
+        storeB.save([other])
+        await publishThatTimesOut(life)
+
+        // The user is in wallet B now; wallet B's operations run while the submit is still held.
+        let chainB = Chain()
+        let platformB = FakePlatform(chain: chainB, response: (Self.documentId, other.response))
+        let rowsB = MemoryRows([
+            DAppConnection(
+                id: Self.app.toBase58String(), name: "App", url: "", status: .active, updatedAt: Date(timeIntervalSince1970: 0))
+        ])
+        let dataSourceB = makeDataSource(
+            chain: chainB, intents: storeB, rows: rowsB, platform: platformB, walletIdHex: Self.walletB)
+        life.held.end(.success(()))
+        await eventually("the document is recorded on wallet A") { current(life)?.responseDocumentId != nil }
+        await dataSourceB.refreshConnections()
+        let lookupsAfterRefresh = platformB.lookupCount
+        let disconnectB = try await dataSourceB.disconnect(id: Self.app.toBase58String(), scope: "\(Self.walletB)  ")
+
+        XCTAssertEqual(current(life)?.responseDocumentId, Self.documentId)
+        XCTAssertEqual(storeB.load().map(\.id), [other.id], "wallet B holds only its own intent")
+        XCTAssertNil(storeB.load().first?.publishStartBlockTimeMs)
+        XCTAssertFalse(disconnectB.responsesMayAppear)
+        XCTAssertEqual(lookupsAfterRefresh, 0, "wallet B's refresh looks for no response of wallet A")
+        XCTAssertEqual(chainB.kinds.filter { $0 == "deleteResponse" }.count, 1, "wallet B deletes only its own response")
+        XCTAssertEqual(current(life)?.responseRemoved, false, "wallet A's response is not deleted from wallet B")
+    }
+
+    /// AC-10: the wallet that started the publish was wiped; the late document is dropped.
+    func testEndToEndALateDocumentOfAWipedWalletIsNotSaved() async throws {
+        let life = lifetime()
+        await publishThatTimesOut(life)
+        _ = try await life.dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+        let key = Self.walletIdHex + UserDefaultsAppConnectIntentStore.keySuffix
+        life.defaults.removeObject(forKey: key)
+
+        life.held.end(.success(()))
+
+        await eventually("the late submit is seen") { life.held.didLog("late submitted") }
+        try? await Task.sleep(for: .milliseconds(200))
+        XCTAssertNil(life.defaults.object(forKey: key), "the wiped wallet's intents are not written again")
+    }
+
+    /// NFR 0 values: no key, document or identity value in a log line the executor received in the flow.
+    func testEndToEndNoLogLineOfTheFlowNamesAnIdentityDocumentOrKeyValue() async throws {
+        let life = lifetime()
+        await publishThatTimesOut(life)
+        _ = try await life.dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+        life.held.end(.success(()))
+        await eventually("the late document is recorded") { current(life)?.responseDocumentId != nil }
+        life.platform.responseGone = false
+        _ = try await life.dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        // DWLogger lines are not captured: CocoaLumberjack is not importable by the test target and
+        // production code has no sink. What the executor's injected `log` received is checked.
+        let lines = life.held.logged
+        XCTAssertTrue(life.held.didLog("late submitted"), "the executor's lines are captured")
+        let secrets = [Self.identity, Self.documentId, Self.app, Self.key.data, Data(repeating: 0xEE, count: 20)]
+        for secret in secrets {
+            let forms = [secret.map { String(format: "%02x", $0) }.joined(), secret.toBase58String(), secret.base64EncodedString()]
+            for form in forms {
+                XCTAssertFalse(lines.contains { $0.localizedCaseInsensitiveContains(form) }, "a log line holds \(form)")
+            }
+        }
+    }
+
+    /// Edge: the late submit fails after the disconnect; the intent waits for a day, then a refresh removes it.
+    func testEndToEndALateFailureLeavesTheResponseNotRemovedUntilADayHasPassed() async throws {
+        let life = lifetime()
+        await publishThatTimesOut(life)
+        _ = try await life.dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        life.held.end(.failure(SubmitEndedBadly()))
+        await eventually("the late failure is seen") { life.held.didLog("late failed") }
+
+        await refreshAt(life, time: Self.freshStart + Self.aDay - 1)
+        XCTAssertEqual(current(life)?.responseRemoved, false)
+        XCTAssertNil(current(life)?.responseDocumentId)
+        await refreshAt(life, time: Self.freshStart + Self.aDay)
+        XCTAssertEqual(current(life)?.responseRemoved, true)
+    }
+
+    /// Edge: two apps, one unresolved; the disconnect of the other app gives no note and keeps the mark.
+    func testEndToEndADisconnectOfOneAppLeavesTheUnresolvedPublishOfAnotherAppMarked() async throws {
+        let unresolved = Self.intent(
+            app: Self.otherApp, key: Self.otherAppKey, closedAt: Self.at, responseDocumentId: nil)
+        let life = lifetime(intent: Self.intent(responseDocumentId: Self.documentId), known: [unresolved])
+        await publishThatTimesOut(life, intent: unresolved)
+
+        let result = try await life.dataSource.disconnect(id: Self.app.toBase58String(), scope: Self.scope)
+
+        XCTAssertFalse(result.responsesMayAppear, "no note for the app disconnected")
+        let kept = life.intents.load().first { $0.id == unresolved.id }
+        XCTAssertEqual(kept?.responseRemoved, false, "the unresolved publish keeps its mark")
+        XCTAssertEqual(kept?.publishStartBlockTimeMs, Self.freshStart)
+        XCTAssertTrue(AppConnect.isPublishUnresolved(try XCTUnwrap(kept), platformTime: Self.freshStart + 1_000))
+        life.held.end(.failure(SubmitEndedBadly()))
+    }
+}
+
 /// The owners of contracts and contract groups, read from Platform and
 /// remembered for the app's run: a known owner is never read again, and a
 /// read that fails leaves the owner unknown, to be read again.
@@ -5433,5 +6302,414 @@ final class AppConnectOwnersThroughSeamsTests: XCTestCase {
         let result = try await h.dataSource.disconnect(id: Self.sibling.toBase58String(), scope: "wallet  ")
         XCTAssertEqual(h.platform.disabled, [20])
         XCTAssertEqual(result.keysTurnedOff, 1)
+    }
+}
+
+// MARK: - The publish start and a late outcome (response-publish-lifetime, T5)
+
+/// `publishAndRecord` through the real intent store of a wallet (UserDefaults),
+/// an executor whose timer fires at once and a submit the test releases.
+final class AppConnectPublishLifetimeTests: XCTestCase {
+    private static let at = Date(timeIntervalSince1970: 1_773_132_300)
+    private static let identity = Data(repeating: 0x01, count: 32)
+    private static let documentId = Data(repeating: 0xDD, count: 32)
+    private static let start: UInt64 = 1_800_000_000_000
+    private static let walletA = "wallet-a"
+    private static let walletB = "wallet-b"
+
+    private var defaults: UserDefaults!
+    private var suiteName: String!
+
+    override func setUp() {
+        super.setUp()
+        suiteName = "AppConnectPublishLifetimeTests.\(UUID().uuidString)"
+        defaults = UserDefaults(suiteName: suiteName)
+    }
+
+    override func tearDown() {
+        defaults.removePersistentDomain(forName: suiteName)
+        defaults = nil
+        suiteName = nil
+        super.tearDown()
+    }
+
+    private func store(_ wallet: String) -> UserDefaultsAppConnectIntentStore {
+        UserDefaultsAppConnectIntentStore(defaults: defaults, scope: .key { wallet })
+    }
+
+    private func storageKey(_ wallet: String) -> String { wallet + UserDefaultsAppConnectIntentStore.keySuffix }
+
+    private static func intent() -> AppConnect.ConnectionIntent {
+        AppConnect.ConnectionIntent(
+            id: UUID(), identityId: identity, appId: Data(repeating: 0xA1, count: 32), appLabel: "App", appUrl: "",
+            requestHash: Data(repeating: 0xEE, count: 20), connectionId: Data(repeating: 0xC1, count: 32),
+            keys: [], sentEncryptionKeyIds: [], disables: [],
+            response: AppConnect.ResponseValues(
+                appEphemeralPubKeyHash: "ee", walletEphemeralPubKey: "02", encryptedPayload: "00"),
+            responseDocumentId: nil, responseRemoved: false,
+            createdAt: Date(timeIntervalSince1970: 0), closedAt: nil)
+    }
+
+    private struct SubmitFailed: Error {}
+
+    /// A submit the test lets end, with an error or without.
+    private final class Release: @unchecked Sendable {
+        private let lock = NSLock()
+        private var continuation: CheckedContinuation<Void, Error>?
+        private var released: Result<Void, Error>?
+        private var lines: [String] = []
+
+        func wait() async throws {
+            try await withCheckedThrowingContinuation { (next: CheckedContinuation<Void, Error>) in
+                let ready = lock.withLock { () -> Result<Void, Error>? in
+                    if let released { return released }
+                    continuation = next
+                    return nil
+                }
+                if let ready { next.resume(with: ready) }
+            }
+        }
+
+        func end(_ result: Result<Void, Error>) {
+            let next = lock.withLock { () -> CheckedContinuation<Void, Error>? in
+                released = result
+                defer { continuation = nil }
+                return continuation
+            }
+            next?.resume(with: result)
+        }
+
+        func log(_ line: String) { lock.withLock { lines.append(line) } }
+        func logged(_ part: String) -> Bool { lock.withLock { lines.contains { $0.contains(part) } } }
+    }
+
+    /// The timer fires at once, so a submit that waits on `release` times out.
+    private static func executor(
+        release: Release,
+        beforeEnd: @escaping @Sendable () -> Void = {}
+    ) -> AppConnectWriteExecutor {
+        AppConnectWriteExecutor(
+            sleep: { _ in }, log: { release.log($0) },
+            submit: { _ in
+                try await release.wait()
+                beforeEnd()
+            })
+    }
+
+    private func waitUntil(_ what: String, _ condition: () -> Bool) async {
+        for _ in 0 ..< 200 where !condition() { try? await Task.sleep(for: .milliseconds(10)) }
+        XCTAssertTrue(condition(), what)
+    }
+
+    /// Publishes `intent` on wallet A with a submit that times out; returns
+    /// once the publish call itself has thrown its timeout.
+    private func publishThatTimesOut(
+        _ intent: AppConnect.ConnectionIntent,
+        in intents: any AppConnectIntentStore,
+        release: Release,
+        gate: DashConnectOperationGate = DashConnectOperationGate(),
+        platformTime: UInt64? = start,
+        created: Data? = documentId
+    ) async {
+        let executor = Self.executor(release: release)
+        do {
+            try await PlatformDashConnectDataSource.publishAndRecord(
+                intent, intents: intents, executor: executor, now: { Self.at },
+                platformTime: platformTime, walletIdHex: Self.walletA, operationGate: gate,
+                createdDocumentId: { created }, lookUp: { nil })
+            XCTFail("a publish nobody can find is not delivered")
+        } catch {
+            XCTAssertTrue(error is AppConnectWriteTimedOut, "\(error)")
+        }
+    }
+
+    // MARK: The start is recorded before the submit (AC-07)
+
+    func testThePublishStartIsOnTheIntentBeforeTheSubmitRuns() async throws {
+        let intent = Self.intent()
+        let intents = store(Self.walletA)
+        intents.save([intent])
+        let seen = Seen()
+        let executor = AppConnectWriteExecutor(
+            sleep: { _ in try await Task.sleep(for: .seconds(1_000_000)) }, log: { _ in },
+            submit: { _ in seen.set(intents.load().first?.publishStartBlockTimeMs) })
+
+        try await PlatformDashConnectDataSource.publishAndRecord(
+            intent, intents: intents, executor: executor, now: { Self.at },
+            platformTime: Self.start, walletIdHex: Self.walletA, operationGate: DashConnectOperationGate(),
+            createdDocumentId: { Self.documentId }, lookUp: { nil })
+
+        XCTAssertEqual(seen.value, Self.start, "the start is persisted when the submit begins")
+        XCTAssertEqual(intents.load().first?.publishStartBlockTimeMs, Self.start)
+        XCTAssertEqual(intents.load().first?.responseDocumentId, Self.documentId)
+    }
+
+    private final class Seen: @unchecked Sendable {
+        private let lock = NSLock()
+        private var stored: UInt64?
+        func set(_ value: UInt64?) { lock.withLock { stored = value } }
+        var value: UInt64? { lock.withLock { stored } }
+    }
+
+    func testNoPublishStartIsRecordedWhenTheApprovalHasNoPlatformTime() async throws {
+        let intent = Self.intent()
+        let intents = store(Self.walletA)
+        intents.save([intent])
+
+        try await PlatformDashConnectDataSource.publishAndRecord(
+            intent, intents: intents, executor: AppConnectWriteExecutor(
+                sleep: { try await Task.sleep(for: $0) }, log: { _ in }, submit: { _ in }),
+            now: { Self.at }, platformTime: nil, walletIdHex: Self.walletA, operationGate: DashConnectOperationGate(),
+            createdDocumentId: { Self.documentId }, lookUp: { nil })
+
+        XCTAssertNil(intents.load().first?.publishStartBlockTimeMs)
+    }
+
+    /// AC-03, AC-07: the start is the block time of the read after landing;
+    /// without one, of the read the intent was made from; without that one
+    /// either (a fence read again), of the approval's first read, which
+    /// always has one: the start is never missing.
+    func testThePublishStartFallsBackToTheApprovalReadWhenTheReadAfterLandingHasNoBlockTime() {
+        let start: (UInt64?, UInt64?, UInt64) -> UInt64 =
+            PlatformDashConnectDataSource.publishStart(afterLanding:intentRead:approvalRead:)
+
+        XCTAssertEqual(
+            start(Self.start, Self.start - 5_000, Self.start - 9_000), Self.start, "the read after landing wins")
+        XCTAssertEqual(start(nil, Self.start - 5_000, Self.start - 9_000), Self.start - 5_000)
+        XCTAssertEqual(
+            start(nil, nil, Self.start - 9_000), Self.start - 9_000,
+            "after a fence's read with no block time, the approval's first read")
+    }
+
+    func testThePublishStaysUnresolvedWhenTheStoreIsReloadedAfterATimeout() async throws {
+        let intent = Self.intent()
+        let intents = store(Self.walletA)
+        intents.save([intent])
+        let release = Release()
+        await publishThatTimesOut(intent, in: intents, release: release)
+
+        let reloaded = try XCTUnwrap(store(Self.walletA).load().first)
+
+        XCTAssertEqual(reloaded.publishStartBlockTimeMs, Self.start)
+        XCTAssertTrue(AppConnect.isPublishUnresolved(reloaded, platformTime: Self.start + 3_600_000))
+        release.end(.failure(SubmitFailed()))
+    }
+
+    // MARK: A late outcome (AC-09, AC-03)
+
+    func testALateSubmitRecordsTheDocumentOnTheIntent() async throws {
+        let intent = Self.intent()
+        let intents = store(Self.walletA)
+        intents.save([intent])
+        let release = Release()
+        await publishThatTimesOut(intent, in: intents, release: release)
+        XCTAssertNil(intents.load().first?.responseDocumentId, "still unknown at the timeout")
+
+        release.end(.success(()))
+
+        await waitUntil("the late document is recorded") { intents.load().first?.responseDocumentId != nil }
+        let stored = try XCTUnwrap(intents.load().first)
+        XCTAssertEqual(stored.responseDocumentId, Self.documentId)
+        XCTAssertFalse(stored.responseRemoved)
+        XCTAssertFalse(AppConnect.isPublishUnresolved(stored, platformTime: Self.start + 3_600_000))
+    }
+
+    /// A disconnect found the response first, deleted it and recorded it
+    /// removed; the late document of the same publish does not undo that.
+    func testALateSubmitAfterADisconnectDeletedTheResponseLeavesItRemoved() async throws {
+        let intent = Self.intent()
+        let intents = store(Self.walletA)
+        intents.save([intent])
+        let release = Release()
+        await publishThatTimesOut(intent, in: intents, release: release)
+        var resolved = try XCTUnwrap(intents.load().first)
+        resolved.responseDocumentId = Self.documentId
+        resolved.responseRemoved = true
+        intents.save([resolved])
+
+        release.end(.success(()))
+
+        await waitUntil("the late submit is seen") { release.logged("late submitted") }
+        try? await Task.sleep(for: .milliseconds(100))
+        XCTAssertEqual(intents.load().first?.responseRemoved, true, "the deleted response stays recorded removed")
+        XCTAssertEqual(intents.load().first?.responseDocumentId, Self.documentId)
+    }
+
+    func testALateFailureRecordsNothingAndThePublishStaysUnresolved() async throws {
+        let intent = Self.intent()
+        let intents = store(Self.walletA)
+        intents.save([intent])
+        let release = Release()
+        await publishThatTimesOut(intent, in: intents, release: release)
+
+        release.end(.failure(SubmitFailed()))
+
+        await waitUntil("the late failure is seen") { release.logged("late failed") }
+        try? await Task.sleep(for: .milliseconds(100))
+        let stored = try XCTUnwrap(intents.load().first)
+        XCTAssertNil(stored.responseDocumentId)
+        XCTAssertTrue(AppConnect.isPublishUnresolved(stored, platformTime: Self.start + 3_600_000))
+    }
+
+    func testALateSubmitThatCreatedNoDocumentRecordsNothing() async throws {
+        let intent = Self.intent()
+        let intents = store(Self.walletA)
+        intents.save([intent])
+        let release = Release()
+        await publishThatTimesOut(intent, in: intents, release: release, created: nil)
+
+        release.end(.success(()))
+
+        await waitUntil("the late submit is seen") { release.logged("late submitted") }
+        try? await Task.sleep(for: .milliseconds(100))
+        XCTAssertNil(intents.load().first?.responseDocumentId)
+    }
+
+    // MARK: Another wallet (AC-10)
+
+    func testALateSubmitAfterASwitchIsRecordedOnTheStartingWalletOnly() async throws {
+        let intent = Self.intent()
+        let walletA = store(Self.walletA)
+        walletA.save([intent])
+        let other = Self.intent()
+        let walletB = store(Self.walletB)
+        walletB.save([other])
+        let release = Release()
+        await publishThatTimesOut(intent, in: walletA, release: release)
+
+        // The user is in wallet B now: it holds its own gate.
+        release.end(.success(()))
+
+        await waitUntil("the document is recorded on wallet A") { walletA.load().first?.responseDocumentId != nil }
+        XCTAssertEqual(walletA.load().first?.responseDocumentId, Self.documentId)
+        XCTAssertNil(walletB.load().first?.responseDocumentId, "wallet B's intents are not touched")
+        XCTAssertNil(walletB.load().first?.publishStartBlockTimeMs)
+    }
+
+    func testALateSubmitOfAWipedWalletIsDroppedAndDoesNotRecreateTheStoreKey() async throws {
+        let intent = Self.intent()
+        let intents = store(Self.walletA)
+        intents.save([intent])
+        let release = Release()
+        await publishThatTimesOut(intent, in: intents, release: release)
+        defaults.removeObject(forKey: storageKey(Self.walletA))
+
+        release.end(.success(()))
+
+        await waitUntil("the late submit is seen") { release.logged("late submitted") }
+        try? await Task.sleep(for: .milliseconds(200))
+        XCTAssertNil(defaults.object(forKey: storageKey(Self.walletA)), "a wiped wallet's key is not recreated")
+        XCTAssertTrue(intents.load().isEmpty)
+    }
+
+    /// A store whose `load` number `wipeAfterLoad` after `arm` reads, then
+    /// starts a wipe of every DashConnect key on another thread and gives it
+    /// a moment to finish before it returns what it read: the wipe falls
+    /// between that read and the save that follows it.
+    private final class WipedDuringLoad: AppConnectIntentStore, @unchecked Sendable {
+        let store: UserDefaultsAppConnectIntentStore
+        private let defaults: UserDefaults
+        private let lock = NSLock()
+        private var loadsToWipe: Int?
+        /// Signalled once the wipe has run.
+        let wiped = DispatchSemaphore(value: 0)
+        private let wipeEnded = DispatchSemaphore(value: 0)
+
+        init(defaults: UserDefaults, scopeKey: String) {
+            self.defaults = defaults
+            store = UserDefaultsAppConnectIntentStore(defaults: defaults, scope: .key { scopeKey })
+        }
+
+        func arm(wipeAfterLoad count: Int) { lock.withLock { loadsToWipe = count } }
+
+        var canPersist: Bool { store.canPersist }
+        func hasUnreadableRows(identityId: Data) -> Bool { store.hasUnreadableRows(identityId: identityId) }
+        func save(_ intents: [AppConnect.ConnectionIntent]) { store.save(intents) }
+        func pinned(toWalletIdHex walletIdHex: String) -> any AppConnectIntentStore { self }
+
+        func load() -> [AppConnect.ConnectionIntent] {
+            let wipeNow = lock.withLock { () -> Bool in
+                guard let left = loadsToWipe else { return false }
+                loadsToWipe = left > 1 ? left - 1 : nil
+                return left == 1
+            }
+            let read = store.load()
+            if wipeNow {
+                let defaults = defaults
+                let wiped = wiped
+                let wipeEnded = wipeEnded
+                DispatchQueue.global().async {
+                    DashConnectStores.removeAllWallets(in: defaults)
+                    wipeEnded.signal()
+                    wiped.signal()
+                }
+                _ = wipeEnded.wait(timeout: .now() + .milliseconds(200))
+            }
+            return read
+        }
+    }
+
+    /// PastaClaw review of #1414: a wipe that starts while the late result
+    /// reads the intents runs after its save, so the save does not bring
+    /// the wiped wallet's intents back.
+    func testAWipeDuringALateRecordIsNotUndoneByItsSave() async throws {
+        let intent = Self.intent()
+        let scopeKey = UserDefaultsDashConnectStore.keyPrefix + "testnet." + Self.walletA
+        let intents = WipedDuringLoad(defaults: defaults, scopeKey: scopeKey)
+        intents.save([intent])
+        let release = Release()
+        await publishThatTimesOut(intent, in: intents, release: release)
+        intents.arm(wipeAfterLoad: 1)
+
+        release.end(.success(()))
+
+        await waitUntil("the late submit is seen") { release.logged("late submitted") }
+        XCTAssertEqual(intents.wiped.wait(timeout: .now() + .seconds(2)), .success, "the wipe ran")
+        try? await Task.sleep(for: .milliseconds(200))
+        XCTAssertNil(
+            defaults.object(forKey: scopeKey + UserDefaultsAppConnectIntentStore.keySuffix),
+            "the wiped wallet's intents are not saved back")
+    }
+
+    /// PastaClaw review of #1414: the same for recording a response removed,
+    /// which follows a delete or lookup that ran for a while.
+    func testAWipeWhileARemovalIsRecordedIsNotUndoneByItsSave() async throws {
+        var intent = Self.intent()
+        intent.responseDocumentId = Self.documentId
+        let scopeKey = UserDefaultsDashConnectStore.keyPrefix + "testnet." + Self.walletA
+        let intents = WipedDuringLoad(defaults: defaults, scopeKey: scopeKey)
+        intents.save([intent])
+        intents.arm(wipeAfterLoad: 1)
+
+        await PlatformDashConnectDataSource.deleteResponse(
+            documentId: Self.documentId, of: intent.id, intents: intents,
+            executor: AppConnectWriteExecutor(sleep: { try await Task.sleep(for: $0) }, log: { _ in }, submit: { _ in }),
+            now: { Self.at }, lookUp: { nil })
+
+        XCTAssertEqual(intents.wiped.wait(timeout: .now() + .seconds(2)), .success, "the wipe ran")
+        XCTAssertNil(
+            defaults.object(forKey: scopeKey + UserDefaultsAppConnectIntentStore.keySuffix),
+            "the wiped wallet's intents are not saved back")
+    }
+
+    /// PastaClaw review of #1414: the same for recording the document of a
+    /// publish that ended on time.
+    func testAWipeWhileAPublishIsRecordedIsNotUndoneByItsSave() async throws {
+        let intent = Self.intent()
+        let scopeKey = UserDefaultsDashConnectStore.keyPrefix + "testnet." + Self.walletA
+        let intents = WipedDuringLoad(defaults: defaults, scopeKey: scopeKey)
+        intents.save([intent])
+        intents.arm(wipeAfterLoad: 1)
+
+        try await PlatformDashConnectDataSource.publishAndRecord(
+            intent, intents: intents, executor: AppConnectWriteExecutor(
+                sleep: { try await Task.sleep(for: $0) }, log: { _ in }, submit: { _ in }),
+            now: { Self.at }, platformTime: nil, walletIdHex: Self.walletA, operationGate: DashConnectOperationGate(),
+            createdDocumentId: { Self.documentId }, lookUp: { nil })
+
+        XCTAssertEqual(intents.wiped.wait(timeout: .now() + .seconds(2)), .success, "the wipe ran")
+        XCTAssertNil(
+            defaults.object(forKey: scopeKey + UserDefaultsAppConnectIntentStore.keySuffix),
+            "the wiped wallet's intents are not saved back")
     }
 }

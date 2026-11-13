@@ -75,6 +75,29 @@ final class DashConnectStoreTests: XCTestCase {
         XCTAssertEqual(store.load().map(\.seenOn), [[]])
     }
 
+    /// AC-12, AC-07: a Disconnected row's "response may still be on Platform"
+    /// mark survives a restart; a row written before the mark reads unmarked.
+    func testTheResponseMayRemainMarkRoundTripsAndAnOlderRowReadsUnmarked() throws {
+        let store = makeStore(network: .testnet, walletIdHex: "wallet-a")
+        var row = DAppConnection(
+            id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", name: "Yappr", url: "yap.pr", status: .disconnected,
+            updatedAt: Date(timeIntervalSince1970: 10))
+        row.responseMayRemain = true
+        store.save([row])
+        XCTAssertEqual(store.load().map(\.responseMayRemain), [true])
+
+        row.responseMayRemain = false
+        store.save([row])
+        XCTAssertEqual(store.load().map(\.responseMayRemain), [false])
+
+        let older: [[String: Any]] = [
+            ["contractId": "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", "label": "Yappr", "url": "yap.pr",
+             "status": "disconnected", "updatedAt": 1_773_132_300_000],
+        ]
+        defaults.set(try JSONSerialization.data(withJSONObject: older), forKey: try XCTUnwrap(store.storageKey))
+        XCTAssertEqual(store.load().map(\.responseMayRemain), [false])
+    }
+
     func testARowOfTheRemovedApprovedStatusIsDroppedAndTheOthersKept() throws {
         let store = makeStore(network: .testnet, walletIdHex: "wallet-a")
         let payload: [[String: Any]] = [
