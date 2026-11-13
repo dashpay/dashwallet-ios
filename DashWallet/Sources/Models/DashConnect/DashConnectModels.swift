@@ -348,6 +348,16 @@ struct KeyFunding: Equatable {
         }
     }
 
+    /// Whether `lines` hold together: nothing left above its key's total.
+    /// The totals come from an identity read and what is left from a later
+    /// one, so a limits update between them makes them disagree.
+    static func agree(_ lines: [KeyFunding]) -> Bool {
+        lines.allSatisfy { line in
+            guard let total = line.totalBudget, let remaining = line.remaining else { return true }
+            return remaining <= total
+        }
+    }
+
     /// The ids `of(intents:snapshot:unrecorded:remaining:)` lists, whose
     /// remaining budgets are read from Platform.
     static func keyIds(
