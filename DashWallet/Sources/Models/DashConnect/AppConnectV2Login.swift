@@ -174,9 +174,10 @@ extension AppConnect {
                         if let snapshot {
                             switch AppConnect.presence(of: key, in: snapshot) {
                             case .live, .expired:
-                                let actual = snapshot.keys.first { $0.id == key.id }
-                                totalBudget = actual?.totalBudget
-                                expiresAt = actual?.expiresAt ?? submittedExpiry
+                                // Its bound not read yet: not known to be access.
+                                guard let actual = AppConnect.accessKey(of: key, in: snapshot) else { return nil }
+                                totalBudget = actual.totalBudget
+                                expiresAt = actual.expiresAt ?? submittedExpiry
                             case .missing:
                                 guard mayLand else { return nil }
                             case .disabled, .conflicting:

@@ -323,6 +323,18 @@ struct ConnectionDetails: Equatable {
     var fundingReadFailed = false
 }
 
+/// What is left of a connection's keys' budgets, read apart from its details
+/// so the sheet does not wait on it.
+enum ConnectionFundingRead: Equatable {
+    /// Nothing to read: no landed key, no identity read, or not the active
+    /// wallet's row.
+    case notRead
+    case read([KeyFunding])
+    /// The read failed, or what it said is above the totals the identity
+    /// read gave (a limits update between the two).
+    case failed
+}
+
 /// One of a connection's keys, with what is left of its budget.
 struct KeyFunding: Equatable {
     /// The key is bound to the DashPay profile, not to the app's data.
@@ -372,10 +384,7 @@ struct KeyFunding: Equatable {
         unrecorded: [AppConnect.PlatformKey]
     ) -> [AppConnect.PlatformKey] {
         var listed = Set<UInt32>()
-        let recorded = intents.flatMap(\.authKeys).compactMap { key -> AppConnect.PlatformKey? in
-            guard [.live, .expired].contains(AppConnect.presence(of: key, in: snapshot)) else { return nil }
-            return snapshot.keys.first { $0.id == key.id }
-        }
+        let recorded = intents.flatMap(\.authKeys).compactMap { AppConnect.accessKey(of: $0, in: snapshot) }
         return (recorded + unrecorded).filter { listed.insert($0.id).inserted }
     }
 }
