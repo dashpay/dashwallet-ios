@@ -1541,7 +1541,7 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
         spy.funding = .read([KeyFunding(isProfileKey: false, totalBudget: 1000, remaining: 400)])
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
         await waitUntil { !viewModel.connections.isEmpty }
-        viewModel.showConnection(viewModel.rows[0])
+        viewModel.showConnection(viewModel.rows(for: .active)[0])
         await waitUntil { viewModel.shownFundingLines != nil }
 
         spy.details = ConnectionDetails(
