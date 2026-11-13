@@ -37,6 +37,7 @@ private final class FakeContests: VotingContestReading {
 
 private final class FakeNodes: VotableMasternodeResolving {
     var resolution = MasternodeVoterRegistry.Resolution(nodes: [], mayBeIncomplete: false)
+    var isNodeListSynced = true
     func votableNodes() -> MasternodeVoterRegistry.Resolution { resolution }
 }
 
@@ -492,6 +493,25 @@ final class VotingListViewModelTests: XCTestCase {
             return XCTFail("expected cannot-filter, got \(String(describing: list.emptyState))")
         }
         XCTAssertTrue(reason.contains("missing from this list"))
+    }
+
+    /// Before the wallet's sync is done the nodes read so far may not be all
+    /// of this wallet's, so its own votes cannot be told yet.
+    func testMyVotesFilterBeforeTheWalletsSyncIsDoneCannotFilter() async {
+        votingWallet()
+        nodes.isNodeListSynced = false
+        contests.result = .success([single("alice")])
+        let store = makeStore()
+        let list = makeList(store)
+        await store.refresh()
+
+        list.filter.type = .notVoted
+
+        XCTAssertFalse(list.canFilterByMyVotes)
+        guard case .cannotFilterByMyVotes(let reason)? = list.emptyState else {
+            return XCTFail("expected cannot-filter, got \(String(describing: list.emptyState))")
+        }
+        XCTAssertEqual(reason, "The masternode list is still syncing. Try again in a moment.")
     }
 
     /// AC-09, AC-12: before voting is set up no vote is this wallet's own, so
