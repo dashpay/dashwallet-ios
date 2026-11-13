@@ -282,7 +282,7 @@ struct ConnectionAccess: Equatable {
 
     /// What `intents` gave as the wallet recorded it, with no read of the
     /// identity: for a connection that ended, whose keys are off, the sheet
-    /// tells what the app was able to do. `nil` when they add no auth key.
+    /// tells what the user allowed the app to do. `nil` when they add no auth key.
     init?(recorded intents: [AppConnect.ConnectionIntent]) {
         let access = AppConnect.GrantedAccess(intents: intents)
         guard !access.keys.isEmpty else { return nil }
