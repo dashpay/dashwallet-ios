@@ -74,11 +74,17 @@ protocol DashConnectDataSource {
     /// identity's intents for the app; `nil` when there is no active wallet
     /// or `scope` is not its.
     func connectionDetails(id: String, scope: String?) async -> ConnectionDetails?
+    /// What is left of the budgets of the keys `basis` gives the app, read
+    /// after the details told from it and apart from them, so the sheet
+    /// shows them first; `.notRead` when `basis` is not of the active
+    /// identity of the wallet `scope` names.
+    func connectionFunding(for basis: ConnectionBasis, scope: String?) async -> ConnectionFundingRead
 }
 
 extension DashConnectDataSource {
     func refreshConnections() async {}
     func connectionDetails(id: String, scope: String?) async -> ConnectionDetails? { nil }
+    func connectionFunding(for basis: ConnectionBasis, scope: String?) async -> ConnectionFundingRead { .notRead }
 }
 
 /// Why a token purchase failed, and — the part that decides what the UI may
