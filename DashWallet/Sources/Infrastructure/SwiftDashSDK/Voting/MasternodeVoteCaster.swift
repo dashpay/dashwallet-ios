@@ -18,7 +18,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 // MARK: - VoteChoice
@@ -106,10 +105,6 @@ struct VoteCastReport {
 /// poll, fanning out across nodes, and reporting what actually landed.
 @MainActor
 final class MasternodeVoteCaster {
-
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.voting")
 
     /// Vote history is per Platform network — a testnet contest and a mainnet
     /// one can share a label, and their counts must never merge.
@@ -219,6 +214,13 @@ final class MasternodeVoteCaster {
             choice: choice, onNormalizedLabel: normalizedLabel, with: nodes)
     }
 
+    /// A node as the voting log lines name it: its kind, the vote weight
+    /// Platform gives it, and its short pro_tx_hash, which is public in the
+    /// masternode list. Never the voting key.
+    private static func logName(_ node: VoterNode) -> String {
+        "\(node.isEvonode ? "evonode" : "masternode") \(node.typeIndex) \(node.shortProTxHash) (weight \(node.voteWeight))"
+    }
+
     /// The per-node broadcast loop, after authentication and pre-flight.
     ///
     /// Nodes are processed **serially**: the SDK fetches an identity nonce for
@@ -235,9 +237,11 @@ final class MasternodeVoteCaster {
         outcomes.reserveCapacity(nodes.count)
 
         for node in nodes {
+            let attempt = "\(choice.logDescription) on \(normalizedLabel) with \(Self.logName(node))"
             // Re-read the count before every cast: Platform refuses the sixth,
             // and an unreadable count is unknown, never zero.
             guard let votes = await history.votes(forContest: normalizedLabel, network: Self.networkKey) else {
+                DWLogger.log("Voting: \(attempt) not sent: vote count unreadable")
                 outcomes.append(VoteOutcome(
                     node: node,
                     failure: NSLocalizedString(
@@ -247,6 +251,7 @@ final class MasternodeVoteCaster {
             }
             let castCount = votes.first { $0.proTxHash == node.proTxHash }?.castCount ?? 0
             guard castCount < VoteLimit.maxCastsPerNode else {
+                DWLogger.log("Voting: \(attempt) not sent: no votes left (\(castCount) cast)")
                 outcomes.append(VoteOutcome(
                     node: node,
                     failure: NSLocalizedString("No votes left", comment: "Voting")))
@@ -254,6 +259,7 @@ final class MasternodeVoteCaster {
             }
 
             guard let votingKey = votingKey(node) else {
+                DWLogger.log("Voting: \(attempt) not sent: no voting key")
                 outcomes.append(VoteOutcome(
                     node: node,
                     failure: NSLocalizedString(
@@ -269,10 +275,7 @@ final class MasternodeVoteCaster {
                 // and never logged beyond the error's type.
                 let message = VoteErrorMessage.plain(for: error)
                 outcomes.append(VoteOutcome(node: node, failure: message))
-                let errorType = String(describing: type(of: error))
-                let nodeName = node.displayName
-                Self.logger.error(
-                    "🗳️ VOTING :: cast failed on \(normalizedLabel, privacy: .public) with \(nodeName, privacy: .public): \(errorType, privacy: .public)")
+                DWLogger.log("Voting: \(attempt) failed: \(String(describing: type(of: error)))")
                 continue
             }
 
@@ -289,13 +292,10 @@ final class MasternodeVoteCaster {
                     network: Self.networkKey)
             } catch {
                 historyRecorded = false
-                let errorType = String(describing: type(of: error))
-                Self.logger.error(
-                    "🗳️ VOTING :: history write failed on \(normalizedLabel, privacy: .public): \(errorType, privacy: .public)")
+                DWLogger.log("Voting: history write failed on \(normalizedLabel): \(String(describing: type(of: error)))")
             }
             outcomes.append(VoteOutcome(node: node, failure: nil, historyRecorded: historyRecorded))
-            Self.logger.info(
-                "🗳️ VOTING :: cast \(choice.logDescription, privacy: .public) on \(normalizedLabel, privacy: .public) with \(node.displayName, privacy: .public)")
+            DWLogger.log("Voting: \(attempt) landed (cast \(castCount + 1) of \(VoteLimit.maxCastsPerNode))")
         }
 
         return VoteCastReport(

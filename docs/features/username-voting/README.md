@@ -13,6 +13,31 @@ wallets, so iOS follows Android's rules where the design is silent, minus Androi
 
 ## What changed
 
+Stage 4:
+
+- **Vote from the pills.** A tap on the block or approve pill sends the vote; the pill shows it is
+  sending, and once it lands a toast confirms it and the pill is filled. A tap on a filled pill, or
+  "Cancel approval" in Request details, cancels the vote with an abstain. While a vote sends, no
+  other vote can start.
+- **One gate order for every vote.** Voting has ended → voting not set up → "No votes left" → "One
+  vote left" → for a block, the confirmation that a blocked name cannot be requested again. Only the
+  first thing that stops a vote is shown
+  ([ADR-0035](../../adr/0035-run-every-vote-through-a-pure-vote-attempt-state-machine.md)).
+- **"Add your voting keys" with tick-boxes.** The first vote on this install opens it: this
+  wallet's masternodes and imported keys, a "N votes will be cast" caption, a warning that voting
+  together links masternodes, and a Block or Approve button that casts the vote without a second
+  tap. Until it is confirmed once, no recorded vote counts as mine. "Voting keys" in the list's menu
+  opens it to change the ticks later. The ticks stay as chosen: a masternode list that is still
+  loading or incomplete never drops a ticked masternode
+  ([ADR-0038](../../adr/0038-let-only-the-voting-store-write-the-remembered-node-choice.md)).
+  "Enter voting key" follows the design and names its two refusals.
+- **Outcomes.** A failed vote shows an error toast; when some masternodes' votes land and others
+  fail, a sheet lists each one, and "Try again" resends from the failed ones only. A vote the
+  masternodes already hold is not sent again, and a toast says so.
+- **The list's bar and messages.** The DashUIKit navigation bar with a round back button and a
+  "Voting keys" menu; refresh failed, node list incomplete and vote history unavailable show as one
+  message above the rows. The old cast sheet, contest screen and node selection sheet are removed.
+
 Stages 1–3 (this set of PRs):
 
 - **The list follows the design.** A large title with an explanation, "All" with the number of open
@@ -41,13 +66,14 @@ Stages 1–3 (this set of PRs):
   before each cast.
 - A vote that landed is never shown as not cast because an older list read arrived later.
 - A contest is not removed from the list before its voting end.
+- No vote is sent before the owner has confirmed once which masternodes vote, and no block is sent
+  without its confirmation.
+- Only one vote sends at a time, and a vote the ticked masternodes already hold is not sent again.
 
 ## Not in scope here
 
 Later stage PRs of the same feature:
 
-- Voting straight from the pills, the "One vote left", "No votes left" and lock-is-final dialogs,
-  the vote-result sheet, and "Add your voting keys" with tick-boxes (stage 4).
 - Request dates, "Link included", the voting period start, "Only requests with links" and Quick
   voting (stage 5b, after the platform SDK change for request dates).
 - Votes cast from another device stay invisible: the vote history is local, as on Android.

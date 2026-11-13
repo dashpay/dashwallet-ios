@@ -59,12 +59,10 @@ final class VotingListViewModel: ObservableObject {
     /// ``visibleContests`` grouped by the day voting ends.
     @Published private(set) var sections: [VotingListSection] = []
 
-    /// The outcome of the last vote, shown in the list's bottom bar and over
-    /// the contest screen.
+    /// The outcome of the last vote, shown in the list's bottom bar (and, for
+    /// an error, on Request details) until it is closed or the next vote
+    /// attempt starts.
     @Published private(set) var toast: VotingToast?
-
-    /// How long a toast stays before it clears itself.
-    static let toastDuration: Duration = .seconds(3)
 
     private let store: VotingStore
     private let normalizedLabel: @MainActor (String) -> String?
@@ -90,18 +88,36 @@ final class VotingListViewModel: ObservableObject {
         recomputeVisible()
     }
 
-    /// What the list shows in place of, or above, its rows.
+    /// What the list shows in place of, or above, its rows. The full-screen
+    /// error only while no list read has succeeded since the screen opened;
+    /// after one, a failed refresh keeps what is on screen (AC-02).
     var loadState: VotingListLoadState {
         if !store.hasLoadedOnce { return .loading }
-        if store.loadFailed && store.contests.isEmpty { return .couldNotLoad }
+        if store.loadFailed && !store.didLoadContests { return .couldNotLoad }
         if store.contests.isEmpty { return .noContests }
         return .contests(refreshFailed: store.loadFailed)
     }
 
-    /// The banner over the kept rows when the last refresh failed (AC-02).
-    var refreshFailedText: String? {
-        guard loadState == .contests(refreshFailed: true) else { return nil }
-        return NSLocalizedString("Couldn't refresh.", comment: "Voting")
+    /// The one lasting state shown above the rows, highest first: the vote
+    /// history, the failed refresh, the incomplete node list. None until a
+    /// list read has succeeded since the screen opened, so never with the
+    /// first load's indicator or the full-screen error.
+    var message: VotingListMessage? {
+        guard store.didLoadContests else { return nil }
+        if store.historyUnavailable { return .historyUnavailable }
+        if store.loadFailed { return .refreshFailed }
+        if store.nodeListMayBeIncomplete { return .nodeListIncomplete }
+        return nil
+    }
+
+    /// A full read of the list is queued or running — pull to refresh, the
+    /// first load or Try again: the message's Try again shows progress.
+    var isTryingAgain: Bool { store.isRefreshing }
+
+    /// The message's Try again: reads the list and the vote history again,
+    /// unless a read is already queued or running.
+    func tryAgain() async {
+        await store.retry()
     }
 
     /// What the list shows instead of rows; `nil` when rows show.
@@ -150,9 +166,10 @@ final class VotingListViewModel: ObservableObject {
     /// Whether this wallet's own votes can be told for the types that read
     /// them: not when the history could not be read, nor while a voting node
     /// may be missing from the store's votable nodes (its votes would not count),
-    /// which is also so until the wallet's sync is done.
+    /// nor before voting is set up, when no vote is this wallet's own (AC-12),
+    /// nor until the wallet's sync is done.
     var canFilterByMyVotes: Bool {
-        !store.historyUnavailable && store.nodeListSynced && !store.nodeListMayBeIncomplete && store.canVote
+        !store.historyUnavailable && store.nodeListSynced && !store.nodeListMayBeIncomplete && store.isVotingSetUp
     }
 
     /// Why this wallet's own votes cannot be told, as the next step for the
@@ -174,6 +191,9 @@ final class VotingListViewModel: ObservableObject {
             return NSLocalizedString(
                 "This wallet's masternode voting keys aren't available right now, so it has no votes to filter by.",
                 comment: "Voting")
+        }
+        if !store.isVotingSetUp {
+            return NSLocalizedString("Set up voting to filter by your votes.", comment: "Voting")
         }
         return nil
     }
@@ -257,19 +277,21 @@ final class VotingListViewModel: ObservableObject {
 
     // MARK: Pills
 
-    /// Whether a tap on a list pill can start anything. A filled pill takes my
-    /// vote back (AC-17), so it stays tappable while a ticked node holding that
-    /// choice can still abstain; an outlined pill follows
-    /// ``VotingStore/canStartVote(_:on:)``.
+    /// Whether a list pill takes a tap. Every tap runs the vote gates, which
+    /// tell an ended contest (AC-03) and "No votes left" (AC-15) themselves, so
+    /// a pill is disabled only while voting is paused (the vote history cannot
+    /// be read, so the vote limit is unknown) and while a vote is being sent:
+    /// one vote at a time, so a send's report and Try again stay its own.
     func canTapPill(_ choice: VoteChoice, on normalizedLabel: String) -> Bool {
-        guard store.myChoices(on: normalizedLabel).contains(choice) else {
-            return store.canStartVote(choice, on: normalizedLabel)
-        }
-        return !store.isClosed(normalizedLabel: normalizedLabel)
-            && !store.nodesToCancel(choice, on: normalizedLabel).isEmpty
+        !store.historyUnavailable && !store.isVoteBusy
     }
 
-    // TODO(voting-4): the pill gates (No votes left, One vote left) run in the vote-attempt coordinator.
+    /// The pill whose vote is being sent on this contest; `nil` when none is,
+    /// or when the send did not start from a pill (Try again).
+    func sendingPill(on normalizedLabel: String) -> VoteChoice? {
+        store.sendingPill(on: normalizedLabel)
+    }
+
     /// The vote a pill tap asks for: the pill's choice, or, on a filled pill,
     /// an abstain from the ticked nodes holding it.
     func voteRequest(for choice: VoteChoice, on contest: DPNSContest) -> VoteFlowRequest {
@@ -280,8 +302,10 @@ final class VotingListViewModel: ObservableObject {
     }
 
     /// What a tap on the row's name does: one request opens its details,
-    /// several open or close in place.
-    func headerAccessibilityHint(for contest: DPNSContest) -> String {
+    /// several open or close in place. `nil` for a name with no request,
+    /// whose header has nothing to open.
+    func headerAccessibilityHint(for contest: DPNSContest) -> String? {
+        guard !contest.contenders.isEmpty else { return nil }
         guard isExpandable(contest) else {
             return NSLocalizedString("Opens the request details", comment: "Voting")
         }
@@ -308,13 +332,10 @@ final class VotingListViewModel: ObservableObject {
 
     // MARK: Toast
 
+    /// The toast stays until ``clearToast()``: its close button or the next
+    /// vote attempt (AC-06).
     func showToast(_ toast: VotingToast) {
         self.toast = toast
-        Task { [weak self, id = toast.id] in
-            try? await Task.sleep(for: Self.toastDuration)
-            // Only the toast this task was started for: a newer one has its own timer.
-            if self?.toast?.id == id { self?.toast = nil }
-        }
     }
 
     func clearToast() {
@@ -353,7 +374,7 @@ struct VotingRequestRow: Equatable {
 enum VotingListLoadState: Equatable {
     /// The first load has not finished.
     case loading
-    /// The load failed and nothing is cached.
+    /// No list read has succeeded since the screen opened.
     case couldNotLoad
     /// The load succeeded and no contest is open.
     case noContests
@@ -361,12 +382,53 @@ enum VotingListLoadState: Equatable {
     case contests(refreshFailed: Bool)
 }
 
+// MARK: - VotingListMessage
+
+/// A lasting state of the list, shown as a message above the rows while it
+/// lasts. It has no close button: it goes when its state ends.
+enum VotingListMessage: Equatable {
+    /// The vote history cannot be read, so voting is paused.
+    case historyUnavailable
+    /// A full read of the list failed after one had succeeded (AC-02).
+    case refreshFailed
+    /// A masternode this wallet votes with may be missing (AC-03b).
+    case nodeListIncomplete
+
+    var title: String {
+        switch self {
+        case .historyUnavailable:
+            return NSLocalizedString("Couldn't read your vote history.", comment: "Voting")
+        case .refreshFailed:
+            return NSLocalizedString("Couldn't refresh the list.", comment: "Voting")
+        case .nodeListIncomplete:
+            return NSLocalizedString("Some masternodes may be missing.", comment: "Voting")
+        }
+    }
+
+    var subtitle: String? {
+        switch self {
+        case .historyUnavailable:
+            return NSLocalizedString("Voting is paused.", comment: "Voting")
+        case .refreshFailed:
+            return nil
+        case .nodeListIncomplete:
+            return NSLocalizedString("Finish syncing.", comment: "Voting")
+        }
+    }
+
+    /// Whether the message has "Try again", which reads the list and the
+    /// vote history again.
+    var offersTryAgain: Bool {
+        self != .nodeListIncomplete
+    }
+}
+
 // MARK: - VotingListEmptyState
 
 /// What the list shows in place of its rows.
 enum VotingListEmptyState: Equatable {
     case loading
-    /// The load failed and nothing is cached (AC-02).
+    /// No list read has succeeded since the screen opened (AC-02).
     case couldNotLoad
     /// A type by my vote while this wallet's votes cannot be told, and why (AC-09).
     case cannotFilterByMyVotes(reason: String)
@@ -425,15 +487,55 @@ struct VotingListSection: Identifiable, Equatable {
 
 // MARK: - VotingToast
 
-/// A vote that landed on every node, told briefly in the list's bottom bar or
-/// over the contest screen. A
-/// partial or failed vote is not a toast: the cast sheet stays open and lists
-/// each node's outcome.
+/// A short message in the list's bottom bar: a vote that landed on every
+/// node, one every ticked masternode already held, one that failed outright,
+/// a vote on a contest that has ended, or a vote history that could not be
+/// read. Request details shows only this name's error toasts (a failed vote,
+/// an ended contest, an unreadable history) and its already-voted notice,
+/// never a landed vote. A mixed vote is not a toast: its report lists each
+/// node's outcome.
 struct VotingToast: Identifiable, Equatable {
     let id = UUID()
     let message: String
 
+    enum Style {
+        case success
+        case error
+    }
+
+    let style: Style
+    /// The vote was already held, so Request details tells it too: nothing
+    /// was sent and the screen stays.
+    var isAlreadyVoted = false
+
     static func voted(username: String) -> VotingToast {
-        VotingToast(message: String(format: NSLocalizedString("Voted %@ username", comment: "Voting"), username))
+        VotingToast(
+            message: String(format: NSLocalizedString("Voted %@ username", comment: "Voting"), username),
+            style: .success)
+    }
+
+    /// Every abstain of a cancel landed (AC-17).
+    static func voteCancelled(username: String) -> VotingToast {
+        VotingToast(
+            message: String(format: NSLocalizedString("Vote cancelled on %@", comment: "Voting"), username),
+            style: .success)
+    }
+
+    /// Every vote of the attempt failed; `reason` in plain words (AC-06).
+    static func failed(_ reason: String) -> VotingToast {
+        VotingToast(message: reason, style: .error)
+    }
+
+    /// A vote every ticked masternode already holds: nothing was sent (AC-12).
+    static func alreadyVoted(username: String) -> VotingToast {
+        let format = NSLocalizedString("Your masternodes already voted this way on %@", comment: "Voting")
+        return VotingToast(message: String(format: format, username), style: .success, isAlreadyVoted: true)
+    }
+
+    /// A vote on a contest whose voting end has passed (AC-03).
+    static func votingEnded(username: String) -> VotingToast {
+        VotingToast(
+            message: String(format: NSLocalizedString("Voting on %@ has ended", comment: "Voting"), username),
+            style: .error)
     }
 }

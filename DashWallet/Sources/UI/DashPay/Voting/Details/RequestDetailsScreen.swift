@@ -56,6 +56,7 @@ struct RequestDetailsScreen: View {
             approveTitle: viewModel.approveTitle,
             isApproveEnabled: viewModel.canApprove,
             isSending: voting.isSending(normalizedLabel: viewModel.normalizedLabel),
+            isBackEnabled: !voting.store.isVoteBusy,
             onBack: { dismiss() },
             onRetry: { Task { await viewModel.loadLink() } },
             onOpenLink: viewModel.open,
@@ -68,6 +69,21 @@ struct RequestDetailsScreen: View {
                 }
             }
             .voteFlow($voteRequest, viewModel: voting)
+            // A vote started here shows its result here; leaving mid-vote
+            // would take the result sheet with it. Hiding the system back
+            // button also holds the swipe-back.
+            .navigationBarBackButtonHidden(voting.store.isVoteBusy)
+            // A failed or already held vote is told here; a vote that landed is told by the list.
+            .overlay(alignment: .bottom) {
+                if let toast = voting.toast, viewModel.showsToast(toast) {
+                    toast.view(onClose: voting.list.clearToast)
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 92)
+                }
+            }
+            .onReceive(voting.store.$outcome.dropFirst()) { outcome in
+                if viewModel.returnsToList(after: outcome) { dismiss() }
+            }
     }
 }
 
@@ -83,6 +99,7 @@ struct RequestDetailsContent: View {
     let approveTitle: String
     let isApproveEnabled: Bool
     let isSending: Bool
+    var isBackEnabled = true
     let onBack: () -> Void
     let onRetry: () -> Void
     let onOpenLink: (URL) -> Void
@@ -91,7 +108,10 @@ struct RequestDetailsContent: View {
     var body: some View {
         VStack(spacing: 0) {
             DashUIKit.NavigationBar(
-                leading: { DashUIKit.NavigationBarElement.back.button(action: onBack) })
+                leading: {
+                    DashUIKit.NavigationBarElement.back.button(action: onBack)
+                        .disabled(!isBackEnabled)
+                })
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
@@ -182,12 +202,14 @@ private enum DetailsPreview {
         linkText: String?,
         period: String = "Not provided – Oct 25, 2026",
         approve: String = "Vote to approve",
-        isApproveEnabled: Bool = true
+        isApproveEnabled: Bool = true,
+        isSending: Bool = false,
+        isBackEnabled: Bool = true
     ) -> some View {
         RequestDetailsContent(
             username: username, identityId: identity, linkState: link, linkText: linkText,
-            votingPeriodText: period, approveTitle: approve, isApproveEnabled: isApproveEnabled, isSending: false,
-            onBack: {}, onRetry: {}, onOpenLink: { _ in }, onApprove: {})
+            votingPeriodText: period, approveTitle: approve, isApproveEnabled: isApproveEnabled, isSending: isSending,
+            isBackEnabled: isBackEnabled, onBack: {}, onRetry: {}, onOpenLink: { _ in }, onApprove: {})
     }
 }
 
@@ -212,6 +234,12 @@ private enum DetailsPreview {
 }
 #Preview("Approve disabled") {
     DetailsPreview.content(link: .none, linkText: "Not provided", isApproveEnabled: false)
+}
+#Preview("Sending") {
+    DetailsPreview.content(link: .none, linkText: "Not provided", isSending: true, isBackEnabled: false)
+}
+#Preview("Sending · other contest") {
+    DetailsPreview.content(link: .none, linkText: "Not provided", isApproveEnabled: false, isBackEnabled: false)
 }
 #Preview("No voting end") {
     DetailsPreview.content(link: .none, linkText: "Not provided", period: "Not provided")

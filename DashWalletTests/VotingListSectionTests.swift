@@ -121,6 +121,14 @@ final class VotingListSectionTests: XCTestCase {
         XCTAssertTrue(toast.message.contains("johndoe"))
     }
 
+    /// A vote that failed outright and a vote on an ended contest are error toasts (AC-03, AC-06).
+    func testFailureToastsAreErrors() {
+        XCTAssertEqual(VotingToast.failed("No connection").style, .error)
+        XCTAssertEqual(VotingToast.failed("No connection").message, "No connection")
+        XCTAssertEqual(VotingToast.votingEnded(username: "johndoe").style, .error)
+        XCTAssertEqual(VotingToast.voted(username: "johndoe").style, .success)
+    }
+
     /// AC-21: a pill's spoken vote count follows the plural rules: «1 vote», «3 votes».
     func testVoteCountIsSpokenWithPluralRules() {
         XCTAssertEqual(VotingContestCard.votesValue(count: 1), "1 vote")
