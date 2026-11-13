@@ -205,6 +205,12 @@ protocol IdentityCreditsSending {
     ) async -> CreditsSendResult
 }
 
+/// Identity to someone else's Shielded address: `identityId`'s credits shielded to `recipientRaw43`
+/// (`shieldedShieldFromIdentityToRecipient`, no memo), signed by `KeychainSigner`. Throws what the SDK throws.
+protocol IdentityToShieldedSending {
+    func shield(identityId: Data, recipientRaw43: Data, amountCredits: UInt64) async throws
+}
+
 /// The funds of a source the send is checked against, in the unit `AmountRules` counts for that source; nil when
 /// they cannot be read.
 protocol ExternalSendBalanceReading {
@@ -395,8 +401,7 @@ protocol ExternalSendExecuting: AnyObject {
 }
 
 /// Authenticates on Continue, prepares the exact send with its binding fee, and broadcasts only in `send`.
-/// Every route with a source is wired except Identity to Shielded, whose unavailable fee estimate stops it at Continue;
-/// Identity to its own identity has no route.
+/// Every route with a source is wired; Identity to its own identity has no route.
 @MainActor
 final class ExternalSendExecutor: ExternalSendExecuting {
     private let standardSend: CoreStandardSending
@@ -405,6 +410,7 @@ final class ExternalSendExecutor: ExternalSendExecuting {
     private let creditsSend: ShieldedPlatformSending
     private let identityTopUp: IdentityTopUpFromCreditsSending
     private let identityCredits: IdentityCreditsSending
+    private let identityShield: IdentityToShieldedSending
     private let fees: SendFeeEstimating
     private let shieldedPlans: ShieldedSpendPlanning
     private let balances: ExternalSendBalanceReading
@@ -427,6 +433,7 @@ final class ExternalSendExecutor: ExternalSendExecuting {
         creditsSend: ShieldedPlatformSending = LiveShieldedPlatformSend(),
         identityTopUp: IdentityTopUpFromCreditsSending = LiveIdentityTopUpFromCredits(),
         identityCredits: IdentityCreditsSending = LiveIdentityCreditsSend(),
+        identityShield: IdentityToShieldedSending = LiveIdentityToShieldedSend(),
         fees: SendFeeEstimating = ExternalSendFeeEstimator(),
         shieldedPlans: ShieldedSpendPlanning = LiveShieldedSpendPlanner(),
         balances: ExternalSendBalanceReading = LiveExternalSendBalances(),
@@ -451,6 +458,7 @@ final class ExternalSendExecutor: ExternalSendExecuting {
         self.creditsSend = creditsSend
         self.identityTopUp = identityTopUp
         self.identityCredits = identityCredits
+        self.identityShield = identityShield
         self.fees = fees
         self.shieldedPlans = shieldedPlans
         self.balances = balances
@@ -772,8 +780,7 @@ final class ExternalSendExecutor: ExternalSendExecuting {
                     amountCredits: prepared.amount, bindingFeeCredits: prepared.fee, isMax: prepared.isMax)
             }
         case .identityToShielded:
-            // TODO(identity-to-shielded): the recipient shield; prepare refuses the route until its fee is estimated.
-            return .notSent(.failed)
+            return await runIdentityShield(prepared, destination: destination)
         default:
             return await runCredits {
                 await creditsSend.run(
@@ -815,6 +822,55 @@ final class ExternalSendExecutor: ExternalSendExecuting {
             return .decided(by: error, after: .lockHeld(lock))
         case let .failed(error, recorded):
             return .decided(by: error, after: recorded ? .assetLockRecorded : nil)
+        }
+    }
+
+    /// Re-reads the identity's credits first: a short balance would be refused only after the SDK armed its
+    /// identity-debit guard, which then blocks every later identity shield (ADR-0012).
+    private func runIdentityShield(_ prepared: PreparedExternalSend, destination: Destination) async -> SendDecision {
+        guard let raw43 = ShieldedDestination.raw43(destination.text) else {
+            return SendDecision(.notSent(.failed), cause: "recipientUnreadable")
+        }
+        // `send` refuses an Identity-source send prepared without a Current identity.
+        guard let identityId = prepared.sourceIdentityId else {
+            return SendDecision(.notSent(.failed), cause: "noSourceIdentity")
+        }
+        guard let balance = await balances.spendableBalance(of: .identity) else {
+            return SendDecision(.notSent(.failed), cause: "identityBalanceUnreadable")
+        }
+        let (needed, overflow) = prepared.amount.addingReportingOverflow(prepared.fee)
+        guard !overflow, balance >= needed else {
+            return SendDecision(.notSent(.balanceNotEnough), cause: "identityBalanceShort")
+        }
+        let failure: Error? = await DWIdentityAuthorizer.preauthorized {
+            do {
+                try await identityShield.shield(
+                    identityId: identityId, recipientRaw43: raw43, amountCredits: prepared.amount)
+                return nil
+            } catch {
+                return error
+            }
+        }
+        guard let failure else { return SendDecision(.sent) }
+        return SendDecision(Self.identityShieldOutcome(failure), cause: SendDecision.errorName(failure))
+    }
+
+    /// The identity shield's own map (ADR-0012): it hands over once, so only the refusals before that are notSent;
+    /// code 18 and every other error are inFlight.
+    private static func identityShieldOutcome(_ error: Error) -> SendOutcome {
+        if error is LiveIdentityToShieldedSend.WalletNotOpen { return .notSent(.failed) }
+        switch error as? PlatformWalletError {
+        case .shieldedIdentityDebitPending?:
+            return .notSent(.earlierPaymentPending)
+        case .signingKeyUnavailable?:
+            return .notSent(.signingKeyUnavailable)
+        case .insufficientIdentityCredits?:
+            return .notSent(.balanceNotEnough)
+        case .walletOperation?, .invalidHandle?, .invalidParameter?, .nullPointer?, .shieldedRecoveryCorrupted?,
+             .shieldedRecoveryKeysRequired?:
+            return .notSent(.failed)
+        default:
+            return .inFlight
         }
     }
 
@@ -1389,6 +1445,27 @@ struct LiveIdentityTopUpFromCredits: IdentityTopUpFromCreditsSending {
         _ = try await IdentityCreditsTopUp().fromPlatform(
             identityId: identityId, amountDuffs: amountDuffs, wallet: wallet, modelContainer: modelContainer,
             anyIdentity: true)
+    }
+}
+
+/// `shieldedShieldFromIdentityToRecipient` from the identity the send was prepared for, in the active wallet at
+/// Shielded account 0, signed by `KeychainSigner` as the other identity spends are.
+struct LiveIdentityToShieldedSend: IdentityToShieldedSending {
+    /// The wallet or its store is not open, so nothing was signed or sent.
+    struct WalletNotOpen: Error {}
+
+    @MainActor
+    func shield(identityId: Data, recipientRaw43: Data, amountCredits: UInt64) async throws {
+        guard let manager = SwiftDashSDKHost.shared.manager,
+              let wallet = SwiftDashSDKHost.shared.wallet,
+              let modelContainer = SwiftDashSDKHost.shared.modelContainer
+        else { throw WalletNotOpen() }
+        let signer = KeychainSigner(modelContainer: modelContainer)
+        // The SDK hands the signer's unretained callback context to the FFI; keep it alive until the call returned.
+        defer { withExtendedLifetime(signer) {} }
+        _ = try await manager.shieldedShieldFromIdentityToRecipient(
+            walletId: wallet.walletId, shieldedAccount: 0, identityId: identityId, recipientRaw43: recipientRaw43,
+            amount: amountCredits, memo: nil, identitySigner: signer)
     }
 }
 
