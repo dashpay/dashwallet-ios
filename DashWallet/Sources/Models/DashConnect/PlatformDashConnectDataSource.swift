@@ -1161,9 +1161,15 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
         let all = stores.intents.load()
         let projection = AppConnect.project([snapshot], intents: all, owners: knownOwners)
-        let elsewhere = all.filter { $0.identityId != snapshot.identityId && $0.closedAt == nil }
+        let elsewhere = all.filter { $0.identityId != snapshot.identityId }
+        // An intent of this identity the store could not read may be the
+        // disconnect a Disconnected row stands for: those rows stay.
+        let hasUnreadableIntent = stores.intents.hasUnreadableRows(identityId: snapshot.identityId)
         await updateRows(in: stores) { rows in
-            Self.rows(rows, after: projection, of: snapshot.identityId, intents: elsewhere, at: updatedAt, keeping: kept)
+            let unread = hasUnreadableIntent ? Set(rows.filter { $0.status == .disconnected }.map(\.id)) : []
+            return Self.rows(
+                rows, after: projection, of: snapshot.identityId, intents: elsewhere, at: updatedAt,
+                keeping: kept.union(unread))
         }
     }
 
@@ -1184,6 +1190,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// off without a disconnect, has none, unless another identity's intents
     /// hold it or its last read saw keys there no approval names (`seenOn`).
     /// Such access elsewhere also keeps a row from showing Disconnected.
+    /// `elsewhere` are the other identities' intents: their open ones hold a
+    /// row, and a Disconnected row whose disconnect closed one of them stays
+    /// Disconnected, since this read says nothing of it.
     /// A row whose app is in `keeping` stays as it is. While the read has a
     /// key whose bound is unknown, that key may be any app's: no row goes;
     /// one that would is Confirming, so it keeps its Disconnect until a
@@ -1212,14 +1221,19 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let shownIds = Set(projection.connections.filter { shownStatus($0) != nil }.map { $0.appId.toBase58String() })
         // An App Connect row stands for intents: it stays only while another
         // identity's intents hold it, since this read says nothing of them.
-        let heldElsewhere = Set(elsewhere.map { $0.appId.toBase58String() })
+        let heldElsewhere = Set(elsewhere.filter { $0.closedAt == nil }.map { $0.appId.toBase58String() })
+        let disconnectedElsewhere = Set(
+            elsewhere.filter { $0.closedAt != nil && $0.disconnectedAt != nil }.map { $0.appId.toBase58String() })
         let hasUnplacedKey = projection.unplacedKeyIds[identityId]?.isEmpty == false
         var result: [DAppConnection] = rows.compactMap { row in
             if keeping.contains(row.id) { return row }
             guard !shownIds.contains(row.id) else { return nil }
             var seenOn = row.seenOn
             seenOn.remove(me)
-            if heldElsewhere.contains(row.id) { return DAppConnection(row, seenOn: seenOn) }
+            if heldElsewhere.contains(row.id)
+                || (row.status == .disconnected && disconnectedElsewhere.contains(row.id)) {
+                return DAppConnection(row, seenOn: seenOn)
+            }
             // Live keys seen on another identity: that is the access left.
             guard !seenOn.isEmpty else {
                 // A key of unknown bound may still be the app's: the row
@@ -3437,21 +3451,23 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             scope: stores.scope, rows: published.filter { !isDisconnected($0) },
             disconnected: published.filter(isDisconnected)
                 .map { disconnectedEntry(of: $0, intents: intents) }
-                .sorted { $0.disconnectedAt > $1.disconnectedAt })
+                .sorted { ($0.disconnectedAt ?? .distantPast) > ($1.disconnectedAt ?? .distantPast) })
     }
 
     /// A Disconnected row as the page lists it: what the intents the
-    /// disconnect marked gave the app, and when it was disconnected.
+    /// disconnect marked gave the app, and when it was disconnected. With no
+    /// marked intent to read, neither is known.
     static func disconnectedEntry(of row: DAppConnection, intents: [AppConnect.ConnectionIntent]) -> DisconnectedConnection {
         let marked = intents.filter { $0.appId.toBase58String() == row.id && $0.disconnectedAt != nil }
-        let disconnectedAt = marked.compactMap(\.disconnectedAt).max() ?? row.updatedAt
+        let disconnectedAt = marked.compactMap(\.disconnectedAt).max()
         // The connection the disconnect ended: the intents it marked last.
-        let ended = marked.filter { $0.disconnectedAt == disconnectedAt }
+        let ended = disconnectedAt.map { last in marked.filter { $0.disconnectedAt == last } } ?? []
         return DisconnectedConnection(
             id: row.id, name: row.name, url: row.url,
             identityId: ended.first?.identityId.toBase58String(), username: nil,
             disconnectedAt: disconnectedAt, access: ConnectionAccess(recorded: ended),
-            connectedAt: ended.map(\.createdAt).min())
+            // The latest approval, as the sheet of a live connection shows it.
+            connectedAt: ended.map(\.createdAt).max())
     }
 
     private func validateNetwork(_ network: DashConnectNetwork) throws {

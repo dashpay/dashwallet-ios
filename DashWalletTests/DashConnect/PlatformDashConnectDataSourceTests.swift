@@ -1580,6 +1580,23 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
         XCTAssertFalse(viewModel.takeDisconnectQuestion())
     }
 
+    func testAnotherWalletsDisconnectedAppOfTheShownAppClosesItsSheet() async {
+        let entry = DisconnectedConnection(
+            id: "app", name: "App", url: "app.example", identityId: nil, username: nil,
+            disconnectedAt: Date(timeIntervalSince1970: 50), access: nil)
+        let spy = ConnectionStatusSpy(rows: [])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        spy.sendWallet("a", rows: [], history: [entry])
+        await waitUntil { !viewModel.rows(for: .disconnected).isEmpty }
+        viewModel.showConnection(viewModel.rows(for: .disconnected)[0])
+        XCTAssertNotNil(viewModel.shownConnection)
+
+        spy.sendWallet("b", rows: [], history: [entry])
+        await waitUntil { viewModel.shownConnection == nil }
+        XCTAssertNil(viewModel.shownConnection, "the sheet was about the other wallet's disconnected app")
+        XCTAssertEqual(viewModel.rows(for: .disconnected).first?.scope, "b")
+    }
+
     private func waitUntil(timeout: TimeInterval = 2, _ condition: () -> Bool) async {
         let deadline = Date().addingTimeInterval(timeout)
         while !condition(), Date() < deadline {
@@ -1938,6 +1955,106 @@ final class AppConnectLoginTests: XCTestCase {
             name: SwiftDashSDKWalletState.activeWalletDidChangeNotification, object: nil)
 
         await fulfillment(of: [moved], timeout: 2)
+    }
+
+    /// The listing names the active wallet's scope and puts its Disconnected
+    /// rows on the Disconnected tab, read off the intents the disconnect marked.
+    func testTheListingSplitsTheActiveWalletsRowsFromItsDisconnectedApps() {
+        let active = ActiveWallet("wallet-a")
+        let connected = Self.row(id: "7UaqHGBJBbRLJ4fUWS45cnud8PPUugJWoGTt1SKwHJ2P", status: .active)
+        let (_, connections) = makeScopedDataSource(active: active)
+        saveDisconnected(in: connections, at: Date(timeIntervalSince1970: 40), keeping: [connected])
+
+        let listing = Self.listing(of: makeScopedDataSource(active: active, rows: connections.load()).0)
+
+        XCTAssertNotNil(listing.scope)
+        XCTAssertEqual(listing.rows.first?.scope, listing.scope)
+        XCTAssertEqual(listing.rows.map(\.id), [connected.id])
+        XCTAssertEqual(listing.disconnected.map(\.id), [Self.app.toBase58String()])
+        XCTAssertEqual(listing.disconnected.first?.disconnectedAt, Date(timeIntervalSince1970: 40))
+    }
+
+    /// A disconnect saved by another data source over the same wallet moves
+    /// the app off the rows and onto the Disconnected tab in one listing.
+    func testADisconnectSavedElsewherePublishesTheRowsGoneAndTheDisconnectedAppTogether() async {
+        let active = ActiveWallet("wallet-a")
+        let center = NotificationCenter()
+        let appId = Self.app.toBase58String()
+        let (dataSource, connections) = makeScopedDataSource(
+            active: active, rows: [Self.row(id: appId, status: .active)], notificationCenter: center)
+        var published: [DashConnectListing] = []
+        let moved = expectation(description: "the disconnected app is published")
+        moved.assertForOverFulfill = false
+        let subscription = dataSource.listing.sink { listing in
+            published.append(listing)
+            if !listing.disconnected.isEmpty { moved.fulfill() }
+        }
+        defer { subscription.cancel() }
+
+        saveDisconnected(in: connections, at: Date(timeIntervalSince1970: 40))
+
+        await fulfillment(of: [moved], timeout: 2)
+        let after = published.first { !$0.disconnected.isEmpty }
+        XCTAssertEqual(after?.rows, [], "the row left in the same listing")
+        XCTAssertEqual(after?.disconnected.map(\.id), [appId])
+        XCTAssertFalse(
+            published.contains { listing in !listing.rows.contains { $0.id == appId } && listing.disconnected.isEmpty },
+            "no listing showed the app in neither tab")
+    }
+
+    /// A switch to a wallet whose only connection is a disconnected app moves
+    /// the listing to that wallet: no rows, its disconnected app, its scope.
+    func testAWalletSwitchToAWalletWithOnlyADisconnectedAppMovesTheListing() async {
+        let active = ActiveWallet("wallet-a")
+        let center = NotificationCenter()
+        let (dataSource, connections) = makeScopedDataSource(
+            active: active, rows: [Self.row(id: "7UaqHGBJBbRLJ4fUWS45cnud8PPUugJWoGTt1SKwHJ2P", status: .active)],
+            notificationCenter: center)
+        let before = Self.listing(of: dataSource)
+        active.idHex = "wallet-b"
+        saveDisconnected(in: connections, at: Date(timeIntervalSince1970: 40))
+        let moved = expectation(description: "wallet b's listing is published")
+        moved.assertForOverFulfill = false
+        var after: DashConnectListing?
+        let subscription = dataSource.listing.sink { listing in
+            if listing.scope != before.scope, !listing.disconnected.isEmpty {
+                after = listing
+                moved.fulfill()
+            }
+        }
+        defer { subscription.cancel() }
+
+        center.post(name: SwiftDashSDKWalletState.activeWalletDidChangeNotification, object: nil)
+
+        await fulfillment(of: [moved], timeout: 2)
+        XCTAssertEqual(after?.rows, [])
+        XCTAssertEqual(after?.disconnected.map(\.id), [Self.app.toBase58String()])
+        XCTAssertNotNil(after?.scope)
+    }
+
+    /// Saves, for the wallet `connections` is on now, `Self.app` disconnected
+    /// at `date` as a disconnect does: its marked intent first, then its
+    /// Disconnected row, with `keeping` rows next to it.
+    private func saveDisconnected(
+        in connections: UserDefaultsDashConnectStore, at date: Date, keeping: [DAppConnection] = []
+    ) {
+        var intent = AppConnect.ConnectionIntent(
+            id: UUID(), identityId: Data(repeating: 0x01, count: 32), appId: Self.app, appLabel: "Yappr",
+            appUrl: "yap.pr", requestHash: Data(repeating: 0xEE, count: 20),
+            connectionId: nil, keys: [], sentEncryptionKeyIds: [], disables: [],
+            response: AppConnect.ResponseValues(appEphemeralPubKeyHash: "ee", walletEphemeralPubKey: "02", encryptedPayload: "00"),
+            responseDocumentId: nil, responseRemoved: true, createdAt: Date(timeIntervalSince1970: 10), closedAt: date)
+        intent.disconnectedAt = date
+        UserDefaultsAppConnectIntentStore(defaults: defaults, scope: .connections(connections)).save([intent])
+        connections.save(keeping + [Self.row(id: Self.app.toBase58String(), status: .disconnected)])
+    }
+
+    /// The listing the data source publishes right now.
+    private static func listing(of dataSource: PlatformDashConnectDataSource) -> DashConnectListing {
+        var listing = DashConnectListing(scope: nil, rows: [], disconnected: [])
+        let subscription = dataSource.listing.sink { listing = $0 }
+        subscription.cancel()
+        return listing
     }
 
     func testOperationsForOneWalletRunOneAtATimeInArrivalOrder() async {
@@ -4992,9 +5109,12 @@ final class AppConnectOwnersThroughSeamsTests: XCTestCase {
     private final class MemoryIntents: AppConnectIntentStore, @unchecked Sendable {
         private var intents: [AppConnect.ConnectionIntent]
         let canPersist = true
+        /// The store holds intents of every identity it could not read.
+        var hasUnreadable = false
         init(_ intents: [AppConnect.ConnectionIntent]) { self.intents = intents }
         func load() -> [AppConnect.ConnectionIntent] { intents }
         func save(_ intents: [AppConnect.ConnectionIntent]) { self.intents = intents }
+        func hasUnreadableRows(identityId: Data) -> Bool { hasUnreadable }
         func pinned(toWalletIdHex walletIdHex: String) -> any AppConnectIntentStore { self }
     }
 
@@ -5010,6 +5130,7 @@ final class AppConnectOwnersThroughSeamsTests: XCTestCase {
         let dataSource: PlatformDashConnectDataSource
         let platform: Platform
         let rows: MemoryRows
+        let intents: MemoryIntents
 
         /// The ids of the stored rows.
         var rowIds: Set<Data> { Set(rows.load().compactMap { Data.identifier(fromBase58: $0.id) }) }
@@ -5027,10 +5148,11 @@ final class AppConnectOwnersThroughSeamsTests: XCTestCase {
     ) -> Harness {
         let platform = Platform(keys: keys, reader: reader)
         let rows = MemoryRows()
+        let stored = MemoryIntents(intents)
         let dataSource = PlatformDashConnectDataSource(
             supportedNetwork: .testnet,
             store: rows,
-            intentStore: MemoryIntents(intents),
+            intentStore: stored,
             activeWalletIdHex: { "wallet" },
             now: { Self.at },
             makeWriteExecutor: { _ in
@@ -5040,7 +5162,7 @@ final class AppConnectOwnersThroughSeamsTests: XCTestCase {
             },
             platform: platform,
             pauseForLaggingNode: { _ in })
-        return Harness(dataSource: dataSource, platform: platform, rows: rows)
+        return Harness(dataSource: dataSource, platform: platform, rows: rows, intents: stored)
     }
 
     // MARK: Refresh
@@ -5071,6 +5193,24 @@ final class AppConnectOwnersThroughSeamsTests: XCTestCase {
         await h.refresh()
         XCTAssertEqual(h.rowIds, [Self.sibling, Self.sibling2])
         XCTAssertEqual(reader.total, 0)
+    }
+
+    /// A Disconnected row stays while the identity has intents the store
+    /// could not read: one of them may be its disconnect. With every intent
+    /// read and none of the app's, the row goes.
+    func testADisconnectedRowStaysWhileTheIdentityHasAnUnreadableIntent() async {
+        let row = DAppConnection(
+            id: Self.app.toBase58String(), name: "App", url: "app.example", status: .disconnected,
+            updatedAt: Date(timeIntervalSince1970: 1))
+        let h = harness([], [])
+        h.rows.save([row])
+        h.intents.hasUnreadable = true
+        await h.refresh()
+        XCTAssertEqual(h.rows.load().map(\.status), [.disconnected])
+
+        h.intents.hasUnreadable = false
+        await h.refresh()
+        XCTAssertEqual(h.rows.load(), [])
     }
 
     func testNoUnrecordedKeyReadsNoOwner() async {
