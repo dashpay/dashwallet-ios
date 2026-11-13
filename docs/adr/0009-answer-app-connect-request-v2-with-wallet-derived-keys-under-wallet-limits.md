@@ -36,7 +36,7 @@ The question is how far the wallet trusts the request: which keys it registers, 
 - **Keys.** Each auth key is derived from the app's ephemeral key and the binding's index, so keys are distinct per binding and stable across retries of one request. The encryption key is the DIP-13 application encryption key for the app's contract, chosen by the DIP "Encryption Keys" rules. The wallet derives rotation `0'` at the path with the `rotation'` level, then each next rotation while the previous one is on the identity, and stops at the first that is not; on testnet and devnet only, it also derives the key at the earlier path without that level. A live current key is sent when it is one of these keys and left out otherwise (rule 1); a disabled current key leaves the slot out and registers nothing (rule 2); with no key for the binding, rotation `0'` at the new path is registered (rule 3). A login never rotates a key.
 - **One update.** The new keys are added, and the keys of this wallet's earlier grant with the same connection id are disabled, in one identity update the wallet signs.
 - **The answer.** The keys are sealed to the app's ephemeral key and published on the App Connect contract; the callback named in the request opens only after the user has answered the sheet.
-- **Networks.** A v2 request for mainnet is refused by the parser.
+- **Networks.** A v2 request for mainnet is refused by the parser. Replaced by [ADR-0053](0053-open-dashconnect-on-mainnet-and-gate-each-request-by-protocol-14.md): on mainnet only the `dash-key:` code is refused.
 
 ## Consequences
 
