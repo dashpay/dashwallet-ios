@@ -693,11 +693,14 @@ struct IdentityCreditsTopUp {
     /// Progress text of the shielded route's two steps.
     var stepChanged: (String) -> Void = { _ in }
 
+    /// `external`: the identity is not one the wallet manages (someone else's), so the top-up reads it from Platform
+    /// instead of the wallet's identities.
     func fromPlatform(
         identityId: Data,
         amountDuffs: UInt64,
         wallet: ManagedPlatformWallet,
-        modelContainer: ModelContainer
+        modelContainer: ModelContainer,
+        external: Bool = false
     ) async throws -> UInt64 {
         let credits = amountDuffs * PlatformPaymentIdentityFundingPolicy.creditsPerDuff
         let candidates = try PlatformPaymentIdentityFundingPolicy.candidates(
@@ -710,6 +713,12 @@ struct IdentityCreditsTopUp {
         // The SDK wrapper hands the FFI a non-owning handle to the signer, so
         // it must outlive the awaited call (dashpay/platform#5939).
         defer { withExtendedLifetime(signer) {} }
+        if external {
+            return try await wallet.topUpExternalIdentityFromAddresses(
+                identityId: identityId,
+                inputs: inputs,
+                addressSigner: signer)
+        }
         return try await wallet.topUpFromAddresses(
             identityId: identityId,
             inputs: inputs,
