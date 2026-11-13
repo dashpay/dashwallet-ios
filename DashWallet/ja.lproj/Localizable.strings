@@ -181,9 +181,6 @@
 /* Voting */
 "%d requests" = "%d requests";
 
-/* Voting */
-"%d selected" = "%d selected";
-
 /* SPV diagnostics */
 "%d still in progress" = "%d still in progress";
 
@@ -228,9 +225,6 @@
 
 /* Voting */
 "%u votes counted for “%@”" = "%1$u votes counted for “%2$@”";
-
-/* Voting */
-"%u votes in total" = "%u votes in total";
 
 /* Voting */
 "%u votes per contest — evonodes count as 4, masternodes as 1" = "%u votes per contest — evonodes count as 4, masternodes as 1";
@@ -1966,9 +1960,6 @@
 /* DashPay FAQ */
 "Enabling DashPay costs a small one-time network fee, paid from your identity's credit balance. The exact estimate is shown before you confirm. Sending contact requests and payments costs the usual network fees." = "DashPay の有効化には、一度きりの少額のネットワーク手数料がかかり、アイデンティティのクレジット残高から支払われます。正確な見積もりは確定前に表示されます。連絡先リクエストや支払いの送信には通常のネットワーク手数料がかかります。";
 
-/* Voting */
-"Ending soonest" = "終了が最も早い";
-
 /* Usernames */
 "Ends around %@" = "Ends around %@";
 
@@ -3186,12 +3177,6 @@
 /* No comment provided by engineer. */
 "More Control" = "コントロールの追加";
 
-/* Voting */
-"Most lock votes" = "ロック票が最多";
-
-/* Voting */
-"Most votes" = "得票数が最多";
-
 /* Masternode unban */
 "Move %@ from shielded balance" = "Move %@ from shielded balance";
 
@@ -3276,9 +3261,6 @@
 
 /* Coinbase Two Factor Auth */
 "Need help? " = "お困りですか。";
-
-/* Voting */
-"Needs attention" = "要対応";
 
 /* No comment provided by engineer. */
 "Network" = "ネットワーク";
@@ -4773,9 +4755,6 @@
 /* Buy Sell Dash */
 "Select a service to buy, sell, convert and transfer Dash" = "Dashの購入、売却、交換、送金などサービスを選択します";
 
-/* Voting */
-"Select all" = "すべて選択";
-
 /* DashSpend denomination selection */
 "Select amount" = "金額を選択する";
 
@@ -5071,9 +5050,6 @@
 /* Username marketplace: departed-name line — buyer identity */
 "Sold to %@" = "%@ に売却";
 
-/* Voting */
-"Sole Requester" = "Sole Requester";
-
 /* Maya */
 "Some coins are not available because of the halted chain" = "Some coins are not available because of the halted chain";
 
@@ -5094,9 +5070,6 @@
 
 /* Usernames */
 "Some usernames can be blocked" = "一部のユーザー名をブロックできます";
-
-/* Voting */
-"Some votes already cast" = "Some votes already cast";
 
 /* No comment provided by engineer. */
 "Something went wrong" = "問題が生じました";
@@ -6661,12 +6634,6 @@
 "Vote in progress" = "投票進行中";
 
 /* Voting */
-"Vote on %d usernames" = "Vote on %d usernames";
-
-/* Voting */
-"Vote on several" = "複数に投票";
-
-/* Voting */
 "Vote with" = "投票に使うノード";
 
 /* Voting */
@@ -7534,3 +7501,42 @@
 
 /* No comment provided by engineer. */
 "Filtered by" = "で絞り込む";
+
+"Reset filters" = "Reset filters";
+
+"No usernames match this filter" = "No usernames match this filter";
+
+"Change the filter or reset it to see every open contest." = "Change the filter or reset it to see every open contest.";
+
+"Can't filter by your votes right now" = "Can't filter by your votes right now";
+
+"This wallet's masternode voting keys aren't available right now, so it has no votes to filter by." = "This wallet's masternode voting keys aren't available right now, so it has no votes to filter by.";
+
+"%@ · only duplicates" = "%@ · only duplicates";
+
+/* No comment provided by engineer. */
+"Date: New to old" = "日付：新しい順";
+
+/* No comment provided by engineer. */
+"Date: Old to new" = "日付：古い順";
+
+/* No comment provided by engineer. */
+"Has blocked votes" = "ブロック票あり";
+
+/* No comment provided by engineer. */
+"I have approved" = "承認しました";
+
+/* No comment provided by engineer. */
+"I have not voted" = "投票しませんでした";
+
+/* No comment provided by engineer. */
+"Only duplicates" = "重複分のみ";
+
+/* No comment provided by engineer. */
+"Only requests with links" = "リンク付きの請求のみ";
+
+/* No comment provided by engineer. */
+"Votes: High to low" = "投票数：高から低";
+
+/* No comment provided by engineer. */
+"Votes: Low to high" = "投票数：低から高";

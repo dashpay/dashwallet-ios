@@ -181,9 +181,6 @@
 /* Voting */
 "%d requests" = "%d requests";
 
-/* Voting */
-"%d selected" = "%d selected";
-
 /* SPV diagnostics */
 "%d still in progress" = "%d still in progress";
 
@@ -228,9 +225,6 @@
 
 /* Voting */
 "%u votes counted for “%@”" = "%1$u votes counted for “%2$@”";
-
-/* Voting */
-"%u votes in total" = "%u votes in total";
 
 /* Voting */
 "%u votes per contest — evonodes count as 4, masternodes as 1" = "%u votes per contest — evonodes count as 4, masternodes as 1";
@@ -1966,9 +1960,6 @@
 /* DashPay FAQ */
 "Enabling DashPay costs a small one-time network fee, paid from your identity's credit balance. The exact estimate is shown before you confirm. Sending contact requests and payments costs the usual network fees." = "Włączenie DashPay kosztuje niewielką jednorazową opłatę sieciową, pobieraną z salda kredytowego Twojej tożsamości. Dokładny szacunek pokazujemy przed potwierdzeniem. Wysyłanie zaproszeń do kontaktów i płatności kosztuje zwykłe opłaty sieciowe.";
 
-/* Voting */
-"Ending soonest" = "Kończy się najwcześniej";
-
 /* Usernames */
 "Ends around %@" = "Ends around %@";
 
@@ -3186,12 +3177,6 @@
 /* No comment provided by engineer. */
 "More Control" = "Więcej Kontroli";
 
-/* Voting */
-"Most lock votes" = "Najwięcej głosów blokujących";
-
-/* Voting */
-"Most votes" = "Najwięcej głosów";
-
 /* Masternode unban */
 "Move %@ from shielded balance" = "Move %@ from shielded balance";
 
@@ -3276,9 +3261,6 @@
 
 /* Coinbase Two Factor Auth */
 "Need help? " = "Potrzebujesz pomocy?";
-
-/* Voting */
-"Needs attention" = "Wymaga uwagi";
 
 /* No comment provided by engineer. */
 "Network" = "Sieć";
@@ -4773,9 +4755,6 @@
 /* Buy Sell Dash */
 "Select a service to buy, sell, convert and transfer Dash" = "Wybierz usługę, aby kupić, sprzedać, przekonwertować i przetransferować Dash";
 
-/* Voting */
-"Select all" = "Zaznacz wszystko";
-
 /* DashSpend denomination selection */
 "Select amount" = "Wybierz kwotę";
 
@@ -5071,9 +5050,6 @@
 /* Username marketplace: departed-name line — buyer identity */
 "Sold to %@" = "Sprzedana użytkownikowi %@";
 
-/* Voting */
-"Sole Requester" = "Sole Requester";
-
 /* Maya */
 "Some coins are not available because of the halted chain" = "Some coins are not available because of the halted chain";
 
@@ -5094,9 +5070,6 @@
 
 /* Usernames */
 "Some usernames can be blocked" = "Niektóre nazwy użytkowników mogą zostać zablokowane";
-
-/* Voting */
-"Some votes already cast" = "Some votes already cast";
 
 /* No comment provided by engineer. */
 "Something went wrong" = "Coś poszło nie tak";
@@ -6661,12 +6634,6 @@
 "Vote in progress" = "Trwa głosowanie";
 
 /* Voting */
-"Vote on %d usernames" = "Vote on %d usernames";
-
-/* Voting */
-"Vote on several" = "Głosuj nad kilkoma";
-
-/* Voting */
 "Vote with" = "Głosuj z";
 
 /* Voting */
@@ -7534,3 +7501,42 @@
 
 /* No comment provided by engineer. */
 "Filtered by" = "Filtruj w zależności od";
+
+"Reset filters" = "Reset filters";
+
+"No usernames match this filter" = "No usernames match this filter";
+
+"Change the filter or reset it to see every open contest." = "Change the filter or reset it to see every open contest.";
+
+"Can't filter by your votes right now" = "Can't filter by your votes right now";
+
+"This wallet's masternode voting keys aren't available right now, so it has no votes to filter by." = "This wallet's masternode voting keys aren't available right now, so it has no votes to filter by.";
+
+"%@ · only duplicates" = "%@ · only duplicates";
+
+/* No comment provided by engineer. */
+"Date: New to old" = "Data: od najnowszej do najstarszej";
+
+/* No comment provided by engineer. */
+"Date: Old to new" = "Data: od najstarszej do najnowszej";
+
+/* No comment provided by engineer. */
+"Has blocked votes" = "Ma głosy za zablokowaniem";
+
+/* No comment provided by engineer. */
+"I have approved" = "Zatwierdziłem";
+
+/* No comment provided by engineer. */
+"I have not voted" = "Nie zagłosowałem";
+
+/* No comment provided by engineer. */
+"Only duplicates" = "Tylko duplikaty";
+
+/* No comment provided by engineer. */
+"Only requests with links" = "Tylko żądania z linkami";
+
+/* No comment provided by engineer. */
+"Votes: High to low" = "Głosy: od najwięcej do najmniej";
+
+/* No comment provided by engineer. */
+"Votes: Low to high" = "Głosy: od najmniej do najwięcej";

@@ -181,9 +181,6 @@
 /* Voting */
 "%d requests" = "%d requests";
 
-/* Voting */
-"%d selected" = "%d selected";
-
 /* SPV diagnostics */
 "%d still in progress" = "%d still in progress";
 
@@ -228,9 +225,6 @@
 
 /* Voting */
 "%u votes counted for “%@”" = "%1$u votes counted for “%2$@”";
-
-/* Voting */
-"%u votes in total" = "%u votes in total";
 
 /* Voting */
 "%u votes per contest — evonodes count as 4, masternodes as 1" = "%u votes per contest — evonodes count as 4, masternodes as 1";
@@ -1966,9 +1960,6 @@
 /* DashPay FAQ */
 "Enabling DashPay costs a small one-time network fee, paid from your identity's credit balance. The exact estimate is shown before you confirm. Sending contact requests and payments costs the usual network fees." = "Увімкнення DashPay коштує невелику одноразову комісію мережі, яку сплачують із балансу кредитів вашого ідентифікатора. Точну оцінку показано перед підтвердженням. Надсилання запитів на додавання до контактів і платежів коштує звичайних комісій мережі.";
 
-/* Voting */
-"Ending soonest" = "Завершується найраніше";
-
 /* Usernames */
 "Ends around %@" = "Ends around %@";
 
@@ -3186,12 +3177,6 @@
 /* No comment provided by engineer. */
 "More Control" = "Більше контролю";
 
-/* Voting */
-"Most lock votes" = "Найбільше голосів за блокування";
-
-/* Voting */
-"Most votes" = "Найбільше голосів";
-
 /* Masternode unban */
 "Move %@ from shielded balance" = "Move %@ from shielded balance";
 
@@ -3276,9 +3261,6 @@
 
 /* Coinbase Two Factor Auth */
 "Need help? " = "Потрібна допомога?";
-
-/* Voting */
-"Needs attention" = "Потребує уваги";
 
 /* No comment provided by engineer. */
 "Network" = "Мережа";
@@ -4773,9 +4755,6 @@
 /* Buy Sell Dash */
 "Select a service to buy, sell, convert and transfer Dash" = "Виберіть сервіс для покупки, продажу, конвертації та передачі Dash";
 
-/* Voting */
-"Select all" = "Обрати все";
-
 /* DashSpend denomination selection */
 "Select amount" = "Виберіть суму";
 
@@ -5071,9 +5050,6 @@
 /* Username marketplace: departed-name line — buyer identity */
 "Sold to %@" = "Продано користувачеві %@";
 
-/* Voting */
-"Sole Requester" = "Sole Requester";
-
 /* Maya */
 "Some coins are not available because of the halted chain" = "Some coins are not available because of the halted chain";
 
@@ -5094,9 +5070,6 @@
 
 /* Usernames */
 "Some usernames can be blocked" = "Деякі імена користувачів можуть бути заблоковані";
-
-/* Voting */
-"Some votes already cast" = "Some votes already cast";
 
 /* No comment provided by engineer. */
 "Something went wrong" = "Щось пішло не так";
@@ -6661,12 +6634,6 @@
 "Vote in progress" = "Триває голосування";
 
 /* Voting */
-"Vote on %d usernames" = "Vote on %d usernames";
-
-/* Voting */
-"Vote on several" = "Голосувати за кілька";
-
-/* Voting */
 "Vote with" = "Голосувати з";
 
 /* Voting */
@@ -7534,3 +7501,42 @@
 
 /* No comment provided by engineer. */
 "Filtered by" = "Відфільтровано за:";
+
+"Reset filters" = "Reset filters";
+
+"No usernames match this filter" = "No usernames match this filter";
+
+"Change the filter or reset it to see every open contest." = "Change the filter or reset it to see every open contest.";
+
+"Can't filter by your votes right now" = "Can't filter by your votes right now";
+
+"This wallet's masternode voting keys aren't available right now, so it has no votes to filter by." = "This wallet's masternode voting keys aren't available right now, so it has no votes to filter by.";
+
+"%@ · only duplicates" = "%@ · only duplicates";
+
+/* No comment provided by engineer. */
+"Date: New to old" = "Дата: від нової до старої";
+
+/* No comment provided by engineer. */
+"Date: Old to new" = "Дата: від старої до нової";
+
+/* No comment provided by engineer. */
+"Has blocked votes" = "Є голоси за блокування";
+
+/* No comment provided by engineer. */
+"I have approved" = "Я схвалив";
+
+/* No comment provided by engineer. */
+"I have not voted" = "Я не проголосував";
+
+/* No comment provided by engineer. */
+"Only duplicates" = "Тільки дублікати";
+
+/* No comment provided by engineer. */
+"Only requests with links" = "Тільки запити з посиланнями";
+
+/* No comment provided by engineer. */
+"Votes: High to low" = "Голоси: від високого до низького";
+
+/* No comment provided by engineer. */
+"Votes: Low to high" = "Голоси: від низького до високого";

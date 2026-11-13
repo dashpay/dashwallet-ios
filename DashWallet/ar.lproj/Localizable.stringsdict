@@ -242,30 +242,6 @@
 			<string>%d evonode</string>
 		</dict>
 	</dict>
-	<key>%u votes in total</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>u</string>
-			<key>zero</key>
-			<string>%u صوت في المجموع</string>
-			<key>one</key>
-			<string>%u صوت في المجموع</string>
-			<key>two</key>
-			<string>%u صوتان في المجموع</string>
-			<key>few</key>
-			<string>%u أصوات في المجموع</string>
-			<key>many</key>
-			<string>%u صوتًا في المجموع</string>
-			<key>other</key>
-			<string>%u صوت في المجموع</string>
-		</dict>
-	</dict>
 	<key>%d masternodes</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -288,30 +264,6 @@
 			<string>%d عقدة ماسترنود</string>
 			<key>other</key>
 			<string>%d ماسترنود</string>
-		</dict>
-	</dict>
-	<key>%d selected</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>zero</key>
-			<string>%d محدد</string>
-			<key>one</key>
-			<string>%d محدد</string>
-			<key>two</key>
-			<string>%d محددان</string>
-			<key>few</key>
-			<string>%d محددة</string>
-			<key>many</key>
-			<string>%d محددًا</string>
-			<key>other</key>
-			<string>%d محدد</string>
 		</dict>
 	</dict>
 	<key>%d of your nodes already voted here and are not listed.</key>
@@ -360,30 +312,6 @@
 			<string>%u صوتًا لكل منافسة — تُحتسب عقد evonode بـ4 وعقد الماسترنود بـ1</string>
 			<key>other</key>
 			<string>%u صوت لكل منافسة — تُحتسب عقد evonode بـ4 وعقد الماسترنود بـ1</string>
-		</dict>
-	</dict>
-	<key>Vote on %d usernames</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>zero</key>
-			<string>التصويت على %d اسم مستخدم</string>
-			<key>one</key>
-			<string>التصويت على %d اسم مستخدم</string>
-			<key>two</key>
-			<string>التصويت على %d اسم مستخدم</string>
-			<key>few</key>
-			<string>التصويت على %d اسم مستخدم</string>
-			<key>many</key>
-			<string>التصويت على %d اسم مستخدم</string>
-			<key>other</key>
-			<string>التصويت على %d اسم مستخدم</string>
 		</dict>
 	</dict>
 	<key>%u votes</key>

@@ -181,9 +181,6 @@
 /* Voting */
 "%d requests" = "%d requests";
 
-/* Voting */
-"%d selected" = "%d selected";
-
 /* SPV diagnostics */
 "%d still in progress" = "%d still in progress";
 
@@ -228,9 +225,6 @@
 
 /* Voting */
 "%u votes counted for “%@”" = "%1$u votes counted for “%2$@”";
-
-/* Voting */
-"%u votes in total" = "%u votes in total";
 
 /* Voting */
 "%u votes per contest — evonodes count as 4, masternodes as 1" = "%u votes per contest — evonodes count as 4, masternodes as 1";
@@ -1966,9 +1960,6 @@
 /* DashPay FAQ */
 "Enabling DashPay costs a small one-time network fee, paid from your identity's credit balance. The exact estimate is shown before you confirm. Sending contact requests and payments costs the usual network fees." = "May maliit at isang beses lang na bayarin sa network ang pag-enable ng DashPay, kinukuha mula sa balanse ng kredito ng iyong pagkakakilanlan. Ipapakita ang tumpak na tantiya bago ka kumpirmahin. Karaniwang bayarin sa network naman ang pagpapadala ng kahilingan sa pakikipag-ugnay at ng bayad.";
 
-/* Voting */
-"Ending soonest" = "Pinakamaagang matatapos";
-
 /* Usernames */
 "Ends around %@" = "Ends around %@";
 
@@ -3186,12 +3177,6 @@
 /* No comment provided by engineer. */
 "More Control" = "Mas marami pang kontrol";
 
-/* Voting */
-"Most lock votes" = "Pinakamaraming lock vote";
-
-/* Voting */
-"Most votes" = "Pinakamaraming boto";
-
 /* Masternode unban */
 "Move %@ from shielded balance" = "Move %@ from shielded balance";
 
@@ -3276,9 +3261,6 @@
 
 /* Coinbase Two Factor Auth */
 "Need help? " = "Kailangan ng tulong ?";
-
-/* Voting */
-"Needs attention" = "Kailangan ng atensyon";
 
 /* No comment provided by engineer. */
 "Network" = "Network";
@@ -4773,9 +4755,6 @@
 /* Buy Sell Dash */
 "Select a service to buy, sell, convert and transfer Dash" = "Pumili ng serbisyong bibilhin, ibebenta, iko-convert at ililipat ang Dash";
 
-/* Voting */
-"Select all" = "Piliin lahat";
-
 /* DashSpend denomination selection */
 "Select amount" = "Pumili ng halaga";
 
@@ -5071,9 +5050,6 @@
 /* Username marketplace: departed-name line — buyer identity */
 "Sold to %@" = "Naibenta kay %@";
 
-/* Voting */
-"Sole Requester" = "Sole Requester";
-
 /* Maya */
 "Some coins are not available because of the halted chain" = "Some coins are not available because of the halted chain";
 
@@ -5094,9 +5070,6 @@
 
 /* Usernames */
 "Some usernames can be blocked" = "Maaaring i-block ang ilang mga username";
-
-/* Voting */
-"Some votes already cast" = "Some votes already cast";
 
 /* No comment provided by engineer. */
 "Something went wrong" = "May maling nangyari";
@@ -6661,12 +6634,6 @@
 "Vote in progress" = "Isinasagawa ang pagboto";
 
 /* Voting */
-"Vote on %d usernames" = "Vote on %d usernames";
-
-/* Voting */
-"Vote on several" = "Bumoto sa marami";
-
-/* Voting */
 "Vote with" = "Bumoto gamit ang";
 
 /* Voting */
@@ -7534,3 +7501,42 @@
 
 /* No comment provided by engineer. */
 "Filtered by" = "Na-filter ng";
+
+"Reset filters" = "Reset filters";
+
+"No usernames match this filter" = "No usernames match this filter";
+
+"Change the filter or reset it to see every open contest." = "Change the filter or reset it to see every open contest.";
+
+"Can't filter by your votes right now" = "Can't filter by your votes right now";
+
+"This wallet's masternode voting keys aren't available right now, so it has no votes to filter by." = "This wallet's masternode voting keys aren't available right now, so it has no votes to filter by.";
+
+"%@ · only duplicates" = "%@ · only duplicates";
+
+/* No comment provided by engineer. */
+"Date: New to old" = "Petsa: Bago sa luma";
+
+/* No comment provided by engineer. */
+"Date: Old to new" = "Petsa: Luma sa bago";
+
+/* No comment provided by engineer. */
+"Has blocked votes" = "May mga botong i-block";
+
+/* No comment provided by engineer. */
+"I have approved" = "Naaprubahan ko na";
+
+/* No comment provided by engineer. */
+"I have not voted" = "hindi ako nakaboto";
+
+/* No comment provided by engineer. */
+"Only duplicates" = "Mga duplicate lang";
+
+/* No comment provided by engineer. */
+"Only requests with links" = "Mga kahilingan lamang na may mga link";
+
+/* No comment provided by engineer. */
+"Votes: High to low" = "Mga Boto: Mataas hanggang mababa";
+
+/* No comment provided by engineer. */
+"Votes: Low to high" = "Mga Boto: Mababa hanggang mataas";

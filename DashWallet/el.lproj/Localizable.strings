@@ -181,9 +181,6 @@
 /* Voting */
 "%d requests" = "%d requests";
 
-/* Voting */
-"%d selected" = "%d selected";
-
 /* SPV diagnostics */
 "%d still in progress" = "%d still in progress";
 
@@ -228,9 +225,6 @@
 
 /* Voting */
 "%u votes counted for “%@”" = "%1$u votes counted for “%2$@”";
-
-/* Voting */
-"%u votes in total" = "%u votes in total";
 
 /* Voting */
 "%u votes per contest — evonodes count as 4, masternodes as 1" = "%u votes per contest — evonodes count as 4, masternodes as 1";
@@ -1966,9 +1960,6 @@
 /* DashPay FAQ */
 "Enabling DashPay costs a small one-time network fee, paid from your identity's credit balance. The exact estimate is shown before you confirm. Sending contact requests and payments costs the usual network fees." = "Η ενεργοποίηση του DashPay κοστίζει ένα μικρό εφάπαξ τέλος δικτύου, που πληρώνεται από το υπόλοιπο credits της ταυτότητάς σας. Η ακριβής εκτίμηση εμφανίζεται πριν την επιβεβαίωση. Η αποστολή αιτημάτων επαφής και πληρωμών κοστίζει τα συνήθη τέλη δικτύου.";
 
-/* Voting */
-"Ending soonest" = "Λήγει νωρίτερα";
-
 /* Usernames */
 "Ends around %@" = "Ends around %@";
 
@@ -3186,12 +3177,6 @@
 /* No comment provided by engineer. */
 "More Control" = "Περισσότερος Έλεγχος";
 
-/* Voting */
-"Most lock votes" = "Περισσότερες ψήφοι κλειδώματος";
-
-/* Voting */
-"Most votes" = "Περισσότερες ψήφοι";
-
 /* Masternode unban */
 "Move %@ from shielded balance" = "Move %@ from shielded balance";
 
@@ -3276,9 +3261,6 @@
 
 /* Coinbase Two Factor Auth */
 "Need help? " = "Χρειάζεστε βοήθεια ?";
-
-/* Voting */
-"Needs attention" = "Χρειάζεται προσοχή";
 
 /* No comment provided by engineer. */
 "Network" = "Δίκτυο";
@@ -4773,9 +4755,6 @@
 /* Buy Sell Dash */
 "Select a service to buy, sell, convert and transfer Dash" = "Επιλέξτε μια υπηρεσία για αγορά, πώληση, μετατροπή και μεταφορά Dash";
 
-/* Voting */
-"Select all" = "Επιλογή όλων";
-
 /* DashSpend denomination selection */
 "Select amount" = "επιλεξτε ποσό";
 
@@ -5071,9 +5050,6 @@
 /* Username marketplace: departed-name line — buyer identity */
 "Sold to %@" = "Πουλήθηκε στον %@";
 
-/* Voting */
-"Sole Requester" = "Sole Requester";
-
 /* Maya */
 "Some coins are not available because of the halted chain" = "Some coins are not available because of the halted chain";
 
@@ -5094,9 +5070,6 @@
 
 /* Usernames */
 "Some usernames can be blocked" = "Ορισμένα ονόματα χρηστών μπορούν να μπλοκαριστούν";
-
-/* Voting */
-"Some votes already cast" = "Some votes already cast";
 
 /* No comment provided by engineer. */
 "Something went wrong" = "Κάτι πήγε στραβά";
@@ -6661,12 +6634,6 @@
 "Vote in progress" = "Ψηφοφορία σε εξέλιξη";
 
 /* Voting */
-"Vote on %d usernames" = "Vote on %d usernames";
-
-/* Voting */
-"Vote on several" = "Ψήφος σε πολλά";
-
-/* Voting */
 "Vote with" = "Ψήφος με";
 
 /* Voting */
@@ -7534,3 +7501,42 @@
 
 /* No comment provided by engineer. */
 "Filtered by" = "Φιλτραρισμένο από";
+
+"Reset filters" = "Reset filters";
+
+"No usernames match this filter" = "No usernames match this filter";
+
+"Change the filter or reset it to see every open contest." = "Change the filter or reset it to see every open contest.";
+
+"Can't filter by your votes right now" = "Can't filter by your votes right now";
+
+"This wallet's masternode voting keys aren't available right now, so it has no votes to filter by." = "This wallet's masternode voting keys aren't available right now, so it has no votes to filter by.";
+
+"%@ · only duplicates" = "%@ · only duplicates";
+
+/* No comment provided by engineer. */
+"Date: New to old" = "Ημερομηνία: Νέα προς παλαιά";
+
+/* No comment provided by engineer. */
+"Date: Old to new" = "Ημερομηνία: Παλαιά προς νέα";
+
+/* No comment provided by engineer. */
+"Has blocked votes" = "Έχει ψήφους αποκλεισμού";
+
+/* No comment provided by engineer. */
+"I have approved" = "Έχω εγκρίνει";
+
+/* No comment provided by engineer. */
+"I have not voted" = "Δεν έχω ψηφίσει";
+
+/* No comment provided by engineer. */
+"Only duplicates" = "Μόνο διπλότυπα";
+
+/* No comment provided by engineer. */
+"Only requests with links" = "Μόνο αιτήματα με συνδέσμους";
+
+/* No comment provided by engineer. */
+"Votes: High to low" = "Ψήφοι: Υψηλές προς χαμηλές";
+
+/* No comment provided by engineer. */
+"Votes: Low to high" = "Ψήφοι: Χαμηλές προς υψηλές";

@@ -222,26 +222,6 @@
 			<string>%d evonode</string>
 		</dict>
 	</dict>
-	<key>%u votes in total</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>u</string>
-			<key>one</key>
-			<string>celkem %u hlas</string>
-			<key>few</key>
-			<string>celkem %u hlasy</string>
-			<key>many</key>
-			<string>celkem %u hlasu</string>
-			<key>other</key>
-			<string>celkem %u hlasů</string>
-		</dict>
-	</dict>
 	<key>%d masternodes</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -260,26 +240,6 @@
 			<string>%d masternode</string>
 			<key>other</key>
 			<string>%d masternode</string>
-		</dict>
-	</dict>
-	<key>%d selected</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>%d vybrán</string>
-			<key>few</key>
-			<string>%d vybrány</string>
-			<key>many</key>
-			<string>%d vybráno</string>
-			<key>other</key>
-			<string>%d vybráno</string>
 		</dict>
 	</dict>
 	<key>%d of your nodes already voted here and are not listed.</key>
@@ -320,26 +280,6 @@
 			<string>%u hlasu na spor — evonode se počítají jako 4, masternode jako 1</string>
 			<key>other</key>
 			<string>%u hlasů na spor — evonode se počítají jako 4, masternode jako 1</string>
-		</dict>
-	</dict>
-	<key>Vote on %d usernames</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>Hlasovat o %d uživatelském jménu</string>
-			<key>few</key>
-			<string>Hlasovat o %d uživatelských jménech</string>
-			<key>many</key>
-			<string>Hlasovat o %d uživatelských jménech</string>
-			<key>other</key>
-			<string>Hlasovat o %d uživatelských jménech</string>
 		</dict>
 	</dict>
 	<key>%u votes</key>

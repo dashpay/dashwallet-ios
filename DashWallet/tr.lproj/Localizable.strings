@@ -181,9 +181,6 @@
 /* Voting */
 "%d requests" = "%d requests";
 
-/* Voting */
-"%d selected" = "%d selected";
-
 /* SPV diagnostics */
 "%d still in progress" = "%d still in progress";
 
@@ -228,9 +225,6 @@
 
 /* Voting */
 "%u votes counted for “%@”" = "%1$u votes counted for “%2$@”";
-
-/* Voting */
-"%u votes in total" = "%u votes in total";
 
 /* Voting */
 "%u votes per contest — evonodes count as 4, masternodes as 1" = "%u votes per contest — evonodes count as 4, masternodes as 1";
@@ -1966,9 +1960,6 @@
 /* DashPay FAQ */
 "Enabling DashPay costs a small one-time network fee, paid from your identity's credit balance. The exact estimate is shown before you confirm. Sending contact requests and payments costs the usual network fees." = "DashPay'i etkinleştirmek, kimliğinizin kredi bakiyesinden ödenen küçük ve bir defalık bir ağ ücretine mal olur. Kesin tahmin, onaylamanızdan önce gösterilir. İletişim isteği ve ödeme göndermek olağan ağ ücretlerine tabidir.";
 
-/* Voting */
-"Ending soonest" = "En erken bitiyor";
-
 /* Usernames */
 "Ends around %@" = "Ends around %@";
 
@@ -3186,12 +3177,6 @@
 /* No comment provided by engineer. */
 "More Control" = "Daha Fazla Kontrol";
 
-/* Voting */
-"Most lock votes" = "En çok kilitleme oyu";
-
-/* Voting */
-"Most votes" = "En çok oy";
-
 /* Masternode unban */
 "Move %@ from shielded balance" = "Move %@ from shielded balance";
 
@@ -3276,9 +3261,6 @@
 
 /* Coinbase Two Factor Auth */
 "Need help? " = "Yardıma mı ihtiyacınız var?";
-
-/* Voting */
-"Needs attention" = "İlgi gerekiyor";
 
 /* No comment provided by engineer. */
 "Network" = "Ağ";
@@ -4773,9 +4755,6 @@
 /* Buy Sell Dash */
 "Select a service to buy, sell, convert and transfer Dash" = "Dash alıp, satıp, dönüştürebileceğiniz ve aktarım yapabileceğiniz bir hizmet seçin";
 
-/* Voting */
-"Select all" = "Tümünü seç";
-
 /* DashSpend denomination selection */
 "Select amount" = "Select amount";
 
@@ -5071,9 +5050,6 @@
 /* Username marketplace: departed-name line — buyer identity */
 "Sold to %@" = "%@ kişisine satıldı";
 
-/* Voting */
-"Sole Requester" = "Sole Requester";
-
 /* Maya */
 "Some coins are not available because of the halted chain" = "Some coins are not available because of the halted chain";
 
@@ -5094,9 +5070,6 @@
 
 /* Usernames */
 "Some usernames can be blocked" = "Bazı kullanıcı adları engellenebilir";
-
-/* Voting */
-"Some votes already cast" = "Some votes already cast";
 
 /* No comment provided by engineer. */
 "Something went wrong" = "Bir şeyler ters gitti";
@@ -6661,12 +6634,6 @@
 "Vote in progress" = "Oylama sürüyor";
 
 /* Voting */
-"Vote on %d usernames" = "Vote on %d usernames";
-
-/* Voting */
-"Vote on several" = "Birkaçı için oy ver";
-
-/* Voting */
 "Vote with" = "Şununla oy ver";
 
 /* Voting */
@@ -7534,3 +7501,42 @@
 
 /* No comment provided by engineer. */
 "Filtered by" = "Şuna göre filtrelendi:";
+
+"Reset filters" = "Reset filters";
+
+"No usernames match this filter" = "No usernames match this filter";
+
+"Change the filter or reset it to see every open contest." = "Change the filter or reset it to see every open contest.";
+
+"Can't filter by your votes right now" = "Can't filter by your votes right now";
+
+"This wallet's masternode voting keys aren't available right now, so it has no votes to filter by." = "This wallet's masternode voting keys aren't available right now, so it has no votes to filter by.";
+
+"%@ · only duplicates" = "%@ · only duplicates";
+
+/* No comment provided by engineer. */
+"Date: New to old" = "Tarih: Yeniden eskiye";
+
+/* No comment provided by engineer. */
+"Date: Old to new" = "Tarih: Eskiden yeniye";
+
+/* No comment provided by engineer. */
+"Has blocked votes" = "Has blocked votes";
+
+/* No comment provided by engineer. */
+"I have approved" = "Onayladım";
+
+/* No comment provided by engineer. */
+"I have not voted" = "I have not voted";
+
+/* No comment provided by engineer. */
+"Only duplicates" = "Yalnızca kopyalar";
+
+/* No comment provided by engineer. */
+"Only requests with links" = "Yalnızca bağlantı içeren istekler";
+
+/* No comment provided by engineer. */
+"Votes: High to low" = "Oylar: Yüksekten düşüğe";
+
+/* No comment provided by engineer. */
+"Votes: Low to high" = "Oylar: Düşükten yükseğe";

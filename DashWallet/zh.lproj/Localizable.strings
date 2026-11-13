@@ -181,9 +181,6 @@
 /* Voting */
 "%d requests" = "%d requests";
 
-/* Voting */
-"%d selected" = "%d selected";
-
 /* SPV diagnostics */
 "%d still in progress" = "%d still in progress";
 
@@ -228,9 +225,6 @@
 
 /* Voting */
 "%u votes counted for “%@”" = "%1$u votes counted for “%2$@”";
-
-/* Voting */
-"%u votes in total" = "%u votes in total";
 
 /* Voting */
 "%u votes per contest — evonodes count as 4, masternodes as 1" = "%u votes per contest — evonodes count as 4, masternodes as 1";
@@ -1966,9 +1960,6 @@
 /* DashPay FAQ */
 "Enabling DashPay costs a small one-time network fee, paid from your identity's credit balance. The exact estimate is shown before you confirm. Sending contact requests and payments costs the usual network fees." = "启用 DashPay 需要一笔小额的一次性网络手续费，从您身份的积分余额中支付。确认前会显示确切的预估金额。发送联系人请求和支付则收取通常的网络手续费。";
 
-/* Voting */
-"Ending soonest" = "最早结束";
-
 /* Usernames */
 "Ends around %@" = "Ends around %@";
 
@@ -3186,12 +3177,6 @@
 /* No comment provided by engineer. */
 "More Control" = "更多控制";
 
-/* Voting */
-"Most lock votes" = "锁定票最多";
-
-/* Voting */
-"Most votes" = "得票最多";
-
 /* Masternode unban */
 "Move %@ from shielded balance" = "Move %@ from shielded balance";
 
@@ -3276,9 +3261,6 @@
 
 /* Coinbase Two Factor Auth */
 "Need help? " = "需要帮助吗?";
-
-/* Voting */
-"Needs attention" = "需要处理";
 
 /* No comment provided by engineer. */
 "Network" = "网络";
@@ -4773,9 +4755,6 @@
 /* Buy Sell Dash */
 "Select a service to buy, sell, convert and transfer Dash" = "请选择购买、出售、转换和转移Dash的服务";
 
-/* Voting */
-"Select all" = "全选";
-
 /* DashSpend denomination selection */
 "Select amount" = "选择面额";
 
@@ -5071,9 +5050,6 @@
 /* Username marketplace: departed-name line — buyer identity */
 "Sold to %@" = "已售予 %@";
 
-/* Voting */
-"Sole Requester" = "Sole Requester";
-
 /* Maya */
 "Some coins are not available because of the halted chain" = "Some coins are not available because of the halted chain";
 
@@ -5094,9 +5070,6 @@
 
 /* Usernames */
 "Some usernames can be blocked" = "一些用户名会被禁止";
-
-/* Voting */
-"Some votes already cast" = "Some votes already cast";
 
 /* No comment provided by engineer. */
 "Something went wrong" = "发生了一些问题";
@@ -6661,12 +6634,6 @@
 "Vote in progress" = "投票进行中";
 
 /* Voting */
-"Vote on %d usernames" = "Vote on %d usernames";
-
-/* Voting */
-"Vote on several" = "为多个投票";
-
-/* Voting */
 "Vote with" = "使用以下节点投票";
 
 /* Voting */
@@ -7534,3 +7501,42 @@
 
 /* No comment provided by engineer. */
 "Filtered by" = "筛选条件";
+
+"Reset filters" = "Reset filters";
+
+"No usernames match this filter" = "No usernames match this filter";
+
+"Change the filter or reset it to see every open contest." = "Change the filter or reset it to see every open contest.";
+
+"Can't filter by your votes right now" = "Can't filter by your votes right now";
+
+"This wallet's masternode voting keys aren't available right now, so it has no votes to filter by." = "This wallet's masternode voting keys aren't available right now, so it has no votes to filter by.";
+
+"%@ · only duplicates" = "%@ · only duplicates";
+
+/* No comment provided by engineer. */
+"Date: New to old" = "日期: 从新到旧";
+
+/* No comment provided by engineer. */
+"Date: Old to new" = "日期: 从旧到新";
+
+/* No comment provided by engineer. */
+"Has blocked votes" = "有阻止票";
+
+/* No comment provided by engineer. */
+"I have approved" = "我已通过的";
+
+/* No comment provided by engineer. */
+"I have not voted" = "我未投票的";
+
+/* No comment provided by engineer. */
+"Only duplicates" = "仅重复项";
+
+/* No comment provided by engineer. */
+"Only requests with links" = "仅以链接申请";
+
+/* No comment provided by engineer. */
+"Votes: High to low" = "投票: 从高到低";
+
+/* No comment provided by engineer. */
+"Votes: Low to high" = "投票: 从低到高";

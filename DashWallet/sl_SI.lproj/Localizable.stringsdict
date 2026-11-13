@@ -218,26 +218,6 @@
 			<string>%d evonode</string>
 		</dict>
 	</dict>
-	<key>%u votes in total</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>u</string>
-			<key>one</key>
-			<string>skupaj %u glas</string>
-			<key>two</key>
-			<string>skupaj %u glasova</string>
-			<key>few</key>
-			<string>skupaj %u glasovi</string>
-			<key>other</key>
-			<string>skupaj %u glasov</string>
-		</dict>
-	</dict>
 	<key>%d masternodes</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -256,26 +236,6 @@
 			<string>%d masternode</string>
 			<key>other</key>
 			<string>%d masternode</string>
-		</dict>
-	</dict>
-	<key>%d selected</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>%d izbran</string>
-			<key>two</key>
-			<string>%d izbrana</string>
-			<key>few</key>
-			<string>%d izbrani</string>
-			<key>other</key>
-			<string>%d izbranih</string>
 		</dict>
 	</dict>
 	<key>%d of your nodes already voted here and are not listed.</key>
@@ -316,26 +276,6 @@
 			<string>%u glasovi na spor — evonode šteje 4, masternode 1</string>
 			<key>other</key>
 			<string>%u glasov na spor — evonode šteje 4, masternode 1</string>
-		</dict>
-	</dict>
-	<key>Vote on %d usernames</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>Glasuj o %d uporabniškem imenu</string>
-			<key>two</key>
-			<string>Glasuj o %d uporabniških imenih</string>
-			<key>few</key>
-			<string>Glasuj o %d uporabniških imenih</string>
-			<key>other</key>
-			<string>Glasuj o %d uporabniških imenih</string>
 		</dict>
 	</dict>
 	<key>%u votes</key>
