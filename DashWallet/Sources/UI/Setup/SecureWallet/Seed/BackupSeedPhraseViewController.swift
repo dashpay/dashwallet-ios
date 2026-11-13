@@ -31,9 +31,7 @@ class BackupSeedPhraseViewController: DWPreviewSeedPhraseViewController {
 
         self.contentView.displayType = DWSeedPhraseDisplayType.backup
 
-        #if SNAPSHOT
-        self.actionButton.accessibilityIdentifier = "seedphrase_continue_button"
-        #endif
+        (self.actionButton as? UIView)?.accessibilityIdentifier = "seedphrase_continue_button"
     }
 
     override var actionButtonTitle: String {

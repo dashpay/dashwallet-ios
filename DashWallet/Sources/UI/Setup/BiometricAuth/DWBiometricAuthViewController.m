@@ -114,6 +114,8 @@ NS_ASSUME_NONNULL_BEGIN
 
     [self.skipBiometricButton setTitle:NSLocalizedString(@"Skip", nil)
                               forState:UIControlStateNormal];
+    self.skipBiometricButton.accessibilityIdentifier = @"biometrics_skip_button";
+    self.enableBiometricButton.accessibilityIdentifier = @"biometrics_enable_button";
 }
 
 @end

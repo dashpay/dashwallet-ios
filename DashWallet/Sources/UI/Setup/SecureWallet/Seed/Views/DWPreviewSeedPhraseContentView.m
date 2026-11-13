@@ -94,9 +94,7 @@ static CGFloat const PHRASE_WARNING_PADDING = 36.0;
         [self addSubview:screenshotDescriptionButton];
         _screenshotDescriptionButton = screenshotDescriptionButton;
 
-#if SNAPSHOT
         confirmationCheckbox.accessibilityIdentifier = @"seedphrase_checkbox";
-#endif /* SNAPSHOT */
 
         _seedPhraseTopConstraint = [seedPhraseView.topAnchor constraintEqualToAnchor:self.topAnchor
                                                                             constant:DW_TOP_COMPACT_PADDING];
