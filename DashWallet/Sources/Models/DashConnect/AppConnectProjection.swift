@@ -718,28 +718,35 @@ extension AppConnect {
         } && outstandingDisables(of: intent, in: snapshot).isEmpty
     }
 
+    /// The key under `id` on `snapshot` whose bound the store holds: the
+    /// only proof the connection sheet takes that a key is the app's. Every
+    /// claim it makes from a key on Platform (access, messages, funding)
+    /// rests on it. A key whose bound the store does not hold yet may be
+    /// bound to another contract, so it backs no claim until a read places it.
+    static func placedKey(withId id: UInt32, in snapshot: IdentitySnapshot) -> PlatformKey? {
+        snapshot.keys.first { $0.id == id && $0.boundKnown }
+    }
+
     /// The key on `snapshot` an intended auth key gives access through: it
-    /// landed (live or expired) and its bound is known to be the intended
-    /// one. A key whose bound the store does not hold yet may be bound
-    /// elsewhere, so it gives no access until a read places it.
+    /// landed (live or expired) and is placed (`placedKey`), so its bound is
+    /// the intended one (`isSameKey`).
     static func accessKey(of intended: IntendedKey, in snapshot: IdentitySnapshot) -> PlatformKey? {
-        guard [.live, .expired].contains(presence(of: intended, in: snapshot)),
-              let actual = snapshot.keys.first(where: { $0.id == intended.id }), actual.boundKnown else { return nil }
-        return actual
+        guard [.live, .expired].contains(presence(of: intended, in: snapshot)) else { return nil }
+        return placedKey(withId: intended.id, in: snapshot)
     }
 
     /// Whether `intent`'s encryption keys give the app message access on
     /// `snapshot`, as the connection sheet says it: every key it re-sends is
-    /// live, and every key it adds is live, or not there yet while the
-    /// intent may still land. One that is off, expired, or whose id another
-    /// key holds gives none.
+    /// placed (`placedKey`) and live, and every key it adds is placed and
+    /// live, or not there yet while the intent may still land. One that is
+    /// off, expired, not placed, or whose id another key holds gives none.
     static func encryptionKeysGiveAccess(_ intent: ConnectionIntent, in snapshot: IdentitySnapshot) -> Bool {
         let mayLand = status(of: intent, in: snapshot) == .confirming
         return intent.sentEncryptionKeyIds.allSatisfy { id in
-            snapshot.keys.contains { $0.id == id && isLive($0, at: snapshot.platformTime) }
+            placedKey(withId: id, in: snapshot).map { isLive($0, at: snapshot.platformTime) } == true
         } && intent.keys.filter { !$0.isAuthentication }.allSatisfy { key in
             switch presence(of: key, in: snapshot) {
-            case .live: return true
+            case .live: return placedKey(withId: key.id, in: snapshot) != nil
             case .missing: return mayLand
             case .conflicting, .expired, .disabled: return false
             }

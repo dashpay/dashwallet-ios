@@ -26,7 +26,8 @@ import UIKit
 import SwiftDashSDK
 
 struct SwiftDashSDKSPVStatusScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
 
     @ObservedObject private var coordinator = SwiftDashSDKSPVCoordinator.shared
 
@@ -91,7 +92,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
     @State private var recoveryResultMessage: String?
     @State private var recoveryResultIsError = false
 
-    init(vc: UINavigationController) {
+    init(vc: UINavigationController?) {
         self.vc = vc
     }
 
@@ -99,7 +100,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             // Back button
             DashUIKit.NavigationBar(leading: {
-                DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
+                DashUIKit.NavigationBarElement.back.button { vc?.popViewController(animated: true) }
             })
 
             // Header
