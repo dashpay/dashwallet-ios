@@ -402,6 +402,17 @@ struct UsernameVotingScreen: View {
                     title: NSLocalizedString("Reset filters", comment: "Voting"),
                     perform: { list.filter = .default }))
                 .padding(.vertical, 40)
+        case .noVotingKeys:
+            VotingEmptyState(
+                icon: "line.3.horizontal.decrease.circle",
+                title: NSLocalizedString("No votes to filter by", comment: "Voting"),
+                message: NSLocalizedString(
+                    "This wallet has no masternode voting keys, so it has no votes to filter by.",
+                    comment: "Voting"),
+                action: (
+                    title: NSLocalizedString("Reset filters", comment: "Voting"),
+                    perform: { list.filter = .default }))
+                .padding(.vertical, 40)
         case .cannotFilterByLinks:
             VotingEmptyState(
                 icon: "exclamationmark.triangle",
@@ -693,6 +704,7 @@ private func previewScreen(
     contests: [DPNSContest],
     nodes: [VoterNode] = [],
     mayBeIncomplete: Bool = false,
+    nodeListSynced: Bool = true,
     failure: Error? = nil,
     failAfterFirstLoad: Bool = false,
     historyUnreadable: Bool = false,
@@ -703,7 +715,7 @@ private func previewScreen(
 ) -> some View {
     let store = VotingStore(
         contests: PreviewContests(contests: contests, failure: failure, failAfterFirstLoad: failAfterFirstLoad),
-        nodes: PreviewNodes(nodes: nodes, mayBeIncomplete: mayBeIncomplete),
+        nodes: PreviewNodes(nodes: nodes, mayBeIncomplete: mayBeIncomplete, isNodeListSynced: nodeListSynced),
         caster: PreviewCaster(),
         history: PreviewHistory(records: historyUnreadable ? nil : []),
         prefs: PreviewPrefs(),
@@ -772,6 +784,10 @@ private let previewNode = VoterNode(
 }
 
 #Preview("Can't filter by your votes") {
+    previewScreen(contests: previewContests, nodeListSynced: false, filterType: .notVoted)
+}
+
+#Preview("No votes to filter by") {
     previewScreen(contests: previewContests, filterType: .notVoted)
 }
 

@@ -7391,3 +7391,8 @@
 
 /* Voting */
 "Quick voting did not start: another vote is still being sent." = "Quick voting did not start: another vote is still being sent.";
+
+/* Voting */
+"No votes to filter by" = "No votes to filter by";
+
+"This wallet has no masternode voting keys, so it has no votes to filter by." = "This wallet has no masternode voting keys, so it has no votes to filter by.";

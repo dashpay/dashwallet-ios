@@ -150,6 +150,9 @@ final class VotingListViewModel: ObservableObject {
         }
         guard visibleContests.isEmpty else { return nil }
         if filter.type.readsMyVotes {
+            // A synced, complete node list without a voting node: the wallet
+            // has no votes, which no retry changes (AC-09).
+            if store.nodeListSynced, !store.nodeListMayBeIncomplete, !store.canVote { return .noVotingKeys }
             // Not the filter's fault: this wallet's votes cannot be told (AC-09).
             if let reason = myVotesUnavailableReason { return .cannotFilterByMyVotes(reason: reason) }
             // Still loading for some contests: nothing can be said to match yet.
@@ -538,6 +541,9 @@ enum VotingListEmptyState: Equatable {
     case couldNotLoad
     /// A type by my vote while this wallet's votes cannot be told, and why (AC-09).
     case cannotFilterByMyVotes(reason: String)
+    /// A type by my vote while the synced node list holds no voting node of
+    /// this wallet: it has no votes to filter by (AC-09).
+    case noVotingKeys
     /// "Only requests with links" while some request's link could not be checked (AC-09b).
     case cannotFilterByLinks
     /// Open contests exist and the filter keeps none (AC-08).

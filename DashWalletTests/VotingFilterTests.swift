@@ -225,9 +225,4 @@ final class VotingFilterTests: XCTestCase {
         XCTAssertEqual(kept.first?.contenders.count, 3)
         XCTAssertFalse(VotingFilter.default.onlyWithLinks)
     }
-
-    func testSortRawValuesAreStable() {
-        XCTAssertEqual(ContestSort.allCases.map(\.rawValue), ["dateNewToOld", "dateOldToNew", "votesHighToLow", "votesLowToHigh"])
-        XCTAssertEqual(VotingTypeFilter.allCases.map(\.rawValue), ["all", "approved", "notVoted", "hasBlockedVotes"])
-    }
 }

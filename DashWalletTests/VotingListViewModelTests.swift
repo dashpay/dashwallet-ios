@@ -522,8 +522,23 @@ final class VotingListViewModelTests: XCTestCase {
         XCTAssertNil(list.emptyState)
     }
 
-    /// AC-09, no voting keys: the wallet holds no vote to filter by.
-    func testMyVotesFilterWithoutVotingKeysCannotFilter() async {
+    /// AC-09, no voting keys in a synced node list: the wallet holds no vote
+    /// to filter by, which is not a passing fault.
+    func testMyVotesFilterWithoutVotingKeysSaysTheWalletHasNone() async {
+        contests.result = .success([single("alice")])
+        let store = makeStore()
+        let list = makeList(store)
+        await store.refresh()
+
+        list.filter.type = .notVoted
+
+        XCTAssertEqual(list.emptyState, .noVotingKeys)
+    }
+
+    /// AC-09, no voting keys found before the node list synced: they may
+    /// still turn up, so the filter cannot tell right now.
+    func testMyVotesFilterBeforeTheNodeListSyncedCannotFilter() async {
+        nodes.isNodeListSynced = false
         contests.result = .success([single("alice")])
         let store = makeStore()
         let list = makeList(store)
