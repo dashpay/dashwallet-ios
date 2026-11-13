@@ -5564,3 +5564,79 @@ final class AppConnectOwnersThroughSeamsTests: XCTestCase {
         XCTAssertEqual(result.keysTurnedOff, 1)
     }
 }
+
+/// The approve sheet's terms and caution: expiries set and bounded at the
+/// Platform time the request was resolved at, and a Refused attempt that
+/// connected nothing.
+@MainActor
+final class ConnectionsViewModelTermsTests: XCTestCase {
+    private static let phone = Date(timeIntervalSince1970: 1_791_676_800)
+    private static let appId = "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F"
+
+    private static func request(platformTimeMs: UInt64, expiresAt: UInt64) -> ConnectionRequest {
+        let app = Data(repeating: 0xA1, count: 32)
+        let binding = AppConnectRequest.AuthBinding(
+            kind: .singleContract, securityLevel: .high, id: app,
+            totalBudget: 1000, expiresAt: expiresAt, documentTypeName: nil)
+        var plan = AppConnect.GrantPlan(
+            appId: app, appEphemeralPubKeyHash: Data(repeating: 0x01, count: 20),
+            auth: [AppConnect.AuthGrant(bindingIndex: 0, binding: binding, totalBudget: 1000, expiresAt: expiresAt)],
+            encryption: [], connectionId: nil, identityHint: nil, createdAt: 0)
+        plan.platformTimeMs = platformTimeMs
+        var request = ConnectionRequest(loginRequest: MockDashConnectDataSource.sampleLoginRequest)
+        request.login = .appConnect(plan)
+        return request
+    }
+
+    func testTheYearPresetIsInBoundsAtAPlatformTimeBehindThePhone() {
+        let platform = AppConnect.milliseconds(Self.phone) - 120_000
+        let viewModel = ConnectionsViewModel(
+            dataSource: MockDashConnectDataSource(store: TestDashConnectStore()), featureUnavailable: false,
+            now: { Self.phone })
+        viewModel.pendingRequest = Self.request(platformTimeMs: platform, expiresAt: platform + 3_600_000)
+
+        viewModel.setExpiry(days: 365)
+
+        let applied = viewModel.termsAppliedPlan
+        XCTAssertNotNil(applied)
+        XCTAssertNil(applied.flatMap { AppConnect.termsFailure(of: $0, platformTimeMs: platform) })
+        XCTAssertNil(applied.flatMap { AppConnect.termsFailure(of: $0, platformTimeMs: platform + 60_000) })
+    }
+
+    func testAnExpiryPastAtPlatformTimeTurnsApproveOffWhileThePhoneClockIsBehind() {
+        var phone = Self.phone
+        let platform = AppConnect.milliseconds(Self.phone) + 2 * 3_600_000
+        let viewModel = ConnectionsViewModel(
+            dataSource: MockDashConnectDataSource(store: TestDashConnectStore()), featureUnavailable: false,
+            now: { phone })
+        viewModel.pendingRequest = Self.request(platformTimeMs: platform, expiresAt: platform + 3_600_000)
+        XCTAssertNotNil(viewModel.termsAppliedPlan)
+
+        // Two hours on: past the expiry at Platform's time, an hour before
+        // it by this phone's clock.
+        phone = phone.addingTimeInterval(2 * 3600)
+
+        XCTAssertNil(viewModel.termsAppliedPlan)
+        XCTAssertEqual(
+            viewModel.approveDisabledReason,
+            NSLocalizedString(
+                "This expiry has passed. Pick another one, then approve.",
+                comment: "DashConnect approve sheet: the chosen expiry is in the past"))
+    }
+
+    func testARefusedAttemptKeepsTheFirstConnectionCaution() async {
+        let refused = DAppConnection(
+            id: Self.appId, name: "Yappr", url: "yap.pr", status: .refused, updatedAt: Self.phone)
+        let viewModel = ConnectionsViewModel(
+            dataSource: MockDashConnectDataSource(initial: [refused], store: TestDashConnectStore()),
+            featureUnavailable: false, now: { Self.phone })
+        let deadline = Date().addingTimeInterval(2)
+        while !viewModel.hasReadRows, Date() < deadline { try? await Task.sleep(nanoseconds: 2_000_000) }
+        XCTAssertTrue(viewModel.hasReadRows)
+
+        viewModel.pendingRequest = ConnectionRequest(loginRequest: MockDashConnectDataSource.sampleLoginRequest)
+
+        XCTAssertEqual(viewModel.pendingRequest?.appContractId, Self.appId)
+        XCTAssertTrue(viewModel.pendingIsFirstConnection)
+    }
+}

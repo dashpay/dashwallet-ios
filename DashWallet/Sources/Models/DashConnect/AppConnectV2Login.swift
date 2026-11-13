@@ -231,6 +231,9 @@ extension AppConnect {
         /// How the app's contract keeps the current key of each encryption
         /// purpose asked, as Platform proves the contract.
         var currentKeyRules: [KeyPurpose: CurrentKeyRule] = [:]
+        /// The proved Platform block time, in milliseconds, the plan was
+        /// made at: the clock its expiries are set from and checked by.
+        var platformTimeMs: UInt64? = nil
 
         /// The largest budget among the keys, for the summary line.
         var totalBudget: UInt64? {
@@ -334,7 +337,8 @@ extension AppConnect {
             encryption: encryption,
             connectionId: request.connectionId,
             identityHint: request.identityHint,
-            createdAt: request.createdAt
+            createdAt: request.createdAt,
+            platformTimeMs: blockTimeMs
         )
     }
 

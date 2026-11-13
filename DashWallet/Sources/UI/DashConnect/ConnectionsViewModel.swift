@@ -161,9 +161,14 @@ final class ConnectionsViewModel: ObservableObject {
             // another request starts from its defaults; the same request
             // rebuilt keeps what the user chose, also across a rebuild that
             // could not tell its login for a while.
+            // A request resolved again reads Platform's time again.
+            let platformTime = pendingRequest?.login.grantPlan?.platformTimeMs
+            if platformTime != oldValue?.login.grantPlan?.platformTimeMs {
+                platformTimeResolved = platformTime.map { (platform: Self.date(ms: $0), phone: now()) }
+            }
             if let plan = pendingRequest?.login.grantPlan, plan.appEphemeralPubKeyHash != termsRequestHash {
                 termsRequestHash = plan.appEphemeralPubKeyHash
-                approvalTerms = AppConnect.defaultTerms(for: plan, now: now())
+                approvalTerms = AppConnect.defaultTerms(for: plan, now: termsStart)
             } else if pendingRequest == nil {
                 termsRequestHash = nil
                 approvalTerms = nil
@@ -175,6 +180,27 @@ final class ConnectionsViewModel: ObservableObject {
     /// The smallest funding limit every key of the pending v2 request can
     /// share; read once per request (`AppConnect.smallestFundingLimit`).
     private var smallestFundingLimit: UInt64?
+    /// The proved Platform time the pending v2 request was resolved at, and
+    /// this phone's clock then; `nil` without one.
+    private var platformTimeResolved: (platform: Date, phone: Date)?
+
+    /// What the sheet sets and bounds expiries from: the Platform time the
+    /// request was resolved at, which the approval's own read of Platform
+    /// time is never earlier than, so an expiry in bounds here is in bounds
+    /// there; this phone's clock for a request without one.
+    private var termsStart: Date { platformTimeResolved?.platform ?? now() }
+
+    /// Whether an expiry has gone by: the Platform time the request was
+    /// resolved at, moved on by this phone's clock since. The approval
+    /// checks again at Platform's time.
+    private var termsNow: Date {
+        guard let resolved = platformTimeResolved else { return now() }
+        return resolved.platform.addingTimeInterval(max(0, now().timeIntervalSince(resolved.phone)))
+    }
+
+    private static func date(ms: UInt64) -> Date {
+        Date(timeIntervalSince1970: TimeInterval(ms) / 1000)
+    }
     /// The funding limit and expiry the user set for the pending v2 request;
     /// `nil` for any other request.
     @Published private(set) var approvalTerms: AppConnect.ConnectionTerms?
@@ -726,6 +752,13 @@ final class ConnectionsViewModel: ObservableObject {
         // `retryPendingRequest` for it instead.
         guard var consent = pendingRequest, consent.login.isApprovable,
               let pendingLoginRequest, !isApproving, !isResolvingRequest else { return }
+        // Read again: the active identity may have lost its username, or
+        // another one become active, since the request came.
+        refreshUsername()
+        guard !needsUsername else {
+            approveError = Self.usernameNeededText
+            return
+        }
 
         // A v2 approval registers its keys with the terms the user set.
         if consent.login.grantPlan != nil {
@@ -760,7 +793,10 @@ final class ConnectionsViewModel: ObservableObject {
                 // An earlier failure was on the sheet this one replaces.
                 self.pendingFailureStatus = nil
                 self.pendingRequest = await dataSource.makeConnectionRequest(from: pendingLoginRequest)
-                self.approveError = DashConnectPlatformError.approvalOutOfDate.localizedDescription
+                // The identity it was rebuilt for may have no username.
+                self.refreshUsername()
+                self.approveError = self.needsUsername
+                    ? Self.usernameNeededText : DashConnectPlatformError.approvalOutOfDate.localizedDescription
             } catch DashConnectPlatformError.approvalTermsExpired {
                 // The expiry went by while the PIN prompt was up. Nothing
                 // was signed: the sheet stays, and says why itself
@@ -827,8 +863,8 @@ final class ConnectionsViewModel: ObservableObject {
         guard let plan = pendingRequest?.login.grantPlan else { return nil }
         // Encryption keys only: no term applies to them, recorded or not.
         if plan.auth.isEmpty { return plan }
-        guard let approvalTerms else { return nil }
-        return AppConnect.applying(approvalTerms, to: plan, now: now())
+        guard let approvalTerms, approvalTerms.expiresAt > AppConnect.milliseconds(termsNow) else { return nil }
+        return AppConnect.applying(approvalTerms, to: plan, now: termsStart)
     }
 
     /// "Maximum of 0.5 DASH" for the pending request's funding limit.
@@ -918,7 +954,8 @@ final class ConnectionsViewModel: ObservableObject {
     /// caution: an earlier connection cannot be ruled out.
     var pendingIsFirstConnection: Bool {
         guard hasReadRows, let id = pendingRequest?.appContractId else { return false }
-        return !connections.contains { $0.id == id } && !history.contains { $0.id == id }
+        // A Refused attempt connected nothing.
+        return !connections.contains { $0.id == id && $0.status != .refused } && !history.contains { $0.id == id }
     }
 
     /// The funding presets every key of the pending request can share, with
@@ -964,7 +1001,7 @@ final class ConnectionsViewModel: ObservableObject {
 
     /// The expiry presets in days, with the one in effect (to the day).
     var expiryPresets: [(days: Int, isSelected: Bool)] {
-        let start = now()
+        let start = termsStart
         return AppConnect.expiryPresetDays.map { days in
             (days, approvalTerms.map { Self.sameDay($0.expiresAt, AppConnect.expiry(days: days, from: start)) } ?? false)
         }
@@ -979,7 +1016,7 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     /// The latest expiry the user may pick now.
-    var latestExpiry: Date { now().addingTimeInterval(AppConnect.v2LifetimeCap) }
+    var latestExpiry: Date { termsStart.addingTimeInterval(AppConnect.v2LifetimeCap) }
 
     /// Sets the funding limit. False when it is out of bounds.
     @discardableResult
@@ -1053,7 +1090,7 @@ final class ConnectionsViewModel: ObservableObject {
     /// terms on screen; `nil` when it can.
     var approveDisabledReason: String? {
         guard pendingRequest?.login.grantPlan != nil, termsAppliedPlan == nil else { return nil }
-        if let expiresAt = approvalTerms?.expiresAt, expiresAt <= AppConnect.milliseconds(now()) {
+        if let expiresAt = approvalTerms?.expiresAt, expiresAt <= AppConnect.milliseconds(termsNow) {
             return NSLocalizedString(
                 "This expiry has passed. Pick another one, then approve.",
                 comment: "DashConnect approve sheet: the chosen expiry is in the past")
@@ -1069,11 +1106,11 @@ final class ConnectionsViewModel: ObservableObject {
     }
 
     /// The earliest expiry the user may pick now.
-    var earliestExpiry: Date { now() }
+    var earliestExpiry: Date { termsNow }
 
     /// Sets the expiry to `days` from now.
     func setExpiry(days: Int) {
-        setExpiry(AppConnect.expiry(days: days, from: now()))
+        setExpiry(AppConnect.expiry(days: days, from: termsStart))
     }
 
     /// Sets the expiry to the end of the day of `date`, capped at the latest
@@ -1087,7 +1124,8 @@ final class ConnectionsViewModel: ObservableObject {
 
     @discardableResult
     private func setExpiry(_ expiresAt: UInt64) -> Bool {
-        guard approvalTerms != nil, AppConnect.isValidExpiry(expiresAt, now: now()) else {
+        guard approvalTerms != nil, AppConnect.isValidExpiry(expiresAt, now: termsStart),
+              expiresAt > AppConnect.milliseconds(termsNow) else {
             return false
         }
         approvalTerms?.expiresAt = expiresAt
