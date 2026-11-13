@@ -327,6 +327,58 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertEqual(entry.identityId, Self.identity.toBase58String())
     }
 
+    /// One disconnect that ended several approvals of the app gives the
+    /// latest of them as the time the connection was made, as the sheet of
+    /// the live connection did.
+    func testADisconnectedEntryIsConnectedAtItsLatestApproval() {
+        let first = Self.disconnected(Self.intent([Self.authKey(10)], createdAt: 100))
+        let renewal = Self.disconnected(Self.intent([Self.authKey(11)], createdAt: 300))
+        let row = DAppConnection(
+            id: Self.app.toBase58String(), name: "App", url: "app.example", status: .disconnected,
+            updatedAt: Date(timeIntervalSince1970: 1))
+
+        let entry = PlatformDashConnectDataSource.disconnectedEntry(of: row, intents: [first, renewal])
+
+        XCTAssertEqual(entry.connectedAt, Date(timeIntervalSince1970: 300))
+    }
+
+    /// A Disconnected row whose marked intents cannot be read (none loaded)
+    /// is listed with no disconnect time and no access, not with the row's
+    /// own time.
+    func testADisconnectedEntryWithNoMarkedIntentKnowsNoDisconnectTime() {
+        let row = DAppConnection(
+            id: Self.app.toBase58String(), name: "App", url: "app.example", status: .disconnected,
+            updatedAt: Date(timeIntervalSince1970: 1))
+
+        let entry = PlatformDashConnectDataSource.disconnectedEntry(of: row, intents: [Self.intent([Self.authKey(12)])])
+
+        XCTAssertNil(entry.disconnectedAt)
+        XCTAssertNil(entry.access)
+        XCTAssertNil(entry.connectedAt)
+    }
+
+    /// A read of identity B says nothing of an app disconnected on identity
+    /// A: its Disconnected row stays. A row whose intents on A were closed
+    /// without a disconnect still goes.
+    func testAReadOfAnotherIdentityKeepsTheRowOfAnAppDisconnectedOnTheFirst() {
+        let row = DAppConnection(
+            id: Self.app.toBase58String(), name: "App", url: "app.example", status: .disconnected,
+            updatedAt: Date(timeIntervalSince1970: 1))
+        let projection = AppConnect.project([Self.snapshot([], identity: Self.otherIdentity)], intents: [])
+        let disconnectedOnA = Self.disconnected(Self.intent([Self.authKey(10)]))
+
+        let kept = PlatformDashConnectDataSource.rows(
+            [row], after: projection, of: Self.otherIdentity, intents: [disconnectedOnA], at: Date(timeIntervalSince1970: 2))
+        XCTAssertEqual(kept.map(\.status), [.disconnected])
+        XCTAssertEqual(kept.first?.updatedAt, row.updatedAt)
+
+        let closedOnA = Self.closed(Self.intent([Self.authKey(10)]))
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.rows(
+                [row], after: projection, of: Self.otherIdentity, intents: [closedOnA], at: Date(timeIntervalSince1970: 2)),
+            [])
+    }
+
     // MARK: The disconnect mark (T35)
 
     /// T35 (G1): an open intent a disconnect ran on, whose id the fence now
