@@ -110,15 +110,6 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
         customNavBar?.onInfo ?? { [weak self] in self?.infoButtonAction() }
     }
 
-    override var locationServicePopupTitle: String {
-        NSLocalizedString("Merchant search works better with Location Services turned on.", comment: "")
-    }
-
-    override var locationServicePopupDetails: String {
-        NSLocalizedString("Your location is used to show your position on the map, merchants in the selected redius and improve search results.",
-                          comment: "")
-    }
-
     internal var locationOffCell: MerchantListLocationOffCell?
     // MARK: Table View
 
@@ -194,109 +185,29 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
 
     // MARK: Life cycle
 
-    override func show(pointOfUse: ExplorePointOfUse) {
-        guard let merchant = pointOfUse.merchant else { return }
-
-        // Pass appropriate search radius and filters based on current segment
-        let isAllTab = currentSegment.tag == 2
-        let searchRadius: Double? = isAllTab ? Double.greatestFiniteMagnitude : model.filters?.currentRadius
-
-        let vc = POIDetailsViewController(pointOfUse: pointOfUse, isShowAllHidden: merchant.type == .online, searchRadius: searchRadius, searchCenterCoordinate: model.searchCenterCoordinate, currentFilters: model.filters)
-        vc.payWithDashHandler = payWithDashHandler
-        vc.onGiftCardPurchased = onGiftCardPurchased
-        navigationController?.pushViewController(vc, animated: true)
-    }
-
-    override func subtitleForFilterCell() -> String? {
-        if model.showMap &&
-            DWLocationManager.shared.isAuthorized &&
-            currentSegment != .all {
-            let physicalMerchants = items.filter { $0.isPhysical }
-
-            guard !physicalMerchants.isEmpty else { return nil }
-
-            if Locale.current.usesMetricSystem {
-                return String.localizedStringWithFormat(NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"), items.count,
-                              ExploreDash.distanceFormatter
-                                  .string(from: Measurement(value: model.currentRadius, unit: UnitLength.meters)))
-            } else {
-                return String.localizedStringWithFormat(NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!"), items.count,
-                              ExploreDash.distanceFormatter
-                                  .string(from: Measurement(value: model.currentRadiusMiles, unit: UnitLength.miles)))
-            }
-        } else {
-            return nil
-        }
-    }
-
-    override func configureModel() {
-        let segments = [
-            MerchantsListSegment.online.pointOfUseListSegment,
-            MerchantsListSegment.nearby.pointOfUseListSegment,
-            MerchantsListSegment.all.pointOfUseListSegment,
-        ]
-
-        // Determine which segment should be default based on caller override or location permission
-        let defaultSegmentIndex: Int
-        if let initial = initialSegment {
-            defaultSegmentIndex = initial.rawValue
-        } else if DWLocationManager.shared.isAuthorized {
-            defaultSegmentIndex = MerchantsListSegment.nearby.rawValue
-        } else {
-            defaultSegmentIndex = MerchantsListSegment.online.rawValue
-        }
-
-        let defaultSortBy: PointOfUseListFilters.SortBy = defaultSegmentIndex == MerchantsListSegment.nearby.rawValue ? .distance : .name
-
-        var defaultPaymentTypes: [PointOfUseListFilters.SpendingOptions] = [.dash, .ctx]
-        #if PIGGYCARDS_ENABLED
-        defaultPaymentTypes.append(.piggyCards)
-        #endif
-
-        let defaultFilters = PointOfUseListFilters(
-            sortBy: defaultSortBy,
-            merchantPaymentTypes: defaultPaymentTypes, // Default to all available payment types
-            radius: .twenty, // Default radius
-            territory: nil,
-            denominationType: .both // Default to both fixed and flexible
-        )
-
-        // Configure the initial segment and its filters before the model starts its first
-        // fetch. This prevents the Online default from racing an unfiltered constructor
-        // fetch against the filtered request.
-        model = PointOfUseListModel(
-            segments: segments,
-            initialSegment: segments[defaultSegmentIndex],
-            initialFilters: defaultFilters
-        )
+    override func makeConfiguration() -> PointOfUseListConfiguration {
+        .merchants(initialSegment: initialSegment, isLocationAuthorized: DWLocationManager.shared.isAuthorized)
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        // Check if we're coming from within the same screen (e.g., returning from merchant detail)
-        // vs. entering the screen fresh (e.g., switching from home screen or another tab)
-        let isReturningFromWithinFlow = model.searchCenterCoordinate != nil
+        // A search center is left over from a details screen pushed on top;
+        // without one the screen is opening and starts at the device's
+        // location. Every map-showing segment (Nearby and All) needs these
+        // bounds, or the All map stays empty until it is panned.
+        if viewModel.searchCenterCoordinate == nil,
+           let gpsLocation = DWLocationManager.shared.currentLocation,
+           viewModel.showsMap {
+            // mapViewDidFinishLoadingMap centers on initialCenterLocation.
+            mapView.initialCenterLocation = gpsLocation
+            mapView.setCenter(gpsLocation, animated: false)
+            mapView.searchRadius = viewModel.searchRadius
 
-        // Only recenter to GPS if entering the screen fresh.
-        // Applies to every map-showing segment (Nearby and All): without seeding the
-        // bounds here, the All tab's map stays empty until the user pans it.
-        if !isReturningFromWithinFlow {
-            if let gpsLocation = DWLocationManager.shared.currentLocation,
-               model.showMap {
-                // Set initialCenterLocation so mapViewDidFinishLoadingMap will use the correct location
-                mapView.initialCenterLocation = gpsLocation
-                mapView.setCenter(gpsLocation, animated: false)
-
-                let radiusToUse = model.filters?.currentRadius ?? kDefaultRadius
-                mapView.searchRadius = radiusToUse
-
-                // Use GPS location directly instead of relying on mapView.centerCoordinate
-                let newBounds = ExploreMapBounds(rect: MKCircle(center: gpsLocation.coordinate, radius: radiusToUse).boundingMapRect)
-                model.currentMapBounds = newBounds
-
-                model.fetch(query: nil)
-            }
+            // The GPS location, not mapView.centerCoordinate, which may not
+            // have moved yet.
+            let bounds = ExploreMapBounds(rect: MKCircle(center: gpsLocation.coordinate, radius: viewModel.searchRadius).boundingMapRect)
+            viewModel.searchAround(bounds: bounds)
         }
 
         // Ensure filter status is visible on initial load
@@ -306,10 +217,9 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
 
-        // Clear search center coordinate when actually leaving the screen
-        // (not when navigating to a child view like merchant detail)
+        // Leaving the screen, not pushing details over it.
         if isMovingFromParent || isBeingDismissed {
-            model.searchCenterCoordinate = nil
+            viewModel.screenDidClose()
         }
     }
 
@@ -327,57 +237,29 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
         if customNavBar == nil {
             setupInfoButton()
         }
-
-        model.itemsDidChange = { [weak self] in
-            guard let wSelf = self else { return }
-            wSelf.refreshFilterCell()
-
-            if wSelf.currentSegment.showLocationServiceSettings && DWLocationManager.shared.isPermissionDenied {
-                wSelf.tableView.reloadData()
-            } else if wSelf.locationOffCell != nil {
-                wSelf.tableView.reloadData()
-                wSelf.locationOffCell = nil
-            } else {
-                wSelf.tableView
-                    .reloadSections([ExplorePointOfUseSections.items.rawValue, ExplorePointOfUseSections.nextPage.rawValue],
-                                    with: .none)
-            }
-
-            wSelf.updateMapMerchants()
-
-            wSelf.updateEmptyResultsForFilters()
-        }
     }
 
-    // The map mirrors Android: it shows every physical location inside the search area
-    // (the closest ones to the search center), while the list keeps one row per merchant.
-    private func updateMapMerchants() {
-        guard model.showMap else { return }
-
-        guard let bounds = model.currentMapBounds, let center = model.userCoordinates else {
-            // No search area yet — only physical items are meaningful on the map. On the
-            // All tab the list also contains online merchants from anywhere, which must
-            // not be plotted.
-            mapView.show(merchants: model.items.filter { $0.isPhysical })
+    override func listDidUpdate(_ update: PointOfUseListViewModel.ListUpdate) {
+        guard update == .replaced else {
+            super.listDidUpdate(update)
             return
         }
 
-        ExploreDash.shared.merchantPhysicalLocations(in: bounds, center: center,
-                                                     paymentMethods: model.filters?.merchantPaymentTypes,
-                                                     denominationType: model.filters?.denominationType) { [weak self] result in
-            DispatchQueue.main.async {
-                // A pan/zoom may have started another fetch; only apply the response
-                // that matches the bounds currently shown.
-                guard let self, self.model.showMap, self.model.currentMapBounds == bounds else { return }
+        refreshFilterCell()
 
-                switch result {
-                case .success(let locations):
-                    self.mapView.show(merchants: locations)
-                case .failure:
-                    self.mapView.show(merchants: self.model.items.filter { $0.isPhysical })
-                }
-            }
+        // The location-off row replaces the whole list, so it needs a full
+        // reload both to appear and to go away.
+        if currentSegment.showLocationServiceSettings && DWLocationManager.shared.isPermissionDenied {
+            tableView.reloadData()
+        } else if locationOffCell != nil {
+            tableView.reloadData()
+            locationOffCell = nil
+        } else {
+            tableView.reloadSections([ExplorePointOfUseSections.items.rawValue, ExplorePointOfUseSections.nextPage.rawValue],
+                                     with: .none)
         }
+
+        updateEmptyResultsForFilters()
     }
 
     override func viewDidAppear(_ animated: Bool) {

@@ -460,6 +460,10 @@
 		47AE8BF628C1306000490F5E /* ExplorePointOfUseListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BD228C1305E00490F5E /* ExplorePointOfUseListViewController.swift */; };
 		47AE8BF728C1306000490F5E /* MerchantListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BD328C1305E00490F5E /* MerchantListViewController.swift */; };
 		47AE8BF828C1306000490F5E /* AtmDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BD528C1305E00490F5E /* AtmDataProvider.swift */; };
+		711CFDF9D95941D7845FA962 /* PointOfUseListConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0F6674D6204D5881A9B018 /* PointOfUseListConfiguration.swift */; };
+		F96751179D394E498CFE68A6 /* PointOfUseListConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0F6674D6204D5881A9B018 /* PointOfUseListConfiguration.swift */; };
+		4D4AB52054B44B19A778E200 /* PointOfUseListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31B2D23F4C6D42E5A9943FA5 /* PointOfUseListViewModel.swift */; };
+		E95A661A407E43CBBF6BB077 /* PointOfUseListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31B2D23F4C6D42E5A9943FA5 /* PointOfUseListViewModel.swift */; };
 		47AE8BF928C1306000490F5E /* MerchantsDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BD628C1305E00490F5E /* MerchantsDataProvider.swift */; };
 		47AE8BFA28C1306000490F5E /* PointOfUseListModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BD728C1305E00490F5E /* PointOfUseListModel.swift */; };
 		47AE8BFB28C1306000490F5E /* ExploreMapAnnotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BDA28C1305E00490F5E /* ExploreMapAnnotationView.swift */; };
@@ -980,6 +984,7 @@
 		7A30001430A1000000000014 /* ShieldedRecoveryTapActionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30001330A1000000000013 /* ShieldedRecoveryTapActionTests.swift */; };
 		7A11E5E70000000000000032 /* AdvancedSecurityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11E5E70000000000000031 /* AdvancedSecurityTests.swift */; };
 		7A11E5E70000000000000022 /* LocalCurrencyViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11E5E70000000000000021 /* LocalCurrencyViewModelTests.swift */; };
+		9A77FEAF8870409F8707674F /* PointOfUseListViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C9AB2E8384F48D590575096 /* PointOfUseListViewModelTests.swift */; };
 		7A30001630A1000000000016 /* ShieldedAssetLocksInFlightTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30001530A1000000000015 /* ShieldedAssetLocksInFlightTests.swift */; };
 		7A30001830A1000000000018 /* ShieldedTxLookupConsumedOverlayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30001730A1000000000017 /* ShieldedTxLookupConsumedOverlayTests.swift */; };
 		7A30002030A1000000000020 /* TxDetailRecoveryRowsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30001930A1000000000019 /* TxDetailRecoveryRowsTests.swift */; };
@@ -2814,6 +2819,8 @@
 		47AE8BD228C1305E00490F5E /* ExplorePointOfUseListViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExplorePointOfUseListViewController.swift; sourceTree = "<group>"; };
 		47AE8BD328C1305E00490F5E /* MerchantListViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MerchantListViewController.swift; sourceTree = "<group>"; };
 		47AE8BD528C1305E00490F5E /* AtmDataProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AtmDataProvider.swift; sourceTree = "<group>"; };
+		FF0F6674D6204D5881A9B018 /* PointOfUseListConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointOfUseListConfiguration.swift; sourceTree = "<group>"; };
+		31B2D23F4C6D42E5A9943FA5 /* PointOfUseListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointOfUseListViewModel.swift; sourceTree = "<group>"; };
 		47AE8BD628C1305E00490F5E /* MerchantsDataProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MerchantsDataProvider.swift; sourceTree = "<group>"; };
 		47AE8BD728C1305E00490F5E /* PointOfUseListModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PointOfUseListModel.swift; sourceTree = "<group>"; };
 		47AE8BDA28C1305E00490F5E /* ExploreMapAnnotationView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExploreMapAnnotationView.swift; sourceTree = "<group>"; };
@@ -3163,6 +3170,7 @@
 		7A30001330A1000000000013 /* ShieldedRecoveryTapActionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedRecoveryTapActionTests.swift; sourceTree = "<group>"; };
 		7A11E5E70000000000000031 /* AdvancedSecurityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvancedSecurityTests.swift; sourceTree = "<group>"; };
 		7A11E5E70000000000000021 /* LocalCurrencyViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalCurrencyViewModelTests.swift; sourceTree = "<group>"; };
+		7C9AB2E8384F48D590575096 /* PointOfUseListViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointOfUseListViewModelTests.swift; sourceTree = "<group>"; };
 		7A30001530A1000000000015 /* ShieldedAssetLocksInFlightTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedAssetLocksInFlightTests.swift; sourceTree = "<group>"; };
 		7A30001730A1000000000017 /* ShieldedTxLookupConsumedOverlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedTxLookupConsumedOverlayTests.swift; sourceTree = "<group>"; };
 		7A30001930A1000000000019 /* TxDetailRecoveryRowsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxDetailRecoveryRowsTests.swift; sourceTree = "<group>"; };
@@ -6519,6 +6527,8 @@
 			children = (
 				47AE8BD728C1305E00490F5E /* PointOfUseListModel.swift */,
 				47AE8BD528C1305E00490F5E /* AtmDataProvider.swift */,
+				FF0F6674D6204D5881A9B018 /* PointOfUseListConfiguration.swift */,
+				31B2D23F4C6D42E5A9943FA5 /* PointOfUseListViewModel.swift */,
 				47AE8BD628C1305E00490F5E /* MerchantsDataProvider.swift */,
 				47AE8C1928C6A21A00490F5E /* AllMerchantLocationsDataProvider.swift */,
 			);
@@ -7352,6 +7362,7 @@
 				7A30001330A1000000000013 /* ShieldedRecoveryTapActionTests.swift */,
 				7A11E5E70000000000000031 /* AdvancedSecurityTests.swift */,
 				7A11E5E70000000000000021 /* LocalCurrencyViewModelTests.swift */,
+				7C9AB2E8384F48D590575096 /* PointOfUseListViewModelTests.swift */,
 				7A30001530A1000000000015 /* ShieldedAssetLocksInFlightTests.swift */,
 				7A30001730A1000000000017 /* ShieldedTxLookupConsumedOverlayTests.swift */,
 				7A30001930A1000000000019 /* TxDetailRecoveryRowsTests.swift */,
@@ -10387,6 +10398,8 @@
 				754D020E2D1558EB005CA466 /* GroupedTransactions.swift in Sources */,
 				47AE8B9F28BFAD8200490F5E /* SQLite+ExloreDash.swift in Sources */,
 				47AE8BF828C1306000490F5E /* AtmDataProvider.swift in Sources */,
+				711CFDF9D95941D7845FA962 /* PointOfUseListConfiguration.swift in Sources */,
+				4D4AB52054B44B19A778E200 /* PointOfUseListViewModel.swift in Sources */,
 				C956AF312A5D601C002FAB75 /* UpholdConfirmTransferModel.swift in Sources */,
 				477A963E292CD27D0013605B /* NetworkUnavailableView.swift in Sources */,
 				2A63004E2328F37C00827825 /* DWLockScreenViewController.m in Sources */,
@@ -10683,6 +10696,7 @@
 				7A30001430A1000000000014 /* ShieldedRecoveryTapActionTests.swift in Sources */,
 				7A11E5E70000000000000032 /* AdvancedSecurityTests.swift in Sources */,
 				7A11E5E70000000000000022 /* LocalCurrencyViewModelTests.swift in Sources */,
+				9A77FEAF8870409F8707674F /* PointOfUseListViewModelTests.swift in Sources */,
 				7A30001630A1000000000016 /* ShieldedAssetLocksInFlightTests.swift in Sources */,
 				7A30001830A1000000000018 /* ShieldedTxLookupConsumedOverlayTests.swift in Sources */,
 				7A30002030A1000000000020 /* TxDetailRecoveryRowsTests.swift in Sources */,
@@ -11461,6 +11475,8 @@
 				755B4B232B0C903500B844F0 /* DWDateFormatter.swift in Sources */,
 				C9D2C8D92A320AA000D15901 /* SQLite+ExloreDash.swift in Sources */,
 				C9D2C8DD2A320AA000D15901 /* AtmDataProvider.swift in Sources */,
+				F96751179D394E498CFE68A6 /* PointOfUseListConfiguration.swift in Sources */,
+				E95A661A407E43CBBF6BB077 /* PointOfUseListViewModel.swift in Sources */,
 				C9D2C8DF2A320AA000D15901 /* NetworkUnavailableView.swift in Sources */,
 				C9D2C8E02A320AA000D15901 /* (null) in Sources */,
 				751B61C32ADFF9AE00D1C2EF /* UpholdPortalModel.swift in Sources */,

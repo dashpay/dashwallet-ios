@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import Combine
 import CoreLocation
 import UIKit
 import SwiftUI
@@ -26,7 +27,6 @@ private let kHandlerHeight: CGFloat = 24.0
 /// Map visible above the opened sheet, below whatever bar covers the map's top.
 private let kDefaultOpenedMapPosition: CGFloat = 260.0
 private let kDefaultClosedMapPosition: CGFloat = -kHandlerHeight
-private let kSignificantLocationChange: CLLocationDistance = 500
 
 // MARK: - ExplorePointOfUseSections
 
@@ -87,13 +87,13 @@ class ExplorePointOfUseListViewController: UIViewController, NavigationBarDispla
     @objc var sellDashHandler: (()->())?
     @objc var onGiftCardPurchased: ((Data)->())?
 
-    internal var model: PointOfUseListModel!
-    internal var segmentTitles: [String] { model.segmentTitles }
-    internal var currentSegment: PointOfUseListSegment { model.currentSegment }
-    internal var items: [ExplorePointOfUse] { model.items }
+    /// Created in `viewDidLoad` from `makeConfiguration()`.
+    internal var viewModel: PointOfUseListViewModel!
+    private var cancellables = Set<AnyCancellable>()
+    internal var segmentTitles: [String] { viewModel.segmentTitles }
+    internal var currentSegment: PointOfUseListSegment { viewModel.currentSegment }
+    internal var items: [ExplorePointOfUse] { viewModel.items }
 
-    internal var radius = 20 // In miles //Move to model
-    private var lastLocationDrivenFetch: CLLocation?
     internal var mapView: ExploreMapView!
     internal var showMapButton: UIButton!
     internal var syncBannerView: ExploreSyncBannerView?
@@ -132,15 +132,14 @@ class ExplorePointOfUseListViewController: UIViewController, NavigationBarDispla
         kDefaultOpenedMapPosition + customNavBarHeight
     }
 
-    internal var isFiltered: Bool { model.hasFilters }
     internal var emptyResultsView: PointOfUseListEmptyResultsView!
 
-    internal var locationServicePopupTitle: String { "" }
-    internal var locationServicePopupDetails: String { "" }
+    private var locationServicePopupTitle: String { viewModel.configuration.locationServicePopupTitle }
+    private var locationServicePopupDetails: String { viewModel.configuration.locationServicePopupDetails }
 
     // MARK: Map
     internal func updateMapVisibility() {
-        if !model.showMap || DWLocationManager.shared.isPermissionDenied {
+        if !viewModel.showsMap || DWLocationManager.shared.isPermissionDenied {
             hideMapIfNeeded()
         } else {
             showMapIfNeeded()
@@ -148,7 +147,7 @@ class ExplorePointOfUseListViewController: UIViewController, NavigationBarDispla
     }
 
     internal func showMapIfNeeded() {
-        guard model.showMap else { return }
+        guard viewModel.showsMap else { return }
 
         if DWLocationManager.shared.needsAuthorization {
             PointOfUseLocationServicePopup
@@ -188,7 +187,7 @@ class ExplorePointOfUseListViewController: UIViewController, NavigationBarDispla
     }
 
     internal func updateShowMapButtonVisibility() {
-        let isVisible = model.showMap && contentViewTopLayoutConstraint.constant == kDefaultClosedMapPosition && DWLocationManager
+        let isVisible = viewModel.showsMap && contentViewTopLayoutConstraint.constant == kDefaultClosedMapPosition && DWLocationManager
             .shared.isAuthorized
 
         showMapButton.isHidden = !isVisible
@@ -203,10 +202,39 @@ class ExplorePointOfUseListViewController: UIViewController, NavigationBarDispla
         )
     }
 
+    // MARK: Subclass hooks
+
+    /// The screen's segments, defaults and copy; every subclass provides one.
+    internal func makeConfiguration() -> PointOfUseListConfiguration {
+        preconditionFailure("\(type(of: self)) must override makeConfiguration()")
+    }
+
+    /// Redraws the rows after the view model changed them.
+    internal func listDidUpdate(_ update: PointOfUseListViewModel.ListUpdate) {
+        if update == .replaced {
+            refreshFilterCell()
+        }
+
+        // The request may finish after a filter, search or location update
+        // has replaced the data source. Reconcile from the current rows rather
+        // than applying stale pager indexes in a batch update.
+        tableView.reloadSections([ExplorePointOfUseSections.items.rawValue, ExplorePointOfUseSections.nextPage.rawValue],
+                                 with: .none)
+
+        if update == .replaced {
+            updateEmptyResultsForFilters()
+        }
+    }
+
     // MARK: life cycle
     internal func show(pointOfUse: ExplorePointOfUse) {
-        let currentRadius = model.filters?.currentRadius ?? kDefaultRadius
-        let vc = POIDetailsViewController(pointOfUse: pointOfUse, searchRadius: currentRadius, searchCenterCoordinate: model.searchCenterCoordinate, currentFilters: model.filters)
+        guard let request = viewModel.detailsRequest(for: pointOfUse) else { return }
+
+        let vc = POIDetailsViewController(pointOfUse: request.pointOfUse,
+                                          isShowAllHidden: request.isShowAllHidden,
+                                          searchRadius: request.searchRadius,
+                                          searchCenterCoordinate: request.searchCenterCoordinate,
+                                          currentFilters: request.filters)
         vc.payWithDashHandler = payWithDashHandler
         vc.sellDashHandler = sellDashHandler
         vc.onGiftCardPurchased = onGiftCardPurchased
@@ -218,9 +246,9 @@ class ExplorePointOfUseListViewController: UIViewController, NavigationBarDispla
 
         showMapIfNeeded()
         DWLocationManager.shared.add(observer: self)
-        
-        // Check database sync status again in case it changed while navigating
-        checkDatabaseSyncStatus()
+
+        // The database may have synced while another screen was on top.
+        viewModel.refreshSyncBanner()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -229,72 +257,52 @@ class ExplorePointOfUseListViewController: UIViewController, NavigationBarDispla
         super.viewWillDisappear(animated)
 
         DWLocationManager.shared.remove(observer: self)
-        NotificationCenter.default.removeObserver(self, name: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification, object: nil)
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        configureModel()
-
-        model.itemsDidChange = { [weak self] in
-            guard let wSelf = self else { return }
-            wSelf.refreshFilterCell()
-            wSelf.tableView
-                .reloadSections([ExplorePointOfUseSections.items.rawValue, ExplorePointOfUseSections.nextPage.rawValue],
-                                with: .none)
-
-            if wSelf.model.showMap {
-                wSelf.mapView.show(merchants: wSelf.model.items)
-            }
-
-            wSelf.updateEmptyResultsForFilters()
-        }
-
-        model.nextPageDidLoaded = { [weak self] _, _ in
-            guard let wSelf = self else { return }
-
-            // The request may finish after a filter/search/location update has
-            // replaced the data source. Reconcile from the current model rather
-            // than applying stale pager indexes in a UITableView batch update.
-            wSelf.tableView.reloadSections([
-                ExplorePointOfUseSections.items.rawValue,
-                ExplorePointOfUseSections.nextPage.rawValue
-            ], with: .none)
-        }
+        viewModel = PointOfUseListViewModel(configuration: makeConfiguration())
 
         configureHierarchy()
         if let config = customNavBar {
             installCustomNavBar(config: config)
         }
         updateTableViewInsetsForCurrentSheetPosition()
-        
-        // Check database sync status
-        checkDatabaseSyncStatus()
-        
-        // Observe database sync notifications
-        NotificationCenter.default.addObserver(self, selector: #selector(databaseHasBeenUpdated), name: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification, object: nil)
+
+        bindViewModel()
+        viewModel.refreshSyncBanner()
     }
 }
 
 extension ExplorePointOfUseListViewController {
-    @objc
-    internal func configureModel() { }
-    
-    private func checkDatabaseSyncStatus() {
-        // Check if we need to show sync banner
-        // If database doesn't exist or has old schema, show banner
-        let documentsPath = FileManager.documentsDirectoryURL.appendingPathComponent(kExploreDashDatabaseName)
-        let fileExists = FileManager.default.fileExists(atPath: documentsPath.path)
-        
-        // If file doesn't exist or has old schema, show sync banner
-        if !fileExists || ExploreDatabaseConnection.hasOldMerchantIdSchema(at: documentsPath) {
-            showSyncBanner()
-        } else {
-            hideSyncBanner()
-        }
+    private func bindViewModel() {
+        viewModel.listUpdates
+            .sink { [weak self] update in self?.listDidUpdate(update) }
+            .store(in: &cancellables)
+
+        viewModel.$mapItems
+            .dropFirst()
+            .sink { [weak self] items in self?.mapView.show(merchants: items) }
+            .store(in: &cancellables)
+
+        viewModel.$filterTitle
+            .sink { [weak self] title in self?.filterCell?.title = title }
+            .store(in: &cancellables)
+
+        viewModel.$isSyncBannerVisible
+            .dropFirst()
+            .removeDuplicates()
+            .sink { [weak self] isVisible in
+                if isVisible {
+                    self?.showSyncBanner()
+                } else {
+                    self?.hideSyncBanner()
+                }
+            }
+            .store(in: &cancellables)
     }
-    
+
     private func showSyncBanner() {
         guard syncBannerView?.isHidden == true else { return }
         
@@ -319,79 +327,25 @@ extension ExplorePointOfUseListViewController {
             self.syncBannerView?.isHidden = true
         }
     }
-    
-    @objc private func databaseHasBeenUpdated() {
-        DispatchQueue.main.async { [weak self] in
-            // Database has been updated, hide the sync banner
-            self?.hideSyncBanner()
-            
-            // The database connection needs to be re-established after update
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-                guard let self = self else { return }
-                
-                self.model.items = []
-                if let currentProvider = self.model.currentDataProvider {
-                    currentProvider.items = []
-                    currentProvider.currentPage = nil
-                }
-                
-                self.model.refreshItems()
-                self.tableView.reloadData()
-            }
-        }
-    }
 }
 
 // MARK: DWLocationObserver
 
 extension ExplorePointOfUseListViewController: DWLocationObserver {
     func locationManagerDidChangeCurrentLocation(_ manager: DWLocationManager, location: CLLocation) {
-        // Set the map center first
         mapView.setCenter(location, animated: false)
-
-        // Clear search center to use actual GPS location
-        model.searchCenterCoordinate = nil
-
-        // Update the model's map bounds to match the new center
-        if model.showMap {
-            let radiusToUse = model.filters?.currentRadius ?? kDefaultRadius
-
-            // Update the map view's search radius
-            mapView.searchRadius = radiusToUse
-
-            let newBounds = mapView.mapBounds(with: radiusToUse)
-            model.currentMapBounds = newBounds
-
-            // Refresh the search with the new location for every map-showing segment.
-            // This is what seeds the map when GPS gets its first fix after the screen
-            // is already visible. Later fixes can arrive every ~100 m, which is too
-            // chatty to requery and reload the list for — only refetch once the user
-            // has moved a significant distance.
-            let movedSignificantly = lastLocationDrivenFetch
-                .map { location.distance(from: $0) > kSignificantLocationChange } ?? true
-            if movedSignificantly {
-                lastLocationDrivenFetch = location
-                model.fetch(query: nil)
-            }
+        if viewModel.showsMap {
+            mapView.searchRadius = viewModel.searchRadius
         }
+        viewModel.locationDidChange(to: location, bounds: mapView.mapBounds(with: viewModel.searchRadius))
     }
 
     func locationManagerDidChangeServiceAvailability(_ manager: DWLocationManager) {
-        if model.showMap {
+        if viewModel.showsMap {
             updateMapVisibility()
             mapView.showUserLocationInCenter(animated: false)
-
-            // Only fetch if we have location authorization and a current location
-            if manager.isAuthorized {
-                if let currentLocation = manager.currentLocation {
-                    model.fetch(query: nil)
-                } else {
-                    // Location will be updated via locationManagerDidChangeCurrentLocation which will trigger the fetch
-                }
-            } else {
-                model.fetch(query: nil)
-            }
         }
+        viewModel.locationAvailabilityDidChange()
     }
 
     func locationManagerDidChangeCurrentReversedLocation(_ manager: DWLocationManager) { }
@@ -399,7 +353,7 @@ extension ExplorePointOfUseListViewController: DWLocationObserver {
 
 extension ExplorePointOfUseListViewController {
     internal func updateEmptyResultsForFilters() {
-        if model.showEmptyResults {
+        if viewModel.showsEmptyResults {
             if emptyResultsView != nil && tableView.tableFooterView == emptyResultsView { return }
 
             emptyResultsView = PointOfUseListEmptyResultsView()
@@ -416,24 +370,9 @@ extension ExplorePointOfUseListViewController {
     }
 
     @objc
-    internal func subtitleForFilterCell() -> String? {
-        nil
-    }
-
-    @objc
     internal func refreshFilterCell() {
-        filterCell?.title = currentSegment.title
-        filterCell?.subtitle = subtitleForFilterCell()
-
-        if DWLocationManager.shared.isAuthorized && currentSegment.showReversedLocation {
-            DWLocationManager.shared
-                .reverseGeocodeLocation(CLLocation(latitude: mapView.centerCoordinate.latitude,
-                                                   longitude: mapView.centerCoordinate.longitude)) { [weak self] (location, _) in
-                    if self?.model.showMap ?? false {
-                        self?.filterCell?.title = location
-                    }
-                }
-        }
+        filterCell?.subtitle = viewModel.resultsSubtitle
+        viewModel.refreshFilterTitle(mapCenter: mapView.centerCoordinate)
     }
 
     @objc
@@ -646,40 +585,7 @@ extension ExplorePointOfUseListViewController {
 // MARK: Actions
 extension ExplorePointOfUseListViewController {
     private func showFilters() {
-        // Ensure the sort option is valid for current segment
-        var effectiveFilters = model.filters
-        let segmentSortOptions = currentSegment.sortOptions
-        let defaultSortBy: PointOfUseListFilters.SortBy = currentSegment.tag == MerchantsListSegment.nearby.rawValue ? .distance : .name
-
-        // If current sort is not available in this segment, use segment default
-        if let currentSort = effectiveFilters?.sortBy, !segmentSortOptions.contains(currentSort) {
-            effectiveFilters = PointOfUseListFilters(
-                sortBy: defaultSortBy,
-                merchantPaymentTypes: effectiveFilters?.merchantPaymentTypes,
-                radius: effectiveFilters?.radius,
-                territory: effectiveFilters?.territory,
-                denominationType: effectiveFilters?.denominationType
-            )
-        } else if effectiveFilters?.sortBy == nil {
-            // No sort set at all, use defaults
-            if effectiveFilters == nil {
-                effectiveFilters = PointOfUseListFilters(
-                    sortBy: defaultSortBy,
-                    merchantPaymentTypes: nil,
-                    radius: nil,
-                    territory: nil,
-                    denominationType: nil
-                )
-            } else {
-                effectiveFilters = PointOfUseListFilters(
-                    sortBy: defaultSortBy,
-                    merchantPaymentTypes: effectiveFilters?.merchantPaymentTypes,
-                    radius: effectiveFilters?.radius,
-                    territory: effectiveFilters?.territory,
-                    denominationType: effectiveFilters?.denominationType
-                )
-            }
-        }
+        let effectiveFilters = viewModel.filtersForEditing
 
         let filtersView = MerchantFiltersView(
             currentFilters: effectiveFilters,
@@ -699,9 +605,7 @@ extension ExplorePointOfUseListViewController {
     }
 
     internal func updateAppliedFiltersView() {
-        let str = model.appliedFiltersLocalizedString
-        // Show default filter text when no custom filters are applied
-        appliedFiltersLabel.text = str ?? NSLocalizedString("Default filters applied", comment: "Explore Dash")
+        appliedFiltersLabel.text = viewModel.appliedFiltersText
         // Always show the toolbar so users can access filters
         navigationController?.setToolbarHidden(false, animated: false)
     }
@@ -756,48 +660,20 @@ extension ExplorePointOfUseListViewController {
     }
 
     private func segmentedControlDidChange(index: Int) {
-        let segment = model.segments[index]
-        model.currentSegment = segment
+        let selection = viewModel.selectSegment(at: index)
 
-        // Only set default filters if this segment has never been visited before
-        if model.filters == nil {
-            resetFiltersToDefaults(for: segment)
+        if selection.appliedDefaultFilters {
+            updateAppliedFiltersView()
         } else {
-            // Just refresh the view with existing filters for this segment
             refreshView()
         }
 
-        // Request location permission immediately when switching to Nearby tab (tag=1)
-        if segment.tag == 1 && DWLocationManager.shared.needsAuthorization {
+        if selection.needsLocationPrompt {
             PointOfUseLocationServicePopup
                 .show(in: view, title: locationServicePopupTitle, details: locationServicePopupDetails) {
                     DWLocationManager.shared.requestAuthorization()
                 }
         }
-    }
-
-    private func resetFiltersToDefaults(for segment: PointOfUseListSegment) {
-        // Determine default sort for this segment
-        let defaultSortBy: PointOfUseListFilters.SortBy = segment.tag == 1 ? .distance : .name // tag 1 = nearby, others = name
-
-        // Create new filters with segment-specific defaults
-        var defaultPaymentTypes: [PointOfUseListFilters.SpendingOptions] = [.dash, .ctx]
-        #if PIGGYCARDS_ENABLED
-        defaultPaymentTypes.append(.piggyCards)
-        #endif
-
-        let defaultFilters = PointOfUseListFilters(
-            sortBy: defaultSortBy,
-            merchantPaymentTypes: defaultPaymentTypes,
-            radius: .twenty,
-            territory: nil,
-            denominationType: .both
-        )
-
-        model.apply(filters: defaultFilters)
-
-        // Update the filter status display
-        updateAppliedFiltersView()
     }
 }
 
@@ -813,17 +689,9 @@ extension ExplorePointOfUseListViewController: ExploreMapViewDelegate {
 
         refreshFilterCell()
 
-        // Update the search radius on the map view to match current filter
-        mapView.searchRadius = model.currentRadius
-
-        // Update the search center to the map camera center (not the device GPS location)
-        model.searchCenterCoordinate = mapView.centerCoordinate
-
-        // Get bounds based on the current filter radius and new center location
-        let newBounds = mapView.mapBounds(with: model.currentRadius)
-
-        model.currentMapBounds = newBounds
-        model.refreshItems()
+        // Search around the map's center, not the device's location.
+        mapView.searchRadius = viewModel.searchRadius
+        viewModel.mapDidMove(center: mapView.centerCoordinate, bounds: mapView.mapBounds(with: viewModel.searchRadius))
     }
 
     func exploreMapView(_ mapView: ExploreMapView, didSelectMerchant merchant: ExplorePointOfUse) {
@@ -835,12 +703,12 @@ extension ExplorePointOfUseListViewController: ExploreMapViewDelegate {
 
 extension ExplorePointOfUseListViewController: PointOfUseListSearchCellDelegate {
     private func stopSearching() {
-        model.fetch(query: nil)
+        viewModel.search(query: nil)
         showMapIfNeeded()
     }
 
     func searchCell(_ cell: PointOfUseListSearchCell, shouldStartSearchWith query: String) {
-        model.fetch(query: query)
+        viewModel.search(query: query)
     }
 
     func searchCellDidEndSearching(searchCell: PointOfUseListSearchCell) {
@@ -900,7 +768,7 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
                 .dequeueReusableCell(withIdentifier: PointOfUseItemCell.reuseIdentifier,
                                      for: indexPath) as! PointOfUseItemCell
             // Pass search center coordinate to cell for accurate distance calculations
-            itemCell.searchCenterCoordinate = model.searchCenterCoordinate
+            itemCell.searchCenterCoordinate = viewModel.searchCenterCoordinate
             itemCell.update(with: merchant)
             cell = itemCell;
         case .nextPage:
@@ -974,7 +842,7 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
 
         let lastSectionIndex = ExplorePointOfUseSections.items.rawValue
         let lastRowIndex = tableView.numberOfRows(inSection: lastSectionIndex) - 1
-        if model.hasNextPage && indexPath.section == lastSectionIndex && indexPath.row == lastRowIndex {
+        if viewModel.hasNextPage && indexPath.section == lastSectionIndex && indexPath.row == lastRowIndex {
             let activity = UIActivityIndicatorView()
             activity.translatesAutoresizingMaskIntoConstraints = false
             activity.tintColor = .dw_secondaryText()
@@ -986,7 +854,7 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
             tableView.tableFooterView = activity
             tableView.tableFooterView?.isHidden = false
 
-            model.fetchNextPage()
+            viewModel.fetchNextPage()
         } else {
             tableView.tableFooterView?.isHidden = true
             tableView.tableFooterView = nil
@@ -1009,10 +877,7 @@ extension ExplorePointOfUseListViewController: PointOfUseListFiltersViewControll
         // Update the map view's search radius
         mapView.searchRadius = radiusToUse
 
-        let newBounds = mapView.mapBounds(with: radiusToUse)
-        model.currentMapBounds = newBounds
-
-        model.apply(filters: filters)
+        viewModel.apply(filters: filters, searchBounds: mapView.mapBounds(with: radiusToUse))
 
         updateAppliedFiltersView()
         refreshView()
