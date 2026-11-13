@@ -111,9 +111,10 @@ final class VoteAttemptCoordinator: ObservableObject {
     /// `expected` is the dialog the button belongs to: a tap that lands after
     /// its dialog was replaced does not confirm the next one.
     func confirm(_ expected: Presentation) async {
-        guard var attempt, presentation == expected,
+        guard var attempt, let contest, presentation == expected,
               presentation == .oneVoteLeft || isConfirmBlock(presentation)
         else { return }
+        attempt.recheck(at: now(), closed: host.isClosed(normalizedLabel: contest.normalizedLabel))
         attempt.confirm()
         self.attempt = attempt
         await advance()

@@ -31,6 +31,9 @@ protocol VotingKeysSource: AnyObject {
     /// The masternodes the user ticked that can vote; `nil` while none was
     /// ticked yet or the masternodes are not known yet.
     var tickedNodeIDs: Set<Data>? { get }
+    /// Whether the remembered choice holds a node ``votableNodes`` does not
+    /// show (an incomplete node list): a choice exists, even with none shown.
+    var remembersHiddenNodes: Bool { get }
     /// Keep the ticks shown and mark voting set up (the vote button of "Add your voting keys").
     func confirmVotingSetup(ticked: Set<Data>)
     /// One tick the user changed, kept without changing whether voting is set up (manage mode).
@@ -126,7 +129,8 @@ final class VotingKeysViewModel: ObservableObject {
             let draft = ticked.union(hiddenTicks)
             hiddenTicks = source.nodeResolution == .complete ? [] : draft.subtracting(live)
             next = draft.intersection(live)
-            nothingChosen = draft.isEmpty
+            // A remembered node the list does not show is a choice too.
+            nothingChosen = draft.isEmpty && !source.remembersHiddenNodes
         }
         if next.isEmpty, nothingChosen, rows.count == 1, let only = rows.first {
             next = [only.proTxHash]

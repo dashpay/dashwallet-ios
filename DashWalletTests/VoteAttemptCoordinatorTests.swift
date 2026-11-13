@@ -301,6 +301,35 @@ final class VoteAttemptCoordinatorTests: XCTestCase {
         XCTAssertTrue(host.sends.isEmpty)
     }
 
+    /// A dialog held open past the voting end: its confirm reports the ended
+    /// contest and sends nothing (AC-16b).
+    func testConfirmAfterTheVotingEndReportsItEndedAndSendsNothing() async {
+        var clock = now
+        coordinator = VoteAttemptCoordinator(host: host, now: { clock })
+        host.history = lastVoteHistory()
+        await coordinator.start(.vote(.lock), on: contest(endsAt: now.addingTimeInterval(60)))
+        XCTAssertEqual(coordinator.presentation, .oneVoteLeft)
+
+        clock = now.addingTimeInterval(61)
+        await coordinator.confirm(.oneVoteLeft)
+
+        XCTAssertEqual(host.endedReports, ["johndoe"])
+        XCTAssertNil(coordinator.presentation)
+        XCTAssertTrue(host.sends.isEmpty)
+    }
+
+    /// Platform closed the contest while the dialog was open: same as ended.
+    func testConfirmAfterPlatformClosedTheContestSendsNothing() async {
+        await coordinator.start(.vote(.lock), on: contest())
+        XCTAssertEqual(coordinator.presentation, .confirmBlock(username: "johndoe", isLastVote: false))
+
+        host.closedLabels = ["johndoe"]
+        await coordinator.confirm(.confirmBlock(username: "johndoe", isLastVote: false))
+
+        XCTAssertEqual(host.endedReports, ["johndoe"])
+        XCTAssertTrue(host.sends.isEmpty)
+    }
+
     func testAContestPlatformClosedCountsAsEnded() async {
         host.closedLabels = ["johndoe"]
 
