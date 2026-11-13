@@ -128,7 +128,7 @@ enum SendOutcome {
         // Refusals of an asset lock's coin selection: nothing was built or broadcast.
         case .assetLockInsufficientFunds, .noSelectableInputs, .assetLockTooManyInputs:
             return .notSent(.failed)
-        // The only producer of this code is the FFI's `identity_manager_remove_identity`, which no send calls.
+        // The external identity top-up throws it, before anything is signed, for an identity Platform does not know.
         case .identityNotFound:
             return .notSent(.identityNotFound)
         // The Platform withdrawal's address network check runs before signing; the Platform-to-shielded capacity
