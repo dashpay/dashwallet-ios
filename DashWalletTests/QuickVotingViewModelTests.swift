@@ -225,6 +225,28 @@ final class QuickVotingViewModelTests: XCTestCase {
         XCTAssertEqual(quick.step, .confirm)
     }
 
+    /// The keys' vote button opens the sheet under the same guard as the menu.
+    func testATapWhileTheSheetOpensAfterKeySetupIsIgnored() async {
+        let host = Host()
+        host.isVotingSetUp = false
+        host.shownContests = [contest("alice", dates: [nine])]
+        let quick = QuickVotingViewModel(host: host)
+        await quick.start()
+        host.isVotingSetUp = true
+        host.holdReload = true
+        let reloadsBefore = host.historyReloads
+
+        let opening = Task { await quick.finishKeys(continueToVote: true) }
+        while host.historyReloads == reloadsBefore { await Task.yield() }
+        await quick.start()
+        host.releaseReload()
+        await opening.value
+
+        XCTAssertEqual(host.attemptsStarted, 1)
+        XCTAssertEqual(host.historyReloads, reloadsBefore + 1)
+        XCTAssertEqual(quick.step, .confirm)
+    }
+
     func testNothingToVoteOffersCloseOnly() async {
         let host = Host()
         host.shownContests = [contest("tied", dates: [nine, nine])]

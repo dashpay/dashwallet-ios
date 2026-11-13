@@ -229,6 +229,8 @@ private final class RunLog {
     var now = Date(timeIntervalSince1970: 1_800_000_000)
     /// Seconds the clock moves on with each send.
     var sendTakes: TimeInterval = 0
+    /// Seconds the clock moves on while a voting key is derived.
+    var keyTakes: TimeInterval = 0
 }
 
 extension MasternodeVoteCasterTests {
@@ -237,7 +239,10 @@ extension MasternodeVoteCasterTests {
             registry: MasternodeVoterRegistry(),
             contests: ContestedNamesService(),
             history: history,
-            votingKey: { _ in Data(repeating: 1, count: 32) },
+            votingKey: { _ in
+                log.now.addTimeInterval(log.keyTakes)
+                return Data(repeating: 1, count: 32)
+            },
             send: { node, _, _, label in
                 log.sent.append("\(label)/\(node.proTxHash[0])")
                 log.now.addTimeInterval(log.sendTakes)
@@ -302,6 +307,22 @@ extension MasternodeVoteCasterTests {
         XCTAssertEqual(log.sent, ["alice/1"])
         XCTAssertTrue(reports[0].outcomes[0].succeeded)
         XCTAssertEqual(reports[0].outcomes[1].failure, "Voting has ended")
+        XCTAssertTrue(reports[0].contestClosed)
+    }
+
+    /// The end is checked at the last point before the send, after the vote
+    /// count is read and the key derived, not only before them.
+    func testARunSendsNothingWhenTheVotingEndPassesWhileTheKeyIsDerived() async throws {
+        let log = RunLog()
+        log.keyTakes = 60
+        let caster = makeRunCaster(history: FakeVoteHistory(records: []), log: log)
+        var planned = casts(["alice"], nodes: [node(1)])
+        planned[0].endsAt = log.now.addingTimeInterval(30)
+
+        let reports = try await caster.castRun(planned) { _ in }
+
+        XCTAssertTrue(log.sent.isEmpty)
+        XCTAssertEqual(reports[0].outcomes[0].failure, "Voting has ended")
         XCTAssertTrue(reports[0].contestClosed)
     }
 

@@ -7385,6 +7385,9 @@
 
 "Some votes were not cast. These usernames were not voted for:" = "Some votes were not cast. These usernames were not voted for:";
 
+/* Voting */
+"Some votes were not cast or their result is not confirmed:" = "Some votes were not cast or their result is not confirmed:";
+
 "Quick voting… %1$d of %2$d done" = "Quick voting… %1$d of %2$d done";
 
 /* Voting */

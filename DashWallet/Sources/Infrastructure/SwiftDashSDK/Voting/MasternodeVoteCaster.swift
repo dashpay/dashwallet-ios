@@ -363,8 +363,9 @@ final class MasternodeVoteCaster {
                 continue
             }
             let report = await castAfterAuthentication(
-                choice: cast.choice, onNormalizedLabel: cast.normalizedLabel, with: [node])
+                choice: cast.choice, onNormalizedLabel: cast.normalizedLabel, with: [node], endsAt: cast.endsAt)
             outcomes.append(contentsOf: report.outcomes)
+            endedWhileSending = endedWhileSending || report.contestClosed
         }
         return VoteCastReport(
             normalizedLabel: cast.normalizedLabel, choice: cast.choice, outcomes: outcomes,
@@ -390,9 +391,11 @@ final class MasternodeVoteCaster {
     func castAfterAuthentication(
         choice: VoteChoice,
         onNormalizedLabel normalizedLabel: String,
-        with nodes: [VoterNode]
+        with nodes: [VoterNode],
+        endsAt: Date? = nil
     ) async -> VoteCastReport {
         var outcomes: [VoteOutcome] = []
+        var ended = false
         outcomes.reserveCapacity(nodes.count)
 
         for node in nodes {
@@ -433,6 +436,15 @@ final class MasternodeVoteCaster {
                 outcomes.append(VoteOutcome(
                     node: node,
                     failure: NSLocalizedString("Quick voting stopped before this vote was sent.", comment: "Voting")))
+                continue
+            }
+            // A Quick voting name's known end may have passed while the count
+            // was read and the key derived.
+            guard !(endsAt.map { now() >= $0 } ?? false) else {
+                DWLogger.log("Voting: \(attempt) not sent: voting ended")
+                outcomes.append(VoteOutcome(
+                    node: node, failure: NSLocalizedString("Voting has ended", comment: "Voting")))
+                ended = true
                 continue
             }
 
@@ -476,6 +488,7 @@ final class MasternodeVoteCaster {
         return VoteCastReport(
             normalizedLabel: normalizedLabel,
             choice: choice,
-            outcomes: outcomes)
+            outcomes: outcomes,
+            contestClosed: ended)
     }
 }

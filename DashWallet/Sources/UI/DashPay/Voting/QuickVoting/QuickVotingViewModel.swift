@@ -107,7 +107,11 @@ final class QuickVotingViewModel: ObservableObject {
     func finishKeys(continueToVote: Bool) async {
         guard step == .addKeys else { return }
         step = nil
-        if continueToVote { await openSheetOrKeys() }
+        guard continueToVote else { return }
+        // A menu tap while this opens is ignored, as during ``start()``.
+        isOpening = true
+        defer { isOpening = false }
+        await openSheetOrKeys()
     }
 
     /// The sheet's «Vote for all».
