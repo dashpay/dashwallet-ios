@@ -20,43 +20,42 @@
 import DashUIKit
 import SwiftUI
 
-/// The populated state: every connection stacked in one card. This owns the
-/// card chrome and scroll.
+/// The apps of the Connections page, in one card.
 struct ConnectionsList: View {
-    let connections: [DAppConnection]
-    let onDisconnect: (DAppConnection) -> Void
-    let onRemove: (DAppConnection) -> Void
+    let items: [ConnectionSheetItem]
+    let onOpen: (ConnectionSheetItem) -> Void
+    let onDisconnect: (ConnectionSheetItem) -> Void
+    let onRemove: (ConnectionSheetItem) -> Void
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 2) {
-                ForEach(connections) { connection in
-                    ConnectionRow(
-                        connection: connection,
-                        onDisconnect: { onDisconnect(connection) },
-                        onRemove: { onRemove(connection) }
-                    )
-                }
+        VStack(spacing: 2) {
+            ForEach(items) { item in
+                ConnectionRow(
+                    item: item, onOpen: { onOpen(item) },
+                    onDisconnect: { onDisconnect(item) },
+                    onRemove: { onRemove(item) })
             }
-            .modifier(MenuViewModifier())
         }
+        .modifier(MenuViewModifier())
     }
 }
 
-#Preview {
+#Preview("Several apps") {
     ConnectionsList(
-        connections: ConnectionStatus.allCases.map { status in
-            DAppConnection(
-                id: status.rawValue,
-                name: "Example App",
-                url: "https://example.org",
-                status: status,
-                updatedAt: Date()
-            )
+        items: ConnectionStatus.allCases.map { status in
+            ConnectionSheetItem(
+                id: status.rawValue, name: "Example App \(status.rawValue)", url: "example.org", status: status,
+                connection: nil)
         },
-        onDisconnect: { _ in },
-        onRemove: { _ in }
-    )
+        onOpen: { _ in }, onDisconnect: { _ in }, onRemove: { _ in })
+    .padding(20)
+    .background(Color.primaryBackground)
+}
+
+#Preview("One app") {
+    ConnectionsList(
+        items: [ConnectionSheetItem(id: "one", name: "Yappr", url: "yap.pr", status: .active, connection: nil)],
+        onOpen: { _ in }, onDisconnect: { _ in }, onRemove: { _ in })
     .padding(20)
     .background(Color.primaryBackground)
 }

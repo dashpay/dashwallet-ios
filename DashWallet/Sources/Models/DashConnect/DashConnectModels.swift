@@ -250,6 +250,17 @@ struct DashConnectDisconnectResult: Equatable {
     var keysOnAnotherIdentity = false
 }
 
+/// A connection as its sheet shows it: the app, the identity it is
+/// connected on, and when it was made.
+struct ConnectionDetails: Equatable {
+    let appId: String
+    let identityId: String?
+    let username: String?
+    /// When the connection was made: the latest of its approvals, so a
+    /// renewal from a new code counts as the connection it made.
+    var connectedAt: Date? = nil
+}
+
 /// A pending request derived from a scanned login QR code.
 struct ConnectionRequest: Equatable {
     let appLabel: String

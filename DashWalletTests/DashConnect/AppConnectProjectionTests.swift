@@ -62,6 +62,30 @@ final class AppConnectProjectionTests: XCTestCase {
         Snapshot(identityId: identity, revision: revision, keys: keys, platformTime: time)
     }
 
+    // MARK: What a connection gave
+
+    /// A row of keys no intent names (a restore, another device's grant, the
+    /// profile keys) is the active identity's when the projection shows them
+    /// on it; a row only another identity's intents hold is not.
+    func testARowOfUnrecordedKeysIsTheIdentitysWhenTheProjectionShowsThem() {
+        let stray = Self.authKey(20, bound: .singleContract(Self.otherApp))
+        XCTAssertTrue(PlatformDashConnectDataSource.showsUnrecordedKeys(
+            of: Self.otherApp.toBase58String(), on: Self.snapshot([Self.onPlatform(stray)]), intents: [], owners: [:]))
+        let elsewhere = Self.intent([Self.authKey(10)], identity: Self.otherIdentity)
+        XCTAssertFalse(PlatformDashConnectDataSource.showsUnrecordedKeys(
+            of: Self.app.toBase58String(), on: Self.snapshot([]), intents: [elsewhere], owners: [:]))
+    }
+
+    func testAnIntentWrittenBeforeItNotedAdministeredGroupsIsStillRead() throws {
+        var intent = Self.intent([Self.authKey(12, bound: .contractGroup(Self.appGroup))])
+        intent.administeredGroupIds = [Self.appGroup]
+        var json = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(intent)) as? [String: Any])
+        json.removeValue(forKey: "administeredGroupIds")
+        let read = try JSONDecoder().decode(Intent.self, from: JSONSerialization.data(withJSONObject: json))
+        XCTAssertNil(read.administeredGroupIds)
+        XCTAssertFalse(read.isAdministered(.contractGroup(Self.appGroup)), "not known, so not said")
+    }
+
     // MARK: The disconnect mark (T35)
 
     /// T35 (G1): an open intent a disconnect ran on, whose id the fence now

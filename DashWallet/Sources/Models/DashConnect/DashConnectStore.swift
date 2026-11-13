@@ -78,7 +78,14 @@ enum DashConnectStores {
 }
 
 final class UserDefaultsDashConnectStore: DashConnectStore {
+    /// Posted after a save, with the `scopeKey` written under
+    /// (`scopeKeyUserInfoKey`). `PlatformDashConnectDataSource` republishes
+    /// its rows on it, whichever store instance wrote them.
+    static let didSaveNotification = Notification.Name("UserDefaultsDashConnectStore.didSave")
+    static let scopeKeyUserInfoKey = "scopeKey"
+
     private let defaults: UserDefaults
+    private let notificationCenter: NotificationCenter
     private let network: DashConnectNetwork
     private let walletIdHexProvider: () -> String?
     private let devnetNameProvider: () -> String?
@@ -91,9 +98,11 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
         walletIdHexProvider: @escaping () -> String? = {
             WalletEnvironment.activeWalletIdHex as String?
         },
-        devnetNameProvider: @escaping () -> String? = { DevnetConfiguration.devnetName }
+        devnetNameProvider: @escaping () -> String? = { DevnetConfiguration.devnetName },
+        notificationCenter: NotificationCenter = .default
     ) {
         self.defaults = defaults
+        self.notificationCenter = notificationCenter
         self.network = network
         self.walletIdHexProvider = walletIdHexProvider
         self.devnetNameProvider = devnetNameProvider
@@ -143,7 +152,8 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
             defaults: defaults,
             network: network,
             walletIdHexProvider: { walletIdHex },
-            devnetNameProvider: { devnetName }
+            devnetNameProvider: { devnetName },
+            notificationCenter: notificationCenter
         )
     }
 
@@ -203,6 +213,7 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
 
         guard !connections.isEmpty else {
             defaults.removeObject(forKey: storageKey)
+            didSave(under: storageKey)
             return
         }
 
@@ -219,10 +230,16 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
 
         do {
             defaults.set(try encoder.encode(rows), forKey: storageKey)
+            didSave(under: storageKey)
         } catch {
             Self.logger.error(
                 "DashConnectStore: failed to encode connections on \(self.network.rawValue, privacy: .public): \(AppConnectWriteExecutor.logDescription(of: error), privacy: .public)")
         }
+    }
+
+    private func didSave(under storageKey: String) {
+        notificationCenter.post(
+            name: Self.didSaveNotification, object: nil, userInfo: [Self.scopeKeyUserInfoKey: storageKey])
     }
 
     /// The storage key embeds the wallet id, a persistent user identifier, so

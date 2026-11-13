@@ -106,6 +106,41 @@ extension AppConnect {
         }
     }
 
+    /// What an approval gives an app, as the approval sheet lists it.
+    struct GrantedAccess: Equatable {
+        struct Key: Equatable {
+            let bound: StoredBound
+            let isCritical: Bool
+            /// `nil` for a key with no spending limit.
+            let totalBudget: UInt64?
+            /// Milliseconds since the epoch.
+            let expiresAt: UInt64
+            /// The key's group has administrators who can add contracts to it.
+            let isAdministered: Bool
+        }
+
+        let keys: [Key]
+        /// The response carries an encryption key for the app.
+        let receivesMessages: Bool
+
+        init(keys: [Key], receivesMessages: Bool) {
+            self.keys = keys
+            self.receivesMessages = receivesMessages
+        }
+
+        /// The auth keys of `plan`, with their terms. `receivesMessages`: the
+        /// response carries an encryption key, which a plan that asks for one
+        /// may still leave out.
+        init(plan: GrantPlan, receivesMessages: Bool) {
+            self.init(
+                keys: plan.auth.map {
+                    Key(bound: $0.storedBound, isCritical: $0.securityLevel == .critical, totalBudget: $0.totalBudget,
+                        expiresAt: $0.expiresAt, isAdministered: plan.administeredGroupIds.contains($0.binding.id))
+                },
+                receivesMessages: receivesMessages)
+        }
+    }
+
     /// What approving a v2 request gives the app, as the approval sheet
     /// shows it. The keys are registered with exactly these terms.
     struct GrantPlan: Equatable {
