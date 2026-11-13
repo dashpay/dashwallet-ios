@@ -6376,9 +6376,7 @@ final class AppConnectPublishLifetimeTests: XCTestCase {
         intents.save([intent])
         let release = Release()
         await publishThatTimesOut(intent, in: intents, release: release)
-        // The late record reads once to check the intent, then reads and
-        // saves it.
-        intents.arm(wipeAfterLoad: 2)
+        intents.arm(wipeAfterLoad: 1)
 
         release.end(.success(()))
 
@@ -6404,6 +6402,27 @@ final class AppConnectPublishLifetimeTests: XCTestCase {
             documentId: Self.documentId, of: intent.id, intents: intents,
             executor: AppConnectWriteExecutor(sleep: { try await Task.sleep(for: $0) }, log: { _ in }, submit: { _ in }),
             now: { Self.at }, lookUp: { nil })
+
+        XCTAssertEqual(intents.wiped.wait(timeout: .now() + .seconds(2)), .success, "the wipe ran")
+        XCTAssertNil(
+            defaults.object(forKey: scopeKey + UserDefaultsAppConnectIntentStore.keySuffix),
+            "the wiped wallet's intents are not saved back")
+    }
+
+    /// PastaClaw review of #1414: the same for recording the document of a
+    /// publish that ended on time.
+    func testAWipeWhileAPublishIsRecordedIsNotUndoneByItsSave() async throws {
+        let intent = Self.intent()
+        let scopeKey = UserDefaultsDashConnectStore.keyPrefix + "testnet." + Self.walletA
+        let intents = WipedDuringLoad(defaults: defaults, scopeKey: scopeKey)
+        intents.save([intent])
+        intents.arm(wipeAfterLoad: 1)
+
+        try await PlatformDashConnectDataSource.publishAndRecord(
+            intent, intents: intents, executor: AppConnectWriteExecutor(
+                sleep: { try await Task.sleep(for: $0) }, log: { _ in }, submit: { _ in }),
+            now: { Self.at }, platformTime: nil, walletIdHex: Self.walletA, operationGate: DashConnectOperationGate(),
+            createdDocumentId: { Self.documentId }, lookUp: { nil })
 
         XCTAssertEqual(intents.wiped.wait(timeout: .now() + .seconds(2)), .success, "the wipe ran")
         XCTAssertNil(

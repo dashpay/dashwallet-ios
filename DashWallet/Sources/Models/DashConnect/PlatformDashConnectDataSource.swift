@@ -1066,12 +1066,18 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         Self.update(stores.intents, change)
     }
 
+    /// The read, the change and the save run while no wipe of the stores
+    /// runs (`DashConnectStores.excludingWipe`): a wipe does not take the
+    /// operation gate, and a save after it would bring the wiped intents
+    /// back.
     @discardableResult
     private static func update<T>(_ store: any AppConnectIntentStore, _ change: (inout [AppConnect.ConnectionIntent]) -> T) -> T {
-        var intents = store.load()
-        let result = change(&intents)
-        store.save(intents)
-        return result
+        DashConnectStores.excludingWipe {
+            var intents = store.load()
+            let result = change(&intents)
+            store.save(intents)
+            return result
+        }
     }
 
     /// Where the owners a projection needs come from: what `memory` knows on
@@ -2357,36 +2363,29 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             return
         }
         let recorded = await operationGate.run(for: walletIdHex) {
-            // A wipe of the wallet between the read and the save would be
-            // undone by the save.
-            DashConnectStores.excludingWipe {
-                guard let stored = intents.load().first(where: { $0.id == intentId }) else {
+            update(intents) { intents in
+                guard let index = intents.firstIndex(where: { $0.id == intentId }) else {
                     return "dropped, intent not in its wallet"
                 }
                 // A lookup found the document first; a disconnect may have
                 // deleted it and recorded it removed since.
-                guard stored.responseDocumentId == nil else { return "not recorded, the document is already known" }
-                update(intents) { intents in
-                    guard let index = intents.firstIndex(where: { $0.id == intentId }) else { return }
-                    intents[index].responseDocumentId = documentId
-                    intents[index].responseRemoved = false
+                guard intents[index].responseDocumentId == nil else {
+                    return "not recorded, the document is already known"
                 }
+                intents[index].responseDocumentId = documentId
+                intents[index].responseRemoved = false
                 return "recorded"
             }
         }
         DWLogger.log("DashConnect: late publish document \(recorded)")
     }
 
-    /// Records that the response of the intent `id` is on Platform. It can
-    /// follow a lookup that ran for a while, so a wipe of the wallet in the
-    /// meantime is not undone by its save (`excludingWipe`).
+    /// Records that the response of the intent `id` is on Platform.
     private func recordResponse(_ documentId: Data, of id: UUID, in stores: Stores) {
-        DashConnectStores.excludingWipe {
-            updateIntents(in: stores) { intents in
-                guard let index = intents.firstIndex(where: { $0.id == id }) else { return }
-                intents[index].responseDocumentId = documentId
-                intents[index].responseRemoved = false
-            }
+        updateIntents(in: stores) { intents in
+            guard let index = intents.firstIndex(where: { $0.id == id }) else { return }
+            intents[index].responseDocumentId = documentId
+            intents[index].responseRemoved = false
         }
     }
 
@@ -2526,15 +2525,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private static func markResponseRemoved(
         _ id: UUID, in intents: any AppConnectIntentStore, platformTime: UInt64?
     ) -> Removal {
-        // It follows a delete or a lookup that ran for a while; a wipe of
-        // the wallet in the meantime is not undone by its save.
-        let removal = DashConnectStores.excludingWipe {
-            update(intents) { intents -> Removal in
-                guard let index = intents.firstIndex(where: { $0.id == id }) else { return .removed }
-                if AppConnect.isPublishUnresolved(intents[index], platformTime: platformTime) { return .kept }
-                intents[index].responseRemoved = true
-                return .removed
-            }
+        let removal = update(intents) { intents -> Removal in
+            guard let index = intents.firstIndex(where: { $0.id == id }) else { return .removed }
+            if AppConnect.isPublishUnresolved(intents[index], platformTime: platformTime) { return .kept }
+            intents[index].responseRemoved = true
+            return .removed
         }
         if removal == .kept {
             DWLogger.log("DashConnect: response not recorded removed, its publish may still land")

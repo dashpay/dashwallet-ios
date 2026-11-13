@@ -42,10 +42,9 @@ enum DashConnectStores {
     private static let wipeLock = NSLock()
 
     /// Runs `body` while no wipe of the stores runs. A wipe does not take the
-    /// wallet's operation gate, so a write that can come at any time, such
-    /// as a publish's late result, reads and saves inside this: a wipe then
-    /// either comes first and the write finds nothing, or comes after and
-    /// removes what it saved.
+    /// wallet's operation gate, so a read-change-save of the intents runs
+    /// inside this: a wipe then either comes first and the write finds
+    /// nothing, or comes after and removes what it saved. Not reentrant.
     static func excludingWipe<T>(_ body: () -> T) -> T {
         wipeLock.lock()
         defer { wipeLock.unlock() }
