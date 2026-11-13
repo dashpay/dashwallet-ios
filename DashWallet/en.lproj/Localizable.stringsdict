@@ -816,7 +816,7 @@ You should check and if necessary correct your date, time and timezone settings.
 			<string>%d finished</string>
 		</dict>
 	</dict>
-	<key>%d added to your Shielded balance</key>
+	<key>%d transfers added to your Shielded balance</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
 		<string>%#@count@</string>
@@ -827,9 +827,9 @@ You should check and if necessary correct your date, time and timezone settings.
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>one</key>
-			<string>%d added to your Shielded balance</string>
+			<string>%d transfer added to your Shielded balance</string>
 			<key>other</key>
-			<string>%d added to your Shielded balance</string>
+			<string>%d transfers added to your Shielded balance</string>
 		</dict>
 	</dict>
 	<key>%d already spent</key>

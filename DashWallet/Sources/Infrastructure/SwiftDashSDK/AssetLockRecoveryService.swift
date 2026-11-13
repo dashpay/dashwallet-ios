@@ -296,7 +296,7 @@ struct AssetLockRecoveryService {
             if addedToOwnShielded > 0 {
                 parts.append(String.localizedStringWithFormat(
                     NSLocalizedString(
-                        "%d added to your Shielded balance",
+                        "%d transfers added to your Shielded balance",
                         comment: "SPV diagnostics: transfers finished to the wallet's own Shielded balance because their recipient was not on record"),
                     addedToOwnShielded))
             }

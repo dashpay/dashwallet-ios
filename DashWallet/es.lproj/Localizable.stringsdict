@@ -724,7 +724,7 @@ Debes comprobar y, si es necesario, corregir la configuración de fecha, hora y 
 			<string>%d finished</string>
 		</dict>
 	</dict>
-	<key>%d added to your Shielded balance</key>
+	<key>%d transfers added to your Shielded balance</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
 		<string>%#@count@</string>
@@ -735,7 +735,7 @@ Debes comprobar y, si es necesario, corregir la configuración de fecha, hora y 
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>other</key>
-			<string>%d added to your Shielded balance</string>
+			<string>%d transfers added to your Shielded balance</string>
 		</dict>
 	</dict>
 	<key>%d already spent</key>

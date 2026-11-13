@@ -133,9 +133,6 @@
 /* No comment provided by engineer. */
 "%@ · Platform balance" = "%@ · Platform 餘額";
 
-/* SPV diagnostics: transfers finished to the wallet's own Shielded balance because their recipient was not on record */
-"%d added to your Shielded balance" = "%d added to your Shielded balance";
-
 /* SPV diagnostics */
 "%d already spent" = "%d already spent";
 
@@ -195,6 +192,9 @@
 
 /* Wallet accounts — address pool */
 "%d total" = "%d total";
+
+/* SPV diagnostics: transfers finished to the wallet's own Shielded balance because their recipient was not on record */
+"%d transfers added to your Shielded balance" = "%d transfers added to your Shielded balance";
 
 /* Wallet accounts — address pool */
 "%d used" = "%d used";

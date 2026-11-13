@@ -268,7 +268,7 @@ final class StuckAssetLockRetryTests: XCTestCase {
         mixed.completed = 2
         mixed.addedToOwnShielded = 3
         mixed.alreadySpent = 1
-        XCTAssertEqual(mixed.summary, "2 finished, 3 added to your Shielded balance, 1 already spent")
+        XCTAssertEqual(mixed.summary, "2 finished, 3 transfers added to your Shielded balance, 1 already spent")
 
         var onlyOrdinary = AssetLockRecoveryService.BulkOutcome()
         onlyOrdinary.completed = 4
@@ -277,7 +277,7 @@ final class StuckAssetLockRetryTests: XCTestCase {
         // A restored wallet: every lock was rebuilt from chain.
         var onlyAdded = AssetLockRecoveryService.BulkOutcome()
         onlyAdded.addedToOwnShielded = 23
-        XCTAssertEqual(onlyAdded.summary, "23 added to your Shielded balance")
+        XCTAssertEqual(onlyAdded.summary, "23 transfers added to your Shielded balance")
     }
 
     func testTheBulkSummaryKeepsTheFirstFailureReasonOnItsOwnLine() {
@@ -285,7 +285,7 @@ final class StuckAssetLockRetryTests: XCTestCase {
         outcome.addedToOwnShielded = 1
         outcome.failed = 1
         outcome.firstFailureMessage = "network unreachable"
-        XCTAssertEqual(outcome.summary, "1 added to your Shielded balance, 1 could not be reached\nnetwork unreachable")
+        XCTAssertEqual(outcome.summary, "1 transfer added to your Shielded balance, 1 could not be reached\nnetwork unreachable")
         XCTAssertEqual(AssetLockRecoveryService.BulkOutcome().summary, "Nothing to finish.")
     }
 
