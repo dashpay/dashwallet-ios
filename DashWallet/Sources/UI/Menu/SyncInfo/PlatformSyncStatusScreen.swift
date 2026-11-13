@@ -28,11 +28,12 @@ struct PlatformSyncStatusPresentationPolicy {
 }
 
 struct PlatformSyncStatusScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
 
     @ObservedObject private var coordinator = PlatformAddressSyncCoordinator.shared
 
-    init(vc: UINavigationController) {
+    init(vc: UINavigationController?) {
         self.vc = vc
     }
 
@@ -40,7 +41,7 @@ struct PlatformSyncStatusScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             // Back button
             DashUIKit.NavigationBar(leading: {
-                DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
+                DashUIKit.NavigationBarElement.back.button { vc?.popViewController(animated: true) }
             })
 
             // Header

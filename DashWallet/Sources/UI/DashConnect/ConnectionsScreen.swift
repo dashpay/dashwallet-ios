@@ -25,21 +25,24 @@ import DashUIKit
 /// `Components/`; this type owns navigation, the QR scanner and the approval
 /// sheet.
 struct ConnectionsScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
 
     @StateObject private var viewModel: ConnectionsViewModel
 
-    init(vc: UINavigationController, viewModel: ConnectionsViewModel? = nil) {
+    init(vc: UINavigationController?, viewModel: ConnectionsViewModel? = nil) {
         self.vc = vc
         _viewModel = StateObject(wrappedValue: viewModel ?? ConnectionsViewModel())
     }
+
+    @State private var showsFundingLimitsInfo = false
 
     var body: some View {
         ZStack {
             VStack(alignment: .leading, spacing: 0) {
                 DashUIKit.NavigationBar(
                     leading: {
-                        DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
+                        DashUIKit.NavigationBarElement.back.button { vc?.popViewController(animated: true) }
                     },
                     trailing: {
                         if !viewModel.featureUnavailable {
@@ -88,6 +91,7 @@ struct ConnectionsScreen: View {
             }
         }
         .sheet(item: shownConnectionBinding, onDismiss: {
+            showsFundingLimitsInfo = false
             viewModel.connectionSheetDismissed()
         }) { item in
             connectionSheet(for: item)
@@ -139,7 +143,10 @@ struct ConnectionsScreen: View {
             item: item,
             details: viewModel.shownDetails,
             detailsFailed: viewModel.shownDetailsFailed,
+            granted: viewModel.shownGrantedLines,
             withheld: viewModel.shownWithheldLines,
+            funding: viewModel.shownFundingLines,
+            fundingFailed: viewModel.shownFundingFailed,
             connectedAt: viewModel.shownConnectedAt,
             isBusy: viewModel.isDisconnecting,
             message: viewModel.connectionSheetMessage,
@@ -150,9 +157,17 @@ struct ConnectionsScreen: View {
                 viewModel.hideConnection()
             },
             takeDisconnectQuestion: viewModel.takeDisconnectQuestion,
-            disconnectQuestion: viewModel.disconnectQuestion
+            disconnectQuestion: viewModel.disconnectQuestion,
+            onShowFundingLimitsInfo: { showsFundingLimitsInfo = true }
         )
         .presentationDragIndicator(.visible)
+        .sheet(isPresented: $showsFundingLimitsInfo) {
+            FundingLimitsInfoSheet(onClose: { showsFundingLimitsInfo = false })
+                // Starts at the tallest it may be, so the first measurement
+                // is of the whole text; the sheet then settles at its height.
+                .selfSizingSheet(fallback: .greatestFiniteMagnitude, background: Color.dash.secondaryBackground)
+                .presentationDragIndicator(.visible)
+        }
     }
 
     private func approveSheet(for request: ConnectionRequest) -> some View {
@@ -227,15 +242,15 @@ struct ConnectionsScreen: View {
         let scanner = GenericQRScannerController()
 
         scanner.onQRCodeScanned = { value in
-            vc.dismiss(animated: true) {
+            vc?.dismiss(animated: true) {
                 viewModel.onQRScanned(value)
             }
         }
         scanner.onCancel = {
-            vc.dismiss(animated: true)
+            vc?.dismiss(animated: true)
         }
 
-        vc.present(scanner, animated: true)
+        vc?.present(scanner, animated: true)
     }
 
     private func mockScan() {

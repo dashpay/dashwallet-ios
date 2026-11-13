@@ -28,8 +28,15 @@ struct ConnectionSheet: View {
     /// which with details shown says a refresh of them failed).
     let details: ConnectionDetails?
     let detailsFailed: Bool
-    /// What an app is never given.
+    /// What the app was given; `nil` while unknown.
+    let granted: [String]?
+    /// What it was not given.
     let withheld: [String]
+    /// Each key with what is left of its budget; `nil` while unknown or not
+    /// read.
+    let funding: [(title: String, value: String)]?
+    /// Platform could not be read for it.
+    let fundingFailed: Bool
     /// When the connection was made.
     let connectedAt: Date?
     let isBusy: Bool
@@ -45,7 +52,9 @@ struct ConnectionSheet: View {
     let takeDisconnectQuestion: () -> Bool
     /// Whether the sheet's own Disconnect may ask now.
     let disconnectQuestion: () -> Bool
+    let onShowFundingLimitsInfo: () -> Void
 
+    @State private var showsGranted = false
     @State private var showsWithheld = false
     @State private var isConfirmingDisconnect = false
 
@@ -73,8 +82,13 @@ struct ConnectionSheet: View {
                             .foregroundColor(Color.dash.secondaryText)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    connectedCard
-                    if details != nil {
+                    limitsCard
+                    if let granted {
+                        collapsible(title: grantedTitle, isExpanded: $showsGranted) {
+                            ForEach(Array(granted.enumerated()), id: \.offset) {
+                                PermissionRow(icon: .custom("dashconnect.check.circle", maxHeight: 18), text: $0.element)
+                            }
+                        }
                         collapsible(title: withheldTitle, isExpanded: $showsWithheld) {
                             ForEach(withheld, id: \.self) {
                                 PermissionRow(icon: .custom("dashconnect.xmark.circle", maxHeight: 18), text: $0)
@@ -208,19 +222,85 @@ struct ConnectionSheet: View {
     }
 
     @ViewBuilder
-    private var connectedCard: some View {
-        if let connectedAt {
+    private var limitsCard: some View {
+        let access = details?.access
+        if access != nil || connectedAt != nil {
             VStack(alignment: .leading, spacing: 2) {
-                Text(NSLocalizedString("Connected", comment: "DashConnect connection sheet: when the connection was made"))
-                    .dashFont(.footnote)
-                    .foregroundColor(Color.dash.tertiaryText)
-                Text(Self.dateFormatter.string(from: connectedAt))
-                    .dashFont(.subhead)
-                    .foregroundColor(Color.dash.primaryText)
+                if let access {
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack(spacing: 4) {
+                            Text(NSLocalizedString("Identity funding limits", comment: "DashConnect connection sheet"))
+                                .dashFont(.footnote)
+                                .foregroundColor(Color.dash.tertiaryText)
+                            Button(action: onShowFundingLimitsInfo) {
+                                InfoRoundIcon(size: 13, color: Color.dash.gray300Alpha90)
+                                    .frame(width: 44, height: 44)
+                                    .contentShape(Rectangle())
+                            }
+                            .frame(width: 18, height: 18)
+                            .accessibilityLabel(Text(NSLocalizedString(
+                                "What are identity funding limits?", comment: "DashConnect connection sheet")))
+                        }
+                        Text(fundingLimitText(access))
+                            .dashFont(.subhead)
+                            .foregroundColor(Color.dash.primaryText)
+                    }
+                    .padding(.leading, 14)
+                    .padding(.vertical, 8)
+                }
+                if let funding, !funding.isEmpty, item.connection != nil {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(NSLocalizedString("Funding left", comment: "DashConnect connection sheet"))
+                            .dashFont(.footnote)
+                            .foregroundColor(Color.dash.tertiaryText)
+                        ForEach(Array(funding.enumerated()), id: \.offset) { _, line in
+                            Text(String(
+                                format: NSLocalizedString(
+                                    "%1$@: %2$@", comment: "DashConnect connection sheet: a key's name, then its budget"),
+                                line.title, line.value))
+                                .dashFont(.subhead)
+                                .foregroundColor(Color.dash.primaryText)
+                        }
+                    }
+                    .accessibilityElement(children: .combine)
+                    .padding(.leading, 14)
+                    .padding(.vertical, 8)
+                }
+                if fundingFailed, item.connection != nil {
+                    Text(NSLocalizedString(
+                        "What is left of the keys' budgets could not be read.", comment: "DashConnect connection sheet"))
+                        .dashFont(.footnote)
+                        .foregroundColor(Color.dash.tertiaryText)
+                        .padding(.leading, 14)
+                        .padding(.vertical, 8)
+                }
+                if let connectedAt {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(NSLocalizedString("Connected", comment: "DashConnect connection sheet: when the connection was made"))
+                            .dashFont(.footnote)
+                            .foregroundColor(Color.dash.tertiaryText)
+                        Text(Self.dateFormatter.string(from: connectedAt))
+                            .dashFont(.subhead)
+                            .foregroundColor(Color.dash.primaryText)
+                    }
+                    .accessibilityElement(children: .combine)
+                    .padding(.leading, 14)
+                    .padding(.vertical, 8)
+                }
+                if let date = dateLine {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(date.title)
+                            .dashFont(.footnote)
+                            .foregroundColor(Color.dash.tertiaryText)
+                        Text(Self.dateFormatter.string(from: date.date))
+                            .dashFont(.subhead)
+                            .foregroundColor(Color.dash.primaryText)
+                    }
+                    .accessibilityElement(children: .combine)
+                    .padding(.leading, 14)
+                    .padding(.vertical, 8)
+                }
             }
-            .accessibilityElement(children: .combine)
-            .padding(.leading, 14)
-            .padding(.vertical, 8)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(6)
             .overlay(
@@ -317,11 +397,37 @@ struct ConnectionSheet: View {
         ConnectionStatusBadge.label(for: item.status)
     }
 
+    private var grantedTitle: String {
+        String(
+            format: NSLocalizedString(
+                "See what %@ will be able to do", comment: "DashConnect connection sheet: the app's name"),
+            item.name)
+    }
+
     private var withheldTitle: String {
         String(
             format: NSLocalizedString(
                 "See what %@ will NOT have access to", comment: "DashConnect connection sheet: the app's name"),
             item.name)
+    }
+
+    private func fundingLimitText(_ access: ConnectionAccess) -> String {
+        if access.hasUnlimitedKey {
+            return NSLocalizedString("No limit", comment: "DashConnect connection sheet: a key with no spending limit")
+        }
+        guard let budget = access.budgetLimit else {
+            return NSLocalizedString("Not known", comment: "DashConnect connection sheet")
+        }
+        return String(
+            format: NSLocalizedString(
+                "Maximum of %@", comment: "DashConnect connection sheet: an amount with its unit, e.g. 0.5 DASH"),
+            PlatformCreditsFormatter.dashString(budget))
+    }
+
+    private var dateLine: (title: String, date: Date)? {
+        guard let expiresAt = details?.access?.expiresAt else { return nil }
+        // Whether that time has passed on Platform is not read here.
+        return (NSLocalizedString("Connection expiry", comment: "DashConnect connection sheet: the date its keys expire"), expiresAt)
     }
 
     private static let dateFormatter: DateFormatter = {
@@ -364,22 +470,36 @@ private enum ConnectionSheetPreview {
                 id: appId, name: name, url: "yap.pr", status: status, updatedAt: Date(timeIntervalSince1970: 1_793_000_000)))
     }
 
+    /// One key the app was given, as Platform shows it.
+    static let key = AppConnect.PlatformKey(
+        id: 10, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160,
+        data: Data(repeating: 3, count: 20), readOnly: false,
+        bound: .documentType(contractId: Data(repeating: 1, count: 32), name: "post"), boundKnown: true,
+        totalBudget: 1_000_000_000, expiresAt: 1_794_000_000_000, disabledAt: nil)
+
     static let details = ConnectionDetails(
         appId: appId, identityId: "5DbLwAxEWR695MsqP4KybNQD5n7CUDWydJYNg63FzUo8", username: "alice",
+        basis: ConnectionBasis(
+            snapshot: AppConnect.IdentitySnapshot(
+                identityId: Data(repeating: 2, count: 32), revision: 3, keys: [key], platformTime: 1_793_500_000_000),
+            intents: [], unrecorded: [key], administeredGroups: []),
         connectedAt: Date(timeIntervalSince1970: 1_793_000_000))
 
     static func sheet(
         _ item: ConnectionSheetItem,
         details: ConnectionDetails?,
         detailsFailed: Bool = false,
+        granted: [String]? = nil,
+        funding: [(title: String, value: String)]? = nil,
+        fundingFailed: Bool = false,
         isBusy: Bool = false,
         message: ConnectionsScreenMessage? = nil
     ) -> ConnectionSheet {
         ConnectionSheet(
-            item: item, details: details, detailsFailed: detailsFailed,
-            withheld: DashConnectPermissionText.withheld,
+            item: item, details: details, detailsFailed: detailsFailed, granted: granted,
+            withheld: DashConnectPermissionText.withheld, funding: funding, fundingFailed: fundingFailed,
             connectedAt: details?.connectedAt, isBusy: isBusy, message: message, onClose: {}, onDisconnect: {}, onRemove: {},
-            takeDisconnectQuestion: { false }, disconnectQuestion: { false })
+            takeDisconnectQuestion: { false }, disconnectQuestion: { false }, onShowFundingLimitsInfo: {})
     }
 }
 
@@ -388,15 +508,21 @@ private enum ConnectionSheetPreview {
 }
 
 #Preview("Loaded") {
-    ConnectionSheetPreview.sheet(ConnectionSheetPreview.item(.active), details: ConnectionSheetPreview.details)
+    ConnectionSheetPreview.sheet(
+        ConnectionSheetPreview.item(.active), details: ConnectionSheetPreview.details,
+        granted: ConnectionSheetPreview.details.access.map {
+            DashConnectPermissionText.granted($0.granted, appLabel: "Yappr")
+        },
+        funding: [(title: "App key", value: "0.004 DASH left of 0.01 DASH")])
 }
 
 #Preview("Details failed") {
     ConnectionSheetPreview.sheet(ConnectionSheetPreview.item(.active), details: nil, detailsFailed: true)
 }
 
-#Preview("Confirming") {
-    ConnectionSheetPreview.sheet(ConnectionSheetPreview.item(.confirming), details: ConnectionSheetPreview.details)
+#Preview("Confirming, funding not read") {
+    ConnectionSheetPreview.sheet(
+        ConnectionSheetPreview.item(.confirming), details: ConnectionSheetPreview.details, fundingFailed: true)
 }
 
 #Preview("Not delivered, disconnecting") {

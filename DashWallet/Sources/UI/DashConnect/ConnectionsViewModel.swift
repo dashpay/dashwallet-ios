@@ -76,6 +76,42 @@ final class ConnectionsViewModel: ObservableObject {
     /// of details already shown failed).
     @Published private(set) var shownDetails: ConnectionDetails?
     @Published private(set) var shownDetailsFailed = false
+    /// The lines of what the shown connection's app was given and was not;
+    /// `nil` while unknown.
+    var shownGrantedLines: [String]? {
+        guard let item = shownConnection, let access = shownDetails?.access else { return nil }
+        return DashConnectPermissionText.granted(access.granted, appLabel: item.name)
+    }
+
+    /// Each of the shown connection's keys with what is left of its budget,
+    /// as the sheet lists them; `nil` while unknown or not read.
+    var shownFundingLines: [(title: String, value: String)]? {
+        guard let funding = shownDetails?.keyFunding else { return nil }
+        return funding.map { key in
+            let title = key.isProfileKey
+                ? NSLocalizedString("DashPay profile key", comment: "DashConnect connection sheet: a key's budget line")
+                : NSLocalizedString("App key", comment: "DashConnect connection sheet: a key's budget line")
+            guard let total = key.totalBudget else {
+                return (title, NSLocalizedString(
+                    "No limit", comment: "DashConnect connection sheet: a key with no spending limit"))
+            }
+            guard let remaining = key.remaining else {
+                return (title, String(
+                    format: NSLocalizedString(
+                        "Maximum of %@", comment: "DashConnect connection sheet: an amount with its unit, e.g. 0.5 DASH"),
+                    PlatformCreditsFormatter.dashString(total)))
+            }
+            return (title, String(
+                format: NSLocalizedString(
+                    "%1$@ left of %2$@",
+                    comment: "DashConnect connection sheet: what is left of a key's budget, then the budget; amounts with units"),
+                PlatformCreditsFormatter.dashString(remaining), PlatformCreditsFormatter.dashString(total)))
+        }
+    }
+
+    /// Platform could not be read for what is left of the keys' budgets.
+    var shownFundingFailed: Bool { shownDetails?.fundingReadFailed == true }
+
     /// When the shown connection was made.
     var shownConnectedAt: Date? {
         shownDetails?.connectedAt
@@ -268,8 +304,29 @@ final class ConnectionsViewModel: ObservableObject {
                 self.shownDetailsFailed = true
                 return
             }
-            self.shownDetails = details
+            // A refresh from the same read of the identity keeps the funding
+            // lines shown until its own read of them ends; one from another
+            // read drops them, as they tell of keys it may not show.
+            var shown = details
+            if keepingShown, let previous = self.shownDetails {
+                shown = shown?.keepingFunding(of: previous)
+            }
+            self.shownDetails = shown
             self.shownDetailsFailed = details == nil
+            if let basis = details?.basis { self.readShownFunding(item, for: basis, number: number) }
+        }
+    }
+
+    /// What is left of the budgets of the keys `basis` gives the app, read
+    /// after the details told from it so the sheet does not wait on it; the
+    /// latest read only, and only beside details told from `basis`.
+    private func readShownFunding(_ item: ConnectionSheetItem, for basis: ConnectionBasis, number: Int) {
+        Task { [weak self] in
+            guard let self else { return }
+            let funding = await self.dataSource.connectionFunding(for: basis, scope: item.connection?.scope)
+            guard number == self.detailsReadNumber, self.shownConnection != nil,
+                  let details = self.shownDetails?.attaching(funding, for: basis) else { return }
+            self.shownDetails = details
         }
     }
 
