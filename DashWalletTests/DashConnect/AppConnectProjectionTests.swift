@@ -258,10 +258,11 @@ final class AppConnectProjectionTests: XCTestCase {
         let key = Self.authKey(10)
         let intent = Self.intent([key])
         let first = ConnectionBasis(
-            snapshot: Self.snapshot([Self.onPlatform(key)]), intents: [intent], unrecorded: [], administeredGroups: [])
+            snapshot: Self.snapshot([Self.onPlatform(key)]), intents: [intent], followedIntentIds: [intent.id],
+            unrecorded: [], administeredGroups: [])
         let raised = ConnectionBasis(
             snapshot: Self.snapshot([Self.onPlatform(key, limits: (5000, Self.now + 1000))], revision: 6),
-            intents: [intent], unrecorded: [], administeredGroups: [])
+            intents: [intent], followedIntentIds: [intent.id], unrecorded: [], administeredGroups: [])
         let details = ConnectionDetails(appId: "app", identityId: "identity", username: nil, basis: first)
         XCTAssertEqual(details.access?.budgetLimit, 1000)
 
@@ -347,6 +348,86 @@ final class AppConnectProjectionTests: XCTestCase {
         let read = try JSONDecoder().decode(Intent.self, from: JSONSerialization.data(withJSONObject: json))
         XCTAssertNil(read.administeredGroupIds)
         XCTAssertFalse(read.isAdministered(.contractGroup(Self.appGroup)), "not known, so not said")
+    }
+
+    // MARK: The Disconnected list (ADR 0013)
+
+    /// A Disconnected row is listed with what the intents its last
+    /// disconnect marked gave the app, and when that disconnect ran; an
+    /// earlier marked connection and an unmarked intent do not count.
+    func testADisconnectedEntryReadsTheIntentsTheLastDisconnectMarked() {
+        var earlier = Self.intent([Self.authKey(10)], createdAt: 100)
+        earlier.disconnectedAt = Date(timeIntervalSince1970: 200)
+        var last = Self.intent([Self.authKey(11, bound: .contractGroup(Self.appGroup))], createdAt: 300)
+        last.disconnectedAt = Date(timeIntervalSince1970: 400)
+        let unmarked = Self.intent([Self.authKey(12)], createdAt: 350)
+        let other = { () -> Intent in
+            var other = Self.intent([Self.authKey(13)], app: Data(repeating: 0xB2, count: 32), createdAt: 500)
+            other.disconnectedAt = Date(timeIntervalSince1970: 600)
+            return other
+        }()
+        let row = DAppConnection(
+            id: Self.app.toBase58String(), name: "App", url: "app.example", status: .disconnected,
+            updatedAt: Date(timeIntervalSince1970: 1))
+
+        let entry = PlatformDashConnectDataSource.disconnectedEntry(of: row, intents: [earlier, last, unmarked, other])
+
+        XCTAssertEqual(entry.disconnectedAt, Date(timeIntervalSince1970: 400))
+        XCTAssertEqual(entry.connectedAt, Date(timeIntervalSince1970: 300))
+        XCTAssertEqual(entry.access?.keys.map(\.bound), [.contractGroup(Self.appGroup)])
+        XCTAssertEqual(entry.identityId, Self.identity.toBase58String())
+    }
+
+    /// One disconnect that ended several approvals of the app gives the
+    /// latest of them as the time the connection was made, as the sheet of
+    /// the live connection did.
+    func testADisconnectedEntryIsConnectedAtItsLatestApproval() {
+        let first = Self.disconnected(Self.intent([Self.authKey(10)], createdAt: 100))
+        let renewal = Self.disconnected(Self.intent([Self.authKey(11)], createdAt: 300))
+        let row = DAppConnection(
+            id: Self.app.toBase58String(), name: "App", url: "app.example", status: .disconnected,
+            updatedAt: Date(timeIntervalSince1970: 1))
+
+        let entry = PlatformDashConnectDataSource.disconnectedEntry(of: row, intents: [first, renewal])
+
+        XCTAssertEqual(entry.connectedAt, Date(timeIntervalSince1970: 300))
+    }
+
+    /// A Disconnected row whose marked intents cannot be read (none loaded)
+    /// is listed with no disconnect time and no access, not with the row's
+    /// own time.
+    func testADisconnectedEntryWithNoMarkedIntentKnowsNoDisconnectTime() {
+        let row = DAppConnection(
+            id: Self.app.toBase58String(), name: "App", url: "app.example", status: .disconnected,
+            updatedAt: Date(timeIntervalSince1970: 1))
+
+        let entry = PlatformDashConnectDataSource.disconnectedEntry(of: row, intents: [Self.intent([Self.authKey(12)])])
+
+        XCTAssertNil(entry.disconnectedAt)
+        XCTAssertNil(entry.access)
+        XCTAssertNil(entry.connectedAt)
+    }
+
+    /// A read of identity B says nothing of an app disconnected on identity
+    /// A: its Disconnected row stays. A row whose intents on A were closed
+    /// without a disconnect still goes.
+    func testAReadOfAnotherIdentityKeepsTheRowOfAnAppDisconnectedOnTheFirst() {
+        let row = DAppConnection(
+            id: Self.app.toBase58String(), name: "App", url: "app.example", status: .disconnected,
+            updatedAt: Date(timeIntervalSince1970: 1))
+        let projection = AppConnect.project([Self.snapshot([], identity: Self.otherIdentity)], intents: [])
+        let disconnectedOnA = Self.disconnected(Self.intent([Self.authKey(10)]))
+
+        let kept = PlatformDashConnectDataSource.rows(
+            [row], after: projection, of: Self.otherIdentity, intents: [disconnectedOnA], at: Date(timeIntervalSince1970: 2))
+        XCTAssertEqual(kept.map(\.status), [.disconnected])
+        XCTAssertEqual(kept.first?.updatedAt, row.updatedAt)
+
+        let closedOnA = Self.closed(Self.intent([Self.authKey(10)]))
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.rows(
+                [row], after: projection, of: Self.otherIdentity, intents: [closedOnA], at: Date(timeIntervalSince1970: 2)),
+            [])
     }
 
     // MARK: The disconnect mark (T35)
@@ -1317,6 +1398,15 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertEqual(restored.connections.first?.isUndelivered, false, "keys no intent names are not judged undelivered")
     }
 
+    func testAConnectionWhoseKeysAreAllExpiredShowsAsExpired() {
+        let key = Self.authKey(10, expiresAt: Self.now - 1)
+        let projection = AppConnect.project(
+            [Self.snapshot([Self.onPlatform(key)])], intents: [Self.intent([key], published: true)])
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.rows([], after: projection, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 2)).map(\.status),
+            [.expired])
+    }
+
     func testAccessSeenOnAnotherIdentityKeepsTheRowUntilThatIdentityIsReadAgain() {
         let stray = Self.onPlatform(Self.authKey(20))
         let onA = AppConnect.project([Self.snapshot([stray])], intents: [])
@@ -1330,6 +1420,51 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertEqual(
             PlatformDashConnectDataSource.rows(rowsB, after: againA, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 3)),
             [], "A read again shows the key off")
+    }
+
+    func testKeysPastTheirExpiryOnAnotherIdentityDoNotHoldTheRowActive() {
+        let expired = Self.onPlatform(Self.authKey(20, expiresAt: Self.now - 1))
+        let onA = AppConnect.project([Self.snapshot([expired])], intents: [])
+        XCTAssertEqual(onA.connections.first?.liveUnrecordedIdentities, [])
+        let rowsA = PlatformDashConnectDataSource.rows(
+            [], after: onA, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 1))
+        XCTAssertEqual(rowsA.map(\.status), [.expired])
+        XCTAssertEqual(rowsA.first?.seenOn, [], "no live key is access left on A")
+        let onB = AppConnect.project([Self.snapshot([], identity: Self.otherIdentity)], intents: [])
+        let rowsB = PlatformDashConnectDataSource.rows(
+            rowsA, after: onB, of: Self.otherIdentity, intents: [], at: Date(timeIntervalSince1970: 2))
+        XCTAssertEqual(rowsB, [], "B's read does not bring the expired row back as Active")
+
+        let live = AppConnect.project([Self.snapshot([Self.onPlatform(Self.authKey(20))])], intents: [])
+        XCTAssertEqual(live.connections.first?.liveUnrecordedIdentities, [Self.identity])
+    }
+
+    /// An Expired row follows its newest install: its sheet tells that
+    /// install's expiry, access and funding, not those of an older install
+    /// still live.
+    func testAnExpiredRowsSheetTellsTheExpiryOfTheConnectionItFollows() {
+        let older = Self.intent([Self.authKey(10, expiresAt: Self.now + 5000)], published: true)
+        let newer = Self.intent(
+            [Self.authKey(11, expiresAt: Self.now - 1, budget: 300)], published: true, createdAt: 10)
+        let snapshot = Self.snapshot([Self.onPlatform(Self.authKey(10, expiresAt: Self.now + 5000)),
+                                      Self.onPlatform(Self.authKey(11, expiresAt: Self.now - 1, budget: 300))])
+        let projection = AppConnect.project([snapshot], intents: [older, newer])
+        let connection = projection.connections.first
+        XCTAssertEqual(connection?.status, .expired)
+        XCTAssertEqual(connection?.followedIntents.map(\.id), [newer.id])
+
+        let basis = ConnectionBasis(
+            snapshot: snapshot, intents: [newer, older],
+            followedIntentIds: Set(connection?.followedIntents.map(\.id) ?? []), unrecorded: [], administeredGroups: [])
+        let details = ConnectionDetails(appId: "app", identityId: "identity", username: nil, basis: basis)
+        let expiry = { (ms: UInt64) in Date(timeIntervalSince1970: TimeInterval(ms) / 1000) }
+        XCTAssertEqual(details.access(shownAs: .expired)?.expiresAt, expiry(Self.now - 1))
+        XCTAssertEqual(details.access(shownAs: .expired)?.keys.count, 1, "only the followed install's key")
+        XCTAssertEqual(details.access(shownAs: .expired)?.budgetLimit, 300)
+        XCTAssertEqual(
+            details.access(shownAs: .active)?.expiresAt, expiry(Self.now + 5000), "a live row tells every key")
+        XCTAssertEqual(basis.shown(as: .expired).fundedKeyIds, [11], "funding of the followed install only")
+        XCTAssertEqual(Set(basis.shown(as: .active).fundedKeyIds), [10, 11])
     }
 
     func testARowAnotherIdentityHoldsKeepsWhatOtherIdentitiesSaw() {

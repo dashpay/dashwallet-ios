@@ -280,6 +280,15 @@ struct ConnectionAccess: Equatable {
         self.init(access)
     }
 
+    /// What `intents` gave as the wallet recorded it, with no read of the
+    /// identity: for a connection that ended, whose keys are off, the sheet
+    /// tells what the user allowed the app to do. `nil` when they add no auth key.
+    init?(recorded intents: [AppConnect.ConnectionIntent]) {
+        let access = AppConnect.GrantedAccess(intents: intents)
+        guard !access.keys.isEmpty else { return nil }
+        self.init(access)
+    }
+
     init(_ access: AppConnect.GrantedAccess) {
         keys = access.keys
         let budgets = access.keys.compactMap(\.totalBudget)
@@ -307,6 +316,9 @@ struct ConnectionBasis: Equatable {
     let snapshot: AppConnect.IdentitySnapshot
     /// The open intents of the snapshot's identity that hold the app.
     let intents: [AppConnect.ConnectionIntent]
+    /// The ids of the intents the app's row follows, the projection's
+    /// `followedIntents`; empty when only `unrecorded` keys show the app.
+    let followedIntentIds: Set<UUID>
     /// Keys on `snapshot` the projection gives the app that no intent names.
     let unrecorded: [AppConnect.PlatformKey]
     /// The groups of `unrecorded` keys that may have administrators.
@@ -316,6 +328,21 @@ struct ConnectionBasis: Equatable {
     var access: ConnectionAccess? {
         ConnectionAccess(
             intents: intents, snapshot: snapshot, unrecorded: unrecorded, administeredGroups: administeredGroups)
+    }
+
+    /// The basis the sheet of a row with `status` is told from. An Expired
+    /// row's status is told from the connection it follows, so its sheet
+    /// shows only that connection: its intents among `intents`, or the
+    /// `unrecorded` keys when none of them is held; access, expiry and
+    /// funding lines alike, not those of another install still held. Any
+    /// other row's sheet shows this whole basis.
+    func shown(as status: ConnectionStatus) -> ConnectionBasis {
+        guard status == .expired else { return self }
+        let followed = intents.filter { followedIntentIds.contains($0.id) }
+        return ConnectionBasis(
+            snapshot: snapshot, intents: followed, followedIntentIds: followedIntentIds,
+            unrecorded: followed.isEmpty ? unrecorded : [],
+            administeredGroups: followed.isEmpty ? administeredGroups : [])
     }
 
     /// The keys whose remaining budgets the sheet reads, by id.
@@ -365,6 +392,25 @@ struct ConnectionDetails: Equatable {
         self.basis = basis
         access = basis?.access
         self.connectedAt = connectedAt
+    }
+
+    /// The details of a connection that ended, with what its intents
+    /// recorded (`ConnectionAccess(recorded:)`): no read of the identity
+    /// tells of it, so it has no basis and no funding.
+    init(appId: String, identityId: String?, username: String?, recorded access: ConnectionAccess?) {
+        self.appId = appId
+        self.identityId = identityId
+        self.username = username
+        basis = nil
+        self.access = access
+        connectedAt = nil
+    }
+
+    /// What the sheet of a row with `status` shows as the app's access:
+    /// that of `basis.shown(as: status)`, or `access` without a basis.
+    func access(shownAs status: ConnectionStatus) -> ConnectionAccess? {
+        guard let basis else { return access }
+        return basis.shown(as: status).access
     }
 
     /// These details with `read`, the funding read for `basis`; `nil` when
