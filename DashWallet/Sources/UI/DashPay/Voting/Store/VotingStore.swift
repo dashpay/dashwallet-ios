@@ -116,6 +116,10 @@ final class VotingStore: ObservableObject {
     @Published private(set) var nodeListMayBeIncomplete = false {
         didSet { if nodeListMayBeIncomplete != oldValue { stateDidChange.send() } }
     }
+    /// A masternode of this wallet may be missing from ``votableNodes``: the
+    /// wallet's sync is not done, or the list may be incomplete. Quick voting
+    /// does not run then, as a missing node may have blocked a name (AC-20).
+    var nodeListMayMissNodes: Bool { !nodeListSynced || nodeListMayBeIncomplete }
     @Published private(set) var isLoading = false
     /// A full refresh is queued or running.
     @Published private(set) var isRefreshing = false
@@ -946,8 +950,9 @@ final class VotingStore: ObservableObject {
     /// the result sheet. Every planned name is sending meanwhile, and no
     /// other vote starts. Cancelling the calling task stops the run; the
     /// votes not sent are reported as not cast. A run that cannot start
-    /// (another vote in flight, the node list possibly incomplete) is a
-    /// failure with the reason, and ``outcome`` is left as it is.
+    /// (another vote in flight, the node list possibly incomplete or not
+    /// synced, a planned masternode no longer votable) is a failure with the
+    /// reason, and ``outcome`` is left as it is.
     @discardableResult
     func runQuickVoting(_ plan: QuickVotePlan) async -> VoteAttemptOutcome {
         // A masternode missing from the list may have blocked a name, and the
@@ -957,21 +962,27 @@ final class VotingStore: ObservableObject {
             DWLogger.log("Voting: Quick voting not started: another vote is being sent")
             return .failure(NSLocalizedString("Quick voting did not start: another vote is still being sent.", comment: "Voting"))
         }
-        guard !nodeListMayBeIncomplete else {
-            DWLogger.log("Voting: Quick voting not started: the node list may be incomplete")
+        guard !nodeListMayMissNodes else {
+            DWLogger.log("Voting: Quick voting not started: the node list may be incomplete or not synced")
             return .failure(NSLocalizedString("Some of your masternodes may be missing from this list.", comment: "Voting"))
         }
-        beginQuickVoting()
-        let casts = plan.votes.compactMap { vote -> QuickVoteCast? in
-            let nodes = votableNodes.filter { vote.nodes.contains($0.proTxHash) }
-            guard !nodes.isEmpty else { return nil }
-            return QuickVoteCast(
-                normalizedLabel: vote.normalizedLabel, choice: .towards(identityId: vote.identityId), nodes: nodes)
+        let casts = plan.votes.map { vote in
+            QuickVoteCast(
+                normalizedLabel: vote.normalizedLabel, choice: .towards(identityId: vote.identityId),
+                nodes: votableNodes.filter { vote.nodes.contains($0.proTxHash) })
         }
+        // A planned masternode that left the wallet since the sheet would send
+        // nothing and be missing from the report: the plan is stale, so the
+        // run does not start and the sheet is opened again.
+        guard zip(plan.votes, casts).allSatisfy({ $0.nodes.count == $1.nodes.count }) else {
+            DWLogger.log("Voting: Quick voting not started: a planned masternode is no longer votable")
+            return .failure(NSLocalizedString("The vote was not cast. Please try again.", comment: "Voting"))
+        }
+        beginQuickVoting()
         DWLogger.log("Voting: Quick voting started: \(casts.count) names, \(casts.reduce(0) { $0 + $1.nodes.count }) votes")
         let result: VoteAttemptOutcome
         if casts.isEmpty {
-            // The planned masternodes left the wallet since the sheet.
+            // A plan with no vote: the sheet offers Close only, so this is not reached from it.
             result = .failure(NSLocalizedString("The vote was not cast. Please try again.", comment: "Voting"))
         } else {
             switch await castRun(casts) {
@@ -1125,7 +1136,7 @@ final class VotingStore: ObservableObject {
               !isClosed(normalizedLabel: label), (contest.endTime ?? .distantFuture) > now()
         else { return (all(NSLocalizedString("Voting has ended", comment: "Voting")), nil) }
         // As the first run: a block by a missing masternode would go unseen.
-        guard !nodeListMayBeIncomplete else {
+        guard !nodeListMayMissNodes else {
             return (all(NSLocalizedString("Some of your masternodes may be missing from this list.", comment: "Voting")), nil)
         }
         let history = await loadVotedNodes(for: label) ? voteHistoryByContest[label] ?? VoteLimit(nil) : VoteLimit(nil)

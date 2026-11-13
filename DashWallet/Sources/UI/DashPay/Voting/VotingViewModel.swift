@@ -308,6 +308,12 @@ extension VotingViewModel: VoteAttemptHosting {
 
 extension VotingViewModel: QuickVotingHosting {
     var shownContests: [DPNSContest] { list.visibleContests }
+    var showsOnlyRequestsWithLinks: Bool { list.filter.onlyWithLinks }
+    var nodeListMayMissNodes: Bool { store.nodeListMayMissNodes }
+
+    func reportNodeListMayMissNodes() {
+        list.showToast(.failed(NSLocalizedString("Some of your masternodes may be missing from this list.", comment: "Voting")))
+    }
 
     func reloadVoteHistory() async -> Bool {
         await store.loadAllVoteHistory()

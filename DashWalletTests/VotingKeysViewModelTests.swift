@@ -28,8 +28,11 @@ private final class FakeKeysSource: VotingKeysSource {
     var nodeResolution: VotingStore.NodeResolution = .complete
     /// The remembered choice; the ticks shown are the part of it that is votable, as in the store.
     var remembered: Set<Data>?
+    /// Before setup the store has no choice while none of it is votable.
+    var isVotingSetUp = true
     var tickedNodeIDs: Set<Data>? {
-        remembered.map { $0.intersection(votableNodes.map(\.proTxHash)) }
+        guard let live = remembered.map({ $0.intersection(votableNodes.map(\.proTxHash)) }) else { return nil }
+        return !isVotingSetUp && live.isEmpty ? nil : live
     }
     var remembersHiddenNodes: Bool {
         !(remembered ?? []).subtracting(votableNodes.map(\.proTxHash)).isEmpty
@@ -329,6 +332,21 @@ final class VotingKeysViewModelTests: XCTestCase {
 
         XCTAssertTrue(vm.ticked.isEmpty)
         XCTAssertFalse(vm.canConfirm)
+    }
+
+    /// Before setup the remembered choice holds only a node a partial list
+    /// does not show, so the store has no choice to show: the screen opens
+    /// with no row ticked rather than the first one.
+    func testVoteModeOpensWithNoRowTickedWhileOnlyAHiddenNodeIsRemembered() {
+        source.isVotingSetUp = false
+        source.remembered = [Data([1])]
+        source.votableNodes = [node(2), node(3)]
+        source.nodeResolution = .partial
+        XCTAssertNil(source.tickedNodeIDs)
+
+        let vm = viewModel()
+
+        XCTAssertTrue(vm.ticked.isEmpty)
     }
 
     /// The list turns complete with the same rows: the screen still rechecks

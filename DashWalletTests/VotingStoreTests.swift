@@ -1002,6 +1002,42 @@ final class VotingStoreTests: XCTestCase {
         XCTAssertTrue(caster.runs.isEmpty)
     }
 
+    /// AC-20: before the wallet's sync is done the registry may answer only
+    /// some of this wallet's masternodes, with nothing marking the list
+    /// incomplete; Quick voting sends nothing then either.
+    func testQuickVotingSendsNothingBeforeTheWalletSyncIsDone() async {
+        let caster = RunCaster()
+        let store = await makeRunStore(caster)
+        let plan = store.quickVotePlan(for: store.contests)
+        nodes.isNodeListSynced = false
+        await store.refresh()
+        XCTAssertFalse(store.nodeListMayBeIncomplete)
+
+        let result = await store.runQuickVoting(plan)
+
+        guard case .failure(let reason) = result else { return XCTFail("the run says why it did not start") }
+        XCTAssertEqual(reason, "Some of your masternodes may be missing from this list.")
+        XCTAssertTrue(caster.runs.isEmpty)
+    }
+
+    /// A planned masternode left the wallet between the sheet and the run:
+    /// the plan is stale, so nothing is sent rather than a run whose report
+    /// leaves that name or masternode out.
+    func testQuickVotingSendsNothingWhenAPlannedMasternodeIsNoLongerVotable() async {
+        let caster = RunCaster()
+        let store = await makeRunStore(caster)
+        let plan = store.quickVotePlan(for: store.contests)
+        nodes.resolution = .init(nodes: [node(1)], mayBeIncomplete: false)
+        await store.refresh()
+
+        let result = await store.runQuickVoting(plan)
+
+        guard case .failure(let reason) = result else { return XCTFail("the run says why it did not start") }
+        XCTAssertEqual(reason, "The vote was not cast. Please try again.")
+        XCTAssertTrue(caster.runs.isEmpty)
+        XCTAssertNil(store.outcome, "not this run's outcome")
+    }
+
     /// Its Try again too: the failed masternodes are told why, and nothing is sent.
     func testTryAgainAfterARunSendsNothingWhileTheNodeListMayBeIncomplete() async {
         let caster = RunCaster()

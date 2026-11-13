@@ -28,6 +28,9 @@ import SwiftUI
 struct QuickVotingSheet: View {
     let votedCount: Int
     let skippedCount: Int
+    /// "Only requests with links" is on, so the first *linked* request gets
+    /// the approve, which may not be the one submitted first (AC-18).
+    var approvesLinkedRequests = false
     let onVote: () -> Void
     let onCancel: () -> Void
 
@@ -37,7 +40,9 @@ struct QuickVotingSheet: View {
             VStack(alignment: .leading, spacing: 20) {
                 DashUIKit.TopIntroView(
                     title: NSLocalizedString("Quick voting", comment: "Voting"),
-                    mainDescription: Self.description(votedCount: votedCount, skippedCount: skippedCount),
+                    mainDescription: Self.description(
+                        votedCount: votedCount, skippedCount: skippedCount,
+                        approvesLinkedRequests: approvesLinkedRequests),
                     descriptionColor: Color.dash.secondaryText)
 
                 if votedCount > 0 {
@@ -69,14 +74,16 @@ struct QuickVotingSheet: View {
     }
 
     /// «By tapping Vote for all, you approve the request submitted first for
-    /// 95 usernames. 5 usernames are skipped.»
-    static func description(votedCount: Int, skippedCount: Int) -> String {
+    /// 95 usernames. 5 usernames are skipped.» With links only, «…the linked
+    /// request submitted first…».
+    static func description(votedCount: Int, skippedCount: Int, approvesLinkedRequests: Bool = false) -> String {
         guard votedCount > 0 else {
             return NSLocalizedString("None of the filtered usernames can get a vote.", comment: "Voting")
         }
-        let voted = String.localizedStringWithFormat(
-            NSLocalizedString("Vote for all approves %d usernames", comment: "Voting: Quick voting sheet"),
-            votedCount)
+        let format = approvesLinkedRequests
+            ? NSLocalizedString("Vote for all approves the linked request for %d usernames", comment: "Voting: Quick voting sheet")
+            : NSLocalizedString("Vote for all approves %d usernames", comment: "Voting: Quick voting sheet")
+        let voted = String.localizedStringWithFormat(format, votedCount)
         guard skippedCount > 0 else { return voted }
         let skipped = String.localizedStringWithFormat(
             NSLocalizedString("%d usernames are skipped", comment: "Voting: Quick voting sheet"),
@@ -97,6 +104,12 @@ struct QuickVotingSheet: View {
 #Preview("One to vote, none skipped") {
     Color.clear.sheet(isPresented: .constant(true)) {
         QuickVotingSheet(votedCount: 1, skippedCount: 0, onVote: {}, onCancel: {})
+    }
+}
+
+#Preview("Only requests with links") {
+    Color.clear.sheet(isPresented: .constant(true)) {
+        QuickVotingSheet(votedCount: 12, skippedCount: 2, approvesLinkedRequests: true, onVote: {}, onCancel: {})
     }
 }
 

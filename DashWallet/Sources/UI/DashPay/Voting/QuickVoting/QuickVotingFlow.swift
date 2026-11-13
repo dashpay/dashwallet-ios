@@ -54,6 +54,7 @@ private struct QuickVotingFlowModifier: ViewModifier {
                 QuickVotingSheet(
                     votedCount: quick.votedCount,
                     skippedCount: quick.skippedCount,
+                    approvesLinkedRequests: quick.approvesLinkedRequests,
                     onVote: quick.voteForAll,
                     onCancel: quick.cancel)
             }

@@ -210,6 +210,8 @@ private final class RunLog {
     var sent: [String] = []
     var closed: Set<String> = []
     var cancelAfterSends: Int?
+    /// The run is stopped while the PIN prompt is up, and the PIN then passes.
+    var cancelDuringAuthentication = false
     var sdkConnected = true
 }
 
@@ -226,6 +228,7 @@ extension MasternodeVoteCasterTests {
             },
             authenticate: {
                 log.authentications += 1
+                if log.cancelDuringAuthentication { withUnsafeCurrentTask { $0?.cancel() } }
                 return log.authOutcome
             },
             isContestOpen: { !log.closed.contains($0) },
@@ -343,6 +346,22 @@ extension MasternodeVoteCasterTests {
         XCTAssertEqual(reports.map(\.normalizedLabel), ["alice", "bob"], "every planned name is reported")
         XCTAssertEqual(reports.flatMap(\.failed).count, 2, "as not cast, for Try again")
         XCTAssertFalse(reports.contains(where: \.contestClosed))
+    }
+
+    /// The screen is left while the PIN prompt is up and the PIN then
+    /// passes: the run sends nothing and tells no progress for it.
+    func testARunStoppedDuringAuthenticationTellsNoProgressAndSendsNothing() async throws {
+        let log = RunLog()
+        log.cancelDuringAuthentication = true
+        let caster = makeRunCaster(history: FakeVoteHistory(records: []), log: log)
+        var progress: [Int] = []
+
+        let reports = try await caster.castRun(casts(["alice", "bob"], nodes: [node(1)])) { progress.append($0) }
+
+        XCTAssertEqual(log.authentications, 1)
+        XCTAssertTrue(progress.isEmpty, "no progress for a run that stopped at the prompt")
+        XCTAssertTrue(log.sent.isEmpty)
+        XCTAssertEqual(reports.flatMap(\.failed).count, 2, "every vote is reported as not cast")
     }
 
     func testARunReChecksTheVoteLimitBeforeEachCast() async throws {

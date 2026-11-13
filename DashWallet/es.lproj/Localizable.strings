@@ -7371,6 +7371,8 @@
 
 "Vote for all approves %d usernames" = "Vote for all approves %d usernames";
 
+"Vote for all approves the linked request for %d usernames" = "Vote for all approves the linked request for %d usernames";
+
 "%d usernames are skipped" = "%d usernames are skipped";
 
 "This is your last vote for some of these usernames. After it, you cannot vote on them again." = "This is your last vote for some of these usernames. After it, you cannot vote on them again.";

@@ -33,6 +33,9 @@ final class QuickVotingViewModelTests: XCTestCase {
         private(set) var historyReloads = 0
         /// What the reload answers: `false` is a store that could not be read.
         var historyReadable = true
+        var nodeListMayMissNodes = false
+        var showsOnlyRequestsWithLinks = false
+        private(set) var nodeListReports = 0
         private(set) var attemptsStarted = 0
         private(set) var planned: [[String]] = []
         private(set) var started: [QuickVotePlan] = []
@@ -43,6 +46,8 @@ final class QuickVotingViewModelTests: XCTestCase {
         }
 
         func quickVotingWillStart() { attemptsStarted += 1 }
+
+        func reportNodeListMayMissNodes() { nodeListReports += 1 }
 
         func quickVotePlan(for shown: [DPNSContest]) -> QuickVotePlan {
             planned.append(shown.map(\.normalizedLabel))
@@ -154,6 +159,38 @@ final class QuickVotingViewModelTests: XCTestCase {
         XCTAssertTrue(host.planned.isEmpty, "no plan on a stale history")
         quick.voteForAll()
         XCTAssertTrue(host.started.isEmpty)
+    }
+
+    /// AC-18: with "Only requests with links" on, the sheet says the linked
+    /// request gets the approve.
+    func testTheSheetSaysTheLinkedRequestWhenOnlyLinksAreShown() async {
+        let host = Host()
+        host.showsOnlyRequestsWithLinks = true
+        host.shownContests = [contest("alice", dates: [nine])]
+        let quick = QuickVotingViewModel(host: host)
+
+        await quick.start()
+
+        XCTAssertEqual(quick.step, .confirm)
+        XCTAssertTrue(quick.approvesLinkedRequests)
+        XCTAssertEqual(
+            QuickVotingSheet.description(votedCount: 2, skippedCount: 0, approvesLinkedRequests: true),
+            "By tapping Vote for all, you approve the linked request submitted first for 2 usernames.")
+    }
+
+    /// AC-20: the wallet's sync is not done, or the list may be incomplete,
+    /// at the tap: no sheet, and the user is told why.
+    func testANodeListThatMayMissNodesOpensNoSheetAndSaysWhy() async {
+        let host = Host()
+        host.nodeListMayMissNodes = true
+        host.shownContests = [contest("alice", dates: [nine])]
+        let quick = QuickVotingViewModel(host: host)
+
+        await quick.start()
+
+        XCTAssertNil(quick.step)
+        XCTAssertTrue(host.planned.isEmpty)
+        XCTAssertEqual(host.nodeListReports, 1)
     }
 
     func testNothingToVoteOffersCloseOnly() async {

@@ -199,9 +199,10 @@ struct UsernameVotingScreen: View {
             trailing: { votingMenu })
     }
 
-    /// Names are on screen, every masternode of this wallet is known (one
-    /// missing may have blocked a name), and no vote is paused, being sent,
-    /// or reading its history.
+    /// Names are on screen, no masternode of this wallet is known to be
+    /// missing (one missing may have blocked a name), and no vote is paused,
+    /// being sent, or reading its history. A sync still running is told at
+    /// the tap, on the nodes read then.
     private var canVoteForAll: Bool {
         !list.visibleContests.isEmpty && !store.historyUnavailable && !store.isVoteBusy
             && !store.nodeListMayBeIncomplete

@@ -283,12 +283,14 @@ final class MasternodeVoteCaster {
         guard isSDKConnected() else { throw CastError.sdkUnavailable }
         // A run stopped before it starts (a Try again stopped while it re-read
         // the history) asks for no PIN and tells no progress: the loop below
-        // reports every vote as not cast.
-        let authenticated = !Task.isCancelled
-        if authenticated {
+        // reports every vote as not cast. One stopped while the PIN prompt
+        // was up tells no progress either, and sends nothing.
+        var tellsProgress = !Task.isCancelled
+        if tellsProgress {
             switch await authenticate() {
             case .ok:
-                progress(0)
+                tellsProgress = !Task.isCancelled
+                if tellsProgress { progress(0) }
             case .cancelled:
                 throw CastError.authenticationCancelled
             case .failed, .timedOut:
@@ -298,7 +300,7 @@ final class MasternodeVoteCaster {
         var reports: [VoteCastReport] = []
         for (index, cast) in casts.enumerated() {
             reports.append(await castAfterAuthentication(cast))
-            if authenticated { progress(index + 1) }
+            if tellsProgress { progress(index + 1) }
         }
         return reports
     }

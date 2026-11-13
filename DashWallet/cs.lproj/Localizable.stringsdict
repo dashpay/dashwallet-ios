@@ -824,6 +824,22 @@ You should check and if necessary correct your date, time and timezone settings.
 			<string>By tapping Vote for all, you approve the request submitted first for %d usernames.</string>
 		</dict>
 	</dict>
+	<key>Vote for all approves the linked request for %d usernames</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>By tapping Vote for all, you approve the linked request submitted first for %d username.</string>
+			<key>other</key>
+			<string>By tapping Vote for all, you approve the linked request submitted first for %d usernames.</string>
+		</dict>
+	</dict>
 	<key>%d usernames are skipped</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
