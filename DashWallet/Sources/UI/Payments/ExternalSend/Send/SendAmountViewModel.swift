@@ -135,7 +135,7 @@ struct LiveSendMaxPlanner: SendMaxPlanning {
                 PlatformPaymentIdentityFundingPolicy.maxFundableDuffs(candidates: $0)
             }
         case .shieldedToCore, .shieldedToPlatform, .shieldedToShielded, .shieldedToIdentity, .identityToCore,
-             .identityToPlatform, .identityToIdentity:
+             .identityToPlatform, .identityToIdentity, .identityToShielded:
             return nil
         case .coreToIdentity:
             return await balanceLessFee(route)
@@ -255,6 +255,7 @@ final class SendAmountViewModel: ObservableObject {
     private let maxPlanner: SendMaxPlanning
     private let converter: SendAmountConverting
     private let currentIdentity: CurrentIdentityReading
+    private let ownShieldedAddress: OwnShieldedAddressReading
     private var pairFacts = SendPairFacts(ownIdentityID: nil)
     /// `load` has run: the screen's `.task` runs again whenever the view reappears, and that must not reset a picked
     /// source or a typed amount.
@@ -276,6 +277,7 @@ final class SendAmountViewModel: ObservableObject {
          maxPlanner: SendMaxPlanning = LiveSendMaxPlanner(),
          converter: SendAmountConverting = LiveSendAmountConverter(),
          currentIdentity: CurrentIdentityReading = WalletCurrentIdentityReader(),
+         ownShieldedAddress: OwnShieldedAddressReading = WalletOwnShieldedAddressReader(),
          initialRestoreSync: AnyPublisher<Bool, Never> = WalletSendService.coreSpendBlockedByInitialRestoreSync,
          initialRestoreSyncNow: @escaping () -> Bool = { WalletSendService.isCoreSpendBlockedByInitialRestoreSync },
          decimalSeparator: String = Locale.current.decimalSeparator ?? ".") {
@@ -288,6 +290,7 @@ final class SendAmountViewModel: ObservableObject {
         self.maxPlanner = maxPlanner
         self.converter = converter
         self.currentIdentity = currentIdentity
+        self.ownShieldedAddress = ownShieldedAddress
         self.initialRestoreSyncNow = initialRestoreSyncNow
         initialRestoreSyncCancellable = initialRestoreSync
             .sink { [weak self] in self?.isInitialRestoreSyncRunning = $0 }
@@ -477,7 +480,9 @@ final class SendAmountViewModel: ObservableObject {
         // A source operation: a source picked while the balances are read cancels it, and the pick stays.
         sourceTask?.cancel()
         let reading = Task {
-            pairFacts = SendPairFacts(ownIdentityID: await currentIdentity.currentIdentity()?.id)
+            pairFacts = SendPairFacts(
+                ownIdentityID: await currentIdentity.currentIdentity()?.id,
+                ownShieldedRaw43: await ownShieldedAddress.ownShieldedAddress())
             let core = await balances.spendableBalance(of: .core)
             let shielded = await balances.spendableBalance(of: .shielded)
             let platform = await balances.spendableBalance(of: .platform)
