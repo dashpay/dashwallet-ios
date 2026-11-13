@@ -76,10 +76,8 @@ enum BarcodeFormat: String {
             return "CIPDF417BarcodeGenerator"
         case .aztec:
             return "CIAztecCodeGenerator"
-        case .dataMatrix:
-            return "CIDataMatrixCodeGenerator"
         default:
-            // Other formats don't have native CIFilter support
+            // Core Image has no generator for the other formats (Code 39/93, Data Matrix)
             return nil
         }
     }

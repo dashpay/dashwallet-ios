@@ -640,8 +640,6 @@ class GiftCardDetailsViewModel: ObservableObject {
             transform = CGAffineTransform(scaleX: 6.0, y: 6.0)
         case .pdf417:
             transform = CGAffineTransform(scaleX: 3.0, y: 3.0)
-        case .dataMatrix:
-            transform = CGAffineTransform(scaleX: 8.0, y: 8.0)
         default:
             transform = CGAffineTransform(scaleX: 3.0, y: 5.0)
         }
