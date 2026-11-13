@@ -2357,18 +2357,22 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             return
         }
         let recorded = await operationGate.run(for: walletIdHex) {
-            guard let stored = intents.load().first(where: { $0.id == intentId }) else {
-                return "dropped, intent not in its wallet"
+            // A wipe of the wallet between the read and the save would be
+            // undone by the save.
+            DashConnectStores.excludingWipe {
+                guard let stored = intents.load().first(where: { $0.id == intentId }) else {
+                    return "dropped, intent not in its wallet"
+                }
+                // A lookup found the document first; a disconnect may have
+                // deleted it and recorded it removed since.
+                guard stored.responseDocumentId == nil else { return "not recorded, the document is already known" }
+                update(intents) { intents in
+                    guard let index = intents.firstIndex(where: { $0.id == intentId }) else { return }
+                    intents[index].responseDocumentId = documentId
+                    intents[index].responseRemoved = false
+                }
+                return "recorded"
             }
-            // A lookup found the document first; a disconnect may have
-            // deleted it and recorded it removed since.
-            guard stored.responseDocumentId == nil else { return "not recorded, the document is already known" }
-            update(intents) { intents in
-                guard let index = intents.firstIndex(where: { $0.id == intentId }) else { return }
-                intents[index].responseDocumentId = documentId
-                intents[index].responseRemoved = false
-            }
-            return "recorded"
         }
         DWLogger.log("DashConnect: late publish document \(recorded)")
     }

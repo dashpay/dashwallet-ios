@@ -6318,4 +6318,75 @@ final class AppConnectPublishLifetimeTests: XCTestCase {
         XCTAssertNil(defaults.object(forKey: storageKey(Self.walletA)), "a wiped wallet's key is not recreated")
         XCTAssertTrue(intents.load().isEmpty)
     }
+
+    /// A store whose `load` number `wipeAfterLoad` after `arm` reads, then
+    /// starts a wipe of every DashConnect key on another thread and gives it
+    /// a moment to finish before it returns what it read: the wipe falls
+    /// between that read and the save that follows it.
+    private final class WipedDuringLoad: AppConnectIntentStore, @unchecked Sendable {
+        let store: UserDefaultsAppConnectIntentStore
+        private let defaults: UserDefaults
+        private let lock = NSLock()
+        private var loadsToWipe: Int?
+        /// Signalled once the wipe has run.
+        let wiped = DispatchSemaphore(value: 0)
+        private let wipeEnded = DispatchSemaphore(value: 0)
+
+        init(defaults: UserDefaults, scopeKey: String) {
+            self.defaults = defaults
+            store = UserDefaultsAppConnectIntentStore(defaults: defaults, scope: .key { scopeKey })
+        }
+
+        func arm(wipeAfterLoad count: Int) { lock.withLock { loadsToWipe = count } }
+
+        var canPersist: Bool { store.canPersist }
+        func hasUnreadableRows(identityId: Data) -> Bool { store.hasUnreadableRows(identityId: identityId) }
+        func save(_ intents: [AppConnect.ConnectionIntent]) { store.save(intents) }
+        func pinned(toWalletIdHex walletIdHex: String) -> any AppConnectIntentStore { self }
+
+        func load() -> [AppConnect.ConnectionIntent] {
+            let wipeNow = lock.withLock { () -> Bool in
+                guard let left = loadsToWipe else { return false }
+                loadsToWipe = left > 1 ? left - 1 : nil
+                return left == 1
+            }
+            let read = store.load()
+            if wipeNow {
+                let defaults = defaults
+                let wiped = wiped
+                let wipeEnded = wipeEnded
+                DispatchQueue.global().async {
+                    DashConnectStores.removeAllWallets(in: defaults)
+                    wipeEnded.signal()
+                    wiped.signal()
+                }
+                _ = wipeEnded.wait(timeout: .now() + .milliseconds(200))
+            }
+            return read
+        }
+    }
+
+    /// PastaClaw review of #1414: a wipe that starts while the late result
+    /// reads the intents runs after its save, so the save does not bring
+    /// the wiped wallet's intents back.
+    func testAWipeDuringALateRecordIsNotUndoneByItsSave() async throws {
+        let intent = Self.intent()
+        let scopeKey = UserDefaultsDashConnectStore.keyPrefix + "testnet." + Self.walletA
+        let intents = WipedDuringLoad(defaults: defaults, scopeKey: scopeKey)
+        intents.save([intent])
+        let release = Release()
+        await publishThatTimesOut(intent, in: intents, release: release)
+        // The late record reads once to check the intent, then reads and
+        // saves it.
+        intents.arm(wipeAfterLoad: 2)
+
+        release.end(.success(()))
+
+        await waitUntil("the late submit is seen") { release.logged("late submitted") }
+        XCTAssertEqual(intents.wiped.wait(timeout: .now() + .seconds(2)), .success, "the wipe ran")
+        try? await Task.sleep(for: .milliseconds(200))
+        XCTAssertNil(
+            defaults.object(forKey: scopeKey + UserDefaultsAppConnectIntentStore.keySuffix),
+            "the wiped wallet's intents are not saved back")
+    }
 }

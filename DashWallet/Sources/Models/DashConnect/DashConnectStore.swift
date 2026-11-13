@@ -38,6 +38,20 @@ enum DashConnectStores {
     /// wrote; nothing reads or writes them now.
     private static let legacyGrantsSuffix = ".app-connect-responses.v1"
 
+    /// Held by `removeAll` and `removeAllWallets`, and by `excludingWipe`.
+    private static let wipeLock = NSLock()
+
+    /// Runs `body` while no wipe of the stores runs. A wipe does not take the
+    /// wallet's operation gate, so a write that can come at any time, such
+    /// as a publish's late result, reads and saves inside this: a wipe then
+    /// either comes first and the write finds nothing, or comes after and
+    /// removes what it saved.
+    static func excludingWipe<T>(_ body: () -> T) -> T {
+        wipeLock.lock()
+        defer { wipeLock.unlock() }
+        return body()
+    }
+
     /// The suffixes a key under `UserDefaultsDashConnectStore.keyPrefix` can
     /// carry after the wallet segment: none (the row cache), the intents, the
     /// legacy grants.
@@ -51,6 +65,8 @@ enum DashConnectStores {
     /// the segment after the last dot of what follows the prefix: the wallet
     /// id hex holds no dot, while a devnet name may.
     static func removeAll(walletIdHex: String, in defaults: UserDefaults) {
+        wipeLock.lock()
+        defer { wipeLock.unlock() }
         let prefix = UserDefaultsDashConnectStore.keyPrefix
         for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(prefix) {
             let scoped = key.dropFirst(prefix.count)
@@ -70,6 +86,8 @@ enum DashConnectStores {
     /// Removes every DashConnect key, whatever wallet id or suffix it carries,
     /// orphans included: the full wipe leaves nothing of the feature behind.
     static func removeAllWallets(in defaults: UserDefaults) {
+        wipeLock.lock()
+        defer { wipeLock.unlock() }
         let prefix = UserDefaultsDashConnectStore.keyPrefix
         for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(prefix) {
             defaults.removeObject(forKey: key)
