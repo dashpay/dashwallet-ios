@@ -1,4 +1,4 @@
-# 0034 — Record the publish start on the connection intent
+# 0049 — Record the publish start on the connection intent
 
 - **Status:** Proposed
 - **Date:** 2026-11-13
@@ -34,10 +34,10 @@ An approval's response publish can land after its publish timeout, and nothing t
 - One more optional field on an already wide model; every reader must treat `nil` as "no start recorded", never as "started at 0".
 
 **Neutral**
-- The value is a Platform block time, not a device date (ADR-0035); its meaning is "the proved block time of the identity read the approval stood on".
+- The value is a Platform block time, not a device date (ADR-0050); its meaning is "the proved block time of the identity read the approval stood on".
 
 ## Links
 
 - Feature summary: [docs/features/app-connect/README.md](../features/app-connect/README.md)
-- Related ADR: [0035](0035-bound-an-unresolved-publish-by-24-hours-of-proved-platform-block-time.md)
+- Related ADR: [0050](0050-bound-an-unresolved-publish-by-24-hours-of-proved-platform-block-time.md)
 - Issue: #1374

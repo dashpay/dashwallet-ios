@@ -3484,7 +3484,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         AppConnectWriteExecutor(
             sleep: { try await Task.sleep(for: $0) },
             log: { line in
-                if line.hasSuffix(": start") || line.hasSuffix(": submitted") {
+                if line.hasSuffix(": start") || line.hasSuffix(": submitted") || line.hasSuffix(": late submitted") {
                     Self.logger.info("🔗 DASHCONNECT :: \(line, privacy: .public)")
                 } else {
                     Self.logger.error("🔗 DASHCONNECT :: \(line, privacy: .public)")

@@ -16,8 +16,8 @@ timeout was treated differently by each.
 - After an error or a timeout the next read of Platform decides; nothing guesses landed or failed.
   While the publish of a response is unresolved, a read that finds no response decides nothing, and
   a submit that ends after its timeout is reported to the wallet that started it, not dropped
-  ([ADR-0036](0036-hand-a-submit-that-ends-after-its-timeout-to-the-wallet-that-started-it.md),
-  [ADR-0037](0037-refuse-response-removed-at-its-one-write-point-while-the-publish-is-unresolved.md)).
+  ([ADR-0051](0051-hand-a-submit-that-ends-after-its-timeout-to-the-wallet-that-started-it.md),
+  [ADR-0052](0052-refuse-response-removed-at-its-one-write-point-while-the-publish-is-unresolved.md)).
 - Failures can be injected in tests without a network.
 
 ## Considered options

@@ -1,4 +1,4 @@
-# 0035 — Bound an unresolved publish by 24 hours of proved Platform block time
+# 0050 — Bound an unresolved publish by 24 hours of proved Platform block time
 
 - **Status:** Proposed
 - **Date:** 2026-11-13
@@ -41,5 +41,5 @@ A publish whose document the wallet does not know must stop being unresolved at 
 ## Links
 
 - Feature summary: [docs/features/app-connect/README.md](../features/app-connect/README.md)
-- Related ADR: [0034](0034-record-the-publish-start-on-the-connection-intent.md); [ADR-0020](0020-judge-request-age-and-expiry-by-proved-platform-block-time.md)
+- Related ADR: [0049](0049-record-the-publish-start-on-the-connection-intent.md); [ADR-0020](0020-judge-request-age-and-expiry-by-proved-platform-block-time.md)
 - Issue: #1374

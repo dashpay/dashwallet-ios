@@ -1,4 +1,4 @@
-# 0037 — Refuse "response removed" at its one write point while the publish is unresolved
+# 0052 — Refuse "response removed" at its one write point while the publish is unresolved
 
 - **Status:** Proposed
 - **Date:** 2026-11-13
@@ -16,7 +16,7 @@ Several paths record a response removed: a disconnect whose lookup found nothing
 
 ## Considered options
 
-1. **One guarded write point** — `markResponseRemoved` asks the pure `AppConnect.isPublishUnresolved(_:platformTime:)` (ADR-0035) and refuses while it holds, returning that it kept the response; callers report the refusal instead of re-checking.
+1. **One guarded write point** — `markResponseRemoved` asks the pure `AppConnect.isPublishUnresolved(_:platformTime:)` (ADR-0050) and refuses while it holds, returning that it kept the response; callers report the refusal instead of re-checking.
 2. **A check in every caller** — each path asks the predicate before calling `markResponseRemoved`.
 
 ## Decision outcome
@@ -39,5 +39,5 @@ Several paths record a response removed: a disconnect whose lookup found nothing
 ## Links
 
 - Feature summary: [docs/features/app-connect/README.md](../features/app-connect/README.md)
-- Related ADR: [0035](0035-bound-an-unresolved-publish-by-24-hours-of-proved-platform-block-time.md)
+- Related ADR: [0050](0050-bound-an-unresolved-publish-by-24-hours-of-proved-platform-block-time.md)
 - Issue: #1374

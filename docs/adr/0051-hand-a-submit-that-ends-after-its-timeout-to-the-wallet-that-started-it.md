@@ -1,4 +1,4 @@
-# 0036 — Hand a submit that ends after its timeout to the wallet that started it
+# 0051 — Hand a submit that ends after its timeout to the wallet that started it
 
 - **Status:** Proposed
 - **Date:** 2026-11-13
@@ -40,5 +40,5 @@
 ## Links
 
 - Feature summary: [docs/features/app-connect/README.md](../features/app-connect/README.md)
-- Related ADR: [ADR-0018](0018-run-app-connect-platform-writes-through-one-executor.md) (amended for this decision); [0037](0037-refuse-response-removed-at-its-one-write-point-while-the-publish-is-unresolved.md)
+- Related ADR: [ADR-0018](0018-run-app-connect-platform-writes-through-one-executor.md) (amended for this decision); [0052](0052-refuse-response-removed-at-its-one-write-point-while-the-publish-is-unresolved.md)
 - Issue: #1374

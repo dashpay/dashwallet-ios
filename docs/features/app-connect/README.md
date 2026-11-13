@@ -72,13 +72,13 @@ one-scan login possible, and with it DashConnect on mainnet once mainnet runs pr
 - **A late response is not lost** ([#1374](https://github.com/dashpay/dashwallet-ios/issues/1374)).
   An approval stops waiting for the publish of the app's response at its timeout, but the publish
   keeps running. The intent records when the publish started
-  ([ADR-0034](../../adr/0034-record-the-publish-start-on-the-connection-intent.md)); until the
+  ([ADR-0049](../../adr/0049-record-the-publish-start-on-the-connection-intent.md)); until the
   wallet knows its document, or it is a day old in proved Platform block time
-  ([ADR-0035](../../adr/0035-bound-an-unresolved-publish-by-24-hours-of-proved-platform-block-time.md)),
+  ([ADR-0050](../../adr/0050-bound-an-unresolved-publish-by-24-hours-of-proved-platform-block-time.md)),
   no operation records the response removed
-  ([ADR-0037](../../adr/0037-refuse-response-removed-at-its-one-write-point-while-the-publish-is-unresolved.md)),
+  ([ADR-0052](../../adr/0052-refuse-response-removed-at-its-one-write-point-while-the-publish-is-unresolved.md)),
   and a submit that ends late is recorded on the wallet that started it
-  ([ADR-0036](../../adr/0036-hand-a-submit-that-ends-after-its-timeout-to-the-wallet-that-started-it.md)).
+  ([ADR-0051](../../adr/0051-hand-a-submit-that-ends-after-its-timeout-to-the-wallet-that-started-it.md)).
   A disconnect in that window still turns the keys off at once and says the response may still
   appear; the Disconnected row shows "Response may still be on Platform". Opening Connections
   finds a late response without the PIN, and the next approval or disconnect on the identity
