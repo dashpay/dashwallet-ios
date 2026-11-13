@@ -319,6 +319,11 @@ final class VotingStore: ObservableObject {
         return live.isEmpty ? nil : live
     }
 
+    /// See ``VotingKeysSource/remembersHiddenNodes``.
+    var remembersHiddenNodes: Bool {
+        !selectedNodeIDs.subtracting(votableNodeIDs).isEmpty
+    }
+
     /// The ticks whose votes are the user's own: none before voting is set
     /// up, so a vote the stored ticks hold fills no pill and a tap asks for
     /// its own choice, as «Add your voting keys» then casts (AC-12, AC-17).

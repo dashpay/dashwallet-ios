@@ -66,11 +66,11 @@ struct VoteAttempt {
     }
 
     let intent: Intent
-    let votingEndsAt: Date?
+    private(set) var votingEndsAt: Date?
     let isVotingSetUp: Bool
     let tickedNodes: Set<Data>
     let history: VoteLimit
-    let now: Date
+    private(set) var now: Date
 
     private var confirmedLastVote = false
     private var confirmedBlock = false
@@ -125,6 +125,13 @@ struct VoteAttempt {
     var skippedForNoVotesLeft: Set<Data> {
         guard let candidates, let senders = history.nodesWithVotesLeft(among: candidates) else { return [] }
         return candidates.subtracting(senders)
+    }
+
+    /// Move the attempt to `now`, and end it if Platform `closed` the
+    /// contest: a dialog held open past the voting end must not send.
+    mutating func recheck(at now: Date, closed: Bool) {
+        self.now = now
+        if closed { votingEndsAt = now }
     }
 
     /// Accept the confirmation ``step`` is asking for; any other step is left as it is.

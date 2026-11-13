@@ -31,6 +31,9 @@ private final class FakeKeysSource: VotingKeysSource {
     var tickedNodeIDs: Set<Data>? {
         remembered.map { $0.intersection(votableNodes.map(\.proTxHash)) }
     }
+    var remembersHiddenNodes: Bool {
+        !(remembered ?? []).subtracting(votableNodes.map(\.proTxHash)).isEmpty
+    }
     private(set) var confirmed: Set<Data>?
     /// Each explicit tick change, in order.
     private(set) var ticks: [(Data, Bool)] = []
@@ -310,6 +313,22 @@ final class VotingKeysViewModelTests: XCTestCase {
         vm.confirm()
 
         XCTAssertEqual(source.confirmed, [Data([1])])
+    }
+
+    /// The remembered choice holds a node a partial list does not show: a
+    /// choice exists, so the one row shown is not ticked for the user.
+    func testVoteModeTicksNoRowWhileTheRememberedChoiceIsHidden() {
+        source.remembered = [Data([1])]
+        source.votableNodes = [node(2)]
+        source.nodeResolution = .partial
+        let vm = viewModel()
+        XCTAssertTrue(vm.ticked.isEmpty)
+
+        source.votableNodes = [node(3)]
+        vm.rowsChanged()
+
+        XCTAssertTrue(vm.ticked.isEmpty)
+        XCTAssertFalse(vm.canConfirm)
     }
 
     /// The list turns complete with the same rows: the screen still rechecks
