@@ -227,6 +227,19 @@ final class AppConnectProjectionTests: XCTestCase {
                        true, "not landed yet: it may still")
     }
 
+    /// What is left of a key's budget, read after the identity, above the
+    /// total that read gave: a limits update landed between the two reads,
+    /// so the lines are not shown as if they agreed.
+    func testRemainingBudgetsAboveTheReadTotalsAreNotShown() {
+        let key = Self.authKey(10)
+        let snapshot = Self.snapshot([Self.onPlatform(key)])
+        let agreeing = KeyFunding.of(intents: [Self.intent([key])], snapshot: snapshot, remaining: [10: 400])
+        XCTAssertTrue(KeyFunding.agree(agreeing))
+        let raised = KeyFunding.of(intents: [Self.intent([key])], snapshot: snapshot, remaining: [10: 2000])
+        XCTAssertFalse(KeyFunding.agree(raised), "2000 left of 1000")
+        XCTAssertTrue(KeyFunding.agree([KeyFunding(isProfileKey: false, totalBudget: nil, remaining: nil)]))
+    }
+
     /// Funding lines are chosen key by key: a live key keeps its line when
     /// another key of its intent never landed.
     func testALiveKeyKeepsItsFundingLineWhenASiblingNeverLanded() {
