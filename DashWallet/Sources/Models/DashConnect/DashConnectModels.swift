@@ -376,6 +376,18 @@ struct ConnectionDetails: Equatable {
         self.connectedAt = connectedAt
     }
 
+    /// The details of a connection that ended, with what its intents
+    /// recorded (`ConnectionAccess(recorded:)`): no read of the identity
+    /// tells of it, so it has no basis and no funding.
+    init(appId: String, identityId: String?, username: String?, recorded access: ConnectionAccess?) {
+        self.appId = appId
+        self.identityId = identityId
+        self.username = username
+        basis = nil
+        self.access = access
+        connectedAt = nil
+    }
+
     /// These details with `read`, the funding read for `basis`; `nil` when
     /// these details are not told from `basis`: what is left of the keys of
     /// another read is not shown beside the access of this one.

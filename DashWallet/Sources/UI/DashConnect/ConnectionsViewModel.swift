@@ -335,7 +335,7 @@ final class ConnectionsViewModel: ObservableObject {
         let number = detailsReadNumber
         if let entry = item.entry {
             shownDetails = ConnectionDetails(
-                appId: entry.id, identityId: entry.identityId, username: entry.username, access: entry.access)
+                appId: entry.id, identityId: entry.identityId, username: entry.username, recorded: entry.access)
             shownDetailsFailed = false
             return
         }
