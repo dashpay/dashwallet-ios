@@ -7490,3 +7490,47 @@
 
 /* DashPay purchase context changed */
 "“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again." = "“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again.";
+
+"%d usernames" = "%d usernames";
+
+"Approve %@" = "Approve %@";
+
+"As a masternode owner you can vote to approve requested usernames before users will be able to create it." = "As a masternode owner you can vote to approve requested usernames before users will be able to create it.";
+
+"Block %@" = "Block %@";
+
+"Opens the requests for this name" = "Opens the requests for this name";
+
+"Show requests for %@" = "Show requests for %@";
+
+"This wallet holds no active masternode voting keys, so it cannot vote yet. Tap a vote to add a key." = "This wallet holds no active masternode voting keys, so it cannot vote yet. Tap a vote to add a key.";
+
+"Username Voting" = "Username Voting";
+
+"Voted %@ username" = "Voted %@ username";
+
+"Voting end unknown" = "Voting end unknown";
+
+"Voting ends in %d days" = "Voting ends in %d days";
+
+"Voting ends today" = "Voting ends today";
+
+"Voting nodes" = "Voting nodes";
+
+"Voting options" = "Voting options";
+
+"Couldn't load the contests" = "Couldn't load the contests";
+
+"Pull down to try again." = "Pull down to try again.";
+
+"You voted" = "You voted";
+
+"Couldn't read your vote history, so voting is paused. Pull down to try again." = "Couldn't read your vote history, so voting is paused. Pull down to try again.";
+
+"You can block the creation of the usernames that you feel inappropriate." = "You can block the creation of the usernames that you feel inappropriate.";
+
+/* No comment provided by engineer. */
+"Back" = "Back";
+
+/* No comment provided by engineer. */
+"Filtered by" = "Фильтр по";
