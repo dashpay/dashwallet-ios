@@ -1438,6 +1438,28 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
     /// A row that turns Refused or Disconnected while its sheet asks about
     /// a disconnect no longer offers one: neither the question nor its
     /// confirmation runs it, and the sheet says why.
+    /// The sheet shows a connection's details while what is left of its
+    /// budgets is still read, then adds the funding lines when they come.
+    func testTheSheetShowsItsDetailsBeforeTheFundingReadEnds() async {
+        let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)])
+        spy.funding = .read([KeyFunding(isProfileKey: false, totalBudget: 1000, remaining: 400)])
+        spy.fundingDelay = 400_000_000
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { !viewModel.connections.isEmpty }
+        viewModel.showConnection(viewModel.rows(for: .active)[0])
+        await waitUntil { viewModel.shownDetails != nil }
+        XCTAssertNil(viewModel.shownFundingLines, "the details do not wait for the budgets")
+        await waitUntil { viewModel.shownFundingLines != nil }
+        XCTAssertEqual(viewModel.shownFundingLines?.count, 1)
+
+        spy.funding = .failed
+        spy.fundingDelay = 0
+        viewModel.hideConnection()
+        viewModel.showConnection(viewModel.rows(for: .active)[0])
+        await waitUntil { viewModel.shownFundingFailed }
+        XCTAssertNil(viewModel.shownFundingLines)
+    }
+
     /// A refresh of a sheet's details that fails keeps the details shown
     /// and says they could not be read again.
     func testARefreshThatFailsKeepsTheDetailsAndSaysSo() async {
@@ -1599,6 +1621,9 @@ private final class ConnectionStatusSpy: DashConnectDataSource {
     var details: ConnectionDetails?
     /// Reads of the details fail, as when the identity cannot be read.
     var failsDetails = false
+    /// What the funding read answers, and how long it takes.
+    var funding: ConnectionFundingRead = .notRead
+    var fundingDelay: UInt64 = 0
     private var storedDisconnectFailure: Error?
     /// Thrown by every disconnect while set, before anything runs.
     var disconnectFailure: Error? {
@@ -1628,6 +1653,12 @@ private final class ConnectionStatusSpy: DashConnectDataSource {
         if delay > 0 { try? await Task.sleep(nanoseconds: delay) }
         if fails { return nil }
         return answer ?? ConnectionDetails(appId: id, identityId: "identity", username: "bob", access: nil)
+    }
+
+    func connectionFunding(id: String, scope: String?) async -> ConnectionFundingRead {
+        let (answer, delay) = lock.withLock { (funding, fundingDelay) }
+        if delay > 0 { try? await Task.sleep(nanoseconds: delay) }
+        return answer
     }
 
     func sendRows(_ value: [DAppConnection]) {

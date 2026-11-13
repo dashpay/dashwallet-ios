@@ -240,6 +240,20 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertTrue(KeyFunding.agree([KeyFunding(isProfileKey: false, totalBudget: nil, remaining: nil)]))
     }
 
+    /// A key that matches an intent but whose bound the store does not hold
+    /// yet may be bound elsewhere: it gives no access and no funding line
+    /// until a read places it.
+    func testAKeyWhoseBoundIsUnknownGivesNoAccessYet() {
+        let profile = Self.authKey(11, bound: .documentType(contractId: Self.dashPay, name: "profile"))
+        let intent = Self.intent([profile])
+        let unplaced = Self.snapshot([Self.onPlatform(profile, boundKnown: false)])
+        XCTAssertNil(AppConnect.accessKey(of: profile, in: unplaced))
+        XCTAssertNil(ConnectionAccess(intents: [intent], snapshot: unplaced), "no 'Edit your DashPay profile'")
+        XCTAssertEqual(KeyFunding.keyIds(of: [intent], snapshot: unplaced), [])
+        let placed = Self.snapshot([Self.onPlatform(profile)])
+        XCTAssertEqual(ConnectionAccess(intents: [intent], snapshot: placed)?.keys.count, 1)
+    }
+
     /// Funding lines are chosen key by key: a live key keeps its line when
     /// another key of its intent never landed.
     func testALiveKeyKeepsItsFundingLineWhenASiblingNeverLanded() {
