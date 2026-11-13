@@ -149,9 +149,10 @@ final class VotingListViewModel: ObservableObject {
 
     /// Whether this wallet's own votes can be told for the types that read
     /// them: not when the history could not be read, nor while a voting node
-    /// may be missing from the store's votable nodes (its votes would not count).
+    /// may be missing from the store's votable nodes (its votes would not count),
+    /// which is also so until the wallet's sync is done.
     var canFilterByMyVotes: Bool {
-        !store.historyUnavailable && !store.nodeListMayBeIncomplete && store.canVote
+        !store.historyUnavailable && store.nodeListSynced && !store.nodeListMayBeIncomplete && store.canVote
     }
 
     /// Why this wallet's own votes cannot be told, as the next step for the
@@ -165,6 +166,9 @@ final class VotingListViewModel: ObservableObject {
             return NSLocalizedString(
                 "Some of your masternodes may be missing from this list — the wallet could not read your full voting-key pool. Finish syncing and reopen this screen.",
                 comment: "Voting")
+        }
+        if !store.nodeListSynced {
+            return NSLocalizedString("The masternode list is still syncing. Try again in a moment.", comment: "Voting")
         }
         if !store.canVote {
             return NSLocalizedString(

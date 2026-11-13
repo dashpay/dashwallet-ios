@@ -571,6 +571,7 @@ private final class PreviewLoadCounter {
 struct PreviewNodes: VotableMasternodeResolving {
     var nodes: [VoterNode] = []
     var mayBeIncomplete = false
+    var isNodeListSynced = true
 
     func votableNodes() -> MasternodeVoterRegistry.Resolution {
         .init(nodes: nodes, mayBeIncomplete: mayBeIncomplete)

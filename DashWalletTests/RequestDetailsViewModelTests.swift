@@ -32,6 +32,7 @@ private final class FakeContests: VotingContestReading {
 
 private final class FakeNodes: VotableMasternodeResolving {
     var resolution = MasternodeVoterRegistry.Resolution(nodes: [], mayBeIncomplete: false)
+    var isNodeListSynced = true
     func votableNodes() -> MasternodeVoterRegistry.Resolution { resolution }
 }
 

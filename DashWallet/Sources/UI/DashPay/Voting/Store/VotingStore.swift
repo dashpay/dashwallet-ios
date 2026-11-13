@@ -34,6 +34,10 @@ protocol VotingContestReading {
 @MainActor
 protocol VotableMasternodeResolving {
     func votableNodes() -> MasternodeVoterRegistry.Resolution
+    /// The wallet's sync is done (`SyncingActivityMonitor` `.syncDone`), so an
+    /// empty ``votableNodes()`` means this wallet has no node rather than that
+    /// the sync has not found it yet.
+    var isNodeListSynced: Bool { get }
 }
 
 /// Casts a vote with a set of masternodes.
@@ -85,6 +89,9 @@ final class VotingStore: ObservableObject {
     }
     /// ``votableNodes`` as a set, kept with it rather than rebuilt per row.
     private(set) var votableNodeIDs: Set<Data> = []
+    /// ``votableNodes`` was read after the wallet's sync was done, so an empty
+    /// one means this wallet has no node to vote with.
+    @Published private(set) var nodeListSynced = false
     /// The wallet's voting-key pool could only be read at its shallow
     /// fallback depth and some active registration went unmatched, so a node
     /// you can actually vote with may be missing from ``votableNodes``.
@@ -358,6 +365,7 @@ final class VotingStore: ObservableObject {
     /// which a key change does not affect.
     func refreshVotableNodes() {
         let resolution = nodes.votableNodes()
+        nodeListSynced = nodes.isNodeListSynced
         votableNodes = resolution.nodes
         nodeListMayBeIncomplete = resolution.mayBeIncomplete
 
