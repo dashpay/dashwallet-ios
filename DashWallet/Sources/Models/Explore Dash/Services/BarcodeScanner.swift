@@ -65,6 +65,24 @@ enum BarcodeFormat: String {
         }
     }
 
+    /// Two-dimensional symbologies: a one-dimensional barcode cannot stand in for them
+    var isTwoDimensional: Bool {
+        switch self {
+        case .qrCode, .pdf417, .aztec, .dataMatrix:
+            return true
+        default:
+            return false
+        }
+    }
+
+    /// Generator to draw this format with: Core Image's own, or Code 128 standing in for the
+    /// one-dimensional formats it cannot draw. A two-dimensional format without a generator
+    /// (Data Matrix) gets no image rather than one in the wrong symbology.
+    var generatorFilterName: String? {
+        if let ciFilterName { return ciFilterName }
+        return isTwoDimensional ? nil : BarcodeFormat.code128.ciFilterName
+    }
+
     /// Get CIFilter name for generating barcode images
     var ciFilterName: String? {
         switch self {

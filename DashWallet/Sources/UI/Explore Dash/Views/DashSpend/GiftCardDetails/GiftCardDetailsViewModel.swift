@@ -632,7 +632,7 @@ class GiftCardDetailsViewModel: ObservableObject {
     private func imageFromBarcode(value: String?, format: String?) -> UIImage? {
         guard let value, !value.isEmpty else { return nil }
         let barcodeFormat = normalizeBarcodeFormat(format)
-        let filterName = barcodeFormat.ciFilterName ?? BarcodeFormat.code128.ciFilterName
+        let filterName = barcodeFormat.generatorFilterName
 
         let transform: CGAffineTransform
         switch barcodeFormat {
