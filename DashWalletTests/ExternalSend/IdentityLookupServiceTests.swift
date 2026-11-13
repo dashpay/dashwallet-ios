@@ -190,4 +190,44 @@ final class IdentityLookupServiceTests: XCTestCase {
 
         XCTAssertEqual(platform.calledOnMainThread, [false])
     }
+
+    /// Stands for the SDK reads, which block their thread on the network inside Rust.
+    private final class BlockingSDK: IdentitySDKReading, @unchecked Sendable {
+        private(set) var onMainThread: [Bool] = []
+
+        func identityGet(identityId: String) async throws -> [String: Any] {
+            onMainThread.append(Thread.isMainThread)
+            Thread.sleep(forTimeInterval: 0.3)
+            return ["id": identityId]
+        }
+
+        func dpnsGetUsername(identityId: String, limit: UInt32?) async throws -> [[String: Any]] {
+            onMainThread.append(Thread.isMainThread)
+            Thread.sleep(forTimeInterval: 0.3)
+            return [["label": "alice"]]
+        }
+    }
+
+    /// The main actor keeps running while the live reader waits on a blocking fetch and username read: a main-actor
+    /// heartbeat ticks every 10 ms through the 600 ms the reads block, which it cannot while they hold the main thread.
+    @MainActor
+    func testLiveReaderKeepsTheMainActorFreeDuringTheSDKReads() async throws {
+        let sdk = BlockingSDK()
+        let reader = SwiftDashSDKIdentityPlatformReader(sdk: { _ in sdk })
+        var ticks = 0
+        let heartbeat = Task { @MainActor in
+            while !Task.isCancelled {
+                ticks += 1
+                try? await Task.sleep(nanoseconds: 10_000_000)
+            }
+        }
+
+        try await reader.fetchIdentity(id: someID, network: .testnet)
+        let username = try await reader.username(forIdentity: someID, network: .testnet)
+        heartbeat.cancel()
+
+        XCTAssertEqual(sdk.onMainThread, [false, false])
+        XCTAssertGreaterThan(ticks, 20, "the main actor stalled during the SDK reads")
+        XCTAssertEqual(username, "alice")
+    }
 }

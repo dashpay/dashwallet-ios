@@ -67,16 +67,31 @@ struct IdentityLookupService: IdentityLooking {
 
 // MARK: - Live conformances
 
+/// The two SDK reads the lookup makes. `SDK` runs both off the main actor: each blocks its thread on the network
+/// inside Rust.
+protocol IdentitySDKReading: Sendable {
+    func identityGet(identityId: String) async throws -> [String: Any]
+    func dpnsGetUsername(identityId: String, limit: UInt32?) async throws -> [[String: Any]]
+}
+
+extension SDK: IdentitySDKReading {}
+
 /// Reads through `SwiftDashSDKHost`'s SDK, which is bound to the network the host is running; a lookup for
-/// any other network throws `SDKError.invalidState`, which the service reports as `.couldNotCheck`.
+/// any other network throws `SDKError.invalidState`, which the service reports as `.couldNotCheck`. Only picking the
+/// SDK touches the main actor; the reads themselves run off it.
 struct SwiftDashSDKIdentityPlatformReader: IdentityPlatformReading {
+    /// The SDK bound to `network`.
+    var sdk: @MainActor @Sendable (WalletEnvironment.NetworkKind) throws -> IdentitySDKReading = { network in
+        try Self.sdk(for: network)
+    }
+
     func fetchIdentity(id: String, network: WalletEnvironment.NetworkKind) async throws {
-        let sdk = try await Self.sdk(for: network)
+        let sdk = try await self.sdk(network)
         _ = try await sdk.identityGet(identityId: id)
     }
 
     func username(forIdentity id: String, network: WalletEnvironment.NetworkKind) async throws -> String? {
-        let sdk = try await Self.sdk(for: network)
+        let sdk = try await self.sdk(network)
         let usernames = try await sdk.dpnsGetUsername(identityId: id, limit: 1)
         return usernames.first?["label"] as? String
     }
