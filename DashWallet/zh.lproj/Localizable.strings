@@ -19,6 +19,9 @@
 /* Contested usernames */
 "%1$@ at %2$@" = "%1$@ at %2$@";
 
+/* DashConnect connection sheet: what is left of a key's budget, then the budget; amounts with units */
+"%1$@ left of %2$@" = "%1$@ left of %2$@";
+
 /* Username marketplace: listing success — name, then price */
 "%1$@ listed for %2$@ DASH" = "%1$@ 已以 %2$@ DASH 挂牌";
 
@@ -27,6 +30,9 @@
 
 /* DashConnect App Connect v2: what a key can do, a date */
 "%1$@, with no limit on spending your identity's credits, until %2$@" = "%1$@, with no limit on spending your identity's credits, until %2$@";
+
+/* DashConnect connection sheet: a key's name, then its budget */
+"%1$@: %2$@" = "%1$@: %2$@";
 
 /* Voting */
 "%1$d already voted “%2$@” and will be left as they are." = "%1$d already voted “%2$@” and will be left as they are.";
@@ -651,6 +657,9 @@
 /* DashConnect connection sheet */
 "App ID" = "App ID";
 
+/* DashConnect connection sheet: a key's budget line */
+"App key" = "App key";
+
 /* AboutDash */
 "App version" = "App version";
 
@@ -1270,6 +1279,9 @@
 /* DashSpend */
 "Connection Error" = "Connection Error";
 
+/* DashConnect connection sheet: the date its keys expire */
+"Connection expiry" = "Connection expiry";
+
 /* DashConnect */
 "Connections" = "Connections";
 
@@ -1683,6 +1695,9 @@
 
 /* DashPay FAQ */
 "DashPay is Dash's social payments experience, built on Dash Platform. You register a username, add other users as contacts, and pay them by name — no more copying addresses." = "DashPay 是构建在 Dash Platform 上的 Dash 社交支付体验。您可以注册用户名、将其他用户添加为联系人，并按名称向他们付款——不必再复制地址。";
+
+/* DashConnect connection sheet: a key's budget line */
+"DashPay profile key" = "DashPay profile key";
 
 /* DashPay intro: pitch paragraph */
 "DashPay replaces long cryptic addresses with usernames. Add friends as contacts, send money to a name, and keep every payment organized by person." = "DashPay 用用户名取代冗长难懂的地址。将好友添加为联系人，向一个名称汇款，并按人整理每一笔支付。";
@@ -2280,6 +2295,9 @@
 /* Identity top-up sheet — linkability warning for transparent-side sources */
 "Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance." = "从透明余额出资会在 Dash 链上将这些币与你的身份公开关联。为保护隐私，请从 Shielded 余额支付。";
 
+/* DashConnect connection sheet */
+"Funding left" = "Funding left";
+
 /* Masternode unban */
 "Funds are on the way…" = "Funds are on the way…";
 
@@ -2467,6 +2485,9 @@
 
 /* Destination of an identity funding asset lock */
 "Identity credits" = "身份积分";
+
+/* DashConnect connection sheet */
+"Identity funding limits" = "Identity funding limits";
 
 /* SDK identity profile sheet */
 "Identity ID" = "Identity ID";
@@ -3082,6 +3103,9 @@
 /* Usernames */
 "Maximum %ld characters" = "Maximum %ld characters";
 
+/* DashConnect connection sheet: an amount with its unit, e.g. 0.5 DASH */
+"Maximum of %@" = "Maximum of %@";
+
 /* DashConnect token purchase */
 "Maximum price" = "Maximum price";
 
@@ -3337,6 +3361,9 @@
 /* Send blocked while the device is offline */
 "No internet connection. Reconnect to the network and try again." = "No internet connection. Reconnect to the network and try again.";
 
+/* DashConnect connection sheet: a key with no spending limit */
+"No limit" = "No limit";
+
 /* Explore Dash */
 "No locations found." = "No locations found.";
 
@@ -3564,6 +3591,9 @@
 
 /* Masternodes */
 "Not in wallet history" = "不在钱包记录中";
+
+/* DashConnect connection sheet */
+"Not known" = "Not known";
 
 /* Username marketplace: own unlisted name */
 "Not listed for sale" = "未挂牌出售";
@@ -6808,6 +6838,9 @@
 
 /* DashPay FAQ */
 "What is DashPay?" = "什么是 DashPay？";
+
+/* DashConnect connection sheet */
+"What is left of the keys' budgets could not be read." = "What is left of the keys' budgets could not be read.";
 
 /* Usernames */
 "What is username voting?" = "什么是用户名投票?";
