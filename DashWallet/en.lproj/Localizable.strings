@@ -1272,6 +1272,9 @@
 /* No comment provided by engineer. */
 "Connecting to payment server" = "Connecting to payment server";
 
+/* DashConnect connection sheet */
+"Connection disconnected" = "Connection disconnected";
+
 /* DashSpend */
 "Connection Error" = "Connection Error";
 
@@ -3294,6 +3297,9 @@
 /* Wallet accounts */
 "No Accounts" = "No Accounts";
 
+/* DashConnect: an empty tab */
+"No active connections" = "No active connections";
+
 /* Coinbase */
 "No active user" = "No active user";
 
@@ -3329,6 +3335,9 @@
 
 /* Log export */
 "No diagnostic logs were found on this device. Logs are written from the next launch onward." = "No diagnostic logs were found on this device. Logs are written from the next launch onward.";
+
+/* DashConnect: an empty tab */
+"No disconnected connections" = "No disconnected connections";
 
 /* Wallet accounts */
 "No extended public key has been persisted for this account yet." = "No extended public key has been persisted for this account yet.";
@@ -4275,6 +4284,12 @@
 /* Identity top-up sheet — shielded source note */
 "Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins." = "Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins.";
 
+/* DashConnect connection sheet */
+"Reconnect" = "Reconnect";
+
+/* DashConnect: accessibility, a row's button; the app's name */
+"Reconnect %@" = "Reconnect %@";
+
 /* Voting */
 "Records your masternodes as having voted, without taking a side." = "Records your masternodes as having voted, without taking a side.";
 
@@ -4714,10 +4729,16 @@
 "See on Uphold" = "See on Uphold";
 
 /* DashConnect connection sheet: the app's name */
+"See what %@ did NOT have access to" = "See what %@ did NOT have access to";
+
+/* DashConnect connection sheet: the app's name */
 "See what %@ will be able to do" = "See what %@ will be able to do";
 
 /* DashConnect connection sheet: the app's name */
 "See what %@ will NOT have access to" = "See what %@ will NOT have access to";
+
+/* DashConnect connection sheet: the app's name */
+"See what you allowed %@ to do" = "See what you allowed %@ to do";
 
 /* DashConnect */
 "See your username" = "See your username";

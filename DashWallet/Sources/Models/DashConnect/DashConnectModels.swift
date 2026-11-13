@@ -280,6 +280,15 @@ struct ConnectionAccess: Equatable {
         self.init(access)
     }
 
+    /// What `intents` gave as the wallet recorded it, with no read of the
+    /// identity: for a connection that ended, whose keys are off, the sheet
+    /// tells what the user allowed the app to do. `nil` when they add no auth key.
+    init?(recorded intents: [AppConnect.ConnectionIntent]) {
+        let access = AppConnect.GrantedAccess(intents: intents)
+        guard !access.keys.isEmpty else { return nil }
+        self.init(access)
+    }
+
     init(_ access: AppConnect.GrantedAccess) {
         keys = access.keys
         let budgets = access.keys.compactMap(\.totalBudget)
@@ -365,6 +374,18 @@ struct ConnectionDetails: Equatable {
         self.basis = basis
         access = basis?.access
         self.connectedAt = connectedAt
+    }
+
+    /// The details of a connection that ended, with what its intents
+    /// recorded (`ConnectionAccess(recorded:)`): no read of the identity
+    /// tells of it, so it has no basis and no funding.
+    init(appId: String, identityId: String?, username: String?, recorded access: ConnectionAccess?) {
+        self.appId = appId
+        self.identityId = identityId
+        self.username = username
+        basis = nil
+        self.access = access
+        connectedAt = nil
     }
 
     /// These details with `read`, the funding read for `basis`; `nil` when

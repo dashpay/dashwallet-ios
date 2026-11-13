@@ -23,12 +23,14 @@ import SwiftUI
 /// One app on the Connections page: its name and website, which open the
 /// connection's sheet, and the action its status allows (ADR-0019).
 /// Disconnect opens the sheet too, which asks first; Remove takes a Refused
-/// row off the list without a PIN.
+/// row off the list without a PIN; Reconnect opens the scanner for a new
+/// request.
 struct ConnectionRow: View {
     let item: ConnectionSheetItem
     let onOpen: () -> Void
     let onDisconnect: () -> Void
     let onRemove: () -> Void
+    let onReconnect: () -> Void
 
     /// What a row offers, read from the state-to-actions table.
     static func actions(for status: ConnectionStatus) -> Set<AppConnect.RowAction> {
@@ -72,6 +74,15 @@ struct ConnectionRow: View {
             disconnectButton
         } else if actions.contains(.remove) {
             removeButton
+        } else if actions.contains(.reconnect) {
+            DashUIKit.DashButton(
+                text: NSLocalizedString("Reconnect", comment: "DashConnect connection sheet"),
+                size: .small, style: .tintedBlue, action: onReconnect)
+                .fixedSize()
+                .accessibilityLabel(Text(String(
+                    format: NSLocalizedString(
+                        "Reconnect %@", comment: "DashConnect: accessibility, a row's button; the app's name"),
+                    item.name)))
         }
     }
 
@@ -95,13 +106,16 @@ struct ConnectionRow: View {
     }
 }
 
+private func previewItem(
+    _ id: String, name: String = "Example App", url: String = "example.org", _ status: ConnectionStatus
+) -> ConnectionSheetItem {
+    ConnectionSheetItem(id: id, name: name, url: url, status: status, connection: nil, entry: nil, scope: nil)
+}
+
 #Preview("Statuses") {
     VStack(spacing: 2) {
         ForEach(ConnectionStatus.allCases, id: \.self) { status in
-            ConnectionRow(
-                item: ConnectionSheetItem(
-                    id: status.rawValue, name: "Example App", url: "example.org", status: status, connection: nil),
-                onOpen: {}, onDisconnect: {}, onRemove: {})
+            ConnectionRow(item: previewItem("\(status)", status), onOpen: {}, onDisconnect: {}, onRemove: {}, onReconnect: {})
         }
     }
     .background(Color.dash.secondaryBackground)
@@ -109,16 +123,12 @@ struct ConnectionRow: View {
 
 #Preview("Long name, no website") {
     ConnectionRow(
-        item: ConnectionSheetItem(
-            id: "long", name: "A Very Long Application Name That Does Not Fit On One Line", url: "",
-            status: .active, connection: nil),
-        onOpen: {}, onDisconnect: {}, onRemove: {})
+        item: previewItem("long", name: "A Very Long Application Name That Does Not Fit On One Line", url: "", .active),
+        onOpen: {}, onDisconnect: {}, onRemove: {}, onReconnect: {})
     .background(Color.dash.secondaryBackground)
 }
 
 #Preview("Refused") {
-    ConnectionRow(
-        item: ConnectionSheetItem(id: "refused", name: "Example App", url: "example.org", status: .refused, connection: nil),
-        onOpen: {}, onDisconnect: {}, onRemove: {})
+    ConnectionRow(item: previewItem("refused", .refused), onOpen: {}, onDisconnect: {}, onRemove: {}, onReconnect: {})
     .background(Color.dash.secondaryBackground)
 }

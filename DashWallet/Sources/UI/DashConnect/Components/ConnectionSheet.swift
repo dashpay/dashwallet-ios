@@ -52,6 +52,8 @@ struct ConnectionSheet: View {
     let takeDisconnectQuestion: () -> Bool
     /// Whether the sheet's own Disconnect may ask now.
     let disconnectQuestion: () -> Bool
+    /// Reconnect: scans the app's new code.
+    let onScan: () -> Void
     let onShowFundingLimitsInfo: () -> Void
 
     @State private var showsGranted = false
@@ -224,7 +226,7 @@ struct ConnectionSheet: View {
     @ViewBuilder
     private var limitsCard: some View {
         let access = details?.access
-        if access != nil || connectedAt != nil {
+        if access != nil || item.disconnectedAt != nil || connectedAt != nil {
             VStack(alignment: .leading, spacing: 2) {
                 if let access {
                     VStack(alignment: .leading, spacing: 2) {
@@ -353,15 +355,23 @@ struct ConnectionSheet: View {
     private var action: some View {
         let actions = AppConnect.StateActions.row(for: item.status).actions
         if actions.contains(.disconnect) {
-            actionButton
+            disconnectButton
         } else if actions.contains(.remove) {
             DashUIKit.DashButton(
                 text: NSLocalizedString("Remove", comment: "DashConnect: takes a refused connection off the list"),
                 isEnabled: !isBusy, fillsWidth: true, size: .large, style: .tintedGray, action: onRemove)
+        } else if actions.contains(.reconnect) {
+            reconnectButton
         }
     }
 
-    private var actionButton: some View {
+    private var reconnectButton: some View {
+        DashUIKit.DashButton(
+            text: NSLocalizedString("Reconnect", comment: "DashConnect connection sheet"),
+            isEnabled: !isBusy, fillsWidth: true, size: .large, style: .filledBlue, action: onScan)
+    }
+
+    private var disconnectButton: some View {
         DashUIKit.DashButton(
             text: NSLocalizedString("Disconnect", comment: "DashConnect"),
             // Enabled even when what it does is not known: the tap reads it
@@ -397,17 +407,23 @@ struct ConnectionSheet: View {
         ConnectionStatusBadge.label(for: item.status)
     }
 
+    private var isPast: Bool { item.status == .disconnected }
+
     private var grantedTitle: String {
         String(
-            format: NSLocalizedString(
-                "See what %@ will be able to do", comment: "DashConnect connection sheet: the app's name"),
+            format: isPast
+                ? NSLocalizedString("See what you allowed %@ to do", comment: "DashConnect connection sheet: the app's name")
+                : NSLocalizedString("See what %@ will be able to do", comment: "DashConnect connection sheet: the app's name"),
             item.name)
     }
 
     private var withheldTitle: String {
         String(
-            format: NSLocalizedString(
-                "See what %@ will NOT have access to", comment: "DashConnect connection sheet: the app's name"),
+            format: isPast
+                ? NSLocalizedString(
+                    "See what %@ did NOT have access to", comment: "DashConnect connection sheet: the app's name")
+                : NSLocalizedString(
+                    "See what %@ will NOT have access to", comment: "DashConnect connection sheet: the app's name"),
             item.name)
     }
 
@@ -425,6 +441,9 @@ struct ConnectionSheet: View {
     }
 
     private var dateLine: (title: String, date: Date)? {
+        if let disconnectedAt = item.disconnectedAt {
+            return (NSLocalizedString("Connection disconnected", comment: "DashConnect connection sheet"), disconnectedAt)
+        }
         guard let expiresAt = details?.access?.expiresAt else { return nil }
         // Whether that time has passed on Platform is not read here.
         return (NSLocalizedString("Connection expiry", comment: "DashConnect connection sheet: the date its keys expire"), expiresAt)
@@ -467,7 +486,18 @@ private enum ConnectionSheetPreview {
         ConnectionSheetItem(
             id: appId, name: name, url: "yap.pr", status: status,
             connection: DAppConnection(
-                id: appId, name: name, url: "yap.pr", status: status, updatedAt: Date(timeIntervalSince1970: 1_793_000_000)))
+                id: appId, name: name, url: "yap.pr", status: status, updatedAt: Date(timeIntervalSince1970: 1_793_000_000)),
+            entry: nil, scope: nil)
+    }
+
+    static var disconnected: ConnectionSheetItem {
+        ConnectionSheetItem(
+            id: appId, name: "Yappr", url: "yap.pr", status: .disconnected, connection: nil,
+            entry: DisconnectedConnection(
+                id: appId, name: "Yappr", url: "yap.pr", identityId: details.identityId, username: "alice",
+                disconnectedAt: Date(timeIntervalSince1970: 1_794_000_000), access: details.access,
+                connectedAt: Date(timeIntervalSince1970: 1_793_000_000)),
+            scope: nil)
     }
 
     /// One key the app was given, as Platform shows it.
@@ -499,7 +529,7 @@ private enum ConnectionSheetPreview {
             item: item, details: details, detailsFailed: detailsFailed, granted: granted,
             withheld: DashConnectPermissionText.withheld, funding: funding, fundingFailed: fundingFailed,
             connectedAt: details?.connectedAt, isBusy: isBusy, message: message, onClose: {}, onDisconnect: {}, onRemove: {},
-            takeDisconnectQuestion: { false }, disconnectQuestion: { false }, onShowFundingLimitsInfo: {})
+            takeDisconnectQuestion: { false }, disconnectQuestion: { false }, onScan: {}, onShowFundingLimitsInfo: {})
     }
 }
 
@@ -535,4 +565,12 @@ private enum ConnectionSheetPreview {
     ConnectionSheetPreview.sheet(
         ConnectionSheetPreview.item(.active), details: ConnectionSheetPreview.details,
         message: ConnectionsScreenMessage(kind: .error, text: "Could not disconnect: the network did not answer."))
+}
+
+#Preview("Disconnected") {
+    ConnectionSheetPreview.sheet(
+        ConnectionSheetPreview.disconnected, details: ConnectionSheetPreview.details,
+        granted: ConnectionSheetPreview.details.access.map {
+            DashConnectPermissionText.granted($0.granted, appLabel: "Yappr")
+        })
 }
