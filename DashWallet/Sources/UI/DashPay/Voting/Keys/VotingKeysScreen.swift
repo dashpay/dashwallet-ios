@@ -163,7 +163,7 @@ private struct VotingKeysScreen: View {
         }
         .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
-        .onChange(of: voting.votableNodes.map(\.proTxHash)) { keys.rowsChanged() }
+        .onChange(of: keys.rowsState) { keys.rowsChanged() }
         .confirmationDialog(
             NSLocalizedString("Remove voting key", comment: "Voting"),
             isPresented: Binding(

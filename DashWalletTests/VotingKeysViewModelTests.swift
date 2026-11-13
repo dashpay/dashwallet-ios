@@ -299,6 +299,29 @@ final class VotingKeysViewModelTests: XCTestCase {
         XCTAssertEqual(source.confirmed, [Data([1])])
     }
 
+    /// The list turns complete with the same rows: the screen still rechecks
+    /// the ticks, so a hidden tick the complete list proved gone does not
+    /// come back with a later partial list.
+    func testVoteModeForgetsAHiddenTickWhenTheListTurnsCompleteWithTheSameRows() {
+        let vm = viewModel()
+        vm.toggle(node(2))
+
+        source.votableNodes = [node(1)]
+        source.nodeResolution = .partial
+        vm.rowsChanged()
+        let partial = vm.rowsState
+        source.nodeResolution = .complete
+        XCTAssertNotEqual(vm.rowsState, partial, "the screen calls rowsChanged() on this change")
+        vm.rowsChanged()
+
+        source.votableNodes = [node(1), node(3)]
+        source.nodeResolution = .partial
+        vm.rowsChanged()
+        vm.confirm()
+
+        XCTAssertEqual(source.confirmed, [Data([1])])
+    }
+
     /// The node list goes empty while the SDK or the masternode list is not
     /// ready: the stored choice is not wiped, and it is back when the nodes are.
     func testAnEmptyNodeListKeepsTheStoredTicks() {
