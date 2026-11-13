@@ -265,7 +265,8 @@ final class VotingStore: ObservableObject {
     enum NodeResolution: Equatable {
         /// No node resolved: the SDK or the masternode list is not ready.
         case unavailable
-        /// Some nodes resolved; others of this wallet may be missing.
+        /// Some nodes resolved; others of this wallet may be missing, as the
+        /// key pool was read only in part or the wallet's sync is not done.
         case partial
         /// Every node of this wallet resolved.
         case complete
@@ -273,7 +274,9 @@ final class VotingStore: ObservableObject {
 
     var nodeResolution: NodeResolution {
         if votableNodes.isEmpty { return .unavailable }
-        return nodeListMayBeIncomplete ? .partial : .complete
+        // Before the sync is done the imported nodes may resolve while this
+        // wallet's own ones are not found yet.
+        return nodeListMayBeIncomplete || !nodeListSynced ? .partial : .complete
     }
 
     /// The vote button of "Add your voting keys": keep the ticks shown and set

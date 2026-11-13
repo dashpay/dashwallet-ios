@@ -1750,6 +1750,27 @@ final class VotingStoreTests: XCTestCase {
         XCTAssertEqual(store.tickedNodeIDs, [a.proTxHash, b.proTxHash])
     }
 
+    /// Before the wallet's sync is done the registry may already return the
+    /// imported nodes and not yet this wallet's own: that is a partial list,
+    /// and the remembered choice stays as the user made it.
+    func testANodeListReadBeforeTheWalletsSyncIsDoneKeepsTheRememberedChoice() async {
+        let a = node(1), b = node(2)
+        nodes.isNodeListSynced = false
+        nodes.resolution = .init(nodes: [a], mayBeIncomplete: false)
+        prefs.votingNodeSelection = [a.proTxHash, b.proTxHash]
+        let store = makeStore()
+        await store.refresh()
+
+        XCTAssertEqual(store.nodeResolution, .partial)
+        XCTAssertEqual(prefs.votingNodeSelection, [a.proTxHash, b.proTxHash])
+
+        nodes.isNodeListSynced = true
+        nodes.resolution = .init(nodes: [a, b], mayBeIncomplete: false)
+        store.refreshVotableNodes()
+        XCTAssertEqual(store.nodeResolution, .complete)
+        XCTAssertEqual(store.tickedNodeIDs, [a.proTxHash, b.proTxHash])
+    }
+
     /// The vote button of "Add your voting keys" keeps the ticks shown; a
     /// remembered node a partial list did not show stays remembered.
     func testConfirmingFromAPartialNodeListKeepsTheUnseenChoice() async {
