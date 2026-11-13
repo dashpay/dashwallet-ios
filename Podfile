@@ -106,7 +106,10 @@ post_install do |installer|
   # DashSDKFFI.xcframework builds in. SQLite.swift declares the system
   # `sqlite3` library, and with it on the link line every `sqlite3_*`
   # reference, the SDK's included, binds to /usr/lib/libsqlite3.dylib,
-  # which on older iOS lacks API the SDK calls (`sqlite3_set_clientdata`).
+  # which on iOS 18 lacks API the SDK calls (`sqlite3_set_clientdata`).
+  # Core Data and SwiftData keep the system SQLite, so the process holds two
+  # copies: never open one database file from both sides, since the two do
+  # not share POSIX lock state.
   installer.aggregate_targets.each do |aggregate_target|
     next unless ['Pods-dashwallet', 'Pods-dashpay'].include?(aggregate_target.name)
 
