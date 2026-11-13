@@ -233,7 +233,7 @@ struct DevnetSettingsScreen: View {
 final class DevnetSettingsHostingViewController: BaseViewController {
     private weak var navController: UINavigationController?
 
-    init(vc: UINavigationController) {
+    init(vc: UINavigationController?) {
         navController = vc
         super.init(nibName: nil, bundle: nil)
     }
