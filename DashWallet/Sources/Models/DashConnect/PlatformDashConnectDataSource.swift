@@ -440,6 +440,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private let activeWalletIdHex: () -> String?
     private let networkEndpoint: () -> String?
     private var walletChangeObserver: AnyCancellable?
+    private var storeSaveObserver: AnyCancellable?
     private let authorizer: DWIdentityAuthorizer
     private let stateTransitionParser: any DashConnectStateTransitionParsing
     private let now: () -> Date
@@ -524,6 +525,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             .publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)
             .sink { [weak self] _ in
                 Task { @MainActor in self?.showActiveWalletRows() }
+            }
+        // Another data source over the same rows (a page opened again while
+        // an earlier one's operation runs) writes them too.
+        self.storeSaveObserver = notificationCenter
+            .publisher(for: UserDefaultsDashConnectStore.didSaveNotification)
+            .sink { [weak self] notification in
+                let scopeKey = notification.userInfo?[UserDefaultsDashConnectStore.scopeKeyUserInfoKey] as? String
+                Task { @MainActor in self?.showStoredRows(savedUnder: scopeKey) }
             }
     }
 
@@ -1714,7 +1723,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             responseDocumentId: nil,
             responseRemoved: false,
             createdAt: now(),
-            closedAt: nil)
+            closedAt: nil,
+            administeredGroupIds: plan.administeredGroupIds.sorted { $0.lexicographicallyPrecedes($1) })
         return (intent, snapshot)
     }
 
@@ -2641,6 +2651,60 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
     }
 
+    func connectionDetails(id: String, scope: String?) async -> ConnectionDetails? {
+        guard let stores = await showActiveWalletRows(), scope == stores.scope else { return nil }
+        return await details(of: id, stores: stores)
+    }
+
+    /// The app's connection on the active identity, as the intents that hold
+    /// it show it: the identity, its username and when the connection was
+    /// made. With a read of the identity, only the intents whose keys are
+    /// live, expired or may still land count; without one, every open intent.
+    private func details(of appId: String, stores: Stores) async -> ConnectionDetails? {
+        // Not read: the sheet says so and keeps details it already shows.
+        guard let context = try? await requireContext(pinnedTo: stores) else { return nil }
+        let open = stores.intents.load().filter {
+            $0.identityId == context.identityId && $0.appId.toBase58String() == appId && $0.closedAt == nil
+        }
+        let snapshot = Self.newestSnapshots.withLock { $0[context.identityId] }
+        let held = snapshot.map { snapshot in
+            open.filter {
+                switch AppConnect.status(of: $0, in: snapshot) {
+                case .active, .expired, .confirming: return true
+                case .refused, .disconnected, .neverLanded: return false
+                }
+            }
+        } ?? open
+        guard !held.isEmpty else {
+            // A row of keys no intent names (a restore, another device's
+            // grant, the profile keys) is the active identity's when the
+            // projection shows them on it; when it was made is not known.
+            let all = stores.intents.load()
+            if let snapshot, Self.showsUnrecordedKeys(
+                of: appId, on: snapshot, intents: all,
+                owners: await Self.ownerReader(context: context).knownOwners(for: snapshot, intents: all)) {
+                return ConnectionDetails(
+                    appId: appId, identityId: context.identityId.toBase58String(), username: context.storedUsername)
+            }
+            // The app's row is held by another identity of the wallet: its
+            // intents are not the active identity's to show.
+            return ConnectionDetails(appId: appId, identityId: nil, username: nil)
+        }
+        return ConnectionDetails(
+            appId: appId, identityId: context.identityId.toBase58String(), username: context.storedUsername,
+            connectedAt: held.map(\.createdAt).max())
+    }
+
+    /// Whether the projection of `snapshot`, with the owners known, shows
+    /// keys no intent names under `appId` on the snapshot's identity.
+    static func showsUnrecordedKeys(
+        of appId: String, on snapshot: AppConnect.IdentitySnapshot, intents: [AppConnect.ConnectionIntent], owners: [Data: Data]
+    ) -> Bool {
+        AppConnect.project([snapshot], intents: intents, owners: owners).connections
+            .first { $0.appId.toBase58String() == appId }?
+            .unrecordedKeyIds[snapshot.identityId]?.isEmpty == false
+    }
+
     @discardableResult
     func disconnect(id: String, scope: String?) async throws -> DashConnectDisconnectResult {
         try await gated { try await disconnectInTurn(id: id, scope: scope) }
@@ -3265,6 +3329,16 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     @MainActor
     private func shownRow(id: String) -> DAppConnection? {
         subject.value.first { $0.id == id }
+    }
+
+    /// Publishes the active wallet's rows as stored, after a save under
+    /// `scopeKey` by any store instance.
+    @MainActor
+    private func showStoredRows(savedUnder scopeKey: String?) {
+        guard store.scopeKey == scopeKey, let active = pinnedActiveStores(),
+              active.connections.scopeKey == scopeKey,
+              shownRows.scope == active.scope else { return }
+        subject.send(active.published(rows(in: active)))
     }
 
     /// Changes the rows of the wallet `stores` belongs to in one step, saves

@@ -19,6 +19,9 @@
 /* Contested usernames */
 "%1$@ at %2$@" = "%1$@ at %2$@";
 
+/* DashConnect connection sheet: what is left of a key's budget, then the budget; amounts with units */
+"%1$@ left of %2$@" = "%1$@ left of %2$@";
+
 /* Username marketplace: listing success — name, then price */
 "%1$@ listed for %2$@ DASH" = "%1$@ を %2$@ DASH で出品しました";
 
@@ -27,6 +30,9 @@
 
 /* DashConnect App Connect v2: what a key can do, a date */
 "%1$@, with no limit on spending your identity's credits, until %2$@" = "%1$@, with no limit on spending your identity's credits, until %2$@";
+
+/* DashConnect connection sheet: a key's name, then its budget */
+"%1$@: %2$@" = "%1$@: %2$@";
 
 /* Voting */
 "%1$d already voted “%2$@” and will be left as they are." = "%1$d already voted “%2$@” and will be left as they are.";
@@ -619,6 +625,9 @@
 /* DashConnect: a second request arrived while one was on screen */
 "Another DashConnect request arrived. Finish this one first, then try again." = "Another DashConnect request arrived. Finish this one first, then try again.";
 
+/* DashConnect */
+"Another DashConnect request is in progress. Try again when it finishes." = "Another DashConnect request is in progress. Try again when it finishes.";
+
 /* A second internal transfer was started before the first finished */
 "Another transfer is still in progress" = "Another transfer is still in progress";
 
@@ -645,6 +654,12 @@
 
 /* DashConnect */
 "App contract" = "App contract";
+
+/* DashConnect connection sheet */
+"App ID" = "App ID";
+
+/* DashConnect connection sheet: a key's budget line */
+"App key" = "App key";
 
 /* AboutDash */
 "App version" = "App version";
@@ -1162,6 +1177,9 @@
 /* Transfer of own mixed funds into the private shielded balance */
 "CoinJoin → Shielded" = "CoinJoin → Shielded";
 
+/* Accessibility: a section that is closed */
+"Collapsed" = "Collapsed";
+
 /* Masternodes */
 "Collateral" = "担保";
 
@@ -1261,6 +1279,9 @@
 
 /* DashSpend */
 "Connection Error" = "Connection Error";
+
+/* DashConnect connection sheet: the date its keys expire */
+"Connection expiry" = "Connection expiry";
 
 /* DashConnect */
 "Connections" = "Connections";
@@ -1685,6 +1706,9 @@
 /* DashPay FAQ */
 "DashPay is Dash's social payments experience, built on Dash Platform. You register a username, add other users as contacts, and pay them by name — no more copying addresses." = "DashPay は、Dash Platform 上に構築された Dash のソーシャル決済です。ユーザー名を登録し、他のユーザーを連絡先に追加して、名前で支払えます。アドレスをコピーする必要はもうありません。";
 
+/* DashConnect connection sheet: a key's budget line */
+"DashPay profile key" = "DashPay profile key";
+
 /* DashPay intro: pitch paragraph */
 "DashPay replaces long cryptic addresses with usernames. Add friends as contacts, send money to a name, and keep every payment organized by person." = "DashPay は長くて分かりにくいアドレスをユーザー名に置き換えます。友人を連絡先に追加し、名前宛てに送金して、すべての支払いを相手ごとに整理できます。";
 
@@ -1777,6 +1801,12 @@
 
 /* DashConnect */
 "Disconnect" = "Disconnect";
+
+/* DashConnect: accessibility, a row's button; the app's name */
+"Disconnect %@" = "Disconnect %@";
+
+/* DashConnect: confirm a disconnect; the app's name */
+"Disconnect %@?" = "Disconnect %@?";
 
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "Coinbaseのアカウントを切断する";
@@ -2038,6 +2068,9 @@
 /* Maya */
 "Exchange rate not available" = "Exchange rate not available";
 
+/* Accessibility: a section that is open */
+"Expanded" = "Expanded";
+
 /* No comment provided by engineer. */
 "Expense" = "支出";
 
@@ -2284,6 +2317,9 @@
 /* Identity top-up sheet — linkability warning for transparent-side sources */
 "Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance." = "透明残高から資金を出すと、その資金が Dash チェーン上であなたのアイデンティティと公に結び付きます。プライバシーのためには Shielded 残高から支払ってください。";
 
+/* DashConnect connection sheet */
+"Funding left" = "Funding left";
+
 /* Masternode unban */
 "Funds are on the way…" = "Funds are on the way…";
 
@@ -2474,6 +2510,9 @@
 
 /* Destination of an identity funding asset lock */
 "Identity credits" = "アイデンティティのクレジット";
+
+/* DashConnect connection sheet */
+"Identity funding limits" = "Identity funding limits";
 
 /* SDK identity profile sheet */
 "Identity ID" = "Identity ID";
@@ -2694,6 +2733,9 @@
 /* DashSpend */
 "It looks like you haven't used DashSpend in a while. For security reasons, you've been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash." = "It looks like you haven't used DashSpend in a while. For security reasons, you've been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash.";
 
+/* DashConnect: what identity funding limits are */
+"It pays for actions on the Dash network, like updating your profile or using connected apps." = "It pays for actions on the Dash network, like updating your profile or using connected apps.";
+
 /* Settings */
 "It unlocks powerful features for managing your Dash across the network" = "It unlocks powerful features for managing your Dash across the network";
 
@@ -2705,6 +2747,9 @@
 
 /* Inactivity reminder */
 "It's been a while since you opened Dash Wallet." = "It's been a while since you opened Dash Wallet.";
+
+/* DashConnect: what a disconnect does, in its confirmation */
+"Its keys are turned off on Platform for good. To connect again, the app asks with a new code." = "Its keys are turned off on Platform for good. To connect again, the app asks with a new code.";
 
 /* No comment provided by engineer. */
 "Join DashPay" = "DashPayに参加する";
@@ -3092,6 +3137,9 @@
 /* Usernames */
 "Maximum %ld characters" = "Maximum %ld characters";
 
+/* DashConnect connection sheet: an amount with its unit, e.g. 0.5 DASH */
+"Maximum of %@" = "Maximum of %@";
+
 /* DashConnect token purchase */
 "Maximum price" = "Maximum price";
 
@@ -3335,6 +3383,9 @@
 /* Send blocked while the device is offline */
 "No internet connection. Reconnect to the network and try again." = "No internet connection. Reconnect to the network and try again.";
 
+/* DashConnect connection sheet: a key with no spending limit */
+"No limit" = "No limit";
+
 /* Explore Dash */
 "No locations found." = "No locations found.";
 
@@ -3562,6 +3613,9 @@
 
 /* Masternodes */
 "Not in wallet history" = "ウォレットの履歴にありません";
+
+/* DashConnect connection sheet */
+"Not known" = "Not known";
 
 /* Username marketplace: own unlisted name */
 "Not listed for sale" = "出品していません";
@@ -4205,6 +4259,9 @@
 /* Identities: key visible to the wallet but not usable for signing */
 "Read-only" = "読み取り専用";
 
+/* DashConnect connection sheet */
+"Reading the details of this connection" = "Reading the details of this connection";
+
 /* Identity → Platform credit transfer */
 "Ready right away" = "Ready right away";
 
@@ -4231,6 +4288,9 @@
 
 /* DashConnect App Connect v2: the placeholder is the app's name */
 "Receive messages encrypted to you in %@" = "Receive messages encrypted to you in %@";
+
+/* DashConnect App Connect v2: before approval, whether the app gets a key for messages is not known yet; the placeholder is the app's name */
+"May receive messages encrypted to you in %@" = "May receive messages encrypted to you in %@";
 
 /* Masternode unban */
 "Receive some DASH to this wallet, or fund its shielded balance, then return here." = "Receive some DASH to this wallet, or fund its shielded balance, then return here.";
@@ -4694,6 +4754,12 @@
 
 /* No comment provided by engineer. */
 "See on Uphold" = "Upholdで確認する";
+
+/* DashConnect connection sheet: the app's name */
+"See what %@ will be able to do" = "See what %@ will be able to do";
+
+/* DashConnect connection sheet: the app's name */
+"See what %@ will NOT have access to" = "See what %@ will NOT have access to";
 
 /* DashConnect */
 "See your username" = "See your username";
@@ -5412,6 +5478,12 @@
 /* Swap */
 "The destination address isn’t valid for %@ (%@). Go back and enter a %@ address." = "The destination address isn’t valid for %1$@ (%2$@). Go back and enter a %3$@ address.";
 
+/* DashConnect connection sheet */
+"The details of this connection could not be read." = "The details of this connection could not be read.";
+
+/* DashConnect connection sheet: a refresh of details already shown failed */
+"The details of this connection could not be read again and may be out of date." = "The details of this connection could not be read again and may be out of date.";
+
 /* DashConnect */
 "The details of this sign-in changed while it was on screen. Check them and approve again." = "The details of this sign-in changed while it was on screen. Check them and approve again.";
 
@@ -5771,6 +5843,9 @@
 
 /* DashConnect re-login */
 "This connection already exists." = "This connection already exists.";
+
+/* DashConnect: a disconnect asked for on a connection that no longer offers one */
+"This connection has nothing to disconnect now." = "This connection has nothing to disconnect now.";
 
 /* Send to contact: the contact was removed, or another wallet was opened, while the amount step was open */
 "This contact is not in your contacts any more." = "This contact is not in your contacts any more.";
@@ -6790,6 +6865,9 @@
 /* DashPay Invitations */
 "What are contested and non-contested usernames?" = "What are contested and non-contested usernames?";
 
+/* DashConnect connection sheet */
+"What are identity funding limits?" = "What are identity funding limits?";
+
 /* DashPay FAQ */
 "What does it cost?" = "費用はいくらですか？";
 
@@ -6798,6 +6876,9 @@
 
 /* DashPay FAQ */
 "What is DashPay?" = "DashPay とは何ですか？";
+
+/* DashConnect connection sheet */
+"What is left of the keys' budgets could not be read." = "What is left of the keys' budgets could not be read.";
 
 /* Usernames */
 "What is username voting?" = "ユーザー名投票とは？";
@@ -7186,6 +7267,9 @@
 
 /* Identity withdrawal — balance below the fee reserve */
 "Your Identity balance is too low to cover the transfer fee." = "Your Identity balance is too low to cover the transfer fee.";
+
+/* DashConnect: what identity funding limits are */
+"Your identity has its own balance, separate from the Dash on your wallet's home screen." = "Your identity has its own balance, separate from the Dash on your wallet's home screen.";
 
 /* DashPay registration recovery */
 "Your identity is ready. Finish registering a username using its existing credits." = "Your identity is ready. Finish registering a username using its existing credits.";
