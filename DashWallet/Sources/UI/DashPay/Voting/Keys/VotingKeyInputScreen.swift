@@ -110,20 +110,31 @@ struct VotingKeyInputContent: View {
                         title: NSLocalizedString("Enter voting key", comment: "Voting"),
                         mainDescription: NSLocalizedString(
                             "Masternodes and evonodes vote on usernames. Enter a node's voting private key to vote with it from this wallet. The key is kept in this device's keychain.",
-                            comment: "Voting"))
+                            comment: "Voting"),
+                        descriptionColor: Color.dash.secondaryText)
 
-                    DashUIKit.AddressFieldView(
-                        text: $keyText,
-                        label: NSLocalizedString("Masternode voting private key", comment: "Voting"),
-                        placeholder: NSLocalizedString("Paste or scan the key", comment: "Voting"),
-                        hasError: error != nil,
-                        errorText: error,
-                        isDisabled: isVerifying,
-                        onScanQR: onScanQR,
-                        onPaste: onPaste,
-                        isFocused: $isFieldFocused)
-                        .submitLabel(.done)
-                        .onSubmit(onVerify)
+                    // The field on a white card, its error under the card (design 3830:20305).
+                    VStack(alignment: .leading, spacing: 10) {
+                        DashUIKit.AddressFieldView(
+                            text: $keyText,
+                            label: NSLocalizedString("Masternode voting key", comment: "Voting"),
+                            placeholder: NSLocalizedString("Paste or scan the key", comment: "Voting"),
+                            hasError: error != nil,
+                            isDisabled: isVerifying,
+                            onScanQR: onScanQR,
+                            onPaste: onPaste,
+                            isFocused: $isFieldFocused)
+                            .submitLabel(.done)
+                            .onSubmit(onVerify)
+                            .padding(20)
+                            .modifier(DashUIKit.MenuViewModifier(shadowRadius: 20))
+
+                        if let error {
+                            Text(error)
+                                .dashFont(.footnote)
+                                .foregroundStyle(Color.dash.errorText)
+                        }
+                    }
                 }
                 .padding(20)
                 .frame(maxWidth: .infinity, alignment: .leading)

@@ -45,6 +45,11 @@ protocol VotableMasternodeResolving {
 protocol VoteCasting {
     func cast(choice: VoteChoice, onNormalizedLabel normalizedLabel: String, with nodes: [VoterNode]) async throws
         -> VoteCastReport
+    /// A Quick voting run under one authentication, one report per name
+    /// (ADR-0037). `progress` gets 0 once the prompt is passed, then the
+    /// number of names done after each one.
+    func castRun(_ casts: [QuickVoteCast], progress: @escaping @MainActor (Int) -> Void) async throws
+        -> [VoteCastReport]
 }
 
 /// Remembers which masternodes the user ticked to vote with.
@@ -57,6 +62,18 @@ extension ContestedNamesService: VotingContestReading {}
 extension MasternodeVoterRegistry: VotableMasternodeResolving {}
 extension MasternodeVoteCaster: VoteCasting {}
 extension VotingPrefs: VotingSelectionStoring {}
+
+// MARK: - RequestLinkState
+
+/// What the link lookup of one request has to say. Four answers, because
+/// collapsing "nothing published" and "the check failed" would tell the owner
+/// there is no proof when in truth the query did not run.
+enum RequestLinkState: Equatable {
+    case reading
+    case published(URL)
+    case none
+    case failed
+}
 
 // MARK: - VotingStore
 
@@ -71,8 +88,8 @@ final class VotingStore: ObservableObject {
     // MARK: Published state
 
     /// The contests on the list: the open ones, plus any Platform closed
-    /// early or left out of its last answer, until their voting end
-    /// (sad §4 choice 6). ``closedLabels`` says which are closed.
+    /// early or left out of its last answer, until their voting end.
+    /// ``closedLabels`` says which are closed.
     @Published private(set) var contests: [DPNSContest] = [] {
         didSet { stateDidChange.send() }
     }
@@ -99,6 +116,10 @@ final class VotingStore: ObservableObject {
     @Published private(set) var nodeListMayBeIncomplete = false {
         didSet { if nodeListMayBeIncomplete != oldValue { stateDidChange.send() } }
     }
+    /// A masternode of this wallet may be missing from ``votableNodes``: the
+    /// wallet's sync is not done, or the list may be incomplete. Quick voting
+    /// does not run then, as a missing node may have blocked a name (AC-20).
+    var nodeListMayMissNodes: Bool { !nodeListSynced || nodeListMayBeIncomplete }
     @Published private(set) var isLoading = false
     /// A full refresh is queued or running.
     @Published private(set) var isRefreshing = false
@@ -163,9 +184,9 @@ final class VotingStore: ObservableObject {
 
     /// Votes Platform accepted while this store lived whose history write
     /// failed, per contest. The store's rows are one cast short for each, so
-    /// every history rebuild adds them back: the cast is spent (owner decision,
-    /// 2026-11-05). Kept per screen open: a store is made each time Username Voting
-    /// opens, and the next one starts without them (owner, 2026-11-06).
+    /// every history rebuild adds them back: the cast is spent. Kept per
+    /// screen open: a store is made each time Username Voting opens, and the
+    /// next one starts without them.
     private var unrecordedCasts: [String: [CastVoteRecord]] = [:]
 
     /// Contests with a vote in flight. Their pills show a spinner and take no
@@ -177,9 +198,26 @@ final class VotingStore: ObservableObject {
     /// The contest of the latest send, for Try again on its mixed outcome.
     private var lastSentContest: DPNSContest?
 
+    /// How far the running Quick voting run is, in names; `nil` when none
+    /// runs, and until its authentication is passed.
+    @Published private(set) var quickVotingProgress: QuickVotingProgress?
+
     /// The contest of the latest vote attempt, set at its start: ``outcome``
     /// and the attempt's toasts are about it until the next attempt starts.
     private(set) var attemptLabel: String?
+
+    /// The link lookup of each request asked for while this store lives, by
+    /// contest and identity. An absent entry was never asked. A published link
+    /// or "none" is kept for the session, across refreshes; a failed check is
+    /// asked again on the next look.
+    @Published private(set) var requestLinks: [RequestKey: RequestLinkState] = [:] {
+        didSet { stateDidChange.send() }
+    }
+
+    struct RequestKey: Hashable {
+        let normalizedLabel: String
+        let identityId: String
+    }
 
     /// Fires after any change a screen derives its rows from, with the new
     /// value already in place (``objectWillChange`` fires before).
@@ -193,6 +231,7 @@ final class VotingStore: ObservableObject {
     private let history: VoteHistoryDAO
     private let prefs: VotingSelectionStoring
     private let now: () -> Date
+    private let linkLookup: LinkLookup
 
     init(
         contests: VotingContestReading,
@@ -200,7 +239,8 @@ final class VotingStore: ObservableObject {
         caster: VoteCasting,
         history: VoteHistoryDAO,
         prefs: VotingSelectionStoring,
-        now: @escaping () -> Date = Date.init
+        now: @escaping () -> Date = Date.init,
+        linkLookup: @escaping LinkLookup = VotingStore.publishedLinks
     ) {
         self.contestsReader = contests
         self.nodes = nodes
@@ -208,6 +248,7 @@ final class VotingStore: ObservableObject {
         self.history = history
         self.prefs = prefs
         self.now = now
+        self.linkLookup = linkLookup
         self.selectedNodeIDs = prefs.votingNodeSelection
     }
 
@@ -371,6 +412,7 @@ final class VotingStore: ObservableObject {
             contests = open + kept
             // A contest Platform lists as open again is not closed.
             closedLabels.subtract(listed)
+            requestsMayBeCut.subtract(listed)
             loadFailed = false
             didLoadContests = true
         } catch {
@@ -418,14 +460,15 @@ final class VotingStore: ObservableObject {
     /// Fills the same per-contest maps ``loadVotedNodes(for:)`` fills for one
     /// contest. A listed contest with no records gets an empty history: after a
     /// full load "no records" means "nobody voted", not "not loaded yet".
-    private func loadAllVoteHistory() async {
+    func loadAllVoteHistory() async {
         await serially { [weak self] in await self?.performLoadAllVoteHistory() }
     }
 
     private func performLoadAllVoteHistory() async {
         let labels = Set(contests.map(\.normalizedLabel))
-        // A failed read leaves every history unknown — not "nobody voted",
-        // which would offer nodes for votes they already hold — and says so.
+        // A failed read keeps what was known — not "nobody voted", which
+        // would offer nodes for votes they already hold — and says so in
+        // ``historyUnavailable``: the pills and Quick voting do not act on it then.
         guard let records = await history.votes(
             forContests: labels, network: MasternodeVoteCaster.networkKey)
         else {
@@ -528,6 +571,11 @@ final class VotingStore: ObservableObject {
         guard let index = contests.firstIndex(where: { $0.normalizedLabel == normalizedLabel })
         else { return }
 
+        if state.contenders.count >= Self.contestReadRequestLimit {
+            requestsMayBeCut.insert(normalizedLabel)
+        } else {
+            requestsMayBeCut.remove(normalizedLabel)
+        }
         let existing = contests[index]
         contests[index] = DPNSContest(
             normalizedLabel: existing.normalizedLabel,
@@ -541,9 +589,178 @@ final class VotingStore: ObservableObject {
             requestedLabels: existing.requestedLabels)
     }
 
+    /// Platform answers a one-contest read with at most this many requests
+    /// (dashpay/platform#5876).
+    static let contestReadRequestLimit = 100
+
+    /// Names whose last one-contest read returned a full page of requests, so
+    /// some may be missing; Quick voting cannot tell their first request.
+    /// A list refresh reads the name's requests again and clears it.
+    private(set) var requestsMayBeCut: Set<String> = []
+
     private func close(normalizedLabel: String) {
         contests.removeAll { $0.normalizedLabel == normalizedLabel }
         closedLabels.insert(normalizedLabel)
+    }
+
+    // MARK: Request links
+
+    /// One name's lookup: the links some of `identityIds` published for it,
+    /// by identity. An identity left out published none.
+    typealias LinkLookup = @MainActor (_ normalizedLabel: String, _ identityIds: [String]) async throws
+        -> [String: URL]
+
+    /// The links these identities published for the name, from Platform, in
+    /// one query.
+    static func publishedLinks(normalizedLabel: String, identityIds: [String]) async throws -> [String: URL] {
+        try await IdentityVerifyService.shared.publishedURLs(forLabel: normalizedLabel, ownedBy: identityIds)
+    }
+
+    /// A lookup made of one call per request, for previews and tests that
+    /// answer request by request.
+    static func lookingUpEachRequest(
+        _ link: @escaping @MainActor (_ normalizedLabel: String, _ identityId: String) async throws -> URL?
+    ) -> LinkLookup {
+        { label, identities in
+            var links: [String: URL] = [:]
+            for identity in identities {
+                links[identity] = try await link(label, identity)
+            }
+            return links
+        }
+    }
+
+    /// Names looked up at once, across every ask of this store: each lookup
+    /// reads every document of its name, and the run's pre-flight reads wait
+    /// behind them.
+    private static let linkLookupsAtOnce = 4
+
+    /// Names waiting for a lookup, in the order asked (what the owner opened
+    /// first), and the requests of each to look up.
+    private var waitingLinkLabels: [String] = []
+    private var waitingLinkIdentities: [String: Set<String>] = [:]
+    private var runningLinkLookups = 0
+    /// Asks waiting for their requests' answers.
+    private var linkWaiters: [LinkWaiter] = []
+
+    private struct LinkWaiter {
+        let id: UUID
+        let keys: Set<RequestKey>
+        let answered: CheckedContinuation<Void, Never>
+    }
+
+    /// The link state of one request; `nil` until it is asked for.
+    func linkState(normalizedLabel: String, identityId: String) -> RequestLinkState? {
+        requestLinks[RequestKey(normalizedLabel: normalizedLabel, identityId: identityId)]
+    }
+
+    /// Looks up one request's link ahead of the waiting names, unless its
+    /// answer is known or a lookup for it is running; a failed check is asked
+    /// again.
+    func loadLink(normalizedLabel: String, identityId: String) async {
+        await loadLinks(
+            [RequestKey(normalizedLabel: normalizedLabel, identityId: identityId)], retryingFailed: true, first: true)
+    }
+
+    /// ``askForLinks(_:retryingFailed:first:)``, then waits until those of
+    /// `keys` it started reading are answered. A cancelled task stops waiting
+    /// at once; the lookups go on and still fill ``requestLinks``.
+    func loadLinks(_ keys: Set<RequestKey>, retryingFailed: Bool, first: Bool = false) async {
+        let reading = askForLinks(keys, retryingFailed: retryingFailed, first: first)
+        guard !reading.isEmpty else { return }
+        let id = UUID()
+        await withTaskCancellationHandler {
+            await withCheckedContinuation { answered in
+                if Task.isCancelled { return answered.resume() }
+                linkWaiters.append(LinkWaiter(id: id, keys: reading, answered: answered))
+            }
+        } onCancel: {
+            Task { @MainActor [weak self] in self?.stopWaitingForLinks(id) }
+        }
+    }
+
+    private func stopWaitingForLinks(_ id: UUID) {
+        guard let index = linkWaiters.firstIndex(where: { $0.id == id }) else { return }
+        linkWaiters.remove(at: index).answered.resume()
+    }
+
+    /// Asks for the links of `keys` never asked (and, when `retryingFailed`,
+    /// those that could not be checked), without waiting: all start reading
+    /// in one change, each name is looked up once for all its requests, and
+    /// at most ``linkLookupsAtOnce`` names at a time across the store. Keys
+    /// already reading or known are left alone. With `first` (what the owner
+    /// opened: an expanded row, Request details) the names of `keys` go
+    /// before the names already waiting, those of keys already waiting too.
+    /// The waiting names go with the store. Returns the keys it started
+    /// reading.
+    @discardableResult
+    func askForLinks(_ keys: Set<RequestKey>, retryingFailed: Bool, first: Bool = false) -> Set<RequestKey> {
+        let needed = keys.filter { key in
+            switch requestLinks[key] {
+            case nil: return true
+            case .failed?: return retryingFailed
+            case .reading?, .published?, .none?: return false
+            }
+        }
+        if first {
+            let opened = Set(keys.map(\.normalizedLabel))
+            let waiting = waitingLinkLabels.filter { opened.contains($0) }
+            waitingLinkLabels = waiting + waitingLinkLabels.filter { !opened.contains($0) }
+        }
+        guard !needed.isEmpty else { return [] }
+        var reading = requestLinks
+        for key in needed { reading[key] = .reading }
+        requestLinks = reading
+        var asked: [String] = []
+        for key in needed.sorted(by: { ($0.normalizedLabel, $0.identityId) < ($1.normalizedLabel, $1.identityId) }) {
+            if waitingLinkIdentities[key.normalizedLabel] == nil { asked.append(key.normalizedLabel) }
+            waitingLinkIdentities[key.normalizedLabel, default: []].insert(key.identityId)
+        }
+        waitingLinkLabels = first ? asked + waitingLinkLabels : waitingLinkLabels + asked
+        startWaitingLinkLookups()
+        return needed
+    }
+
+    private func startWaitingLinkLookups() {
+        let lookup = linkLookup
+        while runningLinkLookups < Self.linkLookupsAtOnce, !waitingLinkLabels.isEmpty {
+            let label = waitingLinkLabels.removeFirst()
+            let identities = waitingLinkIdentities.removeValue(forKey: label) ?? []
+            runningLinkLookups += 1
+            // Holds the lookup, not the store: a store that goes away starts
+            // no more of them.
+            Task { [weak self] in
+                let links: [String: URL]?
+                do {
+                    links = try await lookup(label, identities.sorted())
+                } catch {
+                    DWLogger.log("Voting: links of \(label) unreadable (\(type(of: error)))")
+                    links = nil
+                }
+                self?.linkLookupFinished(label: label, identities: identities, links: links)
+            }
+        }
+    }
+
+    /// One name's answer; `nil` links when the check failed.
+    private func linkLookupFinished(label: String, identities: Set<String>, links: [String: URL]?) {
+        runningLinkLookups -= 1
+        var answered = requestLinks
+        for identity in identities {
+            answered[RequestKey(normalizedLabel: label, identityId: identity)] = links.map { links in
+                links[identity].map { .published($0) } ?? RequestLinkState.none
+            } ?? .failed
+        }
+        requestLinks = answered
+        // An ask is answered once none of its requests reads any more.
+        var done: [CheckedContinuation<Void, Never>] = []
+        linkWaiters.removeAll { waiter in
+            guard !waiter.keys.contains(where: { answered[$0] == .reading }) else { return false }
+            done.append(waiter.answered)
+            return true
+        }
+        done.forEach { $0.resume() }
+        startWaitingLinkLookups()
     }
 
     // MARK: Sending
@@ -620,6 +837,35 @@ final class VotingStore: ObservableObject {
     private func cast(
         choice: VoteChoice, on contest: DPNSContest, from nodes: [VoterNode], skipped: [VoterNode] = []
     ) async -> VoteAttemptOutcome? {
+        switch await castReport(choice: choice, on: contest, from: nodes, skipped: skipped) {
+        case .report(let report):
+            if report.isCompleteSuccess {
+                return .success(successToast(for: choice, on: contest))
+            } else if report.succeeded.isEmpty {
+                return .failure(report.failed.first?.failure
+                    ?? NSLocalizedString("The vote was not cast. Please try again.", comment: "Voting"))
+            } else {
+                return .mixed(report)
+            }
+        case .refused(let reason):
+            return .failure(reason)
+        case nil:
+            return nil
+        }
+    }
+
+    /// What one contest's cast came back with: the report of each
+    /// masternode, or the reason nothing was sent.
+    private enum CastResult {
+        case report(VoteCastReport)
+        case refused(String)
+    }
+
+    /// ``cast(choice:on:from:skipped:)`` before it is told as one outcome:
+    /// Try again keeps each masternode's own outcome from it.
+    private func castReport(
+        choice: VoteChoice, on contest: DPNSContest, from nodes: [VoterNode], skipped: [VoterNode] = []
+    ) async -> CastResult? {
         let label = contest.normalizedLabel
         guard sendingLabels.insert(label).inserted else { return nil }
         lastSentContest = contest
@@ -637,37 +883,306 @@ final class VotingStore: ObservableObject {
             if case MasternodeVoteCaster.CastError.contestClosed = error {
                 await serially { [weak self] in _ = self?.closedLabels.insert(label) }
             }
-            return .failure(VoteErrorMessage.plain(for: error))
+            return .refused(VoteErrorMessage.plain(for: error))
         }
 
-        let castAt = now()
-        let unrecorded = report.succeeded.filter { !$0.historyRecorded }.map {
-            CastVoteRecord(proTxHash: $0.node.proTxHash, normalizedLabel: label, choice: report.choice, castAt: castAt)
+        await apply(report, startedAt: startedAt)
+        if !skipped.isEmpty {
+            report = VoteCastReport(
+                normalizedLabel: label, choice: choice,
+                outcomes: report.outcomes + skipped.map { VoteOutcome.noVotesLeft($0) },
+                contestClosed: report.contestClosed)
         }
-        unrecordedCasts[label, default: []].append(contentsOf: unrecorded)
-        let landed = report
+        return .report(report)
+    }
+
+    /// Keeps what a cast report says landed: the casts whose history write
+    /// failed, the contest's history rebuilt (or patched when the store cannot
+    /// be read), and its tallies read again, through the load queue.
+    /// `startedAt` is when the cast began: a history row from then on already
+    /// holds this vote.
+    private func apply(_ report: VoteCastReport, startedAt: Date) async {
+        let label = report.normalizedLabel
+        let castAt = now()
+        keepUnrecordedCasts(of: report, at: castAt)
         await serially { [weak self] in
             guard let self else { return }
             // Without a readable store, patch what is known instead.
             if await !self.performLoadVotedNodes(for: label) {
-                self.applyRecordedVotes(of: landed, on: label, at: castAt, startedAt: startedAt)
+                self.applyRecordedVotes([(label, report)], at: castAt, startedAt: startedAt)
             }
         }
         await refreshContest(normalizedLabel: label)
-        if !skipped.isEmpty {
-            let noVotesLeft = NSLocalizedString("No votes left", comment: "Voting")
-            report = VoteCastReport(
-                normalizedLabel: label, choice: choice,
-                outcomes: report.outcomes + skipped.map { VoteOutcome(node: $0, failure: noVotesLeft) })
-        }
+    }
 
-        if report.isCompleteSuccess {
-            return .success(successToast(for: choice, on: contest))
-        } else if report.succeeded.isEmpty {
-            return .failure(report.failed.first?.failure
-                ?? NSLocalizedString("The vote was not cast. Please try again.", comment: "Voting"))
+    /// The votes of `report` that landed without a history row, kept so
+    /// every history rebuild counts them.
+    private func keepUnrecordedCasts(of report: VoteCastReport, at castAt: Date) {
+        let label = report.normalizedLabel
+        let unrecorded = report.succeeded.filter { !$0.historyRecorded }.map {
+            CastVoteRecord(proTxHash: $0.node.proTxHash, normalizedLabel: label, choice: report.choice, castAt: castAt)
+        }
+        unrecordedCasts[label, default: []].append(contentsOf: unrecorded)
+    }
+
+    // MARK: Quick voting
+
+    /// What Quick voting would do with `shown`, the names on screen with
+    /// their shown requests: the ticked masternodes vote, and a block by any
+    /// masternode of this wallet keeps a name out (AC-18–AC-20).
+    func quickVotePlan(for shown: [DPNSContest]) -> QuickVotePlan {
+        let histories = voteHistoryByContest
+        return QuickVotePlan(
+            contests: shown,
+            tickedNodes: tickedNodeIDs ?? [],
+            closedLabels: closedLabels,
+            requestsMayBeCut: requestsMayBeCut,
+            now: now(),
+            history: { histories[$0] ?? VoteLimit(nil) })
+    }
+
+    /// Clears the previous attempt's outcome as «Quick voting» is tapped.
+    func beginQuickVoting() {
+        attemptLabel = nil
+        outcome = nil
+    }
+
+    /// Runs `plan` as one attempt (ADR-0037), sets ``outcome`` once and
+    /// returns it: a toast when every vote landed, an error toast when none
+    /// did or none could be sent, otherwise the names whose votes failed for
+    /// the result sheet. Every planned name is sending meanwhile, and no
+    /// other vote starts. Cancelling the calling task stops the run; the
+    /// votes not sent are reported as not cast. A run that cannot start
+    /// (another vote in flight, the node list possibly incomplete or not
+    /// synced, a planned masternode no longer votable) is a failure with the
+    /// reason, and ``outcome`` is left as it is.
+    @discardableResult
+    func runQuickVoting(_ plan: QuickVotePlan) async -> VoteAttemptOutcome {
+        // A masternode missing from the list may have blocked a name, and the
+        // plan could not see it (AC-20).
+        // Not this run's outcome, so ``outcome`` is left to the attempt that has it.
+        guard !isVoteBusy else {
+            DWLogger.log("Voting: Quick voting not started: another vote is being sent")
+            return .failure(NSLocalizedString("Quick voting did not start: another vote is still being sent.", comment: "Voting"))
+        }
+        guard !nodeListMayMissNodes else {
+            DWLogger.log("Voting: Quick voting not started: the node list may be incomplete or not synced")
+            return .failure(NSLocalizedString("Some of your masternodes may be missing from this list.", comment: "Voting"))
+        }
+        let casts = plan.votes.map { vote in
+            QuickVoteCast(
+                normalizedLabel: vote.normalizedLabel, choice: .towards(identityId: vote.identityId),
+                nodes: votableNodes.filter { vote.nodes.contains($0.proTxHash) },
+                // The caster checks it again before each send: the sheet may
+                // have stayed open past the end.
+                endsAt: contests.first { $0.normalizedLabel == vote.normalizedLabel }?.endTime)
+        }
+        // A planned masternode that left the wallet since the sheet would send
+        // nothing and be missing from the report: the plan is stale, so the
+        // run does not start and the sheet is opened again.
+        guard zip(plan.votes, casts).allSatisfy({ $0.nodes.count == $1.nodes.count }) else {
+            DWLogger.log("Voting: Quick voting not started: a planned masternode is no longer votable")
+            return .failure(NSLocalizedString("The vote was not cast. Please try again.", comment: "Voting"))
+        }
+        beginQuickVoting()
+        DWLogger.log("Voting: Quick voting started: \(casts.count) names, \(casts.reduce(0) { $0 + $1.nodes.count }) votes")
+        let result: VoteAttemptOutcome
+        if casts.isEmpty {
+            // A plan with no vote: the sheet offers Close only, so this is not reached from it.
+            result = .failure(NSLocalizedString("The vote was not cast. Please try again.", comment: "Voting"))
         } else {
-            return .mixed(report)
+            switch await castRun(casts) {
+            case .success(let reports):
+                let landed = reports.filter(\.isCompleteSuccess).count
+                DWLogger.log("Voting: Quick voting finished: \(landed) of \(reports.count) names fully landed")
+                result = Self.runOutcome(QuickVoteRunReport(reports: reports))
+            case .failure(let refusal):
+                DWLogger.log("Voting: Quick voting stopped before sending: \(refusal.reason)")
+                result = .failure(refusal.reason)
+            }
+        }
+        outcome = result
+        return result
+    }
+
+    private struct RunRefused: Error {
+        let reason: String
+    }
+
+    /// The caster's run with every one of its names sending and the progress
+    /// published. What landed is kept in the history before the names stop
+    /// sending; the tallies are not re-read here, so the outcome is not held
+    /// back by a Platform read per name (``refreshAfterQuickVoting(_:)``).
+    private func castRun(_ casts: [QuickVoteCast]) async -> Result<[VoteCastReport], RunRefused> {
+        let labels = Set(casts.map(\.normalizedLabel))
+        let startedAt = now()
+        sendingLabels.formUnion(labels)
+        defer {
+            sendingLabels.subtract(labels)
+            quickVotingProgress = nil
+        }
+        let reports: [VoteCastReport]
+        do {
+            reports = try await caster.castRun(casts) { [weak self] done in
+                self?.quickVotingProgress = QuickVotingProgress(done: done, total: casts.count)
+            }
+        } catch {
+            return .failure(RunRefused(reason: VoteErrorMessage.plain(for: error)))
+        }
+        // As a single vote's closed answer: no vote starts on the name again,
+        // through the load queue so an earlier refresh cannot reopen it.
+        let closed = Set(reports.filter(\.contestClosed).map(\.normalizedLabel))
+        if !closed.isEmpty {
+            await serially { [weak self] in self?.closedLabels.formUnion(closed) }
+        }
+        await keepLandedVotes(of: reports, startedAt: startedAt)
+        return .success(reports)
+    }
+
+    /// A run's landed votes into the history, in one read of the store for
+    /// the whole run; patched in one change when the store cannot be read. Names
+    /// that sent nothing are left alone.
+    private func keepLandedVotes(of reports: [VoteCastReport], startedAt: Date) async {
+        let landed = reports.filter { !$0.succeeded.isEmpty }
+        guard !landed.isEmpty else { return }
+        let castAt = now()
+        for report in landed {
+            keepUnrecordedCasts(of: report, at: castAt)
+        }
+        await serially { [weak self] in
+            guard let self else { return }
+            await self.performLoadAllVoteHistory()
+            guard self.historyUnavailable else { return }
+            self.applyRecordedVotes(landed.map { ($0.normalizedLabel, $0) }, at: castAt, startedAt: startedAt)
+        }
+    }
+
+    /// After a run's outcome is shown: one refresh of the list re-reads the
+    /// tallies of every name, when `outcome` says some vote landed.
+    func refreshAfterQuickVoting(_ outcome: VoteAttemptOutcome?) async {
+        switch outcome {
+        case .success, .mixedRun: await refresh()
+        case .failure, .mixed, nil: break
+        }
+    }
+
+    private static func runOutcome(_ run: QuickVoteRunReport) -> VoteAttemptOutcome {
+        if run.reports.allSatisfy(\.isCompleteSuccess) {
+            return .success(.quickVotingDone())
+        }
+        if run.reports.allSatisfy({ $0.succeeded.isEmpty }) {
+            return .failure(run.reports.lazy.flatMap(\.failed).first?.failure
+                ?? NSLocalizedString("The vote was not cast. Please try again.", comment: "Voting"))
+        }
+        return .mixedRun(run)
+    }
+
+    /// Try again after a mixed Quick voting run (AC-06b): each name whose
+    /// votes failed is planned again for its failed masternodes only, towards
+    /// the same request, on a fresh read of its history, and sent as one run.
+    /// A masternode the plan leaves out holds that approve by now, or gets the
+    /// reason it cannot vote.
+    private func retryRun(_ run: QuickVoteRunReport) async {
+        guard !isVoteBusy else { return }
+        let version = outcomeVersion
+        // Claimed before the history reads, so no other vote starts while
+        // they run: one send at a time (AC-06b, ADR-0037). The run below
+        // frees its own names as it ends; the rest are freed here.
+        let failedLabels = Set(run.failedLabels)
+        sendingLabels.formUnion(failedLabels)
+        defer { sendingLabels.subtract(failedLabels) }
+        var updated: [String: [Data: VoteOutcome]] = [:]
+        var casts: [QuickVoteCast] = []
+        for report in run.reports where !report.failed.isEmpty {
+            // A node with no vote left here stays as reported: nothing a retry
+            // sends from it can land. So does one whose vote may have landed.
+            let failed = report.failed.filter(\.isRetryable).map(\.node)
+            guard !failed.isEmpty else { continue }
+            let (outcomes, cast) = await replan(report, failed: failed)
+            updated[report.normalizedLabel] = outcomes
+            if let cast { casts.append(cast) }
+        }
+        if !casts.isEmpty {
+            switch await castRun(casts) {
+            case .success(let reports):
+                for report in reports {
+                    for outcome in report.outcomes {
+                        updated[report.normalizedLabel, default: [:]][outcome.node.proTxHash] = outcome
+                    }
+                }
+            case .failure(let refusal):
+                for cast in casts {
+                    for node in cast.nodes {
+                        updated[cast.normalizedLabel, default: [:]][node.proTxHash] =
+                            VoteOutcome(node: node, failure: refusal.reason)
+                    }
+                }
+            }
+        }
+        let merged = QuickVoteRunReport(reports: run.reports.map { report in
+            VoteCastReport(
+                normalizedLabel: report.normalizedLabel, choice: report.choice,
+                outcomes: report.outcomes.map { updated[report.normalizedLabel]?[$0.node.proTxHash] ?? $0 })
+        })
+        guard outcomeVersion == version else { return }
+        outcome = merged.reports.allSatisfy(\.isCompleteSuccess) ? .success(.quickVotingDone()) : .mixedRun(merged)
+    }
+
+    /// One failed name of a run, planned again: the outcomes of the failed
+    /// masternodes that will not send, and the cast of those that will.
+    private func replan(_ report: VoteCastReport, failed: [VoterNode]) async
+        -> (outcomes: [Data: VoteOutcome], cast: QuickVoteCast?) {
+        let label = report.normalizedLabel
+        func all(_ reason: String) -> [Data: VoteOutcome] {
+            Dictionary(uniqueKeysWithValues: failed.map { ($0.proTxHash, VoteOutcome(node: $0, failure: reason)) })
+        }
+        guard case .towards(let identityId) = report.choice,
+              let contest = contests.first(where: { $0.normalizedLabel == label }),
+              let request = contest.contenders.first(where: { $0.identityId == identityId }),
+              !isClosed(normalizedLabel: label), (contest.endTime ?? .distantFuture) > now()
+        else { return (all(NSLocalizedString("Voting has ended", comment: "Voting")), nil) }
+        // As the first run: a block by a missing masternode would go unseen.
+        guard !nodeListMayMissNodes else {
+            return (all(NSLocalizedString("Some of your masternodes may be missing from this list.", comment: "Voting")), nil)
+        }
+        let history = await loadVotedNodes(for: label) ? voteHistoryByContest[label] ?? VoteLimit(nil) : VoteLimit(nil)
+        // Only this request, so the plan sends towards it again.
+        let target = DPNSContest(
+            normalizedLabel: label, endTime: contest.endTime, hasWinner: contest.hasWinner,
+            abstainVotes: contest.abstainVotes, lockVotes: contest.lockVotes, contenders: [request],
+            requestedLabels: contest.requestedLabels)
+        let failedIDs = Set(failed.map(\.proTxHash))
+        let plan = QuickVotePlan(
+            contests: [target], tickedNodes: failedIDs,
+            closedLabels: closedLabels, requestsMayBeCut: requestsMayBeCut, now: now(), history: { _ in history })
+        if let skip = plan.skipped.first?.reason, skip != .nothingToSend {
+            return (all(Self.retryReason(skip)), nil)
+        }
+        let senders = plan.votes.first?.nodes ?? []
+        let holders = history.nodes(holding: report.choice, among: failedIDs) ?? []
+        var outcomes: [Data: VoteOutcome] = [:]
+        for node in failed where !senders.contains(node.proTxHash) {
+            outcomes[node.proTxHash] = holders.contains(node.proTxHash)
+                ? VoteOutcome(node: node, failure: nil) : .noVotesLeft(node)
+        }
+        let sending = failed.filter { senders.contains($0.proTxHash) }
+        guard !sending.isEmpty else { return (outcomes, nil) }
+        return (outcomes, QuickVoteCast(
+            normalizedLabel: label, choice: report.choice, nodes: sending, endsAt: contest.endTime))
+    }
+
+    private static func retryReason(_ reason: QuickVotePlan.SkipReason) -> String {
+        switch reason {
+        case .blocked:
+            return NSLocalizedString("A masternode of this wallet blocked this name.", comment: "Voting")
+        case .historyUnknown:
+            return NSLocalizedString("Couldn't read your vote history.", comment: "Voting")
+        case .unknownVotingEnd:
+            return NSLocalizedString("Voting end unknown", comment: "Voting")
+        case .undatedRequest, .tiedFirstRequests, .requestsMayBeCut:
+            return NSLocalizedString("Couldn't tell which request came first.", comment: "Voting")
+        case .votingEnded, .nothingToSend:
+            return NSLocalizedString("Voting has ended", comment: "Voting")
         }
     }
 
@@ -680,6 +1195,7 @@ final class VotingStore: ObservableObject {
     /// outcome while the resend runs; when every vote has landed the outcome
     /// is the success toast.
     func retryFailed() async {
+        if case .mixedRun(let run)? = outcome { return await retryRun(run) }
         guard case .mixed(let report)? = outcome, let sent = lastSentContest,
               sent.normalizedLabel == report.normalizedLabel,
               !isVoteBusy
@@ -687,7 +1203,10 @@ final class VotingStore: ObservableObject {
         let version = outcomeVersion
         let label = report.normalizedLabel
         let contest = latest(sent)
-        let failed = report.failed.map(\.node)
+        // A node with no vote left, or whose vote may have landed, stays as
+        // reported (see ``retryRun(_:)``).
+        let failed = report.failed.filter(\.isRetryable).map(\.node)
+        guard !failed.isEmpty else { return }
         let history = await loadVotedNodesForVote(for: label)
             ? voteHistoryByContest[label] ?? VoteLimit(nil) : VoteLimit(nil)
         var attempt = VoteAttempt(
@@ -733,10 +1252,8 @@ final class VotingStore: ObservableObject {
             // A failed masternode that holds the choice by now has it.
             let holders = history.nodes(holding: choice, among: Set(failed.map(\.proTxHash))) ?? []
             return Dictionary(uniqueKeysWithValues: failed.map { node in
-                (node.proTxHash, VoteOutcome(
-                    node: node,
-                    failure: holders.contains(node.proTxHash)
-                        ? nil : NSLocalizedString("No votes left", comment: "Voting")))
+                (node.proTxHash, holders.contains(node.proTxHash)
+                    ? VoteOutcome(node: node, failure: nil) : .noVotesLeft(node))
             })
         case .nothingToSend:
             // Every failed masternode holds the choice by now.
@@ -759,16 +1276,15 @@ final class VotingStore: ObservableObject {
         let holders = history.nodes(holding: choice, among: Set(failed.map(\.proTxHash))) ?? []
         var updated: [Data: VoteOutcome] = [:]
         for node in failed where !senders.contains(node.proTxHash) {
-            updated[node.proTxHash] = VoteOutcome(
-                node: node,
-                failure: holders.contains(node.proTxHash) ? nil : NSLocalizedString("No votes left", comment: "Voting"))
+            updated[node.proTxHash] = holders.contains(node.proTxHash)
+                ? VoteOutcome(node: node, failure: nil) : .noVotesLeft(node)
         }
         let sendable = failed.filter { senders.contains($0.proTxHash) }
         let retried: [VoteOutcome]
-        switch await cast(choice: choice, on: contest, from: sendable) {
-        case .success: retried = sendable.map { VoteOutcome(node: $0, failure: nil) }
-        case .mixed(let again): retried = again.outcomes
-        case .failure(let reason): retried = sendable.map { VoteOutcome(node: $0, failure: reason) }
+        // Each masternode's own outcome, so a no-votes-left refusal keeps its type.
+        switch await castReport(choice: choice, on: contest, from: sendable) {
+        case .report(let again): retried = again.outcomes
+        case .refused(let reason): retried = sendable.map { VoteOutcome(node: $0, failure: reason) }
         case nil: retried = []
         }
         for outcome in retried { updated[outcome.node.proTxHash] = outcome }
@@ -824,23 +1340,28 @@ final class VotingStore: ObservableObject {
         return (Set(records.map(\.proTxHash)).union(unrecorded.map(\.proTxHash)), limit)
     }
 
-    /// Adds the votes `report` says landed to the contest's known history.
-    /// Nothing when the history is not known yet: it stays unknown until the
-    /// next history load, which adds the unrecorded ones back. A node whose
-    /// history already holds a cast from `startedAt` on was counted by a load
-    /// that ran while the vote was in flight, so it is not counted again.
+    /// Adds the votes the reports say landed, each to its contest's known
+    /// history, in one change: one list recompute for a whole run. Nothing
+    /// for a contest whose history is not known yet: it stays unknown until
+    /// the next history load, which adds the unrecorded ones back. A node
+    /// whose history already holds a cast from `startedAt` on was counted by
+    /// a load that ran while the vote was in flight, so it is not counted again.
     private func applyRecordedVotes(
-        of report: VoteCastReport, on normalizedLabel: String, at castAt: Date, startedAt: Date
+        _ landed: [(label: String, report: VoteCastReport)], at castAt: Date, startedAt: Date
     ) {
-        guard var contestHistory = voteHistoryByContest[normalizedLabel] else { return }
-        let uncounted = report.succeeded.filter { !contestHistory.hasCast(of: $0.node.proTxHash, since: startedAt) }
-        for outcome in uncounted {
-            contestHistory.recordCast(
-                of: outcome.node.proTxHash, on: normalizedLabel, choice: report.choice, at: castAt)
+        var histories = voteHistoryByContest
+        var voted = votedProTxHashesByContest
+        for (label, report) in landed {
+            guard var contestHistory = histories[label] else { continue }
+            let uncounted = report.succeeded.filter { !contestHistory.hasCast(of: $0.node.proTxHash, since: startedAt) }
+            for outcome in uncounted {
+                contestHistory.recordCast(of: outcome.node.proTxHash, on: label, choice: report.choice, at: castAt)
+            }
+            histories[label] = contestHistory
+            voted[label, default: []].formUnion(report.succeeded.map(\.node.proTxHash))
         }
-        voteHistoryByContest[normalizedLabel] = contestHistory
-        votedProTxHashesByContest[normalizedLabel, default: []]
-            .formUnion(report.succeeded.map(\.node.proTxHash))
+        voteHistoryByContest = histories
+        votedProTxHashesByContest = voted
     }
 
     /// How many of this wallet's nodes have a live vote here — nodes, not
@@ -881,4 +1402,39 @@ enum VoteAttemptOutcome {
     case failure(String)
     /// Some votes landed and some did not; the report lists each masternode.
     case mixed(VoteCastReport)
+    /// A Quick voting run where some names' votes landed and others failed.
+    case mixedRun(QuickVoteRunReport)
+}
+
+/// One Quick voting run, one cast report per name, in the order sent.
+struct QuickVoteRunReport {
+    let reports: [VoteCastReport]
+
+    /// The names with a vote that did not land, for the result sheet (AC-06b).
+    var failedLabels: [String] {
+        reports.filter { !$0.failed.isEmpty }.map(\.normalizedLabel)
+    }
+
+    /// Some name's failed vote could still land on a retry; a run whose every
+    /// failure is «No votes left» offers Close only (AC-06b, AC-15).
+    var offersTryAgain: Bool { reports.contains(where: \.offersTryAgain) }
+}
+
+/// How far a Quick voting run is: names done of names planned.
+struct QuickVotingProgress: Equatable {
+    let done: Int
+    let total: Int
+}
+
+// MARK: - Voting period
+
+extension DPNSContest {
+    /// When the contest started taking votes: its earliest request date.
+    /// `nil` when any request has no date, since that one may have been
+    /// first, and when there is no request.
+    var votingPeriodStart: Date? {
+        let dates = contenders.map(\.createdAt)
+        guard !dates.isEmpty, !dates.contains(where: { $0 == nil }) else { return nil }
+        return dates.compactMap { $0 }.min()
+    }
 }

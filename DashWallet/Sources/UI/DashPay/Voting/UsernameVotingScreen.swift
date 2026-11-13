@@ -22,6 +22,57 @@ import DashUIKit
 import SwiftDashSDK
 import SwiftUI
 
+// MARK: - UsernameVotingHostingController
+
+/// Hosts Username Voting on the main menu's UIKit stack. Leaving it any way —
+/// the round back button, the edge swipe, VoiceOver's escape gesture — stops a
+/// Quick voting run (ADR-0037). Request details is pushed inside the screen's
+/// own `NavigationStack`, so opening it does not leave this controller.
+/// While a single vote runs the swipe-back is off, as the bar's back button
+/// is (see ``VotingViewModel/holdsScreen``).
+final class UsernameVotingHostingController: UIHostingController<AnyView> {
+    private let viewModel: VotingViewModel
+    private var busy: AnyCancellable?
+
+    init(viewModel: VotingViewModel, onClose: @escaping () -> Void) {
+        self.viewModel = viewModel
+        super.init(rootView: AnyView(
+            NavigationStack {
+                UsernameVotingScreen(onClose: onClose, viewModel: viewModel)
+            }
+        ))
+    }
+
+    @available(*, unavailable)
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) is not supported")
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        busy = viewModel.store.isVoteBusyPublisher
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.navigationController?.interactivePopGestureRecognizer?.isEnabled = !self.viewModel.holdsScreen
+            }
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        busy = nil
+        // The screen underneath gets its swipe-back as usual.
+        navigationController?.interactivePopGestureRecognizer?.isEnabled = true
+    }
+
+    /// Called once the pop is done, whatever started it; a swipe the user
+    /// takes back never gets here.
+    override func didMove(toParent parent: UIViewController?) {
+        super.didMove(toParent: parent)
+        if parent == nil { viewModel.stopQuickVoting() }
+    }
+}
+
 // MARK: - UsernameVotingScreen
 
 /// Menu → Voting. Lists every open DPNS username contest on the network and
@@ -65,6 +116,14 @@ struct UsernameVotingScreen: View {
         VStack(spacing: 0) {
             navigationBar
             scrollingContent
+                // Just above the "Filtered by" bar, so a long message wraps
+                // instead of being cut to the bar's one line. An inset, not an
+                // overlay: the list scrolls clear of it, so the last card's
+                // pills stay reachable while a toast shows.
+                .safeAreaInset(edge: .bottom, spacing: 0) {
+                    toastView
+                        .animation(.easeInOut(duration: 0.2), value: toastID)
+                }
         }
         .background(Color.dash.primaryBackground)
         // The DashUIKit bar replaces the system one; the title stays for
@@ -75,8 +134,7 @@ struct UsernameVotingScreen: View {
             DashUIKit.FilterBar(
                 value: list.filter.sort.title,
                 title: NSLocalizedString("Filtered by", comment: "Voting"),
-                filterAccessibilityLabel: NSLocalizedString("Filter", comment: "Voting"),
-                replacement: list.toast.map { $0.view(onClose: list.clearToast) }) {
+                filterAccessibilityLabel: NSLocalizedString("Filter", comment: "Voting")) {
                 showingFilters = true
             }
         }
@@ -88,6 +146,7 @@ struct UsernameVotingScreen: View {
                 voting: viewModel, normalizedLabel: opened.normalizedLabel, identityId: opened.identityId)
         }
         .voteFlow($voteRequest, viewModel: viewModel)
+        .quickVotingFlow(viewModel.quickVoting, viewModel: viewModel)
         .sheet(isPresented: $showsKeyFlow) {
             // Not opened from a vote: manage mode, with no vote button.
             VotingKeysFlow(
@@ -108,6 +167,12 @@ struct UsernameVotingScreen: View {
                 AccessibilityNotification.Announcement(message).post()
             }
         }
+        // Once as a run starts, not per name: its progress toast stays over the list for minutes.
+        .onChange(of: store.quickVotingProgress != nil) {
+            if let status = viewModel.quickVotingStatus {
+                AccessibilityNotification.Announcement(status).post()
+            }
+        }
         .onChange(of: list.message) {
             if let message = list.message {
                 AccessibilityNotification.Announcement(
@@ -118,16 +183,50 @@ struct UsernameVotingScreen: View {
 
     // MARK: Bar
 
-    /// Round back, and the «…» menu with «Voting keys»: manage mode has no
-    /// other entry. Back is off while a vote runs: the vote outlives the
-    /// screen, and a reopened screen would not know it is still sending.
+    /// Round back and the «…» menu with «Quick voting» and «Voting keys»:
+    /// manage mode has no other entry. Leaving stops a Quick voting run
+    /// (ADR-0037). Back is off while a single vote runs: that vote outlives
+    /// the screen, and a reopened screen would not know it is still sending.
     private var navigationBar: some View {
         DashUIKit.NavigationBar(
             leading: {
-                DashUIKit.NavigationBarElement.back.button(action: onClose)
-                    .disabled(store.isVoteBusy)
+                DashUIKit.NavigationBarElement.back.button(action: {
+                    viewModel.stopQuickVoting()
+                    onClose()
+                })
+                .disabled(viewModel.holdsScreen)
             },
             trailing: { votingMenu })
+    }
+
+    /// Names are on screen, no masternode of this wallet is known to be
+    /// missing (one missing may have blocked a name), and no vote is paused,
+    /// being sent, or reading its history. A sync still running is told at
+    /// the tap, on the nodes read then.
+    private var canVoteForAll: Bool {
+        !list.visibleContests.isEmpty && !store.historyUnavailable && !store.isVoteBusy
+            && !store.nodeListMayBeIncomplete
+    }
+
+    /// The toast over the list: a running Quick voting run, else the last vote's toast.
+    @ViewBuilder
+    private var toastView: some View {
+        if let status = viewModel.quickVotingStatus {
+            DashUIKit.Toast(style: .loading, message: status)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 8)
+                .transition(.opacity)
+        } else if let toast = list.toast {
+            toast.view(onClose: list.clearToast(id:))
+                .padding(.horizontal, 20)
+                .padding(.bottom, 8)
+                .transition(.opacity)
+        }
+    }
+
+    /// Changes whenever a toast appears, goes or is replaced, to animate it.
+    private var toastID: String {
+        viewModel.quickVotingStatus.map { _ in "run" } ?? list.toast?.id.uuidString ?? "none"
     }
 
     private var scrollingContent: some View {
@@ -202,7 +301,15 @@ struct UsernameVotingScreen: View {
         DashUIKit.NavigationBarCircleMenu(
             .system("ellipsis"),
             accessibilityLabel: Text(NSLocalizedString("Voting options", comment: "Voting"))) {
+            // Named as on Android; it opens the Quick voting sheet (AC-18).
             Button {
+                Task { await viewModel.quickVoting.start() }
+            } label: {
+                Label(NSLocalizedString("Quick voting", comment: "Voting"), systemImage: "checkmark.circle")
+            }
+            .disabled(!canVoteForAll)
+            Button {
+                viewModel.refreshVotableNodes()
                 showsKeyFlow = true
             } label: {
                 Label(NSLocalizedString("Voting keys", comment: "Voting"), systemImage: "key")
@@ -238,7 +345,10 @@ struct UsernameVotingScreen: View {
     @ViewBuilder
     private var votingWithRow: some View {
         if viewModel.votableNodes.count > 1 {
-            Button { showsKeyFlow = true } label: {
+            Button {
+                viewModel.refreshVotableNodes()
+                showsKeyFlow = true
+            } label: {
                 HStack(spacing: 8) {
                     Text(NSLocalizedString("Voting with", comment: "Voting"))
                         .dashFont(.footnote)
@@ -289,6 +399,28 @@ struct UsernameVotingScreen: View {
                 icon: "exclamationmark.triangle",
                 title: NSLocalizedString("Can't filter by your votes right now", comment: "Voting"),
                 message: reason,
+                action: (
+                    title: NSLocalizedString("Reset filters", comment: "Voting"),
+                    perform: { list.filter = .default }))
+                .padding(.vertical, 40)
+        case .noVotingKeys:
+            VotingEmptyState(
+                icon: "line.3.horizontal.decrease.circle",
+                title: NSLocalizedString("No votes to filter by", comment: "Voting"),
+                message: NSLocalizedString(
+                    "This wallet has no masternode voting keys, so it has no votes to filter by.",
+                    comment: "Voting"),
+                action: (
+                    title: NSLocalizedString("Reset filters", comment: "Voting"),
+                    perform: { list.filter = .default }))
+                .padding(.vertical, 40)
+        case .cannotFilterByLinks:
+            VotingEmptyState(
+                icon: "exclamationmark.triangle",
+                title: NSLocalizedString("Can't filter by links right now", comment: "Voting"),
+                message: NSLocalizedString(
+                    "Some links couldn't be checked. Apply the filter again to retry, or reset it.",
+                    comment: "Voting"),
                 action: (
                     title: NSLocalizedString("Reset filters", comment: "Voting"),
                     perform: { list.filter = .default }))
@@ -481,45 +613,6 @@ struct VotingBanner: View {
     }
 }
 
-// MARK: - UsernameVotingHostingController
-
-/// Hosts Username Voting in the menu's UIKit stack, in its own
-/// `NavigationStack`. While a vote runs the swipe-back is off, as the bar's
-/// back button is (see ``UsernameVotingScreen``).
-final class UsernameVotingHostingController: UIHostingController<AnyView> {
-    private let store: VotingStore
-    private var busy: AnyCancellable?
-
-    init(onClose: @escaping () -> Void) {
-        let viewModel = VotingViewModel()
-        store = viewModel.store
-        super.init(rootView: AnyView(NavigationStack {
-            UsernameVotingScreen(onClose: onClose, viewModel: viewModel)
-        }))
-    }
-
-    @available(*, unavailable)
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) is not supported")
-    }
-
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        busy = store.isVoteBusyPublisher
-            .receive(on: RunLoop.main)
-            .sink { [weak self] isBusy in
-                self?.navigationController?.interactivePopGestureRecognizer?.isEnabled = !isBusy
-            }
-    }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        busy = nil
-        // The screen underneath gets its swipe-back as usual.
-        navigationController?.interactivePopGestureRecognizer?.isEnabled = true
-    }
-}
-
 // MARK: - Previews
 
 #if DEBUG
@@ -566,6 +659,11 @@ struct PreviewCaster: VoteCasting {
         -> VoteCastReport {
         throw VotingPreviewError.unavailable
     }
+
+    func castRun(_ casts: [QuickVoteCast], progress: @escaping @MainActor (Int) -> Void) async throws
+        -> [VoteCastReport] {
+        throw VotingPreviewError.unavailable
+    }
 }
 
 final class PreviewHistory: VoteHistoryDAO {
@@ -607,20 +705,25 @@ private func previewScreen(
     contests: [DPNSContest],
     nodes: [VoterNode] = [],
     mayBeIncomplete: Bool = false,
+    nodeListSynced: Bool = true,
     failure: Error? = nil,
     failAfterFirstLoad: Bool = false,
     historyUnreadable: Bool = false,
     filterType: VotingTypeFilter = .all,
+    onlyWithLinks: Bool = false,
+    links: @escaping @MainActor (String, String) async throws -> URL? = { _, _ in nil },
     toast: VotingToast? = nil
 ) -> some View {
     let store = VotingStore(
         contests: PreviewContests(contests: contests, failure: failure, failAfterFirstLoad: failAfterFirstLoad),
-        nodes: PreviewNodes(nodes: nodes, mayBeIncomplete: mayBeIncomplete),
+        nodes: PreviewNodes(nodes: nodes, mayBeIncomplete: mayBeIncomplete, isNodeListSynced: nodeListSynced),
         caster: PreviewCaster(),
         history: PreviewHistory(records: historyUnreadable ? nil : []),
-        prefs: PreviewPrefs())
+        prefs: PreviewPrefs(),
+        linkLookup: VotingStore.lookingUpEachRequest(links))
     let viewModel = VotingViewModel(store: store)
     viewModel.list.filter.type = filterType
+    viewModel.list.filter.onlyWithLinks = onlyWithLinks
     if let toast { viewModel.list.showToast(toast) }
     return NavigationStack {
         UsernameVotingScreen(onClose: {}, viewModel: viewModel)
@@ -682,6 +785,30 @@ private let previewNode = VoterNode(
 }
 
 #Preview("Can't filter by your votes") {
+    previewScreen(contests: previewContests, nodeListSynced: false, filterType: .notVoted)
+}
+
+#Preview("No votes to filter by") {
     previewScreen(contests: previewContests, filterType: .notVoted)
+}
+
+/// johndoe with three requests, the second linked; alice with two, neither.
+private let previewLinkContests: [DPNSContest] = [
+    DPNSContest(normalizedLabel: "johndoe", endTime: previewEnd, hasWinner: false, abstainVotes: 0, lockVotes: 1,
+                contenders: (1...3).map { DPNSContender(identityId: "johndoe-request-\($0)", voteTally: UInt32($0)) }),
+    DPNSContest(normalizedLabel: "alice", endTime: previewEnd, hasWinner: false, abstainVotes: 0, lockVotes: 0,
+                contenders: (1...2).map { DPNSContender(identityId: "alice-request-\($0)", voteTally: 0) }),
+]
+
+#Preview("Only requests with links") {
+    previewScreen(
+        contests: previewLinkContests, nodes: [previewNode], onlyWithLinks: true,
+        links: { _, identity in identity == "johndoe-request-2" ? URL(string: "https://example.com/proof") : nil })
+}
+
+#Preview("Can't filter by links") {
+    previewScreen(
+        contests: previewLinkContests, nodes: [previewNode], onlyWithLinks: true,
+        links: { _, _ in throw VotingPreviewError.unavailable })
 }
 #endif

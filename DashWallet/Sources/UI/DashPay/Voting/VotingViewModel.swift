@@ -35,6 +35,10 @@ final class VotingViewModel: ObservableObject {
     let store: VotingStore
     let list: VotingListViewModel
     private var changes = Set<AnyCancellable>()
+    /// The Quick voting run in flight, so leaving can stop it.
+    private var quickVotingRun: Task<Void, Never>?
+    /// The «Quick voting» menu item: keys, the Quick voting sheet, "One vote left", the run.
+    private(set) lazy var quickVoting = QuickVotingViewModel(host: self)
 
     // MARK: Dependencies
 
@@ -50,7 +54,8 @@ final class VotingViewModel: ObservableObject {
         registry: MasternodeVoterRegistry? = nil,
         vault: TrackedMasternodeKeyVaulting? = nil,
         tracker: (@MainActor () -> VotingKeyMasternodeTracking?)? = nil,
-        store: VotingStore? = nil
+        store: VotingStore? = nil,
+        appDidEnterBackground: AnyPublisher<Void, Never>? = nil
     ) {
         let contestsService = contestsService ?? ContestedNamesService()
         let registry = registry ?? MasternodeVoterRegistry()
@@ -70,11 +75,26 @@ final class VotingViewModel: ObservableObject {
         // Screens observe this model; tell them when either part changes.
         store.objectWillChange.sink { [weak self] in self?.objectWillChange.send() }.store(in: &changes)
         list.objectWillChange.sink { [weak self] in self?.objectWillChange.send() }.store(in: &changes)
+        // A run stops when the app goes to the background (ADR-0037).
+        let background = appDidEnterBackground
+            ?? NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)
+                .map { _ in () }.eraseToAnyPublisher()
+        background
+            .sink { [weak self] in self?.stopQuickVoting() }
+            .store(in: &changes)
     }
 
     // MARK: Reads forwarded from the store
 
     var canVote: Bool { store.canVote }
+
+    /// The running Quick voting run, in words: its progress toast over the
+    /// list and what VoiceOver says as the run starts. `nil` when none runs.
+    var quickVotingStatus: String? {
+        store.quickVotingProgress.map {
+            String(format: NSLocalizedString("Quick voting… %1$d of %2$d done", comment: "Voting"), $0.done, $0.total)
+        }
+    }
     var votableNodes: [VoterNode] { store.votableNodes }
     var toast: VotingToast? { list.toast }
 
@@ -85,6 +105,13 @@ final class VotingViewModel: ObservableObject {
     }
     func loadVotedNodes(for normalizedLabel: String) async { await store.loadVotedNodes(for: normalizedLabel) }
     func refreshVotableNodes() { store.refreshVotableNodes() }
+
+    /// The voting-key flow opens on "Enter voting key" only when, with the
+    /// wallet's sync done and the node list complete, it has no node (SCR-04
+    /// «no keys»). Before the sync is done, or while the list may miss a node,
+    /// an empty list says nothing yet, so the flow opens on "Add your voting
+    /// keys", whose empty state offers the key input.
+    var keysFlowOpensOnKeyInput: Bool { votableNodes.isEmpty && !store.nodeListMayMissNodes }
     func isSending(normalizedLabel: String) -> Bool { store.isSending(normalizedLabel: normalizedLabel) }
 
     /// Names the nodes a vote will use, so the privacy consequence of the
@@ -144,11 +171,70 @@ final class VotingViewModel: ObservableObject {
 
     // MARK: Casting
 
-    /// Try again after a mixed vote: the store resends the failed masternodes,
-    /// and a run that now landed everywhere is told by the toast.
+    /// Starts a Quick voting run of `plan`, unless one is running; its outcome
+    /// is told as a single vote's (``showToast(for:)``).
+    func startQuickVoting(_ plan: QuickVotePlan) {
+        guard quickVotingRun == nil else { return }
+        list.clearToast()
+        // The task holds the store, not this model: a run of a screen that
+        // is gone keeps no view model alive.
+        let store = store
+        quickVotingRun = Task { [weak self] in
+            // The run's own outcome: a run that did not start leaves the
+            // store's outcome to whichever attempt set it.
+            let outcome = await store.runQuickVoting(plan)
+            self?.showToast(for: outcome)
+            self?.quickVotingRun = nil
+            // The tallies after the toast, so it does not wait on Platform.
+            await store.refreshAfterQuickVoting(outcome)
+        }
+    }
+
+    /// A vote runs that leaving would not stop: a single vote or its Try
+    /// again. Back stops a Quick voting run instead (ADR-0037).
+    var holdsScreen: Bool { store.isVoteBusy && quickVotingRun == nil }
+
+    /// Stops the run in flight: nothing more is sent, and the votes not sent
+    /// are reported as not cast, for Try again.
+    func stopQuickVoting() {
+        quickVotingRun?.cancel()
+    }
+
+    /// A screen torn down without a pop stops its run too: the run's task
+    /// holds the store, not this model.
+    deinit {
+        quickVotingRun?.cancel()
+    }
+
+    /// Try again after a mixed single vote: the store resends the failed
+    /// masternodes, and a vote that now landed everywhere is told by the
+    /// toast. After a Quick voting run it does nothing: that retry is a run
+    /// too and goes only through ``tryAgainRun()``, which the screen can stop.
     func retryFailed() async {
+        if case .mixedRun? = store.outcome { return }
         await store.retryFailed()
         showToast(for: store.outcome)
+    }
+
+    /// Starts Try again after a Quick voting run as a run, unless one is
+    /// running: leaving the screen or the app going to the background stops
+    /// it (ADR-0037). The returned task ends with the toast, before the
+    /// tallies are re-read, and holds the store, not this model, so a screen
+    /// torn down while it waits stops it too.
+    func tryAgainRun() -> Task<Void, Never>? {
+        guard case .mixedRun? = store.outcome, quickVotingRun == nil else { return nil }
+        let store = store
+        let retry = Task { [weak self] in
+            await store.retryFailed()
+            self?.showToast(for: store.outcome)
+            self?.quickVotingRun = nil
+            // The tallies after the toast, not awaited: the result sheet
+            // closes without waiting on Platform.
+            let outcome = store.outcome
+            Task { await store.refreshAfterQuickVoting(outcome) }
+        }
+        quickVotingRun = retry
+        return retry
     }
 
     /// A vote that landed everywhere is a toast, as is one that failed outright;
@@ -157,7 +243,7 @@ final class VotingViewModel: ObservableObject {
         switch outcome {
         case .success(let toast): list.showToast(toast)
         case .failure(let reason): list.showToast(.failed(reason))
-        case .mixed, nil: break
+        case .mixed, .mixedRun, nil: break
         }
     }
 }
@@ -173,6 +259,9 @@ extension VotingViewModel: VoteAttemptHosting {
     /// attempt, so neither sits under a dialog of the new one (AC-06).
     func attemptWillStart(on contest: DPNSContest) {
         list.clearToast()
+        // Read now, so "Add your voting keys" or "Enter voting key" is
+        // decided on the nodes as they are at the tap.
+        store.refreshVotableNodes()
         store.beginAttempt(on: contest.normalizedLabel)
     }
 
@@ -213,5 +302,36 @@ extension VotingViewModel: VoteAttemptHosting {
 
     func reportHistoryUnavailable() {
         list.showToast(.failed(NSLocalizedString("Couldn't read your vote history.", comment: "Voting")))
+    }
+}
+
+// MARK: - QuickVotingHosting
+
+extension VotingViewModel: QuickVotingHosting {
+    var shownContests: [DPNSContest] { list.visibleContests }
+    var showsOnlyRequestsWithLinks: Bool { list.filter.onlyWithLinks }
+    var nodeListMayMissNodes: Bool { store.nodeListMayMissNodes }
+
+    func reportNodeListMayMissNodes() {
+        list.showToast(.failed(NSLocalizedString("Some of your masternodes may be missing from this list.", comment: "Voting")))
+    }
+
+    func reloadVoteHistory() async -> Bool {
+        await store.loadAllVoteHistory()
+        return !store.historyUnavailable
+    }
+
+    func quickVotePlan(for shown: [DPNSContest]) -> QuickVotePlan {
+        store.quickVotePlan(for: shown)
+    }
+
+    func username(of normalizedLabel: String) -> String {
+        store.contests.first { $0.normalizedLabel == normalizedLabel }?.displayTitle ?? normalizedLabel
+    }
+
+    func quickVotingWillStart() {
+        list.clearToast()
+        store.refreshVotableNodes()
+        store.beginQuickVoting()
     }
 }

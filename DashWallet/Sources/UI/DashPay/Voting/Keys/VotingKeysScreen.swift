@@ -24,8 +24,9 @@ import SwiftUI
 // MARK: - VotingKeysFlow
 
 /// The voting-key screens as one sheet: "Add your voting keys" and, over it,
-/// the key input. With no masternode the list shows its empty state, whose
-/// "Add masternode voting key" opens the input.
+/// the key input. When the wallet's sync is done and it has no node, the
+/// flow opens on the key input; before the sync is done the list shows its
+/// empty state, whose "Add masternode voting key" opens the input.
 ///
 /// In vote mode a vote attempt opened it, and its Block or Approve button
 /// keeps the ticks, sets voting up and goes back to that attempt, whose gates
@@ -36,7 +37,11 @@ struct VotingKeysFlow: View {
     /// Closes the flow; `true` when the vote button was tapped.
     let onFinish: (_ continueToVote: Bool) -> Void
 
-    @State private var isAddingKey = false
+    /// Decided once, when the flow opens: state, so a re-render after a key
+    /// change does not decide it again. Cleared when the list's "Add
+    /// masternode voting key" is tapped.
+    @State private var opensOnKeyInput: Bool
+    @State private var isAddingKey: Bool
     /// Set when the last key entered added only some of its nodes; shown on
     /// the list until the next attempt.
     @State private var importNotice: String?
@@ -49,6 +54,11 @@ struct VotingKeysFlow: View {
         self.mode = mode
         self.viewModel = viewModel
         self.onFinish = onFinish
+        // With no masternode and no imported key there is nothing to tick:
+        // the flow opens on "Enter voting key" (design 3830:20529).
+        let opensOnKeyInput = viewModel.keysFlowOpensOnKeyInput
+        _opensOnKeyInput = State(initialValue: opensOnKeyInput)
+        _isAddingKey = State(initialValue: opensOnKeyInput)
     }
 
     var body: some View {
@@ -58,13 +68,23 @@ struct VotingKeysFlow: View {
                 mode: mode,
                 importNotice: importNotice,
                 onAddKey: {
+                    // The list has been shown: back from this key input
+                    // returns to it, even when it is empty.
+                    opensOnKeyInput = false
                     importNotice = nil
                     isAddingKey = true
                 },
                 onFinish: onFinish)
             .navigationDestination(isPresented: $isAddingKey) {
                 VotingKeyInputScreen(
-                    onBack: { isAddingKey = false },
+                    // Back from the first key leaves the flow, not an empty list.
+                    onBack: {
+                        if opensOnKeyInput, viewModel.votableNodes.isEmpty {
+                            onFinish(false)
+                        } else {
+                            isAddingKey = false
+                        }
+                    },
                     onVerified: { notice in
                         importNotice = notice
                         viewModel.refreshVotableNodes()
@@ -117,7 +137,8 @@ private struct VotingKeysScreen: View {
                         title: NSLocalizedString("Add your voting keys", comment: "Voting"),
                         mainDescription: NSLocalizedString(
                             "The IP address(es) below are associated with this wallet. Tick the ones that should vote.",
-                            comment: "Voting"))
+                            comment: "Voting"),
+                        descriptionColor: Color.dash.secondaryText)
 
                     if let importNotice {
                         VotingBanner(text: importNotice, tone: .warning, isRounded: true)
@@ -158,7 +179,13 @@ private struct VotingKeysScreen: View {
             .scrollBounceBehavior(.basedOnSize)
 
             if let choice = keys.voteChoice {
-                voteButton(for: choice)
+                voteButton(
+                    title: choice == .lock
+                        ? NSLocalizedString("Block", comment: "Voting")
+                        : NSLocalizedString("Approve", comment: "Voting"),
+                    style: choice == .lock ? .filledRed : .filledBlue)
+            } else if keys.mode == .quickVoting {
+                voteButton(title: NSLocalizedString("Vote for all", comment: "Voting"), style: .filledBlue)
             }
         }
         .background(Color.dash.primaryBackground)
@@ -183,17 +210,16 @@ private struct VotingKeysScreen: View {
         }
     }
 
-    /// Block in red or Approve in blue, matching the tapped pill, with the vote count under it.
-    private func voteButton(for choice: VoteChoice) -> some View {
+    /// Block in red or Approve in blue, matching the tapped pill, with the vote
+    /// count under it; «Vote for all» in blue for Quick voting.
+    private func voteButton(title: String, style: DashUIKit.DashButtonStyle) -> some View {
         VStack(spacing: 12) {
             DashUIKit.DashButton(
-                text: choice == .lock
-                    ? NSLocalizedString("Block", comment: "Voting")
-                    : NSLocalizedString("Approve", comment: "Voting"),
+                text: title,
                 isEnabled: keys.canConfirm,
                 fillsWidth: true,
                 size: .large,
-                style: choice == .lock ? .filledRed : .filledBlue,
+                style: style,
                 action: {
                     keys.confirm()
                     onFinish(true)
@@ -218,7 +244,7 @@ private struct VotingKeysScreen: View {
             // Only a key the user added can be taken away, and only when
             // managing keys. A derived key is part of the wallet, and a remove
             // control that did nothing would lie.
-            if keys.voteChoice == nil, node.keySource == .trackedVault {
+            if !keys.hasVoteButton, node.keySource == .trackedVault {
                 Button {
                     removalError = nil
                     nodePendingRemoval = node
@@ -294,6 +320,10 @@ private func keysPreviewNode(_ byte: UInt8, imported: Bool = false) -> VoterNode
         [keysPreviewNode(1), keysPreviewNode(2, imported: true)],
         mode: .manage,
         selection: [Data([1])])
+}
+
+#Preview("Quick voting") {
+    keysPreview([keysPreviewNode(1), keysPreviewNode(2)], mode: .quickVoting)
 }
 
 #Preview("No masternodes") {

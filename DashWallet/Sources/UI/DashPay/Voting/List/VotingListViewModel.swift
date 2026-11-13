@@ -37,10 +37,14 @@ final class VotingListViewModel: ObservableObject {
     /// The search query, homograph-normalized once per edit rather than on
     /// every recompute of the list.
     private var normalizedNeedle: String?
+    /// Set by the filters sheet's Apply. With "Only requests with links" on,
+    /// each set asks again for the links that could not be checked — also
+    /// when the sheet hands back the same filter, which is how «apply the
+    /// filter again» retries them (AC-09b).
     @Published var filter: VotingFilter = .default {
         didSet {
-            guard filter != oldValue else { return }
-            recomputeVisible()
+            guard filter != oldValue || filter.onlyWithLinks else { return }
+            recomputeVisible(retryingFailedLinks: filter.onlyWithLinks)
         }
     }
 
@@ -58,6 +62,17 @@ final class VotingListViewModel: ObservableObject {
     @Published private(set) var myVotesKnownForList = false
     /// ``visibleContests`` grouped by the day voting ends.
     @Published private(set) var sections: [VotingListSection] = []
+    /// Whether "Only requests with links" can be applied: every request it
+    /// would look at has a known link. `.known` when the filter is off.
+    @Published private(set) var linksForFilter: LinksForFilter = .known
+
+    enum LinksForFilter: Equatable {
+        case known
+        /// Some request's link is still being read (AC-09b: loading).
+        case reading
+        /// Some request's link could not be checked (AC-09b: cannot filter).
+        case failed
+    }
 
     /// The outcome of the last vote, shown in the list's bottom bar (and, for
     /// an error, on Request details) until it is closed or the next vote
@@ -135,10 +150,19 @@ final class VotingListViewModel: ObservableObject {
         }
         guard visibleContests.isEmpty else { return nil }
         if filter.type.readsMyVotes {
+            // A synced, complete node list without a voting node: the wallet
+            // has no votes, which no retry changes (AC-09).
+            if store.nodeListSynced, !store.nodeListMayBeIncomplete, !store.canVote { return .noVotingKeys }
             // Not the filter's fault: this wallet's votes cannot be told (AC-09).
             if let reason = myVotesUnavailableReason { return .cannotFilterByMyVotes(reason: reason) }
             // Still loading for some contests: nothing can be said to match yet.
             if !myVotesKnownForList { return .loading }
+        }
+        // Links not all known: the list would be wrong (AC-09b).
+        switch linksForFilter {
+        case .reading: return .loading
+        case .failed: return .cannotFilterByLinks
+        case .known: break
         }
         // The filter alone hides every open contest (AC-08); otherwise the search does.
         return filterMatchCount == 0 ? .filterMatchesNothing : .searchMatchesNothing
@@ -147,6 +171,11 @@ final class VotingListViewModel: ObservableObject {
     /// Also called when the day changes, so "Voting ends today / in N days"
     /// stays true on a screen left open past midnight.
     func recomputeVisible() {
+        recomputeVisible(retryingFailedLinks: false)
+    }
+
+    private func recomputeVisible(retryingFailedLinks: Bool) {
+        linksForFilter = filter.onlyWithLinks ? readLinks(retryingFailed: retryingFailedLinks) : .known
         // Search matching keeps order and does not depend on the filter, so
         // filtering first gives both the header count and the rows.
         myVotesKnownForList = canFilterByMyVotes
@@ -154,7 +183,9 @@ final class VotingListViewModel: ObservableObject {
         // A filter by my vote shows nothing until every contest can be told:
         // after a refresh the new contests' history is still loading, and
         // showing only the contests already known would be a partial list.
-        let kept = filter.type.readsMyVotes && !myVotesKnownForList ? [] : filtered(store.contests)
+        // While the links cannot all be told, the links filter keeps nothing.
+        let canTell = linksForFilter == .known && !(filter.type.readsMyVotes && !myVotesKnownForList)
+        let kept = canTell ? filtered(store.contests) : []
         filterMatchCount = kept.count
         let visible = searchMatches(in: kept)
         // Days always go soonest first; the sort orders names inside a day.
@@ -230,7 +261,43 @@ final class VotingListViewModel: ObservableObject {
     }
 
     private func filtered(_ input: [DPNSContest]) -> [DPNSContest] {
-        filter.apply(to: input, myChoices: knownChoices(on:))
+        filter.apply(to: input, myChoices: knownChoices(on:)) { contest, request in
+            let link = store.linkState(normalizedLabel: contest.normalizedLabel, identityId: request.identityId)
+            if case .published = link { return true }
+            return false
+        }
+    }
+
+    /// The links the links filter needs: those of every request the rest of
+    /// the filter keeps. Asks the store for each one never asked (and, when
+    /// `retryingFailed`, each one that could not be checked), and says
+    /// whether all are known.
+    private func readLinks(retryingFailed: Bool) -> LinksForFilter {
+        var withoutLinks = filter
+        withoutLinks.onlyWithLinks = false
+        var result = LinksForFilter.known
+        var toAsk: Set<VotingStore.RequestKey> = []
+        for contest in withoutLinks.apply(to: store.contests, myChoices: knownChoices(on:)) {
+            for request in contest.contenders {
+                let label = contest.normalizedLabel, identity = request.identityId
+                let state = store.linkState(normalizedLabel: label, identityId: identity)
+                if state == nil || (retryingFailed && state == .failed) {
+                    toAsk.insert(VotingStore.RequestKey(normalizedLabel: label, identityId: identity))
+                    result = .reading
+                } else if state == .reading {
+                    result = .reading
+                } else if state == .failed, result == .known {
+                    result = .failed
+                }
+            }
+        }
+        // One ask for all of them, after this recompute: the store marks them
+        // reading in one change and looks up each name once. Not awaited, so
+        // a screen that goes away does not keep the store and its lookups.
+        if !toAsk.isEmpty {
+            Task { [weak store] in store?.askForLinks(toAsk, retryingFailed: retryingFailed) }
+        }
+        return result
     }
 
     /// This wallet's choices on a contest, or `nil` while they are not known
@@ -255,23 +322,54 @@ final class VotingListViewModel: ObservableObject {
         contest.contenders.count > 1
     }
 
+    /// Opens or closes a several-request name. Opening looks up the link of
+    /// each request, for its «Link included».
     func toggleExpanded(_ normalizedLabel: String) {
         guard let contest = store.contests.first(where: { $0.normalizedLabel == normalizedLabel }),
               isExpandable(contest) else { return }
-        if !expandedLabels.insert(normalizedLabel).inserted {
+        guard expandedLabels.insert(normalizedLabel).inserted else {
             expandedLabels.remove(normalizedLabel)
+            return
         }
+        let keys = contest.contenders.map {
+            VotingStore.RequestKey(normalizedLabel: normalizedLabel, identityId: $0.identityId)
+        }
+        store.askForLinks(Set(keys), retryingFailed: true, first: true)
     }
 
-    /// One row per request, in the contender order, each with its own approve
-    /// pill state: filled where a ticked node's vote lands on that request.
+    /// A request's day, "12 Feb 2023"; its time is `requestTimeFormatter`'s,
+    /// drawn after it in a lighter colour as in the design.
+    let requestDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter
+    }()
+
+    /// A request's time of day, "9:45".
+    let requestTimeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .none
+        formatter.timeStyle = .short
+        return formatter
+    }()
+
+    /// One row per request, in the contender order, each with its date, its
+    /// link mark and its own approve pill state: filled where a ticked node's
+    /// vote lands on that request.
     func requestRows(for contest: DPNSContest) -> [VotingRequestRow] {
         let mine = store.myChoices(on: contest.normalizedLabel)
         return contest.contenders.map { contender in
-            VotingRequestRow(
+            let link = store.linkState(normalizedLabel: contest.normalizedLabel, identityId: contender.identityId)
+            let hasLink: Bool
+            if case .published = link { hasLink = true } else { hasLink = false }
+            return VotingRequestRow(
                 identityId: contender.identityId,
                 votes: Int(contender.voteTally),
-                isMine: mine.contains(.towards(identityId: contender.identityId)))
+                isMine: mine.contains(.towards(identityId: contender.identityId)),
+                dateText: contender.createdAt.map(requestDateFormatter.string(from:)),
+                timeText: contender.createdAt.map(requestTimeFormatter.string(from:)),
+                hasLink: hasLink)
         }
     }
 
@@ -332,13 +430,22 @@ final class VotingListViewModel: ObservableObject {
 
     // MARK: Toast
 
-    /// The toast stays until ``clearToast()``: its close button or the next
-    /// vote attempt (AC-06).
+    /// An error toast stays until it is cleared: by ``clearToast(id:)`` from
+    /// its close button, or by ``clearToast()`` as the next vote attempt
+    /// starts (AC-06); a success toast also clears itself by id after
+    /// ``VotingToast/hidesAfter``.
     func showToast(_ toast: VotingToast) {
         self.toast = toast
     }
 
     func clearToast() {
+        toast = nil
+    }
+
+    /// Clears the toast only while it is still the one with `id`, so an older
+    /// toast's timer never clears the toast that replaced it.
+    func clearToast(id: VotingToast.ID) {
+        guard toast?.id == id else { return }
         toast = nil
     }
 }
@@ -351,6 +458,12 @@ struct VotingRequestRow: Equatable {
     let votes: Int
     /// A ticked node's vote lands on this request: its approve pill is filled.
     let isMine: Bool
+    /// The request's day; `nil` when Platform gave no date, and the row shows the identity instead.
+    let dateText: String?
+    /// The request's time of day, shown after `dateText`; `nil` with it.
+    let timeText: String?
+    /// The requester published a link: the row says «Link included».
+    let hasLink: Bool
 
     /// The identity as VoiceOver reads it: its first and last four
     /// characters, enough to tell a row's requests apart; Request details
@@ -432,6 +545,11 @@ enum VotingListEmptyState: Equatable {
     case couldNotLoad
     /// A type by my vote while this wallet's votes cannot be told, and why (AC-09).
     case cannotFilterByMyVotes(reason: String)
+    /// A type by my vote while the synced node list holds no voting node of
+    /// this wallet: it has no votes to filter by (AC-09).
+    case noVotingKeys
+    /// "Only requests with links" while some request's link could not be checked (AC-09b).
+    case cannotFilterByLinks
     /// Open contests exist and the filter keeps none (AC-08).
     case filterMatchesNothing
     /// The load succeeded and no contest is open.
@@ -504,6 +622,15 @@ struct VotingToast: Identifiable, Equatable {
     }
 
     let style: Style
+
+    /// Only an error toast can be closed by hand (AC-06); a success toast
+    /// hides itself, as in the design.
+    var showsCloseButton: Bool { style == .error }
+
+    /// How long the toast stays: a success toast hides after 3 s; an error
+    /// toast (`nil`) stays until it is closed or the next attempt (AC-06).
+    var hidesAfter: Duration? { style == .success ? .seconds(3) : nil }
+
     /// The vote was already held, so Request details tells it too: nothing
     /// was sent and the screen stays.
     var isAlreadyVoted = false
@@ -528,8 +655,15 @@ struct VotingToast: Identifiable, Equatable {
 
     /// A vote every ticked masternode already holds: nothing was sent (AC-12).
     static func alreadyVoted(username: String) -> VotingToast {
-        let format = NSLocalizedString("Your masternodes already voted this way on %@", comment: "Voting")
+        let format = NSLocalizedString("Already voted this way on %@", comment: "Voting")
         return VotingToast(message: String(format: format, username), style: .success, isAlreadyVoted: true)
+    }
+
+    /// Every vote of a Quick voting run landed (AC-18).
+    static func quickVotingDone() -> VotingToast {
+        VotingToast(
+            message: NSLocalizedString("Quick voting done", comment: "Voting"),
+            style: .success)
     }
 
     /// A vote on a contest whose voting end has passed (AC-03).

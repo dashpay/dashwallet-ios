@@ -139,6 +139,19 @@ final class VotingKeysViewModelTests: XCTestCase {
         XCTAssertEqual(source.confirmed, [Data([1]), Data([2])])
     }
 
+    func testQuickVotingModeKeepsTheTicksOnConfirmAndHasNoSingleVoteChoice() {
+        let vm = viewModel(.quickVoting)
+        vm.toggle(node(2))
+        XCTAssertTrue(source.ticks.isEmpty)
+        XCTAssertNil(vm.voteChoice, "its button is «Vote for all», not Block or Approve")
+        XCTAssertTrue(vm.hasVoteButton)
+        XCTAssertNil(vm.castCaption, "the Quick voting sheet tells the counts next")
+
+        vm.confirm()
+
+        XCTAssertEqual(source.confirmed, [Data([1]), Data([2])])
+    }
+
     func testConfirmWithNothingTickedKeepsNothing() {
         let vm = viewModel()
         vm.toggle(node(1))

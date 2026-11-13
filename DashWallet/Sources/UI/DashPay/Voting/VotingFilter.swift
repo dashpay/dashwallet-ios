@@ -103,6 +103,9 @@ struct VotingFilter: Equatable {
     var type: VotingTypeFilter
     /// Only names requested by more than one identity.
     var onlyDuplicates: Bool
+    /// Only the requests whose requester published a link, as Android: a name
+    /// stays when one of its requests has a link, and shows only those.
+    var onlyWithLinks = false
 
     /// The header's name for what the list holds: the type, and the
     /// duplicates switch when it is on (the bottom bar names the order).
@@ -114,15 +117,30 @@ struct VotingFilter: Equatable {
     /// Everything, oldest request first.
     static let `default` = VotingFilter(sort: .dateOldToNew, type: .all, onlyDuplicates: false)
 
-    /// `contests` narrowed by type and duplicates, then ordered. `myChoices`
-    /// gives this wallet's choices on a contest, `nil` when they are unknown.
+    /// `contests` narrowed by type, duplicates and links, then ordered.
+    /// `myChoices` gives this wallet's choices on a contest, `nil` when they
+    /// are unknown; `hasLink` whether a request has a link, read only for
+    /// ``onlyWithLinks``. With links, a kept contest carries only its linked
+    /// requests, while "duplicates" still counts every request (AC-07b).
     ///
     /// Every order is stable: names that tie keep the order `contests` came
     /// in. A contest whose end is unknown goes last in both date orders.
-    func apply(to contests: [DPNSContest], myChoices: (String) -> Set<VoteChoice>?) -> [DPNSContest] {
-        let kept = contests.filter { contest in
-            (!onlyDuplicates || contest.contenders.count > 1)
-                && type.includes(contest, myChoices: type.readsMyVotes ? myChoices(contest.normalizedLabel) : nil)
+    func apply(
+        to contests: [DPNSContest],
+        myChoices: (String) -> Set<VoteChoice>?,
+        hasLink: (DPNSContest, DPNSContender) -> Bool = { _, _ in false }
+    ) -> [DPNSContest] {
+        let kept: [DPNSContest] = contests.compactMap { contest in
+            guard !onlyDuplicates || contest.contenders.count > 1,
+                  type.includes(contest, myChoices: type.readsMyVotes ? myChoices(contest.normalizedLabel) : nil)
+            else { return nil }
+            guard onlyWithLinks else { return contest }
+            let linked = contest.contenders.filter { hasLink(contest, $0) }
+            guard !linked.isEmpty else { return nil }
+            return DPNSContest(
+                normalizedLabel: contest.normalizedLabel, endTime: contest.endTime, hasWinner: contest.hasWinner,
+                abstainVotes: contest.abstainVotes, lockVotes: contest.lockVotes, contenders: linked,
+                requestedLabels: contest.requestedLabels)
         }
         switch sort {
         case .dateOldToNew:
