@@ -144,6 +144,7 @@ final class ShieldedTransferCoordinator {
     var inFlightOutPoint: ShieldedAssetLocksInFlight.OutPoint?
     static let drainSettleTimeout: TimeInterval = 30
     var lastResumeReport: ResumeReport?
+    var lastResumeRecipientSource: ShieldedResumeRecipient.Source?
     var lastFailure: Error?
     var lastAssetLockContext: CoreShieldedDrainContext?
     var lastAssetLockOutPoint: ShieldedAssetLocksInFlight.OutPoint?
