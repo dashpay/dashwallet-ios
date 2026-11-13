@@ -19,8 +19,12 @@ import SwiftUI
 import DashUIKit
 import UIKit
 
+/// Set once the merchant-types explainer has been shown before Where to Spend.
+private let kMerchantTypesShown = "merchantTypesInfoDialogShownKey"
+
 struct ExploreMenuScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
     private let showBackButton: Bool
     private let onShowSendPayment: () -> Void
     private let onShowReceivePayment: () -> Void
@@ -32,7 +36,7 @@ struct ExploreMenuScreen: View {
         isTestnetProvider()
     }
 
-    init(vc: UINavigationController,
+    init(vc: UINavigationController?,
          showBackButton: Bool = true,
          onShowSendPayment: @escaping () -> Void,
          onShowReceivePayment: @escaping () -> Void,
@@ -53,7 +57,7 @@ struct ExploreMenuScreen: View {
             if showBackButton {
                 DashUIKit.NavigationBar(leading: {
                     DashUIKit.NavigationBarElement.back.button {
-                        vc.popViewController(animated: true)
+                        vc?.popViewController(animated: true)
                     }
                 })
             }
@@ -144,7 +148,7 @@ struct ExploreMenuScreen: View {
                 showMerchants()
             })
             hostingController.setDetent(640)
-            vc.present(hostingController, animated: true)
+            vc?.present(hostingController, animated: true)
         } else {
             showMerchants()
         }
@@ -152,12 +156,16 @@ struct ExploreMenuScreen: View {
 
     private func showMerchants() {
         let merchantVC = MerchantListViewController()
+        merchantVC.customNavBar = MerchantListViewController.CustomNavBarConfiguration(
+            title: NSLocalizedString("Where to Spend", comment: ""),
+            onBack: { [weak merchantVC] in merchantVC?.closeOrPop() },
+            onInfo: nil)
         merchantVC.payWithDashHandler = { onShowSendPayment() }
         merchantVC.onGiftCardPurchased = { txId in
-            vc.popToRootViewController(animated: false)
+            vc?.popToRootViewController(animated: false)
             onShowGiftCard(txId)
         }
-        vc.pushViewController(merchantVC, animated: true)
+        vc?.pushViewController(merchantVC, animated: true)
     }
 
     /// Same auth gate the row carried in the More menu — the portal
@@ -171,20 +179,20 @@ struct ExploreMenuScreen: View {
         ) { authenticated, _, _ in
             guard authenticated else { return }
             let controller = BuySellPortalViewController.controller()
-            vc.pushViewController(controller, animated: true)
+            vc?.pushViewController(controller, animated: true)
         }
     }
 
     private func showUsernameMarketplace() {
         let controller = UIHostingController(
             rootView: UsernameMarketplaceScreen(vc: vc))
-        vc.pushViewController(controller, animated: true)
+        vc?.pushViewController(controller, animated: true)
     }
 
     private func showAtms() {
         let atmVC = AtmListViewController()
         atmVC.payWithDashHandler = { onShowReceivePayment() }
         atmVC.sellDashHandler = { onShowSendPayment() }
-        vc.pushViewController(atmVC, animated: true)
+        vc?.pushViewController(atmVC, animated: true)
     }
 }

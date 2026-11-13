@@ -26,7 +26,8 @@ import UIKit
 
 struct KeysOverviewContentView: View {
     @StateObject private var viewModel = KeysOverviewViewModel()
-    private let navigationController: UINavigationController?
+    /// Weak: this page sits in `navigationController`'s own stack.
+    private weak var navigationController: UINavigationController?
 
     init(navigationController: UINavigationController? = nil) {
         self.navigationController = navigationController

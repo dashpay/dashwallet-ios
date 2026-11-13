@@ -43,13 +43,17 @@ protocol DashConnectDataSource {
     /// every key the wallet's approvals of the app gave on the active
     /// identity, puts a key of the wallet's own under each id an approval
     /// may still land on so it never does, and deletes the published
-    /// responses; it throws when a key could not be shown off, and the
-    /// connection then stays. Keys no approval of this wallet names (the
-    /// app's from another device or from before a restore, DashPay profile
-    /// keys no app can be told to hold) are turned off only when listed in
-    /// `unrecordedKeys`, what the result of a disconnect without them
-    /// offered (nil: none listed); only those still the app's go, and none
-    /// when the active identity is not the one they were offered on. The
+    /// responses. It also turns off, with no further question, the live keys
+    /// bound to the app's contracts that no approval of this wallet names
+    /// (from another device or from before a restore), the live keys on the
+    /// other contracts and contract groups of the app's owner it can
+    /// attribute to the app by owner, and every DashPay profile key no
+    /// approval names. An update that fails stops it: the result says how
+    /// many keys are still live, and the connection stays. Keys whose bound
+    /// the wallet cannot tell yet, or whose owner, the app's owner or another
+    /// app's owner here could not be read, are not turned off and are counted
+    /// as not checked; keys of the app's owner that another app here has too
+    /// are not turned off and are counted as not attributable. The
     /// connection also stays, and that is thrown, while an approval of the
     /// app on another identity of the wallet is not done.
     ///
@@ -57,15 +61,24 @@ protocol DashConnectDataSource {
     /// both calls act only while it still names the wallet they would act
     /// on.
     @discardableResult
-    func disconnect(id: String, scope: String?, unrecordedKeys: DashConnectOfferedKeys?) async throws -> DashConnectDisconnectResult
+    func disconnect(id: String, scope: String?) async throws -> DashConnectDisconnectResult
+    /// Hides a row. For an App Connect connection that Platform refused for
+    /// good it records the remove date on the connection's refused approvals,
+    /// without a PIN and without writing to Platform; a connection that does
+    /// not show Refused is left as it is.
     func remove(id: String, scope: String?) async
     /// Puts the App Connect rows in step with the active identity's keys on
     /// Platform. Best effort: a failed read leaves the rows as they were.
     func refreshConnections() async
+    /// What the connection sheet shows for the row `id`, from the active
+    /// identity's intents for the app; `nil` when there is no active wallet
+    /// or `scope` is not its.
+    func connectionDetails(id: String, scope: String?) async -> ConnectionDetails?
 }
 
 extension DashConnectDataSource {
     func refreshConnections() async {}
+    func connectionDetails(id: String, scope: String?) async -> ConnectionDetails? { nil }
 }
 
 /// Why a token purchase failed, and — the part that decides what the UI may
@@ -279,13 +292,19 @@ final class MockDashConnectDataSource: DashConnectDataSource {
     }
 
     @discardableResult
-    func disconnect(id: String, scope: String?, unrecordedKeys: DashConnectOfferedKeys?) async throws -> DashConnectDisconnectResult {
+    func disconnect(id: String, scope: String?) async throws -> DashConnectDisconnectResult {
         persistAndSend(subject.value.filter { $0.id != id })
         return DashConnectDisconnectResult()
     }
 
     func remove(id: String, scope: String?) async {
         persistAndSend(subject.value.filter { $0.id != id })
+    }
+
+    /// The mock grants no keys: no details beyond the row.
+    func connectionDetails(id: String, scope: String?) async -> ConnectionDetails? {
+        guard subject.value.contains(where: { $0.id == id }) else { return nil }
+        return ConnectionDetails(appId: id, identityId: nil, username: nil)
     }
 
     private func validateNetwork(_ network: DashConnectNetwork) throws {

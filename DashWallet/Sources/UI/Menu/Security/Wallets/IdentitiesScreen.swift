@@ -31,11 +31,12 @@ import SwiftDashSDK
 import UIKit
 
 struct IdentitiesScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
 
     @StateObject private var viewModel = IdentitiesViewModel()
 
-    init(vc: UINavigationController) {
+    init(vc: UINavigationController?) {
         self.vc = vc
     }
 
@@ -107,7 +108,7 @@ struct IdentitiesScreen: View {
     private func showDetail(_ row: IdentityRowModel) {
         let controller = UIHostingController(
             rootView: IdentityDetailScreen(row: row, vc: vc, viewModel: viewModel))
-        vc.pushViewController(controller, animated: true)
+        vc?.pushViewController(controller, animated: true)
     }
 
     // MARK: - Subviews
@@ -115,7 +116,7 @@ struct IdentitiesScreen: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 0) {
             DashUIKit.NavigationBar(leading: {
-                DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
+                DashUIKit.NavigationBarElement.back.button { vc?.popViewController(animated: true) }
             }, trailing: {
                 HStack {
                     // Explicit Find-identities command: DIP-9 scan of the active
@@ -323,7 +324,8 @@ private struct IdentityBadge: View {
 /// one every DashPay surface keys on (username, avatar, contacts).
 struct IdentityDetailScreen: View {
     let row: IdentityRowModel
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
     @ObservedObject private var viewModel: IdentitiesViewModel
 
     @State private var copied = false
@@ -332,7 +334,7 @@ struct IdentityDetailScreen: View {
     @State private var isMain: Bool
     @State private var confirmSetMain = false
 
-    init(row: IdentityRowModel, vc: UINavigationController, viewModel: IdentitiesViewModel) {
+    init(row: IdentityRowModel, vc: UINavigationController?, viewModel: IdentitiesViewModel) {
         self.row = row
         self.vc = vc
         self.viewModel = viewModel
@@ -414,7 +416,7 @@ struct IdentityDetailScreen: View {
     private var pageHeader: some View {
         VStack(alignment: .leading, spacing: 0) {
             DashUIKit.NavigationBar(leading: {
-                DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
+                DashUIKit.NavigationBarElement.back.button { vc?.popViewController(animated: true) }
             })
 
             HStack(spacing: 6) {
@@ -573,7 +575,7 @@ struct IdentityDetailScreen: View {
     private func showPublicKeys() {
         let controller = UIHostingController(
             rootView: IdentityPublicKeysScreen(row: row, vc: vc, viewModel: viewModel))
-        vc.pushViewController(controller, animated: true)
+        vc?.pushViewController(controller, animated: true)
     }
 
     /// Owned DPNS names as a radio-style picker: the checked row is the
@@ -651,7 +653,7 @@ struct IdentityDetailScreen: View {
     private func showUsernameMarketplace() {
         let controller = UIHostingController(
             rootView: UsernameMarketplaceScreen(vc: vc))
-        vc.pushViewController(controller, animated: true)
+        vc?.pushViewController(controller, animated: true)
     }
 
     private var pendingNameCard: some View {
@@ -734,7 +736,8 @@ struct IdentityDetailScreen: View {
 /// happens on Platform, not here.
 struct IdentityPublicKeysScreen: View {
     let row: IdentityRowModel
-    let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    weak var vc: UINavigationController?
     @ObservedObject var viewModel: IdentitiesViewModel
 
     /// Key id whose Copy button just fired (transient checkmark).
@@ -790,7 +793,7 @@ struct IdentityPublicKeysScreen: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 0) {
             DashUIKit.NavigationBar(leading: {
-                DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
+                DashUIKit.NavigationBarElement.back.button { vc?.popViewController(animated: true) }
             }, trailing: {
                 if canRefresh {
                     Button {

@@ -19,6 +19,9 @@
 /* Contested usernames */
 "%1$@ at %2$@" = "%1$@ at %2$@";
 
+/* DashConnect connection sheet: what is left of a key's budget, then the budget; amounts with units */
+"%1$@ left of %2$@" = "%1$@ left of %2$@";
+
 /* Username marketplace: listing success — name, then price */
 "%1$@ listed for %2$@ DASH" = "%1$@ puesto a la venta por %2$@ DASH";
 
@@ -27,6 +30,9 @@
 
 /* DashConnect App Connect v2: what a key can do, a date */
 "%1$@, with no limit on spending your identity's credits, until %2$@" = "%1$@, with no limit on spending your identity's credits, until %2$@";
+
+/* DashConnect connection sheet: a key's name, then its budget */
+"%1$@: %2$@" = "%1$@: %2$@";
 
 /* Voting */
 "%1$d already voted “%2$@” and will be left as they are." = "%1$d already voted “%2$@” and will be left as they are.";
@@ -306,6 +312,12 @@
 
 /* Balance info sheet */
 "A credit balance on Dash Platform used for instant payments between Platform addresses and for features like usernames." = "Un saldo de crédito en Dash Platform que se usa para pagos instantáneos entre direcciones de Platform y para funciones como los nombres de usuario.";
+
+/* DashConnect token purchase */
+"The wallet could not check your DashPay username. Open the link again." = "The wallet could not check your DashPay username. Open the link again.";
+
+/* DashConnect */
+"A DashPay username is needed to buy tokens. Create one, then open the link again." = "A DashPay username is needed to buy tokens. Create one, then open the link again.";
 
 /* No comment provided by engineer. */
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "Es necesario que tu dispositivo esté resguardado por una clave para proteger tu billetera. Ve a configuraciones y habilita una clave de acceso para continuar";
@@ -613,6 +625,9 @@
 /* DashConnect: a second request arrived while one was on screen */
 "Another DashConnect request arrived. Finish this one first, then try again." = "Another DashConnect request arrived. Finish this one first, then try again.";
 
+/* DashConnect */
+"Another DashConnect request is in progress. Try again when it finishes." = "Another DashConnect request is in progress. Try again when it finishes.";
+
 /* A second internal transfer was started before the first finished */
 "Another transfer is still in progress" = "Another transfer is still in progress";
 
@@ -639,6 +654,12 @@
 
 /* DashConnect */
 "App contract" = "App contract";
+
+/* DashConnect connection sheet */
+"App ID" = "App ID";
+
+/* DashConnect connection sheet: a key's budget line */
+"App key" = "App key";
 
 /* AboutDash */
 "App version" = "App version";
@@ -1098,6 +1119,9 @@
 /* No comment provided by engineer. */
 "Claimable balance" = "Saldo reclamable";
 
+/* No comment provided by engineer. */
+"Claimed" = "Reclamado";
+
 /* Sync diagnostics - button that resets the displayed counters only
    Sync diagnostics - button that wipes the local Platform sync state */
 "Clear" = "Clear";
@@ -1152,6 +1176,9 @@
 
 /* Transfer of own mixed funds into the private shielded balance */
 "CoinJoin → Shielded" = "CoinJoin → Shielded";
+
+/* Accessibility: a section that is closed */
+"Collapsed" = "Collapsed";
 
 /* Masternodes */
 "Collateral" = "Colateral";
@@ -1253,6 +1280,9 @@
 /* DashSpend */
 "Connection Error" = "Connection Error";
 
+/* DashConnect connection sheet: the date its keys expire */
+"Connection expiry" = "Connection expiry";
+
 /* DashConnect */
 "Connections" = "Connections";
 
@@ -1283,6 +1313,9 @@
 
 /* DashPay Contacts: success card after sending a request */
 "Contact request sent to %@" = "Solicitud de contacto enviada a %@";
+
+/* No comment provided by engineer. */
+"Contact Requests" = "Solicitudes de contacto";
 
 /* DashPay Contacts */
 "Contact Requests (%d)" = "Contact Requests (%d)";
@@ -1513,6 +1546,9 @@
 /* No comment provided by engineer. */
 "Create a New Wallet" = "Crear una Nueva Billetera";
 
+/* Usernames */
+"Create a username" = "Crear nombre de usuario";
+
 /* DashPay Invitations */
 "Create a username and say goodbye to numerical addresses" = "Create a username and say goodbye to numerical addresses";
 
@@ -1551,6 +1587,9 @@
 
 /* Raw transaction */
 "Credit output %d" = "Credit output %d";
+
+/* Masternodes */
+"Credits" = "Créditos";
 
 /* Raw transaction */
 "Credit outputs" = "Credit outputs";
@@ -1667,6 +1706,9 @@
 /* DashPay FAQ */
 "DashPay is Dash's social payments experience, built on Dash Platform. You register a username, add other users as contacts, and pay them by name — no more copying addresses." = "DashPay es la experiencia de pagos sociales de Dash, construida sobre Dash Platform. Registras un nombre de usuario, añades a otros usuarios como contactos y les pagas por su nombre: se acabó copiar direcciones.";
 
+/* DashConnect connection sheet: a key's budget line */
+"DashPay profile key" = "DashPay profile key";
+
 /* DashPay intro: pitch paragraph */
 "DashPay replaces long cryptic addresses with usernames. Add friends as contacts, send money to a name, and keep every payment organized by person." = "DashPay sustituye las largas direcciones crípticas por nombres de usuario. Añade amigos como contactos, envía dinero a un nombre y mantén cada pago organizado por persona.";
 
@@ -1760,6 +1802,12 @@
 /* DashConnect */
 "Disconnect" = "Disconnect";
 
+/* DashConnect: accessibility, a row's button; the app's name */
+"Disconnect %@" = "Disconnect %@";
+
+/* DashConnect: confirm a disconnect; the app's name */
+"Disconnect %@?" = "Disconnect %@?";
+
 /* Coinbase Entry Point */
 "Disconnect Coinbase Account" = "Desconectar la cuenta de Coinbase";
 
@@ -1770,14 +1818,14 @@
    Coinbase Entry Point */
 "Disconnected" = "Desconectado";
 
+/* DashConnect: the status badge of a connection whose keys are all turned off */
+"Disconnected (connection status)" = "Disconnected";
+
 /* DashConnect: after a disconnect that left keys no approval of this wallet names */
 "Disconnected. Keys this wallet did not record giving are still on your identity (%d): keys of this app from another device or from before a restore, or DashPay profile keys no connection holds. Turn them off too?" = "Disconnected. Keys this wallet did not record giving are still on your identity (%d): keys of this app from another device or from before a restore, or DashPay profile keys no connection holds. Turn them off too?";
 
 /* DashConnect: after turning off the keys a question listed, keys of the app found since stay on */
 "Disconnected. Some keys of this app are still on your identity (%d). Disconnect it again to turn them off." = "Disconnected. Some keys of this app are still on your identity (%d). Disconnect it again to turn them off.";
-
-/* DashConnect: after a disconnect, keys of the app stay on and now show under another app's row; %2$@ is that app's name */
-"Disconnected. Some keys of this app are still on your identity (%1$d). They now show under %2$@ in Connections: disconnect it there to turn them off." = "Disconnected. Some keys of this app are still on your identity (%1$d). They now show under %2$@ in Connections: disconnect it there to turn them off.";
 
 /* DashSpend confirmation */
 "Discount" = "Descuento";
@@ -2020,8 +2068,14 @@
 /* Maya */
 "Exchange rate not available" = "Exchange rate not available";
 
+/* Accessibility: a section that is open */
+"Expanded" = "Expanded";
+
 /* No comment provided by engineer. */
 "Expense" = "Gasto";
+
+/* DashConnect: connection status */
+"Expired" = "Expired";
 
 /* No comment provided by engineer. */
 "Explore" = "Explorar";
@@ -2263,6 +2317,9 @@
 /* Identity top-up sheet — linkability warning for transparent-side sources */
 "Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance." = "Financiar desde un saldo transparente vincula públicamente esas monedas con tu identidad en la cadena Dash. Por privacidad, paga desde tu saldo Shielded.";
 
+/* DashConnect connection sheet */
+"Funding left" = "Funding left";
+
 /* Masternode unban */
 "Funds are on the way…" = "Funds are on the way…";
 
@@ -2297,6 +2354,9 @@
 
 /* Coinbase/Convert Crypto */
 "Get Quote" = "Obtener cotización";
+
+/* Usernames */
+"Get ready to join DashPay" = "Prepárate para unirte a DashPay";
 
 /* No comment provided by engineer. */
 "Get Started" = "Comienza";
@@ -2450,6 +2510,9 @@
 
 /* Destination of an identity funding asset lock */
 "Identity credits" = "Créditos de identidad";
+
+/* DashConnect connection sheet */
+"Identity funding limits" = "Identity funding limits";
 
 /* SDK identity profile sheet */
 "Identity ID" = "Identity ID";
@@ -2605,6 +2668,9 @@
 "Internal transfer" = "Internal transfer";
 
 /* No comment provided by engineer. */
+"Internal transfer to/from" = "Internal transfer to/from";
+
+/* No comment provided by engineer. */
 "Internally moved to" = "Movido internamente para";
 
 /* Invalid transaction */
@@ -2667,6 +2733,9 @@
 /* DashSpend */
 "It looks like you haven't used DashSpend in a while. For security reasons, you've been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash." = "It looks like you haven't used DashSpend in a while. For security reasons, you've been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash.";
 
+/* DashConnect: what identity funding limits are */
+"It pays for actions on the Dash network, like updating your profile or using connected apps." = "It pays for actions on the Dash network, like updating your profile or using connected apps.";
+
 /* Settings */
 "It unlocks powerful features for managing your Dash across the network" = "It unlocks powerful features for managing your Dash across the network";
 
@@ -2678,6 +2747,9 @@
 
 /* Inactivity reminder */
 "It's been a while since you opened Dash Wallet." = "It's been a while since you opened Dash Wallet.";
+
+/* DashConnect: what a disconnect does, in its confirmation */
+"Its keys are turned off on Platform for good. To connect again, the app asks with a new code." = "Its keys are turned off on Platform for good. To connect again, the app asks with a new code.";
 
 /* No comment provided by engineer. */
 "Join DashPay" = "Unirse a DashPay";
@@ -3065,6 +3137,9 @@
 /* Usernames */
 "Maximum %ld characters" = "Maximum %ld characters";
 
+/* DashConnect connection sheet: an amount with its unit, e.g. 0.5 DASH */
+"Maximum of %@" = "Maximum of %@";
+
 /* DashConnect token purchase */
 "Maximum price" = "Maximum price";
 
@@ -3308,6 +3383,9 @@
 /* Send blocked while the device is offline */
 "No internet connection. Reconnect to the network and try again." = "No internet connection. Reconnect to the network and try again.";
 
+/* DashConnect connection sheet: a key with no spending limit */
+"No limit" = "No limit";
+
 /* Explore Dash */
 "No locations found." = "No locations found.";
 
@@ -3524,6 +3602,9 @@
 /* Usernames */
 "Not enough shielded funds" = "Not enough shielded funds";
 
+/* DashConnect: a disconnect that stopped part-way */
+"Not every key was turned off: %d still on your identity. The connection stays listed; disconnect it again to turn them off." = "Not every key was turned off: %d still on your identity. The connection stays listed; disconnect it again to turn them off.";
+
 /* Username marketplace: someone else's unlisted name */
 "Not for sale" = "No está a la venta";
 
@@ -3532,6 +3613,9 @@
 
 /* Masternodes */
 "Not in wallet history" = "No está en el historial de la billetera";
+
+/* DashConnect connection sheet */
+"Not known" = "Not known";
 
 /* Username marketplace: own unlisted name */
 "Not listed for sale" = "No está publicado a la venta";
@@ -3749,6 +3833,9 @@
 /* No comment provided by engineer. */
 "Pay to usernames. No more alphanumeric addresses" = "Pagar a los nombres de usuario. No más direcciones alfanuméricas";
 
+/* Usernames */
+"Pay to usernames. No more alphanumeric addresses." = "Paga a los nombres de usuario. No más direcciones alfanuméricas.";
+
 /* Coinbase/Buy Dash */
 "Pay with" = "Pagar con";
 
@@ -3901,6 +3988,9 @@
 
 /* Masternode unban */
 "Platform P2P port" = "Platform P2P port";
+
+/* No comment provided by engineer. */
+"Platform Payment" = "Platform Payment";
 
 /* DashPay Platform Payment funding shortfall */
 "Platform Payment needs at least %@ DASH available; you have %@ DASH. Add funds to Platform and try again." = "Platform Payment needs at least %1$@ DASH available; you have %2$@ DASH. Add funds to Platform and try again.";
@@ -4133,6 +4223,9 @@
 /* No comment provided by engineer. */
 "Quick Receive" = "Recibir Rápidamente ";
 
+/* Voting */
+"Quick Voting" = "Votación rápida";
+
 /* Devnet */
 "Quorum URL" = "Quorum URL";
 
@@ -4166,6 +4259,9 @@
 /* Identities: key visible to the wallet but not usable for signing */
 "Read-only" = "Solo lectura";
 
+/* DashConnect connection sheet */
+"Reading the details of this connection" = "Reading the details of this connection";
+
 /* Identity → Platform credit transfer */
 "Ready right away" = "Ready right away";
 
@@ -4192,6 +4288,9 @@
 
 /* DashConnect App Connect v2: the placeholder is the app's name */
 "Receive messages encrypted to you in %@" = "Receive messages encrypted to you in %@";
+
+/* DashConnect App Connect v2: before approval, whether the app gets a key for messages is not known yet; the placeholder is the app's name */
+"May receive messages encrypted to you in %@" = "May receive messages encrypted to you in %@";
 
 /* Masternode unban */
 "Receive some DASH to this wallet, or fund its shielded balance, then return here." = "Receive some DASH to this wallet, or fund its shielded balance, then return here.";
@@ -4273,6 +4372,9 @@
 
 /* Dash DEX */
 "Refunded" = "Refunded";
+
+/* DashConnect: connection status */
+"Refused" = "Refused";
 
 /* Button title, Register (username) */
 "Register" = "Registro";
@@ -4653,6 +4755,12 @@
 /* No comment provided by engineer. */
 "See on Uphold" = "Ver en Uphold";
 
+/* DashConnect connection sheet: the app's name */
+"See what %@ will be able to do" = "See what %@ will be able to do";
+
+/* DashConnect connection sheet: the app's name */
+"See what %@ will NOT have access to" = "See what %@ will NOT have access to";
+
 /* DashConnect */
 "See your username" = "See your username";
 
@@ -4738,11 +4846,17 @@
 /* No comment provided by engineer. */
 "Send to" = "Enviar para";
 
+/* No comment provided by engineer. */
+"Send to a Contact" = "Enviar a un contacto";
+
 /* DashPay intro: feature body */
 "Send to a username you can actually remember and verify." = "Envía a un nombre de usuario que realmente puedas recordar y verificar.";
 
 /* Translate it as short as possible! (24 symbols max) */
 "Send to Address" = "Enviar a Dirección";
+
+/* No comment provided by engineer. */
+"Send to address" = "Send to address";
 
 /* No comment provided by engineer. */
 "Send to contact" = "Enviar a contacto";
@@ -4963,6 +5077,9 @@
 /* Maya */
 "Some coins are not available because of the halted chain" = "Some coins are not available because of the halted chain";
 
+/* DashConnect: after a disconnect that turned off keys no approval in this wallet names */
+"This also turned off keys on your identity that this wallet has no record of giving (%d), such as keys given on another device or DashPay profile keys." = "This also turned off keys on your identity that this wallet has no record of giving (%d), such as keys given on another device or DashPay profile keys.";
+
 /* DashConnect: after a disconnect that left keys another app of the same developer may hold */
 "Some keys on your identity (%d) may belong to another app of the same developer, so this wallet left them on. Each one shows on its own row in Connections; disconnect it there if you no longer need it." = "Some keys on your identity (%d) may belong to another app of the same developer, so this wallet left them on. Each one shows on its own row in Connections; disconnect it there if you no longer need it.";
 
@@ -5118,6 +5235,10 @@
 
 /* Payments */
 "Swap to other crypto" = "Swap to other crypto";
+
+/* Dash Portal
+   SwapKit Portal */
+"SwapKit" = "SwapKit";
 
 /* Dash DEX */
 "Swapping" = "Swapping";
@@ -5357,6 +5478,12 @@
 /* Swap */
 "The destination address isn’t valid for %@ (%@). Go back and enter a %@ address." = "The destination address isn’t valid for %1$@ (%2$@). Go back and enter a %3$@ address.";
 
+/* DashConnect connection sheet */
+"The details of this connection could not be read." = "The details of this connection could not be read.";
+
+/* DashConnect connection sheet: a refresh of details already shown failed */
+"The details of this connection could not be read again and may be out of date." = "The details of this connection could not be read again and may be out of date.";
+
 /* DashConnect */
 "The details of this sign-in changed while it was on screen. Check them and approve again." = "The details of this sign-in changed while it was on screen. Check them and approve again.";
 
@@ -5450,6 +5577,9 @@
 /* DashConnect App Connect v2 */
 "The network has not caught up with your identity's keys yet. Try again in a moment." = "The network has not caught up with your identity's keys yet. Try again in a moment.";
 
+/* DashConnect App Connect v2 */
+"The network refused this sign-in for good. Ask the app for a new code." = "The network refused this sign-in for good. Ask the app for a new code.";
+
 /* Protocol version advisory */
 "The network uses a newer protocol than this version of the app. Check for available updates." = "The network uses a newer protocol than this version of the app. Check for available updates.";
 
@@ -5522,6 +5652,9 @@
 /* DashPay */
 "The shared privacy pool is still growing (%ld of %ld deposits). Try again once it reaches the minimum." = "El grupo de privacidad compartido aún está creciendo (%1$ld de %2$ld depósitos). Inténtalo de nuevo cuando alcance el mínimo.";
 
+/* DashConnect: after a disconnect whose fence keys the read after it does not show */
+"The sign-in may still land: some temporary keys (%d) may not be placed yet. Disconnect again to be sure they are turned off." = "The sign-in may still land: some temporary keys (%d) may not be placed yet. Disconnect again to be sure they are turned off.";
+
 /* DashConnect App Connect v2 */
 "The sign-in request is dated in the future. Check this device's clock." = "The sign-in request is dated in the future. Check this device's clock.";
 
@@ -5566,6 +5699,12 @@
 
 /* Wallets */
 "The wallet could not be fully removed. Please try again." = "The wallet could not be fully removed. Please try again.";
+
+/* DashConnect */
+"The wallet could not check how old this sign-in request is. Try again." = "The wallet could not check how old this sign-in request is. Try again.";
+
+/* DashConnect */
+"The wallet could not check whether this sign-in was already answered. Try again." = "The wallet could not check whether this sign-in was already answered. Try again.";
 
 /* DashConnect App Connect v2 */
 "The wallet could not read your identity's encryption key for this app from the network. Try again." = "The wallet could not read your identity's encryption key for this app from the network. Try again.";
@@ -5705,6 +5844,9 @@
 /* DashConnect re-login */
 "This connection already exists." = "This connection already exists.";
 
+/* DashConnect: a disconnect asked for on a connection that no longer offers one */
+"This connection has nothing to disconnect now." = "This connection has nothing to disconnect now.";
+
 /* Send to contact: the contact was removed, or another wallet was opened, while the amount step was open */
 "This contact is not in your contacts any more." = "This contact is not in your contacts any more.";
 
@@ -5758,6 +5900,9 @@
 
 /* DashPay Contacts: scanned QR is a payment/invitation/foreign code */
 "This isn't a DashPay user QR code." = "Este no es un código QR de usuario de DashPay.";
+
+/* DashConnect */
+"This kind of code is not accepted on mainnet. Ask the app for a DashPay connect link or code." = "This kind of code is not accepted on mainnet. Ask the app for a DashPay connect link or code.";
 
 /* No comment provided by engineer. */
 "This link needs a newer version of the wallet." = "This link needs a newer version of the wallet.";
@@ -5836,6 +5981,9 @@
 
 /* DashConnect App Connect v2 */
 "This sign-in request has expired. Ask the app for a new one." = "This sign-in request has expired. Ask the app for a new one.";
+
+/* DashConnect */
+"This sign-in request is dated ahead of the network's time. Ask the app for a new code." = "This sign-in request is dated ahead of the network's time. Ask the app for a new code.";
 
 /* Voting */
 "This still counts as your masternodes having voted in this contest." = "Esto sigue contando como que tus masternodes han votado en esta disputa.";
@@ -6717,6 +6865,9 @@
 /* DashPay Invitations */
 "What are contested and non-contested usernames?" = "What are contested and non-contested usernames?";
 
+/* DashConnect connection sheet */
+"What are identity funding limits?" = "What are identity funding limits?";
+
 /* DashPay FAQ */
 "What does it cost?" = "¿Cuánto cuesta?";
 
@@ -6725,6 +6876,9 @@
 
 /* DashPay FAQ */
 "What is DashPay?" = "¿Qué es DashPay?";
+
+/* DashConnect connection sheet */
+"What is left of the keys' budgets could not be read." = "What is left of the keys' budgets could not be read.";
 
 /* Usernames */
 "What is username voting?" = "¿Qué es la votación por nombre de usuario?";
@@ -7113,6 +7267,9 @@
 
 /* Identity withdrawal — balance below the fee reserve */
 "Your Identity balance is too low to cover the transfer fee." = "Your Identity balance is too low to cover the transfer fee.";
+
+/* DashConnect: what identity funding limits are */
+"Your identity has its own balance, separate from the Dash on your wallet's home screen." = "Your identity has its own balance, separate from the Dash on your wallet's home screen.";
 
 /* DashPay registration recovery */
 "Your identity is ready. Finish registering a username using its existing credits." = "Your identity is ready. Finish registering a username using its existing credits.";

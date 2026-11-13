@@ -21,7 +21,8 @@ import DashUIKit
 import SafariServices
 
 struct ToolsMenuScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
 
     @StateObject private var viewModel = ToolsMenuViewModel()
     @State private var showCSVExportSheet = false
@@ -29,7 +30,7 @@ struct ToolsMenuScreen: View {
     @State private var showZenLedgerSheet = false
     @State private var showExtendedPublicKeySheet = false
 
-    init(vc: UINavigationController) {
+    init(vc: UINavigationController?) {
         self.vc = vc
     }
 
@@ -37,7 +38,7 @@ struct ToolsMenuScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             DashUIKit.NavigationBar(leading: {
                 DashUIKit.NavigationBarElement.back.button {
-                    vc.popViewController(animated: true)
+                    vc?.popViewController(animated: true)
                 }
             })
 
@@ -252,6 +253,7 @@ struct ToolsMenuScreen: View {
     }
 
     private func showStorageExplorer() {
+        guard let vc else { return }
         let container = PlatformAddressSyncCoordinator.shared.swiftDataContainer
         let navigator = StorageExplorerNavigator(navigationController: vc, container: container)
         if container != nil {
@@ -267,10 +269,11 @@ struct ToolsMenuScreen: View {
     
     private func showMasternodeKeys() {
         let controller = KeysOverviewViewController()
-        vc.pushViewController(controller, animated: true)
+        vc?.pushViewController(controller, animated: true)
     }
 
     private func showConnections() {
+        guard let vc else { return }
         let controller = DashConnectHostingController(navigationController: vc)
         vc.pushViewController(controller, animated: true)
     }
@@ -288,7 +291,7 @@ struct ToolsMenuScreen: View {
     private func openSafariLink(_ link: String) {
         if let url = URL(string: link) {
             let controller = SFSafariViewController(url: url)
-            vc.present(controller, animated: true, completion: nil)
+            vc?.present(controller, animated: true, completion: nil)
         }
     }
 

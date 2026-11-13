@@ -686,6 +686,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
                                 deleteWallet: { id in
                                     try backend.delete(id)
                                 },
+                                leavesDashConnectToWipe: true,
                                 scope: network.persistenceScope)
                         } catch {
                             result.recordFailure()
@@ -766,7 +767,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
                         // configured scope's own deletion removes it last.
                         try deleteWalletFromSDK(walletId, deleteWallet: {
                             try backend.delete($0, preservingSharedSecrets: true)
-                        }, keepsWalletOnAnotherScope: true, scope: scope)
+                        }, keepsWalletOnAnotherScope: true, leavesDashConnectToWipe: true, scope: scope)
                     } catch {
                         result.recordFailure()
                         logDeletionFailure(error, walletId: walletId, network: .devnet)
@@ -946,6 +947,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
         ShieldedWithdrawalStore.shared.resetForWipe()
         AssetLockProbeStore.shared.resetForWipe()
         AssetLockFailureStore.shared.resetForWipe()
+        DashConnectStores.removeAllWallets(in: .standard)
         SPVChainResyncMarker.resetForWipe()
     }
 
@@ -967,6 +969,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
         deleteWallet: (@MainActor (Data) throws -> Void)? = nil,
         clearAppState: (@MainActor (Data) -> Void)? = nil,
         keepsWalletOnAnotherScope: Bool = false,
+        leavesDashConnectToWipe: Bool = false,
         scope: String,
         drainStore: CoreShieldedDrainFileStore = CoreShieldedDrainFileStore()
     ) throws {
@@ -1023,6 +1026,17 @@ final class SwiftDashSDKWalletWiper: NSObject {
                     "Core drain marker cleanup failed: \(String(describing: error), privacy: .public)")
             }
             AssetLockProbeStore.shared.clearForWallet(walletIdHex: walletIdHex)
+            // DashConnect connection history, intents and legacy grants of
+            // the wallet on every network scope. One wallet id covers every
+            // devnet scope, so a store-only sweep of one scope leaves them
+            // to the deletion that removes the wallet itself. The full wipe
+            // (`leavesDashConnectToWipe`) goes on after a scope's deletion
+            // fails, so it leaves them to its commit point, which removes
+            // them only once every deletion succeeded. Local only: the keys
+            // given on Platform stay.
+            if !keepsWalletOnAnotherScope && !leavesDashConnectToWipe {
+                DashConnectStores.removeAll(walletIdHex: walletIdHex, in: .standard)
+            }
             // One wallet id covers every devnet scope it has rows in, so
             // only the rebuild pending on the scope whose rows were just
             // deleted is dropped; the wallet's other scopes keep theirs.

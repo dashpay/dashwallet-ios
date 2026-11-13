@@ -22,7 +22,8 @@ import Combine
 import MessageUI
 
 struct SettingsScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
     // Retained solely for the frozen MainMenuViewController call site; the
     // rescan controls were removed with the dead DashSync rescan actions
     // (post-M6 there is no SDK rescan API), so this closure is never invoked.
@@ -32,7 +33,7 @@ struct SettingsScreen: View {
     @State private var showNetworkAlert = false
     @State private var showCSVExportActivity = false
 
-    init(vc: UINavigationController, onDidRescan: @escaping () -> ()) {
+    init(vc: UINavigationController?, onDidRescan: @escaping () -> ()) {
         self.vc = vc
         self.onDidRescan = onDidRescan
     }
@@ -41,7 +42,7 @@ struct SettingsScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             DashUIKit.NavigationBar(leading: {
                 DashUIKit.NavigationBarElement.back.button {
-                    vc.popViewController(animated: true)
+                    vc?.popViewController(animated: true)
                 }
             })
 
@@ -240,17 +241,17 @@ struct SettingsScreen: View {
             }
         )
         let controller = LocalCurrencyHostingViewController(rootView: view)
-        vc.pushViewController(controller, animated: true)
+        vc?.pushViewController(controller, animated: true)
     }
     
     private func showAboutController() {
         let controller = AboutDashHostingViewController()
-        vc.pushViewController(controller, animated: true)
+        vc?.pushViewController(controller, animated: true)
     }
 
     private func showDevnetSettings() {
         let controller = DevnetSettingsHostingViewController(vc: vc)
-        vc.pushViewController(controller, animated: true)
+        vc?.pushViewController(controller, animated: true)
     }
     
     private func handleCSVExport() {

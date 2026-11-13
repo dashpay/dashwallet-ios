@@ -551,8 +551,9 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         pushWithoutTabBar(SendScreenViewController())
     }
 
-    /// The landing keeps the tab bar; everything it pushes is a step in a
-    /// flow and takes the whole screen.
+    /// Everything the landing pushes is a step in a flow and takes the whole
+    /// screen. Every landing sits in a `BaseNavigationController`, which hides
+    /// the tab bar on each push above the root.
     private func pushWithoutTabBar(_ controller: UIViewController) {
         navigationController?.pushViewController(controller, animated: true)
     }

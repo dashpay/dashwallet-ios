@@ -25,11 +25,12 @@ import DashUIKit
 /// `Components/`; this type owns navigation, the QR scanner and the approval
 /// sheet.
 struct ConnectionsScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
 
     @StateObject private var viewModel: ConnectionsViewModel
 
-    init(vc: UINavigationController, viewModel: ConnectionsViewModel? = nil) {
+    init(vc: UINavigationController?, viewModel: ConnectionsViewModel? = nil) {
         self.vc = vc
         _viewModel = StateObject(wrappedValue: viewModel ?? ConnectionsViewModel())
     }
@@ -39,23 +40,15 @@ struct ConnectionsScreen: View {
             VStack(alignment: .leading, spacing: 0) {
                 DashUIKit.NavigationBar(
                     leading: {
-                        DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
+                        DashUIKit.NavigationBarElement.back.button { vc?.popViewController(animated: true) }
                     },
                     trailing: {
-                        // The empty state has its own scan button; a list
-                        // needs one too, for a new code after a request that
-                        // could not be completed.
-                        if !viewModel.featureUnavailable && !viewModel.connections.isEmpty {
+                        if !viewModel.featureUnavailable {
                             DashUIKit.NavigationBarElement.plus.button(action: showScanner)
                                 .accessibilityLabel(Text(NSLocalizedString("Connect an app", comment: "DashConnect")))
                         }
                     }
                 )
-
-                TopIntro(title: NSLocalizedString("Connections", comment: "DashConnect"))
-                    .padding(.horizontal, 20)
-                    .padding(.top, 10)
-                    .padding(.bottom, 20)
 
                 content
             }
@@ -72,27 +65,19 @@ struct ConnectionsScreen: View {
                     .background(Color.primaryBackground)
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
-
-            if let message = viewModel.message {
-                // The question and the result of a disconnect (SCR-03, SCR-04),
-                // and every other message, above the progress: a refusal while
-                // a request runs shows at once.
-                Color.dash.backgroundOverlay
-                    .ignoresSafeArea()
-
-                ConnectionsMessageDialog.dialog(
-                    for: message,
-                    turnOff: { connection, keys in
-                        viewModel.message = nil
-                        viewModel.disconnect(connection, unrecordedKeys: keys)
-                    },
-                    dismiss: { viewModel.message = nil })
-                    .padding(.horizontal, 20)
-            }
         }
         .background(Color.primaryBackground)
         .navigationBarHidden(true)
         .task { await viewModel.refreshConnections() }
+        .alert(item: messageBinding) { message in
+            return Alert(
+                title: Text(message.title),
+                message: Text(message.text),
+                dismissButton: .default(Text(NSLocalizedString("OK", comment: ""))) {
+                    viewModel.message = nil
+                }
+            )
+        }
         .sheet(isPresented: isApproveSheetPresented) {
             if let request = viewModel.pendingRequest {
                 approveSheet(for: request)
@@ -103,22 +88,72 @@ struct ConnectionsScreen: View {
                 tokenPurchaseSheet(for: purchase)
             }
         }
+        .sheet(item: shownConnectionBinding, onDismiss: {
+            viewModel.connectionSheetDismissed()
+        }) { item in
+            connectionSheet(for: item)
+        }
     }
 
     // MARK: - States
 
     @ViewBuilder private var content: some View {
         if viewModel.featureUnavailable {
+            title
             ConnectionsUnavailableState()
+        } else if !viewModel.hasReadRows {
+            // No empty state that the rows replace a moment later.
+            title
+            SwiftUI.ProgressView()
+                .frame(maxWidth: .infinity)
+                .padding(.top, 40)
+            Spacer()
         } else if viewModel.connections.isEmpty {
+            title
             ConnectionsEmptyState(onScanQR: showScanner, onMockScan: mockScan)
         } else {
-            ConnectionsList(
-                connections: viewModel.connections,
-                onDisconnect: viewModel.disconnect
-            )
-            .padding(.horizontal, 20)
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 20) {
+                    title
+                    ConnectionsList(
+                        items: viewModel.rows,
+                        onOpen: { viewModel.showConnection($0) },
+                        onDisconnect: { viewModel.showConnection($0, asksToDisconnect: true) },
+                        onRemove: { item in
+                            if let connection = item.connection { viewModel.removeConnection(connection) }
+                        })
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
+            }
         }
+    }
+
+    private var title: some View {
+        TopIntro(title: NSLocalizedString("Connections", comment: "DashConnect"))
+            .padding(.horizontal, !viewModel.connections.isEmpty && !viewModel.featureUnavailable ? 0 : 20)
+            .padding(.top, 10)
+    }
+
+    private func connectionSheet(for item: ConnectionSheetItem) -> some View {
+        ConnectionSheet(
+            item: item,
+            details: viewModel.shownDetails,
+            detailsFailed: viewModel.shownDetailsFailed,
+            withheld: viewModel.shownWithheldLines,
+            connectedAt: viewModel.shownConnectedAt,
+            isBusy: viewModel.isDisconnecting,
+            message: viewModel.connectionSheetMessage,
+            onClose: viewModel.hideConnection,
+            onDisconnect: viewModel.disconnectShown,
+            onRemove: {
+                if let connection = item.connection { viewModel.removeConnection(connection) }
+                viewModel.hideConnection()
+            },
+            takeDisconnectQuestion: viewModel.takeDisconnectQuestion,
+            disconnectQuestion: viewModel.disconnectQuestion
+        )
+        .presentationDragIndicator(.visible)
     }
 
     private func approveSheet(for request: ConnectionRequest) -> some View {
@@ -170,21 +205,38 @@ struct ConnectionsScreen: View {
         )
     }
 
+    private var shownConnectionBinding: Binding<ConnectionSheetItem?> {
+        Binding(
+            get: { viewModel.shownConnection },
+            set: { if $0 == nil { viewModel.hideConnection() } }
+        )
+    }
+
+    private var messageBinding: Binding<ConnectionsScreenMessage?> {
+        Binding(
+            get: { viewModel.message },
+            set: { viewModel.message = $0 }
+        )
+    }
+
     // MARK: - Actions
 
     private func showScanner() {
+        // Not while something signs or an approval is up: the scanner would
+        // cover it.
+        guard viewModel.mayScan() else { return }
         let scanner = GenericQRScannerController()
 
         scanner.onQRCodeScanned = { value in
-            vc.dismiss(animated: true) {
+            vc?.dismiss(animated: true) {
                 viewModel.onQRScanned(value)
             }
         }
         scanner.onCancel = {
-            vc.dismiss(animated: true)
+            vc?.dismiss(animated: true)
         }
 
-        vc.present(scanner, animated: true)
+        vc?.present(scanner, animated: true)
     }
 
     private func mockScan() {
@@ -242,15 +294,4 @@ struct ConnectionsScreen: View {
             featureUnavailable: false
         )
     )
-}
-
-#Preview("Busy refusal over progress") {
-    let viewModel = ConnectionsViewModel(
-        dataSource: MockDashConnectDataSource(initial: [MockDashConnectDataSource.sample(.active)]),
-        featureUnavailable: false
-    )
-    viewModel.isProcessingStateTransition = true
-    viewModel.message = ConnectionsScreenMessage(
-        kind: .error, text: "Finish the current DashConnect request first, then try again.")
-    return ConnectionsScreen(vc: UINavigationController(), viewModel: viewModel)
 }
