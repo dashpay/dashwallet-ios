@@ -1440,7 +1440,8 @@ final class AppConnectProjectionTests: XCTestCase {
     }
 
     /// An Expired row follows its newest install: its sheet tells that
-    /// install's expiry and access, not those of an older install still live.
+    /// install's expiry, access and funding, not those of an older install
+    /// still live.
     func testAnExpiredRowsSheetTellsTheExpiryOfTheConnectionItFollows() {
         let older = Self.intent([Self.authKey(10, expiresAt: Self.now + 5000)], published: true)
         let newer = Self.intent(
@@ -1462,6 +1463,8 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertEqual(details.access(shownAs: .expired)?.budgetLimit, 300)
         XCTAssertEqual(
             details.access(shownAs: .active)?.expiresAt, expiry(Self.now + 5000), "a live row tells every key")
+        XCTAssertEqual(basis.shown(as: .expired).fundedKeyIds, [11], "funding of the followed install only")
+        XCTAssertEqual(Set(basis.shown(as: .active).fundedKeyIds), [10, 11])
     }
 
     func testARowAnotherIdentityHoldsKeepsWhatOtherIdentitiesSaw() {

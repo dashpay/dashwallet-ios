@@ -330,14 +330,18 @@ struct ConnectionBasis: Equatable {
             intents: intents, snapshot: snapshot, unrecorded: unrecorded, administeredGroups: administeredGroups)
     }
 
-    /// What the connection the row follows gave: its intents among
-    /// `intents`, or the `unrecorded` keys when none of them is held. The
-    /// row's status is told from it, so an Expired row tells its expiry,
-    /// not that of another install still held.
-    var followedAccess: ConnectionAccess? {
+    /// The basis the sheet of a row with `status` is told from. An Expired
+    /// row's status is told from the connection it follows, so its sheet
+    /// shows only that connection: its intents among `intents`, or the
+    /// `unrecorded` keys when none of them is held; access, expiry and
+    /// funding lines alike, not those of another install still held. Any
+    /// other row's sheet shows this whole basis.
+    func shown(as status: ConnectionStatus) -> ConnectionBasis {
+        guard status == .expired else { return self }
         let followed = intents.filter { followedIntentIds.contains($0.id) }
-        return ConnectionAccess(
-            intents: followed, snapshot: snapshot, unrecorded: followed.isEmpty ? unrecorded : [],
+        return ConnectionBasis(
+            snapshot: snapshot, intents: followed, followedIntentIds: followedIntentIds,
+            unrecorded: followed.isEmpty ? unrecorded : [],
             administeredGroups: followed.isEmpty ? administeredGroups : [])
     }
 
@@ -402,12 +406,11 @@ struct ConnectionDetails: Equatable {
         connectedAt = nil
     }
 
-    /// What the sheet of a row with `status` shows as the app's access: for
-    /// an Expired row, that of the connection it follows
-    /// (`ConnectionBasis.followedAccess`), whose keys are past their expiry;
-    /// otherwise `access`.
+    /// What the sheet of a row with `status` shows as the app's access:
+    /// that of `basis.shown(as: status)`, or `access` without a basis.
     func access(shownAs status: ConnectionStatus) -> ConnectionAccess? {
-        status == .expired ? basis?.followedAccess : access
+        guard let basis else { return access }
+        return basis.shown(as: status).access
     }
 
     /// These details with `read`, the funding read for `basis`; `nil` when

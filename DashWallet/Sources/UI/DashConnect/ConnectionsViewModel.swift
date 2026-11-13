@@ -381,7 +381,10 @@ final class ConnectionsViewModel: ObservableObject {
     private func readShownFunding(_ item: ConnectionSheetItem, for basis: ConnectionBasis, number: Int) {
         Task { [weak self] in
             guard let self else { return }
-            let funding = await self.dataSource.connectionFunding(for: basis, scope: item.connection?.scope)
+            // The keys of the connection the sheet shows: for an Expired row,
+            // only those of the connection it follows.
+            let funding = await self.dataSource.connectionFunding(
+                for: basis.shown(as: item.status), scope: item.connection?.scope)
             guard number == self.detailsReadNumber, self.shownConnection != nil,
                   let details = self.shownDetails?.attaching(funding, for: basis) else { return }
             self.shownDetails = details
