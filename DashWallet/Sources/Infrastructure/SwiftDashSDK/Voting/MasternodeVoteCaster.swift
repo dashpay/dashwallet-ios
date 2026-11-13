@@ -227,7 +227,7 @@ final class MasternodeVoteCaster {
     /// Cast `choice` on `normalizedLabel` with each node in `nodes`.
     ///
     /// Prompts for PIN/biometric once, then hands off to
-    /// ``castAuthenticated(choice:onNormalizedLabel:with:)``.
+    /// ``castAfterAuthentication(choice:onNormalizedLabel:with:)``.
     ///
     /// - Throws: ``CastError`` when the run cannot start at all (auth refused,
     ///   poll already closed). Once broadcasting starts, per-node failures are
@@ -257,7 +257,7 @@ final class MasternodeVoteCaster {
             throw CastError.authenticationFailed
         }
 
-        return await castAuthenticated(
+        return await castAfterAuthentication(
             choice: choice, onNormalizedLabel: normalizedLabel, with: nodes)
     }
 
@@ -297,14 +297,14 @@ final class MasternodeVoteCaster {
         }
         var reports: [VoteCastReport] = []
         for (index, cast) in casts.enumerated() {
-            reports.append(await castAuthenticated(cast))
+            reports.append(await castAfterAuthentication(cast))
             if authenticated { progress(index + 1) }
         }
         return reports
     }
 
     /// One name of a run, after authentication.
-    private func castAuthenticated(_ cast: QuickVoteCast) async -> VoteCastReport {
+    private func castAfterAuthentication(_ cast: QuickVoteCast) async -> VoteCastReport {
         func notSent(_ reason: String, closed: Bool = false) -> VoteCastReport {
             DWLogger.log("Voting: Quick voting \(cast.choice.logDescription) on \(cast.normalizedLabel) not sent: \(reason)")
             return VoteCastReport(
@@ -327,7 +327,7 @@ final class MasternodeVoteCaster {
                 outcomes.append(VoteOutcome(node: node, failure: stopped))
                 continue
             }
-            let report = await castAuthenticated(
+            let report = await castAfterAuthentication(
                 choice: cast.choice, onNormalizedLabel: cast.normalizedLabel, with: [node])
             outcomes.append(contentsOf: report.outcomes)
         }
@@ -342,13 +342,15 @@ final class MasternodeVoteCaster {
     }
 
     /// The per-node broadcast loop, after authentication and pre-flight.
+    /// It asks for no PIN: internal only so the tests can reach it, and every
+    /// app caller goes through ``cast(choice:onNormalizedLabel:with:)``.
     ///
     /// Nodes are processed **serially**: the SDK fetches an identity nonce for
     /// the voter identity on every broadcast, and two concurrent votes from
     /// the same node would race on it. Never throws — a node that fails is
     /// recorded and the loop continues, so one failure cannot discard the
     /// nodes that already succeeded.
-    func castAuthenticated(
+    func castAfterAuthentication(
         choice: VoteChoice,
         onNormalizedLabel normalizedLabel: String,
         with nodes: [VoterNode]

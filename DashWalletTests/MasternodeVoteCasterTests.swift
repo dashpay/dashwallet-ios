@@ -30,7 +30,7 @@ import XCTest
 /// - `typealias VoteSender = (VoterNode, Data, VoteChoice, String) async throws -> Void`
 ///   (node, voting key, choice, normalizedLabel);
 /// - the per-node loop reachable as an internal
-///   `castAuthenticated(choice:onNormalizedLabel:with:) async -> VoteCastReport`.
+///   `castAfterAuthentication(choice:onNormalizedLabel:with:) async -> VoteCastReport`.
 @MainActor
 final class MasternodeVoteCasterTests: XCTestCase {
 
@@ -65,7 +65,7 @@ final class MasternodeVoteCasterTests: XCTestCase {
     }
 
     private func run(_ caster: MasternodeVoteCaster, nodes: [VoterNode]) async -> VoteCastReport {
-        await caster.castAuthenticated(choice: choice, onNormalizedLabel: label, with: nodes)
+        await caster.castAfterAuthentication(choice: choice, onNormalizedLabel: label, with: nodes)
     }
 
     func testNodeAtTheLimitIsNeverCast() async {

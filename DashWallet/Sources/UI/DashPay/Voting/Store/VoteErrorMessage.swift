@@ -28,10 +28,14 @@ enum VoteErrorMessage {
     // ("Voting Errors: 40300-40399").
     /// `MasternodeNotFoundError`
     private static let voterNotFound: UInt32 = 40300
+    /// `VotePollNotFoundError`
+    private static let votePollNotFound: UInt32 = 40301
     /// `VotePollNotAvailableForVotingError`
     private static let votePollNotAvailable: UInt32 = 40302
     /// `MasternodeVotedTooManyTimesError`
     private static let votedTooManyTimes: UInt32 = 40303
+    /// `MasternodeVoteAlreadyPresentError`
+    private static let voteAlreadyPresent: UInt32 = 40304
     /// `MasternodeIncorrectVotingAddressError`
     private static let incorrectVotingAddress: UInt32 = 40305
     /// `MasternodeIncorrectVoterIdentityIdError`
@@ -75,8 +79,12 @@ enum VoteErrorMessage {
         switch code {
         case votedTooManyTimes:
             return NSLocalizedString("No votes left", comment: "Voting")
-        case votePollNotAvailable:
+        case votePollNotAvailable, votePollNotFound:
             return closed
+        case voteAlreadyPresent:
+            // A vote this device has no record of (another device, a reinstall):
+            // the same refusal comes back on every try.
+            return NSLocalizedString("The vote was not cast. This masternode already holds this vote.", comment: "Voting")
         case voterNotFound, incorrectVotingAddress, incorrectVoterIdentityId:
             return NSLocalizedString(
                 "The vote was not cast. This voting key does not belong to an active masternode.",

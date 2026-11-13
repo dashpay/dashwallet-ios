@@ -78,10 +78,10 @@ Stages 1–3 (this set of PRs):
 
 ## What it guarantees
 
-- No masternode of this wallet votes more than 5 times on one contest; the limit is checked again
-  before each cast.
+- By this device's record of its votes, the app never offers a masternode a sixth vote on one
+  contest, and it checks that record again before each cast; Platform refuses a sixth in any case.
 - A vote that landed is never shown as not cast because an older list read arrived later.
-- A contest is not removed from the list before its voting end.
+- A contest with a known voting end is not removed from the list before it.
 - No vote is sent before the owner has confirmed once which masternodes vote, and no block is sent
   without its confirmation.
 - Only one vote sends at a time, and a vote the ticked masternodes already hold is not sent again.

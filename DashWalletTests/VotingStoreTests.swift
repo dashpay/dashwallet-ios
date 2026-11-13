@@ -2853,6 +2853,14 @@ final class VotingStoreTests: XCTestCase {
         let expected = "The vote was not cast. Voting on this name has closed."
         XCTAssertEqual(VoteErrorMessage.plain(for: MasternodeVoteCaster.CastError.contestClosed("johndoe")), expected)
         XCTAssertEqual(VoteErrorMessage.plain(for: consensus(40302)), expected)
+        XCTAssertEqual(VoteErrorMessage.plain(for: consensus(40301)), expected)
+    }
+
+    /// The same choice already stands for this node on Platform (a vote from
+    /// another device, or before a reinstall): trying again cannot help.
+    func testVoteAlreadyPresentReadsAsAlreadyHeld() {
+        XCTAssertEqual(VoteErrorMessage.plain(for: consensus(40304)),
+                       "The vote was not cast. This masternode already holds this vote.")
     }
 
     func testKeyNotOfAnActiveMasternodeReadsAsSuch() {

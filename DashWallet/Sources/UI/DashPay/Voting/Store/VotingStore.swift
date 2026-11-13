@@ -88,8 +88,8 @@ final class VotingStore: ObservableObject {
     // MARK: Published state
 
     /// The contests on the list: the open ones, plus any Platform closed
-    /// early or left out of its last answer, until their voting end
-    /// (sad §4 choice 6). ``closedLabels`` says which are closed.
+    /// early or left out of its last answer, until their voting end.
+    /// ``closedLabels`` says which are closed.
     @Published private(set) var contests: [DPNSContest] = [] {
         didSet { stateDidChange.send() }
     }
@@ -180,9 +180,9 @@ final class VotingStore: ObservableObject {
 
     /// Votes Platform accepted while this store lived whose history write
     /// failed, per contest. The store's rows are one cast short for each, so
-    /// every history rebuild adds them back: the cast is spent (owner decision,
-    /// 2026-11-05). Kept per screen open: a store is made each time Username Voting
-    /// opens, and the next one starts without them (owner, 2026-11-06).
+    /// every history rebuild adds them back: the cast is spent. Kept per
+    /// screen open: a store is made each time Username Voting opens, and the
+    /// next one starts without them.
     private var unrecordedCasts: [String: [CastVoteRecord]] = [:]
 
     /// Contests with a vote in flight. Their pills show a spinner and take no
