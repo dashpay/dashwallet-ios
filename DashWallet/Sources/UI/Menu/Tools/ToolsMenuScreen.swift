@@ -269,14 +269,12 @@ struct ToolsMenuScreen: View {
     
     private func showMasternodeKeys() {
         let controller = KeysOverviewViewController()
-        controller.hidesBottomBarWhenPushed = true
         vc?.pushViewController(controller, animated: true)
     }
 
     private func showConnections() {
         guard let vc else { return }
         let controller = DashConnectHostingController(navigationController: vc)
-        controller.hidesBottomBarWhenPushed = true
         vc.pushViewController(controller, animated: true)
     }
 

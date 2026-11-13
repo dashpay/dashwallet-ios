@@ -65,7 +65,6 @@ extension IntegrationViewController: DWUpholdLogoutTutorialViewControllerDelegat
         
         let controller = UpholdTransferViewController.init(card: dashCard)
         controller.delegate = self
-        controller.hidesBottomBarWhenPushed = true
         
         return controller
     }
