@@ -969,7 +969,10 @@ final class VotingStore: ObservableObject {
         let casts = plan.votes.map { vote in
             QuickVoteCast(
                 normalizedLabel: vote.normalizedLabel, choice: .towards(identityId: vote.identityId),
-                nodes: votableNodes.filter { vote.nodes.contains($0.proTxHash) })
+                nodes: votableNodes.filter { vote.nodes.contains($0.proTxHash) },
+                // The caster checks it again before each send: the sheet may
+                // have stayed open past the end.
+                endsAt: contests.first { $0.normalizedLabel == vote.normalizedLabel }?.endTime)
         }
         // A planned masternode that left the wallet since the sheet would send
         // nothing and be missing from the report: the plan is stale, so the
@@ -1089,8 +1092,8 @@ final class VotingStore: ObservableObject {
         var casts: [QuickVoteCast] = []
         for report in run.reports where !report.failed.isEmpty {
             // A node with no vote left here stays as reported: nothing a retry
-            // sends from it can land.
-            let failed = report.failed.filter { !$0.hasNoVotesLeft }.map(\.node)
+            // sends from it can land. So does one whose vote may have landed.
+            let failed = report.failed.filter(\.isRetryable).map(\.node)
             guard !failed.isEmpty else { continue }
             let (outcomes, cast) = await replan(report, failed: failed)
             updated[report.normalizedLabel] = outcomes
@@ -1161,7 +1164,8 @@ final class VotingStore: ObservableObject {
         }
         let sending = failed.filter { senders.contains($0.proTxHash) }
         guard !sending.isEmpty else { return (outcomes, nil) }
-        return (outcomes, QuickVoteCast(normalizedLabel: label, choice: report.choice, nodes: sending))
+        return (outcomes, QuickVoteCast(
+            normalizedLabel: label, choice: report.choice, nodes: sending, endsAt: contest.endTime))
     }
 
     private static func retryReason(_ reason: QuickVotePlan.SkipReason) -> String {
@@ -1196,8 +1200,9 @@ final class VotingStore: ObservableObject {
         let version = outcomeVersion
         let label = report.normalizedLabel
         let contest = latest(sent)
-        // A node with no vote left here stays as reported (see ``retryRun(_:)``).
-        let failed = report.failed.filter { !$0.hasNoVotesLeft }.map(\.node)
+        // A node with no vote left, or whose vote may have landed, stays as
+        // reported (see ``retryRun(_:)``).
+        let failed = report.failed.filter(\.isRetryable).map(\.node)
         guard !failed.isEmpty else { return }
         let history = await loadVotedNodesForVote(for: label)
             ? voteHistoryByContest[label] ?? VoteLimit(nil) : VoteLimit(nil)

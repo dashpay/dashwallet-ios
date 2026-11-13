@@ -40,9 +40,22 @@ final class QuickVotingViewModelTests: XCTestCase {
         private(set) var planned: [[String]] = []
         private(set) var started: [QuickVotePlan] = []
 
+        /// The next reload waits for ``releaseReload()``.
+        var holdReload = false
+        private var reloadGate: CheckedContinuation<Void, Never>?
+
         func reloadVoteHistory() async -> Bool {
             historyReloads += 1
+            if holdReload {
+                holdReload = false
+                await withCheckedContinuation { reloadGate = $0 }
+            }
             return historyReadable
+        }
+
+        func releaseReload() {
+            reloadGate?.resume()
+            reloadGate = nil
         }
 
         func quickVotingWillStart() { attemptsStarted += 1 }
@@ -191,6 +204,25 @@ final class QuickVotingViewModelTests: XCTestCase {
         XCTAssertNil(quick.step)
         XCTAssertTrue(host.planned.isEmpty)
         XCTAssertEqual(host.nodeListReports, 1)
+    }
+
+    /// A second tap while the first is still reading the history starts nothing.
+    func testATapWhileTheSheetIsOpeningIsIgnored() async {
+        let host = Host()
+        host.shownContests = [contest("alice", dates: [nine])]
+        host.holdReload = true
+        let quick = QuickVotingViewModel(host: host)
+
+        let first = Task { await quick.start() }
+        while host.historyReloads == 0 { await Task.yield() }
+        await quick.start()
+        host.releaseReload()
+        await first.value
+
+        XCTAssertEqual(host.attemptsStarted, 1)
+        XCTAssertEqual(host.historyReloads, 1)
+        XCTAssertEqual(host.planned.count, 1)
+        XCTAssertEqual(quick.step, .confirm)
     }
 
     func testNothingToVoteOffersCloseOnly() async {

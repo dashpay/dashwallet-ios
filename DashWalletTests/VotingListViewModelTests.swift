@@ -389,6 +389,19 @@ final class VotingListViewModelTests: XCTestCase {
         XCTAssertFalse(voting.keysFlowOpensOnKeyInput, "a node to tick")
     }
 
+    /// An empty list that may be incomplete (a key the keychain could not
+    /// read) does not prove the wallet has no node, even after the sync.
+    func testTheKeysFlowDoesNotOpenOnTheKeyInputWhileTheListMayBeIncomplete() {
+        let store = makeStore()
+        let voting = VotingViewModel(store: store)
+        nodes.isNodeListSynced = true
+        nodes.resolution = .init(nodes: [], mayBeIncomplete: true)
+
+        store.refreshVotableNodes()
+
+        XCTAssertFalse(voting.keysFlowOpensOnKeyInput)
+    }
+
     /// A masternode found after the last refresh (the wallet's scan found its
     /// registration) is seen at the tap that starts a vote, so the key flow
     /// does not open on "Enter voting key" from a stale empty list.

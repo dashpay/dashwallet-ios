@@ -158,6 +158,8 @@ private final class RunCaster: VoteCasting {
     var failing: [String: Set<Data>] = [:]
     /// Masternodes Platform refuses for having no vote left, per name.
     var noVotesLeft: [String: Set<Data>] = [:]
+    /// Masternodes whose broadcast the SDK could not confirm, per name.
+    var unconfirmed: [String: Set<Data>] = [:]
     /// Names whose poll the run finds closed: nothing is sent on them.
     var closed: Set<String> = []
     var refusal: Error?
@@ -199,6 +201,7 @@ private final class RunCaster: VoteCasting {
                 normalizedLabel: cast.normalizedLabel, choice: cast.choice,
                 outcomes: cast.nodes.map { node in
                     if noVotesLeft[cast.normalizedLabel]?.contains(node.proTxHash) == true { return .noVotesLeft(node) }
+                    if unconfirmed[cast.normalizedLabel]?.contains(node.proTxHash) == true { return .unconfirmed(node) }
                     return VoteOutcome(
                         node: node,
                         failure: failing[cast.normalizedLabel]?.contains(node.proTxHash) == true ? "refused" : nil)
@@ -984,6 +987,34 @@ final class VotingStoreTests: XCTestCase {
 
         XCTAssertEqual(caster.runs.count, 2)
         XCTAssertEqual(caster.runs.last?.map(\.normalizedLabel), ["bob"], "alice's refused node is not retried")
+    }
+
+    /// A vote the SDK could not confirm may have landed: Try again after a
+    /// run does not send it again.
+    func testTryAgainAfterARunLeavesAnUnconfirmedVoteAlone() async {
+        let caster = RunCaster()
+        caster.unconfirmed = ["alice": [Data([1])]]
+        caster.failing = ["bob": [Data([2])]]
+        let store = await makeRunStore(caster)
+        await store.runQuickVoting(store.quickVotePlan(for: store.contests))
+        caster.unconfirmed = [:]
+        caster.failing = [:]
+
+        await store.retryFailed()
+
+        XCTAssertEqual(caster.runs.count, 2)
+        XCTAssertEqual(caster.runs.last?.map(\.normalizedLabel), ["bob"], "alice's unconfirmed vote is not sent again")
+    }
+
+    /// The run gets each name's known voting end, so the caster can refuse a
+    /// name whose end passed while the sheet was open.
+    func testQuickVotingCarriesEachNamesVotingEndIntoTheRun() async {
+        let caster = RunCaster()
+        let store = await makeRunStore(caster)
+
+        await store.runQuickVoting(store.quickVotePlan(for: store.contests))
+
+        XCTAssertEqual(caster.runs.first?.map(\.endsAt), store.contests.map(\.endTime))
     }
 
     /// AC-20: a masternode missing from the list may have blocked a name, so
@@ -2511,6 +2542,21 @@ final class VotingStoreTests: XCTestCase {
 
         await store.retryFailed()
         XCTAssertEqual(caster.calls.count, 2, "nothing is sent from a node with no vote left")
+    }
+
+    /// A vote the SDK could not confirm may have landed: Try again after a
+    /// single vote does not send it again.
+    func testTryAgainDoesNotSendAnUnconfirmedVoteAgain() async {
+        let (store, a, b, johndoe) = await makeVotingStore()
+        caster.script = .outcomes([landed(a), .unconfirmed(b)])
+        await store.send(choice: approve, on: johndoe, from: [a, b])
+
+        guard case .mixed(let report)? = store.outcome else {
+            return XCTFail("expected .mixed, got \(String(describing: store.outcome))")
+        }
+        XCTAssertFalse(report.offersTryAgain)
+        await store.retryFailed()
+        XCTAssertEqual(caster.calls.count, 1, "nothing is sent again")
     }
 
     func testTryAgainSendsOnlyTheFailedMasternodes() async {

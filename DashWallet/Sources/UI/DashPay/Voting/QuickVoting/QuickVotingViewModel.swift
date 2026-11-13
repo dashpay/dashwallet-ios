@@ -76,6 +76,9 @@ final class QuickVotingViewModel: ObservableObject {
     /// The plan approves the first linked request of each name, as the list shows only those (AC-18).
     private(set) var approvesLinkedRequests = false
 
+    /// A tap is reading the history before the sheet opens.
+    private var isOpening = false
+
     /// Weak: the host owns this model.
     private weak var host: QuickVotingHosting?
 
@@ -90,9 +93,12 @@ final class QuickVotingViewModel: ObservableObject {
     /// Some name gets a vote; otherwise the sheet offers Close only.
     var canVote: Bool { votedCount > 0 }
 
-    /// «Quick voting» tapped in the list's menu. Ignored while a step is up.
+    /// «Quick voting» tapped in the list's menu. Ignored while a step is up,
+    /// and while an earlier tap is still opening the sheet.
     func start() async {
-        guard step == nil else { return }
+        guard step == nil, !isOpening else { return }
+        isOpening = true
+        defer { isOpening = false }
         host?.quickVotingWillStart()
         await openSheetOrKeys()
     }
