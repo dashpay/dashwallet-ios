@@ -7,6 +7,26 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E5E0D00100000000000000B0 /* SendPairPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D00100000000000000A0 /* SendPairPolicy.swift */; };
+		E5E0D00100000000000000B1 /* SendPairPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D00100000000000000A0 /* SendPairPolicy.swift */; };
+		E5E0D00100000000000000B2 /* SendRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D00100000000000000A1 /* SendRoute.swift */; };
+		E5E0D00100000000000000B3 /* SendRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D00100000000000000A1 /* SendRoute.swift */; };
+		E5E0D00100000000000000B4 /* ConfirmWarning.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D00100000000000000A2 /* ConfirmWarning.swift */; };
+		E5E0D00100000000000000B5 /* ConfirmWarning.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D00100000000000000A2 /* ConfirmWarning.swift */; };
+		E5E0D00400000000000000A2 /* AmountRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D00400000000000000A1 /* AmountRules.swift */; };
+		E5E0D00400000000000000A3 /* AmountRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D00400000000000000A1 /* AmountRules.swift */; };
+		E5E0D0010000000000000061 /* SendOutcome.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0010000000000000060 /* SendOutcome.swift */; };
+		E5E0D0010000000000000062 /* SendOutcome.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0010000000000000060 /* SendOutcome.swift */; };
+		E5E0D0010000000000000030 /* SendSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0010000000000000020 /* SendSource.swift */; };
+		E5E0D0010000000000000031 /* SendSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0010000000000000020 /* SendSource.swift */; };
+		E5E0D0010000000000000032 /* Destination.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0010000000000000021 /* Destination.swift */; };
+		E5E0D0010000000000000033 /* Destination.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0010000000000000021 /* Destination.swift */; };
+		E5E0D0010000000000000034 /* DestinationParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0010000000000000022 /* DestinationParser.swift */; };
+		E5E0D0010000000000000035 /* DestinationParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0010000000000000022 /* DestinationParser.swift */; };
+		E5E0D0040000000000000002 /* AmountRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0040000000000000001 /* AmountRulesTests.swift */; };
+		E5E0D0030000000000000002 /* SendPairPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0030000000000000001 /* SendPairPolicyTests.swift */; };
+		E5E0D0010000000000000051 /* SendOutcomeMappingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0010000000000000050 /* SendOutcomeMappingTests.swift */; };
+		E5E0D0010000000000000005 /* DestinationParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0010000000000000004 /* DestinationParserTests.swift */; };
 		A11C00001274000000000002 /* AssetLockInputPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C00001274000000000001 /* AssetLockInputPolicy.swift */; };
 		A11C00001274000000000003 /* AssetLockInputPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C00001274000000000001 /* AssetLockInputPolicy.swift */; };
 		A11C00001274000000000012 /* CoreCoinConsolidationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C00001274000000000011 /* CoreCoinConsolidationViewModel.swift */; };
@@ -2141,6 +2161,18 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		E5E0D00100000000000000A0 /* SendPairPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendPairPolicy.swift; sourceTree = "<group>"; };
+		E5E0D00100000000000000A1 /* SendRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendRoute.swift; sourceTree = "<group>"; };
+		E5E0D00100000000000000A2 /* ConfirmWarning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmWarning.swift; sourceTree = "<group>"; };
+		E5E0D00400000000000000A1 /* AmountRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountRules.swift; sourceTree = "<group>"; };
+		E5E0D0010000000000000060 /* SendOutcome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendOutcome.swift; sourceTree = "<group>"; };
+		E5E0D0010000000000000020 /* SendSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendSource.swift; sourceTree = "<group>"; };
+		E5E0D0010000000000000021 /* Destination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Destination.swift; sourceTree = "<group>"; };
+		E5E0D0010000000000000022 /* DestinationParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DestinationParser.swift; sourceTree = "<group>"; };
+		E5E0D0040000000000000001 /* AmountRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountRulesTests.swift; sourceTree = "<group>"; };
+		E5E0D0030000000000000001 /* SendPairPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendPairPolicyTests.swift; sourceTree = "<group>"; };
+		E5E0D0010000000000000050 /* SendOutcomeMappingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendOutcomeMappingTests.swift; sourceTree = "<group>"; };
+		E5E0D0010000000000000004 /* DestinationParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DestinationParserTests.swift; sourceTree = "<group>"; };
 		A11C00001274000000000001 /* AssetLockInputPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetLockInputPolicy.swift; sourceTree = "<group>"; };
 		A11C00001274000000000011 /* CoreCoinConsolidationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreCoinConsolidationViewModel.swift; sourceTree = "<group>"; };
 		A11C00001274000000000021 /* CoreCoinConsolidationSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreCoinConsolidationSheet.swift; sourceTree = "<group>"; };
@@ -4007,6 +4039,40 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		E5E0D0010000000000000041 /* Domain */ = {
+			isa = PBXGroup;
+			children = (
+				E5E0D0010000000000000020 /* SendSource.swift */,
+				E5E0D0010000000000000021 /* Destination.swift */,
+				E5E0D0010000000000000022 /* DestinationParser.swift */,
+				E5E0D00400000000000000A1 /* AmountRules.swift */,
+				E5E0D0010000000000000060 /* SendOutcome.swift */,
+				E5E0D00100000000000000A0 /* SendPairPolicy.swift */,
+				E5E0D00100000000000000A1 /* SendRoute.swift */,
+				E5E0D00100000000000000A2 /* ConfirmWarning.swift */,
+			);
+			path = Domain;
+			sourceTree = "<group>";
+		};
+		E5E0D0010000000000000040 /* ExternalSend */ = {
+			isa = PBXGroup;
+			children = (
+				E5E0D0010000000000000041 /* Domain */,
+			);
+			path = ExternalSend;
+			sourceTree = "<group>";
+		};
+		E5E0D0010000000000000003 /* ExternalSend */ = {
+			isa = PBXGroup;
+			children = (
+				E5E0D0030000000000000001 /* SendPairPolicyTests.swift */,
+				E5E0D0040000000000000001 /* AmountRulesTests.swift */,
+				E5E0D0010000000000000004 /* DestinationParserTests.swift */,
+				E5E0D0010000000000000050 /* SendOutcomeMappingTests.swift */,
+			);
+			path = ExternalSend;
+			sourceTree = "<group>";
+		};
 		C0171F000000000000000000 /* Components */ = {
 			isa = PBXGroup;
 			children = (
@@ -5066,6 +5132,7 @@
 				C94D98262A53034A00F3BEE1 /* Enter Address */,
 				2A0C69AD2312C666001B8C90 /* ScanQR */,
 				2A0C69A023104798001B8C90 /* PaymentModels */,
+				E5E0D0010000000000000040 /* ExternalSend */,
 				2AB8CDD5220D80F100A3D1DB /* Amount */,
 				2A8B9E712302E43400FF8653 /* Receive */,
 				2A8B9E5722FF6F2900FF8653 /* Pay */,
@@ -7318,6 +7385,7 @@
 				AA06A0032FF6000000000003 /* PlatformDashConnectDataSourceTests.swift */,
 				47976E492987772700612988 /* AmountObjectTests.swift */,
 				A17EED0126C7000000000002 /* WalletWipeSerialExecutorTests.swift */,
+				E5E0D0010000000000000003 /* ExternalSend */,
 				7D4F1A2B3C4D5E6F7A8B9D05 /* SPVChainStoreRebuildTests.swift */,
 				0B9C2C0E62850E8D5FBB2161 /* MainNamePickSaveTests.swift */,
 				B7C072AA26C7000000000002 /* DWContestedNameStatusServiceTests.swift */,
@@ -10454,6 +10522,14 @@
 				1F3FF21B0295D5A326F08B74 /* OrderPreviewFeeRow.swift in Sources */,
 				61E0BCA4B860A2578137B28F /* WalletSendService.swift in Sources */,
 				6715F4CB33E5F472FEC43B7E /* DWParsedPaymentURI.swift in Sources */,
+				E5E0D0010000000000000030 /* SendSource.swift in Sources */,
+				E5E0D0010000000000000032 /* Destination.swift in Sources */,
+				E5E0D0010000000000000034 /* DestinationParser.swift in Sources */,
+				E5E0D00400000000000000A2 /* AmountRules.swift in Sources */,
+				E5E0D0010000000000000061 /* SendOutcome.swift in Sources */,
+				E5E0D00100000000000000B0 /* SendPairPolicy.swift in Sources */,
+				E5E0D00100000000000000B2 /* SendRoute.swift in Sources */,
+				E5E0D00100000000000000B4 /* ConfirmWarning.swift in Sources */,
 				5010C6015DD809969DF514ED /* DWRecoverModel+Mnemonic.swift in Sources */,
 				CB74BF16EB95CE2D1246C243 /* SwiftDashSDKKeyMigrator.swift in Sources */,
 				51F44F5933DD07DC51CACE4E /* SwiftDashSDKPhraseRepairer.swift in Sources */,
@@ -10649,6 +10725,10 @@
 				AA06A0012FF6000000000001 /* PlatformDashConnectDataSourceTests.swift in Sources */,
 				47976E4A2987772700612988 /* AmountObjectTests.swift in Sources */,
 				A17EED0126C7000000000001 /* WalletWipeSerialExecutorTests.swift in Sources */,
+				E5E0D0030000000000000002 /* SendPairPolicyTests.swift in Sources */,
+				E5E0D0040000000000000002 /* AmountRulesTests.swift in Sources */,
+				E5E0D0010000000000000005 /* DestinationParserTests.swift in Sources */,
+				E5E0D0010000000000000051 /* SendOutcomeMappingTests.swift in Sources */,
 				7D4F1A2B3C4D5E6F7A8B9D04 /* SPVChainStoreRebuildTests.swift in Sources */,
 				D14F9F63DD9D8AE57D14B3F1 /* MainNamePickSaveTests.swift in Sources */,
 				B7C072AA26C7000000000001 /* DWContestedNameStatusServiceTests.swift in Sources */,
@@ -11536,6 +11616,14 @@
 				5EE4B9063E1F3D890E811B1F /* WalletAccountsViewModel.swift in Sources */,
 				6C4AA7FD67FEE5A9E5CF9781 /* WalletsViewModel.swift in Sources */,
 				EC5D47238700BFBE0CB8FE6F /* DWParsedPaymentURI.swift in Sources */,
+				E5E0D0010000000000000031 /* SendSource.swift in Sources */,
+				E5E0D0010000000000000033 /* Destination.swift in Sources */,
+				E5E0D0010000000000000035 /* DestinationParser.swift in Sources */,
+				E5E0D00400000000000000A3 /* AmountRules.swift in Sources */,
+				E5E0D0010000000000000062 /* SendOutcome.swift in Sources */,
+				E5E0D00100000000000000B1 /* SendPairPolicy.swift in Sources */,
+				E5E0D00100000000000000B3 /* SendRoute.swift in Sources */,
+				E5E0D00100000000000000B5 /* ConfirmWarning.swift in Sources */,
 				FACED5DF2BA8E7234BE6BE8D /* DWRecoverModel+Mnemonic.swift in Sources */,
 				C393DD0A89617D8BF270CE27 /* SwiftDashSDKKeyMigrator.swift in Sources */,
 				6FFC566DBB2CFAA3DB3CEFB4 /* SwiftDashSDKPhraseRepairer.swift in Sources */,

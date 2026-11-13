@@ -337,6 +337,9 @@
 /* Platform partial withdrawal cap */
 "A partial withdrawal is limited to %@. Tap Max to withdraw the full balance." = "A partial withdrawal is limited to %@. Tap Max to withdraw the full balance.";
 
+/* External send */
+"A payment request can only be paid from Core" = "A payment request can only be paid from Core";
+
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 
@@ -599,6 +602,9 @@
 
 /* Balance info sheet */
 "Amounts and addresses are public on the blockchain" = "Pampubliko sa blockchain ang mga halaga at address";
+
+/* External send */
+"An earlier payment is still being processed. Try again in a moment." = "An earlier payment is still being processed. Try again in a moment.";
 
 /* Usernames: unfinished identity top-up */
 "An earlier top-up of your identity was paid but hasn't reached Platform yet. Topping up again may pay twice. You can finish that transfer from your transaction history first." = "An earlier top-up of your identity was paid but hasn't reached Platform yet. Topping up again may pay twice. You can finish that transfer from your transaction history first.";
@@ -1399,6 +1405,12 @@
 
 /* Dash Core chain */
 "Core" = "Core";
+
+/* External send */
+"Core can't pay someone else's identity" = "Core can't pay someone else's identity";
+
+/* External send */
+"Core can't pay this kind of Platform address" = "Core can't pay this kind of Platform address";
 
 /* No comment provided by engineer. */
 "Core chain-locked height" = "Core chain-locked height";
@@ -2482,6 +2494,12 @@
 
 /* DashPay Invitations */
 "Identity already found" = "Identity already found";
+
+/* External send */
+"Identity can't pay a Shielded address yet" = "Identity can't pay a Shielded address yet";
+
+/* External send */
+"Identity can't top up itself" = "Identity can't top up itself";
 
 /* No comment provided by engineer. */
 "Identity check" = "Pagsusuri ng pagkakakilanlan";
@@ -3946,6 +3964,12 @@
 /* Sync diagnostics */
 "Platform Balance" = "Platform Balance";
 
+/* External send */
+"Platform can't pay someone else's identity yet" = "Platform can't pay someone else's identity yet";
+
+/* External send */
+"Platform can't pay this kind of Platform address" = "Platform can't pay this kind of Platform address";
+
 /* No comment provided by engineer. */
 "Platform could not be reached, so owner and payout keys were not checked." = "Hindi naabot ang Platform, kaya hindi nasuri ang owner at payout key.";
 
@@ -5368,6 +5392,9 @@
 /* DashConnect */
 "The active wallet or identity changed. Try again." = "The active wallet or identity changed. Try again.";
 
+/* External send */
+"The amount is below the minimum for this payment. Your funds were not sent." = "The amount is below the minimum for this payment. Your funds were not sent.";
+
 /* Dash DEX / dex_error_insufficient_balance */
 "The amount is more than what you're sending." = "The amount is more than what you're sending.";
 
@@ -5551,6 +5578,9 @@
 /* DashConnect App Connect v2 */
 "The network refused this sign-in for good. Ask the app for a new code." = "The network refused this sign-in for good. Ask the app for a new code.";
 
+/* External send */
+"The network rejected the payment. Your funds were not sent." = "The network rejected the payment. Your funds were not sent.";
+
 /* Protocol version advisory */
 "The network uses a newer protocol than this version of the app. Check for available updates." = "The network uses a newer protocol than this version of the app. Check for available updates.";
 
@@ -5580,6 +5610,12 @@
 
 /* Send to contact: the prepared payment went stale before broadcast */
 "The payment changed while you were confirming, so it wasn't sent. Nothing left your wallet. Please try again." = "The payment changed while you were confirming, so it wasn't sent. Nothing left your wallet. Please try again.";
+
+/* External send */
+"The payment failed. Your funds were not sent." = "The payment failed. Your funds were not sent.";
+
+/* External send */
+"The payment request has expired. Your funds were not sent." = "The payment request has expired. Your funds were not sent.";
 
 /* Send: Core drain recovery success */
 "The pending Max transfer completed." = "The pending Max transfer completed.";
@@ -5631,6 +5667,9 @@
 
 /* No comment provided by engineer. */
 "The signing key is missing from the keychain — re-add it and try again." = "Wala sa keychain ang signing key — idagdag ulit ito at subukan muli.";
+
+/* External send */
+"The signing key is unavailable. Your funds were not sent." = "The signing key is unavailable. Your funds were not sent.";
 
 /* Dash DEX */
 "The status of your %@ swap could not be confirmed" = "The status of your %@ swap could not be confirmed";
@@ -5841,6 +5880,9 @@
 
 /* Identities */
 "This identity is being used for your pending username request." = "This identity is being used for your pending username request.";
+
+/* External send */
+"This identity was not found in your wallet. Your funds were not sent." = "This identity was not found in your wallet. Your funds were not sent.";
 
 /* DashPay Invitations */
 "This invitation couldn't be used. Check it on the Home screen." = "This invitation couldn't be used. Check it on the Home screen.";
@@ -6955,6 +6997,9 @@
 
 /* Username marketplace: purchase confirmation body with seller clarity */
 "You are buying from an independent user, not from Dash or this app. The price plus a small network fee is paid from your identity balance, and the name moves to your identity immediately." = "Bumibili ka mula sa isang independiyenteng user, hindi mula sa Dash o sa app na ito. Ang presyo kasama ang maliit na network fee ay binabayaran mula sa balanse ng iyong pagkakakilanlan, at agad na lilipat ang pangalan sa iyong pagkakakilanlan.";
+
+/* External send */
+"You are offline. Check your connection and try again." = "You are offline. Check your connection and try again.";
 
 /* Shielded manual sync requires an internet connection */
 "You are offline. Connect to the internet and try again." = "You are offline. Connect to the internet and try again.";
