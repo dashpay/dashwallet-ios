@@ -169,7 +169,7 @@ final class ConfirmViewModelTests: XCTestCase {
     private let estimateRoutes: [SendRoute] = [
         .coreToShielded, .coreToPlatform, .coreToIdentity,
         .platformToCore, .platformToShielded, .platformToPlatform, .platformToIdentity,
-        .identityToCore, .identityToPlatform, .identityToIdentity
+        .identityToCore, .identityToPlatform, .identityToIdentity, .identityToShielded
     ]
 
     func testCoreToCoreFeeIsExactWithoutTildeOrNote() async {
@@ -595,6 +595,17 @@ final class ConfirmViewModelTests: XCTestCase {
     func testAChangedShieldedPlanAtConfirmGoesBackToSendWithoutAnOutcome() async {
         executor.sendOutcome = .notSent(.balanceChanged)
         let vm = await readyVM(route: .shieldedToShielded)
+        await vm.confirm()
+        XCTAssertEqual(executor.sentCalls, 1)
+        XCTAssertTrue(outcomes.isEmpty, "\(outcomes)")
+        XCTAssertEqual(backToSend, [.balanceNotEnough])
+    }
+
+    /// The identity's balance no longer covers the amount and the shield fee at Confirm: nothing was sent, so Send
+    /// recomputes Max.
+    func testAnIdentityBalanceNotEnoughAtConfirmGoesBackToSendWithoutAnOutcome() async {
+        executor.sendOutcome = .notSent(.balanceNotEnough)
+        let vm = await readyVM(route: .identityToShielded)
         await vm.confirm()
         XCTAssertEqual(executor.sentCalls, 1)
         XCTAssertTrue(outcomes.isEmpty, "\(outcomes)")

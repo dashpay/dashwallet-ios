@@ -192,6 +192,8 @@ enum NotSentReason {
     case belowMinimum
     /// A Shielded withdrawal's amount is outside what Platform accepts for its Core fee.
     case amountOutOfRange
+    /// The balance no longer covers the amount and the fee; Confirm sends the holder back to Send.
+    case balanceNotEnough
     case expired
     /// The balance a send pays changed after Confirm showed it (a whole-balance send, or the notes a Shielded spend
     /// was planned with); nothing was sent, and Confirm sends the holder back to Send.
@@ -207,6 +209,7 @@ enum NotSentReason {
         case .identityNotFound: return "identityNotFound"
         case .belowMinimum: return "belowMinimum"
         case .amountOutOfRange: return "amountOutOfRange"
+        case .balanceNotEnough: return "balanceNotEnough"
         case .expired: return "expired"
         case .balanceChanged: return "balanceChanged"
         case .failed: return "failed"
@@ -243,6 +246,8 @@ enum NotSentReason {
             return NSLocalizedString(
                 "The amount is outside the limits for a withdrawal to Core. Your funds were not sent.",
                 comment: "External send")
+        case .balanceNotEnough:
+            return NSLocalizedString("Balance not enough", comment: "External send")
         case .expired:
             return NSLocalizedString(
                 "The payment request has expired. Your funds were not sent.",

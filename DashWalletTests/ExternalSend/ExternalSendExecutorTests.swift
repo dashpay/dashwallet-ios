@@ -215,6 +215,25 @@ final class ExternalSendExecutorTests: XCTestCase {
         }
     }
 
+    /// Stands for `shieldedShieldFromIdentityToRecipient` from the prepared identity, signed by `KeychainSigner`.
+    private final class FakeIdentityShield: IdentityToShieldedSending {
+        struct Run: Equatable {
+            let identityId: Data
+            let recipientRaw43: Data
+            let amountCredits: UInt64
+        }
+
+        var error: Error?
+        private(set) var runs: [Run] = []
+        private(set) var sawPreauthorized: [Bool] = []
+
+        func shield(identityId: Data, recipientRaw43: Data, amountCredits: UInt64) async throws {
+            runs.append(Run(identityId: identityId, recipientRaw43: recipientRaw43, amountCredits: amountCredits))
+            sawPreauthorized.append(DWIdentityAuthorizer.isPreauthorized)
+            if let error { throw error }
+        }
+    }
+
     /// Stands for the BIP70 send of a payment request: authenticate, build and sign without broadcasting (what
     /// `BIP70PaymentService.confirmAndSend` does first, BIP70PaymentService.swift:292-300), then on send POST the
     /// Payment and broadcast (:303-345). `sends` counts that POST + broadcast step; the real service reaches the
@@ -354,6 +373,7 @@ final class ExternalSendExecutorTests: XCTestCase {
     private let credits = FakeCreditsSend()
     private let identityTopUp = FakeIdentityTopUp()
     private let identityCredits = FakeIdentityCredits()
+    private let identityShield = FakeIdentityShield()
     private let fees = FakeFees()
     private let shieldedPlanner = FakeShieldedPlanner()
     private let balances = FakeBalances()
@@ -376,6 +396,7 @@ final class ExternalSendExecutorTests: XCTestCase {
             creditsSend: credits,
             identityTopUp: identityTopUp,
             identityCredits: identityCredits,
+            identityShield: identityShield,
             fees: fees,
             shieldedPlans: shieldedPlanner,
             balances: balances,
@@ -2428,6 +2449,147 @@ final class ExternalSendExecutorTests: XCTestCase {
 
         XCTAssertEqual(identityCredits.runs.map(\.isMax), identityRoutes.flatMap { _ in [false, true] })
         XCTAssertEqual(identityCredits.runs.filter(\.isMax).map(\.amountCredits), identityRoutes.map { _ in max })
+    }
+
+    // MARK: - Identity to someone else's Shielded address (ADR-0012)
+
+    private static let shieldedRecipientRaw43 = Data(repeating: 0x11, count: 43)
+
+    private func shieldedRecipient(mainnet: Bool = WalletEnvironment.isMainnet) throws -> Destination {
+        let text = try XCTUnwrap(Bech32m.encode(hrp: Bech32m.platformHrp(mainnet: mainnet),
+                                                data: Data([0x10]) + Self.shieldedRecipientRaw43))
+        return Destination(type: .shieldedAddress, text: text)
+    }
+
+    private func prepareIdentityShield(_ executor: ExternalSendExecutor) async throws -> PreparedExternalSend {
+        try await executor.prepare(route: .identityToShielded, destination: try shieldedRecipient(),
+                                   amount: Self.identityAmount, isMax: false, sweepCredits: nil)
+    }
+
+    func testIdentityToShieldedPreparesWithTheEstimatedFeeInCreditsAndShieldsNothing() async throws {
+        scriptIdentity()
+        let prepared = try await prepareIdentityShield(makeExecutor())
+
+        XCTAssertEqual(prepared.route, .identityToShielded)
+        XCTAssertEqual(prepared.amount, Self.identityAmount)
+        XCTAssertEqual(prepared.fee, Self.identityFee)
+        XCTAssertEqual(fees.calls.map(\.route), [.identityToShielded])
+        XCTAssertEqual(balances.reads, [.identity])
+        XCTAssertEqual(prompt.spendAmounts, [AmountRules.dashValue(of: Self.identityAmount)])
+        XCTAssertTrue(identityShield.runs.isEmpty, "prepare never spends")
+    }
+
+    func testIdentityToShieldedReReadsTheBalanceAndShieldsTheAmountToTheRecipientInsidePreauthorized() async throws {
+        scriptIdentity()
+        let executor = makeExecutor()
+        let prepared = try await prepareIdentityShield(executor)
+        // Exactly the amount and the fee is enough.
+        balances.spendable = Self.identityAmount + Self.identityFee
+
+        let outcome = await executor.send(prepared)
+
+        XCTAssertTrue(isSent(outcome), "\(outcome)")
+        XCTAssertEqual(balances.reads, [.identity, .identity], "read again right before the shield")
+        XCTAssertEqual(identityShield.runs, [FakeIdentityShield.Run(
+            identityId: Self.identityA, recipientRaw43: Self.shieldedRecipientRaw43, amountCredits: Self.identityAmount)])
+        XCTAssertEqual(identityShield.sawPreauthorized, [true], "the user authenticated on Continue")
+        XCTAssertEqual(prompt.spendAmounts.count, 1, "send does not authenticate")
+        XCTAssertTrue(identityCredits.runs.isEmpty)
+        XCTAssertTrue(credits.runs.isEmpty)
+        XCTAssertEqual(logged.count, 1)
+    }
+
+    /// Without the check a short balance is refused after the identity-debit guard is armed: unconfirmed, and every
+    /// later identity shield refused until the scan resolves it.
+    func testIdentityToShieldedBalanceBelowTheAmountAndFeeAtSendIsNotSentAndShieldsNothing() async throws {
+        scriptIdentity()
+        let executor = makeExecutor()
+        let prepared = try await prepareIdentityShield(executor)
+        balances.spendable = Self.identityAmount + Self.identityFee - 1
+
+        let outcome = await executor.send(prepared)
+
+        XCTAssertTrue(isNotSent(outcome, "balanceNotEnough"), "\(outcome)")
+        XCTAssertTrue(identityShield.runs.isEmpty)
+        XCTAssertEqual(logged.count, 1)
+    }
+
+    func testIdentityToShieldedUnreadableBalanceAtSendIsNotSentAndShieldsNothing() async throws {
+        scriptIdentity()
+        let executor = makeExecutor()
+        let prepared = try await prepareIdentityShield(executor)
+        balances.spendable = nil
+
+        let outcome = await executor.send(prepared)
+
+        XCTAssertTrue(isNotSent(outcome, "failed"), "\(outcome)")
+        XCTAssertTrue(identityShield.runs.isEmpty)
+    }
+
+    func testIdentityToShieldedOfAShieldedAddressOfTheOtherNetworkIsNotSentAndShieldsNothing() async throws {
+        scriptIdentity()
+        let executor = makeExecutor()
+        let prepared = try await executor.prepare(
+            route: .identityToShielded, destination: try shieldedRecipient(mainnet: !WalletEnvironment.isMainnet),
+            amount: Self.identityAmount, isMax: false, sweepCredits: nil)
+
+        let outcome = await executor.send(prepared)
+
+        XCTAssertTrue(isNotSent(outcome, "failed"), "\(outcome)")
+        XCTAssertTrue(identityShield.runs.isEmpty)
+    }
+
+    func testIdentityToShieldedOfAnAddressThatIsNotShieldedIsNotSentAndShieldsNothing() async throws {
+        scriptIdentity()
+        let executor = makeExecutor()
+        let prepared = try await executor.prepare(
+            route: .identityToShielded, destination: Destination(type: .shieldedAddress, text: "not-bech32m"),
+            amount: Self.identityAmount, isMax: false, sweepCredits: nil)
+
+        let outcome = await executor.send(prepared)
+
+        XCTAssertTrue(isNotSent(outcome, "failed"), "\(outcome)")
+        XCTAssertTrue(identityShield.runs.isEmpty)
+    }
+
+    /// The export hands over once; every failure after it is code 18. Refusals before it are notSent, everything else
+    /// (any code not listed, including what other routes read as a rejection) is inFlight with no Retry.
+    func testIdentityToShieldedClassifiesTheShieldsErrorsByItsOwnMap() async throws {
+        let cases: [(Error, String?)] = [
+            (PlatformWalletError.shieldedSpendUnconfirmed("u"), nil),
+            (PlatformWalletError.transactionBroadcastRejected("r"), nil),
+            (PlatformWalletError.identityNotFound("n"), nil),
+            (NSError(domain: "unmapped", code: 1), nil),
+            (PlatformWalletError.shieldedIdentityDebitPending("p"), "earlierPaymentPending"),
+            (PlatformWalletError.signingKeyUnavailable("k"), "signingKeyUnavailable"),
+            (PlatformWalletError.insufficientIdentityCredits(identityId: "i", required: 2, available: 1),
+             "balanceNotEnough"),
+            (PlatformWalletError.walletOperation("w"), "failed"),
+            (PlatformWalletError.invalidHandle("h"), "failed"),
+            (PlatformWalletError.invalidParameter("p"), "failed"),
+            (PlatformWalletError.nullPointer("n"), "failed"),
+            (PlatformWalletError.shieldedRecoveryCorrupted("c"), "failed"),
+            (PlatformWalletError.shieldedRecoveryKeysRequired("k"), "failed"),
+            (LiveIdentityToShieldedSend.WalletNotOpen(), "failed")
+        ]
+        scriptIdentity()
+        let executor = makeExecutor()
+        for (error, reason) in cases {
+            identityShield.error = error
+            let outcome = await executor.send(try await prepareIdentityShield(executor))
+            if let reason {
+                XCTAssertTrue(isNotSent(outcome, reason), "\(error): \(outcome)")
+            } else {
+                XCTAssertTrue(isInFlight(outcome), "\(error): \(outcome)")
+            }
+        }
+        XCTAssertEqual(identityShield.runs.count, cases.count)
+        XCTAssertEqual(logged.count, cases.count)
+    }
+
+    func testIdentityToShieldedEarlierPaymentPendingSaysThePreviousPaymentIsStillProcessing() {
+        XCTAssertEqual(NotSentReason.earlierPaymentPending.localizedMessage,
+                       "An earlier payment is still being processed. Try again in a moment.")
     }
 
     // MARK: - Live adapters through their real code

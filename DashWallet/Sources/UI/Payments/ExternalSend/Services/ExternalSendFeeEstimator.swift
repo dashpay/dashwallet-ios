@@ -75,8 +75,9 @@ struct ExternalSendFeeEstimator: SendFeeEstimating {
             case .coreToShielded, .coreToPlatform, .coreToIdentity:
                 return try await assetLockEstimate(route: route, amount: amount)
             case .identityToShielded:
-                // TODO(identity-to-shielded): the recipient shield's fee; until then Send cannot continue.
-                return .unavailable
+                // The consensus admission floor of the identity shield, in credits; the charged fee never exceeds it.
+                let fee = try await shieldedFee(.shieldFromIdentity)
+                return fee > 0 ? .fee(fee) : .unavailable
             default:
                 guard let fee = try await fee(route: route, amount: amount), fee > 0 else { return .unavailable }
                 return .fee(fee)

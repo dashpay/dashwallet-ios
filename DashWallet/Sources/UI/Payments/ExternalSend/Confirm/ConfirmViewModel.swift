@@ -171,10 +171,13 @@ final class ConfirmViewModel: ObservableObject {
         prepared.onSlowNetwork = { [weak self] in self?.isWaitingForNetwork = true }
         let outcome = await executor.send(prepared)
         guard !isReleasedWhileSending else { return }
-        if case .notSent(.balanceChanged) = outcome {
+        switch outcome {
+        case .notSent(.balanceChanged), .notSent(.balanceNotEnough):
             // Nothing was sent: Send plans again against the balance and notes as they are now.
             onBackToSend?(.balanceNotEnough)
             return
+        default:
+            break
         }
         onOutcome?(outcome)
     }
