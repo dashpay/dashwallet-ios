@@ -150,7 +150,7 @@ struct ContestDetailScreen: View {
                     ContenderRow(
                         contender: contender,
                         normalizedLabel: contest.normalizedLabel,
-                        votingEndsAt: current.endTime,
+                        voting: viewModel,
                         // Nobody leads before the first vote: with every tally at
                         // zero the first row was highlighted as if it were ahead.
                         isLeading: contender.id == current.leadingContender?.id
@@ -236,7 +236,7 @@ private struct ContenderRow: View {
     /// Passed through to the details screen, which shows the stored form and
     /// looks this contender's published link up by it.
     let normalizedLabel: String
-    let votingEndsAt: Date?
+    let voting: VotingViewModel
     let isLeading: Bool
     let canVote: Bool
     let voteTitle: String
@@ -248,13 +248,10 @@ private struct ContenderRow: View {
             // one row, so the link wraps only the text — wrapping the row would
             // swallow the button's tap.
             NavigationLink {
-                ContenderDetailScreen(
-                    contender: contender,
+                RequestDetailsScreen(
+                    voting: voting,
                     normalizedLabel: normalizedLabel,
-                    votingEndsAt: votingEndsAt,
-                    canVote: canVote,
-                    voteTitle: voteTitle,
-                    onVote: onVote)
+                    identityId: contender.identityId)
             } label: {
                 HStack(spacing: 6) {
                     VStack(alignment: .leading, spacing: 2) {
@@ -337,197 +334,5 @@ extension VoteChoice: Identifiable {
         case .abstain: return "abstain"
         case .lock: return "lock"
         }
-    }
-}
-
-// MARK: - ContenderDetailScreen
-
-/// One contender, in the same four fields — and the same shape — as the
-/// requester's own "Request details": the name as this person typed it, the
-/// proof of identity they published, who they are on Platform, and when the
-/// result is due. The vote control comes along so the decision can be made
-/// where the evidence is.
-private struct ContenderDetailScreen: View {
-    let contender: DPNSContender
-    let normalizedLabel: String
-    let votingEndsAt: Date?
-    let canVote: Bool
-    let voteTitle: String
-    let onVote: () -> Void
-
-    @Environment(\.dismiss) private var dismiss
-    /// What the link lookup has to say. Reading, a link, nothing published, or
-    /// a failure — four answers, because collapsing the last two tells a voter
-    /// this contender published no proof when in truth the query did not run.
-    private enum LinkState {
-        case reading
-        case published(URL)
-        case none
-        case failed
-    }
-    @State private var link: LinkState = .reading
-
-    private enum Layout {
-        static let cardSpacing: CGFloat = 2
-        static let rowHPadding: CGFloat = 14
-        static let rowVPadding: CGFloat = 12
-        static let labelSpacing: CGFloat = 20
-        static let rowMinHeight: CGFloat = 46
-    }
-
-    private var requestedLabel: String {
-        contender.displayLabel ?? normalizedLabel
-    }
-
-    var body: some View {
-        VStack(spacing: 0) {
-            DashUIKit.NavigationBar(
-                leading: { DashUIKit.NavigationBarElement.back.button(action: { dismiss() }) })
-
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    DashUIKit.TopIntroView(
-                        title: NSLocalizedString("Contender details", comment: "Voting"),
-                        mainDescription: NSLocalizedString(
-                            "What this person published to show the name is theirs. None of it is verified by the network — it is what you are voting on.",
-                            comment: "Voting"))
-                        .padding(.horizontal, 20)
-
-                    VStack(spacing: Layout.cardSpacing) {
-                        detailRow(NSLocalizedString("Username", comment: "Voting")) {
-                            Text(requestedLabel)
-                        }
-                        detailRow(NSLocalizedString("Link", comment: "Voting")) {
-                            linkValue
-                        }
-                        detailRow(NSLocalizedString("Identity", comment: "Voting")) {
-                            Text(contender.identityId)
-                                .lineLimit(1)
-                                .truncationMode(.middle)
-                        }
-                        detailRow(NSLocalizedString("Results", comment: "Voting")) {
-                            Text(votingEndsAt.map { DWDateFormatter.sharedInstance.dateAndTime(from: $0) }
-                                ?? NSLocalizedString("Unknown", comment: "Voting"))
-                        }
-                    }
-                    .modifier(DashUIKit.MenuViewModifier(shadowRadius: 20))
-                    .padding(.horizontal, 20)
-
-                    if canVote {
-                        DashUIKit.DashButton(
-                            text: voteTitle,
-                            fillsWidth: true,
-                            size: .large,
-                            style: .filledBlue,
-                            action: {
-                                // The cast sheet belongs to the screen behind
-                                // this one; step back rather than stack a
-                                // second presentation on top of it.
-                                dismiss()
-                                onVote()
-                            })
-                            .padding(.horizontal, 20)
-                    }
-                }
-                .padding(.vertical, 20)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .scrollBounceBehavior(.basedOnSize)
-        }
-        .background(Color.dash.primaryBackground)
-        .navigationBarHidden(true)
-        .task {
-            guard case .reading = link else { return }
-            await loadLink()
-        }
-    }
-
-    private func loadLink() async {
-        link = .reading
-        do {
-            if let url = try await IdentityVerifyService.shared.publishedURL(
-                forLabel: normalizedLabel, ownedBy: contender.identityId) {
-                link = .published(url)
-            } else {
-                link = .none
-            }
-        } catch {
-            link = .failed
-        }
-    }
-
-    @ViewBuilder
-    private var linkValue: some View {
-        switch link {
-        case .reading:
-            HStack(spacing: 6) {
-                SwiftUI.ProgressView()
-                Text(NSLocalizedString("Checking…", comment: "Voting"))
-            }
-            .foregroundColor(Color.dash.secondaryText)
-        case .none:
-            Text(NSLocalizedString("None", comment: "Voting"))
-                .foregroundColor(Color.dash.secondaryText)
-        case .failed:
-            // Not "None": the difference between "published nothing" and "we
-            // could not ask" is the whole value of this row to a voter.
-            Button {
-                Task { await loadLink() }
-            } label: {
-                HStack(spacing: 6) {
-                    Text(NSLocalizedString("Could not check — retry", comment: "Voting"))
-                    Image(systemName: "arrow.clockwise")
-                }
-                .foregroundStyle(Color.dash.blue)
-            }
-        case .published(let url) where !Self.isOpenableInBrowser(url):
-            // Written by another contender, through any client or straight
-            // against the contract, so the read path cannot assume what the
-            // write path enforces. A `someapp://…` value handed to the system
-            // opener is an attacker's choice of action, taken by a masternode
-            // owner who only meant to read; show it, do not offer it.
-            Text(url.absoluteString)
-                .lineLimit(1)
-                .truncationMode(.middle)
-                .foregroundColor(Color.dash.secondaryText)
-        case .published(let url):
-            Link(destination: url) {
-                HStack(spacing: 6) {
-                    Text(url.absoluteString)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-                    Image(systemName: "arrow.up.right.square")
-                }
-                .foregroundStyle(Color.dash.blue)
-            }
-        }
-    }
-
-    /// Whether this is a link a browser will take: `http` or `https` and
-    /// nothing else, matching what the publish path accepts.
-    private static func isOpenableInBrowser(_ url: URL) -> Bool {
-        guard let scheme = url.scheme?.lowercased() else { return false }
-        return scheme == "http" || scheme == "https"
-    }
-
-    private func detailRow<Value: View>(
-        _ label: String,
-        @ViewBuilder value: () -> Value
-    ) -> some View {
-        HStack(alignment: .top, spacing: Layout.labelSpacing) {
-            Text(label)
-                .dashFont(.subheadMedium)
-                .foregroundColor(Color.dash.tertiaryText)
-                .fixedSize()
-
-            value()
-                .dashFont(.subhead)
-                .foregroundColor(Color.dash.primaryText)
-                .multilineTextAlignment(.trailing)
-                .frame(maxWidth: .infinity, alignment: .trailing)
-        }
-        .padding(.horizontal, Layout.rowHPadding)
-        .padding(.vertical, Layout.rowVPadding)
-        .frame(minHeight: Layout.rowMinHeight)
     }
 }

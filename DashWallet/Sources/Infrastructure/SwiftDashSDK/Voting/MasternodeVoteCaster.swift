@@ -71,8 +71,11 @@ enum VoteChoice: Hashable {
 /// so a partial run is reported as a partial run rather than as an error.
 struct VoteOutcome: Identifiable {
     let node: VoterNode
-    /// `nil` on success; the Platform or local error message otherwise.
+    /// `nil` on success; the reason in plain words otherwise.
     let failure: String?
+    /// `false` when Platform accepted the vote but the local history write
+    /// failed, so the stored cast count is one low.
+    var historyRecorded: Bool = true
 
     var id: Data { node.proTxHash }
     var succeeded: Bool { failure == nil }
@@ -108,8 +111,6 @@ final class MasternodeVoteCaster {
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.voting")
 
-    private static let history: VoteHistoryDAO = VoteHistoryDAOImpl.shared
-
     /// Vote history is per Platform network — a testnet contest and a mainnet
     /// one can share a label, and their counts must never merge.
     static var networkKey: String {
@@ -118,12 +119,40 @@ final class MasternodeVoteCaster {
         WalletEnvironment.network?.persistenceScope ?? "mainnet"
     }
 
-    private let registry: MasternodeVoterRegistry
     private let contests: ContestedNamesService
+    private let history: VoteHistoryDAO
+    private let votingKey: (VoterNode) -> Data?
+    private let send: VoteSender
 
-    init(registry: MasternodeVoterRegistry, contests: ContestedNamesService) {
-        self.registry = registry
+    /// Broadcasts one vote for one node. Throws on any failure.
+    typealias VoteSender = (
+        _ node: VoterNode, _ votingKey: Data, _ choice: VoteChoice, _ normalizedLabel: String
+    ) async throws -> Void
+
+    /// - Parameters:
+    ///   - votingKey: derives a node's voting key; `nil` uses the registry.
+    ///   - send: broadcasts one vote; `nil` uses the SDK.
+    init(
+        registry: MasternodeVoterRegistry,
+        contests: ContestedNamesService,
+        history: VoteHistoryDAO,
+        votingKey: ((VoterNode) -> Data?)? = nil,
+        send: VoteSender? = nil
+    ) {
         self.contests = contests
+        self.history = history
+        self.votingKey = votingKey ?? { registry.votingPrivateKey(for: $0) }
+        self.send = send ?? { node, votingKey, choice, normalizedLabel in
+            guard let sdk = SwiftDashSDKHost.shared.sdk else { throw CastError.sdkUnavailable }
+            try await sdk.castContestedResourceVote(
+                dataContractId: DPNSVotePoll.contractId,
+                documentTypeName: DPNSVotePoll.documentTypeName,
+                indexName: DPNSVotePoll.indexName,
+                indexValues: DPNSVotePoll.indexValues(normalizedLabel: normalizedLabel),
+                choice: choice.sdkChoice,
+                proTxHash: node.proTxHash,
+                votingPrivateKey: votingKey)
+        }
     }
 
     enum CastError: LocalizedError {
@@ -156,7 +185,7 @@ final class MasternodeVoteCaster {
     /// Cast `choice` on `normalizedLabel` with each node in `nodes`.
     ///
     /// Prompts for PIN/biometric once, then hands off to
-    /// ``castAuthenticated(choice:onNormalizedLabel:with:sdk:)``.
+    /// ``castAuthenticated(choice:onNormalizedLabel:with:)``.
     ///
     /// - Throws: ``CastError`` when the run cannot start at all (auth refused,
     ///   poll already closed). Once broadcasting starts, per-node failures are
@@ -168,7 +197,7 @@ final class MasternodeVoteCaster {
         with nodes: [VoterNode]
     ) async throws -> VoteCastReport {
         guard !nodes.isEmpty else { throw CastError.noNodesSelected }
-        guard let sdk = SwiftDashSDKHost.shared.sdk else { throw CastError.sdkUnavailable }
+        guard SwiftDashSDKHost.shared.sdk != nil else { throw CastError.sdkUnavailable }
 
         // Pre-flight: a closed poll otherwise fails only after a long
         // broadcast retry, with an error that says nothing useful.
@@ -187,7 +216,7 @@ final class MasternodeVoteCaster {
         }
 
         return await castAuthenticated(
-            choice: choice, onNormalizedLabel: normalizedLabel, with: nodes, sdk: sdk)
+            choice: choice, onNormalizedLabel: normalizedLabel, with: nodes)
     }
 
     /// The per-node broadcast loop, after authentication and pre-flight.
@@ -197,18 +226,34 @@ final class MasternodeVoteCaster {
     /// the same node would race on it. Never throws — a node that fails is
     /// recorded and the loop continues, so one failure cannot discard the
     /// nodes that already succeeded.
-    private func castAuthenticated(
+    func castAuthenticated(
         choice: VoteChoice,
         onNormalizedLabel normalizedLabel: String,
-        with nodes: [VoterNode],
-        sdk: SDK
+        with nodes: [VoterNode]
     ) async -> VoteCastReport {
-        let indexValues = DPNSVotePoll.indexValues(normalizedLabel: normalizedLabel)
         var outcomes: [VoteOutcome] = []
         outcomes.reserveCapacity(nodes.count)
 
         for node in nodes {
-            guard let votingKey = registry.votingPrivateKey(for: node) else {
+            // Re-read the count before every cast: Platform refuses the sixth,
+            // and an unreadable count is unknown, never zero.
+            guard let votes = await history.votes(forContest: normalizedLabel, network: Self.networkKey) else {
+                outcomes.append(VoteOutcome(
+                    node: node,
+                    failure: NSLocalizedString(
+                        "Could not check how many votes this node has left.",
+                        comment: "Voting")))
+                continue
+            }
+            let castCount = votes.first { $0.proTxHash == node.proTxHash }?.castCount ?? 0
+            guard castCount < VoteLimit.maxCastsPerNode else {
+                outcomes.append(VoteOutcome(
+                    node: node,
+                    failure: NSLocalizedString("No votes left", comment: "Voting")))
+                continue
+            }
+
+            guard let votingKey = votingKey(node) else {
                 outcomes.append(VoteOutcome(
                     node: node,
                     failure: NSLocalizedString(
@@ -218,36 +263,39 @@ final class MasternodeVoteCaster {
             }
 
             do {
-                try await sdk.castContestedResourceVote(
-                    dataContractId: DPNSVotePoll.contractId,
-                    documentTypeName: DPNSVotePoll.documentTypeName,
-                    indexName: DPNSVotePoll.indexName,
-                    indexValues: indexValues,
-                    choice: choice.sdkChoice,
-                    proTxHash: node.proTxHash,
-                    votingPrivateKey: votingKey)
-                outcomes.append(VoteOutcome(node: node, failure: nil))
-                // Recorded only on success, so the count the UI shows is
-                // votes Platform accepted — not votes attempted.
-                await Self.history.record(
+                try await send(node, votingKey, choice, normalizedLabel)
+            } catch {
+                // Stored in plain words: Platform's own text is never shown,
+                // and never logged beyond the error's type.
+                let message = VoteErrorMessage.plain(for: error)
+                outcomes.append(VoteOutcome(node: node, failure: message))
+                let errorType = String(describing: type(of: error))
+                let nodeName = node.displayName
+                Self.logger.error(
+                    "🗳️ VOTING :: cast failed on \(normalizedLabel, privacy: .public) with \(nodeName, privacy: .public): \(errorType, privacy: .public)")
+                continue
+            }
+
+            // Recorded only on success, so the count the UI shows is
+            // votes Platform accepted — not votes attempted.
+            var historyRecorded = true
+            do {
+                try await history.record(
                     CastVoteRecord(
                         proTxHash: node.proTxHash,
                         normalizedLabel: normalizedLabel,
                         choice: choice,
                         castAt: Date()),
                     network: Self.networkKey)
-                Self.logger.info(
-                    "🗳️ VOTING :: cast \(choice.logDescription, privacy: .public) on \(normalizedLabel, privacy: .public) with \(node.displayName, privacy: .public)")
             } catch {
-                // Platform's message is the useful one here — "already voted",
-                // "too many vote changes", "masternode not found" each tell
-                // the user something different. Surface it verbatim.
-                let message = (error as? LocalizedError)?.errorDescription
-                    ?? String(describing: error)
-                outcomes.append(VoteOutcome(node: node, failure: message))
+                historyRecorded = false
+                let errorType = String(describing: type(of: error))
                 Self.logger.error(
-                    "🗳️ VOTING :: cast failed on \(normalizedLabel, privacy: .public) with \(node.displayName, privacy: .public): \(message, privacy: .public)")
+                    "🗳️ VOTING :: history write failed on \(normalizedLabel, privacy: .public): \(errorType, privacy: .public)")
             }
+            outcomes.append(VoteOutcome(node: node, failure: nil, historyRecorded: historyRecorded))
+            Self.logger.info(
+                "🗳️ VOTING :: cast \(choice.logDescription, privacy: .public) on \(normalizedLabel, privacy: .public) with \(node.displayName, privacy: .public)")
         }
 
         return VoteCastReport(

@@ -24,10 +24,13 @@ import SwiftUI
 
 /// A vote the user asked for from a screen: which contest and which choice.
 /// `choice` is `nil` when the user only asked to add a voting key.
+/// `cancelling` is the choice an abstain takes back: only the nodes holding it
+/// cast (AC-17).
 struct VoteFlowRequest: Identifiable {
     let id = UUID()
     let contest: DPNSContest
     let choice: VoteChoice?
+    var cancelling: VoteChoice?
 }
 
 extension View {
@@ -68,6 +71,7 @@ private struct VoteFlowModifier: ViewModifier {
                     CastVoteSheet(
                         contest: viewModel.latest(request.contest),
                         choice: choice,
+                        cancelling: request.cancelling,
                         viewModel: viewModel)
                 }
             }

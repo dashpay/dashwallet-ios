@@ -1330,7 +1330,6 @@
 "Contender %@" = "Кандидат %@";
 
 /* Voting */
-"Contender details" = "Contender details";
 
 /* No comment provided by engineer. */
 "Continue" = "Продължи";
@@ -6853,7 +6852,6 @@
 "What is username voting?" = "What is username voting?";
 
 /* Voting */
-"What this person published to show the name is theirs. None of it is verified by the network — it is what you are voting on." = "What this person published to show the name is theirs. None of it is verified by the network — it is what you are voting on.";
 
 /* DashPay FAQ */
 "What's coming next?" = "Какво следва?";
@@ -7542,3 +7540,32 @@
 
 /* No comment provided by engineer. */
 "Votes: Low to high" = "Votes: Low to high";
+
+"Could not check how many votes this node has left." = "Could not check how many votes this node has left.";
+
+/* No comment provided by engineer. */
+"No votes left" = "No votes left";
+
+"The vote was not cast. Check your connection and try again." = "The vote was not cast. Check your connection and try again.";
+
+"The vote was not cast. Voting on this name has closed." = "The vote was not cast. Voting on this name has closed.";
+
+"The vote was not cast. This voting key does not belong to an active masternode." = "The vote was not cast. This voting key does not belong to an active masternode.";
+
+"The vote was not cast. Please try again." = "The vote was not cast. Please try again.";
+"Hide requests for %@" = "Hide requests for %@";
+"Not provided" = "Not provided";
+"Not provided – %@" = "Not provided – %@";
+"Couldn't check for a link" = "Couldn't check for a link";
+"Vote to approve" = "Vote to approve";
+"Cancel approval" = "Cancel approval";
+"Voting period" = "Voting period";
+"All outcomes" = "All outcomes";
+"Opens the request details" = "Opens the request details";
+"Couldn't refresh." = "Couldn't refresh.";
+
+"Hides the requests for this name" = "Hides the requests for this name";
+"Takes your vote back" = "Takes your vote back";
+
+/* Voting */
+"Review the posting below to verify the ownership of this username" = "Review the posting below to verify the ownership of this username";
