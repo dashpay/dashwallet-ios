@@ -133,6 +133,9 @@
 /* No comment provided by engineer. */
 "%@ · Platform balance" = "‏%@ · موجودی Platform";
 
+/* SPV diagnostics: transfers finished to the wallet's own Shielded balance because their recipient was not on record */
+"%d added to your Shielded balance" = "%d added to your Shielded balance";
+
 /* SPV diagnostics */
 "%d already spent" = "%d already spent";
 
@@ -2319,6 +2322,9 @@
 
 /* DashConnect connection sheet */
 "Funding left" = "Funding left";
+
+/* A transfer whose recipient was not on record was finished to the wallet's own Shielded balance */
+"Funds added to your Shielded balance" = "Funds added to your Shielded balance";
 
 /* Masternode unban */
 "Funds are on the way…" = "Funds are on the way…";
@@ -6077,6 +6083,9 @@
 
 /* Usernames */
 "This wallet has no Platform identity yet." = "This wallet has no Platform identity yet.";
+
+/* InternalTransfer recovery */
+"This wallet has no record of the address this transfer was going to, so it was finished to your own Shielded balance." = "This wallet has no record of the address this transfer was going to, so it was finished to your own Shielded balance.";
 
 /* DashConnect */
 "This wallet holds DashConnect records a newer version wrote. Update the wallet, then try again." = "This wallet holds DashConnect records a newer version wrote. Update the wallet, then try again.";

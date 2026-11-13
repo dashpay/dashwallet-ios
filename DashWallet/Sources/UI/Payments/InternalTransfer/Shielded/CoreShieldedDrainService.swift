@@ -102,15 +102,24 @@ enum CoreShieldedDrainMarkerLookup: Sendable {
     case unavailable
 }
 
-/// Where a resume of a Max drain's lock pays when its SDK row has no recorded
-/// recipient: a drain built before the SDK recorded recipients
-/// (dashpay/platform#5762) has its recipient only in the app's marker, so such
-/// a row is resumed to the marker's recipient or not at all.
+/// Where a resume of a Max drain's lock pays when its SDK row names the drain
+/// but has no recorded recipient: a drain built before the SDK recorded
+/// recipients (dashpay/platform#5762) has its recipient only in the app's
+/// marker, so such a row is resumed to the marker's recipient or not at all.
 /// `ShieldedResumeRecipient` consults this only for those rows.
 ///
-/// TODO(drain-marker-recipient): once no unconsumed drain row can lack an SDK
-/// recipient, drop the marker's recipient and this fallback; the marker's
-/// operation UUID stays for status reconciliation and the one-drain gate.
+/// A lock the SDK rebuilt from chain (status `RecoveredFromChain`, after a
+/// restore from seed, a reinstall or a lost store) is not such a row: it has
+/// no drain operation id either, so it resolves as `.none` here and the marker
+/// is not read for it. `InternalTransferRunner` still passes the marker's
+/// recipient as the caller's when it resumes a drain.
+///
+/// TODO(drain-marker-recipient): the marker's recipient cannot be dropped on
+/// the premise that rows without a recorded recipient die out with pre-#5762
+/// builds: a rebuilt row never has one, because the recipient is not in the
+/// lock transaction. Decide what a Max drain's resume reads for its recipient
+/// before removing it; the marker's operation UUID stays either way, for
+/// status reconciliation and the one-drain gate.
 enum CoreShieldedDrainResumeTarget: Equatable, Sendable {
     /// The wallet's own default Orchard address.
     case ownWallet
@@ -149,11 +158,17 @@ enum CoreShieldedDrainResumeTarget: Equatable, Sendable {
 /// The SDK records the recipient on the tracked lock row before the lock is
 /// broadcast and, on resume, pays that recipient and refuses any other
 /// (`PlatformWalletError.assetLockRecipientMismatch`). A recorded recipient
-/// therefore decides, and a caller's recipient must agree with it. A row
-/// tracked before the SDK recorded recipients falls back to the Max drain
-/// marker (a drain row) or to the caller's recipient, then to the wallet's own
-/// address: nothing else recorded where such a lock was going, and refusing it
-/// would leave its funds locked.
+/// therefore decides, and a caller's recipient must agree with it.
+///
+/// A row has no recorded recipient in two cases. One ends: the lock was
+/// broadcast by a build from before the SDK recorded recipients
+/// (dashpay/platform#5762). The other does not: the SDK rebuilt the lock from
+/// chain (status `RecoveredFromChain`, after a restore from seed, a reinstall
+/// or a lost store), and the recipient is not in the lock transaction, so the
+/// rebuilt row has neither a recipient nor a drain operation id. Such a row
+/// falls back to the Max drain marker (a drain row) or to the caller's
+/// recipient, then to the wallet's own address: nothing else recorded where
+/// the lock was going, and refusing it would leave its funds locked.
 enum ShieldedResumeRecipient: Equatable, Sendable {
 
     /// Which record decided the recipient. Logged; the address never is.
@@ -161,6 +176,13 @@ enum ShieldedResumeRecipient: Equatable, Sendable {
         case recorded
         case marker
         case caller
+        /// The wallet's own address, because the row has no recorded
+        /// recipient, is not a drain row, and the caller passed none. Not only
+        /// rows from older builds: a lock rebuilt from chain is always this.
+        /// The interrupted transfer may have been going elsewhere, so
+        /// surfaces that do not know its purpose report the funds as added to
+        /// the Shielded balance
+        /// (`ShieldedTransferCoordinator.resumePaidOwnBalanceWithoutRecord`).
         case ownLegacy = "own-legacy"
     }
 
