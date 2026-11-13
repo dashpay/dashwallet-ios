@@ -102,4 +102,18 @@ post_install do |installer|
 
   end
 
+  # The app must link exactly one SQLite: the one SwiftDashSDK's
+  # DashSDKFFI.xcframework builds in. SQLite.swift declares the system
+  # `sqlite3` library, and with it on the link line every `sqlite3_*`
+  # reference, the SDK's included, binds to /usr/lib/libsqlite3.dylib,
+  # which on older iOS lacks API the SDK calls (`sqlite3_set_clientdata`).
+  installer.aggregate_targets.each do |aggregate_target|
+    next unless ['Pods-dashwallet', 'Pods-dashpay'].include?(aggregate_target.name)
+
+    aggregate_target.xcconfigs.each do |config_name, xcconfig|
+      xcconfig.libraries.delete('sqlite3')
+      xcconfig.save_as(aggregate_target.xcconfig_path(config_name))
+    end
+  end
+
 end
