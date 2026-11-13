@@ -2710,8 +2710,15 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             // on them, and the UI does not wait on the network.
             if let remaining = try? await DashConnectPlatformQueries.keysRemainingBudgets(
                 sdk: context.sdk, identityId: identityId, keyIds: keyIds) {
-                details.keyFunding = KeyFunding.of(
-                    intents: held, snapshot: snapshot, unrecorded: unrecorded, remaining: remaining)
+                let lines = KeyFunding.of(intents: held, snapshot: snapshot, unrecorded: unrecorded, remaining: remaining)
+                // A limits update between the identity read and this one:
+                // what is left is not shown against totals it outgrew; the
+                // next read of the identity brings them together.
+                if KeyFunding.agree(lines) {
+                    details.keyFunding = lines
+                } else {
+                    details.fundingReadFailed = true
+                }
             } else {
                 details.fundingReadFailed = true
             }
