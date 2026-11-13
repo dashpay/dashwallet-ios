@@ -59,7 +59,7 @@ extension AtmListSegmnets {
         case .buy:
             return BuyAtmsDataProvider()
         case .sell:
-            return BuyAndSellAtmsDataProvider()
+            return SellAtmsDataProvider()
         case .buyAndSell:
             return BuyAndSellAtmsDataProvider()
         }

@@ -1580,7 +1580,7 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
     func testTheSheetListsWhatIsLeftOfEachKey() async {
         let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)], history: [])
         spy.details = ConnectionDetails(
-            appId: "app", identityId: "identity", username: nil, access: nil,
+            appId: "app", identityId: "identity", username: nil, basis: Self.sheetBasis(revision: 1),
             connectedAt: Date(timeIntervalSince1970: 1_000))
         spy.funding = .read([
             KeyFunding(isProfileKey: false, totalBudget: 50_000_000_000, remaining: 20_000_000_000),
@@ -1598,11 +1598,73 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
         XCTAssertEqual(lines?[1].value, "Maximum of \(dash(200_000_000))", "Platform did not say what is left")
         XCTAssertEqual(lines?[2].value, "No limit")
         XCTAssertEqual(viewModel.shownConnectedAt, Date(timeIntervalSince1970: 1_000))
+        XCTAssertEqual(spy.fundingBases, [Self.sheetBasis(revision: 1)], "read for the read the details were told from")
+    }
+
+    /// A refresh told from another read of the identity drops the funding
+    /// lines of the earlier one, and shows those read for its own.
+    func testARefreshFromAnotherReadDoesNotKeepTheEarlierFundingLines() async {
+        let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)])
+        spy.details = ConnectionDetails(
+            appId: "app", identityId: "identity", username: nil, basis: Self.sheetBasis(revision: 1))
+        spy.funding = .read([KeyFunding(isProfileKey: false, totalBudget: 1000, remaining: 400)])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { !viewModel.connections.isEmpty }
+        viewModel.showConnection(viewModel.rows(for: .active)[0])
+        await waitUntil { viewModel.shownFundingLines != nil }
+
+        spy.details = ConnectionDetails(
+            appId: "app", identityId: "identity", username: nil, basis: Self.sheetBasis(revision: 2))
+        spy.funding = .read([KeyFunding(isProfileKey: false, totalBudget: 5000, remaining: 4000)])
+        spy.fundingDelay = 300_000_000
+        spy.sendRows([Self.row("app", .active)])
+        await waitUntil { viewModel.shownDetails?.basis == Self.sheetBasis(revision: 2) }
+        XCTAssertNil(viewModel.shownDetails?.keyFunding, "the lines told of the earlier read")
+        await waitUntil { viewModel.shownDetails?.keyFunding != nil }
+        XCTAssertEqual(viewModel.shownDetails?.keyFunding?.first?.totalBudget, 5000)
+    }
+
+    /// An Expired row's sheet reads the funding of the connection it
+    /// follows, and shows it beside the details of the whole read.
+    func testAnExpiredSheetReadsTheFundingOfTheConnectionItFollows() async {
+        let held = Self.sheetBasis(revision: 1)
+        let intent = AppConnect.ConnectionIntent(
+            id: UUID(), identityId: held.snapshot.identityId, appId: Data(repeating: 1, count: 32), appLabel: "App",
+            appUrl: "", requestHash: Data(repeating: 0xEE, count: 20), connectionId: nil, keys: [],
+            sentEncryptionKeyIds: [], disables: [],
+            response: AppConnect.ResponseValues(
+                appEphemeralPubKeyHash: "ee", walletEphemeralPubKey: "02", encryptedPayload: "00"),
+            responseDocumentId: nil, responseRemoved: true, createdAt: Date(timeIntervalSince1970: 0), closedAt: nil)
+        let basis = ConnectionBasis(
+            snapshot: held.snapshot, intents: [intent], followedIntentIds: [], unrecorded: held.unrecorded,
+            administeredGroups: [])
+        XCTAssertNotEqual(basis.shown(as: .expired), basis)
+        let spy = ConnectionStatusSpy(rows: [Self.row("app", .expired)])
+        spy.details = ConnectionDetails(appId: "app", identityId: "identity", username: nil, basis: basis)
+        spy.funding = .read([KeyFunding(isProfileKey: false, totalBudget: 1000, remaining: 400)])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { !viewModel.connections.isEmpty }
+        viewModel.showConnection(viewModel.rows(for: .expired)[0])
+        await waitUntil { viewModel.shownFundingLines != nil }
+        XCTAssertEqual(spy.fundingBases, [basis.shown(as: .expired)], "the followed connection's keys only")
+    }
+
+    /// A read of the identity with one app key, at `revision`.
+    nonisolated static func sheetBasis(revision: UInt64) -> ConnectionBasis {
+        let key = AppConnect.PlatformKey(
+            id: 10, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160,
+            data: Data(repeating: 3, count: 20), readOnly: false, bound: .singleContract(Data(repeating: 1, count: 32)),
+            boundKnown: true, totalBudget: revision == 1 ? 1000 : 5000, expiresAt: 1_900_000_000_000, disabledAt: nil)
+        return ConnectionBasis(
+            snapshot: AppConnect.IdentitySnapshot(
+                identityId: Data(repeating: 2, count: 32), revision: revision, keys: [key],
+                platformTime: 1_800_000_000_000),
+            intents: [], followedIntentIds: [], unrecorded: [key], administeredGroups: [])
     }
 
     func testADetailsReadFromBeforeTheSheetOpenedAgainIsNotShown() async {
         let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)])
-        spy.details = ConnectionDetails(appId: "app", identityId: "identity", username: "before", access: nil)
+        spy.details = ConnectionDetails(appId: "app", identityId: "identity", username: "before")
         spy.detailsDelay = 200_000_000
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
         await waitUntil { !viewModel.connections.isEmpty }
@@ -1612,7 +1674,7 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
         await waitUntil { spy.detailReads == 1 }
         viewModel.hideConnection()
 
-        spy.details = ConnectionDetails(appId: "app", identityId: "identity", username: "after", access: nil)
+        spy.details = ConnectionDetails(appId: "app", identityId: "identity", username: "after")
         spy.detailsDelay = 0
         viewModel.showConnection(viewModel.rows(for: .active)[0])
         await waitUntil { viewModel.shownDetails != nil }
@@ -1624,13 +1686,13 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
 
     func testTheSheetReadsItsDetailsAgainWhenTheRowsArePublishedUnchanged() async {
         let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)])
-        spy.details = ConnectionDetails(appId: "app", identityId: "identity", username: "before", access: nil)
+        spy.details = ConnectionDetails(appId: "app", identityId: "identity", username: "before")
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
         await waitUntil { !viewModel.connections.isEmpty }
         viewModel.showConnection(viewModel.rows(for: .active)[0])
         await waitUntil { viewModel.shownDetails?.username == "before" }
 
-        spy.details = ConnectionDetails(appId: "app", identityId: "identity", username: "renewed", access: nil)
+        spy.details = ConnectionDetails(appId: "app", identityId: "identity", username: "renewed")
         spy.sendRows([Self.row("app", .active)])
         await waitUntil { viewModel.shownDetails?.username == "renewed" }
         XCTAssertEqual(viewModel.shownDetails?.username, "renewed", "another grant of the same app, same status")
@@ -1717,6 +1779,9 @@ private final class ConnectionStatusSpy: DashConnectDataSource {
     /// What the funding read answers, and how long it takes.
     var funding: ConnectionFundingRead = .notRead
     var fundingDelay: UInt64 = 0
+    private var storedFundingBases: [ConnectionBasis] = []
+    /// The bases funding was read for, in order.
+    var fundingBases: [ConnectionBasis] { lock.withLock { storedFundingBases } }
     private var storedDisconnectFailure: Error?
     /// Thrown by every disconnect while set, before anything runs.
     var disconnectFailure: Error? {
@@ -1745,11 +1810,16 @@ private final class ConnectionStatusSpy: DashConnectDataSource {
         }
         if delay > 0 { try? await Task.sleep(nanoseconds: delay) }
         if fails { return nil }
-        return answer ?? ConnectionDetails(appId: id, identityId: "identity", username: "bob", access: nil)
+        return answer ?? ConnectionDetails(
+            appId: id, identityId: "identity", username: "bob",
+            basis: ConnectionsViewModelStatusTests.sheetBasis(revision: 1))
     }
 
-    func connectionFunding(id: String, scope: String?) async -> ConnectionFundingRead {
-        let (answer, delay) = lock.withLock { (funding, fundingDelay) }
+    func connectionFunding(for basis: ConnectionBasis, scope: String?) async -> ConnectionFundingRead {
+        let (answer, delay) = lock.withLock {
+            storedFundingBases.append(basis)
+            return (funding, fundingDelay)
+        }
         if delay > 0 { try? await Task.sleep(nanoseconds: delay) }
         return answer
     }

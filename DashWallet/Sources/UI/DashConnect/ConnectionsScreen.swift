@@ -25,7 +25,8 @@ import DashUIKit
 /// `Components/`; this type owns navigation, the QR scanner and the approval
 /// sheet.
 struct ConnectionsScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
     /// Starts the app's username creation; `nil` where it cannot be reached.
     private let onCreateUsername: (() -> Void)?
     /// Presents the identity top-up over whatever is on screen; `nil` where
@@ -35,7 +36,7 @@ struct ConnectionsScreen: View {
     @StateObject private var viewModel: ConnectionsViewModel
 
     init(
-        vc: UINavigationController,
+        vc: UINavigationController?,
         viewModel: ConnectionsViewModel? = nil,
         onCreateUsername: (() -> Void)? = nil,
         onTopUpIdentity: (() -> Void)? = nil
@@ -60,7 +61,7 @@ struct ConnectionsScreen: View {
             VStack(alignment: .leading, spacing: 0) {
                 DashUIKit.NavigationBar(
                     leading: {
-                        DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
+                        DashUIKit.NavigationBarElement.back.button { vc?.popViewController(animated: true) }
                     },
                     trailing: {
                         if !viewModel.featureUnavailable, !showsNoUsernameState {
@@ -369,15 +370,15 @@ struct ConnectionsScreen: View {
         let scanner = GenericQRScannerController()
 
         scanner.onQRCodeScanned = { value in
-            vc.dismiss(animated: true) {
+            vc?.dismiss(animated: true) {
                 viewModel.onQRScanned(value)
             }
         }
         scanner.onCancel = {
-            vc.dismiss(animated: true)
+            vc?.dismiss(animated: true)
         }
 
-        vc.present(scanner, animated: true)
+        vc?.present(scanner, animated: true)
     }
 
     private func mockScan() {

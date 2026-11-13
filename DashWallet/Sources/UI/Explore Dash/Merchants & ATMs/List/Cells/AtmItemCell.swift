@@ -44,7 +44,7 @@ class AtmItemCell: PointOfUseItemCell {
         }
 
         buyTag.isHidden = atm.type == .sell
-        sellTag.isHidden = atm.type != .buySell
+        sellTag.isHidden = atm.type != .sell && atm.type != .buySell
     }
 }
 

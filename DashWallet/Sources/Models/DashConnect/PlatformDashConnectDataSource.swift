@@ -1179,7 +1179,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// Refused, or Disconnected by the user has a row of that status, named
     /// after those intents; one whose update never landed, or whose keys went
     /// off without a disconnect, has none, unless another identity's intents
-    /// hold it or its last read saw keys there no approval names (`seenOn`).
+    /// hold it or its last read saw live keys there no approval names (`seenOn`).
     /// Such access elsewhere also keeps a row from showing Disconnected.
     /// `elsewhere` are the other identities' intents: their open ones hold a
     /// row, and a Disconnected row whose disconnect closed one of them stays
@@ -1245,7 +1245,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             let name = latest?.appLabel ?? existing?.name ?? (id == AppConnect.dashPayContractId ? "DashPay" : "")
             var seenOn = existing?.seenOn ?? []
             seenOn.remove(me)
-            if connection.unrecordedKeyIds[identityId]?.isEmpty == false { seenOn.insert(me) }
+            // Only live keys are access left: an identity whose unrecorded
+            // keys are all past their expiry does not hold the row Active.
+            if connection.liveUnrecordedIdentities.contains(identityId) { seenOn.insert(me) }
             // Disconnected here, but another identity of the wallet still
             // holds the app (its intents, or live keys its last read saw):
             // the row keeps that access, and its Disconnect, until that
@@ -2666,21 +2668,29 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return await details(of: id, stores: stores)
     }
 
-    func connectionFunding(id: String, scope: String?) async -> ConnectionFundingRead {
-        guard let stores = await showActiveWalletRows(), scope == stores.scope else { return .notRead }
-        guard let shown = await heldConnection(of: id, stores: stores) else { return .failed }
-        return await funding(of: shown)
+    func connectionFunding(for basis: ConnectionBasis, scope: String?) async -> ConnectionFundingRead {
+        guard let stores = await showActiveWalletRows(), scope == stores.scope,
+              let context = try? await requireContext(pinnedTo: stores),
+              context.identityId == basis.snapshot.identityId else { return .notRead }
+        let keyIds = basis.fundedKeyIds
+        guard !keyIds.isEmpty else { return .notRead }
+        // A read-only query, off the main actor: it does not touch the
+        // identity copy the operations that sign use, so it does not wait on
+        // them, and the UI does not wait on the network.
+        guard let remaining = try? await DashConnectPlatformQueries.keysRemainingBudgets(
+            sdk: context.sdk, identityId: context.identityId.toBase58String(), keyIds: keyIds)
+        else { return .failed }
+        return basis.funding(remaining: remaining)
     }
 
-    /// What the sheet of `appId` is told from: the active identity's intents
-    /// that hold the app, the identity's newest read, and the keys the row
-    /// shows that no intent names. `nil` when the identity cannot be read.
+    /// What the sheet of `appId` is told from: the active identity, its open
+    /// intents that hold the app, and, with a read of the identity, the
+    /// basis of the sheet's access and funding. `nil` when the identity
+    /// cannot be read.
     private struct HeldConnection {
         let context: Context
         let held: [AppConnect.ConnectionIntent]
-        let snapshot: AppConnect.IdentitySnapshot?
-        let unrecorded: [AppConnect.PlatformKey]
-        let administeredGroups: Set<Data>
+        let basis: ConnectionBasis?
     }
 
     private func heldConnection(of appId: String, stores: Stores) async -> HeldConnection? {
@@ -2688,73 +2698,49 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let open = stores.intents.load().filter {
             $0.identityId == context.identityId && $0.appId.toBase58String() == appId && $0.closedAt == nil
         }
-        let snapshot = Self.newestSnapshots.withLock { $0[context.identityId] }
-        let held = snapshot.map { snapshot in
-            open.filter {
-                switch AppConnect.status(of: $0, in: snapshot) {
-                case .active, .expired, .confirming: return true
-                case .refused, .disconnected, .neverLanded: return false
-                }
+        // One read of the identity for everything the sheet says of the keys.
+        guard let snapshot = Self.newestSnapshots.withLock({ $0[context.identityId] }) else {
+            return HeldConnection(context: context, held: open, basis: nil)
+        }
+        let held = open.filter {
+            switch AppConnect.status(of: $0, in: snapshot) {
+            case .active, .expired, .confirming: return true
+            case .refused, .disconnected, .neverLanded: return false
             }
-        } ?? open
+        }
         // Keys the row shows that no intent names (another device's, or
         // attributed by owner) are the app's access too, from the same
-        // projection, with the owners it reads.
-        var unrecorded: [AppConnect.PlatformKey] = []
-        var administeredGroups: Set<Data> = []
-        if let snapshot {
-            let all = stores.intents.load()
-            let owners = await Self.ownerReader(context: context).knownOwners(for: snapshot, intents: all)
-            unrecorded = Self.unrecordedKeys(of: appId, on: snapshot, intents: all, owners: owners)
-            administeredGroups = Self.mayBeAdministered(unrecorded, owners: owners)
-        }
+        // projection, with the owners it reads. The same projection names the
+        // intents the row follows.
+        let all = stores.intents.load()
+        let owners = await Self.ownerReader(context: context).knownOwners(for: snapshot, intents: all)
+        let connection = AppConnect.project([snapshot], intents: all, owners: owners).connections
+            .first { $0.appId.toBase58String() == appId }
+        let unrecordedIds = Set(connection?.unrecordedKeyIds[snapshot.identityId] ?? [])
+        let unrecorded = snapshot.keys.filter { unrecordedIds.contains($0.id) }
+        let followedIds = Set(connection?.followedIntents.map(\.id) ?? [])
         return HeldConnection(
-            context: context, held: held, snapshot: snapshot, unrecorded: unrecorded, administeredGroups: administeredGroups)
+            context: context, held: held,
+            basis: ConnectionBasis(
+                snapshot: snapshot, intents: held, followedIntentIds: followedIds, unrecorded: unrecorded,
+                administeredGroups: Self.mayBeAdministered(unrecorded, owners: owners)))
     }
 
     /// The app's connection on the active identity, as the intents that hold
     /// it show it. With a read of the identity, only the intents whose keys
     /// are live, expired or may still land count. What is left of the keys'
-    /// budgets is read apart (`connectionFunding`).
+    /// budgets is read apart, for the same basis (`connectionFunding`).
     private func details(of appId: String, stores: Stores) async -> ConnectionDetails? {
         // Not read: the sheet says so and keeps details it already shows.
         guard let shown = await heldConnection(of: appId, stores: stores) else { return nil }
         // The app's row is held by another identity of the wallet: its
         // intents are not the active identity's to show.
-        guard !shown.held.isEmpty || !shown.unrecorded.isEmpty else {
-            return ConnectionDetails(appId: appId, identityId: nil, username: nil, access: nil)
+        guard !shown.held.isEmpty || shown.basis?.unrecorded.isEmpty == false else {
+            return ConnectionDetails(appId: appId, identityId: nil, username: nil)
         }
         return ConnectionDetails(
             appId: appId, identityId: shown.context.identityId.toBase58String(), username: shown.context.storedUsername,
-            // Without a read of the identity nothing is known to be the
-            // app's access: the sheet shows none rather than what the
-            // intents submitted, which may never have landed.
-            access: shown.snapshot.flatMap {
-                ConnectionAccess(
-                    intents: shown.held, snapshot: $0, unrecorded: shown.unrecorded,
-                    administeredGroups: shown.administeredGroups)
-            },
-            connectedAt: shown.held.map(\.createdAt).max())
-    }
-
-    /// What is left of the budgets of the keys that give `shown` access,
-    /// chosen key by key: a live key keeps its line when another key of its
-    /// intent never landed.
-    private func funding(of shown: HeldConnection) async -> ConnectionFundingRead {
-        guard let snapshot = shown.snapshot else { return .notRead }
-        let keyIds = KeyFunding.keyIds(of: shown.held, snapshot: snapshot, unrecorded: shown.unrecorded)
-        guard !keyIds.isEmpty else { return .notRead }
-        // A read-only query, off the main actor: it does not touch the
-        // identity copy the operations that sign use, so it does not wait on
-        // them, and the UI does not wait on the network.
-        guard let remaining = try? await DashConnectPlatformQueries.keysRemainingBudgets(
-            sdk: shown.context.sdk, identityId: shown.context.identityId.toBase58String(), keyIds: keyIds)
-        else { return .failed }
-        let lines = KeyFunding.of(intents: shown.held, snapshot: snapshot, unrecorded: shown.unrecorded, remaining: remaining)
-        // A limits update between the identity read and this one: what is
-        // left is not shown against totals it outgrew; the next read of the
-        // identity brings them together.
-        return KeyFunding.agree(lines) ? .read(lines) : .failed
+            basis: shown.basis, connectedAt: shown.held.map(\.createdAt).max())
     }
 
     /// The groups of `keys` that may have administrators: the owner read
@@ -2765,18 +2751,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             let owner = owners[id]
             return owner == nil || owner == AppConnect.administeredGroupOwnerId ? id : nil
         })
-    }
-
-    /// The keys on `snapshot` that the projection, with the `owners` known,
-    /// shows under `appId` and no intent names.
-    private static func unrecordedKeys(
-        of appId: String, on snapshot: AppConnect.IdentitySnapshot, intents: [AppConnect.ConnectionIntent],
-        owners: [Data: Data]
-    ) -> [AppConnect.PlatformKey] {
-        let connection = AppConnect.project([snapshot], intents: intents, owners: owners).connections
-            .first { $0.appId.toBase58String() == appId }
-        let ids = Set(connection?.unrecordedKeyIds[snapshot.identityId] ?? [])
-        return snapshot.keys.filter { ids.contains($0.id) }
     }
 
     /// Whether the projection of `snapshot`, with the owners known, shows

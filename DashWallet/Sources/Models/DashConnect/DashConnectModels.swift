@@ -282,7 +282,7 @@ struct ConnectionAccess: Equatable {
 
     /// What `intents` gave as the wallet recorded it, with no read of the
     /// identity: for a connection that ended, whose keys are off, the sheet
-    /// tells what the app was able to do. `nil` when they add no auth key.
+    /// tells what the user allowed the app to do. `nil` when they add no auth key.
     init?(recorded intents: [AppConnect.ConnectionIntent]) {
         let access = AppConnect.GrantedAccess(intents: intents)
         guard !access.keys.isEmpty else { return nil }
@@ -306,28 +306,148 @@ struct ConnectionAccess: Equatable {
     }
 }
 
+/// What a connection sheet is told from: one read of the identity, the
+/// intents that hold the app on it, and the keys that read gives the app
+/// that no intent names. The sheet's access and what is left of its keys'
+/// budgets both come from one basis, so they tell of the same read. A newer
+/// read is another basis: funding read for an earlier one is never shown
+/// beside it (`ConnectionDetails.attaching(_:for:)`).
+struct ConnectionBasis: Equatable {
+    let snapshot: AppConnect.IdentitySnapshot
+    /// The open intents of the snapshot's identity that hold the app.
+    let intents: [AppConnect.ConnectionIntent]
+    /// The ids of the intents the app's row follows, the projection's
+    /// `followedIntents`; empty when only `unrecorded` keys show the app.
+    let followedIntentIds: Set<UUID>
+    /// Keys on `snapshot` the projection gives the app that no intent names.
+    let unrecorded: [AppConnect.PlatformKey]
+    /// The groups of `unrecorded` keys that may have administrators.
+    let administeredGroups: Set<Data>
+
+    /// What the app was given; `nil` when no auth key gives access.
+    var access: ConnectionAccess? {
+        ConnectionAccess(
+            intents: intents, snapshot: snapshot, unrecorded: unrecorded, administeredGroups: administeredGroups)
+    }
+
+    /// The basis the sheet of a row with `status` is told from. An Expired
+    /// row's status is told from the connection it follows, so its sheet
+    /// shows only that connection: its intents among `intents`, or the
+    /// `unrecorded` keys when none of them is held; access, expiry and
+    /// funding lines alike, not those of another install still held. Any
+    /// other row's sheet shows this whole basis.
+    func shown(as status: ConnectionStatus) -> ConnectionBasis {
+        guard status == .expired else { return self }
+        let followed = intents.filter { followedIntentIds.contains($0.id) }
+        return ConnectionBasis(
+            snapshot: snapshot, intents: followed, followedIntentIds: followedIntentIds,
+            unrecorded: followed.isEmpty ? unrecorded : [],
+            administeredGroups: followed.isEmpty ? administeredGroups : [])
+    }
+
+    /// The keys whose remaining budgets the sheet reads, by id.
+    var fundedKeyIds: [UInt32] {
+        KeyFunding.keyIds(of: intents, snapshot: snapshot, unrecorded: unrecorded)
+    }
+
+    /// The funding lines of `fundedKeyIds` with what `remaining` (by key id)
+    /// says is left. What is left is read after `snapshot`: when it is above
+    /// a total of this read, a limits update came between them, and the read
+    /// fails rather than show it against totals it outgrew; the next read of
+    /// the identity brings them together.
+    func funding(remaining: [UInt32: UInt64?]) -> ConnectionFundingRead {
+        let lines = KeyFunding.of(intents: intents, snapshot: snapshot, unrecorded: unrecorded, remaining: remaining)
+        return KeyFunding.agree(lines) ? .read(lines) : .failed
+    }
+}
+
 /// A connection as its sheet shows it: the app, the identity it is
 /// connected on, and what it was given.
 struct ConnectionDetails: Equatable {
     let appId: String
     let identityId: String?
     let username: String?
+    /// What `access` and the funding lines are told from; `nil` without a
+    /// read of the identity, or when the connection is not the active
+    /// identity's.
+    let basis: ConnectionBasis?
+    /// What the app was given, from `basis`. Without one nothing is known to
+    /// be the app's access: the sheet shows none rather than what the
+    /// intents submitted, which may never have landed.
     let access: ConnectionAccess?
     /// When the connection was made: the latest of its approvals, so a
     /// renewal from a new code counts as the connection it made.
-    var connectedAt: Date? = nil
-    /// What is left of each key's budget, read from Platform; `nil` when it
-    /// was not read (the connection is on another identity) or could not be
-    /// (`fundingReadFailed`).
-    var keyFunding: [KeyFunding]? = nil
-    var fundingReadFailed = false
+    let connectedAt: Date?
+    /// What is left of each key's budget, read from Platform for `basis`;
+    /// `nil` when it was not read or could not be (`fundingReadFailed`).
+    private(set) var keyFunding: [KeyFunding]?
+    private(set) var fundingReadFailed = false
+
+    init(
+        appId: String, identityId: String?, username: String?, basis: ConnectionBasis? = nil, connectedAt: Date? = nil
+    ) {
+        self.appId = appId
+        self.identityId = identityId
+        self.username = username
+        self.basis = basis
+        access = basis?.access
+        self.connectedAt = connectedAt
+    }
+
+    /// The details of a connection that ended, with what its intents
+    /// recorded (`ConnectionAccess(recorded:)`): no read of the identity
+    /// tells of it, so it has no basis and no funding.
+    init(appId: String, identityId: String?, username: String?, recorded access: ConnectionAccess?) {
+        self.appId = appId
+        self.identityId = identityId
+        self.username = username
+        basis = nil
+        self.access = access
+        connectedAt = nil
+    }
+
+    /// What the sheet of a row with `status` shows as the app's access:
+    /// that of `basis.shown(as: status)`, or `access` without a basis.
+    func access(shownAs status: ConnectionStatus) -> ConnectionAccess? {
+        guard let basis else { return access }
+        return basis.shown(as: status).access
+    }
+
+    /// These details with `read`, the funding read for `basis`; `nil` when
+    /// these details are not told from `basis`: what is left of the keys of
+    /// another read is not shown beside the access of this one.
+    func attaching(_ read: ConnectionFundingRead, for basis: ConnectionBasis) -> ConnectionDetails? {
+        guard basis == self.basis else { return nil }
+        var details = self
+        switch read {
+        case .notRead:
+            details.keyFunding = nil
+            details.fundingReadFailed = false
+        case .read(let lines):
+            details.keyFunding = lines
+            details.fundingReadFailed = false
+        case .failed:
+            details.keyFunding = nil
+            details.fundingReadFailed = true
+        }
+        return details
+    }
+
+    /// These details with the funding `previous` shows, when both are told
+    /// from the same basis; otherwise as they are, with none.
+    func keepingFunding(of previous: ConnectionDetails) -> ConnectionDetails {
+        guard previous.basis == basis else { return self }
+        var details = self
+        details.keyFunding = previous.keyFunding
+        details.fundingReadFailed = previous.fundingReadFailed
+        return details
+    }
 }
 
 /// What is left of a connection's keys' budgets, read apart from its details
 /// so the sheet does not wait on it.
 enum ConnectionFundingRead: Equatable {
-    /// Nothing to read: no landed key, no identity read, or not the active
-    /// wallet's row.
+    /// Nothing to read: no landed key, or not the active identity's basis.
     case notRead
     case read([KeyFunding])
     /// The read failed, or what it said is above the totals the identity
@@ -385,7 +505,8 @@ struct KeyFunding: Equatable {
     ) -> [AppConnect.PlatformKey] {
         var listed = Set<UInt32>()
         let recorded = intents.flatMap(\.authKeys).compactMap { AppConnect.accessKey(of: $0, in: snapshot) }
-        return (recorded + unrecorded).filter { listed.insert($0.id).inserted }
+        let placed = unrecorded.compactMap { AppConnect.placedKey(withId: $0.id, in: snapshot) }
+        return (recorded + placed).filter { listed.insert($0.id).inserted }
     }
 }
 
