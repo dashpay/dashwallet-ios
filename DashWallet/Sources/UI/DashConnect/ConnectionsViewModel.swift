@@ -436,7 +436,9 @@ final class ConnectionsViewModel: ObservableObject {
             guard number == self.detailsReadNumber, self.shownConnection != nil, var details = self.shownDetails else { return }
             switch funding {
             case .notRead:
-                return
+                // Nothing to read now: the lines an earlier read showed go.
+                details.keyFunding = nil
+                details.fundingReadFailed = false
             case .read(let lines):
                 details.keyFunding = lines
                 details.fundingReadFailed = false

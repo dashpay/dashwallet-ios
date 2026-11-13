@@ -43,7 +43,8 @@ struct DisconnectedConnection: Equatable, Identifiable {
     let url: String
     let identityId: String?
     let username: String?
-    let disconnectedAt: Date
+    /// `nil` when the intents of the disconnect cannot be read.
+    let disconnectedAt: Date?
     /// What the connection gave the app when it was disconnected.
     let access: ConnectionAccess?
     /// When the connection was made.
