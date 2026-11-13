@@ -173,6 +173,7 @@ struct ConnectionsScreen: View {
         switch tab {
         case .active: return NSLocalizedString("No active connections", comment: "DashConnect: an empty tab")
         case .disconnected: return NSLocalizedString("No disconnected connections", comment: "DashConnect: an empty tab")
+        case .expired: return NSLocalizedString("No expired connections", comment: "DashConnect: an empty tab")
         }
     }
 
@@ -180,6 +181,7 @@ struct ConnectionsScreen: View {
         switch tab {
         case .active: return NSLocalizedString("Active", comment: "DashConnect connection status")
         case .disconnected: return NSLocalizedString("Disconnected", comment: "DashConnect connection status")
+        case .expired: return NSLocalizedString("Expired", comment: "DashConnect connection status")
         }
     }
 
@@ -354,6 +356,16 @@ struct ConnectionsScreen: View {
         vc: UINavigationController(),
         viewModel: ConnectionsViewModel(
             dataSource: MockDashConnectDataSource(initial: [MockDashConnectDataSource.sample(.active)]),
+            featureUnavailable: false
+        )
+    )
+}
+
+#Preview("Expired") {
+    ConnectionsScreen(
+        vc: UINavigationController(),
+        viewModel: ConnectionsViewModel(
+            dataSource: MockDashConnectDataSource(initial: [MockDashConnectDataSource.sample(.expired)]),
             featureUnavailable: false
         )
     )

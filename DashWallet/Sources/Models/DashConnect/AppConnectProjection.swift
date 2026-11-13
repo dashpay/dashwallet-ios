@@ -282,10 +282,13 @@ extension AppConnect {
         let status: IntentStatus
         /// The app's intents, newest first.
         let intents: [ConnectionIntent]
-        /// Live auth keys bound to one of the app's contracts that no intent
-        /// names: granted on another device, or before a restore. Keyed by
-        /// identity.
+        /// Enabled auth keys bound to one of the app's contracts that no
+        /// intent names, live or past their expiry: granted on another
+        /// device, or before a restore. Keyed by identity.
         let unrecordedKeyIds: [Data: [UInt32]]
+        /// The identities where one of `unrecordedKeyIds` is live at
+        /// Platform's time of their read.
+        var liveUnrecordedIdentities: Set<Data> = []
         /// The app's live access comes only from approvals whose response
         /// was never published: it holds keys it never got.
         var isUndelivered = false
@@ -444,12 +447,13 @@ extension AppConnect {
             // They are Active while one of them is live at Platform's time,
             // else Expired: enabled, so still turned off by a disconnect.
             var latest = followedStatus
+            let liveOthers = Set(others.compactMap { identity, ids -> Data? in
+                guard let snapshot = byIdentity[identity] else { return nil }
+                let live = snapshot.keys.contains { ids.contains($0.id) && isLive($0, at: snapshot.platformTime) }
+                return live ? identity : nil
+            })
             if !others.isEmpty, latest == nil || [.disconnected, .neverLanded].contains(latest) {
-                let anyLive = others.contains { identity, ids in
-                    guard let snapshot = byIdentity[identity] else { return false }
-                    return snapshot.keys.contains { ids.contains($0.id) && isLive($0, at: snapshot.platformTime) }
-                }
-                latest = anyLive ? .active(expiresAt: nil) : .expired
+                latest = liveOthers.isEmpty ? .expired : .active(expiresAt: nil)
             }
             // An app this read says nothing about (its intents are on
             // identities not read) has no connection here.
@@ -462,8 +466,8 @@ extension AppConnect {
             }
             let isUndelivered = others.isEmpty && !delivering.isEmpty && delivering.allSatisfy { $0.responseDocumentId == nil }
             return ProjectedConnection(
-                appId: app, status: latest, intents: own, unrecordedKeyIds: others, isUndelivered: isUndelivered,
-                followedIntents: followed.map(\.0))
+                appId: app, status: latest, intents: own, unrecordedKeyIds: others,
+                liveUnrecordedIdentities: liveOthers, isUndelivered: isUndelivered, followedIntents: followed.map(\.0))
         }
         return Projection(
             connections: connections.sorted { $0.appId.lexicographicallyPrecedes($1.appId) },

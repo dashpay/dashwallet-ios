@@ -1279,6 +1279,9 @@
 /* DashSpend */
 "Connection Error" = "Connection Error";
 
+/* DashConnect connection sheet */
+"Connection expired" = "Connection expired";
+
 /* DashConnect connection sheet: the date its keys expire */
 "Connection expiry" = "Connection expiry";
 
@@ -3342,6 +3345,9 @@
 
 /* DashConnect: an empty tab */
 "No disconnected connections" = "No disconnected connections";
+
+/* DashConnect: an empty tab */
+"No expired connections" = "No expired connections";
 
 /* Wallet accounts */
 "No extended public key has been persisted for this account yet." = "No extended public key has been persisted for this account yet.";

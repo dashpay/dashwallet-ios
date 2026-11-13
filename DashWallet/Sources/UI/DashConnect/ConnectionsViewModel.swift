@@ -53,6 +53,7 @@ struct ConnectionsScreenMessage: Identifiable, Equatable {
 enum ConnectionsTab: CaseIterable {
     case active
     case disconnected
+    case expired
 }
 
 /// A connection as its sheet shows it: a row of the page, or an app
@@ -97,7 +98,9 @@ final class ConnectionsViewModel: ObservableObject {
     /// The lines of what the shown connection's app was given and was not;
     /// `nil` while unknown.
     var shownGrantedLines: [String]? {
-        guard let item = shownConnection, let access = shownDetails?.access else { return nil }
+        guard let item = shownConnection, let access = shownDetails?.access(shownAs: item.status) else {
+            return nil
+        }
         return DashConnectPermissionText.granted(access.granted, appLabel: item.name)
     }
 
@@ -238,10 +241,17 @@ final class ConnectionsViewModel: ObservableObject {
     func rows(for tab: ConnectionsTab) -> [ConnectionSheetItem] {
         switch tab {
         case .active:
-            return connections.map { item(for: $0) }
+            return connections.filter { Self.tab(of: $0) == .active }.map { item(for: $0) }
+        case .expired:
+            return connections.filter { Self.tab(of: $0) == .expired }.map { item(for: $0) }
         case .disconnected:
             return history.map(item(for:))
         }
+    }
+
+    /// The tab of a row, from the state-to-actions table (ADR-0019).
+    private static func tab(of connection: DAppConnection) -> AppConnect.Tab {
+        AppConnect.StateActions.row(for: connection.status).tab
     }
 
     /// Whether the page shows its tabs: once anything was connected.
@@ -371,7 +381,10 @@ final class ConnectionsViewModel: ObservableObject {
     private func readShownFunding(_ item: ConnectionSheetItem, for basis: ConnectionBasis, number: Int) {
         Task { [weak self] in
             guard let self else { return }
-            let funding = await self.dataSource.connectionFunding(for: basis, scope: item.connection?.scope)
+            // The keys of the connection the sheet shows: for an Expired row,
+            // only those of the connection it follows.
+            let funding = await self.dataSource.connectionFunding(
+                for: basis.shown(as: item.status), scope: item.connection?.scope)
             guard number == self.detailsReadNumber, self.shownConnection != nil,
                   let details = self.shownDetails?.attaching(funding, for: basis) else { return }
             self.shownDetails = details

@@ -1423,6 +1423,18 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
         XCTAssertNil(viewModel.message, "not over the sheet")
     }
 
+    func testAnExpiredRowIsListedUnderExpiredOnly() async {
+        let spy = ConnectionStatusSpy(rows: [Self.row("live", .active), Self.row("old", .expired)])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { viewModel.connections.count == 2 }
+        XCTAssertEqual(viewModel.rows(for: .active).map(\.id), ["live"])
+        XCTAssertEqual(viewModel.rows(for: .expired).map(\.id), ["old"])
+        XCTAssertEqual(viewModel.rows(for: .expired).first?.status, .expired)
+        XCTAssertEqual(
+            viewModel.rows(for: .expired).first.map { ConnectionRow.actions(for: $0.status).contains(.disconnect) }, true,
+            "its keys are still on")
+    }
+
     /// A row that turns Refused or Disconnected while its sheet asks about
     /// a disconnect no longer offers one: neither the question nor its
     /// confirmation runs it, and the sheet says why.
@@ -1555,6 +1567,31 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
         XCTAssertEqual(viewModel.shownDetails?.keyFunding?.first?.totalBudget, 5000)
     }
 
+    /// An Expired row's sheet reads the funding of the connection it
+    /// follows, and shows it beside the details of the whole read.
+    func testAnExpiredSheetReadsTheFundingOfTheConnectionItFollows() async {
+        let held = Self.sheetBasis(revision: 1)
+        let intent = AppConnect.ConnectionIntent(
+            id: UUID(), identityId: held.snapshot.identityId, appId: Data(repeating: 1, count: 32), appLabel: "App",
+            appUrl: "", requestHash: Data(repeating: 0xEE, count: 20), connectionId: nil, keys: [],
+            sentEncryptionKeyIds: [], disables: [],
+            response: AppConnect.ResponseValues(
+                appEphemeralPubKeyHash: "ee", walletEphemeralPubKey: "02", encryptedPayload: "00"),
+            responseDocumentId: nil, responseRemoved: true, createdAt: Date(timeIntervalSince1970: 0), closedAt: nil)
+        let basis = ConnectionBasis(
+            snapshot: held.snapshot, intents: [intent], followedIntentIds: [], unrecorded: held.unrecorded,
+            administeredGroups: [])
+        XCTAssertNotEqual(basis.shown(as: .expired), basis)
+        let spy = ConnectionStatusSpy(rows: [Self.row("app", .expired)])
+        spy.details = ConnectionDetails(appId: "app", identityId: "identity", username: nil, basis: basis)
+        spy.funding = .read([KeyFunding(isProfileKey: false, totalBudget: 1000, remaining: 400)])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        await waitUntil { !viewModel.connections.isEmpty }
+        viewModel.showConnection(viewModel.rows(for: .expired)[0])
+        await waitUntil { viewModel.shownFundingLines != nil }
+        XCTAssertEqual(spy.fundingBases, [basis.shown(as: .expired)], "the followed connection's keys only")
+    }
+
     /// A read of the identity with one app key, at `revision`.
     nonisolated static func sheetBasis(revision: UInt64) -> ConnectionBasis {
         let key = AppConnect.PlatformKey(
@@ -1565,7 +1602,7 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
             snapshot: AppConnect.IdentitySnapshot(
                 identityId: Data(repeating: 2, count: 32), revision: revision, keys: [key],
                 platformTime: 1_800_000_000_000),
-            intents: [], unrecorded: [key], administeredGroups: [])
+            intents: [], followedIntentIds: [], unrecorded: [key], administeredGroups: [])
     }
 
     func testADetailsReadFromBeforeTheSheetOpenedAgainIsNotShown() async {

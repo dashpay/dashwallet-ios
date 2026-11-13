@@ -258,10 +258,11 @@ final class AppConnectProjectionTests: XCTestCase {
         let key = Self.authKey(10)
         let intent = Self.intent([key])
         let first = ConnectionBasis(
-            snapshot: Self.snapshot([Self.onPlatform(key)]), intents: [intent], unrecorded: [], administeredGroups: [])
+            snapshot: Self.snapshot([Self.onPlatform(key)]), intents: [intent], followedIntentIds: [intent.id],
+            unrecorded: [], administeredGroups: [])
         let raised = ConnectionBasis(
             snapshot: Self.snapshot([Self.onPlatform(key, limits: (5000, Self.now + 1000))], revision: 6),
-            intents: [intent], unrecorded: [], administeredGroups: [])
+            intents: [intent], followedIntentIds: [intent.id], unrecorded: [], administeredGroups: [])
         let details = ConnectionDetails(appId: "app", identityId: "identity", username: nil, basis: first)
         XCTAssertEqual(details.access?.budgetLimit, 1000)
 
@@ -1397,6 +1398,15 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertEqual(restored.connections.first?.isUndelivered, false, "keys no intent names are not judged undelivered")
     }
 
+    func testAConnectionWhoseKeysAreAllExpiredShowsAsExpired() {
+        let key = Self.authKey(10, expiresAt: Self.now - 1)
+        let projection = AppConnect.project(
+            [Self.snapshot([Self.onPlatform(key)])], intents: [Self.intent([key], published: true)])
+        XCTAssertEqual(
+            PlatformDashConnectDataSource.rows([], after: projection, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 2)).map(\.status),
+            [.expired])
+    }
+
     func testAccessSeenOnAnotherIdentityKeepsTheRowUntilThatIdentityIsReadAgain() {
         let stray = Self.onPlatform(Self.authKey(20))
         let onA = AppConnect.project([Self.snapshot([stray])], intents: [])
@@ -1410,6 +1420,51 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertEqual(
             PlatformDashConnectDataSource.rows(rowsB, after: againA, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 3)),
             [], "A read again shows the key off")
+    }
+
+    func testKeysPastTheirExpiryOnAnotherIdentityDoNotHoldTheRowActive() {
+        let expired = Self.onPlatform(Self.authKey(20, expiresAt: Self.now - 1))
+        let onA = AppConnect.project([Self.snapshot([expired])], intents: [])
+        XCTAssertEqual(onA.connections.first?.liveUnrecordedIdentities, [])
+        let rowsA = PlatformDashConnectDataSource.rows(
+            [], after: onA, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 1))
+        XCTAssertEqual(rowsA.map(\.status), [.expired])
+        XCTAssertEqual(rowsA.first?.seenOn, [], "no live key is access left on A")
+        let onB = AppConnect.project([Self.snapshot([], identity: Self.otherIdentity)], intents: [])
+        let rowsB = PlatformDashConnectDataSource.rows(
+            rowsA, after: onB, of: Self.otherIdentity, intents: [], at: Date(timeIntervalSince1970: 2))
+        XCTAssertEqual(rowsB, [], "B's read does not bring the expired row back as Active")
+
+        let live = AppConnect.project([Self.snapshot([Self.onPlatform(Self.authKey(20))])], intents: [])
+        XCTAssertEqual(live.connections.first?.liveUnrecordedIdentities, [Self.identity])
+    }
+
+    /// An Expired row follows its newest install: its sheet tells that
+    /// install's expiry, access and funding, not those of an older install
+    /// still live.
+    func testAnExpiredRowsSheetTellsTheExpiryOfTheConnectionItFollows() {
+        let older = Self.intent([Self.authKey(10, expiresAt: Self.now + 5000)], published: true)
+        let newer = Self.intent(
+            [Self.authKey(11, expiresAt: Self.now - 1, budget: 300)], published: true, createdAt: 10)
+        let snapshot = Self.snapshot([Self.onPlatform(Self.authKey(10, expiresAt: Self.now + 5000)),
+                                      Self.onPlatform(Self.authKey(11, expiresAt: Self.now - 1, budget: 300))])
+        let projection = AppConnect.project([snapshot], intents: [older, newer])
+        let connection = projection.connections.first
+        XCTAssertEqual(connection?.status, .expired)
+        XCTAssertEqual(connection?.followedIntents.map(\.id), [newer.id])
+
+        let basis = ConnectionBasis(
+            snapshot: snapshot, intents: [newer, older],
+            followedIntentIds: Set(connection?.followedIntents.map(\.id) ?? []), unrecorded: [], administeredGroups: [])
+        let details = ConnectionDetails(appId: "app", identityId: "identity", username: nil, basis: basis)
+        let expiry = { (ms: UInt64) in Date(timeIntervalSince1970: TimeInterval(ms) / 1000) }
+        XCTAssertEqual(details.access(shownAs: .expired)?.expiresAt, expiry(Self.now - 1))
+        XCTAssertEqual(details.access(shownAs: .expired)?.keys.count, 1, "only the followed install's key")
+        XCTAssertEqual(details.access(shownAs: .expired)?.budgetLimit, 300)
+        XCTAssertEqual(
+            details.access(shownAs: .active)?.expiresAt, expiry(Self.now + 5000), "a live row tells every key")
+        XCTAssertEqual(basis.shown(as: .expired).fundedKeyIds, [11], "funding of the followed install only")
+        XCTAssertEqual(Set(basis.shown(as: .active).fundedKeyIds), [10, 11])
     }
 
     func testARowAnotherIdentityHoldsKeepsWhatOtherIdentitiesSaw() {

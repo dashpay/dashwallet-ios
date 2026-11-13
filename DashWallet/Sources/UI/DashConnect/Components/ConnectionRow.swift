@@ -67,14 +67,13 @@ struct ConnectionRow: View {
         .padding(.trailing, 14)
     }
 
+    /// One button: Reconnect where the table allows it (a disconnected app,
+    /// and an expired one as in Figma, whose sheet offers Disconnect too),
+    /// else Disconnect, else Remove.
     @ViewBuilder
     private var action: some View {
         let actions = Self.actions(for: item.status)
-        if actions.contains(.disconnect) {
-            disconnectButton
-        } else if actions.contains(.remove) {
-            removeButton
-        } else if actions.contains(.reconnect) {
+        if actions.contains(.reconnect) {
             DashUIKit.DashButton(
                 text: NSLocalizedString("Reconnect", comment: "DashConnect connection sheet"),
                 size: .small, style: .tintedBlue, action: onReconnect)
@@ -83,6 +82,10 @@ struct ConnectionRow: View {
                     format: NSLocalizedString(
                         "Reconnect %@", comment: "DashConnect: accessibility, a row's button; the app's name"),
                     item.name)))
+        } else if actions.contains(.disconnect) {
+            disconnectButton
+        } else if actions.contains(.remove) {
+            removeButton
         }
     }
 
