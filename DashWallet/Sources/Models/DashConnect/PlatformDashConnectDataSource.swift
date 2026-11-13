@@ -1188,7 +1188,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// Refused, or Disconnected by the user has a row of that status, named
     /// after those intents; one whose update never landed, or whose keys went
     /// off without a disconnect, has none, unless another identity's intents
-    /// hold it or its last read saw keys there no approval names (`seenOn`).
+    /// hold it or its last read saw live keys there no approval names (`seenOn`).
     /// Such access elsewhere also keeps a row from showing Disconnected.
     /// `elsewhere` are the other identities' intents: their open ones hold a
     /// row, and a Disconnected row whose disconnect closed one of them stays
@@ -1254,7 +1254,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             let name = latest?.appLabel ?? existing?.name ?? fallback.name
             var seenOn = existing?.seenOn ?? []
             seenOn.remove(me)
-            if connection.unrecordedKeyIds[identityId]?.isEmpty == false { seenOn.insert(me) }
+            // Only live keys are access left: an identity whose unrecorded
+            // keys are all past their expiry does not hold the row Active.
+            if connection.liveUnrecordedIdentities.contains(identityId) { seenOn.insert(me) }
             // Disconnected here, but another identity of the wallet still
             // holds the app (its intents, or live keys its last read saw):
             // the row keeps that access, and its Disconnect, until that
@@ -2712,14 +2714,19 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
         // Keys the row shows that no intent names (another device's, or
         // attributed by owner) are the app's access too, from the same
-        // projection, with the owners it reads.
+        // projection, with the owners it reads. The same projection names the
+        // intents the row follows.
         let all = stores.intents.load()
         let owners = await Self.ownerReader(context: context).knownOwners(for: snapshot, intents: all)
-        let unrecorded = Self.unrecordedKeys(of: appId, on: snapshot, intents: all, owners: owners)
+        let connection = AppConnect.project([snapshot], intents: all, owners: owners).connections
+            .first { $0.appId.toBase58String() == appId }
+        let unrecordedIds = Set(connection?.unrecordedKeyIds[snapshot.identityId] ?? [])
+        let unrecorded = snapshot.keys.filter { unrecordedIds.contains($0.id) }
+        let followedIds = Set(connection?.followedIntents.map(\.id) ?? [])
         return HeldConnection(
             context: context, held: held,
             basis: ConnectionBasis(
-                snapshot: snapshot, intents: held, unrecorded: unrecorded,
+                snapshot: snapshot, intents: held, followedIntentIds: followedIds, unrecorded: unrecorded,
                 administeredGroups: Self.mayBeAdministered(unrecorded, owners: owners)))
     }
 
@@ -2748,18 +2755,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             let owner = owners[id]
             return owner == nil || owner == AppConnect.administeredGroupOwnerId ? id : nil
         })
-    }
-
-    /// The keys on `snapshot` that the projection, with the `owners` known,
-    /// shows under `appId` and no intent names.
-    private static func unrecordedKeys(
-        of appId: String, on snapshot: AppConnect.IdentitySnapshot, intents: [AppConnect.ConnectionIntent],
-        owners: [Data: Data]
-    ) -> [AppConnect.PlatformKey] {
-        let connection = AppConnect.project([snapshot], intents: intents, owners: owners).connections
-            .first { $0.appId.toBase58String() == appId }
-        let ids = Set(connection?.unrecordedKeyIds[snapshot.identityId] ?? [])
-        return snapshot.keys.filter { ids.contains($0.id) }
     }
 
     /// Whether the projection of `snapshot`, with the owners known, shows

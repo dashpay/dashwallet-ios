@@ -1553,7 +1553,7 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
         spy.funding = .read([KeyFunding(isProfileKey: false, totalBudget: 1000, remaining: 400)])
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
         await waitUntil { !viewModel.connections.isEmpty }
-        viewModel.showConnection(viewModel.rows[0])
+        viewModel.showConnection(viewModel.rows(for: .active)[0])
         await waitUntil { viewModel.shownFundingLines != nil }
 
         spy.details = ConnectionDetails(
@@ -1577,7 +1577,7 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
             snapshot: AppConnect.IdentitySnapshot(
                 identityId: Data(repeating: 2, count: 32), revision: revision, keys: [key],
                 platformTime: 1_800_000_000_000),
-            intents: [], unrecorded: [key], administeredGroups: [])
+            intents: [], followedIntentIds: [], unrecorded: [key], administeredGroups: [])
     }
 
     func testADetailsReadFromBeforeTheSheetOpenedAgainIsNotShown() async {

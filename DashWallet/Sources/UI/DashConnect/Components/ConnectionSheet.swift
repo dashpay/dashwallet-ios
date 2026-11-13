@@ -225,7 +225,7 @@ struct ConnectionSheet: View {
 
     @ViewBuilder
     private var limitsCard: some View {
-        let access = details?.access
+        let access = details?.access(shownAs: item.status)
         if access != nil || item.disconnectedAt != nil || connectedAt != nil {
             VStack(alignment: .leading, spacing: 2) {
                 if let access {
@@ -451,8 +451,9 @@ struct ConnectionSheet: View {
         if let disconnectedAt = item.disconnectedAt {
             return (NSLocalizedString("Connection disconnected", comment: "DashConnect connection sheet"), disconnectedAt)
         }
-        guard let expiresAt = details?.access?.expiresAt else { return nil }
-        // Past only once the Core tip shows every live key past it.
+        guard let expiresAt = details?.access(shownAs: item.status)?.expiresAt else { return nil }
+        // Expired once Platform's proved block time is past every key of
+        // the connection the row follows.
         return item.status == .expired
             ? (NSLocalizedString("Connection expired", comment: "DashConnect connection sheet"), expiresAt)
             : (NSLocalizedString("Connection expiry", comment: "DashConnect connection sheet: the date its keys expire"), expiresAt)
@@ -504,7 +505,7 @@ private enum ConnectionSheetPreview {
             id: appId, name: "Yappr", url: "yap.pr", status: .disconnected, connection: nil,
             entry: DisconnectedConnection(
                 id: appId, name: "Yappr", url: "yap.pr", identityId: details.identityId, username: "alice",
-                disconnectedAt: Date(timeIntervalSince1970: 1_794_000_000), access: access,
+                disconnectedAt: Date(timeIntervalSince1970: 1_794_000_000), access: details.access,
                 connectedAt: Date(timeIntervalSince1970: 1_793_000_000)),
             scope: nil)
     }
@@ -521,8 +522,13 @@ private enum ConnectionSheetPreview {
         basis: ConnectionBasis(
             snapshot: AppConnect.IdentitySnapshot(
                 identityId: Data(repeating: 2, count: 32), revision: 3, keys: [key], platformTime: 1_793_500_000_000),
-            intents: [], unrecorded: [key], administeredGroups: []),
+            intents: [], followedIntentIds: [], unrecorded: [key], administeredGroups: []),
         connectedAt: Date(timeIntervalSince1970: 1_793_000_000))
+
+    /// What the sheet of a row with `status` lists as the app's access.
+    static func granted(_ status: ConnectionStatus) -> [String]? {
+        details.access(shownAs: status).map { DashConnectPermissionText.granted($0.granted, appLabel: "Yappr") }
+    }
 
     static func sheet(
         _ item: ConnectionSheetItem,
@@ -549,9 +555,7 @@ private enum ConnectionSheetPreview {
 #Preview("Loaded") {
     ConnectionSheetPreview.sheet(
         ConnectionSheetPreview.item(.active), details: ConnectionSheetPreview.details,
-        granted: ConnectionSheetPreview.details.access.map {
-            DashConnectPermissionText.granted($0.granted, appLabel: "Yappr")
-        },
+        granted: ConnectionSheetPreview.granted(.active),
         funding: [(title: "App key", value: "0.004 DASH left of 0.01 DASH")])
 }
 
@@ -579,11 +583,11 @@ private enum ConnectionSheetPreview {
 #Preview("Disconnected") {
     ConnectionSheetPreview.sheet(
         ConnectionSheetPreview.disconnected, details: ConnectionSheetPreview.details,
-        granted: DashConnectPermissionText.granted(ConnectionSheetPreview.access.granted, appLabel: "Yappr"))
+        granted: ConnectionSheetPreview.granted(.disconnected))
 }
 
 #Preview("Expired") {
     ConnectionSheetPreview.sheet(
         ConnectionSheetPreview.item(.expired), details: ConnectionSheetPreview.details,
-        granted: DashConnectPermissionText.granted(ConnectionSheetPreview.access.granted, appLabel: "Yappr"))
+        granted: ConnectionSheetPreview.granted(.expired))
 }

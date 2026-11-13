@@ -98,7 +98,9 @@ final class ConnectionsViewModel: ObservableObject {
     /// The lines of what the shown connection's app was given and was not;
     /// `nil` while unknown.
     var shownGrantedLines: [String]? {
-        guard let item = shownConnection, let access = shownDetails?.access else { return nil }
+        guard let item = shownConnection, let access = shownDetails?.access(shownAs: item.status) else {
+            return nil
+        }
         return DashConnectPermissionText.granted(access.granted, appLabel: item.name)
     }
 
@@ -247,7 +249,7 @@ final class ConnectionsViewModel: ObservableObject {
         }
     }
 
-    /// The tab of a row, from the state-to-actions table (ADR 0010).
+    /// The tab of a row, from the state-to-actions table (ADR-0019).
     private static func tab(of connection: DAppConnection) -> AppConnect.Tab {
         AppConnect.StateActions.row(for: connection.status).tab
     }
@@ -343,7 +345,7 @@ final class ConnectionsViewModel: ObservableObject {
         let number = detailsReadNumber
         if let entry = item.entry {
             shownDetails = ConnectionDetails(
-                appId: entry.id, identityId: entry.identityId, username: entry.username, access: entry.access)
+                appId: entry.id, identityId: entry.identityId, username: entry.username, recorded: entry.access)
             shownDetailsFailed = false
             return
         }
