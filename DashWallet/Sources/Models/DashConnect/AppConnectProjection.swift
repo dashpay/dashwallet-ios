@@ -718,6 +718,16 @@ extension AppConnect {
         } && outstandingDisables(of: intent, in: snapshot).isEmpty
     }
 
+    /// The key on `snapshot` an intended auth key gives access through: it
+    /// landed (live or expired) and its bound is known to be the intended
+    /// one. A key whose bound the store does not hold yet may be bound
+    /// elsewhere, so it gives no access until a read places it.
+    static func accessKey(of intended: IntendedKey, in snapshot: IdentitySnapshot) -> PlatformKey? {
+        guard [.live, .expired].contains(presence(of: intended, in: snapshot)),
+              let actual = snapshot.keys.first(where: { $0.id == intended.id }), actual.boundKnown else { return nil }
+        return actual
+    }
+
     /// Whether `intent`'s encryption keys give the app message access on
     /// `snapshot`, as the connection sheet says it: every key it re-sends is
     /// live, and every key it adds is live, or not there yet while the

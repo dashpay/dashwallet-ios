@@ -352,8 +352,37 @@ final class ConnectionsViewModel: ObservableObject {
                 self.shownDetailsFailed = true
                 return
             }
-            self.shownDetails = details
+            // A refresh keeps the funding lines shown until its own read of
+            // them ends.
+            var shown = details
+            if keepingShown, let previous = self.shownDetails {
+                shown?.keyFunding = previous.keyFunding
+                shown?.fundingReadFailed = previous.fundingReadFailed
+            }
+            self.shownDetails = shown
             self.shownDetailsFailed = details == nil
+            if details != nil { self.readShownFunding(item, number: number) }
+        }
+    }
+
+    /// What is left of the shown connection's budgets, read after its
+    /// details so the sheet does not wait on it; the latest read only.
+    private func readShownFunding(_ item: ConnectionSheetItem, number: Int) {
+        Task { [weak self] in
+            guard let self else { return }
+            let funding = await self.dataSource.connectionFunding(id: item.id, scope: item.connection?.scope)
+            guard number == self.detailsReadNumber, self.shownConnection != nil, var details = self.shownDetails else { return }
+            switch funding {
+            case .notRead:
+                return
+            case .read(let lines):
+                details.keyFunding = lines
+                details.fundingReadFailed = false
+            case .failed:
+                details.keyFunding = nil
+                details.fundingReadFailed = true
+            }
+            self.shownDetails = details
         }
     }
 
