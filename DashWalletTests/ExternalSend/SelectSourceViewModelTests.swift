@@ -16,6 +16,7 @@
 //
 
 @testable import dashpay
+import SwiftDashSDK
 import XCTest
 
 /// The Select source sheet's ViewModel (SCR-05; AC-05, AC-06, AC-07): only the edge is faked (the Current
@@ -44,7 +45,17 @@ final class SelectSourceViewModelTests: XCTestCase {
         }
     }
 
+    /// The wallet's bound Shielded account, by its raw Orchard address; nil when it has none.
+    private final class FakeShieldedAccount: OwnShieldedAddressReading {
+        var raw43: Data? = Data(repeating: 0x5a, count: 43)
+
+        func ownShieldedAddress() async -> Data? {
+            raw43
+        }
+    }
+
     private let identity = FakeIdentity()
+    private let shieldedAccount = FakeShieldedAccount()
     private var picked: [SendSource] = []
 
     override func setUp() {
@@ -53,7 +64,8 @@ final class SelectSourceViewModelTests: XCTestCase {
     }
 
     private func makeVM(_ destination: Destination, selected: SendSource = .core) async -> SelectSourceViewModel {
-        let vm = SelectSourceViewModel(destination: destination, selected: selected, currentIdentity: identity)
+        let vm = SelectSourceViewModel(destination: destination, selected: selected, currentIdentity: identity,
+                                       ownShieldedAddress: shieldedAccount)
         vm.onPick = { [unowned self] source in picked.append(source) }
         await vm.load()
         return vm
@@ -145,11 +157,29 @@ final class SelectSourceViewModelTests: XCTestCase {
         XCTAssertTrue(try row(.identity, in: vm).isSelectable)
     }
 
-    func testIdentityToAShieldedAddressIsUnavailable() async throws {
+    func testIdentityPaysSomeoneElsesShieldedAddress() async throws {
         let vm = await makeVM(destination(.shieldedAddress), selected: .core)
-        try assertUnavailable(.identity, .notSupportedYet, "Identity can't pay a Shielded address yet", in: vm)
+        XCTAssertTrue(try row(.identity, in: vm).isSelectable)
         vm.tap(.identity)
-        XCTAssertEqual(vm.toastMessage, "Identity can't pay a Shielded address yet")
+        XCTAssertEqual(picked, [.identity])
+        XCTAssertNil(vm.toastMessage)
+    }
+
+    func testIdentityToTheWalletsOwnShieldedAddressIsUnavailable() async throws {
+        let own = try XCTUnwrap(Bech32m.encode(hrp: Bech32m.platformHrp(mainnet: false),
+                                               data: Data([0x10]) + Data(repeating: 0x5a, count: 43)))
+        let vm = await makeVM(destination(.shieldedAddress, text: own), selected: .core)
+        try assertUnavailable(.identity, .identityToOwnShieldedAddress,
+                              "Identity can't pay this wallet's own Shielded address", in: vm)
+    }
+
+    func testIdentityToAShieldedAddressIsUnavailableWithoutAShieldedAccount() async throws {
+        shieldedAccount.raw43 = nil
+        let vm = await makeVM(destination(.shieldedAddress), selected: .core)
+        try assertUnavailable(.identity, .identityWithoutShieldedAccount,
+                              "Identity can't pay a Shielded address until Shielded is set up", in: vm)
+        vm.tap(.identity)
+        XCTAssertEqual(vm.toastMessage, "Identity can't pay a Shielded address until Shielded is set up")
         XCTAssertTrue(picked.isEmpty)
         XCTAssertEqual(vm.selected, .core)
         XCTAssertTrue(try row(.core, in: vm).isSelectable)

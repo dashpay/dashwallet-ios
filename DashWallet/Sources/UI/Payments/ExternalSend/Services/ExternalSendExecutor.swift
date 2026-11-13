@@ -395,7 +395,8 @@ protocol ExternalSendExecuting: AnyObject {
 }
 
 /// Authenticates on Continue, prepares the exact send with its binding fee, and broadcasts only in `send`.
-/// Every route with a source is wired; Identity to Shielded and Identity to its own identity have no route (ADR-0041).
+/// Every route with a source is wired except Identity to Shielded, whose unavailable fee estimate stops it at Continue;
+/// Identity to its own identity has no route.
 @MainActor
 final class ExternalSendExecutor: ExternalSendExecuting {
     private let standardSend: CoreStandardSending
@@ -492,7 +493,7 @@ final class ExternalSendExecutor: ExternalSendExecuting {
         case .coreToShielded, .coreToIdentity,
              .shieldedToCore, .shieldedToShielded, .shieldedToPlatform, .shieldedToIdentity,
              .platformToCore, .platformToShielded, .platformToPlatform, .platformToIdentity,
-             .identityToCore, .identityToPlatform, .identityToIdentity:
+             .identityToCore, .identityToPlatform, .identityToIdentity, .identityToShielded:
             return try await prepareRouted(
                 route: route, destination: destination, amount: amount, isMax: isMax, sweepCredits: sweepCredits)
         }
@@ -770,6 +771,9 @@ final class ExternalSendExecutor: ExternalSendExecuting {
                     route: prepared.route, destination: destination, identityId: identityId,
                     amountCredits: prepared.amount, bindingFeeCredits: prepared.fee, isMax: prepared.isMax)
             }
+        case .identityToShielded:
+            // TODO(identity-to-shielded): the recipient shield; prepare refuses the route until its fee is estimated.
+            return .notSent(.failed)
         default:
             return await runCredits {
                 await creditsSend.run(

@@ -153,7 +153,7 @@ private let allAvailable = [
 
 private let identityUnavailable = [
     previewRow(.core, "Core"), previewRow(.shielded, "Shielded"), previewRow(.platform, "Platform"),
-    previewRow(.identity, "Identity", reason: .notSupportedYet)
+    previewRow(.identity, "Identity", reason: .identityWithoutShieldedAccount)
 ]
 
 #Preview("Loading") { previewSheet([], loading: true) }
@@ -165,7 +165,7 @@ private let identityUnavailable = [
 #Preview("With an unavailable row") { previewSheet(identityUnavailable) }
 
 #Preview("Toast shown") {
-    previewSheet(identityUnavailable, toast: UnavailableReason.notSupportedYet.localizedMessage)
+    previewSheet(identityUnavailable, toast: UnavailableReason.identityWithoutShieldedAccount.localizedMessage)
 }
 
 #Preview("Payment request: Core only") {
