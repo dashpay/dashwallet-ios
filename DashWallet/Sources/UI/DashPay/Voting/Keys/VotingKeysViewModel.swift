@@ -58,6 +58,8 @@ final class VotingKeysViewModel: ObservableObject {
         case vote(VoteChoice)
         /// Opened from the list's menu, before or after setup; it starts from the stored ticks.
         case manage
+        /// Opened by «Vote for all» before voting is set up; the button goes on to Quick voting.
+        case quickVoting
     }
 
     let mode: Mode
@@ -147,6 +149,9 @@ final class VotingKeysViewModel: ObservableObject {
         if case .vote(let choice) = mode { return choice }
         return nil
     }
+
+    /// A vote mode, with a button that keeps the ticks and goes on; manage mode has none.
+    var hasVoteButton: Bool { mode != .manage }
 
     /// Nothing ticked, nothing to vote with.
     var canConfirm: Bool { !ticked.isEmpty }

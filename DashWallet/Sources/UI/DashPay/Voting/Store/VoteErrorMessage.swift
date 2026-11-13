@@ -37,6 +37,12 @@ enum VoteErrorMessage {
     /// `MasternodeIncorrectVoterIdentityIdError`
     private static let incorrectVoterIdentityId: UInt32 = 40306
 
+    /// Platform refused the vote because the masternode has spent its votes here.
+    static func isNoVotesLeft(_ error: Error) -> Bool {
+        if case .consensusRejection(let consensus, _) = error as? SDKError { return consensus.code == votedTooManyTimes }
+        return false
+    }
+
     static func plain(for error: Error) -> String {
         if let castError = error as? MasternodeVoteCaster.CastError {
             switch castError {

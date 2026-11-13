@@ -17,6 +17,7 @@
 //  limitations under the License.
 //
 
+import Combine
 @testable import dashpay
 import SwiftDashSDK
 import XCTest
@@ -54,7 +55,10 @@ private final class FakeContests: VotingContestReading {
     private var voteStateGate: CheckedContinuation<Void, Never>?
     private(set) var voteStateHeld = false
 
+    private(set) var voteStateReads = 0
+
     func voteState(normalizedLabel: String) async throws -> DPNSContestVoteState? {
+        voteStateReads += 1
         if holdNextVoteState {
             holdNextVoteState = false
             voteStateHeld = true
@@ -77,6 +81,7 @@ private final class TestClock {
 
 private final class FakeNodes: VotableMasternodeResolving {
     var resolution = MasternodeVoterRegistry.Resolution(nodes: [], mayBeIncomplete: false)
+    var isNodeListSynced = true
     func votableNodes() -> MasternodeVoterRegistry.Resolution { resolution }
 }
 
@@ -137,6 +142,76 @@ private final class ScriptedCaster: VoteCasting {
     }
 }
 
+/// Fakes that never run Quick voting. A Quick voting fake implements its own.
+extension VoteCasting {
+    func castRun(
+        _ casts: [QuickVoteCast], progress: @escaping @MainActor (Int) -> Void
+    ) async throws -> [VoteCastReport] {
+        XCTFail("this fake does not run Quick voting")
+        return []
+    }
+}
+
+/// A Quick voting caster the test scripts: per name, which nodes fail; or a
+/// refusal before anything is sent; it can hold the run until `release()`.
+private final class RunCaster: VoteCasting {
+    var failing: [String: Set<Data>] = [:]
+    /// Masternodes Platform refuses for having no vote left, per name.
+    var noVotesLeft: [String: Set<Data>] = [:]
+    /// Names whose poll the run finds closed: nothing is sent on them.
+    var closed: Set<String> = []
+    var refusal: Error?
+    var holdRun = false
+    private(set) var runs: [[QuickVoteCast]] = []
+    /// The run's task was cancelled by the time it was released.
+    private(set) var sawCancellation = false
+    /// The last run's task was already cancelled when the run was called.
+    private(set) var startedCancelled = false
+    private var gate: CheckedContinuation<Void, Never>?
+
+    func cast(choice: VoteChoice, onNormalizedLabel normalizedLabel: String, with nodes: [VoterNode]) async throws
+        -> VoteCastReport {
+        XCTFail("Quick voting goes through castRun")
+        return VoteCastReport(normalizedLabel: normalizedLabel, choice: choice, outcomes: [])
+    }
+
+    func castRun(
+        _ casts: [QuickVoteCast], progress: @escaping @MainActor (Int) -> Void
+    ) async throws -> [VoteCastReport] {
+        runs.append(casts)
+        startedCancelled = Task.isCancelled
+        if let refusal { throw refusal }
+        // As the real caster: 0 once the prompt is passed.
+        progress(0)
+        if holdRun {
+            holdRun = false
+            await withCheckedContinuation { gate = $0 }
+            sawCancellation = Task.isCancelled
+        }
+        return casts.enumerated().map { index, cast in
+            progress(index + 1)
+            if closed.contains(cast.normalizedLabel) {
+                return VoteCastReport(
+                    normalizedLabel: cast.normalizedLabel, choice: cast.choice,
+                    outcomes: cast.nodes.map { VoteOutcome(node: $0, failure: "closed") }, contestClosed: true)
+            }
+            return VoteCastReport(
+                normalizedLabel: cast.normalizedLabel, choice: cast.choice,
+                outcomes: cast.nodes.map { node in
+                    if noVotesLeft[cast.normalizedLabel]?.contains(node.proTxHash) == true { return .noVotesLeft(node) }
+                    return VoteOutcome(
+                        node: node,
+                        failure: failing[cast.normalizedLabel]?.contains(node.proTxHash) == true ? "refused" : nil)
+                })
+        }
+    }
+
+    func release() {
+        gate?.resume()
+        gate = nil
+    }
+}
+
 private final class FakeHistory: VoteHistoryDAO {
     /// `nil` makes the whole-list read fail, as an unreadable store does.
     var records: [CastVoteRecord]? = []
@@ -185,6 +260,11 @@ private final class FakeHistory: VoteHistoryDAO {
         listGate = nil
     }
     func deleteAll() {}
+}
+
+/// Set by a task the test waits on.
+private final class Flag {
+    var isSet = false
 }
 
 private final class FakePrefs: VotingSelectionStoring {
@@ -245,6 +325,993 @@ final class VotingStoreTests: XCTestCase {
         XCTAssertEqual(history.listReads, 1, "one read for the whole list, not one per row")
         XCTAssertEqual(history.singleReads, 0)
         XCTAssertEqual(store.contests.count, 12)
+    }
+
+    // MARK: Request dates (AC-22)
+
+    func testRequestDatesComeThroughAndAMissingDateStaysMissing() async {
+        let submitted = Date(timeIntervalSince1970: 1_762_000_000)
+        contests.result = .success([
+            DPNSContest(
+                normalizedLabel: "johndoe", endTime: nil, hasWinner: false, abstainVotes: 0, lockVotes: 0,
+                contenders: [
+                    DPNSContender(identityId: "dated", voteTally: 1, displayLabel: "johndoe", createdAt: submitted),
+                    DPNSContender(identityId: "undated", voteTally: 0, displayLabel: nil, createdAt: nil),
+                    DPNSContender(
+                        identityId: "epoch", voteTally: 0, displayLabel: "johnd0e",
+                        createdAt: Date(timeIntervalSince1970: 0)),
+                ]),
+        ])
+        let store = makeStore()
+
+        await store.refresh()
+
+        let dates = Dictionary(
+            uniqueKeysWithValues: (store.contests.first?.contenders ?? []).map { ($0.identityId, $0.createdAt) })
+        XCTAssertEqual(dates.count, 3, "the read succeeds with every request, dated or not")
+        XCTAssertEqual(dates["dated"], .some(submitted))
+        XCTAssertEqual(dates["undated"], .some(nil), "a request whose document cannot be read has no date")
+        XCTAssertEqual(dates["epoch"], .some(Date(timeIntervalSince1970: 0)), "a stored 0 is the epoch, not missing")
+    }
+
+    // MARK: Request links (AC-10, AC-11)
+
+    private func makeStore(links: @escaping @MainActor (String, String) async throws -> URL?) -> VotingStore {
+        VotingStore(contests: contests, nodes: nodes, caster: FakeCaster(), history: history, prefs: prefs,
+                    linkLookup: VotingStore.lookingUpEachRequest(links))
+    }
+
+    private func key(_ label: String, _ identity: String) -> VotingStore.RequestKey {
+        VotingStore.RequestKey(normalizedLabel: label, identityId: identity)
+    }
+
+    func testTheLinksOfOneNameAreLookedUpOnceForAllItsRequests() async throws {
+        let url = try XCTUnwrap(URL(string: "https://example.com/proof"))
+        var asked: [String: [String]] = [:]
+        let store = VotingStore(
+            contests: contests, nodes: nodes, caster: FakeCaster(), history: history, prefs: prefs,
+            linkLookup: { label, identities in
+                asked[label, default: []].append(contentsOf: identities.sorted())
+                return ["j1": url]
+            })
+
+        await store.loadLinks([key("johndoe", "j1"), key("johndoe", "j2"), key("alice", "a1")], retryingFailed: false)
+
+        XCTAssertEqual(asked, ["johndoe": ["j1", "j2"], "alice": ["a1"]], "one lookup per name")
+        XCTAssertEqual(store.linkState(normalizedLabel: "johndoe", identityId: "j1"), .published(url))
+        XCTAssertEqual(store.linkState(normalizedLabel: "johndoe", identityId: "j2"), RequestLinkState.none)
+        XCTAssertEqual(store.linkState(normalizedLabel: "alice", identityId: "a1"), RequestLinkState.none)
+    }
+
+    func testEveryMissingLinkStartsReadingInOneChange() async {
+        var held: [CheckedContinuation<[String: URL], Error>] = []
+        let store = VotingStore(
+            contests: contests, nodes: nodes, caster: FakeCaster(), history: history, prefs: prefs,
+            linkLookup: { _, _ in try await withCheckedThrowingContinuation { held.append($0) } })
+        var changes = 0
+        let counting = store.stateDidChange.sink { changes += 1 }
+
+        let load = Task {
+            await store.loadLinks([self.key("johndoe", "j1"), self.key("johndoe", "j2"), self.key("alice", "a1")],
+                                  retryingFailed: false)
+        }
+        await yield(until: { held.count == 2 })
+
+        XCTAssertEqual(changes, 1, "one change, not one list recompute per request")
+        XCTAssertEqual(store.linkState(normalizedLabel: "johndoe", identityId: "j2"), .reading)
+        XCTAssertEqual(store.linkState(normalizedLabel: "alice", identityId: "a1"), .reading)
+        held.forEach { $0.resume(returning: [:]) }
+        await load.value
+        counting.cancel()
+    }
+
+    func testAtMostFourNamesAreLookedUpAtOnce() async {
+        var held: [CheckedContinuation<[String: URL], Error>] = []
+        let store = VotingStore(
+            contests: contests, nodes: nodes, caster: FakeCaster(), history: history, prefs: prefs,
+            linkLookup: { _, _ in try await withCheckedThrowingContinuation { held.append($0) } })
+
+        let load = Task {
+            await store.loadLinks(Set((1...6).map { self.key("name\($0)", "id") }), retryingFailed: false)
+        }
+        await yield(until: { held.count == 4 })
+        for _ in 0..<100 { await Task.yield() }
+        XCTAssertEqual(held.count, 4, "the rest wait for a lookup to finish")
+
+        for _ in 1...6 {
+            await yield(until: { !held.isEmpty })
+            held.removeFirst().resume(returning: [:])
+        }
+        await load.value
+    }
+
+    func testTwoAsksAtOnceStillLookUpAtMostFourNamesInAll() async {
+        var held: [CheckedContinuation<[String: URL], Error>] = []
+        let store = VotingStore(
+            contests: contests, nodes: nodes, caster: FakeCaster(), history: history, prefs: prefs,
+            linkLookup: { _, _ in try await withCheckedThrowingContinuation { held.append($0) } })
+
+        // As the links filter and an expanded row asking at the same time.
+        let filter = Task {
+            await store.loadLinks(Set((1...4).map { self.key("name\($0)", "id") }), retryingFailed: false)
+        }
+        let row = Task {
+            await store.loadLinks(Set((5...8).map { self.key("name\($0)", "id") }), retryingFailed: true)
+        }
+        await yield(until: { held.count >= 4 })
+        for _ in 0..<100 { await Task.yield() }
+        XCTAssertEqual(held.count, 4, "the limit is the store's, not each ask's")
+
+        for _ in 1...8 {
+            await yield(until: { !held.isEmpty })
+            held.removeFirst().resume(returning: [:])
+        }
+        await filter.value
+        await row.value
+        XCTAssertEqual(store.linkState(normalizedLabel: "name8", identityId: "id"), RequestLinkState.none)
+    }
+
+    func testALinkTheOwnerOpensIsLookedUpBeforeTheNamesWaitingForTheFilter() async {
+        var held: [(label: String, answer: CheckedContinuation<[String: URL], Error>)] = []
+        let store = VotingStore(
+            contests: contests, nodes: nodes, caster: FakeCaster(), history: history, prefs: prefs,
+            linkLookup: { label, _ in try await withCheckedThrowingContinuation { held.append((label, $0)) } })
+
+        // The links filter: four names looked up, name5…name8 waiting.
+        store.askForLinks(Set((1...8).map { key("name\($0)", "id") }), retryingFailed: false)
+        await yield(until: { held.count == 4 })
+        // An expanded row of a waiting name and Request details of a new one.
+        store.askForLinks([key("name8", "id"), key("opened", "id")], retryingFailed: true, first: true)
+
+        var started: [String] = []
+        for _ in 1...2 {
+            held.removeFirst().answer.resume(returning: [:])
+            await yield(until: { held.count == 4 })
+            started.append(held[3].label)
+        }
+        XCTAssertEqual(Set(started), ["name8", "opened"], "what the owner opens goes before the filter's backlog")
+
+        for _ in 1...7 {
+            await yield(until: { !held.isEmpty })
+            held.removeFirst().answer.resume(returning: [:])
+        }
+        await yield(until: { store.linkState(normalizedLabel: "name7", identityId: "id") != .reading })
+        XCTAssertEqual(store.linkState(normalizedLabel: "name7", identityId: "id"), RequestLinkState.none)
+    }
+
+    func testClosingRequestDetailsEndsItsWaitForTheLink() async {
+        var held: [CheckedContinuation<[String: URL], Error>] = []
+        let store = VotingStore(
+            contests: contests, nodes: nodes, caster: FakeCaster(), history: history, prefs: prefs,
+            linkLookup: { _, _ in try await withCheckedThrowingContinuation { held.append($0) } })
+        store.askForLinks(Set((1...4).map { key("name\($0)", "id") }), retryingFailed: false)
+        await yield(until: { held.count == 4 })
+
+        let returned = Flag()
+        let details = Task {
+            await store.loadLink(normalizedLabel: "opened", identityId: "id")
+            returned.isSet = true
+        }
+        await yield(until: { store.linkState(normalizedLabel: "opened", identityId: "id") == .reading })
+        details.cancel()
+        await yield(until: { returned.isSet })
+
+        XCTAssertTrue(returned.isSet, "closing Request details ends its wait though its lookup still waits")
+        for _ in 1...5 {
+            await yield(until: { !held.isEmpty })
+            held.removeFirst().resume(returning: [:])
+        }
+        await details.value
+        await yield(until: { store.linkState(normalizedLabel: "opened", identityId: "id") != .reading })
+        XCTAssertEqual(store.linkState(normalizedLabel: "opened", identityId: "id"), RequestLinkState.none,
+                       "the lookup itself still fills the store")
+    }
+
+    func testTheWaitingLookupsGoWithTheStore() async {
+        var held: [CheckedContinuation<[String: URL], Error>] = []
+        var store: VotingStore? = VotingStore(
+            contests: contests, nodes: nodes, caster: FakeCaster(), history: history, prefs: prefs,
+            linkLookup: { _, _ in try await withCheckedThrowingContinuation { held.append($0) } })
+        weak var gone = store
+
+        store?.askForLinks(Set((1...6).map { key("name\($0)", "id") }), retryingFailed: false)
+        await yield(until: { held.count == 4 })
+        store = nil
+        XCTAssertNil(gone, "the running lookups do not keep the store")
+
+        held.forEach { $0.resume(returning: [:]) }
+        for _ in 0..<100 { await Task.yield() }
+        XCTAssertEqual(held.count, 4, "the two waiting names are not looked up once the screen is gone")
+    }
+
+    func testALinkIsLookedUpOnceAndKeptAcrossARefresh() async throws {
+        let url = try XCTUnwrap(URL(string: "https://example.com/proof/johndoe"))
+        contests.result = .success([contest("johndoe")])
+        var asked: [String] = []
+        let store = makeStore(links: { label, identity in
+            asked.append("\(label)/\(identity)")
+            return url
+        })
+        await store.refresh()
+        XCTAssertNil(store.linkState(normalizedLabel: "johndoe", identityId: "id1"), "unknown until asked")
+
+        await store.loadLink(normalizedLabel: "johndoe", identityId: "id1")
+        await store.refresh()
+        await store.loadLink(normalizedLabel: "johndoe", identityId: "id1")
+
+        XCTAssertEqual(asked, ["johndoe/id1"], "one lookup per request for the session")
+        XCTAssertEqual(store.linkState(normalizedLabel: "johndoe", identityId: "id1"), .published(url))
+    }
+
+    func testNoLinkIsKeptAsNone() async {
+        var lookups = 0
+        let store = makeStore(links: { _, _ in
+            lookups += 1
+            return nil
+        })
+
+        await store.loadLink(normalizedLabel: "johndoe", identityId: "id1")
+        await store.loadLink(normalizedLabel: "johndoe", identityId: "id1")
+
+        XCTAssertEqual(store.linkState(normalizedLabel: "johndoe", identityId: "id1"), RequestLinkState.none)
+        XCTAssertEqual(lookups, 1)
+    }
+
+    func testAFailedLookupIsNotNoLinkAndIsAskedAgain() async {
+        struct Down: Error {}
+        var lookups = 0
+        let store = makeStore(links: { _, _ in
+            lookups += 1
+            if lookups == 1 { throw Down() }
+            return nil
+        })
+
+        await store.loadLink(normalizedLabel: "johndoe", identityId: "id1")
+        XCTAssertEqual(store.linkState(normalizedLabel: "johndoe", identityId: "id1"), .failed)
+
+        await store.loadLink(normalizedLabel: "johndoe", identityId: "id1")
+        XCTAssertEqual(store.linkState(normalizedLabel: "johndoe", identityId: "id1"), RequestLinkState.none)
+        XCTAssertEqual(lookups, 2, "a failed check runs again; a known answer does not")
+    }
+
+    func testALinkReadsWhileItsLookupRunsAndIsNotAskedTwice() async {
+        var release: CheckedContinuation<URL?, Error>?
+        var lookups = 0
+        let store = makeStore(links: { _, _ in
+            lookups += 1
+            return try await withCheckedThrowingContinuation { release = $0 }
+        })
+
+        let first = Task { await store.loadLink(normalizedLabel: "johndoe", identityId: "id1") }
+        await yield(until: { release != nil })
+        XCTAssertEqual(store.linkState(normalizedLabel: "johndoe", identityId: "id1"), .reading)
+        await store.loadLink(normalizedLabel: "johndoe", identityId: "id1")
+        release?.resume(returning: nil)
+        await first.value
+
+        XCTAssertEqual(lookups, 1)
+        XCTAssertEqual(store.linkState(normalizedLabel: "johndoe", identityId: "id1"), RequestLinkState.none)
+    }
+
+    // MARK: Voting period (AC-11)
+
+    private func dated(_ dates: [Date?]) -> DPNSContest {
+        DPNSContest(
+            normalizedLabel: "johndoe", endTime: nil, hasWinner: false, abstainVotes: 0, lockVotes: 0,
+            contenders: dates.enumerated().map {
+                DPNSContender(identityId: "id\($0.offset)", voteTally: 0, createdAt: $0.element)
+            })
+    }
+
+    func testTheVotingPeriodStartsAtTheEarliestRequestDate() {
+        let first = Date(timeIntervalSince1970: 1_762_000_000)
+        XCTAssertEqual(dated([first.addingTimeInterval(60), first, first.addingTimeInterval(3600)]).votingPeriodStart,
+                       first)
+    }
+
+    func testTheVotingPeriodStartIsUnknownWhenAnyRequestHasNoDate() {
+        let first = Date(timeIntervalSince1970: 1_762_000_000)
+        XCTAssertNil(dated([first, nil]).votingPeriodStart, "the undated request may be the first one")
+        XCTAssertNil(dated([]).votingPeriodStart)
+    }
+
+    // MARK: Quick voting runs (AC-14b, AC-18, AC-06b)
+
+    private let submitted = Date(timeIntervalSince1970: 1_762_765_200)
+
+    private func dated(_ label: String) -> DPNSContest {
+        DPNSContest(normalizedLabel: label, endTime: epoch.addingTimeInterval(86_400 * 400), hasWinner: false,
+                    abstainVotes: 0, lockVotes: 0,
+                    contenders: [DPNSContender(identityId: "\(label)-1", voteTally: 0, createdAt: submitted)])
+    }
+
+    private func makeRunStore(_ caster: RunCaster, nodes ids: [UInt8] = [1, 2]) async -> VotingStore {
+        let voters = ids.map(node)
+        nodes.resolution = .init(nodes: voters, mayBeIncomplete: false)
+        prefs.votingNodeSelection = Set(voters.map(\.proTxHash))
+        contests.result = .success([dated("alice"), dated("bob")])
+        let store = VotingStore(contests: contests, nodes: nodes, caster: caster, history: history, prefs: prefs,
+                                now: { self.epoch })
+        await store.refresh()
+        return store
+    }
+
+    func testQuickVotingSendsThePlanOnceAndToastsOnce() async {
+        let caster = RunCaster()
+        let store = await makeRunStore(caster)
+        let plan = store.quickVotePlan(for: store.contests)
+        XCTAssertEqual(plan.votes.map(\.normalizedLabel), ["alice", "bob"])
+
+        await store.runQuickVoting(plan)
+
+        XCTAssertEqual(caster.runs.count, 1)
+        XCTAssertEqual(caster.runs.first?.map(\.normalizedLabel), ["alice", "bob"])
+        XCTAssertEqual(caster.runs.first?.first?.choice, .towards(identityId: "alice-1"))
+        XCTAssertEqual(caster.runs.first?.first.map { Set($0.nodes.map(\.proTxHash)) }, [Data([1]), Data([2])])
+        guard case .success(let toast)? = store.outcome else { return XCTFail("one toast for the run") }
+        XCTAssertEqual(toast.message, VotingToast.quickVotingDone().message)
+        XCTAssertFalse(store.isSendingAny)
+        XCTAssertNil(store.quickVotingProgress)
+        XCTAssertNil(VotingViewModel(store: store).quickVotingStatus)
+    }
+
+    /// A one-contest read that returns a full page of requests may have cut
+    /// the first one off: Quick voting skips the name until a list refresh
+    /// reads its requests again (dashpay/platform#5876).
+    func testQuickVotingSkipsANameWhoseRequestsMayBeCut() async {
+        let store = await makeRunStore(RunCaster())
+        let full = (1...VotingStore.contestReadRequestLimit).map {
+            DPNSContender(identityId: "alice-\($0)", voteTally: 0, createdAt: submitted)
+        }
+        contests.voteStateResult = .success(DPNSContestVoteState(
+            normalizedLabel: "alice", contenders: full, abstainVotes: 0, lockVotes: 0,
+            outcome: .ongoing, resolvedAt: nil))
+
+        await store.refreshContest(normalizedLabel: "alice")
+
+        let plan = store.quickVotePlan(for: store.contests)
+        XCTAssertEqual(plan.votes.map(\.normalizedLabel), ["bob"])
+        XCTAssertEqual(plan.skipped, [QuickVotePlan.Skip(normalizedLabel: "alice", reason: .requestsMayBeCut)])
+
+        await store.refresh()
+        XCTAssertEqual(store.quickVotePlan(for: store.contests).votes.map(\.normalizedLabel), ["alice", "bob"])
+    }
+
+    /// One vote at a time: while another vote's history read (its gates, or
+    /// Try again) holds the slot, Quick voting does not start.
+    func testQuickVotingDoesNotStartWhileAVoteReadHoldsTheSlot() async {
+        let caster = RunCaster()
+        let store = await makeRunStore(caster)
+        let plan = store.quickVotePlan(for: store.contests)
+        history.holdNextSingleRead = true
+        let read = Task { await store.loadVotedNodesForVote(for: "alice") }
+        await yield(until: { self.history.singleReadHeld })
+
+        let run = Task { await store.runQuickVoting(plan) }
+        for _ in 0..<50 { await Task.yield() }
+
+        XCTAssertTrue(caster.runs.isEmpty, "no run while the slot is held")
+        history.releaseSingleRead()
+        _ = await read.value
+        let result = await run.value
+        guard case .failure(let reason) = result else { return XCTFail("the run says why it did not start") }
+        XCTAssertEqual(reason, "Quick voting did not start: another vote is still being sent.")
+    }
+
+    func testQuickVotingWithSomeNamesFailedListsThoseNames() async {
+        let caster = RunCaster()
+        caster.failing = ["bob": [Data([2])]]
+        let store = await makeRunStore(caster)
+
+        await store.runQuickVoting(store.quickVotePlan(for: store.contests))
+
+        guard case .mixedRun(let run)? = store.outcome else { return XCTFail("the result sheet") }
+        XCTAssertEqual(run.failedLabels, ["bob"])
+    }
+
+    func testQuickVotingWhereEveryVoteFailedIsAnErrorToast() async {
+        let caster = RunCaster()
+        caster.failing = ["alice": [Data([1]), Data([2])], "bob": [Data([1]), Data([2])]]
+        let store = await makeRunStore(caster)
+
+        await store.runQuickVoting(store.quickVotePlan(for: store.contests))
+
+        guard case .failure(let reason)? = store.outcome else { return XCTFail("an error toast, not the sheet") }
+        XCTAssertEqual(reason, "refused")
+    }
+
+    func testQuickVotingRefusedBeforeItStartsSaysSo() async {
+        let caster = RunCaster()
+        caster.refusal = MasternodeVoteCaster.CastError.authenticationCancelled
+        let store = await makeRunStore(caster)
+
+        await store.runQuickVoting(store.quickVotePlan(for: store.contests))
+
+        guard case .failure(let reason)? = store.outcome else { return XCTFail("the refusal is told") }
+        XCTAssertEqual(reason, MasternodeVoteCaster.CastError.authenticationCancelled.errorDescription)
+        XCTAssertFalse(store.isSendingAny)
+    }
+
+    func testARunTheAuthenticationRefusesShowsNoProgress() async {
+        let caster = RunCaster()
+        caster.refusal = MasternodeVoteCaster.CastError.authenticationCancelled
+        let store = await makeRunStore(caster)
+        var shown: [QuickVotingProgress] = []
+        let watching = store.$quickVotingProgress.compactMap { $0 }.sink { shown.append($0) }
+
+        await store.runQuickVoting(store.quickVotePlan(for: store.contests))
+        watching.cancel()
+
+        XCTAssertEqual(shown, [], "no «Quick voting…» status, nor its VoiceOver announcement, before the prompt passes")
+        XCTAssertEqual(caster.runs.count, 1)
+    }
+
+    func testEveryPlannedNameIsSendingWhileTheRunRunsAndNoOtherVoteStarts() async {
+        let caster = RunCaster()
+        caster.holdRun = true
+        let store = await makeRunStore(caster)
+
+        let run = Task { await store.runQuickVoting(store.quickVotePlan(for: store.contests)) }
+        await yield(until: { caster.runs.count == 1 })
+
+        XCTAssertTrue(store.isSending(normalizedLabel: "alice") && store.isSending(normalizedLabel: "bob"))
+        XCTAssertEqual(store.quickVotingProgress, QuickVotingProgress(done: 0, total: 2))
+        XCTAssertEqual(VotingViewModel(store: store).quickVotingStatus, "Quick voting… 0 of 2 done",
+                       "what the bar shows and VoiceOver says as the run starts")
+        let second = await store.runQuickVoting(store.quickVotePlan(for: store.contests))
+        XCTAssertEqual(caster.runs.count, 1, "one vote at a time")
+        guard case .failure(let reason) = second else { return XCTFail("a run that cannot start says why") }
+        XCTAssertEqual(reason, "Quick voting did not start: another vote is still being sent.")
+        // A pill tap during the run: RunCaster fails the test on a single cast.
+        await store.send(choice: .abstain, on: dated("carol"), from: [node(1)])
+        caster.release()
+        await run.value
+    }
+
+    func testNoOtherVoteStartsWhileTryAgainRereadsTheFailedNamesHistory() async {
+        let caster = RunCaster()
+        caster.failing = ["bob": [Data([2])]]
+        let store = await makeRunStore(caster)
+        await store.runQuickVoting(store.quickVotePlan(for: store.contests))
+        caster.failing = [:]
+        history.holdNextSingleRead = true
+
+        let retry = Task { await store.retryFailed() }
+        await yield(until: { self.history.singleReadHeld })
+
+        XCTAssertTrue(store.isSending(normalizedLabel: "bob"), "the failed name is claimed before its history read")
+        // A pill tap on another name while the retry reads: RunCaster fails the test on a single cast.
+        // Awaited after the release, so a send that does start fails the test instead of waiting on the queue.
+        let tapReturned = Flag()
+        let tap = Task {
+            await store.send(choice: .abstain, on: self.dated("alice"), from: [self.node(1)])
+            tapReturned.isSet = true
+        }
+        await yield(until: { tapReturned.isSet || store.isSending(normalizedLabel: "alice") })
+        history.releaseSingleRead()
+        await tap.value
+        await retry.value
+
+        XCTAssertEqual(caster.runs.count, 2, "the retry still sends")
+        XCTAssertFalse(store.isSendingAny)
+    }
+
+    // MARK: What reaches the plan (AC-18)
+
+    func testOnlyTheShownNamesAndTheirLinkedRequestsReachThePlan() async throws {
+        let url = try XCTUnwrap(URL(string: "https://example.com/proof"))
+        let caster = RunCaster()
+        nodes.resolution = .init(nodes: [node(1)], mayBeIncomplete: false)
+        prefs.votingNodeSelection = [Data([1])]
+        let end = epoch.addingTimeInterval(86_400 * 400)
+        let alice = DPNSContest(
+            normalizedLabel: "alice", endTime: end, hasWinner: false, abstainVotes: 0, lockVotes: 0,
+            contenders: [
+                DPNSContender(identityId: "alice-early", voteTally: 0, createdAt: submitted),
+                DPNSContender(identityId: "alice-linked", voteTally: 0, createdAt: submitted.addingTimeInterval(60)),
+            ])
+        let alina = DPNSContest(
+            normalizedLabel: "alina", endTime: end, hasWinner: false, abstainVotes: 0, lockVotes: 0,
+            contenders: [DPNSContender(identityId: "alina-1", voteTally: 0, createdAt: submitted)])
+        contests.result = .success([alice, alina, dated("bob")])
+        let store = VotingStore(
+            contests: contests, nodes: nodes, caster: caster, history: history, prefs: prefs, now: { self.epoch },
+            linkLookup: VotingStore.lookingUpEachRequest { _, identity in identity == "alice-linked" ? url : nil })
+        await store.refresh()
+        // The plan reads the list's rows; the search narrowing them is
+        // `testSearchNarrowsRowsButNotTheOpenCount`.
+        let voting = VotingViewModel(store: store)
+        voting.list.filter.onlyWithLinks = true
+        await yield(until: { voting.list.emptyState == nil && !voting.list.visibleContests.isEmpty })
+
+        await voting.quickVoting.start()
+        voting.quickVoting.voteForAll()
+        await yield(until: { caster.runs.count == 1 })
+
+        XCTAssertEqual(caster.runs.first?.map(\.normalizedLabel), ["alice"], "alina and bob have no link")
+        XCTAssertEqual(caster.runs.first?.first?.choice, .towards(identityId: "alice-linked"),
+                       "the earliest shown request, not the earliest of the name")
+    }
+
+    // MARK: Try again after a mixed run, every branch (AC-06b, AC-19)
+
+    /// A run where bob's masternode 2 failed, then the caster lands everything.
+    private func mixedRunStore(_ caster: RunCaster) async -> VotingStore {
+        caster.failing = ["bob": [Data([2])]]
+        let store = await makeRunStore(caster)
+        await store.runQuickVoting(store.quickVotePlan(for: store.contests))
+        caster.failing = [:]
+        return store
+    }
+
+    private func bobsFailure(_ store: VotingStore) -> String? {
+        guard case .mixedRun(let run)? = store.outcome else { return nil }
+        return run.reports.first { $0.normalizedLabel == "bob" }?.outcomes
+            .first { $0.node.proTxHash == Data([2]) }?.failure
+    }
+
+    func testTryAgainRefusedAtTheAuthenticationTellsEachFailedVoteWhy() async {
+        let caster = RunCaster()
+        let store = await mixedRunStore(caster)
+        caster.refusal = MasternodeVoteCaster.CastError.authenticationCancelled
+
+        await store.retryFailed()
+
+        XCTAssertEqual(bobsFailure(store), MasternodeVoteCaster.CastError.authenticationCancelled.errorDescription)
+        guard case .mixedRun(let run)? = store.outcome else { return XCTFail("the result sheet stays") }
+        XCTAssertEqual(run.reports.flatMap(\.succeeded).count, 3, "the landed votes stay landed")
+    }
+
+    func testTryAgainOnANameThatClosedMeanwhileSaysVotingHasEnded() async {
+        let caster = RunCaster()
+        let store = await mixedRunStore(caster)
+        contests.voteStateResult = .success(resolved("bob", lock: 0))
+        await store.refreshContest(normalizedLabel: "bob")
+
+        await store.retryFailed()
+
+        XCTAssertEqual(caster.runs.count, 1, "nothing is sent on a closed name")
+        XCTAssertEqual(bobsFailure(store), "Voting has ended")
+    }
+
+    func testTryAgainOnANameBlockedMeanwhileSaysSo() async {
+        let caster = RunCaster()
+        let store = await mixedRunStore(caster)
+        history.records?.append(vote(node(1), on: "bob", .lock))
+
+        await store.retryFailed()
+
+        XCTAssertEqual(caster.runs.count, 1)
+        XCTAssertEqual(bobsFailure(store), "A masternode of this wallet blocked this name.")
+    }
+
+    func testTryAgainForANodeThatHoldsTheApproveByNowSendsNothingAndLands() async {
+        let caster = RunCaster()
+        let store = await mixedRunStore(caster)
+        history.records?.append(vote(node(2), on: "bob", .towards(identityId: "bob-1")))
+
+        await store.retryFailed()
+
+        XCTAssertEqual(caster.runs.count, 1, "no second vote for what it holds")
+        guard case .success? = store.outcome else { return XCTFail("every vote is in now") }
+    }
+
+    func testTryAgainForANodeOutOfVotesSaysNoVotesLeft() async {
+        let caster = RunCaster()
+        let store = await mixedRunStore(caster)
+        history.records?.append(CastVoteRecord(
+            proTxHash: Data([2]), normalizedLabel: "bob", choice: .abstain,
+            castAt: epoch, castCount: VoteLimit.maxCastsPerNode))
+
+        await store.retryFailed()
+
+        XCTAssertEqual(caster.runs.count, 1)
+        XCTAssertEqual(bobsFailure(store), "No votes left")
+    }
+
+    func testATryAgainThatFailsAgainKeepsEveryEarlierLandedVote() async {
+        let caster = RunCaster()
+        caster.failing = ["alice": [Data([1])], "bob": [Data([2])]]
+        let store = await makeRunStore(caster)
+        await store.runQuickVoting(store.quickVotePlan(for: store.contests))
+        caster.failing = ["bob": [Data([2])]]
+
+        await store.retryFailed()
+
+        XCTAssertEqual(caster.runs.last?.map(\.normalizedLabel), ["alice", "bob"])
+        guard case .mixedRun(let run)? = store.outcome else { return XCTFail("bob still failed") }
+        XCTAssertEqual(run.failedLabels, ["bob"])
+        XCTAssertEqual(run.reports.flatMap(\.succeeded).count, 3, "alice's two and bob's first")
+    }
+
+    func testANameTheRunFindsClosedIsClosedAndLeftOutOfTheNextPlan() async {
+        let caster = RunCaster()
+        caster.closed = ["alice"]
+        let store = await makeRunStore(caster)
+
+        await store.runQuickVoting(store.quickVotePlan(for: store.contests))
+
+        XCTAssertTrue(store.isClosed(normalizedLabel: "alice"), "as a single vote's closed answer")
+        let next = store.quickVotePlan(for: store.contests)
+        XCTAssertEqual(next.skipped, [QuickVotePlan.Skip(normalizedLabel: "alice", reason: .votingEnded)])
+    }
+
+    func testANameKeptPastItsVotingEndIsNotPlanned() async {
+        let caster = RunCaster()
+        var clock = epoch
+        nodes.resolution = .init(nodes: [node(1)], mayBeIncomplete: false)
+        prefs.votingNodeSelection = [Data([1])]
+        contests.result = .success([dated("alice")])
+        let store = VotingStore(contests: contests, nodes: nodes, caster: caster, history: history, prefs: prefs,
+                                now: { clock })
+        await store.refresh()
+        clock = epoch.addingTimeInterval(86_400 * 400)
+
+        let plan = store.quickVotePlan(for: store.contests)
+
+        XCTAssertTrue(plan.votes.isEmpty)
+        XCTAssertEqual(plan.skipped.first?.reason, .votingEnded)
+    }
+
+    func testTryAgainAfterAMixedRunResendsOnlyTheFailedVotes() async {
+        let caster = RunCaster()
+        caster.failing = ["bob": [Data([2])]]
+        let store = await makeRunStore(caster)
+        await store.runQuickVoting(store.quickVotePlan(for: store.contests))
+        caster.failing = [:]
+
+        await store.retryFailed()
+
+        XCTAssertEqual(caster.runs.count, 2)
+        XCTAssertEqual(caster.runs.last?.map(\.normalizedLabel), ["bob"])
+        XCTAssertEqual(caster.runs.last?.first.map { $0.nodes.map(\.proTxHash) }, [Data([2])])
+        XCTAssertEqual(caster.runs.last?.first?.choice, .towards(identityId: "bob-1"))
+        guard case .success? = store.outcome else { return XCTFail("every vote landed now") }
+    }
+
+    /// A masternode Platform refused for having no vote left is not sent
+    /// again by Try again, whatever this device's history says.
+    func testTryAgainAfterARunLeavesANodeWithNoVotesLeftAlone() async {
+        let caster = RunCaster()
+        caster.noVotesLeft = ["alice": [Data([1])]]
+        caster.failing = ["bob": [Data([2])]]
+        let store = await makeRunStore(caster)
+        await store.runQuickVoting(store.quickVotePlan(for: store.contests))
+        caster.noVotesLeft = [:]
+        caster.failing = [:]
+
+        await store.retryFailed()
+
+        XCTAssertEqual(caster.runs.count, 2)
+        XCTAssertEqual(caster.runs.last?.map(\.normalizedLabel), ["bob"], "alice's refused node is not retried")
+    }
+
+    /// AC-20: a masternode missing from the list may have blocked a name, so
+    /// Quick voting sends nothing while the list may be incomplete.
+    func testQuickVotingSendsNothingWhileTheNodeListMayBeIncomplete() async {
+        let caster = RunCaster()
+        let store = await makeRunStore(caster)
+        let plan = store.quickVotePlan(for: store.contests)
+        nodes.resolution = .init(nodes: [node(1), node(2)], mayBeIncomplete: true)
+        await store.refresh()
+
+        let result = await store.runQuickVoting(plan)
+
+        guard case .failure(let reason) = result else { return XCTFail("the run says why it did not start") }
+        XCTAssertEqual(reason, "Some of your masternodes may be missing from this list.")
+        XCTAssertTrue(caster.runs.isEmpty)
+    }
+
+    /// Its Try again too: the failed masternodes are told why, and nothing is sent.
+    func testTryAgainAfterARunSendsNothingWhileTheNodeListMayBeIncomplete() async {
+        let caster = RunCaster()
+        caster.failing = ["bob": [Data([2])]]
+        let store = await makeRunStore(caster)
+        await store.runQuickVoting(store.quickVotePlan(for: store.contests))
+        caster.failing = [:]
+        nodes.resolution = .init(nodes: [node(1), node(2)], mayBeIncomplete: true)
+        await store.refresh()
+
+        await store.retryFailed()
+
+        XCTAssertEqual(caster.runs.count, 1, "no second run")
+        guard case .mixedRun(let run)? = store.outcome else { return XCTFail("the report stays") }
+        XCTAssertEqual(
+            run.reports.flatMap(\.failed).map(\.failure), ["Some of your masternodes may be missing from this list."])
+    }
+
+    /// A request whose date a later read lost is not "Voting has ended": the
+    /// contest is open, only the first request cannot be told.
+    func testTryAgainOnARequestThatLostItsDateSaysWhy() async {
+        let caster = RunCaster()
+        caster.failing = ["bob": [Data([2])]]
+        let store = await makeRunStore(caster)
+        await store.runQuickVoting(store.quickVotePlan(for: store.contests))
+        caster.failing = [:]
+        var bob = dated("bob")
+        bob = DPNSContest(normalizedLabel: "bob", endTime: bob.endTime, hasWinner: false, abstainVotes: 0, lockVotes: 0,
+                          contenders: [DPNSContender(identityId: "bob-1", voteTally: 0, createdAt: nil)])
+        contests.result = .success([dated("alice"), bob])
+        await store.refresh()
+
+        await store.retryFailed()
+
+        XCTAssertEqual(caster.runs.count, 1)
+        guard case .mixedRun(let run)? = store.outcome else { return XCTFail("the report stays") }
+        XCTAssertEqual(run.reports.flatMap(\.failed).map(\.failure), ["Couldn't tell which request came first."])
+    }
+
+    /// Back stays on during a Quick voting run (leaving stops it, ADR-0037),
+    /// and is held while a single vote's gates read the history.
+    func testASingleVoteHoldsTheScreenAndARunDoesNot() async {
+        let store = await makeRunStore(RunCaster())
+        let voting = VotingViewModel(store: store)
+        history.holdNextSingleRead = true
+
+        let read = Task { await store.loadVotedNodesForVote(for: "alice") }
+        await yield(until: { self.history.singleReadHeld })
+        XCTAssertTrue(voting.holdsScreen)
+        history.releaseSingleRead()
+        _ = await read.value
+        XCTAssertFalse(voting.holdsScreen)
+    }
+
+    func testVoteForAllWithAnUnreadableHistoryShowsOnlyTheCardAndNoSheet() async {
+        let caster = RunCaster()
+        let store = await makeRunStore(caster)
+        let voting = VotingViewModel(store: store)
+        history.records = nil
+
+        await voting.quickVoting.start()
+
+        XCTAssertNil(voting.quickVoting.step)
+        XCTAssertEqual(voting.list.message, .historyUnavailable, "the lasting card says voting is paused")
+        XCTAssertNil(voting.toast, "a lasting state is a card, not a toast as well (spec §1)")
+        XCTAssertTrue(caster.runs.isEmpty)
+    }
+
+    func testVoteForAllClearsTheLastVotesToastAtTheTap() async {
+        let store = await makeRunStore(RunCaster())
+        let voting = VotingViewModel(store: store)
+        voting.list.showToast(.voted(username: "earlier"))
+
+        await voting.quickVoting.start()
+
+        XCTAssertNil(voting.toast, "no earlier toast under the sheet, nor after Cancel")
+        voting.quickVoting.cancel()
+        XCTAssertNil(voting.toast)
+    }
+
+    func testARunThatCanSendNothingSaysSoInsteadOfAnEarlierToast() async {
+        let caster = RunCaster()
+        let store = await makeRunStore(caster)
+        let voting = VotingViewModel(store: store)
+        await store.runQuickVoting(store.quickVotePlan(for: store.contests))
+        guard case .success? = store.outcome else { return XCTFail("an earlier run landed") }
+        let plan = store.quickVotePlan(for: [dated("carol")])
+        // The masternodes left the wallet between the sheet and the run.
+        nodes.resolution = .init(nodes: [], mayBeIncomplete: false)
+        store.refreshVotableNodes()
+
+        voting.startQuickVoting(plan)
+        await yield(until: { voting.toast != nil })
+
+        XCTAssertEqual(caster.runs.count, 1, "nothing more is sent")
+        XCTAssertEqual(voting.toast?.message, "The vote was not cast. Please try again.")
+    }
+
+    func testStoppingQuickVotingStopsATryAgainInFlight() async {
+        let caster = RunCaster()
+        caster.failing = ["bob": [Data([2])]]
+        let store = await makeRunStore(caster)
+        let voting = VotingViewModel(store: store)
+        await store.runQuickVoting(store.quickVotePlan(for: store.contests))
+        caster.failing = [:]
+        caster.holdRun = true
+
+        let retry = voting.tryAgainRun()
+        await yield(until: { caster.runs.count == 2 })
+        voting.stopQuickVoting()
+        caster.release()
+        await retry?.value
+
+        XCTAssertTrue(caster.sawCancellation, "leaving or the background stops the retry too")
+    }
+
+    func testTheSingleVoteTryAgainSendsNothingAfterARun() async {
+        let caster = RunCaster()
+        caster.failing = ["bob": [Data([2])]]
+        let store = await makeRunStore(caster)
+        let voting = VotingViewModel(store: store)
+        await store.runQuickVoting(store.quickVotePlan(for: store.contests))
+        caster.failing = [:]
+
+        await voting.retryFailed()
+
+        XCTAssertEqual(caster.runs.count, 1, "a run's Try again goes only through tryAgainRun(), which the screen can stop")
+    }
+
+    func testATryAgainStoppedWhileItRereadsTheHistoryReachesTheRunAlreadyStopped() async {
+        let caster = RunCaster()
+        caster.failing = ["bob": [Data([2])]]
+        let store = await makeRunStore(caster)
+        let voting = VotingViewModel(store: store)
+        await store.runQuickVoting(store.quickVotePlan(for: store.contests))
+        caster.failing = [:]
+        history.holdNextSingleRead = true
+
+        let retry = voting.tryAgainRun()
+        await yield(until: { self.history.singleReadHeld })
+        voting.stopQuickVoting()
+        history.releaseSingleRead()
+        await retry?.value
+
+        // The real caster asks for no PIN and sends nothing for a stopped run
+        // (MasternodeVoteCasterTests.testARunStoppedBeforeItStartsAsksForNoAuthenticationAndSendsNothing).
+        XCTAssertEqual(caster.runs.count, 2)
+        XCTAssertTrue(caster.startedCancelled, "the stop reaches the run before its prompt")
+        XCTAssertFalse(store.isSendingAny)
+    }
+
+    func testPoppingTheVotingScreenStopsTheRun() async {
+        let caster = RunCaster()
+        caster.holdRun = true
+        let store = await makeRunStore(caster)
+        let voting = VotingViewModel(store: store)
+        let screen = UsernameVotingHostingController(viewModel: voting, onClose: {})
+        let navigation = UINavigationController(rootViewController: UIViewController())
+        navigation.pushViewController(screen, animated: false)
+
+        voting.startQuickVoting(store.quickVotePlan(for: store.contests))
+        await yield(until: { caster.runs.count == 1 })
+        // As the edge swipe or VoiceOver's escape gesture does: no back button.
+        navigation.popViewController(animated: false)
+        await yield(until: { screen.parent == nil })
+        caster.release()
+        await yield(until: { !store.isSendingAny })
+
+        XCTAssertTrue(caster.sawCancellation, "leaving the screen any way stops the run")
+    }
+
+    func testARunDoesNotKeepTheScreensModelAliveAndStopsWithIt() async {
+        let caster = RunCaster()
+        caster.holdRun = true
+        let store = await makeRunStore(caster)
+        var voting: VotingViewModel? = VotingViewModel(store: store)
+        weak var leftBehind = voting
+
+        voting?.startQuickVoting(store.quickVotePlan(for: store.contests))
+        await yield(until: { caster.runs.count == 1 })
+        voting = nil
+
+        XCTAssertNil(leftBehind, "a run of a screen that is gone holds no view model")
+        caster.release()
+        await yield(until: { !store.isSendingAny })
+        XCTAssertTrue(caster.sawCancellation, "a screen gone without a pop stops its run too")
+    }
+
+    func testATryAgainDoesNotKeepTheScreensModelAliveAndStopsWithIt() async {
+        let caster = RunCaster()
+        caster.failing = ["bob": [Data([2])]]
+        let store = await makeRunStore(caster)
+        var voting: VotingViewModel? = VotingViewModel(store: store)
+        weak var leftBehind = voting
+        await store.runQuickVoting(store.quickVotePlan(for: store.contests))
+        caster.failing = [:]
+        caster.holdRun = true
+
+        let retry = voting?.tryAgainRun()
+        await yield(until: { caster.runs.count == 2 })
+        voting = nil
+
+        XCTAssertNil(leftBehind, "a Try again of a screen that is gone holds no view model")
+        caster.release()
+        await retry?.value
+        XCTAssertTrue(caster.sawCancellation, "a screen gone without a pop stops its Try again too")
+    }
+
+    func testARunShowsItsToastThenRereadsTheTalliesOnce() async {
+        let caster = RunCaster()
+        let store = await makeRunStore(caster)
+        let voting = VotingViewModel(store: store)
+        let loadsBefore = contests.loads
+        contests.holdNextLoad = true
+
+        voting.startQuickVoting(store.quickVotePlan(for: store.contests))
+        await yield(until: { self.contests.loads == loadsBefore + 1 })
+
+        XCTAssertEqual(contests.loads, loadsBefore + 1, "one re-read of the list for the whole run")
+        XCTAssertEqual(contests.voteStateReads, 0, "no Platform read per name")
+        XCTAssertEqual(voting.toast?.message, VotingToast.quickVotingDone().message, "the toast does not wait for it")
+        XCTAssertFalse(store.isSendingAny, "the pills are free while the tallies are re-read")
+        XCTAssertNil(store.quickVotingProgress)
+        contests.holdNextLoad = false
+        contests.release()
+        await yield(until: { !store.isRefreshing })
+    }
+
+    func testARunWhoseHistoryCannotBeReadAfterwardsKeepsWhatLandedAndPausesVoting() async {
+        let caster = RunCaster()
+        let store = await makeRunStore(caster)
+        let list = VotingListViewModel(store: store, normalizedLabel: { $0 })
+        let plan = store.quickVotePlan(for: store.contests)
+        history.records = nil
+        var historyWrites = 0
+        let watching = store.$voteHistoryByContest.dropFirst().sink { _ in historyWrites += 1 }
+
+        await store.runQuickVoting(plan)
+        watching.cancel()
+
+        XCTAssertEqual(store.votedNodeCount(on: "alice"), 2, "the landed votes are kept though the store is unreadable")
+        XCTAssertEqual(store.votedNodeCount(on: "bob"), 2)
+        XCTAssertEqual(historyWrites, 1, "the run's history is patched in one change, not one list recompute per name")
+        XCTAssertTrue(store.historyUnavailable)
+        XCTAssertFalse(list.canTapPill(approve, on: "alice"), "voting is paused while the history cannot be read")
+
+        history.records = []
+        await store.loadAllVoteHistory()
+
+        XCTAssertFalse(store.historyUnavailable, "the next good read lifts the pause")
+        XCTAssertTrue(list.canTapPill(approve, on: "alice"))
+    }
+
+    func testTryAgainAfterARunEndsWithoutWaitingForTheTallies() async {
+        let caster = RunCaster()
+        caster.failing = ["bob": [Data([2])]]
+        let store = await makeRunStore(caster)
+        let voting = VotingViewModel(store: store)
+        await store.runQuickVoting(store.quickVotePlan(for: store.contests))
+        caster.failing = [:]
+        let loadsBefore = contests.loads
+        contests.holdNextLoad = true
+
+        let returned = Flag()
+        let retry = Task {
+            await voting.tryAgainRun()?.value
+            returned.isSet = true
+        }
+        await yield(until: { self.contests.loads == loadsBefore + 1 })
+        await yield(until: { returned.isSet })
+
+        XCTAssertTrue(returned.isSet, "the result sheet closes while the tallies are re-read")
+        XCTAssertEqual(voting.toast?.message, VotingToast.quickVotingDone().message)
+        XCTAssertFalse(store.isSendingAny)
+        contests.holdNextLoad = false
+        contests.release()
+        await retry.value
+        await yield(until: { !store.isRefreshing })
+    }
+
+    func testARunWhereNothingLandedRereadsNothing() async {
+        let caster = RunCaster()
+        caster.failing = ["alice": [Data([1]), Data([2])], "bob": [Data([1]), Data([2])]]
+        let store = await makeRunStore(caster)
+        let loadsBefore = contests.loads
+
+        await store.runQuickVoting(store.quickVotePlan(for: store.contests))
+
+        XCTAssertEqual(contests.loads, loadsBefore)
+        XCTAssertEqual(contests.voteStateReads, 0, "a name that sent nothing is not read again")
+    }
+
+    func testTheAppGoingToTheBackgroundStopsTheRun() async {
+        let caster = RunCaster()
+        caster.holdRun = true
+        let store = await makeRunStore(caster)
+        // A center of its own: the host app's observers of the real notice stay asleep.
+        let center = NotificationCenter()
+        let voting = VotingViewModel(
+            store: store,
+            appDidEnterBackground: center.publisher(for: UIApplication.didEnterBackgroundNotification)
+                .map { _ in () }.eraseToAnyPublisher())
+
+        voting.startQuickVoting(store.quickVotePlan(for: store.contests))
+        await yield(until: { caster.runs.count == 1 })
+        center.post(name: UIApplication.didEnterBackgroundNotification, object: nil)
+        caster.release()
+        await yield(until: { !store.isSendingAny })
+
+        XCTAssertTrue(caster.sawCancellation, "nothing more is sent once the app leaves the screen")
     }
 
     // MARK: Load states
@@ -1037,8 +2104,9 @@ final class VotingStoreTests: XCTestCase {
         VoteOutcome(node: node, failure: nil, historyRecorded: recorded)
     }
 
+    /// As the caster reports it: "No votes left" is the typed outcome.
     private func refused(_ node: VoterNode, _ reason: String = "No votes left") -> VoteOutcome {
-        VoteOutcome(node: node, failure: reason)
+        reason == "No votes left" ? .noVotesLeft(node) : VoteOutcome(node: node, failure: reason)
     }
 
     /// Two ticked masternodes with an empty, known history on "johndoe".
@@ -1114,6 +2182,34 @@ final class VotingStoreTests: XCTestCase {
         XCTAssertEqual(report.failed.first?.failure, "No votes left")
         XCTAssertEqual(
             caster.calls.first?.nodes.map(\.proTxHash), [b.proTxHash], "nothing is sent from the skipped one")
+        XCTAssertFalse(report.offersTryAgain, "a masternode with no vote left cannot vote on a retry")
+    }
+
+    /// AC-06b on the Quick voting sheet: Try again only while some name's
+    /// failed vote could still land; every failure «No votes left» → Close only.
+    func testTheQuickVotingSheetOffersTryAgainOnlyWhenARetryCanLand() async {
+        let (_, a, b, _) = await makeVotingStore()
+        let outOfVotes = QuickVoteRunReport(reports: [
+            VoteCastReport(normalizedLabel: "alice", choice: .lock, outcomes: [landed(a)]),
+            VoteCastReport(normalizedLabel: "johndoe", choice: .lock, outcomes: [refused(b)]),
+        ])
+        XCTAssertFalse(outOfVotes.offersTryAgain)
+
+        let retriable = QuickVoteRunReport(reports: outOfVotes.reports + [
+            VoteCastReport(
+                normalizedLabel: "bob", choice: .lock, outcomes: [refused(a, "The network did not answer.")]),
+        ])
+        XCTAssertTrue(retriable.offersTryAgain)
+    }
+
+    /// AC-06b: Try again stays while any failed masternode could still land a vote.
+    func testTryAgainIsOfferedWhileAFailureIsNotForNoVotesLeft() async {
+        let (_, a, b, _) = await makeVotingStore()
+        let report = VoteCastReport(
+            normalizedLabel: "johndoe", choice: .lock,
+            outcomes: [refused(a), refused(b, "The vote was not cast. Check your connection and try again.")])
+
+        XCTAssertTrue(report.offersTryAgain)
     }
 
     /// A full refresh that ran while the vote was in flight already counted
@@ -1129,7 +2225,7 @@ final class VotingStoreTests: XCTestCase {
         caster.holdNextCall = true
 
         let send = Task { await store.send(choice: approve, on: johndoe, from: [a]) }
-        while !caster.started { await Task.yield() }
+        await yield(until: { self.caster.started })
         // The caster wrote the fourth cast; a refresh reads it while the cast
         // is still returning.
         history.records = [CastVoteRecord(
@@ -1156,7 +2252,7 @@ final class VotingStoreTests: XCTestCase {
         caster.holdNextCall = true
 
         let send = Task { await store.send(choice: approve, on: johndoe, from: [a]) }
-        while !caster.started { await Task.yield() }
+        await yield(until: { self.caster.started })
         history.records = nil
         caster.release()
         await send.value
@@ -1360,6 +2456,27 @@ final class VotingStoreTests: XCTestCase {
 
     // MARK: Try again after a mixed vote (AC-06b)
 
+    /// A retry Platform refuses for having no vote left keeps that reason's
+    /// type: Try again is no longer offered, and a node with no vote left is
+    /// not sent again.
+    func testTryAgainKeepsANoVotesLeftRefusalAndDoesNotSendItAgain() async {
+        let (store, a, b, johndoe) = await makeVotingStore()
+        caster.script = .outcomes([landed(a), refused(b, "Network error")])
+        await store.send(choice: approve, on: johndoe, from: [a, b])
+
+        caster.script = .outcomes([refused(b)])
+        await store.retryFailed()
+
+        guard case .mixed(let report)? = store.outcome else {
+            return XCTFail("expected .mixed, got \(String(describing: store.outcome))")
+        }
+        XCTAssertTrue(report.failed.allSatisfy(\.hasNoVotesLeft))
+        XCTAssertFalse(report.offersTryAgain)
+
+        await store.retryFailed()
+        XCTAssertEqual(caster.calls.count, 2, "nothing is sent from a node with no vote left")
+    }
+
     func testTryAgainSendsOnlyTheFailedMasternodes() async {
         let (store, a, b, johndoe) = await makeVotingStore()
         caster.script = .outcomes([landed(a), refused(b, "Network error")])
@@ -1523,7 +2640,7 @@ final class VotingStoreTests: XCTestCase {
             return XCTFail("expected .mixed, got \(String(describing: store.outcome))")
         }
         XCTAssertEqual(report.failed.map(\.node.proTxHash), [a.proTxHash])
-        XCTAssertTrue(report.failed.allSatisfy { $0.failure == NSLocalizedString("No votes left", comment: "Voting") })
+        XCTAssertTrue(report.failed.allSatisfy(\.hasNoVotesLeft))
     }
 
     /// SCR-10 «retrying»: the report stays on the sheet while Try again runs.

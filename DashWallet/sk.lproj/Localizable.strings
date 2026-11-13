@@ -3004,9 +3004,6 @@
 /* No comment provided by engineer. */
 "Masternode Update" = "Aktualizácia masternódu";
 
-/* Voting */
-"Masternode voting private key" = "Masternode voting private key";
-
 /* Tools menu */
 "Masternodes" = "Masternódy";
 
@@ -7160,9 +7157,6 @@
 /* Balance info sheet */
 "Your main Dash balance on the Core blockchain — what you send and receive with other wallets, exchanges, and merchants." = "Váš hlavný zostatok Dash v blockchaine Core — to, čo posielate a prijímate s ostatnými peňaženkami, burzami a obchodníkmi.";
 
-/* Voting */
-"Your masternodes already voted this way on %@" = "Your masternodes already voted this way on %@";
-
 /* CoinJoin */
 "Your mixed coins are being prepared for the Shielded balance. Please try again in a few minutes." = "Your mixed coins are being prepared for the Shielded balance. Please try again in a few minutes.";
 
@@ -7351,3 +7345,49 @@
 
 /* Voting */
 "✓ Voted" = "✓ Voted";
+
+/* Voting */
+"Masternode voting key" = "Masternode voting key";
+
+"Already voted this way on %@" = "Already voted this way on %@";
+
+"Link included" = "Link included";
+
+"Can't filter by links right now" = "Can't filter by links right now";
+
+"Some links couldn't be checked. Apply the filter again to retry, or reset it." = "Some links couldn't be checked. Apply the filter again to retry, or reset it.";
+
+"Quick voting stopped before this vote was sent." = "Quick voting stopped before this vote was sent.";
+
+"Quick voting done" = "Quick voting done";
+
+"A masternode of this wallet blocked this name." = "A masternode of this wallet blocked this name.";
+
+"Vote for all" = "Vote for all";
+
+"Quick voting" = "Quick voting";
+
+"None of the filtered usernames can get a vote." = "None of the filtered usernames can get a vote.";
+
+"Vote for all approves %d usernames" = "Vote for all approves %d usernames";
+
+"%d usernames are skipped" = "%d usernames are skipped";
+
+"This is your last vote for some of these usernames. After it, you cannot vote on them again." = "This is your last vote for some of these usernames. After it, you cannot vote on them again.";
+
+"Show all usernames" = "Show all usernames";
+
+"Quick voting partly done" = "Quick voting partly done";
+
+"Some votes were not cast. These usernames were not voted for:" = "Some votes were not cast. These usernames were not voted for:";
+
+"Quick voting… %1$d of %2$d done" = "Quick voting… %1$d of %2$d done";
+
+/* Voting */
+"Couldn't tell which request came first." = "Couldn't tell which request came first.";
+
+/* Voting */
+"Some of your masternodes may be missing from this list." = "Some of your masternodes may be missing from this list.";
+
+/* Voting */
+"Quick voting did not start: another vote is still being sent." = "Quick voting did not start: another vote is still being sent.";

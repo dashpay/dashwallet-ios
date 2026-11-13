@@ -181,6 +181,51 @@ final class VotingFilterTests: XCTestCase {
         XCTAssertNotEqual(filter.title, VotingTypeFilter.notVoted.title)
     }
 
+    // MARK: Only requests with links (AC-07b)
+
+    /// johndoe: 3 requests, the second linked; alice: 2, neither; solo: 1, linked.
+    private let linkFixture = [
+        DPNSContest(normalizedLabel: "johndoe", endTime: nil, hasWinner: false, abstainVotes: 0, lockVotes: 0,
+                    contenders: ["j1", "j2", "j3"].map { DPNSContender(identityId: $0, voteTally: 0) }),
+        DPNSContest(normalizedLabel: "alice", endTime: nil, hasWinner: false, abstainVotes: 0, lockVotes: 0,
+                    contenders: ["a1", "a2"].map { DPNSContender(identityId: $0, voteTally: 0) }),
+        DPNSContest(normalizedLabel: "solo", endTime: nil, hasWinner: false, abstainVotes: 0, lockVotes: 0,
+                    contenders: [DPNSContender(identityId: "s1", voteTally: 0)]),
+    ]
+
+    private func linked(_ contest: DPNSContest, _ contender: DPNSContender) -> Bool {
+        ["j2", "s1"].contains(contender.identityId)
+    }
+
+    func testOnlyRequestsWithLinksKeepsOnlyTheLinkedRequests() {
+        var filter = VotingFilter.default
+        filter.onlyWithLinks = true
+
+        let kept = filter.apply(to: linkFixture, myChoices: { _ in [] }, hasLink: linked)
+
+        XCTAssertEqual(kept.map(\.normalizedLabel), ["johndoe", "solo"], "alice has no linked request")
+        XCTAssertEqual(kept.first?.contenders.map(\.identityId), ["j2"], "johndoe shows only its linked request")
+    }
+
+    func testOnlyDuplicatesWithLinksNeedsSeveralRequestsInTotalAndOneLinked() {
+        var filter = VotingFilter.default
+        filter.onlyWithLinks = true
+        filter.onlyDuplicates = true
+
+        let kept = filter.apply(to: linkFixture, myChoices: { _ in [] }, hasLink: linked)
+
+        XCTAssertEqual(kept.map(\.normalizedLabel), ["johndoe"], "solo has one request in total")
+        XCTAssertEqual(kept.first?.contenders.map(\.identityId), ["j2"])
+    }
+
+    func testWithoutTheLinksFilterLinksChangeNothing() {
+        let kept = VotingFilter.default.apply(to: linkFixture, myChoices: { _ in [] }, hasLink: { _, _ in false })
+
+        XCTAssertEqual(kept.map(\.normalizedLabel), ["johndoe", "alice", "solo"])
+        XCTAssertEqual(kept.first?.contenders.count, 3)
+        XCTAssertFalse(VotingFilter.default.onlyWithLinks)
+    }
+
     func testSortRawValuesAreStable() {
         XCTAssertEqual(ContestSort.allCases.map(\.rawValue), ["dateNewToOld", "dateOldToNew", "votesHighToLow", "votesLowToHigh"])
         XCTAssertEqual(VotingTypeFilter.allCases.map(\.rawValue), ["all", "approved", "notVoted", "hasBlockedVotes"])

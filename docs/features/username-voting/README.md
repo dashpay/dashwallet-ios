@@ -13,6 +13,22 @@ wallets, so iOS follows Android's rules where the design is silent, minus Androi
 
 ## What changed
 
+Stage 5b:
+
+- **Request dates and links.** Each request shows its request date and "Link included" when it has
+  a link; Request details shows the voting period from the earliest request date to the voting end.
+  The dates come from SwiftDashSDK.
+- **"Only requests with links".** The filter keeps only linked requests; while links are looked up
+  the list shows loading, and when a link cannot be told it says it cannot filter by links and
+  offers "Reset filters".
+- **Quick voting.** "Quick voting" in the list's "…" menu approves the request submitted first under every
+  shown username, from every ticked masternode, after one confirmation that names how many are
+  voted for and how many are skipped. Names whose order or voting end cannot be told, closed names,
+  names any masternode of this wallet blocked, and names with no votes left are skipped; an existing
+  block or approve is never replaced. The votes go one after another under one PIN prompt
+  ([ADR-0037](../../adr/0037-cast-quick-voting-sequentially-under-one-authentication.md)); a run
+  with failures lists the usernames not voted for, with "Try again" for those only.
+
 Stage 4:
 
 - **Vote from the pills.** A tap on the block or approve pill sends the vote; the pill shows it is
@@ -69,13 +85,10 @@ Stages 1–3 (this set of PRs):
 - No vote is sent before the owner has confirmed once which masternodes vote, and no block is sent
   without its confirmation.
 - Only one vote sends at a time, and a vote the ticked masternodes already hold is not sent again.
+- Quick voting never replaces an existing block or approve and never guesses which request came first.
 
 ## Not in scope here
 
-Later stage PRs of the same feature:
-
-- Request dates, "Link included", the voting period start, "Only requests with links" and Quick
-  voting (stage 5b, after the platform SDK change for request dates).
 - Votes cast from another device stay invisible: the vote history is local, as on Android.
 
 The screens follow the design canon in [`docs/design-system.md`](../../design-system.md).
