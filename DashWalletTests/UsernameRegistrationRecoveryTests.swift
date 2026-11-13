@@ -1,0 +1,427 @@
+import XCTest
+@testable import dashpay
+import SwiftUI
+import SwiftDashSDK
+
+@MainActor
+final class UsernameRegistrationRecoveryTests: XCTestCase {
+    private enum Failure: Error { case cancelled, contextChanged, unavailable, insufficientCredits }
+
+    func testUncertainTopUpRetainsFundingStageInsteadOfDPNSSubmission() {
+        typealias Coordinator = DWIdentityRegistrationCoordinator
+        let errors: [Error] = [
+            SDKError.stateTransitionResultUnconfirmed("unknown"),
+            PlatformWalletError.transactionBroadcastUnconfirmed("unknown"),
+            PlatformWalletError.shieldedSpendUnconfirmed("unknown"),
+        ]
+        for error in errors {
+            let failure = Coordinator.identityTopUpFailure(error)
+            XCTAssertTrue(failure.isIdentityTopUp,
+                          "Funding did not reach DPNS; its provisional bookmark must be withdrawn")
+            guard case .identityTopUp(let underlying) = failure,
+                  case Coordinator.CoordinatorError.platformWriteUnconfirmed = underlying else {
+                return XCTFail("The funding-stage wrapper must retain the unconfirmed warning")
+            }
+            XCTAssertTrue(failure.localizedDescription.contains("could not be confirmed"))
+        }
+    }
+
+    func testUnconfirmedPurchaseKeepsFormBlockedAfterItsWarning() async {
+        typealias Error = DWIdentityRegistrationCoordinator.CoordinatorError
+        let model = CreateUsernameViewModel.makeForPreview()
+        let outcome = model.purchaseFailureOutcome(Error.purchase(Error.platformWriteUnconfirmed))
+        guard case .submittedUnconfirmed = outcome else { return XCTFail("Expected purchase warning") }
+        XCTAssertTrue(model.purchaseSubmissionUnconfirmed)
+        XCTAssertFalse(model.canPurchaseListedNameDirectly)
+        // A second action stays unknown even without a sale price; it must not reach funding.
+        let retry = await model.purchaseListedUsername(name: "alpha")
+        guard case .submittedUnconfirmed = retry else { return XCTFail("Purchase was reopened") }
+    }
+
+    func testDefinitePurchaseFailureDoesNotLockTheForm() {
+        let model = CreateUsernameViewModel.makeForPreview()
+        let outcome = model.purchaseFailureOutcome(Failure.insufficientCredits)
+        guard case .failure = outcome else { return XCTFail("Expected a definite failure") }
+        XCTAssertFalse(model.purchaseSubmissionUnconfirmed)
+    }
+
+    func testDefiniteTopUpFailureKeepsItsOriginalCause() {
+        let failure = DWIdentityRegistrationCoordinator.identityTopUpFailure(Failure.insufficientCredits)
+        guard case .identityTopUp(let underlying) = failure,
+              case Failure.insufficientCredits = underlying else {
+            return XCTFail("A definite refusal must not become an unconfirmed submission")
+        }
+    }
+
+    func testNameReadinessRequiresSuccessfulReadAndExplicitRetryAfterFailure() throws {
+        let readiness = IdentityNameReadiness()
+        let scope = UsernameRegistrationDraftStore.Scope(network: "testnet", walletId: Data([1]), identityId: Data([2]))
+        let other = UsernameRegistrationDraftStore.Scope(network: "mainnet", walletId: Data([1]), identityId: Data([2]))
+        let first = try XCTUnwrap(readiness.begin(scope))
+        XCTAssertNil(readiness.begin(scope), "Polling must not duplicate the in-flight read")
+        readiness.finish(scope, generation: first, succeeded: false)
+        XCTAssertFalse(readiness.isLoaded(scope))
+        XCTAssertNil(readiness.begin(scope), "Failed reads wait for user retry")
+        readiness.retry()
+        let second = try XCTUnwrap(readiness.begin(scope))
+        readiness.finish(scope, generation: second, succeeded: true)
+        XCTAssertTrue(readiness.isLoaded(scope))
+        XCTAssertFalse(readiness.isLoaded(other))
+        readiness.retry(scope)
+        let background = try XCTUnwrap(readiness.begin(scope, refresh: true))
+        XCTAssertTrue(readiness.isLoaded(scope), "Background refresh preserves known absence")
+        readiness.finish(scope, generation: background, succeeded: false)
+        XCTAssertTrue(readiness.isLoaded(scope))
+    }
+
+    func testRetryReplacesStuckReadAndIgnoresItsLateCompletion() throws {
+        let readiness = IdentityNameReadiness()
+        let scope = UsernameRegistrationDraftStore.Scope(network: "testnet", walletId: Data([1]), identityId: Data([2]))
+        let stuck = try XCTUnwrap(readiness.begin(scope))
+        readiness.retry()
+        let replacement = try XCTUnwrap(readiness.begin(scope))
+        readiness.finish(scope, generation: stuck, succeeded: true)
+        XCTAssertFalse(readiness.isLoaded(scope), "An obsolete success must not establish absence")
+        readiness.finish(scope, generation: replacement, succeeded: true)
+        readiness.finish(scope, generation: stuck, succeeded: false)
+        XCTAssertTrue(readiness.isLoaded(scope), "An obsolete failure must not undo the replacement")
+    }
+
+    func testDraftSurvivesStoreRecreationAndIsScopedToNetworkWalletAndIdentity() throws {
+        let suite = "dpns-recovery-tests-\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let scope = UsernameRegistrationDraftStore.Scope(network: "mainnet", walletId: Data([1]), identityId: Data([2]))
+        let draft = UsernameRegistrationDraftStore.Draft(username: "dash786", temporaryUsername: "dash786-temp")
+        try UsernameRegistrationDraftStore(defaults: defaults).save(draft, for: scope)
+        let restored = UsernameRegistrationDraftStore(defaults: try XCTUnwrap(UserDefaults(suiteName: suite)))
+        XCTAssertEqual(restored.draft(for: scope), draft)
+        for other in [
+            UsernameRegistrationDraftStore.Scope(network: "testnet", walletId: Data([1]), identityId: Data([2])),
+            .init(network: "mainnet", walletId: Data([3]), identityId: Data([2])),
+            .init(network: "mainnet", walletId: Data([1]), identityId: Data([4]))
+        ] {
+            XCTAssertNil(restored.draft(for: other))
+        }
+        restored.clear(for: scope)
+        XCTAssertNil(restored.draft(for: scope))
+    }
+
+    func testRecoverySeparatesUnfinishedPaymentFromExistingIdentity() {
+        XCTAssertFalse(UsernameRegistrationRecovery.none.isPending)
+        XCTAssertNil(UsernameRegistrationRecovery.pendingCoreAssetLock.identityId)
+        let recovery = UsernameRegistrationRecovery.identityNeedsUsername(Data([2]))
+        XCTAssertTrue(recovery.isPending)
+        XCTAssertEqual(recovery.identityId, Data([2]))
+    }
+
+    func testExistingIdentityNeverCallsIdentityCreationOrFunding() async throws {
+        let identityId = Data(repeating: 1, count: 32)
+        var fundingOrCreateCalls = 0
+        var dpnsCalls = 0
+        // The report's 0.09639635 DASH identity balance is sufficient even
+        // when no Core, Platform-address or shielded funds remain.
+        var identityCredits: UInt64 = 9_639_634_780
+        let result = try await UsernameRegistrationRecoveryFlow.route(
+            identityId: identityId,
+            resume: { id in
+                XCTAssertEqual(id, identityId)
+                _ = try await UsernameRegistrationRecoveryFlow.run(
+                    authorize: {}, validateContext: {}, lookup: { .available },
+                    register: { dpnsCalls += 1; identityCredits -= 1_000 })
+                return id
+            },
+            create: { fundingOrCreateCalls += 1; XCTFail("Must not create or fund an identity"); return Data() })
+        XCTAssertEqual(result, identityId)
+        XCTAssertEqual(fundingOrCreateCalls, 0)
+        XCTAssertEqual(dpnsCalls, 1)
+        XCTAssertEqual(identityCredits, 9_639_633_780)
+    }
+
+    func testResumeFailureCannotFallThroughToIdentityCreation() async {
+        do {
+            _ = try await UsernameRegistrationRecoveryFlow.route(
+                identityId: Data([1]), resume: { _ in throw Failure.insufficientCredits },
+                create: { XCTFail("Failed DPNS must never fall back to funding"); return Data() })
+            XCTFail("Expected DPNS error")
+        } catch Failure.insufficientCredits {} catch { XCTFail("Unexpected \(error)") }
+    }
+
+    func testAvailableNameAuthorizesChecksContextThenSubmitsOnce() async throws {
+        var events: [String] = []
+        let result = try await UsernameRegistrationRecoveryFlow.run(
+            authorize: { events.append("auth") },
+            validateContext: { events.append("context") },
+            lookup: { events.append("lookup"); return .available },
+            register: { events.append("dpns") })
+        XCTAssertEqual(result, .available)
+        XCTAssertEqual(events, ["auth", "context", "lookup", "context", "dpns"])
+    }
+
+    func testContextSwitchDuringSuccessfulBroadcastDoesNotReportFailure() async throws {
+        var current = true
+        var broadcasts = 0
+        let result = try await UsernameRegistrationRecoveryFlow.run(
+            authorize: {},
+            validateContext: { if !current { throw Failure.contextChanged } },
+            lookup: { .available },
+            register: { broadcasts += 1; current = false })
+        XCTAssertEqual(result, .available)
+        XCTAssertEqual(broadcasts, 1)
+    }
+
+    func testOwnedAndVotingNamesReconcileWithoutBroadcasting() async throws {
+        for state in [UsernameRegistrationRecoveryFlow.NameState.owned, .voting] {
+            let result = try await UsernameRegistrationRecoveryFlow.run(
+                authorize: {}, validateContext: {}, lookup: { state },
+                register: { XCTFail("Already submitted names must not spend credits again") })
+            XCTAssertEqual(result, state)
+        }
+    }
+
+    func testAuthenticationCancellationNeverQueriesOrBroadcasts() async {
+        do {
+            _ = try await UsernameRegistrationRecoveryFlow.run(
+                authorize: { throw Failure.cancelled }, validateContext: {},
+                lookup: { XCTFail("Cancelled authentication"); return .available },
+                register: { XCTFail("Cancelled authentication") })
+            XCTFail("Expected cancellation")
+        } catch Failure.cancelled {} catch { XCTFail("Unexpected \(error)") }
+    }
+
+    func testWalletOrNetworkSwitchAfterAuthenticationOrLookupPreventsBroadcast() async {
+        for failAtCheck in [1, 2] {
+            var checks = 0
+            do {
+                _ = try await UsernameRegistrationRecoveryFlow.run(
+                    authorize: {},
+                    validateContext: {
+                        checks += 1
+                        if checks == failAtCheck { throw Failure.contextChanged }
+                    },
+                    lookup: { .available }, register: { XCTFail("Stale context") })
+                XCTFail("Expected context change")
+            } catch Failure.contextChanged {} catch { XCTFail("Unexpected \(error)") }
+        }
+    }
+
+    func testFailedOrUnavailableLookupNeverImpliesAvailability() async {
+        for error in [Failure.unavailable, .contextChanged] {
+            do {
+                _ = try await UsernameRegistrationRecoveryFlow.run(
+                    authorize: {}, validateContext: {}, lookup: { throw error },
+                    register: { XCTFail("A failed read must not spend credits") })
+                XCTFail("Expected lookup error")
+            } catch { }
+        }
+    }
+
+    func testCompletedPurchaseDefersReconciliationAfterContextSwitch() {
+        var reconciliations = 0
+        XCTAssertFalse(UsernamePurchaseCompletion.reconcileIfCurrent(
+            isCurrent: { false }, reconcile: { reconciliations += 1 }))
+        XCTAssertEqual(reconciliations, 0)
+        XCTAssertTrue(UsernamePurchaseCompletion.reconcileIfCurrent(
+            isCurrent: { true }, reconcile: { reconciliations += 1 }))
+        XCTAssertEqual(reconciliations, 1)
+    }
+
+    func testInsufficientCreditsReturnsErrorWithoutAutomaticRetryOrFunding() async {
+        var broadcasts = 0
+        do {
+            _ = try await UsernameRegistrationRecoveryFlow.run(
+                authorize: {}, validateContext: {}, lookup: { .available },
+                register: { broadcasts += 1; throw Failure.insufficientCredits })
+            XCTFail("Expected insufficient credits")
+        } catch Failure.insufficientCredits {} catch { XCTFail("Unexpected \(error)") }
+        XCTAssertEqual(broadcasts, 1)
+    }
+
+    /// Wallet deletion drops that wallet's drafts under every network scope —
+    /// a devnet scope name may itself contain dots — and no other wallet's.
+    func testClearingAWalletsDraftsLeavesOtherWalletsAlone() throws {
+        let suite = "UsernameRegistrationDraftCleanup"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defaults.removePersistentDomain(forName: suite)
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let store = UsernameRegistrationDraftStore(defaults: defaults)
+        let draft = UsernameRegistrationDraftStore.Draft(username: "alice", temporaryUsername: nil)
+        let removed = Data([0xaa, 0x11]), kept = Data([0xbb, 0x22])
+        let removedScopes = ["testnet", "devnet-a.b"].map {
+            UsernameRegistrationDraftStore.Scope(network: $0, walletId: removed, identityId: Data([1]))
+        }
+        // The removed wallet's id as another wallet's identity id is not a match.
+        let keptScope = UsernameRegistrationDraftStore.Scope(network: "testnet", walletId: kept, identityId: removed)
+        try (removedScopes + [keptScope]).forEach { try store.save(draft, for: $0) }
+
+        store.clearAll(walletIdHex: "aa11")
+
+        XCTAssertTrue(removedScopes.allSatisfy { store.draft(for: $0) == nil })
+        XCTAssertEqual(store.draft(for: keptScope), draft)
+    }
+}
+
+extension UsernameRegistrationRecoveryTests {
+    private func unnamedIdentitySnapshot() -> DWCurrentUserIdentityInfo.Snapshot {
+        .init(namesAreLoaded: true, balanceCredits: 9_639_634_780,
+              identityId: Data(repeating: 1, count: 32), identityIdHex: String(repeating: "01", count: 32),
+              username: nil, usernames: [], displayName: nil, avatarURL: nil, publicMessage: nil)
+    }
+
+    func testRestoredCompanionDraftSurvivesOpeningConfirmation() {
+        let field = TemporaryUsernameFieldModel(acceptsOwnedName: true)
+        field.restoreDraft("my-custom-777", for: "alpha")
+        field.seedSuggestion(from: "alpha")
+        XCTAssertEqual(field.trimmedText, "my-custom-777")
+        field.seedSuggestion(from: "beta")
+        XCTAssertEqual(field.trimmedText, "beta2")
+    }
+
+    func testLoadingIdentityDoesNotOfferRegistrationAndLoadedIdentityDoes() {
+        var snapshot = unnamedIdentitySnapshot()
+        snapshot.isLoading = true
+        XCTAssertFalse(snapshot.needsUsername)
+        snapshot.isLoading = false
+        XCTAssertTrue(snapshot.needsUsername)
+        XCTAssertEqual(snapshot.registrationRecovery, .identityNeedsUsername(snapshot.identityId!))
+        snapshot.pendingContestedName = "dash786"
+        XCTAssertFalse(snapshot.needsUsername)
+    }
+
+    func testUnloadedNamesDoNotImplyUnnamedIdentity() {
+        var snapshot = unnamedIdentitySnapshot()
+        snapshot.namesAreLoaded = false
+        XCTAssertFalse(snapshot.needsUsername)
+        XCTAssertEqual(snapshot.registrationRecovery, .none)
+        snapshot.namesAreLoaded = true
+        XCTAssertTrue(snapshot.needsUsername)
+    }
+
+    func testUnknownBalanceIsNotKnownZero() {
+        XCTAssertNil(DWCurrentUserIdentityInfo.cachedBalanceCredits(0))
+        XCTAssertNil(DWCurrentUserIdentityInfo.cachedBalanceCredits(nil))
+        XCTAssertEqual(DWCurrentUserIdentityInfo.cachedBalanceCredits(42), 42)
+        var snapshot = unnamedIdentitySnapshot()
+        snapshot.balanceCredits = nil
+        XCTAssertFalse(snapshot.hasKnownZeroBalance)
+        snapshot.balanceCredits = 0
+        XCTAssertTrue(snapshot.hasKnownZeroBalance)
+        snapshot.balanceCredits = 9_639_634_780
+        XCTAssertFalse(snapshot.hasKnownZeroBalance)
+    }
+
+    /// A recovered paid lock funds the identity and nothing more: when the
+    /// name asked for costs more than the lock left, the run stops before any
+    /// funding call; a lock that covers the name completes without one; and
+    /// the retry — no longer a recovery — honours the amount it confirmed.
+    func testRecoveredLockNeverAuthorizesANewTopUp() {
+        typealias Coordinator = DWIdentityRegistrationCoordinator
+        let confirmed: UInt64 = 25_000_000
+        let plainLockCredits: UInt64 = 2_800_000_000
+
+        // A 0.03 lock recovered, then a contested name: short, and not authorized.
+        let contestedNeed = Coordinator.identityTopUpDuffs(
+            requiredCredits: Coordinator.requiredRegistrationCredits(
+                isContested: true, nameCount: 1,
+                contestFundCredits: ContestedUsernameFee.Amounts.legacy.fundCredits),
+            heldCredits: plainLockCredits)
+        XCTAssertGreaterThan(contestedNeed, 0)
+        let recovered = Coordinator.topUpAuthorization(confirmedDuffs: confirmed, recoveredPaidLock: true)
+        XCTAssertNil(recovered)
+        XCTAssertEqual(Coordinator.topUpDecision(neededDuffs: contestedNeed, authorizedDuffs: recovered), .notConfirmed)
+
+        // The same lock for the plain name it was paid for: nothing to top up.
+        let plainNeed = Coordinator.identityTopUpDuffs(
+            requiredCredits: Coordinator.requiredRegistrationCredits(
+                isContested: false, nameCount: 1,
+                contestFundCredits: ContestedUsernameFee.Amounts.legacy.fundCredits),
+            heldCredits: plainLockCredits)
+        XCTAssertEqual(plainNeed, 0)
+        XCTAssertEqual(Coordinator.topUpDecision(neededDuffs: plainNeed, authorizedDuffs: recovered), .notNeeded)
+
+        // The retry, with the shortfall confirmed: within the ceiling it runs,
+        // above it it stops, and an unconfirmed (0) amount authorizes nothing.
+        let retry = Coordinator.topUpAuthorization(confirmedDuffs: confirmed, recoveredPaidLock: false)
+        XCTAssertEqual(retry, confirmed)
+        XCTAssertEqual(Coordinator.topUpDecision(neededDuffs: contestedNeed, authorizedDuffs: retry), .proceed)
+        XCTAssertEqual(
+            Coordinator.topUpDecision(neededDuffs: confirmed + 1, authorizedDuffs: retry),
+            .exceedsConfirmed(confirmedDuffs: confirmed))
+        XCTAssertEqual(Coordinator.topUpDecision(neededDuffs: contestedNeed, authorizedDuffs: 0), .notConfirmed)
+    }
+
+    /// A resolved contest retires the handoff record of that request and no
+    /// other: left behind after a restart, a matching record made the row say
+    /// "interrupted" for a request whose outcome was already known.
+    func testResolvedContestRetiresOnlyItsOwnHandoffRecord() {
+        let prefs = UsernamePrefs.shared
+        let saved = prefs.inFlightRegistrationUsername
+        defer { prefs.inFlightRegistrationUsername = saved }
+
+        // Confirmed bookmark resolved, handoff marker for the same name unconsumed.
+        prefs.inFlightRegistrationUsername = "Alice"
+        prefs.retireInFlightRegistration(matching: "alice.dash")
+        XCTAssertNil(prefs.inFlightRegistrationUsername)
+
+        // Another request is in flight when the contest resolves.
+        prefs.inFlightRegistrationUsername = "bob"
+        prefs.retireInFlightRegistration(matching: "alice")
+        XCTAssertEqual(prefs.inFlightRegistrationUsername, "bob")
+    }
+
+    /// Removing a wallet drops its registration reports on every network and
+    /// leaves another wallet's alone; the full wipe drops them all. A wallet
+    /// id is derived from the phrase, so a survivor would be read back by the
+    /// same wallet re-imported.
+    func testWalletDeletionClearsOnlyThatWalletsRegistrationRecords() throws {
+        let suite = "UsernameRegistrationRecordCleanup"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defaults.removePersistentDomain(forName: suite)
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let bases = UsernamePrefs.registrationRecordKeys
+        XCTAssertEqual(bases.count, 5)
+        let removed = Data([0xaa, 0x11]), kept = Data([0xbb, 0x22])
+        func keys(_ wallet: Data) -> [String] {
+            WalletEnvironment.NetworkKind.allCases.flatMap { network in
+                bases.map {
+                    JoinDashPayDismissalScope.scopedKey(
+                        $0, networkRawValue: network.rawValue, walletIdHex: wallet.hexEncodedString())
+                }
+            }
+        }
+        (keys(removed) + keys(kept)).forEach { defaults.set("x", forKey: $0) }
+        let drafts = UsernameRegistrationDraftStore(defaults: defaults)
+        let draft = UsernameRegistrationDraftStore.Draft(username: "alice", temporaryUsername: nil)
+        func scope(_ wallet: Data) -> UsernameRegistrationDraftStore.Scope {
+            .init(network: "testnet", walletId: wallet, identityId: Data([1]))
+        }
+        try drafts.save(draft, for: scope(removed))
+        try drafts.save(draft, for: scope(kept))
+        // Not a registration report: neither cleanup touches it.
+        let dismissal = JoinDashPayDismissalScope.storageKey(networkRawValue: 1, walletIdHex: removed.hexEncodedString())
+        defaults.set(true, forKey: dismissal)
+
+        UsernamePrefs.clearRegistrationRecords(walletIdHex: removed.hexEncodedString(), defaults: defaults)
+        XCTAssertTrue(keys(removed).allSatisfy { defaults.object(forKey: $0) == nil })
+        XCTAssertNil(drafts.draft(for: scope(removed)))
+        XCTAssertTrue(keys(kept).allSatisfy { defaults.object(forKey: $0) != nil })
+        XCTAssertEqual(drafts.draft(for: scope(kept)), draft)
+
+        UsernamePrefs.clearAllRegistrationRecords(defaults: defaults)
+        XCTAssertTrue(keys(kept).allSatisfy { defaults.object(forKey: $0) == nil })
+        XCTAssertNil(drafts.draft(for: scope(kept)))
+        XCTAssertNotNil(defaults.object(forKey: dismissal))
+    }
+
+    func testConfirmedNameDoesNotOfferRegistrationRecovery() {
+        let snapshot = DWCurrentUserIdentityInfo.Snapshot(
+            balanceCredits: 0, identityId: Data([1]), identityIdHex: "01",
+            username: "confirmed-name", usernames: ["confirmed-name"],
+            displayName: nil, avatarURL: nil, publicMessage: nil)
+        XCTAssertFalse(snapshot.needsUsername)
+        XCTAssertEqual(snapshot.registrationRecovery, .none)
+    }
+
+}

@@ -59,7 +59,9 @@ struct BIP70URI {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let colon = trimmed.firstIndex(of: ":") else { return nil }
 
-        // Scheme normalization (pay: → dash:).
+        // Scheme normalization (pay: → dash:). `dashwallet:` is only the plain `dash:` alias here;
+        // the `dashwallet://pay=` deep-link form is not parsed (`pay=` stays in the address) —
+        // see `ParsedPaymentURI.deepLinkPaymentString`.
         switch trimmed[..<colon].lowercased() {
         case "pay", "dash", "dashwallet": scheme = "dash"
         case "bitcoin": scheme = "bitcoin"
@@ -112,7 +114,8 @@ struct BIP70URI {
             case "label", "req-label": label = value
             case "message", "req-message": message = value
             case "r", "req-r": r = URL(string: value)
-            case "sender", "req-sender": callbackScheme = value
+            // Not a scheme an app can own → no callback; the rest of the link still stands.
+            case "sender", "req-sender": callbackScheme = CallbackScheme.validated(value)
             case "user", "req-user": dashpayUsername = value
             case "currency", "req-currency": fiatCurrencyCode = value
             case "local", "req-local": fiatAmount = (value as NSString).floatValue

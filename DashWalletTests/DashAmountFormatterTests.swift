@@ -68,12 +68,13 @@ final class MayaAmountFormatterTests: XCTestCase {
         )
     }
 
-    func testMayaCoinFormatterKeepsEightDecimalsAndUsesLocalizedSeparators() {
+    /// Display rounds to five decimals (half-up); the localized separator follows the locale.
+    func testMayaCoinFormatterRoundsToFiveDecimalsAndUsesLocalizedSeparators() {
         let enLocale = Locale(identifier: "en_US")
         let deLocale = Locale(identifier: "de_DE")
         let amount = Decimal(string: "0.12345678")!
 
-        XCTAssertEqual(MayaAmountFormatter.coinDisplayString(amount, locale: enLocale), "0.12345678")
-        XCTAssertEqual(MayaAmountFormatter.coinDisplayString(amount, locale: deLocale), "0,12345678")
+        XCTAssertEqual(MayaAmountFormatter.coinDisplayString(amount, locale: enLocale), "0.12346")
+        XCTAssertEqual(MayaAmountFormatter.coinDisplayString(amount, locale: deLocale), "0,12346")
     }
 }

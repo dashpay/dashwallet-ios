@@ -174,7 +174,8 @@ struct TransferEndpointCards: View {
             id: "identity",
             icon: display.icon,
             title: display.title,
-            dashBalance: display.dashBalance,
+            dashBalance: display.dashBalance ?? 0,
+            trailingView: display.dashBalance == nil ? AnyView(Text("—")) : nil,
             onTap: onTap)
     }
 
@@ -193,7 +194,8 @@ struct TransferEndpointCards: View {
             id: network,
             icon: display.icon,
             title: display.title,
-            dashBalance: display.dashBalance,
+            dashBalance: display.dashBalance ?? 0,
+            trailingView: display.dashBalance == nil ? AnyView(Text("—")) : nil,
             onTap: onTap)
     }
 

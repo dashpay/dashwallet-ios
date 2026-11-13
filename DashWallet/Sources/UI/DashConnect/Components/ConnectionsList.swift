@@ -20,46 +20,45 @@
 import DashUIKit
 import SwiftUI
 
-/// The populated state: every connection stacked in one card. Rows carry their
-/// own status-specific content, so this only owns the card chrome and scroll.
+/// The apps of one tab of the Connections page, in one card.
 struct ConnectionsList: View {
-    let connections: [DAppConnection]
-    let onScanQR: () -> Void
-    let onMockScan: () -> Void
-    let onDisconnect: (DAppConnection) -> Void
+    let items: [ConnectionSheetItem]
+    let onOpen: (ConnectionSheetItem) -> Void
+    let onDisconnect: (ConnectionSheetItem) -> Void
+    let onRemove: (ConnectionSheetItem) -> Void
+    let onReconnect: () -> Void
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 2) {
-                ForEach(connections) { connection in
-                    ConnectionRow(
-                        connection: connection,
-                        onPrimaryAction: onScanQR,
-                        onMockScan: onMockScan,
-                        onDisconnect: { onDisconnect(connection) }
-                    )
-                }
+        VStack(spacing: 2) {
+            ForEach(items) { item in
+                ConnectionRow(
+                    item: item, onOpen: { onOpen(item) },
+                    onDisconnect: { onDisconnect(item) },
+                    onRemove: { onRemove(item) },
+                    onReconnect: onReconnect)
             }
-            .modifier(MenuViewModifier())
         }
+        .modifier(MenuViewModifier())
     }
 }
 
-#Preview {
+#Preview("Several apps") {
     ConnectionsList(
-        connections: ConnectionStatus.allCases.map { status in
-            DAppConnection(
-                id: status.rawValue,
-                name: "Example App",
-                url: "https://example.org",
-                status: status,
-                updatedAt: Date()
-            )
+        items: ConnectionStatus.allCases.map { status in
+            ConnectionSheetItem(
+                id: "\(status)", name: "Example App \(status)", url: "example.org", status: status,
+                connection: nil, entry: nil, scope: nil)
         },
-        onScanQR: {},
-        onMockScan: {},
-        onDisconnect: { _ in }
-    )
+        onOpen: { _ in }, onDisconnect: { _ in }, onRemove: { _ in }, onReconnect: {})
+    .padding(20)
+    .background(Color.primaryBackground)
+}
+
+#Preview("One app") {
+    ConnectionsList(
+        items: [ConnectionSheetItem(
+            id: "one", name: "Yappr", url: "yap.pr", status: .active, connection: nil, entry: nil, scope: nil)],
+        onOpen: { _ in }, onDisconnect: { _ in }, onRemove: { _ in }, onReconnect: {})
     .padding(20)
     .background(Color.primaryBackground)
 }

@@ -4,14 +4,14 @@
 <dict>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
-		<string>org.dashcore.dashsync.backgroundblocksync</string>
+		<string>org.dashfoundation.dashpay.refresh</string>
 	</array>
 	<key>CALL_BACK_URL_SCHEME</key>
 	<string>$(CALL_BACK_URL_SCHEME)</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Dash</string>
+	<string>DashPay</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
@@ -107,6 +107,27 @@
 				<string>dashid</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>dashpay</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>dashpay</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>org.dashfoundation.dash.dashconnect</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>dash-key</string>
+				<string>dash-st</string>
+			</array>
+		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
@@ -144,6 +165,23 @@
 	<string>Used to save media data</string>
 	<key>REDIRECT_URI</key>
 	<string>$(REDIRECT_URI)</string>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneConfigurationName</key>
+					<string>Default Configuration</string>
+					<key>UISceneDelegateClassName</key>
+					<string>SceneDelegate</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>

@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import Combine
 import UIKit
 import SwiftUI
 import DashUIKit
@@ -111,6 +112,24 @@ class TXDetailViewController: BaseTxDetailsViewController {
     var currentSnapshot: NSDiffableDataSourceSnapshot<Section, Item>! = nil
     /// Single-flight guard for the stuck-lock retry action.
     private var isRetryingAssetLock = false
+    private var inFlightLocksObservation: AnyCancellable?
+    /// What `viewDidLoad` subscribes to for rebuilding the recovery rows;
+    /// tests replace it before the view loads.
+    var recoveryInputs: AnyPublisher<TxDetailModel.RecoveryInput, Never> = TxDetailModel.recoveryInputChanges()
+
+    /// Handles VoiceOver's escape gesture when set. Escape travels up the UIKit responder
+    /// chain, so a SwiftUI host cannot answer it with `.accessibilityAction(.escape)`.
+    /// An escape that rises from a controller this one presented is left to the default
+    /// handling, so it closes that controller and not this screen. Returns whether it acted;
+    /// when it did not, the default handling runs.
+    var onAccessibilityEscape: (() -> Bool)?
+
+    override func accessibilityPerformEscape() -> Bool {
+        guard let onAccessibilityEscape, presentedViewController == nil, onAccessibilityEscape() else {
+            return super.accessibilityPerformEscape()
+        }
+        return true
+    }
 
     enum Section: CaseIterable {
         case header
@@ -181,6 +200,16 @@ class TXDetailViewController: BaseTxDetailsViewController {
         }
     }
 
+    /// The contact whose profile a host already sits on, and how to go back
+    /// to it: that contact's row goes back instead of stacking a second
+    /// profile on top.
+    struct ContactReturn {
+        let identityId: Data
+        let goBack: () -> Void
+    }
+
+    var contactReturn: ContactReturn?
+
     @objc
     init(model: TxDetailModel) {
         self.model = model
@@ -217,6 +246,20 @@ class TXDetailViewController: BaseTxDetailsViewController {
         // block explorer for it; the row reads "Paid by sender" until (and
         // unless) an answer lands.
         model.resolveExplorerFee { [weak self] in
+            self?.reloadDataSource()
+        }
+
+        // The rows are rebuilt on the next main-queue turn after a recovery
+        // input changes.
+        inFlightLocksObservation = recoveryInputs
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.reloadDataSource()
+            }
+
+        // A swap order shown before its Dash transaction exists changes status while the
+        // screen is up.
+        model.observeSwapOrderPlaceholder { [weak self] in
             self?.reloadDataSource()
         }
     }
@@ -276,7 +319,23 @@ extension TXDetailViewController {
     /// spans the whole recovery, so the HUD honestly covers a
     /// several-minute worst case rather than claiming early success.
     private func retryStuckAssetLock() {
-        guard !isRetryingAssetLock, let retry = model.stuckAssetLockRetry else { return }
+        guard !isRetryingAssetLock else { return }
+        // `currentRetry`, not `stuckAssetLockRetry`: a tap on a row built
+        // just before a removal began must not retry during its reload.
+        guard let retry = model.currentRetry else {
+            // The row was built before a transfer started consuming this
+            // lock: say so and drop the row rather than ignore the tap.
+            if model.isAssetLockRetryInFlight {
+                presentDashUIKitToast(
+                    style: .info,
+                    message: ShieldedTransferCoordinator.CoordinatorError.assetLockInFlight.errorDescription ?? "")
+                reloadDataSource()
+            } else if ShieldedAssetLocksInFlight.shared.isRemovalInProgress {
+                presentDashUIKitToast(style: .info, message: ShieldedAssetLocksInFlight.walletReloadingMessage)
+                reloadDataSource()
+            }
+            return
+        }
         isRetryingAssetLock = true
         let txidWire = model.transaction.txHashData
         view.dw_showProgressHUD(withMessage: NSLocalizedString("Retrying transfer…", comment: "Asset-lock retry in progress"))
@@ -293,14 +352,24 @@ extension TXDetailViewController {
                     fundingTypeRaw: retry.fundingTypeRaw,
                     txidWire: txidWire,
                     vout: retry.vout)
+                AssetLockRetryLog.logOutcome(
+                    "outcome=\(outcome)",
+                    event: "single",
+                    txidWire: txidWire,
+                    vout: retry.vout,
+                    fundingTypeRaw: retry.fundingTypeRaw,
+                    statusBeforeRaw: retry.statusRaw)
+                self?.model.recordRecoveryOutcome(outcome)
                 switch outcome {
                 case .completed:
                     toast = (NSLocalizedString("Transfer completed", comment: "Asset-lock retry finished"), .success)
                 case .completionUnconfirmed:
                     // Platform said the outpoint is already spent, but that
-                    // report is not quorum-authenticated. Nothing is left to
-                    // retry; say only that, so the wallet never reports a
-                    // completion it did not witness.
+                    // report is not quorum-authenticated. Say only what was
+                    // reported, so the wallet never claims a completion it
+                    // did not witness. The row keeps its retry on purpose:
+                    // each tap is an explicit, authorized recheck of this
+                    // same outpoint.
                     toast = (NSLocalizedString("Already spent — nothing to transfer", comment: "Asset-lock retry found the lock already consumed"), .info)
                 case .submittedAwaitingSync:
                     // Accepted, result not readable yet. Re-submitting risks a
@@ -310,8 +379,30 @@ extension TXDetailViewController {
                 }
             } catch DWIdentityAuthorizer.AuthError.cancelled {
                 // Backing out of the PIN prompt is not an error state.
+                AssetLockRetryLog.logOutcome(
+                    "outcome=cancelled",
+                    event: "single",
+                    txidWire: txidWire,
+                    vout: retry.vout,
+                    fundingTypeRaw: retry.fundingTypeRaw,
+                    statusBeforeRaw: retry.statusRaw)
+            } catch AssetLockRecoveryService.RecoveryError.inProgress(let message) {
+                // Refused because another attempt is consuming the lock or a
+                // removal is reloading the wallet: nothing failed.
+                // The coordinator logged the refusal.
+                toast = (message, .info)
             } catch {
                 failure = error
+                // The alert shows only the text; the log keeps the typed case.
+                // The failure store is written where the network call threw,
+                // not here, so a refusal cannot overwrite the stored reason.
+                AssetLockRetryLog.logFailure(
+                    error,
+                    event: "single",
+                    txidWire: txidWire,
+                    vout: retry.vout,
+                    fundingTypeRaw: retry.fundingTypeRaw,
+                    statusBeforeRaw: retry.statusRaw)
             }
 
             guard let self else { return }
@@ -368,16 +459,31 @@ extension TXDetailViewController {
                 self?.view.dw_hideProgressHUD()
             }
             do {
-                let rescanArmed = try await UnconfirmedTransactionRemover().remove(txidWire: txidWire)
-                // Never claim the rescan safety net ran when it didn't —
-                // point at the manual Rescan Filters action instead.
-                self?.view.dw_showInfoHUD(withText: rescanArmed
-                    ? NSLocalizedString("Transaction removed", comment: "Remove never-accepted transaction: success")
-                    : NSLocalizedString("Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status", comment: "Remove never-accepted transaction: removed but the recovery rescan did not arm"))
-                // The row this sheet describes no longer exists.
-                self?.closeAction()
+                let outcome = try await UnconfirmedTransactionRemover().remove(txidWire: txidWire)
+                switch outcome {
+                case .rescanArmed:
+                    self?.view.dw_showInfoHUD(withText: NSLocalizedString("Transaction removed", comment: "Remove never-accepted transaction: success"))
+                    // The row this sheet describes no longer exists.
+                    self?.closeAction()
+                case .rescanUnavailable:
+                    // Never claim the rescan safety net ran when it didn't.
+                    self?.view.dw_showInfoHUD(withText: NSLocalizedString("Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status", comment: "Remove never-accepted transaction: removed but the recovery rescan did not arm"))
+                    self?.closeAction()
+                case .runtimeStopped:
+                    // A HUD would not survive this: it is added to this
+                    // controller's own view, which `closeAction` tears down.
+                    // The stopped wallet needs an acknowledged alert that
+                    // dismisses the sheet only once the user has read it —
+                    // and it must name BOTH steps, because restarting the
+                    // runtime does not replay this removal's rescan.
+                    self?.presentRemovalLeftWalletStopped()
+                }
             } catch UnconfirmedTransactionRemover.RemovalError.transactionOnChain {
                 self?.presentRemovalRefused()
+            } catch UnconfirmedTransactionRemover.RemovalError.removalInProgress {
+                // Another removal is reloading the wallet: nothing failed.
+                self?.presentDashUIKitToast(style: .info, message: ShieldedAssetLocksInFlight.walletReloadingMessage)
+                self?.reloadDataSource()
             } catch {
                 let alert = UIAlertController(
                     title: NSLocalizedString("Couldn't remove the transaction", comment: "Remove never-accepted transaction: failure title"),
@@ -387,6 +493,24 @@ extension TXDetailViewController {
                 self?.present(alert, animated: true)
             }
         }
+    }
+
+    /// The rows are deleted, but reloading the runtime left the wallet
+    /// stopped (Core SPV is torn down when the Platform side fails to come
+    /// back). Both recovery steps are spelled out: restarting the runtime
+    /// does NOT replay the rescan this removal skipped, so the transaction's
+    /// on-chain safety check still has to be run by hand afterwards. The
+    /// sheet is dismissed only after the user acknowledges.
+    private func presentRemovalLeftWalletStopped() {
+        let alert = UIAlertController(
+            title: NSLocalizedString("Transaction removed, but the wallet stopped", comment: "Remove never-accepted transaction: removed but the runtime reload left the wallet stopped"),
+            message: NSLocalizedString("The transaction was deleted from this device. Reloading the wallet didn't finish, so the wallet is stopped and the rescan that double-checks the blockchain never ran.\n\nRestart the wallet — reopen the app, or tap Sync Now in Sync Info — and then run Rescan Filters in Core Sync Status. Restarting alone does not repeat the rescan.", comment: "Remove never-accepted transaction: both recovery steps after a failed runtime reload"),
+            preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel) { [weak self] _ in
+            // The row this sheet describes no longer exists.
+            self?.closeAction()
+        })
+        present(alert, animated: true)
     }
 
     /// The explorer knows the transaction, either from the mempool or a
@@ -510,9 +634,21 @@ extension TXDetailViewController {
         let date = model.date
         let taxCategory = model.taxCategory
 
+        // A swap order shown before its Dash transaction exists has nothing to categorise for
+        // tax, no raw transaction to inspect and nothing to look up on a block explorer, so
+        // those sections are left out.
+        let hasTransaction = model.swapOrderPlaceholder == nil
+
         currentSnapshot = NSDiffableDataSourceSnapshot<Section, Item>()
-        currentSnapshot.appendSections([.header, .info, .taxCategory, .rawTransaction, .explorer])
+        currentSnapshot.appendSections(hasTransaction
+            ? [.header, .info, .taxCategory, .rawTransaction, .explorer]
+            : [.header, .info])
         currentSnapshot.appendItems([.header], toSection: .header)
+        if !hasTransaction {
+            // The header item's identity never changes, so a rebuilt snapshot alone leaves
+            // the cell as it was; an order's title follows its status, so redraw it.
+            currentSnapshot.reconfigureItems([.header])
+        }
 
         // Shielded transfers lead with their balance route + lock status.
         for item in model.shieldedInfo() {
@@ -570,26 +706,28 @@ extension TXDetailViewController {
         }
 
         currentSnapshot.appendItems([.date(date)], toSection: .info)
-        currentSnapshot.appendItems([.taxCategory(taxCategory)], toSection: .taxCategory)
-        // A funding asset lock parked mid-transfer gets a retry action.
-        // The section is inserted (not pre-appended) so the empty state
-        // adds no phantom section spacing.
-        if let retry = model.stuckAssetLockRetry {
-            currentSnapshot.insertSections([.recovery], afterSection: .taxCategory)
-            currentSnapshot.appendItems([.rebroadcast(retry.actionTitle)], toSection: .recovery)
-            if retry.supportsRemoval {
-                currentSnapshot.appendItems([.removeUnconfirmed], toSection: .recovery)
-            }
-        } else if model.supportsUnconfirmedRemoval {
-            // Any other transaction stuck in mempool context (a
-            // network-dropped classic send — e.g. a stalled CoinJoin sweep
-            // chunk) gets the removal action alone: there is no retry
-            // route for it, but deleting the local row frees its inputs.
-            currentSnapshot.insertSections([.recovery], afterSection: .taxCategory)
-            currentSnapshot.appendItems([.removeUnconfirmed], toSection: .recovery)
+        if hasTransaction {
+            currentSnapshot.appendItems([.taxCategory(taxCategory)], toSection: .taxCategory)
         }
-        currentSnapshot.appendItems([.viewTransaction, .copyRawTransaction], toSection: .rawTransaction)
-        currentSnapshot.appendItems([.explorer], toSection: .explorer)
+        // A funding asset lock parked mid-transfer gets a retry action, and
+        // the removal action applies to some stuck transactions (see
+        // `TxDetailModel.offersUnconfirmedRemoval`). The section is inserted
+        // (not pre-appended) so the empty state adds no phantom section
+        // spacing. A Buy swap placeholder has no tax category section to
+        // insert it after, and nothing to recover.
+        let actions = hasTransaction ? model.recoveryActions : (retry: nil, offersRemoval: false)
+        var recovery: [Item] = actions.retry.map { [.rebroadcast($0.actionTitle)] } ?? []
+        if actions.offersRemoval {
+            recovery.append(.removeUnconfirmed)
+        }
+        if !recovery.isEmpty {
+            currentSnapshot.insertSections([.recovery], afterSection: .taxCategory)
+            currentSnapshot.appendItems(recovery, toSection: .recovery)
+        }
+        if hasTransaction {
+            currentSnapshot.appendItems([.viewTransaction, .copyRawTransaction], toSection: .rawTransaction)
+            currentSnapshot.appendItems([.explorer], toSection: .explorer)
+        }
         if let swapLink = model.swapExplorerLink {
             currentSnapshot.appendSections([.swapExplorer])
             currentSnapshot.appendItems([.swapExplorer(swapLink.title)], toSection: .swapExplorer)
@@ -610,7 +748,11 @@ extension TXDetailViewController {
         switch section {
         case .info:
             if case .contact(_, let party)? = dataSource.itemIdentifier(for: indexPath) {
-                openContactProfile(party)
+                if let contactReturn, contactReturn.identityId == party.identityId {
+                    contactReturn.goBack()
+                } else {
+                    openContactProfile(party)
+                }
             }
         case .taxCategory:
             model.toggleTaxCategoryOnCurrentTransaction()
@@ -697,26 +839,65 @@ class SuccessTxDetailViewController: TXDetailViewController, NavigationBarDispla
 struct TXDetailVCWrapper: UIViewControllerRepresentable {
     @Environment(\.presentationMode) private var presentationMode
     
-    let tx: Transaction
+    private let makeModel: () -> TxDetailModel
     @Binding var navigateBack: Bool
     var onDismissed: (() -> Void)? = nil
+    /// VoiceOver's escape gesture on the detail, returning whether it acted; `nil` or
+    /// `false` leaves the gesture to the default handling.
+    var onAccessibilityEscape: (() -> Bool)? = nil
     
-    init(tx: Transaction, navigateBack: Binding<Bool>, onDismissed: (() -> Void)? = nil) {
-        self.tx = tx
+    /// See `TXDetailViewController.contactReturn`.
+    var contactReturn: TXDetailViewController.ContactReturn? = nil
+
+    init(tx: Transaction,
+         navigateBack: Binding<Bool>,
+         onDismissed: (() -> Void)? = nil,
+         contactReturn: TXDetailViewController.ContactReturn? = nil,
+         onAccessibilityEscape: (() -> Bool)? = nil) {
+        self.init(makeModel: { .init(transaction: tx) }, navigateBack: navigateBack,
+                  onDismissed: onDismissed, contactReturn: contactReturn,
+                  onAccessibilityEscape: onAccessibilityEscape)
+    }
+
+    init(model: TxDetailModel,
+         navigateBack: Binding<Bool>,
+         onDismissed: (() -> Void)? = nil,
+         contactReturn: TXDetailViewController.ContactReturn? = nil) {
+        self.init(makeModel: { model }, navigateBack: navigateBack,
+                  onDismissed: onDismissed, contactReturn: contactReturn, onAccessibilityEscape: nil)
+    }
+
+    init(swapOrder: BuySwapOrderItem, navigateBack: Binding<Bool>) {
+        self.init(makeModel: { .init(swapOrder: swapOrder) }, navigateBack: navigateBack,
+                  onDismissed: nil, contactReturn: nil, onAccessibilityEscape: nil)
+    }
+
+    private init(makeModel: @escaping () -> TxDetailModel,
+                 navigateBack: Binding<Bool>,
+                 onDismissed: (() -> Void)?,
+                 contactReturn: TXDetailViewController.ContactReturn?,
+                 onAccessibilityEscape: (() -> Bool)?) {
+        self.makeModel = makeModel
         self._navigateBack = navigateBack
         self.onDismissed = onDismissed
+        self.contactReturn = contactReturn
+        self.onAccessibilityEscape = onAccessibilityEscape
     }
 
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
     }
 
-    func makeUIViewController(context: Context) -> some UIViewController {
-        let vc = TXDetailViewController(model: .init(transaction: tx))
+    func makeUIViewController(context: Context) -> TXDetailViewController {
+        let vc = TXDetailViewController(model: makeModel())
+        vc.contactReturn = contactReturn
+        vc.onAccessibilityEscape = onAccessibilityEscape
         return vc
     }
 
     func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
+        uiViewController.contactReturn = contactReturn
+        uiViewController.onAccessibilityEscape = onAccessibilityEscape
         if navigateBack {
             context.coordinator.dismissView()
             navigateBack = false

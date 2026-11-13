@@ -60,6 +60,11 @@ final class InternalTransferConfirmViewModel: ObservableObject {
     @Published private(set) var platformShieldCapacityChange:
         InternalTransferRunner.PlatformShieldCapacityChange?
 
+    /// Set when the runner refused the transfer before the PIN prompt because
+    /// its asset lock would need too many inputs: the sheet stays up and
+    /// offers `CoreCoinConsolidationSheet` for this lock.
+    @Published var coinConsolidationCheck: AssetLockInputLimit.Check?
+
     private let runner: InternalTransferRunner
     private var cancellables = Set<AnyCancellable>()
 
@@ -78,6 +83,7 @@ final class InternalTransferConfirmViewModel: ObservableObject {
         isFullPlatformWithdrawal: Bool,
         isFullShieldedSweep: Bool,
         platformShieldAmountWasMax: Bool,
+        coreShieldedDrain: CoreShieldedDrainConfirmation? = nil,
         runner: InternalTransferRunner = .shared
     ) {
         // Precedence matches what the view did before: an identity transfer
@@ -102,11 +108,12 @@ final class InternalTransferConfirmViewModel: ObservableObject {
                 withdrawalFeeCredits: withdrawalFeeCredits,
                 isFullPlatformWithdrawal: isFullPlatformWithdrawal,
                 isFullShieldedSweep: isFullShieldedSweep,
-                platformShieldAmountWasMax: platformShieldAmountWasMax))
+                platformShieldAmountWasMax: platformShieldAmountWasMax,
+                coreShieldedDrain: coreShieldedDrain))
         } ?? .unavailable
 
         self.dashDuffs = dashDuffs
-        self.fiatText = fiatText
+        self.fiatText = coreShieldedDrain.map { $0.estimatedRecipientCredits == nil ? "—" : "≈ " + fiatText } ?? fiatText
         self.networkFeeCredits = networkFeeCredits
         self.totalDuffs = totalDuffs
         self.runner = runner
@@ -127,7 +134,22 @@ final class InternalTransferConfirmViewModel: ObservableObject {
     /// Digits only — `SwapAmountView` draws the Dash logo beside them rather
     /// than taking a symbol inside the string.
     var dashAmountText: String {
-        (request?.amountDuffsUnsigned ?? 0).dashAmount.formattedDashAmountWithoutCurrencySymbol
+        if let drain = request?.coreShieldedDrain {
+            guard let credits = drain.estimatedRecipientCredits else { return NSLocalizedString("Max", comment: "Whole wallet intent") }
+            return credits < 1000 ? "<0.00000001" : "≈ " + (credits / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol
+        }
+        return (request?.amountDuffsUnsigned ?? 0).dashAmount.formattedDashAmountWithoutCurrencySymbol
+    }
+
+    var coreDrainFeeDetails: String? {
+        request?.coreShieldedDrain?.feeBreakdownText
+    }
+
+    var coreDrainExplanation: String? {
+        guard request?.coreShieldedDrain != nil else { return nil }
+        return NSLocalizedString(
+            "All eligible Core funds available when you confirm will be moved to Shielded. The amount, total and fees shown are estimates. CoinJoin funds are excluded.",
+            comment: "Core drain confirmation")
     }
 
     var summary: TransferConfirmSummary {
@@ -156,12 +178,21 @@ final class InternalTransferConfirmViewModel: ObservableObject {
 
     /// Runs the auth gate, then hands the transfer off. Returns whether the
     /// sheet has finished with the user: it stays open when the PIN prompt was
-    /// backed out of, so Confirm can simply be tapped again — everything else,
-    /// including a refusal because another transfer is still running, is
-    /// announced by a toast on the surface behind it.
+    /// backed out of, so Confirm can simply be tapped again, and when the
+    /// coins need combining first — everything else, including a refusal
+    /// because another transfer is still running, is announced by a toast on
+    /// the surface behind it.
     func confirm() async -> Bool {
         guard case .transfer(let request) = mode else { return false }
-        return await runner.start(request) != .notAuthorized
+        switch await runner.start(request) {
+        case .started, .busy, .walletReloading:
+            return true
+        case .notAuthorized:
+            return false
+        case .needsCoinConsolidation(let check):
+            coinConsolidationCheck = check
+            return false
+        }
     }
 
     // MARK: - Request accessors

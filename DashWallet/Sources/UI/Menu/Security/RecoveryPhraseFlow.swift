@@ -28,12 +28,14 @@ import UIKit
 enum RecoveryPhraseWalletNetwork: Int, CaseIterable, Hashable {
     case mainnet
     case testnet
+    case devnet
 
     init?(sdkNetwork: Network) {
         switch sdkNetwork {
         case .mainnet: self = .mainnet
         case .testnet: self = .testnet
-        case .devnet, .regtest: return nil
+        case .devnet: self = .devnet
+        case .regtest: return nil
         }
     }
 
@@ -41,7 +43,15 @@ enum RecoveryPhraseWalletNetwork: Int, CaseIterable, Hashable {
         switch environmentKind {
         case .mainnet: self = .mainnet
         case .testnet: self = .testnet
-        case .devnet: return nil
+        case .devnet: self = .devnet
+        }
+    }
+
+    var environmentKind: WalletEnvironment.NetworkKind {
+        switch self {
+        case .mainnet: return .mainnet
+        case .testnet: return .testnet
+        case .devnet: return .devnet
         }
     }
 
@@ -49,6 +59,7 @@ enum RecoveryPhraseWalletNetwork: Int, CaseIterable, Hashable {
         switch self {
         case .mainnet: return NSLocalizedString("Mainnet", comment: "Wallet network")
         case .testnet: return NSLocalizedString("Testnet", comment: "Wallet network")
+        case .devnet: return NSLocalizedString("Devnet", comment: "Wallet network")
         }
     }
 }
@@ -133,14 +144,13 @@ enum RecoveryPhraseInventory {
                 "Skipping \(result.skippedWalletIds.count, privacy: .public) unreadable recovery-phrase entry/entries ids=\(labels, privacy: .public)")
         }
 
-        let entries = result.entries
+        let entries = selectableEntries(result.entries)
         let displayNames = Dictionary(uniqueKeysWithValues: entries.map {
             ($0.walletId, WalletsViewModel.displayName(for: $0.walletId))
         })
         let activeWalletIds: [RecoveryPhraseWalletNetwork: Data] = Dictionary(
             uniqueKeysWithValues: RecoveryPhraseWalletNetwork.allCases.compactMap { network in
-                let kind: WalletEnvironment.NetworkKind = network == .mainnet ? .mainnet : .testnet
-                return WalletEnvironment.activeWalletId(for: kind).map { (network, $0) }
+                WalletEnvironment.activeWalletId(for: network.environmentKind).map { (network, $0) }
             })
 
         return try makeDescriptors(
@@ -175,6 +185,28 @@ enum RecoveryPhraseInventory {
             skippedWalletIds: skippedWalletIds)
     }
 
+    /// The entries this build can actually act on.
+    ///
+    /// Enumeration classifies every Keychain entry by derived wallet id,
+    /// independent of what the build can select, so a devnet-scoped entry
+    /// resolves to `.devnet` even where devnet does not exist. Left unfiltered,
+    /// a shipping build would label a picker row `Mainnet, Devnet`, and a
+    /// devnet-only phrase would get a revealable row of its own — material
+    /// `networkKind`, `switchToNetwork(_:)` and `hasWallet` deliberately hide
+    /// everywhere else. The precondition is the one the rest of the devnet work
+    /// already treats as real: an internal build replaced in place by a
+    /// shipping one.
+    ///
+    /// `devnetAvailable` is injected so the rule is testable in both build
+    /// shapes.
+    static func selectableEntries(
+        _ entries: [RecoveryPhraseInventoryEntry],
+        devnetAvailable: Bool = WalletEnvironment.isDevnetAvailable
+    ) -> [RecoveryPhraseInventoryEntry] {
+        guard !devnetAvailable else { return entries }
+        return entries.filter { $0.network != .devnet }
+    }
+
     static func route(for descriptors: [RecoveryPhraseWalletDescriptor]) -> RecoveryPhraseRoute {
         switch descriptors.count {
         case 0: return .unavailable
@@ -186,6 +218,12 @@ enum RecoveryPhraseInventory {
     static func mnemonic(for walletId: Data) throws -> MnemonicMaterial {
         let mnemonic = try SwiftDashSDKHost.strictlyPersistedMnemonic(for: walletId)
         let entry = try classify((walletId: walletId, mnemonic: mnemonic))
+        // The reveal is reachable by wallet id as well as through a descriptor
+        // (`RecoveryPhraseFlowModel.loadWallet`), so the same rule has to hold
+        // here — filtering the inventory alone would leave that entry point open.
+        guard !selectableEntries([entry]).isEmpty else {
+            throw RecoveryPhraseInventoryError.unsupportedWalletNetwork
+        }
         return MnemonicMaterial(
             mnemonic: entry.normalizedMnemonic,
             canonicalWalletId: entry.canonicalWalletId,
@@ -306,6 +344,21 @@ final class RecoveryPhraseFlowViewModel: ObservableObject {
 
     private var retryRequest: RetryRequest?
     private var pickerRetryDescriptor: RecoveryPhraseWalletDescriptor?
+    /// Bumped by `invalidatePendingAuthentication`; an authentication that
+    /// started under an older value is discarded when it resolves, so the
+    /// phrase is never read or shown for a request the host has withdrawn.
+    private var authenticationGeneration: UInt64 = 0
+
+    /// The PIN gate run before any keychain read. Hosts inside a `.normal`
+    /// window keep the default; the wallet-open failure overlay injects a
+    /// gate that hides its own window for the prompt's duration.
+    typealias Authenticator = @MainActor () async -> AuthenticationGate.Outcome
+
+    private let runAuthentication: Authenticator
+
+    init(authenticate: @escaping Authenticator = { await AuthenticationGate.authenticate(biometric: false) }) {
+        runAuthentication = authenticate
+    }
 
     func beginGlobal() {
         authenticate(for: .global) { [weak self] in
@@ -379,6 +432,17 @@ final class RecoveryPhraseFlowViewModel: ObservableObject {
         }
     }
 
+    /// Withdraw a backup request still awaiting authentication. Hosts call
+    /// this when the app resigns active: a PIN verified just before Control
+    /// Center or another interruption would otherwise resume after the app
+    /// returns and reveal the phrase without a fresh unlock. A later outcome
+    /// from that prompt is dropped — no read, no modal, no retry alert.
+    func invalidatePendingAuthentication() {
+        guard isBusy else { return }
+        authenticationGeneration &+= 1
+        Self.logger.info("Pending recovery-phrase authentication withdrawn")
+    }
+
     func retry() {
         let request = retryRequest
         alertState = nil
@@ -400,9 +464,14 @@ final class RecoveryPhraseFlowViewModel: ObservableObject {
     private func authenticate(for request: RetryRequest, action: @escaping () -> Void) {
         guard !isBusy else { return }
         isBusy = true
+        let generation = authenticationGeneration
         Task { @MainActor in
-            let outcome = await AuthenticationGate.authenticate(biometric: false)
+            let outcome = await runAuthentication()
             isBusy = false
+            // Resolved after the host withdrew the request: a stale outcome,
+            // whatever it says. Checking app activity here would miss an
+            // inactive→active transition that completes before the result.
+            guard generation == authenticationGeneration else { return }
             switch outcome {
             case .ok:
                 action()
@@ -539,7 +608,9 @@ struct RecoveryPhrasePickerScreen: View {
             Color.dash.primaryBackground.ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 0) {
-                NavBarBack { viewModel.cancel() }
+                DashUIKit.NavigationBar(leading: {
+                    DashUIKit.NavigationBarElement.back.button { viewModel.cancel() }
+                })
 
                 Text(NSLocalizedString("Choose Wallet", comment: "Recovery phrase"))
                     .font(.title)
@@ -642,16 +713,27 @@ enum RecoveryPhraseNavigation {
         return controller
     }
 
-    static func showPhrase(
+    /// The phrase screen for `presentation`, ready to push or to serve as a
+    /// modal root. Done on it calls `delegate.secureWalletRoutineDidCancel`;
+    /// the controller never dismisses or pops itself.
+    static func phraseController(
         _ presentation: RecoveryPhrasePresentation,
-        in navigationController: UINavigationController,
         delegate: DWSecureWalletDelegate?
-    ) {
+    ) -> UIViewController {
         let model = DWPreviewSeedPhraseModel(existingSeedPhrase: presentation.mnemonic)
         let controller = DWPreviewSeedPhraseViewController(model: model)
         controller.delegate = delegate
         controller.navigationItem.prompt = presentation.contextLabel
         controller.hidesBottomBarWhenPushed = true
+        return controller
+    }
+
+    static func showPhrase(
+        _ presentation: RecoveryPhrasePresentation,
+        in navigationController: UINavigationController,
+        delegate: DWSecureWalletDelegate?
+    ) {
+        let controller = phraseController(presentation, delegate: delegate)
 
         var controllers = navigationController.viewControllers
         if controllers.last is UIHostingController<RecoveryPhrasePickerScreen> {
@@ -660,5 +742,120 @@ enum RecoveryPhraseNavigation {
         } else {
             navigationController.pushViewController(controller, animated: true)
         }
+    }
+}
+
+/// Hosts the picker / phrase screens in a modal `BaseNavigationController`
+/// for a caller without a navigation stack of its own (the wallet-open
+/// failure overlay: one hosting controller in its own window). Done on the
+/// phrase screen and Back on the picker dismiss the modal; the host calls
+/// `dismiss(animated:)` on app resign and when the failure phase ends.
+@MainActor
+final class RecoveryPhraseModalPresenter: NSObject, DWSecureWalletDelegate {
+    private weak var navigationController: UINavigationController?
+
+    /// `true` when the modal goes up, `false` on the next `dismiss(animated:)`
+    /// after that (Done, Back, resign, the host's own dismiss) — also when
+    /// the modal already went away by another route. The host uses it to
+    /// hold automatic wallet preparation while the phrase is on screen.
+    var onPresentationChanged: ((Bool) -> Void)?
+    private var reportedPresented = false
+
+    private func reportPresentation(_ presented: Bool) {
+        guard presented != reportedPresented else { return }
+        reportedPresented = presented
+        onPresentationChanged?(presented)
+    }
+
+    /// Presents `destination` from `anchor`. A `.phrase` arriving while the
+    /// picker modal is up replaces the picker in place (the picker's select).
+    func show(
+        _ destination: RecoveryPhraseFlowViewModel.Destination,
+        from anchor: UIViewController,
+        flowModel: RecoveryPhraseFlowViewModel
+    ) {
+        if let navigationController, navigationController.presentingViewController != nil {
+            if case .phrase(let presentation) = destination {
+                RecoveryPhraseNavigation.showPhrase(presentation, in: navigationController, delegate: self)
+            }
+            return
+        }
+        let root: UIViewController
+        switch destination {
+        case .picker(let options):
+            root = RecoveryPhraseNavigation.pickerController(
+                options: options,
+                flowModel: flowModel,
+                onCancel: { [weak self] in self?.dismiss(animated: true) })
+        case .phrase(let presentation):
+            root = RecoveryPhraseNavigation.phraseController(presentation, delegate: self)
+        }
+        let navigation = BaseNavigationController(rootViewController: root)
+        // Full screen: no interactive sheet dismissal that would bypass this
+        // presenter, and the presenting view leaves the hierarchy.
+        navigation.modalPresentationStyle = .fullScreen
+        // The overlay root is `accessibilityViewIsModal`; VoiceOver must treat
+        // the presented screen, not the card beneath, as the modal.
+        navigation.view.accessibilityViewIsModal = true
+        navigationController = navigation
+        anchor.present(navigation, animated: true)
+        reportPresentation(true)
+    }
+
+    func dismiss(animated: Bool) {
+        // Reported even when the modal is already gone (released, or taken
+        // down by another route): a host hold must never outlive it.
+        defer { reportPresentation(false) }
+        guard let navigationController,
+              let presenter = navigationController.presentingViewController else {
+            self.navigationController = nil
+            return
+        }
+        self.navigationController = nil
+        // Addressed to the presenter: `dismiss` on the navigation controller
+        // itself would only drop whatever it presented (the screenshot alert).
+        presenter.dismiss(animated: animated)
+    }
+
+    // The Objective-C protocol's requirements are nonisolated; UIKit calls
+    // them on the main thread, and the hop keeps the conformance honest.
+    nonisolated func secureWalletRoutineDidCancel(_ controller: UIViewController) {
+        Task { @MainActor in self.dismiss(animated: true) }
+    }
+
+    nonisolated func secureWalletRoutineDidVerify(_ controller: UIViewController) { }
+
+    nonisolated func secureWalletRoutineDidFinish(_ controller: VerifiedSuccessfullyViewController) {
+        Task { @MainActor in self.dismiss(animated: true) }
+    }
+}
+
+/// The flow's read / authentication failure alert (Cancel, Retry) — one
+/// definition for every host of `RecoveryPhraseFlowViewModel`.
+struct RecoveryPhraseFlowAlert: ViewModifier {
+    @ObservedObject var flowModel: RecoveryPhraseFlowViewModel
+
+    func body(content: Content) -> some View {
+        content.alert(
+            flowModel.alertState?.title ?? "",
+            isPresented: Binding(
+                get: { flowModel.alertState != nil },
+                set: { if !$0 { flowModel.dismissAlert() } })
+        ) {
+            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
+                flowModel.dismissAlert()
+            }
+            Button(NSLocalizedString("Retry", comment: "")) {
+                flowModel.retry()
+            }
+        } message: {
+            Text(flowModel.alertState?.message ?? "")
+        }
+    }
+}
+
+extension View {
+    func recoveryPhraseFlowAlert(_ flowModel: RecoveryPhraseFlowViewModel) -> some View {
+        modifier(RecoveryPhraseFlowAlert(flowModel: flowModel))
     }
 }

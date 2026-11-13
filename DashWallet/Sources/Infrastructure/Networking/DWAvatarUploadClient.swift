@@ -23,7 +23,13 @@ enum DWAvatarUploadConfiguration {
     /// authenticates with `Authorization: Client-ID <id>`; the client SECRET
     /// belongs to the OAuth flows we do not use, and must never be put on a
     /// request from the app.
-    static let clientID: String = {
+    static var clientID: String { testingClientID ?? bundledClientID }
+
+    /// Unit tests run inside a host app that ships no `Imgur-Info.plist`; this lets them
+    /// exercise the configured path. Never set outside tests.
+    static var testingClientID: String?
+
+    private static let bundledClientID: String = {
         guard let path = Bundle.main.path(forResource: "Imgur-Info", ofType: "plist"),
               let dict = NSDictionary(contentsOfFile: path) as? [String: AnyObject],
               let clientID = dict["IMGUR_CLIENT_ID"] as? String

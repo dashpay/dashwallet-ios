@@ -56,4 +56,11 @@ final class SwapKitAPIService: HTTPClient<SwapKitEndpoint> {
     func track(_ request: SwapKitTrackRequest) async throws -> SwapKitTrackResponse {
         try await self.request(.track(request))
     }
+
+    // MARK: - Balances
+
+    /// What `address` holds on `chain` (SwapKit chain code, e.g. `ARB`, `BTC`).
+    func balance(chain: String, address: String) async throws -> [SwapKitBalanceItem] {
+        try await request(.balance(chain: chain, address: address))
+    }
 }

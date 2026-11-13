@@ -27,9 +27,10 @@ enum HomeBalanceViewState: Int {
 
 // MARK: - HomeBalanceView
 
-/// Home header: the combined total (transparent + platform + shielded)
-/// as the hero amount, and a row per balance with its fiat value. Advanced
-/// mode decides how many rows, not whether there are any.
+/// Home header: the hero waits for the transparent balance, then sums the known
+/// balances. Each balance has a row with its fiat value; missing amounts stay
+/// unavailable and label an otherwise known total partial.
+/// Advanced mode controls whether Platform credits are included.
 ///
 /// The rows are a readout, not a control surface. They used to carry an
 /// in/out arrow pair opening the pinned receive/send sheets; the transfer
@@ -43,11 +44,8 @@ struct HomeBalanceView: View {
     var onLongPress: () -> Void
     /// Tap on a row: opens the what-is-this-balance info sheet.
     var onInfo: (ChainNetwork) -> Void = { _ in }
-    /// Advanced mode adds the Platform row. The other two are shown either
-    /// way: a wallet that can hold shielded funds has to be able to say how
-    /// much of the total is shielded, whatever mode it is in. Platform holds
-    /// credits rather than spendable Dash, which is the part simple mode has
-    /// no vocabulary for.
+    /// Advanced mode includes Platform credits even before sync starts.
+    /// Unavailable amounts use a placeholder until their local read succeeds.
     var showsPlatformBalance: Bool = true
 
     // Header nav-bar (SB-11) inputs, threaded in by HomeView from the same
@@ -62,17 +60,12 @@ struct HomeBalanceView: View {
     var onProfileTap: () -> Void = {}
     var onNotificationsTap: () -> Void = {}
 
-    private var platformDuffs: UInt64 { platformSync.platformBalance / 1_000 }
-    private var shieldedDuffs: UInt64 { platformSync.shieldedBalance / 1_000 }
-    /// The hero figure is the sum of the rows below it — including Platform
-    /// only while that row is on screen.
-    ///
-    /// Simple mode hides Platform credits everywhere, not just here: the
-    /// internal transfer's endpoints exclude them too, so counting them in a
-    /// total whose breakdown cannot show them would state a number the user
-    /// can neither see the parts of nor reach.
-    private var totalDuffs: UInt64 {
-        viewModel.value + shieldedDuffs + (showsPlatformBalance ? platformDuffs : 0)
+    private var balance: HomeBalancePresentation {
+        HomeBalancePresentation(
+            transparentDuffs: viewModel.value,
+            platformState: platformSync.platformBalanceState,
+            shieldedCredits: platformSync.shieldedBalanceState.credits,
+            showsPlatformBalance: showsPlatformBalance)
     }
 
     var body: some View {
@@ -89,8 +82,8 @@ struct HomeBalanceView: View {
             )
             #endif
 
-            if viewModel.isTestnet {
-                testnetBadge
+            if let badgeText = viewModel.networkBadgeText {
+                networkBadge(badgeText)
             }
 
             ZStack {
@@ -123,11 +116,25 @@ struct HomeBalanceView: View {
                         .frame(width: 58, height: 58)
                 } else {
                     VStack(spacing: 0) {
-                        DashAmount(amount: Int64(totalDuffs), font: .largeTitle, dashSymbolFactor: 0.7, showDirection: false)
-                            .foregroundColor(Color.dash.whiteText)
-                        Text(viewModel.fiatString(forDuffs: totalDuffs))
-                            .font(.subhead)
-                            .foregroundColor(Color.dash.whiteText)
+                        if let totalDuffs = balance.totalDuffs {
+                            DashAmount(amount: Int64(totalDuffs), font: .largeTitle, dashSymbolFactor: 0.7, showDirection: false)
+                                .foregroundColor(Color.dash.whiteText)
+                            Text(viewModel.fiatString(forDuffs: totalDuffs))
+                                .font(.subhead)
+                                .foregroundColor(Color.dash.whiteText)
+                            if balance.isPartial {
+                                Text(NSLocalizedString("Known balance", comment: "Total excludes unavailable balances"))
+                                    .font(.caption)
+                                    .foregroundColor(.white.opacity(0.7))
+                            }
+                        } else {
+                            Text("—")
+                                .font(.largeTitle)
+                                .foregroundColor(Color.dash.whiteText)
+                            Text(NSLocalizedString("Balance unavailable", comment: "Balance not restored"))
+                                .font(.subhead)
+                                .foregroundColor(Color.dash.whiteText)
+                        }
 
                         ZStack {
                             if viewModel.shouldShowTapToHideBalance {
@@ -151,7 +158,7 @@ struct HomeBalanceView: View {
                 onLongPress()
             }
 
-            if !viewModel.isBalanceHidden && platformSync.isRunning {
+            if !viewModel.isBalanceHidden {
                 breakdownCard
                     .padding(.horizontal, 16)
                     .padding(.top, 12)
@@ -228,14 +235,14 @@ struct HomeBalanceView: View {
                 balanceRow(
                     icon: "cloud",
                     title: ChainNetwork.platform.balanceName,
-                    duffs: platformDuffs,
+                    duffs: balance.platformDuffs,
                     infoAction: { onInfo(.platform) })
             }
             rowDivider
             balanceRow(
                 icon: "shield",
                 title: ChainNetwork.shielded.balanceName,
-                duffs: shieldedDuffs,
+                duffs: balance.shieldedDuffs,
                 isSyncing: shieldedSync.isSyncing || platformSync.isShieldedBalanceReconciling,
                 infoAction: { onInfo(.shielded) })
         }
@@ -245,9 +252,9 @@ struct HomeBalanceView: View {
     }
 
     /// Unmissable "these are not real funds" marker while the wallet runs
-    /// on testnet.
-    private var testnetBadge: some View {
-        Text(NSLocalizedString("TESTNET", comment: "Badge on the home balance while the wallet runs on testnet"))
+    /// on a test network (TESTNET/DEVNET).
+    private func networkBadge(_ text: String) -> some View {
+        Text(text)
             .font(.system(size: 11, weight: .bold))
             .kerning(1.2)
             .foregroundColor(Color.dash.whiteText)
@@ -265,7 +272,7 @@ struct HomeBalanceView: View {
     private func balanceRow(
         icon: String,
         title: String,
-        duffs: UInt64,
+        duffs: UInt64?,
         isSyncing: Bool = false,
         infoAction: @escaping () -> Void
     ) -> some View {
@@ -291,14 +298,19 @@ struct HomeBalanceView: View {
                     Text(
                         isSyncing
                             ? NSLocalizedString("Syncing", comment: "Shielded balance")
-                            : viewModel.fiatString(forDuffs: duffs)
+                            : duffs.map { viewModel.fiatString(forDuffs: $0) }
+                                ?? NSLocalizedString("Balance unavailable", comment: "Balance not restored")
                     )
                         .font(.caption2)
                         .foregroundColor(.white.opacity(0.7))
                 }
                 Spacer(minLength: 8)
-                DashAmount(amount: Int64(duffs), font: .footnote, dashSymbolFactor: 0.8, showDirection: false)
-                    .foregroundColor(Color.dash.whiteText)
+                if let duffs {
+                    DashAmount(amount: Int64(duffs), font: .footnote, dashSymbolFactor: 0.8, showDirection: false)
+                        .foregroundColor(Color.dash.whiteText)
+                } else {
+                    Text("—").foregroundColor(Color.dash.whiteText)
+                }
             }
             .contentShape(Rectangle())
             .onTapGesture { infoAction() }

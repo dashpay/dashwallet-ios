@@ -18,7 +18,6 @@
 #import "AppDelegate.h"
 
 #import <CloudInAppMessaging/CloudInAppMessaging.h>
-#import <UserNotifications/UserNotifications.h>
 
 @import Firebase;
 
@@ -54,9 +53,17 @@
 #endif
 NS_ASSUME_NONNULL_BEGIN
 
-@interface AppDelegate () <UNUserNotificationCenterDelegate>
+@interface AppDelegate ()
 
-@property (nonatomic, strong) DWBalanceNotifier *balanceNotifier;
+/// The notifications composition root: store, permission coordinator,
+/// dispatcher, lifecycle (the UNUserNotificationCenter delegate), router,
+/// and the transaction producer.
+@property (nonatomic, strong) DWNotificationsBootstrap *notifications;
+
+#if DEBUG && TARGET_OS_SIMULATOR && DASHPAY
+/// Built in `didFinishLaunching`, shown by `installWindowInScene:` instead of the wallet UI.
+@property (nullable, nonatomic, strong) UIViewController *recoveryFixture;
+#endif
 
 @end
 
@@ -69,13 +76,32 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)registerForPushNotifications {
-    [self.balanceNotifier registerForPushNotifications];
+    [self.notifications registerForPushNotifications];
 }
 
 #pragma mark - UIApplicationDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(nullable NSDictionary *)launchOptions {
 #if DEBUG
+#if TARGET_OS_SIMULATOR && DASHPAY
+    UIViewController *recoveryFixture = [DWUsernameRecoveryUITestFixture makeViewControllerIfRequested];
+    if (recoveryFixture != nil) {
+        self.recoveryFixture = recoveryFixture;
+        return YES;
+    }
+    UIViewController *historyFixture = [DWShieldedHistoryUITestFixture makeViewControllerIfRequested];
+    if (historyFixture != nil) {
+        self.recoveryFixture = historyFixture;
+        return YES;
+    }
+    UIViewController *settingsFixture = [DWSettingsRowsUITestFixture makeViewControllerIfRequested];
+    if (settingsFixture != nil) {
+        self.window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
+        self.window.rootViewController = settingsFixture;
+        [self.window makeKeyAndVisible];
+        return YES;
+    }
+#endif
     if ([NSProcessInfo.processInfo.environment[@"XCODE_RUNNING_FOR_PREVIEWS"] isEqualToString:@"1"]) {
         return YES;
     }
@@ -119,7 +145,6 @@ NS_ASSUME_NONNULL_BEGIN
     [ExploreDashObjcWrapper configure];
     [CurrencyExchangerObjcWrapper startExchangeRateFetching];
     [CoinbaseObjcWrapper start];
-    [CrowdNodeObjcWrapper start];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(applicationTerminationRequestNotification:)
@@ -127,10 +152,7 @@ NS_ASSUME_NONNULL_BEGIN
                                                object:nil];
     
     [CLMCloudInAppMessaging setupWithCloudKitContainerIdentifier:@"iCloud.org.dash.dashwallet"];
-    
-    self.window = [[DWWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-    self.window.backgroundColor = [UIColor blackColor];
-    
+
     [[DWVersionManager sharedInstance] migrateUserDefaults];
     [[DWAuthenticationService shared] enableAuthenticationIfNeeded];
 #ifdef DEBUG
@@ -169,38 +191,50 @@ NS_ASSUME_NONNULL_BEGIN
     [DWSwiftDashSDKWalletRuntime startObservingNetworkChanges];
     [DWSwiftDashSDKWalletRuntime startIfReady];
 
-    [self performNormalStartWithLaunchOptions:launchOptions];
-    
-    NSParameterAssert(self.window.rootViewController);
-    
-    [self.window makeKeyAndVisible];
+    // The window is created later, when the scene connects (`installWindowInScene:`).
+    [self setupDashWalletComponentsWithOptions:launchOptions];
 
     return YES;
 }
 
-- (void)applicationWillResignActive:(UIApplication *)application {
-    // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
-    // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
+#pragma mark - Scene
+
+- (void)installWindowInScene:(UIWindowScene *)scene {
+#if DEBUG
+#if TARGET_OS_SIMULATOR && DASHPAY
+    if (self.recoveryFixture != nil) {
+        self.window = [[UIWindow alloc] initWithWindowScene:scene];
+        self.window.rootViewController = self.recoveryFixture;
+        [self.window makeKeyAndVisible];
+        return;
+    }
+#endif
+    if ([NSProcessInfo.processInfo.environment[@"XCODE_RUNNING_FOR_PREVIEWS"] isEqualToString:@"1"]) {
+        return;
+    }
+#endif /* DEBUG */
+
+    self.window = [[DWWindow alloc] initWithWindowScene:scene];
+    self.window.backgroundColor = [UIColor blackColor];
+    self.window.rootViewController = [[DWInitialViewController alloc] init];
+    [self.window makeKeyAndVisible];
 }
 
-- (void)applicationDidEnterBackground:(UIApplication *)application {
-    // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
-    // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-}
-
-- (void)applicationWillEnterForeground:(UIApplication *)application {
-    // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
-}
-
-- (void)applicationDidBecomeActive:(UIApplication *)application {
-    // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
-
+- (void)handleDidBecomeActive {
     //
     // THIS IS IMPORTANT!
     //
     // When adding any logic here mind the migration process
     //
-    [self.balanceNotifier updateBalance];
+
+    // Badge reset and delivered-notification clearing live in
+    // DWNotificationsBootstrap's NotificationLifecycle, which observes
+    // UIApplicationDidBecomeActiveNotification itself.
+
+    // Retired CrowdNode data: retried on every activation until done. It
+    // touches only UserDefaults, so it is safe while the migration runs;
+    // once done it costs one flag read.
+    [DWRetiredCrowdNodeDefaults removeAllOnce];
 
     // Check geo-restriction for PiggyCards (if available)
     // This logs location info each time the app becomes active for debugging
@@ -224,61 +258,53 @@ NS_ASSUME_NONNULL_BEGIN
     return NO; // disable extensions such as custom keyboards for security purposes
 }
 
-- (void)application:(UIApplication *)application
-performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
-    // Background fetch is no longer driven by DashSync. SwiftDashSDK does not
-    // yet run in the background — backgrounded SPV is a future milestone.
-    // The Apple Watch sync path that piggybacks on this will be re-pointed
-    // in M10 (DWPhoneWCSessionManager). Until then, watch balance updates
-    // may be stale until the user opens the phone app.
-    completionHandler(UIBackgroundFetchResultNoData);
-}
-
+- (void)handleUserActivity:(NSUserActivity *)userActivity {
 #if DASHPAY
-- (BOOL)application:(UIApplication *)application continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(nonnull void (^)(NSArray<id<UIUserActivityRestoring>> *_Nullable))restorationHandler {
     // Universal links (invitations.dashpay.io applink). Firebase
     // Dynamic Links previously unwrapped these; the service was shut
-    // down in 2025, so the invitation URL is now routed directly —
-    // normalization/validation happens in the redeem flow
-    // (DWInvitationLinkNormalizer + ClaimInvitationScreen).
+    // down in 2025, so the invitation URL is now routed directly — the
+    // root controller stores it (PendingInvitationStore) and the Home card
+    // validates it.
     NSURL *url = userActivity.webpageURL;
     if (url == nil || ![DWInvitationLinkNormalizer isInvitationURL:url]) {
-        return NO;
+        return;
     }
     DWInitialViewController *controller = (DWInitialViewController *)self.window.rootViewController;
     if ([controller isKindOfClass:DWInitialViewController.class]) {
         [controller handleDeeplink:url];
-        return YES;
     }
-    return NO;
-}
 #endif
+}
 
-- (BOOL)application:(UIApplication *)application
-            openURL:(NSURL *)url
-            options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
+- (void)handleOpenURL:(NSURL *)url {
 #if DASHPAY
-    // dashpay://invite (and pasted-transport) invitation links open the
-    // redeem flow; every other scheme falls through to DWURLParser.
+    // dashpay://invite (and pasted-transport) invitation links are stored
+    // (PendingInvitationStore) and shown on the Home card; every other
+    // scheme falls through to DWURLParser.
     if ([DWInvitationLinkNormalizer isInvitationURL:url]) {
         DWInitialViewController *controller = (DWInitialViewController *)self.window.rootViewController;
         if ([controller isKindOfClass:DWInitialViewController.class]) {
             [controller handleDeeplink:url];
         }
-        return YES;
+        return;
     }
 
     // Handle URL Scheme instead
 #endif
     
     if (![DWURLParser allowsURLHandling]) {
-        return NO;
+        return;
     }
     
     if (![DWURLParser canHandleURL:url]) {
+        // A dashpay:// verb this version does not know (e.g. sign) is a link from
+        // a newer app, not a malformed one.
+        BOOL needsNewerWallet = [DWDashConnectDeepLink isUnsupportedDashpayVerbURL:url];
         UIAlertController * alert = [UIAlertController
-                                     alertControllerWithTitle:NSLocalizedString(@"Not a Dash URL", nil)
-                                     message:url.absoluteString
+                                     alertControllerWithTitle:needsNewerWallet
+                                         ? NSLocalizedString(@"This link needs a newer version of the wallet.", nil)
+                                         : NSLocalizedString(@"Not a Dash URL", nil)
+                                     message:needsNewerWallet ? nil : url.absoluteString
                                      preferredStyle:UIAlertControllerStyleAlert];
         UIAlertAction* okAction = [UIAlertAction
                                        actionWithTitle:NSLocalizedString(@"OK", nil)
@@ -287,10 +313,11 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
 
         [alert addAction:okAction];
         
-        UIViewController *presentingController = [application.keyWindow.rootViewController topController];
+        // The key window, not self.window: while the PIN lock window is up it is the key one.
+        UIViewController *presentingController = [[UIApplication sharedApplication].keyWindow.rootViewController topController];
         [presentingController presentViewController:alert animated:YES completion:nil];
         
-        return NO;
+        return;
     }
     
     DWInitialViewController *controller = (DWInitialViewController *)self.window.rootViewController;
@@ -301,18 +328,9 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
         // TODO: defer action when start controller finish
         DWLog(@"Ignoring handle URL: %@. Root controller hasn't been set up yet", url);
     }
-
-    return YES;
 }
 
 #pragma mark - Private
-
-- (void)performNormalStartWithLaunchOptions:(NSDictionary *)launchOptions {
-    DWInitialViewController *controller = [[DWInitialViewController alloc] init];
-    self.window.rootViewController = controller;
-
-    [self setupDashWalletComponentsWithOptions:launchOptions];
-}
 
 - (void)setupDashWalletComponentsWithOptions:(NSDictionary *)launchOptions {
     // TODO_outdated: bitcoin protocol/payment protocol over multipeer connectivity
@@ -332,31 +350,14 @@ performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionH
     [DWPhoneWCSessionManager sharedInstance];
 #endif
 
-    self.balanceNotifier = [[DWBalanceNotifier alloc] init];
-    [self.balanceNotifier setupNotifications];
-
-    UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
-    center.delegate = self;
-}
-
-- (void)userNotificationCenter:(UNUserNotificationCenter *)center
-       willPresentNotification:(UNNotification *)notification
-         withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler {
-    
-    if ([notification.request.identifier isEqual: CrowdNodeObjcWrapper.notificationID]) {
-        completionHandler(UNNotificationPresentationOptionList | UNNotificationPresentationOptionBanner | UNNotificationPresentationOptionSound);
-    }
-}
-
-- (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void(^)(void))completionHandler {
-
-    if ([response.notification.request.identifier isEqual: CrowdNodeObjcWrapper.notificationID]) {
-        if (SyncingActivityMonitor.shared.state == SyncingActivityMonitorStateSyncDone) {
-            UIViewController *vc = [CrowdNodeModelObjcWrapper getRootVC];
-            [_window.rootViewController presentViewController:vc animated:YES completion:nil];
-        }
-        completionHandler();
-    }
+    // The notifications composition root: builds the module graph and
+    // installs NotificationLifecycle as the UNUserNotificationCenter
+    // delegate (foreground presentation, tap routing, clearing). It must
+    // exist before launch returns, so it reads the window lazily.
+    __weak typeof(self) weakSelf = self;
+    self.notifications = [[DWNotificationsBootstrap alloc] initWithWindowProvider:^UIWindow *_Nullable {
+        return weakSelf.window;
+    }];
 }
 
 #pragma mark - Notifications

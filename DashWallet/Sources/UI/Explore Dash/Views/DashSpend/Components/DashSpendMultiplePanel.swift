@@ -33,8 +33,8 @@ struct DashSpendMultiplePanel: View {
     private var inventoryWarning: String? {
         for (denomination, count) in quantities where count > 0 {
             if let limit = inventoryLimits[denomination], count >= limit {
-                return String(
-                    format: NSLocalizedString("Merchant has only %d cards available", comment: "DashSpend"),
+                return String.localizedStringWithFormat(
+                    NSLocalizedString("Merchant has only %d cards available", comment: "DashSpend"),
                     limit
                 )
             }
@@ -70,7 +70,7 @@ struct DashSpendMultiplePanel: View {
                 if let error = error {
                     Text(error.localizedDescription)
                         .font(.caption)
-                        .foregroundColor(Color.dash.red)
+                        .foregroundColor(DashSpendErrorCaption.color(for: error))
                         .multilineTextAlignment(.center)
                         .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity)

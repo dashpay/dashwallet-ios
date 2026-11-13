@@ -63,8 +63,8 @@ struct SendAmountView<AvatarView: View>: View {
                 .ignoresSafeArea(edges: .top)
 
             VStack(spacing: 0) {
-                NavigationBar(leading: {
-                    NavigationBarElement.back.button { onBack() }
+                DashUIKit.NavigationBar(leading: {
+                    DashUIKit.NavigationBarElement.back.button { onBack() }
                 })
                 .background(Color.dash.secondaryBackground)
 

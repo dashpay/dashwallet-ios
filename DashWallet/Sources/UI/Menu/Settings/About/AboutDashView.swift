@@ -32,8 +32,8 @@ struct AboutDashView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            NavigationBar(
-                leading: { NavigationBarElement.back.button { onBack?() } }
+            DashUIKit.NavigationBar(
+                leading: { DashUIKit.NavigationBarElement.back.button { onBack?() } }
             )
 
             ScrollView {

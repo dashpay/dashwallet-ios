@@ -29,13 +29,14 @@ import DashUIKit
 import UIKit
 
 struct WalletAccountDetailScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
 
     @StateObject private var viewModel: WalletAccountDetailViewModel
     /// Address string just copied, for a transient "Copied" confirmation.
     @State private var copiedAddress: String? = nil
 
-    init(vc: UINavigationController, walletId: Data, account: WalletAccountRow) {
+    init(vc: UINavigationController?, walletId: Data, account: WalletAccountRow) {
         self.vc = vc
         _viewModel = StateObject(
             wrappedValue: WalletAccountDetailViewModel(walletId: walletId, account: account))
@@ -91,18 +92,9 @@ struct WalletAccountDetailScreen: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Button(action: { vc.popViewController(animated: true) }) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(Color.dash.primaryText)
-                        .frame(width: 36, height: 36)
-                        .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
-                }
-                Spacer()
-            }
-            .padding(.horizontal, 5)
-            .padding(.top, 10)
+            DashUIKit.NavigationBar(leading: {
+                DashUIKit.NavigationBarElement.back.button { vc?.popViewController(animated: true) }
+            })
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(viewModel.detail?.typeName ?? NSLocalizedString("Account", comment: "Wallet accounts"))

@@ -232,8 +232,8 @@ class Transaction: TransactionDataItem, Identifiable {
         // 3=coinjoin. Promote outgoing→moved when the wallet's net
         // change equals just the fee (self-send) — mirrors DashSync's
         // `received + fee == sent` check so the legacy code path that
-        // still relies on `.moved` (e.g. CrowdNode top-up matcher,
-        // "Internal Transfer" labelling) keeps working uniformly.
+        // still relies on `.moved` (e.g. "Internal Transfer" labelling)
+        // keeps working uniformly.
         switch snapshot.direction {
         case 0: return .received
         case 2: return .moved
@@ -411,6 +411,20 @@ class Transaction: TransactionDataItem, Identifiable {
         return (txHashData, info.vout)
     }
 
+    /// The Max drain that built this transfer's shielded asset lock, if one
+    /// did; see `ShieldedAssetLocksInFlight`.
+    var shieldedDrainOperation: UUID? {
+        shieldedLockInfo?.drainOperation
+    }
+
+    /// Whether a running transfer, or the Max drain that built it while it
+    /// holds its claim, is consuming this transfer's shielded asset lock.
+    /// Reads the lock's snapshot once.
+    func isShieldedLockInFlight(in registry: ShieldedAssetLocksInFlight) -> Bool {
+        guard let info = shieldedLockInfo else { return false }
+        return registry.contains(.init(txidWire: txHashData, vout: info.vout), drainOperation: info.drainOperation)
+    }
+
     private lazy var _dashAmount: UInt64 = {
         // A "to Shielded" / "to Platform" transfer's L1 funding tx is an
         // asset lock; surface the real locked amount the SDK recorded
@@ -586,6 +600,12 @@ class Transaction: TransactionDataItem, Identifiable {
 
     var date: Date
 
+    /// When the wallet's store first held the transaction (the row's `createdAt`); nil
+    /// for a transaction with no row. Unlike `date` it does not move when the transaction
+    /// is mined. A row written anew — the wallet restored, the transaction dropped and
+    /// seen again — carries the time of that instead.
+    let firstStored: Date?
+
     var shortDateString: String {
         _shortDateString
     }
@@ -672,6 +692,7 @@ class Transaction: TransactionDataItem, Identifiable {
         self.date = ts == 0
             ? Date()
             : Date(timeIntervalSince1970: TimeInterval(ts))
+        self.firstStored = p.createdAt
     }
 
     /// Synthetic wrapper for a transaction that has no persisted row: the
@@ -695,6 +716,7 @@ class Transaction: TransactionDataItem, Identifiable {
             context: contextRaw,
             externalSentAddresses: externalSentAddresses)
         self.date = date
+        self.firstStored = nil
     }
 }
 

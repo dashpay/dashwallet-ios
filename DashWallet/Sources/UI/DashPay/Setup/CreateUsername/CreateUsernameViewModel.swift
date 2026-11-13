@@ -54,7 +54,9 @@ class CreateUsernameViewModel: ObservableObject {
     /// query that distinguishes a locked name from one mid-vote.
     private let marketplaceService = UsernameMarketplaceService()
     private let illegalChars = TemporaryUsernameFieldModel.illegalCharacters
-    private var submittedRegistrationUsername: String?
+    /// The normalized label the running registration was submitted under.
+    /// Read by the form for its handoff so both name the same attempt.
+    private(set) var submittedRegistrationUsername: String?
     private var didNotifyRegistrationStarted = false
     private var onRegistrationStarted: (@MainActor () -> Void)?
     /// In-flight DPNS availability check. Cancelled and replaced when
@@ -72,6 +74,11 @@ class CreateUsernameViewModel: ObservableObject {
     /// snapshots are refreshed by wallet events instead of while typing.
     private var platformFundingCandidates: [PlatformPaymentIdentityFundingPolicy.Candidate] = []
     private var contestedShieldedReadiness: ShieldedIdentityFundingReadiness.Snapshot?
+    /// What Core or Platform would pay for the typed name, as the last
+    /// validation judged it. Not `uiState.requiredDash`: that is the active
+    /// source's figure, and Shielded's fixed denomination can be higher than
+    /// what the transparent sources are charged.
+    private var transparentRequiredDuffs = UInt64(DWDP_MIN_BALANCE_TO_CREATE_USERNAME)
     /// One-shot revalidation alarm for a `.maturing` shielded snapshot.
     /// The shared readiness service arms its own flip timer only for
     /// the STANDARD denomination; a contested name's (0.25 DASH) ready
@@ -98,6 +105,9 @@ class CreateUsernameViewModel: ObservableObject {
     @Published var username: String = ""
     @Published private(set) var hasMinimumRequiredBalance = false
     @Published private(set) var hasRecommendedBalance = false
+    /// What a contested name costs on the running network — mirrored from
+    /// `ContestedUsernameFee` so the screens observing this model follow it.
+    @Published private(set) var contestedFee = ContestedUsernameFee.Amounts.legacy
     @Published private(set) var balance: String = ""
 
     /// `true` when the trimmed input is a contested-eligible DPNS
@@ -113,7 +123,7 @@ class CreateUsernameViewModel: ObservableObject {
     /// username collected by the contested-name confirmation sheet.
     /// Submitted through `submitUsernameRequest(temporaryUsername:)`
     /// when the user confirms with it.
-    let temporaryField = TemporaryUsernameFieldModel()
+    let temporaryField = TemporaryUsernameFieldModel(acceptsOwnedName: true)
 
     /// The typed label lost an earlier contest to a masternode LOCK, so nobody
     /// can register it. It still reports as available (no owner holds the
@@ -151,13 +161,16 @@ class CreateUsernameViewModel: ObservableObject {
     /// owner, fiat price) is visible before committing that much.
     static let directPurchaseMaxDuffs: UInt64 = 10 * 100_000_000
 
+    /// Prevent another purchase on this form while its result is unknown.
+    @Published private(set) var purchaseSubmissionUnconfirmed = false
+
     /// The typed name's listing can be bought right here: priced under
     /// the direct-purchase ceiling, with a wallet balance that covers
     /// the price plus the identity fee headroom. Not offered in
     /// invitation mode (the voucher funds a registration, not a trade)
     /// or while a registration recovery is pending.
     var canPurchaseListedNameDirectly: Bool {
-        guard let credits = takenNameSalePriceCredits,
+        guard !purchaseSubmissionUnconfirmed, let credits = takenNameSalePriceCredits,
               !isInvitationMode,
               !hasPendingRegistrationRecovery else { return false }
         let priceDuffs = credits / 1_000
@@ -198,7 +211,8 @@ class CreateUsernameViewModel: ObservableObject {
     /// Locked and mid-vote answers keep the callout: it carries their
     /// detail.
     var showContestedWarning: Bool {
-        guard isContestedCandidate else { return false }
+        // A non-contested-only invitation says why instead (the tier note).
+        guard isContestedCandidate, !isNonContestedInvitation else { return false }
         if uiState.usernameBlockedRule == .invalidCritical {
             return isLockedContestedName || activeContestContenders != nil
         }
@@ -207,26 +221,179 @@ class CreateUsernameViewModel: ObservableObject {
 
     /// Per-funding-source eligibility flags. `hasMinimumRequiredBalance`
     /// (above) is kept as the legacy OR-of-both flag for any existing
-    /// consumer; the new picker UI reads these to decide whether to
-    /// show both options or auto-pin to the single viable source.
+    /// consumer; these say which source can actually pay — the privacy page
+    /// offers Platform only on the second one, and the form pins to the first
+    /// viable source when no choice was carried in.
     @Published private(set) var hasMinimumRequiredCoreBalance = false
     @Published private(set) var hasMinimumRequiredPlatformBalance = false
     /// Formatted Platform Payment balance (in DASH, derived from the
     /// duff-equivalent of `SwiftDashSDKWalletState.platformPaymentCredits`).
     @Published private(set) var platformPaymentBalance: String = ""
+    /// Mirrors `DWGlobalOptions.advancedModeEnabled`. Paying for a username
+    /// from Platform credits is one of the surfaces the mode unlocks — it
+    /// spends a balance that only advanced mode even shows — and it has to
+    /// appear and disappear with the switch rather than on the next launch.
+    @Published private(set) var isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
+
+    /// Whether the Join DashPay entry offers the Platform balance: it covers
+    /// the minimum and advanced mode — the only place that balance is visible —
+    /// is on. Asked by the Join DashPay sheet and the privacy page, the two
+    /// screens that offer a source. The form itself keeps accepting Platform
+    /// regardless, so a retry or recovery of a Platform-funded attempt can
+    /// still finish from it.
+    var canOfferPlatformFunding: Bool {
+        isAdvancedMode && hasMinimumRequiredPlatformBalance
+    }
+
+    /// Covers `duffs` from Platform only where the entry offers Platform.
+    private func offersPlatform(covering duffs: UInt64) -> Bool {
+        isAdvancedMode && canFundFromPlatform(duffs)
+    }
+
+    // MARK: - Confirmed top-up ceiling
+
+    /// The requested pass's figure as confirmed. Kept apart from the running
+    /// total so the companion sheet's amount does not move when its own
+    /// Confirm updates that total.
+    private(set) var requestedTopUpCeilingDuffs: UInt64?
+    /// The most the coordinator may move to top up the identity without a new
+    /// confirmation: what the sheets showed, captured on Confirm, so a balance
+    /// refresh before submit cannot raise it.
+    private var confirmedTopUpCeilingDuffs: UInt64?
+
+    /// Records what a confirmation sheet just showed: the requested pass
+    /// starts the ceiling, the companion pass adds what it showed.
+    func captureConfirmedTopUp(shownDuffs: UInt64, isCompanionPass: Bool) {
+        if isCompanionPass {
+            confirmedTopUpCeilingDuffs = (requestedTopUpCeilingDuffs ?? 0) + shownDuffs
+        } else {
+            requestedTopUpCeilingDuffs = shownDuffs
+            confirmedTopUpCeilingDuffs = shownDuffs
+        }
+    }
+
+    /// The ceiling for the submission about to go out; clears the capture.
+    func takeConfirmedTopUpCeiling() -> UInt64? {
+        defer { discardConfirmedTopUp() }
+        return confirmedTopUpCeilingDuffs
+    }
+
+    func discardConfirmedTopUp() {
+        requestedTopUpCeilingDuffs = nil
+        confirmedTopUpCeilingDuffs = nil
+    }
+
+    /// Which balance the user chose on the Join DashPay sheet's privacy page.
+    ///
+    /// The create form used to ask the same question a second time, with its
+    /// own picker. It no longer does, so the answer has to travel — and the
+    /// route between the two screens runs through Home's shortcut dispatcher,
+    /// which carries no payload.
+    ///
+    /// Type-level, not per-instance, because the two screens do not share an
+    /// instance: the privacy page runs on `shared`, while `CreateUsernameView`
+    /// makes its own so each presentation of the form starts clean. An
+    /// instance property here was read back as nil every time, and the form
+    /// silently funded from whatever source happened to be viable instead of
+    /// the one that was picked. The choice belongs to the flow, not to either
+    /// object. `@MainActor` on the class covers it.
+    ///
+    /// Being process-global, it is also scoped: it carries the wallet and
+    /// network it was made on, so a form opened for another wallet ignores it,
+    /// and the Join DashPay sheet discards it when it closes without handing
+    /// off to the form (`discardChosenFundingSource()`). Otherwise a pick made
+    /// in an abandoned sheet was adopted by the next form — a recovery
+    /// included — as an explicit choice, and auto-pinning then left Shielded
+    /// in place for a top-up Shielded cannot pay, with no picker to change it.
+    private static var chosenFundingSource: PendingFundingChoice?
+
+    private struct PendingFundingChoice {
+        let source: DWIdentityFundingSource
+        let walletId: Data?
+        let network: SwiftDashSDK.Network?
+    }
+
+    /// Which source will actually pay, once the form has adopted the pick.
+    ///
+    /// The cost rule is judged against THIS and nothing else. It used to pass
+    /// whenever *any* balance could cover the name, which was right while the
+    /// form carried its own picker — the user could switch to whichever source
+    /// was funded. With the source fixed a screen earlier that became a false
+    /// green: a Platform balance short of a contested name's cost reported
+    /// that cost as satisfied because Core happened to hold
+    /// enough.
+    ///
+    /// `nil` before the form has appeared, when the OR-of-all-sources is still
+    /// the honest answer — no source has been committed to yet.
+    @Published private(set) var activeFundingSource: DWIdentityFundingSource?
+
+    /// Records the privacy page's pick.
+    func chooseFundingSource(_ source: DWIdentityFundingSource) {
+        Self.chosenFundingSource = PendingFundingChoice(
+            source: source,
+            walletId: SwiftDashSDKHost.shared.wallet?.walletId,
+            network: WalletEnvironment.network)
+    }
+
+    /// Drops a pick that will not reach the form: the Join DashPay sheet
+    /// closed some other way than handing off to it, or the form is being
+    /// opened by an entry that never passes the privacy page.
+    static func discardChosenFundingSource() {
+        chosenFundingSource = nil
+    }
+
+    /// Told by the form which source it settled on, on appear and whenever it
+    /// changes. Re-runs validation, because the cost rule's verdict depends on
+    /// it.
+    func setActiveFundingSource(_ source: DWIdentityFundingSource) {
+        // An invitation claim is paid by the invitation, whatever the form's
+        // picker state says.
+        guard !isInvitationMode, activeFundingSource != source else { return }
+        activeFundingSource = source
+        validateUsername(username: username)
+    }
+
+    /// Hands the pick to the form and forgets it. Consume-once on purpose: a
+    /// later visit that never passes the privacy page — a recovery, an
+    /// invitation claim — must not inherit a choice made for a previous
+    /// attempt.
+    ///
+    /// A pick made on another wallet or network is not this form's to adopt:
+    /// it is dropped, and the form pins a viable source itself.
+    func consumeChosenFundingSource() -> DWIdentityFundingSource? {
+        defer { Self.chosenFundingSource = nil }
+        guard let pending = Self.chosenFundingSource else { return nil }
+        guard let walletId = pending.walletId,
+              walletId == SwiftDashSDKHost.shared.wallet?.walletId,
+              let network = pending.network,
+              network == WalletEnvironment.network else {
+            return nil
+        }
+        return pending.source
+    }
 
     /// Shielded-funding readiness for the CURRENT typed name (contested
-    /// names need the 0.25 DASH exit denomination instead of 0.1).
+    /// names need the 0.25 DASH exit denomination instead of 0.03).
     /// Recomputed by `validateUsername` and on every readiness publish.
     /// nil while the SDK host has no hydrated wallet.
     @Published private(set) var shieldedReadiness: ShieldedIdentityFundingReadiness.Snapshot? = nil
-    /// Formatted unspent shielded balance in DASH, for the picker label.
-    @Published private(set) var shieldedBalance: String = ""
 
-    /// A prior Core-funded attempt has already created an identity or
-    /// persisted an unfinished asset lock. The form must not require a
-    /// second balance or offer another funding source in this state.
-    @Published private(set) var hasPendingRegistrationRecovery = false
+    /// Distinguishes a paid Core lock from an existing identity. Neither
+    /// recovery path asks the user to fund a second identity.
+    @Published private(set) var registrationRecovery: UsernameRegistrationRecovery = .none
+    @Published private(set) var isIdentityLoading = true
+    /// Persisted credit balance of the wallet's existing identity; nil when
+    /// there is none, so a registration creates and funds a new one. An
+    /// unknown balance reads as 0, which asks for the full requirement.
+    /// Cached with the other persistence-backed state, off the typing path.
+    private var existingIdentityCredits: UInt64?
+    /// What the wallet has to send to top up the existing identity for the
+    /// typed name (`DWIdentityRegistrationCoordinator.identityTopUpDuffs`), or
+    /// nil when there is no existing identity to top up. The coordinator
+    /// re-reads the live balance at submit; this is the persisted estimate.
+    @Published private(set) var identityTopUpDuffs: UInt64?
+    var hasPendingRegistrationRecovery: Bool { registrationRecovery.isPending }
+    var isResumingUsername: Bool { registrationRecovery.identityId != nil }
 
     /// Fee-aware spendable Core balance (duffs) — the real ceiling for funding
     /// a registration: an ordinary L1 spend draws on confirmed UTXOs only and
@@ -241,8 +408,338 @@ class CreateUsernameViewModel: ObservableObject {
     /// Shielded funding is offerable right now: funded + matured + pool
     /// minimum cleared (or pool count unknown — Drive enforces the real
     /// rule at submit).
+    ///
+    /// An existing identity is topped up rather than created, and this flow
+    /// has no shielded top-up route: Shielded can pay only when the identity
+    /// needs nothing.
     var hasReadyShieldedFunding: Bool {
-        shieldedReadiness?.state == .ready
+        if Self.shieldedUnpayableTopUp(identityTopUpDuffs: identityTopUpDuffsOrStandard) != nil { return false }
+        return shieldedReadiness?.state == .ready
+    }
+
+    /// `identityTopUpDuffs` for the judged name; before a name is judged
+    /// (the Join DashPay sheet and the privacy page it opens), the top-up a
+    /// standard name needs. nil when there is no existing identity.
+    var identityTopUpDuffsOrStandard: UInt64? {
+        identityTopUpDuffs ?? existingIdentityTopUpDuffs(isContested: false, nameCount: 1)
+    }
+
+    /// Whether Shielded, the chosen source, settles the typed name. An
+    /// existing identity that needs nothing is paid by no source at all, and
+    /// one that falls short cannot be topped up from Shielded.
+    nonisolated static func shieldedPays(identityTopUpDuffs: UInt64?, shieldedReady: Bool) -> Bool {
+        if shieldedUnpayableTopUp(identityTopUpDuffs: identityTopUpDuffs) != nil { return false }
+        return identityTopUpDuffs == 0 || shieldedReady
+    }
+
+    /// Why Shielded, the chosen source, cannot pay for the typed name yet,
+    /// when the reason is its readiness rather than the price itself.
+    enum ShieldedCostBlocker: Equatable {
+        /// Enough is shielded; the covering notes are still resting.
+        case resting(readyAt: Date)
+        /// Not enough is shielded.
+        case short(shortfallDuffs: UInt64)
+        /// The shared pool is below the consensus minimum.
+        case poolTooSmall(current: UInt64)
+        /// The registration reuses an existing identity that is short by
+        /// `topUpDuffs`, and Shielded has no top-up route.
+        case cannotTopUp(topUpDuffs: UInt64)
+    }
+
+    /// nil when Shielded is not the source, can pay, or the registration
+    /// reuses an existing identity that needs nothing. Readiness describes
+    /// the exit that creates a new identity; an existing one is never
+    /// funded from Shielded.
+    var shieldedCostBlocker: ShieldedCostBlocker? {
+        Self.shieldedCostBlocker(
+            source: activeFundingSource,
+            identityTopUpDuffs: identityTopUpDuffs,
+            readiness: shieldedReadiness?.state)
+    }
+
+    /// The top-up an existing identity needs that Shielded cannot pay; nil
+    /// for a new identity or one that needs nothing.
+    nonisolated static func shieldedUnpayableTopUp(identityTopUpDuffs: UInt64?) -> UInt64? {
+        guard let identityTopUpDuffs, identityTopUpDuffs > 0 else { return nil }
+        return identityTopUpDuffs
+    }
+
+    static func shieldedCostBlocker(
+        source: DWIdentityFundingSource?,
+        identityTopUpDuffs: UInt64?,
+        readiness: ShieldedIdentityFundingReadiness.State?
+    ) -> ShieldedCostBlocker? {
+        guard source == .shielded else { return nil }
+        if let topUp = shieldedUnpayableTopUp(identityTopUpDuffs: identityTopUpDuffs) {
+            return .cannotTopUp(topUpDuffs: topUp)
+        }
+        if identityTopUpDuffs != nil { return nil }
+        guard let readiness else { return nil }
+        return shieldedCostBlocker(for: readiness)
+    }
+
+    static func shieldedCostBlocker(
+        for state: ShieldedIdentityFundingReadiness.State
+    ) -> ShieldedCostBlocker? {
+        switch state {
+        case .ready:
+            return nil
+        case .maturing(let readyAt):
+            return .resting(readyAt: readyAt)
+        case .needsFunding(let shortfallCredits):
+            return .short(shortfallDuffs: shieldedShortfallDuffs(shortfallCredits))
+        case .poolTooSmall(let current):
+            return .poolTooSmall(current: current)
+        }
+    }
+
+    /// A Shielded shortfall in duffs, rounded up: shielding the stated
+    /// amount must never leave the balance short of the denomination.
+    nonisolated static func shieldedShortfallDuffs(_ shortfallCredits: UInt64) -> UInt64 {
+        let perDuff = ContestedUsernameFee.Amounts.creditsPerDuff
+        return (shortfallCredits + perDuff - 1) / perDuff
+    }
+
+    /// The cost row when nothing but the price stops the name: the price,
+    /// stated as the least the source must hold.
+    nonisolated static func minimumCostMessage(requiredDuffs: UInt64) -> String {
+        String.localizedStringWithFormat(
+            NSLocalizedString("You need at least %@ Dash to create this username", comment: "Usernames"),
+            requiredDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol)
+    }
+
+    /// Why a private registration waits on the shared pool rather than on
+    /// the user's own funds. One wording for every screen that says it.
+    nonisolated static func shieldedPoolTooSmallMessage(current: UInt64) -> String {
+        let count: (UInt64) -> String = { NumberFormatter.localizedString(from: NSNumber(value: $0), number: .decimal) }
+        return String.localizedStringWithFormat(
+            NSLocalizedString("The shared privacy pool holds %@ of the %@ notes a private registration needs. That count comes from everyone's shielded activity, so it grows on its own — try again later.", comment: "Usernames"),
+            count(current),
+            count(ShieldedIdentityFundingReadiness.minimumPoolNotes))
+    }
+
+    /// What a ready Shielded balance pays for, where it changes what the
+    /// Join DashPay sheet says about the price.
+    enum ShieldedOnlyFunding: Equatable {
+        /// A standard name, not a contested one, and the Dash balance pays
+        /// for no name. `matureDuffs`: the shielded balance that can be
+        /// spent now.
+        case standardOnly(matureDuffs: UInt64)
+        /// Any name, contested included, whatever the Dash balance holds.
+        case everyName
+    }
+
+    /// nil when Shielded is not ready to pay, the registration reuses an
+    /// existing identity (Shielded only ever funds a new one), or Shielded
+    /// pays for a standard name only while the Dash balance covers one too.
+    var shieldedOnlyFunding: ShieldedOnlyFunding? {
+        Self.shieldedOnlyFunding(
+            reusesIdentity: existingIdentityCredits != nil,
+            dashBalanceCovers: hasMinimumRequiredCoreBalance,
+            shieldedReady: hasReadyShieldedFunding,
+            matureCredits: shieldedReadiness?.matureCredits ?? 0)
+    }
+
+    static func shieldedOnlyFunding(
+        reusesIdentity: Bool,
+        dashBalanceCovers: Bool,
+        shieldedReady: Bool,
+        matureCredits: UInt64
+    ) -> ShieldedOnlyFunding? {
+        guard !reusesIdentity, shieldedReady else { return nil }
+        if matureCredits >= ShieldedIdentityFundingReadiness.contestedDenominationCredits {
+            return .everyName
+        }
+        guard !dashBalanceCovers else { return nil }
+        return .standardOnly(matureDuffs: matureCredits / ContestedUsernameFee.Amounts.creditsPerDuff)
+    }
+
+    /// What the Join DashPay sheet says above its button.
+    enum JoinBalanceNote: Equatable {
+        /// No source covers a standard name: names the minimum.
+        case minimum
+        /// Only Shielded pays, and only for a standard name.
+        case shielded(matureDuffs: UInt64)
+        /// The Dash balance pays for a standard name, not for every name.
+        case dashBalance
+    }
+
+    /// nil when nothing needs saying: some source covers every name.
+    nonisolated static func joinBalanceNote(
+        canProceed: Bool,
+        transparentCoversEveryName: Bool,
+        shieldedOnlyFunding: ShieldedOnlyFunding?
+    ) -> JoinBalanceNote? {
+        guard canProceed else { return .minimum }
+        guard !transparentCoversEveryName else { return nil }
+        switch shieldedOnlyFunding {
+        case .everyName: return nil
+        case .standardOnly(let matureDuffs): return .shielded(matureDuffs: matureDuffs)
+        case nil: return .dashBalance
+        }
+    }
+
+    /// Reads the network's protocol version again; the fee subscription
+    /// re-runs validation if the contested cost moved. Called when the form
+    /// appears, since the read at launch may not have reached the network.
+    func refreshContestedFee() {
+        Task { await ContestedUsernameFee.shared.refresh() }
+    }
+
+    /// What a new identity is funded with for one name from `source` (the
+    /// form's when nil) — the figure the form's cost rule states. Also the
+    /// ceiling for an identity the create path reuses instead of funding.
+    func newIdentityFundingDuffs(isContested: Bool, source: DWIdentityFundingSource? = nil) -> UInt64 {
+        contestedFee.newIdentityFundingDuffs(
+            isContested: isContested,
+            fromShielded: (source ?? activeFundingSource) == .shielded)
+    }
+
+    /// Non-nil when `source` would take more for the typed contested name's
+    /// new identity than its confirmation showed. The sheet states the
+    /// figure for the source the form held then; one settled afterwards must
+    /// not exceed it — Shielded's denomination can.
+    func fundingExceedingConfirmation(
+        source: DWIdentityFundingSource, nameCount: UInt64
+    ) -> (neededDuffs: UInt64, confirmedDuffs: UInt64)? {
+        guard !isInvitationMode, registrationRecovery != .pendingCoreAssetLock,
+              isContestedCandidate,
+              existingIdentityTopUpDuffs(isContested: true, nameCount: nameCount) == nil,
+              let confirmedDuffs = requestedTopUpCeilingDuffs else { return nil }
+        let neededDuffs = newIdentityFundingDuffs(isContested: true, source: source)
+        return neededDuffs > confirmedDuffs ? (neededDuffs, confirmedDuffs) : nil
+    }
+
+    /// Whether a Core top-up of the identity is already paid and waiting to
+    /// reach Platform, so another one for this submission may pay again.
+    /// Only a Core top-up builds an asset lock, so a registration asks only
+    /// for Core. A purchase (`isPurchase`) always tops up from Core, whatever
+    /// `source` is, and is judged by its own shortfall, not the registration's.
+    func hasUnfinishedCoreTopUp(source: DWIdentityFundingSource, nameCount: UInt64, isPurchase: Bool = false) -> Bool {
+        guard !isInvitationMode,
+              isPurchase || source == .core,
+              let wallet = SwiftDashSDKHost.shared.wallet,
+              let container = SwiftDashSDKHost.shared.modelContainer
+        else { return false }
+        if isPurchase {
+            // A purchase tops up from Core whatever the registration pick
+            // says, but only an identity that exists and falls short — the
+            // coordinator's own test, on the same persisted balance it reads.
+            // Without an identity it registers a fresh one. Read refreshed, as
+            // the coordinator reads it when it decides.
+            guard let identityId = DWCurrentUserIdentityInfo.shared.refreshedSnapshot().identityId,
+                  let price = takenNameSalePriceCredits,
+                  DWIdentityRegistrationCoordinator.purchaseTopUpDuffs(
+                    priceCredits: price,
+                    heldCredits: UsernameMarketplaceService.identityBalanceCredits(
+                        identityId: identityId, container: container)) > 0
+            else { return false }
+            return DWIdentityRegistrationCoordinator.hasUnfinishedIdentityTopUp(
+                walletId: wallet.walletId, identityId: identityId, modelContainer: container)
+        }
+        guard let needed = existingIdentityTopUpDuffs(isContested: isContestedCandidate, nameCount: nameCount),
+              needed > 0,
+              // The identity the cached credits above belong to.
+              let identityId = DWCurrentUserIdentityInfo.shared.snapshotForReading.identityId
+        else { return false }
+        return DWIdentityRegistrationCoordinator.hasUnfinishedIdentityTopUp(
+            walletId: wallet.walletId,
+            identityId: identityId,
+            modelContainer: container)
+    }
+
+    /// What the chosen source has to cover for a name: the shortfall of an
+    /// existing identity (the coordinator tops it up), or a new identity's full
+    /// funding. Updates `identityTopUpDuffs` for the label being judged.
+    /// `source` nil is the form's; Core and Platform are judged with
+    /// `.core`, at their own figure rather than Shielded's denomination.
+    private func requiredFundingDuffs(isContested: Bool, source: DWIdentityFundingSource? = nil) -> UInt64 {
+        // One name: the companion is chosen only after this verdict, and the
+        // confirmation sheet states what it adds.
+        let topUp = existingIdentityTopUpDuffs(isContested: isContested, nameCount: 1)
+        if identityTopUpDuffs != topUp {
+            identityTopUpDuffs = topUp
+        }
+        if let topUp { return topUp }
+        return newIdentityFundingDuffs(isContested: isContested, source: source)
+    }
+
+    /// Whether registering the typed name as `nameCount` names moves money
+    /// from the funding source: a new identity is funded from it, and an
+    /// existing one is topped up from it when its credits fall short.
+    func registrationMovesFunds(nameCount: UInt64) -> Bool {
+        existingIdentityTopUpDuffs(isContested: isContestedCandidate, nameCount: nameCount).map { $0 > 0 } ?? true
+    }
+
+    /// Whether `source` can pay for registering the typed name as `nameCount`
+    /// names. For an existing identity the companion can add a top-up the
+    /// form's one-name flags did not count; its shortfall is topped up from
+    /// Core or Platform, and Shielded has no top-up route. A new identity is
+    /// funded with the same amount for one name or two, so the one-name
+    /// flags decide there.
+    func canPay(from source: DWIdentityFundingSource, nameCount: UInt64) -> Bool {
+        guard let topUp = existingIdentityTopUpDuffs(isContested: isContestedCandidate, nameCount: nameCount) else {
+            switch source {
+            case .shielded: return hasReadyShieldedFunding
+            case .platformPayment: return hasMinimumRequiredPlatformBalance
+            case .core: return coreSpendableDuffs >= newIdentityFundingDuffs(isContested: isContestedCandidate, source: .core)
+            case .invitation: return isInvitationMode
+            @unknown default: return false
+            }
+        }
+        guard topUp > 0 else { return true }
+        switch source {
+        // On the figure `refreshCoreSpendable()` re-derived for this submission.
+        case .core: return coreSpendableDuffs >= topUp
+        case .platformPayment: return canFundFromPlatform(topUp)
+        case .shielded, .invitation: return false
+        @unknown default: return false
+        }
+    }
+
+    /// Re-derives the Core spendable figure from the live UTXO set — the fee
+    /// reserve moves with the UTXO count while the cached figure can lag.
+    /// One FFI walk; called once per submission, before `canPay` judges Core.
+    func refreshCoreSpendable() {
+        coreSpendableDuffs = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
+    }
+
+    /// The first of `candidates` that can pay for `nameCount` names.
+    func firstPayableSource(of candidates: [DWIdentityFundingSource], nameCount: UInt64) -> DWIdentityFundingSource? {
+        var seen = Set<DWIdentityFundingSource>()
+        return candidates.first { seen.insert($0).inserted && canPay(from: $0, nameCount: nameCount) }
+    }
+
+    /// Whether a registration of `nameCount` names must name its funding
+    /// source and ask first. A form that did not pass the privacy page this
+    /// visit (`sourcePickedByUser` false) — a retry from Home or More, a
+    /// recovery — picked the source by itself, and the contested confirmations
+    /// state amounts, not the balance they come from: a request that went out
+    /// from Shielded must not quietly move to transparent Core on its retry.
+    /// Asked only when money can leave that source; not for an invitation (the
+    /// voucher pays) or a paid Core lock being resumed. A purchase never comes
+    /// here: it always pays from the wallet's Core balance, which its own
+    /// confirmation names as the wallet balance.
+    func fundingSourceNeedsConfirmation(nameCount: UInt64, sourcePickedByUser: Bool) -> Bool {
+        !sourcePickedByUser
+            && !isInvitationMode
+            && registrationRecovery != .pendingCoreAssetLock
+            && registrationMovesFunds(nameCount: nameCount)
+    }
+
+    /// What the chosen source sends to top up the existing identity so it can
+    /// register `nameCount` names (the coordinator's own formula, from the
+    /// persisted balance), or nil when there is no existing identity to top
+    /// up. The confirmation sheet shows this figure and the submission carries
+    /// it as the ceiling the coordinator may spend without asking again.
+    func existingIdentityTopUpDuffs(isContested: Bool, nameCount: UInt64) -> UInt64? {
+        existingIdentityCredits.map { held in
+            DWIdentityRegistrationCoordinator.identityTopUpDuffs(
+                requiredCredits: DWIdentityRegistrationCoordinator.requiredRegistrationCredits(
+                    isContested: isContested, nameCount: nameCount,
+                    contestFundCredits: contestedFee.fundCredits),
+                heldCredits: held)
+        }
     }
 
     /// Non-nil puts the form in invitation-claim mode (DIP-13): the
@@ -257,12 +754,57 @@ class CreateUsernameViewModel: ObservableObject {
 
     var isInvitationMode: Bool { invitationURI != nil }
 
+    /// What the invitation funds, read before the form opened. nil outside
+    /// invitation mode, or when the form was opened without a checked
+    /// invitation.
+    @Published private(set) var invitationAmountDuffs: UInt64? = nil
+
+    /// Which usernames the invitation pays for: judged against the contested
+    /// cost as it stands, so a protocol version read after the form opened
+    /// moves it too. nil when the amount is unknown, which gates no name.
+    var invitationTier: InvitationTier? {
+        invitationAmountDuffs.map {
+            InvitationValidationPolicy.tier(amountDuffs: $0, contestedDuffs: contestedFee.fundingDuffs)
+        }
+    }
+
+    /// The stored invitation being claimed (scope + link), when the form was
+    /// opened from the Home card.
+    private var pendingInvitation: PendingInvitation?
+
+    /// The invitation pays for non-contested names only, so a name that
+    /// would go to a masternode vote cannot be submitted with it.
+    var isNonContestedInvitation: Bool { invitationTier == .nonContested }
+
+    /// Whether an invitation of this tier pays for `label`; always true
+    /// without a non-contested-only invitation.
+    nonisolated static func invitationPays(
+        for label: String, tier: InvitationTier?,
+        isContested: (String) -> Bool = { DWContestedNameStatusService.isContestedLabel($0) }
+    ) -> Bool {
+        tier != .nonContested || !isContested(label)
+    }
+
+    /// The non-contested requirement ("20–23 characters" OR "a digit 2–9")
+    /// for a non-contested-only invitation; `.hidden` otherwise.
+    @Published private(set) var nonContestedRule: UsernameValidationRuleResult = .hidden
+
     /// Enter invitation-claim mode with a normalized invitation URI
     /// (see `DWInvitationLinkNormalizer`). Re-runs validation so the
     /// cost rule reflects the voucher funding.
-    func configureInvitationMode(uri: String) {
+    func configureInvitationMode(uri: String, amountDuffs: UInt64? = nil, invitation: PendingInvitation? = nil) {
         invitationURI = uri
+        invitationAmountDuffs = amountDuffs
+        pendingInvitation = invitation
+        // A check started under the previous rules answers a different
+        // question; its result must not enable Continue here.
+        availabilityCheckTask?.cancel()
+        availabilityCheckLabel = nil
         invitationInviterUsername = DWInvitationService.shared.preview(for: uri)?.inviterUsername
+        // The invitation pays; no source is picked or judged, and an existing
+        // identity is not topped up on this path.
+        activeFundingSource = .invitation
+        existingIdentityCredits = nil
         validateUsername(username: username)
     }
 
@@ -271,9 +813,20 @@ class CreateUsernameViewModel: ObservableObject {
         // verdict from an earlier visit (name taken meanwhile, a vote
         // started or resolved) can't carry over into this one.
         refreshWalletBackedValidationState()
+        if username.isEmpty, !isInvitationMode,
+           let draft = DWIdentityRegistrationCoordinator.shared.pendingUsernameDraft() {
+            username = draft.username
+            temporaryField.restoreDraft(draft.temporaryUsername ?? "", for: draft.username)
+        }
         availabilityCheckLabel = nil
         validateUsername(username: username)
         checkBalance()
+        // The persisted identity balance is what the shortfall above is judged
+        // on; ask Platform for the current one. A changed balance publishes
+        // the registration-status notification this model re-validates on.
+        if existingIdentityCredits != nil {
+            Task { await DWCurrentUserIdentityInfo.shared.refreshCurrentBalanceFromNetwork() }
+        }
     }
     
     var minimumRequiredBalance: String {
@@ -281,7 +834,7 @@ class CreateUsernameViewModel: ObservableObject {
     }
     
     var recommendedBalance: String {
-        return DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME.dashAmount.formattedDashAmountWithoutCurrencySymbol
+        return contestedFee.maximumUsernameCostDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol
     }
     
     var minimumRequiredBalanceFiat: String {
@@ -314,6 +867,70 @@ class CreateUsernameViewModel: ObservableObject {
 
         observeBalance()
     }
+
+    #if DEBUG
+    /// True only for `makeForPreview` instances. They never wired the
+    /// balance observers, so nothing may reach for the SDK singletons a
+    /// canvas process has no hydrated wallet for.
+    private(set) var isPreviewInstance = false
+
+    /// Lightweight init used only by SwiftUI previews. Skips `init()`'s
+    /// Combine wiring — it touches `SwiftDashSDKWalletState`, the
+    /// registration coordinator and the shielded readiness service — and
+    /// just poses the published state the Join DashPay surfaces read.
+    private init(previewBalance: String,
+                 hasMinimumRequiredBalance: Bool,
+                 hasRecommendedBalance: Bool,
+                 shieldedReadiness: ShieldedIdentityFundingReadiness.Snapshot?,
+                 contestedFee: ContestedUsernameFee.Amounts,
+                 isContestedCandidate: Bool,
+                 existingIdentityCredits: UInt64?) {
+        self.isPreviewInstance = true
+        self.contestedFee = contestedFee
+        self.isContestedCandidate = isContestedCandidate
+        self.existingIdentityCredits = existingIdentityCredits
+        self.balance = previewBalance
+        self.hasMinimumRequiredBalance = hasMinimumRequiredBalance
+        // The Join DashPay sheet reads the per-source flag; a preview's
+        // "enough" is a Core balance.
+        self.hasMinimumRequiredCoreBalance = hasMinimumRequiredBalance
+        self.hasRecommendedBalance = hasRecommendedBalance
+        self.shieldedReadiness = shieldedReadiness
+    }
+
+    /// - Parameters:
+    ///   - balance: formatted transparent balance, as the info line prints it.
+    ///   - hasMinimumRequiredBalance: covers a standard name (0.03 DASH).
+    ///   - hasRecommendedBalance: the Dash or Platform balance covers a
+    ///     contested name.
+    ///   - shieldedReadiness: poses the shielded route; `nil` stands for a
+    ///     wallet that has not hydrated yet, which is what keeps Continue off.
+    ///   - contestedFee: the contested cost of the network the form is on.
+    ///   - isContestedCandidate: the typed name goes to a masternode vote.
+    ///     Posed without a name in the field, so the next validation (a
+    ///     funding-source change runs one) puts it back to false.
+    ///   - existingIdentityCredits: the balance of an identity the wallet
+    ///     already has; `nil` for none, so a registration funds a new one.
+    ///     Replaced by the next recovery-state refresh.
+    static func makeForPreview(
+        balance: String = "0.00000000",
+        hasMinimumRequiredBalance: Bool = false,
+        hasRecommendedBalance: Bool = false,
+        shieldedReadiness: ShieldedIdentityFundingReadiness.Snapshot? = nil,
+        contestedFee: ContestedUsernameFee.Amounts = .legacy,
+        isContestedCandidate: Bool = false,
+        existingIdentityCredits: UInt64? = nil
+    ) -> CreateUsernameViewModel {
+        CreateUsernameViewModel(
+            previewBalance: balance,
+            hasMinimumRequiredBalance: hasMinimumRequiredBalance,
+            hasRecommendedBalance: hasRecommendedBalance,
+            shieldedReadiness: shieldedReadiness,
+            contestedFee: contestedFee,
+            isContestedCandidate: isContestedCandidate,
+            existingIdentityCredits: existingIdentityCredits)
+    }
+    #endif
     
     /// Terminal outcome of a username-registration attempt, surfaced to
     /// the SwiftUI form so it can keep the screen up through the PIN +
@@ -327,9 +944,15 @@ class CreateUsernameViewModel: ObservableObject {
     /// submission itself still succeeded).
     enum UsernameRegistrationOutcome {
         case success
+        case completedInOriginalContext(String)
+        case submittedUnconfirmed(String)
         case submittedForVoting(temporaryUsername: String?, temporaryUsernameError: String?)
         case cancelled
         case failure(String)
+        /// Nothing was sent: the Core asset lock would need more inputs than
+        /// the network accepts. The screen offers `CoreCoinConsolidationSheet`
+        /// for this lock.
+        case needsCoinConsolidation(AssetLockInputLimit.Check)
     }
 
     /// Kick off SwiftDashSDK identity + DPNS registration and suspend
@@ -362,7 +985,14 @@ class CreateUsernameViewModel: ObservableObject {
         // check and put the spinner back up mid-submission.
         coreSpendableDuffs = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
 
-        let submittedUsername = username
+        // Normalized ONCE, here, and used for everything that follows:
+        // registration, the phase match below, and the handoff label the Home
+        // row is keyed by. `validateUsername` trims only its local argument, so
+        // a pasted label can reach this point with surrounding whitespace —
+        // registering the raw form while the handoff persists the trimmed one
+        // leaves the row reporting an interrupted registration for an attempt
+        // that is actually running.
+        let submittedUsername = username.trimmingCharacters(in: .whitespacesAndNewlines)
         submittedRegistrationUsername = submittedUsername
         didNotifyRegistrationStarted = false
         self.onRegistrationStarted = onRegistrationStarted
@@ -374,20 +1004,71 @@ class CreateUsernameViewModel: ObservableObject {
         // `handleRegistrationPhase` — the coordinator publishes the
         // same phases for every funding source.
         if let invitationURI {
+            // The claim spends the voucher from the active wallet; an
+            // invitation stored for another wallet or network must not.
+            if let pendingInvitation, !InvitationScope.isActiveAndBound(pendingInvitation.scope) {
+                DWLogger.log("CreateUsername: invitation belongs to another wallet or network; not claiming")
+                submittedRegistrationUsername = nil
+                self.onRegistrationStarted = nil
+                return .cancelled
+            }
             defer {
                 submittedRegistrationUsername = nil
                 didNotifyRegistrationStarted = false
                 self.onRegistrationStarted = nil
             }
+            // The form's rule again, on the name actually submitted: the
+            // voucher cannot pay for a name that goes to a vote.
+            guard Self.invitationPays(for: submittedUsername, tier: invitationTier) else {
+                return .failure(NSLocalizedString(
+                    "You can only create a non-contested username using this invitation",
+                    comment: "DashPay Invitations"))
+            }
+            // The card's check again, right before the claim: an identity
+            // that appeared since (a recovered one, another registration)
+            // would otherwise take the username on a resume that never
+            // spends the voucher. A definitive answer goes to the card, which
+            // explains it and removes this copy; an undetermined one proceeds,
+            // as it does on the card. One not chain-locked yet would fail the
+            // claim after the PIN, so it is answered here.
+            if let pendingInvitation {
+                let verdict = await InvitationValidator.validate(pendingInvitation)
+                // The query can outlast a wallet switch, and the validator
+                // answers nil for that too; the claim spends from the
+                // wallet active now, so the scope is checked again here.
+                guard InvitationScope.isActiveAndBound(pendingInvitation.scope) else {
+                    DWLogger.log("CreateUsername: wallet changed during the invitation check; not claiming")
+                    return .cancelled
+                }
+                if let verdict, verdict.isDefinitive {
+                    // The case only: the verdict carries the inviter's name.
+                    DWLogger.log("CreateUsername: invitation refused before the claim")
+                    PendingInvitationViewModel.shared.recheck()
+                    return .failure(InvitationClaimFailure.refused.message)
+                }
+                if verdict == .awaitingChainLock {
+                    return .failure(InvitationClaimFailure.stillConfirming.message)
+                }
+            }
             do {
                 _ = try await DWIdentityRegistrationCoordinator.shared.startClaimInvitation(
                     username: submittedUsername,
                     invitationURI: invitationURI,
-                    temporaryUsername: temporaryUsername)
-                // This path never touches `DWIdentityRegistrationBridge.shared`,
-                // so on an invitation-first launch that singleton is never
-                // constructed, never observes the coordinator's phases, and
-                // never posts the canonical registration notification —
+                    temporaryUsername: temporaryUsername,
+                    // The verification offer is made in this mode too, and the
+                    // accepted link is held on the bridge; this path skips the
+                    // bridge, so it has to fetch the link itself.
+                    verificationURL: DWIdentityRegistrationBridge.shared
+                        .verificationURL(forSubmissionOf: submittedUsername))
+                // This path never REFERENCES `DWIdentityRegistrationBridge.shared`,
+                // so on an invitation-first launch that singleton may never be
+                // constructed, and then never observes the coordinator's phases
+                // and never posts the canonical registration notification —
+                // note "may": any earlier plain submit in the process builds the
+                // bridge (`performSubmit` writes `preferredFundingSource` on
+                // it), and from then on it mirrors this path's phases like any
+                // other. What the Home row keys off is the handoff record, not
+                // the bridge being blind to invitations.
                 // `.shared` and `.stateChangedNotification` are independently
                 // lazy statics, so referencing the notification name does not
                 // build the bridge. Every consumer of app-wide "registered now"
@@ -397,6 +1078,16 @@ class CreateUsernameViewModel: ObservableObject {
                 // it from disk. Announce it explicitly here, the same way
                 // `DWCurrentUserIdentityInfo.reconcileRecoveredIdentity()` does
                 // for identities that arrive outside the bridge's flow.
+                // This wallet has its username, so its copy of the
+                // invitation is done with. A claim that created the identity
+                // already retired every copy; one that finished on an identity
+                // the wallet already had (an earlier claim, or a paid Core
+                // lock) removes nothing, and the card would then read the new
+                // username as "already has one". Only this wallet's copy: on
+                // that route the voucher may still be unspent.
+                if let pendingInvitation {
+                    PendingInvitationStore.shared.retireFinished(pendingInvitation)
+                }
                 DWCurrentUserIdentityInfo.shared.refreshFromSDK()
                 NotificationCenter.default.post(
                     name: .DWDashPayRegistrationStatusUpdated, object: nil)
@@ -404,6 +1095,14 @@ class CreateUsernameViewModel: ObservableObject {
             } catch DWIdentityRegistrationCoordinator.CoordinatorError.authCancelled {
                 return .cancelled
             } catch {
+                // A failure about the invitation itself, in its own words;
+                // anything else keeps the generic wording and the invitation.
+                // The registration-activity sink of the Home card re-checks
+                // the invitation once this attempt has ended.
+                if let failure = InvitationClaimFailure.classify(error) {
+                    DWLogger.log("CreateUsername: invitation claim refused (\(failure)): \(String(describing: error))")
+                    return .failure(failure.message)
+                }
                 return .failure(
                     Self.registrationFailureMessage(error, username: submittedUsername))
             }
@@ -431,6 +1130,9 @@ class CreateUsernameViewModel: ObservableObject {
                     // user-cancel — a silent no-op, not an error popup.
                     if error.domain == NSCocoaErrorDomain && error.code == NSUserCancelledError {
                         continuation.resume(returning: .cancelled)
+                    } else if let check = AssetLockInputLimit.check(for: error) {
+                        DWLogger.log("CreateUsername: registration refused over the asset-lock input limit for '\(submittedUsername)'")
+                        continuation.resume(returning: .needsCoinConsolidation(check))
                     } else {
                         continuation.resume(
                             returning: .failure(
@@ -451,6 +1153,9 @@ class CreateUsernameViewModel: ObservableObject {
     /// change is refused by consensus and surfaces as a typed failure,
     /// as does a price/name mismatch from a mid-flight edit.
     func purchaseListedUsername(name: String) async -> UsernameRegistrationOutcome {
+        guard !purchaseSubmissionUnconfirmed else {
+            return .submittedUnconfirmed(DWIdentityRegistrationCoordinator.CoordinatorError.platformWriteUnconfirmed.localizedDescription)
+        }
         guard let credits = takenNameSalePriceCredits else {
             // The gate (`canPurchaseListedNameDirectly`) shouldn't let a
             // priceless state reach here; answer with the marketplace's
@@ -462,40 +1167,46 @@ class CreateUsernameViewModel: ObservableObject {
                 name: name,
                 priceCredits: credits)
             return .success
+        } catch let error as DWIdentityRegistrationCoordinator.CoordinatorError
+            where error.isCompletedPurchase {
+            return .completedInOriginalContext(error.localizedDescription)
         } catch DWIdentityRegistrationCoordinator.CoordinatorError.authCancelled {
             return .cancelled
         } catch {
-            DWLogger.log("CreateUsername: purchase failed for '\(name)': \(error.localizedDescription)")
-            return .failure(error.localizedDescription)
+            return purchaseFailureOutcome(error)
         }
     }
 
-    /// Human wording for a failed registration. Platform surfaces its refusals
-    /// as a Rust debug dump of the whole state transition — hundreds of
-    /// characters of `ContestedDocumentResourceVotePoll { … }` that fill the
-    /// alert and tell the user nothing. Recognised causes get a sentence; an
-    /// unrecognised one is passed through unchanged rather than swallowed, and
-    /// the raw text always reaches the log.
+    /// Keep an uncertain purchase blocked for the lifetime of this form.
+    func purchaseFailureOutcome(_ error: Error) -> UsernameRegistrationOutcome {
+        if let error = error as? DWIdentityRegistrationCoordinator.CoordinatorError,
+           error.isSubmissionUnconfirmed {
+            purchaseSubmissionUnconfirmed = true
+            return .submittedUnconfirmed(error.localizedDescription)
+        }
+        DWLogger.log("CreateUsername: purchase failed: \(error.localizedDescription)")
+        if let check = AssetLockInputLimit.check(for: error) {
+            return .needsCoinConsolidation(check)
+        }
+        return .failure(error.localizedDescription)
+    }
+
+    /// Human wording for a failed registration — the shared mapping
+    /// (`UsernameRegistrationFailureWording`) the Home / More row reports with
+    /// too. The raw text always reaches the log.
     private static func registrationFailureMessage(
         _ error: Error,
         username: String
     ) -> String {
         let raw = error.localizedDescription
         DWLogger.log("CreateUsername: registration failed for '\(username)': \(raw)")
-
-        // The vote poll ended in a LOCK: masternodes decided nobody gets the
-        // name. Re-submitting can only fail the same way.
-        if raw.contains("vote_poll_status: Locked") || raw.contains("is currently already locked") {
-            return String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "“%@” was locked by a masternode vote, so it cannot be registered by anyone. Please choose a different username.",
-                    comment: "Usernames"),
-                username)
-        }
-        return raw
+        return UsernameRegistrationFailureWording.message(forRaw: raw, username: username)
     }
 
     private func registrationOutcome(for username: String) -> UsernameRegistrationOutcome {
+        if let message = DWIdentityRegistrationCoordinator.shared.completedRegistrationContextMessage {
+            return .completedInOriginalContext(message)
+        }
         // Membership across ALL pending entries, not the single-slot
         // `pendingLabel` (the oldest): an older unresolved contested
         // submission in the store must not make THIS submission read as
@@ -521,11 +1232,14 @@ class CreateUsernameViewModel: ObservableObject {
         }
 
         switch phase {
-        case .preparingKeys, .inFlight:
+        case .inFlight:
+            // Not `.preparingKeys`: both coordinator paths enter it before the
+            // PIN prompt, so it would announce a registration the user may
+            // still cancel. `.inFlight` is only reached once authorized.
             guard !didNotifyRegistrationStarted else { return }
             didNotifyRegistrationStarted = true
             onRegistrationStarted?()
-        case .idle, .completed, .failed:
+        case .idle, .preparingKeys, .completed, .failed:
             break
         }
     }
@@ -552,6 +1266,14 @@ class CreateUsernameViewModel: ObservableObject {
             takenNameSalePriceCredits = nil
         }
 
+        let nonContestedVerdict: UsernameValidationRuleResult = !isNonContestedInvitation
+            ? .hidden
+            : (username.isEmpty ? .empty
+                : (DWContestedNameStatusService.isContestedLabel(username) ? .invalid : .valid))
+        if nonContestedRule != nonContestedVerdict {
+            nonContestedRule = nonContestedVerdict
+        }
+
         guard !username.isEmpty else {
             uiState = CreateUsernameUIState()
             if isContestedCandidate {
@@ -564,11 +1286,11 @@ class CreateUsernameViewModel: ObservableObject {
             if shieldedReadiness != standardReadiness {
                 shieldedReadiness = standardReadiness
             }
+            let standardCost = requiredFundingDuffs(isContested: false, source: .core)
+            transparentRequiredDuffs = standardCost
             updateCurrentFundingEligibility(
-                coreEligible: coreSpendableDuffs >= DWDP_MIN_BALANCE_TO_CREATE_USERNAME,
-                platformEligible: PlatformPaymentIdentityFundingPolicy.canFund(
-                    candidates: platformFundingCandidates,
-                    fundingDuffs: DWDP_MIN_BALANCE_TO_CREATE_USERNAME))
+                coreEligible: coreSpendableDuffs >= standardCost,
+                platformEligible: canFundFromPlatform(standardCost))
             return
         }
 
@@ -586,31 +1308,28 @@ class CreateUsernameViewModel: ObservableObject {
         if isContestedCandidate != contestedCandidate {
             isContestedCandidate = contestedCandidate
         }
-        let requiredCost = isContested ? DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME : DWDP_MIN_BALANCE_TO_CREATE_USERNAME
-        // Any funding source can satisfy the cost rule. Core spends
-        // BIP44 UTXOs via `registerIdentityWithFunding`; Platform
-        // Payment spends DIP-17 credits via
-        // `registerIdentityFromAddresses`; Shielded spends a fixed
-        // exit denomination via `shieldedIdentityCreateFromPool` and
-        // is viable only when its readiness gates (funding, maturity,
-        // pool) all pass. The picker in `CreateUsernameView` lets the
-        // user choose among the viable sources; the form is unblocked
-        // as soon as any one is.
+        // A new identity is funded in full; an existing one only needs its
+        // shortfall topped up, which is 0 when it already holds enough.
+        let requiredCost = requiredFundingDuffs(isContested: isContested)
+        // What each source spends: Core, BIP44 UTXOs via
+        // `registerIdentityWithFunding` (or `topUpIdentityWithFunding`);
+        // Platform Payment, DIP-17 credits via `registerIdentityFromAddresses`
+        // (or `topUpFromAddresses`); Shielded, a fixed exit denomination via
+        // `shieldedIdentityCreateFromPool`, viable only when its readiness
+        // gates (funding, maturity, pool) all pass — and never for a top-up.
+        // All three are measured here; `activeFundingSource` decides which
+        // verdict the cost rule actually reports.
+        let transparentCost = requiredFundingDuffs(isContested: isContested, source: .core)
+        transparentRequiredDuffs = transparentCost
         let coreBalance = coreSpendableDuffs
-        let hasEnoughCore = coreBalance >= requiredCost
-        let hasEnoughPlatform = PlatformPaymentIdentityFundingPolicy
-            .canFund(
-                candidates: platformFundingCandidates,
-                fundingDuffs: UInt64(requiredCost))
+        let hasEnoughCore = coreBalance >= transparentCost
+
+        let hasEnoughPlatform = canFundFromPlatform(transparentCost)
         let currentShieldedReadiness = isContested
             ? contestedReadiness()
             : ShieldedIdentityFundingReadiness.shared.standardSnapshot
         if shieldedReadiness != currentShieldedReadiness {
             shieldedReadiness = currentShieldedReadiness
-            // The picker's Shielded row and this formatted amount read the same
-            // snapshot, so they have to move together — `checkBalance` no longer
-            // runs on the typing path that reaches here.
-            shieldedBalance = Self.formattedShieldedBalance(from: currentShieldedReadiness)
         }
         armShieldedMaturityRevalidation()
         updateCurrentFundingEligibility(
@@ -618,14 +1337,32 @@ class CreateUsernameViewModel: ObservableObject {
             platformEligible: hasEnoughPlatform)
         // Invitation-claim mode: the voucher pays the registration, so
         // no local balance is required and the cost rule stays hidden.
-        // Whether the voucher actually covers the cost is only known at
-        // claim time (the amount is not in the link) — the coordinator
-        // surfaces an insufficient-voucher failure through the normal
-        // error alert.
+        // Which names the voucher covers is `invitationTier`'s gate; with
+        // the amount unknown nothing is gated, and a voucher that falls short
+        // fails at claim time through the normal error alert.
         let voucherFunded = isInvitationMode
-        let recoveryFunded = hasPendingRegistrationRecovery && !voucherFunded
-        let hasEnoughBalance = recoveryFunded || voucherFunded || hasEnoughCore || hasEnoughPlatform || hasReadyShieldedFunding
+        // A paid Core lock is resumed, never paid again. An existing identity
+        // is judged by its shortfall above instead.
+        let recoveryFunded = registrationRecovery == .pendingCoreAssetLock && !voucherFunded
+        // Only the source that will pay counts. `nil` is the window before the
+        // form appears and commits to one; there, any source still could.
+        let hasEnoughFunding: Bool
+        switch activeFundingSource {
+        case .core:
+            hasEnoughFunding = hasEnoughCore
+        case .platformPayment:
+            hasEnoughFunding = hasEnoughPlatform
+        case .shielded:
+            hasEnoughFunding = Self.shieldedPays(identityTopUpDuffs: identityTopUpDuffs, shieldedReady: hasReadyShieldedFunding)
+        case .invitation, .none:
+            hasEnoughFunding = hasEnoughCore || hasEnoughPlatform || hasReadyShieldedFunding
+        }
+        let hasEnoughBalance = recoveryFunded || voucherFunded || hasEnoughFunding
+        // A non-contested-only invitation cannot pay for a contested name.
+        let tierAllowsName = Self.invitationPays(for: username, tier: invitationTier, isContested: { _ in isContested })
         let canContinue = lengthValid && !hasIllegalCharacters && !startsOrEndsWithHyphen && hasEnoughBalance
+            && tierAllowsName
+            && !isIdentityLoading && DWCurrentUserIdentityInfo.shared.isCurrentNetworkContextReady
 
         // Same label as the existing check state → carry its rule forward
         // (a settled verdict stays settled; an in-flight `.loading` keeps
@@ -640,7 +1377,7 @@ class CreateUsernameViewModel: ObservableObject {
         uiState = CreateUsernameUIState(
             lengthRule: lengthValid ? .valid : .invalid,
             allowedCharactersRule: hasIllegalCharacters || startsOrEndsWithHyphen ? .invalid : .valid,
-            costRule: voucherFunded || recoveryFunded ? .hidden : (hasEnoughBalance ? .valid : .invalid),
+            costRule: isIdentityLoading || voucherFunded || recoveryFunded ? .hidden : (hasEnoughBalance ? .valid : .invalid),
             usernameBlockedRule: canContinue ? (reusePriorCheck ? priorRule : .loading) : .hidden,
             requiredDash: requiredCost,
             canContinue: reusePriorCheck && priorRule == .valid
@@ -677,17 +1414,20 @@ class CreateUsernameViewModel: ObservableObject {
         // Log the funding verdict only after typing settles. Logging it from
         // the local validator did synchronous file work for every keystroke.
         let isContested = DWContestedNameStatusService.isContestedLabel(username)
-        let requiredCost = isContested
-            ? DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME
-            : DWDP_MIN_BALANCE_TO_CREATE_USERNAME
+        let requiredCost = requiredFundingDuffs(isContested: isContested)
         DWLogger.log(
             "CreateUsername: checking '\(username)' "
-                + "(contested=\(isContested), required=\(requiredCost) duffs) — "
+                + "(contested=\(isContested), required=\(requiredCost) duffs"
+                + "\(identityTopUpDuffs != nil ? " top-up of existing identity" : "")) — "
                 + "core=\(hasMinimumRequiredCoreBalance) [spendable \(coreSpendableDuffs) duffs], "
                 + "platform=\(hasMinimumRequiredPlatformBalance), "
                 + "shielded=\(hasReadyShieldedFunding), "
-                + "recovery=\(hasPendingRegistrationRecovery), voucher=\(isInvitationMode)")
+                + "recovery=\(hasPendingRegistrationRecovery), voucher=\(isInvitationMode) — "
+                + "judging \(activeFundingSource?.logLabel ?? "any (no choice committed)")")
 
+        let checkingWalletId = SwiftDashSDKHost.shared.wallet?.walletId
+        let checkingNetwork = SwiftDashSDKHost.shared.runningNetwork
+        let checkingRecovery = registrationRecovery
         let result: UsernameValidationRuleResult
         var locked = false
         var activeContenders: Int?
@@ -707,6 +1447,26 @@ class CreateUsernameViewModel: ObservableObject {
                 : .fresh
 
             let available = try await availability
+            if let identityId = registrationRecovery.identityId,
+               let wallet = SwiftDashSDKHost.shared.wallet {
+                let recoveryState = try await DWIdentityRegistrationCoordinator.shared.registrationNameState(
+                    username, identityId: identityId, wallet: wallet)
+                if recoveryState != .available {
+                    guard !Task.isCancelled,
+                          self.username.trimmingCharacters(in: .whitespacesAndNewlines) == username,
+                          SwiftDashSDKHost.shared.wallet?.walletId == checkingWalletId,
+                          SwiftDashSDKHost.shared.runningNetwork == checkingNetwork,
+                          WalletEnvironment.network == checkingNetwork,
+                          registrationRecovery == checkingRecovery, !isIdentityLoading else { return }
+                    isLockedContestedName = false
+                    activeContestContenders = nil
+                    activeContestEndsAt = nil
+                    takenNameSalePriceCredits = nil
+                    uiState.usernameBlockedRule = .valid
+                    uiState.canContinue = Self.invitationPays(for: username, tier: invitationTier)
+                    return
+                }
+            }
             if available {
                 // "Available" only means no identity owns the domain document.
                 // A contested label can still be spoken for: a vote that ended
@@ -752,12 +1512,11 @@ class CreateUsernameViewModel: ObservableObject {
                             result = .valid
                         }
                     }
-                case .fresh, .unknown:
-                    // .unknown = the precheck query failed. It must not block
-                    // a name that is very likely fine — the submit-time
-                    // transition stays the authority (mirrors the old
-                    // locked-check's failed-query behavior).
+                case .fresh:
                     result = .valid
+                case .unknown:
+                    // A failed read cannot establish name availability.
+                    result = .error
                 }
             } else if let pending = DWContestedNameStatusService.shared.pendingLabel,
                       pending.caseInsensitiveCompare(username) == .orderedSame {
@@ -774,6 +1533,8 @@ class CreateUsernameViewModel: ObservableObject {
                 }
                 result = .invalidCritical
             }
+        } catch DWIdentityRegistrationCoordinator.CoordinatorError.usernameUnavailable {
+            result = .invalidCritical
         } catch {
             result = .error
         }
@@ -782,7 +1543,11 @@ class CreateUsernameViewModel: ObservableObject {
         // flight. Compare against the trimmed live value — validateUsername
         // trims before calling us.
         guard !Task.isCancelled,
-              self.username.trimmingCharacters(in: .whitespacesAndNewlines) == username
+              self.username.trimmingCharacters(in: .whitespacesAndNewlines) == username,
+              SwiftDashSDKHost.shared.wallet?.walletId == checkingWalletId,
+              SwiftDashSDKHost.shared.runningNetwork == checkingNetwork,
+              WalletEnvironment.network == checkingNetwork,
+              registrationRecovery == checkingRecovery, !isIdentityLoading
         else { return }
 
         isLockedContestedName = locked
@@ -790,7 +1555,9 @@ class CreateUsernameViewModel: ObservableObject {
         activeContestEndsAt = activeContestEnd
         takenNameSalePriceCredits = salePriceCredits
         uiState.usernameBlockedRule = result
-        uiState.canContinue = (result == .valid)
+        // Availability alone does not allow the name: the invitation's tier
+        // may have been set while this check ran.
+        uiState.canContinue = (result == .valid) && Self.invitationPays(for: username, tier: invitationTier)
         armContestBoundaryRevalidation()
     }
 
@@ -824,6 +1591,21 @@ class CreateUsernameViewModel: ObservableObject {
         // long-standing wallet with PP credits but no recent Core tx).
         SwiftDashSDKWalletState.shared.refreshPlatformPaymentCredits()
         coreSpendableDuffs = SwiftDashSDKWalletState.shared.feeAwareMaxSendable()
+        // The network's protocol version decides the contested cost. It can
+        // arrive after the cost rule was first judged, so every change
+        // re-runs the same validation a balance change does.
+        contestedFee = ContestedUsernameFee.shared.amounts
+        ContestedUsernameFee.shared.$amounts
+            .dropFirst()
+            .receive(on: RunLoop.main)
+            .sink { [weak self] amounts in
+                guard let self, self.contestedFee != amounts else { return }
+                self.contestedFee = amounts
+                self.validateUsername(username: self.username)
+                self.checkBalance()
+            }
+            .store(in: &cancellableBag)
+        refreshContestedFee()
         refreshWalletBackedValidationState()
         checkBalance()
         // Source from SwiftDashSDKWalletState. After M6 retired DashSync's
@@ -857,6 +1639,15 @@ class CreateUsernameViewModel: ObservableObject {
                 self.checkBalance()
             }
             .store(in: &cancellableBag)
+        NotificationCenter.default.publisher(for: .advancedModeDidChange)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
+                // The contested-balance caption counts Platform only in
+                // advanced mode.
+                self?.checkBalance()
+            }
+            .store(in: &cancellableBag)
         // Shielded readiness changes (a note maturing, a shielded sync
         // pass landing new notes, the pool count arriving) re-run the
         // same validation so the picker's shielded option and the
@@ -870,6 +1661,20 @@ class CreateUsernameViewModel: ObservableObject {
                 self.checkBalance()
             }
             .store(in: &cancellableBag)
+        // The readiness service evaluates the standard denomination again
+        // on its own and publishes; the contested one is this model's cache,
+        // which validation evaluates again once it is past its ready time.
+        NotificationCenter.default
+            .publisher(for: UIApplication.willEnterForegroundNotification)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self,
+                      let contested = self.contestedShieldedReadiness,
+                      Self.isPastReadyTime(contested.state, now: Date()) else { return }
+                self.validateUsername(username: self.username)
+                self.checkBalance()
+            }
+            .store(in: &cancellableBag)
         // Fires on create / import / migrate, a wallet switch, a network
         // change and a wipe — not on an ordinary launch, which enqueues
         // `.startIfReady` and publishes nothing. Cold-launch ordering is
@@ -877,6 +1682,8 @@ class CreateUsernameViewModel: ObservableObject {
         // empty, not by this.
         NotificationCenter.default
             .publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)
+            .merge(with: NotificationCenter.default.publisher(for: .DWCurrentNetworkDidChange),
+                   NotificationCenter.default.publisher(for: .DWDashPayRegistrationStatusUpdated))
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
                 guard let self else { return }
@@ -937,26 +1744,40 @@ class CreateUsernameViewModel: ObservableObject {
     /// typing path. The standard denomination has no equivalent problem: it
     /// reads `ShieldedIdentityFundingReadiness.shared.standardSnapshot`, which
     /// the service itself keeps current.
+    ///
+    /// A cached `.maturing` past its ready time is evaluated again: the
+    /// maturity alarm is armed only for the name being typed, so a contested
+    /// snapshot cached while a standard name was typed has none.
     private func contestedReadiness() -> ShieldedIdentityFundingReadiness.Snapshot? {
-        if let contestedShieldedReadiness { return contestedShieldedReadiness }
+        if let contestedShieldedReadiness, !Self.isPastReadyTime(contestedShieldedReadiness.state, now: Date()) {
+            return contestedShieldedReadiness
+        }
         refreshShieldedReadinessSnapshots()
         return contestedShieldedReadiness
     }
 
-    /// Credits → duffs (÷1000) for display; the readiness snapshot keeps the
-    /// canonical credit-denominated values.
-    private static func formattedShieldedBalance(
-        from snapshot: ShieldedIdentityFundingReadiness.Snapshot?
-    ) -> String {
-        ((snapshot?.unspentCredits ?? 0) / 1_000)
-            .dashAmount.formattedDashAmountWithoutCurrencySymbol
+    /// A `.maturing` state whose ready time has come: its notes may be
+    /// spendable now, and the state no longer says so.
+    nonisolated static func isPastReadyTime(_ state: ShieldedIdentityFundingReadiness.State, now: Date) -> Bool {
+        guard case .maturing(let readyAt) = state else { return false }
+        return readyAt <= now
     }
 
     private func refreshRegistrationRecoverySnapshot() {
-        let pending = DWIdentityRegistrationCoordinator.shared.hasPendingRegistrationRecovery()
-        if hasPendingRegistrationRecovery != pending {
-            hasPendingRegistrationRecovery = pending
-        }
+        let snapshot = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
+        isIdentityLoading = snapshot.isLoading
+        registrationRecovery = DWIdentityRegistrationCoordinator.shared.registrationRecovery()
+        existingIdentityCredits = snapshot.hasIdentity && !isInvitationMode
+            ? (snapshot.balanceCredits ?? 0)
+            : nil
+    }
+
+    /// Platform Payment can cover `duffs`. Nothing to cover always can: the
+    /// planner would otherwise demand a fee-source address for a zero spend.
+    private func canFundFromPlatform(_ duffs: UInt64) -> Bool {
+        duffs == 0 || PlatformPaymentIdentityFundingPolicy.canFund(
+            candidates: platformFundingCandidates,
+            fundingDuffs: duffs)
     }
 
     /// Update only the requirement-dependent picker flags while typing. The
@@ -981,26 +1802,28 @@ class CreateUsernameViewModel: ObservableObject {
     private func checkBalance() {
         let balance = coreSpendableDuffs
         let platformDuffs = SwiftDashSDKWalletState.shared.platformPaymentCreditsAsDuffs
-        let requiredDuffs = uiState.requiredDash
+        let requiredDuffs = transparentRequiredDuffs
         self.balance = balance.dashAmount.formattedDashAmountWithoutCurrencySymbol
         self.platformPaymentBalance = platformDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol
-        self.shieldedBalance = Self.formattedShieldedBalance(from: shieldedReadiness)
         // These flags drive the actual funding-source picker. They must
         // follow the current name's cost, otherwise a Core/Platform
         // balance that covers 0.03 DASH but not a contested name's
-        // 0.25 DASH is still offered and fails only inside the SDK.
+        // cost is still offered and fails only inside the SDK.
         updateCurrentFundingEligibility(
             coreEligible: balance >= requiredDuffs,
-            platformEligible: PlatformPaymentIdentityFundingPolicy.canFund(
-                candidates: platformFundingCandidates,
-                fundingDuffs: requiredDuffs))
+            platformEligible: canFundFromPlatform(requiredDuffs))
         // `hasMinimumRequiredBalance` stays as the legacy OR view —
         // any pre-PR-5 consumer (banner gate, etc.) keeps seeing
-        // "user has enough to register" without caring about source.
-        hasRecommendedBalance = balance >= DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME
-            || PlatformPaymentIdentityFundingPolicy.canFund(
-                candidates: platformFundingCandidates,
-                fundingDuffs: UInt64(DWDP_MIN_BALANCE_FOR_CONTESTED_USERNAME))
+        // "user has enough to register" without caring about source, Platform
+        // included in either mode. The contested-cost caption below counts
+        // Platform only where the entry offers it (advanced mode).
+        // Judged at what Core or Platform pay for a contested name: the
+        // existing identity's top-up, or a new identity's funding. The
+        // caption it gates names the dearest route (`recommendedBalance`).
+        let contestedCost = existingIdentityTopUpDuffs(isContested: true, nameCount: 1)
+            ?? newIdentityFundingDuffs(isContested: true, source: .core)
+        hasRecommendedBalance = balance >= contestedCost
+            || offersPlatform(covering: contestedCost)
     }
 }
 
@@ -1065,8 +1888,10 @@ final class TemporaryUsernameFieldModel: ObservableObject {
     private var suggestionBase: String?
 
     private var cancellableBag = Set<AnyCancellable>()
+    private let acceptsOwnedName: Bool
 
-    init() {
+    init(acceptsOwnedName: Bool = false) {
+        self.acceptsOwnedName = acceptsOwnedName
         $text
             .throttle(for: .milliseconds(500), scheduler: RunLoop.main, latest: true)
             .removeDuplicates()
@@ -1075,6 +1900,11 @@ final class TemporaryUsernameFieldModel: ObservableObject {
                 self?.validate(value)
             }
             .store(in: &cancellableBag)
+    }
+
+    func restoreDraft(_ username: String, for mainLabel: String) {
+        suggestionBase = mainLabel.trimmingCharacters(in: .whitespacesAndNewlines)
+        text = username
     }
 
     /// Seed the field with a variant of `mainLabel` that is guaranteed
@@ -1141,16 +1971,33 @@ final class TemporaryUsernameFieldModel: ObservableObject {
             do { try await Task.sleep(nanoseconds: 400_000_000) }
             catch { return }
             guard let self, !Task.isCancelled else { return }
+            let walletId = SwiftDashSDKHost.shared.wallet?.walletId
+            let network = SwiftDashSDKHost.shared.runningNetwork
             let verdict: Check
             do {
-                let available = try await DWIdentityRegistrationCoordinator.shared
-                    .dpnsCheckAvailability(label)
-                verdict = available ? .available : .taken
+                if self.acceptsOwnedName,
+                   let identityId = DWCurrentUserIdentityInfo.shared.refreshedSnapshot().identityId,
+                   let wallet = SwiftDashSDKHost.shared.wallet {
+                    // The create/recovery coordinator reconciles an owned
+                    // companion instead of trying to register it again.
+                    _ = try await DWIdentityRegistrationCoordinator.shared.registrationNameState(
+                        label, identityId: identityId, wallet: wallet)
+                    verdict = .available
+                } else {
+                    let available = try await DWIdentityRegistrationCoordinator.shared
+                        .dpnsCheckAvailability(label)
+                    verdict = available ? .available : .taken
+                }
+            } catch DWIdentityRegistrationCoordinator.CoordinatorError.usernameUnavailable {
+                verdict = .taken
             } catch {
                 verdict = .error
             }
-            // Drop stale results — the field changed while the RPC ran.
-            guard !Task.isCancelled, self.trimmedText == label else { return }
+            // Drop stale results — the field or wallet changed during the RPC.
+            guard !Task.isCancelled, self.trimmedText == label,
+                  SwiftDashSDKHost.shared.wallet?.walletId == walletId,
+                  SwiftDashSDKHost.shared.runningNetwork == network,
+                  WalletEnvironment.network == network else { return }
             self.check = verdict
         }
     }

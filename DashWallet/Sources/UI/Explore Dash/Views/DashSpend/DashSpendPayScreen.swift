@@ -80,9 +80,11 @@ struct DashSpendPayScreen: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             VStack(spacing: 0) {
-                NavBarBack {
-                    presentationMode.wrappedValue.dismiss()
-                }
+                DashUIKit.NavigationBar(leading: {
+                    DashUIKit.NavigationBarElement.back.button {
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                })
 
                 if viewModel.isFixedDenomination {
                     DashSpendFixedContent(
@@ -154,7 +156,7 @@ struct DashSpendPayScreen: View {
         }
 
         if showErrorDialog {
-            ModalDialog(
+            LegacyModalDialog(
                 style: .error,
                 icon: .system("exclamationmark.triangle.fill"),
                 heading: errorTitle,
@@ -168,7 +170,7 @@ struct DashSpendPayScreen: View {
         }
 
         if showCustomErrorDialog {
-            ModalDialog(
+            LegacyModalDialog(
                 style: .error,
                 icon: .system("exclamationmark.triangle.fill"),
                 heading: errorTitle,

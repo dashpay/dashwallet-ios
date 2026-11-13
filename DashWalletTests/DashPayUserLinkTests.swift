@@ -7,7 +7,7 @@
 
 import Foundation
 import XCTest
-@testable import dashwallet
+@testable import dashpay
 
 final class DashPayUserLinkTests: XCTestCase {
 

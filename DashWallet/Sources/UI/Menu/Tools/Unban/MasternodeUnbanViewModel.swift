@@ -94,6 +94,7 @@ final class MasternodeUnbanViewModel: ObservableObject {
 
     @Published private(set) var spendableDuffs: UInt64 = 0
     @Published private(set) var shieldedBalanceCredits: UInt64 = 0
+    @Published private(set) var isShieldedBalanceAvailable = false
 
     /// Drives the shielded→L1 top-up; same coordinator the transfer screens
     /// use, constructed per flow.
@@ -111,10 +112,16 @@ final class MasternodeUnbanViewModel: ObservableObject {
     }
 
     private var balancePollTask: Task<Void, Never>?
+    private var shieldedBalanceObserver: AnyCancellable?
 
     init(record: PlatformMasternode, keySource: UnbanOperatorKeySource) {
         self.record = record
         self.keySource = keySource
+        shieldedBalanceObserver = PlatformAddressSyncCoordinator.shared.$shieldedBalanceState
+            .sink { [weak self] state in
+                self?.shieldedBalanceCredits = state.credits ?? 0
+                self?.isShieldedBalanceAvailable = state.isAvailable
+            }
         if let pending = PendingMasternodeUnbanStore.shared.pending(forProTxHash: record.proTxHash) {
             if let port = pending.platformP2PPort {
                 p2pPortText = String(port)
@@ -151,7 +158,7 @@ final class MasternodeUnbanViewModel: ObservableObject {
     }
 
     var canTopUp: Bool {
-        shieldedBalanceCredits >= Self.topUpCredits
+        isShieldedBalanceAvailable && shieldedBalanceCredits >= Self.topUpCredits
     }
 
     /// Refresh the funding preflight: spendable L1 balance vs the fee floor,
@@ -160,7 +167,9 @@ final class MasternodeUnbanViewModel: ObservableObject {
     func refreshFunding() {
         let balance = (try? SwiftDashSDKHost.shared.wallet?.balance()) ?? nil
         spendableDuffs = balance?.spendable ?? 0
-        shieldedBalanceCredits = PlatformAddressSyncCoordinator.shared.shieldedBalance
+        let shieldedState = PlatformAddressSyncCoordinator.shared.shieldedBalanceState
+        shieldedBalanceCredits = shieldedState.credits ?? 0
+        isShieldedBalanceAvailable = shieldedState.isAvailable
         switch phase {
         case .ready, .needsFunds:
             phase = spendableDuffs >= Self.feeFloorDuffs ? .ready : .needsFunds
@@ -406,7 +415,8 @@ final class MasternodeUnbanViewModel: ObservableObject {
     ) throws -> Preview {
         let bytes = try prepared.serializedData()
         let parsed = try ParsedRawTransaction(data: bytes)
-        let network: PaymentNetwork = WalletEnvironment.isTestnet ? .testnet : .mainnet
+        // Devnet shares testnet's address version bytes.
+        let network: PaymentNetwork = WalletEnvironment.isMainnet ? .mainnet : .testnet
         let outputs = parsed.outputs.map { output in
             (address: ScriptAddressCodec.address(forScript: output.scriptPubKey, network: network)
                 ?? NSLocalizedString("Non-standard output", comment: "Masternode unban"),

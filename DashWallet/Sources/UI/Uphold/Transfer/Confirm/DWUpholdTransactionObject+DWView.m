@@ -86,6 +86,16 @@
     return total;
 }
 
+- (uint64_t)feeDuffs {
+    NSDecimalNumber *duffs = (NSDecimalNumber *)[NSDecimalNumber numberWithLongLong:DW_DUFFS_PER_DASH];
+    return [self.fee decimalNumberByMultiplyingBy:duffs].longLongValue;
+}
+
+- (uint64_t)totalDuffs {
+    NSDecimalNumber *duffs = (NSDecimalNumber *)[NSDecimalNumber numberWithLongLong:DW_DUFFS_PER_DASH];
+    return [self.total decimalNumberByMultiplyingBy:duffs].longLongValue;
+}
+
 - (BOOL)copyAddressToPasteboard {
     // don't allow copying address
     return NO;

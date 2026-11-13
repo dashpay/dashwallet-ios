@@ -25,6 +25,7 @@
 //  registration flow, which owns key preparation and phase UI.
 //
 
+import Combine
 import Foundation
 import OSLog
 import SwiftDashSDK
@@ -32,6 +33,16 @@ import SwiftData
 
 @MainActor
 struct AssetLockRecoveryService {
+
+    /// Where an identity top-up whose network call threw records the error,
+    /// and what the coordinator routes are handed for theirs.
+    private let failureStore: AssetLockFailureStore
+    private let probeStore: AssetLockProbeStore
+
+    init(failureStore: AssetLockFailureStore = .shared, probeStore: AssetLockProbeStore = .shared) {
+        self.failureStore = failureStore
+        self.probeStore = probeStore
+    }
 
     private static let logger = Logger(
         subsystem: "org.dashfoundation.dash",
@@ -41,7 +52,14 @@ struct AssetLockRecoveryService {
         case notReady
         case noIdentity
         case unsupportedRoute
-        case failed(String)
+        /// The coordinator refused the resume because a running transfer is
+        /// consuming, or may be consuming, the lock, or because a removal is
+        /// reloading the wallet.
+        case inProgress(String)
+        /// A coordinator route's terminal failure: the text it showed, and
+        /// the typed error behind it (`coordinator.lastFailure`) so the log
+        /// and the failure store can name the case.
+        case failed(String, underlying: Error? = nil)
 
         var errorDescription: String? {
             switch self {
@@ -51,7 +69,7 @@ struct AssetLockRecoveryService {
                 return NSLocalizedString("This wallet has no identity to top up.", comment: "Asset-lock retry: identity top-up with no identity")
             case .unsupportedRoute:
                 return NSLocalizedString("This transfer can't be retried from here.", comment: "Asset-lock retry: unsupported funding route")
-            case .failed(let message):
+            case .inProgress(let message), .failed(let message, _):
                 return message
             }
         }
@@ -69,6 +87,10 @@ struct AssetLockRecoveryService {
     /// unauthenticated already-consumed report), whose Platform-side
     /// consumption is unknown.
     nonisolated static let recoveredFromChainStatus = 5
+
+    /// `AssetLockStatus::Consumed`: Platform accepted the transition that
+    /// spent the lock.
+    nonisolated static let consumedStatus = 4
 
     /// Asset-lock statuses whose transfer has not been shown to be finished,
     /// and which therefore still deserve a retry action. Pure predicate so the
@@ -132,23 +154,20 @@ struct AssetLockRecoveryService {
     func retry(fundingTypeRaw: Int,
                txidWire: Data,
                vout: UInt32,
-               refreshLookup: Bool = true) async throws -> Outcome {
-        // Resolved before the resume suspends: a wallet switch during the
-        // round-trip must not file this probe under whatever wallet is active
-        // when the answer arrives.
-        let originatingWalletIdHex = AssetLockProbeStore.currentWalletIdHex()
+               refreshLookup: Bool = true,
+               retryUnverifiedConsumption: Bool = true) async throws -> Outcome {
         Self.logger.info("🔁 LOCK-RETRY :: type=\(fundingTypeRaw, privacy: .public) vout=\(vout, privacy: .public)")
         let outcome: Outcome
         switch fundingTypeRaw {
         case 1, 2:
-            try await retryIdentityTopUp(txidWire: txidWire, vout: vout)
-            outcome = .completed
+            outcome = try await retryIdentityTopUp(
+                txidWire: txidWire, vout: vout, retryUnverifiedConsumption: retryUnverifiedConsumption)
         case 4, 5:
             // Both coordinator routes report their outcome through the
             // terminal phase rather than throwing, so the resume call and
             // the phase check stay one pair — a future route added here
             // can't forget the check.
-            let coordinator = ShieldedTransferCoordinator()
+            let coordinator = ShieldedTransferCoordinator(failureStore: failureStore)
             if fundingTypeRaw == 4 {
                 let recipientAmountDuffs = try Self.coreToPlatformRecipientAmountDuffs(
                     txidWire: txidWire,
@@ -156,9 +175,11 @@ struct AssetLockRecoveryService {
                 await coordinator.resumeFundPlatform(
                     outPointTxidWire: txidWire,
                     outPointVout: vout,
-                    recipientAmountDuffs: recipientAmountDuffs)
+                    recipientAmountDuffs: recipientAmountDuffs,
+                    retryUnverifiedConsumption: retryUnverifiedConsumption)
             } else {
-                await coordinator.resumeAssetLock(outPointTxidWire: txidWire, outPointVout: vout)
+                await coordinator.resumeAssetLock(outPointTxidWire: txidWire, outPointVout: vout,
+                                                  retryUnverifiedConsumption: retryUnverifiedConsumption)
             }
             try Self.checkTerminalPhase(coordinator)
             // Branch on the coordinator's typed report, NOT on
@@ -177,13 +198,9 @@ struct AssetLockRecoveryService {
                 // settles it. Reporting `.completed` would be worse still.
                 outcome = .submittedAwaitingSync
             } else if coordinator.lastResumeReport == .alreadyConsumed {
-                // Platform reported this outpoint already spent. The SDK keeps
-                // the lock at `RecoveredFromChain` (the report is not
-                // quorum-authenticated), so record the probe here — otherwise
-                // the answer dies with this call and every later launch offers
-                // the same futile retry. Recorded at the service layer so the
-                // single-row and bulk callers share it.
-                AssetLockProbeStore.shared.record(txid: txidWire, walletIdHex: originatingWalletIdHex)
+                // The coordinator records the advisory probe for its captured
+                // wallet, including calls made directly by the recovery sheet.
+                // Rust retains the nonterminal lock and its recovery proof.
                 outcome = .completionUnconfirmed
             } else {
                 outcome = .completed
@@ -202,10 +219,14 @@ struct AssetLockRecoveryService {
     // MARK: - Bulk recovery
 
     /// One funding lock the bulk pass will act on.
-    struct PendingRecovery {
+    struct PendingRecovery: Hashable {
         let txidWire: Data
         let vout: UInt32
         let fundingTypeRaw: Int
+        /// Status when the pass picked the lock up, for the outcome log line.
+        let statusRaw: Int
+        /// The Max drain that built the lock, if one did.
+        let drainOperation: UUID?
     }
 
     /// What a bulk pass ended up doing.
@@ -215,6 +236,10 @@ struct AssetLockRecoveryService {
         /// Submitted, result not yet readable. Neither a win nor a failure —
         /// counted apart so the summary never folds it into "finished".
         var awaitingSync = 0
+        /// Skipped because a running transfer is still consuming the lock.
+        var inProgress = 0
+        /// Nothing was attempted: a removal was reloading the wallet.
+        var deferredForReload = false
         var failed = 0
         var cancelled = false
         /// First failure's message, surfaced so a run that mostly failed says
@@ -244,6 +269,8 @@ struct AssetLockRecoveryService {
         case completed
         case alreadySpent
         case awaitingSync
+        /// Refused because a running transfer is crediting the lock.
+        case inProgress
         case cancelled
         case failed(String)
     }
@@ -271,6 +298,10 @@ struct AssetLockRecoveryService {
             // trip the stop rule.
             consecutiveFailures = 0
             outcome.awaitingSync += 1
+        case .inProgress:
+            // Not a failure, and not an answer about this lock either: the
+            // run is left as it was.
+            outcome.inProgress += 1
         case .cancelled:
             outcome.cancelled = true
             return true
@@ -288,32 +319,77 @@ struct AssetLockRecoveryService {
         return false
     }
 
+    /// The step for a lock whose resume threw anything but a PIN cancel: a
+    /// refusal because a transfer started on the lock since the pass checked
+    /// it is in progress, anything else a failure.
+    static func bulkStep(for error: Error) -> BulkStep {
+        if case RecoveryError.inProgress? = error as? RecoveryError { return .inProgress }
+        return .failed((error as? LocalizedError)?.errorDescription ?? error.localizedDescription)
+    }
+
     /// Every tracked funding lock still worth retrying: a status that is not a
     /// finished transfer, a route this service handles, and no recorded
-    /// already-spent probe. This is the same predicate the per-transaction
-    /// action uses, applied to the whole snapshot.
+    /// already-spent probe. Explicit per-transaction recovery can recheck a
+    /// previously reported outpoint; bulk recovery skips it to avoid loops.
     ///
     /// Restoring a wallet turns every shielded funding lock into
     /// `RecoveredFromChain` at once, so this is routinely dozens of entries —
     /// which is exactly why they need one action rather than one tap each.
     static func pendingRecoveries() -> [PendingRecovery] {
+        pendingRecoveries(activeWalletId: SwiftDashSDKHost.shared.wallet?.walletId,
+                          lookup: .shared, registry: .shared)
+    }
+
+    /// `pendingRecoveries()` over the given wallet, lookup and registry.
+    static func pendingRecoveries(activeWalletId: Data?,
+                                  lookup: ShieldedTxLookup,
+                                  registry: ShieldedAssetLocksInFlight) -> [PendingRecovery] {
         // The snapshot spans every wallet whose rows live in this container, so
         // the active wallet's id is the first filter: resuming another wallet's
         // outpoint fails with "not tracked by this wallet", and a batch of them
         // reports as a network problem it never was.
-        guard let activeWalletId = SwiftDashSDKHost.shared.wallet?.walletId else { return [] }
-        return ShieldedTxLookup.shared.allEntries().compactMap { entry in
+        guard let activeWalletId else { return [] }
+        return lookup.allEntries().compactMap { entry in
             guard entry.info.walletId == activeWalletId,
                   entry.info.fundingTypeRaw == bulkFundingTypeRaw,
                   bulkStatusAllowsRecovery(entry.info.statusRaw),
                   let txidWire = txidWire(fromDisplayHex: entry.txidHex),
-                  !AssetLockProbeStore.shared.contains(txidWire)
+                  !AssetLockProbeStore.shared.contains(txidWire, vout: entry.info.vout),
+                  // Still being consumed by a running transfer: not pending
+                  // recovery, and resuming it would only be refused.
+                  !registry.contains(
+                      .init(txidWire: txidWire, vout: entry.info.vout),
+                      drainOperation: entry.info.drainOperation)
             else { return nil }
             return PendingRecovery(
                 txidWire: txidWire,
                 vout: entry.info.vout,
-                fundingTypeRaw: entry.info.fundingTypeRaw)
+                fundingTypeRaw: entry.info.fundingTypeRaw,
+                statusRaw: entry.info.statusRaw,
+                drainOperation: entry.info.drainOperation)
         }
+    }
+
+    /// Emits on the main queue, once per burst, when `pendingRecoveries()` may answer
+    /// differently for the same wallet: `registry` reports a change (a
+    /// running transfer or Max drain claimed or released a lock — its attempt
+    /// failed, say — or a funding call or removal started or ended), `lookup` published a
+    /// changed snapshot or a consumed mark, or `probes` recorded or cleared
+    /// an already-spent lock. The wallet runtime binding or switching is not
+    /// among them: `SwiftDashSDKHost` publishes neither. The defaults
+    /// are the shared instances the list reads; tests pass their own.
+    static func pendingRecoveriesChanges(lookup: ShieldedTxLookup = .shared,
+                                         registry: ShieldedAssetLocksInFlight = .shared,
+                                         probes: AssetLockProbeStore = .shared)
+        -> AnyPublisher<Void, Never> {
+        let center = NotificationCenter.default
+        return registry.objectWillChange
+            .merge(with: center.publisher(for: .shieldedTxLookupDidChange, object: lookup).map { _ in },
+                   center.publisher(for: AssetLockProbeStore.didChangeNotification, object: probes).map { _ in })
+            // A finished transfer releases, ends its funding call and marks
+            // its lock consumed in quick succession: one re-read covers them.
+            .debounce(for: .milliseconds(50), scheduler: DispatchQueue.main)
+            .eraseToAnyPublisher()
     }
 
     /// Resume every pending lock, gating authentication ONCE for the whole
@@ -323,11 +399,23 @@ struct AssetLockRecoveryService {
     /// one unreachable outpoint should not strand the rest.
     ///
     /// `progress` is called on the main actor after each lock with the number
-    /// finished so far and the total.
+    /// finished so far and the total. `registry` gates the pass (its funding
+    /// call) and the in-flight skip; each resume is still admitted by the
+    /// coordinator on `ShieldedAssetLocksInFlight.shared`.
     func recoverAll(_ pending: [PendingRecovery],
+                    registry: ShieldedAssetLocksInFlight = .shared,
                     progress: @MainActor (Int, Int) -> Void = { _, _ in }) async -> BulkOutcome {
         var outcome = BulkOutcome()
         guard !pending.isEmpty else { return outcome }
+        // The whole pass, PIN prompt included, counts as activity, so no
+        // removal reloads the wallet between one recovery and the next. A
+        // pass started during a removal's reload is deferred before the PIN.
+        guard registry.beginFundingCall() else {
+            DWLogger.log("LOCK-RETRY bulk deferred count=\(pending.count): a removal is reloading the wallet")
+            outcome.deferredForReload = true
+            return outcome
+        }
+        defer { registry.endFundingCall() }
 
         // One gate for the batch: authorize here, then run every resume inside
         // `preauthorized`, whose task-local suppresses only the second prompt
@@ -337,6 +425,7 @@ struct AssetLockRecoveryService {
             try await DWIdentityAuthorizer().authorize()
         } catch DWIdentityAuthorizer.AuthError.cancelled {
             outcome.cancelled = true
+            AssetLockRetryLog.logBulkOutcome("outcome=cancelled before the first lock", count: pending.count)
             return outcome
         } catch {
             // Authentication can also time out or fail outright. Reporting
@@ -349,7 +438,7 @@ struct AssetLockRecoveryService {
         }
 
         let result = await DWIdentityAuthorizer.preauthorized { [self] in
-            await runRecoveries(pending, into: outcome, progress: progress)
+            await runRecoveries(pending, into: outcome, registry: registry, progress: progress)
         }
         // Once for the pass. Each `retry` suppressed its own refresh, and
         // nothing between iterations reads the lookup.
@@ -357,17 +446,57 @@ struct AssetLockRecoveryService {
         return result
     }
 
-    private func runRecoveries(_ pending: [PendingRecovery],
-                               into initial: BulkOutcome,
-                               progress: @MainActor (Int, Int) -> Void) async -> BulkOutcome {
+    /// A transfer finished this lock after the list was taken.
+    private func isReportedConsumed(_ item: PendingRecovery) -> Bool {
+        ShieldedTxLookup.shared.info(forTxidHex: Transaction.displayHex(item.txidWire))?.statusRaw
+            == Self.consumedStatus
+    }
+
+    /// The pass after authorization. Internal for tests, which drive it with
+    /// locks that are all in flight, so no resume is called. `registry` gates
+    /// the in-flight skip; each resume is still admitted by the coordinator on
+    /// `ShieldedAssetLocksInFlight.shared`.
+    func runRecoveries(_ pending: [PendingRecovery],
+                       into initial: BulkOutcome,
+                       registry: ShieldedAssetLocksInFlight,
+                       progress: @MainActor (Int, Int) -> Void) async -> BulkOutcome {
         var outcome = initial
 
         var consecutiveFailures = 0
         DWLogger.log("LOCK-RETRY bulk start count=\(pending.count)")
 
         for (index, item) in pending.enumerated() {
-            let txidDisplay = String(Data(item.txidWire.reversed())
-                .map { String(format: "%02x", $0) }.joined().prefix(16))
+            let event = "bulk \(index + 1)/\(pending.count)"
+            // The list was taken when the screen appeared; a transfer started
+            // since then may be consuming this lock, or may have finished it.
+            // A resume would only be refused or reported already consumed, and
+            // counting that as a failure could stop the pass. A running
+            // transfer's new lock is claimed from the moment the SDK builds
+            // it, so it is skipped here too.
+            if registry.contains(
+                .init(txidWire: item.txidWire, vout: item.vout), drainOperation: item.drainOperation) {
+                AssetLockRetryLog.logOutcome(
+                    "outcome=skipped reason=in-flight",
+                    event: event,
+                    txidWire: item.txidWire,
+                    vout: item.vout,
+                    fundingTypeRaw: item.fundingTypeRaw,
+                    statusBeforeRaw: item.statusRaw)
+                Self.apply(.inProgress, to: &outcome, consecutiveFailures: &consecutiveFailures)
+                progress(index + 1, pending.count)
+                continue
+            }
+            if isReportedConsumed(item) {
+                AssetLockRetryLog.logOutcome(
+                    "outcome=skipped reason=consumed-since-listed",
+                    event: event,
+                    txidWire: item.txidWire,
+                    vout: item.vout,
+                    fundingTypeRaw: item.fundingTypeRaw,
+                    statusBeforeRaw: item.statusRaw)
+                progress(index + 1, pending.count)
+                continue
+            }
             do {
                 let result = try await retry(
                     fundingTypeRaw: item.fundingTypeRaw,
@@ -376,7 +505,7 @@ struct AssetLockRecoveryService {
                     // One refresh for the pass, in `recoverAll`. Per item it is
                     // a full lookup rebuild on top of the one `resumeAssetLock`
                     // already does, and nothing between iterations reads it.
-                    refreshLookup: false)
+                    refreshLookup: false, retryUnverifiedConsumption: false)
                 let step: BulkStep
                 switch result {
                 case .completed: step = .completed
@@ -384,20 +513,40 @@ struct AssetLockRecoveryService {
                 case .submittedAwaitingSync: step = .awaitingSync
                 }
                 Self.apply(step, to: &outcome, consecutiveFailures: &consecutiveFailures)
-                DWLogger.log("LOCK-RETRY bulk \(index + 1)/\(pending.count) \(txidDisplay)… -> \(result)")
+                AssetLockRetryLog.logOutcome(
+                    "outcome=\(result)",
+                    event: event,
+                    txidWire: item.txidWire,
+                    vout: item.vout,
+                    fundingTypeRaw: item.fundingTypeRaw,
+                    statusBeforeRaw: item.statusRaw)
             } catch DWIdentityAuthorizer.AuthError.cancelled {
                 Self.apply(.cancelled, to: &outcome, consecutiveFailures: &consecutiveFailures)
-                DWLogger.log("LOCK-RETRY bulk cancelled at \(index + 1)/\(pending.count)")
+                AssetLockRetryLog.logOutcome(
+                    "outcome=cancelled",
+                    event: event,
+                    txidWire: item.txidWire,
+                    vout: item.vout,
+                    fundingTypeRaw: item.fundingTypeRaw,
+                    statusBeforeRaw: item.statusRaw)
                 return outcome
             } catch {
-                let message = (error as? LocalizedError)?.errorDescription
-                    ?? error.localizedDescription
-                let stop = Self.apply(.failed(message), to: &outcome, consecutiveFailures: &consecutiveFailures)
-                // File logger, not just OSLog: a bulk pass that fails is
-                // exactly what a diagnostic export needs to carry.
-                DWLogger.log("LOCK-RETRY bulk \(index + 1)/\(pending.count) \(txidDisplay)… FAILED: \(message)")
-                Self.logger.error("🔁 LOCK-RETRY :: bulk item failed: \(String(describing: error), privacy: .public)")
-
+                // A refusal because a transfer started on it since the check
+                // above is in progress, not a failure; the coordinator logged it.
+                let step = Self.bulkStep(for: error)
+                let stop = Self.apply(step, to: &outcome, consecutiveFailures: &consecutiveFailures)
+                if case .failed = step {
+                    // File logger, not just OSLog: a bulk pass that fails is
+                    // exactly what a diagnostic export needs to carry, with the
+                    // typed error case so a consensus refusal is searchable.
+                    AssetLockRetryLog.logFailure(
+                        error,
+                        event: event,
+                        txidWire: item.txidWire,
+                        vout: item.vout,
+                        fundingTypeRaw: item.fundingTypeRaw,
+                        statusBeforeRaw: item.statusRaw)
+                }
                 if stop {
                     DWLogger.log("LOCK-RETRY bulk stopped after \(consecutiveFailures) consecutive failures")
                     progress(index + 1, pending.count)
@@ -407,14 +556,14 @@ struct AssetLockRecoveryService {
             progress(index + 1, pending.count)
         }
 
-        DWLogger.log("LOCK-RETRY bulk finished completed=\(outcome.completed) alreadySpent=\(outcome.alreadySpent) awaitingSync=\(outcome.awaitingSync) failed=\(outcome.failed)")
-        Self.logger.info("🔁 LOCK-RETRY :: bulk finished completed=\(outcome.completed, privacy: .public) alreadySpent=\(outcome.alreadySpent, privacy: .public) awaitingSync=\(outcome.awaitingSync, privacy: .public) failed=\(outcome.failed, privacy: .public)")
+        DWLogger.log("LOCK-RETRY bulk finished completed=\(outcome.completed) alreadySpent=\(outcome.alreadySpent) awaitingSync=\(outcome.awaitingSync) inProgress=\(outcome.inProgress) failed=\(outcome.failed)")
+        Self.logger.info("🔁 LOCK-RETRY :: bulk finished completed=\(outcome.completed, privacy: .public) alreadySpent=\(outcome.alreadySpent, privacy: .public) awaitingSync=\(outcome.awaitingSync, privacy: .public) inProgress=\(outcome.inProgress, privacy: .public) failed=\(outcome.failed, privacy: .public)")
         return outcome
     }
 
     /// Display-order hex ("as shown in the UI") to the 32-byte wire-order txid
-    /// the resume entry points expect. Mirrors
-    /// `ShieldedTransferCoordinator.parseOutPoint`'s reversal.
+    /// the resume entry points expect — the reverse of
+    /// `PersistentAssetLock.encodeOutPoint`'s txid encoding.
     ///
     /// Not private: a byte-order slip here makes every bulk resume fail with
     /// "not tracked by this wallet" and the pass reports a network problem it
@@ -432,6 +581,22 @@ struct AssetLockRecoveryService {
         return Data(display.reversed())
     }
 
+    /// The persisted asset-lock row for the outpoint (`txidWire` wire order,
+    /// 32 bytes), or `nil` when there is none or `txidWire` is malformed.
+    static func persistedLock(txidWire: Data, vout: UInt32, in context: ModelContext) throws -> PersistentAssetLock? {
+        guard txidWire.count == 32 else { return nil }
+        var outPoint = Data(txidWire)
+        var voutLittleEndian = vout.littleEndian
+        withUnsafeBytes(of: &voutLittleEndian) { outPoint.append(contentsOf: $0) }
+        let outPointHex = PersistentAssetLock.encodeOutPoint(rawBytes: outPoint)
+        var descriptor = FetchDescriptor<PersistentAssetLock>(
+            predicate: #Predicate<PersistentAssetLock> { row in
+                row.outPointHex == outPointHex
+            })
+        descriptor.fetchLimit = 1
+        return try context.fetch(descriptor).first
+    }
+
     private static func coreToPlatformRecipientAmountDuffs(
         txidWire: Data,
         vout: UInt32
@@ -441,16 +606,7 @@ struct AssetLockRecoveryService {
               let reserveCredits = CoreToPlatformAmountPolicy.currentReserveCredits
         else { throw RecoveryError.notReady }
 
-        var outPoint = Data(txidWire)
-        var voutLittleEndian = vout.littleEndian
-        withUnsafeBytes(of: &voutLittleEndian) { outPoint.append(contentsOf: $0) }
-        let outPointHex = PersistentAssetLock.encodeOutPoint(rawBytes: outPoint)
-        let descriptor = FetchDescriptor<PersistentAssetLock>(
-            predicate: #Predicate<PersistentAssetLock> { row in
-                row.outPointHex == outPointHex
-            })
-
-        guard let lock = try container.mainContext.fetch(descriptor).first,
+        guard let lock = try persistedLock(txidWire: txidWire, vout: vout, in: container.mainContext),
               lock.amountDuffs > 0
         else { throw RecoveryError.unsupportedRoute }
 
@@ -468,7 +624,9 @@ struct AssetLockRecoveryService {
     /// `consumeInvitationVoucher` stays false: a generic retry surface
     /// must never silently consume an invitation lock (the SDK resolver
     /// refuses them).
-    private func retryIdentityTopUp(txidWire: Data, vout: UInt32) async throws {
+    private func retryIdentityTopUp(
+        txidWire: Data, vout: UInt32, retryUnverifiedConsumption: Bool
+    ) async throws -> Outcome {
         guard let wallet = SwiftDashSDKHost.shared.wallet else {
             Self.logger.error("🔁 LOCK-RETRY :: top-up aborted — no active wallet")
             throw RecoveryError.notReady
@@ -477,12 +635,43 @@ struct AssetLockRecoveryService {
             Self.logger.error("🔁 LOCK-RETRY :: top-up aborted — wallet has no identity")
             throw RecoveryError.noIdentity
         }
+        let walletIdHex = wallet.walletId.map { String(format: "%02x", $0) }.joined()
         try await DWIdentityAuthorizer().authorize()
-        _ = try await wallet.resumeTopUpWithAssetLock(
-            identityId: identityId,
-            outPointTxid: txidWire,
-            outPointVout: vout)
+        let outcome = try await identityTopUpResumeOutcome(
+            txidWire: txidWire, vout: vout, walletIdHex: walletIdHex,
+            retryUnverifiedConsumption: retryUnverifiedConsumption
+        ) {
+            _ = try await wallet.resumeTopUpWithAssetLock(
+                identityId: identityId,
+                outPointTxid: txidWire,
+                outPointVout: vout)
+        }
         DWCurrentUserIdentityInfo.shared.refreshFromSDK()
+        return outcome
+    }
+
+    /// Classify the network call separately from authorization and readiness refusals.
+    func identityTopUpResumeOutcome(
+        txidWire: Data, vout: UInt32, walletIdHex: String,
+        retryUnverifiedConsumption: Bool = true, submit: () async throws -> Void
+    ) async throws -> Outcome {
+        if !retryUnverifiedConsumption,
+           probeStore.contains(txidWire, vout: vout, walletIdHex: walletIdHex) {
+            return .completionUnconfirmed
+        }
+        do {
+            try await submit()
+            return .completed
+        } catch SDKError.stateTransitionResultUnconfirmed, PlatformWalletError.transactionBroadcastUnconfirmed,
+                PlatformWalletError.shieldedSpendUnconfirmed {
+            return .submittedAwaitingSync
+        } catch PlatformWalletError.assetLockAlreadyConsumed {
+            probeStore.record(txid: txidWire, vout: vout, walletIdHex: walletIdHex)
+            return .completionUnconfirmed
+        } catch {
+            failureStore.record(txidWire: txidWire, vout: vout, error: error)
+            throw error
+        }
     }
 
     /// Map the transfer coordinator's terminal phase to thrown errors.
@@ -491,11 +680,28 @@ struct AssetLockRecoveryService {
     /// its localized description — and rethrown as `AuthError.cancelled`
     /// so callers keep one cancel contract.
     private static func checkTerminalPhase(_ coordinator: ShieldedTransferCoordinator) throws {
-        guard case .failed(let message) = coordinator.phase else { return }
-        if let failure = coordinator.lastFailure as? ShieldedTransferCoordinator.CoordinatorError,
-           case .authCancelled = failure {
-            throw DWIdentityAuthorizer.AuthError.cancelled
+        if let error = terminalError(phase: coordinator.phase, lastFailure: coordinator.lastFailure) {
+            throw error
         }
-        throw RecoveryError.failed(message)
+    }
+
+    /// The error `checkTerminalPhase` throws for a coordinator that ended in
+    /// `phase` after `lastFailure`, or nil when it did not fail. A refusal
+    /// because the lock is in flight, or the wallet is reloading, is
+    /// `RecoveryError.inProgress`, which the pass counts as still in
+    /// progress, never as a failure.
+    static func terminalError(phase: ShieldedTransferCoordinator.Phase, lastFailure: Error?) -> Error? {
+        guard case .failed(let message) = phase else { return nil }
+        if let failure = lastFailure as? ShieldedTransferCoordinator.CoordinatorError {
+            switch failure {
+            case .authCancelled:
+                return DWIdentityAuthorizer.AuthError.cancelled
+            case .assetLockInFlight, .walletReloading:
+                return RecoveryError.inProgress(message)
+            default:
+                break
+            }
+        }
+        return RecoveryError.failed(message, underlying: lastFailure)
     }
 }

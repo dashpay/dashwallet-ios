@@ -134,9 +134,12 @@ class MainTabbarController: UITabBarController {
     private var contactsTabIndex: Int?
     #endif
     weak var menuNavigationController: MainMenuViewController?
+    /// Position of the More tab. Always built, but the DashPay layout inserts
+    /// tabs before it, so `MainTabbarTabs.more.rawValue` is wrong in the core
+    /// layout. Refreshed by `configureControllers()` with the rest.
+    private var moreTabIndex: Int?
 
     #if DASHPAY
-    weak var exploreNavigationController: ExploreViewController?
     private var pendingDashPayTabReconfiguration = false
     #endif
 
@@ -163,8 +166,38 @@ class MainTabbarController: UITabBarController {
     /// footprint for Platform-Payment-funded registrations), hiding
     /// the tabs from exactly the users the SDK flows serve.
     @MainActor
+    /// DashPay's tabs need a username, not just an identity.
+    ///
+    /// A contested request registers the identity immediately but the name
+    /// belongs to nobody until the vote resolves, so unlocking on the identity
+    /// alone handed the user Contacts and a profile under a name they might
+    /// never get — and that nobody could find them by meanwhile.
+    /// `usernames` already excludes every in-flight contested label
+    /// (`DWCurrentUserIdentityInfo`, Row #18 filter), so this reads true the
+    /// moment a name is actually theirs: an instant companion registered
+    /// alongside the request, or the contested name once won.
     private var hasDashPayIdentity: Bool {
-        DWCurrentUserIdentityInfo.shared.hasIdentity
+        let identity = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
+        guard identity.hasIdentity else { return false }
+
+        // `usernames` is empty both for an identity that owns no name and for
+        // one whose names have not been read yet, and the two must not be
+        // answered the same way.
+        //
+        // Loaded: the list decides. Not loaded yet: keep a layout that is
+        // already standing — taking Contacts away from a wallet that has had a
+        // username for months, on every cold launch and for the whole session
+        // when the name query fails, is the worse answer — but do not build one
+        // on an unresolved name, or a contested request with nothing of its own
+        // would be handed DashPay for a name it may never win, with no later
+        // pass to take it back.
+        if identity.namesAreLoaded { return !identity.usernames.isEmpty }
+        return hasDashPayTabLayout
+    }
+
+    /// The five-tab DashPay layout is the one currently installed.
+    private var hasDashPayTabLayout: Bool {
+        viewControllers?.count == MainTabbarTabs.allCases.count
     }
     #endif
 
@@ -270,9 +303,9 @@ extension MainTabbarController {
         #endif
 
         // Payment. A real tab, not a modal: the landing is where the send /
-        // receive / transfer flows start, and the tab bar stays visible on it.
-        // The screens it pushes set `hidesBottomBarWhenPushed`, so the bar is
-        // gone from the first step that asks for an amount.
+        // receive / transfer flows start. The landing hides the tab bar while
+        // it is up, and `BaseNavigationController` hides it on every screen
+        // pushed above the landing.
         let paymentImage = Self.makePaymentTabImage()
         item = MainTabbarTabs.payment.tabBarItem(image: paymentImage, selectedImage: paymentImage)
 
@@ -321,6 +354,7 @@ extension MainTabbarController {
 
         nvc = BaseNavigationController(rootViewController: menuVC)
         nvc.tabBarItem = item
+        moreTabIndex = viewControllers.count
         viewControllers.append(nvc)
 
         #if !DASHPAY
@@ -484,6 +518,17 @@ extension MainTabbarController {
     }
     #endif
 
+    /// Switch to the More tab, without disturbing what it is showing.
+    ///
+    /// Where a submitted username request is reported in one sentence, which
+    /// is where the create flow leaves the user once the request is in.
+    @discardableResult
+    func showMore() -> Bool {
+        guard let moreTabIndex else { return false }
+        selectedIndex = moreTabIndex
+        return true
+    }
+
     @objc
     public func performScanQRCodeAction() {
         dismiss(animated: false, completion: nil)
@@ -496,6 +541,31 @@ extension MainTabbarController {
         dismiss(animated: false, completion: nil)
         selectedIndex = MainTabbarTabs.home.rawValue
         homeController?.performPay(to: url)
+    }
+
+    /// Opens the Connections screen for a `dash-key:`, `dash-st:` or
+    /// `dashpay://connect` link.
+    ///
+    /// The More tab's index moves with the DashPay layout, so it comes from
+    /// `moreTabIndex` rather than from the tab enum.
+    @objc
+    public func openDashConnect(_ uri: String) {
+        dismiss(animated: false, completion: nil)
+
+        guard let menuNav = menuNavigationController?.navigationController else { return }
+
+        if let moreTabIndex {
+            selectedIndex = moreTabIndex
+        }
+
+        if let connections = menuNav.topViewController as? DashConnectHostingController {
+            connections.handle(uri: uri)
+            return
+        }
+
+        let controller = DashConnectHostingController(navigationController: menuNav, uri: uri)
+        controller.hidesBottomBarWhenPushed = true
+        menuNav.pushViewController(controller, animated: true)
     }
 
     @objc
@@ -511,11 +581,14 @@ extension MainTabbarController {
     }
     
     #if DASHPAY
+    /// An invitation was stored: bring Home forward, where its card is — out
+    /// of any modal, onto the Home tab, and back to Home's root screen. The
+    /// one route for an opened link and both scanners.
     @objc
-    public func handleDeeplink(_ url: URL, definedUsername: String?) {
+    public func showHomeForInvitation() {
         dismiss(animated: false, completion: nil)
         selectedIndex = MainTabbarTabs.home.rawValue
-        homeController?.handleDeeplink(url, definedUsername: definedUsername)
+        homeController?.navigationController?.popToRootViewController(animated: false)
     }
     #endif
 }

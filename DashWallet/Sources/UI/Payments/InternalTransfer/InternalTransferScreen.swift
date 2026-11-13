@@ -25,6 +25,7 @@ private struct InternalTransferConfirmation: Identifiable {
     let isFullPlatformWithdrawal: Bool
     let isFullShieldedSweep: Bool
     let platformShieldAmountWasMax: Bool
+    let coreShieldedDrain: CoreShieldedDrainConfirmation?
     /// Identity-destination submission: the top-up the confirm sheet runs
     /// instead of a route.
     let identityTopUp: IdentityTopUpTransfer?
@@ -119,12 +120,38 @@ struct InternalTransferScreen: View {
                         )
                         .padding(.horizontal, 20)
 
-                        if viewModel.canContinue {
-                            // Sits under the cards, not in the middle of the
-                            // gap above the keypad: a spacer on each side used
-                            // to split the slack evenly, which floated the line
-                            // away from the form it belongs to. 20pt from the
-                            // cards — the stack's own 16 plus 4.
+                        if let completion = viewModel.coreDrainCompletionNotice {
+                            Text(completion)
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 20)
+                        }
+                        if let estimateNotice = viewModel.coreDrainEstimateNotice {
+                            Text(estimateNotice)
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                                .padding(.horizontal, 20)
+                        }
+                        if let action = viewModel.coreDrainActionTitle {
+                            Button(action) { viewModel.performCoreDrainAction() }
+                                .disabled(viewModel.isCoreDrainLoading)
+                        }
+                        // Sits under the cards, not in the middle of the gap
+                        // above the keypad: a spacer on each side used to split
+                        // the slack evenly, which floated the line away from
+                        // the form it belongs to. 20pt from the cards — the
+                        // stack's own 16 plus 4. An error takes the preview's
+                        // place; the amount row carries only the fiat figure.
+                        if let message = viewModel.amountValidationMessage {
+                            Text(message)
+                                .dashFont(.caption1)
+                                .foregroundColor(Color.dash.errorText)
+                                .multilineTextAlignment(.center)
+                                .frame(maxWidth: .infinity)
+                                .padding(.top, 4)
+                                .padding(.horizontal, 20)
+                        } else if viewModel.canShowTransferPreview {
                             TransferPreview(amountFormatted: viewModel.dashAmountFormatted)
                                 .padding(.top, 4)
                                 .padding(.horizontal, 20)
@@ -168,6 +195,7 @@ struct InternalTransferScreen: View {
                 isFullPlatformWithdrawal: submission.isFullPlatformWithdrawal,
                 isFullShieldedSweep: submission.isFullShieldedSweep,
                 platformShieldAmountWasMax: submission.platformShieldAmountWasMax,
+                coreShieldedDrain: submission.coreShieldedDrain,
                 identityTopUp: submission.identityTopUp,
                 identityWithdrawal: submission.identityWithdrawal,
                 onCancel: { confirmation = nil },
@@ -221,8 +249,7 @@ struct InternalTransferScreen: View {
                 : { viewModel.fillMaxFromWallet() },
             onSwap: toggleAmountUnit,
             onCurrencyTap: toggleAmountUnit,
-            onSelectInputType: selectAmountCurrency,
-            errorMessage: viewModel.amountValidationMessage
+            onSelectInputType: selectAmountCurrency
         )
     }
 
@@ -234,7 +261,7 @@ struct InternalTransferScreen: View {
             showDecimalSeparator: true,
             actionButtonText: NSLocalizedString("Continue", comment: ""),
             actionEnabled: viewModel.canContinue,
-            inProgress: false,
+            inProgress: viewModel.isCoreDrainLoading,
             actionHandler: presentConfirmation
         )
     }
@@ -259,6 +286,7 @@ struct InternalTransferScreen: View {
             isFullPlatformWithdrawal: viewModel.isFullPlatformWithdrawal,
             isFullShieldedSweep: viewModel.isFullShieldedSweep,
             platformShieldAmountWasMax: viewModel.platformShieldAmountWasMax,
+            coreShieldedDrain: viewModel.coreShieldedDrainConfirmation,
             identityTopUp: identityTopUp,
             identityWithdrawal: identityWithdrawal)
     }
@@ -272,6 +300,7 @@ struct InternalTransferScreen: View {
     }
 
     private var dashAmountText: String {
+        if let amount = viewModel.coreDrainDashDisplay { return amount }
         switch viewModel.unit {
         case .dash:
             return keypadBinding.wrappedValue
@@ -284,6 +313,7 @@ struct InternalTransferScreen: View {
     }
 
     private var fiatAmountText: String {
+        if let amount = viewModel.coreDrainFiatDisplay { return amount }
         switch viewModel.unit {
         case .dash:
             guard viewModel.parsedDashAmount > 0,
@@ -321,7 +351,10 @@ struct InternalTransferScreen: View {
             set: { newValue in
                 if newValue.isEmpty {
                     viewModel.amountText = "0"
-                } else {
+                // Shorter text always passes: a unit switch can leave more decimals than
+                // the new unit allows, and refusing backspace would lock the field.
+                } else if newValue.count < viewModel.amountText.count
+                    || InternalTransferViewModel.typedTextFitsPrecision(newValue, unit: viewModel.unit) {
                     viewModel.amountText = newValue
                 }
             })

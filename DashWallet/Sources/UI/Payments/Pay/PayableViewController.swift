@@ -55,7 +55,7 @@ extension PayableViewController where Self: UIViewController {
 #if DASHPAY
     /// Row #18: "Send to a Contact" opens the SwiftUI contacts screen;
     /// paying happens from a contact's profile sheet via
-    /// `WalletSendService.sendToContact`. (The legacy
+    /// `WalletSendService.prepareContactPayment`. (The legacy
     /// `DWContactsViewController` pay-selector flow is retired.)
     func performPayToDashPayUser() {
         let controller = UIHostingController(rootView: ContactsScreen())

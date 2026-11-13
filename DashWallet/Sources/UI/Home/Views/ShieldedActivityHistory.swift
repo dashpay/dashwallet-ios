@@ -25,8 +25,8 @@
 //
 //  Kinds whose Core leg is already a history row are not projected twice:
 //  ShieldFromAssetLock is always omitted because its Core asset-lock spend
-//  renders via `Transaction.isShieldedTransfer`. An internal Withdrawal is
-//  temporarily projected as Pending until its Core receipt appears, then
+//  renders via `Transaction.isShieldedTransfer`. A Pending or Confirmed internal
+//  Withdrawal is shown as Pending until its Core receipt appears, then
 //  matched by destination, amount, and time and replaced by that receipt.
 //
 
@@ -64,6 +64,7 @@ struct ShieldedActivityItem: Identifiable {
         case pending = 0
         case confirmed = 1
         case failed = 2
+        case unknown = 3
     }
 
     let entryId: Data
@@ -113,9 +114,17 @@ struct ShieldedActivityItem: Identifiable {
     let isAwaitingTransparentReceipt: Bool
 
     var id: String {
+        Self.id(entryId: entryId, accountIndex: accountIndex)
+    }
+
+    /// The id a row projects to, for callers that need it without building
+    /// the item (`persistedShieldedActivityIds`).
+    static func id(entryId: Data, accountIndex: UInt32) -> String {
         "shielded-" + entryId.map { String(format: "%02x", $0) }.joined() + "-\(accountIndex)"
     }
 
+    /// Projects the current persisted status. Only Pending and Confirmed entries
+    /// can be shown as awaiting a Core receipt; Failed and Unknown remain explicit.
     init(
         row: PersistentShieldedActivity,
         kindOverride: Kind? = nil,
@@ -126,15 +135,15 @@ struct ShieldedActivityItem: Identifiable {
     ) {
         self.destinationAddress = destinationAddress
         self.isExternalDestination = isExternalDestination
-        self.isAwaitingTransparentReceipt = isAwaitingTransparentReceipt
+        let storedStatus = Status(rawValue: row.status) ?? .unknown
+        let awaitingReceipt = isAwaitingTransparentReceipt && (storedStatus == .pending || storedStatus == .confirmed)
+        self.isAwaitingTransparentReceipt = awaitingReceipt
         let effectiveKind = kindOverride ?? Kind(rawValue: row.kindTag) ?? .shieldedSpend
         entryId = row.entryId
         accountIndex = row.accountIndex
         kind = effectiveKind
         direction = Direction(rawValue: row.direction) ?? .selfTransfer
-        status = isAwaitingTransparentReceipt
-            ? .pending
-            : Status(rawValue: row.status) ?? .confirmed
+        status = awaitingReceipt ? .pending : storedStatus
         amountDuffs = (amountCreditsOverride ?? row.amount) / 1000
         feeDuffs = row.hasFee ? row.fee / 1000 : nil
         blockHeight = row.hasBlockHeight ? row.blockHeight : nil
@@ -152,7 +161,7 @@ struct ShieldedActivityItem: Identifiable {
     // MARK: Display
 
     var title: String {
-        if isAwaitingTransparentReceipt {
+        if isAwaitingTransparentReceipt || (kind == .withdrawal && !isExternalDestination) {
             return NSLocalizedString("Internal Transfer", comment: "Transaction within the wallet, transfer of own funds")
         }
         switch kind {
@@ -289,6 +298,7 @@ struct ShieldedActivityItem: Identifiable {
         switch status {
         case .pending: return NSLocalizedString("Pending", comment: "")
         case .failed: return NSLocalizedString("Failed", comment: "")
+        case .unknown: return NSLocalizedString("Unknown", comment: "")
         case .confirmed: return nil
         }
     }
@@ -313,12 +323,36 @@ struct ShieldedActivityItem: Identifiable {
     }
 }
 
+// MARK: - History row
+
+/// Renders a shielded operation from its immutable history projection.
+struct ShieldedActivityHistoryRow: View {
+    let item: ShieldedActivityItem
+    let icon: AnyView
+    let onSelect: () -> Void
+
+    var body: some View {
+        DashUIKit.TransactionView(
+            iconView: icon,
+            secondaryIcon: item.secondarySystemIcon.map { DashIconSource.system($0) },
+            title: item.title,
+            subtitle: item.shortTimeString,
+            details: item.detailsText,
+            dashAmount: item.signedDashAmount,
+            amountSign: item.showsDirectionSign ? .always : .none,
+            amountAccessorySystemImage: item.showsDirectionSign ? nil : "arrow.triangle.2.circlepath",
+            fiat: item.fiatAmount,
+            trailingStatusText: item.trailingStatusText
+        ) { onSelect() }
+        .frame(minHeight: 66)
+        .accessibilityIdentifier(item.id)
+    }
+}
+
 // MARK: - Detail sheet
 
 /// Read-only detail for one shielded activity entry, presented from the
-/// history list inside the standard `BottomSheet`. Deliberately simpler
-/// than `TXDetailVC`: a shielded entry has no inputs/outputs/addresses
-/// to enumerate — its whole point is that those stay private.
+/// history list inside the standard `BottomSheet`.
 struct ShieldedActivityDetailsView: View {
     let item: ShieldedActivityItem
 

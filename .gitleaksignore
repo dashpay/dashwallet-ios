@@ -12,3 +12,8 @@
 7381075f16bd4d8ea8a36bae54510c4f166a1d0c:DashWallet/Sources/Models/Uphold/DWUpholdMainnetConstants.m:hardcoded-hex-secret-literal:37
 f383b7a8aac5bf7aeb29c4a2a7f7cec54832e2de:DashWallet/Sources/Models/Uphold/DWUpholdMainnetConstants.m:hardcoded-hex-secret-literal:33
 f383b7a8aac5bf7aeb29c4a2a7f7cec54832e2de:DashWallet/Sources/Models/Uphold/DWUpholdMainnetConstants.m:hardcoded-hex-secret-literal:37
+
+# CoreShieldedDrainStoreTests removes the "recipientRaw43" key from a stored
+# record; generic-api-key reads the key name as a credential. No secret.
+DashWalletTests/CoreShieldedDrainStoreTests.swift:generic-api-key:136
+DashWalletTests/CoreShieldedDrainStoreTests.swift:generic-api-key:165

@@ -34,10 +34,6 @@ protocol HomeViewControllerDelegate: AnyObject {
 
 class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     private var cancellableBag = Set<AnyCancellable>()
-    private var isSyncObserverRegistered = false
-    private var pendingCrowdNodeReminder = false
-    private var isCrowdNodeReminderRetryScheduled = false
-    private weak var crowdNodeBalanceReminderController: UIViewController?
     var model: DWHomeProtocol!
     var viewModel: HomeViewModel!
     private var homeView: HomeView!
@@ -53,7 +49,6 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
     #if DASHPAY
     var isBackButtonHidden: Bool = false
-    private var invitationSetup: DWInvitationSetupState?
     private var avatarView: DWDPAvatarView!
     #else
     var isBackButtonHidden: Bool = true
@@ -67,9 +62,6 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     }
     
     deinit {
-        if isSyncObserverRegistered {
-            SyncingActivityMonitor.shared.remove(observer: self)
-        }
         print("☠️ \(String(describing: self))")
     }
 
@@ -86,7 +78,6 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
         assert(model != nil)
 
-        registerSyncObserverIfNeeded()
         setupView()
         performJailbreakCheck()
         configureObservers()
@@ -117,6 +108,13 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
+        #if DASHPAY
+        // A verdict that finished while Home was off screen is shown now.
+        if let outcome = PendingInvitationViewModel.shared.undeliveredOutcome {
+            homeViewPresentInvitationOutcome(outcome)
+        }
+        #endif
+
         // Evonode epoch-blocks card: cheap no-op inside its refresh throttle.
         viewModel.refreshEvonodeEpochBlocks()
 
@@ -137,42 +135,8 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         showWalletBackupReminderIfNeeded()
 
         model.registerForPushNotifications()
-        model.checkCrowdNodeState()
-        presentCrowdNodeBalanceReminderIfNeeded()
     }
 
-    #if DASHPAY
-    func handleDeeplink(_ url: URL, definedUsername: String?) {
-        if DWInvitationService.shared.hasLocalIdentity {
-            let title = NSLocalizedString("Username already found", comment: "")
-            let message = NSLocalizedString("You cannot claim this invite since you already have a Dash username", comment: "")
-            let alert = DPAlertViewController(icon: UIImage(named: "icon_invitation_error")!, title: title, description: message)
-            present(alert, animated: true, completion: nil)
-            return
-        }
-
-        if SyncingActivityMonitor.shared.state != .syncDone {
-            let state = DWInvitationSetupState()
-            state.invitation = url
-            state.chosenUsername = definedUsername
-            invitationSetup = state
-            return
-        }
-
-        // The redeem screen owns validation: an unrecognized or
-        // structurally invalid link renders its inline error state
-        // (and the field stays editable), so no pre-flight alert is
-        // needed. Claim-time failures (already claimed, wrong network,
-        // insufficient voucher) surface in the username form's error
-        // alert from the coordinator.
-        let prefill = DWInvitationLinkNormalizer.normalize(url) ?? url.absoluteString
-        ClaimInvitationFlow.pushRedeemScreen(
-            on: navigationController,
-            dashPayModel: model.dashPayModel,
-            initialLink: prefill,
-            definedUsername: definedUsername)
-    }
-    #endif
 
     // MARK: - Private
 
@@ -349,148 +313,8 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
                 self?.viewModel.reclassifyTransactionShown(isShown: true)
             }
             .store(in: &cancellableBag)
-
-        CrowdNodeBalanceReminder.shared.$hasBalance
-            .removeDuplicates()
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] hasBalance in
-                guard let self = self else { return }
-
-                if hasBalance {
-                    self.presentCrowdNodeBalanceReminderIfNeeded()
-                } else {
-                    self.pendingCrowdNodeReminder = false
-                    self.dismissCrowdNodeBalanceReminder(markDismissed: false, animated: true)
-                }
-            }
-            .store(in: &cancellableBag)
     }
 
-    private func registerSyncObserverIfNeeded() {
-        guard !isSyncObserverRegistered else { return }
-
-        SyncingActivityMonitor.shared.add(observer: self)
-        isSyncObserverRegistered = true
-    }
-
-    private func presentCrowdNodeBalanceReminderIfNeeded() {
-        guard isViewLoaded else { return }
-        guard SyncingActivityMonitor.shared.state == .syncDone else { return }
-        guard CrowdNodeBalanceReminder.shared.shouldShowOnActiveScreen else {
-            pendingCrowdNodeReminder = false
-            return
-        }
-        guard crowdNodeBalanceReminderController == nil else {
-            pendingCrowdNodeReminder = false
-            return
-        }
-        // Present on whatever view is currently active (any tab / pushed screen), not just Home.
-        // The sync observer fires even when Home isn't the visible tab, so `self` may be off-screen.
-        //
-        // The top controller may itself be a dialog — the PIN prompt (DSRequestPinViewController)
-        // is a DWAlertController and reports no presentedViewController of its own, so presenting
-        // over it would pass the check. Stacking on top of the PIN breaks its dismissal and lets
-        // its completion fire twice, which trips NSParameterAssert(completion) in DashSync.
-        guard let presenter = activeTopViewController(),
-              presenter.presentedViewController == nil,
-              !(presenter is UIAlertController),
-              !(presenter is DWAlertController) else {
-            pendingCrowdNodeReminder = true
-            scheduleCrowdNodeReminderRetryIfNeeded()
-            return
-        }
-
-        let bottomSheet = DashUIKit.BottomSheet(showBackButton: .constant(false), fillsHeight: false) {
-            CrowdNodeBalanceReminderSheet(
-                onWithdraw: { [weak self] in
-                    self?.openCrowdNodeWithdrawalFromReminder()
-                },
-                onDismiss: { [weak self] in
-                    self?.dismissCrowdNodeBalanceReminder(markDismissed: true, animated: true)
-                }
-            )
-        }
-
-        let hostingController = UIHostingController(rootView: bottomSheet)
-        hostingController.modalPresentationStyle = .pageSheet
-        hostingController.presentationController?.delegate = self
-        // Fill the whole sheet (incl. the bottom safe-area strip) with the sheet background.
-        hostingController.view.backgroundColor = UIColor(Color.dash.primaryBackground)
-
-        if let sheetPC = hostingController.sheetPresentationController {
-            sheetPC.prefersGrabberVisible = false
-            // Custom corner radius only below iOS 26; iOS 26+ keeps the native sheet styling.
-            if #unavailable(iOS 26.0) {
-                sheetPC.preferredCornerRadius = 24
-            }
-
-            // SwiftUI's `.presentationDetents` (used by `.selfSizingSheet()`) does NOT bridge to a
-            // UIHostingController presented via UIKit `present()` — UIKit would fall back to `.large`.
-            // So size the sheet to its content here with a custom UIKit detent.
-            if #available(iOS 16.0, *) {
-                let width = presenter.view.bounds.width
-                let bottomInset = presenter.view.window?.safeAreaInsets.bottom ?? 0
-                let contentHeight = hostingController
-                    .sizeThatFits(in: CGSize(width: width, height: .greatestFiniteMagnitude))
-                    .height
-                sheetPC.detents = [.custom { context in
-                    min(contentHeight + bottomInset, context.maximumDetentValue)
-                }]
-            } else {
-                sheetPC.detents = [.medium()]
-            }
-        }
-
-        pendingCrowdNodeReminder = false
-        crowdNodeBalanceReminderController = hostingController
-        // Show at most once per session — don't re-present on subsequent HomeView appearances.
-        CrowdNodeBalanceReminder.shared.markActiveScreenReminderShown()
-        presenter.present(hostingController, animated: true)
-    }
-
-    /// The active tab's top-most controller. Resolves via the tab-bar ancestor, which stays
-    /// reachable even when Home isn't the selected tab (so the reminder can appear anywhere).
-    private func activeTopViewController() -> UIViewController? {
-        (tabBarController ?? view.window?.rootViewController)?.topController()
-    }
-
-    private func dismissCrowdNodeBalanceReminder(markDismissed: Bool, animated: Bool, completion: (() -> Void)? = nil) {
-        pendingCrowdNodeReminder = false
-
-        if markDismissed {
-            CrowdNodeBalanceReminder.shared.dismissActiveScreenReminder()
-        }
-
-        guard let controller = crowdNodeBalanceReminderController else {
-            completion?()
-            return
-        }
-
-        crowdNodeBalanceReminderController = nil
-        controller.dismiss(animated: animated, completion: completion)
-    }
-
-    private func openCrowdNodeWithdrawalFromReminder() {
-        dismissCrowdNodeBalanceReminder(markDismissed: false, animated: true) { [weak self] in
-            guard let self = self, let presenter = self.activeTopViewController() else { return }
-            CrowdNodeWithdrawalRouter.openWithdrawal(from: presenter)
-        }
-    }
-
-    private func scheduleCrowdNodeReminderRetryIfNeeded() {
-        guard pendingCrowdNodeReminder, !isCrowdNodeReminderRetryScheduled else { return }
-
-        isCrowdNodeReminderRetryScheduled = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-            guard let self = self else { return }
-
-            self.isCrowdNodeReminderRetryScheduled = false
-            guard self.pendingCrowdNodeReminder else { return }
-
-            self.presentCrowdNodeBalanceReminderIfNeeded()
-        }
-    }
-    
     private func showTimeSkewDialog(diffSeconds: Int64, coinjoin: Bool) {
         let settingsURL = URL(string: UIApplication.openSettingsURLString)
         let hasSettings = settingsURL != nil && UIApplication.shared.canOpenURL(settingsURL!)
@@ -498,9 +322,9 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
         
         if coinjoin {
             let position = diffSeconds > 0 ? NSLocalizedString("ahead", comment: "TimeSkew") : NSLocalizedString("behind", comment: "TimeSkew")
-            message = String(format: NSLocalizedString("Your device time is %@ by %d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin.", comment: "TimeSkew"), position, abs(diffSeconds))
+            message = String.localizedStringWithFormat(NSLocalizedString("Your device time is %@ by %d seconds. You cannot use CoinJoin due to this difference.\n\nThe time settings on your device needs to be changed to “Set time automatically” to use CoinJoin.", comment: "TimeSkew"), position, abs(diffSeconds))
         } else {
-            message = String(format: NSLocalizedString("Your device time is off by %d minutes. You probably cannot send or receive Dash due to this problem.\n\nYou should check and if necessary correct your date, time and timezone settings.", comment: "TimeSkew"), abs(diffSeconds / 60))
+            message = String.localizedStringWithFormat(NSLocalizedString("Your device time is off by %d minutes. You probably cannot send or receive Dash due to this problem.\n\nYou should check and if necessary correct your date, time and timezone settings.", comment: "TimeSkew"), abs(diffSeconds / 60))
         }
         
         showModalDialog(
@@ -534,7 +358,7 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
                 DWLogger.log("HomeViewController: sweep invoked from Home popup (\(amount))")
                 self.viewModel.showCoinJoinSweepDialog = false
                 Task { @MainActor in
-                    // The post-sync popup (ModalDialog) is mid-dismissal here —
+                    // The post-sync popup (LegacyModalDialog) is mid-dismissal here —
                     // its wrapper calls dismiss(animated:) immediately before
                     // running this action. Presenting the PIN now races that
                     // dismissal: DSAuthenticationManager.presentController:
@@ -578,14 +402,35 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
 
 extension HomeViewController: RootEditProfileViewControllerDelegate {
     func editProfileViewController(_ controller: RootEditProfileViewController, updateDisplayName rawDisplayName: String, aboutMe rawAboutMe: String, avatarURLString: String?, avatarImage: UIImage?) {
-        // Pass the cropped image through so the profile bridge can compute
-        // the avatar hash from the uploaded bytes.
-        model.dashPayModel.userProfile.updateModel.update(
-            withDisplayName: rawDisplayName,
-            aboutMe: rawAboutMe,
-            avatarURLString: avatarURLString,
-            avatarImage: avatarImage)
-        controller.dismiss(animated: true, completion: nil)
+        // Same credit gate as the More entry: a write the identity cannot pay
+        // for must not be broadcast, and a balance running low is worth saying
+        // once — before the write, not after it.
+        Task { @MainActor in
+            switch await controller.confirmAgainstIdentityCredits() {
+            case .proceed:
+                break
+            case .stop:
+                controller.dismiss(animated: true)
+                return
+            case .topUp:
+                // After the editor is gone, not onto it: this screen is the one
+                // being dismissed, so whatever presented it does the presenting.
+                let presenter = controller.presentingViewController
+                controller.dismiss(animated: true) {
+                    presenter?.present(IdentityCreditGate.makeTopUpController(), animated: true)
+                }
+                return
+            }
+
+            // Pass the cropped image through so the profile bridge can compute
+            // the avatar hash from the uploaded bytes.
+            model.dashPayModel.userProfile.updateModel.update(
+                withDisplayName: rawDisplayName,
+                aboutMe: rawAboutMe,
+                avatarURLString: avatarURLString,
+                avatarImage: avatarImage)
+            controller.dismiss(animated: true, completion: nil)
+        }
     }
 
     func editProfileViewControllerDidCancel(_ controller: RootEditProfileViewController) {
@@ -603,8 +448,64 @@ extension HomeViewController: HomeViewDelegate {
     }
 
     #if DASHPAY
-    func homeViewClaimInvitation() {
-        showClaimInvitation()
+    func homeViewRequestUsernameForRecovery(username: String) {
+        showCreateUsernameForRecovery(definedUsername: username)
+    }
+
+    func homeViewScanInvitation() {
+        InvitationEntry.presentScanner(from: self) { [weak self] in
+            (self?.tabBarController as? MainTabbarController)?.showHomeForInvitation()
+        }
+    }
+
+    func homeViewCreateUsername(with invitation: PendingInvitation, amountDuffs: UInt64) {
+        showCreateUsername(withInvitation: invitation, amountDuffs: amountDuffs)
+    }
+
+    func homeViewPresentInvitationOutcome(_ outcome: InvitationValidation) {
+        // Every Home built this session hears the verdict; only the one on
+        // screen shows it. Off screen it stays undelivered and `viewDidAppear`
+        // shows it on return.
+        guard viewIfLoaded?.window != nil else { return }
+        // Only a verdict still waiting for the active wallet: one reached for
+        // another wallet stays for that wallet's Home.
+        guard PendingInvitationViewModel.shared.undeliveredOutcome == outcome else { return }
+        PendingInvitationViewModel.shared.acknowledgeOutcome(outcome)
+        guard let dialog = InvitationOutcomeDialogs.controller(for: outcome) else { return }
+        // Over whatever is already up (a sheet, another alert), or UIKit
+        // refuses the presentation silently.
+        InvitationEntry.topmost(from: tabBarController ?? self).present(dialog, animated: true)
+    }
+
+    /// Where the DashPay row goes while a contested name is being voted on —
+    /// the same screen the More row pushes (`MainMenuScreen`), so both
+    /// surfaces report the vote in one place.
+    func homeViewShowUsernameRequestStatus(username: String?) {
+        // The label the row is showing wins. It reaches `.voting` from the
+        // bookmark OR from the identity's pending contested name, and the
+        // bookmark itself returns nothing while `identityId` is unresolved —
+        // so navigating on the bookmark alone left the row's tap and its ⓘ
+        // dead on exactly the wallets that can display it.
+        guard let label = (username?.isEmpty == false ? username : nil)
+            ?? DWContestedNameStatusService.shared.pendingLabel
+            ?? DWCurrentUserIdentityInfo.shared.refreshedSnapshot().pendingContestedName
+        else { return }
+
+        let screen = UsernameRequestStatusScreen(
+            viewModel: UsernameRequestStatusViewModel(label: label),
+            onBack: { [weak self] in self?.navigationController?.popViewController(animated: true) },
+            onRetryCompanion: { [weak self] name in self?.showCreateUsernameForRecovery(definedUsername: name) })
+        let controller = UIHostingController(rootView: screen)
+        controller.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(controller, animated: true)
+    }
+
+    func homeViewShieldFunds() {
+        // Preselected, not pinned — the transfer form still lets the user
+        // change their mind about either endpoint.
+        let controller = InternalTransferHostingController(transferTo: .balance(.shielded))
+        controller.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(controller, animated: true)
     }
     #endif
 
@@ -687,33 +588,3 @@ extension HomeViewController: ShortcutsActionDelegate {
     }
 }
 
-// MARK: - SyncingActivityMonitorObserver
-
-extension HomeViewController: SyncingActivityMonitorObserver {
-    func syncingActivityMonitorProgressDidChange(_ progress: Double) {
-        // pass
-    }
-
-    func syncingActivityMonitorStateDidChange(previousState: SyncingActivityMonitor.State, state: SyncingActivityMonitor.State) {
-        if state == .syncDone {
-            #if DASHPAY
-            if let invitationSetup = invitationSetup, let invitation = invitationSetup.invitation {
-                handleDeeplink(invitation, definedUsername: invitationSetup.chosenUsername)
-                self.invitationSetup = nil
-                return
-            }
-            #endif
-
-            presentCrowdNodeBalanceReminderIfNeeded()
-        }
-    }
-}
-
-extension HomeViewController: UIAdaptivePresentationControllerDelegate {
-    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
-        guard presentationController.presentedViewController === crowdNodeBalanceReminderController else { return }
-
-        crowdNodeBalanceReminderController = nil
-        CrowdNodeBalanceReminder.shared.dismissActiveScreenReminder()
-    }
-}

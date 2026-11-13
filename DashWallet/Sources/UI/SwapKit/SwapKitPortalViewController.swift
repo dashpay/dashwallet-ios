@@ -18,6 +18,29 @@
 import SwiftUI
 import UIKit
 
+extension UIViewController {
+    /// Open the Dash DEX portal behind the spending authentication gate.
+    ///
+    /// The portal is a spending surface, so every entry point — the Home
+    /// shortcut and the payments landing's swap card — goes through this one
+    /// gate; a destination that asks for a PIN from one entry point and not
+    /// another is not a gate at all.
+    func presentDashDEXAfterAuthentication() {
+        AuthenticationService.shared.authenticate(
+            withPrompt: nil,
+            usingBiometricAuthentication: DWGlobalOptions.sharedInstance().biometricAuthEnabled,
+            alertIfLockout: true
+        ) { [weak self] authenticated, _, _ in
+            guard authenticated, let self else { return }
+            let controller = SwapKitPortalViewController()
+            controller.hidesBottomBarWhenPushed = true
+            let navigationController = BaseNavigationController(rootViewController: controller)
+            navigationController.modalPresentationStyle = .fullScreen
+            self.present(navigationController, animated: true)
+        }
+    }
+}
+
 final class SwapKitPortalViewController: UIViewController, NavigationBarDisplayable {
     var isNavigationBarHidden: Bool { true }
 

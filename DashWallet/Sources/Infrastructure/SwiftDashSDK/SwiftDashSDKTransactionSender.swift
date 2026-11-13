@@ -17,8 +17,8 @@
 //  payment-output broadcast path stamps `alreadyAuthorized` so it doesn't
 //  re-prompt.
 //
-//  The selected-input (CrowdNode) and CoinJoin-sweep paths below broadcast
-//  inline — post-auth programmatic flows with no confirmation UI.
+//  The CoinJoin-sweep path below broadcasts inline — a post-auth
+//  programmatic flow with no confirmation UI.
 //
 //  This file intentionally does NOT import DashSync.
 //
@@ -43,7 +43,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
     /// `MAX_STANDARD_TX_INPUTS`, which the builder hard-rejects if exceeded — so
     /// this cap is a proactive split, and a drifted value still fails safe (an
     /// error) rather than mis-signing.
-    private static let maxInputsPerSweep = 500
+    static let maxInputsPerSweep = 500
     /// Relay-minimum fee rate: 1 duff/byte == 1000 duffs per kB.
     private static let feeRateSatPerKb: UInt64 = 1000
     /// `AccountBalance.typeTag` discriminant for CoinJoin (matches
@@ -67,14 +67,8 @@ final class SwiftDashSDKTransactionSender: NSObject {
     /// (`DashpayExternalAccount`) is a contact's watch-only coins and is NOT
     /// pooled — the local seed cannot sign them.
     private static let dashpayReceivingTypeTag: UInt8 = 12
-    /// Signal sends spend from the primary BIP44 account.
+    /// The primary BIP44 account, the one Core sends fund from.
     private static let bip44AccountIndex: UInt32 = 0
-    /// How long to wait for a just-broadcast funding output to appear in the
-    /// SDK's UTXO set (the local mempool apply is async relative to
-    /// `broadcastTransaction` returning).
-    private static let selectedInputUtxoTimeout: TimeInterval = 30
-    /// Poll interval for the UTXO wait above.
-    private static let selectedInputPollInterval: TimeInterval = 0.5
 
     // MARK: - Build & Sign
 
@@ -205,6 +199,54 @@ final class SwiftDashSDKTransactionSender: NSObject {
 
     // MARK: - CoinJoin Sweep
 
+    /// Outcome of a chunked sweep (the CoinJoin sweep, or the Core
+    /// consolidation that shares its chunk loop).
+    ///
+    /// Each chunk is an independent transaction, so a sweep can end up partly
+    /// done: some chunks broadcast while another fails to build, sign or
+    /// broadcast. The txids alone cannot express that — a caller that only sees
+    /// a non-empty array reports "your mixed coins were moved" while the failed
+    /// chunks are still sitting in the CoinJoin account. So the failure travels
+    /// with them, and the caller records the accepted transactions *and* still
+    /// surfaces the partial state.
+    struct SweepOutcome {
+        /// Wire-order txids of the chunks that broadcast, in chunk order
+        /// (matches `Transaction.txHashData`). The CoinJoin sweep records them
+        /// in `CoinJoinWithdrawalStore`; the Core consolidation never does.
+        let txids: [Data]
+        /// How many chunks were not accepted, including the unknown ones.
+        let failedChunkCount: Int
+        /// The first failed chunk's error, preferring one that was not unknown
+        /// (it says why coins are left); nil when every chunk broadcast.
+        let firstFailure: Error?
+        /// Wire-order txids of the chunks whose broadcast ended
+        /// `transactionStatusUnknown`: they may have reached peers.
+        let unknownTxids: [Data]
+
+        /// Some chunks broadcast and some did not. A rejected chunk's coins
+        /// remain in the CoinJoin account; an unknown chunk's were applied to
+        /// the wallet before the broadcast waited for peers (see
+        /// `WalletSendService.coinJoinSweepFailure`).
+        var isPartial: Bool { !txids.isEmpty && failedChunkCount > 0 }
+    }
+
+    typealias CoinJoinSweepOutcome = SweepOutcome
+
+    /// Thrown by `sweepCoinJoin` when no chunk was accepted and at least one
+    /// ended `transactionStatusUnknown`; carries every such chunk's txid.
+    struct CoinJoinSweepUnknownError: LocalizedError {
+        /// Wire-order txids of the chunks whose outcome is unknown.
+        let unknownTxids: [Data]
+        /// The first unknown chunk's error.
+        let underlying: Error
+        /// Every chunk that was not accepted, unknown or not.
+        let failedChunkCount: Int
+        /// The first failed chunk's error that was not unknown, if any.
+        let otherFailure: Error?
+
+        var errorDescription: String? { underlying.localizedDescription }
+    }
+
     /// Sweep the entire CoinJoin-account balance to `address` (the user's own
     /// BIP44 receive address), fully emptying the CoinJoin account across one or
     /// more transactions.
@@ -220,242 +262,523 @@ final class SwiftDashSDKTransactionSender: NSObject {
     /// longer supported, so we move the user's mixed coins into their normal
     /// spendable balance.
     ///
-    /// - Parameter address: Destination Dash address (the user's own BIP44
-    ///   receive address, resolved via `SwiftDashSDKReceiveAddressReader`).
-    /// - Returns: The **wire-order** txids of the broadcast sweep transactions
-    ///   (one per chunk) — ready to record in `CoinJoinWithdrawalStore`
-    ///   (matches `Transaction.txHashData`).
-    static func sweepCoinJoin(to address: String) throws -> [Data] {
+    /// - Parameters:
+    ///   - address: Destination Dash address (the user's own BIP44 receive
+    ///     address, resolved via `SwiftDashSDKReceiveAddressReader`, or a fresh
+    ///     CoinJoin address for the Shielded consolidation).
+    ///   - binding: When set, the sweep refuses to run unless this is still the
+    ///     active wallet and network.
+    ///   - outpoints: When set, only these UTXOs are spent (the ones still
+    ///     unspent), and fewer than two of them are not swept: one input
+    ///     would only pay a fee. The Shielded consolidation passes the final
+    ///     ones it planned from: an unconfirmed input that never locks would
+    ///     leave every coin swept with it behind a transaction that cannot
+    ///     confirm.
+    /// - Returns: A `CoinJoinSweepOutcome` carrying the broadcast chunks' txids
+    ///   and any chunk failure. Throws only when nothing broadcast at all.
+    static func sweepCoinJoin(
+        to address: String, expecting binding: CoinJoinWalletBinding? = nil,
+        outpoints: Set<CoinJoinOutpoint>? = nil
+    ) throws -> CoinJoinSweepOutcome {
         logger.info("💸 TXSEND :: sweeping CoinJoin account → spendable balance")
 
-        let sweep = { @MainActor () throws -> [Data] in
+        let sweep = { @MainActor () throws -> CoinJoinSweepOutcome in
             let host = SwiftDashSDKHost.shared
             guard let wallet = host.wallet, let manager = host.manager,
                   let network = host.runningNetwork else {
                 throw SendError.walletNotReady("PlatformWalletManager wallet is not available")
             }
+            if let binding, binding != CoinJoinWalletBinding.current() {
+                throw SendError.walletNotReady("the active wallet changed")
+            }
             let core = try wallet.coreWallet()
-            let walletId = wallet.walletId
-
-            // CoinJoin account-0 balance descriptor (mirrors
-            // SwiftDashSDKCoinJoinBalanceReader: typeTag 1, index 0). Used only to
-            // address the account for UTXO enumeration.
-            guard let cjBalance = manager.accountBalances(for: walletId).first(where: {
-                $0.typeTag == Self.coinJoinTypeTag && $0.index == Self.coinJoinAccountIndex
-            }) else {
-                return []
+            let utxos = Self.sweepUtxos(manager: manager, walletId: wallet.walletId, restrictedTo: outpoints)
+            guard !utxos.isEmpty else {
+                return SweepOutcome(txids: [], failedChunkCount: 0, firstFailure: nil, unknownTxids: [])
             }
+            return try Self.sweepChunks(
+                utxos, accountType: .coinJoin, accountIndex: Self.coinJoinAccountIndex,
+                to: address, wallet: wallet, core: core, network: network, label: "coinjoin sweep")
+        }
 
-            // Snapshot the account's spendable UTXOs (after the recovery scan has
-            // materialized deep `/0/` + `/1/` addresses).
-            let utxos = manager.accountUtxos(for: walletId, balance: cjBalance)
-            guard !utxos.isEmpty else { return [] }
+        let outcome = try onMain(sweep)
+        logSweepBroadcast(outcome, label: "coinjoin sweep")
+        return outcome
+    }
 
-            // Drain each balanced ≤500-input chunk to `address`. `SelectionStrategy.all`
-            // makes core compute output = Σinputs − fee with no change (the addOutput
-            // amount is ignored); `finalizeAtomic` resolves dual-chain `/0/`+`/1/` signing.
-            // Partial-failure tolerant: keep the txs that broadcast, log the rest, and
-            // throw only if nothing broadcast at all (a re-run sweeps the remainder).
-            var txids: [Data] = []
-            var firstError: Error?
-            for (index, chunk) in Self.balancedChunks(utxos).enumerated() {
-                do {
-                    let builder = try CoreTransactionBuilder(network: network)
-                    try builder.addInputs(
-                        wallet: wallet, accountType: .coinJoin,
-                        accountIndex: Self.coinJoinAccountIndex, utxos: chunk)
-                    try builder.setSelectionStrategy(.all)
-                    try builder.setFeeRate(satPerKb: Self.feeRateSatPerKb)
-                    // No setCurrentHeight: the finalizer sets the height from the
-                    // wallet's last_processed_height, overriding anything set here.
-                    try builder.addOutput(address: address, amountDuffs: 0)
-                    let tx = try builder.finalizeAtomic(
-                        wallet: wallet, accountType: .coinJoin,
-                        accountIndex: Self.coinJoinAccountIndex)
-                    // Serialize BEFORE broadcast — broadcasting consumes the handle.
-                    let txData = try tx.serializedData()
-                    let outcome = try core.broadcastTransactionWithOutcome(tx)
-                    _ = try Self.requireAccepted(outcome)
-                    // Wire (internal) byte order to match `Transaction.txHashData` /
-                    // `CoinJoinWithdrawalStore`: `computeTxHash` yields display order,
-                    // so reverse it back to wire order.
-                    txids.append(Data(Self.computeTxHash(from: txData).reversed()))
-                } catch {
-                    firstError = firstError ?? error
-                    Self.logger.error(
-                        "💸 TXSEND :: coinjoin sweep chunk \(index + 1, privacy: .public) failed to broadcast, continuing: \(String(describing: error), privacy: .public)")
+    /// Spend `utxos` of one account to `address` in balanced ≤500-input
+    /// chunks, one transaction each, and broadcast them.
+    ///
+    /// `useOnlyAddedInputs` is what makes the chunk the transaction's input
+    /// set — the finalizer otherwise funds from the whole account regardless
+    /// of what was seeded. `SelectionStrategy.all` makes core compute
+    /// output = Σinputs − fee with no change (the addOutput amount is
+    /// ignored); `finalizeAtomic` resolves dual-chain `/0/`+`/1/` signing.
+    /// Partial-failure tolerant: keep the txs that broadcast, log the rest,
+    /// and throw only if none was accepted (`CoinJoinSweepUnknownError` when
+    /// one may still land). A mixed outcome is reported through
+    /// `SweepOutcome`, not swallowed.
+    @MainActor
+    private static func sweepChunks(
+        _ utxos: [PlatformWalletManager.AccountUtxo],
+        accountType: CoreTransactionBuilder.AccountType,
+        accountIndex: UInt32,
+        to address: String,
+        wallet: ManagedPlatformWallet,
+        core: ManagedCoreWallet,
+        network: Network,
+        label: String
+    ) throws -> SweepOutcome {
+        var txids: [Data] = []
+        var failedChunkCount = 0
+        var firstOther: Error?
+        // An unconfirmed broadcast may have reached peers: when nothing was
+        // accepted it is the error reported, ahead of a rejection, so a
+        // caller can tell it apart from "nothing moved".
+        var firstUnknown: Error?
+        var unknownTxids: [Data] = []
+        for (index, chunk) in Self.balancedChunks(utxos, maxPerChunk: Self.maxInputsPerSweep).enumerated() {
+            var chunkTxid: Data?
+            do {
+                let builder = try CoreTransactionBuilder(network: network)
+                try builder.addInputs(
+                    wallet: wallet, accountType: accountType,
+                    accountIndex: accountIndex, utxos: chunk)
+                // Without this the finalizer adds every unreserved UTXO of
+                // the account on top of the chunk and `.all` takes the lot,
+                // so the chunking below has no effect and an account over
+                // the input cap fails on every chunk and every retry.
+                try builder.useOnlyAddedInputs()
+                try builder.setSelectionStrategy(.all)
+                try builder.setFeeRate(satPerKb: Self.feeRateSatPerKb)
+                // No setCurrentHeight: the finalizer sets the height from the
+                // wallet's last_processed_height, overriding anything set here.
+                try builder.addOutput(address: address, amountDuffs: 0)
+                let tx = try builder.finalizeAtomic(
+                    wallet: wallet, accountType: accountType,
+                    accountIndex: accountIndex)
+                // Serialize BEFORE broadcast — broadcasting consumes the handle.
+                let txData = try tx.serializedData()
+                // Wire (internal) byte order to match `Transaction.txHashData` /
+                // `CoinJoinWithdrawalStore`: `computeTxHash` yields display order,
+                // so reverse it back to wire order.
+                let txid = Data(Self.computeTxHash(from: txData).reversed())
+                chunkTxid = txid
+                let outcome = try core.broadcastTransactionWithOutcome(tx)
+                _ = try Self.requireAccepted(outcome)
+                txids.append(txid)
+            } catch {
+                failedChunkCount += 1
+                if case SendError.transactionStatusUnknown = error {
+                    firstUnknown = firstUnknown ?? error
+                    if let chunkTxid { unknownTxids.append(chunkTxid) }
+                } else {
+                    firstOther = firstOther ?? error
                 }
+                Self.logger.error(
+                    "💸 TXSEND :: \(label, privacy: .public) chunk \(index + 1, privacy: .public) failed to broadcast, continuing: \(String(describing: error), privacy: .public)")
             }
-            if txids.isEmpty, let error = firstError { throw error }
-            return txids
         }
+        if txids.isEmpty, let firstUnknown {
+            throw CoinJoinSweepUnknownError(
+                unknownTxids: unknownTxids, underlying: firstUnknown,
+                failedChunkCount: failedChunkCount, otherFailure: firstOther)
+        }
+        if txids.isEmpty, let firstOther { throw firstOther }
+        return SweepOutcome(
+            txids: txids, failedChunkCount: failedChunkCount, firstFailure: firstOther ?? firstUnknown,
+            unknownTxids: unknownTxids)
+    }
 
-        let txids: [Data]
+    /// Runs `work` on the main actor: inline when already on main, else by a
+    /// synchronous hop.
+    private static func onMain<T>(_ work: @MainActor () throws -> T) throws -> T {
         if Thread.isMainThread {
-            txids = try MainActor.assumeIsolated { try sweep() }
-        } else {
-            var captured: Result<[Data], Error> = .failure(SendError.walletNotReady("uninitialized result"))
-            DispatchQueue.main.sync {
-                captured = Result { try MainActor.assumeIsolated { try sweep() } }
-            }
-            txids = try captured.get()
+            return try MainActor.assumeIsolated { try work() }
         }
+        var captured: Result<T, Error> = .failure(SendError.walletNotReady("uninitialized result"))
+        DispatchQueue.main.sync {
+            captured = Result { try MainActor.assumeIsolated { try work() } }
+        }
+        return try captured.get()
+    }
 
-        // Log display-order hex (byte-reversed wire order) to match explorers.
-        let hexes = txids.map { txid -> String in
+    /// Logs a sweep's broadcast txids in display order (byte-reversed wire
+    /// order), to match explorers.
+    private static func logSweepBroadcast(_ outcome: SweepOutcome, label: String) {
+        let hexes = outcome.txids.map { txid -> String in
             Data(txid.reversed()).map { String(format: "%02x", $0) }.joined()
         }
-        logger.info("💸 TXSEND :: coinjoin sweep broadcast — \(txids.count, privacy: .public) tx(s): \(hexes.joined(separator: ","), privacy: .public)")
-        return txids
+        logger.info("💸 TXSEND :: \(label, privacy: .public) broadcast — \(outcome.txids.count, privacy: .public) tx(s), \(outcome.failedChunkCount, privacy: .public) chunk(s) failed: \(hexes.joined(separator: ","), privacy: .public)")
     }
 
-    // MARK: - Selected-input send (CrowdNode signal txs)
+    // MARK: - Core consolidation (asset-lock input limit)
 
-    /// Build, sign, and broadcast a transaction funded ONLY from UTXOs sitting
-    /// on `fromAddress`, with change returned to `fromAddress`.
+    /// Combine the BIP44 account-0 coins in `outpoints` onto `address` (a
+    /// fresh BIP44 receive address of this wallet), so an asset lock can
+    /// cover its amount with fewer inputs (`AssetLockInputPolicy`).
     ///
-    /// SwiftDashSDK replacement for the retired DashSync
-    /// `LegacySelectedInputSendExecutor`. CrowdNode identifies the user by the
-    /// address its signal transactions originate from, so both the inputs and
-    /// the change must stay on the account address, and the destination output
-    /// must carry the exact signal amount (`apiOffset + ApiCode`).
-    ///
-    /// Semantic delta vs legacy: the legacy path spent ALL outputs of specific
-    /// candidate transactions matching the address; this path spends from the
-    /// address's current UTXO pool. Same sender address, change back to it —
-    /// the CrowdNode-visible semantics hold.
-    ///
-    /// Freshness: signup/deposit spend a just-broadcast top-up output. The SDK
-    /// applies its own broadcasts to the local mempool asynchronously (0-conf
-    /// outputs are spendable once applied), so the UTXO set is polled until
-    /// the required funds appear or `selectedInputUtxoTimeout` elapses.
+    /// Same chunk loop as `sweepCoinJoin`: ≤500 inputs per transaction,
+    /// `useOnlyAddedInputs`, `.all`, 1000 sat/kB. The txids are not CoinJoin
+    /// withdrawals and must never be recorded as such
+    /// (`CoinJoinWithdrawalStore`): they are the wallet paying itself.
     ///
     /// - Parameters:
-    ///   - fromAddress: The address whose UTXOs fund the send and receive the change.
-    ///   - address: Destination Dash address (Base58Check).
-    ///   - amount: Amount to send in duffs — passed through untouched unless
-    ///     `adjustAmountDownwards` fires.
-    ///   - adjustAmountDownwards: Mirror of the legacy executor's single retry:
-    ///     when the address balance can't cover `amount + fee`, send
-    ///     `amount − fee` instead (used by the confirmation-forward).
-    /// - Returns: Tuple of (serialized signed tx bytes, exact fee in duffs, 32-byte txHash).
-    static func buildAndSignFromAddress(
-        fromAddress: String,
-        to address: String,
-        amount: UInt64,
-        adjustAmountDownwards: Bool
-    ) async throws -> (txData: Data, fee: UInt64, txHash: Data) {
-        logger.info("💸 TXSEND :: selected-input send — amount=\(amount, privacy: .public) adjust=\(adjustAmountDownwards, privacy: .public)")
+    ///   - binding: the sweep refuses to run unless this is still the active
+    ///     wallet and network.
+    ///   - outpoints: the coins to spend — the final ones the caller planned
+    ///     from (an unconfirmed input that never locks would strand every coin
+    ///     combined with it). Fewer than two still unspent are not combined.
+    /// - Returns: the broadcast chunks' txids and any chunk failure. Throws
+    ///   only when nothing broadcast at all.
+    static func consolidateCoreAccount(
+        to address: String, expecting binding: CoinJoinWalletBinding, outpoints: Set<CoinJoinOutpoint>
+    ) throws -> SweepOutcome {
+        logger.info("💸 TXSEND :: combining BIP44 coins for an asset lock")
 
-        // Resolve the sender address to its P2PKH/P2SH script for byte-exact
-        // UTXO matching (`AccountUtxo` carries scriptPubkey, not an address).
-        // The resolver keeps this file free of DashSync imports.
-        let network: PaymentNetwork
-        do {
-            network = try PaymentNetworkResolver.current()
-        } catch {
-            throw SendError.walletNotReady("unsupported network for selected-input send")
-        }
-        guard let script = ScriptAddressCodec.scriptPubKey(forAddress: fromAddress, network: network) else {
-            throw SendError.invalidInput("cannot derive scriptPubKey for the funding address")
-        }
-
-        // Wait for the address's UTXOs to cover the send (tolerates the async
-        // mempool apply of a just-broadcast top-up). For adjust-downwards sends
-        // any funds at all are workable — the amount shrinks to fit.
-        let minimumTotal = adjustAmountDownwards ? 1 : amount + estimatedSignalFee(inputCount: 1)
-        let utxos = try await waitForAddressUtxos(script: script, minimumTotal: minimumTotal)
-
-        // Deterministic legacy-parity pre-adjust: same size-based estimate as
-        // `chain.fee(forTxSize:)` at the relay-minimum rate, single-shot
-        // adjustment exactly like the legacy executor's one retry. `.all`
-        // drain is deliberately avoided — it would over-send whenever the
-        // address balance exceeds the signal amount.
-        let selected = utxos.reduce(UInt64(0)) { $0 + $1.valueDuffs }
-        let feeEstimate = estimatedSignalFee(inputCount: utxos.count)
-        let adjusted = amount + feeEstimate > selected
-        if adjusted, !(adjustAmountDownwards && amount > feeEstimate) {
-            throw SendError.insufficientSelectedFunds(selected: selected, amount: amount, fee: feeEstimate)
-        }
-        let sendAmount = adjusted ? amount - feeEstimate : amount
-
-        let (txData, exactFee): (Data, UInt64) = try await MainActor.run {
-            guard let wallet = SwiftDashSDKHost.shared.wallet,
-                  let network = SwiftDashSDKHost.shared.runningNetwork else {
+        let consolidate = { @MainActor () throws -> SweepOutcome in
+            let host = SwiftDashSDKHost.shared
+            guard let wallet = host.wallet, let manager = host.manager,
+                  let network = host.runningNetwork else {
                 throw SendError.walletNotReady("PlatformWalletManager wallet is not available")
             }
+            guard binding == CoinJoinWalletBinding.current() else {
+                throw SendError.walletNotReady("the active wallet changed")
+            }
             let core = try wallet.coreWallet()
-            let builder = try CoreTransactionBuilder(network: network)
-            try builder.addInputs(
-                wallet: wallet, accountType: .bip44,
-                accountIndex: Self.bip44AccountIndex, utxos: utxos)
-            try builder.addOutput(address: address, amountDuffs: sendAmount)
-            // Required with `addInputs` (funding selection is what normally
-            // routes change) — and the change MUST return to the sender address
-            // so CrowdNode keeps recognizing the account.
-            try builder.setChangeAddress(fromAddress)
-            try builder.setFeeRate(satPerKb: Self.feeRateSatPerKb)
-            let tx = try builder.finalizeAtomic(
-                wallet: wallet, accountType: .bip44, accountIndex: Self.bip44AccountIndex)
-            // Serialize BEFORE broadcast — broadcasting consumes the handle.
-            let data = try tx.serializedData()
-            let fee = tx.fee
-            let outcome = try core.broadcastTransactionWithOutcome(tx)
-            _ = try Self.requireAccepted(outcome)
-            return (data, fee)
+            guard let bip44 = Self.bip44AccountBalance(in: manager.accountBalances(for: wallet.walletId)) else {
+                return SweepOutcome(txids: [], failedChunkCount: 0, firstFailure: nil, unknownTxids: [])
+            }
+            let utxos = Self.sweepInputs(
+                manager.accountUtxos(for: wallet.walletId, balance: bip44).filter { !$0.isLocked },
+                restrictedTo: outpoints
+            ) { CoinJoinOutpoint(txid: $0.outpointTxid, vout: $0.outpointVout) }
+            guard utxos.count >= 2 else {
+                Self.logger.info(
+                    "💸 TXSEND :: core consolidation — \(utxos.count, privacy: .public) of \(outpoints.count, privacy: .public) planned UTXO(s) still spendable, not combining")
+                return SweepOutcome(txids: [], failedChunkCount: 0, firstFailure: nil, unknownTxids: [])
+            }
+            return try Self.sweepChunks(
+                utxos, accountType: .bip44, accountIndex: Self.bip44AccountIndex,
+                to: address, wallet: wallet, core: core, network: network, label: "core consolidation")
         }
 
-        let txHash = computeTxHash(from: txData)
-        logger.info("💸 TXSEND :: selected-input send broadcast — txHash=\(txHash.map { String(format: "%02x", $0) }.joined(), privacy: .public) fee=\(exactFee, privacy: .public) adjusted=\(adjusted, privacy: .public) inputs=\(utxos.count, privacy: .public)")
-        return (txData, exactFee, txHash)
+        let outcome = try onMain(consolidate)
+        logSweepBroadcast(outcome, label: "core consolidation")
+        return outcome
     }
 
-    /// The BIP44 account-0 UTXOs sitting on `script`, unlocked only.
-    /// Byte-exact scriptPubkey compare — no per-UTXO address decoding.
+    /// The BIP44 account-0 balance descriptor among a wallet's
+    /// `accountBalances`, which addresses the account for UTXO enumeration.
+    private static func bip44AccountBalance(
+        in balances: [PlatformWalletManager.AccountBalance]
+    ) -> PlatformWalletManager.AccountBalance? {
+        balances.first(where: isBip44Account0)
+    }
+
+    /// Whether `balance` describes BIP44 account 0, the account the Core
+    /// consolidation spends.
+    private static func isBip44Account0(_ balance: PlatformWalletManager.AccountBalance) -> Bool {
+        balance.typeTag == Self.bip44TypeTag
+            && balance.standardTag == Self.bip44StandardTag
+            && balance.index == Self.bip44AccountIndex
+    }
+
+    /// Snapshot of the BIP44 account-0 spendable UTXOs with their finality —
+    /// the same shape as `coinJoinUtxoState(expecting:)`, read off the
+    /// account the Core consolidation spends and pays back into. Nil when the
+    /// active wallet is not `binding`, no manager is bound, or the read can't
+    /// be told apart from a failed one (`CoinJoinShieldPlanner.utxoReadIsUsable`:
+    /// every wallet has this account, and one with a balance has UTXOs);
+    /// `isLocked` rows are left out, as coin selection never spends them.
     @MainActor
-    private static func addressUtxos(script: Data) throws -> [PlatformWalletManager.AccountUtxo] {
+    static func bip44UtxoState(expecting binding: CoinJoinWalletBinding) -> CoinJoinUtxoState? {
         let host = SwiftDashSDKHost.shared
-        guard let wallet = host.wallet, let manager = host.manager else {
-            throw SendError.walletNotReady("PlatformWalletManager wallet is not available")
-        }
-        // BIP44 account-0 balance descriptor (mirrors the sweep's CoinJoin
-        // descriptor resolution above).
-        guard let bip44 = manager.accountBalances(for: wallet.walletId).first(where: {
-            $0.typeTag == Self.bip44TypeTag
-                && $0.standardTag == Self.bip44StandardTag
-                && $0.index == Self.bip44AccountIndex
-        }) else {
+        guard let manager = host.manager, CoinJoinWalletBinding.current() == binding else { return nil }
+        let walletId = binding.walletId
+        let balances = manager.accountBalances(for: walletId)
+        guard let bip44 = bip44AccountBalance(in: balances) else { return nil }
+        let utxos = manager.accountUtxos(for: walletId, balance: bip44)
+        let balanceIsZero = bip44.confirmed == 0 && bip44.unconfirmed == 0 && bip44.immature == 0 && bip44.locked == 0
+        guard CoinJoinShieldPlanner.utxoReadIsUsable(
+            accountCount: balances.count, accountBalanceIsZero: balanceIsZero, utxoCount: utxos.count)
+        else { return nil }
+        let instantLocked = Set(manager.instantSendLockTxids(for: walletId))
+        let entries = utxos
+            .filter { !$0.isLocked }
+            .map { utxo in
+                CoinJoinUtxoState.Entry(
+                    txid: utxo.outpointTxid,
+                    vout: utxo.outpointVout,
+                    valueDuffs: utxo.valueDuffs,
+                    isFinal: CoinJoinShieldPlanner.isFinal(
+                        height: utxo.height,
+                        txid: utxo.outpointTxid,
+                        instantLockedTxids: instantLocked))
+            }
+        return CoinJoinUtxoState(binding: binding, entries: entries)
+    }
+
+    /// `waitForCoinJoinUtxoState` over the BIP44 account-0 snapshot
+    /// (`bip44UtxoState(expecting:)`), with the same contract.
+    static func waitForBip44UtxoState(
+        binding: CoinJoinWalletBinding,
+        timeout: TimeInterval,
+        pollInterval: TimeInterval = 1,
+        until isDone: @escaping (CoinJoinUtxoState) -> Bool
+    ) async throws -> (state: CoinJoinUtxoState, satisfied: Bool)? {
+        try await waitForUtxoState(
+            binding: binding, timeout: timeout, pollInterval: pollInterval,
+            read: { bip44UtxoState(expecting: $0) }, until: isDone)
+    }
+
+    // MARK: - CoinJoin consolidation (CoinJoin → Shielded over the asset-lock input cap)
+
+    /// The CoinJoin account-0 balance descriptor (typeTag 1, index 0 — mirrors
+    /// `SwiftDashSDKCoinJoinBalanceReader`) among a wallet's `accountBalances`,
+    /// which addresses the account for UTXO and address-pool enumeration. Nil
+    /// when the wallet has no CoinJoin account.
+    private static func coinJoinAccountBalance(
+        in balances: [PlatformWalletManager.AccountBalance]
+    ) -> PlatformWalletManager.AccountBalance? {
+        balances.first(where: {
+            $0.typeTag == Self.coinJoinTypeTag && $0.index == Self.coinJoinAccountIndex
+        })
+    }
+
+    /// The CoinJoin rows a sweep spends: the unlocked ones, only those in
+    /// `outpoints` when it is set. None when there is nothing worth sweeping:
+    /// no CoinJoin account, or fewer than two of the planned rows left.
+    @MainActor
+    private static func sweepUtxos(
+        manager: PlatformWalletManager, walletId: Data, restrictedTo outpoints: Set<CoinJoinOutpoint>?
+    ) -> [PlatformWalletManager.AccountUtxo] {
+        // CoinJoin account-0 balance descriptor (mirrors
+        // SwiftDashSDKCoinJoinBalanceReader: typeTag 1, index 0). Used only to
+        // address the account for UTXO enumeration.
+        guard let cjBalance = coinJoinAccountBalance(in: manager.accountBalances(for: walletId)) else { return [] }
+        // Snapshot the account's spendable UTXOs (after the recovery scan has
+        // materialized deep `/0/` + `/1/` addresses). `isLocked` rows are
+        // left out, matching `coinJoinUtxoState(expecting:)`: coin
+        // selection never spends them.
+        let utxos = sweepInputs(
+            manager.accountUtxos(for: walletId, balance: cjBalance).filter { !$0.isLocked },
+            restrictedTo: outpoints
+        ) { CoinJoinOutpoint(txid: $0.outpointTxid, vout: $0.outpointVout) }
+        if let outpoints, utxos.count < 2 {
+            logger.info(
+                "💸 TXSEND :: coinjoin sweep — \(utxos.count, privacy: .public) of \(outpoints.count, privacy: .public) planned UTXO(s) still spendable, not sweeping")
             return []
         }
-        return manager.accountUtxos(for: wallet.walletId, balance: bip44)
-            .filter { !$0.isLocked && $0.scriptPubkey == script }
+        return utxos
     }
 
-    /// Poll `addressUtxos` until their sum covers `minimumTotal` or the
-    /// timeout elapses; returns the last snapshot either way (the caller
-    /// decides insufficiency). Sleeps off-main between polls.
-    private static func waitForAddressUtxos(
-        script: Data, minimumTotal: UInt64
-    ) async throws -> [PlatformWalletManager.AccountUtxo] {
-        let deadline = Date().addingTimeInterval(selectedInputUtxoTimeout)
-        var polls = 0
-        while true {
-            polls += 1
-            let utxos = try await MainActor.run { try addressUtxos(script: script) }
-            let total = utxos.reduce(UInt64(0)) { $0 + $1.valueDuffs }
-            if total >= minimumTotal || Date() >= deadline {
-                logger.info("💸 TXSEND :: selected-input UTXO wait — polls=\(polls, privacy: .public) utxos=\(utxos.count, privacy: .public) total=\(total, privacy: .public) needed=\(minimumTotal, privacy: .public)")
-                return utxos
-            }
-            try await Task.sleep(nanoseconds: UInt64(selectedInputPollInterval * 1_000_000_000))
+    /// The CoinJoin account's descriptor and UTXO rows (locked ones included),
+    /// or nil when the read can't be told apart from a failed one (see
+    /// `CoinJoinShieldPlanner.utxoReadIsUsable`). An account that does not
+    /// exist reads as no descriptor and no rows.
+    @MainActor
+    private static func coinJoinUtxoRows(
+        manager: PlatformWalletManager, walletId: Data
+    ) -> (balance: PlatformWalletManager.AccountBalance?, utxos: [PlatformWalletManager.AccountUtxo])? {
+        let balances = manager.accountBalances(for: walletId)
+        let cjBalance = coinJoinAccountBalance(in: balances)
+        let utxos = cjBalance.map { manager.accountUtxos(for: walletId, balance: $0) } ?? []
+        let balanceIsZero = cjBalance.map {
+            $0.confirmed == 0 && $0.unconfirmed == 0 && $0.immature == 0 && $0.locked == 0
+        }
+        guard CoinJoinShieldPlanner.utxoReadIsUsable(
+            accountCount: balances.count, accountBalanceIsZero: balanceIsZero, utxoCount: utxos.count)
+        else { return nil }
+        return (cjBalance, utxos)
+    }
+
+    /// The wallet and network a CoinJoin → Shielded move was authorized for.
+    /// Each step of the move re-checks it, so a wallet or network switch while
+    /// it runs stops the move instead of carrying it over to another wallet.
+    struct CoinJoinWalletBinding: Equatable {
+        let walletId: Data
+        let network: Network
+
+        /// The host's active wallet and network; nil when none is bound.
+        @MainActor
+        static func current() -> CoinJoinWalletBinding? {
+            let host = SwiftDashSDKHost.shared
+            guard let wallet = host.wallet, let network = host.runningNetwork else { return nil }
+            return CoinJoinWalletBinding(walletId: wallet.walletId, network: network)
         }
     }
 
-    /// Size-based fee estimate for a signal send at the relay-minimum
+    /// A CoinJoin UTXO's outpoint; the txid is in wire order.
+    struct CoinJoinOutpoint: Hashable {
+        let txid: Data
+        let vout: UInt32
+    }
+
+    /// The `rows` a sweep spends: those whose outpoint is in `outpoints`, or
+    /// all of them when it is nil.
+    static func sweepInputs<Row>(
+        _ rows: [Row], restrictedTo outpoints: Set<CoinJoinOutpoint>?, outpoint: (Row) -> CoinJoinOutpoint
+    ) -> [Row] {
+        guard let outpoints else { return rows }
+        return rows.filter { outpoints.contains(outpoint($0)) }
+    }
+
+    /// The CoinJoin account's spendable UTXO set, as `CoinJoinShieldPlanner`
+    /// reads it.
+    struct CoinJoinUtxoState {
+        struct Entry {
+            /// Wire-order txid (`AccountUtxo.outpointTxid`, the same order as
+            /// `CoinJoinSweepOutcome.txids`).
+            let txid: Data
+            let vout: UInt32
+            let valueDuffs: UInt64
+            /// Confirmed or InstantSend-locked — what the drain builder
+            /// accepts as an input (see `CoinJoinShieldPlanner.isFinal`).
+            let isFinal: Bool
+
+            var outpoint: CoinJoinOutpoint { CoinJoinOutpoint(txid: txid, vout: vout) }
+        }
+
+        let binding: CoinJoinWalletBinding
+        let entries: [Entry]
+
+        var count: Int { entries.count }
+        var finalCount: Int { entries.reduce(0) { $0 + ($1.isFinal ? 1 : 0) } }
+        var totalDuffs: UInt64 { entries.reduce(0) { $0 + $1.valueDuffs } }
+        var txidFinality: [(txid: Data, isFinal: Bool)] { entries.map { ($0.txid, $0.isFinal) } }
+        var finalOutpoints: Set<CoinJoinOutpoint> {
+            Set(entries.lazy.filter(\.isFinal).map(\.outpoint))
+        }
+    }
+
+    /// Snapshot of the CoinJoin account's spendable UTXOs with their finality.
+    /// Nil when it can't be read: the host has no wallet or manager bound, the
+    /// active wallet is not `binding`, or the SDK read looks failed (see
+    /// `coinJoinUtxoRows`). An account that does not exist reads as empty.
+    ///
+    /// `isLocked` rows are left out: coin selection never spends them, so
+    /// counting them would ask for a consolidation that has nothing to
+    /// consolidate.
+    @MainActor
+    static func coinJoinUtxoState(expecting binding: CoinJoinWalletBinding) -> CoinJoinUtxoState? {
+        let host = SwiftDashSDKHost.shared
+        guard let manager = host.manager, CoinJoinWalletBinding.current() == binding else { return nil }
+        let walletId = binding.walletId
+        guard let rows = coinJoinUtxoRows(manager: manager, walletId: walletId) else { return nil }
+        let instantLocked = Set(manager.instantSendLockTxids(for: walletId))
+        let entries = rows.utxos
+            .filter { !$0.isLocked }
+            .map { utxo in
+                CoinJoinUtxoState.Entry(
+                    txid: utxo.outpointTxid,
+                    vout: utxo.outpointVout,
+                    valueDuffs: utxo.valueDuffs,
+                    isFinal: CoinJoinShieldPlanner.isFinal(
+                        height: utxo.height,
+                        txid: utxo.outpointTxid,
+                        instantLockedTxids: instantLocked))
+            }
+        return CoinJoinUtxoState(binding: binding, entries: entries)
+    }
+
+    /// A fresh receive address of this wallet's own CoinJoin account — the
+    /// consolidation destination, so the mixed coins stay in the CoinJoin
+    /// account until the drain asset lock spends them.
+    ///
+    /// Picked from the account's external (`.../0/index`) address pool: the
+    /// lowest-index address the pool has not seen used and that holds no UTXO
+    /// right now. Pool addresses are exactly what the SPV client watches —
+    /// `monitored_script_pubkeys` walks every account's pool — so an output
+    /// paid here is detected and lands back in the CoinJoin account, and its
+    /// use moves the pool's gap forward like any other receive.
+    @MainActor
+    static func unusedCoinJoinAddress(for binding: CoinJoinWalletBinding) -> String? {
+        let host = SwiftDashSDKHost.shared
+        guard let manager = host.manager, CoinJoinWalletBinding.current() == binding else { return nil }
+        let walletId = binding.walletId
+        // A failed UTXO read would leave funded addresses looking unused.
+        guard let rows = coinJoinUtxoRows(manager: manager, walletId: walletId),
+              let cjBalance = rows.balance,
+              let network = try? PaymentNetworkResolver.current()
+        else { return nil }
+        // Pool type 0 = External (see `AccountAddressPoolSnapshot.pool_type`).
+        guard let external = manager.accountAddressPools(for: walletId, balance: cjBalance)
+            .first(where: { $0.poolType == 0 })
+        else { return nil }
+        let fundedScripts = Set(rows.utxos.map(\.scriptPubkey))
+        let candidates = external.addresses
+            .filter { !$0.isUsed && !$0.address.isEmpty }
+            .sorted { $0.addressIndex < $1.addressIndex }
+        for candidate in candidates {
+            guard let script = ScriptAddressCodec.scriptPubKey(forAddress: candidate.address, network: network),
+                  !fundedScripts.contains(script)
+            else { continue }
+            let watched = external.addresses.count, gap = external.gapLimit
+            logger.info(
+                "💸 TXSEND :: coinjoin consolidation address index=\(candidate.addressIndex, privacy: .public) of \(watched, privacy: .public) watched (gap \(gap, privacy: .public))")
+            return candidate.address
+        }
+        return nil
+    }
+
+    /// Poll `binding`'s CoinJoin UTXO state until `isDone` holds or `timeout`
+    /// elapses. Returns the last snapshot and whether `isDone` held for it;
+    /// nil when the active wallet is no longer `binding`, or when the last
+    /// poll before the deadline could not read the state (a read that looks
+    /// failed is retried, never taken as the answer, and an older snapshot is
+    /// never returned in its place). Sleeps off the main actor between polls.
+    ///
+    /// - Throws: `CancellationError` when the calling task is cancelled, even
+    ///   if the last snapshot satisfied `isDone`.
+    static func waitForCoinJoinUtxoState(
+        binding: CoinJoinWalletBinding,
+        timeout: TimeInterval,
+        pollInterval: TimeInterval = 1,
+        until isDone: @escaping (CoinJoinUtxoState) -> Bool
+    ) async throws -> (state: CoinJoinUtxoState, satisfied: Bool)? {
+        try await waitForUtxoState(
+            binding: binding, timeout: timeout, pollInterval: pollInterval,
+            read: { coinJoinUtxoState(expecting: $0) }, until: isDone)
+    }
+
+    /// The poll behind `waitForCoinJoinUtxoState` and `waitForBip44UtxoState`:
+    /// `read` is the snapshot to poll.
+    private static func waitForUtxoState(
+        binding: CoinJoinWalletBinding,
+        timeout: TimeInterval,
+        pollInterval: TimeInterval,
+        read readState: @escaping @MainActor (CoinJoinWalletBinding) -> CoinJoinUtxoState?,
+        until isDone: @escaping (CoinJoinUtxoState) -> Bool
+    ) async throws -> (state: CoinJoinUtxoState, satisfied: Bool)? {
+        let deadline = Date().addingTimeInterval(timeout)
+        while true {
+            try Task.checkCancellation()
+            let read = await MainActor.run { () -> (bound: Bool, state: CoinJoinUtxoState?) in
+                if let state = readState(binding) { return (true, state) }
+                return (CoinJoinWalletBinding.current() == binding, nil)
+            }
+            try Task.checkCancellation()
+            guard read.bound else { return nil }
+            if let state = read.state, isDone(state) { return (state, true) }
+            if Date() >= deadline { return read.state.map { ($0, false) } }
+            try await Task.sleep(nanoseconds: UInt64(pollInterval * 1_000_000_000))
+        }
+    }
+
+    /// Size-based fee estimate for a P2PKH send at the relay-minimum
     /// 1 duff/byte: base 10 + 148/input + 34 × 2 outputs (dest + change).
     /// Mirrors the legacy `chain.fee(forTxSize: tx.size + TX_OUTPUT_SIZE)`.
-    private static func estimatedSignalFee(inputCount: Int) -> UInt64 {
+    /// Also the base of `AssetLockInputPolicy.estimatedFeeDuffs`.
+    static func estimatedFee(inputCount: Int) -> UInt64 {
         UInt64(10 + inputCount * 148 + 2 * 34)
+    }
+
+    /// `estimatedFee` for `inputCount` inputs plus a +50 % margin, so the
+    /// Max reserve never under-reserves.
+    static func maxSendFeeReserve(forInputCount inputCount: Int) -> UInt64 {
+        let base = estimatedFee(inputCount: inputCount)
+        return base + base / 2
     }
 
     /// Fee reserve for a "Max" / all-funds core send, sized from the BIP44
@@ -464,7 +787,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
     /// The flat `WalletBalance.sendFeeReserveDuffs` (100_000 duffs) is a large
     /// worst-case over-estimate — a typical send costs ~1–2k duffs, so Max used
     /// to leave ~0.001 DASH behind as change. Here the reserve is the same
-    /// size model as `estimatedSignalFee` (1 duff/byte over the enumerated
+    /// size model as `estimatedFee` (1 duff/byte over the enumerated
     /// inputs) plus a **+50 % safety margin** so it can never *under*-reserve —
     /// an under-estimate would make the Max send fail to build.
     ///
@@ -477,44 +800,132 @@ final class SwiftDashSDKTransactionSender: NSObject {
     /// no UTXOs) falls back to the flat reserve, i.e. the previous behaviour —
     /// the change never makes Max worse than before, only tighter when it can.
     static func maxSendFeeReserveDuffs() -> UInt64 {
-        let read = { @MainActor () -> UInt64? in
-            let host = SwiftDashSDKHost.shared
-            guard let manager = host.manager, let wallet = host.wallet else { return nil }
-            let walletId = wallet.walletId
-            // Enumerate exactly what `.allSpendable` spends — BIP44 + BIP32 at
-            // the funding index, plus every DashPay receiving account. Sizing
-            // the reserve off BIP44 alone would under-reserve whenever the
-            // other sources contribute inputs, and Max would then price itself
-            // above what the builder can actually fund.
-            let pooled = manager.accountBalances(for: walletId).filter { balance in
-                if balance.typeTag == Self.bip44TypeTag {
-                    // Standard family: BIP44 and BIP32 both resolve to the
-                    // single account at the funding index.
-                    let isStandardPooled = balance.standardTag == Self.bip44StandardTag
-                        || balance.standardTag == Self.bip32StandardTag
-                    return isStandardPooled && balance.index == Self.bip44AccountIndex
-                }
-                // Every DashPay receiving account, whatever its index.
-                return balance.typeTag == Self.dashpayReceivingTypeTag
-            }
-            guard !pooled.isEmpty else { return nil }
+        let dynamic = readSendPool { manager, walletId, pooled -> UInt64? in
             let count = pooled.reduce(0) { total, balance in
                 total + manager.accountUtxos(for: walletId, balance: balance).count
             }
             guard count > 0 else { return nil }
-            let base = estimatedSignalFee(inputCount: count)
-            return base + base / 2 // +50 % margin — must never under-reserve
-        }
-
-        let dynamic: UInt64?
-        if Thread.isMainThread {
-            dynamic = MainActor.assumeIsolated { read() }
-        } else {
-            var captured: UInt64?
-            DispatchQueue.main.sync { captured = MainActor.assumeIsolated { read() } }
-            dynamic = captured
+            return maxSendFeeReserve(forInputCount: count)
         }
         return dynamic ?? WalletBalance.sendFeeReserveDuffs
+    }
+
+    /// The send pool's `confirmed` and `unconfirmed` sums over the same
+    /// accounts `maxSendFeeReserveDuffs` enumerates, from one read. Immature
+    /// coinbase and locked coins are left out — waiting a few minutes does not
+    /// free them.
+    ///
+    /// `nil` when the accounts cannot be enumerated (no wallet/manager yet).
+    static func sendPoolConfirmationSnapshot() -> SendPoolConfirmationSnapshot? {
+        readSendPool { _, _, pooled in
+            SendPoolConfirmationSnapshot(
+                confirmedDuffs: pooled.reduce(0) { $0 + $1.confirmed },
+                unconfirmedDuffs: pooled.reduce(0) { $0 + $1.unconfirmed })
+        }
+    }
+
+    /// Runs `read` on the main actor over the accounts `.allSpendable` funds a
+    /// send from, from any thread. `nil` when there is no wallet/manager or
+    /// none of those accounts exists.
+    ///
+    /// Enumerates exactly what `.allSpendable` spends — BIP44 + BIP32 at the
+    /// funding index, plus every DashPay receiving account. Sizing the fee
+    /// reserve off BIP44 alone would under-reserve whenever the other sources
+    /// contribute inputs, and Max would then price itself above what the
+    /// builder can actually fund.
+    private static func readSendPool<T: Sendable>(
+        _ read: @escaping @MainActor (PlatformWalletManager, Data, [PlatformWalletManager.AccountBalance]) -> T?
+    ) -> T? {
+        let body = { @MainActor () -> T? in
+            let host = SwiftDashSDKHost.shared
+            guard let manager = host.manager, let wallet = host.wallet else { return nil }
+            let walletId = wallet.walletId
+            guard let pooled = Self.pooledAccountBalances(manager: manager, walletId: walletId) else { return nil }
+            return read(manager, walletId, pooled)
+        }
+
+        if Thread.isMainThread {
+            return MainActor.assumeIsolated { body() }
+        }
+        var captured: T?
+        DispatchQueue.main.sync { captured = MainActor.assumeIsolated { body() } }
+        return captured
+    }
+
+    // MARK: - Pooled Core UTXOs
+
+    /// The accounts `.allSpendable` spends from — BIP44 + BIP32 at the
+    /// funding index, plus every DashPay receiving account. Also the
+    /// asset-lock funding set (`ASSET_LOCK_FUNDING_SOURCES` equals the send
+    /// set SDK-side). Nil when the wallet has none of those accounts.
+    @MainActor
+    private static func pooledAccountBalances(
+        manager: PlatformWalletManager, walletId: Data
+    ) -> [PlatformWalletManager.AccountBalance]? {
+        let pooled = manager.accountBalances(for: walletId).filter { balance in
+            if balance.typeTag == Self.bip44TypeTag {
+                // Standard family: BIP44 and BIP32 both resolve to the
+                // single account at the funding index.
+                let isStandardPooled = balance.standardTag == Self.bip44StandardTag
+                    || balance.standardTag == Self.bip32StandardTag
+                return isStandardPooled && balance.index == Self.bip44AccountIndex
+            }
+            // Every DashPay receiving account, whatever its index.
+            return balance.typeTag == Self.dashpayReceivingTypeTag
+        }
+        return pooled.isEmpty ? nil : pooled
+    }
+
+    /// A pooled Core coin as `AssetLockInputPolicy` counts it.
+    struct PooledUtxo: Equatable {
+        let valueDuffs: UInt64
+        /// Confirmed or InstantSend-locked — the only coins an asset lock
+        /// spends (`require_final_inputs()`).
+        let isFinal: Bool
+        /// In BIP44 account 0, the only account the Core consolidation
+        /// (`consolidateCoreAccount`) spends.
+        let isCombinable: Bool
+    }
+
+    /// The coins a Core-funded asset lock may spend: the UTXO rows of the
+    /// pooled accounts (`pooledAccountBalances`) without the `isLocked` ones
+    /// coin selection never spends. Nil when no wallet or manager is bound,
+    /// or when the read can't be told apart from a failed one
+    /// (`CoinJoinShieldPlanner.utxoReadIsUsable`): every wallet has its BIP44
+    /// account, and an account with a balance has UTXOs.
+    @MainActor
+    static func pooledSpendableUtxos() -> [PooledUtxo]? {
+        let host = SwiftDashSDKHost.shared
+        guard let manager = host.manager, let wallet = host.wallet else { return nil }
+        let walletId = wallet.walletId
+        guard let pooled = pooledAccountBalances(manager: manager, walletId: walletId) else {
+            logger.error("💸 TXSEND :: pooled UTXO read — no pooled account, treating the read as failed")
+            return nil
+        }
+        let instantLocked = Set(manager.instantSendLockTxids(for: walletId))
+        var coins: [PooledUtxo] = []
+        for balance in pooled {
+            let rows = manager.accountUtxos(for: walletId, balance: balance)
+            let balanceIsZero = balance.confirmed == 0 && balance.unconfirmed == 0
+                && balance.immature == 0 && balance.locked == 0
+            guard CoinJoinShieldPlanner.utxoReadIsUsable(
+                accountCount: pooled.count, accountBalanceIsZero: balanceIsZero, utxoCount: rows.count)
+            else {
+                logger.error("💸 TXSEND :: pooled UTXO read — an account with a balance returned no UTXOs, treating the read as failed")
+                return nil
+            }
+            let isCombinable = isBip44Account0(balance)
+            coins += rows
+                .filter { !$0.isLocked }
+                .map { utxo in
+                    PooledUtxo(
+                        valueDuffs: utxo.valueDuffs,
+                        isFinal: CoinJoinShieldPlanner.isFinal(
+                            height: utxo.height, txid: utxo.outpointTxid, instantLockedTxids: instantLocked),
+                        isCombinable: isCombinable)
+                }
+        }
+        return coins
     }
 
     // MARK: - Broadcast
@@ -585,18 +996,17 @@ final class SwiftDashSDKTransactionSender: NSObject {
 
     // MARK: - Helpers
 
-    /// Partition `utxos` into balanced chunks each ≤ `maxInputsPerSweep`,
-    /// preserving order — app-side chunking (no upstream key-wallet counterpart):
-    /// `ceil(n / 500)` near-equal chunks, so no chunk is a lone sub-fee input.
+    /// Partition `utxos` into balanced chunks each ≤ `maxPerChunk`
+    /// (`maxInputsPerSweep` in production), preserving order — app-side
+    /// chunking (no upstream key-wallet counterpart): `ceil(n / 500)`
+    /// near-equal chunks, so no chunk is a lone sub-fee input.
     /// Examples: 500 → [500]; 501 → [251, 250]; 1000 → [500, 500].
-    private static func balancedChunks(
-        _ utxos: [PlatformWalletManager.AccountUtxo]
-    ) -> [[PlatformWalletManager.AccountUtxo]] {
+    static func balancedChunks<T>(_ utxos: [T], maxPerChunk: Int) -> [[T]] {
         let n = utxos.count
-        guard n > 0 else { return [] }
-        let numChunks = (n + maxInputsPerSweep - 1) / maxInputsPerSweep // ceil(n / 500)
-        let chunkSize = (n + numChunks - 1) / numChunks                  // ceil(n / numChunks)
-        var chunks: [[PlatformWalletManager.AccountUtxo]] = []
+        guard n > 0, maxPerChunk > 0 else { return [] }
+        let numChunks = (n + maxPerChunk - 1) / maxPerChunk // ceil(n / max)
+        let chunkSize = (n + numChunks - 1) / numChunks     // ceil(n / numChunks)
+        var chunks: [[T]] = []
         var start = 0
         while start < n {
             let end = min(start + chunkSize, n)
@@ -682,7 +1092,6 @@ final class SwiftDashSDKTransactionSender: NSObject {
         case invalidInput(String)
         case invalidSwapMemo(String)
         case walletNotReady(String)
-        case insufficientSelectedFunds(selected: UInt64, amount: UInt64, fee: UInt64)
         case transactionRejected(txid: String, reason: String)
         case transactionStatusUnknown(txid: String, reason: String)
 
@@ -694,8 +1103,6 @@ final class SwiftDashSDKTransactionSender: NSObject {
                 return reason
             case .walletNotReady(let reason):
                 return "Wallet not ready: \(reason)"
-            case .insufficientSelectedFunds(let selected, let amount, let fee):
-                return "Not enough funds. Selected: \(selected), Amount: \(amount), Fee: \(fee)"
             case .transactionRejected(_, let reason):
                 return "The transaction wasn't sent. You can try again. \(reason)"
             case .transactionStatusUnknown(_, let reason):

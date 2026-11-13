@@ -33,34 +33,51 @@ extension View {
 private struct InternalTransferToastModifier: ViewModifier {
     @ObservedObject var runner: InternalTransferRunner
 
-    /// Long enough to read a failure reason, which is the only one that says
-    /// something the history will not.
+    /// How long a progress or success notice stays up. A failure has no
+    /// timer: its reason is the one thing the history will not show, so it
+    /// stays until the user closes it.
     private static let duration: TimeInterval = 3
+    /// Longer: it tells the user not to send again, which must not be missed.
+    private static let submittedDuration: TimeInterval = 8
 
     func body(content: Content) -> some View {
         content
             .overlay(alignment: .bottom) {
-                if let notice = runner.notice {
-                    DashUIKit.Toast(style: style(for: notice), message: message(for: notice))
+                if let notice = runner.notice, notice.coinConsolidationCheck == nil {
+                    DashUIKit.Toast(
+                        style: style(for: notice),
+                        message: message(for: notice),
+                        onDismiss: notice.isFailure ? { dismiss(notice) } : nil)
+                        // The pinned DashUIKit draws the close glyph unlabelled,
+                        // and for a failure it is the only way out — VoiceOver
+                        // gets it as a named action on the toast. Only there:
+                        // other notices cannot be closed, so they offer no action.
+                        .accessibilityActions {
+                            if notice.isFailure {
+                                Button(NSLocalizedString("Close", comment: "")) { dismiss(notice) }
+                            }
+                        }
                         .padding(.horizontal, 20)
                         .padding(.bottom, 16)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
+            // The input-limit outcome is the shared sheet, not a toast: it
+            // offers to combine the coins, which the user retries after.
+            .coreCoinConsolidationSheet(check: Binding(
+                get: { runner.notice?.coinConsolidationCheck },
+                set: { if $0 == nil, runner.notice?.coinConsolidationCheck != nil { runner.notice = nil } }))
             .animation(.easeInOut(duration: 0.3), value: runner.notice)
             .task(id: runner.notice) {
-                guard runner.notice != nil else { return }
+                guard let remaining = runner.notice?.remainingDisplayTime(
+                    raisedAt: runner.noticeRaisedAt, now: Date(), duration: runner.notice == .submitted ? Self.submittedDuration : Self.duration)
+                else { return }
 
-                // A notice raised while this screen was away has already spent
-                // its life unseen — announcing it now would date-stamp an old
-                // outcome as current. Anything still inside its window is fair
-                // to show, for the rest of that window.
-                let age = runner.noticeRaisedAt.map { Date().timeIntervalSince($0) } ?? 0
-                guard age < Self.duration else {
+                guard remaining > 0 else {
                     runner.notice = nil
                     return
                 }
-                try? await Task.sleep(for: .seconds(Self.duration - age))
+                try? await Task.sleep(for: .seconds(remaining))
                 // Cancelled when the notice changes or the view goes away, so
                 // a later one restarts the countdown instead of being cut
                 // short by the previous one.
@@ -69,12 +86,20 @@ private struct InternalTransferToastModifier: ViewModifier {
             }
     }
 
+    /// Closes the notice this toast was drawn for, not whatever has replaced
+    /// it since — a newer outcome must not be swept away by a stale tap.
+    private func dismiss(_ notice: InternalTransferRunner.Notice) {
+        if InternalTransferRunner.dismissal(of: notice, clears: runner.notice) {
+            runner.notice = nil
+        }
+    }
+
     private func style(for notice: InternalTransferRunner.Notice) -> ToastStyle {
         switch notice {
         case .started: return .loading
-        case .busy: return .warning
-        case .succeeded, .submitted: return .success
-        case .failed: return .error
+        case .busy, .drainPending, .submitted: return .warning
+        case .succeeded: return .success
+        case .failed, .needsCoinConsolidation: return .error
         }
     }
 
@@ -94,10 +119,16 @@ private struct InternalTransferToastModifier: ViewModifier {
                 comment: "")
         case .submitted:
             return NSLocalizedString(
-                "Transfer sent — waiting for the network to confirm it",
-                comment: "Internal transfer accepted but not yet confirmed")
+                "Transfer result unconfirmed. Don't resend it; wait for the wallet to sync and check its status.",
+                comment: "The transfer may have reached the network; avoid sending twice")
+        case .drainPending:
+            return NSLocalizedString(
+                "Max transfer status is pending. Open the pending transaction in History, or tap Max again, to check or resume it.",
+                comment: "A wallet drain has an unresolved outcome")
         case .failed(let reason):
             return reason
+        case .needsCoinConsolidation:
+            return AssetLockInputLimit.message
         }
     }
 }

@@ -34,6 +34,19 @@ public protocol ConfirmPaymentDataSource {
 
     @objc(totalWithFont:tintColor:)
     func total(with font: UIFont, tintColor: UIColor) -> DWTitleDetailItem
+
+    /// The fee and the all-in debit in duffs.
+    ///
+    /// The `DWTitleDetailItem`s above carry the same two figures already
+    /// formatted, but they carry the Dash symbol as an image attachment — read
+    /// back as plain text it is gone, and the row renders a bare number. A
+    /// renderer that wants to draw the amount itself needs the number.
+    ///
+    /// Optional so a data source without duff figures still renders: callers
+    /// fall back to the formatted string. Both the L1 payment output and the
+    /// Uphold transfer implement them.
+    @objc optional var feeDuffs: UInt64 { get }
+    @objc optional var totalDuffs: UInt64 { get }
 }
 
 // MARK: - ConfirmPaymentModel
@@ -41,6 +54,10 @@ public protocol ConfirmPaymentDataSource {
 class ConfirmPaymentModel {
     private(set) var dataSource: ConfirmPaymentDataSource!
     private(set) var items: [DWTitleDetailItem]!
+    /// The members of `items` that carry the fee and the total — handed out so
+    /// a renderer can tell those rows apart without matching their titles.
+    private(set) var feeItem: DWTitleDetailItem?
+    private(set) var totalItem: DWTitleDetailItem?
 
     public var actionButtonTitleDidChange: (() -> ())?
     public var dataSourceDidChange: (() -> ())?
@@ -108,11 +125,14 @@ class ConfirmPaymentModel {
             arr.append(item)
         }
 
-        if let item = dataSource.fee(with: font, tintColor: .dw_darkTitle()) {
+        feeItem = dataSource.fee(with: font, tintColor: .dw_darkTitle())
+        if let item = feeItem {
             arr.append(item)
         }
 
-        arr.append(dataSource.total(with: font, tintColor: .dw_darkTitle()))
+        let total = dataSource.total(with: font, tintColor: .dw_darkTitle())
+        totalItem = total
+        arr.append(total)
 
         return arr
     }

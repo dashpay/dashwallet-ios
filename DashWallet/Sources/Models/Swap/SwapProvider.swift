@@ -17,6 +17,7 @@
 //  limitations under the License.
 //
 
+import Combine
 import Foundation
 
 // MARK: - Result types
@@ -53,19 +54,43 @@ struct SwapStatusResult {
     let outHashes: [String]?
     /// Actual amount received at the destination (from /track `toAmount`), if available.
     let actualToAmount: String?
+    /// True when the status request itself failed, so this result says nothing about the
+    /// swap: "not observed" here means "could not ask", not "the provider does not see it".
+    let requestFailed: Bool
+    /// True when the provider's own status says it has the deposit: in progress, paid out
+    /// or sent back. False for the statuses that are only mapped onto one of those for want
+    /// of a better place ("unknown", "failed", anything unrecognised); what those mean for a
+    /// deposit is for the caller to decide from `providerStatus`.
+    let depositProven: Bool
+    /// The provider's own status word, lower-cased, when it sent one. `observedStatus` folds
+    /// several of them together ("failed" and "unknown" read "refunded" there); a caller
+    /// that must not state a refund nobody reported reads this instead.
+    let providerStatus: String?
+    /// The Dash transaction a swap into DASH was paid out with, when the provider names it.
+    /// Nil when it does not, or when the answer does not say the swap ends in DASH —
+    /// `outHashes` may then hold the deposit's hash, which is no payout.
+    let dashPayoutHash: String?
 
     init(
         error: String?,
         isObserved: Bool,
         observedStatus: String?,
         outHashes: [String]?,
-        actualToAmount: String? = nil
+        actualToAmount: String? = nil,
+        requestFailed: Bool = false,
+        depositProven: Bool = false,
+        providerStatus: String? = nil,
+        dashPayoutHash: String? = nil
     ) {
         self.error = error
         self.isObserved = isObserved
         self.observedStatus = observedStatus
         self.outHashes = outHashes
         self.actualToAmount = actualToAmount
+        self.requestFailed = requestFailed
+        self.depositProven = depositProven
+        self.providerStatus = providerStatus
+        self.dashPayoutHash = dashPayoutHash
     }
 }
 
@@ -112,12 +137,24 @@ extension SwapProvider {
     /// Returns a map of asset identifier (uppercased) → routing network label
     /// for display in the coin picker ("Maya", "NEAR", "Multiple networks").
     /// Default: empty — non-SwapKit providers don't have multi-provider routing.
-    func networkLabels(for pools: [SwapPool]) async -> [String: String] { [:] }
+    func networkLabels(for pools: [SwapPool], direction: SwapDirection) async -> [String: String] { [:] }
 
     /// Returns the set of asset identifiers (uppercased) that are halted due to
-    /// provider-specific halt logic (e.g. Maya chain halt for mayaOnly assets).
+    /// provider-specific halt logic (SwapKit: no provider can carry the coin right now).
     /// Default: empty set (use chain-based halt from inbound addresses).
-    func haltedAssets(from inboundAddresses: [SwapInboundAddress], pools: [SwapPool]) async -> Set<String> { [] }
+    func haltedAssets(from inboundAddresses: [SwapInboundAddress], pools: [SwapPool], direction: SwapDirection) async -> Set<String> { [] }
+
+    /// Starts checking, in the background, whether the shown coins can be swapped right now.
+    /// Default: nothing to check — the provider's pools and inbound addresses are already live.
+    func refreshRouteAvailability(for pools: [SwapPool], direction: SwapDirection) {}
+
+    /// Stops the background check started by `refreshRouteAvailability`. Default: nothing runs.
+    func stopRouteAvailabilityRefresh(direction: SwapDirection) {}
+
+    /// Directions whose live route availability changed. Default: never.
+    var routeAvailabilityChanges: AnyPublisher<SwapDirection, Never> {
+        Empty().eraseToAnyPublisher()
+    }
 }
 
 // MARK: - Protocol
@@ -132,7 +169,9 @@ protocol SwapProvider {
     var displayName: String { get }
     var usesGenericFeeLabel: Bool { get }
     var buildsSwapKitDeposit: Bool { get }
-    var onBuyRoutabilityChanged: (() -> Void)? { get set }
+    /// Directions whose live route availability changed, so the picker can re-label. MUST be a
+    /// protocol requirement for dynamic dispatch.
+    var routeAvailabilityChanges: AnyPublisher<SwapDirection, Never> { get }
 
     func fetchPools() async throws -> [SwapPool]
     func fetchInboundAddresses() async throws -> [SwapInboundAddress]
@@ -143,10 +182,16 @@ protocol SwapProvider {
     func fetchPools(direction: SwapDirection) async throws -> [SwapPool]
 
     /// Routing network labels per asset. MUST be a protocol requirement for dynamic dispatch.
-    func networkLabels(for pools: [SwapPool]) async -> [String: String]
+    func networkLabels(for pools: [SwapPool], direction: SwapDirection) async -> [String: String]
 
     /// Provider-specific halted assets. MUST be a protocol requirement for dynamic dispatch.
-    func haltedAssets(from inboundAddresses: [SwapInboundAddress], pools: [SwapPool]) async -> Set<String>
+    func haltedAssets(from inboundAddresses: [SwapInboundAddress], pools: [SwapPool], direction: SwapDirection) async -> Set<String>
+
+    /// Live route checks for the shown coins. MUST be a protocol requirement for dynamic dispatch.
+    func refreshRouteAvailability(for pools: [SwapPool], direction: SwapDirection)
+
+    /// Stops the live route checks for `direction`. MUST be a protocol requirement for dynamic dispatch.
+    func stopRouteAvailabilityRefresh(direction: SwapDirection)
 
     /// Returns `nil` if the destination address is valid, otherwise an error string.
     func validateAddress(destination: String, toAsset: String) async -> String?

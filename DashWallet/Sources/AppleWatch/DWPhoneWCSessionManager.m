@@ -152,14 +152,11 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
         switch ([message[AW_SESSION_REQUEST_DATA_TYPE_KEY] integerValue]) {
             case AWSessionRquestDataTypeApplicationContextData:
                 [self handleApplicationContextDataRequest:message replyHandler:replyHandler];
-                // sync with peer whenever there is a request coming, so we can update watch side.
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [[UIApplication sharedApplication].delegate
-                                              application:[UIApplication sharedApplication]
-                        performFetchWithCompletionHandler:^(UIBackgroundFetchResult result) {
-                            NSLog(@"watch triggered background fetch completed with result %lu", (unsigned long)result);
-                        }];
-                });
+                // TODO(watch-sync): a watch fetch-data request no longer
+                // triggers a phone-side sync — the background-fetch stub it
+                // used to call was a no-op and has been removed. The reply
+                // above serves the last known balance; it can be stale until
+                // the user opens the phone app.
                 break;
 
             case AWSessionRquestDataTypeQRCodeBits: {

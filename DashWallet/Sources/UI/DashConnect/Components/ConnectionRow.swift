@@ -20,109 +20,118 @@
 import DashUIKit
 import SwiftUI
 
-/// One connected app: its name and url, the current status, and — once the
-/// connection is live — the switch that lets this wallet forget it.
-///
-/// An approved connection is not usable yet, so the row carries the prompt to
-/// finish the login underneath itself rather than leaving the list to know
-/// which rows need it.
+/// One app on the Connections page: its name and website, which open the
+/// connection's sheet, and the action its status allows (ADR-0019).
+/// Disconnect opens the sheet too, which asks first; Remove takes a Refused
+/// row off the list without a PIN; Reconnect opens the scanner for a new
+/// request.
 struct ConnectionRow: View {
-    let connection: DAppConnection
-    let onPrimaryAction: () -> Void
-    let onMockScan: () -> Void
+    let item: ConnectionSheetItem
+    let onOpen: () -> Void
     let onDisconnect: () -> Void
+    let onRemove: () -> Void
+    let onReconnect: () -> Void
 
-    private enum Layout {
-        /// `SwitchView` is a fixed 64×28 from the design system and sets that
-        /// width internally, so an outer `.frame` cannot shrink it — it would
-        /// only change the space reserved while the control kept overflowing.
-        /// Scaling is the only way to make it smaller from the outside; the
-        /// design ratio is preserved.
-        static let switchScale: CGFloat = 0.75
-        static let switchWidth: CGFloat = 64 * switchScale
-        static let switchHeight: CGFloat = 28 * switchScale
-        /// The scaled switch draws at 48×21, and the tap gesture lives on that
-        /// shape alone — under the 44pt minimum. The hit area is grown around
-        /// the control without changing what is drawn.
-        static let minimumTouchTarget: CGFloat = 44
+    /// What a row offers, read from the state-to-actions table.
+    static func actions(for status: ConnectionStatus) -> Set<AppConnect.RowAction> {
+        AppConnect.StateActions.row(for: status).actions
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack(spacing: 12) {
-                identity
+        HStack(spacing: 20) {
+            Button(action: onOpen) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(item.name)
+                        .dashFont(.callout)
+                        .foregroundStyle(Color.dash.primaryText)
+                        .lineLimit(1)
 
-                ConnectionStatusBadge(status: connection.status, updatedAt: connection.updatedAt)
-                    .fixedSize(horizontal: true, vertical: false)
-
-                if connection.status == .active {
-                    activeSwitch
+                    if !item.url.isEmpty {
+                        Text(item.url)
+                            .dashFont(.caption1)
+                            .foregroundStyle(Color.dash.tertiaryText)
+                            .lineLimit(1)
+                    }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.leading, 14)
+                .padding(.vertical, 12)
+                .contentShape(Rectangle())
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 12)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .buttonStyle(.plain)
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isButton)
 
-            if connection.status == .approved {
-                ScanToCompleteBanner(onScanQR: onPrimaryAction, onMockScan: onMockScan)
-            }
+            action
+        }
+        .padding(.trailing, 14)
+    }
+
+    /// One button: Reconnect where the table allows it (a disconnected app,
+    /// and an expired one as in Figma, whose sheet offers Disconnect too),
+    /// else Disconnect, else Remove.
+    @ViewBuilder
+    private var action: some View {
+        let actions = Self.actions(for: item.status)
+        if actions.contains(.reconnect) {
+            DashUIKit.DashButton(
+                text: NSLocalizedString("Reconnect", comment: "DashConnect connection sheet"),
+                size: .small, style: .tintedBlue, action: onReconnect)
+                .fixedSize()
+                .accessibilityLabel(Text(String(
+                    format: NSLocalizedString(
+                        "Reconnect %@", comment: "DashConnect: accessibility, a row's button; the app's name"),
+                    item.name)))
+        } else if actions.contains(.disconnect) {
+            disconnectButton
+        } else if actions.contains(.remove) {
+            removeButton
         }
     }
 
-    private var identity: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(connection.name)
-                .dashFont(.subhead)
-                .foregroundStyle(Color.dash.primaryText)
-                .lineLimit(1)
-
-            if !connection.url.isEmpty {
-                Text(connection.url)
-                    .dashFont(.footnote)
-                    .foregroundStyle(Color.dash.tertiaryText)
-                    .lineLimit(1)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .topLeading)
+    private var disconnectButton: some View {
+        DashUIKit.DashButton(
+            text: NSLocalizedString("Disconnect", comment: "DashConnect"),
+            size: .small, style: .tintedGray, action: onDisconnect)
+            .fixedSize()
+            .accessibilityLabel(Text(String(
+                format: NSLocalizedString(
+                    "Disconnect %@", comment: "DashConnect: accessibility, a row's button; the app's name"),
+                item.name)))
     }
 
-    /// Always reads as on: the row only shows it for an active connection, and
-    /// only the off direction is reachable from here. Turning it off locally
-    /// downgrades the connection back to `.approved`; it does not sign the user
-    /// out of the app, because the wallet has no channel to end that session.
-    private var activeSwitch: some View {
-        ZStack {
-            SwitchView(isOn: .constant(true))
-                .allowsHitTesting(false)
-                .scaleEffect(Layout.switchScale)
-        }
-        .frame(width: Layout.switchWidth, height: Layout.switchHeight)
-        .frame(minWidth: Layout.minimumTouchTarget, minHeight: Layout.minimumTouchTarget)
-        .contentShape(Rectangle())
-        .onTapGesture(perform: onDisconnect)
-        .accessibilityElement()
-        .accessibilityAddTraits(.isButton)
-        .accessibilityLabel(Text(NSLocalizedString("Disconnect", comment: "DashConnect")))
+    private var removeButton: some View {
+        DashUIKit.DashButton(
+            text: NSLocalizedString("Remove", comment: "DashConnect: takes a refused connection off the list"),
+            size: .small, style: .tintedGray, action: onRemove)
+            .fixedSize()
+            .accessibilityLabel(Text(NSLocalizedString("Remove", comment: "DashConnect: takes a refused connection off the list")))
     }
 }
 
-#Preview {
+private func previewItem(
+    _ id: String, name: String = "Example App", url: String = "example.org", _ status: ConnectionStatus
+) -> ConnectionSheetItem {
+    ConnectionSheetItem(id: id, name: name, url: url, status: status, connection: nil, entry: nil, scope: nil)
+}
+
+#Preview("Statuses") {
     VStack(spacing: 2) {
         ForEach(ConnectionStatus.allCases, id: \.self) { status in
-            ConnectionRow(
-                connection: DAppConnection(
-                    id: status.rawValue,
-                    name: "A Very Long Application Name Indeed",
-                    url: "https://example.org",
-                    status: status,
-                    updatedAt: Date(timeIntervalSince1970: 1_754_232_520)
-                ),
-                onPrimaryAction: {},
-                onMockScan: {},
-                onDisconnect: {}
-            )
+            ConnectionRow(item: previewItem("\(status)", status), onOpen: {}, onDisconnect: {}, onRemove: {}, onReconnect: {})
         }
     }
-    .padding()
-    .background(Color.primaryBackground)
+    .background(Color.dash.secondaryBackground)
+}
+
+#Preview("Long name, no website") {
+    ConnectionRow(
+        item: previewItem("long", name: "A Very Long Application Name That Does Not Fit On One Line", url: "", .active),
+        onOpen: {}, onDisconnect: {}, onRemove: {}, onReconnect: {})
+    .background(Color.dash.secondaryBackground)
+}
+
+#Preview("Refused") {
+    ConnectionRow(item: previewItem("refused", .refused), onOpen: {}, onDisconnect: {}, onRemove: {}, onReconnect: {})
+    .background(Color.dash.secondaryBackground)
 }

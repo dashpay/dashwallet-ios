@@ -21,38 +21,27 @@ import DashUIKit
 import UIKit
 
 struct ShieldedSyncInfoScreen: View {
-    private let vc: UINavigationController
+    @State private var syncRequestError: String?
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
 
     @ObservedObject private var monitor = ShieldedSyncMonitor.shared
     @ObservedObject private var coordinator = PlatformAddressSyncCoordinator.shared
 
-    init(vc: UINavigationController) {
+    init(vc: UINavigationController?) {
         self.vc = vc
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Back button
-            HStack {
-                Button(action: {
-                    vc.popViewController(animated: true)
-                }) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(Color.dash.primaryText)
-                        .frame(width: 36, height: 36)
-                        .overlay(
-                            Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1)
-                        )
-                }
-                Spacer()
-            }
-            .padding(.horizontal, 5)
-            .padding(.top, 10)
+            DashUIKit.NavigationBar(leading: {
+                DashUIKit.NavigationBarElement.back.button { vc?.popViewController(animated: true) }
+            })
 
             // Header
             HStack {
-                Text("Shielded Sync Info")
+                Text(NSLocalizedString("Shielded Sync Info", comment: "Sync diagnostics"))
                     .font(.title)
                     .fontWeight(.bold)
                     .foregroundColor(.dash.primaryText)
@@ -60,6 +49,7 @@ struct ShieldedSyncInfoScreen: View {
             }
             .padding(.top, 30)
             .padding(.bottom, 20)
+            .padding(.horizontal, 20)
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
@@ -73,50 +63,56 @@ struct ShieldedSyncInfoScreen: View {
                     if monitor.syncCountSinceLaunch > 0 {
                         countersCard
                     }
-                    if let lastError = monitor.lastError {
+                    if let lastError = coordinator.shieldedRecoveryError ?? coordinator.shieldedInitializationError ?? monitor.lastError {
                         errorCard(message: lastError)
                     }
                     controlsCard
                     Spacer(minLength: 12)
                 }
             }
+            .padding(.horizontal, 20)
         }
-        .padding(.horizontal, 20)
         .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
+        .alert(Text(NSLocalizedString("Sync Now", comment: "Sync diagnostics")), isPresented: Binding(
+            get: { syncRequestError != nil },
+            set: { if !$0 { syncRequestError = nil } }
+        )) {
+            Button(NSLocalizedString("OK", comment: ""), role: .cancel) { syncRequestError = nil }
+        } message: {
+            Text(syncRequestError ?? "")
+        }
     }
 
     // MARK: - Cards
 
     private var stateCard: some View {
         HStack(spacing: 8) {
-            if !coordinator.isRunning {
+            if !coordinator.isShieldedRunning {
                 Image(systemName: "exclamationmark.circle")
                     .foregroundColor(.orange)
-                Text("Platform sync is not running")
+                Text(NSLocalizedString("Shielded sync is not running", comment: "Sync diagnostics"))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(Color.dash.secondaryText)
             } else if monitor.isSyncing {
                 SwiftUI.ProgressView().scaleEffect(0.7)
-                Text("Syncing…")
+                Text(NSLocalizedString("Syncing…", comment: "Sync diagnostics"))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
             } else if monitor.isBound == false {
                 Image(systemName: "shield.slash")
                     .foregroundColor(.orange)
-                Text("Not bound")
+                Text(NSLocalizedString("Not bound", comment: "Sync diagnostics"))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(Color.dash.secondaryText)
             } else if let lastSync = monitor.lastSyncTime {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.green)
-                Text("Last sync: \(lastSync, style: .relative) ago")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.dash.primaryText)
+                LastSyncLabel(date: lastSync)
             } else {
                 Image(systemName: "circle.dashed")
                     .foregroundColor(Color.dash.secondaryText)
-                Text("Not synced yet")
+                Text(NSLocalizedString("Not synced yet", comment: "Sync diagnostics"))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(Color.dash.secondaryText)
             }
@@ -135,10 +131,10 @@ struct ShieldedSyncInfoScreen: View {
     private var balanceCard: some View {
         VStack(alignment: .leading, spacing: 8) {
             row(
-                title: "Total Shielded Balance",
-                value: PlatformCreditsFormatter.dashString(coordinator.shieldedBalance))
+                title: NSLocalizedString("Total Shielded Balance", comment: "Sync diagnostics"),
+                value: coordinator.shieldedBalanceState.credits.map(PlatformCreditsFormatter.dashString) ?? "—")
             row(
-                title: "Notes Synced",
+                title: NSLocalizedString("Notes Synced", comment: "Sync diagnostics"),
                 value: formattedCount(monitor.notesSynced))
         }
         .padding(16)
@@ -149,12 +145,12 @@ struct ShieldedSyncInfoScreen: View {
     private var liveProgressCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Current Pass")
+                Text(NSLocalizedString("Current Pass", comment: "Sync diagnostics"))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
                 Spacer()
                 if let elapsed = monitor.currentSyncElapsed {
-                    Text(String(format: "%.1f s", elapsed))
+                    Text(String.localizedStringWithFormat(NSLocalizedString("%.1f s", comment: "Seconds, abbreviated"), elapsed))
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(Color.dash.secondaryText)
                         .monospacedDigit()
@@ -162,16 +158,17 @@ struct ShieldedSyncInfoScreen: View {
             }
             if monitor.currentSyncScanned != nil || monitor.currentTreeCommitted != nil {
                 dualProgressRow(
-                    label: "Downloaded",
+                    label: NSLocalizedString("Downloaded", comment: "Sync diagnostics"),
                     value: monitor.currentSyncScanned,
                     total: monitor.currentTreeTotal)
                 dualProgressRow(
-                    label: "Checked",
+                    label: NSLocalizedString("Checked", comment: "Sync diagnostics"),
                     value: monitor.currentTreeCommitted,
                     total: monitor.currentTreeTotal)
             }
             if let height = monitor.currentSyncBlockHeight, height > 0 {
-                row(title: "Block Height", value: formattedCount(height))
+                row(title: NSLocalizedString("Block Height", comment: "Sync diagnostics"),
+                    value: formattedCount(height))
             }
         }
         .padding(16)
@@ -182,10 +179,12 @@ struct ShieldedSyncInfoScreen: View {
     private var durationsCard: some View {
         VStack(alignment: .leading, spacing: 8) {
             if let last = monitor.lastSyncDuration {
-                row(title: "Last Sync Duration", value: String(format: "%.2f s", last))
+                row(title: NSLocalizedString("Last Sync Duration", comment: "Sync diagnostics"),
+                    value: String.localizedStringWithFormat(NSLocalizedString("%.2f s", comment: "Seconds, abbreviated"), last))
                 // Only worth a row when it meaningfully exceeds the last pass.
                 if let longest = monitor.longestSyncDuration, longest > last + 0.05 {
-                    row(title: "Longest Pass", value: String(format: "%.2f s", longest))
+                    row(title: NSLocalizedString("Longest Pass", comment: "Sync diagnostics"),
+                        value: String.localizedStringWithFormat(NSLocalizedString("%.2f s", comment: "Seconds, abbreviated"), longest))
                 }
             }
         }
@@ -197,18 +196,25 @@ struct ShieldedSyncInfoScreen: View {
     private var countersCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Queries Since Launch")
+                Text(NSLocalizedString("Queries Since Launch", comment: "Sync diagnostics"))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
                 Spacer()
-                Text("\(monitor.syncCountSinceLaunch) syncs")
+                Text(String.localizedStringWithFormat(
+                    NSLocalizedString(
+                        "%d syncs",
+                        comment: "Sync diagnostics - number of syncs since app launch"),
+                    monitor.syncCountSinceLaunch))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(Color.dash.secondaryText)
             }
             HStack(spacing: 8) {
-                counterBadge(label: "Scanned", count: monitor.totalScanned, color: .blue)
-                counterBadge(label: "New", count: monitor.totalNewNotes, color: .purple)
-                counterBadge(label: "Spent", count: monitor.totalNewlySpent, color: .orange)
+                counterBadge(label: NSLocalizedString("Scanned", comment: "Sync diagnostics"),
+                             count: monitor.totalScanned, color: .blue)
+                counterBadge(label: NSLocalizedString("New", comment: "Sync diagnostics"),
+                             count: monitor.totalNewNotes, color: .purple)
+                counterBadge(label: NSLocalizedString("Spent", comment: "Sync diagnostics"),
+                             count: monitor.totalNewlySpent, color: .orange)
             }
         }
         .padding(16)
@@ -218,7 +224,7 @@ struct ShieldedSyncInfoScreen: View {
 
     private func errorCard(message: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Last Error")
+            Text(NSLocalizedString("Last Error", comment: "Sync diagnostics"))
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(.red)
             Text(message)
@@ -235,11 +241,11 @@ struct ShieldedSyncInfoScreen: View {
     private var controlsCard: some View {
         HStack(spacing: 12) {
             Button(action: {
-                Task { await monitor.syncNow() }
+                syncRequestError = monitor.syncNow()
             }) {
                 HStack(spacing: 4) {
                     Image(systemName: "arrow.clockwise")
-                    Text("Sync Now")
+                    Text(NSLocalizedString("Sync Now", comment: "Sync diagnostics"))
                 }
                 .font(.system(size: 14, weight: .semibold))
                 .frame(maxWidth: .infinity)
@@ -253,7 +259,9 @@ struct ShieldedSyncInfoScreen: View {
             Button(action: {
                 monitor.clearDisplayCounters()
             }) {
-                Text("Clear")
+                Text(NSLocalizedString(
+                    "Clear",
+                    comment: "Sync diagnostics - button that resets the displayed counters only"))
                     .font(.system(size: 14, weight: .semibold))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
@@ -265,7 +273,7 @@ struct ShieldedSyncInfoScreen: View {
     }
 
     private var syncNowDisabled: Bool {
-        monitor.isSyncing || !coordinator.isRunning
+        monitor.isSyncing || !coordinator.canRecoverShielded
     }
 
     // MARK: - Row builders
@@ -301,7 +309,8 @@ struct ShieldedSyncInfoScreen: View {
                     .monospacedDigit()
             } else if let value {
                 SwiftUI.ProgressView().scaleEffect(0.6)
-                Text("\(formattedCount(value)) notes")
+                Text(String.localizedStringWithFormat(NSLocalizedString("%@ notes", comment: "Sync diagnostics - shielded note count"),
+                            formattedCount(value), value))
                     .font(.system(size: 11))
                     .foregroundColor(Color.dash.secondaryText)
                     .monospacedDigit()

@@ -17,6 +17,7 @@
 //  limitations under the License.
 //
 
+import DashUIKit
 import SwiftDashSDK
 import SwiftUI
 
@@ -25,25 +26,50 @@ import SwiftUI
 /// Menu → Voting. Lists every open DPNS username contest on the network and
 /// lets masternodes and evonodes registered to this wallet vote on them.
 ///
-/// Browsing needs no masternode. The voting controls are enabled only when the
-/// wallet derives the voting key of at least one active registration.
+/// Browsing needs no masternode. Voting needs the voting key of at least one
+/// active masternode: derived by the wallet, or added through the voting-key
+/// flow this screen's header opens.
 struct UsernameVotingScreen: View {
-    /// Pops the UIKit stack. The screen lives inside its own `NavigationStack`
-    /// (see `GovernanceMenuScreen.showVoting`), so the back button has to be
-    /// wired explicitly — SwiftUI cannot see the UIKit stack underneath it.
+    /// The UIKit stack this screen is pushed on; contest details are pushed
+    /// onto it.
+    /// Weak: this page sits in `vc`'s own stack.
+    weak var vc: UINavigationController?
+    /// Leaves the screen; the bar's back button calls it.
     let onClose: () -> Void
 
     @StateObject private var viewModel = VotingViewModel()
     @State private var showingNodePicker = false
+    /// Where the voting-key flow opens, while it is shown.
+    @State private var keyFlowStart: VotingKeysFlow.Start?
 
     var body: some View {
         VStack(spacing: 0) {
+            DashUIKit.NavigationBar(
+                leading: {
+                    DashUIKit.NavigationBarElement.back.button(action: onClose)
+                },
+                central: {
+                    Text(NSLocalizedString("Username voting", comment: "Voting"))
+                        .dashFont(.subheadMedium)
+                        .foregroundColor(.dash.primaryText)
+                        .lineLimit(1)
+                        .padding(.horizontal, 60)
+                },
+                trailing: { trailingBarItem })
+
+            DashUIKit.SearchBar(
+                text: $viewModel.searchQuery,
+                placeholder: NSLocalizedString("Search usernames", comment: "Voting"))
+                .padding(.horizontal, 20)
+
             VoterCapacityHeader(
                 nodes: viewModel.votableNodes,
                 totalWeight: viewModel.totalVoteWeight,
                 effectiveSelection: viewModel.effectiveSelectedNodeIDs,
                 selectedNodeIDs: $viewModel.selectedNodeIDs,
-                onEditSelection: { showingNodePicker = true })
+                onEditSelection: { showingNodePicker = true },
+                onAddKey: { keyFlowStart = .addKey },
+                onShowKeys: { keyFlowStart = .keyList })
 
             if viewModel.nodeListMayBeIncomplete {
                 VotingBanner(
@@ -59,46 +85,7 @@ struct UsernameVotingScreen: View {
 
             contestList
         }
-        .navigationTitle(NSLocalizedString("Username voting", comment: "Voting"))
-        .navigationBarTitleDisplayMode(.inline)
-        .searchable(
-            text: $viewModel.searchQuery,
-            placement: .navigationBarDrawer(displayMode: .always),
-            prompt: NSLocalizedString("Search usernames", comment: "Voting"))
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button(action: onClose) {
-                    Image(systemName: "chevron.left")
-                }
-            }
-            ToolbarItem(placement: .navigationBarTrailing) {
-                if viewModel.isSelecting {
-                    Button(NSLocalizedString("Done", comment: "")) { viewModel.endSelecting() }
-                } else {
-                    Menu {
-                        Picker(NSLocalizedString("Sort by", comment: "Voting"), selection: $viewModel.sort) {
-                            ForEach(ContestSort.allCases) { option in
-                                Text(option.title).tag(option)
-                            }
-                        }
-                        // Voting on many contests at once replaces the old
-                        // "Quick Voting" screen. Only offered when this wallet
-                        // can actually vote.
-                        if viewModel.canVote && !viewModel.visibleContests.isEmpty {
-                            Divider()
-                            Button {
-                                viewModel.isSelecting = true
-                            } label: {
-                                Label(NSLocalizedString("Vote on several", comment: "Voting"),
-                                      systemImage: "checklist")
-                            }
-                        }
-                    } label: {
-                        Image(systemName: "ellipsis.circle")
-                    }
-                }
-            }
-        }
+        .navigationBarHidden(true)
         .safeAreaInset(edge: .bottom) {
             if viewModel.isSelecting {
                 BulkSelectionBar(viewModel: viewModel)
@@ -108,9 +95,59 @@ struct UsernameVotingScreen: View {
             VotingNodeSelectionSheet(
                 nodes: viewModel.votableNodes,
                 selectedNodeIDs: $viewModel.selectedNodeIDs)
+                .presentationDragIndicator(.hidden)
+        }
+        .sheet(item: $keyFlowStart) { start in
+            // Not opened from a vote, so the list's button only closes.
+            VotingKeysFlow(
+                start: start,
+                continuesToVote: false,
+                viewModel: viewModel,
+                onFinish: { _ in keyFlowStart = nil })
         }
         .task { await viewModel.refreshIfNeeded() }
         .refreshable { await viewModel.refresh() }
+    }
+
+    /// "Done" ends selection mode; otherwise the sort / vote-on-several menu.
+    @ViewBuilder
+    private var trailingBarItem: some View {
+        if viewModel.isSelecting {
+            DashUIKit.DashButton(
+                text: NSLocalizedString("Done", comment: ""),
+                size: .small,
+                style: .plainBlue) {
+                    viewModel.endSelecting()
+                }
+        } else {
+            DashUIKit.NavigationBarCircleMenu(
+                .system("ellipsis"),
+                accessibilityLabel: Text(NSLocalizedString("More", comment: "Voting"))
+            ) {
+                Picker(NSLocalizedString("Sort by", comment: "Voting"), selection: $viewModel.sort) {
+                    ForEach(ContestSort.allCases) { option in
+                        Text(option.title).tag(option)
+                    }
+                }
+                // Voting on many contests at once replaces the old
+                // "Quick Voting" screen. Only offered when this wallet
+                // can actually vote.
+                if viewModel.canVote && !viewModel.visibleContests.isEmpty {
+                    Divider()
+                    Button {
+                        viewModel.isSelecting = true
+                    } label: {
+                        Label(NSLocalizedString("Vote on several", comment: "Voting"),
+                              systemImage: "checklist")
+                    }
+                }
+            }
+        }
+    }
+
+    private func showContest(_ contest: DPNSContest) {
+        let screen = ContestDetailScreen(vc: vc, contest: contest, viewModel: viewModel)
+        vc?.pushViewController(UIHostingController(rootView: screen), animated: true)
     }
 
     @ViewBuilder
@@ -168,11 +205,14 @@ struct UsernameVotingScreen: View {
                     .buttonStyle(.plain)
                     .disabled(!eligible)
                 } else {
-                    NavigationLink {
-                        ContestDetailScreen(contest: contest, viewModel: viewModel)
+                    Button {
+                        showContest(contest)
                     } label: {
-                        ContestRow(contest: contest)
+                        ListDisclosureRow {
+                            ContestRow(contest: contest)
+                        }
                     }
+                    .buttonStyle(.plain)
                 }
             }
             .listStyle(.plain)
@@ -183,7 +223,7 @@ struct UsernameVotingScreen: View {
 // MARK: - VoterCapacityHeader
 
 /// States plainly how much voting power this wallet actually has. When it has
-/// none, it says so and points at where masternodes would appear — it never
+/// none, it says so and offers to add a masternode voting key — it never
 /// implies a check passed that did not.
 private struct VoterCapacityHeader: View {
     let nodes: [VoterNode]
@@ -197,6 +237,10 @@ private struct VoterCapacityHeader: View {
     @Binding var selectedNodeIDs: Set<Data>
     /// Opens the node picker.
     let onEditSelection: () -> Void
+    /// Opens the voting-key input — offered when there is no node.
+    let onAddKey: () -> Void
+    /// Opens the list of nodes this wallet votes with.
+    let onShowKeys: () -> Void
 
     var body: some View {
         HStack(spacing: 10) {
@@ -209,10 +253,16 @@ private struct VoterCapacityHeader: View {
                         .font(.subheadline)
                         .fontWeight(.medium)
                     Text(NSLocalizedString(
-                        "This wallet holds no active masternode voting keys, so it cannot vote. Registered nodes appear under Tools → Masternodes.",
+                        "This wallet holds no active masternode voting keys, so it cannot vote.",
                         comment: "Voting"))
                         .font(.caption)
                         .foregroundColor(Color.dash.secondaryText)
+                    // The only way to a voting key outside advanced mode, where
+                    // Governance → Masternodes is not shown.
+                    Button(NSLocalizedString("Add masternode voting key", comment: "Voting"), action: onAddKey)
+                        .font(.caption.weight(.semibold))
+                        .buttonStyle(.borderless)
+                        .padding(.top, 4)
                 } else {
                     Text(nodeSummary)
                         .font(.subheadline)
@@ -224,6 +274,14 @@ private struct VoterCapacityHeader: View {
             }
 
             Spacer(minLength: 0)
+
+            if !nodes.isEmpty {
+                Button(action: onShowKeys) {
+                    Label(NSLocalizedString("Voting keys", comment: "Voting"), systemImage: "key")
+                        .font(.caption.weight(.semibold))
+                }
+                .buttonStyle(.borderless)
+            }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
@@ -268,7 +326,7 @@ private struct VoterCapacityHeader: View {
             return NSLocalizedString("Select nodes", comment: "Voting")
         }
         if chosen.count == nodes.count {
-            return String(format: NSLocalizedString(
+            return String.localizedStringWithFormat(NSLocalizedString(
                 "All %d nodes", comment: "Voting"), chosen.count)
         }
         return chosen.map(\.displayName).joined(separator: ", ")
@@ -279,17 +337,17 @@ private struct VoterCapacityHeader: View {
         let regularNodes = nodes.count - evonodes
         var parts: [String] = []
         if evonodes > 0 {
-            parts.append(String(format: NSLocalizedString("%d evonodes", comment: "Voting"), evonodes))
+            parts.append(String.localizedStringWithFormat(NSLocalizedString("%d evonodes", comment: "Voting"), evonodes))
         }
         if regularNodes > 0 {
-            parts.append(String(format: NSLocalizedString("%d masternodes", comment: "Voting"), regularNodes))
+            parts.append(String.localizedStringWithFormat(NSLocalizedString("%d masternodes", comment: "Voting"), regularNodes))
         }
         return parts.joined(separator: ", ")
     }
 
     private var weightSummary: String {
-        String(
-            format: NSLocalizedString(
+        String.localizedStringWithFormat(
+            NSLocalizedString(
                 "%u votes per contest — evonodes count as 4, masternodes as 1",
                 comment: "Voting"),
             totalWeight)
@@ -323,7 +381,7 @@ struct ContestRow: View {
 
             HStack(spacing: 12) {
                 Label(
-                    String(format: NSLocalizedString("%d requests", comment: "Voting"),
+                    String.localizedStringWithFormat(NSLocalizedString("%d requests", comment: "Voting"),
                            contest.contenders.count),
                     systemImage: "person.2")
                 if contest.lockVotes > 0 {
@@ -333,7 +391,7 @@ struct ContestRow: View {
                     Label("\(contest.abstainVotes)", systemImage: "minus.circle")
                 }
                 Spacer()
-                Text(String(format: NSLocalizedString("%u votes", comment: "Voting"),
+                Text(String.localizedStringWithFormat(NSLocalizedString("%u votes", comment: "Voting"),
                             contest.totalVotes))
             }
             .font(.caption)

@@ -28,7 +28,8 @@ import DashUIKit
 import UIKit
 
 struct WalletsScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
     private let resetDelegate: ResetDelegate
 
     @StateObject private var viewModel = WalletsViewModel()
@@ -42,7 +43,7 @@ struct WalletsScreen: View {
     /// True while the "Add Wallet" sheet (create / import) is presented.
     @State private var showAddWallet = false
 
-    init(vc: UINavigationController, wipeDelegate: DWWipeDelegate? = nil) {
+    init(vc: UINavigationController?, wipeDelegate: DWWipeDelegate? = nil) {
         self.vc = vc
         self.resetDelegate = ResetDelegate(onFinish: { [weak vc] in
             vc?.popViewController(animated: true)
@@ -180,6 +181,7 @@ struct WalletsScreen: View {
                     showAddWallet = false
                     viewModel.switchWallet(to: walletId)
                 })
+                .presentationDragIndicator(.hidden)
         }
         // Remove (recovery-phrase confirmation sheet)
         .sheet(item: $removeTarget) { target in
@@ -191,6 +193,7 @@ struct WalletsScreen: View {
                     Task { await viewModel.removeWallet(walletId: target.walletId) }
                 },
                 onCancel: { removeTarget = nil })
+                .presentationDragIndicator(.hidden)
         }
         // Errors
         .alert(
@@ -203,47 +206,21 @@ struct WalletsScreen: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
-        .alert(
-            recoveryPhraseFlow.alertState?.title ?? "",
-            isPresented: Binding(
-                get: { recoveryPhraseFlow.alertState != nil },
-                set: { if !$0 { recoveryPhraseFlow.dismissAlert() } })
-        ) {
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
-                recoveryPhraseFlow.dismissAlert()
-            }
-            Button(NSLocalizedString("Retry", comment: "")) {
-                recoveryPhraseFlow.retry()
-            }
-        } message: {
-            Text(recoveryPhraseFlow.alertState?.message ?? "")
-        }
+        .recoveryPhraseFlowAlert(recoveryPhraseFlow)
     }
 
     // MARK: - Subviews
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Button(action: { vc.popViewController(animated: true) }) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(Color.dash.primaryText)
-                        .frame(width: 36, height: 36)
-                        .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
-                }
-                Spacer()
-                Button(action: { showAddWallet = true }) {
-                    Image(systemName: "plus")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(Color.dash.primaryText)
-                        .frame(width: 36, height: 36)
-                        .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
-                }
-                .accessibilityLabel(NSLocalizedString("Add Wallet", comment: "Wallets"))
-            }
-            .padding(.horizontal, 5)
-            .padding(.top, 10)
+            DashUIKit.NavigationBar(
+                leading: {
+                    DashUIKit.NavigationBarElement.back.button { vc?.popViewController(animated: true) }
+                },
+                trailing: {
+                    DashUIKit.NavigationBarElement.plus.button { showAddWallet = true }
+                        .accessibilityLabel(NSLocalizedString("Add Wallet", comment: "Wallets"))
+                })
 
             HStack {
                 Text(NSLocalizedString("Wallets", comment: "Wallets"))
@@ -265,7 +242,7 @@ struct WalletsScreen: View {
         let controller = UIHostingController(
             rootView: WalletAccountsScreen(vc: vc, walletId: row.walletId, walletName: row.displayName))
         controller.hidesBottomBarWhenPushed = true
-        vc.pushViewController(controller, animated: true)
+        vc?.pushViewController(controller, animated: true)
     }
 
     // MARK: - Recovery phrase
@@ -279,8 +256,9 @@ struct WalletsScreen: View {
                 onCancel: { [weak vc] in
                     vc?.popViewController(animated: true)
                 })
-            vc.pushViewController(controller, animated: true)
+            vc?.pushViewController(controller, animated: true)
         case .phrase(let presentation):
+            guard let vc else { break }
             RecoveryPhraseNavigation.showPhrase(
                 presentation,
                 in: vc,
@@ -296,7 +274,7 @@ struct WalletsScreen: View {
 
     /// A wallet whose recovery phrase provably covers every stored wallet
     /// (Keychain ground truth) routes to the full reset flow
-    /// (`DWResetWalletInfoViewController`); a wallet with siblings on this
+    /// (`ResetWalletInfoHostingController`); a wallet with siblings on this
     /// network gets the per-wallet recovery-phrase remove sheet. A sole
     /// rendered wallet that can't route to reset — a distinct wallet is
     /// stored for the other network, or the Keychain couldn't be read — is
@@ -305,9 +283,8 @@ struct WalletsScreen: View {
     /// a wallet to switch to.
     private func beginRemove(_ row: WalletRow) {
         if viewModel.removalRoutesToFullReset(walletId: row.walletId) {
-            let controller = DWResetWalletInfoViewController.make()
-            controller.delegate = resetDelegate
-            vc.pushViewController(controller, animated: true)
+            let controller = ResetWalletInfoHostingController(wipeDelegate: resetDelegate)
+            vc?.pushViewController(controller, animated: true)
         } else if viewModel.rows.contains(where: { $0.walletId != row.walletId }) {
             removeTarget = row
         } else {
@@ -419,7 +396,11 @@ private struct RemoveWalletSheet: View {
     @State private var showMismatch = false
 
     var body: some View {
-        NavigationStack {
+        DashUIKit.BottomSheet(
+            title: NSLocalizedString("Remove Wallet", comment: "Wallets"),
+            showBackButton: .constant(false),
+            onClose: onCancel
+        ) {
             ZStack {
                 Color.dash.primaryBackground.ignoresSafeArea()
                 ScrollView {
@@ -472,13 +453,6 @@ private struct RemoveWalletSheet: View {
                     .padding(20)
                 }
             }
-            .navigationTitle(NSLocalizedString("Remove Wallet", comment: "Wallets"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(NSLocalizedString("Cancel", comment: "")) { onCancel() }
-                }
-            }
         }
     }
 
@@ -518,25 +492,33 @@ private struct AddWalletSheet: View {
 
     @State private var step: Step = .chooser
 
+    /// A wallet is being added or switched to: closing, swiping away and
+    /// stepping back are all held off until it settles.
+    private var isBusy: Bool {
+        viewModel.addInProgress || viewModel.switchInProgress
+    }
+
     var body: some View {
-        NavigationStack {
+        DashUIKit.BottomSheet(
+            title: title,
+            showBackButton: Binding(
+                get: { step != .chooser && !isBusy },
+                set: { _ in }),
+            onBackButtonPressed: { step = .chooser },
+            isDismissalEnabled: Binding(
+                get: { !isBusy },
+                set: { _ in }),
+            isCloseButtonEnabled: !isBusy,
+            onClose: onFinished
+        ) {
             ZStack {
                 Color.dash.primaryBackground.ignoresSafeArea()
                 content
             }
-            .navigationTitle(navigationTitle)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(NSLocalizedString("Cancel", comment: "")) { onFinished() }
-                        .disabled(viewModel.addInProgress || viewModel.switchInProgress)
-                }
-            }
         }
-        .interactiveDismissDisabled(viewModel.addInProgress || viewModel.switchInProgress)
     }
 
-    private var navigationTitle: String {
+    private var title: String {
         switch step {
         case .chooser: return NSLocalizedString("Add Wallet", comment: "Wallets")
         case .create: return NSLocalizedString("New Wallet", comment: "Wallets")
@@ -815,7 +797,7 @@ private struct ImportWalletView: View {
 // MARK: - Reset flow delegate
 
 extension WalletsScreen {
-    /// Bridges the last-wallet full reset flow (`DWResetWalletInfoViewController`).
+    /// Bridges the last-wallet full reset flow (`ResetWalletInfoHostingController`).
     /// A completed wipe invalidates the entire main UI: route to the app-level
     /// DWWipeDelegate chain (MainTabbar → root VC), which transitions to
     /// onboarding and drops the whole main stack. Popping back to this screen

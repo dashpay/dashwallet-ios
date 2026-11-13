@@ -71,7 +71,8 @@ struct TransferConfirmSummary {
         if let identityWithdrawal {
             from = identityName
             to = InternalTransferSummaryFigures.balanceName(identityWithdrawal.target.network)
-            networkFee = InternalTransferSummaryFigures.identityWithdrawalFeeFiat ?? Self.unavailable
+            networkFee = InternalTransferSummaryFigures.identityWithdrawalFeeFiat(
+                target: identityWithdrawal.target)
             total = InternalTransferSummaryFigures.identityTopUpTotal(dashDuffs: dashDuffs)
             return
         }

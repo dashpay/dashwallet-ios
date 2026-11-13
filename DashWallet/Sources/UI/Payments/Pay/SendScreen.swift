@@ -29,8 +29,16 @@ struct SendScreen: View {
     /// (the balance-row send sheet) — hides the X + title header.
     var showsHeader: Bool = true
 
+    /// Set when the screen was pushed: the header's leading slot becomes a
+    /// back button instead of a close one, and the host hides the UIKit bar.
+    var onBack: (() -> Void)? = nil
+
     @FocusState private var addressFieldFocused: Bool
     @State private var isEditingAddress = false
+    /// Identifies this instance's clipboard-monitoring registration. During a
+    /// tab change two `SendScreen`s are alive at once, so the outgoing one's
+    /// `onDisappear` must withdraw only its own.
+    @State private var clipboardMonitorToken = UUID()
 
     /// The address is "locked" (shown as a truncated card) once a valid
     /// destination is decoded and focus has left the field; tapping it reopens
@@ -42,9 +50,9 @@ struct SendScreen: View {
     var body: some View {
         VStack(spacing: 0) {
             if showsHeader {
+                // No padding of its own: `NavigationBar` already insets its
+                // leading/trailing slots by 20 and stands 64 tall.
                 header
-                    .padding(.horizontal, 20)
-                    .padding(.top, 10)
             }
 
             ScrollView {
@@ -78,26 +86,38 @@ struct SendScreen: View {
         }
         .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
+        .task {
+            // A pasteboard read can block on the system permission dialog.
+            // Let the address form's entrance animation finish first. This
+            // view can still be on its way out when the sleep ends — its
+            // removal transition outlasts the delay — which is why the read
+            // itself is gated on the host's `isClipboardReadAllowed`.
+            try? await Task.sleep(for: .milliseconds(300))
+            guard !Task.isCancelled else { return }
+            viewModel.setClipboardMonitoring(true, token: clipboardMonitorToken)
+        }
+        .onDisappear { viewModel.setClipboardMonitoring(false, token: clipboardMonitorToken) }
     }
 
     // MARK: - Header
 
+    /// Back when the screen was pushed, close when it is the root of its own
+    /// presentation. Both come from the design system's bar rather than the
+    /// UIKit one, so the glyph and its ring are the `navigationbar-*` assets.
     private var header: some View {
-        HStack {
-            Button(action: onClose) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 16, weight: .medium))
+        DashUIKit.NavigationBar(
+            leading: {
+                if let onBack {
+                    DashUIKit.NavigationBarElement.back.button(action: onBack)
+                } else {
+                    DashUIKit.NavigationBarElement.close.button(action: onClose)
+                }
+            },
+            central: {
+                Text(NSLocalizedString("Send", comment: ""))
+                    .dashFont(.subheadMedium)
                     .foregroundColor(Color.dash.primaryText)
-                    .frame(width: 36, height: 36)
-                    .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
-            }
-            Spacer()
-            Text(NSLocalizedString("Send", comment: ""))
-                .font(.headline)
-                .foregroundColor(.dash.primaryText)
-            Spacer()
-            Color.clear.frame(width: 36, height: 36)
-        }
+            })
     }
 
     // MARK: - Address
@@ -129,6 +149,7 @@ struct SendScreen: View {
                     .textInputAutocapitalization(.never)
                     .keyboardType(.asciiCapable)
                     .lineLimit(2...4)
+                    .accessibilityIdentifier("send_address_field")
                     .focused($addressFieldFocused)
                     .onAppear {
                         // Rendered after tapping the locked card → put the
@@ -191,6 +212,7 @@ struct SendScreen: View {
             .cornerRadius(10)
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("send_address_locked")
     }
 
     private func destinationBadge(_ destination: SendViewModel.DestinationKind) -> some View {
@@ -289,8 +311,6 @@ struct SendSourceScreen: View {
     var body: some View {
         VStack(spacing: 0) {
             SendStepHeader(onBack: onBack)
-                .padding(.horizontal, 20)
-                .padding(.top, 10)
 
             ScrollView {
                 VStack(spacing: 14) {
@@ -360,42 +380,114 @@ struct SendSourceScreen: View {
 
 // MARK: - Step 3: amount
 
-/// The final step of the split external-send flow: the address and source are
-/// already chosen (both shown read-only), leaving only the amount keypad and
-/// the balance/affordability validation. Continue routes exactly as the old
-/// single-screen form did — Core → Core into the L1 payment processor,
+/// The final step of the split external-send flow: the recipient and source
+/// are already chosen (both shown read-only), leaving only the amount keypad
+/// and the balance/affordability validation. Continue routes exactly as the
+/// old single-screen form did — Core → Core into the L1 payment processor,
 /// everything else into `SendConfirmSheet`.
+///
+/// Also the amount step for a DashPay contact, which the picker and the
+/// contact profile open directly: same screen, same view model, with the
+/// recipient rendered as a contact. Send asks for the PIN and has the view
+/// model sign the payment (`prepareContactReview`), then opens
+/// `ConfirmContactSendSheet` on it with the exact fee and total; once the
+/// review is sent and closed, `onContinueContact` has the host run
+/// `sendToContact`, which broadcasts that signed payment.
 struct ExternalSendAmountScreen: View {
     @ObservedObject var viewModel: SendViewModel
-    /// Pop back to the source step.
+    /// Pop back to the step that chose the recipient — the source step for an
+    /// address, the contact picker for a contact.
     var onBack: () -> Void
     /// Core → Core: hand (address, amount in duffs) to the hosting
     /// controller, which routes through the L1 payment processor.
     var onContinueCore: (String, UInt64) -> Void
+    /// Contact route: the review was sent and has closed. The host runs
+    /// `viewModel.sendToContact()` and shows the outcome.
+    var onContinueContact: () -> Void
     /// A non-core route finished successfully (confirm sheet's Done).
     var onSendCompleted: () -> Void
 
     @State private var showConfirm = false
+    /// Set by the confirm sheet's Done so `onDismiss` can tell a finished send
+    /// from a cancelled one — both close the sheet the same way.
+    @State private var didCompleteSend = false
+    /// Pre-send review for the DashPay contact route.
+    @State private var showContactConfirm = false
+    /// The review the sheet is showing (`SendViewModel.contactReviewID`),
+    /// set when it appears. Its `onDismiss` closes that review only, so a
+    /// late dismissal never closes the next one; and the amount step's Send
+    /// is ignored while the current review is on screen.
+    @State private var shownContactReviewID: Int?
 
     var body: some View {
         VStack(spacing: 0) {
+            #if DASHPAY
+            if let contact = viewModel.contactRecipient {
+                DashUIKit.NavigationBar(leading: {
+                    // Leaving mid-broadcast would hide the outcome — the
+                    // success, or the "don't send it again" notice.
+                    DashUIKit.NavigationBarElement.back.button(action: {
+                        if !isContactSendInFlight { onBack() }
+                    })
+                })
+                SendContactIntro(
+                    contact: contact,
+                    balanceDuffs: viewModel.coreToCoreSpendableDuffs)
+                    .padding(.horizontal, 20)
+            } else {
+                SendStepHeader(onBack: onBack)
+            }
+            #else
             SendStepHeader(onBack: onBack)
-                .padding(.horizontal, 20)
-                .padding(.top, 10)
+            #endif
 
             ScrollView {
                 VStack(spacing: 14) {
-                    SendAddressSummary(viewModel: viewModel, onEdit: onBack)
-                        .padding(.top, 12)
+                    // The contact route names its recipient in the intro
+                    // above; only the address route repeats it as a card,
+                    // where tapping it is also the way back to editing.
+                    if !isContactSend {
+                        SendAddressSummary(viewModel: viewModel, onEdit: onBack)
+                            .padding(.top, 12)
+                    }
 
-                    fromSummary
+                    if !isContactSend {
+                        fromSummary
+                    }
 
                     amountRow
                         .padding(.horizontal, 20)
                         .padding(.top, 6)
 
+                    if let completion = viewModel.coreDrainCompletionNotice {
+                        Text(completion)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 20)
+                    }
+                    if let estimateNotice = viewModel.coreDrainEstimateNotice {
+                        Text(estimateNotice)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 20)
+                    }
+                    if let action = viewModel.coreDrainActionTitle {
+                        Button(action) { viewModel.performCoreDrainAction() }
+                            .disabled(viewModel.isCoreDrainLoading)
+                    }
+
                     if let message = viewModel.amountValidationMessage {
                         TransferAmountValidationNote(message: message)
+                            .padding(.horizontal, 20)
+                    }
+
+                    // The address flow meets this gate on the source step,
+                    // which won't advance while it is up — but a restored
+                    // wallet can start resyncing while this screen is open, and
+                    // the contact flow never passes through that step at all.
+                    if viewModel.isBlockedBySync {
+                        SyncGateNote()
                             .padding(.horizontal, 20)
                     }
                 }
@@ -407,22 +499,75 @@ struct ExternalSendAmountScreen: View {
         }
         .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
-        .sheet(isPresented: $showConfirm) {
+        // `onDismiss`, not the sheet's own completion closure: leaving the flow
+        // pops the steps under this sheet, and doing that while it is still
+        // presented tears down the presenter mid-dismissal. A cancel dismisses
+        // the same way and must not unwind, so the outcome is carried across.
+        #if DASHPAY
+        // A sheet or the PIN prompt over this step does not count as leaving
+        // it; a pop, a dismissal or a tab switch does.
+        .onAppear { viewModel.contactAmountStepDidAppear() }
+        .onDisappear { viewModel.contactAmountStepDidDisappear() }
+        // The broadcast starts from `onDismiss`, once the review is gone, so
+        // the host's outcome screen never presents over a sheet that is still
+        // on its way out. Any other close abandons the signed payment.
+        .sheet(isPresented: $showContactConfirm, onDismiss: {
+            let closedReviewID = shownContactReviewID
+            shownContactReviewID = nil
+            if viewModel.isSendingToContact {
+                onContinueContact()
+            } else {
+                // A sheet that never appeared was replaced by the next
+                // review before it showed; that review is not this one's to
+                // close, and the next prepare already released its payment.
+                if let closedReviewID { viewModel.cancelContactReview(id: closedReviewID) }
+            }
+        }) {
+            if let contact = viewModel.contactRecipient,
+               let duffs = viewModel.contactReviewDuffs,
+               let feeDuffs = viewModel.contactReviewFeeDuffs,
+               let totalDuffs = viewModel.contactReviewTotalDuffs {
+                ConfirmContactSendSheet(
+                    contact: contact,
+                    amountDuffs: duffs,
+                    feeDuffs: feeDuffs,
+                    totalDuffs: totalDuffs,
+                    fiatText: viewModel.contactReviewFiatText ?? "",
+                    // The contact can be removed, or its channel break, while
+                    // the review is open — or only seem to, for a moment
+                    // during a sync. Send waits rather than the review closing.
+                    unavailableMessage: viewModel.contactUnavailableMessage,
+                    onCancel: { showContactConfirm = false },
+                    onSend: {
+                        if viewModel.confirmContactReview() { showContactConfirm = false }
+                    })
+                    .onAppear { shownContactReviewID = viewModel.contactReviewID }
+                // No detent here: the sheet is `BottomSheet.selfSizing`, which
+                // sets its own from the measured content.
+            }
+        }
+        #endif
+        .sheet(isPresented: $showConfirm, onDismiss: {
+            guard didCompleteSend else { return }
+            didCompleteSend = false
+            onSendCompleted()
+        }) {
             if let route = viewModel.route, route != .coreToCore {
                 SendConfirmSheet(
                     route: route,
                     destinationAddress: viewModel.trimmedAddress,
                     destinationRaw43: shieldedRecipientRaw43,
-                    dashDuffs: viewModel.dashDuffs,
+                    dashDuffs: viewModel.frozenCoreDrainSubmission?.dashDuffs ?? viewModel.dashDuffs,
                     creditsAmount: viewModel.creditsPreview,
-                    fiatText: viewModel.fiatAmountString,
+                    fiatText: viewModel.frozenCoreDrainSubmission?.fiatText ?? viewModel.fiatAmountString,
                     withdrawalFeeCredits: viewModel.withdrawalPreflight?.estimatedFee,
                     isFullPlatformWithdrawal: viewModel.isFullPlatformWithdrawal,
                     isFullShieldedSweep: viewModel.isFullShieldedSweep,
+                    coreShieldedDrain: viewModel.frozenCoreDrainSubmission?.confirmation,
                     onCancel: { showConfirm = false },
                     onCompleted: {
+                        didCompleteSend = true
                         showConfirm = false
-                        onSendCompleted()
                     })
                     .presentationDetents([.large])
                     .presentationDragIndicator(.hidden)
@@ -459,29 +604,73 @@ struct ExternalSendAmountScreen: View {
         HardwareNumericKeyboardView(
             value: keypadBinding,
             showDecimalSeparator: true,
-            actionButtonText: NSLocalizedString("Continue", comment: ""),
+            // A contact payment's review, opened by this tap, is the last
+            // step before the broadcast; every other route continues to a
+            // flow of its own (the L1 payment processor or `SendConfirmSheet`).
+            actionButtonText: isContactSend
+                ? NSLocalizedString("Send", comment: "")
+                : NSLocalizedString("Continue", comment: ""),
             actionEnabled: viewModel.canContinue,
-            inProgress: false,
+            inProgress: isContactSendInFlight || viewModel.isCoreDrainLoading,
             actionHandler: continueAction
         )
-        .padding(.top, 12)
-        .padding(.horizontal, 16)
-        .padding(.bottom, 12)
-        .background(Color.dash.secondaryBackground)
-        .clipShape(.rect(cornerRadius: 20))
-        .background(Color.dash.secondaryBackground, ignoresSafeAreaEdges: .bottom)
     }
 
     private func continueAction() {
+        if isContactSend {
+            // Never straight to the broadcast: this signs the payment (after
+            // the PIN) and opens the review on its exact fee and total; only
+            // the review's Send broadcasts it.
+            #if DASHPAY
+            if let shown = shownContactReviewID, shown == viewModel.contactReviewID { return }
+            // A review that was asked for and never appeared, or is still on
+            // its way in, left this set; clear it so the next one presents.
+            showContactConfirm = false
+            Task { @MainActor in
+                if await viewModel.prepareContactReview() {
+                    showContactConfirm = true
+                }
+            }
+            #endif
+            return
+        }
         guard let route = viewModel.route else { return }
         if route == .coreToCore {
             onContinueCore(viewModel.trimmedAddress, viewModel.dashDuffsUnsigned)
         } else {
+            // Frozen before the sheet is asked for, never read from view
+            // state: see `frozenCoreDrainSubmission`.
+            viewModel.freezeCoreDrainSubmission()
             showConfirm = true
         }
     }
 
-    /// The source picked on the previous step, read-only. Tapping goes back.
+    /// True on the DashPay contact route. Always false in the dashwallet
+    /// target, which has no contacts — so the contact branches below are
+    /// compiled out of every path there.
+    private var isContactSend: Bool {
+        #if DASHPAY
+        return viewModel.contactRecipient != nil
+        #else
+        return false
+        #endif
+    }
+
+    /// From the amount step's Send to the review, and from the review's Send
+    /// on — `isSendingToContact` covers the review's exit as well as the
+    /// broadcast.
+    private var isContactSendInFlight: Bool {
+        #if DASHPAY
+        return viewModel.isContactPaymentInFlight
+        #else
+        return false
+        #endif
+    }
+
+    /// The source picked on the previous step, read-only. Tapping goes back —
+    /// except on the contact route, where the transparent balance is the only
+    /// possible source and there is no From step behind this screen, so the
+    /// card is a fact rather than a way back.
     private var fromSummary: some View {
         Button(action: onBack) {
             HStack(spacing: 10) {
@@ -498,9 +687,11 @@ struct ExternalSendAmountScreen: View {
                         .foregroundColor(.primaryText)
                 }
                 Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.secondary)
+                if !isContactSend {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(.secondary)
+                }
             }
             .padding(12)
             .frame(maxWidth: .infinity)
@@ -508,6 +699,7 @@ struct ExternalSendAmountScreen: View {
             .cornerRadius(10)
         }
         .buttonStyle(.plain)
+        .disabled(isContactSend)
         .padding(.horizontal, 20)
     }
 
@@ -518,6 +710,7 @@ struct ExternalSendAmountScreen: View {
     }
 
     private var dashAmountText: String {
+        if let amount = viewModel.coreDrainDashDisplay { return amount }
         switch viewModel.unit {
         case .dash:
             return keypadBinding.wrappedValue
@@ -530,6 +723,7 @@ struct ExternalSendAmountScreen: View {
     }
 
     private var fiatAmountText: String {
+        if let amount = viewModel.coreDrainFiatDisplay { return amount }
         switch viewModel.unit {
         case .dash:
             guard viewModel.parsedDashAmount > 0,
@@ -570,7 +764,10 @@ struct ExternalSendAmountScreen: View {
             set: { newValue in
                 if newValue.isEmpty {
                     viewModel.amountText = "0"
-                } else {
+                // Shorter text always passes: a unit switch can leave more decimals than
+                // the new unit allows, and refusing backspace would lock the field.
+                } else if newValue.count < viewModel.amountText.count
+                    || InternalTransferViewModel.typedTextFitsPrecision(newValue, unit: viewModel.unit) {
                     viewModel.amountText = newValue
                 }
             })
@@ -579,31 +776,140 @@ struct ExternalSendAmountScreen: View {
 
 // MARK: - Shared step chrome
 
-/// Back-chevron + "Send" title, shared by the source and amount steps.
+/// Back + "Send" title, shared by the source and amount steps.
 private struct SendStepHeader: View {
     var onBack: () -> Void
 
     var body: some View {
-        HStack {
-            Button(action: onBack) {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.primary)
-                    .frame(width: 36, height: 36)
-                    .overlay(Circle().stroke(Color.gray300.opacity(0.3), lineWidth: 1))
-            }
-            Spacer()
-            Text(NSLocalizedString("Send", comment: ""))
-                .font(.headline)
-                .foregroundColor(.primaryText)
-            Spacer()
-            Color.clear.frame(width: 36, height: 36)
-        }
+        DashUIKit.NavigationBar(
+            leading: { DashUIKit.NavigationBarElement.back.button(action: onBack) },
+            central: {
+                Text(NSLocalizedString("Send", comment: ""))
+                    .dashFont(.subheadMedium)
+                    .foregroundColor(Color.dash.primaryText)
+            })
     }
 }
 
-/// The chosen destination address, read-only. Tapping (`onEdit`) pops back to
-/// the address step. Shared by the source and amount steps.
+#if DASHPAY
+
+/// The contact route's intro under its navigation bar: the design system's
+/// TopIntro — a large left-aligned title, and the recipient named underneath.
+///
+/// `TopIntroView` draws the title. The recipient line is composed here rather
+/// than passed as its `mainDescription` because the component's descriptions
+/// are plain strings and this one carries an avatar; it uses the same
+/// `.subhead` token, so the two read as one block. A `TopIntroView` overload
+/// taking a description view would let this drop — a DashUIKit change, not one
+/// to make from here.
+private struct SendContactIntro: View {
+    let contact: ContactItem
+    /// The funding balance in duffs, shown on its own line. A contact can only
+    /// be paid from Core today, so the screen states what is available rather
+    /// than offering a choice. It is the fee-aware spendable figure the Send
+    /// button is gated on, not the raw balance — typing the number shown here
+    /// must not come back as "insufficient balance".
+    let balanceDuffs: UInt64
+
+    /// Hidden first, like the merchant pay screen: the number is here to be
+    /// consulted, not broadcast to whoever is looking at the phone.
+    @State private var balanceHidden = true
+
+    private enum Layout {
+        static let eyeCircleSize: CGFloat = 28
+        static let eyeIconSize: CGFloat = 14
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 4) {
+                DashUIKit.TopIntroView(title: NSLocalizedString("Send", comment: ""))
+
+                HStack(spacing: 6) {
+                    Text(NSLocalizedString("to", comment: "Send screen: precedes the recipient"))
+                        .dashFont(.subhead)
+                        .foregroundColor(Color.dash.primaryText)
+                    ContactAvatarView(
+                        title: contact.displayTitle,
+                        avatarURL: contact.avatarURL,
+                        identitySeed: contact.contactIdentityId,
+                        size: 24)
+                    Text(contact.displayTitle)
+                        .dashFont(.subhead)
+                        .foregroundColor(Color.dash.primaryText)
+                        .lineLimit(1)
+                }
+
+                // What the send has to spend, not which balance it came from:
+                // a contact can only be paid from Core, so naming the source
+                // says nothing the user can act on — the number does. Masked
+                // until asked for, with the eye control and the hidden-first
+                // default `DashSpendPayIntro` established for this same row.
+                HStack(spacing: 4) {
+                    Text(NSLocalizedString("Balance:", comment: "Send screen: the funding balance"))
+
+                    if balanceHidden {
+                        Text("***********")
+                    } else {
+                        DashAmount(amount: Int64(balanceDuffs), font: .subheadline, showDirection: false)
+                        Text("~").font(.subheadline)
+                        fiatText
+                    }
+
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.2)) { balanceHidden.toggle() }
+                    }) {
+                        eyeIcon
+                    }
+                    .buttonStyle(.plain)
+                    // `eyeIcon` is two icons in a ZStack and carries no text,
+                    // so VoiceOver would announce this control unnamed.
+                    .accessibilityLabel(Text(balanceHidden
+                        ? NSLocalizedString("Show balance", comment: "Send screen: reveal the funding balance")
+                        : NSLocalizedString("Hide balance", comment: "Send screen: mask the funding balance")))
+                }
+                .font(.subheadline)
+                .foregroundColor(Color.dash.secondaryText)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var eyeIcon: some View {
+        ZStack {
+            Circle()
+                .fill(Color.dash.gray300Alpha10)
+                .frame(width: Layout.eyeCircleSize, height: Layout.eyeCircleSize)
+
+            Icon(name: .custom("eye_opened-icon", maxHeight: Layout.eyeIconSize))
+                .foregroundColor(.dash.primaryText)
+                .opacity(balanceHidden ? 1 : 0)
+
+            Icon(name: .custom("eye_closed-icon", maxHeight: Layout.eyeIconSize))
+                .foregroundColor(.dash.primaryText)
+                .opacity(balanceHidden ? 0 : 1)
+        }
+        .compositingGroup()
+    }
+
+    @ViewBuilder
+    private var fiatText: some View {
+        let text = try? CurrencyExchanger.shared
+            .convertDash(amount: balanceDuffs.dashAmount, to: App.fiatCurrency)
+            .formattedFiatAmount
+
+        Text(text ?? NSLocalizedString("Not available", comment: ""))
+            .font(.subheadline)
+            .foregroundColor(Color.dash.secondaryText)
+    }
+}
+
+#endif
+
+/// The chosen recipient, read-only — a truncated address, or a DashPay
+/// contact's avatar and name when the flow was opened from the contact picker.
+/// Tapping (`onEdit`) pops back to whichever step chose it. Shared by the
+/// source and amount steps.
 private struct SendAddressSummary: View {
     @ObservedObject var viewModel: SendViewModel
     var onEdit: () -> Void
@@ -611,33 +917,102 @@ private struct SendAddressSummary: View {
     var body: some View {
         Button(action: onEdit) {
             VStack(alignment: .leading, spacing: 6) {
-                HStack {
-                    Text(NSLocalizedString("Address", comment: ""))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Spacer()
-                    if let destination = viewModel.destination {
-                        destinationBadge(destination)
-                    }
-                }
-                HStack(spacing: 8) {
-                    Text(truncateMiddle(viewModel.trimmedAddress, visible: 10))
-                        .font(.system(.footnote, design: .monospaced))
-                        .foregroundColor(.primaryText)
-                        .lineLimit(1)
-                    Spacer()
-                    Image(systemName: "pencil")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(.secondary)
-                }
-                .padding(12)
-                .frame(maxWidth: .infinity)
-                .background(Color.secondaryBackground)
-                .cornerRadius(10)
+                caption
+                card
             }
         }
         .buttonStyle(.plain)
         .padding(.horizontal, 20)
+    }
+
+    @ViewBuilder
+    private var caption: some View {
+        HStack {
+            Text(isContactRecipient
+                ? NSLocalizedString("To", comment: "")
+                : NSLocalizedString("Address", comment: ""))
+                .font(.caption)
+                .foregroundColor(.secondary)
+            Spacer()
+            // A contact has no address form to name — the row below already
+            // says who is being paid.
+            if !isContactRecipient, let destination = viewModel.destination {
+                destinationBadge(destination)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var card: some View {
+        #if DASHPAY
+        if let contact = viewModel.contactRecipient {
+            contactCard(contact)
+        } else {
+            addressCard
+        }
+        #else
+        addressCard
+        #endif
+    }
+
+    private var addressCard: some View {
+        HStack(spacing: 8) {
+            Text(truncateMiddle(viewModel.trimmedAddress, visible: 10))
+                .font(.system(.footnote, design: .monospaced))
+                .foregroundColor(.primaryText)
+                .lineLimit(1)
+            Spacer()
+            Image(systemName: "pencil")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.secondary)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity)
+        .background(Color.secondaryBackground)
+        .cornerRadius(10)
+    }
+
+    #if DASHPAY
+    private func contactCard(_ contact: ContactItem) -> some View {
+        HStack(spacing: 10) {
+            ContactAvatarView(
+                title: contact.displayTitle,
+                avatarURL: contact.avatarURL,
+                identitySeed: contact.contactIdentityId)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(contact.displayTitle)
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundColor(.primaryText)
+                    .lineLimit(1)
+                // Only when it adds something: the title is already the alias
+                // or profile name when one of those is known.
+                if let username = contact.username?.withoutDashSuffix,
+                   !username.isEmpty,
+                   username != contact.displayTitle {
+                    Text(username)
+                        .font(.system(size: 12))
+                        .foregroundColor(Color.dash.tertiaryText)
+                        .lineLimit(1)
+                }
+            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.secondary)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity)
+        .background(Color.secondaryBackground)
+        .cornerRadius(10)
+    }
+    #endif
+
+    private var isContactRecipient: Bool {
+        #if DASHPAY
+        return viewModel.contactRecipient != nil
+        #else
+        return false
+        #endif
     }
 }
 
@@ -652,11 +1027,8 @@ private func sourceIconName(_ network: ChainNetwork) -> String {
 }
 
 private func sourceTitle(_ network: ChainNetwork) -> String {
-    switch network {
-    case .core: return NSLocalizedString("Transparent", comment: "Balance breakdown")
-    case .platform: return NSLocalizedString("Platform", comment: "Dash Platform chain")
-    case .shielded: return NSLocalizedString("Shielded", comment: "")
-    }
+    // One source of truth: simple mode calls the Core balance "Dash Wallet".
+    network.balanceName
 }
 
 private func destinationBadge(_ destination: SendViewModel.DestinationKind) -> some View {
@@ -689,6 +1061,107 @@ private func destinationTitle(_ destination: SendViewModel.DestinationKind) -> S
     }
 }
 
+#if DASHPAY
+/// Pre-send review for a DashPay contact payment. The payment is already
+/// signed (`SendViewModel.prepareContactReview`), so the fee and total are
+/// the exact figures of the transaction Send broadcasts.
+private struct ConfirmContactSendSheet: View {
+    let contact: ContactItem
+    let amountDuffs: UInt64
+    /// The exact fee of the signed payment.
+    let feeDuffs: UInt64
+    let totalDuffs: UInt64
+    let fiatText: String
+    /// Why Send is disabled; nil when the contact can be paid.
+    let unavailableMessage: String?
+    var onCancel: () -> Void
+    var onSend: () -> Void
+
+    private static let dashFractionDigits = 8
+
+    var body: some View {
+        // The same parts as the L1 confirmation (`ConfirmPaymentViewController`)
+        // and the internal transfer's: the design system's sheet with its title,
+        // grabber and close button, the amount pair, a card of rows, and the
+        // button pair. Unlike those, the To row is the design system's list-8,
+        // with the contact's avatar. `selfSizing` measures the content, so nothing below may
+        // grow greedily — no `Spacer`, no `maxHeight: .infinity`.
+        DashUIKit.BottomSheet.selfSizing(
+            title: NSLocalizedString("Confirm", comment: "Payment confirmation"),
+            showBackButton: .constant(false),
+            onClose: onCancel
+        ) {
+            VStack(spacing: 0) {
+                // Digits only: the component draws the Dash symbol itself, as an
+                // image VoiceOver cannot name — so the pair is read as one,
+                // with the unit spelled out.
+                DashUIKit.SwapAmountView(
+                    amount: amountDuffs.formattedDashAmountWithoutCurrencySymbol,
+                    secondaryText: fiatText,
+                    showDashLogo: true)
+                    .padding(.top, 14)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(amountDuffs.formattedDashAmount)
+                    .accessibilityValue(fiatText)
+
+                VStack(spacing: 0) {
+                    DashUIKit.List8View(
+                        label: NSLocalizedString("To", comment: "Payment confirmation"),
+                        value: contact.displayTitle,
+                        truncationMode: contact.displayTitleIsName ? .tail : .middle
+                    ) {
+                        ContactAvatarView(
+                            title: contact.displayTitle,
+                            avatarURL: contact.avatarURL,
+                            identitySeed: contact.contactIdentityId,
+                            size: 24)
+                    }
+                    // Every place a duff can occupy, as on the L1 confirmation:
+                    // the component's default rounds a Core fee to "0".
+                    DashUIKit.MenuItem(
+                        title: NSLocalizedString("Network fee", comment: "Payment confirmation"),
+                        accessory: .balance(
+                            dash: Int64(clamping: feeDuffs), sign: .none,
+                            maximumFractionDigits: Self.dashFractionDigits))
+                    DashUIKit.MenuItem(
+                        title: NSLocalizedString("Total", comment: ""),
+                        accessory: .balance(
+                            dash: Int64(clamping: totalDuffs), sign: .none,
+                            maximumFractionDigits: Self.dashFractionDigits))
+                }
+                .modifier(MenuViewModifier())
+                .padding(.top, 20)
+
+                // The card already sits inside this stack's side padding.
+                if let unavailableMessage {
+                    TransferAmountValidationNote(message: unavailableMessage)
+                        .padding(.top, 20)
+                }
+
+                HStack(spacing: 20) {
+                    DashUIKit.DashButton(
+                        text: NSLocalizedString("Cancel", comment: ""),
+                        fillsWidth: true,
+                        size: .large,
+                        style: .tintedGray,
+                        action: onCancel)
+                    DashUIKit.DashButton(
+                        text: NSLocalizedString("Send", comment: ""),
+                        isEnabled: unavailableMessage == nil,
+                        fillsWidth: true,
+                        size: .large,
+                        style: .filledBlue,
+                        action: onSend)
+                }
+                .padding(.top, 24)
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 20)
+        }
+    }
+}
+#endif
+
 /// Middle-truncated address display shared by the screen's clipboard chip
 /// and the confirm sheet's To row.
 private func truncateMiddle(_ s: String, visible: Int = 8) -> String {
@@ -720,10 +1193,23 @@ struct SendConfirmSheet: View {
     var withdrawalFeeCredits: UInt64? = nil
     var isFullPlatformWithdrawal: Bool = false
     var isFullShieldedSweep: Bool = false
+    /// `.coreToShielded` Max: the whole eligible Core balance drains into the
+    /// recipient's address through the SDK wallet drain. `dashDuffs` and
+    /// `fiatText` are then its estimate; the figures below come from here.
+    var coreShieldedDrain: CoreShieldedDrainConfirmation? = nil
     var onCancel: () -> Void
     var onCompleted: () -> Void
 
     @StateObject private var coordinator = ShieldedTransferCoordinator()
+
+    /// The lock `CoreCoinConsolidationSheet` is up for, after the coordinator
+    /// refused it over the asset-lock input limit.
+    @State private var coinConsolidationCheck: AssetLockInputLimit.Check?
+
+    private var isCoreDrain: Bool { coreShieldedDrain != nil }
+
+    /// An estimate is marked as one wherever the figure is drawn.
+    private var displayedFiatText: String { isCoreDrain ? "≈ " + fiatText : fiatText }
 
     var body: some View {
         DashUIKit.BottomSheet(
@@ -739,11 +1225,38 @@ struct SendConfirmSheet: View {
             case .success:
                 successBody
             case .submittedUnconfirmed:
-                ShieldedSubmittedUnconfirmedView(onDone: onCompleted)
+                ShieldedSubmittedUnconfirmedView(
+                    onDone: onCompleted,
+                    detail: unconfirmedDetail,
+                    onResume: canResumeUnconfirmedLock ? resumeUnconfirmedLock : nil)
             default:
                 detailsBody
             }
         }
+        // Nothing was sent: once the sheet closes, Confirm is offered again
+        // for the user to retry.
+        .coreCoinConsolidationSheet(check: $coinConsolidationCheck) { coordinator.reset() }
+    }
+
+    private static let drainPendingDetail = NSLocalizedString(
+        "Check the Max transfer's status from the pending transaction in History, or by tapping Max again.",
+        comment: "Send confirm sheet: drain outcome pending")
+
+    private static let resumeDetail = NSLocalizedString(
+        "If it does not arrive, Resume continues this same transfer to the same recipient. It cannot pay twice.",
+        comment: "Send confirm sheet: an unconfirmed Core to Shielded send can be resumed")
+
+    private var unconfirmedDetail: String? {
+        if isCoreDrain { return Self.drainPendingDetail }
+        return canResumeUnconfirmedLock ? Self.resumeDetail : nil
+    }
+
+    /// The unknown result left this send's asset lock recorded. Only this
+    /// sheet still holds the recipient: every later recovery surface resumes
+    /// the lock to the wallet's own shielded address.
+    private var canResumeUnconfirmedLock: Bool {
+        route == .coreToShielded && !isCoreDrain && destinationRaw43 != nil
+            && coordinator.canResumeUnconfirmedAssetLock
     }
 
     /// The close button has to do what the visible button of the current phase
@@ -773,14 +1286,21 @@ struct SendConfirmSheet: View {
 
     private var detailsBody: some View {
         VStack(spacing: 0) {
-            DashAmount(
-                amount: dashDuffs,
-                font: .largeTitle,
-                dashSymbolFactor: 0.7,
-                showDirection: false)
-                .padding(.top, 14)
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                if isCoreDrain {
+                    Text("≈")
+                        .font(.largeTitle)
+                        .foregroundColor(.dash.primaryText)
+                }
+                DashAmount(
+                    amount: dashDuffs,
+                    font: .largeTitle,
+                    dashSymbolFactor: 0.7,
+                    showDirection: false)
+            }
+            .padding(.top, 14)
 
-            Text(fiatText)
+            Text(displayedFiatText)
                 .font(.subheadline)
                 .foregroundColor(.dash.secondaryText)
                 .padding(.top, 6)
@@ -817,15 +1337,27 @@ struct SendConfirmSheet: View {
                     .padding(.bottom, 16)
 
             case .failed:
-                ButtonsGroup(
-                    orientation: .horizontal,
-                    size: .large,
-                    positiveButtonText: NSLocalizedString("Try again", comment: ""),
-                    positiveButtonAction: tryAgain,
-                    negativeButtonText: NSLocalizedString("Close", comment: ""),
-                    negativeButtonAction: onCancel)
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 16)
+                if let check = coordinator.inputLimitCheck {
+                    ButtonsGroup(
+                        orientation: .horizontal,
+                        size: .large,
+                        positiveButtonText: CoreCoinConsolidationViewModel.combineButtonTitle,
+                        positiveButtonAction: { coinConsolidationCheck = check },
+                        negativeButtonText: NSLocalizedString("Close", comment: ""),
+                        negativeButtonAction: onCancel)
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 16)
+                } else {
+                    ButtonsGroup(
+                        orientation: .horizontal,
+                        size: .large,
+                        positiveButtonText: NSLocalizedString("Try again", comment: ""),
+                        positiveButtonAction: tryAgain,
+                        negativeButtonText: NSLocalizedString("Close", comment: ""),
+                        negativeButtonAction: onCancel)
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 16)
+                }
 
             case .signing, .locking, .proving, .broadcasting:
                 ShieldedTransferStepList(currentPhase: coordinator.phase, steps: progressSteps)
@@ -845,7 +1377,7 @@ struct SendConfirmSheet: View {
             PaymentSuccessHeader(
                 title: NSLocalizedString("Sent", comment: "Send confirm sheet"),
                 amountDuffs: dashDuffs,
-                fiatText: fiatText)
+                fiatText: displayedFiatText)
 
             Spacer(minLength: 12)
 
@@ -883,6 +1415,14 @@ struct SendConfirmSheet: View {
             summaryRow(
                 label: NSLocalizedString("Network fee", comment: ""),
                 value: networkFeeString)
+            if let breakdown = coreShieldedDrain?.feeBreakdownText {
+                Text(breakdown)
+                    .font(.footnote)
+                    .foregroundColor(.dash.secondaryText)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 14)
+                    .padding(.bottom, 10)
+            }
             divider
             summaryRow(
                 label: NSLocalizedString("Total", comment: ""),
@@ -932,6 +1472,7 @@ struct SendConfirmSheet: View {
     /// Flat fee estimate (credits) for the active route — same estimators as
     /// the internal transfer's confirm sheet. `nil` → the row shows "—".
     private var networkFeeCredits: UInt64? {
+        if let drain = coreShieldedDrain { return drain.totalFeeCredits }
         switch route {
         case .coreToShielded:
             // The lock charges the fee rounded UP to a whole duff — display
@@ -972,6 +1513,12 @@ struct SendConfirmSheet: View {
     /// unavailable — `canContinue` fails closed before that can be confirmed,
     /// but the row must never show the un-inflated number.
     private var totalString: String {
+        if let drain = coreShieldedDrain {
+            // The whole candidate balance leaves the wallet; nothing comes
+            // back as change. The SDK settles the exact figure at confirm.
+            guard let total = Int64(exactly: drain.candidateBalanceDuffs) else { return "—" }
+            return "≈ " + total.formattedDashAmount
+        }
         guard route == .coreToShielded else {
             return dashDuffs.formattedDashAmount
         }
@@ -1023,6 +1570,9 @@ struct SendConfirmSheet: View {
     }
 
     private var infoTitle: String {
+        if isCoreDrain {
+            return NSLocalizedString("Sends all eligible Transparent funds", comment: "Send confirm sheet: Core drain")
+        }
         switch route {
         case .platformToCore, .shieldedToCore:
             return NSLocalizedString("Processing time", comment: "")
@@ -1032,6 +1582,11 @@ struct SendConfirmSheet: View {
     }
 
     private var infoBody: String {
+        if isCoreDrain {
+            return NSLocalizedString(
+                "All eligible funds in your Transparent balance will be sent to this address when you confirm. Nothing is kept as change. The amount and fees are estimates. CoinJoin funds are excluded. Dash sent to a wrong address can't be recovered.",
+                comment: "Send confirm sheet: Core drain")
+        }
         switch route {
         case .shieldedToCore:
             return NSLocalizedString(
@@ -1058,6 +1613,12 @@ struct SendConfirmSheet: View {
         var steps: [ShieldedTransferStepList.Step] = [
             .init(label: NSLocalizedString("Authorizing", comment: ""), phase: .signing)
         ]
+        // The wallet drain is one opaque SDK call that locks, proves and
+        // broadcasts; the coordinator reports it as a single stage.
+        if isCoreDrain {
+            steps.append(.init(label: NSLocalizedString("Sending", comment: "Send confirm sheet: drain in progress"), phase: .locking))
+            return steps
+        }
         // Only the asset-lock route has the on-chain locking stage.
         if route == .coreToShielded {
             steps.append(.init(label: NSLocalizedString("Locking funds", comment: ""), phase: .locking))
@@ -1082,6 +1643,11 @@ struct SendConfirmSheet: View {
             case .coreToShielded:
                 guard let destinationRaw43 else {
                     coordinator.reset()
+                    return
+                }
+                if let drain = coreShieldedDrain {
+                    await coordinator.performWalletDrain(
+                        drain, recipient: .external(raw43: destinationRaw43))
                     return
                 }
                 await coordinator.performAssetLock(
@@ -1136,21 +1702,28 @@ struct SendConfirmSheet: View {
         // If the just-failed Core → Shielded attempt already committed its
         // asset lock, RESUME that exact outpoint with the same recipient
         // instead of building a second lock (which strands the first) —
-        // mirrors the internal transfer's retry.
-        if route == .coreToShielded,
-           let op = coordinator.lastAssetLockOutPoint,
+        // mirrors the internal transfer's retry. A drain that reached a lock
+        // ends in `.submittedUnconfirmed`, never here; a failed one left no
+        // marker, so it confirms afresh under a new operation.
+        if route == .coreToShielded, !isCoreDrain,
+           coordinator.lastAssetLockOutPoint != nil,
            let destinationRaw43 {
-            coordinator.reset()
             Task {
-                await coordinator.resumeAssetLock(
-                    outPointTxidWire: op.txidWire,
-                    outPointVout: op.vout,
-                    recipientRaw43: destinationRaw43)
+                await coordinator.retryLastAssetLock(recipientRaw43: destinationRaw43)
             }
             return
         }
         coordinator.reset()
         confirm()
+    }
+
+    /// Continues the recorded lock to the same recipient. Never starts a
+    /// fresh payment: without a recorded lock it does nothing.
+    private func resumeUnconfirmedLock() {
+        guard canResumeUnconfirmedLock, let destinationRaw43 else { return }
+        Task {
+            await coordinator.retryLastAssetLock(recipientRaw43: destinationRaw43)
+        }
     }
 }
 

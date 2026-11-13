@@ -26,7 +26,7 @@ final class ShieldedWithdrawalStore {
 
     static let shared = ShieldedWithdrawalStore()
 
-    private let defaults = UserDefaults.standard
+    private let defaults: UserDefaults
     private let lock = NSLock()
     /// Per-wallet key prefix; the effective key is `<keyPrefix>_<walletIdHex>`
     /// so an address recorded under wallet A isn't tagged as A's withdrawal
@@ -40,8 +40,12 @@ final class ShieldedWithdrawalStore {
     private var cacheKey: String?
     private var cache: Set<String>?
 
-    private init() {}
+    /// Allows isolated persistence in tests while production uses the standard domain.
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+    }
 
+    /// Resolve the active wallet for direct send/receipt callers that do not carry a snapshot id.
     private func resolvedKey() -> String {
         guard let walletIdHex = WalletEnvironment.activeWalletIdHex as String?,
               !walletIdHex.isEmpty else {
@@ -50,8 +54,9 @@ final class ShieldedWithdrawalStore {
         return "\(keyPrefix)_\(walletIdHex)"
     }
 
-    private func loaded() -> Set<String> {
-        let key = resolvedKey()
+    /// Load one explicit wallet key, replacing the single-wallet cache when its owner changes.
+    /// Callers hold `lock` across this lookup and any following write.
+    private func loaded(forKey key: String) -> Set<String> {
         if cacheKey == key, let cache { return cache }
         let stored = (defaults.array(forKey: key) as? [String]) ?? []
         let set = Set(stored)
@@ -65,18 +70,36 @@ final class ShieldedWithdrawalStore {
     func record(address: String) {
         guard !address.isEmpty else { return }
         lock.lock(); defer { lock.unlock() }
-        var set = loaded()
+        let key = resolvedKey()
+        var set = loaded(forKey: key)
         guard !set.contains(address) else { return }
         set.insert(address)
         cache = set
-        defaults.set(Array(set), forKey: resolvedKey())
+        defaults.set(Array(set), forKey: key)
     }
 
     /// Whether `address` is a recorded shielded-withdrawal destination.
     /// Thread-safe; cheap (in-memory `Set` lookup).
-    func contains(_ address: String) -> Bool {
+    func contains(_ address: String, walletIdHex: String? = nil) -> Bool {
         lock.lock(); defer { lock.unlock() }
-        return loaded().contains(address)
+        let key = walletIdHex.map { "\(keyPrefix)_\($0)" } ?? resolvedKey()
+        return loaded(forKey: key).contains(address)
+    }
+
+    /// Reconcile one wallet's observed withdrawal outcomes. A failed attempt
+    /// retracts an earlier tag only when no non-failed attempt in the same
+    /// snapshot shares its address. Tags for other addresses absent from the
+    /// snapshot remain intact. The explicit wallet key
+    /// prevents a background history refresh from affecting a newly selected wallet.
+    func reconcile(walletIdHex: String, failed: Set<String>, nonFailed: Set<String>) {
+        guard !walletIdHex.isEmpty else { return }
+        lock.lock(); defer { lock.unlock() }
+        let key = "\(keyPrefix)_\(walletIdHex)"
+        let previous = loaded(forKey: key)
+        let updated = previous.subtracting(failed.subtracting(nonFailed)).union(nonFailed)
+        guard updated != previous else { return }
+        cache = updated
+        defaults.set(Array(updated), forKey: key)
     }
 
     /// Clear a SINGLE wallet's recorded addresses (per-wallet Remove flow —

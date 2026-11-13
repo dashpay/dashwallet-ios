@@ -144,9 +144,12 @@ final class PreparedStandardSend: NSObject {
                 txidWire: Data(txHash.reversed()), address: address, amount: amount, fee: fee)
 
         case .rejected(_, let reason):
+            // Nothing reached the network, so the money is provably still
+            // here — say that, because "wasn't sent" alone reads as a loss.
             let error = WalletSendService.makeError(
                 code: .broadcastRejected,
-                description: "The transaction wasn't sent. You can try again. \(reason)"
+                description: WalletSendService.BroadcastOutcomeCopy.rejected,
+                diagnostic: reason
             )
             claimLock.lock()
             broadcastState = .ready
@@ -154,9 +157,24 @@ final class PreparedStandardSend: NSObject {
             throw error
 
         case .unknown(_, let reason):
+            // The old copy told the user to "wait for wallet synchronization"
+            // without saying that the wallet is the thing doing the waiting —
+            // and it appended the SDK's internal reason, so the dialog ended
+            // in "SPV broadcast saw no acceptance signal before dash-spv's
+            // acceptance timeout". Neither was actionable, and neither was
+            // localized, so a customer on a non-English device got a wall of
+            // English (support ticket 32189).
+            //
+            // What the copy promises is what the shipped SDK does: dash-spv
+            // keeps retrying while the wallet is open. It deliberately does
+            // NOT promise that retries survive closing the app —
+            // launch-time re-registration is dashpay/platform#4659 and is
+            // not in the SDK this builds against. See
+            // `BroadcastOutcomeCopy.unknown` for when that qualifier can go.
             let error = WalletSendService.makeError(
                 code: .broadcastUnknown,
-                description: "We couldn't confirm whether the transaction was accepted. Don't send it again; wait for wallet synchronization. \(reason)"
+                description: WalletSendService.BroadcastOutcomeCopy.unknown,
+                diagnostic: reason
             )
             claimLock.lock()
             broadcastState = .unknown(error)
@@ -167,8 +185,8 @@ final class PreparedStandardSend: NSObject {
 }
 
 /// In-memory record of just-broadcast sends, keyed by wire-order txid.
-/// Written at every broadcast-success point (standard, selected-input and
-/// BIP70 sends); read by the send-success screen (`TxDetailModel`) as the
+/// Written at every broadcast-success point (standard, selected-input, BIP70
+/// and DashPay contact sends); read by the send-success screen (`TxDetailModel`) as the
 /// fallback while the Rust persister hasn't written the `PersistentTransaction`
 /// row yet. Display-only data — never persisted, never fed back into the SDK.
 final class RecentSendsRegistry {
@@ -179,6 +197,9 @@ final class RecentSendsRegistry {
         /// Broadcast time — the honest "date" for a success screen shown
         /// before the row exists.
         let date: Date
+        /// The DashPay contact a contact payment went to, for the success
+        /// screen's contact row until the payment projection lists it.
+        let contactPayment: DashPayPaymentTxLookup.PaymentInfo?
     }
 
     private let lock = NSLock()
@@ -190,7 +211,13 @@ final class RecentSendsRegistry {
 
     /// - Parameter txidWire: wire-order txid (`Transaction.txHashData` byte
     ///   order). Broadcast callers hold display-order hashes — reverse first.
-    func record(txidWire: Data, address: String?, amount: UInt64, fee: UInt64) {
+    func record(
+        txidWire: Data,
+        address: String?,
+        amount: UInt64,
+        fee: UInt64,
+        contactPayment: DashPayPaymentTxLookup.PaymentInfo? = nil
+    ) {
         lock.lock()
         defer { lock.unlock() }
         if entries[txidWire] == nil {
@@ -199,7 +226,8 @@ final class RecentSendsRegistry {
                 entries.removeValue(forKey: insertionOrder.removeFirst())
             }
         }
-        entries[txidWire] = Entry(address: address, amount: amount, fee: fee, date: Date())
+        entries[txidWire] = Entry(
+            address: address, amount: amount, fee: fee, date: Date(), contactPayment: contactPayment)
     }
 
     func entry(forTxidWire txid: Data) -> Entry? {
@@ -209,6 +237,33 @@ final class RecentSendsRegistry {
     }
 }
 
+#if DASHPAY
+/// Contacts whose last payment came back with an unknown broadcast outcome.
+///
+/// The transaction may already be on the network with only the response lost,
+/// so a second payment to the same contact could be a duplicate that no later
+/// correction undoes. Held for the life of the process rather than a screen: a
+/// flag on the amount step was cleared by backing out and reopening the same
+/// contact. Never persisted — by the next launch a sync has had the chance to
+/// show whether the first payment landed.
+final class UnknownContactPaymentOutcomes {
+    private let lock = NSLock()
+    private var contactIdentityIds: Set<Data> = []
+
+    func record(contactIdentityId: Data) {
+        lock.lock()
+        defer { lock.unlock() }
+        contactIdentityIds.insert(contactIdentityId)
+    }
+
+    func contains(contactIdentityId: Data) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return contactIdentityIds.contains(contactIdentityId)
+    }
+}
+#endif
+
 @objc(DWWalletSendService)
 final class WalletSendService: NSObject {
     @objc(sharedService) static let shared = WalletSendService()
@@ -217,8 +272,20 @@ final class WalletSendService: NSObject {
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.wallet-send-service")
 
+    /// `userInfo` key carrying the SDK's own explanation of a broadcast
+    /// outcome.
+    ///
+    /// Deliberately not `NSLocalizedDescriptionKey`: it is engineer-facing
+    /// text and must never reach a dialog. Internal rather than file-private
+    /// because the point of keeping it is that logging, error inspection and
+    /// tests in other files can read it back.
+    static let diagnosticKey = "org.dashfoundation.dash.send.diagnostic"
+
     /// See `RecentSendsRegistry` — the send-success screen's fallback source.
     let recentSends = RecentSendsRegistry()
+    #if DASHPAY
+    let unknownContactPaymentOutcomes = UnknownContactPaymentOutcomes()
+    #endif
 
     private let sendAuthorizer = SendAuthorizer()
 
@@ -228,6 +295,8 @@ final class WalletSendService: NSObject {
 
     /// A normal foreground catch-up must not delay a payment. Only the first
     /// historical sync after restoring a wallet blocks new Core spends.
+    /// `isResyncingWallet` is the gate as the current network sees it
+    /// (`DWGlobalOptions.isResyncingCurrentNetworkWallet`).
     static func isBlockedByInitialRestoreSync(
         isResyncingWallet: Bool,
         isChainSynced: Bool
@@ -239,7 +308,7 @@ final class WalletSendService: NSObject {
     /// authentication and before inputs are selected or reserved.
     private static func ensureInitialRestoreSyncCompleted() throws {
         guard !isBlockedByInitialRestoreSync(
-            isResyncingWallet: DWGlobalOptions.sharedInstance().isResyncingWallet,
+            isResyncingWallet: DWGlobalOptions.sharedInstance().isResyncingCurrentNetworkWallet,
             isChainSynced: SyncingActivityMonitor.shared.state == .syncDone
         ) else {
             throw Self.makeError(
@@ -281,48 +350,10 @@ final class WalletSendService: NSObject {
     func send(
         address: String,
         amount: UInt64,
-        inputSelector: SingleInputAddressSelector? = nil,
-        adjustAmountDownwards: Bool = false,
         sessionAuthSufficient: Bool = false
     ) async throws -> Data {
         try Self.ensureInitialRestoreSyncCompleted()
-        // Also covers the selected-input path below, whose `buildAndSignFromAddress`
-        // broadcasts internally and never reaches `PreparedStandardSend.broadcast()`.
         try Self.ensureOnline()
-        if let inputSelector {
-            Self.logger.info("💸 TXSEND :: routing to selected-input (SwiftDashSDK) path")
-            try await sendAuthorizer.authorizeSend(spendAmount: amount, sessionAuthSufficient: sessionAuthSufficient)
-            do {
-                let (_, fee, txHash) = try await SwiftDashSDKTransactionSender.buildAndSignFromAddress(
-                    fromAddress: inputSelector.address,
-                    to: address,
-                    amount: amount,
-                    adjustAmountDownwards: adjustAmountDownwards
-                )
-                // buildAndSignFromAddress broadcasts internally; txHash is
-                // display order — reverse to the wire-order registry key.
-                let txidWire = Data(txHash.reversed())
-                recentSends.record(
-                    txidWire: txidWire, address: address, amount: amount, fee: fee)
-                return txidWire
-            } catch SwiftDashSDKTransactionSender.SendError.insufficientSelectedFunds(let selected, let amount, let fee) {
-                throw Self.makeError(
-                    code: .insufficientSelectedFunds,
-                    description: "Not enough funds. Selected: \(selected), Amount: \(amount), Fee: \(fee)"
-                )
-            } catch SwiftDashSDKTransactionSender.SendError.transactionRejected(_, let reason) {
-                throw Self.makeError(
-                    code: .broadcastRejected,
-                    description: "The transaction wasn't sent. You can try again. \(reason)"
-                )
-            } catch SwiftDashSDKTransactionSender.SendError.transactionStatusUnknown(_, let reason) {
-                throw Self.makeError(
-                    code: .broadcastUnknown,
-                    description: "We couldn't confirm whether the transaction was accepted. Don't send it again; wait for wallet synchronization. \(reason)"
-                )
-            }
-        }
-
         let preparedSend = try await prepareStandardSendForConfirmation(
             address: address, amount: amount, sessionAuthSufficient: sessionAuthSufficient)
         try preparedSend.broadcast()
@@ -357,11 +388,34 @@ final class WalletSendService: NSObject {
     /// CoinJoin-balance re-tally so both surfaces self-clear without waiting
     /// for the next SPV balance event.
     ///
+    /// A heavy mixer's account is swept across several independent chunk
+    /// transactions, so the sweep can end up partly done. In that case the
+    /// accepted chunks are recorded and the balance re-tallied exactly as on a
+    /// full sweep, and only then does this throw the error
+    /// `coinJoinSweepFailure` picks (`.coinJoinSweepPartial` or
+    /// `.broadcastUnknown`) — the caller must not show "moved" over coins that
+    /// are still in the account or not yet confirmed.
+    ///
     /// - Returns: the CoinJoin balance (duffs) that was swept, for the success
     ///   message; the on-chain amount delivered is this minus the network fee.
+    /// - Parameter binding: the wallet and network to sweep; the sweep refuses
+    ///   to run unless it is still the active one. Nil pins the wallet active
+    ///   on entry.
     @discardableResult
-    func sweepCoinJoin() async throws -> UInt64 {
-        let amount = await MainActor.run { SwiftDashSDKWalletState.shared.coinJoinBalanceDuffs }
+    func sweepCoinJoin(
+        expecting binding: SwiftDashSDKTransactionSender.CoinJoinWalletBinding? = nil
+    ) async throws -> UInt64 {
+        // The pin and the amount are read in one hop. The amount is the
+        // published CoinJoin balance, which can lag a wallet switch; the
+        // sweep itself spends only the pinned wallet's UTXOs.
+        let (pinned, amount) = try await MainActor.run {
+            () throws -> (SwiftDashSDKTransactionSender.CoinJoinWalletBinding, UInt64) in
+            guard let current = SwiftDashSDKTransactionSender.CoinJoinWalletBinding.current(),
+                  binding == nil || binding == current else {
+                throw SwiftDashSDKTransactionSender.SendError.walletNotReady("the active wallet changed")
+            }
+            return (current, SwiftDashSDKWalletState.shared.coinJoinBalanceDuffs)
+        }
         guard amount > 0 else {
             throw Self.makeError(
                 code: .coinJoinSweepUnavailable,
@@ -372,15 +426,36 @@ final class WalletSendService: NSObject {
         Self.logger.info("💸 TXSEND :: preparing CoinJoin sweep — balance \(amount, privacy: .public) duffs (\(Double(amount) / 1e8, privacy: .public) DASH)")
         try await sendAuthorizer.authorizeSend(spendAmount: amount)
 
-        guard let destination = SwiftDashSDKReceiveAddressReader.receiveAddress() else {
+        guard let resolved = SwiftDashSDKReceiveAddressReader.receiveDestination() else {
             throw Self.makeError(
                 code: .coinJoinSweepUnavailable,
                 description: "Could not resolve a destination address for the CoinJoin sweep"
             )
         }
+        // The address must be the pinned wallet's own; the sweep itself
+        // re-checks that wallet is still the active one.
+        if resolved.walletId != pinned.walletId {
+            throw SwiftDashSDKTransactionSender.SendError.walletNotReady("the active wallet changed")
+        }
+        let destination = resolved.address
 
         Self.logger.info("💸 TXSEND :: CoinJoin sweep destination resolved \(destination, privacy: .public)")
-        let txids = try SwiftDashSDKTransactionSender.sweepCoinJoin(to: destination)
+        let outcome: SwiftDashSDKTransactionSender.CoinJoinSweepOutcome
+        do {
+            outcome = try SwiftDashSDKTransactionSender.sweepCoinJoin(to: destination, expecting: pinned)
+        } catch let error as SwiftDashSDKTransactionSender.CoinJoinSweepUnknownError {
+            // These may still land: tag them like accepted ones.
+            Self.recordSweepTxids(error.unknownTxids)
+            // The wallet applied them locally; re-tally so the balance shows it.
+            await MainActor.run { SwiftDashSDKWalletState.shared.refreshCoinJoinBalance() }
+            let counts = "\(error.failedChunkCount) failed (\(error.unknownTxids.count) unknown)"
+            Self.logger.error("💸 TXSEND :: CoinJoin sweep incomplete — nothing accepted, \(counts, privacy: .public)")
+            throw Self.coinJoinSweepFailure(
+                acceptedCount: 0, failedChunkCount: error.failedChunkCount,
+                unknownChunkCount: error.unknownTxids.count,
+                reason: Self.sweepChunkFailureReason(error.otherFailure ?? error.underlying)) ?? error
+        }
+        let txids = outcome.txids
         guard !txids.isEmpty else {
             // A reported-success sweep that produced no transaction is treated
             // as a failure, so the caller surfaces an error (the sweep alert)
@@ -395,14 +470,9 @@ final class WalletSendService: NSObject {
         // single "CoinJoin Withdrawals" cell. A large UTXO set is swept across
         // multiple transactions (chunks); the sender returns wire-order txids
         // (matching PersistentTransaction.txid / Transaction.txHashData), so
-        // record each directly.
-        for txid in txids {
-            CoinJoinWithdrawalStore.shared.record(txid: txid)
-        }
-        let recordedHexes: [String] = txids.map { (txid: Data) in
-            txid.reversed().map { String(format: "%02x", $0) }.joined()
-        }
-        Self.logger.info("💸 TXSEND :: recorded \(txids.count, privacy: .public) sweep txid(s) in CoinJoinWithdrawalStore: \(recordedHexes.joined(separator: ","), privacy: .public)")
+        // record each directly — the unknown-outcome chunks too, which may
+        // still land.
+        Self.recordSweepTxids(txids + outcome.unknownTxids)
 
         await MainActor.run {
             SwiftDashSDKWalletState.shared.refreshCoinJoinBalance()
@@ -415,44 +485,92 @@ final class WalletSendService: NSObject {
             // completed, so it must not mark recovered here — doing so would suppress
             // a legitimate re-widen after an interrupted scan.
         }
+
+        // Everything above ran for the accepted chunks — the txids are in the
+        // withdrawal store and the balance is re-tallied — so it is safe to fail
+        // here. Reported as a failure because a success screen would say every
+        // coin moved: a rejected chunk's coins are still in the account, and an
+        // unknown chunk's are not confirmed yet.
+        if let failure = Self.coinJoinSweepFailure(
+            acceptedCount: txids.count, failedChunkCount: outcome.failedChunkCount,
+            unknownChunkCount: outcome.unknownTxids.count,
+            reason: outcome.firstFailure.map(Self.sweepChunkFailureReason)) {
+            let diagnostic = failure.userInfo[Self.diagnosticKey] as? String ?? "-"
+            Self.logger.error("💸 TXSEND :: CoinJoin sweep incomplete (code \(failure.code, privacy: .public)) — \(diagnostic, privacy: .public)")
+            throw failure
+        }
         return amount
     }
 
 #if DASHPAY
-    /// DashPay pay-to-contact (migration Row #18 phase 6). The caller
-    /// shows its confirmation UI FIRST — the user's explicit "Pay" tap
-    /// is what invokes this — then this method runs the spend-auth
-    /// gate (same `sendAuthorizer` as every other spend) and the
-    /// single-shot SDK payment: `sendDashPayPayment` derives the
-    /// contact's DIP-15 receive address Rust-side from the registered
-    /// external contact account, builds, signs, and broadcasts
-    /// atomically. There is no separate prepare/broadcast split on
-    /// this path, so it must never be called before the user
-    /// confirms. The network fee is computed SDK-side on top of
-    /// `amount`; callers cap input at `WalletBalance.maxSendable`.
-    ///
-    /// - Returns: the 32-byte transaction id plus the exact network
-    ///   fee (duffs) of the broadcast transaction, from the builder.
-    @discardableResult
-    func sendToContact(
+    /// A DashPay contact payment that is signed and not broadcast: its inputs
+    /// are reserved and the contact's next DIP-15 address is claimed, Rust-side,
+    /// until `broadcastContactPayment` or `abandonContactPayment` takes it.
+    /// Releasing it without either abandons it too.
+    final class PreparedContactPayment {
+        let contactIdentityId: Data
+        let amount: UInt64
+        /// The exact network fee of the signed transaction.
+        let fee: UInt64
+        /// Amount plus fee: what leaves the wallet.
+        let total: UInt64
+        fileprivate let wallet: ManagedPlatformWallet
+        /// The DashPay identity that signed it.
+        fileprivate let senderIdentityId: Data
+        /// The network selected when it was signed.
+        fileprivate let network: WalletEnvironment.NetworkKind
+        fileprivate let payment: PreparedDashPayPayment
+
+        fileprivate init(
+            contactIdentityId: Data,
+            wallet: ManagedPlatformWallet,
+            senderIdentityId: Data,
+            network: WalletEnvironment.NetworkKind,
+            payment: PreparedDashPayPayment
+        ) {
+            self.contactIdentityId = contactIdentityId
+            self.amount = payment.amountDuffs
+            self.fee = payment.feeDuffs
+            self.total = payment.totalDuffs
+            self.wallet = wallet
+            self.senderIdentityId = senderIdentityId
+            self.network = network
+            self.payment = payment
+        }
+    }
+
+    /// DashPay pay-to-contact, first half: the spend-auth gate (same
+    /// `sendAuthorizer` as every other spend), then the SDK signs the payment
+    /// without broadcasting it — the contact's DIP-15 address is derived
+    /// Rust-side and never crosses the FFI. The returned payment carries the
+    /// exact fee for the confirmation; nothing has left the wallet yet.
+    func prepareContactPayment(
         contactIdentityId: Data,
         amount: UInt64,
         memo: String? = nil
-    ) async throws -> (txid: Data, feeDuffs: UInt64) {
-        Self.logger.info("💸 TXSEND :: pay-to-contact starting — \(amount, privacy: .public) duffs")
+    ) async throws -> PreparedContactPayment {
+        Self.logger.info("💸 TXSEND :: pay-to-contact preparing — \(amount, privacy: .public) duffs")
+        // Refused before the PIN prompt: see `UnknownContactPaymentOutcomes`.
+        try refuseContactWithUnknownOutcome(contactIdentityId)
         try Self.ensureInitialRestoreSyncCompleted()
+        try Self.ensureOnline()
         // spendAmount engages the biometric spending limit (C7.4) —
         // without it the gate is non-monetary and Face ID alone would
         // authorize a contact payment of any size.
         try await sendAuthorizer.authorizeSend(spendAmount: amount)
 
-        let context: (wallet: ManagedPlatformWallet, ourId: Data)? = await MainActor.run {
-            guard let wallet = SwiftDashSDKHost.shared.wallet,
-                  let ourId = DWCurrentUserIdentityInfo.shared.identityId else {
-                return nil
+        let context: (wallet: ManagedPlatformWallet, ourId: Data, network: WalletEnvironment.NetworkKind)? =
+            await MainActor.run {
+                let network = WalletEnvironment.networkKind
+                // Mid-switch the host still publishes the old wallet: signing
+                // with it would only be refused at Send.
+                guard let wallet = SwiftDashSDKHost.shared.wallet,
+                      WalletEnvironment.activeWalletId(for: network) == wallet.walletId,
+                      let ourId = DWCurrentUserIdentityInfo.shared.identityId else {
+                    return nil
+                }
+                return (wallet, ourId, network)
             }
-            return (wallet, ourId)
-        }
         guard let context else {
             throw Self.makeError(
                 code: .dashPayPaymentUnavailable,
@@ -460,9 +578,9 @@ final class WalletSendService: NSObject {
             )
         }
 
-        let (txid, feeDuffs): (Data, UInt64)
+        let payment: PreparedDashPayPayment
         do {
-            (txid, feeDuffs) = try await context.wallet.sendDashPayPayment(
+            payment = try await context.wallet.prepareDashPayPayment(
                 fromIdentityId: context.ourId,
                 toContactIdentityId: contactIdentityId,
                 amountDuffs: amount,
@@ -470,8 +588,124 @@ final class WalletSendService: NSObject {
         } catch {
             throw Self.contactPaymentError(from: error)
         }
+        Self.logger.info("💸 TXSEND :: pay-to-contact prepared, fee \(payment.feeDuffs, privacy: .public) duffs")
+        return PreparedContactPayment(
+            contactIdentityId: contactIdentityId,
+            wallet: context.wallet,
+            senderIdentityId: context.ourId,
+            network: context.network,
+            payment: payment)
+    }
+
+    /// DashPay pay-to-contact, second half: broadcasts the payment the user
+    /// confirmed. No PIN here — `prepareContactPayment` asked for it.
+    ///
+    /// - Parameter contact: the contact as the review showed it, which names
+    ///   the payment on the success screen.
+    /// - Returns: the 32-byte transaction id, wire order.
+    @discardableResult
+    func broadcastContactPayment(_ prepared: PreparedContactPayment, contact: ContactItem?) async throws -> Data {
+        let contactIdentityId = prepared.contactIdentityId
+        // While this one waited on the confirmation, another payment to this
+        // contact may have ended unknown, the device may have gone offline,
+        // or another wallet or DashPay identity may have become active.
+        do {
+            try refuseContactWithUnknownOutcome(contactIdentityId)
+            try Self.ensureOnline()
+            try await refuseIfSenderChanged(prepared)
+        } catch {
+            await abandonContactPayment(prepared)
+            throw error
+        }
+
+        let (txid, feeDuffs): (Data, UInt64)
+        do {
+            (txid, feeDuffs) = try await prepared.wallet.sendPreparedDashPayPayment(prepared.payment)
+        } catch {
+            let mapped = Self.contactPaymentError(from: error)
+            if Self.isBroadcastUnknownError(mapped as NSError) {
+                unknownContactPaymentOutcomes.record(contactIdentityId: contactIdentityId)
+            }
+            throw mapped
+        }
         Self.logger.info("💸 TXSEND :: pay-to-contact broadcast, txid \(txid.map { String(format: "%02x", $0) }.joined(), privacy: .public), fee \(feeDuffs, privacy: .public) duffs")
-        return (txid: txid, feeDuffs: feeDuffs)
+        // The send-success screen resolves the amount from this registry while
+        // the Rust persister hasn't written the transaction row yet — same as
+        // every other broadcast-success point. `txid` is already wire order
+        // (Rust hands back `to_raw_hash().to_byte_array()`), which is the
+        // registry's key convention. No address: the DIP-15 receive address is
+        // derived inside Rust and never crosses the FFI boundary.
+        recentSends.record(
+            txidWire: txid, address: nil, amount: prepared.amount, fee: feeDuffs,
+            contactPayment: contact.flatMap {
+                $0.contactIdentityId == prepared.contactIdentityId ? Self.sentContactPayment(prepared, to: $0) : nil
+            })
+        return txid
+    }
+
+    /// The contact-payment record the projection writes for a sent payment,
+    /// built from the contact as the review showed it.
+    private static func sentContactPayment(
+        _ prepared: PreparedContactPayment,
+        to contact: ContactItem
+    ) -> DashPayPaymentTxLookup.PaymentInfo {
+        func nonEmpty(_ value: String?) -> String? { value?.isEmpty == false ? value : nil }
+        return DashPayPaymentTxLookup.PaymentInfo(
+            amountDuffs: prepared.amount,
+            isOutgoing: true,
+            counterpartyIdentityId: prepared.contactIdentityId,
+            counterpartyName: nonEmpty(contact.profileDisplayName),
+            counterpartyAlias: nonEmpty(contact.alias),
+            counterpartyAvatarURL: nonEmpty(contact.avatarURL),
+            counterpartyUsername: nonEmpty(contact.username?.withoutDashSuffix))
+    }
+
+    /// Drop a prepared contact payment the user did not send: Rust releases
+    /// its inputs and returns the address to the pool. A failure is only
+    /// logged — the reservation then lapses on its own.
+    func abandonContactPayment(_ prepared: PreparedContactPayment) async {
+        do {
+            try await prepared.wallet.abandonPreparedDashPayPayment(prepared.payment)
+        } catch {
+            Self.logger.error("💸 TXSEND :: pay-to-contact abandon failed: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    /// A prepared payment is sent only from the wallet and identity that are
+    /// still active: the user may have switched while the review was open.
+    ///
+    /// The selected network and the active wallet id move first on a switch,
+    /// while the host still publishes the old wallet until its teardown ends —
+    /// so the network, the wallet id and the wallet handle are all compared;
+    /// a wallet id alone can repeat across networks. The identity is read
+    /// fresh rather than from the cached snapshot, and one that cannot be
+    /// read refuses too: the user prepares again.
+    private func refuseIfSenderChanged(_ prepared: PreparedContactPayment) async throws {
+        let mismatch: String? = await MainActor.run {
+            let network = WalletEnvironment.networkKind
+            guard network == prepared.network else { return "network changed" }
+            guard SwiftDashSDKHost.shared.wallet === prepared.wallet,
+                  WalletEnvironment.activeWalletId(for: network) == prepared.wallet.walletId
+            else { return "wallet changed" }
+            guard let identityId = DWCurrentUserIdentityInfo.shared.refreshedSnapshot().identityId else {
+                return "identity unreadable"
+            }
+            guard identityId == prepared.senderIdentityId else { return "identity changed" }
+            return nil
+        }
+        if let mismatch {
+            Self.logger.info("💸 TXSEND :: pay-to-contact refused — sender check failed: \(mismatch, privacy: .public)")
+            throw Self.makeError(code: .broadcastRejected, description: BroadcastOutcomeCopy.contactPaymentChanged)
+        }
+    }
+
+    private func refuseContactWithUnknownOutcome(_ contactIdentityId: Data) throws {
+        if unknownContactPaymentOutcomes.contains(contactIdentityId: contactIdentityId) {
+            throw Self.makeError(
+                code: .broadcastUnknown,
+                description: "A previous payment to this contact could not be confirmed. Don't send it again; wait for wallet synchronization."
+            )
+        }
     }
 #endif
 
@@ -525,11 +759,116 @@ final class WalletSendService: NSObject {
         }
     }
 
+    /// Tag sweep txids (wire order) so the home screen groups them into the
+    /// single "CoinJoin Withdrawals" cell — the unknown-outcome chunks too,
+    /// which may still land.
+    private static func recordSweepTxids(_ txids: [Data]) {
+        for txid in txids {
+            CoinJoinWithdrawalStore.shared.record(txid: txid)
+        }
+        let hexes = txids.map { Data($0.reversed()).map { String(format: "%02x", $0) }.joined() }
+        logger.info("💸 TXSEND :: recorded \(txids.count, privacy: .public) sweep txid(s) in CoinJoinWithdrawalStore: \(hexes.joined(separator: ","), privacy: .public)")
+    }
+
+    /// An error's type and code for the exported log. Not its description:
+    /// send and builder errors quote txids, outpoints and addresses, which
+    /// lead to the wallet's own addresses (the sender's os.Logger keeps the
+    /// detail, outside the export).
+    static func logSummary(of error: Error) -> String {
+        let nsError = error as NSError
+        return "\(type(of: error)) \(nsError.domain) #\(nsError.code)"
+    }
+
+    /// A failed sweep for the exported log: `logSummary(of:)` plus what it
+    /// says without a txid — the diagnostic `coinJoinSweepFailure` attached,
+    /// a send error's reason, or this service's own description.
+    static func coinJoinSweepLogLine(for error: Error) -> String {
+        let nsError = error as NSError
+        let detail: String?
+        if let diagnostic = nsError.userInfo[diagnosticKey] as? String {
+            detail = diagnostic
+        } else if error is SwiftDashSDKTransactionSender.SendError {
+            detail = sweepChunkFailureReason(error)
+        } else if nsError.domain == errorDomain {
+            detail = nsError.localizedDescription
+        } else {
+            detail = nil
+        }
+        return logSummary(of: error) + (detail.map { " (\($0))" } ?? "")
+    }
+
+    /// A chunk's broadcast error for the diagnostic: the SDK's reason for a
+    /// rejected or unknown outcome, without the txid it also carries, or for
+    /// a wallet that is not ready; anything else (a builder error may quote
+    /// an outpoint) as `logSummary(of:)`.
+    static func sweepChunkFailureReason(_ error: Error) -> String {
+        switch error {
+        case SwiftDashSDKTransactionSender.SendError.transactionStatusUnknown(_, let reason):
+            return "unknown: \(reason)"
+        case SwiftDashSDKTransactionSender.SendError.transactionRejected(_, let reason):
+            return "rejected: \(reason)"
+        case SwiftDashSDKTransactionSender.SendError.walletNotReady(let reason):
+            return "wallet not ready: \(reason)"
+        default:
+            return logSummary(of: error)
+        }
+    }
+
+    /// The error a sweep with failed chunks surfaces; nil when none failed,
+    /// or when none was accepted or unknown (the sender throws that case's
+    /// chunk error itself and never gets here).
+    ///
+    /// - Every failed chunk ended unknown: `.broadcastUnknown`, not offered
+    ///   again. The wallet applies a transaction before it waits for peers, so
+    ///   those coins already read as spent and a re-run has nothing to sweep.
+    /// - Otherwise, when a chunk was accepted or may still land: partial. The
+    ///   other failed chunks' coins are still in the CoinJoin account, and a
+    ///   re-run sweeps only them. An unknown chunk counts as moved here, as
+    ///   the re-tallied balance and the withdrawal history already show it.
+    ///
+    /// The diagnostic carries the chunk counts and `reason` (one failed
+    /// chunk's error).
+    static func coinJoinSweepFailure(
+        acceptedCount: Int, failedChunkCount: Int, unknownChunkCount: Int, reason: String? = nil
+    ) -> NSError? {
+        guard failedChunkCount > 0 else { return nil }
+        let diagnostic = "CoinJoin sweep: \(acceptedCount) accepted, \(unknownChunkCount) unknown, "
+            + "\(failedChunkCount - unknownChunkCount) failed otherwise" + (reason.map { "; \($0)" } ?? "")
+        if unknownChunkCount == failedChunkCount {
+            return makeError(
+                code: .broadcastUnknown,
+                description: BroadcastOutcomeCopy.coinJoinSweepUnknown,
+                diagnostic: diagnostic)
+        }
+        guard acceptedCount > 0 || unknownChunkCount > 0 else { return nil }
+        return makeError(code: .coinJoinSweepPartial, description: "CoinJoin sweep incomplete", diagnostic: diagnostic)
+    }
+
+    /// Whether a failed CoinJoin sweep may be offered again right away: not
+    /// when its transactions may all still land.
+    static func isCoinJoinSweepRetryable(_ error: Error) -> Bool {
+        !isBroadcastUnknownError(error as NSError)
+    }
+
     /// User-facing message for a CoinJoin sweep failure, or nil if the user
     /// simply cancelled authentication (callers stay silent). Centralizes the
     /// cancel predicate + copy so every sweep entry point behaves identically.
+    ///
+    /// A partial sweep gets its own copy: "try again" is still the right
+    /// action, but telling the user nothing moved would contradict the
+    /// transactions already in their history. An unknown outcome keeps its
+    /// own "don't send it again" copy.
     static func coinJoinSweepUserMessage(for error: Error) -> String? {
-        guard !isAuthenticationCancelledError(error as NSError) else { return nil }
+        let nsError = error as NSError
+        guard !isAuthenticationCancelledError(nsError) else { return nil }
+        if isBroadcastUnknownError(nsError) {
+            return nsError.localizedDescription
+        }
+        if nsError.domain == errorDomain, nsError.code == ErrorCode.coinJoinSweepPartial.rawValue {
+            return NSLocalizedString(
+                "Some of your CoinJoin funds were moved. Please try again to move the rest.",
+                comment: "CoinJoin")
+        }
         return NSLocalizedString(
             "Couldn't move your CoinJoin funds. Please try again.", comment: "CoinJoin")
     }
@@ -565,13 +904,18 @@ final class WalletSendService: NSObject {
     }
 }
 
-/// Timeout-guarded wrapper over `DSAuthenticationManager.authenticate(...)`. The bare
-/// completion-based API never resumes if the PIN view controller fails to present silently
-/// (no key window / app backgrounded / a sheet already presenting — DashSync's internal
-/// `NSParameterAssert` is compiled out in Release), which would hang an awaiting `async` call
-/// forever. This guarantees the continuation resumes exactly once: either from the callback or
-/// from a watchdog. The 120s timeout is generous enough never to interrupt real PIN/biometric
-/// entry — it only breaks an otherwise-infinite hang.
+/// The prompt `AuthenticationGate` drives and cancels: the session flag and
+/// the presenting entry point. Production is `AuthenticationService.shared`.
+@MainActor
+protocol SendAuthenticationPrompting: AnyObject {
+    var didAuthenticate: Bool { get }
+    func authenticate(usingBiometrics: Bool, spendAmount: UInt64?) async -> AuthenticationService.AuthOutcome
+}
+
+extension AuthenticationService: SendAuthenticationPrompting {}
+
+/// A timeout cancels this request's PIN/biometric prompt and waits for its
+/// dismissal before returning, so callers can safely restore their overlay.
 enum AuthenticationGate {
     enum Outcome { case ok, cancelled, failed, timedOut }
 
@@ -580,11 +924,13 @@ enum AuthenticationGate {
     /// protocol sends: an already-authenticated session (`didAuthenticate`,
     /// set by the lock-screen PIN/biometric unlock) passes without presenting
     /// any UI. Interactive gates keep the default `false` and prompt per send.
+    @MainActor
     static func authenticate(biometric: Bool,
                              sessionAuthSufficient: Bool = false,
                              spendAmount: UInt64? = nil,
-                             timeout: TimeInterval = 120) async -> Outcome {
-        if sessionAuthSufficient, AuthenticationService.shared.didAuthenticate {
+                             timeout: TimeInterval = 120,
+                             prompt: any SendAuthenticationPrompting = AuthenticationService.shared) async -> Outcome {
+        if sessionAuthSufficient, prompt.didAuthenticate {
             WalletSendService.logger.info("💸 TXSEND :: session-authenticated — skipping auth prompt")
             return .ok
         }
@@ -596,14 +942,14 @@ enum AuthenticationGate {
                 continuation.resume(returning: outcome)
             }
 
-            // Watchdog: resume after the timeout if the modal never resolves
-            // (no presentation anchor is handled inside the presenter, but a
-            // wedged UI still can't be ruled out). Idempotent; serial on main.
-            DispatchQueue.main.asyncAfter(deadline: .now() + timeout) { safeResume(.timedOut) }
-
-            Task { @MainActor in
-                let outcome = await AuthenticationService.shared.authenticate(
+            var didTimeOut = false
+            let authentication = Task { @MainActor in
+                let outcome = await prompt.authenticate(
                     usingBiometrics: biometric, spendAmount: spendAmount)
+                if didTimeOut {
+                    safeResume(.timedOut)
+                    return
+                }
                 switch outcome {
                 case .authenticated:
                     safeResume(.ok)
@@ -612,6 +958,11 @@ enum AuthenticationGate {
                 case .failed:
                     safeResume(.failed)
                 }
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + timeout) {
+                guard !didResume else { return }
+                didTimeOut = true
+                authentication.cancel()
             }
         }
     }
@@ -653,7 +1004,6 @@ private extension WalletSendService {
     enum ErrorCode: Int {
         case authenticationCancelled = 1
         case authenticationFailed = 2
-        case insufficientSelectedFunds = 3
         case coinJoinSweepUnavailable = 4
         case alreadyBroadcast = 5
         case dashPayPaymentUnavailable = 6
@@ -662,12 +1012,20 @@ private extension WalletSendService {
         case broadcastRejected = 9
         case broadcastUnknown = 10
         case invalidSwapMemo = 11
+        case coinJoinSweepPartial = 12
     }
 
     static let errorDomain = "org.dashfoundation.dash.wallet-send-service"
 
-    /// Translate the SDK's internal missing-external-account diagnostic into
-    /// something a user can act on.
+    /// Translate the SDK's contact-payment errors into ones the app acts on.
+    ///
+    /// A broadcast outcome the SDK could not confirm becomes this service's
+    /// `broadcastUnknown`, which `broadcastContactPayment` turns into a per-contact lock
+    /// and the amount step into a terminal state — the SDK's own error type
+    /// matched neither. A definitive rejection becomes `broadcastRejected`, and
+    /// so does a stale prepared payment — its reservation aged out on the
+    /// confirmation, or another payment to the contact took its address —
+    /// refused before the network, so nothing was sent either.
     ///
     /// A contact's DIP-15 external account is built in the background from the
     /// counterparty's contact request; until it exists the SDK fails the send
@@ -677,11 +1035,35 @@ private extension WalletSendService {
     /// as an instruction for something they cannot do.
     ///
     /// Mapped here rather than at the presentation layer so the diagnostic stops
-    /// at the boundary that owns the SDK call, and every present and future
-    /// caller of `sendToContact` gets the same treatment. Deliberately narrow —
+    /// at the boundary that owns the SDK call, and both halves of a contact
+    /// payment — prepare and broadcast — get the same treatment. Deliberately narrow —
     /// anything else is returned untouched rather than hidden behind a generic
     /// message.
     static func contactPaymentError(from error: Error) -> Error {
+        // The SDK reports the broadcast outcome in its own error type; the rest
+        // of the app — the amount step's terminal state included — recognises
+        // it only in this service's domain, the same codes a standard send gets.
+        switch error as? PlatformWalletError {
+        case .transactionBroadcastUnconfirmed(let reason):
+            return makeError(
+                code: .broadcastUnknown,
+                description: "We couldn't confirm whether the transaction was accepted. Don't send it again; wait for wallet synchronization. \(reason)"
+            )
+        case .transactionBroadcastRejected(let reason):
+            return makeError(
+                code: .broadcastRejected,
+                description: "The transaction wasn't sent. You can try again. \(reason)"
+            )
+        case .staleReservationToken:
+            // Either the reserved inputs aged out while the user confirmed (a
+            // long wait, or a catch-up after the app was in the background),
+            // or another payment to this contact took the reviewed address.
+            // Refused before the network, everything released: a fresh
+            // prepare succeeds.
+            return makeError(code: .broadcastRejected, description: BroadcastOutcomeCopy.contactPaymentChanged)
+        default:
+            break
+        }
         let description = error.localizedDescription
         guard description.contains("DashpayExternalAccount")
             || description.contains("register_external_contact_account")
@@ -695,11 +1077,118 @@ private extension WalletSendService {
                 comment: "DashPay Contacts"))
     }
 
-    static func makeError(code: ErrorCode, description: String) -> NSError {
-        NSError(
+    /// The two broadcast outcomes a user can be shown, in one place.
+    ///
+    /// Every send route ends in one of these, and there is more than one
+    /// route, so the strings live here rather than in each route: built
+    /// independently, they drift apart, and one route ends up showing
+    /// unlocalized English with the SDK's internal reason appended.
+    enum BroadcastOutcomeCopy {
+        /// Nothing reached the network, so the money is provably still here —
+        /// say that, because "wasn't sent" alone reads as a loss.
+        static var rejected: String {
+            NSLocalizedString(
+                "The transaction wasn't sent, so nothing left your wallet. You can try again.",
+                comment: "Send failed before any bytes reached the network")
+        }
+
+        /// A prepared contact payment refused before the network: it went
+        /// stale, or the wallet or identity that signed it is no longer the
+        /// active one. Everything it reserved is released.
+        static var contactPaymentChanged: String {
+            NSLocalizedString(
+                "The payment changed while you were confirming, so it wasn't sent. Nothing left your wallet. Please try again.",
+                comment: "Send to contact: the prepared payment went stale before broadcast")
+        }
+
+        /// The transaction went out and no acceptance signal came back.
+        ///
+        /// The retry this promises is the one the shipped SDK actually
+        /// performs: dash-spv keeps rebroadcasting a transaction it is
+        /// tracking, for as long as the process lives. That is also why the
+        /// copy says "while it's open" rather than making an unqualified
+        /// promise — closing the app ends the retry today, and telling the
+        /// user otherwise would be worse than the old wording, because they
+        /// would close it believing the wallet had the situation in hand.
+        ///
+        /// dashpay/platform#4659 re-registers unconfirmed sends for rebroadcast
+        /// at every launch, which makes closing the app harmless. This sentence
+        /// stays true either way; it can lose the qualifier once that ships.
+        static var unknown: String {
+            NSLocalizedString(
+                "We couldn't confirm the transaction reached the network. Don't send it again — the wallet keeps trying while it's open, and your balance will update as soon as it goes through.",
+                comment: "Send dispatched but no network acceptance signal arrived")
+        }
+
+        /// `unknown` for a CoinJoin sweep, whose chunks were not all
+        /// confirmed. Same "while it's open" qualifier, for the same reason.
+        static var coinJoinSweepUnknown: String {
+            NSLocalizedString(
+                "We couldn't confirm all of your CoinJoin funds reached the network. Don't move them again — the wallet keeps trying while it's open, and your balance will update as soon as they go through.",
+                comment: "CoinJoin sweep dispatched but no network acceptance signal arrived for some of it")
+        }
+    }
+
+    static func makeError(
+        code: ErrorCode,
+        description: String,
+        diagnostic: String? = nil
+    ) -> NSError {
+        var userInfo: [String: Any] = [NSLocalizedDescriptionKey: description]
+        if let diagnostic, !diagnostic.isEmpty {
+            userInfo[diagnosticKey] = diagnostic
+        }
+        return NSError(
             domain: errorDomain,
             code: code.rawValue,
-            userInfo: [NSLocalizedDescriptionKey: description]
+            userInfo: userInfo
         )
+    }
+}
+
+// MARK: - Initial restore sync gate
+
+/// The persisted "first historical sync after a restore" gate: the
+/// `DWGlobalOptions.resyncingWallet` flag plus the network scopes whose
+/// historical scans armed it. `scopes == nil` means every network (the
+/// phrase restore provisions the phrase on all of them); keychain recovery
+/// arms one `persistenceScope` at a time. Pure, so the arm, clear and block
+/// rules are testable without `NSUserDefaults`; `DWGlobalOptions` maps it
+/// onto its two keys.
+struct InitialRestoreSyncGate: Equatable {
+    var isArmed: Bool
+    /// Armed scopes, sorted; `nil` = every network. Ignored while disarmed.
+    var scopes: [String]?
+
+    static let disarmed = InitialRestoreSyncGate(isArmed: false, scopes: nil)
+    static let everyNetwork = InitialRestoreSyncGate(isArmed: true, scopes: nil)
+
+    /// Arm for `scope`. An every-network arm is never narrowed, and a
+    /// second network joins the first instead of replacing it: keychain
+    /// recovery runs on every network whose rows are missing, and each of
+    /// those scans has to finish before its own network may spend.
+    func arming(scope: String) -> InitialRestoreSyncGate {
+        if isArmed, scopes == nil { return self }
+        var armed = Set(isArmed ? (scopes ?? []) : [])
+        armed.insert(scope)
+        return InitialRestoreSyncGate(isArmed: true, scopes: armed.sorted())
+    }
+
+    /// `.syncDone` on `scope`: lifts an every-network arm, or that one
+    /// scope's arm, leaving the other networks' arms in place. An unknown
+    /// scope lifts nothing it cannot attribute.
+    func clearing(scope: String?) -> InitialRestoreSyncGate {
+        guard isArmed, let scopes else { return .disarmed }
+        guard let scope else { return self }
+        let remaining = scopes.filter { $0 != scope }
+        return remaining.isEmpty ? .disarmed : InitialRestoreSyncGate(isArmed: true, scopes: remaining)
+    }
+
+    /// Whether the gate blocks Core spends on `scope`. An unknown current
+    /// network is treated as blocked: unknown readiness must not spend.
+    func blocks(scope: String?) -> Bool {
+        guard isArmed else { return false }
+        guard let scopes, let scope else { return true }
+        return scopes.contains(scope)
     }
 }

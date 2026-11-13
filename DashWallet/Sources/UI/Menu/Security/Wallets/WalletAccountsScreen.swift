@@ -29,12 +29,13 @@ import DashUIKit
 import UIKit
 
 struct WalletAccountsScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
     private let walletId: Data
 
     @StateObject private var viewModel: WalletAccountsViewModel
 
-    init(vc: UINavigationController, walletId: Data, walletName: String) {
+    init(vc: UINavigationController?, walletId: Data, walletName: String) {
         self.vc = vc
         self.walletId = walletId
         _viewModel = StateObject(
@@ -87,16 +88,16 @@ struct WalletAccountsScreen: View {
         let controller = UIHostingController(
             rootView: WalletAccountDetailScreen(vc: vc, walletId: walletId, account: row))
         controller.hidesBottomBarWhenPushed = true
-        vc.pushViewController(controller, animated: true)
+        vc?.pushViewController(controller, animated: true)
     }
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 0) {
-            NavigationBar(
-                leading: { NavigationBarElement.back.button { vc.popViewController(animated: true) } },
+            DashUIKit.NavigationBar(
+                leading: { DashUIKit.NavigationBarElement.back.button { vc?.popViewController(animated: true) } },
                 central: {
                     Text(viewModel.walletName)
-                        .font(.headline)
+                        .dashFont(.subheadMedium)
                         .foregroundColor(.dash.primaryText)
                         .lineLimit(1)
                         .padding(.horizontal, 60)
@@ -262,10 +263,10 @@ private struct AccountRowView: View {
             // DIP-17 pools are flat — no external/internal split.
             HStack(spacing: 16) {
                 Label(
-                    String(format: NSLocalizedString("%d used", comment: "Wallet accounts — address pool"), row.platformAddressesUsed),
+                    String.localizedStringWithFormat(NSLocalizedString("%d used", comment: "Wallet accounts — address pool"), row.platformAddressesUsed),
                     systemImage: "checkmark.circle")
                 Label(
-                    String(format: NSLocalizedString("%d total", comment: "Wallet accounts — address pool"), row.platformAddressesTotal),
+                    String.localizedStringWithFormat(NSLocalizedString("%d total", comment: "Wallet accounts — address pool"), row.platformAddressesTotal),
                     systemImage: "tray.full")
                 Spacer()
             }
@@ -275,12 +276,12 @@ private struct AccountRowView: View {
             HStack(spacing: 16) {
                 if row.receiveAddressCount > 0 {
                     Label(
-                        String(format: NSLocalizedString("%d receive", comment: "Wallet accounts — address pool"), row.receiveAddressCount),
+                        String.localizedStringWithFormat(NSLocalizedString("%d receive", comment: "Wallet accounts — address pool"), row.receiveAddressCount),
                         systemImage: "arrow.down.circle")
                 }
                 if row.changeAddressCount > 0 {
                     Label(
-                        String(format: NSLocalizedString("%d change", comment: "Wallet accounts — address pool"), row.changeAddressCount),
+                        String.localizedStringWithFormat(NSLocalizedString("%d change", comment: "Wallet accounts — address pool"), row.changeAddressCount),
                         systemImage: "arrow.up.arrow.down.circle")
                 }
                 Spacer()

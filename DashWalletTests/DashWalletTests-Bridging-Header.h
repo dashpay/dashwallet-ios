@@ -19,5 +19,6 @@
 #define DashWalletTests_Bridging_Header_h
 
 #import "DashPay/Presentation/Profile/EditProfile/Upload/DWUploadAvatarModel.h"
+#import "DashWallet/Sources/Models/URL Handling/DWURLParser.h"
 
 #endif /* DashWalletTests_Bridging_Header_h */

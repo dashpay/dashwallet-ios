@@ -63,6 +63,9 @@ struct UsernameMarketplaceService {
 
     enum ServiceError: LocalizedError {
         case noIdentity
+        /// The wallet runtime has no network bound — it is being torn down or
+        /// switched.
+        case noNetwork
         case contestedName
         case invalidRecipient
         case invalidPrice
@@ -73,6 +76,8 @@ struct UsernameMarketplaceService {
             switch self {
             case .noIdentity:
                 return NSLocalizedString("No DashPay identity is registered", comment: "DashPay")
+            case .noNetwork:
+                return NSLocalizedString("Network is not configured", comment: "DashPay")
             case .contestedName:
                 return NSLocalizedString("Short names are decided by a network vote — use Request Username instead.", comment: "Username marketplace")
             case .invalidRecipient:
@@ -347,6 +352,12 @@ struct UsernameMarketplaceService {
     /// seller-side change (typed `.priceChanged`).
     func purchase(name: String, expectedPriceCredits: UInt64) async throws {
         let (wallet, container, buyerId) = try requireOwnContext()
+        // Captured with the wallet and the buyer, before the awaits: the
+        // runtime can be torn down or rebound while the purchase is out, and
+        // the rejection it clears belongs to the network it was made on.
+        guard let network = SwiftDashSDKHost.shared.runningNetwork else {
+            throw ServiceError.noNetwork
+        }
         try await authorize()
         _ = try await wallet.purchaseDpnsName(
             purchaserIdentityId: buyerId,
@@ -354,6 +365,9 @@ struct UsernameMarketplaceService {
             expectedPriceCredits: expectedPriceCredits,
             signer: KeychainSigner(modelContainer: container))
         Self.logger.info("🏷️ MARKET :: purchased \(name, privacy: .public) for \(expectedPriceCredits, privacy: .public) credits")
+        // Bought now: an earlier lost contest for it no longer hides it.
+        DWContestedNameStatusService.shared.clearRejected(
+            label: name, for: network, identityId: buyerId, walletId: wallet.walletId)
         // The name now points at the buyer's identity; refresh the
         // snapshots the rest of the app renders usernames from.
         DWCurrentUserIdentityInfo.shared.refreshFromSDK()
@@ -380,7 +394,7 @@ struct UsernameMarketplaceService {
     /// transition, but the on-chain effect differs: the label enters a
     /// masternode vote (~2 weeks mainnet) instead of being claimed, and
     /// the transition locks the protocol's vote-resolution fund
-    /// (`contestedFundCredits`) from the identity balance.
+    /// (`ContestedUsernameFee`) from the identity balance.
     ///
     /// Mirrors step 3.5 of `DWIdentityRegistrationCoordinator`: the
     /// submission is bookmarked in `DWContestedNameStatusService` so the
@@ -401,18 +415,22 @@ struct UsernameMarketplaceService {
         // newly-selected network (the network-explicit overload exists
         // for exactly this).
         guard let network = WalletEnvironment.network else {
-            throw ServiceError.noIdentity
+            throw ServiceError.noNetwork
         }
+        // Before the PIN prompt: a fund that cannot be stated stops here.
+        let maxContestFund = try await ContestedUsernameFee.shared
+            .contestFundCeilingCredits(scope: network.persistenceScope)
         try await authorize()
         _ = try await wallet.registerDpnsName(
             identityId: identityId,
             name: label,
-            signer: KeychainSigner(modelContainer: container))
+            signer: KeychainSigner(modelContainer: container),
+            maxContestFund: maxContestFund)
         Self.logger.info("🏷️ MARKET :: contested request submitted for \(label, privacy: .public)")
         // Bookmark BEFORE the vote-state read — Platform can legitimately
         // return nil until the contest is indexed, and the conservative
         // fallback deadline written here is what reconciliation leans on.
-        DWContestedNameStatusService.shared.recordSubmission(label: label, network: network)
+        DWContestedNameStatusService.shared.recordSubmission(label: label, network: network, identityId: identityId, walletId: wallet.walletId)
         do {
             _ = try await wallet.syncContestedDpnsNames(identityId: identityId)
         } catch {
@@ -421,7 +439,7 @@ struct UsernameMarketplaceService {
         var endTime: Date?
         if let state = try? await wallet.fetchContestVoteState(identityId: identityId, label: label) {
             endTime = state.endTime
-            DWContestedNameStatusService.shared.recordVotingEndTime(state.endTime, label: label, network: network)
+            DWContestedNameStatusService.shared.recordVotingEndTime(state.endTime, label: label, network: network, walletId: wallet.walletId)
         }
         return endTime
     }
@@ -522,13 +540,6 @@ struct UsernameMarketplaceService {
             : 45 * 60
         return voteEnd.addingTimeInterval(-closedBeforeEnd)
     }
-
-    /// The protocol's contested-document vote-resolution fund: what a
-    /// contested request locks from the identity balance on top of the
-    /// normal registration fee. Mirrors
-    /// `vote_resolution_fund_fees::v1` in rs-platform-version
-    /// (20_000_000_000 credits = 0.2 DASH).
-    static let contestedFundCredits: UInt64 = 20_000_000_000
 
     /// Buyer identity's credit balance from the persisted row — for the
     /// affordability hint; the SDK re-checks authoritatively at purchase.

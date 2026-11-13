@@ -23,12 +23,72 @@ import os
 protocol DashConnectStore {
     func load() -> [DAppConnection]
     func save(_ connections: [DAppConnection])
+    /// Names the wallet and network whose rows this store reads and writes
+    /// right now; `nil` when it has no scope.
+    var scopeKey: String? { get }
+    /// This store fixed to one wallet, and to the network scope it has now.
+    /// An operation that outlasts a wallet switch reads and writes through
+    /// it, so its rows stay with the wallet it ran for.
+    func pinned(toWalletIdHex walletIdHex: String) -> any DashConnectStore
+}
+
+/// Deletes what the DashConnect stores keep for one wallet.
+enum DashConnectStores {
+    /// Ends the keys of the grant records that internal TestFlight builds
+    /// wrote; nothing reads or writes them now.
+    private static let legacyGrantsSuffix = ".app-connect-responses.v1"
+
+    /// The suffixes a key under `UserDefaultsDashConnectStore.keyPrefix` can
+    /// carry after the wallet segment: none (the row cache), the intents, the
+    /// legacy grants.
+    private static let scopedSuffixes = [
+        "",
+        UserDefaultsAppConnectIntentStore.keySuffix,
+        legacyGrantsSuffix,
+    ]
+
+    /// Removes every key of the wallet, on every network scope. The wallet is
+    /// the segment after the last dot of what follows the prefix: the wallet
+    /// id hex holds no dot, while a devnet name may.
+    static func removeAll(walletIdHex: String, in defaults: UserDefaults) {
+        let prefix = UserDefaultsDashConnectStore.keyPrefix
+        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(prefix) {
+            let scoped = key.dropFirst(prefix.count)
+            for suffix in scopedSuffixes {
+                let body = scoped.dropLast(suffix.count)
+                guard scoped.hasSuffix(suffix),
+                      let dot = body.lastIndex(of: "."),
+                      dot > body.startIndex,
+                      body[body.index(after: dot)...] == walletIdHex
+                else { continue }
+                defaults.removeObject(forKey: key)
+                break
+            }
+        }
+    }
+
+    /// Removes every DashConnect key, whatever wallet id or suffix it carries,
+    /// orphans included: the full wipe leaves nothing of the feature behind.
+    static func removeAllWallets(in defaults: UserDefaults) {
+        let prefix = UserDefaultsDashConnectStore.keyPrefix
+        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(prefix) {
+            defaults.removeObject(forKey: key)
+        }
+    }
 }
 
 final class UserDefaultsDashConnectStore: DashConnectStore {
+    /// Posted after a save, with the `scopeKey` written under
+    /// (`scopeKeyUserInfoKey`). `PlatformDashConnectDataSource` republishes
+    /// its rows on it, whichever store instance wrote them.
+    static let didSaveNotification = Notification.Name("UserDefaultsDashConnectStore.didSave")
+    static let scopeKeyUserInfoKey = "scopeKey"
+
     private let defaults: UserDefaults
+    private let notificationCenter: NotificationCenter
     private let network: DashConnectNetwork
     private let walletIdHexProvider: () -> String?
+    private let devnetNameProvider: () -> String?
     private let encoder: JSONEncoder
     private let decoder: JSONDecoder
 
@@ -37,11 +97,15 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
         network: DashConnectNetwork,
         walletIdHexProvider: @escaping () -> String? = {
             WalletEnvironment.activeWalletIdHex as String?
-        }
+        },
+        devnetNameProvider: @escaping () -> String? = { DevnetConfiguration.devnetName },
+        notificationCenter: NotificationCenter = .default
     ) {
         self.defaults = defaults
+        self.notificationCenter = notificationCenter
         self.network = network
         self.walletIdHexProvider = walletIdHexProvider
+        self.devnetNameProvider = devnetNameProvider
 
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .millisecondsSince1970
@@ -60,11 +124,45 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
     /// so a shared placeholder scope would let one wallet's rows be saved and
     /// then loaded back in a different wallet context — reporting a connection
     /// status that belongs to someone else.
+    ///
+    /// On devnet the segment also names the configured devnet: every devnet
+    /// shares the network code, and the same wallet on devnet B would otherwise
+    /// load the connections it approved on devnet A. An unnamed devnet has no
+    /// scope, so nothing is stored or loaded for it.
     var storageKey: String? {
         guard let walletScope = walletIdHexProvider()?
             .trimmingCharacters(in: .whitespacesAndNewlines),
             !walletScope.isEmpty else { return nil }
-        return "dashconnect.connections.v1.\(network.rawValue).\(walletScope)"
+        guard let networkScope else { return nil }
+        return "\(Self.keyPrefix)\(networkScope).\(walletScope)"
+    }
+
+    /// Starts every key this store and the stores scoped from it write.
+    static let keyPrefix = "dashconnect.connections.v1."
+
+    var scopeKey: String? { storageKey }
+
+    func pinned(toWalletIdHex walletIdHex: String) -> any DashConnectStore {
+        pinnedStore(toWalletIdHex: walletIdHex)
+    }
+
+    func pinnedStore(toWalletIdHex walletIdHex: String) -> UserDefaultsDashConnectStore {
+        let devnetName = devnetNameProvider()
+        return UserDefaultsDashConnectStore(
+            defaults: defaults,
+            network: network,
+            walletIdHexProvider: { walletIdHex },
+            devnetNameProvider: { devnetName },
+            notificationCenter: notificationCenter
+        )
+    }
+
+    private var networkScope: String? {
+        guard network == .devnet else { return network.rawValue }
+        guard let name = devnetNameProvider()?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+            !name.isEmpty else { return nil }
+        return "\(network.rawValue)-\(name)"
     }
 
     func load() -> [DAppConnection] {
@@ -98,7 +196,8 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
                     name: row.label,
                     url: row.url,
                     status: row.status,
-                    updatedAt: row.updatedAt
+                    updatedAt: row.updatedAt,
+                    seenOn: Set(row.seenOn ?? [])
                 )
             )
         }
@@ -107,12 +206,14 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
     }
 
     func save(_ connections: [DAppConnection]) {
-        // No wallet scope means there is no key this state may be written
-        // under; dropping the write is correct, not a silent failure.
+        // No wallet scope (or an unnamed devnet) means there is no key this
+        // state may be written under; dropping the write is correct, not a
+        // silent failure.
         guard let storageKey else { return }
 
         guard !connections.isEmpty else {
             defaults.removeObject(forKey: storageKey)
+            didSave(under: storageKey)
             return
         }
 
@@ -122,16 +223,23 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
                 label: $0.name,
                 url: $0.url,
                 status: $0.status,
-                updatedAt: $0.updatedAt
+                updatedAt: $0.updatedAt,
+                seenOn: $0.seenOn.isEmpty ? nil : $0.seenOn.sorted()
             )
         }
 
         do {
             defaults.set(try encoder.encode(rows), forKey: storageKey)
+            didSave(under: storageKey)
         } catch {
             Self.logger.error(
-                "DashConnectStore: failed to encode connections on \(self.network.rawValue, privacy: .public): \(error.localizedDescription, privacy: .public)")
+                "DashConnectStore: failed to encode connections on \(self.network.rawValue, privacy: .public): \(AppConnectWriteExecutor.logDescription(of: error), privacy: .public)")
         }
+    }
+
+    private func didSave(under storageKey: String) {
+        notificationCenter.post(
+            name: Self.didSaveNotification, object: nil, userInfo: [Self.scopeKeyUserInfoKey: storageKey])
     }
 
     /// The storage key embeds the wallet id, a persistent user identifier, so
@@ -148,6 +256,8 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
         let url: String
         let status: ConnectionStatus
         let updatedAt: Date
+        /// Absent in rows written before it was kept.
+        let seenOn: [String]?
     }
 
     private static func base58Decode(_ string: String) -> Data? {

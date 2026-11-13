@@ -60,13 +60,13 @@ final class EvonodeWithdrawalViewModel: ObservableObject {
     static let creditsPerDuff: UInt64 = 1000
 
     /// Headroom kept back from a Max withdrawal so the identity can still pay
-    /// the transition fee. Platform's minimum credit-withdrawal fee is
-    /// 0.004 DASH (`STATE_TRANSITION_MIN_FEES_VERSION1.credit_withdrawal` =
-    /// 400,000,000 credits); the reserve adds a small margin on top.
-    static let feeReserveCredits: UInt64 = 500_000_000
+    /// the transition fee. A masternode withdrawal is the same
+    /// IdentityCreditWithdrawal an identity Max to Core runs, so it holds back
+    /// the same reserve: the 0.004 DASH Platform minimum plus a small margin.
+    static let feeReserveCredits = IdentityWithdrawViewModel.feeReserveCredits(target: .transparent)
 
     /// The fee figure shown to the user (the Platform minimum above).
-    static let estimatedFeeCredits: UInt64 = 400_000_000
+    static let estimatedFeeCredits = IdentityWithdrawViewModel.minimumFeeCredits(target: .transparent)
 
     /// Platform's minimum withdrawal: 1000 duffs (`system_limits.min_withdrawal_amount`).
     static let minWithdrawalCredits: UInt64 = 1_000_000

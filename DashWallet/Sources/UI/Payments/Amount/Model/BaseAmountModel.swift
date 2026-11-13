@@ -84,6 +84,12 @@ class BaseAmountModel: ObservableObject {
     public var inputsSwappedHandler: ((AmountType) -> Void)?
     public var amountInputItemsChangeHandler: (() -> Void)?
 
+    /// Called when something OTHER than an amount edit changed whether the
+    /// current amount is valid — the funding ceiling moving under a screen that
+    /// is already open. The view's `$amount` subscription cannot see that, so
+    /// it refreshes the button and the error message from here.
+    public var validationDidChangeHandler: (() -> Void)?
+
     public var isAllowedToContinue: Bool {
         isAmountValidForProceeding
     }
@@ -267,13 +273,23 @@ extension BaseAmountModel {
         CurrencyExchanger.shared.hasRate(for: localCurrencyCode)
     }
 
+    /// The wallet balance in this model's fiat currency, which can differ
+    /// from the app's (a Coinbase transfer picks its own).
     var fiatWalletBalanceFormatted: String {
-        guard let fiatAmount = try? Coinbase.shared.currencyExchanger.convertDash(amount: walletBalance.dashAmount, to: App.fiatCurrency) else {
-            return "Invalid"
-        }
+        Self.fiatFormatted(duffs: walletBalance,
+                           currencyCode: localCurrencyCode,
+                           exchanger: Coinbase.shared.currencyExchanger,
+                           formatter: supplementaryNumberFormatter) ?? "Invalid"
+    }
 
-        let nf = supplementaryNumberFormatter
-        return nf.string(from: fiatAmount as NSNumber) ?? fiatAmount.string
+    /// `duffs` converted to `currencyCode` and formatted by `formatter`,
+    /// which must format that same currency; `nil` without a rate.
+    static func fiatFormatted(duffs: UInt64, currencyCode: String,
+                              exchanger: CurrencyExchanger, formatter: NumberFormatter) -> String? {
+        guard let fiatAmount = try? exchanger.convertDash(amount: duffs.dashAmount, to: currencyCode) else {
+            return nil
+        }
+        return formatter.string(from: fiatAmount as NSNumber) ?? fiatAmount.string
     }
 
     var walletBalanceFormatted: String {

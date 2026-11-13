@@ -15,10 +15,16 @@ import SwiftDashSDK
 /// removal check (is this tx known to the network at all?) and the fee of a
 /// received transaction whose parent transactions this wallet doesn't hold.
 enum InsightExplorerAPI {
-    static func baseURL(network: Network) -> String {
-        network == .mainnet
-            ? "https://insight.dash.org/insight-api"
-            : "https://insight.testnet.networks.dash.org/insight-api"
+    /// Nil for networks with no public Insight deployment (devnet/regtest):
+    /// asking the TESTNET explorer about a devnet txid would return an
+    /// authoritative-looking 404 and let a caller draw a destructive
+    /// conclusion ("the network doesn't know this tx") from the wrong chain.
+    static func baseURL(network: Network) -> String? {
+        switch network {
+        case .mainnet: return "https://insight.dash.org/insight-api"
+        case .testnet: return "https://insight.testnet.networks.dash.org/insight-api"
+        case .devnet, .regtest: return nil
+        }
     }
 
     /// GET `/tx/<txid>`. Returns the HTTP status and, for a 200 whose body
@@ -32,7 +38,8 @@ enum InsightExplorerAPI {
     /// caller that only needs "does this transaction exist" is not made to
     /// fail on an unparseable body.
     static func transaction(displayTxid: String, network: Network) async -> (statusCode: Int, body: [String: Any]?)? {
-        guard let url = URL(string: "\(baseURL(network: network))/tx/\(displayTxid)") else {
+        guard let base = baseURL(network: network),
+              let url = URL(string: "\(base)/tx/\(displayTxid)") else {
             return nil
         }
         var request = URLRequest(url: url)

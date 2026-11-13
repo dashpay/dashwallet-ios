@@ -21,7 +21,8 @@ import DashUIKit
 import SafariServices
 
 struct ToolsMenuScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
 
     @StateObject private var viewModel = ToolsMenuViewModel()
     @State private var showCSVExportSheet = false
@@ -29,15 +30,17 @@ struct ToolsMenuScreen: View {
     @State private var showZenLedgerSheet = false
     @State private var showExtendedPublicKeySheet = false
 
-    init(vc: UINavigationController) {
+    init(vc: UINavigationController?) {
         self.vc = vc
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            NavBarBack {
-                vc.popViewController(animated: true)
-            }
+            DashUIKit.NavigationBar(leading: {
+                DashUIKit.NavigationBarElement.back.button {
+                    vc?.popViewController(animated: true)
+                }
+            })
 
             TopIntro(title: NSLocalizedString("Tools", comment: ""))
                 .padding(.leading, 20)
@@ -114,6 +117,16 @@ struct ToolsMenuScreen: View {
             } else {
                 csvExportSheet
             }
+        }
+        // Destination choice (Dash Wallet vs Shielded), the same sheet the
+        // post-sync popup presents. Deliberately no `onDismiss` hook: unlike the
+        // popup this row is user-initiated, so closing it must not persist a
+        // "Later" that would suppress the popup for good.
+        .sheet(isPresented: $viewModel.showCoinJoinMoveFundsSheet) {
+            CoinJoinMoveFundsSheet(amountDuffs: viewModel.coinJoinLeftoverDuffs) {
+                viewModel.showCoinJoinMoveFundsSheet = false
+            }
+            .presentationDetents([.medium, .large])
         }
         .alert(NSLocalizedString("Move CoinJoin Funds", comment: "CoinJoin"), isPresented: $viewModel.showCoinJoinSweepConfirmation) {
             Button(NSLocalizedString("Move funds", comment: "CoinJoin")) {
@@ -240,49 +253,14 @@ struct ToolsMenuScreen: View {
     }
 
     private func showStorageExplorer() {
-        let coordinator = PlatformAddressSyncCoordinator.shared
-        let navController = vc
-        let popRoot: () -> Void = { [weak navController] in
-            _ = navController?.popViewController(animated: true)
-        }
-
-        let hosting: UIHostingController<AnyView>
-        if let container = coordinator.swiftDataContainer {
-            hosting = UIHostingController(
-                rootView: AnyView(
-                    NavigationStack {
-                        StorageExplorerView()
-                            .navigationTitle("Storage Explorer")
-                            .navigationBarTitleDisplayMode(.inline)
-                            .toolbar {
-                                ToolbarItem(placement: .navigationBarLeading) {
-                                    Button(action: popRoot) {
-                                        Image(systemName: "chevron.left")
-                                    }
-                                }
-                            }
-                    }
-                    .modelContainer(container)
-                )
-            )
+        guard let vc else { return }
+        let container = PlatformAddressSyncCoordinator.shared.swiftDataContainer
+        let navigator = StorageExplorerNavigator(navigationController: vc, container: container)
+        if container != nil {
+            navigator.push(StorageExplorerView())
         } else {
-            hosting = UIHostingController(
-                rootView: AnyView(
-                    NavigationStack {
-                        StorageExplorerUnavailableView()
-                            .toolbar {
-                                ToolbarItem(placement: .navigationBarLeading) {
-                                    Button(action: popRoot) {
-                                        Image(systemName: "chevron.left")
-                                    }
-                                }
-                            }
-                    }
-                )
-            )
+            navigator.push(StorageExplorerUnavailableView())
         }
-        hosting.hidesBottomBarWhenPushed = true
-        vc.pushViewController(hosting, animated: true)
     }
     
     private func showExtendedPublicKeys() {
@@ -292,12 +270,12 @@ struct ToolsMenuScreen: View {
     private func showMasternodeKeys() {
         let controller = KeysOverviewViewController()
         controller.hidesBottomBarWhenPushed = true
-        vc.pushViewController(controller, animated: true)
+        vc?.pushViewController(controller, animated: true)
     }
 
     private func showConnections() {
-        let screen = ConnectionsScreen(vc: vc)
-        let controller = UIHostingController(rootView: screen)
+        guard let vc else { return }
+        let controller = DashConnectHostingController(navigationController: vc)
         controller.hidesBottomBarWhenPushed = true
         vc.pushViewController(controller, animated: true)
     }
@@ -315,7 +293,7 @@ struct ToolsMenuScreen: View {
     private func openSafariLink(_ link: String) {
         if let url = URL(string: link) {
             let controller = SFSafariViewController(url: url)
-            vc.present(controller, animated: true, completion: nil)
+            vc?.present(controller, animated: true, completion: nil)
         }
     }
 

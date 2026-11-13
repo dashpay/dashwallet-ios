@@ -30,29 +30,68 @@ struct SDKIdentityProfileSheet: View {
     @State private var pendingVotingEndTime: Date? = nil
     @State private var copyToast: String? = nil
     /// The identity's credit balance (credits, 1000 credits = 1 duff),
-    /// from the persisted identity row; refreshed by a top-up's returned
-    /// post-transition balance. nil until the identity row loads.
+    /// refreshed from Platform when the profile opens. nil until the
+    /// identity row loads; read failures retain the last known balance.
     @State private var identityBalanceCredits: UInt64?
     /// 32-byte identity id the top-up transition targets.
     @State private var identityIdData: Data?
     @State private var showingBalanceInfo = false
     @State private var showingTopUp = false
     @State private var showingUsernameMarketplace = false
+    @State private var showingUsernameRecovery = false
+    @State private var loadedUsername: String?
+    @State private var identityIsLoading = true
+    @State private var balanceRefreshContext: IdentityBalanceRefresh.Context?
+    @State private var balanceRefreshAttempt = 0
+
+    private struct BalanceRefreshRequest: Hashable {
+        let context: IdentityBalanceRefresh.Context?
+        let attempt: Int
+    }
+
+    @State private var identityLoadTimedOut = false
+    @State private var identityLoadAttempt = 0
 
     /// Callback invoked when the user taps Edit. Owner (HomeViewController)
     /// dismisses the sheet and pushes `RootEditProfileViewController`.
     /// Nil → no Edit button is shown (back-compat with callers that
     /// haven't wired up the edit flow yet).
     var onEditTapped: (() -> Void)?
+    var identityLoadPollLimit = 20
+    var snapshotProvider: () -> DWCurrentUserIdentityInfo.Snapshot = {
+        DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
+    }
 
     var body: some View {
-        NavigationStack {
+        DashUIKit.BottomSheet(
+            title: NSLocalizedString("My Profile", comment: "SDK identity profile sheet — title"),
+            showBackButton: .constant(false)
+        ) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     header
+                    ProtocolCompatibilityBanner(controller: SwiftDashSDKHost.shared.protocolCompatibility)
                     Divider()
                     infoSection
-                    if hasIdentity {
+                    if identityIsLoading {
+                        if identityLoadTimedOut {
+                            Button(NSLocalizedString("Retry loading identity", comment: "Identity recovery")) {
+                                DWCurrentUserIdentityInfo.shared.retryNameRefresh()
+                                identityLoadTimedOut = false
+                                identityLoadAttempt += 1
+                            }
+                        } else {
+                            SwiftUI.ProgressView()
+                                .accessibilityIdentifier("identityProfileLoading")
+                        }
+                    } else if hasIdentity {
+                        if dpnsNames.isEmpty && loadedUsername == nil && pendingContestedName == nil {
+                            Button(NSLocalizedString("Finish username registration", comment: "DashPay registration recovery")) {
+                                showingUsernameRecovery = true
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .accessibilityIdentifier("finishUsernameRegistration")
+                        }
                         namesSection
                     }
                     // Edit Profile gated on hasIdentity: the editor's
@@ -68,15 +107,6 @@ struct SDKIdentityProfileSheet: View {
                 .padding(.top, 24)
             }
             .background(Color.dash.primaryBackground)
-            .navigationTitle(NSLocalizedString("My Profile", comment: "SDK identity profile sheet — title"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(NSLocalizedString("Done", comment: "")) {
-                        dismiss()
-                    }
-                }
-            }
             .overlay(alignment: .bottom) {
                 if let toast = copyToast {
                     Text(toast)
@@ -91,11 +121,57 @@ struct SDKIdentityProfileSheet: View {
                 }
             }
             .onAppear(perform: reloadIdentitySnapshot)
+            .task(id: "\(identityIsLoading)-\(identityLoadAttempt)") {
+                // Cold launch may hydrate persistence without a registration event.
+                // Only refresh reads while loading; never resume a spend here.
+                for _ in 0..<identityLoadPollLimit {
+                    guard identityIsLoading else { return }
+                    do { try await Task.sleep(nanoseconds: 250_000_000) }
+                    catch { return }
+                    reloadIdentitySnapshot()
+                }
+                identityLoadTimedOut = identityIsLoading
+            }
+            .task(id: BalanceRefreshRequest(context: balanceRefreshContext, attempt: balanceRefreshAttempt)) {
+                guard balanceRefreshContext != nil else { return }
+                await DWCurrentUserIdentityInfo.shared.refreshCurrentBalanceFromNetwork()
+                guard !Task.isCancelled else { return }
+                reloadIdentitySnapshot()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .DWDashPayRegistrationStatusUpdated)) { _ in
+                reloadIdentitySnapshot()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+                reloadIdentitySnapshot()
+                // Restart the view-owned task; SwiftUI cancels it on dismissal
+                // and on wallet/identity changes through the request context.
+                balanceRefreshAttempt += 1
+            }
+            .onReceive(NotificationCenter.default.publisher(for: SwiftDashSDKWalletState.activeWalletDidChangeNotification)) { _ in
+                restartIdentityLoading()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .DWCurrentNetworkDidChange)) { _ in
+                restartIdentityLoading()
+            }
         }
         // `onDismiss` rather than relying on the `onAppear` above: SwiftUI does
         // not re-run it for the presenting view when a `fullScreenCover` closes,
         // and a name registered or bought in the marketplace changes both
         // `dpnsNames` and `hasIdentity`.
+        .fullScreenCover(isPresented: $showingUsernameRecovery, onDismiss: reloadIdentitySnapshot) {
+            CreateUsernameView(
+                invitationURI: nil,
+                definedUsername: nil,
+                // Both exits close the cover: the shielded question moved
+                // to the Join DashPay sheet's privacy page, and a handoff
+                // to the status row leaves this screen just the same.
+                finish: { showingUsernameRecovery = false },
+                handOffToStatusRow: { showingUsernameRecovery = false },
+                // The form is the cover's root, so its bar shows close and
+                // closing it dismisses the cover.
+                onBack: { showingUsernameRecovery = false },
+                leadingElement: .close)
+        }
         .fullScreenCover(isPresented: $showingUsernameMarketplace,
                          onDismiss: reloadIdentitySnapshot) {
             UsernameMarketplaceScreen {
@@ -104,13 +180,34 @@ struct SDKIdentityProfileSheet: View {
         }
     }
 
+    private func restartIdentityLoading() {
+        identityLoadTimedOut = false
+        identityLoadAttempt += 1
+        DWCurrentUserIdentityInfo.shared.retryNameRefresh()
+        reloadIdentitySnapshot()
+    }
+
     private func reloadIdentitySnapshot() {
-        loadIdentityId()
-        dpnsNames = DWCurrentUserIdentityInfo.shared.usernames
-        hasIdentity = DWCurrentUserIdentityInfo.shared.hasIdentity
-        pendingContestedName = DWContestedNameStatusService.shared.pendingLabel
-        pendingVotingEndTime = DWContestedNameStatusService.shared.pendingVotingEndTime
-        avatarURL = DWCurrentUserIdentityInfo.shared.avatarURL
+        let snapshot = snapshotProvider()
+        if let identityId = snapshot.identityId,
+           let wallet = SwiftDashSDKHost.shared.wallet,
+           let network = SwiftDashSDKHost.shared.runningNetwork {
+            balanceRefreshContext = .init(
+                network: network.persistenceScope, walletId: wallet.walletId, identityId: identityId)
+        } else {
+            balanceRefreshContext = nil
+        }
+        identityIsLoading = snapshot.isLoading
+        identityIdData = snapshot.identityId
+        identityIdHex = snapshot.identityIdHex
+        identitySeed = snapshot.identityId ?? Data()
+        identityBalanceCredits = snapshot.balanceCredits
+        dpnsNames = snapshot.usernames
+        loadedUsername = snapshot.username
+        hasIdentity = snapshot.identityId != nil
+        pendingContestedName = snapshot.pendingContestedName
+        pendingVotingEndTime = snapshot.pendingVotingEndTime
+        avatarURL = snapshot.avatarURL
     }
 
     // MARK: - Edit button
@@ -353,7 +450,7 @@ struct SDKIdentityProfileSheet: View {
 
     private var username: String {
         pendingContestedName
-            ?? DWGlobalOptions.sharedInstance().dashpayUsername
+            ?? loadedUsername
             ?? "—"
     }
 
@@ -377,33 +474,7 @@ struct SDKIdentityProfileSheet: View {
         }
     }
 
-    /// Look up the persisted identity ID from SwiftData. Mirrors the
-    /// fetch pattern in `DWIdentityRegistrationCoordinator.lookupExistingIdentityId`
-    /// (PersistentIdentity scoped to the active wallet); we render the
-    /// 32-byte id as lowercase hex matching the existing coordinator
-    /// logs (`identityId.map { String(format: "%02x", $0) }.joined()`).
-    private func loadIdentityId() {
-        guard
-            let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
-            let container = SwiftDashSDKHost.shared.modelContainer
-        else { return }
 
-        let context = container.mainContext
-        var descriptor = FetchDescriptor<PersistentIdentity>(
-            predicate: #Predicate { identity in
-                identity.wallet?.walletId == walletId
-            }
-        )
-        descriptor.fetchLimit = 1
-        if let identity = try? context.fetch(descriptor).first {
-            identityIdHex = identity.identityId.map { String(format: "%02x", $0) }.joined()
-            identitySeed = identity.identityId
-            identityIdData = identity.identityId
-            // Stored as the Int64 bit-pattern of the UInt64 credits (see
-            // IdentitiesViewModel's identical read).
-            identityBalanceCredits = UInt64(bitPattern: identity.balance)
-        }
-    }
 }
 
 // MARK: - IdentityTopUpViewModel
@@ -455,18 +526,31 @@ final class IdentityTopUpViewModel: ObservableObject {
 
     @Published var isProcessing = false
     @Published var errorMessage: String?
+    @Published private(set) var submittedUnconfirmed = false
+    @Published private(set) var movedToPlatform = false
+    /// Set instead of `errorMessage` when a transparent top-up would need
+    /// more inputs than one asset lock may carry: the lock to re-check once
+    /// `CoreCoinConsolidationSheet` has combined the coins.
+    @Published var inputLimitCheck: AssetLockInputLimit.Check?
     /// User-visible progress for the shielded route's two steps.
     @Published var stepLabel: String?
-
     private let authorizer = DWIdentityAuthorizer()
 
     enum TopUpError: LocalizedError {
         case noPlatformReceiveAddress
+        case movedToPlatform(Error)
+        case secondLegCancelled
 
         var errorDescription: String? {
             switch self {
             case .noPlatformReceiveAddress:
                 return NSLocalizedString("No Platform receive address is available yet — wait for the Platform sync to finish and try again.", comment: "Identity top-up sheet — missing unshield destination")
+            case .secondLegCancelled:
+                return NSLocalizedString("The identity top-up result could not be confirmed. Check your balances before continuing.", comment: "Identity top-up second leg cancelled")
+            case .movedToPlatform(let error):
+                return NSLocalizedString(
+                    "Dash was moved to your Platform balance. Finish the top-up from Platform after reviewing the amount again.",
+                    comment: "Identity top-up stopped after successful unshield") + " " + error.localizedDescription
             }
         }
     }
@@ -511,18 +595,31 @@ final class IdentityTopUpViewModel: ObservableObject {
         return unshieldFee + observedTopUpTransitionFeeCredits
     }
 
+    /// A settled first leg must not unshield again on this screen.
+    func canTopUp(from source: FundingSource) -> Bool {
+        !isProcessing && !submittedUnconfirmed && !(source == .shielded && movedToPlatform)
+    }
+
     /// nil = cancelled or failed (errorMessage carries the failure).
     func topUp(identityId: Data, amountDuffs: UInt64, source: FundingSource) async -> UInt64? {
-        guard !isProcessing else { return nil }
+        guard canTopUp(from: source) else { return nil }
         guard let wallet = SwiftDashSDKHost.shared.wallet,
               let modelContainer = SwiftDashSDKHost.shared.modelContainer else {
             errorMessage = NSLocalizedString("Wallet is not ready", comment: "DashPay")
             return nil
         }
         isProcessing = true
+        submittedUnconfirmed = false
         defer {
             isProcessing = false
             stepLabel = nil
+        }
+        // Before the prompt: a lock over the input limit is never built.
+        let inputCheck = AssetLockInputLimit.Check(
+            amountDuffs: amountDuffs, inputBudget: AssetLockInputPolicy.platformInputBudget)
+        if source == .transparent, AssetLockInputLimit.verdict(for: inputCheck) == .needsConsolidation {
+            inputLimitCheck = inputCheck
+            return nil
         }
         do {
             try await authorizer.authorize()
@@ -533,10 +630,12 @@ final class IdentityTopUpViewModel: ObservableObject {
         do {
             switch source {
             case .transparent:
-                return try await wallet.topUpIdentityWithFunding(
-                    identityId: identityId,
-                    amountDuffs: amountDuffs,
-                    accountIndex: 0)
+                return try await AssetLockInputLimit.mappingRefusal(inputCheck) {
+                    try await wallet.topUpIdentityWithFunding(
+                        identityId: identityId,
+                        amountDuffs: amountDuffs,
+                        accountIndex: 0)
+                }
 
             case .platform:
                 let credits = amountDuffs * PlatformPaymentIdentityFundingPolicy.creditsPerDuff
@@ -559,6 +658,17 @@ final class IdentityTopUpViewModel: ObservableObject {
                     wallet: wallet,
                     modelContainer: modelContainer)
             }
+        } catch SDKError.stateTransitionResultUnconfirmed, PlatformWalletError.transactionBroadcastUnconfirmed,
+                PlatformWalletError.shieldedSpendUnconfirmed, TopUpError.secondLegCancelled {
+            submittedUnconfirmed = true
+            errorMessage = NSLocalizedString(
+                "The transfer may have been submitted, but its result could not be confirmed. Wait for the wallet to sync and check your balances and history before making another transfer.",
+                comment: "Identity transfer result unknown")
+            return nil
+        } catch let error as TopUpError {
+            if case .movedToPlatform = error { movedToPlatform = true }
+            errorMessage = error.localizedDescription
+            return nil
         } catch let error as PlatformPaymentIdentityFundingPolicy.PlanningError {
             if case .insufficient(let required, let available) = error {
                 errorMessage = String.localizedStringWithFormat(
@@ -570,7 +680,11 @@ final class IdentityTopUpViewModel: ObservableObject {
             }
             return nil
         } catch {
-            errorMessage = error.localizedDescription
+            if let check = AssetLockInputLimit.check(for: error) {
+                inputLimitCheck = check
+            } else {
+                errorMessage = error.localizedDescription
+            }
             return nil
         }
     }
@@ -625,10 +739,21 @@ final class IdentityTopUpViewModel: ObservableObject {
             hash: Data(storageBytes.dropFirst()),
             credits: claim)
         let signer = KeychainSigner(modelContainer: modelContainer)
-        let newBalance = try await wallet.topUpFromAddresses(
-            identityId: identityId,
-            inputs: [input],
-            addressSigner: signer)
+        let newBalance: UInt64
+        do {
+            newBalance = try await wallet.topUpFromAddresses(
+                identityId: identityId,
+                inputs: [input],
+                addressSigner: signer)
+        } catch {
+            // An ambiguous second leg may already have credited the identity.
+            // Never suggest another top-up when its result is unknown.
+            if case SDKError.stateTransitionResultUnconfirmed = error { throw error }
+            if case PlatformWalletError.transactionBroadcastUnconfirmed = error { throw error }
+            if case PlatformWalletError.shieldedSpendUnconfirmed = error { throw error }
+            if error is CancellationError { throw TopUpError.secondLegCancelled }
+            throw TopUpError.movedToPlatform(error)
+        }
         Task { await PlatformAddressSyncCoordinator.shared.syncNow() }
         return newBalance
     }
@@ -818,8 +943,8 @@ struct IdentityTopUpSheet: View {
                             .cornerRadius(12)
                     }
                 }
-                .disabled(viewModel.isProcessing || effectiveDuffs == nil)
-                .opacity(effectiveDuffs == nil ? 0.55 : 1)
+                .disabled(!viewModel.canTopUp(from: source) || effectiveDuffs == nil)
+                .opacity(!viewModel.canTopUp(from: source) || effectiveDuffs == nil ? 0.55 : 1)
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
 
@@ -840,7 +965,9 @@ struct IdentityTopUpSheet: View {
         .background(Color.dash.primaryBackground)
         .interactiveDismissDisabled(viewModel.isProcessing)
         .alert(
-            NSLocalizedString("Error", comment: ""),
+            viewModel.submittedUnconfirmed
+                ? NSLocalizedString("Confirmation pending", comment: "Identity transfer result unknown")
+                : NSLocalizedString("Error", comment: ""),
             isPresented: Binding(
                 get: { viewModel.errorMessage != nil },
                 set: { if !$0 { viewModel.errorMessage = nil } })
@@ -849,6 +976,7 @@ struct IdentityTopUpSheet: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
+        .coreCoinConsolidationSheet(check: $viewModel.inputLimitCheck)
     }
 
     /// Shared chip chrome for the preset and Custom amount buttons.
@@ -915,3 +1043,39 @@ struct IdentityTopUpSheet: View {
         }
     }
 }
+
+#if DEBUG && targetEnvironment(simulator)
+/// Isolated UI-test launch surface. Does not initialize or modify a real wallet.
+@objc(DWUsernameRecoveryUITestFixture)
+final class DWUsernameRecoveryUITestFixture: NSObject {
+    @objc static func makeViewControllerIfRequested() -> UIViewController? {
+        guard ProcessInfo.processInfo.environment["DPNS_RECOVERY_UI_TEST"] == "1" else { return nil }
+        return UIHostingController(rootView: Fixture())
+    }
+
+    private struct Fixture: View {
+        @State private var loading = true
+
+        var body: some View {
+            SDKIdentityProfileSheet(
+                identityLoadPollLimit: ProcessInfo.processInfo.environment["DPNS_RECOVERY_UI_HYDRATION"] == "1" ? 240 : 20,
+                snapshotProvider: {
+                .init(isLoading: loading, namesAreLoaded: !loading, balanceCredits: 9_639_634_780,
+                      identityId: Data(repeating: 1, count: 32), identityIdHex: String(repeating: "01", count: 32),
+                      username: nil, usernames: [], displayName: nil, avatarURL: nil, publicMessage: nil)
+            })
+            .overlay(alignment: .bottom) {
+                HStack {
+                    Button("Load identity fixture") { loading = false }
+                        .accessibilityIdentifier("loadIdentityFixture")
+                    Button("Switch identity fixture") {
+                        loading = true
+                        NotificationCenter.default.post(name: .DWCurrentNetworkDidChange, object: nil)
+                    }
+                    .accessibilityIdentifier("switchIdentityFixture")
+                }
+            }
+        }
+    }
+}
+#endif

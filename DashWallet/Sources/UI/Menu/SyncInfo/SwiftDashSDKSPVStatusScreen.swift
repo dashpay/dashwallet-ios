@@ -17,6 +17,7 @@
 //  the migration plan for why parallel-observe mode exists.
 //
 
+import Combine
 import OSLog
 import SwiftData
 import SwiftUI
@@ -25,7 +26,8 @@ import UIKit
 import SwiftDashSDK
 
 struct SwiftDashSDKSPVStatusScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
 
     @ObservedObject private var coordinator = SwiftDashSDKSPVCoordinator.shared
 
@@ -77,42 +79,33 @@ struct SwiftDashSDKSPVStatusScreen: View {
 
     // MARK: - Pending transfers UI state
 
-    /// Locks awaiting a recovery resume, re-read when the card appears and
-    /// after a pass so the count reflects what actually remains.
+    /// Locks awaiting a recovery resume, re-read when the card appears, after
+    /// a pass so the count reflects what actually remains, and whenever a
+    /// running transfer's claim, the lock lookup or the probe store changes.
     @State private var pendingRecoveries: [AssetLockRecoveryService.PendingRecovery] = []
+    /// One publisher for every instance, so a body update keeps the
+    /// screen's subscription.
+    private static let pendingRecoveriesChanges = AssetLockRecoveryService.pendingRecoveriesChanges()
     @State private var isRecoveringPending = false
     /// "3 of 23" progress while the pass runs.
     @State private var recoveryProgress: (done: Int, total: Int)?
     @State private var recoveryResultMessage: String?
     @State private var recoveryResultIsError = false
 
-    init(vc: UINavigationController) {
+    init(vc: UINavigationController?) {
         self.vc = vc
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Back button
-            HStack {
-                Button(action: {
-                    vc.popViewController(animated: true)
-                }) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(Color.dash.primaryText)
-                        .frame(width: 36, height: 36)
-                        .overlay(
-                            Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1)
-                        )
-                }
-                Spacer()
-            }
-            .padding(.horizontal, 5)
-            .padding(.top, 10)
+            DashUIKit.NavigationBar(leading: {
+                DashUIKit.NavigationBarElement.back.button { vc?.popViewController(animated: true) }
+            })
 
             // Header
             HStack {
-                Text("Core Sync Status")
+                Text(NSLocalizedString("Core Sync Status", comment: "SPV diagnostics"))
                     .font(.title)
                     .fontWeight(.bold)
                     .foregroundColor(.dash.primaryText)
@@ -120,6 +113,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
             }
             .padding(.top, 30)
             .padding(.bottom, 20)
+            .padding(.horizontal, 20)
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
@@ -130,6 +124,8 @@ struct SwiftDashSDKSPVStatusScreen: View {
                     rescanFiltersCard
                     dropUnconfirmedCard
                     pendingTransfersCard
+                        .onAppear { refreshPendingRecoveriesUnlessBusy() }
+                        .onReceive(Self.pendingRecoveriesChanges) { _ in refreshPendingRecoveriesUnlessBusy() }
                     connectedPeersCard
                     if let lastError = coordinator.lastError {
                         errorCard(message: lastError)
@@ -138,8 +134,8 @@ struct SwiftDashSDKSPVStatusScreen: View {
                     Spacer(minLength: 12)
                 }
             }
+            .padding(.horizontal, 20)
         }
-        .padding(.horizontal, 20)
         .background(Color.dash.primaryBackground)
         .navigationBarHidden(true)
         .confirmationDialog(
@@ -266,7 +262,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
     private var progressCard: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Aggregate Progress")
+                Text(NSLocalizedString("Aggregate Progress", comment: "SPV diagnostics"))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
                 Spacer()
@@ -294,8 +290,8 @@ struct SwiftDashSDKSPVStatusScreen: View {
 
     private var heightsCard: some View {
         VStack(alignment: .leading, spacing: 8) {
-            row(title: "Tip height", value: "\(coordinator.tipHeight)")
-            row(title: "Best peer height", value: "\(coordinator.bestPeerHeight)")
+            row(title: NSLocalizedString("Tip height", comment: "SPV diagnostics"), value: "\(coordinator.tipHeight)")
+            row(title: NSLocalizedString("Best peer height", comment: "SPV diagnostics"), value: "\(coordinator.bestPeerHeight)")
             // Birth height (the wallet's filter-scan floor) with an
             // edit affordance — the escape hatch for wallets stamped
             // with a wrong creation height (e.g. imports made before
@@ -329,7 +325,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
     private var connectedPeersCard: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Connected Peers")
+                Text(NSLocalizedString("Connected Peers", comment: "SPV diagnostics"))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
                 Spacer()
@@ -341,7 +337,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
             .padding(.bottom, 4)
 
             if coordinator.connectedPeers.isEmpty {
-                Text("No peers connected")
+                Text(NSLocalizedString("No peers connected", comment: "SPV diagnostics"))
                     .font(.system(size: 13))
                     .foregroundColor(Color.dash.secondaryText)
             } else {
@@ -393,34 +389,34 @@ struct SwiftDashSDKSPVStatusScreen: View {
 
     private var perPhaseCard: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Per-Phase Progress")
+            Text(NSLocalizedString("Per-Phase Progress", comment: "SPV diagnostics"))
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(.dash.primaryText)
                 .padding(.bottom, 4)
 
             phaseRow(
-                title: "Headers",
+                title: NSLocalizedString("Headers", comment: "SPV diagnostics"),
                 state: coordinator.syncProgress.headers?.state,
                 percentage: coordinator.syncProgress.headers?.percentage,
                 current: coordinator.syncProgress.headers?.currentHeight,
                 target: coordinator.syncProgress.headers?.targetHeight
             )
             phaseRow(
-                title: "Filter Headers",
+                title: NSLocalizedString("Filter Headers", comment: "SPV diagnostics"),
                 state: coordinator.syncProgress.filterHeaders?.state,
                 percentage: coordinator.syncProgress.filterHeaders?.percentage,
                 current: coordinator.syncProgress.filterHeaders?.currentHeight,
                 target: coordinator.syncProgress.filterHeaders?.targetHeight
             )
             phaseRow(
-                title: "Filters",
+                title: NSLocalizedString("Filters", comment: "SPV diagnostics"),
                 state: coordinator.syncProgress.filters?.state,
                 percentage: coordinator.syncProgress.filters?.percentage,
                 current: coordinator.syncProgress.filters?.currentHeight,
                 target: coordinator.syncProgress.filters?.targetHeight
             )
             phaseRow(
-                title: "Masternodes",
+                title: NSLocalizedString("Masternodes", comment: "SPV diagnostics"),
                 state: coordinator.syncProgress.masternodes?.state,
                 percentage: nil,
                 current: coordinator.syncProgress.masternodes?.currentHeight,
@@ -519,10 +515,12 @@ struct SwiftDashSDKSPVStatusScreen: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
                     .background(Color.dash.gray300.opacity(0.3))
-                    .foregroundColor(pendingRecoveries.isEmpty || isRecoveringPending ? .secondary : .dash.primaryText)
+                    .foregroundColor(pendingRecoveries.isEmpty || isRecoveringPending || isDroppingUnconfirmed ? .secondary : .dash.primaryText)
                     .cornerRadius(8)
                 }
-                .disabled(pendingRecoveries.isEmpty || isRecoveringPending)
+                // A recovery pass and a drop-all exclude each other (see
+                // `ShieldedAssetLocksInFlight.beginRemoval`).
+                .disabled(pendingRecoveries.isEmpty || isRecoveringPending || isDroppingUnconfirmed)
 
                 if let recoveryResultMessage {
                     Text(recoveryResultMessage)
@@ -534,9 +532,8 @@ struct SwiftDashSDKSPVStatusScreen: View {
             .padding(16)
             .background(Color.dash.secondaryBackground)
             .cornerRadius(12)
-            .onAppear { refreshPendingRecoveries() }
         } else {
-            Color.clear.frame(height: 0).onAppear { refreshPendingRecoveries() }
+            Color.clear.frame(height: 0)
         }
     }
 
@@ -585,10 +582,10 @@ struct SwiftDashSDKSPVStatusScreen: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
                 .background(Color.dash.gray300.opacity(0.3))
-                .foregroundColor(rescanEnabled && !isDroppingUnconfirmed ? .red : .secondary)
+                .foregroundColor(rescanEnabled && !isDroppingUnconfirmed && !isRecoveringPending ? .red : .secondary)
                 .cornerRadius(8)
             }
-            .disabled(!rescanEnabled || isDroppingUnconfirmed)
+            .disabled(!rescanEnabled || isDroppingUnconfirmed || isRecoveringPending)
 
             if !rescanEnabled {
                 Text(NSLocalizedString(
@@ -613,7 +610,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
 
     private func errorCard(message: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Last Error")
+            Text(NSLocalizedString("Last Error", comment: "SPV diagnostics"))
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(.red)
             Text(message)
@@ -632,7 +629,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
             Button(action: {
                 SwiftDashSDKWalletRuntime.stopCoreSPV()
             }) {
-                Text("Stop")
+                Text(NSLocalizedString("Stop", comment: "SPV diagnostics"))
                     .font(.system(size: 14, weight: .semibold))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
@@ -814,11 +811,22 @@ extension SwiftDashSDKSPVStatusScreen {
         return row.birthHeight
     }
 
-    /// Validate the "From height…" text field to a `UInt32` and start
-    /// the rescan. A non-numeric or empty entry is rejected with an
-    /// error banner rather than defaulted to `0`.
+    /// Re-read the locks awaiting a recovery resume; the card re-renders
+    /// only when the set of locks changed.
     func refreshPendingRecoveries() {
-        pendingRecoveries = AssetLockRecoveryService.pendingRecoveries()
+        let pending = AssetLockRecoveryService.pendingRecoveries()
+        if Set(pending) != Set(pendingRecoveries) { pendingRecoveries = pending }
+    }
+
+    /// The card appeared, or something the list depends on changed while the
+    /// screen is up (an attempt running when it opened has failed, say). Not
+    /// while this screen's pass or drop runs, which refresh the list when
+    /// they end, nor while any removal reloads the wallet, whose end
+    /// publishes again.
+    private func refreshPendingRecoveriesUnlessBusy() {
+        guard !isRecoveringPending, !isDroppingUnconfirmed,
+              !ShieldedAssetLocksInFlight.shared.isRemovalInProgress else { return }
+        refreshPendingRecoveries()
     }
 
     func runPendingRecovery() {
@@ -846,7 +854,13 @@ extension SwiftDashSDKSPVStatusScreen {
                 return
             }
 
-            if outcome.cancelled, outcome.attempted == 0 {
+            if outcome.deferredForReload {
+                recoveryResultIsError = false
+                recoveryResultMessage = ShieldedAssetLocksInFlight.walletReloadingMessage
+                return
+            }
+
+            if outcome.cancelled, outcome.attempted == 0, outcome.inProgress == 0 {
                 recoveryResultIsError = false
                 recoveryResultMessage = NSLocalizedString("Cancelled.", comment: "SPV diagnostics")
                 return
@@ -857,23 +871,28 @@ extension SwiftDashSDKSPVStatusScreen {
             // a completion this pass witnessed.
             var parts: [String] = []
             if outcome.completed > 0 {
-                parts.append(String(
-                    format: NSLocalizedString("%d finished", comment: "SPV diagnostics"),
+                parts.append(String.localizedStringWithFormat(
+                    NSLocalizedString("%d finished", comment: "SPV diagnostics"),
                     outcome.completed))
             }
             if outcome.alreadySpent > 0 {
-                parts.append(String(
-                    format: NSLocalizedString("%d already spent", comment: "SPV diagnostics"),
+                parts.append(String.localizedStringWithFormat(
+                    NSLocalizedString("%d already spent", comment: "SPV diagnostics"),
                     outcome.alreadySpent))
             }
             if outcome.awaitingSync > 0 {
-                parts.append(String(
-                    format: NSLocalizedString("%d waiting for the network", comment: "SPV diagnostics"),
+                parts.append(String.localizedStringWithFormat(
+                    NSLocalizedString("%d waiting for the network", comment: "SPV diagnostics"),
                     outcome.awaitingSync))
             }
-            if outcome.failed > 0 {
+            if outcome.inProgress > 0 {
                 parts.append(String(
-                    format: NSLocalizedString("%d could not be reached", comment: "SPV diagnostics"),
+                    format: NSLocalizedString("%d still in progress", comment: "SPV diagnostics"),
+                    outcome.inProgress))
+            }
+            if outcome.failed > 0 {
+                parts.append(String.localizedStringWithFormat(
+                    NSLocalizedString("%d could not be reached", comment: "SPV diagnostics"),
                     outcome.failed))
             }
             if outcome.cancelled {
@@ -952,30 +971,53 @@ extension SwiftDashSDKSPVStatusScreen {
                     dropResultMessage = NSLocalizedString(
                         "No unconfirmed transactions to drop.",
                         comment: "SPV diagnostics")
-                } else if outcome.rescanArmed {
-                    dropResultIsError = false
-                    dropResultMessage = String(
-                        format: NSLocalizedString(
-                            "Dropped %d unconfirmed transaction(s) — rescanning filters, watch the Filters row.",
-                            comment: "SPV diagnostics"),
-                        outcome.dropped)
                 } else {
-                    // The drop finished but the recovery rescan didn't
-                    // arm — flag it instead of claiming the safety net ran.
-                    dropResultIsError = true
-                    dropResultMessage = String(
-                        format: NSLocalizedString(
-                            "Dropped %d unconfirmed transaction(s), but the filter rescan couldn't start — run Rescan Filters above.",
-                            comment: "SPV diagnostics"),
-                        outcome.dropped)
+                    switch outcome.outcome {
+                    case .rescanArmed:
+                        dropResultIsError = false
+                        dropResultMessage = String.localizedStringWithFormat(
+                            NSLocalizedString(
+                                "Dropped %d unconfirmed transaction(s) — rescanning filters, watch the Filters row.",
+                                comment: "SPV diagnostics"),
+                            outcome.dropped)
+                    case .rescanUnavailable:
+                        // The drop finished but the recovery rescan didn't
+                        // arm — flag it instead of claiming the safety net ran.
+                        dropResultIsError = true
+                        dropResultMessage = String.localizedStringWithFormat(
+                            NSLocalizedString(
+                                "Dropped %d unconfirmed transaction(s), but the filter rescan couldn't start — run Rescan Filters above.",
+                                comment: "SPV diagnostics"),
+                            outcome.dropped)
+                    case .runtimeStopped:
+                        // Rescan Filters above is disabled while SPV is
+                        // stopped, so restarting comes first — and it has to
+                        // be followed by the rescan, which restarting does
+                        // not replay. This path never explorer-checked, so
+                        // that rescan is the only on-chain safety check the
+                        // dropped transactions ever get.
+                        dropResultIsError = true
+                        dropResultMessage = String.localizedStringWithFormat(
+                            NSLocalizedString(
+                                "Dropped %d unconfirmed transaction(s), but the wallet stopped and the filter rescan never ran. Restart the wallet (reopen the app, or Sync Now in Platform sync), then run Rescan Filters above.",
+                                comment: "SPV diagnostics"),
+                            outcome.dropped)
+                    }
                 }
-                Self.logger.info("🛰️ SPV-STATUS :: bulk unconfirmed drop finished — \(outcome.dropped, privacy: .public) tx(s), rescanArmed=\(outcome.rescanArmed, privacy: .public)")
+                Self.logger.info("🛰️ SPV-STATUS :: bulk unconfirmed drop finished — \(outcome.dropped, privacy: .public) tx(s), outcome=\(String(describing: outcome.outcome), privacy: .public)")
+            } catch UnconfirmedTransactionRemover.RemovalError.removalInProgress {
+                // Another removal is reloading the wallet: nothing failed.
+                dropResultIsError = false
+                dropResultMessage = ShieldedAssetLocksInFlight.walletReloadingMessage
             } catch {
                 dropResultIsError = true
                 dropResultMessage = error.localizedDescription
                 Self.logger.error("🛰️ SPV-STATUS :: bulk unconfirmed drop failed: \(String(describing: error), privacy: .public)")
             }
             isDroppingUnconfirmed = false
+            // The drop deletes the locks of the dropped transactions; the
+            // pending list read before it would offer to resume them.
+            refreshPendingRecoveries()
         }
     }
 

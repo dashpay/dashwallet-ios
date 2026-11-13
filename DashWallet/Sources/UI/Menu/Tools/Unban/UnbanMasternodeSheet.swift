@@ -11,6 +11,7 @@
 //  limitations under the License.
 //
 
+import DashUIKit
 import SwiftDashSDK
 import SwiftUI
 
@@ -31,7 +32,11 @@ struct UnbanMasternodeSheet: View {
     }
 
     var body: some View {
-        NavigationStack {
+        DashUIKit.BottomSheet(
+            title: NSLocalizedString("Unban masternode", comment: "Masternode unban"),
+            showBackButton: .constant(false),
+            background: Color(UIColor.systemGroupedBackground)
+        ) {
             List {
                 overviewSection
                 if viewModel.isEvonode {
@@ -44,13 +49,6 @@ struct UnbanMasternodeSheet: View {
                 reviewToggleSection
                 previewSection
                 submitSection
-            }
-            .navigationTitle(NSLocalizedString("Unban masternode", comment: "Masternode unban"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(NSLocalizedString("Close", comment: "")) { dismiss() }
-                }
             }
             .onAppear { viewModel.resumePendingIfAny() }
         }
@@ -190,8 +188,8 @@ struct UnbanMasternodeSheet: View {
                     value: preview.feeDuffs.formattedDashAmount)
                 MasternodeDetailRow(
                     label: NSLocalizedString("Size", comment: "Masternode unban"),
-                    value: String(
-                        format: NSLocalizedString("%d bytes", comment: "Masternode unban"),
+                    value: String.localizedStringWithFormat(
+                        NSLocalizedString("%d bytes", comment: "Masternode unban"),
                         preview.sizeBytes))
                 MasternodeDetailRow(
                     label: NSLocalizedString("Inputs", comment: "Masternode unban"),

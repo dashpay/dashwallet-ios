@@ -271,12 +271,12 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
         }
         let remaining = LockoutPolicy.maxFailCount - count
         if count > 0, remaining <= LockoutPolicy.permanentLockWarningThreshold {
-            let message = String(format: NSLocalizedString("%ld attempt(s) left before your wallet is disabled", comment: ""), Int(remaining))
+            let message = String.localizedStringWithFormat(NSLocalizedString("%ld attempt(s) left before your wallet is disabled", comment: ""), Int(remaining))
             return Precheck(shouldContinueAuthentication: true, shouldLockout: false, attemptsMessage: message)
         }
         if count > 0, count < LockoutPolicy.allowedFailCount {
             let untilCooldown = LockoutPolicy.allowedFailCount - count
-            let message = String(format: NSLocalizedString("%ld attempt(s) remaining", comment: "PIN attempts before temporary lockout"), Int(untilCooldown))
+            let message = String.localizedStringWithFormat(NSLocalizedString("%ld attempt(s) remaining", comment: "PIN attempts before temporary lockout"), Int(untilCooldown))
             return Precheck(shouldContinueAuthentication: true, shouldLockout: false, attemptsMessage: message)
         }
         return Precheck(shouldContinueAuthentication: true, shouldLockout: false, attemptsMessage: nil)
@@ -388,8 +388,22 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
 
     @objc func canUseBiometricAuthentication(forAmount amount: UInt64) -> Bool {
         guard isBiometricAuthenticationAllowed else { return false }
-        guard let left = PinStore.int64(for: .biometricAmountLeft) else { return false }
-        return amount <= UInt64(bitPattern: left)
+        return Self.biometricAllowanceCovers(amount: amount,
+                                             allowanceLeft: PinStore.int64(for: .biometricAmountLeft),
+                                             limit: biometricSpendingLimit)
+    }
+
+    /// Whether the remaining biometric allowance covers `amount`. With no
+    /// stored limit there is no allowance, whatever `allowanceLeft` holds.
+    static func biometricAllowanceCovers(amount: UInt64, allowanceLeft: Int64?, limit: UInt64) -> Bool {
+        guard limit != spendingLimitNotSet, let allowanceLeft else { return false }
+        return amount <= UInt64(bitPattern: allowanceLeft)
+    }
+
+    /// The biometric allowance a PIN entry restores for `limit`: the limit
+    /// itself, or none when no limit is stored.
+    static func allowanceAfterPinEntry(limit: UInt64) -> UInt64 {
+        limit == spendingLimitNotSet ? 0 : limit
     }
 
     /// Pod's `updateBiometricsAmountLeftAfterSpendingAmount:` — subtract, or
@@ -432,10 +446,8 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
     @objc @discardableResult
     func resetSpendingLimitsIfAuthenticated() -> Bool {
         guard didAuthenticate else { return false }
-        let limit = biometricSpendingLimit
-        if limit > 0 {
-            PinStore.set(int64: Int64(bitPattern: limit), for: .biometricAmountLeft)
-        }
+        let allowance = Self.allowanceAfterPinEntry(limit: biometricSpendingLimit)
+        PinStore.set(int64: Int64(bitPattern: allowance), for: .biometricAmountLeft)
         return true
     }
 
@@ -455,6 +467,7 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
     /// non-monetary gates.
     @MainActor
     func authenticate(usingBiometrics: Bool, spendAmount: UInt64?) async -> AuthOutcome {
+        guard !Task.isCancelled else { return .cancelled }
         guard usesAuthentication else { return .authenticated(usedBiometrics: false) }
 
         let biometricsPermitted: Bool = {
@@ -464,7 +477,9 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
         }()
 
         if biometricsPermitted {
-            switch await evaluateBiometrics() {
+            let result = await evaluateBiometrics()
+            guard !Task.isCancelled else { return .cancelled }
+            switch result {
             case .success:
                 didAuthenticate = true
                 if let amount = spendAmount { updateBiometricsAmountLeft(afterSpending: amount) }
@@ -517,16 +532,24 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
         reason: String = NSLocalizedString("Authenticate to access your wallet", comment: "Biometric prompt")
     ) async -> BiometricResult {
         let context = LAContext()
-        return await withCheckedContinuation { continuation in
-            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, error in
-                if success {
-                    continuation.resume(returning: .success)
-                } else if let laError = error as? LAError, laError.code == .userCancel || laError.code == .appCancel || laError.code == .systemCancel {
+        return await withTaskCancellationHandler {
+            await withCheckedContinuation { continuation in
+                guard !Task.isCancelled else {
                     continuation.resume(returning: .cancelled)
-                } else {
-                    continuation.resume(returning: .failed)
+                    return
+                }
+                context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, error in
+                    if success {
+                        continuation.resume(returning: .success)
+                    } else if let laError = error as? LAError, laError.code == .userCancel || laError.code == .appCancel || laError.code == .systemCancel {
+                        continuation.resume(returning: .cancelled)
+                    } else {
+                        continuation.resume(returning: .failed)
+                    }
                 }
             }
+        } onCancel: {
+            context.invalidate()
         }
     }
 

@@ -63,7 +63,7 @@ static NSString *DWReversedHexString(NSData *data) {
     // Core Data contact graph (matchingDashpayUserInContext +
     // DSFriendRequestEntity) that no longer syncs. Pay-to-contact
     // now flows through the SwiftUI contacts screen →
-    // WalletSendService.sendToContact, never through this processor.
+    // WalletSendService.prepareContactPayment, never through this processor.
 #endif
 
     self.paymentInput = paymentInput;
@@ -196,7 +196,7 @@ static NSString *DWReversedHexString(NSData *data) {
         self.bip70Coordinator = coordinator;
         [coordinator fetchAndVerifyWithRequestURL:parsed.rURL
                                            scheme:parsed.scheme
-                                   callbackScheme:parsed.callbackScheme
+                                   callbackScheme:self.paymentInput.callbackScheme
                                        completion:^(DWBIP70ConfirmationBox *_Nullable box, NSError *_Nullable error) {
                                            __strong typeof(weakSelf) strongSelf = weakSelf;
                                            if (!strongSelf) {
@@ -391,12 +391,9 @@ static NSString *DWReversedHexString(NSData *data) {
     if (callbackScheme) {
         // Same display-order hex as before the txid retype (wire bytes reversed).
         NSString *txid = DWReversedHexString(txidWire);
-        NSString *encodedAddress = [address stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
-        NSString *callbackString = [callbackScheme
-            stringByAppendingFormat:@"://callback=payack&address=%@&txid=%@",
-                                    encodedAddress,
-                                    txid];
-        NSURL *callbackURL = [NSURL URLWithString:callbackString];
+        NSURL *callbackURL = [DWCallbackScheme payAckURLWithScheme:callbackScheme
+                                                           address:address
+                                                              txid:txid];
         if (callbackURL) {
             [[UIApplication sharedApplication] openURL:callbackURL
                                                options:@{}

@@ -34,8 +34,11 @@ struct GenericQRScannerView: View {
                 onQRCodeScanned: { value in
                     let generator = UINotificationFeedbackGenerator()
                     generator.notificationOccurred(.success)
+                    // Never the payload: this scanner also reads private keys
+                    // (masternode and voting keys), and DWLogger's files end up
+                    // in support mail and diagnostic archives.
                     #if DEBUG
-                    DWLogger.log("Maya QR Scanner: Scanned value: \(value)")
+                    DWLogger.log("QR Scanner: scanned a code (\(value.count) characters)")
                     #endif
                     onQRCodeScanned?(value)
                 },

@@ -17,6 +17,7 @@
 
 import Combine
 import Foundation
+import SwiftDashSDK
 
 /// One internal transfer, described completely enough to execute without the
 /// screen that asked for it.
@@ -46,6 +47,7 @@ struct InternalTransferRequest: Equatable {
     /// Frozen with the submitted amount, so a capacity refresh only rewrites
     /// a figure the user derived with Max.
     let platformShieldAmountWasMax: Bool
+    var coreShieldedDrain: CoreShieldedDrainConfirmation? = nil
 }
 
 /// Runs an internal transfer and outlives whatever presented it.
@@ -67,8 +69,7 @@ final class InternalTransferRunner: ObservableObject {
     static let shared = InternalTransferRunner()
 
     /// The one lifecycle callers render from, whichever executor is running.
-    /// `submittedUnconfirmed` is route-only — no identity transition lands in
-    /// that state.
+    /// `submittedUnconfirmed` also covers an identity top-up with an unknown result.
     enum Phase: Equatable {
         case idle
         case inFlight
@@ -93,6 +94,14 @@ final class InternalTransferRunner: ObservableObject {
         /// The user backed out of the PIN prompt, or it failed. Not an error
         /// state — the caller returns to what it was showing.
         case notAuthorized
+        /// The transfer's asset lock would need more inputs than the network
+        /// accepts. Refused before the PIN prompt; the caller offers
+        /// `CoreCoinConsolidationSheet` for this lock.
+        case needsCoinConsolidation(AssetLockInputLimit.Check)
+        /// A removal is reloading the wallet, so a transfer from the Dash
+        /// Wallet balance would only be refused. Refused before the PIN
+        /// prompt; the notice says why.
+        case walletReloading
     }
 
     @Published private(set) var phase: Phase = .idle
@@ -102,7 +111,8 @@ final class InternalTransferRunner: ObservableObject {
     /// The confirm sheet closes as soon as the transfer starts, so the
     /// outcome arrives with nothing of the transfer's own left on screen —
     /// this is how it reaches the surface the user actually landed on.
-    /// Cleared by that surface once shown.
+    /// Cleared by that surface once shown — except a failure, which stays
+    /// until the user closes it or the next transfer replaces it.
     @Published var notice: Notice? {
         didSet { noticeRaisedAt = notice == nil ? nil : Date() }
     }
@@ -111,8 +121,9 @@ final class InternalTransferRunner: ObservableObject {
     ///
     /// The toast lives on `HomeView`, and a notice raised while the user is
     /// elsewhere stays set until something clears it. Without a timestamp the
-    /// next appearance of that screen would announce an outcome from an
-    /// arbitrary time ago as if it had just happened.
+    /// next appearance of that screen would announce a progress or success
+    /// notice from an arbitrary time ago as if it had just happened. A failure
+    /// is exempt: it is shown whenever the user next arrives, until closed.
     private(set) var noticeRaisedAt: Date?
 
     /// The things worth saying, in the order they can happen.
@@ -126,11 +137,48 @@ final class InternalTransferRunner: ObservableObject {
         /// Accepted by the network but not yet confirmed — a shielded spend
         /// whose receipt has not landed.
         case submitted
+        case drainPending
         case failed(String)
+        /// The transfer's asset lock would need more inputs than the network
+        /// accepts. Drawn as `CoreCoinConsolidationSheet`, not a toast.
+        case needsCoinConsolidation(AssetLockInputLimit.Check)
+
+        /// A failure stays up until the user closes it: its reason is the one
+        /// thing the history will not show.
+        var isFailure: Bool {
+            if case .failed = self { return true }
+            return false
+        }
+
+        /// The lock to offer combining coins for, when this notice is that offer.
+        var coinConsolidationCheck: AssetLockInputLimit.Check? {
+            if case .needsCoinConsolidation(let check) = self { return check }
+            return nil
+        }
+
+        /// How much longer this notice stays up, given when it was raised.
+        ///
+        /// `nil` means no timer at all — a failure waits for the user. Zero
+        /// means its time is already spent: a notice raised while its screen
+        /// was away has lived its life unseen, and announcing it now would
+        /// date-stamp an old outcome as current. Anything still inside its
+        /// window is shown for the rest of that window.
+        func remainingDisplayTime(raisedAt: Date?, now: Date, duration: TimeInterval) -> TimeInterval? {
+            // The coin-combining offer waits for the user like a failure.
+            guard !isFailure, coinConsolidationCheck == nil else { return nil }
+            let age = raisedAt.map { now.timeIntervalSince($0) } ?? 0
+            return max(0, duration - age)
+        }
+    }
+
+    /// Whether closing the toast drawn for `dismissed` clears `current`.
+    /// Only the notice that toast was drawn for — a newer outcome must not be
+    /// swept away by a stale tap.
+    nonisolated static func dismissal(of dismissed: Notice, clears current: Notice?) -> Bool {
+        current == dismissed
     }
 
     private let coordinator = ShieldedTransferCoordinator()
-    private let topUpExecutor = IdentityTopUpViewModel()
     private let withdrawExecutor = IdentityWithdrawViewModel()
     private let authorizer = DWIdentityAuthorizer()
     private var cancellables = Set<AnyCancellable>()
@@ -138,6 +186,7 @@ final class InternalTransferRunner: ObservableObject {
     /// Held across the authorization gate, which is the window `phase` cannot
     /// cover: it is still `.idle` while the PIN prompt is up.
     private var isAwaitingAuthorization = false
+    private var isCoreDrainRecovery = false
 
     private init() {
         coordinator.$phase
@@ -170,6 +219,26 @@ final class InternalTransferRunner: ObservableObject {
             return .busy
         }
 
+        // Counted before the gate, as the coordinator counts its own call: a
+        // transfer from the Dash Wallet balance started during a removal's
+        // reload is refused without a PIN prompt, and no removal is admitted
+        // while the prompt is up. Held until the executor finishes (`run`).
+        let holdsFundingCall = Self.countsAsFundingCall(request.kind)
+        if holdsFundingCall {
+            guard ShieldedAssetLocksInFlight.shared.beginFundingCall() else {
+                notice = .failed(ShieldedAssetLocksInFlight.walletReloadingMessage)
+                return .walletReloading
+            }
+        }
+
+        // Before the gate: a lock over the input limit is never built, so it
+        // asks for no PIN (`AssetLockInputPolicy`).
+        if let check = Self.assetLockInputCheck(for: request),
+           AssetLockInputLimit.verdict(for: check) == .needsConsolidation {
+            if holdsFundingCall { ShieldedAssetLocksInFlight.shared.endFundingCall() }
+            return .needsCoinConsolidation(check)
+        }
+
         // Claimed BEFORE the gate, not after. `phase` only becomes `.inFlight`
         // once an executor is running, and the PIN prompt sits in between —
         // three entry points build a transfer screen against this one shared
@@ -184,6 +253,7 @@ final class InternalTransferRunner: ObservableObject {
             // Both backing out and a failed prompt leave the caller where it
             // was — the prompt itself has already said whatever there was to
             // say, and nothing has been started to report on.
+            if holdsFundingCall { ShieldedAssetLocksInFlight.shared.endFundingCall() }
             return .notAuthorized
         }
 
@@ -201,11 +271,134 @@ final class InternalTransferRunner: ObservableObject {
         // guards and started a second transfer behind the first.
         phase = .inFlight
         notice = .started
-        run(request)
+        run(request, endingFundingCall: holdsFundingCall)
         return .started
     }
 
-    // No retry here. A Core-funded route that fails after committing its asset
+    /// Whether the request builds a funding lock from the Dash Wallet balance
+    /// that `ShieldedAssetLocksInFlight` counts: Core → Shielded (Max
+    /// included) and Core → Platform address. Identity top-ups do not use the
+    /// registry yet (dashpay/dashwallet-ios#1231).
+    nonisolated static func countsAsFundingCall(_ kind: InternalTransferRequest.Kind) -> Bool {
+        switch kind {
+        case .route(.coreToShielded), .route(.coreToPlatform):
+            return true
+        case .route, .identityTopUp, .identityWithdrawal:
+            return false
+        }
+    }
+
+    /// Recovery reuses the UUID's exact outpoint. A missing outpoint permits
+    /// only status lookup; it must never fall back to building another lock.
+    func resumeCoreDrain(context: CoreShieldedDrainContext, operation: CoreShieldedDrainOperation? = nil) async -> WalletDrainOutcome? {
+        guard phase != .inFlight, !isAwaitingAuthorization else { notice = .busy; return nil }
+        isAwaitingAuthorization = true
+        defer { isAwaitingAuthorization = false }
+        let service = CoreShieldedDrainService()
+        var attemptedResume = false
+        // A refused recipient keeps the failure `apply` showed, whatever the
+        // status re-read says or throws: nothing was sent, and the next resume
+        // is refused the same way.
+        var refusedRecipient = false
+        do {
+            let lookup: (operation: CoreShieldedDrainOperation, outcome: WalletDrainOutcome)?
+            if let operation {
+                guard operation.context == context else { return nil }
+                lookup = (operation, try await service.status(for: operation))
+            } else {
+                lookup = try await service.operationStatus(context)
+            }
+            guard let pending = lookup else { return nil }
+            switch pending.outcome.drainVerdict {
+            case .completed:
+                phase = .success
+                notice = .succeeded
+                return pending.outcome
+            case .notSent, .pending(hasOutpoint: false):
+                return nil
+            case .pending(hasOutpoint: true):
+                break
+            }
+            guard let outpoint = pending.outcome.outpoint else { return nil }
+            // Counted before the gate, as `start` does, and held until the
+            // resume returns.
+            guard ShieldedAssetLocksInFlight.shared.beginFundingCall() else {
+                notice = .failed(ShieldedAssetLocksInFlight.walletReloadingMessage)
+                return nil
+            }
+            defer { ShieldedAssetLocksInFlight.shared.endFundingCall() }
+            do { try await authorizer.authorize() } catch { return nil }
+            _ = try service.manager(for: context)
+            isCoreDrainRecovery = true
+            defer { isCoreDrainRecovery = false }
+            coordinator.reset()
+            phase = .inFlight
+            attemptedResume = true
+            // The recipient passed is the marker's, never re-derived: the
+            // coordinator refuses it unless it matches the recipient the SDK
+            // recorded on the lock, and pays the marker's for a drain started
+            // before the SDK recorded one.
+            await DWIdentityAuthorizer.preauthorized {
+                await coordinator.resumeAssetLock(
+                    outPointTxidWire: outpoint.txidWire, outPointVout: outpoint.vout,
+                    recipientRaw43: pending.operation.recipient.externalRaw43,
+                    expectedDrainContext: context, retryUnverifiedConsumption: true)
+            }
+            refusedRecipient = coordinator.lastFailure.map(ShieldedTransferCoordinator.isRecipientMismatch) ?? false
+            let status = try await service.status(for: pending.operation)
+            if status.drainVerdict == .completed {
+                // A concurrent resume can consume the lock while authorization
+                // is open. The generic resume reports AlreadyConsumed as
+                // unconfirmed; the UUID lookup reads the SDK's drain receipt
+                // instead. That receipt is not yet authenticated evidence: the
+                // SDK also writes it on an unverified already-consumed report
+                // (#1230).
+                phase = .success
+                notice = .succeeded
+            } else if case .pending = status.drainVerdict, !refusedRecipient {
+                phase = .submittedUnconfirmed
+                notice = .drainPending
+            }
+            return status
+        } catch {
+            if attemptedResume {
+                if !refusedRecipient {
+                    phase = .submittedUnconfirmed
+                    notice = .drainPending
+                }
+            } else {
+                phase = .failed(error.localizedDescription)
+                notice = .failed(error.localizedDescription)
+            }
+        }
+        return nil
+    }
+
+    /// The asset lock `request` builds from Core coins, for the input
+    /// pre-check; nil when it builds none. A Max drain is not pre-checked:
+    /// its preview already warns, and the SDK refuses one over the cap.
+    static func assetLockInputCheck(for request: InternalTransferRequest) -> AssetLockInputLimit.Check? {
+        switch request.kind {
+        case .route(.coreToShielded):
+            guard request.coreShieldedDrain == nil,
+                  let poolFeeCredits = CoreToShieldedAmountPolicy.poolFeeCredits,
+                  let lockDuffs = CoreToShieldedAmountPolicy.lockValueDuffs(
+                      forAmountDuffs: request.amountDuffsUnsigned, poolFeeCredits: poolFeeCredits)
+            else { return nil }
+            return ShieldedTransferCoordinator.shieldInputCheck(lockValueDuffs: lockDuffs)
+        case .route(.coreToPlatform):
+            guard let lockDuffs = request.coreToPlatformLockDuffs else { return nil }
+            return AssetLockInputLimit.Check(
+                amountDuffs: lockDuffs, inputBudget: AssetLockInputPolicy.platformInputBudget)
+        case .identityTopUp(let topUp) where topUp.source == .core:
+            return AssetLockInputLimit.Check(
+                amountDuffs: request.amountDuffsUnsigned, inputBudget: AssetLockInputPolicy.platformInputBudget)
+        case .route, .identityTopUp, .identityWithdrawal:
+            return nil
+        }
+    }
+
+    // Legacy Core-funded failures are recovered from history. A Core-funded route that fails after committing its asset
     // lock is recovered by the home screen: the pending transaction row is
     // tappable and opens `ShieldedRecoverySheet`, which resumes that exact
     // outpoint. A second entry point would risk building a second lock.
@@ -216,8 +409,10 @@ final class InternalTransferRunner: ObservableObject {
     /// held the gate open for this exact transfer. Without it the user would
     /// be asked for the PIN twice: once on the sheet, once again from inside
     /// the coordinator.
-    private func run(_ request: InternalTransferRequest) {
+    private func run(_ request: InternalTransferRequest, endingFundingCall: Bool) {
         Task {
+            // Ends the funding call `start` counted before the PIN prompt.
+            defer { if endingFundingCall { ShieldedAssetLocksInFlight.shared.endFundingCall() } }
             await DWIdentityAuthorizer.preauthorized {
                 switch request.kind {
                 case .route(let route):
@@ -234,7 +429,11 @@ final class InternalTransferRunner: ObservableObject {
     private func runRoute(_ route: InternalTransferRoute, _ request: InternalTransferRequest) async {
         switch route {
         case .coreToShielded:
-            await coordinator.performAssetLock(recipientAmountDuffs: request.amountDuffsUnsigned)
+            if let drain = request.coreShieldedDrain {
+                await coordinator.performWalletDrain(drain)
+            } else {
+                await coordinator.performAssetLock(recipientAmountDuffs: request.amountDuffsUnsigned)
+            }
         case .platformToShielded:
             await coordinator.performShield(amountCredits: request.creditsAmount)
         case .shieldedToCore:
@@ -265,12 +464,22 @@ final class InternalTransferRunner: ObservableObject {
     /// the same way: a result is success, a message is failure, and a bare
     /// nil is neither — the executor declined without anything to say.
     private func runTopUp(_ topUp: IdentityTopUpTransfer, _ request: InternalTransferRequest) async {
+        // This task outlives its sheet, but outcome guards belong to this
+        // authorized request, not to every later request on the shared runner.
+        let topUpExecutor = IdentityTopUpViewModel()
         phase = .inFlight
         let newBalance = await topUpExecutor.topUp(
             identityId: topUp.identityId,
             amountDuffs: request.amountDuffsUnsigned,
             source: .init(spending: topUp.source))
-        phase = outcome(succeeded: newBalance != nil, message: consume(&topUpExecutor.errorMessage))
+        if let check = consume(&topUpExecutor.inputLimitCheck) {
+            phase = .failed(AssetLockInputLimit.message)
+            notice = .needsCoinConsolidation(check)
+            return
+        }
+        let message = consume(&topUpExecutor.errorMessage)
+        phase = topUpExecutor.submittedUnconfirmed ? .submittedUnconfirmed
+            : outcome(succeeded: newBalance != nil, message: message)
         announce(phase)
     }
 
@@ -295,7 +504,8 @@ final class InternalTransferRunner: ObservableObject {
         case .success: notice = .succeeded
         case .failed(let message): notice = .failed(message)
         case .idle: notice = nil
-        case .inFlight, .submittedUnconfirmed: break
+        case .submittedUnconfirmed: notice = .submitted
+        case .inFlight: break
         }
     }
 
@@ -311,7 +521,7 @@ final class InternalTransferRunner: ObservableObject {
 
     /// Clears the executor's message as it reads it, so a later retry cannot
     /// inherit the previous failure.
-    private func consume(_ message: inout String?) -> String? {
+    private func consume<Value>(_ message: inout Value?) -> Value? {
         defer { message = nil }
         return message
     }
@@ -321,7 +531,9 @@ final class InternalTransferRunner: ObservableObject {
     private func apply(_ routePhase: ShieldedTransferCoordinator.Phase) {
         // Identity transfers drive `phase` directly; the coordinator is idle
         // then and must not overwrite them.
-        guard case .route? = request?.kind else { return }
+        if !isCoreDrainRecovery {
+            guard case .route? = request?.kind else { return }
+        }
 
         switch routePhase {
         case .signing, .locking, .proving, .broadcasting:
@@ -331,10 +543,14 @@ final class InternalTransferRunner: ObservableObject {
             notice = .succeeded
         case .submittedUnconfirmed:
             phase = .submittedUnconfirmed
-            notice = .submitted
+            notice = request?.coreShieldedDrain != nil || isCoreDrainRecovery ? .drainPending : .submitted
         case .failed(let message):
             phase = .failed(message)
-            notice = .failed(message)
+            if let check = coordinator.inputLimitCheck {
+                notice = .needsCoinConsolidation(check)
+            } else {
+                notice = .failed(message)
+            }
             notePlatformShieldCapacityChange()
         default:
             phase = .idle

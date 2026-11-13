@@ -20,13 +20,14 @@ import Foundation
 class CTXConstants {
     /// Returns the appropriate CTX API base URL based on the current network
     /// - Mainnet: https://spend.ctx.com/
-    /// - Testnet: https://staging.spend.ctx.com/
+    /// - Testnet/devnet: https://staging.spend.ctx.com/ (a non-mainnet
+    ///   network must never talk to the production spend service)
     static var baseURI: String {
         let url: String
-        if WalletEnvironment.isTestnet {
-            url = "https://staging.spend.ctx.com/"  // Changed from http to https
-        } else {
+        if WalletEnvironment.isMainnet {
             url = "https://spend.ctx.com/"
+        } else {
+            url = "https://staging.spend.ctx.com/"  // Changed from http to https
         }
 
         return url

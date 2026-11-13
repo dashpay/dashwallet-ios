@@ -2,7 +2,7 @@ name: Release dashpay to TestFlight
 
 run-name: >-
   dashpay ${{ inputs.release_channel }} TestFlight from ${{ inputs.wallet_ref }}
-  → ${{ inputs.app_version }} (platform ${{ inputs.platform_ref }})
+  → ${{ inputs.app_version }} (platform ${{ inputs.platform_ref || 'pin or default branch' }})
 
 on:
   workflow_dispatch:
@@ -13,9 +13,9 @@ on:
         default: develop
         type: string
       platform_ref:
-        description: "dashpay/platform branch, tag, or commit SHA"
-        required: true
-        default: v4.2-dev
+        description: "dashpay/platform branch, tag, or commit SHA — blank uses the pin in wallet_ref's .platform-ref (dashpay/platform's default branch if it has none)"
+        required: false
+        default: ""
         type: string
       dashuikit_ref:
         description: "dashpay/DashUIKit branch, tag, or full commit SHA — blank uses the pin committed in Package.resolved"
@@ -45,6 +45,11 @@ on:
         required: true
         default: "New beta build."
         type: string
+      expose_devnet:
+        description: "Expose Devnet in the build. Internal builds only — never for a build that will be promoted to the App Store."
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -76,7 +81,7 @@ jobs:
       # package, so both repositories must be siblings in the Actions
       # workspace.
       - name: Checkout dashwallet-ios
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           ref: ${{ inputs.wallet_ref }}
           path: dashwallet-ios
@@ -173,35 +178,204 @@ jobs:
       # `dashwallet-ios` checkout, so `.github/scripts` there is whatever
       # `wallet_ref` happens to carry — and a branch cut before those scripts
       # existed cannot be released at all, which is the opposite of what a
-      # release pipeline is for. Sparse: only the scripts are needed.
+      # release pipeline is for. Sparse: only the scripts, the select-xcode action
+      # and its fallback .xcode-version are needed.
       - name: Checkout release tooling
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           ref: ${{ github.ref }}
           path: release-tooling
-          sparse-checkout: .github/scripts
+          sparse-checkout: |
+            .github/scripts
+            .github/actions
+            .xcode-version
           sparse-checkout-cone-mode: false
           fetch-depth: 1
           persist-credentials: false
 
       - name: Locate release tooling
+        env:
+          RELEASE_CHANNEL: ${{ inputs.release_channel }}
         run: |
           set -euo pipefail
-          script="$GITHUB_WORKSPACE/release-tooling/.github/scripts/app_store_connect_release.rb"
-          if [[ ! -f "$script" ]]; then
-            echo "::error::release tooling missing at $script"
+          tooling="$GITHUB_WORKSPACE/release-tooling/.github/scripts"
+          scripts=(app_store_connect_release.rb)
+          if [[ "$RELEASE_CHANNEL" != 'internal-only' ]]; then
+            scripts+=(schema_release.rb capture_schema_release.py)
+          fi
+          for script in "${scripts[@]}"; do
+            if [[ ! -f "$tooling/$script" ]]; then
+              echo "::error::release tooling missing at $tooling/$script; use a workflow ref containing all release scripts"
+              exit 1
+            fi
+          done
+          echo "RELEASE_SCRIPT=$tooling/app_store_connect_release.rb" >> "$GITHUB_ENV"
+          echo "SCHEMA_RELEASE_SCRIPT=$tooling/schema_release.rb" >> "$GITHUB_ENV"
+          echo "SCHEMA_CAPTURE_SCRIPT=$tooling/capture_schema_release.py" >> "$GITHUB_ENV"
+
+      # A blank `platform_ref` builds the SDK from the commit in `.platform-ref`,
+      # the pin unit-tests.yml checks out. A branch cut before `.platform-ref`
+      # existed falls back to Platform's default branch (a blank checkout ref),
+      # so it can still be released. An entered ref wins; build provenance
+      # warns when it lands off the pin, and the release summary records it.
+      - name: Resolve the platform ref
+        id: platform-ref
+        env:
+          REQUESTED_PLATFORM_REF: ${{ inputs.platform_ref }}
+        run: |
+          set -euo pipefail
+          ref=$(printf '%s' "$REQUESTED_PLATFORM_REF" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+          if [[ "$ref" =~ [[:space:]] ]]; then
+            echo "::error::platform_ref must be a single branch, tag or SHA without whitespace"
             exit 1
           fi
-          echo "RELEASE_SCRIPT=$script" >> "$GITHUB_ENV"
+          # checkout fails on an unknown ref (an abbreviated SHA, a typo) only
+          # after a full-history fetch, so anything but a full SHA must name a
+          # branch or tag exactly. ls-remote patterns match name suffixes, so
+          # the returned names are compared exactly.
+          if [[ -n "$ref" && ! "$ref" =~ ^[0-9a-fA-F]{40}$ ]]; then
+            if [[ "$ref" == refs/* ]]; then
+              candidates=("$ref")
+            else
+              candidates=("refs/heads/$ref" "refs/tags/$ref")
+            fi
+            if ! listed=$(git ls-remote https://github.com/dashpay/platform "${candidates[@]}"); then
+              echo "::error::could not look up platform_ref '$ref' in dashpay/platform"
+              exit 1
+            fi
+            found=$(printf '%s\n' "$listed" | awk -v a="${candidates[0]}" -v b="${candidates[1]:-}" '$2 == a || $2 == b { print $2; exit }')
+            if [[ -z "$found" ]]; then
+              echo "::error::platform_ref '$ref' is not a dashpay/platform branch or tag; a commit needs its full 40-hex SHA"
+              exit 1
+            fi
+          fi
+          pin=""
+          if [[ -L .platform-ref ]] || { [[ -e .platform-ref ]] && [[ ! -f .platform-ref ]]; }; then
+            echo "::error file=.platform-ref::.platform-ref must be a regular file, not a symlink or directory"
+            exit 1
+          elif [[ -f .platform-ref ]]; then
+            pin=$(tr -d '[:space:]' < .platform-ref)
+            if ! [[ "$pin" =~ ^[0-9a-f]{40}$ ]]; then
+              echo "::error file=.platform-ref::expected a full 40-hex platform commit SHA, got '$pin'"
+              exit 1
+            fi
+          fi
+          if [[ -n "$ref" ]]; then
+            source="$ref"
+          elif [[ -n "$pin" ]]; then
+            ref="$pin"
+            source=".platform-ref"
+          else
+            echo "::warning::wallet_ref has no .platform-ref; building against dashpay/platform's default branch"
+            source="default branch"
+          fi
+          {
+            echo "ref=$ref"
+            echo "pin=$pin"
+            echo "source=$source"
+          } >> "$GITHUB_OUTPUT"
+          echo "platform: ${ref:-default branch} (from: $source)"
 
       - name: Checkout platform
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           repository: dashpay/platform
-          ref: ${{ inputs.platform_ref }}
+          # Blank only when the wallet has no `.platform-ref` and no ref was entered:
+          # then Platform's default branch, so a renamed dev branch needs no edit here.
+          ref: ${{ steps.platform-ref.outputs.ref }}
           path: platform
-          fetch-depth: 1
+          # Frozen models are regenerated from historical source commits.
+          fetch-depth: 0
           persist-credentials: false
+
+      - name: Resolve build provenance
+        id: release-info
+        env:
+          PLATFORM_PIN: ${{ steps.platform-ref.outputs.pin }}
+        run: |
+          set -euo pipefail
+
+          wallet_sha=$(git rev-parse HEAD)
+          platform_sha=$(git -C ../platform rev-parse HEAD)
+
+          if [[ -z "$PLATFORM_PIN" ]]; then
+            pin_status="no .platform-ref"
+          elif [[ "$platform_sha" == "$PLATFORM_PIN" ]]; then
+            pin_status="on the .platform-ref pin"
+          else
+            pin_status="off the .platform-ref pin ${PLATFORM_PIN}"
+            echo "::warning::building against platform $platform_sha, not the .platform-ref pin $PLATFORM_PIN that unit-tests.yml uses"
+          fi
+
+          {
+            echo "wallet_sha=$wallet_sha"
+            echo "platform_sha=$platform_sha"
+            echo "pin_status=$pin_status"
+          } >> "$GITHUB_OUTPUT"
+          # The SDK cache key and the Rust steps read it, as in unit-tests.yml.
+          echo "PLATFORM_SHA=$platform_sha" >> "$GITHUB_ENV"
+
+      # Toolchain before the first step that reads a release secret, so a missing
+      # Xcode or Rust fails the run before any credential is touched. The Xcode
+      # version comes from the wallet_ref checkout, else from this tooling ref.
+      - name: Select Xcode from .xcode-version
+        id: xcode
+        uses: ./release-tooling/.github/actions/select-xcode
+        with:
+          app-path: ${{ github.workspace }}/dashwallet-ios
+          fallback-path: ${{ github.workspace }}/release-tooling
+
+      - name: Show toolchain versions
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          swift --version
+
+      # Rust comes from platform's own pin (rust-toolchain.toml at the platform
+      # commit), the version cargo uses inside the platform checkout anyway.
+      - name: Read Rust version from platform
+        id: rust
+        working-directory: ${{ github.workspace }}/platform
+        run: |
+          set -euo pipefail
+          version=""
+          if [ -f rust-toolchain.toml ]; then
+            version="$(python3 - <<'TOML'
+          import re
+          text = open("rust-toolchain.toml").read()
+          section = re.search(r"^\[toolchain\][^\n]*\n(.*?)(?=^\[|\Z)", text, re.M | re.S)
+          channel = section and re.search(r'^\s*channel\s*=\s*"([^"]+)"', section.group(1), re.M)
+          print(channel.group(1) if channel else "")
+          TOML
+          )"
+          fi
+          if [ -z "$version" ]; then
+            echo "::error::rust_toolchain.not_found: no [toolchain] channel in platform's rust-toolchain.toml at $PLATFORM_SHA."
+            exit 1
+          fi
+          echo "Rust $version from platform's rust-toolchain.toml at $PLATFORM_SHA"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Restore release XCFramework cache
+        id: xcframework-cache
+        uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: ${{ github.workspace }}/platform/packages/swift-sdk/DashSDKFFI.xcframework
+          key: dash-sdk-xcframework-v1-${{ runner.os }}-${{ runner.arch }}-xcode-${{ steps.xcode.outputs.version }}-rust-${{ steps.rust.outputs.version }}-ios-sim-release-${{ env.PLATFORM_SHA }}
+
+      - name: Install Rust from platform's pin
+        if: steps.xcframework-cache.outputs.cache-hit != 'true'
+        working-directory: ${{ github.workspace }}/platform
+        env:
+          RUST_VERSION: ${{ steps.rust.outputs.version }}
+        run: |
+          set -euo pipefail
+          if ! rustup toolchain install "$RUST_VERSION" --profile minimal \
+            --target aarch64-apple-ios --target aarch64-apple-ios-sim; then
+            echo "::error::rust_toolchain.not_found: Rust $RUST_VERSION from platform's rust-toolchain.toml at $PLATFORM_SHA could not be installed."
+            exit 1
+          fi
+          rustc --version
 
       - name: Resolve archive paths
         run: |
@@ -209,8 +383,15 @@ jobs:
           echo "ARCHIVE_PATH=$RUNNER_TEMP/dashpay.xcarchive" >> "$GITHUB_ENV"
           echo "EXPORT_PATH=$RUNNER_TEMP/dashpay-export" >> "$GITHUB_ENV"
 
+      - name: Set up release tooling Ruby
+        uses: ruby/setup-ruby@de492cf36cbab201753d720ce4f4e336cd688c94 # v1.336.0
+        with:
+          ruby-version: '3.3'
+
       - name: Validate release secrets
         env:
+          SCHEMA_RELEASE_TOKEN: ${{ secrets.SCHEMA_RELEASE_TOKEN }}
+          RELEASE_CHANNEL: ${{ inputs.release_channel }}
           APPLE_DISTRIBUTION_CERTIFICATE_BASE64: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_BASE64 }}
           APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD }}
           APPLE_DEVELOPMENT_CERTIFICATE_BASE64: ${{ secrets.APPLE_DEVELOPMENT_CERTIFICATE_BASE64 }}
@@ -240,6 +421,9 @@ jobs:
             UPHOLD_INFO_PLIST_BASE64
             SWAPKIT_INFO_PLIST_BASE64
           )
+          if [[ "$RELEASE_CHANNEL" != 'internal-only' ]]; then
+            required_secrets+=(SCHEMA_RELEASE_TOKEN)
+          fi
 
           missing=0
           for name in "${required_secrets[@]}"; do
@@ -269,19 +453,6 @@ jobs:
           if [[ "$missing" -ne 0 ]]; then
             exit 1
           fi
-
-      - name: Resolve build provenance
-        id: release-info
-        run: |
-          set -euo pipefail
-
-          wallet_sha=$(git rev-parse HEAD)
-          platform_sha=$(git -C ../platform rev-parse HEAD)
-
-          {
-            echo "wallet_sha=$wallet_sha"
-            echo "platform_sha=$platform_sha"
-          } >> "$GITHUB_OUTPUT"
 
       - name: Install App Store Connect API key
         env:
@@ -316,6 +487,15 @@ jobs:
           chmod 600 "$fastlane_api_key_path"
           echo "FASTLANE_API_KEY_PATH=$fastlane_api_key_path" >> "$GITHUB_ENV"
 
+      - name: Require previous App Store schemas before building a candidate
+        if: inputs.release_channel != 'internal-only'
+        env:
+          SCHEMA_RELEASE_TOKEN: ${{ secrets.SCHEMA_RELEASE_TOKEN }}
+          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          BUNDLE_ID: ${{ env.DASHPAY_BUNDLE_ID }}
+        run: ruby "$SCHEMA_RELEASE_SCRIPT" gate --platform-dir ../platform
+
       - name: Resolve TestFlight release version
         id: release-version
         env:
@@ -329,41 +509,10 @@ jobs:
           set -euo pipefail
           ruby "$RELEASE_SCRIPT" resolve-version
 
-      - name: Select Xcode 26.6
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: "26.6"
-
-      - name: Show toolchain versions
-        run: |
-          set -euo pipefail
-          xcodebuild -version
-          swift --version
-
-      - name: Restore release XCFramework cache
-        id: xcframework-cache
-        uses: actions/cache/restore@v5
-        with:
-          path: ${{ github.workspace }}/platform/packages/swift-sdk/DashSDKFFI.xcframework
-          key: dash-sdk-xcframework-v1-${{ runner.os }}-${{ runner.arch }}-xcode-26.6-rust-1.92-ios-sim-release-${{ steps.release-info.outputs.platform_sha }}
-
-      - name: Set up Rust 1.92
-        if: steps.xcframework-cache.outputs.cache-hit != 'true'
-        uses: dtolnay/rust-toolchain@1.92.0
-        with:
-          targets: aarch64-apple-ios,aarch64-apple-ios-sim
-
-      - name: Ensure iOS Rust targets for platform toolchain
-        if: steps.xcframework-cache.outputs.cache-hit != 'true'
-        working-directory: ${{ github.workspace }}/platform
-        run: |
-          set -euo pipefail
-          rustup target add aarch64-apple-ios aarch64-apple-ios-sim
-
       - name: Restore Cargo dependencies cache
         id: cargo-cache
         if: steps.xcframework-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: |
             ~/.cargo/registry
@@ -374,7 +523,7 @@ jobs:
 
       - name: Install protoc
         if: steps.xcframework-cache.outputs.cache-hit != 'true'
-        uses: arduino/setup-protoc@v3
+        uses: arduino/setup-protoc@c65c819552d16ad3c9b72d9dfd5ba5237b9c906b # v3.0.0
         with:
           version: "32.x"
           repo-token: ${{ github.token }}
@@ -392,7 +541,7 @@ jobs:
 
       - name: Save Cargo dependencies cache
         if: steps.xcframework-cache.outputs.cache-hit != 'true' && steps.cargo-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: |
             ~/.cargo/registry
@@ -401,7 +550,7 @@ jobs:
 
       - name: Save release XCFramework cache
         if: steps.xcframework-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: ${{ github.workspace }}/platform/packages/swift-sdk/DashSDKFFI.xcframework
           key: ${{ steps.xcframework-cache.outputs.cache-primary-key }}
@@ -410,13 +559,13 @@ jobs:
         run: test -d ../platform/packages/swift-sdk/DashSDKFFI.xcframework
 
       - name: Set up CocoaPods 1.15.2
-        uses: maxim-lobanov/setup-cocoapods@v1
+        uses: maxim-lobanov/setup-cocoapods@8e97e1e98e6ccf42564fdf5622c8feec74199377 # v1
         with:
           version: "1.15.2"
 
       - name: Restore CocoaPods dependencies cache
         id: cocoapods-cache
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: |
             ~/Library/Caches/CocoaPods
@@ -430,7 +579,7 @@ jobs:
 
       - name: Save CocoaPods dependencies cache
         if: steps.cocoapods-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: |
             ~/Library/Caches/CocoaPods
@@ -464,7 +613,7 @@ jobs:
             DashWallet/SwapKit-Info.plist
 
       - name: Resolve next TestFlight build number
-        id: release-build
+        id: apple-build
         env:
           API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
@@ -473,6 +622,22 @@ jobs:
         run: |
           set -euo pipefail
           ruby "$RELEASE_SCRIPT" resolve-build
+
+      - name: Skip build numbers with evidence from an interrupted upload
+        id: release-build
+        env:
+          SCHEMA_RELEASE_TOKEN: ${{ secrets.SCHEMA_RELEASE_TOKEN }}
+          BUNDLE_ID: ${{ env.DASHPAY_BUNDLE_ID }}
+          EFFECTIVE_VERSION: ${{ steps.release-version.outputs.effective_version }}
+          MIN_BUILD_NUMBER: ${{ steps.apple-build.outputs.build_number }}
+          RELEASE_CHANNEL: ${{ inputs.release_channel }}
+        run: |
+          set -euo pipefail
+          if [[ "$RELEASE_CHANNEL" == 'internal-only' ]]; then
+            echo "build_number=$MIN_BUILD_NUMBER" >> "$GITHUB_OUTPUT"
+          else
+            ruby "$SCHEMA_RELEASE_SCRIPT" next-build
+          fi
 
       - name: Install Apple signing certificates
         env:
@@ -552,8 +717,30 @@ jobs:
           API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
           EFFECTIVE_VERSION: ${{ steps.release-version.outputs.effective_version }}
           BUILD_NUMBER: ${{ steps.release-build.outputs.build_number }}
+          EXPOSE_DEVNET: ${{ inputs.expose_devnet }}
+          RELEASE_CHANNEL: ${{ inputs.release_channel }}
         run: |
           set -euo pipefail
+
+          # A devnet build is for the team only. Only `internal-only` marks the
+          # upload TestFlight Internal Only (see the export-options step), so
+          # every other channel — `internal` included — leaves a devnet build
+          # that can later be handed to external testers or promoted to the
+          # App Store. Refuse before archiving.
+          if [[ "$EXPOSE_DEVNET" == "true" && "$RELEASE_CHANNEL" != "internal-only" ]]; then
+            echo "::error::expose_devnet requires release_channel 'internal-only' (got '$RELEASE_CHANNEL')."
+            exit 1
+          fi
+
+          # Devnet is compiled in only when this run explicitly asks for it.
+          # The Release configuration defaults the setting to empty, so an
+          # ordinary build — including the one promoted to the App Store —
+          # carries no devnet UI at all.
+          devnet_flags=""
+          if [[ "$EXPOSE_DEVNET" == "true" ]]; then
+            devnet_flags="DASH_DEVNET"
+            echo "::warning::Devnet is exposed in this build. Do not promote it to the App Store."
+          fi
 
           xcodebuild archive \
             -workspace DashWallet.xcworkspace \
@@ -571,7 +758,8 @@ jobs:
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
             CODE_SIGN_STYLE=Automatic \
             MARKETING_VERSION="$EFFECTIVE_VERSION" \
-            CURRENT_PROJECT_VERSION="$BUILD_NUMBER"
+            CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
+            DASH_DEVNET_FLAGS="$devnet_flags"
 
       - name: Read archived app version
         id: app-version
@@ -611,6 +799,24 @@ jobs:
             echo "bundle_id=$bundle_id"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Capture schema evidence from the candidate sources
+        if: inputs.release_channel != 'internal-only'
+        run: |
+          set -euo pipefail
+          python3 "$SCHEMA_CAPTURE_SCRIPT" \
+            --platform-dir ../platform --output-dir "$RUNNER_TEMP/schema-capture"
+
+      - name: Persist candidate evidence before upload
+        if: inputs.release_channel != 'internal-only'
+        env:
+          SCHEMA_RELEASE_TOKEN: ${{ secrets.SCHEMA_RELEASE_TOKEN }}
+          BUNDLE_ID: ${{ steps.app-version.outputs.bundle_id }}
+          EFFECTIVE_VERSION: ${{ steps.app-version.outputs.version }}
+          BUILD_NUMBER: ${{ steps.app-version.outputs.build }}
+          WALLET_SHA: ${{ steps.release-info.outputs.wallet_sha }}
+          PLATFORM_SHA: ${{ steps.release-info.outputs.platform_sha }}
+        run: ruby "$SCHEMA_RELEASE_SCRIPT" record-build --capture-dir "$RUNNER_TEMP/schema-capture"
+
       - name: Ensure fastlane is available
         run: |
           set -euo pipefail
@@ -647,6 +853,15 @@ jobs:
         run: |
           set -euo pipefail
           ruby "$RELEASE_SCRIPT" assert-build-free
+
+      - name: Recheck published schemas immediately before upload
+        if: inputs.release_channel != 'internal-only'
+        env:
+          SCHEMA_RELEASE_TOKEN: ${{ secrets.SCHEMA_RELEASE_TOKEN }}
+          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          BUNDLE_ID: ${{ steps.app-version.outputs.bundle_id }}
+        run: ruby "$SCHEMA_RELEASE_SCRIPT" gate --platform-dir ../platform
 
       - name: Upload archive to TestFlight
         env:
@@ -692,6 +907,16 @@ jobs:
         run: |
           set -euo pipefail
           ruby "$RELEASE_SCRIPT" wait-build
+
+      - name: Bind the processed Apple build to its recorded sources
+        if: inputs.release_channel != 'internal-only'
+        env:
+          SCHEMA_RELEASE_TOKEN: ${{ secrets.SCHEMA_RELEASE_TOKEN }}
+          BUNDLE_ID: ${{ steps.app-version.outputs.bundle_id }}
+          EFFECTIVE_VERSION: ${{ steps.app-version.outputs.version }}
+          BUILD_NUMBER: ${{ steps.uploaded-build.outputs.number }}
+          ASC_BUILD_ID: ${{ steps.uploaded-build.outputs.id }}
+        run: ruby "$SCHEMA_RELEASE_SCRIPT" bind-build
 
       - name: Finalize internal TestFlight build
         if: inputs.release_channel != 'external'
@@ -748,7 +973,8 @@ jobs:
           WALLET_SHA: ${{ steps.release-info.outputs.wallet_sha }}
           PLATFORM_SHA: ${{ steps.release-info.outputs.platform_sha }}
           REQUESTED_WALLET_REF: ${{ inputs.wallet_ref }}
-          REQUESTED_PLATFORM_REF: ${{ inputs.platform_ref }}
+          PLATFORM_REF_SOURCE: ${{ steps.platform-ref.outputs.source }}
+          PLATFORM_PIN_STATUS: ${{ steps.release-info.outputs.pin_status }}
           REQUESTED_VERSION: ${{ steps.release-version.outputs.requested_version }}
           LATEST_TESTFLIGHT_VERSION: ${{ steps.release-version.outputs.latest_testflight_version }}
           LATEST_PRODUCTION_VERSION: ${{ steps.release-version.outputs.latest_production_version }}
@@ -767,7 +993,7 @@ jobs:
             echo "- Latest production version: \`${LATEST_PRODUCTION_VERSION}\`"
             echo "- Bundle ID: \`${BUNDLE_ID}\`"
             echo "- dashwallet-ios: \`${WALLET_SHA}\` (requested: \`${REQUESTED_WALLET_REF}\`)"
-            echo "- platform: \`${PLATFORM_SHA}\` (requested: \`${REQUESTED_PLATFORM_REF}\`)"
+            echo "- platform: \`${PLATFORM_SHA}\` (from: \`${PLATFORM_REF_SOURCE}\`; ${PLATFORM_PIN_STATUS})"
             echo "- Channel: \`${RELEASE_CHANNEL}\`"
             if [[ "$RELEASE_CHANNEL" == 'external' ]]; then
               echo "- External group: \`${TESTFLIGHT_GROUP}\`"

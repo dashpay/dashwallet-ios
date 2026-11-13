@@ -393,6 +393,12 @@ final class BIP70PaymentService {
 
     /// Maps a BIP70 `details.network` string to a `PaymentNetwork`. nil ⇒ unknown/absent.
     /// Reproduces DashSync's `chainForNetworkName:` value set.
+    ///
+    /// No string names a devnet: BIP70 has no devnet token. A request carrying
+    /// `"test"` therefore resolves to `.testnet`, and a wallet running on a
+    /// devnet fails the equality check above with `.networkMismatch` — the
+    /// intended outcome, not a gap. The two share address version bytes, so
+    /// nothing downstream would catch the mismatch on its own.
     static func paymentNetwork(fromString string: String?) -> PaymentNetwork? {
         switch string?.lowercased() {
         case "main", "live", "livenet", "mainnet": return .mainnet
@@ -411,8 +417,6 @@ final class BIP70PaymentService {
     /// Builds the x-callback-url string L6 opens after a good send. Matches the legacy
     /// `DWPaymentProcessor` format. nil unless both a callback scheme and a primary address exist.
     static func makeCallbackURL(scheme: String?, address: String?, txidHexDisplay: String) -> URL? {
-        guard let scheme, let address else { return nil }
-        let encoded = address.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? address
-        return URL(string: "\(scheme)://callback=payack&address=\(encoded)&txid=\(txidHexDisplay)")
+        CallbackScheme.payAckURL(scheme: scheme, address: address, txid: txidHexDisplay)
     }
 }

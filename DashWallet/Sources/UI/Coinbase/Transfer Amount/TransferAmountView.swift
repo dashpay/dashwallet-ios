@@ -33,7 +33,7 @@ struct TransferAmountView<ViewModel: TransferAmountViewModelProtocol>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             DashUIKit.NavigationBar(
-                leading: { NavigationBarElement.back.button { onBack?() } }
+                leading: { DashUIKit.NavigationBarElement.back.button { onBack?() } }
             )
 
             VStack(alignment: .leading, spacing: 20) {
@@ -82,7 +82,12 @@ struct TransferAmountView<ViewModel: TransferAmountViewModelProtocol>: View {
         }
         .sheet(isPresented: $showLocalCurrency) {
             let dialog = DashUIKit.BottomSheet(showBackButton: Binding<Bool>.constant(false)) {
-                LocalCurrencyView { code in
+                // The pick is for this transfer only, like the amount
+                // screens: it must not change the app-wide currency.
+                LocalCurrencyView(
+                    currencyCode: viewModel.fiatCurrencyCode,
+                    changesAppCurrency: false
+                ) { code in
                     viewModel.selectFiatCurrency(code)
                     showLocalCurrency = false
                 }
@@ -148,6 +153,7 @@ final class MockTransferAmountViewModel: TransferAmountViewModelProtocol {
     @Published private(set) var receiveFiat: String?
 
     var currencyOptions: [DashUIKit.CurrencyOption] { [.dash, .fiat("USD")] }
+    var fiatCurrencyCode: String { "USD" }
 
     init(
         inputValue: String = "0.5",

@@ -53,4 +53,9 @@ NS_ASSUME_NONNULL_BEGIN
 @implementation DWURLPayAction
 @end
 
+//
+
+@implementation DWURLDashConnectAction
+@end
+
 NS_ASSUME_NONNULL_END
