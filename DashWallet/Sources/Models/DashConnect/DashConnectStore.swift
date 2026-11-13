@@ -190,16 +190,16 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
                 continue
             }
 
-            restored.append(
-                DAppConnection(
-                    id: row.contractId,
-                    name: row.label,
-                    url: row.url,
-                    status: row.status,
-                    updatedAt: row.updatedAt,
-                    seenOn: Set(row.seenOn ?? [])
-                )
+            var connection = DAppConnection(
+                id: row.contractId,
+                name: row.label,
+                url: row.url,
+                status: row.status,
+                updatedAt: row.updatedAt,
+                seenOn: Set(row.seenOn ?? [])
             )
+            connection.responseMayRemain = row.responseMayRemain ?? false
+            restored.append(connection)
         }
 
         return restored
@@ -224,7 +224,8 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
                 url: $0.url,
                 status: $0.status,
                 updatedAt: $0.updatedAt,
-                seenOn: $0.seenOn.isEmpty ? nil : $0.seenOn.sorted()
+                seenOn: $0.seenOn.isEmpty ? nil : $0.seenOn.sorted(),
+                responseMayRemain: $0.responseMayRemain ? true : nil
             )
         }
 
@@ -258,6 +259,8 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
         let updatedAt: Date
         /// Absent in rows written before it was kept.
         let seenOn: [String]?
+        /// Absent when false, and in rows written before it was kept.
+        let responseMayRemain: Bool?
     }
 
     private static func base58Decode(_ string: String) -> Data? {

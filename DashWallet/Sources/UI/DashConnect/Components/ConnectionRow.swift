@@ -50,6 +50,15 @@ struct ConnectionRow: View {
                             .foregroundStyle(Color.dash.tertiaryText)
                             .lineLimit(1)
                     }
+
+                    // Only a Disconnected row carries the mark (ADR-0019 badge unchanged).
+                    if item.status == .disconnected, item.connection?.responseMayRemain == true {
+                        Text(NSLocalizedString(
+                            "Response may still be on Platform",
+                            comment: "DashConnect: on a disconnected app's row whose response the wallet has not seen deleted yet"))
+                            .dashFont(.caption1)
+                            .foregroundStyle(Color.dash.orange)
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.leading, 14)
@@ -112,6 +121,30 @@ struct ConnectionRow: View {
         item: ConnectionSheetItem(
             id: "long", name: "A Very Long Application Name That Does Not Fit On One Line", url: "",
             status: .active, connection: nil),
+        onOpen: {}, onDisconnect: {}, onRemove: {})
+    .background(Color.dash.secondaryBackground)
+}
+
+#Preview("Disconnected, response may remain") {
+    var connection = DAppConnection(
+        id: "disconnected", name: "Example App", url: "example.org", status: .disconnected,
+        updatedAt: Date(timeIntervalSince1970: 1_754_232_520))
+    connection.responseMayRemain = true
+    return ConnectionRow(
+        item: ConnectionSheetItem(
+            id: connection.id, name: connection.name, url: connection.url, status: .disconnected, connection: connection),
+        onOpen: {}, onDisconnect: {}, onRemove: {})
+    .background(Color.dash.secondaryBackground)
+}
+
+#Preview("Disconnected, response may remain, long name") {
+    var connection = DAppConnection(
+        id: "disconnected-long", name: String(repeating: "Extremely Long Application Name ", count: 4),
+        url: "example.org", status: .disconnected, updatedAt: Date(timeIntervalSince1970: 1_754_232_520))
+    connection.responseMayRemain = true
+    return ConnectionRow(
+        item: ConnectionSheetItem(
+            id: connection.id, name: connection.name, url: connection.url, status: .disconnected, connection: connection),
         onOpen: {}, onDisconnect: {}, onRemove: {})
     .background(Color.dash.secondaryBackground)
 }

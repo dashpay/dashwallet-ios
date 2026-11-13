@@ -37,6 +37,10 @@ where they disagree, ADR-0001 wins.
 | [0031](0031-turn-off-unattributed-dashpay-profile-keys-with-any-disconnect.md) | Turn off unattributed DashPay profile keys with any disconnect | keys | Proposed | |
 | [0032](0032-pass-owners-read-from-platform-into-the-pure-projection.md) | Pass the owners read from Platform into the pure App Connect projection | platform | Proposed | |
 | [0033](0033-turn-off-only-the-unrecorded-keys-the-question-listed.md) | Turn off only the unrecorded keys the question listed | keys | Superseded | [0016](0016-turn-off-unrecorded-keys-on-disconnect-without-asking.md) |
+| [0034](0034-record-the-publish-start-on-the-connection-intent.md) | Record the publish start on the connection intent | platform | Proposed | |
+| [0035](0035-bound-an-unresolved-publish-by-24-hours-of-proved-platform-block-time.md) | Bound an unresolved publish by 24 hours of proved Platform block time | platform | Proposed | |
+| [0036](0036-hand-a-submit-that-ends-after-its-timeout-to-the-wallet-that-started-it.md) | Hand a submit that ends after its timeout to the wallet that started it | platform | Proposed | |
+| [0037](0037-refuse-response-removed-at-its-one-write-point-while-the-publish-is-unresolved.md) | Refuse "response removed" at its one write point while the publish is unresolved | platform | Proposed | |
 
 Areas: `spv`, `platform`, `keys`, `storage`, `coinjoin`, `payments`, `swap`, `ui`, `build`, `process`. Each ADR takes one; a new
 Area is added to this list in the PR that first needs it.

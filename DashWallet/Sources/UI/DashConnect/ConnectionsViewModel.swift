@@ -691,7 +691,7 @@ final class ConnectionsViewModel: ObservableObject {
             self.updateShownConnection()
             let notTurnedOff = result.keysStillLive > 0 || result.fencesNotPlaced > 0
             guard notTurnedOff || result.keysOnAnotherIdentity || result.keysNotChecked > 0 || result.keysNotAttributable > 0
-                || result.unrecordedKeysTurnedOff > 0 else { return }
+                || result.unrecordedKeysTurnedOff > 0 || result.responsesMayAppear else { return }
             var texts: [String] = []
             if result.unrecordedKeysTurnedOff > 0 {
                 // swiftlint:disable line_length
@@ -734,6 +734,19 @@ final class ConnectionsViewModel: ObservableObject {
             }
             if result.keysOnAnotherIdentity {
                 texts.append(DashConnectPlatformError.grantOnAnotherIdentity.localizedDescription)
+            }
+            if result.responsesMayAppear {
+                // swiftlint:disable line_length
+                // Behind a warning that keys stay on, the note does not say
+                // they are off.
+                texts.append(notTurnedOff
+                    ? NSLocalizedString(
+                        "The app's response may still appear; it is deleted with your next App Connect approval or disconnect on this identity.",
+                        comment: "DashConnect: after a disconnect that left keys on, whose app's response may still land on Platform")
+                    : NSLocalizedString(
+                        "The app's keys are off. Its response may still appear; it is deleted with your next App Connect approval or disconnect on this identity.",
+                        comment: "DashConnect: after a disconnect whose app's response may still land on Platform"))
+                // swiftlint:enable line_length
             }
             // Keys still live, or nothing turned off here while the app still
             // has keys elsewhere, is not a success.

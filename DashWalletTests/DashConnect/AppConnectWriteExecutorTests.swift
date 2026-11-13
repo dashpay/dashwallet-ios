@@ -166,8 +166,9 @@ final class AppConnectWriteExecutorTests: XCTestCase {
 
     /// The real submits block inside Rust and ignore Swift cancellation, so the
     /// timeout must end `run` without waiting for the submit to return. A late
-    /// finish of the submit writes no further line: the outcome line already
-    /// said `timedOut`, and the caller's next read decides what landed.
+    /// finish of the submit is logged as one more line (`late submitted`); the
+    /// outcome line already said `timedOut`, and the caller's next read decides
+    /// what landed.
     func testTimeoutEndsRunWhileTheSubmitIgnoresCancellation() async {
         let probe = Probe()
         let blocked = BlockedSubmit()
@@ -187,8 +188,143 @@ final class AppConnectWriteExecutorTests: XCTestCase {
             XCTFail("expected .timedOut while the submit never returned, got \(String(describing: result.value))")
             return
         }
-        XCTAssertEqual(probe.lines.count, 2, "no line is written when the submit finishes late: \(probe.lines)")
-        XCTAssertTrue(probe.lines.last?.contains("timedOut") ?? false, "outcome line says timedOut: \(probe.lines)")
+        await waitForLines(of: probe, count: 3)
+        XCTAssertEqual(probe.lines.count, 3, "start, timedOut and one late line: \(probe.lines)")
+        XCTAssertTrue(probe.lines[1].contains("timedOut"), "outcome line says timedOut: \(probe.lines)")
+        XCTAssertTrue(probe.lines.last?.contains("late submitted") ?? false, "late line: \(probe.lines)")
+    }
+
+    // MARK: - Late outcome (T3, spec AC-03, AC-09)
+
+    /// Edge: submit ends after the timeout with success. `run` already returned
+    /// `.timedOut`; the handler is called once with `.submitted`.
+    func testLateSuccessReachesTheHandlerAfterRunReturnedTimedOut() async {
+        let probe = Probe()
+        let gate = LateGate()
+        let recorder = LateRecorder()
+        let executor = probe.executor(neverTimesOut: false) { _ in try await gate.block() }
+
+        let outcome = await executor.run(.publish(requestHash: Data([0x01]))) { await recorder.record($0) }
+
+        guard case .timedOut = outcome else { return XCTFail("expected .timedOut, got \(outcome)") }
+        XCTAssertEqual(recorder.count, 0, "the handler is not called before the submit ends")
+        gate.release()
+        await recorder.waitForCall()
+
+        XCTAssertEqual(recorder.outcomes.count, 1, "the handler is called once")
+        guard case .submitted? = recorder.outcomes.first else {
+            return XCTFail("expected .submitted, got \(recorder.outcomes)")
+        }
+    }
+
+    /// Edge: submit ends after the timeout with an error: handler gets `.failed`.
+    func testLateFailureReachesTheHandlerAsFailed() async {
+        let probe = Probe()
+        let gate = LateGate()
+        let recorder = LateRecorder()
+        let executor = probe.executor(neverTimesOut: false) { _ in try await gate.block() }
+
+        let outcome = await executor.run(.publish(requestHash: Data([0x01]))) { await recorder.record($0) }
+
+        guard case .timedOut = outcome else { return XCTFail("expected .timedOut, got \(outcome)") }
+        gate.release(throwing: SDKError.networkError(sentinel))
+        await recorder.waitForCall()
+
+        XCTAssertEqual(recorder.outcomes.count, 1, "the handler is called once")
+        guard case .failed(let error)? = recorder.outcomes.first,
+              case SDKError.networkError(let message) = error else {
+            return XCTFail("expected .failed(networkError), got \(recorder.outcomes)")
+        }
+        XCTAssertEqual(message, sentinel)
+    }
+
+    /// Edge: the late outcome is logged by kind and type, never the error text.
+    func testLateOutcomeIsLoggedWithoutTheErrorText() async {
+        let probe = Probe()
+        let gate = LateGate()
+        let recorder = LateRecorder()
+        let executor = probe.executor(neverTimesOut: false) { _ in try await gate.block() }
+
+        _ = await executor.run(.publish(requestHash: Data([0x01]))) { await recorder.record($0) }
+        gate.release(throwing: SDKError.networkError(sentinel))
+        await recorder.waitForCall()
+        await waitForLines(of: probe, count: 3)
+
+        let late = probe.lines.last ?? ""
+        XCTAssertTrue(late.contains("platform write publish: late failed"), "late line: \(probe.lines)")
+        XCTAssertTrue(late.contains("SDKError"), "the error type is logged: \(late)")
+        XCTAssertFalse(probe.lines.joined().contains(sentinel), "the error text is never logged: \(probe.lines)")
+    }
+
+    /// Edge: `onLateOutcome == nil` (fence, updateKeys, delete): logged only.
+    func testLateOutcomeWithoutAHandlerIsLoggedOnly() async {
+        let probe = Probe()
+        let gate = LateGate()
+        let executor = probe.executor(neverTimesOut: false) { _ in try await gate.block() }
+
+        let outcome = await executor.run(.fence(keyIds: [1]))
+        gate.release()
+        await waitForLines(of: probe, count: 3)
+
+        guard case .timedOut = outcome else { return XCTFail("expected .timedOut, got \(outcome)") }
+        XCTAssertTrue(probe.lines.last?.contains("platform write fence: late submitted") ?? false,
+                      "late line: \(probe.lines)")
+    }
+
+    /// Edge: submit ends before the timeout: `run` reports it, handler not called.
+    func testOnTimeSubmitNeverCallsTheHandler() async {
+        for failing in [false, true] {
+            let probe = Probe()
+            let recorder = LateRecorder()
+            let executor = probe.executor(neverTimesOut: true) { _ in
+                if failing { throw SDKError.networkError(self.sentinel) }
+            }
+
+            let outcome = await executor.run(.publish(requestHash: Data([0x01]))) { await recorder.record($0) }
+
+            switch outcome {
+            case .submitted: XCTAssertFalse(failing)
+            case .failed: XCTAssertTrue(failing)
+            case .timedOut: XCTFail("an on-time submit is not timedOut")
+            }
+            await recorder.expectNoCall()
+            XCTAssertEqual(recorder.count, 0, "failing=\(failing): the handler is not called")
+        }
+    }
+
+    /// Edge: caller cancellation ends `run` with `.failed`; the handler is not
+    /// called when the blocked submit returns afterwards.
+    func testCallerCancellationNeverCallsTheHandler() async {
+        let gate = CallerCancelSubmit()
+        let recorder = LateRecorder()
+        let executor = AppConnectWriteExecutor(
+            sleep: { try await Task.sleep(for: $0) }, log: { _ in },
+            submit: { _ in await gate.block() })
+        let ended = expectation(description: "run returned")
+        let box = OutcomeBox()
+        let task = Task {
+            box.set(await executor.run(.publish(requestHash: Data([0x01]))) { await recorder.record($0) })
+            ended.fulfill()
+        }
+        await gate.waitUntilBlocked()
+
+        task.cancel()
+        await fulfillment(of: [ended], timeout: 2)
+        gate.release()
+        await recorder.expectNoCall()
+
+        guard case .failed(let error)? = box.value else {
+            return XCTFail("expected .failed(CancellationError), got \(String(describing: box.value))")
+        }
+        XCTAssertTrue(error is CancellationError)
+        XCTAssertEqual(recorder.count, 0, "the handler is not called after a caller cancellation")
+    }
+
+    /// Polls until the probe holds `count` lines, or gives up after 5 s.
+    private func waitForLines(of probe: Probe, count: Int) async {
+        for _ in 0..<1000 where probe.lines.count < count {
+            try? await Task.sleep(for: .milliseconds(5))
+        }
     }
 
     /// R15: cancelling the caller while the submit is blocked (the real
@@ -393,5 +529,61 @@ private final class CallerCancelSubmit: @unchecked Sendable {
             return continuation
         }
         waiter?.resume()
+    }
+}
+
+/// A submit that ignores cancellation until released, then returns or throws.
+private final class LateGate: @unchecked Sendable {
+    private let lock = NSLock()
+    private var continuation: CheckedContinuation<Error?, Never>?
+    private var released = false
+    private var releasedError: Error?
+
+    func block() async throws {
+        let error = await withCheckedContinuation { (waiter: CheckedContinuation<Error?, Never>) in
+            let ready = lock.withLock { () -> (Bool, Error?) in
+                if released { return (true, releasedError) }
+                continuation = waiter
+                return (false, nil)
+            }
+            if ready.0 { waiter.resume(returning: ready.1) }
+        }
+        if let error { throw error }
+    }
+
+    func release(throwing error: Error? = nil) {
+        let waiter = lock.withLock { () -> CheckedContinuation<Error?, Never>? in
+            released = true
+            releasedError = error
+            defer { continuation = nil }
+            return continuation
+        }
+        waiter?.resume(returning: error)
+    }
+}
+
+/// The `onLateOutcome` handler under test: records each outcome it is given.
+private final class LateRecorder: @unchecked Sendable {
+    private let lock = NSLock()
+    private var _outcomes: [AppConnectWriteExecutor.Outcome] = []
+
+    var outcomes: [AppConnectWriteExecutor.Outcome] { lock.withLock { _outcomes } }
+    var count: Int { lock.withLock { _outcomes.count } }
+
+    func record(_ outcome: AppConnectWriteExecutor.Outcome) async {
+        lock.withLock { _outcomes.append(outcome) }
+    }
+
+    /// Polls until the first call; returns at once if it already happened.
+    /// Bounded, so a missing call fails the assertions instead of hanging.
+    func waitForCall() async {
+        for _ in 0..<1000 where outcomes.isEmpty {
+            try? await Task.sleep(for: .milliseconds(5))
+        }
+    }
+
+    /// Gives a wrongly-made late call time to arrive.
+    func expectNoCall() async {
+        try? await Task.sleep(for: .milliseconds(300))
     }
 }
