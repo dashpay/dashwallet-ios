@@ -4304,9 +4304,6 @@
 "Platform Balance" = "Platform Balance";
 
 /* External send */
-"Platform can't pay someone else's identity yet" = "Platform can't pay someone else's identity yet";
-
-/* External send */
 "Platform can't pay this kind of Platform address" = "Platform can't pay this kind of Platform address";
 
 /* Add masternode */

@@ -1714,14 +1714,11 @@ final class SendAmountViewModelTests: XCTestCase {
         XCTAssertNil(vm.sourceChangedNotice)
     }
 
-    func testAPinnedPlatformCannotPaySomeoneElsesIdentityAndIsReplacedWithTheNotice() async {
+    func testAPinnedPlatformPaysSomeoneElsesIdentityWithoutANotice() async {
         let vm = await makeVM(destination(.identityID, text: otherID), pinned: .platform, recipient: recipient())
-        XCTAssertEqual(vm.source, .shielded)
-        XCTAssertEqual(vm.route, .shieldedToIdentity)
-        XCTAssertEqual(vm.sourceChangedNotice,
-                       "Platform can't pay someone else's identity yet, so the source was changed to Shielded.")
-        await vm.pickSource(.platform)
-        XCTAssertEqual(vm.source, .shielded, "Platform stays unavailable for this destination")
+        XCTAssertEqual(vm.source, .platform)
+        XCTAssertEqual(vm.route, .platformToIdentity)
+        XCTAssertNil(vm.sourceChangedNotice)
     }
 
     func testTheHolderCanStillPickAnotherSourceFromAPin() async {
