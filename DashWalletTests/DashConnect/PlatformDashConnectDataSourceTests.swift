@@ -6389,4 +6389,25 @@ final class AppConnectPublishLifetimeTests: XCTestCase {
             defaults.object(forKey: scopeKey + UserDefaultsAppConnectIntentStore.keySuffix),
             "the wiped wallet's intents are not saved back")
     }
+
+    /// PastaClaw review of #1414: the same for recording a response removed,
+    /// which follows a delete or lookup that ran for a while.
+    func testAWipeWhileARemovalIsRecordedIsNotUndoneByItsSave() async throws {
+        var intent = Self.intent()
+        intent.responseDocumentId = Self.documentId
+        let scopeKey = UserDefaultsDashConnectStore.keyPrefix + "testnet." + Self.walletA
+        let intents = WipedDuringLoad(defaults: defaults, scopeKey: scopeKey)
+        intents.save([intent])
+        intents.arm(wipeAfterLoad: 1)
+
+        await PlatformDashConnectDataSource.deleteResponse(
+            documentId: Self.documentId, of: intent.id, intents: intents,
+            executor: AppConnectWriteExecutor(sleep: { try await Task.sleep(for: $0) }, log: { _ in }, submit: { _ in }),
+            now: { Self.at }, lookUp: { nil })
+
+        XCTAssertEqual(intents.wiped.wait(timeout: .now() + .seconds(2)), .success, "the wipe ran")
+        XCTAssertNil(
+            defaults.object(forKey: scopeKey + UserDefaultsAppConnectIntentStore.keySuffix),
+            "the wiped wallet's intents are not saved back")
+    }
 }
