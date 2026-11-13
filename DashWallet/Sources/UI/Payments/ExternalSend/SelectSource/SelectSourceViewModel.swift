@@ -17,6 +17,7 @@
 
 import Combine
 import Foundation
+import SwiftDashSDK
 
 /// The Current identity as Select source needs it: its ID and DPNS username (nil when it has none).
 struct SelectSourceIdentity: Equatable {
@@ -39,6 +40,24 @@ struct WalletCurrentIdentityReader: CurrentIdentityReading {
         let snapshot = info.refreshedSnapshot()
         guard let id = snapshot.identityId?.toBase58String() else { return nil }
         return SelectSourceIdentity(id: id, username: snapshot.username)
+    }
+}
+
+/// The raw Orchard address of the active wallet's bound Shielded account. Faked in tests.
+protocol OwnShieldedAddressReading {
+    /// nil when the wallet has no bound Shielded account.
+    func ownShieldedAddress() async -> Data?
+}
+
+/// The running manager's `shieldedDefaultAddress`, as the Shielded receive address reads it: nil until the wallet's
+/// Shielded sub-wallet is bound, and when the manager does not know the wallet.
+struct WalletOwnShieldedAddressReader: OwnShieldedAddressReading {
+    @MainActor
+    func ownShieldedAddress() async -> Data? {
+        guard let manager = SwiftDashSDKHost.shared.manager, let wallet = SwiftDashSDKHost.shared.wallet else {
+            return nil
+        }
+        return try? manager.shieldedDefaultAddress(walletId: wallet.walletId, account: 0)
     }
 }
 
@@ -70,12 +89,15 @@ final class SelectSourceViewModel: ObservableObject {
 
     private let destination: Destination
     private let currentIdentity: CurrentIdentityReading
+    private let ownShieldedAddress: OwnShieldedAddressReading
 
     init(destination: Destination, selected: SendSource,
-         currentIdentity: CurrentIdentityReading = WalletCurrentIdentityReader()) {
+         currentIdentity: CurrentIdentityReading = WalletCurrentIdentityReader(),
+         ownShieldedAddress: OwnShieldedAddressReading = WalletOwnShieldedAddressReader()) {
         self.destination = destination
         self.selected = selected
         self.currentIdentity = currentIdentity
+        self.ownShieldedAddress = ownShieldedAddress
     }
 
     func load() async {
@@ -83,7 +105,8 @@ final class SelectSourceViewModel: ObservableObject {
         defer { isLoading = false }
         let identity = await currentIdentity.currentIdentity()
         let offersIdentity = identity?.username?.isEmpty == false
-        let facts = SendPairFacts(ownIdentityID: identity?.id)
+        let facts = SendPairFacts(ownIdentityID: identity?.id,
+                                  ownShieldedRaw43: await ownShieldedAddress.ownShieldedAddress())
         var built: [Row] = []
         for source in SendSource.allCases where source != .identity || offersIdentity {
             var reason: UnavailableReason?

@@ -16,6 +16,7 @@
 //
 
 @testable import dashpay
+import SwiftDashSDK
 import XCTest
 
 /// The one pair policy (ADR-0062, ADR-0041): for every source and destination type it answers the route or the
@@ -23,6 +24,8 @@ import XCTest
 final class SendPairPolicyTests: XCTestCase {
     private let ownID = "own-current-identity-id"
     private let otherID = "someone-elses-identity-id"
+    /// The raw Orchard address of the wallet's bound Shielded account.
+    private let ownShieldedRaw43 = Data(repeating: 0x5a, count: 43)
 
     private struct PairCase {
         let name: String
@@ -39,7 +42,12 @@ final class SendPairPolicyTests: XCTestCase {
     }
 
 
-    private var facts: SendPairFacts { SendPairFacts(ownIdentityID: ownID) }
+    private var facts: SendPairFacts { SendPairFacts(ownIdentityID: ownID, ownShieldedRaw43: ownShieldedRaw43) }
+
+    /// A Shielded address as the holder types it: the DIP-0018 bech32m form of `raw43`.
+    private func shieldedText(_ raw43: Data, mainnet: Bool = false) throws -> String {
+        try XCTUnwrap(Bech32m.encode(hrp: Bech32m.platformHrp(mainnet: mainnet), data: Data([0x10]) + raw43))
+    }
 
     private func destination(_ kind: Destination.Kind, text: String = "dest", script: Bool = false) -> Destination {
         Destination(type: kind, text: text, isScriptForm: script)
@@ -78,7 +86,7 @@ final class SendPairPolicyTests: XCTestCase {
             PairCase("platform -> other identity", .platform, otherIdentity, .route(.platformToIdentity)),
 
             PairCase("identity -> core", .identity, core, .route(.identityToCore)),
-            PairCase("identity -> shielded (ADR-0041)", .identity, shielded, .unavailable(.notSupportedYet)),
+            PairCase("identity -> shielded (ADR-0012)", .identity, shielded, .route(.identityToShielded)),
             PairCase("identity -> platform", .identity, platform, .route(.identityToPlatform)),
             PairCase("identity -> own identity", .identity, ownIdentity, .unavailable(.identityToOwnIdentity)),
             PairCase("identity -> other identity", .identity, otherIdentity, .route(.identityToIdentity))
@@ -206,19 +214,64 @@ final class SendPairPolicyTests: XCTestCase {
         XCTAssertTrue(result.sourceChanged)
     }
 
-    func testIdentityToShieldedStaysUnavailableForEveryShieldedAddress() {
-        // ADR-0041: no call site, whatever the SDK can do.
-        for text in ["a", "b", "own-current-identity-id"] {
-            XCTAssertEqual(decide(.identity, destination(.shieldedAddress, text: text)),
-                           .unavailable(.notSupportedYet), text)
-        }
+    // MARK: - ADR-0012: Identity to someone else's Shielded address
+
+    func testIdentityPaysSomeoneElsesShieldedAddressThroughTheRecipientShield() throws {
+        let other = try shieldedText(Data(repeating: 0x11, count: 43))
+        XCTAssertEqual(decide(.identity, destination(.shieldedAddress, text: other)), .route(.identityToShielded))
+    }
+
+    func testIdentityToShieldedIsUnavailableWithoutABoundShieldedAccount() throws {
+        let unbound = SendPairFacts(ownIdentityID: ownID, ownShieldedRaw43: nil)
+        let other = try shieldedText(Data(repeating: 0x11, count: 43))
+        XCTAssertEqual(SendPairPolicy.decide(source: .identity, destination: destination(.shieldedAddress, text: other),
+                                             facts: unbound),
+                       .unavailable(.identityWithoutShieldedAccount))
+        // The other sources do not need the account to pay a Shielded address.
+        XCTAssertEqual(SendPairPolicy.decide(source: .platform, destination: destination(.shieldedAddress, text: other),
+                                             facts: unbound),
+                       .route(.platformToShielded))
+    }
+
+    func testIdentityToTheWalletsOwnShieldedAddressIsUnavailableInEitherCase() throws {
+        let own = try shieldedText(ownShieldedRaw43)
+        XCTAssertEqual(decide(.identity, destination(.shieldedAddress, text: own)),
+                       .unavailable(.identityToOwnShieldedAddress))
+        XCTAssertEqual(decide(.identity, destination(.shieldedAddress, text: own.uppercased())),
+                       .unavailable(.identityToOwnShieldedAddress))
+        // Only the Identity source refuses it.
+        XCTAssertEqual(decide(.shielded, destination(.shieldedAddress, text: own)), .route(.shieldedToShielded))
+    }
+
+    func testIdentityToShieldedRouteSpendsTheIdentityWithAnEstimatedAmountIndependentFee() {
+        XCTAssertEqual(SendRoute.identityToShielded.source, .identity)
+        XCTAssertFalse(SendRoute.identityToShielded.isFeeExact, "Confirm shows the fee as \"~\"")
+        XCTAssertTrue(SendRoute.identityToShielded.hasAmountIndependentFee)
+    }
+
+    func testPinnedIdentityKeepsSomeoneElsesShieldedAddressAndIsReplacedForItsOwn() throws {
+        let other = start(destination(.shieldedAddress, text: try shieldedText(Data(repeating: 0x11, count: 43))),
+                          balances(9, 9, 9), pinned: .identity)
+        XCTAssertEqual(other, StartingSource(source: .identity, sourceChanged: false))
+
+        let own = start(destination(.shieldedAddress, text: try shieldedText(ownShieldedRaw43)), balances(0, 4, 9),
+                        pinned: .identity)
+        XCTAssertEqual(own, StartingSource(source: .shielded, sourceChanged: true))
+    }
+
+    func testPinnedIdentityWithoutABoundShieldedAccountIsReplaced() throws {
+        let dest = destination(.shieldedAddress, text: try shieldedText(Data(repeating: 0x11, count: 43)))
+        let result = SendPairPolicy.startingSource(
+            destination: dest, balances: balances(0, 0, 9), pinned: .identity,
+            facts: SendPairFacts(ownIdentityID: ownID, ownShieldedRaw43: nil))
+        XCTAssertEqual(result, StartingSource(source: .platform, sourceChanged: true))
     }
 
     func testUnavailableReasonsAreDistinctAndCarryText() {
         let reasons: [UnavailableReason] = [.coreToOtherIdentity, .coreToPlatformAddress,
                                             .platformToScriptFormPlatformAddress, .identityToOwnIdentity,
-                                            .notSupportedYet, .paymentRequestCoreOnly,
-                                            .noCurrentIdentity]
+                                            .identityWithoutShieldedAccount, .identityToOwnShieldedAddress,
+                                            .paymentRequestCoreOnly, .noCurrentIdentity]
         XCTAssertEqual(Set(reasons).count, 7)
         XCTAssertEqual(Set(reasons.map(\.localizedMessage)).count, 7)
         for reason in reasons {
@@ -360,8 +413,8 @@ final class SendPairPolicyTests: XCTestCase {
             (.shielded, destination(.platformAddress)), (.shielded, destination(.identityID, text: otherID)),
             (.platform, destination(.coreAddress)), (.platform, destination(.shieldedAddress)),
             (.platform, destination(.platformAddress)), (.platform, destination(.identityID, text: ownID)),
-            (.identity, destination(.coreAddress)), (.identity, destination(.platformAddress)),
-            (.identity, destination(.identityID, text: otherID))
+            (.identity, destination(.coreAddress)), (.identity, destination(.shieldedAddress)),
+            (.identity, destination(.platformAddress)), (.identity, destination(.identityID, text: otherID))
         ]
     }
 
