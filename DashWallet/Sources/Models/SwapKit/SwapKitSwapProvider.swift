@@ -17,6 +17,7 @@
 //  limitations under the License.
 //
 
+import Combine
 import Foundation
 
 /// `SwapProvider` backed by `SwapKitAPIService`.
@@ -28,8 +29,11 @@ import Foundation
 ///   MAYACHAIN, NEAR, Chainflip, etc. — AC#4 "choose best price (Maya vs NEAR)".
 /// - The DASH tx is still built locally from `vaultAddress + memo` — no PSBT parsing.
 ///
-/// @MainActor ensures all mutable caches (classification sets, routability cache, price cache,
-/// etc.) are accessed from a single isolation domain, eliminating concurrent read/write races.
+/// Live per-provider availability (what the picker labels and halts on) lives in
+/// `SwapRouteAvailability`; this type supplies it with the static classification and the probes.
+///
+/// @MainActor ensures all mutable caches (classification sets, price cache, etc.) are accessed
+/// from a single isolation domain, eliminating concurrent read/write races.
 @MainActor
 final class SwapKitSwapProvider: SwapProvider {
     private enum Constants {
@@ -39,7 +43,19 @@ final class SwapKitSwapProvider: SwapProvider {
     nonisolated var displayName: String { "SwapKit" }
     nonisolated var usesGenericFeeLabel: Bool { true }
     nonisolated var buildsSwapKitDeposit: Bool { true }
-    var onBuyRoutabilityChanged: (() -> Void)?
+
+    private let routeAvailability: SwapRouteAvailability
+    /// The running live-availability refresh per direction, so leaving the picker can stop it.
+    private var routeRefreshTasks: [SwapDirection: (id: UUID, task: Task<Void, Never>)] = [:]
+
+    init(routeAvailability: SwapRouteAvailability = .shared) {
+        self.routeAvailability = routeAvailability
+    }
+
+    /// One event per stored answer that changed something; subscribers batch them.
+    var routeAvailabilityChanges: AnyPublisher<SwapDirection, Never> {
+        routeAvailability.changes.eraseToAnyPublisher()
+    }
 
     // MARK: - Cache
 
@@ -66,21 +82,6 @@ final class SwapKitSwapProvider: SwapProvider {
     private var classificationUsable = false
     /// Identifier (uppercased) → logoURI, populated from both Maya and NEAR token lists.
     private var logoURIByIdentifier: [String: String] = [:]
-    /// Cached NEAR→DASH buy routability decisions for buy-list pruning.
-    private var buyRoutabilityCache: [String: (value: BuyRoutability, checkedAt: Date)] = [:]
-    /// Prevents duplicate probes while a candidate is already being checked.
-    private var buyRoutabilityInFlight: Set<String> = []
-    /// Buy routability cache TTL, mirroring Android's preferred-route cache cadence.
-    private let buyRoutabilityTTL: TimeInterval = 600
-    /// Small batch size to keep verification bounded without spamming the quote endpoint.
-    private let buyRoutabilityProbeBatchSize: Int = 8
-
-    /// Internal rather than private so the tests can assert `routability(from:)` directly.
-    enum BuyRoutability {
-        case routable
-        case notRoutable
-    }
-
     private var isCacheValid: Bool {
         guard let cachedAt = poolsCachedAt else { return false }
         return Date().timeIntervalSince(cachedAt) < cacheMaxAge
@@ -164,56 +165,77 @@ final class SwapKitSwapProvider: SwapProvider {
             )
         }
 
-        // Cheap pre-filter: only assets that classification says can reach NEAR.
-        let candidates = pools.filter {
-            let key = $0.asset.uppercased()
-            return nearOnlyAssets.contains(key) || bothAssets.contains(key)
-        }
-
-        // Pass original-case identifiers — uppercased contract addresses differ from what
-        // the quote endpoint accepts, causing all contract-token probes to error → never pruned.
-        // Uppercasing is kept only for the Set-membership keys (nearOnlyAssets / bothAssets above).
-        scheduleBuyRoutabilityVerification(for: candidates.map { $0.asset })
-
-        // Optimistic filter: show until a probe conclusively proves the asset cannot route
-        // NEAR→DASH — which now means NEAR itself reporting a no-route in `providerErrors`, the
-        // only unambiguous negative (see `routability(from:)`). This keeps first-open responsive
-        // while background verification prunes.
-        return candidates.filter { pool in
-            cachedBuyRoutability(for: pool.asset) != .notRoutable
-        }
+        // Only assets the classification says NEAR can carry: Buy routes through NEAR alone.
+        // Whether NEAR carries them right now is live state — a coin it cannot carry is shown
+        // halted (`haltedAssets`), not dropped.
+        return pools.filter { !capableProviders(for: $0.asset, direction: .buy).isEmpty }
     }
 
-    func networkLabels(for pools: [SwapPool]) async -> [String: String] {
+    /// The label is the set of providers that can carry the coin *now* (live probes over the static
+    /// classification): both → "Multiple", one → that provider. A coin no provider can carry gets
+    /// no label; `haltedAssets` reports it instead.
+    func networkLabels(for pools: [SwapPool], direction: SwapDirection) async -> [String: String] {
         if !classificationBuilt { await buildClassification() }
         var result: [String: String] = [:]
         for pool in pools {
-            let key = pool.asset.uppercased()
-            if mayaOnlyAssets.contains(key) {
-                result[key] = RouteProvider.maya.shortLabel
-            } else if nearOnlyAssets.contains(key) {
-                result[key] = RouteProvider.near.shortLabel
-            } else if bothAssets.contains(key) {
-                result[key] = RouteProvider.multiple.shortLabel
+            if let label = RouteProvider.label(forUsable: usableProviders(for: pool.asset, direction: direction)) {
+                result[pool.asset.uppercased()] = label.shortLabel
             }
         }
         return result
     }
 
-    func haltedAssets(from inboundAddresses: [SwapInboundAddress], pools: [SwapPool]) async -> Set<String> {
+    /// Coins some provider can ever carry but none can carry now — a halt, or no route at all.
+    /// `fetchInboundAddresses` reports no halted chains for SwapKit, so this is its only halt source.
+    func haltedAssets(from inboundAddresses: [SwapInboundAddress], pools: [SwapPool], direction: SwapDirection) async -> Set<String> {
         if !classificationBuilt { await buildClassification() }
-        let haltedChains = Set(inboundAddresses.filter { $0.halted }.map { $0.chain.uppercased() })
-        guard !haltedChains.isEmpty else { return [] }
-        // Only mayaOnly assets are halted when the Maya chain is halted.
-        // Assets routed via NEAR ("both" or "nearOnly") remain available.
         var halted = Set<String>()
-        for asset in mayaOnlyAssets {
-            let chain = asset.components(separatedBy: ".").first ?? ""
-            if haltedChains.contains(chain) {
-                halted.insert(asset)
+        for pool in pools {
+            let capable = capableProviders(for: pool.asset, direction: direction)
+            guard !capable.isEmpty else { continue }
+            if routeAvailability.usableProviders(for: pool.asset, capable: capable, direction: direction).isEmpty {
+                halted.insert(pool.asset.uppercased())
             }
         }
         return halted
+    }
+
+    /// Starts the live probes for the coins the picker shows, in its display order. Returns at once;
+    /// answers arrive through `routeAvailabilityChanges`.
+    ///
+    /// Assets are passed in their original case: an uppercased contract address is not what the
+    /// quote endpoint accepts.
+    func refreshRouteAvailability(for pools: [SwapPool], direction: SwapDirection) {
+        guard classificationUsable, routeRefreshTasks[direction] == nil else { return }
+        let assets = pools.map { $0.asset }
+        let capability = Dictionary(
+            assets.map { ($0.uppercased(), capableProviders(for: $0, direction: direction)) },
+            uniquingKeysWith: { first, _ in first }
+        )
+        let id = UUID()
+        let task = Task { [weak self, routeAvailability] in
+            await routeAvailability.refresh(
+                assets: assets,
+                direction: direction,
+                capable: { capability[$0.uppercased()] ?? [] },
+                probe: { asset, provider, direction in
+                    guard let self else { return .unknown }
+                    return await self.probeRoute(asset: asset, provider: provider, direction: direction)
+                }
+            )
+            // A newer refresh may have replaced this one after a stop; leave its handle alone.
+            if self?.routeRefreshTasks[direction]?.id == id {
+                self?.routeRefreshTasks[direction] = nil
+            }
+        }
+        routeRefreshTasks[direction] = (id, task)
+    }
+
+    /// Stops the live-availability refresh for `direction`: queued probes are dropped, the one or
+    /// two in flight finish. Answers already in keep counting.
+    func stopRouteAvailabilityRefresh(direction: SwapDirection) {
+        routeRefreshTasks[direction]?.task.cancel()
+        routeRefreshTasks[direction] = nil
     }
 
     func fetchInboundAddresses() async throws -> [SwapInboundAddress] {
@@ -246,24 +268,236 @@ final class SwapKitSwapProvider: SwapProvider {
         }
     }
 
+    /// What the address screen does with the nominal quote to the user's address.
+    enum AddressCheck: Equatable {
+        /// Let the user through; the amount screen quotes the real amount.
+        case pass
+        /// The request itself was refused (`validation_error`, `invalidDestinationAddress`, …);
+        /// the associated value is SwapKit's code for `SwapKitErrorCopy.message(for:coin:)`.
+        case refused(String)
+        /// No asked provider can carry the coin, and these said no-route — which, to the user's own
+        /// address, may be about the address: re-ask them without it before deciding.
+        case confirmNoRoute(Set<RouteProvider>)
+        /// No asked provider can carry the coin, and none blamed a missing route (all halted).
+        case unavailable
+    }
+
+    /// Codes that are about the request or the address, not about the route.
+    private static let requestCodes: Set<String> = [
+        "validation_error", "invalidrequest", "invaliddestinationaddress", "issanctionedaddress",
+    ]
+    /// Codes SwapKit uses to refuse the coin itself, whatever the provider.
+    private static let refusedCoinCodes: Set<String> = ["blacklistasset", "invalidasset"]
+
+    /// Pure decision for `validateAddress`, internal for the tests. `requested` is the providers
+    /// the quote named (`addressCheckRequest`), never empty: `sellQuoteProviders` always names NEAR
+    /// or Maya.
+    static func addressCheck(_ response: SwapKitQuoteResponse, requested: Set<RouteProvider>) -> AddressCheck {
+        // Only a route an asked provider carries counts: the swap would not use another one.
+        let routed = Set((response.routes ?? []).flatMap { $0.providers }
+            .compactMap { RouteProvider(swapKitProvider: $0) })
+        if !routed.isDisjoint(with: requested) {
+            return .pass
+        }
+
+        func code(_ raw: String?) -> String? {
+            raw?.components(separatedBy: ":").first?.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        // A top-level refusal is about the whole request.
+        if let top = code(response.error),
+           requestCodes.contains(top.lowercased()) || refusedCoinCodes.contains(top.lowercased()) {
+            return .refused(top)
+        }
+
+        // A refusal only counts for the SwapKit provider (a Maya flavour, say) that gave it: another
+        // one may still accept the request. A refusal from a provider the quote did not ask, from any
+        // other provider, or from none named, is ignored. When several refuse, the first in
+        // SwapKit's order is shown.
+        let errors = response.providerErrors ?? []
+        var refusedBy: Set<String> = []
+        var firstRefusal: String?
+        for error in errors {
+            guard let raw = code(error.errorCode),
+                  requestCodes.contains(raw.lowercased()) || refusedCoinCodes.contains(raw.lowercased()) else { continue }
+            guard let name = error.provider,
+                  let provider = RouteProvider(swapKitProvider: name),
+                  requested.contains(provider) else { continue }
+            refusedBy.insert(name.uppercased())
+            firstRefusal = firstRefusal ?? raw
+        }
+
+        // The quote asked every usable provider at once; each one is judged on its own answer.
+        let states = judgedWithoutRefusals(LiveRouteState.classifyPerProvider(response, requested: requested),
+                                           errors: errors, refusedBy: refusedBy)
+        if states.values.contains(where: { $0.isUsable }) {
+            return .pass
+        }
+        if let refusal = firstRefusal {
+            return .refused(refusal)
+        }
+        let noRoute = Set(states.filter { $0.value == .noRoute }.map { $0.key })
+        return noRoute.isEmpty ? .unavailable : .confirmNoRoute(noRoute)
+    }
+
+    /// `states` with each provider whose flavours (SwapKit provider names) are partly in
+    /// `refusedBy` judged on the other flavours' errors alone, and left out when every flavour
+    /// that spoke refused.
+    private static func judgedWithoutRefusals(
+        _ states: [RouteProvider: LiveRouteState],
+        errors: [SwapKitProviderError],
+        refusedBy: Set<String>
+    ) -> [RouteProvider: LiveRouteState] {
+        var judged = states
+        for provider in states.keys {
+            let spoke = errors.filter { $0.provider.flatMap { RouteProvider(swapKitProvider: $0) } == provider }
+            let rest = spoke.filter { !refusedBy.contains($0.provider?.uppercased() ?? "") }
+            guard rest.count < spoke.count else { continue }
+            judged[provider] = rest.isEmpty
+                ? nil
+                : LiveRouteState.classify(SwapKitQuoteResponse(quoteId: nil, routes: nil, providerErrors: rest,
+                                                               error: nil, message: nil))
+        }
+        return judged
+    }
+
+    /// A nominal Sell quote to the entered address. Its real use is the last check before the
+    /// amount screen that the coin can be swapped right now (`addressCheck` decides).
+    ///
+    /// The user is stopped when SwapKit refuses the request or the address, or when no asked
+    /// provider can carry the coin. Anything inconclusive (an upstream failure, a below-minimum for
+    /// the nominal amount) lets them through to the amount screen, which quotes the real amount
+    /// and reports what is wrong with it.
     func validateAddress(destination: String, toAsset: String) async -> String? {
-        let request = SwapKitQuoteRequest(
+        if !classificationBuilt { await buildClassification() }
+        let request = addressCheckRequest(destination: destination, toAsset: toAsset)
+
+        let response: SwapKitQuoteResponse
+        do {
+            response = try await SwapKitAPIService.shared.quote(request)
+        } catch {
+            // A non-2xx carrying a SwapKit body (404 `noRoutesFound`, 400 `validation_error`) is an
+            // answer, not a connection problem.
+            guard let decoded = Self.decodedQuoteResponse(from: error) else {
+                DWLogger.log("SwapKit: address validation request failed: \(error)")
+                return Self.addressCheckFailureMessage(for: error)
+            }
+            response = decoded
+        }
+
+        let requested = Set((request.providers ?? []).compactMap { RouteProvider(swapKitProvider: $0) })
+        Self.recordQuoteOutcome(
+            response, requested: requested, asset: toAsset, direction: .sell, store: routeAvailability
+        )
+
+        let check = Self.addressCheck(response, requested: requested)
+        if check != .pass {
+            DWLogger.log("SwapKit: address check for \(toAsset) → \(check) — \(response.error ?? SwapKitErrorCopy.providerErrorMessage(response.providerErrors?.first) ?? "no code")")
+        }
+        let coin = SwapCryptoCurrency.knownCoin(for: toAsset)
+
+        switch check {
+        case .pass:
+            return nil
+        case .refused(let code):
+            guard let coin else { return code }
+            // On this screen the address is the thing to check; the generic deposit copy for
+            // `invalidDestinationAddress` would only say "try again".
+            if code.lowercased() == "invaliddestinationaddress" {
+                return SwapKitErrorCopy.message(for: "validation_error", coin: coin)
+            }
+            return SwapKitErrorCopy.message(for: code, coin: coin)
+        case .unavailable:
+            guard let coin else { return NSLocalizedString("No route available", comment: "SwapKit") }
+            return SwapKitErrorCopy.unavailableNowMessage(coin: coin)
+        case .confirmNoRoute(let noRouteProviders):
+            let reAsked = await Self.reCheckNoRoute(noRouteProviders, asset: toAsset, store: routeAvailability)
+            return Self.addressReCheckMessage(reAsked, coin: coin)
+        }
+    }
+
+    /// The amount of the address quote, and of its re-check without the address.
+    nonisolated static let addressCheckAmount = "1"  // one DASH is far above every route floor
+
+    /// The re-check of a no-route on the address screen: the address quote's amount, forced to
+    /// `provider`, with no address — so only the address differs from the quote it confirms.
+    nonisolated static func addressReCheckRequest(asset: String, provider: RouteProvider) -> SwapKitQuoteRequest {
+        probeRequest(asset: asset, provider: provider, direction: .sell, amount: addressCheckAmount)
+    }
+
+    /// Asks each of `noRouteProviders` (NEAR, then Maya) again through `quote` at the address
+    /// quote's amount without the address: if a provider routes there, the address is what to fix.
+    /// Returns each answer as read for the address (`addressReCheckState`); `store` records the
+    /// usual classification (`LiveRouteState.classify`). When an answer recorded while the re-check
+    /// was asking is newer, the store keeps it and the re-check returns it instead.
+    static func reCheckNoRoute(
+        _ noRouteProviders: Set<RouteProvider>,
+        asset: String,
+        store: SwapRouteAvailability,
+        quote: (SwapKitQuoteRequest) async -> SwapKitQuoteResponse? = addressReCheckResponse
+    ) async -> [LiveRouteState] {
+        var reAsked: [LiveRouteState] = []
+        for provider in [RouteProvider.near, .maya] where noRouteProviders.contains(provider) {
+            var reCheck = LiveRouteState.unknown
+            var asked = LiveRouteState.unknown
+            let kept = await store.probeNow(asset: asset, provider: provider, direction: .sell) { asset, provider, _ in
+                let response = await quote(addressReCheckRequest(asset: asset, provider: provider))
+                reCheck = addressReCheckState(response)
+                asked = response.map(LiveRouteState.classify) ?? .unknown
+                return asked
+            }
+            // A different state back means a newer answer recorded meanwhile won over this one.
+            reAsked.append(kept == asked ? reCheck : kept)
+        }
+        return reAsked
+    }
+
+    /// Sends a re-check request; nil when no SwapKit answer came back.
+    private static func addressReCheckResponse(_ request: SwapKitQuoteRequest) async -> SwapKitQuoteResponse? {
+        do {
+            return try await SwapKitAPIService.shared.quote(request)
+        } catch {
+            return decodedQuoteResponse(from: error)
+        }
+    }
+
+    /// What a re-check answer says about the address: a route → `.available`; a below-minimum is
+    /// about the amount, so `.unknown` here (the amount screen quotes the real amount); otherwise
+    /// as `LiveRouteState.classify`. No answer → `.unknown`.
+    nonisolated static func addressReCheckState(_ response: SwapKitQuoteResponse?) -> LiveRouteState {
+        guard let response else { return .unknown }
+        if response.routes?.isEmpty == false { return .available }
+        let state = LiveRouteState.classify(response)
+        return state == .available ? .unknown : state
+    }
+
+    /// The nominal quote `validateAddress` sends: the providers the real Sell quote would ask
+    /// (`sellQuoteProviders`), so no provider the swap can't use decides the address.
+    func addressCheckRequest(destination: String, toAsset: String) -> SwapKitQuoteRequest {
+        SwapKitQuoteRequest(
             sellAsset: SwapKitConstants.dashAsset,
             buyAsset: toAsset,
-            sellAmount: "1",  // nominal — only the address format is being validated
+            sellAmount: Self.addressCheckAmount,
             slippage: SwapKitConstants.defaultSlippagePercent,
             sourceAddress: nil,
             destinationAddress: destination,
-            providers: nil,
+            providers: sellQuoteProviders(for: toAsset),
             affiliateFee: nil
         )
-        do {
-            let response = try await SwapKitAPIService.shared.quote(request)
-            return response.error
-        } catch {
-            DWLogger.log("SwapKit: address validation request failed: \(error)")
-            return NSLocalizedString("Address validation unavailable — please check your connection", comment: "SwapKit")
+    }
+
+    /// What the address screen says after the providers that answered "no route" were asked again
+    /// without the address: a route → the address is what to fix; nothing conclusive → nil, the
+    /// amount screen gets to quote the coin; no route confirmed → the coin can't be swapped now.
+    nonisolated static func addressReCheckMessage(_ reAsked: [LiveRouteState], coin: SwapCryptoCurrency?) -> String? {
+        if reAsked.contains(.available) {
+            guard let coin else { return "validation_error" }
+            return SwapKitErrorCopy.message(for: "validation_error", coin: coin)
         }
+        if reAsked.contains(.unknown) {
+            return nil
+        }
+        guard let coin else { return NSLocalizedString("No route available", comment: "SwapKit") }
+        return SwapKitErrorCopy.unavailableNowMessage(coin: coin)
     }
 
     func createBuyOrder(
@@ -647,135 +881,151 @@ final class SwapKitSwapProvider: SwapProvider {
         return best
     }
 
-    // MARK: - Private: Buy Routability
+    // MARK: - Private: Live Route Availability
 
-    private func scheduleBuyRoutabilityVerification(for assets: [String]) {
-        let pending = assets.filter { shouldProbeBuyRoutability(for: $0) }
-        guard !pending.isEmpty else { return }
+    /// The providers the `/tokens` classification says can ever carry `asset` in `direction`.
+    /// Buy routes only through NEAR (the counterparty builds the deposit, and Maya needs an
+    /// OP_RETURN memo an external wallet will not add), so Maya never counts for Buy.
+    private func capableProviders(for asset: String, direction: SwapDirection) -> Set<RouteProvider> {
+        Self.capableProviders(
+            for: asset,
+            direction: direction,
+            nearOnly: nearOnlyAssets,
+            mayaOnly: mayaOnlyAssets,
+            both: bothAssets
+        )
+    }
 
-        pending.forEach { buyRoutabilityInFlight.insert($0) }
-
-        Task(priority: .utility) { [weak self] in
-            guard let self else { return }
-            await self.verifyBuyRoutability(for: pending)
+    /// The providers the published lists say can carry `asset`. Buy routes through NEAR only,
+    /// so Maya never counts on Buy.
+    nonisolated static func capableProviders(
+        for asset: String,
+        direction: SwapDirection,
+        nearOnly: Set<String>,
+        mayaOnly: Set<String>,
+        both: Set<String>
+    ) -> Set<RouteProvider> {
+        let key = asset.uppercased()
+        var providers = Set<RouteProvider>()
+        if nearOnly.contains(key) || both.contains(key) {
+            providers.insert(.near)
         }
-    }
-
-    private func verifyBuyRoutability(for assets: [String]) async {
-        var updatedAny = false
-
-        for chunk in assets.chunked(into: buyRoutabilityProbeBatchSize) {
-            let probeResults = await withTaskGroup(of: (String, BuyRoutability?).self) { group -> [(String, BuyRoutability?)] in
-                for asset in chunk {
-                    let sellAmount = buyProbeSellAmount(for: asset)
-                    group.addTask { [sellAmount] in
-                        (asset, await Self.probeBuyRoutability(for: asset, sellAmount: sellAmount))
-                    }
-                }
-
-                var results: [(String, BuyRoutability?)] = []
-                results.reserveCapacity(chunk.count)
-                for await result in group {
-                    results.append(result)
-                }
-                return results
-            }
-
-            // @MainActor class — caches are already on the main actor; no MainActor.run hop needed.
-            let now = Date()
-            var changed = false
-            for (asset, result) in probeResults {
-                buyRoutabilityInFlight.remove(asset)
-                guard let result else { continue }
-
-                let previous = buyRoutabilityCache[asset]?.value
-                buyRoutabilityCache[asset] = (value: result, checkedAt: now)
-                if previous != result {
-                    changed = true
-                }
-            }
-            updatedAny = updatedAny || changed
+        if direction == .sell, mayaOnly.contains(key) || both.contains(key) {
+            providers.insert(.maya)
         }
-
-        guard updatedAny else { return }
-        onBuyRoutabilityChanged?()
+        return providers
     }
 
-    private func shouldProbeBuyRoutability(for asset: String) -> Bool {
-        guard cachedBuyRoutability(for: asset) == nil else { return false }
-        return !buyRoutabilityInFlight.contains(asset)
+    /// The providers that can carry `asset` now: capable ones the live probes have not ruled out.
+    private func usableProviders(for asset: String, direction: SwapDirection) -> Set<RouteProvider> {
+        routeAvailability.usableProviders(
+            for: asset,
+            capable: capableProviders(for: asset, direction: direction),
+            direction: direction
+        )
     }
 
-    private func cachedBuyRoutability(for asset: String) -> BuyRoutability? {
-        guard let entry = buyRoutabilityCache[asset] else { return nil }
-        guard Date().timeIntervalSince(entry.checkedAt) < buyRoutabilityTTL else { return nil }
-        return entry.value
-    }
-
-    private func buyProbeSellAmount(for asset: String) -> String {
-        guard let priceUSD = usdPriceCache[asset.uppercased()], priceUSD > 0 else {
-            return "1"
+    /// The amount a probe sells: about $50 of the sold asset, so a top-level `noRoutesFound` can be
+    /// read as a real no-route (see `LiveRouteState.classify`). `nil` when that size is unknown —
+    /// a Buy coin with no cached USD price — and the probe must not run.
+    private func probeAmount(for asset: String, direction: SwapDirection) -> String? {
+        let soldAsset = direction == .sell ? SwapKitConstants.dashAsset : asset
+        if let priceUSD = usdPriceCache[soldAsset.uppercased()], priceUSD > 0 {
+            return Self.plainDecimalString(Decimal(50) / Decimal(priceUSD), scale: 8)
         }
-
-        let nominal = Decimal(50) / Decimal(priceUSD)
-        return Self.plainDecimalString(nominal, scale: 8)
+        // One DASH is worth tens of dollars, far above any route floor, so Sell can still probe
+        // without a DASH price. One unit of an arbitrary Buy coin can be worth a fraction of a cent.
+        return direction == .sell ? "1" : nil
     }
 
-    private static func probeBuyRoutability(for asset: String, sellAmount: String) async -> BuyRoutability? {
-        let request = SwapKitQuoteRequest(
-            sellAsset: asset,
-            buyAsset: SwapKitConstants.dashAsset,
-            sellAmount: sellAmount,
+    /// The quote a probe sends: forced to `provider`'s SwapKit providers and carrying no address,
+    /// so a probe reveals nothing about the wallet.
+    nonisolated static func probeRequest(
+        asset: String,
+        provider: RouteProvider,
+        direction: SwapDirection,
+        amount: String
+    ) -> SwapKitQuoteRequest {
+        SwapKitQuoteRequest(
+            sellAsset: direction == .sell ? SwapKitConstants.dashAsset : asset,
+            buyAsset: direction == .sell ? asset : SwapKitConstants.dashAsset,
+            sellAmount: amount,
             slippage: SwapKitConstants.defaultSlippagePercent,
             sourceAddress: nil,
             destinationAddress: nil,
-            // Buy routability is still about counterparty-built deposits, so keep probing NEAR.
-            providers: [SwapKitConstants.providerNear],
+            providers: provider.swapKitProviders,
             affiliateFee: nil
         )
+    }
+
+    /// One quote forced to `provider`'s SwapKit providers, classified.
+    private func probeRoute(asset: String, provider: RouteProvider, direction: SwapDirection) async -> LiveRouteState {
+        guard let amount = probeAmount(for: asset, direction: direction) else {
+            return .unknown
+        }
+        let request = Self.probeRequest(asset: asset, provider: provider, direction: direction, amount: amount)
 
         do {
-            let response = try await SwapKitAPIService.shared.quote(request)
-            return routability(from: response)
+            return LiveRouteState.classify(try await SwapKitAPIService.shared.quote(request))
         } catch {
-            if let response = decodedQuoteResponse(from: error) {
-                return routability(from: response)
+            let state = Self.decodedQuoteResponse(from: error).map(LiveRouteState.classify) ?? .unknown
+            // Every field of a quote response is optional, so any JSON error body decodes. Only a
+            // conclusive answer is not a failure; a 401, a 429 or a gateway error is logged.
+            if state == .unknown {
+                let detail = SwapKitFailureDetail.describe(error)
+                DWLogger.log("SwapKit: route check \(asset) \(provider) \(direction) failed — \(detail)")
             }
-            return nil
+            return state
         }
     }
 
-    /// Internal rather than private so the tests can drive the picker-pruning rule with recorded
-    /// responses; nothing outside this type calls it.
-    static func routability(from response: SwapKitQuoteResponse) -> BuyRoutability? {
-        if response.routes?.isEmpty == false {
-            return .routable
+    /// Feeds what a quote to the user's address said about `asset` into the live store. Only what
+    /// cannot depend on the address is recorded: a route names the providers that carry it, and a
+    /// provider's halt names the provider that is halted. A no-route is left to the address-free
+    /// re-probe in `validateAddress`. Internal rather than private so the tests can feed it an answer.
+    static func recordQuoteOutcome(
+        _ response: SwapKitQuoteResponse,
+        requested: Set<RouteProvider>,
+        asset: String,
+        direction: SwapDirection,
+        store: SwapRouteAvailability
+    ) {
+        let carrying = Set(
+            (response.routes ?? []).flatMap { $0.providers }.compactMap { RouteProvider(swapKitProvider: $0) }
+        )
+        for provider in carrying.intersection(requested) {
+            store.record(.available, provider: provider, asset: asset, direction: direction)
         }
 
-        // Classify on the codes, not the prose: a provider reports its reason in
-        // `providerErrors[].errorCode`, and only the code is a stable identifier.
-        let providerCode = SwapKitErrorCopy.providerErrorMessage(response.providerErrors?.first)
-
-        guard let providerCode else {
-            // A top-level `noRoutesFound` is deliberately NOT treated as proof of unroutability.
-            // SwapKit answers with it for an amount far below a route's floor as well as for a
-            // pair it cannot carry — measured 2026-08-28, DASH → BTC returned it at 0.01 DASH
-            // and quoted a route at 0.3 — and the probe amount is a $50 estimate that falls back
-            // to one whole unit when no USD price is cached. Pruning on it would drop a routable
-            // asset out of the picker for the whole cache window.
-            return nil
+        // Both Maya flavours answer for `.maya`: it is halted only when no flavour says otherwise,
+        // and a route from either flavour says otherwise.
+        var halted = Set<RouteProvider>()
+        var notHalted = Set<RouteProvider>()
+        for error in response.providerErrors ?? [] {
+            guard let name = error.provider, let provider = RouteProvider(swapKitProvider: name),
+                  requested.contains(provider) else { continue }
+            if SwapKitErrorCopy.isHalted(error.errorCode) {
+                halted.insert(provider)
+            } else {
+                notHalted.insert(provider)
+            }
         }
-
-        if SwapKitErrorCopy.isBelowMinimum(providerCode) {
-            // The probe amount was under this route's floor, which says nothing about whether
-            // the asset is routable — the picker must not hide it on this evidence.
-            return .routable
+        for provider in halted.subtracting(notHalted).subtracting(carrying) {
+            store.record(.halted, provider: provider, asset: asset, direction: direction)
         }
+    }
 
-        // A provider naming its own no-route is the one conclusive negative: it is answering for
-        // the single provider the probe asked about. Anything else it reports (an upstream
-        // `apiRequestFailed`, say) leaves the question open.
-        return SwapKitErrorCopy.isNoRoute(providerCode) ? .notRoutable : nil
+    /// The address screen's copy for a check that got no SwapKit answer to read. A response that came
+    /// back but could not be read (a gateway's error page, a broken body) means the swap service
+    /// failed, so the user is not sent to check a connection that works; anything else never got a
+    /// response — no connection, a timeout, a DNS failure.
+    static func addressCheckFailureMessage(for error: Error) -> String {
+        switch error {
+        case HTTPClientError.statusCode, HTTPClientError.mapping, HTTPClientError.decoder:
+            return NSLocalizedString("The swap service isn't responding. Please try again later.", comment: "SwapKit")
+        default:
+            return NSLocalizedString("Address validation unavailable — please check your connection", comment: "SwapKit")
+        }
     }
 
     private static func decodedQuoteResponse(from error: Error) -> SwapKitQuoteResponse? {
@@ -835,20 +1085,23 @@ final class SwapKitSwapProvider: SwapProvider {
     /// Consequence to keep in mind: a MAYACHAIN route can now win for a coin that previously
     /// always deposited memo-less, so the 80-byte memo ceiling and Maya's dust floor apply to
     /// dual-routable coins too. Both guards already run on the fresh pre-commit quote.
-    private func sellQuoteProviders(for toAsset: String) -> [String]? {
+    ///
+    /// Providers the live probes have ruled out for this coin are left out, so a halted Maya leg
+    /// cannot crowd the answer of a working NEAR one. When the probes ruled out every provider, the
+    /// static set is sent anyway and SwapKit's own answer reaches the user.
+    private func sellQuoteProviders(for toAsset: String) -> [String] {
         guard classificationUsable else {
             return [SwapKitConstants.providerNear]
         }
 
-        let key = toAsset.uppercased()
-        if mayaOnlyAssets.contains(key) {
-            return SwapKitConstants.mayaProviders
+        let capable = capableProviders(for: toAsset, direction: .sell)
+        guard !capable.isEmpty else {
+            return [SwapKitConstants.providerNear]
         }
-        if bothAssets.contains(key) {
-            return [SwapKitConstants.providerNear] + SwapKitConstants.mayaProviders
-        }
-
-        return [SwapKitConstants.providerNear]
+        let usable = routeAvailability.usableProviders(for: toAsset, capable: capable, direction: .sell, freshOnly: true)
+        let chosen = usable.isEmpty ? capable : usable
+        // NEAR first, then Maya — the order the request has always used.
+        return [RouteProvider.near, .maya].filter { chosen.contains($0) }.flatMap { $0.swapKitProviders }
     }
 
     // MARK: - Private: Amount Conversion
@@ -1048,22 +1301,5 @@ private func errorResult(_ message: String) -> SwapQuoteResult {
         // diagnosable from an exported log instead of only from a screenshot.
         DWLogger.log("SwapKit: quote/swap failed — raw: \(message)")
         return SwapQuoteResult(error: message, expectedAmountOut: nil, fees: nil, inboundAddress: nil, memo: nil, executionNetwork: nil)
-    }
-}
-
-private extension Array {
-    func chunked(into size: Int) -> [[Element]] {
-        guard size > 0, !isEmpty else { return [self] }
-        var result: [[Element]] = []
-        result.reserveCapacity((count + size - 1) / size)
-
-        var index = startIndex
-        while index < endIndex {
-            let nextIndex = self.index(index, offsetBy: size, limitedBy: endIndex) ?? endIndex
-            result.append(Array(self[index..<nextIndex]))
-            index = nextIndex
-        }
-
-        return result
     }
 }

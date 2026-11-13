@@ -24,7 +24,6 @@ final class NotificationTopicTests: XCTestCase {
     func testRawValuesArePinned() {
         XCTAssertEqual(NotificationTopic.transactions.rawValue, "transactions")
         XCTAssertEqual(NotificationTopic.dashpay.rawValue, "dashpay")
-        XCTAssertEqual(NotificationTopic.crowdnode.rawValue, "crowdnode")
         XCTAssertEqual(NotificationTopic.swap.rawValue, "swap")
         XCTAssertEqual(NotificationTopic.announcements.rawValue, "announcements")
         XCTAssertEqual(NotificationTopic.system.rawValue, "system")

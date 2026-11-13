@@ -7,8 +7,8 @@
 //  `findLastPotentialWordsOfMnemonicForPassphrase:…`,
 //  DSBIP39Mnemonic.m:436–589), composed from SwiftDashSDK primitives:
 //  `Mnemonic.wordList` (candidate enumeration), `Mnemonic.validate`
-//  (BIP-39 checksum), `Mnemonic.toSeed` + `key_wallet_derive_address_from_seed`
-//  (candidate → first BIP-44 mainnet address), plus `InsightClient`
+//  (BIP-39 checksum), `Mnemonic.firstReceiveAddress` (candidate → first
+//  BIP-44 mainnet address), plus `InsightClient`
 //  (on-chain address-existence) and `DamerauLevenshtein` (typo backup).
 //
 //  Algorithm (single missing/incorrect word of a 12-word phrase):
@@ -30,10 +30,8 @@
 //      DashSync's per-language decode; extra candidates are Insight-gated.
 //   4. Two-missing concurrency is 4 (DashSync: CPU−1) — gentler on Insight.
 //   5. Distance backup ranks ALL checksum-valid words, not only those whose
-//      seed derivation succeeded. Identical for English; for non-English
-//      phrases the current key-wallet FFI (`mnemonic_to_seed`) is
-//      English-hardcoded, so derivation fails and on-chain confirmation is
-//      unavailable — the distance backup still works there.
+//      address derivation succeeded. Derivation accepts every SDK language,
+//      so this differs from DashSync only if a derivation fails.
 //   6. A stopped scan still completes (with whatever was accumulated):
 //      keeps the stop-flag box's lifetime airtight; the VC has already
 //      dismissed itself on cancel, so the extra completion is invisible.
@@ -159,13 +157,12 @@ enum PhraseRepairEngine {
     typealias ProgressTick = (Float) async -> Bool
 
     /// Seam for unit tests; `.default` wires the real Insight client and
-    /// the SwiftDashSDK/FFI derivation chain.
+    /// the SwiftDashSDK address derivation.
     struct Dependencies {
         var insight: InsightAddressQuerying
         /// Checksum-valid candidate phrase → first BIP-44 external address
-        /// (account 0, mainnet). `nil` when derivation fails — today that
-        /// means a non-English phrase (the FFI's `mnemonic_to_seed` is
-        /// English-hardcoded); such candidates skip on-chain confirmation.
+        /// (account 0, mainnet). `nil` when derivation fails. Such candidates
+        /// skip on-chain confirmation.
         var deriveFirstAddress: (String) -> String?
 
         static let `default` = Dependencies(insight: InsightClient(),
@@ -442,39 +439,12 @@ enum PhraseRepairEngine {
         return found
     }
 
-    // MARK: Address derivation (SDK + FFI)
+    // MARK: Address derivation (SDK)
 
-    /// m/44'/5'/0'/0/0 — first external address of account 0, mainnet
+    /// Checksum-valid phrase → its first receive address on mainnet
     /// (hardcoded, parity with `[DSChain mainnet]` in DSBIP39Mnemonic.m:542).
-    private static let firstAddressPath: String? =
-        try? KeyDerivation.getBIP44PaymentPath(network: .mainnet,
-                                               accountIndex: 0,
-                                               isChange: false,
-                                               addressIndex: 0)
-
-    /// Checksum-valid phrase → BIP-39 seed (nil passphrase) → address via
-    /// the `key_wallet_derive_address_from_seed` C FFI (re-exported through
-    /// SwiftDashSDK; result freed with `string_free`, its documented pair).
-    /// Returns nil on any failure — notably non-English phrases, which the
-    /// FFI's English-hardcoded `mnemonic_to_seed` rejects.
+    /// Returns nil on any failure.
     static func defaultDeriveFirstAddress(phrase: String) -> String? {
-        guard let path = firstAddressPath,
-              let seed = try? Mnemonic.toSeed(mnemonic: phrase),
-              seed.count == 64 else {
-            return nil
-        }
-
-        var address: String?
-        seed.withUnsafeBytes { (rawBuffer: UnsafeRawBufferPointer) in
-            guard let base = rawBuffer.bindMemory(to: UInt8.self).baseAddress else { return }
-            path.withCString { cPath in
-                guard let cAddress = key_wallet_derive_address_from_seed(base,
-                                                                         Network.mainnet.ffiValue,
-                                                                         cPath) else { return }
-                address = String(cString: cAddress)
-                string_free(cAddress)
-            }
-        }
-        return address
+        try? Mnemonic.firstReceiveAddress(for: phrase, network: .mainnet)
     }
 }

@@ -93,10 +93,10 @@ final class MasternodeVoterRegistry {
     /// Outcome of a votable-node resolution.
     ///
     /// `mayBeIncomplete` says the answer cannot be trusted as exhaustive: the
-    /// voting address pool was read from the degraded fallback (gap-limit
-    /// deep) *and* at least one active registration went unmatched, so a node
-    /// this wallet really can vote with may be missing from `nodes`. The UI
-    /// says so rather than presenting a short list as the full picture.
+    /// running wallet has no provider voting account *and* at least one active
+    /// registration went unmatched, so a node this wallet really can vote with
+    /// may be missing from `nodes`. The UI says so rather than presenting a
+    /// short list as the full picture.
     struct Resolution {
         let nodes: [VoterNode]
         let mayBeIncomplete: Bool
@@ -163,11 +163,11 @@ final class MasternodeVoterRegistry {
                     keySource: .walletIndex(index))
             }
 
-        // Only a degraded pool read can hide a node we own; if every active
-        // registration matched, depth did not matter.
-        let mayBeIncomplete = !resolution.poolIsLive && nodes.count < eligible.count
+        // Only a missing provider voting account can hide a node we own. If
+        // every active registration matched, the account did not matter.
+        let mayBeIncomplete = !resolution.hasProviderPool && nodes.count < eligible.count
         Self.logger.info(
-            "🗳️ VOTING :: votable nodes=\(nodes.count, privacy: .public) of \(eligible.count, privacy: .public) active registrations livePool=\(resolution.poolIsLive, privacy: .public)")
+            "🗳️ VOTING :: votable nodes=\(nodes.count, privacy: .public) of \(eligible.count, privacy: .public) active registrations providerPool=\(resolution.hasProviderPool, privacy: .public)")
         // Exclusion is by the wallet's ELIGIBLE set (not just the votable
         // subset): a wallet-registered node stays out of the tracked list
         // even when its derived key didn't resolve.

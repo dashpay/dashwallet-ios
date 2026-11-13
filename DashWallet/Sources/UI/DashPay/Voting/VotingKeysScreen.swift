@@ -290,8 +290,8 @@ private struct VotingKeysScreen: View {
         let chosen = viewModel.votableNodes.filter {
             viewModel.effectiveSelectedNodeIDs.contains($0.proTxHash)
         }
-        return String(
-            format: NSLocalizedString(
+        return String.localizedStringWithFormat(
+            NSLocalizedString(
                 "A vote is cast with %d of these nodes, worth %u votes. Choose which ones under “Voting with”.",
                 comment: "Voting"),
             chosen.count, chosen.totalVoteWeight)

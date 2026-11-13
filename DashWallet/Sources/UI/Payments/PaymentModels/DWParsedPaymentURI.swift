@@ -177,17 +177,19 @@ final class ParsedPaymentURI: NSObject {
     }
 
     /// The `dash:` URI that `DWURLParser`, the deep-link router, rewrites a `dashwallet://pay=…`
-    /// link to: the address, the link's own parameters and a label naming its `sender`. Read raw,
-    /// `pay=<address>` would be taken for the address. nil for anything the router does not turn
-    /// into a payment — the plain `dashwallet:<address>` alias among them, which `BIP70URI` reads.
+    /// link to. Read raw, `pay=<address>` would be taken for the address. A deep link is rewritten
+    /// before it gets here, so this is a link the wallet read itself (a scan, a paste, an NFC tag):
+    /// it keeps the address and the link's own parameters and loses `sender`, since no app asked
+    /// for the payment. nil for anything the router does not turn into a payment — the plain
+    /// `dashwallet:<address>` alias among them, which `BIP70URI` reads.
     private static func deepLinkPaymentString(for raw: String) -> String? {
         let link = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard link.hasPrefix("dashwallet:"),
               let url = URL(string: link),
-              let action = DWURLParser.action(for: url) as? DWURLPayAction else {
+              let paymentURL = DWURLParser.paymentURL(forScannedLink: url) else {
             return nil
         }
-        return action.paymentURL.absoluteString
+        return paymentURL.absoluteString
     }
 
     /// The fetch-failed fallback: a copy without the BIP70 request URL (was the

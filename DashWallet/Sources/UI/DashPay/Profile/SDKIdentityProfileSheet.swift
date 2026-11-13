@@ -63,7 +63,10 @@ struct SDKIdentityProfileSheet: View {
     }
 
     var body: some View {
-        NavigationStack {
+        DashUIKit.BottomSheet(
+            title: NSLocalizedString("My Profile", comment: "SDK identity profile sheet — title"),
+            showBackButton: .constant(false)
+        ) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     header
@@ -104,15 +107,6 @@ struct SDKIdentityProfileSheet: View {
                 .padding(.top, 24)
             }
             .background(Color.dash.primaryBackground)
-            .navigationTitle(NSLocalizedString("My Profile", comment: "SDK identity profile sheet — title"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(NSLocalizedString("Done", comment: "")) {
-                        dismiss()
-                    }
-                }
-            }
             .overlay(alignment: .bottom) {
                 if let toast = copyToast {
                     Text(toast)
@@ -165,25 +159,18 @@ struct SDKIdentityProfileSheet: View {
         // and a name registered or bought in the marketplace changes both
         // `dpnsNames` and `hasIdentity`.
         .fullScreenCover(isPresented: $showingUsernameRecovery, onDismiss: reloadIdentitySnapshot) {
-            NavigationStack {
-                CreateUsernameView(
-                    invitationURI: nil,
-                    definedUsername: nil,
-                    // Both exits close the cover: the shielded question moved
-                    // to the Join DashPay sheet's privacy page, and a handoff
-                    // to the status row leaves this screen just the same.
-                    finish: { showingUsernameRecovery = false },
-                    handOffToStatusRow: { showingUsernameRecovery = false },
-                    // The form draws its own back arrow; without this it is a
-                    // visible control that does nothing inside a cover.
-                    onBack: { showingUsernameRecovery = false })
-                .navigationTitle(NSLocalizedString("Finish username registration", comment: "DashPay registration recovery"))
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button(NSLocalizedString("Close", comment: "")) { showingUsernameRecovery = false }
-                    }
-                }
-            }
+            CreateUsernameView(
+                invitationURI: nil,
+                definedUsername: nil,
+                // Both exits close the cover: the shielded question moved
+                // to the Join DashPay sheet's privacy page, and a handoff
+                // to the status row leaves this screen just the same.
+                finish: { showingUsernameRecovery = false },
+                handOffToStatusRow: { showingUsernameRecovery = false },
+                // The form is the cover's root, so its bar shows close and
+                // closing it dismisses the cover.
+                onBack: { showingUsernameRecovery = false },
+                leadingElement: .close)
         }
         .fullScreenCover(isPresented: $showingUsernameMarketplace,
                          onDismiss: reloadIdentitySnapshot) {
@@ -539,22 +526,31 @@ final class IdentityTopUpViewModel: ObservableObject {
 
     @Published var isProcessing = false
     @Published var errorMessage: String?
+    @Published private(set) var submittedUnconfirmed = false
+    @Published private(set) var movedToPlatform = false
     /// Set instead of `errorMessage` when a transparent top-up would need
     /// more inputs than one asset lock may carry: the lock to re-check once
     /// `CoreCoinConsolidationSheet` has combined the coins.
     @Published var inputLimitCheck: AssetLockInputLimit.Check?
     /// User-visible progress for the shielded route's two steps.
     @Published var stepLabel: String?
-
     private let authorizer = DWIdentityAuthorizer()
 
     enum TopUpError: LocalizedError {
         case noPlatformReceiveAddress
+        case movedToPlatform(Error)
+        case secondLegCancelled
 
         var errorDescription: String? {
             switch self {
             case .noPlatformReceiveAddress:
                 return NSLocalizedString("No Platform receive address is available yet — wait for the Platform sync to finish and try again.", comment: "Identity top-up sheet — missing unshield destination")
+            case .secondLegCancelled:
+                return NSLocalizedString("The identity top-up result could not be confirmed. Check your balances before continuing.", comment: "Identity top-up second leg cancelled")
+            case .movedToPlatform(let error):
+                return NSLocalizedString(
+                    "Dash was moved to your Platform balance. Finish the top-up from Platform after reviewing the amount again.",
+                    comment: "Identity top-up stopped after successful unshield") + " " + error.localizedDescription
             }
         }
     }
@@ -599,15 +595,21 @@ final class IdentityTopUpViewModel: ObservableObject {
         return unshieldFee + observedTopUpTransitionFeeCredits
     }
 
+    /// A settled first leg must not unshield again on this screen.
+    func canTopUp(from source: FundingSource) -> Bool {
+        !isProcessing && !submittedUnconfirmed && !(source == .shielded && movedToPlatform)
+    }
+
     /// nil = cancelled or failed (errorMessage carries the failure).
     func topUp(identityId: Data, amountDuffs: UInt64, source: FundingSource) async -> UInt64? {
-        guard !isProcessing else { return nil }
+        guard canTopUp(from: source) else { return nil }
         guard let wallet = SwiftDashSDKHost.shared.wallet,
               let modelContainer = SwiftDashSDKHost.shared.modelContainer else {
             errorMessage = NSLocalizedString("Wallet is not ready", comment: "DashPay")
             return nil
         }
         isProcessing = true
+        submittedUnconfirmed = false
         defer {
             isProcessing = false
             stepLabel = nil
@@ -656,6 +658,17 @@ final class IdentityTopUpViewModel: ObservableObject {
                     wallet: wallet,
                     modelContainer: modelContainer)
             }
+        } catch SDKError.stateTransitionResultUnconfirmed, PlatformWalletError.transactionBroadcastUnconfirmed,
+                PlatformWalletError.shieldedSpendUnconfirmed, TopUpError.secondLegCancelled {
+            submittedUnconfirmed = true
+            errorMessage = NSLocalizedString(
+                "The transfer may have been submitted, but its result could not be confirmed. Wait for the wallet to sync and check your balances and history before making another transfer.",
+                comment: "Identity transfer result unknown")
+            return nil
+        } catch let error as TopUpError {
+            if case .movedToPlatform = error { movedToPlatform = true }
+            errorMessage = error.localizedDescription
+            return nil
         } catch let error as PlatformPaymentIdentityFundingPolicy.PlanningError {
             if case .insufficient(let required, let available) = error {
                 errorMessage = String.localizedStringWithFormat(
@@ -726,10 +739,21 @@ final class IdentityTopUpViewModel: ObservableObject {
             hash: Data(storageBytes.dropFirst()),
             credits: claim)
         let signer = KeychainSigner(modelContainer: modelContainer)
-        let newBalance = try await wallet.topUpFromAddresses(
-            identityId: identityId,
-            inputs: [input],
-            addressSigner: signer)
+        let newBalance: UInt64
+        do {
+            newBalance = try await wallet.topUpFromAddresses(
+                identityId: identityId,
+                inputs: [input],
+                addressSigner: signer)
+        } catch {
+            // An ambiguous second leg may already have credited the identity.
+            // Never suggest another top-up when its result is unknown.
+            if case SDKError.stateTransitionResultUnconfirmed = error { throw error }
+            if case PlatformWalletError.transactionBroadcastUnconfirmed = error { throw error }
+            if case PlatformWalletError.shieldedSpendUnconfirmed = error { throw error }
+            if error is CancellationError { throw TopUpError.secondLegCancelled }
+            throw TopUpError.movedToPlatform(error)
+        }
         Task { await PlatformAddressSyncCoordinator.shared.syncNow() }
         return newBalance
     }
@@ -919,8 +943,8 @@ struct IdentityTopUpSheet: View {
                             .cornerRadius(12)
                     }
                 }
-                .disabled(viewModel.isProcessing || effectiveDuffs == nil)
-                .opacity(effectiveDuffs == nil ? 0.55 : 1)
+                .disabled(!viewModel.canTopUp(from: source) || effectiveDuffs == nil)
+                .opacity(!viewModel.canTopUp(from: source) || effectiveDuffs == nil ? 0.55 : 1)
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
 
@@ -941,7 +965,9 @@ struct IdentityTopUpSheet: View {
         .background(Color.dash.primaryBackground)
         .interactiveDismissDisabled(viewModel.isProcessing)
         .alert(
-            NSLocalizedString("Error", comment: ""),
+            viewModel.submittedUnconfirmed
+                ? NSLocalizedString("Confirmation pending", comment: "Identity transfer result unknown")
+                : NSLocalizedString("Error", comment: ""),
             isPresented: Binding(
                 get: { viewModel.errorMessage != nil },
                 set: { if !$0 { viewModel.errorMessage = nil } })

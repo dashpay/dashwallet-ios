@@ -140,20 +140,16 @@ final class BuyCreditsViewController: SendAmountViewController, ObservableObject
     override func actionButtonAction(sender: UIView) {
         guard validateInputAmount() else { return }
 
-        checkLeftoverBalance { [weak self] canContinue in
-            guard canContinue, let self = self else { return }
+        showActivityIndicator()
 
-            self.showActivityIndicator()
-            
-            Task { // TODO: Temp MOCK_DASHPAY
-                try? await Task.sleep(nanoseconds: 2_000_000_000)
-                self.hideActivityIndicator()
-                let dashAmount = self.model.amount.dashAmount.plainAmount
-                let opAmount = dashAmount / BuyCreditsModel.opCost
-                BuyCreditsModel.currentCredits += Double(opAmount) * 0.25
-                self.dismiss(animated: true)
-                self.onDismissed?()
-            }
+        Task { // TODO: Temp MOCK_DASHPAY
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            self.hideActivityIndicator()
+            let dashAmount = self.model.amount.dashAmount.plainAmount
+            let opAmount = dashAmount / BuyCreditsModel.opCost
+            BuyCreditsModel.currentCredits += Double(opAmount) * 0.25
+            self.dismiss(animated: true)
+            self.onDismissed?()
         }
     }
     

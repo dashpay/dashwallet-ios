@@ -140,7 +140,6 @@ class MainTabbarController: UITabBarController {
     private var moreTabIndex: Int?
 
     #if DASHPAY
-    weak var exploreNavigationController: ExploreViewController?
     private var pendingDashPayTabReconfiguration = false
     #endif
 
@@ -304,9 +303,9 @@ extension MainTabbarController {
         #endif
 
         // Payment. A real tab, not a modal: the landing is where the send /
-        // receive / transfer flows start, and the tab bar stays visible on it.
-        // The screens it pushes set `hidesBottomBarWhenPushed`, so the bar is
-        // gone from the first step that asks for an amount.
+        // receive / transfer flows start. The landing hides the tab bar while
+        // it is up, and `BaseNavigationController` hides it on every screen
+        // pushed above the landing.
         let paymentImage = Self.makePaymentTabImage()
         item = MainTabbarTabs.payment.tabBarItem(image: paymentImage, selectedImage: paymentImage)
 
@@ -544,7 +543,8 @@ extension MainTabbarController {
         homeController?.performPay(to: url)
     }
 
-    /// Opens the Connections screen for a `dash-key:` / `dash-st:` link.
+    /// Opens the Connections screen for a `dash-key:`, `dash-st:` or
+    /// `dashpay://connect` link.
     ///
     /// The More tab's index moves with the DashPay layout, so it comes from
     /// `moreTabIndex` rather than from the tab enum.

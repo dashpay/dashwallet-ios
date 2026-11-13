@@ -25,10 +25,13 @@ protocol DashConnectDataSource {
 
     func parseQR(_ content: String) async throws -> DashConnectQr
     func makeConnectionRequest(from loginRequest: DashKeyRequest) async -> ConnectionRequest
-    func approveLogin(_ request: DashKeyRequest) async throws -> DAppConnection
-    /// Parses a scanned `dash-st:` payload and either completes key
-    /// registration immediately or returns a token purchase that awaits
-    /// explicit user approval via `approveTokenPurchase(_:)`.
+    /// `consent` is the request as the approval sheet showed it. A login
+    /// that would give the app something else, or act for another identity,
+    /// wallet or network than it was resolved for, is refused.
+    func approveLogin(_ request: DashKeyRequest, consent: ConnectionRequest) async throws -> DAppConnection
+    /// Parses a scanned `dash-st:` payload and returns the token purchase it
+    /// carries, which awaits explicit user approval via
+    /// `approveTokenPurchase(_:)`. Any other transition is refused.
     func handleStateTransition(_ request: DashStRequest) async throws -> DashConnectStAction
     /// Rebuilds, signs and submits a token purchase the user approved.
     ///
@@ -36,8 +39,52 @@ protocol DashConnectDataSource {
     /// transition could already have reached Platform — the caller must not
     /// offer a retry when it could have.
     func approveTokenPurchase(_ request: DashConnectTokenPurchaseRequest) async throws
-    func disconnect(id: String) async
-    func remove(id: String) async
+    /// Turns a connection off. For an App Connect connection this turns off
+    /// every key the wallet's approvals of the app gave on the active
+    /// identity, puts a key of the wallet's own under each id an approval
+    /// may still land on so it never does, and deletes the published
+    /// responses. It also turns off, with no further question, the live keys
+    /// bound to the app's contracts that no approval of this wallet names
+    /// (from another device or from before a restore), the live keys on the
+    /// other contracts and contract groups of the app's owner it can
+    /// attribute to the app by owner, and every DashPay profile key no
+    /// approval names. An update that fails stops it: the result says how
+    /// many keys are still live, and the connection stays. Keys whose bound
+    /// the wallet cannot tell yet, or whose owner, the app's owner or another
+    /// app's owner here could not be read, are not turned off and are counted
+    /// as not checked; keys of the app's owner that another app here has too
+    /// are not turned off and are counted as not attributable. The
+    /// connection also stays, and that is thrown, while an approval of the
+    /// app on another identity of the wallet is not done.
+    ///
+    /// `scope` is the `DAppConnection.scope` of the row that was picked:
+    /// both calls act only while it still names the wallet they would act
+    /// on.
+    @discardableResult
+    func disconnect(id: String, scope: String?) async throws -> DashConnectDisconnectResult
+    /// Hides a row. For an App Connect connection that Platform refused for
+    /// good it records the remove date on the connection's refused approvals,
+    /// without a PIN and without writing to Platform; a connection that does
+    /// not show Refused is left as it is.
+    func remove(id: String, scope: String?) async
+    /// Puts the App Connect rows in step with the active identity's keys on
+    /// Platform. Best effort: a failed read leaves the rows as they were.
+    func refreshConnections() async
+    /// What the connection sheet shows for the row `id`, from the active
+    /// identity's intents for the app; `nil` when there is no active wallet
+    /// or `scope` is not its.
+    func connectionDetails(id: String, scope: String?) async -> ConnectionDetails?
+    /// What is left of the budgets of the keys `basis` gives the app, read
+    /// after the details told from it and apart from them, so the sheet
+    /// shows them first; `.notRead` when `basis` is not of the active
+    /// identity of the wallet `scope` names.
+    func connectionFunding(for basis: ConnectionBasis, scope: String?) async -> ConnectionFundingRead
+}
+
+extension DashConnectDataSource {
+    func refreshConnections() async {}
+    func connectionDetails(id: String, scope: String?) async -> ConnectionDetails? { nil }
+    func connectionFunding(for basis: ConnectionBasis, scope: String?) async -> ConnectionFundingRead { .notRead }
 }
 
 /// Why a token purchase failed, and — the part that decides what the UI may
@@ -73,6 +120,7 @@ enum DashConnectMockError: LocalizedError, Equatable {
     case parseFailed
     case approveFailed
     case notDashConnectQrCode
+    case needsNewerWallet
     case unsupportedNetwork(expected: DashConnectNetwork, actual: DashConnectNetwork)
     case stateTransitionNotSupported
 
@@ -84,6 +132,8 @@ enum DashConnectMockError: LocalizedError, Equatable {
             return "Approval failed"
         case .notDashConnectQrCode:
             return "This QR code is not a DashConnect QR code."
+        case .needsNewerWallet:
+            return NSLocalizedString("This link needs a newer version of the wallet.", comment: "DashConnect")
         case let .unsupportedNetwork(expected, actual):
             return "This DashConnect QR is for \(Self.displayName(for: actual)), but this wallet currently supports \(Self.displayName(for: expected)) only."
         case .stateTransitionNotSupported:
@@ -118,7 +168,13 @@ final class MockDashConnectDataSource: DashConnectDataSource {
         network: .testnet
     )
     static let sampleLoginQRCode = DashConnectSampleQR.keyUri(for: sampleLoginRequest)
-    static let sampleRequest = ConnectionRequest(loginRequest: sampleLoginRequest)
+    static let sampleRequest: ConnectionRequest = {
+        var request = ConnectionRequest(loginRequest: sampleLoginRequest)
+        request.login = .appConnect(AppConnect.GrantPlan(
+            appId: sampleLoginRequest.contractId, appEphemeralPubKeyHash: Data(repeating: 0, count: 20),
+            auth: [], encryption: [], connectionId: nil, identityHint: nil, createdAt: 0, callbackHost: nil))
+        return request
+    }()
 
     static func sample(_ status: ConnectionStatus) -> DAppConnection {
         DAppConnection(
@@ -133,7 +189,7 @@ final class MockDashConnectDataSource: DashConnectDataSource {
     #if DEBUG
     static func previewMixed() -> MockDashConnectDataSource {
         MockDashConnectDataSource(initial: [
-            sample(.approved),
+            sample(.confirming),
             DAppConnection(
                 id: "7W6u4NgW63FPUuW8EnTbYzD4KybNQD5n7CUDWydJY234",
                 name: "DashGet",
@@ -182,7 +238,7 @@ final class MockDashConnectDataSource: DashConnectDataSource {
         if DashConnectUri.isKeyUri(trimmed) {
             let request = try DashConnectUri.parseKeyRequest(trimmed)
             try validateNetwork(request.network)
-            return .login(request)
+            throw AppConnect.v1Refusal
         }
 
         if DashConnectUri.isStUri(trimmed) {
@@ -194,20 +250,21 @@ final class MockDashConnectDataSource: DashConnectDataSource {
         throw DashConnectMockError.notDashConnectQrCode
     }
 
-    func approveLogin(_ request: DashKeyRequest) async throws -> DAppConnection {
+    func approveLogin(_ request: DashKeyRequest, consent: ConnectionRequest) async throws -> DAppConnection {
         try await Task.sleep(nanoseconds: 400_000_000)
 
         if shouldFailNextApprove {
             shouldFailNextApprove = false
             throw DashConnectMockError.approveFailed
         }
+        guard consent.login.isApprovable else { throw DashConnectPlatformError.approvalOutOfDate }
 
         let connectionRequest = await makeConnectionRequest(from: request)
         let connection = DAppConnection(
             id: connectionRequest.appContractId,
             name: connectionRequest.appLabel.isEmpty ? NSLocalizedString("Unknown app", comment: "DashConnect") : connectionRequest.appLabel,
             url: connectionRequest.appUrl,
-            status: .approved,
+            status: .active,
             updatedAt: Date()
         )
 
@@ -225,7 +282,8 @@ final class MockDashConnectDataSource: DashConnectDataSource {
             appUrl: fallback.appUrl,
             walletUsername: nil,
             walletIdentityId: nil,
-            existingConnection: existingConnection(for: fallback.appContractId)
+            existingConnection: existingConnection(for: fallback.appContractId),
+            login: .refused(AppConnect.v1Refusal)
         )
     }
 
@@ -239,22 +297,20 @@ final class MockDashConnectDataSource: DashConnectDataSource {
             DashConnectMockError.stateTransitionNotSupported)
     }
 
-    func disconnect(id: String) async {
-        let disconnectedAt = Date()
-        persistAndSend(subject.value.map { connection in
-            guard connection.id == id else { return connection }
-            return DAppConnection(
-                id: connection.id,
-                name: connection.name,
-                url: connection.url,
-                status: .approved,
-                updatedAt: disconnectedAt
-            )
-        })
+    @discardableResult
+    func disconnect(id: String, scope: String?) async throws -> DashConnectDisconnectResult {
+        persistAndSend(subject.value.filter { $0.id != id })
+        return DashConnectDisconnectResult()
     }
 
-    func remove(id: String) async {
+    func remove(id: String, scope: String?) async {
         persistAndSend(subject.value.filter { $0.id != id })
+    }
+
+    /// The mock grants no keys: no details beyond the row.
+    func connectionDetails(id: String, scope: String?) async -> ConnectionDetails? {
+        guard subject.value.contains(where: { $0.id == id }) else { return nil }
+        return ConnectionDetails(appId: id, identityId: nil, username: nil)
     }
 
     private func validateNetwork(_ network: DashConnectNetwork) throws {

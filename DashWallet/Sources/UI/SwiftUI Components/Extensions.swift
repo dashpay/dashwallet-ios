@@ -63,3 +63,23 @@ extension Font {
         }
     }
 }
+
+// MARK: - ListDisclosureRow
+
+/// A `List` row label for a `Button` that pushes a screen: the content
+/// followed by the trailing disclosure chevron a `NavigationLink` row draws.
+struct ListDisclosureRow<Content: View>: View {
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        HStack {
+            content
+            Spacer(minLength: 0)
+            Image(systemName: "chevron.right")
+                .font(.footnote.weight(.semibold))
+                .foregroundColor(Color(UIColor.tertiaryLabel))
+                .accessibilityHidden(true)
+        }
+        .contentShape(Rectangle())
+    }
+}

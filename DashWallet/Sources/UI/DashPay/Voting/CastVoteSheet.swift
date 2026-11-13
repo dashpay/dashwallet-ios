@@ -17,6 +17,7 @@
 //  limitations under the License.
 //
 
+import DashUIKit
 import SwiftDashSDK
 import SwiftUI
 
@@ -70,27 +71,25 @@ struct CastVoteSheet: View {
     }
 
     var body: some View {
-        NavigationView {
-            Group {
-                if let report = viewModel.lastCastReport {
-                    VoteResultView(report: report) {
-                        viewModel.dismissCastResult()
-                        dismiss()
-                    }
-                } else {
-                    confirmForm
+        DashUIKit.BottomSheet(
+            title: NSLocalizedString("Cast vote", comment: "Voting"),
+            showBackButton: .constant(false),
+            // No swipe-down while a vote is being cast, same as the close button.
+            isDismissalEnabled: .constant(!viewModel.isCasting),
+            isCloseButtonEnabled: !viewModel.isCasting,
+            onClose: {
+                viewModel.dismissCastResult()
+                dismiss()
+            },
+            background: Color(UIColor.systemGroupedBackground)
+        ) {
+            if let report = viewModel.lastCastReport {
+                VoteResultView(report: report) {
+                    viewModel.dismissCastResult()
+                    dismiss()
                 }
-            }
-            .navigationTitle(NSLocalizedString("Cast vote", comment: "Voting"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(NSLocalizedString("Cancel", comment: "")) {
-                        viewModel.dismissCastResult()
-                        dismiss()
-                    }
-                    .disabled(viewModel.isCasting)
-                }
+            } else {
+                confirmForm
             }
         }
         .onAppear {
@@ -137,15 +136,15 @@ struct CastVoteSheet: View {
                     // and showing one hides the other.
                     VStack(alignment: .leading, spacing: 2) {
                         if holdingThisChoice > 0 {
-                            Text(String(
-                                format: NSLocalizedString(
+                            Text(String.localizedStringWithFormat(
+                                NSLocalizedString(
                                     "%d of your nodes already voted this way and are not listed. Any node voting differently is listed — its vote will be replaced.",
                                     comment: "Voting"),
                                 holdingThisChoice))
                         }
                         if outOfCasts > 0 {
-                            Text(String(
-                                format: NSLocalizedString(
+                            Text(String.localizedStringWithFormat(
+                                NSLocalizedString(
                                     "%d of your nodes have used all 5 votes Dash Platform allows on one contest.",
                                     comment: "Voting"),
                                 outOfCasts))
@@ -237,8 +236,8 @@ struct CastVoteSheet: View {
     }
 
     private var castButtonTitle: String {
-        String(
-            format: NSLocalizedString("Cast %u votes", comment: "Voting"),
+        String.localizedStringWithFormat(
+            NSLocalizedString("Cast %u votes", comment: "Voting"),
             selectedNodes.totalVoteWeight)
     }
 }
@@ -267,7 +266,7 @@ private struct NodeSelectionRow: View {
 
                 Spacer()
 
-                Text(String(format: NSLocalizedString("%u votes", comment: "Voting"), node.voteWeight))
+                Text(String.localizedStringWithFormat(NSLocalizedString("%u votes", comment: "Voting"), node.voteWeight))
                     .font(.caption)
                     .foregroundColor(Color.dash.secondaryText)
             }
@@ -300,8 +299,8 @@ private struct VoteResultView: View {
                         .font(.headline)
                         .multilineTextAlignment(.center)
                     if !report.succeeded.isEmpty {
-                        Text(String(
-                            format: NSLocalizedString("%u votes counted for “%@”", comment: "Voting"),
+                        Text(String.localizedStringWithFormat(
+                            NSLocalizedString("%u votes counted for “%@”", comment: "Voting"),
                             report.acceptedWeight, report.normalizedLabel))
                             .font(.caption)
                             .foregroundColor(Color.dash.secondaryText)
@@ -346,8 +345,8 @@ private struct VoteResultView: View {
         if report.succeeded.isEmpty {
             return NSLocalizedString("No votes were cast", comment: "Voting")
         }
-        return String(
-            format: NSLocalizedString("%d of %d masternodes voted", comment: "Voting"),
+        return String.localizedStringWithFormat(
+            NSLocalizedString("%d of %d masternodes voted", comment: "Voting"),
             report.succeeded.count, report.outcomes.count)
     }
 }

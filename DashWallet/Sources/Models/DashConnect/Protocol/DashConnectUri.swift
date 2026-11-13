@@ -19,6 +19,7 @@ enum DashConnectUriError: LocalizedError, Equatable {
     case emptyTransitionPayload
     case invalidKeyLabelEncoding
     case bodyTooLong
+    case queryTooLong
 
     var errorDescription: String? {
         switch self {
@@ -58,6 +59,8 @@ enum DashConnectUriError: LocalizedError, Equatable {
             return "The dash-st payload must be non-empty."
         case .bodyTooLong:
             return "The URI body is longer than the DashConnect payload format allows."
+        case .queryTooLong:
+            return "The URI query is longer than DashConnect allows."
         }
     }
 }
@@ -77,19 +80,30 @@ enum DashConnectUri {
     /// `dash-key:` is fully specified: version + compressed point + contract id
     /// + label length + label.
     ///
-    /// `dash-st:` carries one `IdentityUpdateTransition` that adds the two
-    /// login keys: identity id, revision, nonce, two key entries with their
-    /// contract bounds and per-key signatures, and the transition signature —
-    /// well under a kilobyte. The ceiling is deliberately not Platform's own
-    /// state-transition limit, which is far larger than this format ever needs
-    /// and which the decode below cannot afford: its cost is quadratic in the
-    /// encoded length, so a 32 KiB ceiling would admit a ~44,800-character body
-    /// worth ~1.5 billion inner iterations — seconds of CPU per link, from any
-    /// installed app. 4 KiB costs ~23 million, tens of milliseconds, and still
-    /// leaves several times the headroom a longer key form or an added field
-    /// would need.
+    /// `dash-st:` carries the one state transition the wallet takes, a token
+    /// purchase — well under a kilobyte. The ceiling is deliberately not
+    /// Platform's own state-transition limit, which is far larger than this
+    /// format ever needs and which the decode below cannot afford: its cost
+    /// is quadratic in the encoded length, so a 32 KiB ceiling would admit a
+    /// ~44,800-character body worth ~1.5 billion inner iterations — seconds
+    /// of CPU per link, from any installed app. 4 KiB costs ~23 million, tens
+    /// of milliseconds, and still leaves several times the headroom an added
+    /// field would need.
     private static let maxKeyPayloadLength = minKeyPayloadLength + maxLabelLength
     private static let maxStPayloadLength = 4 * 1024
+    /// The largest App Connect request the format defines today (a 64-byte
+    /// label, four auth bindings with full-length names, two encryption
+    /// bindings and every optional field) is 734 bytes. The rest is room for optional
+    /// fields a newer app may add, which this decoder has to skip, at a
+    /// decode cost that stays small.
+    private static let maxAppConnectPayloadLength = 1024
+    private static let appConnectVersion = "2"
+    private static let maxCallbackLength = 512
+    /// The query is measured in Unicode scalars before it is split or form-decoded, so the
+    /// parameter count and every decoded value are bounded with it. 4 KiB
+    /// holds the longest callback form-encoded (each character as `%XX`)
+    /// twice over, with room for parameters a newer app may add.
+    private static let maxQueryLength = 4 * 1024
 
     /// Encoded-length ceilings, enforced BEFORE decoding.
     ///
@@ -182,6 +196,303 @@ enum DashConnectUri {
         )
     }
 
+    /// Whether a `dash-key:` URI asks for request version 2 (`v=2`), and so
+    /// belongs to `parseAppConnectRequest`. The v1 parser cannot tell: it
+    /// measures the body before it reads the version. The query is read as
+    /// that parser reads it, form-decoded, so `v=%32` is version 2 as well.
+    static func isAppConnectUri(_ uri: String) -> Bool {
+        guard isKeyUri(uri), let queryIndex = uri.unicodeScalars.firstIndex(of: "?") else { return false }
+        var query = uri.unicodeScalars[uri.unicodeScalars.index(after: queryIndex)...]
+        // Too long for either version: the version 1 parser refuses it.
+        guard query.count <= maxQueryLength else { return false }
+        if query.first == "?" { query = query.dropFirst() }
+        return query.split(separator: "&").contains { item in
+            let parts = item.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: false)
+            return parts.count == 2 && formDecoded(parts[0]) == "v" && formDecoded(parts[1]) == appConnectVersion
+        }
+    }
+
+    /// Parses a `dash-key:` URI of version 2. A version 1 URI is
+    /// `unsupported` here: it belongs to `parseKeyRequest`.
+    static func parseAppConnectRequest(_ uri: String) throws -> AppConnectUri {
+        // Scalars, not characters: a combining mark after the scheme or a
+        // delimiter must not hide it.
+        guard uri.unicodeScalars.starts(with: keyScheme.unicodeScalars) else {
+            throw AppConnectRequestError.invalid("not a dash-key URI")
+        }
+        let remainder = uri.unicodeScalars.dropFirst(keyScheme.unicodeScalars.count)
+        guard let queryIndex = remainder.firstIndex(of: "?") else {
+            throw AppConnectRequestError.invalid("URI has no query")
+        }
+        let body = String(remainder[..<queryIndex])
+
+        var query = remainder[remainder.index(after: queryIndex)...]
+        guard query.count <= maxQueryLength else {
+            throw AppConnectRequestError.invalid("query is too long")
+        }
+        if query.first == "?" { query = query.dropFirst() }
+        let parameters = try appConnectParameters(query, known: ["n", "v", "cb"])
+
+        return try finishAppConnectRequest(parameters) {
+            // Before the decode, as for the other two formats: its cost is
+            // quadratic in the encoded length.
+            guard body.utf8.count <= maxEncodedLength(forPayloadBytes: maxAppConnectPayloadLength) else {
+                throw AppConnectRequestError.invalid("request is too long")
+            }
+            guard let payload = base58Decode(body) else {
+                throw AppConnectRequestError.invalid("request is not base58")
+            }
+            return payload
+        }
+    }
+
+    // MARK: - dashpay://connect
+
+    private static let dashpayUrlPrefix = Array("dashpay://".unicodeScalars)
+    private static let connectHost = "connect"
+    /// Hosts of `dashpay:` links that other parts of the wallet read (an
+    /// invitation, a contact's user code). They are not unknown verbs.
+    private static let otherKnownDashpayHosts: Set<String> = ["invite", "user"]
+    /// The whole URI, checked on the raw string before anything is decoded.
+    private static let maxConnectUriBytes = 4096
+    /// 1,024 bytes of body in unpadded base64url.
+    private static let maxConnectBodyCharacters = 1366
+    /// How much of the text after `dashpay://` `dashpayHost` reads.
+    private static let maxAuthorityScalars = 256
+
+    /// The lowercased host of a `dashpay://` URI, which names its verb, or nil
+    /// for any other string. Scheme and host compare case-insensitively. A
+    /// userinfo or port is dropped here so that `dashpay://connect:80` is
+    /// still read as `connect` and refused by the parser, not as another
+    /// link.
+    ///
+    /// This runs on any string before the connect parser's size limit, so it
+    /// reads at most `maxAuthorityScalars` scalars after the scheme and its
+    /// cost does not grow with the input. A real verb, userinfo and port fit
+    /// well inside that; a longer authority is classified from its first
+    /// scalars, which makes it an unknown verb, not a connect link.
+    private static func dashpayHost(of uri: String) -> String? {
+        let scalars = uri.unicodeScalars
+        let head = Array(scalars.prefix(dashpayUrlPrefix.count))
+        guard head.count == dashpayUrlPrefix.count,
+              zip(head, dashpayUrlPrefix).allSatisfy({ asciiLowercased($0) == $1 }) else { return nil }
+        let authority = Array(scalars.dropFirst(dashpayUrlPrefix.count).prefix(maxAuthorityScalars)
+            .prefix { $0 != "/" && $0 != "?" && $0 != "#" })
+        let afterUserinfo = authority.split(separator: "@", omittingEmptySubsequences: false).last ?? []
+        let host = afterUserinfo.prefix { $0 != ":" }
+        var result = String.UnicodeScalarView()
+        result.append(contentsOf: host.map(asciiLowercased))
+        return String(result)
+    }
+
+    private static func asciiLowercased(_ scalar: Unicode.Scalar) -> Unicode.Scalar {
+        ("A" ... "Z").contains(scalar) ? Unicode.Scalar(scalar.value + 0x20)! : scalar
+    }
+
+    /// Whether `uri` is a `dashpay://connect` link. Only the verb is read;
+    /// `parseConnectRequest` decides whether the rest is valid.
+    static func isConnectUri(_ uri: String) -> Bool {
+        dashpayHost(of: uri) == connectHost
+    }
+
+    /// Whether `uri` is a `dashpay://` link whose verb this wallet does not
+    /// know (the DIP's `sign`, or one a later DIP adds). The user should be
+    /// told the link needs a newer wallet, not that it is not a Dash link.
+    static func isUnsupportedDashpayVerb(_ uri: String) -> Bool {
+        guard let host = dashpayHost(of: uri), !host.isEmpty else { return false }
+        return host != connectHost && !otherKnownDashpayHosts.contains(host)
+    }
+
+    /// Parses `dashpay://connect?v=2&n=<m|t|d>&r=<base64url body>[&cb=<https URL>]`
+    /// (DIP App Connect, "connect URI"). The body is the one a `dash-key:`
+    /// version 2 URI carries and is processed identically.
+    static func parseConnectRequest(_ uri: String) throws -> AppConnectUri {
+        // The raw string, before anything is decoded or split.
+        guard uri.utf8.count <= maxConnectUriBytes else {
+            throw AppConnectRequestError.invalid("URI is too long")
+        }
+        guard dashpayHost(of: uri) == connectHost else {
+            throw AppConnectRequestError.invalid("not a dashpay://connect URI")
+        }
+        let rest = uri.unicodeScalars.dropFirst(dashpayUrlPrefix.count)
+        guard !rest.contains("#") else {
+            throw AppConnectRequestError.invalid("URI has a fragment")
+        }
+        let authority = rest.prefix { !["/", "?"].contains($0) }
+        guard authority.count == connectHost.unicodeScalars.count else {
+            throw AppConnectRequestError.invalid("URI has userinfo or a port")
+        }
+        // The path is empty, or a single `/` that is ignored.
+        let afterAuthority = rest.dropFirst(authority.count)
+        let path = afterAuthority.prefix { $0 != "?" }
+        guard path.isEmpty || String(path) == "/" else {
+            throw AppConnectRequestError.invalid("URI has a path")
+        }
+        let query = afterAuthority.dropFirst(path.count)
+        guard query.first == "?" else {
+            throw AppConnectRequestError.invalid("URI has no query")
+        }
+        let parameters = try appConnectParameters(query.dropFirst(), known: ["n", "v", "r", "cb"])
+
+        return try finishAppConnectRequest(parameters) {
+            guard let encoded = parameters["r"], !encoded.isEmpty else {
+                throw AppConnectRequestError.invalid("request is missing")
+            }
+            // Before the decode, as everywhere.
+            guard encoded.utf8.count <= maxConnectBodyCharacters else {
+                throw AppConnectRequestError.invalid("request is too long")
+            }
+            // 1,366 characters decode to at most 1,024 bytes, the ceiling checked after.
+            guard let payload = base64URLDecode(encoded) else {
+                throw AppConnectRequestError.invalid("request is not canonical base64url")
+            }
+            return payload
+        }
+    }
+
+    /// Canonical base64url (RFC 4648 section 5, no padding), or nil. Refused:
+    /// `=`, `+`, `/`, anything outside the alphabet, a length of 1 mod 4, and
+    /// non-zero bits in the last character, so each value has one encoding.
+    static func base64URLDecode(_ string: String) -> Data? {
+        let input = Array(string.utf8)
+        guard input.count % 4 != 1 else { return nil }
+
+        var output = Data()
+        output.reserveCapacity(input.count * 3 / 4)
+        var accumulator: UInt32 = 0
+        var bits = 0
+        for byte in input {
+            let value: UInt32
+            switch byte {
+            case UInt8(ascii: "A") ... UInt8(ascii: "Z"): value = UInt32(byte - UInt8(ascii: "A"))
+            case UInt8(ascii: "a") ... UInt8(ascii: "z"): value = UInt32(byte - UInt8(ascii: "a")) + 26
+            case UInt8(ascii: "0") ... UInt8(ascii: "9"): value = UInt32(byte - UInt8(ascii: "0")) + 52
+            case UInt8(ascii: "-"): value = 62
+            case UInt8(ascii: "_"): value = 63
+            default: return nil
+            }
+            accumulator = accumulator << 6 | value
+            bits += 6
+            if bits >= 8 {
+                bits -= 8
+                output.append(UInt8(truncatingIfNeeded: accumulator >> UInt32(bits)))
+                accumulator &= (1 << UInt32(bits)) - 1
+            }
+        }
+        // What is left are the padding bits of the last character.
+        guard accumulator == 0 else { return nil }
+        return output
+    }
+
+    // MARK: - Shared by the App Connect carriers
+
+    /// Splits a query on `&` and keeps the `known` parameters. Names and
+    /// values are form-decoded before they are compared, as the app's
+    /// `URLSearchParams` does; a repeated known parameter is invalid and
+    /// unknown ones are ignored.
+    private static func appConnectParameters(_ query: Substring.UnicodeScalarView, known: Set<String>) throws -> [String: String] {
+        var parameters: [String: String] = [:]
+        for item in query.split(separator: "&") {
+            let parts = item.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: false)
+            let name = formDecoded(parts[0])
+            guard known.contains(name) else { continue }
+            guard parameters[name] == nil else {
+                throw AppConnectRequestError.invalid("query parameter \(name) is repeated")
+            }
+            parameters[name] = parts.count == 2 ? formDecoded(parts[1]) : ""
+        }
+        return parameters
+    }
+
+    /// The part both carriers share: `v`, then `n`, then the body bytes the
+    /// carrier produces, then `cb`, then the body decoder.
+    private static func finishAppConnectRequest(_ parameters: [String: String],
+                                                payload: () throws -> Data) throws -> AppConnectUri {
+        guard parameters["v"] == appConnectVersion else {
+            // The value is untrusted and unbounded: only a short number is echoed.
+            let version = parameters["v"].map { (1 ... 3).contains($0.utf8.count) && $0.utf8.allSatisfy { (0x30 ... 0x39).contains($0) } ? $0 : "(unreadable)" }
+            throw AppConnectRequestError.unsupported("URI version \(version ?? "(none)")")
+        }
+        guard let network = parameters["n"].flatMap(DashConnectNetwork.init(rawValue:)) else {
+            throw AppConnectRequestError.invalid("unknown network")
+        }
+        // Not enabled on mainnet yet (ADR-0009), on either carrier; the DIP
+        // allows `dashpay://connect` there. Refused here, so it does not rest
+        // on DashConnect being off on mainnet.
+        guard network != .mainnet else {
+            throw AppConnectRequestError.invalid("request v2 is not enabled on mainnet")
+        }
+        let body = try payload()
+        guard body.count <= maxAppConnectPayloadLength else {
+            throw AppConnectRequestError.invalid("request is too long")
+        }
+        let callback = try parameters["cb"].map(parseCallback)
+
+        return AppConnectUri(request: try AppConnectRequest.decode(body), network: network, callback: callback)
+    }
+
+    /// `+` is a space and each well-formed `%XX` a byte; a `%` that is not
+    /// followed by two hex digits stands as written. Bytes that are not
+    /// UTF-8 come out as U+FFFD.
+    private static func formDecoded(_ scalars: Substring.UnicodeScalarView) -> String {
+        let source = Array(String(scalars).utf8)
+        let hexValue = { (byte: UInt8) -> UInt8? in
+            byte < 0x80 ? Character(UnicodeScalar(byte)).hexDigitValue.map(UInt8.init) : nil
+        }
+        var bytes: [UInt8] = []
+        bytes.reserveCapacity(source.count)
+        var index = 0
+        while index < source.count {
+            let byte = source[index]
+            if byte == UInt8(ascii: "%"), index + 2 < source.count,
+               let high = hexValue(source[index + 1]), let low = hexValue(source[index + 2]) {
+                bytes.append(high << 4 | low)
+                index += 3
+            } else {
+                bytes.append(byte == UInt8(ascii: "+") ? 0x20 : byte)
+                index += 1
+            }
+        }
+        return String(decoding: bytes, as: UTF8.self)
+    }
+
+    /// `cb` is an absolute `https` URL without credentials, already
+    /// form-decoded. The app's own check takes anything a browser's URL
+    /// parser repairs or percent-encodes; this refuses what `URLComponents`
+    /// does not take as written, and takes a host only when it is a plain
+    /// lowercase DNS name (see `isPlainHostName`) and a port only when it is
+    /// a port. The host is what the user will be shown. In one case this is
+    /// the looser side: an `xn--` label that is not valid punycode passes
+    /// here and not in the app.
+    private static func parseCallback(_ text: String) throws -> URL {
+        guard text.utf16.count <= maxCallbackLength,
+              let components = URLComponents(string: text, encodingInvalidCharacters: false),
+              components.scheme?.lowercased() == "https",
+              // Presence, not the decoded value: that is nil for bytes that are not UTF-8.
+              components.rangeOfUser == nil, components.rangeOfPassword == nil,
+              let hostRange = components.rangeOfHost, isPlainHostName(text[hostRange]),
+              components.rangeOfPort == nil || components.port.map({ (0 ... 65535).contains($0) }) == true,
+              let url = components.url else {
+            throw AppConnectRequestError.invalid("callback is not an https URL without credentials")
+        }
+        return url
+    }
+
+    /// Dot-separated labels of lowercase ASCII letters, digits and hyphens,
+    /// none of them empty, the last one starting with a letter. That leaves
+    /// out IP addresses in every spelling (`[::1]`, `1.2.3.4`, `2130706433`,
+    /// `1.2.3.0x4`), bracketed text, which `URL.host` reads back without the
+    /// brackets, percent-encoding, and capitals, which a browser lowercases
+    /// (`paypaI.com` opens `paypai.com`). Whether an `xn--` label is valid
+    /// punycode is not checked.
+    private static func isPlainHostName(_ host: Substring) -> Bool {
+        let labels = host.split(separator: ".", omittingEmptySubsequences: false)
+        let isLetter = { (scalar: Unicode.Scalar) in ("a" ... "z").contains(scalar) }
+        return labels.allSatisfy { label in
+            !label.isEmpty && label.unicodeScalars.allSatisfy { isLetter($0) || ("0" ... "9").contains($0) || $0 == "-" }
+        } && labels.last?.unicodeScalars.first.map(isLetter) == true
+    }
+
     static func parseStRequest(_ uri: String) throws -> DashStRequest {
         let envelope = try parseEnvelope(uri,
                                          scheme: stScheme,
@@ -223,6 +534,9 @@ enum DashConnectUri {
         }
 
         let query = String(remainder[remainder.index(after: queryIndex)...])
+        guard query.unicodeScalars.count <= maxQueryLength else {
+            throw DashConnectUriError.queryTooLong
+        }
         let parameters = parseQueryItems(query)
 
         guard let version = parameters["v"] else {

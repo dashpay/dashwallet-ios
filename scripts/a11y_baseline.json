@@ -7,18 +7,18 @@
   ],
   "counts": {
     "A11Y008": 8,
-    "A11Y002": 10,
+    "A11Y002": 8,
     "A11Y003": 1,
     "A11Y004": 37,
     "A11Y005": 1,
-    "A11Y006": 2,
+    "A11Y006": 1,
     "A11Y009": 2,
     "A11Y010": 3,
-    "A11Y011": 11,
+    "A11Y011": 5,
     "A11Y012": 31,
     "A11Y007": 559
   },
-  "total": 665,
+  "total": 656,
   "findings": [
     {
       "rule": "A11Y008",
@@ -75,20 +75,6 @@
       "fingerprint": "1671c5bcbd154fd8",
       "line_when_recorded": 68,
       "snippet": "public static let caption2: Font = .system(size: 11, weight: .regular)"
-    },
-    {
-      "rule": "A11Y002",
-      "path": "DashWallet/Sources/UI/CrowdNode/Portal/CrowdNodePortalViewController.swift",
-      "fingerprint": "3ed4ba51690bb49c",
-      "line_when_recorded": 115,
-      "snippet": "navigationItem.leftBarButtonItem = UIBarButtonItem(customView: backButton)"
-    },
-    {
-      "rule": "A11Y002",
-      "path": "DashWallet/Sources/UI/CrowdNode/Portal/CrowdNodePortalViewController.swift",
-      "fingerprint": "67615e7739843196",
-      "line_when_recorded": 121,
-      "snippet": "let button = UIBarButtonItem(image: buttonImage, style: UIBarButtonItem.Style.plain, target: self, action: #selector(infoButtonAction))"
     },
     {
       "rule": "A11Y002",
@@ -421,13 +407,6 @@
     },
     {
       "rule": "A11Y006",
-      "path": "DashWallet/Sources/UI/CrowdNode/Portal/CrowdNodePortalViewController.swift",
-      "fingerprint": "78003431c215cd98",
-      "line_when_recorded": 109,
-      "snippet": "let backButton = UIButton(type: .custom)"
-    },
-    {
-      "rule": "A11Y006",
       "path": "DashWallet/Sources/UI/Views/Navigation/BaseNavigationController.swift",
       "fingerprint": "6ee73a8d95d7ac7f",
       "line_when_recorded": 177,
@@ -495,48 +474,6 @@
       "fingerprint": "b77babe630b242e9",
       "line_when_recorded": 502,
       "snippet": "<button opaque=\"NO\" contentMode=\"scaleToFill\" contentHorizontalAlignment=\"center\" contentVerticalAlignment=\"center\" lineBreakMode=\"middleTruncation\" translatesA"
-    },
-    {
-      "rule": "A11Y011",
-      "path": "DashWallet/Sources/UI/CrowdNode/CrowdNode.storyboard",
-      "fingerprint": "04b35db4c19a8677",
-      "line_when_recorded": 88,
-      "snippet": "<buttonConfiguration key=\"configuration\" style=\"plain\" image=\"icon_copy_outline\"/>"
-    },
-    {
-      "rule": "A11Y011",
-      "path": "DashWallet/Sources/UI/CrowdNode/CrowdNode.storyboard",
-      "fingerprint": "04b35db4c19a8677",
-      "line_when_recorded": 1335,
-      "snippet": "<buttonConfiguration key=\"configuration\" style=\"plain\" image=\"icon_copy_outline\"/>"
-    },
-    {
-      "rule": "A11Y011",
-      "path": "DashWallet/Sources/UI/CrowdNode/CrowdNode.storyboard",
-      "fingerprint": "04b35db4c19a8677",
-      "line_when_recorded": 1516,
-      "snippet": "<buttonConfiguration key=\"configuration\" style=\"plain\" image=\"icon_copy_outline\"/>"
-    },
-    {
-      "rule": "A11Y011",
-      "path": "DashWallet/Sources/UI/CrowdNode/CrowdNode.storyboard",
-      "fingerprint": "04b35db4c19a8677",
-      "line_when_recorded": 1573,
-      "snippet": "<buttonConfiguration key=\"configuration\" style=\"plain\" image=\"icon_copy_outline\"/>"
-    },
-    {
-      "rule": "A11Y011",
-      "path": "DashWallet/Sources/UI/CrowdNode/CrowdNode.storyboard",
-      "fingerprint": "04b35db4c19a8677",
-      "line_when_recorded": 1719,
-      "snippet": "<buttonConfiguration key=\"configuration\" style=\"plain\" image=\"icon_copy_outline\"/>"
-    },
-    {
-      "rule": "A11Y011",
-      "path": "DashWallet/Sources/UI/CrowdNode/CrowdNode.storyboard",
-      "fingerprint": "04b35db4c19a8677",
-      "line_when_recorded": 1776,
-      "snippet": "<buttonConfiguration key=\"configuration\" style=\"plain\" image=\"icon_copy_outline\"/>"
     },
     {
       "rule": "A11Y011",

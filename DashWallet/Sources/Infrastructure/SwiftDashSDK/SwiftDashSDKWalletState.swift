@@ -33,10 +33,7 @@ import SwiftDashSDK
 
 // MARK: - WalletBalance
 
-/// Wallet balance snapshot. Defined locally rather than re-exporting
-/// SwiftDashSDK's `KeyWalletTypes.Balance` because that struct references
-/// an internal `FFIBalance` type, which makes it unusable as a `public`
-/// property type from this module. The four fields map directly to
+/// Wallet balance snapshot. The four fields map directly to
 /// `SPVWalletEventsHandler.onBalanceUpdated`'s callback parameters.
 public struct WalletBalance: Equatable, Sendable {
     public let confirmed: UInt64
@@ -85,8 +82,8 @@ public struct WalletBalance: Equatable, Sendable {
 
     /// Conservative fee headroom reserved on top of a fixed-amount send so a
     /// "Max"/affordability value stays sendable. Approximate — Core has no
-    /// pre-build fee-estimate FFI yet (the send path settles the exact fee via
-    /// `adjustAmountDownwards`); sized for a realistic multi-input InstantSend
+    /// pre-build fee-estimate FFI yet (the send path settles the exact fee
+    /// when it builds); sized for a realistic multi-input InstantSend
     /// (10 × DashSync `TX_FEE_PER_INPUT` of 10_000 = 100_000 duffs ≈ 0.001 DASH).
     public static let sendFeeReserveDuffs: UInt64 = 100_000
 

@@ -15,7 +15,9 @@ subpathsToIgnore = [".git", "build", "carthage", "docs", "pods", ".claude"]
 
 [update.code]
 codePath = "."
-localizablePath = "."
+# Only the app's catalogs: "." would keep updating (and so keep alive) a stray
+# Localizable.strings anywhere else in the repo.
+localizablePath = "DashWallet"
 defaultToKeys = true
 additive = false
 unstripped = false

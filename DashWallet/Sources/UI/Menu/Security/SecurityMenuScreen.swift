@@ -20,7 +20,8 @@ import DashUIKit
 import UIKit
 
 struct SecurityMenuScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
     private let delegateInternal: DelegateInternal
     
     @StateObject private var viewModel = SecurityMenuViewModel()
@@ -31,10 +32,11 @@ struct SecurityMenuScreen: View {
     @State private var showResetWalletInventoryError = false
     @State private var showResetWalletDebugAlert = false
     
-    init(vc: UINavigationController, wipeDelegate: DWWipeDelegate? = nil) {
+    init(vc: UINavigationController?, wipeDelegate: DWWipeDelegate? = nil) {
         self.vc = vc
-        self.delegateInternal = DelegateInternal(onHide: {
-            vc.popViewController(animated: true)
+        // `[weak vc]`: `vc` here is the init parameter, not the weak property.
+        self.delegateInternal = DelegateInternal(onHide: { [weak vc] in
+            vc?.popViewController(animated: true)
         }, wipeDelegate: wipeDelegate)
     }
     
@@ -42,7 +44,7 @@ struct SecurityMenuScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             DashUIKit.NavigationBar(leading: {
                 DashUIKit.NavigationBarElement.back.button {
-                    vc.popViewController(animated: true)
+                    vc?.popViewController(animated: true)
                 }
             })
 
@@ -156,18 +158,18 @@ struct SecurityMenuScreen: View {
                     let controller = DWSetPinViewController(intent: .changePin)
                     controller.delegate = delegateInternal
                     controller.hidesBottomBarWhenPushed = true
-                    self.vc.pushViewController(controller, animated: true)
+                    self.vc?.pushViewController(controller, animated: true)
                 }
             }
         case .advancedSecurity:
             viewModel.authenticate { authenticated in
                 if authenticated {
                     #if SNAPSHOT
-                    let controller = DWDemoAdvancedSecurityViewController()
+                    let controller = AdvancedSecurityHostingController.demo()
                     #else
-                    let controller = DWAdvancedSecurityViewController()
+                    let controller = AdvancedSecurityHostingController.live()
                     #endif
-                    self.vc.pushViewController(controller, animated: true)
+                    self.vc?.pushViewController(controller, animated: true)
                 }
             }
         case .resetWalletDebug:
@@ -191,8 +193,9 @@ struct SecurityMenuScreen: View {
                 onCancel: { [weak vc] in
                     vc?.popViewController(animated: true)
                 })
-            vc.pushViewController(controller, animated: true)
+            vc?.pushViewController(controller, animated: true)
         case .phrase(let presentation):
+            guard let vc else { break }
             RecoveryPhraseNavigation.showPhrase(
                 presentation,
                 in: vc,
@@ -225,9 +228,8 @@ struct SecurityMenuScreen: View {
     private func handleResetWalletDestination(_ destination: SecurityMenuResetWalletDestination) {
         switch destination {
         case .reset:
-            let controller = DWResetWalletInfoViewController.make()
-            controller.delegate = delegateInternal
-            vc.pushViewController(controller, animated: true)
+            let controller = ResetWalletInfoHostingController(wipeDelegate: delegateInternal)
+            vc?.pushViewController(controller, animated: true)
         case .multipleWallets:
             showMultipleWalletsResetAlert = true
         case .noWallet:
@@ -244,7 +246,7 @@ struct SecurityMenuScreen: View {
             rootView: WalletsScreen(
                 vc: vc,
                 wipeDelegate: delegateInternal.wipeDelegate))
-        vc.pushViewController(controller, animated: true)
+        vc?.pushViewController(controller, animated: true)
     }
 }
 

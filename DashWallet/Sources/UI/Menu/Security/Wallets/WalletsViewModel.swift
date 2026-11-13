@@ -399,10 +399,9 @@ final class WalletsViewModel: ObservableObject {
         guard Mnemonic.validate(trimmed) else { return false }
         guard let network = WalletEnvironment.network else { return false }
         do {
-            // `Wallet(mnemonic:network:)` derives keys locally in the key-wallet
-            // FFI and persists nothing (same read-only surface `SwiftDashSDKHost
-            // .derivationWallet` uses); its `id` is the deterministic walletId.
-            let derivedId = try Wallet(mnemonic: trimmed, network: network).id
+            // `Mnemonic.walletId(for:network:)` derives the deterministic
+            // walletId without creating or persisting a wallet.
+            let derivedId = try Mnemonic.walletId(for: trimmed, network: network)
             return derivedId == expected
         } catch {
             Self.logger.error("walletId derivation from mnemonic failed: \(String(describing: error), privacy: .public)")

@@ -40,14 +40,10 @@ final class CoinJoinWithdrawalTxSet: GroupedTransactions {
         guard !txs.isEmpty else { return nil }
         let txCount = txs.count
         let utxoCount = txs.reduce(0) { $0 + $1.inputCount }
-        let txPart = String(
-            format: NSLocalizedString(
-                txCount == 1 ? "%d transaction" : "%d transactions", comment: "CoinJoin"),
-            txCount)
-        let utxoPart = String(
-            format: NSLocalizedString(
-                utxoCount == 1 ? "%d UTXO" : "%d UTXOs", comment: "CoinJoin"),
-            utxoCount)
+        let txPart = String.localizedStringWithFormat(
+            NSLocalizedString("%d transaction(s)", comment: "#bc-ignore!"), txCount)
+        let utxoPart = String.localizedStringWithFormat(
+            NSLocalizedString("%d UTXOs", comment: "CoinJoin"), utxoCount)
         return "\(txPart) · \(utxoPart)"
     }
 

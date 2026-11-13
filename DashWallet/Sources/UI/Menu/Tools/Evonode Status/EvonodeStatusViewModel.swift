@@ -138,6 +138,7 @@ final class EvonodeStatusViewModel: ObservableObject {
         case .invalidParameter(let detail), .invalidState(let detail), .protocolError(let detail),
              .cryptoError(let detail), .notFound(let detail), .notImplemented(let detail),
              .internalError(let detail), .unknown(let detail),
+             .stateTransitionResultUnconfirmed(let detail),
              .consensusRejection(_, let detail):
             return .failed(
                 title: NSLocalizedString("Couldn't get the evonode's status.", comment: "Evonode status"),
@@ -345,6 +346,6 @@ final class EvonodeStatusViewModel: ObservableObject {
         if seconds < 1 {
             return String(format: NSLocalizedString("%.3f s", comment: "Evonode status: sub-second duration"), seconds)
         }
-        return durationFormatter.string(from: seconds) ?? String(format: "%.0f s", seconds)
+        return durationFormatter.string(from: seconds) ?? String(format: NSLocalizedString("%.0f s", comment: "Evonode status: duration"), seconds)
     }
 }

@@ -21,7 +21,7 @@ import SwiftUI
 import DashUIKit
 import SwiftDashSDK
 
-extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
+extension HomeViewController {
     func performAction(for action: ShortcutAction, sender: UIView?) {
         switch action.type {
         case .secureWallet:
@@ -64,8 +64,6 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
             showAtmList()
         case .sendToContact:
             showSendToContact()
-        case .crowdNode:
-            showCrowdNode()
         case .coinbase:
             showCoinbase()
         case .uphold:
@@ -168,9 +166,8 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
     }
 
     private func showLocalCurrencyAction() {
-        let controller = DWLocalCurrencyViewController(navigationAppearance: .white, presentationMode: .dialog, currencyCode: nil)
-        controller.delegate = self
-        presentControllerModallyInNavigationController(controller)
+        let controller = LocalCurrencyModalController(currencyCode: nil, changesAppCurrency: true, onSelect: { _ in })
+        present(controller, animated: true)
     }
 
     #if DASHPAY
@@ -279,6 +276,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
         controller.initialSegment = .all
         controller.customNavBar = MerchantListViewController.CustomNavBarConfiguration(
             title: NSLocalizedString("Where to Spend", comment: ""),
+            leading: .close,
             onBack: { [weak controller] in controller?.dismiss(animated: true) },
             onInfo: nil
         )
@@ -316,20 +314,6 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
         let controller = UIHostingController(rootView: ContactsScreen())
         present(controller, animated: true)
         #endif
-    }
-
-    private func showCrowdNode() {
-        if SyncingActivityMonitor.shared.state == .syncDone {
-            let controller = CrowdNodeModelObjcWrapper.getRootVC()
-            let navigationController = BaseNavigationController(rootViewController: controller)
-            present(navigationController, animated: true, completion: nil)
-        } else {
-            let title = NSLocalizedString("The chain is syncing…", comment: "")
-            let message = NSLocalizedString("Wait until the chain is fully synced before using CrowdNode.", comment: "")
-            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default))
-            present(alert, animated: true)
-        }
     }
 
     private func showCoinbase() {
@@ -492,16 +476,6 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
             self?.presentShortcutSelection(for: position)
         })
         present(alert, animated: true)
-    }
-
-    // MARK: - DWLocalCurrencyViewControllerDelegate
-
-    func localCurrencyViewController(_ controller: DWLocalCurrencyViewController, didSelectCurrency currencyCode: String) {
-        controller.navigationController?.dismiss(animated: true, completion: nil)
-    }
-
-    func localCurrencyViewControllerDidCancel(_ controller: DWLocalCurrencyViewController) {
-        controller.navigationController?.dismiss(animated: true, completion: nil)
     }
 
 }

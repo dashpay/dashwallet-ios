@@ -22,7 +22,8 @@ import Combine
 import MessageUI
 
 struct SettingsScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
     // Retained solely for the frozen MainMenuViewController call site; the
     // rescan controls were removed with the dead DashSync rescan actions
     // (post-M6 there is no SDK rescan API), so this closure is never invoked.
@@ -32,7 +33,7 @@ struct SettingsScreen: View {
     @State private var showNetworkAlert = false
     @State private var showCSVExportActivity = false
 
-    init(vc: UINavigationController, onDidRescan: @escaping () -> ()) {
+    init(vc: UINavigationController?, onDidRescan: @escaping () -> ()) {
         self.vc = vc
         self.onDidRescan = onDidRescan
     }
@@ -41,7 +42,7 @@ struct SettingsScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             DashUIKit.NavigationBar(leading: {
                 DashUIKit.NavigationBarElement.back.button {
-                    vc.popViewController(animated: true)
+                    vc?.popViewController(animated: true)
                 }
             })
 
@@ -141,13 +142,15 @@ struct SettingsScreen: View {
     ///   toggle row that is the toggle, so the whole row flips the switch.
     @ViewBuilder
     private func row(for item: MenuItemModel) -> some View {
+        // One binding for the switch on screen and the one VoiceOver reads.
+        let isOn = Self.toggleBinding(item)
         let content = DashUIKit.MenuItem(
             leadingIcon: item.icon.map(Self.iconSource),
             title: item.title,
             helpText: item.subtitle,
             info: item.showInfo ? .round(color: Color.dash.gray300Alpha70) : nil,
             accessory: item.showToggle
-                ? .toggle(isOn: Self.toggleBinding(item))
+                ? .toggle(isOn: isOn)
                 : (item.details.map { .text($0) } ?? .none)
         )
         // The row's full height is the tap target: `MenuItem` draws no
@@ -160,16 +163,17 @@ struct SettingsScreen: View {
         if item.showToggle, let infoAction = item.infoAction {
             // The switch owns its own tap, so the rest of the row is free
             // to answer the question the info glyph poses. Named so a UI
-            // test can tap the switch alone and assert the sheet stays shut.
+            // test can find the row and tap the switch's place in it.
             Button(action: infoAction) { content }
                 .buttonStyle(.plain)
+                .modifier(ToggleRowAccessibility(item: item, isOn: isOn))
                 .accessibilityIdentifier(Self.accessibilityIdentifier(item))
         } else if let action = item.action {
             // For a plain toggle row the action is the toggle itself, so a tap
             // anywhere on the row flips the switch.
             Button(action: action) { content }
                 .buttonStyle(.plain)
-                .modifier(ToggleRowAccessibility(item: item, isOn: Self.toggleBinding(item)))
+                .modifier(ToggleRowAccessibility(item: item, isOn: isOn))
                 .accessibilityIdentifier(Self.accessibilityIdentifier(item))
         } else {
             content
@@ -229,28 +233,28 @@ struct SettingsScreen: View {
     private func showCurrencySelector() {
         let view = LocalCurrencyView(
             currencyCode: nil,
-            onSelect: { [weak vc] _ in
+            leadingAction: .back { [weak vc] in
                 vc?.popViewController(animated: true)
             },
-            onBack: { [weak vc] in
+            onSelect: { [weak vc] _ in
                 vc?.popViewController(animated: true)
             }
         )
         let controller = LocalCurrencyHostingViewController(rootView: view)
         controller.hidesBottomBarWhenPushed = true
-        vc.pushViewController(controller, animated: true)
+        vc?.pushViewController(controller, animated: true)
     }
     
     private func showAboutController() {
         let controller = AboutDashHostingViewController()
         controller.hidesBottomBarWhenPushed = true
-        vc.pushViewController(controller, animated: true)
+        vc?.pushViewController(controller, animated: true)
     }
 
     private func showDevnetSettings() {
         let controller = DevnetSettingsHostingViewController(vc: vc)
         controller.hidesBottomBarWhenPushed = true
-        vc.pushViewController(controller, animated: true)
+        vc?.pushViewController(controller, animated: true)
     }
     
     private func handleCSVExport() {
@@ -332,23 +336,33 @@ extension AboutDashHostingViewController: MFMailComposeViewControllerDelegate {
     }
 }
 
-/// One element for VoiceOver on a plain toggle row: the row reads as the
-/// switch it flips, with its state and subtitle, rather than a stateless
-/// button next to a second switch element. Other rows are left as they are.
+/// One element for VoiceOver on a toggle row: the row reads as the switch it
+/// flips, with its state and subtitle, rather than a stateless button next to
+/// a second switch element. Other rows are left as they are.
+///
+/// A row whose body opens an explainer would otherwise read as a switch that
+/// opens the explainer when activated; here activation flips the switch, and
+/// the explainer is a named action on the same element.
 private struct ToggleRowAccessibility: ViewModifier {
     let item: MenuItemModel
     let isOn: Binding<Bool>
 
     func body(content: Content) -> some View {
         if item.showToggle {
-            content.accessibilityRepresentation {
-                Toggle(isOn: isOn) {
-                    Text(item.title)
-                    if let subtitle = item.subtitle {
-                        Text(subtitle)
+            content
+                .accessibilityRepresentation {
+                    Toggle(isOn: isOn) {
+                        Text(item.title)
+                        if let subtitle = item.subtitle {
+                            Text(subtitle)
+                        }
                     }
                 }
-            }
+                .accessibilityActions {
+                    if let infoAction = item.infoAction {
+                        Button(NSLocalizedString("Learn more", comment: "Settings"), action: infoAction)
+                    }
+                }
         } else {
             content
         }

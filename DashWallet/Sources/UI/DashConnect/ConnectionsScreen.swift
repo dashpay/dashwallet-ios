@@ -25,33 +25,37 @@ import DashUIKit
 /// `Components/`; this type owns navigation, the QR scanner and the approval
 /// sheet.
 struct ConnectionsScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
 
     @StateObject private var viewModel: ConnectionsViewModel
 
-    init(vc: UINavigationController, viewModel: ConnectionsViewModel? = nil) {
+    init(vc: UINavigationController?, viewModel: ConnectionsViewModel? = nil) {
         self.vc = vc
         _viewModel = StateObject(wrappedValue: viewModel ?? ConnectionsViewModel())
     }
+
+    @State private var showsFundingLimitsInfo = false
 
     var body: some View {
         ZStack {
             VStack(alignment: .leading, spacing: 0) {
                 DashUIKit.NavigationBar(
                     leading: {
-                        DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
+                        DashUIKit.NavigationBarElement.back.button { vc?.popViewController(animated: true) }
+                    },
+                    trailing: {
+                        if !viewModel.featureUnavailable {
+                            DashUIKit.NavigationBarElement.plus.button(action: showScanner)
+                                .accessibilityLabel(Text(NSLocalizedString("Connect an app", comment: "DashConnect")))
+                        }
                     }
                 )
-
-                TopIntro(title: NSLocalizedString("Connections", comment: "DashConnect"))
-                    .padding(.horizontal, 20)
-                    .padding(.top, 10)
-                    .padding(.bottom, 20)
 
                 content
             }
 
-            if viewModel.isProcessingStateTransition {
+            if viewModel.isProcessingStateTransition || viewModel.isDisconnecting {
                 Color.black.opacity(0.08)
                     .ignoresSafeArea()
 
@@ -66,8 +70,9 @@ struct ConnectionsScreen: View {
         }
         .background(Color.primaryBackground)
         .navigationBarHidden(true)
+        .task { await viewModel.refreshConnections() }
         .alert(item: messageBinding) { message in
-            Alert(
+            return Alert(
                 title: Text(message.title),
                 message: Text(message.text),
                 dismissButton: .default(Text(NSLocalizedString("OK", comment: ""))) {
@@ -85,23 +90,83 @@ struct ConnectionsScreen: View {
                 tokenPurchaseSheet(for: purchase)
             }
         }
+        .sheet(item: shownConnectionBinding, onDismiss: {
+            showsFundingLimitsInfo = false
+            viewModel.connectionSheetDismissed()
+        }) { item in
+            connectionSheet(for: item)
+        }
     }
 
     // MARK: - States
 
     @ViewBuilder private var content: some View {
         if viewModel.featureUnavailable {
+            title
             ConnectionsUnavailableState()
+        } else if !viewModel.hasReadRows {
+            // No empty state that the rows replace a moment later.
+            title
+            SwiftUI.ProgressView()
+                .frame(maxWidth: .infinity)
+                .padding(.top, 40)
+            Spacer()
         } else if viewModel.connections.isEmpty {
+            title
             ConnectionsEmptyState(onScanQR: showScanner, onMockScan: mockScan)
         } else {
-            ConnectionsList(
-                connections: viewModel.connections,
-                onScanQR: showScanner,
-                onMockScan: mockScan,
-                onDisconnect: viewModel.disconnect
-            )
-            .padding(.horizontal, 20)
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 20) {
+                    title
+                    ConnectionsList(
+                        items: viewModel.rows,
+                        onOpen: { viewModel.showConnection($0) },
+                        onDisconnect: { viewModel.showConnection($0, asksToDisconnect: true) },
+                        onRemove: { item in
+                            if let connection = item.connection { viewModel.removeConnection(connection) }
+                        })
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
+            }
+        }
+    }
+
+    private var title: some View {
+        TopIntro(title: NSLocalizedString("Connections", comment: "DashConnect"))
+            .padding(.horizontal, !viewModel.connections.isEmpty && !viewModel.featureUnavailable ? 0 : 20)
+            .padding(.top, 10)
+    }
+
+    private func connectionSheet(for item: ConnectionSheetItem) -> some View {
+        ConnectionSheet(
+            item: item,
+            details: viewModel.shownDetails,
+            detailsFailed: viewModel.shownDetailsFailed,
+            granted: viewModel.shownGrantedLines,
+            withheld: viewModel.shownWithheldLines,
+            funding: viewModel.shownFundingLines,
+            fundingFailed: viewModel.shownFundingFailed,
+            connectedAt: viewModel.shownConnectedAt,
+            isBusy: viewModel.isDisconnecting,
+            message: viewModel.connectionSheetMessage,
+            onClose: viewModel.hideConnection,
+            onDisconnect: viewModel.disconnectShown,
+            onRemove: {
+                if let connection = item.connection { viewModel.removeConnection(connection) }
+                viewModel.hideConnection()
+            },
+            takeDisconnectQuestion: viewModel.takeDisconnectQuestion,
+            disconnectQuestion: viewModel.disconnectQuestion,
+            onShowFundingLimitsInfo: { showsFundingLimitsInfo = true }
+        )
+        .presentationDragIndicator(.visible)
+        .sheet(isPresented: $showsFundingLimitsInfo) {
+            FundingLimitsInfoSheet(onClose: { showsFundingLimitsInfo = false })
+                // Starts at the tallest it may be, so the first measurement
+                // is of the whole text; the sheet then settles at its height.
+                .selfSizingSheet(fallback: .greatestFiniteMagnitude, background: Color.dash.secondaryBackground)
+                .presentationDragIndicator(.visible)
         }
     }
 
@@ -111,9 +176,12 @@ struct ConnectionsScreen: View {
             isLoading: viewModel.isApproving,
             errorText: viewModel.approveError,
             onApprove: { viewModel.approvePendingRequest() },
+            onRetry: { viewModel.retryPendingRequest() },
             onDeny: { viewModel.denyPendingRequest() }
         )
-        .approveSheetPresentation(isLoading: viewModel.isApproving)
+        // An App Connect plan makes the sheet longer than the fixed height
+        // shows; who pays and when access ends must not sit below the fold.
+        .approveSheetPresentation(isTall: request.login.grantPlan != nil)
     }
 
     private func tokenPurchaseSheet(for purchase: DashConnectTokenPurchaseRequest) -> some View {
@@ -124,7 +192,7 @@ struct ConnectionsScreen: View {
             onApprove: { viewModel.approvePendingTokenPurchase() },
             onDeny: { viewModel.denyPendingTokenPurchase() }
         )
-        .approveSheetPresentation(isLoading: viewModel.isApprovingPurchase)
+        .approveSheetPresentation()
     }
 
     // MARK: - Presentation bindings
@@ -151,6 +219,13 @@ struct ConnectionsScreen: View {
         )
     }
 
+    private var shownConnectionBinding: Binding<ConnectionSheetItem?> {
+        Binding(
+            get: { viewModel.shownConnection },
+            set: { if $0 == nil { viewModel.hideConnection() } }
+        )
+    }
+
     private var messageBinding: Binding<ConnectionsScreenMessage?> {
         Binding(
             get: { viewModel.message },
@@ -161,18 +236,21 @@ struct ConnectionsScreen: View {
     // MARK: - Actions
 
     private func showScanner() {
+        // Not while something signs or an approval is up: the scanner would
+        // cover it.
+        guard viewModel.mayScan() else { return }
         let scanner = GenericQRScannerController()
 
         scanner.onQRCodeScanned = { value in
-            vc.dismiss(animated: true) {
+            vc?.dismiss(animated: true) {
                 viewModel.onQRScanned(value)
             }
         }
         scanner.onCancel = {
-            vc.dismiss(animated: true)
+            vc?.dismiss(animated: true)
         }
 
-        vc.present(scanner, animated: true)
+        vc?.present(scanner, animated: true)
     }
 
     private func mockScan() {
@@ -202,17 +280,21 @@ struct ConnectionsScreen: View {
     )
 }
 
-#Preview("Approved") {
+#Preview("Confirming") {
     ConnectionsScreen(
         vc: UINavigationController(),
         viewModel: ConnectionsViewModel(
-            dataSource: MockDashConnectDataSource(initial: [.init(
-                id: MockDashConnectDataSource.sample(.approved).id,
-                name: MockDashConnectDataSource.sample(.approved).name,
-                url: MockDashConnectDataSource.sample(.approved).url,
-                status: .approved,
-                updatedAt: MockDashConnectDataSource.sample(.approved).updatedAt
-            )]),
+            dataSource: MockDashConnectDataSource(initial: [MockDashConnectDataSource.sample(.confirming)]),
+            featureUnavailable: false
+        )
+    )
+}
+
+#Preview("Not Delivered") {
+    ConnectionsScreen(
+        vc: UINavigationController(),
+        viewModel: ConnectionsViewModel(
+            dataSource: MockDashConnectDataSource(initial: [MockDashConnectDataSource.sample(.undelivered)]),
             featureUnavailable: false
         )
     )
