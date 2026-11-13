@@ -4731,13 +4731,13 @@
 "See what %@ did NOT have access to" = "See what %@ did NOT have access to";
 
 /* DashConnect connection sheet: the app's name */
-"See what %@ was able to do" = "See what %@ was able to do";
-
-/* DashConnect connection sheet: the app's name */
 "See what %@ will be able to do" = "See what %@ will be able to do";
 
 /* DashConnect connection sheet: the app's name */
 "See what %@ will NOT have access to" = "See what %@ will NOT have access to";
+
+/* DashConnect connection sheet: the app's name */
+"See what you allowed %@ to do" = "See what you allowed %@ to do";
 
 /* DashConnect */
 "See your username" = "See your username";
