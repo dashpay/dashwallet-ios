@@ -352,38 +352,28 @@ final class ConnectionsViewModel: ObservableObject {
                 self.shownDetailsFailed = true
                 return
             }
-            // A refresh keeps the funding lines shown until its own read of
-            // them ends.
+            // A refresh from the same read of the identity keeps the funding
+            // lines shown until its own read of them ends; one from another
+            // read drops them, as they tell of keys it may not show.
             var shown = details
             if keepingShown, let previous = self.shownDetails {
-                shown?.keyFunding = previous.keyFunding
-                shown?.fundingReadFailed = previous.fundingReadFailed
+                shown = shown?.keepingFunding(of: previous)
             }
             self.shownDetails = shown
             self.shownDetailsFailed = details == nil
-            if details != nil { self.readShownFunding(item, number: number) }
+            if let basis = details?.basis { self.readShownFunding(item, for: basis, number: number) }
         }
     }
 
-    /// What is left of the shown connection's budgets, read after its
-    /// details so the sheet does not wait on it; the latest read only.
-    private func readShownFunding(_ item: ConnectionSheetItem, number: Int) {
+    /// What is left of the budgets of the keys `basis` gives the app, read
+    /// after the details told from it so the sheet does not wait on it; the
+    /// latest read only, and only beside details told from `basis`.
+    private func readShownFunding(_ item: ConnectionSheetItem, for basis: ConnectionBasis, number: Int) {
         Task { [weak self] in
             guard let self else { return }
-            let funding = await self.dataSource.connectionFunding(id: item.id, scope: item.connection?.scope)
-            guard number == self.detailsReadNumber, self.shownConnection != nil, var details = self.shownDetails else { return }
-            switch funding {
-            case .notRead:
-                // Nothing to read now: the lines an earlier read showed go.
-                details.keyFunding = nil
-                details.fundingReadFailed = false
-            case .read(let lines):
-                details.keyFunding = lines
-                details.fundingReadFailed = false
-            case .failed:
-                details.keyFunding = nil
-                details.fundingReadFailed = true
-            }
+            let funding = await self.dataSource.connectionFunding(for: basis, scope: item.connection?.scope)
+            guard number == self.detailsReadNumber, self.shownConnection != nil,
+                  let details = self.shownDetails?.attaching(funding, for: basis) else { return }
             self.shownDetails = details
         }
     }

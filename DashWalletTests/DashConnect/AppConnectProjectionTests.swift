@@ -227,6 +227,56 @@ final class AppConnectProjectionTests: XCTestCase {
                        true, "not landed yet: it may still")
     }
 
+    /// An encryption key whose bound the store does not hold yet may be
+    /// bound to another contract: it gives no message access, whether the
+    /// response added it or sent it again, until a read places it.
+    func testMessageAccessNeedsItsEncryptionKeysPlaced() {
+        let auth = Self.authKey(10), encryption = Self.encryptionKey(13)
+        let added = Self.intent([auth, encryption])
+        XCTAssertEqual(ConnectionAccess(intents: [added], snapshot: Self.snapshot([
+            Self.onPlatform(auth), Self.onPlatform(encryption, boundKnown: false),
+        ]))?.receivesMessages, false, "an added key not placed")
+
+        var resent = Self.intent([auth])
+        resent = Intent(
+            id: resent.id, identityId: resent.identityId, appId: resent.appId, appLabel: resent.appLabel,
+            appUrl: resent.appUrl, requestHash: resent.requestHash, connectionId: nil, keys: resent.keys,
+            sentEncryptionKeyIds: [3], disables: [], response: resent.response, responseDocumentId: nil,
+            responseRemoved: true, createdAt: resent.createdAt, closedAt: nil)
+        let identityKey = Self.encryptionKey(3)
+        XCTAssertFalse(AppConnect.encryptionKeysGiveAccess(
+            resent, in: Self.snapshot([Self.onPlatform(auth), Self.onPlatform(identityKey, boundKnown: false)])),
+            "a re-sent key not placed")
+        XCTAssertTrue(AppConnect.encryptionKeysGiveAccess(
+            resent, in: Self.snapshot([Self.onPlatform(auth), Self.onPlatform(identityKey)])))
+    }
+
+    /// Details and funding come from one read of the identity: funding read
+    /// for another read is not set beside the details, and a refresh from
+    /// another read drops the lines the sheet shows.
+    func testFundingIsShownOnlyBesideTheDetailsOfItsRead() {
+        let key = Self.authKey(10)
+        let intent = Self.intent([key])
+        let first = ConnectionBasis(
+            snapshot: Self.snapshot([Self.onPlatform(key)]), intents: [intent], unrecorded: [], administeredGroups: [])
+        let raised = ConnectionBasis(
+            snapshot: Self.snapshot([Self.onPlatform(key, limits: (5000, Self.now + 1000))], revision: 6),
+            intents: [intent], unrecorded: [], administeredGroups: [])
+        let details = ConnectionDetails(appId: "app", identityId: "identity", username: nil, basis: first)
+        XCTAssertEqual(details.access?.budgetLimit, 1000)
+
+        let lines = [KeyFunding(isProfileKey: false, totalBudget: 5000, remaining: 4000)]
+        XCTAssertNil(details.attaching(.read(lines), for: raised), "funding of a newer read beside the older totals")
+        let shown = details.attaching(first.funding(remaining: [10: 400]), for: first)
+        XCTAssertEqual(shown?.keyFunding, [KeyFunding(isProfileKey: false, totalBudget: 1000, remaining: 400)])
+        XCTAssertEqual(first.funding(remaining: [10: 4000]), .failed, "4000 left of the 1000 this read gave")
+
+        let refreshed = ConnectionDetails(appId: "app", identityId: "identity", username: nil, basis: raised)
+        XCTAssertNil(refreshed.keepingFunding(of: shown!).keyFunding, "the lines told of the earlier read")
+        let again = ConnectionDetails(appId: "app", identityId: "identity", username: nil, basis: first)
+        XCTAssertEqual(again.keepingFunding(of: shown!).keyFunding, shown?.keyFunding, "the same read")
+    }
+
     /// What is left of a key's budget, read after the identity, above the
     /// total that read gave: a limits update landed between the two reads,
     /// so the lines are not shown as if they agreed.

@@ -500,15 +500,20 @@ private enum ConnectionSheetPreview {
             scope: nil)
     }
 
-    static let access = ConnectionAccess(AppConnect.GrantedAccess(
-        keys: [.init(
-            bound: .documentType(contractId: Data(repeating: 1, count: 32), name: "post"), isCritical: false,
-            totalBudget: 1_000_000_000, expiresAt: 1_794_000_000_000, isAdministered: false)],
-        receivesMessages: true))
+    /// One key the app was given, as Platform shows it.
+    static let key = AppConnect.PlatformKey(
+        id: 10, purpose: .authentication, securityLevel: .high, keyType: .ecdsaHash160,
+        data: Data(repeating: 3, count: 20), readOnly: false,
+        bound: .documentType(contractId: Data(repeating: 1, count: 32), name: "post"), boundKnown: true,
+        totalBudget: 1_000_000_000, expiresAt: 1_794_000_000_000, disabledAt: nil)
 
     static let details = ConnectionDetails(
         appId: appId, identityId: "5DbLwAxEWR695MsqP4KybNQD5n7CUDWydJYNg63FzUo8", username: "alice",
-        access: access, connectedAt: Date(timeIntervalSince1970: 1_793_000_000))
+        basis: ConnectionBasis(
+            snapshot: AppConnect.IdentitySnapshot(
+                identityId: Data(repeating: 2, count: 32), revision: 3, keys: [key], platformTime: 1_793_500_000_000),
+            intents: [], unrecorded: [key], administeredGroups: []),
+        connectedAt: Date(timeIntervalSince1970: 1_793_000_000))
 
     static func sheet(
         _ item: ConnectionSheetItem,
@@ -535,7 +540,9 @@ private enum ConnectionSheetPreview {
 #Preview("Loaded") {
     ConnectionSheetPreview.sheet(
         ConnectionSheetPreview.item(.active), details: ConnectionSheetPreview.details,
-        granted: DashConnectPermissionText.granted(ConnectionSheetPreview.access.granted, appLabel: "Yappr"),
+        granted: ConnectionSheetPreview.details.access.map {
+            DashConnectPermissionText.granted($0.granted, appLabel: "Yappr")
+        },
         funding: [(title: "App key", value: "0.004 DASH left of 0.01 DASH")])
 }
 
