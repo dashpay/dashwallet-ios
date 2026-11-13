@@ -35,11 +35,38 @@ private final class FakeNodes: VotableMasternodeResolving {
     func votableNodes() -> MasternodeVoterRegistry.Resolution { resolution }
 }
 
+/// Holds every cast until `release()`, so a test can look at a vote in flight.
+private final class HeldCaster: VoteCasting {
+    private var gate: CheckedContinuation<Void, Never>?
+    private(set) var started = false
+
+    func cast(choice: VoteChoice, onNormalizedLabel normalizedLabel: String, with nodes: [VoterNode]) async throws
+        -> VoteCastReport {
+        started = true
+        await withCheckedContinuation { gate = $0 }
+        return VoteCastReport(normalizedLabel: normalizedLabel, choice: choice, outcomes: [])
+    }
+
+    func release() {
+        gate?.resume()
+        gate = nil
+    }
+}
+
 private struct FakeCaster: VoteCasting {
     struct Unused: Error {}
     func cast(choice: VoteChoice, onNormalizedLabel normalizedLabel: String, with nodes: [VoterNode]) async throws
         -> VoteCastReport {
         throw Unused()
+    }
+}
+
+/// Lands every vote on every node it is given.
+private struct LandingCaster: VoteCasting {
+    func cast(choice: VoteChoice, onNormalizedLabel normalizedLabel: String, with nodes: [VoterNode]) async throws
+        -> VoteCastReport {
+        VoteCastReport(normalizedLabel: normalizedLabel, choice: choice,
+                       outcomes: nodes.map { VoteOutcome(node: $0, failure: nil) })
     }
 }
 
@@ -57,6 +84,8 @@ private final class FakeHistory: VoteHistoryDAO {
 
 private final class FakePrefs: VotingSelectionStoring {
     var votingNodeSelection: Set<Data> = []
+    /// A wallet that set voting up, unless a test says otherwise.
+    var isVotingSetUp = true
 }
 
 private struct LookupFailure: Error {}
@@ -253,6 +282,20 @@ final class RequestDetailsViewModelTests: XCTestCase {
         XCTAssertEqual(vm.approveTitle, "Cancel approval")
     }
 
+    /// AC-12, AC-17: before voting is set up the stored ticks' approve is not
+    /// «mine», so the button asks to approve.
+    func testActionIsVoteToApproveBeforeSetupThoughAStoredTickApproved() async {
+        let a = node(1)
+        nodes.resolution = .init(nodes: [a], mayBeIncomplete: false)
+        prefs.votingNodeSelection = [a.proTxHash]
+        prefs.isVotingSetUp = false
+        contests.result = .success([contest()])
+        history.records = [vote(a, .towards(identityId: identityId))]
+        let vm = makeVM(await makeStore())
+
+        XCTAssertEqual(vm.approveAction, .voteToApprove)
+    }
+
     func testActionIsVoteToApproveWhenNobodyVoted() async {
         let a = node(1)
         nodes.resolution = .init(nodes: [a], mayBeIncomplete: false)
@@ -312,8 +355,6 @@ final class RequestDetailsViewModelTests: XCTestCase {
 
         XCTAssertEqual(request.choice, .abstain)
         XCTAssertEqual(request.cancelling, .towards(identityId: identityId))
-        XCTAssertEqual(store.nodesToCancel(.towards(identityId: identityId), on: label).map(\.proTxHash),
-                       [a.proTxHash], "b's block on the name is not touched")
     }
 
     func testVoteToApproveAsksForThisRequestsApprove() async throws {
@@ -334,7 +375,48 @@ final class RequestDetailsViewModelTests: XCTestCase {
         XCTAssertTrue(vm.canApprove)
     }
 
-    func testApproveIsDisabledOnceTheContestClosed() async {
+    /// One vote at a time: while another name's vote is sent, this request
+    /// cannot be approved (SCR-03 «sending · other contest»).
+    func testApproveIsDisabledWhileAnotherNamesVoteIsSent() async {
+        let other = DPNSContest(normalizedLabel: "janedoe", endTime: nil, hasWinner: false,
+                                abstainVotes: 0, lockVotes: 0,
+                                contenders: [DPNSContender(identityId: "janedoe-id1", voteTally: 1)])
+        contests.result = .success([contest(), other])
+        let caster = HeldCaster()
+        let store = VotingStore(contests: contests, nodes: nodes, caster: caster, history: history, prefs: prefs)
+        await store.refresh()
+        let vm = makeVM(store)
+        XCTAssertTrue(vm.canApprove)
+
+        let send = Task { await store.send(choice: .lock, on: other, from: store.votableNodes) }
+        await yield(until: { caster.started })
+
+        XCTAssertFalse(vm.canApprove)
+        caster.release()
+        await send.value
+        XCTAssertTrue(vm.canApprove)
+    }
+
+    /// screens.md SCR-03 «sending»: this request's own vote keeps the button
+    /// enabled, so it shows the loading look; its spinner takes the taps.
+    func testApproveStaysEnabledWhileThisNamesVoteIsSent() async {
+        contests.result = .success([contest()])
+        let caster = HeldCaster()
+        let store = VotingStore(contests: contests, nodes: nodes, caster: caster, history: history, prefs: prefs)
+        await store.refresh()
+        let vm = makeVM(store)
+
+        let send = Task { await store.send(choice: .towards(identityId: identityId), on: contest(), from: []) }
+        await yield(until: { caster.started })
+
+        XCTAssertTrue(store.isSending(normalizedLabel: label))
+        XCTAssertTrue(vm.canApprove)
+        caster.release()
+        await send.value
+    }
+
+    /// AC-03: the tap is told that voting has ended, so the button stays enabled.
+    func testApproveStaysEnabledOnceTheContestClosed() async {
         contests.result = .success([contest(endTime: Date().addingTimeInterval(86_400))])
         let store = await makeStore()
         let vm = makeVM(store)
@@ -343,10 +425,11 @@ final class RequestDetailsViewModelTests: XCTestCase {
                                               outcome: .locked, resolvedAt: epoch)
         await store.refreshContest(normalizedLabel: label)
 
-        XCTAssertFalse(vm.canApprove)
+        XCTAssertTrue(vm.canApprove)
     }
 
-    func testApproveIsDisabledWhenNoTickedNodeHasAVoteLeft() async {
+    /// AC-15: the tap shows "No votes left", so the button stays enabled.
+    func testApproveStaysEnabledWhenNoTickedNodeHasAVoteLeft() async {
         let a = node(1)
         nodes.resolution = .init(nodes: [a], mayBeIncomplete: false)
         prefs.votingNodeSelection = [a.proTxHash]
@@ -355,7 +438,140 @@ final class RequestDetailsViewModelTests: XCTestCase {
                                           castAt: epoch, castCount: VoteLimit.maxCastsPerNode)]
         let vm = makeVM(await makeStore())
 
+        XCTAssertTrue(vm.canApprove)
+    }
+
+    /// Voting is paused while the vote history cannot be read.
+    func testApproveIsDisabledWhileTheHistoryCannotBeRead() async {
+        contests.result = .success([contest()])
+        history.records = nil
+        let store = await makeStore()
+        let vm = makeVM(store)
+
+        XCTAssertTrue(store.historyUnavailable)
         XCTAssertFalse(vm.canApprove)
+    }
+
+    // MARK: Back to the list on success only (SCR-03)
+
+    func testOnlyAVoteFromHereThatLandedReturnsToTheList() async {
+        let a = node(1)
+        nodes.resolution = .init(nodes: [a], mayBeIncomplete: false)
+        prefs.votingNodeSelection = [a.proTxHash]
+        contests.result = .success([contest()])
+        let store = VotingStore(contests: contests, nodes: nodes, caster: LandingCaster(), history: history,
+                                prefs: prefs)
+        await store.refresh()
+        let vm = makeVM(store)
+
+        await store.send(choice: .towards(identityId: identityId), on: contest(), from: [a])
+
+        XCTAssertTrue(vm.returnsToList(after: store.outcome))
+        XCTAssertFalse(vm.returnsToList(after: .failure("No connection")))
+        XCTAssertFalse(vm.returnsToList(after: nil))
+    }
+
+    /// SCR-03 «sending · other contest»: another name's vote, sent from the
+    /// list before this screen opened, does not close this screen when it
+    /// lands.
+    func testAnotherNamesOutcomeStaysOffThisScreen() async {
+        let a = node(1)
+        nodes.resolution = .init(nodes: [a], mayBeIncomplete: false)
+        prefs.votingNodeSelection = [a.proTxHash]
+        let other = DPNSContest(normalizedLabel: "janedoe", endTime: nil, hasWinner: false,
+                                abstainVotes: 0, lockVotes: 0,
+                                contenders: [DPNSContender(identityId: "janedoe-id1", voteTally: 1)])
+        contests.result = .success([contest(), other])
+        let store = VotingStore(contests: contests, nodes: nodes, caster: LandingCaster(), history: history,
+                                prefs: prefs)
+        await store.refresh()
+        let vm = makeVM(store)
+
+        await store.send(choice: .lock, on: other, from: [a])
+
+        guard case .success = store.outcome else { return XCTFail("janedoe's vote landed") }
+        XCTAssertFalse(vm.returnsToList(after: store.outcome))
+    }
+
+    /// SCR-03: another name's vote that fails, sent from the list, shows its
+    /// error on the list only; this screen's own failed vote shows here.
+    func testAnotherNamesFailedVoteShowsNoErrorHere() async throws {
+        let a = node(1)
+        nodes.resolution = .init(nodes: [a], mayBeIncomplete: false)
+        prefs.votingNodeSelection = [a.proTxHash]
+        prefs.isVotingSetUp = true
+        let other = DPNSContest(normalizedLabel: "janedoe", endTime: nil, hasWinner: false,
+                                abstainVotes: 0, lockVotes: 0,
+                                contenders: [DPNSContender(identityId: "janedoe-id1", voteTally: 1)])
+        contests.result = .success([contest(), other])
+        let store = VotingStore(contests: contests, nodes: nodes, caster: FakeCaster(), history: history,
+                                prefs: prefs)
+        let voting = VotingViewModel(store: store)
+        await store.refresh()
+        let vm = makeVM(store)
+
+        await voting.send(.lock, on: other, from: [a.proTxHash], skipped: [], pill: .lock)
+
+        let othersError = try XCTUnwrap(voting.toast)
+        XCTAssertEqual(othersError.style, .error)
+        XCTAssertFalse(vm.showsToast(othersError))
+        XCTAssertFalse(vm.returnsToList(after: store.outcome))
+
+        let approve = VoteChoice.towards(identityId: identityId)
+        await voting.send(approve, on: contest(), from: [a.proTxHash], skipped: [], pill: approve)
+
+        XCTAssertTrue(vm.showsToast(try XCTUnwrap(voting.toast)))
+    }
+
+    /// AC-12, AC-14b: before setup «Vote to approve» is offered although a
+    /// stored tick approved; after the keys nothing is sent, and this screen
+    /// tells it and stays. Another name's notice stays on the list.
+    func testAVoteTheTicksAlreadyHoldIsToldHere() async throws {
+        let a = node(1)
+        nodes.resolution = .init(nodes: [a], mayBeIncomplete: false)
+        prefs.votingNodeSelection = [a.proTxHash]
+        prefs.isVotingSetUp = false
+        let other = DPNSContest(normalizedLabel: "janedoe", endTime: nil, hasWinner: false,
+                                abstainVotes: 0, lockVotes: 0,
+                                contenders: [DPNSContender(identityId: "janedoe-id1", voteTally: 1)])
+        contests.result = .success([contest(), other])
+        history.records = [vote(a, .towards(identityId: identityId))]
+        let store = VotingStore(contests: contests, nodes: nodes, caster: FakeCaster(), history: history,
+                                prefs: prefs)
+        let voting = VotingViewModel(store: store)
+        await store.refresh()
+        let vm = makeVM(store)
+        let attempt = VoteAttemptCoordinator(host: voting)
+        XCTAssertEqual(vm.approveAction, .voteToApprove)
+
+        await attempt.start(.vote(.towards(identityId: identityId)), on: contest())
+        XCTAssertEqual(attempt.presentation, .addKeys(.towards(identityId: identityId)))
+        store.confirmVotingSetup(ticked: [a.proTxHash])
+        attempt.finishKeys(continueToVote: true)
+        await attempt.presentationDismissed()
+
+        XCTAssertNil(store.outcome, "nothing was sent")
+        let notice = try XCTUnwrap(voting.toast)
+        XCTAssertEqual(notice.message, "Your masternodes already voted this way on johndoe")
+        XCTAssertTrue(vm.showsToast(notice))
+        XCTAssertFalse(vm.returnsToList(after: store.outcome))
+
+        voting.attemptWillStart(on: other)
+        voting.reportAlreadyVoted(on: other)
+        XCTAssertFalse(vm.showsToast(try XCTUnwrap(voting.toast)))
+    }
+
+    /// A gate that stops this screen's own attempt is told here.
+    func testThisScreensAttemptShowsItsErrorHere() async {
+        contests.result = .success([contest()])
+        let store = await makeStore()
+        let vm = makeVM(store)
+        let voting = VotingViewModel(store: store)
+
+        voting.attemptWillStart(on: contest())
+
+        XCTAssertTrue(vm.showsToast(.failed("Couldn't read your vote history.")))
+        XCTAssertFalse(vm.showsToast(.voted(username: "johndoe")), "a landed vote is told by the list")
     }
 
     /// The contest left the list while the screen was open: the fields keep

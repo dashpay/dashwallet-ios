@@ -46,6 +46,7 @@ protocol VoteCasting {
 /// Remembers which masternodes the user ticked to vote with.
 protocol VotingSelectionStoring: AnyObject {
     var votingNodeSelection: Set<Data> { get set }
+    var isVotingSetUp: Bool { get set }
 }
 
 extension ContestedNamesService: VotingContestReading {}
@@ -71,9 +72,9 @@ final class VotingStore: ObservableObject {
     @Published private(set) var contests: [DPNSContest] = [] {
         didSet { stateDidChange.send() }
     }
-    /// Labels observed to have resolved while the user was looking at them,
-    /// so an already-open detail screen can say so instead of offering a vote
-    /// that can no longer be accepted.
+    /// Labels observed to have resolved while the user was looking at them.
+    /// The vote gates treat such a contest as ended, so a tap on it is told
+    /// that voting has ended instead of sending a vote Platform refuses.
     @Published private(set) var closedLabels: Set<String> = []
     @Published private(set) var votableNodes: [VoterNode] = [] {
         didSet {
@@ -119,14 +120,21 @@ final class VotingStore: ObservableObject {
     }
 
     /// proTxHashes of the nodes the next vote will use, shared by the list
-    /// and the contest screen and persisted so the next contest
-    /// opens with the same nodes ticked.
+    /// and Request details and persisted so the next vote uses the same
+    /// nodes.
     ///
     /// Persisted rather than re-asked because it is a privacy choice: voting
     /// with several nodes at once links those masternodes to each other, and
     /// that should stay the user's standing decision, not something re-made
     /// under time pressure on every contest.
-    @Published var selectedNodeIDs: Set<Data> {
+    ///
+    /// Only the store writes it. It changes on the user's explicit acts — a
+    /// tick, the vote button of "Add your voting keys", removing a key — and
+    /// on one observation: a complete resolution forgets a remembered node
+    /// that is no longer votable (see ``refreshVotableNodes()``). A node
+    /// missing from a partial or unavailable resolution stays remembered; a
+    /// vote uses only the remembered nodes that resolved (``tickedNodeIDs``).
+    @Published private(set) var selectedNodeIDs: Set<Data> {
         didSet {
             prefs.votingNodeSelection = selectedNodeIDs
             stateDidChange.send()
@@ -136,7 +144,15 @@ final class VotingStore: ObservableObject {
     /// The one result of the latest vote attempt: a toast, an error message or
     /// the per-masternode report of a mixed run. Cleared when the next attempt
     /// starts.
-    @Published private(set) var outcome: VoteAttemptOutcome?
+    @Published private(set) var outcome: VoteAttemptOutcome? {
+        didSet { outcomeVersion += 1 }
+    }
+    /// Counts every change of ``outcome``, so Try again publishes only over
+    /// the outcome it started from.
+    private var outcomeVersion = 0
+    /// History reads of a vote in progress (the gates, Try again); while any
+    /// runs, no other vote starts.
+    @Published private var voteReads = 0
 
     /// Votes Platform accepted while this store lived whose history write
     /// failed, per contest. The store's rows are one cast short for each, so
@@ -148,6 +164,15 @@ final class VotingStore: ObservableObject {
     /// Contests with a vote in flight. Their pills show a spinner and take no
     /// taps until the votes are applied and the tallies re-read.
     @Published private(set) var sendingLabels: Set<String> = []
+    /// The pill each send was tapped on, while it sends.
+    private var sendingPills: [String: VoteChoice] = [:]
+
+    /// The contest of the latest send, for Try again on its mixed outcome.
+    private var lastSentContest: DPNSContest?
+
+    /// The contest of the latest vote attempt, set at its start: ``outcome``
+    /// and the attempt's toasts are about it until the next attempt starts.
+    private(set) var attemptLabel: String?
 
     /// Fires after any change a screen derives its rows from, with the new
     /// value already in place (``objectWillChange`` fires before).
@@ -183,23 +208,78 @@ final class VotingStore: ObservableObject {
 
     var canVote: Bool { !votableNodes.isEmpty }
 
+    /// A node to vote with, and "Add your voting keys" confirmed once (AC-12).
+    var isVotingSetUp: Bool { canVote && prefs.isVotingSetUp }
+
+    // MARK: Remembered choice
+
+    /// How far the latest node resolution can be trusted.
+    enum NodeResolution: Equatable {
+        /// No node resolved: the SDK or the masternode list is not ready.
+        case unavailable
+        /// Some nodes resolved; others of this wallet may be missing.
+        case partial
+        /// Every node of this wallet resolved.
+        case complete
+    }
+
+    var nodeResolution: NodeResolution {
+        if votableNodes.isEmpty { return .unavailable }
+        return nodeListMayBeIncomplete ? .partial : .complete
+    }
+
+    /// The vote button of "Add your voting keys": keep the ticks shown and set
+    /// voting up. Remembered nodes that are not shown stay unless the
+    /// resolution is complete, which proves them gone.
+    func confirmVotingSetup(ticked: Set<Data>) {
+        let isComplete = nodeResolution == .complete
+        let unseen = isComplete ? [] : selectedNodeIDs.subtracting(votableNodeIDs)
+        // The flag first: the selection's change notice must already see voting set up.
+        prefs.isVotingSetUp = true
+        // A complete resolution also proves a ticked node that is not votable gone.
+        selectedNodeIDs = unseen.union(isComplete ? ticked.intersection(votableNodeIDs) : ticked)
+    }
+
+    /// See ``VotingKeysSource/votesToCast(_:from:)``: on the contest of the
+    /// latest vote attempt.
+    func votesToCast(_ choice: VoteChoice, from nodes: Set<Data>) -> Int? {
+        guard let label = attemptLabel, let history = voteHistoryByContest[label], history.isKnown else { return nil }
+        return nodes.filter { (history.votesLeft($0) ?? 0) > 0 && history.liveChoice(of: $0) != choice }.count
+    }
+
+    /// One tick changed on "Add your voting keys" in manage mode: only that
+    /// node's place in the remembered choice changes. Does not set voting up.
+    func setTick(_ proTxHash: Data, _ isTicked: Bool) {
+        if isTicked {
+            selectedNodeIDs.insert(proTxHash)
+        } else {
+            selectedNodeIDs.remove(proTxHash)
+        }
+    }
+
+    /// The user removed this node's voting key: it leaves the remembered choice.
+    func forgetNode(_ proTxHash: Data) {
+        selectedNodeIDs.remove(proTxHash)
+    }
+
     /// The stored choice that is still votable — a remembered node that has
     /// since been revoked or left the masternode list must not silently come
-    /// back. `nil` while none is chosen yet, which is not the same as an empty
-    /// choice.
+    /// back. `nil` while none is chosen yet or the nodes are not known yet,
+    /// which is not the same as an empty choice. Once voting is set up an
+    /// empty choice stays empty, and the next vote opens "Add your voting
+    /// keys" (AC-14); before that, ticks kept in manage mode are the choice.
     var tickedNodeIDs: Set<Data>? {
+        guard !votableNodeIDs.isEmpty else { return nil }
         let live = selectedNodeIDs.intersection(votableNodeIDs)
+        if prefs.isVotingSetUp { return live }
         return live.isEmpty ? nil : live
     }
 
-    /// The remembered selection, or a single node when nothing was ever
-    /// chosen. Never every node by default: see ``VotingPrefs``.
-    ///
-    /// Also recovers from a selection that no longer matches any votable node
-    /// (nodes revoked, or a different wallet), which would otherwise leave the
-    /// vote button permanently disabled with no way to see why.
-    var effectiveSelectedNodeIDs: Set<Data> {
-        tickedNodeIDs ?? Set(votableNodes.first.map { [$0.proTxHash] } ?? [])
+    /// The ticks whose votes are the user's own: none before voting is set
+    /// up, so a vote the stored ticks hold fills no pill and a tap asks for
+    /// its own choice, as «Add your voting keys» then casts (AC-12, AC-17).
+    var myNodeIDs: Set<Data>? {
+        prefs.isVotingSetUp ? tickedNodeIDs : nil
     }
 
     /// The latest copy of `contest` in the list, so a screen opened from an
@@ -209,8 +289,7 @@ final class VotingStore: ObservableObject {
     }
 
     /// Whether a contest the user is looking at has closed under them. The
-    /// detail screen reads this to swap its vote controls for a closed notice
-    /// instead of silently showing a stale snapshot with live-looking buttons.
+    /// vote gates read this as a voting end that has passed (AC-03).
     func isClosed(normalizedLabel: String) -> Bool {
         closedLabels.contains(normalizedLabel)
     }
@@ -219,7 +298,7 @@ final class VotingStore: ObservableObject {
 
     /// True once a contest fetch has actually succeeded. Distinct from
     /// ``hasLoadedOnce``, which only records that a load was attempted.
-    private var didLoadContests = false
+    private(set) var didLoadContests = false
 
     /// Each load reads the store or Platform when its turn comes and applies
     /// what it read before the next one starts, so a load that read earlier
@@ -361,17 +440,19 @@ final class VotingStore: ObservableObject {
         votableNodes = resolution.nodes
         nodeListMayBeIncomplete = resolution.mayBeIncomplete
 
-        // Settle the remembered selection against the nodes that actually
-        // exist now, so the picker and the "voting with" row agree with what a
-        // tap would really do.
+        // Forget remembered nodes that are no longer votable, so a revoked
+        // node does not come back ticked if it ever resolves again.
         //
-        // Only when the node list actually resolved. `votableNodes()` returns
-        // empty while the SDK is starting or the masternode phase has not
-        // synced, and settling against that would compute an empty selection
-        // and PERSIST it — destroying a multi-node choice the user made, with
-        // the next vote silently falling back to one node.
-        if !votableNodes.isEmpty {
-            let settled = effectiveSelectedNodeIDs
+        // Only from a complete resolution: an unavailable one (SDK starting,
+        // masternode list not synced) or a partial one (a provider pool
+        // unreadable) does not prove a missing node gone, and settling against
+        // it would PERSIST a smaller choice than the user made. The vote never
+        // needs the settling: it takes the remembered nodes that resolved
+        // (``tickedNodeIDs``). And only once voting is set up: before that the
+        // default tick is not a choice (AC-12).
+        if nodeResolution == .complete, prefs.isVotingSetUp {
+            // Only the user's own ticks: a node they did not tick is never saved in their place.
+            let settled = selectedNodeIDs.intersection(votableNodeIDs)
             if settled != selectedNodeIDs {
                 selectedNodeIDs = settled
             }
@@ -397,7 +478,16 @@ final class VotingStore: ObservableObject {
             // The query failed, so we learned nothing about this contest.
             // Leave the cached row exactly as it was rather than treating a
             // network blip as a resolution.
+            DWLogger.log("Voting: tallies of \(normalizedLabel) unreadable (\(type(of: error)))")
             return
+        }
+        // Platform's weighted counts (an evonode's vote counts 4), the numbers
+        // the pills show; the contenders' tallies only, never their identities.
+        if let state {
+            let requests = state.contenders.map { String($0.voteTally) }.joined(separator: ", ")
+            DWLogger.log("Voting: tallies of \(normalizedLabel): lock \(state.lockVotes), abstain \(state.abstainVotes), requests [\(requests)]")
+        } else {
+            DWLogger.log("Voting: tallies of \(normalizedLabel): no contenders")
         }
 
         // No contenders: the row keeps its last known votes until its voting
@@ -446,8 +536,40 @@ final class VotingStore: ObservableObject {
         sendingLabels.contains(normalizedLabel)
     }
 
-    /// Clears the previous attempt's outcome.
-    func beginAttempt() {
+    /// Some vote is being sent, on any contest.
+    var isSendingAny: Bool { !sendingLabels.isEmpty }
+
+    /// A vote holds the store: it is being sent, or its history is being read
+    /// for the vote gates or Try again. One vote at a time, across the list,
+    /// Request details and Try again.
+    var isVoteBusy: Bool { isSendingAny || voteReads > 0 }
+
+    /// ``isVoteBusy`` as it changes, for the UIKit host that holds the
+    /// swipe-back while a vote runs.
+    var isVoteBusyPublisher: AnyPublisher<Bool, Never> {
+        $sendingLabels.combineLatest($voteReads)
+            .map { !$0.isEmpty || $1 > 0 }
+            .removeDuplicates()
+            .eraseToAnyPublisher()
+    }
+
+    /// ``loadVotedNodes(for:)`` for a vote's gates: the read holds the vote slot.
+    func loadVotedNodesForVote(for normalizedLabel: String) async -> Bool {
+        voteReads += 1
+        defer { voteReads -= 1 }
+        return await loadVotedNodes(for: normalizedLabel)
+    }
+
+    /// The pill whose vote is being sent on this contest; `nil` when none is,
+    /// or when the send did not start from a pill (Try again).
+    func sendingPill(on normalizedLabel: String) -> VoteChoice? {
+        guard isSending(normalizedLabel: normalizedLabel) else { return nil }
+        return sendingPills[normalizedLabel]
+    }
+
+    /// Clears the previous attempt's outcome and starts one on `normalizedLabel`.
+    func beginAttempt(on normalizedLabel: String) {
+        attemptLabel = normalizedLabel
         outcome = nil
     }
 
@@ -456,15 +578,38 @@ final class VotingStore: ObservableObject {
     /// Returns once the caster has finished, the contest's history is rebuilt
     /// from the store's rows plus the unrecorded casts this store keeps, and its
     /// tallies are re-read. Both go through the load queue, so a load that read
-    /// before the cast cannot land after it. A second send on a contest already
-    /// in flight returns without casting.
-    func send(choice: VoteChoice, on contest: DPNSContest, from nodes: [VoterNode]) async {
+    /// before the cast cannot land after it. One vote at a time: a send while
+    /// any vote is in flight returns without casting, so that vote's report
+    /// and Try again stay its own. `pill` is the pill the vote was
+    /// tapped on, if any, for ``sendingPill(on:)`` while it sends.
+    func send(
+        choice: VoteChoice, on contest: DPNSContest, from nodes: [VoterNode], skipped: [VoterNode] = [],
+        pill: VoteChoice? = nil
+    ) async {
         let label = contest.normalizedLabel
-        guard sendingLabels.insert(label).inserted else { return }
-        beginAttempt()
+        guard !isVoteBusy else { return }
+        beginAttempt(on: label)
+        sendingPills[label] = pill
+        defer { sendingPills[label] = nil }
+        if let result = await cast(choice: choice, on: contest, from: nodes, skipped: skipped) {
+            outcome = result
+        }
+    }
+
+    /// The cast behind ``send(choice:on:from:)``: returns its outcome and
+    /// leaves ``outcome`` as it is, so Try again keeps the report on screen
+    /// while it runs. `nil` when this contest is already in flight.
+    /// `skipped` had no vote left: nothing is sent from them, and the report
+    /// names them as «No votes left» (AC-15).
+    private func cast(
+        choice: VoteChoice, on contest: DPNSContest, from nodes: [VoterNode], skipped: [VoterNode] = []
+    ) async -> VoteAttemptOutcome? {
+        let label = contest.normalizedLabel
+        guard sendingLabels.insert(label).inserted else { return nil }
+        lastSentContest = contest
         defer { sendingLabels.remove(label) }
 
-        let report: VoteCastReport
+        var report: VoteCastReport
         let startedAt = now()
         do {
             report = try await caster.cast(choice: choice, onNormalizedLabel: label, with: nodes)
@@ -476,8 +621,7 @@ final class VotingStore: ObservableObject {
             if case MasternodeVoteCaster.CastError.contestClosed = error {
                 await serially { [weak self] in _ = self?.closedLabels.insert(label) }
             }
-            outcome = .failure(VoteErrorMessage.plain(for: error))
-            return
+            return .failure(VoteErrorMessage.plain(for: error))
         }
 
         let castAt = now()
@@ -485,23 +629,140 @@ final class VotingStore: ObservableObject {
             CastVoteRecord(proTxHash: $0.node.proTxHash, normalizedLabel: label, choice: report.choice, castAt: castAt)
         }
         unrecordedCasts[label, default: []].append(contentsOf: unrecorded)
+        let landed = report
         await serially { [weak self] in
             guard let self else { return }
             // Without a readable store, patch what is known instead.
             if await !self.performLoadVotedNodes(for: label) {
-                self.applyRecordedVotes(of: report, on: label, at: castAt, startedAt: startedAt)
+                self.applyRecordedVotes(of: landed, on: label, at: castAt, startedAt: startedAt)
             }
         }
         await refreshContest(normalizedLabel: label)
+        if !skipped.isEmpty {
+            let noVotesLeft = NSLocalizedString("No votes left", comment: "Voting")
+            report = VoteCastReport(
+                normalizedLabel: label, choice: choice,
+                outcomes: report.outcomes + skipped.map { VoteOutcome(node: $0, failure: noVotesLeft) })
+        }
 
         if report.isCompleteSuccess {
-            outcome = .success(.voted(username: contest.displayTitle))
+            return .success(successToast(for: choice, on: contest))
         } else if report.succeeded.isEmpty {
-            outcome = .failure(report.failed.first?.failure
+            return .failure(report.failed.first?.failure
                 ?? NSLocalizedString("The vote was not cast. Please try again.", comment: "Voting"))
         } else {
-            outcome = .mixed(report)
+            return .mixed(report)
         }
+    }
+
+    /// Try again after a mixed vote (AC-06b): the masternodes whose vote
+    /// failed go through the vote gates again (``VoteAttempt``) on a fresh read
+    /// of the history, and those that may still vote resend the choice. A
+    /// masternode the gates stop gets their reason in the report: voting has
+    /// ended, the history could not be read, or no vote left. The report keeps
+    /// every masternode, the earlier landed ones included, and stays the
+    /// outcome while the resend runs; when every vote has landed the outcome
+    /// is the success toast.
+    func retryFailed() async {
+        guard case .mixed(let report)? = outcome, let sent = lastSentContest,
+              sent.normalizedLabel == report.normalizedLabel,
+              !isVoteBusy
+        else { return }
+        let version = outcomeVersion
+        let label = report.normalizedLabel
+        let contest = latest(sent)
+        let failed = report.failed.map(\.node)
+        let history = await loadVotedNodesForVote(for: label)
+            ? voteHistoryByContest[label] ?? VoteLimit(nil) : VoteLimit(nil)
+        var attempt = VoteAttempt(
+            intent: .vote(report.choice),
+            votingEndsAt: isClosed(normalizedLabel: label) ? now() : contest.endTime,
+            isVotingSetUp: true,
+            tickedNodes: Set(failed.map(\.proTxHash)),
+            history: history,
+            now: now())
+        // The first try already asked "One vote left" and the lock-is-final
+        // question for this choice; the retry does not ask them again.
+        attempt.confirm()
+        attempt.confirm()
+        guard let updated = await retryOutcomes(
+            of: failed, choice: report.choice, at: attempt.step, on: contest, history: history)
+        else { return }
+        let merged = VoteCastReport(
+            normalizedLabel: label,
+            choice: report.choice,
+            outcomes: report.outcomes.map { updated[$0.node.proTxHash] ?? $0 })
+        // A newer attempt replaced or cleared the outcome meanwhile: it stays.
+        guard outcomeVersion == version else { return }
+        outcome = merged.isCompleteSuccess
+            ? .success(successToast(for: report.choice, on: contest))
+            : .mixed(merged)
+    }
+
+    /// What Try again's gate `step` makes of each failed masternode, sending
+    /// from those it lets vote. `nil` for a step the retry cannot reach.
+    private func retryOutcomes(
+        of failed: [VoterNode], choice: VoteChoice, at step: VoteAttempt.Step, on contest: DPNSContest,
+        history: VoteLimit
+    ) async -> [Data: VoteOutcome]? {
+        func all(_ reason: String?) -> [Data: VoteOutcome] {
+            Dictionary(uniqueKeysWithValues: failed.map { ($0.proTxHash, VoteOutcome(node: $0, failure: reason)) })
+        }
+        switch step {
+        case .votingEnded:
+            return all(NSLocalizedString("Voting has ended", comment: "Voting"))
+        case .historyUnavailable:
+            return all(NSLocalizedString("Couldn't read your vote history.", comment: "Voting"))
+        case .noVotesLeft:
+            // A failed masternode that holds the choice by now has it.
+            let holders = history.nodes(holding: choice, among: Set(failed.map(\.proTxHash))) ?? []
+            return Dictionary(uniqueKeysWithValues: failed.map { node in
+                (node.proTxHash, VoteOutcome(
+                    node: node,
+                    failure: holders.contains(node.proTxHash)
+                        ? nil : NSLocalizedString("No votes left", comment: "Voting")))
+            })
+        case .nothingToSend:
+            // Every failed masternode holds the choice by now.
+            return all(nil)
+        case .needsKeys, .confirmLastVote, .confirmBlock:
+            // Not reached: the failed masternodes are ticked and both
+            // confirmations were given.
+            return nil
+        case let .send(choice, senders):
+            return await resend(choice, from: failed, senders: senders, on: contest, history: history)
+        }
+    }
+
+    /// Try again's send: the failed masternodes the gates let vote send
+    /// `choice`; any other one holds it by now or has no vote left.
+    private func resend(
+        _ choice: VoteChoice, from failed: [VoterNode], senders: Set<Data>, on contest: DPNSContest,
+        history: VoteLimit
+    ) async -> [Data: VoteOutcome] {
+        let holders = history.nodes(holding: choice, among: Set(failed.map(\.proTxHash))) ?? []
+        var updated: [Data: VoteOutcome] = [:]
+        for node in failed where !senders.contains(node.proTxHash) {
+            updated[node.proTxHash] = VoteOutcome(
+                node: node,
+                failure: holders.contains(node.proTxHash) ? nil : NSLocalizedString("No votes left", comment: "Voting"))
+        }
+        let sendable = failed.filter { senders.contains($0.proTxHash) }
+        let retried: [VoteOutcome]
+        switch await cast(choice: choice, on: contest, from: sendable) {
+        case .success: retried = sendable.map { VoteOutcome(node: $0, failure: nil) }
+        case .mixed(let again): retried = again.outcomes
+        case .failure(let reason): retried = sendable.map { VoteOutcome(node: $0, failure: reason) }
+        case nil: retried = []
+        }
+        for outcome in retried { updated[outcome.node.proTxHash] = outcome }
+        return updated
+    }
+
+    private func successToast(for choice: VoteChoice, on contest: DPNSContest) -> VotingToast {
+        choice == .abstain
+            ? .voteCancelled(username: contest.displayTitle)
+            : .voted(username: contest.displayTitle)
     }
 
     // MARK: Vote history
@@ -512,10 +773,14 @@ final class VotingStore: ObservableObject {
         votedProTxHashesByContest[normalizedLabel] != nil
     }
 
-    /// Load which of our nodes already voted on one contest. Called when its
-    /// detail screen opens, so the vote button knows what is left.
-    func loadVotedNodes(for normalizedLabel: String) async {
-        await serially { [weak self] in await self?.performLoadVotedNodes(for: normalizedLabel) }
+    /// Load which of our nodes already voted on one contest. A vote attempt
+    /// and Try again call it at the tap, so the vote gates decide on today's
+    /// history. `false` when the store could not be read; what was known stays.
+    @discardableResult
+    func loadVotedNodes(for normalizedLabel: String) async -> Bool {
+        var read = false
+        await serially { [weak self] in read = await self?.performLoadVotedNodes(for: normalizedLabel) ?? false }
+        return read
     }
 
     /// `false` when the store could not be read.
@@ -562,17 +827,6 @@ final class VotingStore: ObservableObject {
             .formUnion(report.succeeded.map(\.node.proTxHash))
     }
 
-    /// Nodes that have not yet voted on this contest, in registration order.
-    ///
-    /// Empty until this contest's history has loaded. The screen evaluates this
-    /// before its `.task` completes, and treating "not loaded" as "nobody
-    /// voted" would offer nodes that already voted — a duplicate Platform
-    /// rejects, spending one of the masternode's per-contest votes.
-    func nodesYetToVote(on normalizedLabel: String) -> [VoterNode] {
-        guard let voted = votedProTxHashesByContest[normalizedLabel] else { return [] }
-        return votableNodes.filter { !voted.contains($0.proTxHash) }
-    }
-
     /// How many of this wallet's nodes have a live vote here — nodes, not
     /// records. A node that changed its mind has two records and is still one
     /// node, which is what "%d of %d nodes voted" is counting.
@@ -585,77 +839,14 @@ final class VotingStore: ObservableObject {
         voteHistoryByContest[normalizedLabel]?.liveChoice(of: node.proTxHash)
     }
 
-    /// The nodes a tap on `choice` should cast with: the remembered selection,
-    /// minus nodes already holding that exact choice (Platform rejects a
-    /// duplicate) and minus nodes that have spent the five casts it allows per
-    /// contest. A node holding a *different* choice belongs here — replacing
-    /// its vote is one state transition, and it is the whole point of being
-    /// able to change your mind from this screen.
-    func nodesForVote(_ choice: VoteChoice, on normalizedLabel: String) -> [VoterNode] {
-        guard hasLoadedVoteHistory(for: normalizedLabel) else { return [] }
-        let chosen = effectiveSelectedNodeIDs
-        let history = voteHistoryByContest[normalizedLabel] ?? VoteLimit([])
-        return votableNodes.filter { node in
-            guard chosen.contains(node.proTxHash) else { return false }
-            guard (history.votesLeft(node.proTxHash) ?? 0) > 0 else { return false }
-            return history.liveChoice(of: node.proTxHash) != choice
-        }
-    }
-
-    /// The nodes cancelling `held` should abstain with: the remembered
-    /// selection's nodes whose live choice is `held` and that have a vote left.
-    /// A node holding anything else is not touched (AC-17).
-    func nodesToCancel(_ held: VoteChoice, on normalizedLabel: String) -> [VoterNode] {
-        nodesForVote(.abstain, on: normalizedLabel).filter { liveChoice(of: $0, on: normalizedLabel) == held }
-    }
-
-    /// What the cast sheet offers for a vote, and why ticked nodes are missing.
-    struct CastCandidates {
-        /// The nodes the vote can be cast with.
-        let nodes: [VoterNode]
-        /// Ticked nodes left out because they already hold this choice.
-        let holdingThisChoice: Int
-        /// Ticked nodes left out because they have no casts left here.
-        let outOfCasts: Int
-    }
-
-    /// The cast sheet's nodes for `choice`: ``nodesForVote(_:on:)``, or
-    /// ``nodesToCancel(_:on:)`` when the vote takes `cancelling` back. The
-    /// counts cover the ticked nodes only — when cancelling, only the ticked
-    /// holders of `cancelling` — so a node the user never ticked is not
-    /// reported as out of votes.
-    func castCandidates(for choice: VoteChoice, cancelling: VoteChoice?, on normalizedLabel: String) -> CastCandidates {
-        let offered = cancelling.map { nodesToCancel($0, on: normalizedLabel) }
-            ?? nodesForVote(choice, on: normalizedLabel)
-        let ticked = effectiveSelectedNodeIDs
-        let considered = votableNodes.filter { node in
-            guard ticked.contains(node.proTxHash) else { return false }
-            guard let cancelling else { return true }
-            return liveChoice(of: node, on: normalizedLabel) == cancelling
-        }
-        let holding = considered.filter { liveChoice(of: $0, on: normalizedLabel) == choice }.count
-        return CastCandidates(
-            nodes: offered,
-            holdingThisChoice: holding,
-            outOfCasts: max(0, considered.count - offered.count - holding))
-    }
-
-    /// Whether a tap on `choice` may start a vote on this contest: the key flow
-    /// when the wallet has no node, otherwise only once the contest's history
-    /// is known and some selected node can still cast that choice — not one
-    /// already holding it, not one out of casts. One rule for the list and the
-    /// contest screen.
-    func canStartVote(_ choice: VoteChoice, on normalizedLabel: String) -> Bool {
-        guard !isClosed(normalizedLabel: normalizedLabel) else { return false }
-        guard canVote else { return true }
-        return !nodesForVote(choice, on: normalizedLabel).isEmpty
-    }
-
     /// The choices the ticked nodes currently hold on a contest, from local
-    /// history. Empty when none of them voted, when no node is ticked, or
-    /// before the history loaded (or when it could not be read).
+    /// history. Empty when none of them voted, when no node is ticked, before
+    /// voting is set up, before the history loaded, or while the latest read
+    /// failed: the last good read is not shown as today's votes.
     func myChoices(on normalizedLabel: String) -> Set<VoteChoice> {
-        guard let ticked = tickedNodeIDs, let history = voteHistoryByContest[normalizedLabel] else { return [] }
+        guard !historyUnavailable, let ticked = myNodeIDs,
+              let history = voteHistoryByContest[normalizedLabel]
+        else { return [] }
         var choices = history.filledChoices(of: ticked) ?? []
         if let abstainers = history.nodes(holding: .abstain, among: ticked), !abstainers.isEmpty {
             choices.insert(.abstain)

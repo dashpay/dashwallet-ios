@@ -17,6 +17,7 @@
 //  limitations under the License.
 //
 
+import Combine
 import DashUIKit
 import SwiftDashSDK
 import SwiftUI
@@ -28,7 +29,7 @@ import SwiftUI
 ///
 /// Browsing needs no masternode. Voting needs the voting key of at least one
 /// active masternode: derived by the wallet, or added through the voting-key
-/// flow this screen's header opens.
+/// flow a pill tap or the bar's menu opens.
 struct UsernameVotingScreen: View {
     /// Pops the UIKit stack. The screen lives inside its own `NavigationStack`
     /// (see `MainMenuScreen.showVoting`), so the back button has to be wired
@@ -36,14 +37,11 @@ struct UsernameVotingScreen: View {
     let onClose: () -> Void
 
     @StateObject private var viewModel: VotingViewModel
-    @State private var showingNodePicker = false
     @State private var showingFilters = false
-    /// Where the voting-key flow opens, while it is shown.
-    @State private var keyFlowStart: VotingKeysFlow.Start?
+    /// The voting-key flow opened from the menu or the «Voting with» row.
+    @State private var showsKeyFlow = false
     /// A vote started from a pill, handed to ``View/voteFlow(_:viewModel:)``.
     @State private var voteRequest: VoteFlowRequest?
-    /// The contest opened from a row's context menu.
-    @State private var openedContest: OpenedContest?
     /// The request opened from a row.
     @State private var openedRequest: OpenedRequest?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -51,14 +49,6 @@ struct UsernameVotingScreen: View {
     private struct OpenedRequest: Hashable {
         let normalizedLabel: String
         let identityId: String
-    }
-
-    /// A contest pushed from the list, identified by its label so the
-    /// destination keeps its snapshot while it pops.
-    private struct OpenedContest: Hashable {
-        let contest: DPNSContest
-        static func == (lhs: Self, rhs: Self) -> Bool { lhs.contest.normalizedLabel == rhs.contest.normalizedLabel }
-        func hash(into hasher: inout Hasher) { hasher.combine(contest.normalizedLabel) }
     }
 
     init(onClose: @escaping () -> Void, viewModel: VotingViewModel? = nil) {
@@ -72,6 +62,75 @@ struct UsernameVotingScreen: View {
     private var screenTitle: String { NSLocalizedString("Username Voting", comment: "Voting") }
 
     var body: some View {
+        VStack(spacing: 0) {
+            navigationBar
+            scrollingContent
+        }
+        .background(Color.dash.primaryBackground)
+        // The DashUIKit bar replaces the system one; the title stays for
+        // VoiceOver's screen title and the long-press back menu.
+        .navigationTitle(screenTitle)
+        .toolbar(.hidden, for: .navigationBar)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            DashUIKit.FilterBar(
+                value: list.filter.sort.title,
+                title: NSLocalizedString("Filtered by", comment: "Voting"),
+                filterAccessibilityLabel: NSLocalizedString("Filter", comment: "Voting"),
+                replacement: list.toast.map { $0.view(onClose: list.clearToast) }) {
+                showingFilters = true
+            }
+        }
+        .sheet(isPresented: $showingFilters) {
+            VotingFiltersSheet(filter: list.filter) { list.filter = $0 }
+        }
+        .navigationDestination(item: $openedRequest) { opened in
+            RequestDetailsScreen(
+                voting: viewModel, normalizedLabel: opened.normalizedLabel, identityId: opened.identityId)
+        }
+        .voteFlow($voteRequest, viewModel: viewModel)
+        .sheet(isPresented: $showsKeyFlow) {
+            // Not opened from a vote: manage mode, with no vote button.
+            VotingKeysFlow(
+                mode: .manage,
+                viewModel: viewModel,
+                onFinish: { _ in showsKeyFlow = false })
+        }
+        .task { await store.refreshIfNeeded() }
+        // "Voting ends today / in N days" is relative to today.
+        // Midnight and time-zone changes, delivered on return if they happened
+        // while the app was suspended.
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
+            list.recomputeVisible()
+        }
+        // The toast and the message appear where VoiceOver is not looking; say them.
+        .onChange(of: list.toast?.id) {
+            if let message = list.toast?.message {
+                AccessibilityNotification.Announcement(message).post()
+            }
+        }
+        .onChange(of: list.message) {
+            if let message = list.message {
+                AccessibilityNotification.Announcement(
+                    [message.title, message.subtitle].compactMap { $0 }.joined(separator: " ")).post()
+            }
+        }
+    }
+
+    // MARK: Bar
+
+    /// Round back, and the «…» menu with «Voting keys»: manage mode has no
+    /// other entry. Back is off while a vote runs: the vote outlives the
+    /// screen, and a reopened screen would not know it is still sending.
+    private var navigationBar: some View {
+        DashUIKit.NavigationBar(
+            leading: {
+                DashUIKit.NavigationBarElement.back.button(action: onClose)
+                    .disabled(store.isVoteBusy)
+            },
+            trailing: { votingMenu })
+    }
+
+    private var scrollingContent: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 0) {
                 DashUIKit.TopIntroView(
@@ -93,10 +152,7 @@ struct UsernameVotingScreen: View {
                     placeholder: NSLocalizedString("Search by username", comment: "Voting"))
                     .padding(.top, 20)
 
-                if hasBanners {
-                    banners
-                        .padding(.top, 12)
-                }
+                lastingMessage
 
                 votingWithRow
 
@@ -106,72 +162,7 @@ struct UsernameVotingScreen: View {
             .padding(.horizontal, 20)
             .padding(.bottom, 20)
         }
-        .background(Color.dash.primaryBackground)
-        // The title lives in the scrolling intro, as designed; the bar keeps it
-        // for VoiceOver's screen title and the long-press back menu only.
-        .navigationTitle(screenTitle)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .principal) {
-                Color.clear.frame(width: 1, height: 1).accessibilityHidden(true)
-            }
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button(action: onClose) {
-                    Image(systemName: "chevron.left")
-                }
-                .accessibilityLabel(NSLocalizedString("Back", comment: ""))
-            }
-            ToolbarItem(placement: .navigationBarTrailing) {
-                votingMenu
-            }
-        }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            DashUIKit.FilterBar(
-                value: list.filter.sort.title,
-                title: NSLocalizedString("Filtered by", comment: "Voting"),
-                filterAccessibilityLabel: NSLocalizedString("Filter", comment: "Voting"),
-                replacement: list.toast.map(\.view)) {
-                showingFilters = true
-            }
-        }
-        .sheet(isPresented: $showingFilters) {
-            VotingFiltersSheet(filter: list.filter) { list.filter = $0 }
-        }
-        .navigationDestination(item: $openedContest) { opened in
-            ContestDetailScreen(contest: opened.contest, viewModel: viewModel)
-        }
-        .navigationDestination(item: $openedRequest) { opened in
-            RequestDetailsScreen(
-                voting: viewModel, normalizedLabel: opened.normalizedLabel, identityId: opened.identityId)
-        }
-        .voteFlow($voteRequest, viewModel: viewModel)
-        .sheet(isPresented: $showingNodePicker) {
-            VotingNodeSelectionSheet(
-                nodes: viewModel.votableNodes,
-                selectedNodeIDs: $viewModel.selectedNodeIDs)
-        }
-        .sheet(item: $keyFlowStart) { start in
-            // Not opened from a vote, so the list's button only closes.
-            VotingKeysFlow(
-                start: start,
-                continuesToVote: false,
-                viewModel: viewModel,
-                onFinish: { _ in keyFlowStart = nil })
-        }
-        .task { await store.refreshIfNeeded() }
         .refreshable { await store.refresh() }
-        // "Voting ends today / in N days" is relative to today.
-        // Midnight and time-zone changes, delivered on return if they happened
-        // while the app was suspended.
-        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
-            list.recomputeVisible()
-        }
-        // The toast appears where VoiceOver is not looking; say it.
-        .onChange(of: list.toast?.id) {
-            if let message = list.toast?.message {
-                AccessibilityNotification.Announcement(message).post()
-            }
-        }
     }
 
     // MARK: Header
@@ -205,87 +196,39 @@ struct UsernameVotingScreen: View {
         }
     }
 
-    /// Voting keys and the node choice, which the design has no place for
-    /// yet. Labelled, so none of them hides behind a bare icon.
+    /// Voting keys (manage mode: which masternodes vote), which the design
+    /// keeps behind this menu. Labelled, so it does not hide behind a bare icon.
     private var votingMenu: some View {
-        Menu {
+        DashUIKit.NavigationBarCircleMenu(
+            .system("ellipsis"),
+            accessibilityLabel: Text(NSLocalizedString("Voting options", comment: "Voting"))) {
             Button {
-                keyFlowStart = viewModel.canVote ? .keyList : .addKey
+                showsKeyFlow = true
             } label: {
                 Label(NSLocalizedString("Voting keys", comment: "Voting"), systemImage: "key")
             }
-            // With more than one node the user chooses WHICH nodes a tap votes
-            // with: that choice links those masternodes to each other publicly.
-            if viewModel.votableNodes.count > 1 {
-                Button {
-                    showingNodePicker = true
-                } label: {
-                    Label(NSLocalizedString("Voting nodes", comment: "Voting"), systemImage: "server.rack")
-                }
-            }
-        } label: {
-            Image(systemName: "ellipsis.circle")
+            // A vote reads the ticked nodes after its history read; a change
+            // made meanwhile would slip into it.
+            .disabled(store.isVoteBusy)
         }
-        .accessibilityLabel(NSLocalizedString("Voting options", comment: "Voting"))
     }
 
     // MARK: States
 
-    /// No node to vote with, and the node list is complete — while it may be
-    /// incomplete, its own banner says so instead of "no voting keys".
-    private var showsBrowseOnly: Bool {
-        store.hasLoadedOnce && !viewModel.canVote && !store.nodeListMayBeIncomplete
-    }
-
-    private var hasBanners: Bool {
-        showsBrowseOnly || store.nodeListMayBeIncomplete || list.loadState == .contests(refreshFailed: true)
-            || store.historyUnavailable
-    }
-
-    private var banners: some View {
-        VStack(spacing: 8) {
-            // A wallet without a voting key can still browse; a pill tap asks
-            // for a key first. Say so up front, and offer the key here too —
-            // there may be no pill to tap.
-            if showsBrowseOnly {
-                VotingBanner(
-                    text: NSLocalizedString(
-                        "This wallet holds no active masternode voting keys, so it cannot vote yet. Tap a vote to add a key.",
-                        comment: "Voting"),
-                    tone: .warning,
-                    action: (NSLocalizedString("Add masternode voting key", comment: "Voting"), { keyFlowStart = .addKey }),
-                    isRounded: true)
-            }
-            if store.nodeListMayBeIncomplete {
-                VotingBanner(
-                    text: NSLocalizedString(
-                        "Some of your masternodes may be missing from this list — the wallet could not read your full voting-key pool. Finish syncing and reopen this screen.",
-                        comment: "Voting"),
-                    tone: .warning,
-                    isRounded: true)
-            }
-            // Rows are on screen: keep them and offer a retry above them. With
-            // nothing cached the full-screen message says it instead.
-            // No Try again while the retry runs; it comes back if that fails too.
-            if let refreshFailed = list.refreshFailedText {
-                VotingBanner(
-                    text: refreshFailed,
-                    tone: .error,
-                    action: store.isRefreshing
-                        ? nil
-                        : (NSLocalizedString("Try again", comment: "Voting"), { retryLoad() }),
-                    isRounded: true)
-            }
-            // Without the history the list cannot tell which votes are cast,
-            // so it holds the vote controls back; say why.
-            if store.historyUnavailable {
-                VotingBanner(
-                    text: NSLocalizedString(
-                        "Couldn't read your vote history, so voting is paused. Pull down to try again.",
-                        comment: "Voting"),
-                    tone: .error,
-                    isRounded: true)
-            }
+    /// The one lasting state, the first item under the search field: above
+    /// the rows and above the empty, no-match and cannot-filter states, which
+    /// stay. No close button; it goes when its state ends. While a list read
+    /// runs, Try again takes no tap and dims.
+    @ViewBuilder
+    private var lastingMessage: some View {
+        if let message = list.message {
+            DashUIKit.SystemMessageView(
+                title: message.title,
+                subtitle: message.subtitle,
+                buttonName: message.offersTryAgain ? NSLocalizedString("Try again", comment: "Voting") : nil,
+                onAction: message.offersTryAgain ? { Task { await list.tryAgain() } } : nil)
+                .disabled(list.isTryingAgain)
+                .padding(.top, 12)
         }
     }
 
@@ -295,7 +238,7 @@ struct UsernameVotingScreen: View {
     @ViewBuilder
     private var votingWithRow: some View {
         if viewModel.votableNodes.count > 1 {
-            Button { showingNodePicker = true } label: {
+            Button { showsKeyFlow = true } label: {
                 HStack(spacing: 8) {
                     Text(NSLocalizedString("Voting with", comment: "Voting"))
                         .dashFont(.footnote)
@@ -315,6 +258,7 @@ struct UsernameVotingScreen: View {
             }
             .buttonStyle(.plain)
             .accessibilityElement(children: .combine)
+            .disabled(store.isVoteBusy)
         }
     }
 
@@ -330,7 +274,7 @@ struct UsernameVotingScreen: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 40)
         case .couldNotLoad:
-            // The load failed and nothing is cached: say so, rather than that
+            // No list read has succeeded yet: say so, rather than that
             // nothing is being contested — that was never checked.
             VotingEmptyState(
                 icon: "exclamationmark.triangle",
@@ -396,10 +340,10 @@ struct UsernameVotingScreen: View {
             contest: contest,
             myChoices: store.myChoices(on: label),
             isCasting: store.isSending(normalizedLabel: label),
+            sendingPill: list.sendingPill(on: label),
             canTapPill: { list.canTapPill($0, on: label) },
             onVote: { voteRequest = list.voteRequest(for: $0, on: contest) },
             onOpenRequest: { openedRequest = OpenedRequest(normalizedLabel: label, identityId: $0) },
-            onOpenOutcomes: { openedContest = OpenedContest(contest: contest) },
             headerHint: list.headerAccessibilityHint(for: contest),
             expansion: list.isExpandable(contest) ? expansion(for: contest) : nil)
     }
@@ -537,10 +481,49 @@ struct VotingBanner: View {
     }
 }
 
+// MARK: - UsernameVotingHostingController
+
+/// Hosts Username Voting in the menu's UIKit stack, in its own
+/// `NavigationStack`. While a vote runs the swipe-back is off, as the bar's
+/// back button is (see ``UsernameVotingScreen``).
+final class UsernameVotingHostingController: UIHostingController<AnyView> {
+    private let store: VotingStore
+    private var busy: AnyCancellable?
+
+    init(onClose: @escaping () -> Void) {
+        let viewModel = VotingViewModel()
+        store = viewModel.store
+        super.init(rootView: AnyView(NavigationStack {
+            UsernameVotingScreen(onClose: onClose, viewModel: viewModel)
+        }))
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) is not supported")
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        busy = store.isVoteBusyPublisher
+            .receive(on: RunLoop.main)
+            .sink { [weak self] isBusy in
+                self?.navigationController?.interactivePopGestureRecognizer?.isEnabled = !isBusy
+            }
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        busy = nil
+        // The screen underneath gets its swipe-back as usual.
+        navigationController?.interactivePopGestureRecognizer?.isEnabled = true
+    }
+}
+
 // MARK: - Previews
 
 #if DEBUG
-// Shared by the voting screens' previews (CastVoteSheet too).
+// Shared by the voting screens' previews.
 struct PreviewContests: VotingContestReading {
     let contests: [DPNSContest]
     var failure: Error?
@@ -585,27 +568,30 @@ struct PreviewCaster: VoteCasting {
 }
 
 final class PreviewHistory: VoteHistoryDAO {
-    private let records: [CastVoteRecord]
+    /// `nil`: the history cannot be read.
+    private let records: [CastVoteRecord]?
 
-    init(records: [CastVoteRecord] = []) {
+    init(records: [CastVoteRecord]? = []) {
         self.records = records
     }
 
     func record(_ record: CastVoteRecord, network: String) async throws {}
     func votes(forContest normalizedLabel: String, network: String) async -> [CastVoteRecord]? {
-        records.filter { $0.normalizedLabel == normalizedLabel }
+        records?.filter { $0.normalizedLabel == normalizedLabel }
     }
     func votes(forContests normalizedLabels: Set<String>, network: String) async -> [CastVoteRecord]? {
-        records.filter { normalizedLabels.contains($0.normalizedLabel) }
+        records?.filter { normalizedLabels.contains($0.normalizedLabel) }
     }
     func deleteAll() {}
 }
 
 final class PreviewPrefs: VotingSelectionStoring {
     var votingNodeSelection: Set<Data>
+    var isVotingSetUp: Bool
 
-    init(selection: Set<Data> = []) {
+    init(selection: Set<Data> = [], isVotingSetUp: Bool = false) {
         votingNodeSelection = selection
+        self.isVotingSetUp = isVotingSetUp
     }
 }
 
@@ -622,16 +608,19 @@ private func previewScreen(
     mayBeIncomplete: Bool = false,
     failure: Error? = nil,
     failAfterFirstLoad: Bool = false,
-    filterType: VotingTypeFilter = .all
+    historyUnreadable: Bool = false,
+    filterType: VotingTypeFilter = .all,
+    toast: VotingToast? = nil
 ) -> some View {
     let store = VotingStore(
         contests: PreviewContests(contests: contests, failure: failure, failAfterFirstLoad: failAfterFirstLoad),
         nodes: PreviewNodes(nodes: nodes, mayBeIncomplete: mayBeIncomplete),
         caster: PreviewCaster(),
-        history: PreviewHistory(),
+        history: PreviewHistory(records: historyUnreadable ? nil : []),
         prefs: PreviewPrefs())
     let viewModel = VotingViewModel(store: store)
     viewModel.list.filter.type = filterType
+    if let toast { viewModel.list.showToast(toast) }
     return NavigationStack {
         UsernameVotingScreen(onClose: {}, viewModel: viewModel)
     }
@@ -671,6 +660,20 @@ private let previewNode = VoterNode(
 
 #Preview("Refresh failed with rows") {
     previewScreen(contests: previewContests, nodes: [previewNode], failAfterFirstLoad: true)
+}
+
+#Preview("Vote history unreadable") {
+    previewScreen(contests: previewContests, nodes: [previewNode], failAfterFirstLoad: true, historyUnreadable: true)
+}
+
+#Preview("Vote failed toast") {
+    previewScreen(
+        contests: previewContests, nodes: [previewNode],
+        toast: .failed("Couldn't reach the network. Your vote was not cast."))
+}
+
+#Preview("Voted toast") {
+    previewScreen(contests: previewContests, nodes: [previewNode], toast: .voted(username: "johndoe"))
 }
 
 #Preview("Filter matches nothing") {

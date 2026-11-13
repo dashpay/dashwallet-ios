@@ -35,16 +35,16 @@ struct VotingContestCard: View {
     let myChoices: Set<VoteChoice>
     /// A vote on this contest is being sent.
     let isCasting: Bool
+    /// The pill whose vote is being sent, when the send started from one.
+    var sendingPill: VoteChoice?
     /// Whether a tap on this choice's pill can start anything: a vote (it may
     /// lead to the key flow) or, on a filled pill, taking that vote back.
     let canTapPill: (VoteChoice) -> Bool
     let onVote: (VoteChoice) -> Void
     /// Opens one request's details, by its identity.
     let onOpenRequest: (_ identityId: String) -> Void
-    /// Opens the contest screen with every outcome (the row's context menu).
-    let onOpenOutcomes: () -> Void
-    /// What a tap on the name does, for VoiceOver.
-    let headerHint: String
+    /// What a tap on the name does, for VoiceOver; `nil` when it does nothing.
+    let headerHint: String?
     /// The open-in-place state of a several-request name; `nil` for one request.
     var expansion: Expansion?
 
@@ -99,10 +99,8 @@ struct VotingContestCard: View {
     private func openHeader() {
         if let sole {
             onOpenRequest(sole.identityId)
-        } else if let expansion {
-            expansion.onToggle()
         } else {
-            onOpenOutcomes()
+            expansion?.onToggle()
         }
     }
 
@@ -146,10 +144,9 @@ struct VotingContestCard: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityHint(headerHint)
-            .contextMenu {
-                Button(NSLocalizedString("All outcomes", comment: "Voting"), action: onOpenOutcomes)
-            }
+            // A name with no request has nothing to open.
+            .disabled(sole == nil && expansion == nil)
+            .accessibilityHint(headerHint ?? "")
 
             HStack(spacing: 10) {
                 pill(.block, count: contest.lockVotes, choice: .lock)
@@ -171,7 +168,8 @@ struct VotingContestCard: View {
     /// details open on tap) and its own approve pill.
     private func requestRow(_ request: VotingRequestRow) -> some View {
         let choice = VoteChoice.towards(identityId: request.identityId)
-        let status: VotePill.Status = isCasting ? .busy : (canTapPill(choice) ? .enabled : .disabled)
+        let status = Self.pillStatus(
+            of: choice, isCasting: isCasting, sendingPill: sendingPill, canTap: canTapPill(choice))
         return HStack(spacing: 20) {
             Button(action: { onOpenRequest(request.identityId) }) {
                 Text(request.identityId)
@@ -194,7 +192,7 @@ struct VotingContestCard: View {
                 isSelected: request.isMine,
                 status: status,
                 accessibilityLabel: request.accessibilityLabel,
-                accessibilityValue: isCasting
+                accessibilityValue: status == .busy
                     ? request.accessibilityValue + ", " + NSLocalizedString("Sending", comment: "Voting")
                     : request.accessibilityValue,
                 action: { onVote(choice) })
@@ -202,6 +200,17 @@ struct VotingContestCard: View {
         }
         .padding(.leading, 10)
         .padding(.top, 8)
+    }
+
+    /// A pill's look: while a vote on the contest is sent, the tapped pill is
+    /// busy and the others are disabled (screens.md SCR-01 «sending»).
+    static func pillStatus(
+        of choice: VoteChoice, isCasting: Bool, sendingPill: VoteChoice?, canTap: Bool
+    ) -> VotePill.Status {
+        guard isCasting else { return canTap ? .enabled : .disabled }
+        // A send that did not start from a pill (Try again) busies them all.
+        guard let sendingPill else { return .busy }
+        return choice == sendingPill ? .busy : .disabled
     }
 
     /// VoiceOver's hint for a block or approve pill: a filled pill that can be
@@ -223,14 +232,15 @@ struct VotingContestCard: View {
             : String(format: NSLocalizedString("Approve %@", comment: "Voting"), contest.displayTitle)
         let votes = Self.votesValue(count: count)
         let isSelected = myChoices.contains(choice)
-        let status: VotePill.Status = isCasting ? .busy : (canTapPill(choice) ? .enabled : .disabled)
+        let status = Self.pillStatus(
+            of: choice, isCasting: isCasting, sendingPill: sendingPill, canTap: canTapPill(choice))
         return VotePill(
             kind: kind,
             count: Int(count),
             isSelected: isSelected,
             status: status,
             accessibilityLabel: label,
-            accessibilityValue: isCasting
+            accessibilityValue: status == .busy
                 ? votes + ", " + NSLocalizedString("Sending", comment: "Voting")
                 : votes,
             action: { onVote(choice) })
@@ -241,9 +251,10 @@ struct VotingContestCard: View {
 // MARK: - VotingToast view
 
 extension VotingToast {
-    /// The toast as drawn, shared by the list and the contest screen.
-    var view: some View {
-        DashUIKit.Toast(style: .success, message: message)
+    /// The toast as drawn, shared by the list and Request details, with the
+    /// close button that takes it away (AC-06).
+    func view(onClose: @escaping () -> Void) -> some View {
+        DashUIKit.Toast(style: style == .success ? .success : .error, message: message, onDismiss: onClose)
             .id(id)
     }
 }
@@ -255,22 +266,24 @@ private enum CardPreview {
     static func contest(requests: Int, label: String = "johndoe") -> DPNSContest {
         DPNSContest(
             normalizedLabel: label, endTime: nil, hasWinner: false, abstainVotes: 0, lockVotes: 3,
-            contenders: (1...requests).map {
+            contenders: (0..<requests).map { $0 + 1 }.map {
                 DPNSContender(identityId: "identity\($0)Xk3vQ9mT2pLw8RzYb5NcHf7Ud4Ea", voteTally: UInt32($0 * 2))
             })
     }
 
     static func card(
-        _ contest: DPNSContest, expanded: Bool = false, mine: Int? = nil
+        _ contest: DPNSContest, expanded: Bool = false, mine: Int? = nil, sending: VoteChoice? = nil
     ) -> some View {
         let rows = contest.contenders.enumerated().map { index, contender in
             VotingRequestRow(identityId: contender.identityId, votes: Int(contender.voteTally), isMine: index == mine)
         }
         let myChoices: Set<VoteChoice> = mine.map { [.towards(identityId: contest.contenders[$0].identityId)] } ?? []
         return VotingContestCard(
-            contest: contest, myChoices: myChoices, isCasting: false,
-            canTapPill: { _ in true }, onVote: { _ in }, onOpenRequest: { _ in }, onOpenOutcomes: {},
-            headerHint: contest.contenders.count > 1 ? "Opens the requests for this name" : "Opens the request details",
+            contest: contest, myChoices: myChoices, isCasting: sending != nil, sendingPill: sending,
+            canTapPill: { _ in sending == nil }, onVote: { _ in }, onOpenRequest: { _ in },
+            headerHint: contest.contenders.isEmpty
+                ? nil
+                : contest.contenders.count > 1 ? "Opens the requests for this name" : "Opens the request details",
             expansion: contest.contenders.count > 1
                 ? .init(
                     isExpanded: expanded, countText: "\(contest.contenders.count) requests",
@@ -282,8 +295,15 @@ private enum CardPreview {
 }
 
 #Preview("One request") { CardPreview.card(CardPreview.contest(requests: 1)) }
+#Preview("No requests") { CardPreview.card(CardPreview.contest(requests: 0)) }
 #Preview("Several collapsed") { CardPreview.card(CardPreview.contest(requests: 3)) }
 #Preview("Several expanded") { CardPreview.card(CardPreview.contest(requests: 3), expanded: true) }
+#Preview("Sending") { CardPreview.card(CardPreview.contest(requests: 1), sending: .lock) }
+#Preview("Sending, several expanded") {
+    let contest = CardPreview.contest(requests: 3)
+    return CardPreview.card(
+        contest, expanded: true, sending: .towards(identityId: contest.contenders[1].identityId))
+}
 #Preview("My vote on request 2 of 3") {
     CardPreview.card(CardPreview.contest(requests: 3), expanded: true, mine: 1)
 }

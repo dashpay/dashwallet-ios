@@ -144,9 +144,24 @@ private final class FakeHistory: VoteHistoryDAO {
     private(set) var singleReads = 0
 
     func record(_ record: CastVoteRecord, network: String) async throws {}
+    /// When set, the next one-contest read suspends until `releaseSingleRead()`.
+    var holdNextSingleRead = false
+    private var singleGate: CheckedContinuation<Void, Never>?
+    private(set) var singleReadHeld = false
+
     func votes(forContest normalizedLabel: String, network: String) async -> [CastVoteRecord]? {
         singleReads += 1
+        if holdNextSingleRead {
+            holdNextSingleRead = false
+            singleReadHeld = true
+            await withCheckedContinuation { singleGate = $0 }
+        }
         return records?.filter { $0.normalizedLabel == normalizedLabel }
+    }
+
+    func releaseSingleRead() {
+        singleGate?.resume()
+        singleGate = nil
     }
     /// When set, the next whole-list read takes its rows, then suspends until
     /// `releaseListRead()` — a read that finished before a later write landed.
@@ -174,6 +189,8 @@ private final class FakeHistory: VoteHistoryDAO {
 
 private final class FakePrefs: VotingSelectionStoring {
     var votingNodeSelection: Set<Data> = []
+    /// A wallet that set voting up, unless a test says otherwise.
+    var isVotingSetUp = true
 }
 
 // MARK: - Tests
@@ -340,20 +357,179 @@ final class VotingStoreTests: XCTestCase {
         XCTAssertEqual(store.myChoices(on: "johndoe"), [])
     }
 
+    /// Flow 4: a read that fails after a good one leaves no pill filled from
+    /// the last good read, as the history is unknown now.
+    func testAFailedHistoryReadAfterAGoodOneFillsNoPill() async {
+        let a = node(1)
+        nodes.resolution = .init(nodes: [a], mayBeIncomplete: false)
+        prefs.votingNodeSelection = [a.proTxHash]
+        contests.result = .success([contest("johndoe")])
+        history.records = [vote(a, on: "johndoe", .lock)]
+        let store = makeStore()
+        await store.refresh()
+        XCTAssertEqual(store.myChoices(on: "johndoe"), [.lock])
+
+        history.records = nil
+        await store.refresh()
+
+        XCTAssertTrue(store.historyUnavailable)
+        XCTAssertEqual(store.myChoices(on: "johndoe"), [], "counts only, none filled")
+    }
+
     // MARK: No masternode chosen yet
 
-    /// Nothing stored and a resolved node list: the first node is settled on
-    /// and persisted, as before the extraction.
-    func testEmptySelectionWithResolvedNodesSettlesOnTheFirstNode() async {
+    /// AC-12: before voting is set up, the default tick is not a choice — it
+    /// is neither persisted nor reported as ticked.
+    func testDefaultTickBeforeSetupIsNeitherPersistedNorTicked() async {
         let first = node(1)
         nodes.resolution = .init(nodes: [first, node(2)], mayBeIncomplete: false)
         prefs.votingNodeSelection = []
+        prefs.isVotingSetUp = false
         let store = makeStore()
 
         await store.refresh()
 
-        XCTAssertEqual(prefs.votingNodeSelection, [first.proTxHash])
-        XCTAssertEqual(store.tickedNodeIDs, [first.proTxHash])
+        XCTAssertEqual(prefs.votingNodeSelection, [])
+        XCTAssertNil(store.tickedNodeIDs)
+        XCTAssertFalse(store.isVotingSetUp)
+    }
+
+    /// AC-12: voting is set up only by confirming «Add your voting keys» once
+    /// on this install. A selection an earlier build stored, with votes
+    /// recorded for it, is not that: the first tap opens SCR-04, with the
+    /// stored ticks ticked.
+    func testAStoredSelectionWithVotesIsNotSetUpButStaysTicked() async {
+        let a = node(1), b = node(2)
+        nodes.resolution = .init(nodes: [a, b], mayBeIncomplete: false)
+        prefs.votingNodeSelection = [b.proTxHash]
+        prefs.isVotingSetUp = false
+        contests.result = .success([contest("johndoe")])
+        history.records = [vote(b, on: "johndoe", .lock)]
+        let store = makeStore()
+
+        await store.refresh()
+
+        XCTAssertFalse(store.isVotingSetUp)
+        XCTAssertFalse(prefs.isVotingSetUp)
+        XCTAssertEqual(store.tickedNodeIDs, [b.proTxHash])
+        XCTAssertEqual(VotingKeysViewModel(mode: .vote(.lock), source: store).ticked, [b.proTxHash])
+    }
+
+    /// AC-12: a voting key the user added does not set voting up by itself.
+    func testAnAddedVotingKeyIsNotSetUp() async {
+        let derived = node(1)
+        let added = VoterNode(proTxHash: Data([9]), isEvonode: false, typeIndex: 9,
+                              serviceAddress: nil, keySource: .trackedVault)
+        nodes.resolution = .init(nodes: [derived, added], mayBeIncomplete: false)
+        prefs.votingNodeSelection = []
+        prefs.isVotingSetUp = false
+        contests.result = .success([contest("johndoe")])
+        history.records = [vote(added, on: "johndoe", .lock)]
+        let store = makeStore()
+
+        await store.refresh()
+
+        XCTAssertFalse(store.isVotingSetUp)
+        XCTAssertNil(store.tickedNodeIDs)
+    }
+
+    /// Ticks kept in manage mode before setup do not set voting up at a later
+    /// refresh; only «Add your voting keys» does.
+    func testManageModeTicksBeforeSetupDoNotSetVotingUpOnALaterRefresh() async {
+        let a = node(1), b = node(2)
+        nodes.resolution = .init(nodes: [a, b], mayBeIncomplete: false)
+        prefs.votingNodeSelection = []
+        prefs.isVotingSetUp = false
+        contests.result = .success([contest("johndoe")])
+        let store = makeStore()
+        await store.refresh()
+
+        store.setTick(a.proTxHash, true)
+        store.setTick(b.proTxHash, true)
+        await store.refresh()
+
+        XCTAssertFalse(store.isVotingSetUp)
+        XCTAssertEqual(store.tickedNodeIDs, [a.proTxHash, b.proTxHash])
+    }
+
+    /// A stored selection none of whose nodes can vote any more is not a choice.
+    func testAStaleStoredSelectionIsNotSetUp() async {
+        nodes.resolution = .init(nodes: [node(1)], mayBeIncomplete: false)
+        prefs.votingNodeSelection = [node(7).proTxHash]
+        prefs.isVotingSetUp = false
+        let store = makeStore()
+
+        await store.refresh()
+
+        XCTAssertFalse(store.isVotingSetUp)
+        XCTAssertNil(store.tickedNodeIDs)
+    }
+
+    /// A wiped wallet forgets voting set up and the masternode choice, so the
+    /// next wallet is not set up by what the last one chose.
+    func testForgettingVotingSetupClearsTheFlagAndTheSelection() {
+        let prefs = VotingPrefs.shared
+        let saved = (prefs.isVotingSetUp, prefs.votingNodeSelection)
+        defer { (prefs.isVotingSetUp, prefs.votingNodeSelection) = saved }
+        prefs.isVotingSetUp = true
+        prefs.votingNodeSelection = [Data([1])]
+
+        prefs.forgetVotingSetup()
+
+        XCTAssertFalse(prefs.isVotingSetUp)
+        XCTAssertEqual(prefs.votingNodeSelection, [])
+    }
+
+    /// AC-12, AC-14: the vote button of "Add your voting keys" keeps the ticks and sets voting up.
+    func testConfirmingTheTicksSetsVotingUp() async {
+        let a = node(1), b = node(2)
+        nodes.resolution = .init(nodes: [a, b], mayBeIncomplete: false)
+        prefs.isVotingSetUp = false
+        let store = makeStore()
+        await store.refresh()
+
+        store.confirmVotingSetup(ticked: [a.proTxHash, b.proTxHash])
+
+        XCTAssertTrue(prefs.isVotingSetUp)
+        XCTAssertTrue(store.isVotingSetUp)
+        XCTAssertEqual(prefs.votingNodeSelection, [a.proTxHash, b.proTxHash])
+        XCTAssertEqual(store.tickedNodeIDs, [a.proTxHash, b.proTxHash])
+    }
+
+    /// A complete node list proves a ticked node that is not votable gone:
+    /// confirming does not keep it.
+    func testConfirmingWithACompleteListKeepsOnlyVotableTicks() async {
+        let a = node(1)
+        nodes.resolution = .init(nodes: [a], mayBeIncomplete: false)
+        let store = makeStore()
+        await store.refresh()
+
+        store.confirmVotingSetup(ticked: [a.proTxHash, node(2).proTxHash])
+
+        XCTAssertEqual(prefs.votingNodeSelection, [a.proTxHash])
+    }
+
+    /// Managing keys keeps the ticks but does not set voting up.
+    func testSavingTicksDoesNotSetVotingUp() async {
+        let a = node(1)
+        nodes.resolution = .init(nodes: [a], mayBeIncomplete: false)
+        prefs.isVotingSetUp = false
+        let store = makeStore()
+        await store.refresh()
+
+        store.setTick(a.proTxHash, true)
+
+        XCTAssertEqual(prefs.votingNodeSelection, [a.proTxHash])
+        XCTAssertFalse(prefs.isVotingSetUp)
+    }
+
+    /// Without a node to vote with, voting is not set up whatever the flag says.
+    func testNoVotableNodeIsNotSetUp() async {
+        nodes.resolution = .init(nodes: [], mayBeIncomplete: false)
+        let store = makeStore()
+        await store.refresh()
+
+        XCTAssertFalse(store.isVotingSetUp)
     }
 
     /// Nothing stored and no nodes yet (SDK not ready): no selection is
@@ -370,6 +546,44 @@ final class VotingStoreTests: XCTestCase {
         XCTAssertEqual(prefs.votingNodeSelection, [])
     }
 
+    /// AC-14, AC-16b: once set up, unticking every masternode is a choice of
+    /// none. The next attempt opens Add your voting keys, and no node the user
+    /// did not tick is saved in its place.
+    func testUntickingEveryMasternodeAfterSetupOpensAddYourVotingKeys() async {
+        let a = node(1), b = node(2)
+        nodes.resolution = .init(nodes: [a, b], mayBeIncomplete: false)
+        prefs.votingNodeSelection = [a.proTxHash]
+        let johndoe = contest("johndoe", endsAt: Date().addingTimeInterval(30 * day))
+        contests.result = .success([johndoe])
+        let store = makeStore()
+        await store.refresh()
+
+        store.setTick(a.proTxHash, false)
+        await store.refresh()
+
+        XCTAssertEqual(store.tickedNodeIDs, [])
+        XCTAssertEqual(prefs.votingNodeSelection, [], "no fallback saved")
+        let voting = VotingViewModel(store: store)
+        let attempt = VoteAttemptCoordinator(host: voting)
+        await attempt.start(.vote(.lock), on: johndoe)
+        XCTAssertEqual(attempt.presentation, .addKeys(.lock))
+    }
+
+    /// Ticks kept in manage mode before voting was set up are shown there again.
+    func testManageModeBeforeSetupShowsTheStoredTicks() async {
+        let a = node(1), b = node(2)
+        nodes.resolution = .init(nodes: [a, b], mayBeIncomplete: false)
+        prefs.isVotingSetUp = false
+        let store = makeStore()
+        await store.refresh()
+
+        store.setTick(b.proTxHash, true)
+
+        XCTAssertFalse(store.isVotingSetUp)
+        XCTAssertEqual(store.tickedNodeIDs, [b.proTxHash])
+        XCTAssertEqual(VotingKeysViewModel(mode: .manage, source: store).ticked, [b.proTxHash])
+    }
+
     func testTickedNodesAreTheStoredChoiceThatIsStillVotable() async {
         let a = node(1)
         nodes.resolution = .init(nodes: [a, node(2)], mayBeIncomplete: false)
@@ -379,6 +593,55 @@ final class VotingStoreTests: XCTestCase {
         await store.refresh()
 
         XCTAssertEqual(store.tickedNodeIDs, [a.proTxHash], "a remembered node that is no longer votable is dropped")
+    }
+
+    /// A partial resolution does not prove a missing node gone: the choice
+    /// stays as the user made it, the vote uses the nodes that resolved, and
+    /// the missing node votes again once it resolves.
+    func testAPartialNodeListKeepsTheRememberedChoice() async {
+        let a = node(1), b = node(2)
+        nodes.resolution = .init(nodes: [a, b], mayBeIncomplete: false)
+        prefs.votingNodeSelection = [a.proTxHash, b.proTxHash]
+        let store = makeStore()
+        await store.refresh()
+
+        nodes.resolution = .init(nodes: [a], mayBeIncomplete: true)
+        store.refreshVotableNodes()
+        XCTAssertEqual(store.nodeResolution, .partial)
+        XCTAssertEqual(prefs.votingNodeSelection, [a.proTxHash, b.proTxHash])
+        XCTAssertEqual(store.tickedNodeIDs, [a.proTxHash])
+
+        nodes.resolution = .init(nodes: [a, b], mayBeIncomplete: false)
+        store.refreshVotableNodes()
+        XCTAssertEqual(store.tickedNodeIDs, [a.proTxHash, b.proTxHash])
+    }
+
+    /// The vote button of "Add your voting keys" keeps the ticks shown; a
+    /// remembered node a partial list did not show stays remembered.
+    func testConfirmingFromAPartialNodeListKeepsTheUnseenChoice() async {
+        let a = node(1), b = node(2), c = node(3)
+        nodes.resolution = .init(nodes: [a, c], mayBeIncomplete: true)
+        prefs.votingNodeSelection = [a.proTxHash, b.proTxHash]
+        let store = makeStore()
+        await store.refresh()
+
+        store.confirmVotingSetup(ticked: [c.proTxHash])
+
+        XCTAssertEqual(prefs.votingNodeSelection, [b.proTxHash, c.proTxHash])
+    }
+
+    /// A removed voting key leaves the remembered choice even while the node
+    /// list is partial, so the node does not come back ticked.
+    func testARemovedKeyLeavesTheChoice() async {
+        let a = node(1), b = node(2)
+        nodes.resolution = .init(nodes: [a, b], mayBeIncomplete: true)
+        prefs.votingNodeSelection = [a.proTxHash, b.proTxHash]
+        let store = makeStore()
+        await store.refresh()
+
+        store.forgetNode(b.proTxHash)
+
+        XCTAssertEqual(prefs.votingNodeSelection, [a.proTxHash])
     }
 
     // MARK: Sections on the list view model (AC-01, AC-03b)
@@ -415,91 +678,6 @@ final class VotingStoreTests: XCTestCase {
 
         XCTAssertEqual(list.visibleContests.map(\.normalizedLabel), ["bob"])
         XCTAssertEqual(list.filterMatchCount, 2, "the header's count ignores the search")
-    }
-
-    // MARK: Which nodes a tap casts with (AC-14b)
-
-    /// Ticked a, b, d; c is not ticked. a holds the approve, b has spent its
-    /// five casts, d has not voted.
-    func testNodesForVoteSkipsHoldersSpentAndUntickedNodes() async {
-        let a = node(1), b = node(2), c = node(3), d = node(4)
-        nodes.resolution = .init(nodes: [a, b, c, d], mayBeIncomplete: false)
-        prefs.votingNodeSelection = [a.proTxHash, b.proTxHash, d.proTxHash]
-        contests.result = .success([contest("johndoe")])
-        history.records = [
-            vote(a, on: "johndoe", approve),
-            CastVoteRecord(proTxHash: b.proTxHash, normalizedLabel: "johndoe", choice: .lock, castAt: epoch,
-                           castCount: VoteLimit.maxCastsPerNode),
-        ]
-        let store = makeStore()
-        await store.refresh()
-
-        XCTAssertEqual(store.nodesForVote(approve, on: "johndoe").map(\.proTxHash), [d.proTxHash],
-                       "a already holds it, b has no vote left, c is not ticked")
-        XCTAssertEqual(store.nodesForVote(.lock, on: "johndoe").map(\.proTxHash), [a.proTxHash, d.proTxHash],
-                       "a holding another choice can change it")
-    }
-
-    // MARK: What the cast sheet offers (AC-14b, AC-17)
-
-    /// A vote: the ticked nodes that can cast it, and how many ticked nodes
-    /// were left out because they hold it or are out of casts. An unticked
-    /// node is not counted at all.
-    func testCastCandidatesForAVoteCountWhatWasLeftOut() async {
-        let a = node(1), b = node(2), c = node(3), d = node(4)
-        nodes.resolution = .init(nodes: [a, b, c, d], mayBeIncomplete: false)
-        prefs.votingNodeSelection = [a.proTxHash, b.proTxHash, c.proTxHash]
-        contests.result = .success([contest("johndoe")])
-        history.records = [
-            vote(a, on: "johndoe", approve),
-            CastVoteRecord(proTxHash: b.proTxHash, normalizedLabel: "johndoe", choice: .lock, castAt: epoch,
-                           castCount: VoteLimit.maxCastsPerNode),
-        ]
-        let store = makeStore()
-        await store.refresh()
-
-        let candidates = store.castCandidates(for: approve, cancelling: nil, on: "johndoe")
-
-        XCTAssertEqual(candidates.nodes.map(\.proTxHash), [c.proTxHash])
-        XCTAssertEqual(candidates.holdingThisChoice, 1, "a")
-        XCTAssertEqual(candidates.outOfCasts, 1, "b; d is not ticked")
-    }
-
-    /// Cancel approval: only the ticked holders of the approve, and the counts
-    /// talk only about them — a ticked node blocking the name is not counted.
-    func testCastCandidatesForCancelApprovalTalkOnlyAboutItsHolders() async {
-        let a = node(1), b = node(2), c = node(3)
-        nodes.resolution = .init(nodes: [a, b, c], mayBeIncomplete: false)
-        prefs.votingNodeSelection = [a.proTxHash, b.proTxHash, c.proTxHash]
-        contests.result = .success([contest("johndoe")])
-        history.records = [
-            vote(a, on: "johndoe", approve),
-            vote(b, on: "johndoe", .lock),
-            CastVoteRecord(proTxHash: c.proTxHash, normalizedLabel: "johndoe", choice: approve, castAt: epoch,
-                           castCount: VoteLimit.maxCastsPerNode),
-        ]
-        let store = makeStore()
-        await store.refresh()
-
-        let candidates = store.castCandidates(for: .abstain, cancelling: approve, on: "johndoe")
-
-        XCTAssertEqual(candidates.nodes.map(\.proTxHash), [a.proTxHash])
-        XCTAssertEqual(candidates.holdingThisChoice, 0)
-        XCTAssertEqual(candidates.outOfCasts, 1, "c; b's block is not counted")
-    }
-
-    /// Before the contest's history is known, no node is offered.
-    func testNodesForVoteIsEmptyBeforeTheHistoryLoads() async {
-        let a = node(1)
-        nodes.resolution = .init(nodes: [a], mayBeIncomplete: false)
-        prefs.votingNodeSelection = [a.proTxHash]
-        history.records = nil
-        contests.result = .success([contest("johndoe")])
-        let store = makeStore()
-        await store.refresh()
-
-        XCTAssertFalse(store.hasLoadedVoteHistory(for: "johndoe"))
-        XCTAssertEqual(store.nodesForVote(approve, on: "johndoe").map(\.proTxHash), [])
     }
 
     // MARK: Keep a contest until its voting end, newer data wins (AC-03, AC-03c)
@@ -645,7 +823,6 @@ final class VotingStoreTests: XCTestCase {
 
         XCTAssertEqual(store.contests.map(\.normalizedLabel), ["johndoe"])
         XCTAssertTrue(store.isClosed(normalizedLabel: "johndoe"))
-        XCTAssertFalse(store.canStartVote(.lock, on: "johndoe"))
 
         contests.result = .success([])
         await store.refresh()
@@ -865,7 +1042,8 @@ final class VotingStoreTests: XCTestCase {
     }
 
     /// Two ticked masternodes with an empty, known history on "johndoe".
-    private func makeVotingStore() async -> (store: VotingStore, a: VoterNode, b: VoterNode, johndoe: DPNSContest) {
+    private func makeVotingStore(clock: TestClock? = nil) async
+        -> (store: VotingStore, a: VoterNode, b: VoterNode, johndoe: DPNSContest) {
         let a = node(1), b = node(2)
         nodes.resolution = .init(nodes: [a, b], mayBeIncomplete: false)
         prefs.votingNodeSelection = [a.proTxHash, b.proTxHash]
@@ -874,9 +1052,26 @@ final class VotingStoreTests: XCTestCase {
         contests.voteStateResult = .success(ongoing("johndoe", lock: 7))
         caster = ScriptedCaster()
         caster.history = history
-        let store = makeStore(caster: caster)
+        let store = clock.map { clock in
+            VotingStore(contests: contests, nodes: nodes, caster: caster, history: history, prefs: prefs,
+                        now: { clock.now })
+        } ?? makeStore(caster: caster)
         await store.refresh()
         return (store, a, b, johndoe)
+    }
+
+    /// AC-17: an abstain that landed everywhere is told as a cancelled vote, not as a vote.
+    func testAllAbstainsLandedGivesVoteCancelledToast() async {
+        let (store, a, b, johndoe) = await makeVotingStore()
+        caster.script = .outcomes([landed(a), landed(b)])
+
+        await store.send(choice: .abstain, on: johndoe, from: [a, b])
+
+        guard case .success(let toast)? = store.outcome else {
+            return XCTFail("expected .success, got \(String(describing: store.outcome))")
+        }
+        XCTAssertEqual(toast.message, "Vote cancelled on \(johndoe.displayTitle)")
+        XCTAssertEqual(toast.style, .success)
     }
 
     func testAllLandedGivesSuccessToastAndUpdatesCountsAndMyVote() async throws {
@@ -889,6 +1084,7 @@ final class VotingStoreTests: XCTestCase {
             return XCTFail("expected .success, got \(String(describing: store.outcome))")
         }
         XCTAssertEqual(toast.message, "Voted \(johndoe.displayTitle) username")
+        XCTAssertEqual(toast.style, .success)
         let limit = try XCTUnwrap(store.voteHistoryByContest["johndoe"])
         XCTAssertEqual(limit.votesLeft(a.proTxHash), VoteLimit.maxCastsPerNode - 1)
         XCTAssertEqual(limit.votesLeft(b.proTxHash), VoteLimit.maxCastsPerNode - 1)
@@ -899,6 +1095,25 @@ final class VotingStoreTests: XCTestCase {
         XCTAssertEqual(caster.calls.count, 1)
         XCTAssertEqual(caster.calls.first?.label, "johndoe")
         XCTAssertEqual(caster.calls.first?.nodes.map(\.proTxHash), [a.proTxHash, b.proTxHash])
+    }
+
+    /// AC-15, AC-06b: a masternode skipped for having no vote left is in the
+    /// report as «No votes left», so a cancel that landed from the other one
+    /// is a mixed result, not «Vote cancelled».
+    func testAMasternodeSkippedForNoVotesLeftMakesTheOutcomeMixed() async {
+        let (store, a, b, johndoe) = await makeVotingStore()
+        caster.script = .outcomes([landed(b)])
+
+        await store.send(choice: .abstain, on: johndoe, from: [b], skipped: [a])
+
+        guard case .mixed(let report)? = store.outcome else {
+            return XCTFail("expected .mixed, got \(String(describing: store.outcome))")
+        }
+        XCTAssertEqual(report.succeeded.map(\.node.proTxHash), [b.proTxHash])
+        XCTAssertEqual(report.failed.map(\.node.proTxHash), [a.proTxHash])
+        XCTAssertEqual(report.failed.first?.failure, "No votes left")
+        XCTAssertEqual(
+            caster.calls.first?.nodes.map(\.proTxHash), [b.proTxHash], "nothing is sent from the skipped one")
     }
 
     /// A full refresh that ran while the vote was in flight already counted
@@ -1018,7 +1233,7 @@ final class VotingStoreTests: XCTestCase {
 
         caster.script = .outcomes([landed(a)])
         let send = Task { await store.send(choice: approve, on: johndoe, from: [a]) }
-        while !caster.started { await Task.yield() }
+        await yield(until: { caster.started })
         for _ in 0..<20 { await Task.yield() }
         history.releaseListRead()
         await full.value
@@ -1068,14 +1283,12 @@ final class VotingStoreTests: XCTestCase {
         let (store, a, _, johndoe) = await makeVotingStore()
         contests.result = .success([])
         await store.refresh()
-        XCTAssertTrue(store.canStartVote(approve, on: "johndoe"), "left out is not known to be closed")
+        XCTAssertFalse(store.isClosed(normalizedLabel: "johndoe"), "left out is not known to be closed")
         caster.script = .throwing(MasternodeVoteCaster.CastError.contestClosed("johndoe"))
 
         await store.send(choice: approve, on: johndoe, from: [a])
 
         XCTAssertTrue(store.isClosed(normalizedLabel: "johndoe"))
-        XCTAssertFalse(store.canStartVote(approve, on: "johndoe"))
-        XCTAssertFalse(store.canStartVote(.lock, on: "johndoe"))
         XCTAssertEqual(store.contests.map(\.normalizedLabel), ["johndoe"], "the row stays until its voting end")
         guard case .failure? = store.outcome else {
             return XCTFail("expected .failure, got \(String(describing: store.outcome))")
@@ -1093,7 +1306,7 @@ final class VotingStoreTests: XCTestCase {
         caster.script = .throwing(MasternodeVoteCaster.CastError.contestClosed("johndoe"))
 
         let send = Task { await store.send(choice: approve, on: johndoe, from: [a]) }
-        while !caster.started { await Task.yield() }
+        await yield(until: { caster.started })
         for _ in 0..<20 { await Task.yield() }
         contests.holdNextLoad = false
         contests.release()
@@ -1102,7 +1315,6 @@ final class VotingStoreTests: XCTestCase {
 
         XCTAssertEqual(store.contests.map(\.normalizedLabel), ["johndoe"], "the refresh listed it open")
         XCTAssertTrue(store.isClosed(normalizedLabel: "johndoe"))
-        XCTAssertFalse(store.canStartVote(approve, on: "johndoe"))
     }
 
     /// Any other refusal says nothing about the contest: it stays open.
@@ -1146,6 +1358,293 @@ final class VotingStoreTests: XCTestCase {
         XCTAssertFalse(store.isSending(normalizedLabel: "johndoe"))
     }
 
+    // MARK: Try again after a mixed vote (AC-06b)
+
+    func testTryAgainSendsOnlyTheFailedMasternodes() async {
+        let (store, a, b, johndoe) = await makeVotingStore()
+        caster.script = .outcomes([landed(a), refused(b, "Network error")])
+        await store.send(choice: approve, on: johndoe, from: [a, b])
+
+        caster.script = .outcomes([landed(b)])
+        await store.retryFailed()
+
+        XCTAssertEqual(caster.calls.count, 2)
+        XCTAssertEqual(caster.calls.last?.nodes.map(\.proTxHash), [b.proTxHash])
+        XCTAssertEqual(caster.calls.last?.choice, approve)
+    }
+
+    func testTryAgainThatLandsEverywhereIsASuccess() async {
+        let (store, a, b, johndoe) = await makeVotingStore()
+        caster.script = .outcomes([landed(a), refused(b, "Network error")])
+        await store.send(choice: approve, on: johndoe, from: [a, b])
+
+        caster.script = .outcomes([landed(b)])
+        await store.retryFailed()
+
+        guard case .success(let toast)? = store.outcome else {
+            return XCTFail("expected .success, got \(String(describing: store.outcome))")
+        }
+        XCTAssertEqual(toast.message, "Voted \(johndoe.displayTitle) username")
+    }
+
+    func testTryAgainStillMixedKeepsEveryMasternodeInTheReport() async {
+        let (store, a, b, johndoe) = await makeVotingStore()
+        caster.script = .outcomes([landed(a), refused(b, "Network error")])
+        await store.send(choice: approve, on: johndoe, from: [a, b])
+
+        caster.script = .outcomes([refused(b, "Still offline")])
+        await store.retryFailed()
+
+        guard case .mixed(let report)? = store.outcome else {
+            return XCTFail("expected .mixed, got \(String(describing: store.outcome))")
+        }
+        XCTAssertEqual(report.succeeded.map(\.node.proTxHash), [a.proTxHash], "a's earlier vote still counts")
+        XCTAssertEqual(report.failed.map(\.node.proTxHash), [b.proTxHash])
+        XCTAssertEqual(report.failed.first?.failure, "Still offline")
+    }
+
+    func testTryAgainSkipsAFailedMasternodeWithNoVoteLeft() async {
+        let (store, a, b, johndoe) = await makeVotingStore()
+        caster.script = .outcomes([landed(a), refused(b, "Network error")])
+        await store.send(choice: approve, on: johndoe, from: [a, b])
+        history.records?.append(CastVoteRecord(
+            proTxHash: b.proTxHash, normalizedLabel: "johndoe", choice: .lock,
+            castAt: epoch, castCount: VoteLimit.maxCastsPerNode))
+        await store.loadVotedNodes(for: "johndoe")
+        let callsBefore = caster.calls.count
+
+        await store.retryFailed()
+
+        XCTAssertEqual(caster.calls.count, callsBefore, "nothing is sent for a masternode out of votes")
+        guard case .mixed(let report)? = store.outcome else {
+            return XCTFail("expected .mixed, got \(String(describing: store.outcome))")
+        }
+        XCTAssertEqual(report.failed.map(\.node.proTxHash), [b.proTxHash])
+        XCTAssertEqual(report.failed.first?.failure, "No votes left")
+    }
+
+    /// One vote at a time: while Try again reads the history its slot is
+    /// held, so a vote on another name started meanwhile sends nothing.
+    func testTryAgainHoldsTheVoteSlotWhileItReadsTheHistory() async {
+        let (store, a, b, johndoe) = await makeVotingStore()
+        caster.script = .outcomes([landed(a), refused(b, "Network error")])
+        await store.send(choice: approve, on: johndoe, from: [a, b])
+        let callsBefore = caster.calls.count
+        history.holdNextSingleRead = true
+
+        let retry = Task { await store.retryFailed() }
+        await yield(until: { self.history.singleReadHeld })
+        XCTAssertTrue(store.isVoteBusy, "the retry's history read holds the slot")
+        caster.script = .outcomes([landed(a)])
+        let other = Task { await store.send(choice: .lock, on: self.contest("alice"), from: [a]) }
+        for _ in 0..<50 { await Task.yield() }
+        XCTAssertEqual(caster.calls.count, callsBefore, "no other vote starts during the retry")
+
+        history.releaseSingleRead()
+        await retry.value
+        await other.value
+        XCTAssertFalse(store.isVoteBusy)
+    }
+
+    /// A newer attempt that replaced the outcome while Try again ran keeps it:
+    /// the retry does not put its old report back.
+    func testTryAgainDoesNotOverwriteANewerOutcome() async {
+        let (store, a, b, johndoe) = await makeVotingStore()
+        caster.script = .outcomes([landed(a), refused(b, "Network error")])
+        await store.send(choice: approve, on: johndoe, from: [a, b])
+        history.holdNextSingleRead = true
+
+        let retry = Task { await store.retryFailed() }
+        await yield(until: { self.history.singleReadHeld })
+        store.beginAttempt(on: "alice")
+        caster.script = .outcomes([refused(b, "Still offline")])
+        history.releaseSingleRead()
+        await retry.value
+
+        XCTAssertNil(store.outcome, "the newer attempt's (empty) outcome stays")
+    }
+
+    /// The vote gates' history read holds the slot, so the list's pills and
+    /// Request details' button are off until the attempt sends or stops.
+    func testAVoteGateReadHoldsTheVoteSlot() async {
+        let (store, _, _, _) = await makeVotingStore()
+        history.holdNextSingleRead = true
+
+        let read = Task { await store.loadVotedNodesForVote(for: "johndoe") }
+        await yield(until: { self.history.singleReadHeld })
+        XCTAssertTrue(store.isVoteBusy)
+        history.releaseSingleRead()
+        _ = await read.value
+        XCTAssertFalse(store.isVoteBusy)
+    }
+
+    /// The menu's host holds the swipe-back from this publisher: it tells the
+    /// slot taken and given back, once each.
+    func testTheBusyPublisherFollowsTheVoteSlot() async {
+        let (store, _, _, _) = await makeVotingStore()
+        var seen: [Bool] = []
+        let watch = store.isVoteBusyPublisher.sink { seen.append($0) }
+        defer { watch.cancel() }
+        history.holdNextSingleRead = true
+
+        let read = Task { await store.loadVotedNodesForVote(for: "johndoe") }
+        await yield(until: { self.history.singleReadHeld })
+        XCTAssertEqual(seen, [false, true])
+        history.releaseSingleRead()
+        _ = await read.value
+        XCTAssertEqual(seen, [false, true, false])
+    }
+
+    /// AC-06b through the view model the vote gates use: their history read
+    /// holds the vote slot, so no pill starts a second vote while it runs.
+    func testAGateReadThroughTheViewModelKeepsThePillsOff() async {
+        let (store, _, _, _) = await makeVotingStore()
+        let voting = VotingViewModel(store: store)
+        history.holdNextSingleRead = true
+
+        let read = Task { await voting.voteHistory(for: "johndoe") }
+        await yield(until: { self.history.singleReadHeld })
+        XCTAssertFalse(voting.list.canTapPill(approve, on: "johndoe"))
+        history.releaseSingleRead()
+        _ = await read.value
+        XCTAssertTrue(voting.list.canTapPill(approve, on: "johndoe"))
+    }
+
+    /// AC-15 through the view model: the masternodes skipped for having no
+    /// vote left reach the store, so the outcome is mixed with their rows.
+    func testTheViewModelForwardsTheNodesSkippedForNoVotesLeft() async {
+        let (store, a, b, johndoe) = await makeVotingStore()
+        let voting = VotingViewModel(store: store)
+        caster.script = .outcomes([landed(b)])
+
+        await voting.send(approve, on: johndoe, from: [b.proTxHash], skipped: [a.proTxHash], pill: approve)
+
+        guard case .mixed(let report)? = store.outcome else {
+            return XCTFail("expected .mixed, got \(String(describing: store.outcome))")
+        }
+        XCTAssertEqual(report.failed.map(\.node.proTxHash), [a.proTxHash])
+        XCTAssertTrue(report.failed.allSatisfy { $0.failure == NSLocalizedString("No votes left", comment: "Voting") })
+    }
+
+    /// SCR-10 «retrying»: the report stays on the sheet while Try again runs.
+    func testTryAgainKeepsTheReportWhileItRuns() async {
+        let (store, a, b, johndoe) = await makeVotingStore()
+        caster.script = .outcomes([landed(a), refused(b, "Network error")])
+        await store.send(choice: approve, on: johndoe, from: [a, b])
+
+        caster.script = .outcomes([landed(b)])
+        caster.holdNextCall = true
+        let retry = Task { await store.retryFailed() }
+        while caster.calls.count < 2 { await Task.yield() }
+
+        let whileRetrying = store.outcome
+        guard case .mixed(let during)? = whileRetrying else {
+            caster.release()
+            await retry.value
+            return XCTFail("expected the report while retrying, got \(String(describing: whileRetrying))")
+        }
+        XCTAssertEqual(during.failed.map(\.node.proTxHash), [b.proTxHash])
+        XCTAssertTrue(store.isSending(normalizedLabel: "johndoe"))
+
+        caster.release()
+        await retry.value
+        guard case .success? = store.outcome else {
+            return XCTFail("expected .success after the retry, got \(String(describing: store.outcome))")
+        }
+    }
+
+    /// Try again runs the vote gates again: a contest whose voting has ended
+    /// gets nothing, and the report says why.
+    func testTryAgainAfterVotingEndedSendsNothingAndSaysSo() async {
+        let clock = TestClock(Date())
+        let (store, a, b, johndoe) = await makeVotingStore(clock: clock)
+        caster.script = .outcomes([landed(a), refused(b, "Network error")])
+        await store.send(choice: approve, on: johndoe, from: [a, b])
+        let callsBefore = caster.calls.count
+
+        clock.now = clock.now.addingTimeInterval(31 * day)
+        await store.retryFailed()
+
+        XCTAssertEqual(caster.calls.count, callsBefore)
+        guard case .mixed(let report)? = store.outcome else {
+            return XCTFail("expected .mixed, got \(String(describing: store.outcome))")
+        }
+        XCTAssertEqual(report.failed.map(\.node.proTxHash), [b.proTxHash])
+        XCTAssertEqual(report.failed.first?.failure, "Voting has ended")
+    }
+
+    /// Platform closed the contest after the first try: Try again sends nothing.
+    func testTryAgainOnAContestPlatformClosedSendsNothing() async {
+        let (store, a, b, johndoe) = await makeVotingStore()
+        caster.script = .outcomes([landed(a), refused(b, "Network error")])
+        await store.send(choice: approve, on: johndoe, from: [a, b])
+        contests.voteStateResult = .success(resolved("johndoe", lock: 9))
+        await store.refreshContest(normalizedLabel: "johndoe")
+        XCTAssertTrue(store.isClosed(normalizedLabel: "johndoe"))
+        let callsBefore = caster.calls.count
+
+        await store.retryFailed()
+
+        XCTAssertEqual(caster.calls.count, callsBefore)
+        guard case .mixed(let report)? = store.outcome else {
+            return XCTFail("expected .mixed, got \(String(describing: store.outcome))")
+        }
+        XCTAssertEqual(report.failed.first?.failure, "Voting has ended")
+    }
+
+    /// A history that cannot be read is unknown, not "No votes left".
+    func testTryAgainWithAnUnreadableHistorySendsNothingAndSaysSo() async {
+        let (store, a, b, johndoe) = await makeVotingStore()
+        caster.script = .outcomes([landed(a), refused(b, "Network error")])
+        await store.send(choice: approve, on: johndoe, from: [a, b])
+        history.records = nil
+        let callsBefore = caster.calls.count
+
+        await store.retryFailed()
+
+        XCTAssertEqual(caster.calls.count, callsBefore)
+        guard case .mixed(let report)? = store.outcome else {
+            return XCTFail("expected .mixed, got \(String(describing: store.outcome))")
+        }
+        XCTAssertEqual(report.failed.first?.failure, "Couldn't read your vote history.")
+    }
+
+    /// A failed masternode that holds the choice by now has it, also when
+    /// every other failed masternode is out of votes.
+    func testTryAgainCountsAHolderAsLandedWhenTheOthersHaveNoVoteLeft() async {
+        let (store, a, b, johndoe) = await makeVotingStore()
+        let c = node(3)
+        nodes.resolution = .init(nodes: [a, b, c], mayBeIncomplete: false)
+        prefs.votingNodeSelection = [a.proTxHash, b.proTxHash, c.proTxHash]
+        store.refreshVotableNodes()
+        caster.script = .outcomes([landed(a), refused(b, "Network error"), refused(c, "Network error")])
+        await store.send(choice: approve, on: johndoe, from: [a, b, c])
+        history.records?.append(vote(b, on: "johndoe", approve))
+        history.records?.append(CastVoteRecord(
+            proTxHash: c.proTxHash, normalizedLabel: "johndoe", choice: .lock,
+            castAt: epoch, castCount: VoteLimit.maxCastsPerNode))
+        let callsBefore = caster.calls.count
+
+        await store.retryFailed()
+
+        XCTAssertEqual(caster.calls.count, callsBefore)
+        guard case .mixed(let report)? = store.outcome else {
+            return XCTFail("expected .mixed, got \(String(describing: store.outcome))")
+        }
+        XCTAssertEqual(Set(report.succeeded.map(\.node.proTxHash)), [a.proTxHash, b.proTxHash])
+        XCTAssertEqual(report.failed.map(\.node.proTxHash), [c.proTxHash])
+        XCTAssertEqual(report.failed.first?.failure, "No votes left")
+    }
+
+    func testTryAgainWithoutAMixedOutcomeDoesNothing() async {
+        let (store, _, _, _) = await makeVotingStore()
+
+        await store.retryFailed()
+
+        XCTAssertTrue(caster.calls.isEmpty)
+        XCTAssertNil(store.outcome)
+    }
+
     func testContestIsInFlightWhileTheCasterIsHeldAndASecondSendIsIgnored() async {
         let (store, a, b, johndoe) = await makeVotingStore()
         caster.script = .outcomes([landed(a)])
@@ -1153,7 +1652,7 @@ final class VotingStoreTests: XCTestCase {
         XCTAssertFalse(store.isSending(normalizedLabel: "johndoe"))
 
         let first = Task { await store.send(choice: approve, on: johndoe, from: [a]) }
-        while !caster.started { await Task.yield() }
+        await yield(until: { caster.started })
         XCTAssertTrue(store.isSending(normalizedLabel: "johndoe"))
         XCTAssertFalse(store.isSending(normalizedLabel: "other"), "only the contest being sent is in flight")
 
@@ -1166,13 +1665,35 @@ final class VotingStoreTests: XCTestCase {
         XCTAssertEqual(caster.calls.count, 1)
     }
 
+    /// One vote at a time, from every entry point: a send on another contest
+    /// while one is in flight casts nothing, so the first send's report and
+    /// Try again stay its own.
+    func testASendOnAnotherContestWhileOneIsInFlightIsIgnored() async {
+        let (store, a, b, johndoe) = await makeVotingStore()
+        let jane = contest("janedoe", endsAt: Date().addingTimeInterval(30 * day), lock: 1)
+        caster.script = .outcomes([landed(a), refused(b, "Network error")])
+        caster.holdNextCall = true
+
+        let first = Task { await store.send(choice: approve, on: johndoe, from: [a, b]) }
+        await yield(until: { caster.started })
+        await store.send(choice: .lock, on: jane, from: [a])
+        XCTAssertEqual(caster.calls.count, 1, "the second contest's send is ignored")
+
+        caster.release()
+        await first.value
+        guard case .mixed(let report)? = store.outcome else {
+            return XCTFail("expected johndoe's .mixed, got \(String(describing: store.outcome))")
+        }
+        XCTAssertEqual(report.normalizedLabel, "johndoe")
+    }
+
     func testBeginAttemptClearsThePreviousOutcome() async {
         let (store, a, _, johndoe) = await makeVotingStore()
         caster.script = .outcomes([landed(a)])
         await store.send(choice: approve, on: johndoe, from: [a])
         XCTAssertNotNil(store.outcome)
 
-        store.beginAttempt()
+        store.beginAttempt(on: "johndoe")
 
         XCTAssertNil(store.outcome)
     }

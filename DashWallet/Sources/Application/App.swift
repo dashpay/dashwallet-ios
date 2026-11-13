@@ -106,6 +106,8 @@ final class App {
     #if DASHPAY
         // Which of your masternodes voted on what is wallet-scoped history.
         VoteHistoryDAOImpl.shared.deleteAll()
+        // So are the masternodes chosen to vote with, and voting set up.
+        VotingPrefs.shared.forgetVotingSetup()
     #endif
 
         _fiatCurrency = nil
