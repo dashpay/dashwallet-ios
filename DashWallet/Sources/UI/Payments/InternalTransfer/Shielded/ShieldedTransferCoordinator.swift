@@ -379,6 +379,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case contactFeeChanged
         /// A Shielded contact payment above what one withdrawal may carry.
         case contactAboveShieldedWithdrawalMaximum
+        /// A Platform contact payment above what one withdrawal may carry.
+        case contactAbovePlatformWithdrawalMaximum
         case shieldedAmountExceedsBundle(UInt64)
         case coinJoinDrainRequiresSync
         /// Another attempt is still consuming this asset lock — typically a
@@ -454,6 +456,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
                     comment: "DashPay contact payment from Platform or Shielded: its network fee was unknown at confirmation")
             case .contactAboveShieldedWithdrawalMaximum:
                 return ShieldedTransferCoordinator.contactShieldedMaximumMessage
+            case .contactAbovePlatformWithdrawalMaximum:
+                return ShieldedTransferCoordinator.contactPlatformMaximumMessage
             case .contactFeeChanged:
                 return NSLocalizedString(
                     "The network fee for this payment changed. Close this confirmation and review it again.",
@@ -643,13 +647,17 @@ final class ShieldedTransferCoordinator: ObservableObject {
         return liveFeeCredits > confirmedFeeCredits ? .contactFeeChanged : nil
     }
 
-    /// The same for a Platform contact payment, from a fresh preflight's fee
-    /// (nil when it failed or can't withdraw).
-    nonisolated static func contactPlatformFeeRefusal(
-        confirmedFeeCredits: UInt64?, liveFeeCredits: UInt64?
+    /// Why a Platform contact payment of `submittedCredits` (Core fee
+    /// included) can't go ahead at the fee its confirmation showed, or nil.
+    /// It submits one explicit input, priced at
+    /// `platformSingleInputWithdrawalFeeCredits` — no whole-account preflight,
+    /// which would refuse an account the one input could still pay from.
+    nonisolated static func contactPlatformRefusal(
+        submittedCredits: UInt64, confirmedFeeCredits: UInt64?
     ) -> CoordinatorError? {
-        guard let confirmedFeeCredits, let liveFeeCredits else { return .contactPaymentNotPriced }
-        return liveFeeCredits > confirmedFeeCredits ? .contactFeeChanged : nil
+        guard submittedCredits <= withdrawalMaximumCredits else { return .contactAbovePlatformWithdrawalMaximum }
+        guard let confirmedFeeCredits else { return .contactPaymentNotPriced }
+        return platformSingleInputWithdrawalFeeCredits > confirmedFeeCredits ? .contactFeeChanged : nil
     }
 
     /// Largest amount the pool can fund inside ONE transition — the sweep
@@ -1531,7 +1539,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 handleFailure(error)
                 return
             }
-            guard submittedAmount <= Self.shieldedWithdrawalMaximumCredits else {
+            guard submittedAmount <= Self.withdrawalMaximumCredits else {
                 handleFailure(CoordinatorError.contactAboveShieldedWithdrawalMaximum)
                 return
             }
@@ -2008,22 +2016,19 @@ final class ShieldedTransferCoordinator: ObservableObject {
             submittedAmount = amountCredits
         }
 
+        // Refused before the PIN and before a reservation uses up one of the
+        // contact's addresses.
+        // TODO(shielded-withdraw-fee-cap): `withdrawToCore` takes no maximum
+        // fee (dashpay/platform#5698); Platform holds the input to this fee.
+        if contactRecipient != nil, let refusal = Self.contactPlatformRefusal(
+            submittedCredits: submittedAmount, confirmedFeeCredits: contactNetworkFeeCredits) {
+            handleFailure(refusal)
+            return
+        }
         let contactWithdrawal: ContactWithdrawal?
         do {
             try await authorize(contactSpendDuffs: try Self.contactSpendDuffs(
                 contactRecipient, submittedCredits: submittedAmount, networkFeeCredits: contactNetworkFeeCredits))
-            // Preflighted again after the PIN, before a reservation uses up
-            // one of the contact's addresses.
-            // TODO(shielded-withdraw-fee-cap): `withdrawToCore` takes no
-            // maximum fee either (dashpay/platform#5698).
-            if contactRecipient != nil {
-                let preflight = try? await PlatformAddressSyncCoordinator.shared.preflightWithdrawal()
-                if let refusal = Self.contactPlatformFeeRefusal(
-                    confirmedFeeCredits: contactNetworkFeeCredits,
-                    liveFeeCredits: preflight?.canWithdraw == true ? preflight?.estimatedFee : nil) {
-                    throw refusal
-                }
-            }
             contactWithdrawal = try await reserveContactWithdrawal(
                 contactRecipient,
                 amountDuffs: amountCredits / 1000,
@@ -2037,22 +2042,6 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
         if let contactWithdrawal {
-            // And again after the reservation's await, the last point before
-            // the SDK withdraws. A refusal here has used up the address.
-            // TODO(shielded-withdraw-fee-cap): dashpay/platform#5698.
-            let preflight: ManagedPlatformAddressWallet.WithdrawalPreflight?
-            do {
-                preflight = try await PlatformAddressSyncCoordinator.shared.preflightWithdrawal()
-            } catch {
-                Self.logger.error("🛡️ SHIELD-TX :: contact withdrawal preflight failed after reservation \(String(describing: error), privacy: .public)")
-                preflight = nil
-            }
-            if let refusal = Self.contactPlatformFeeRefusal(
-                confirmedFeeCredits: contactNetworkFeeCredits,
-                liveFeeCredits: preflight?.canWithdraw == true ? preflight?.estimatedFee : nil) {
-                failUnsubmittedContactWithdrawal(contactWithdrawal, error: refusal)
-                return
-            }
             // `withdrawToCore` spends from whichever wallet is active, so the
             // one the address was reserved and journaled for must still be.
             #if DASHPAY
@@ -2077,7 +2066,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 try await PlatformAddressSyncCoordinator.shared.withdrawToCore(
                     amountCredits: submittedAmount,
                     address: coreAddress,
-                    feeHeadroomCredits: feeHeadroomCredits)
+                    // A contact's input keeps the single-input fee, not the
+                    // AUTO preflight's, which a contact payment never needs.
+                    feeHeadroomCredits: contactRecipient != nil
+                        ? Self.platformSingleInputWithdrawalFeeCredits : feeHeadroomCredits)
             }
         } catch {
             if concludeUncertainContactWithdrawal(contactWithdrawal, error: error) {
@@ -2267,27 +2259,45 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// than the amount entered.
     nonisolated static let contactCoreFeeCredits: UInt64 = 190_000
 
-    /// The most one Shielded withdrawal may carry, Core fee included: the
-    /// protocol's `max_withdrawal_amount` (500 DASH), which
-    /// `ShieldedWithdrawalTransition` checks against the amount it reserves.
-    /// `AddressCreditWithdrawalTransition` holds a Platform withdrawal to the
-    /// same maximum. A Platform contact payment stays under it because it
-    /// needs a successful full-account preflight, whose payout the SDK holds
-    /// to that maximum, and spends only part of one address.
-    nonisolated static let shieldedWithdrawalMaximumCredits: UInt64 = 50_000_000_000_000
+    /// The most one withdrawal may carry, Core fee included: the protocol's
+    /// `max_withdrawal_amount` (500 DASH). `ShieldedWithdrawalTransition`
+    /// checks it against the amount it reserves, and
+    /// `AddressCreditWithdrawalTransition` (`validate_structure_v0`, which v1
+    /// calls) against the amount a Platform withdrawal pays out.
+    nonisolated static let withdrawalMaximumCredits: UInt64 = 50_000_000_000_000
+
+    /// The fee of a Platform → Core withdrawal with one explicit input and no
+    /// change output — the transition a contact payment from Platform
+    /// submits: `AddressCreditWithdrawalTransition::estimate_min_fee(1, false)`,
+    /// the `address_credit_withdrawal` base plus one
+    /// `address_funds_transfer_input_cost` (`STATE_TRANSITION_MIN_FEES_VERSION1`,
+    /// the only fee schedule any protocol version uses). The SDK's own
+    /// preflight prices the AUTO withdrawal of every funded address instead,
+    /// which fails for an account with more inputs than one transition takes
+    /// or a payout above the maximum, though one address could still pay.
+    /// Platform holds the input's remaining balance to this same fee.
+    nonisolated static let platformSingleInputWithdrawalFeeCredits: UInt64 = 400_000_000 + 500_000
+
+    nonisolated static var contactPlatformMaximumMessage: String {
+        String.localizedStringWithFormat(
+            NSLocalizedString(
+                "You can send up to %@ to a contact from your Platform balance in one payment.",
+                comment: "DashPay contact payment from Platform: single-payment cap"),
+            "\((contactWithdrawalMaximumCredits / 1000).formattedDashAmountWithoutCurrencySymbol) DASH")
+    }
 
     nonisolated static var contactShieldedMaximumMessage: String {
         String.localizedStringWithFormat(
             NSLocalizedString(
                 "You can send up to %@ to a contact from your Shielded balance in one payment.",
                 comment: "DashPay contact payment from Shielded: the protocol's single-withdrawal maximum"),
-            "\((contactShieldedMaximumCredits / 1000).formattedDashAmountWithoutCurrencySymbol) DASH")
+            "\((contactWithdrawalMaximumCredits / 1000).formattedDashAmountWithoutCurrencySymbol) DASH")
     }
 
-    /// The most a contact can be paid from Shielded in one payment: the
-    /// withdrawal maximum less the Core fee added on top.
-    nonisolated static var contactShieldedMaximumCredits: UInt64 {
-        shieldedWithdrawalMaximumCredits - contactCoreFeeCredits
+    /// The most a contact can be paid from Platform or Shielded in one
+    /// payment: the withdrawal maximum less the Core fee added on top.
+    nonisolated static var contactWithdrawalMaximumCredits: UInt64 {
+        withdrawalMaximumCredits - contactCoreFeeCredits
     }
 
     /// The amount a withdrawal carries for the contact to receive

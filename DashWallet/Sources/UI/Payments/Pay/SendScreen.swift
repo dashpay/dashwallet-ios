@@ -1229,8 +1229,8 @@ struct SendConfirmSheet: View {
     /// at least the amount shown (`SendViewModel.contactCoreFeeCredits`).
     var contactCoreFeeCredits: UInt64 = 0
     /// A contact payment's network fee, priced by the amount step
-    /// (`SendViewModel.contactNetworkFeeCredits`): the Platform preflight's,
-    /// or the fee of the Shielded notes the withdrawal would spend — either
+    /// (`SendViewModel.contactNetworkFeeCredits`): the single-input Platform
+    /// withdrawal fee, or the fee of the Shielded notes the withdrawal would spend — either
     /// an upper bound. Shown, and authorized with the amount; nil refuses the
     /// payment.
     var contactNetworkFeeCredits: UInt64? = nil

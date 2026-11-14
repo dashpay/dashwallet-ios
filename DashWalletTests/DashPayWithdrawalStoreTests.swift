@@ -470,26 +470,58 @@ final class ContactWithdrawalTotalTests: XCTestCase {
     /// Platform rejects a Shielded withdrawal above 500 DASH, Core fee
     /// included, so a contact can be paid at most 499.9999981 DASH from it.
     func testContactShieldedMaximumLeavesRoomForTheCoreFee() throws {
-        XCTAssertEqual(ShieldedTransferCoordinator.shieldedWithdrawalMaximumCredits, 50_000_000_000_000)
-        XCTAssertEqual(ShieldedTransferCoordinator.contactShieldedMaximumCredits, 49_999_999_810_000)
+        XCTAssertEqual(ShieldedTransferCoordinator.withdrawalMaximumCredits, 50_000_000_000_000)
+        XCTAssertEqual(ShieldedTransferCoordinator.contactWithdrawalMaximumCredits, 49_999_999_810_000)
         XCTAssertEqual(
             try ShieldedTransferCoordinator.contactWithdrawalCredits(
-                recipientCredits: ShieldedTransferCoordinator.contactShieldedMaximumCredits),
-            ShieldedTransferCoordinator.shieldedWithdrawalMaximumCredits)
+                recipientCredits: ShieldedTransferCoordinator.contactWithdrawalMaximumCredits),
+            ShieldedTransferCoordinator.withdrawalMaximumCredits)
     }
 
-    func testContactPlatformFeeIsHeldToTheConfirmedFee() {
+    /// A contact's Platform withdrawal spends one explicit input, so it is
+    /// priced with Platform's minimum fee for one input and no change output
+    /// (`AddressCreditWithdrawalTransition::estimate_min_fee(1, false)`):
+    /// 400_000_000 for the withdrawal plus 500_000 for the input.
+    func testContactPlatformFeeIsTheSingleInputWithdrawalFee() {
+        XCTAssertEqual(ShieldedTransferCoordinator.platformSingleInputWithdrawalFeeCredits, 400_500_000)
+    }
+
+    func testContactPlatformPaymentIsHeldToItsConfirmedFeeAndTheMaximum() {
         typealias Coordinator = ShieldedTransferCoordinator
-        XCTAssertNil(Coordinator.contactPlatformFeeRefusal(confirmedFeeCredits: 5_000, liveFeeCredits: 5_000))
+        let fee = Coordinator.platformSingleInputWithdrawalFeeCredits
+        XCTAssertNil(Coordinator.contactPlatformRefusal(submittedCredits: 5_000_000, confirmedFeeCredits: fee))
         XCTAssertEqual(
-            Coordinator.contactPlatformFeeRefusal(confirmedFeeCredits: 5_000, liveFeeCredits: 6_000).map { "\($0)" },
+            Coordinator.contactPlatformRefusal(submittedCredits: 5_000_000, confirmedFeeCredits: fee - 1)
+                .map { "\($0)" },
             "contactFeeChanged")
         XCTAssertEqual(
-            Coordinator.contactPlatformFeeRefusal(confirmedFeeCredits: 5_000, liveFeeCredits: nil).map { "\($0)" },
+            Coordinator.contactPlatformRefusal(submittedCredits: 5_000_000, confirmedFeeCredits: nil).map { "\($0)" },
             "contactPaymentNotPriced")
+        XCTAssertNil(Coordinator.contactPlatformRefusal(
+            submittedCredits: Coordinator.withdrawalMaximumCredits, confirmedFeeCredits: fee))
         XCTAssertEqual(
-            Coordinator.contactPlatformFeeRefusal(confirmedFeeCredits: nil, liveFeeCredits: 5_000).map { "\($0)" },
-            "contactPaymentNotPriced")
+            Coordinator.contactPlatformRefusal(
+                submittedCredits: Coordinator.withdrawalMaximumCredits + 1, confirmedFeeCredits: fee)
+                .map { "\($0)" },
+            "contactAbovePlatformWithdrawalMaximum")
+    }
+
+    /// What a contact can be paid from Platform depends only on the largest
+    /// address, never on the whole-account preflight: an account whose AUTO
+    /// withdrawal can't be planned (more than 16 addresses, or a total above
+    /// the withdrawal maximum) still pays a contact from one address.
+    func testContactPlatformCapComesFromTheLargestAddressAlone() {
+        let reserved = ShieldedTransferCoordinator.platformSingleInputWithdrawalFeeCredits
+            + ShieldedTransferCoordinator.contactCoreFeeCredits
+        XCTAssertEqual(SendViewModel.contactPlatformCapCredits(largestAddressCredits: 0), 0)
+        XCTAssertEqual(SendViewModel.contactPlatformCapCredits(largestAddressCredits: reserved), 0)
+        XCTAssertEqual(SendViewModel.contactPlatformCapCredits(largestAddressCredits: reserved + 1), 1)
+        XCTAssertEqual(
+            SendViewModel.contactPlatformCapCredits(largestAddressCredits: 1_000_000_000_000),
+            1_000_000_000_000 - 400_690_000)
+        XCTAssertEqual(
+            SendViewModel.contactPlatformCapCredits(largestAddressCredits: 60_000_000_000_000),
+            ShieldedTransferCoordinator.contactWithdrawalMaximumCredits)
     }
 
     /// A Platform or Shielded payment claims the contact for its whole run:
