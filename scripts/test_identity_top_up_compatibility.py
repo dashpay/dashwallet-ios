@@ -28,6 +28,9 @@ with tempfile.TemporaryDirectory(prefix="identity-top-up-compatibility-") as dir
     tests.mkdir(parents=True)
     policy = repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK/AssetLockInputPolicy.swift"
     (source / policy.name).write_text(policy.read_text().replace("import SwiftDashSDK\n", ""))
+    (source / "ShieldedProverWarmup.swift").symlink_to(
+        repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK/ShieldedProverWarmup.swift")
+    (source / "ShieldedProverWarmupStub.swift").symlink_to(repository / "scripts/fixtures/ShieldedProverWarmupStub.swift")
     # The production control flow and error classification are unchanged.
     # Only the native SDK, persistence, and address-provider boundaries are fakes.
     methods = "\n".join(declaration(marker) for marker in (

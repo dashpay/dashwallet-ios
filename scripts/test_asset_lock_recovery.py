@@ -38,6 +38,7 @@ with tempfile.TemporaryDirectory(prefix="asset-lock-recovery-tests-") as directo
         (source / name).symlink_to(repository / "DashWallet/Sources/UI/Payments/InternalTransfer/Shielded" / name)
     (source / "DurableFileStorage.swift").symlink_to(repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK/DurableFileStorage.swift")
     (source / "ShieldedProverWarmup.swift").symlink_to(repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK/ShieldedProverWarmup.swift")
+    (source / "ShieldedProverWarmupStub.swift").symlink_to(repository / "scripts/fixtures/ShieldedProverWarmupStub.swift")
     service = (repository / "DashWallet/Sources/UI/Payments/InternalTransfer/Shielded/CoreShieldedDrainService.swift").read_text()
     types = service[service.index("enum CoreShieldedDrainVerdict:"):service.index("@MainActor\nstruct CoreShieldedDrainService")]
     (source / "DrainRecipient.swift").write_text("import Foundation\n" + types)
