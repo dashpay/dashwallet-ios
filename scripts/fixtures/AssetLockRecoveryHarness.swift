@@ -290,6 +290,19 @@ enum DiagnosticLogExporter {
 }
 enum DWLogger { static func log(_ message: String) {} }
 
+// Proof timing is diagnostic; the harness's proving key is always cached.
+struct ShieldedBalanceState { let credits: UInt64? }
+private struct CachedProverBackend: ShieldedProverBackend {
+    var isReady: Bool { true }
+    func prepare() async -> Bool { true }
+}
+extension ShieldedProverWarmup {
+    static let shared = ShieldedProverWarmup(
+        backend: CachedProverBackend(),
+        conditions: { ShieldedProverWarmupConditions(isLowPowerModeEnabled: false, isInForeground: true) },
+        log: { _ in })
+}
+
 @MainActor final class DrainClaimSettler {
     init(operation: UUID, timeout: TimeInterval, lookup: ShieldedTxLookup) {}
     func start() { preconditionFailure("Completed drain settling belongs to the application tests") }
