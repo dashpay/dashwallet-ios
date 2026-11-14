@@ -26,7 +26,7 @@ The App Connect DIP defines the `dash-key:` version 2 code for testnet and devne
 
 ## Decision outcome
 
-**Chosen:** option 1, because the protocol check already refuses every request on a network below 14, and mainnet is past it.
+**Chosen:** DashConnect is open on every network, and each request is gated by the Platform protocol version read at runtime; on mainnet a request comes as `dashpay://connect`, and a `dash-key:` code is refused. The protocol check already refuses every request on a network below 14, and mainnet is past it.
 
 - `ConnectionsViewModel` treats the feature as available on every network; the real data source runs on mainnet.
 - A v2 request on a network below protocol 14 is refused on the sheet (`AppConnect.isAvailable(protocolVersion:)`), as on testnet and devnets.
@@ -44,3 +44,9 @@ The App Connect DIP defines the `dash-key:` version 2 code for testnet and devne
 
 **Neutral**
 - The Connections page's "Available on test networks only" state is left for previews and tests.
+
+## Links
+
+- Feature summary: [docs/features/app-connect/README.md](../features/app-connect/README.md)
+- [ADR-0006](0006-choose-the-app-connect-login-by-the-protocol-version-read-at-runtime.md): the login is chosen by the protocol version read at runtime.
+- [ADR-0009](0009-answer-app-connect-request-v2-with-wallet-derived-keys-under-wallet-limits.md): request v2; its "Networks" rule is replaced here.

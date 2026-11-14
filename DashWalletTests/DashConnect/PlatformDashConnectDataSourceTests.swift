@@ -2711,6 +2711,25 @@ extension ConnectionsViewModelPurchaseTests {
 
 }
 
+// MARK: - Connections page on mainnet (ADR-0053)
+
+extension ConnectionsViewModelPurchaseTests {
+    /// With no network selection stored the wallet is on mainnet, and the
+    /// page built with its default availability is open there.
+    func testThePageIsAvailableOnMainnetByDefault() {
+        let key = "CURRENT_CHAIN_TYPE_KEY"
+        let defaults = UserDefaults.standard
+        let stored = defaults.object(forKey: key)
+        defaults.removeObject(forKey: key)
+        defer { defaults.set(stored, forKey: key) }
+        XCTAssertTrue(WalletEnvironment.isMainnet)
+
+        let viewModel = ConnectionsViewModel(dataSource: LoginApprovalSpy(shown: []))
+
+        XCTAssertFalse(viewModel.featureUnavailable)
+    }
+}
+
 // MARK: - Removing a Refused row (AC-20b, T27 R8)
 
 extension ConnectionsViewModelPurchaseTests {
