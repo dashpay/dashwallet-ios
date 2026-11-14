@@ -19,6 +19,9 @@
 /* Contested usernames */
 "%1$@ at %2$@" = "%1$@ at %2$@";
 
+/* DashConnect connection sheet: what is left of a key's budget, then the budget; amounts with units */
+"%1$@ left of %2$@" = "%1$@ left of %2$@";
+
 /* Username marketplace: listing success — name, then price */
 "%1$@ listed for %2$@ DASH" = "‏%1$@ به قیمت %2$@ DASH برای فروش گذاشته شد";
 
@@ -27,6 +30,9 @@
 
 /* DashConnect App Connect v2: what a key can do, a date */
 "%1$@, with no limit on spending your identity's credits, until %2$@" = "%1$@, with no limit on spending your identity's credits, until %2$@";
+
+/* DashConnect connection sheet: a key's name, then its budget */
+"%1$@: %2$@" = "%1$@: %2$@";
 
 /* Voting */
 "%1$d already voted “%2$@” and will be left as they are." = "%1$d already voted “%2$@” and will be left as they are.";
@@ -654,6 +660,9 @@
 /* DashConnect connection sheet */
 "App ID" = "App ID";
 
+/* DashConnect connection sheet: a key's budget line */
+"App key" = "App key";
+
 /* AboutDash */
 "App version" = "App version";
 
@@ -1267,8 +1276,17 @@
 /* No comment provided by engineer. */
 "Connecting to payment server" = "Connecting to payment server";
 
+/* DashConnect connection sheet */
+"Connection disconnected" = "Connection disconnected";
+
 /* DashSpend */
 "Connection Error" = "Connection Error";
+
+/* DashConnect connection sheet */
+"Connection expired" = "Connection expired";
+
+/* DashConnect connection sheet: the date its keys expire */
+"Connection expiry" = "Connection expiry";
 
 /* DashConnect */
 "Connections" = "Connections";
@@ -1683,6 +1701,9 @@
 
 /* DashPay FAQ */
 "DashPay is Dash's social payments experience, built on Dash Platform. You register a username, add other users as contacts, and pay them by name — no more copying addresses." = "‏DashPay تجربه پرداخت اجتماعی دش است که روی Dash Platform ساخته شده. یک نام کاربری ثبت می‌کنید، کاربران دیگر را به‌عنوان مخاطب می‌افزایید و با نام به آنها پرداخت می‌کنید — دیگر خبری از کپی کردن نشانی نیست.";
+
+/* DashConnect connection sheet: a key's budget line */
+"DashPay profile key" = "DashPay profile key";
 
 /* DashPay intro: pitch paragraph */
 "DashPay replaces long cryptic addresses with usernames. Add friends as contacts, send money to a name, and keep every payment organized by person." = "‏DashPay نشانی‌های بلند و نامفهوم را با نام کاربری جایگزین می‌کند. دوستان را به‌عنوان مخاطب بیفزایید، به یک نام پول بفرستید و هر پرداخت را بر اساس شخص مرتب نگه دارید.";
@@ -2280,6 +2301,9 @@
 /* Identity top-up sheet — linkability warning for transparent-side sources */
 "Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance." = "تأمین مالی از موجودی شفاف، آن سکه‌ها را به‌طور عمومی در زنجیره Dash به هویت شما پیوند می‌زند. برای حفظ حریم خصوصی، از موجودی Shielded خود بپردازید.";
 
+/* DashConnect connection sheet */
+"Funding left" = "Funding left";
+
 /* A transfer whose recipient was not on record was finished to the wallet's own Shielded balance */
 "Funds added to your Shielded balance" = "Funds added to your Shielded balance";
 
@@ -2470,6 +2494,9 @@
 
 /* Destination of an identity funding asset lock */
 "Identity credits" = "اعتبارهای هویت";
+
+/* DashConnect connection sheet */
+"Identity funding limits" = "Identity funding limits";
 
 /* SDK identity profile sheet */
 "Identity ID" = "Identity ID";
@@ -3085,6 +3112,9 @@
 /* Usernames */
 "Maximum %ld characters" = "Maximum %ld characters";
 
+/* DashConnect connection sheet: an amount with its unit, e.g. 0.5 DASH */
+"Maximum of %@" = "Maximum of %@";
+
 /* DashConnect token purchase */
 "Maximum price" = "Maximum price";
 
@@ -3280,6 +3310,9 @@
 /* Wallet accounts */
 "No Accounts" = "No Accounts";
 
+/* DashConnect: an empty tab */
+"No active connections" = "No active connections";
+
 /* Coinbase */
 "No active user" = "No active user";
 
@@ -3316,6 +3349,12 @@
 /* Log export */
 "No diagnostic logs were found on this device. Logs are written from the next launch onward." = "هیچ گزارش تشخیصی روی این دستگاه پیدا نشد. گزارش‌ها از اجرای بعدی نوشته می‌شوند.";
 
+/* DashConnect: an empty tab */
+"No disconnected connections" = "No disconnected connections";
+
+/* DashConnect: an empty tab */
+"No expired connections" = "No expired connections";
+
 /* Wallet accounts */
 "No extended public key has been persisted for this account yet." = "No extended public key has been persisted for this account yet.";
 
@@ -3333,6 +3372,9 @@
 
 /* Send blocked while the device is offline */
 "No internet connection. Reconnect to the network and try again." = "No internet connection. Reconnect to the network and try again.";
+
+/* DashConnect connection sheet: a key with no spending limit */
+"No limit" = "No limit";
 
 /* Explore Dash */
 "No locations found." = "No locations found.";
@@ -3561,6 +3603,9 @@
 
 /* Masternodes */
 "Not in wallet history" = "در تاریخچه کیف پول نیست";
+
+/* DashConnect connection sheet */
+"Not known" = "Not known";
 
 /* Username marketplace: own unlisted name */
 "Not listed for sale" = "برای فروش گذاشته نشده";
@@ -4252,6 +4297,12 @@
 /* Identity top-up sheet — shielded source note */
 "Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins." = "توصیه می‌شود: انتقال دومرحله‌ای از طریق نشانی Platform خودتان، هویت شما را از سکه‌های شفافتان جدا نگه می‌دارد.";
 
+/* DashConnect connection sheet */
+"Reconnect" = "Reconnect";
+
+/* DashConnect: accessibility, a row's button; the app's name */
+"Reconnect %@" = "Reconnect %@";
+
 /* Voting */
 "Records your masternodes as having voted, without taking a side." = "مسترنودهای شما را به‌عنوان رأی‌داده ثبت می‌کند، بدون جانبداری.";
 
@@ -4689,7 +4740,16 @@
 "See on Uphold" = "مشاهده در آپهلد";
 
 /* DashConnect connection sheet: the app's name */
+"See what %@ did NOT have access to" = "See what %@ did NOT have access to";
+
+/* DashConnect connection sheet: the app's name */
+"See what %@ will be able to do" = "See what %@ will be able to do";
+
+/* DashConnect connection sheet: the app's name */
 "See what %@ will NOT have access to" = "See what %@ will NOT have access to";
+
+/* DashConnect connection sheet: the app's name */
+"See what you allowed %@ to do" = "See what you allowed %@ to do";
 
 /* DashConnect */
 "See your username" = "See your username";
@@ -6793,6 +6853,9 @@
 
 /* DashPay FAQ */
 "What is DashPay?" = "‏DashPay چیست؟";
+
+/* DashConnect connection sheet */
+"What is left of the keys' budgets could not be read." = "What is left of the keys' budgets could not be read.";
 
 /* Usernames */
 "What is username voting?" = "رای‌گیری نام کاربری چیست؟";

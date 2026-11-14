@@ -225,7 +225,6 @@ struct MasternodesScreen: View {
     /// `UIHostingController`s, each drawing its own `DashUIKit.NavigationBar`.
     static func hostingController(popFrom navigation: UINavigationController) -> UIViewController {
         let hosting = UIHostingController(rootView: MasternodesScreen(vc: navigation))
-        hosting.hidesBottomBarWhenPushed = true
         return hosting
     }
 

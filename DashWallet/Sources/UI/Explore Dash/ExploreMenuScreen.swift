@@ -179,7 +179,6 @@ struct ExploreMenuScreen: View {
         ) { authenticated, _, _ in
             guard authenticated else { return }
             let controller = BuySellPortalViewController.controller()
-            controller.hidesBottomBarWhenPushed = true
             vc?.pushViewController(controller, animated: true)
         }
     }
@@ -187,7 +186,6 @@ struct ExploreMenuScreen: View {
     private func showUsernameMarketplace() {
         let controller = UIHostingController(
             rootView: UsernameMarketplaceScreen(vc: vc))
-        controller.hidesBottomBarWhenPushed = true
         vc?.pushViewController(controller, animated: true)
     }
 
