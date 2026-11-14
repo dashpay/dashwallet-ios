@@ -1139,6 +1139,9 @@
 /* No comment provided by engineer. */
 "Chunk process avg time" = "分块处理平均耗时";
 
+/* QR scanner */
+"Claim Invitation" = "Claim Invitation";
+
 /* No comment provided by engineer. */
 "Claimable balance" = "可领取余额";
 
@@ -2954,6 +2957,9 @@
 /* Settings: advanced mode */
 "Keep credits to pay for on-chain actions and Platform apps" = "Keep credits to pay for on-chain actions and Platform apps";
 
+/* QR scanner */
+"Keep Scanning" = "Keep Scanning";
+
 /* CoinJoin */
 "Keep these coins private. Network and privacy fees apply." = "让这些币保持私密。将收取网络和隐私手续费。";
 
@@ -3957,6 +3963,9 @@
 
 /* DashConnect: return to an app the wallet does not know; the placeholder is a website, e.g. yap.pr */
 "Open %@" = "Open %@";
+
+/* QR scanner */
+"Open Send" = "Open Send";
 
 /* Notifications */
 "Open Settings" = "Open Settings";
@@ -6400,6 +6409,9 @@
 /* DashPay Contacts: scanned QR is a payment/invitation/foreign code */
 "This isn't a DashPay user QR code." = "这不是 DashPay 用户二维码。";
 
+/* DashPay Invitations */
+"This isn't an invitation QR code." = "This isn't an invitation QR code.";
+
 /* DashConnect */
 "This kind of code is not accepted on mainnet. Ask the app for a DashPay connect link or code." = "This kind of code is not accepted on mainnet. Ask the app for a DashPay connect link or code.";
 
@@ -6471,6 +6483,15 @@
 
 /* DashConnect error */
 "This QR code is not a DashConnect QR code." = "This QR code is not a DashConnect QR code.";
+
+/* QR scanner */
+"This QR code is a Dash payment request." = "This QR code is a Dash payment request.";
+
+/* QR scanner */
+"This QR code is a DashPay invitation." = "This QR code is a DashPay invitation.";
+
+/* QR scanner */
+"This QR code is a DashPay user." = "This QR code is a DashPay user.";
 
 /* Receive screen */
 "This QR contains the specified amount" = "This QR contains the specified amount";
@@ -6876,6 +6897,12 @@
 /* Alert title */
 "Turn device passcode on" = "打开设备密码";
 
+/* QR scanner */
+"Turn off flashlight" = "Turn off flashlight";
+
+/* QR scanner */
+"Turn on flashlight" = "Turn on flashlight";
+
 /* Notifications */
 "Turned off in iOS Settings" = "Turned off in iOS Settings";
 
@@ -7194,6 +7221,9 @@
 
 /* Maya */
 "View transaction on MayaScan" = "View transaction on MayaScan";
+
+/* QR scanner */
+"View User" = "View User";
 
 /* Voting */
 "Vote" = "投票";
