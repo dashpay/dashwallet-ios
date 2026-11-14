@@ -8,6 +8,10 @@ import DashUIKit
 
 /// sync.
 struct ShieldedSubmittedUnconfirmedView: View {
+    var title = NSLocalizedString("Submitted — confirming", comment: "InternalTransfer")
+    var message = NSLocalizedString(
+        "Your transfer may have reached the network, but its result is not confirmed yet. Don't resend it. Wait for the wallet to sync and check its status.",
+        comment: "InternalTransfer")
     var onDone: () -> Void
     /// Where this transfer's status can be checked later, when the surface
     /// that started it has a place for that.
@@ -25,14 +29,12 @@ struct ShieldedSubmittedUnconfirmedView: View {
                 .foregroundColor(.dash.blue)
                 .padding(.top, 24)
 
-            Text(String(localized: "Submitted — confirming", comment: "InternalTransfer"))
+            Text(title)
                 .font(.title3)
                 .fontWeight(.semibold)
                 .foregroundColor(.dash.primaryText)
 
-            Text(String(
-                localized: "Your transfer may have reached the network, but its result is not confirmed yet. Don't resend it. Wait for the wallet to sync and check its status.",
-                comment: "InternalTransfer"))
+            Text(message)
                 .font(.callout)
                 .foregroundColor(.dash.secondaryText)
                 .multilineTextAlignment(.center)

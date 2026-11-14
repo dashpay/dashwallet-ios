@@ -29,6 +29,9 @@ struct ContactProfileSheet: View {
     /// Set once the profile has asked to close: a contacts change during the
     /// Pay sheet's exit and that sheet's onDismiss can both ask.
     @State private var isClosing = false
+    /// The wallet and identity this profile opened on, handed to the pay
+    /// sheet so a wallet switch while the profile is open can't rebind it.
+    @State private var paymentRecipient: ContactPaymentRecipient?
 
     // Owner-private contact meta, editable for established contacts.
     // Seeded from the immutable snapshot in onAppear; saved through
@@ -118,10 +121,16 @@ struct ContactProfileSheet: View {
                     loadPayments()
                 }
             }) {
-                PayContactSheet(contact: contact, onSent: { paidFromPaySheet = true })
+                PayContactSheet(
+                    contact: contact,
+                    recipient: paymentRecipient,
+                    onSent: { paidFromPaySheet = true })
                     .onAppear { isPayPresented = true }
             }
             .onAppear {
+                if paymentRecipient == nil {
+                    paymentRecipient = ContactPaymentRecipient.current(for: contact)
+                }
                 aliasText = contact.alias ?? ""
                 noteText = contact.note ?? ""
                 isHidden = contact.isHidden
@@ -679,7 +688,7 @@ struct ContactProfileSheet: View {
                         .font(.system(size: 12))
                         .foregroundColor(.dash.secondaryText)
                 }
-                if let status = payment.withdrawalStatus {
+                if let status = payment.statusNote {
                     Text(status)
                         .font(.system(size: 12))
                         .foregroundColor(.dash.secondaryText)
@@ -771,14 +780,19 @@ struct PayContactSheet: View {
     /// The sent payment's details, once it is broadcast.
     @State private var sentDetails: TxDetailModel?
 
-    init(contact: ContactItem, onSent: @escaping () -> Void) {
+    /// - Parameter recipient: the wallet and identity the profile opened on;
+    ///   nil leaves the view model to take the ones active now. The payment
+    ///   is bound to them, so a wallet switch voids it.
+    init(contact: ContactItem, recipient: ContactPaymentRecipient?, onSent: @escaping () -> Void) {
         self.contact = contact
         self.onSent = onSent
         // Built inside the autoclosure, so a re-render of the profile does not
         // construct (and subscribe) a view model only to drop it.
         _viewModel = StateObject(wrappedValue: {
             let viewModel = SendViewModel()
-            viewModel.setContactRecipient(contact)
+            // Transparent only: this sheet has no From step and no withdrawal
+            // confirmation; Send → Send to username offers every balance.
+            viewModel.setContactRecipient(contact, paymentRecipient: recipient, transparentOnly: true)
             return viewModel
         }())
     }
