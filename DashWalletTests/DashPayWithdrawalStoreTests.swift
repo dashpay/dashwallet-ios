@@ -354,6 +354,44 @@ final class ContactPaymentSourceTests: XCTestCase {
         XCTAssertEqual(result.initialSource, .core)
         XCTAssertFalse(result.offersChoice)
     }
+
+    private func capturedRecipient(for contact: ContactItem) -> ContactPaymentRecipient {
+        ContactPaymentRecipient(
+            identityId: contact.contactIdentityId,
+            displayName: "",
+            walletId: Data(repeating: 1, count: 32),
+            ownerIdentityId: Data(repeating: 2, count: 32),
+            network: .testnet)
+    }
+
+    /// The contact profile's Pay hosts the amount step without a From step or
+    /// a withdrawal confirmation, so it pays only from Transparent even with a
+    /// wallet context that would admit every balance.
+    func testTransparentOnlyHostOffersOnlyTransparent() {
+        let contact = ContactItem.fixture(relationship: .established, createdAt: Date(timeIntervalSince1970: 0))
+        let captured = capturedRecipient(for: contact)
+
+        let profile = SendViewModel(contactLookup: { _ in contact })
+        profile.setContactRecipient(contact, paymentRecipient: captured, transparentOnly: true)
+        XCTAssertEqual(profile.contactPaymentRecipient, captured)
+        XCTAssertEqual(profile.validSources, [.core])
+        XCTAssertEqual(profile.source, .core)
+        XCTAssertEqual(profile.route, .coreToCore)
+        XCTAssertFalse(profile.contactOffersSourceChoice)
+
+        let picker = SendViewModel(contactLookup: { _ in contact })
+        picker.setContactRecipient(contact, paymentRecipient: captured)
+        XCTAssertEqual(picker.validSources, [.core, .platform, .shielded])
+    }
+
+    /// A context captured for another contact never binds this payment.
+    func testRecipientCapturedForAnotherContactIsNotUsed() {
+        let contact = ContactItem.fixture(relationship: .established, createdAt: Date(timeIntervalSince1970: 0))
+        let other = ContactItem.fixture(idByte: 0xbb, relationship: .established, createdAt: Date(timeIntervalSince1970: 0))
+        let viewModel = SendViewModel(contactLookup: { _ in contact })
+        viewModel.setContactRecipient(contact, paymentRecipient: capturedRecipient(for: other))
+        XCTAssertNotEqual(viewModel.contactPaymentRecipient?.identityId, other.contactIdentityId)
+    }
 }
 
 /// The Total a contact payment from Platform or Shielded confirms.
