@@ -171,8 +171,20 @@ extension String {
     }
 }
 
+extension String {
+    /// Every non-ASCII character spelled out by its Unicode name (a 🔒 reads `\N{LOCK}`). Both Sends show a merchant
+    /// name, a memo and a link's label and message this way, so no text can pass for the verified-merchant lock.
+    var spellingOutUnicodeNames: String {
+        applyingTransform(.toUnicodeName, reverse: false) ?? self
+    }
+}
+
 @objc
 extension NSString {
+    var spellingOutUnicodeNames: String {
+        (self as String).spellingOutUnicodeNames
+    }
+
     var wordsCount: UInt {
         var count: UInt = 0
 

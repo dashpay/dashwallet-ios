@@ -39,6 +39,9 @@ enum SendOutcome {
             self = Self.outcome(for: error)
         } else if let error = error as? PlatformAddressSyncCoordinator.SendError {
             self = Self.outcome(for: error)
+        } else if case BIP70Error.failedAfterAcknowledgement = error {
+            // The merchant acknowledged the Payment and holds the signed bytes.
+            self = .inFlight
         } else if case BIP70Error.expired = error {
             // Thrown before the claim is spent: nothing was POSTed or broadcast.
             self = .notSent(.expired)

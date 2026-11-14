@@ -327,8 +327,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     private static let assetLockPollInterval: TimeInterval = 0.5
 
     /// Rust rejects Core identity top-ups below this floor. Purchases use
-    /// it when funding the explicitly accepted sale price.
-    private static let minimumCoreTopUpDuffs: UInt64 = 50_500
+    /// it when funding the explicitly accepted sale price; the external send
+    /// refuses a Core → Identity amount below it.
+    nonisolated static let minimumCoreTopUpDuffs: UInt64 = 50_500
 
     /// Fee headroom an existing identity must hold for each DPNS name
     /// registered in one run, on top of any contest fund: 0.01 DASH.
