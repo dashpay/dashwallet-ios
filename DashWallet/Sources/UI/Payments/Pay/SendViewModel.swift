@@ -509,10 +509,7 @@ final class SendViewModel: ObservableObject {
                 // and could starve the preflight of time to resolve.
                 let changed = self.platformCredits != credits
                 self.platformCredits = credits
-                if changed {
-                    self.restartShieldPreflightOnBalanceChange()
-                    self.restartContactWithdrawalPreflightOnBalanceChange()
-                }
+                if changed { self.restartShieldPreflightOnBalanceChange() }
             }
             .store(in: &cancellables)
 
@@ -785,17 +782,18 @@ final class SendViewModel: ObservableObject {
     /// What one contact payment from `source` can send, for picking the
     /// source before its route's preflights have run: Transparent's
     /// fee-aware spendable amount; for Platform the largest address (a
-    /// payment spends one; its Platform fee is only known once the preflight
-    /// runs) and for Shielded the note-priced ceiling (or the balance less a
-    /// full bundle's fee), each less the Core fee and nothing below the
-    /// withdrawal floor.
+    /// payment spends one) less the fee that input keeps, and for Shielded
+    /// the note-priced ceiling (or the balance less a full bundle's fee),
+    /// each less the Core fee and nothing below the withdrawal floor.
     private func contactPayableDuffs(from source: ChainNetwork) -> UInt64 {
         switch source {
         case .core:
             return coreToCoreSpendableDuffs
         case .platform:
+            // The one address a payment spends, less the fee its input keeps.
             let largest = PlatformAddressSyncCoordinator.shared.derivedAddresses.map(\.balance).max() ?? 0
-            return Self.contactPayableDuffs(envelopeCredits: largest)
+            let fee = ShieldedTransferCoordinator.platformSingleInputWithdrawalFeeCredits
+            return Self.contactPayableDuffs(envelopeCredits: largest > fee ? largest - fee : 0)
         case .shielded:
             let ceiling = ShieldedTransferCoordinator.spendCeilingCredits(feeKind: .withdrawal)
                 ?? ShieldedTransferCoordinator.fullBundleWithdrawalFeeCredits()
@@ -864,13 +862,13 @@ final class SendViewModel: ObservableObject {
     /// the Core fee added on top, and no more than one withdrawal may carry.
     private func contactShieldedRecipientCredits(withinCeiling ceiling: UInt64) -> UInt64 {
         min(ceiling > contactCoreFeeCredits ? ceiling - contactCoreFeeCredits : 0,
-            ShieldedTransferCoordinator.contactShieldedMaximumCredits)
+            ShieldedTransferCoordinator.contactWithdrawalMaximumCredits)
     }
 
     /// A Shielded contact payment above what one withdrawal may carry.
     private var exceedsContactShieldedMaximum: Bool {
         route == .shieldedToCore && contactCoreFeeCredits > 0
-            && creditsPreview > ShieldedTransferCoordinator.contactShieldedMaximumCredits
+            && creditsPreview > ShieldedTransferCoordinator.contactWithdrawalMaximumCredits
     }
 
     /// The Core fee a contact paid from Platform or Shielded has added on
@@ -882,7 +880,8 @@ final class SendViewModel: ObservableObject {
     }
 
     /// The network fee a contact payment from Platform or Shielded pays on
-    /// top of what it submits: the Platform preflight's, or the fee of the
+    /// top of what it submits: the fee of a one-input Platform withdrawal
+    /// (`ShieldedTransferCoordinator.platformSingleInputWithdrawalFeeCredits`), or the fee of the
     /// notes Rust's selector would spend on this Shielded withdrawal — or,
     /// while those notes aren't ready, the worst-case fee of a full bundle,
     /// which the selector never exceeds. Nil when not known; the payment can't
@@ -892,7 +891,7 @@ final class SendViewModel: ObservableObject {
         guard paysContact else { return nil }
         switch route {
         case .platformToCore:
-            return withdrawalPreflight?.canWithdraw == true ? withdrawalPreflight?.estimatedFee : nil
+            return ShieldedTransferCoordinator.platformSingleInputWithdrawalFeeCredits
         case .shieldedToCore:
             let (submitted, overflow) = creditsPreview.addingReportingOverflow(contactCoreFeeCredits)
             guard !overflow else { return nil }
@@ -1283,17 +1282,6 @@ final class SendViewModel: ObservableObject {
         refreshShieldPreflight()
     }
 
-    /// A contact paid from Platform is held to its preflighted fee after the
-    /// PIN (`ShieldedTransferCoordinator.contactPlatformFeeRefusal`), and a
-    /// receipt can raise that fee: re-preflight, so confirming again offers
-    /// the current one instead of being refused the same way.
-    private func restartContactWithdrawalPreflightOnBalanceChange() {
-        guard route == .platformToCore, paysContact else { return }
-        preflightTask?.cancel()
-        preflightTask = nil
-        refreshWithdrawalPreflight()
-    }
-
     // MARK: - Clipboard
 
     struct ClipboardSuggestion: Equatable {
@@ -1588,11 +1576,24 @@ final class SendViewModel: ObservableObject {
     }
 
     /// The most one Platform → Core payment can send with its explicit
-    /// input: `partialWithdrawCapCredits`, less the Core fee a contact has
-    /// added on top.
+    /// input: `partialWithdrawCapCredits`; for a contact, the largest address
+    /// less the single-input fee and the Core fee added on top, and no more
+    /// than one withdrawal may carry (`contactPlatformCapCredits`).
     private var platformToCoreCapCredits: UInt64 {
-        let cap = partialWithdrawCapCredits
-        return cap > contactCoreFeeCredits ? cap - contactCoreFeeCredits : 0
+        guard paysContact else { return partialWithdrawCapCredits }
+        return Self.contactPlatformCapCredits(
+            largestAddressCredits: PlatformAddressSyncCoordinator.shared.derivedAddresses.map(\.balance).max() ?? 0)
+    }
+
+    /// What a contact can be paid from a Platform address holding
+    /// `largestAddressCredits`: its one explicit input must keep the
+    /// single-input fee, the Core fee goes on top, and the withdrawal stays
+    /// within the protocol maximum. Needs no whole-account preflight.
+    nonisolated static func contactPlatformCapCredits(largestAddressCredits: UInt64) -> UInt64 {
+        let reserved = ShieldedTransferCoordinator.platformSingleInputWithdrawalFeeCredits
+            + ShieldedTransferCoordinator.contactCoreFeeCredits
+        guard largestAddressCredits > reserved else { return 0 }
+        return min(largestAddressCredits - reserved, ShieldedTransferCoordinator.contactWithdrawalMaximumCredits)
     }
 
     /// A contact paid from Platform or Shielded below the withdrawal floor
@@ -1823,6 +1824,23 @@ final class SendViewModel: ObservableObject {
                 feeReserveCredits: 0) {
                 return message
             }
+            // A contact pays from one explicit input, capped without the
+            // whole-account preflight the messages below wait on.
+            if paysContact {
+                guard creditsPreview > platformToCoreCapCredits else { return nil }
+                let largest = PlatformAddressSyncCoordinator.shared.derivedAddresses.map(\.balance).max() ?? 0
+                if creditsPreview <= largest {
+                    return String.localizedStringWithFormat(
+                        NSLocalizedString(
+                            "You can send up to %@ to a contact from your Platform balance in one payment.",
+                            comment: "DashPay contact payment from Platform: single-payment cap"),
+                        "\((platformToCoreCapCredits / 1000).formattedDashAmountWithoutCurrencySymbol) DASH")
+                }
+                return TransferSpendAmountPolicy.insufficientBalanceMessage(
+                    balanceName: balanceName,
+                    requestedDuffs: dashDuffsUnsigned,
+                    spendableDuffs: platformToCoreCapCredits / 1000)
+            }
             // Stay quiet while the preflight is still RESOLVING: Continue is
             // disabled, but the amount is not yet known to be unaffordable.
             // An attempt that already failed is named instead — the same
@@ -1844,13 +1862,6 @@ final class SendViewModel: ObservableObject {
 
             let formattedCap =
                 "\((platformToCoreCapCredits / 1000).formattedDashAmountWithoutCurrencySymbol) DASH"
-            if paysContact, let fullDuffs = platformWithdrawableDuffs, dashDuffsUnsigned <= fullDuffs {
-                return String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "You can send up to %@ to a contact from your Platform balance in one payment.",
-                        comment: "DashPay contact payment from Platform: single-payment cap"),
-                    formattedCap)
-            }
             if let fullDuffs = platformWithdrawableDuffs, dashDuffsUnsigned <= fullDuffs {
                 return String.localizedStringWithFormat(
                     NSLocalizedString(
@@ -1954,6 +1965,9 @@ final class SendViewModel: ObservableObject {
                 requestedCredits: creditsPreview,
                 capacity: platformShieldCapacity)
         case .platformToCore:
+            // A contact pays from one explicit input, priced without the
+            // whole-account preflight (`contactPlatformCapCredits`).
+            if paysContact { return creditsPreview <= platformToCoreCapCredits }
             guard withdrawalPreflight?.canWithdraw == true else { return false }
             if isFullPlatformWithdrawal { return true }
             return creditsPreview <= platformToCoreCapCredits
