@@ -227,6 +227,30 @@ final class QRScannerTests: XCTestCase {
         XCTAssertEqual(SendViewModel.scannedAddress(in: input), Self.address)
     }
 
+    /// A scanned link's `sender` calls no app back (ADR-0007), so an "Open
+    /// Send" redirect that fills the form with the address and amount drops
+    /// no callback.
+    func testScannedPaymentCallsNoAppBack() {
+        let link = "dash:\(Self.address)?amount=1.5&sender=someapp"
+        let (scanner, recorder) = makeScanner(.addressInput(expectsDashAddress: false))
+        scanner.didDetectCodes([link])
+        scanner.acceptOffer()
+        guard case .payment(let redirected) = recorder.results.first else {
+            return XCTFail("an accepted payment offer finishes with the payment")
+        }
+        XCTAssertEqual(redirected.parsedURI?.callbackScheme, "someapp")
+        XCTAssertNil(redirected.callbackScheme)
+        XCTAssertNil(redirected.paymentIntent?.callbackScheme)
+
+        let (paymentScanner, paymentRecorder) = makeScanner(.payment)
+        paymentScanner.didDetectCodes([link])
+        guard case .payment(let scanned) = paymentRecorder.results.first else {
+            return XCTFail("the payment scanner pays a payment URI")
+        }
+        XCTAssertNil(scanned.callbackScheme)
+        XCTAssertNil(scanned.paymentIntent?.callbackScheme)
+    }
+
     func testDashAddressFieldUnwrapsAPaymentURI() {
         let (scanner, recorder) = makeScanner(.addressInput(expectsDashAddress: true))
         scanner.didDetectCodes(["dash:\(Self.address)?amount=1.5"])
