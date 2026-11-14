@@ -33,7 +33,7 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
     /// creating one; without it the page does not ask.
     init(navigationController: UINavigationController, uri: String? = nil, dashPayModel: DWDashPayProtocol? = nil) {
         let viewModel = ConnectionsViewModel(
-            hasUsername: { dashPayModel == nil || Self.activeIdentityHasUsername() })
+            usernameState: { dashPayModel == nil ? .present : Self.activeIdentityUsernameState() })
         self.viewModel = viewModel
         pendingURI = uri
 
@@ -47,15 +47,17 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
     /// Whether the active identity owns a username. `registrationCompleted`
     /// is not asked: it is one flag for every wallet on the network, so
     /// another wallet's name would count. Until the identity's names are
-    /// read it is not asked to create one.
+    /// read the answer is unknown: no login is approved, and the user is
+    /// not asked to create a name they may have.
     @MainActor
-    private static func activeIdentityHasUsername() -> Bool {
+    private static func activeIdentityUsernameState() -> ConnectionsViewModel.UsernameState {
         #if DASHPAY
         let identity = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
-        guard identity.hasIdentity else { return false }
-        return !identity.usernames.isEmpty || !identity.namesAreLoaded
+        guard identity.hasIdentity else { return .missing }
+        guard identity.namesAreLoaded else { return .unknown }
+        return identity.usernames.isEmpty ? .missing : .present
         #else
-        return true
+        return .present
         #endif
     }
 
@@ -74,9 +76,9 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
         #endif
     }
 
-    /// The identity top-up, over the approve sheet: the request stays on
-    /// screen to be approved once the balance is there. `nil` in a build
-    /// without DashPay, which has no top-up.
+    /// The identity top-up, over the approve sheet. The refused request is
+    /// not approved again; the app gives a new code once the balance is
+    /// there. `nil` in a build without DashPay, which has no top-up.
     private static func topUp(over navigationController: UINavigationController) -> (() -> Void)? {
         #if DASHPAY
         return { [weak navigationController] in

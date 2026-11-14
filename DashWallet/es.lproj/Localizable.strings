@@ -1584,6 +1584,12 @@
 /* DashConnect: a request arrived while the wallet has no username */
 "Create a username to connect apps, then ask the app for a new code." = "Create a username to connect apps, then ask the app for a new code.";
 
+/* DashConnect: a request arrived before the wallet read the identity's usernames */
+"The wallet is still reading your username. Try again in a moment." = "The wallet is still reading your username. Try again in a moment.";
+
+/* DashConnect approve sheet: Platform refused the approval for the identity's balance */
+"Your identity's balance is too low for this connection. Top up, then ask the app for a new code." = "Your identity's balance is too low for this connection. Top up, then ask the app for a new code.";
+
 /* Create DashSpend account */
 "Create account" = "Crear cuenta";
 

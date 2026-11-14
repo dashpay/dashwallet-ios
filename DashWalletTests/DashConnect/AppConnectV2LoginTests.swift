@@ -1019,6 +1019,30 @@ final class AppConnectConnectionTermsTests: XCTestCase {
         XCTAssertEqual(AppConnect.appKeyBudgets(of: 10, requested: [0, 0]), [5, 5])
     }
 
+    func testTheSheetOpensAtALimitThatFundsEveryKey() {
+        let expiry = Self.platformTime + Self.hour
+        let profile = AppConnectRequest.AuthBinding(
+            kind: .documentType, securityLevel: .high, id: Data.identifier(fromBase58: AppConnect.dashPayContractId)!,
+            totalBudget: nil, expiresAt: expiry, documentTypeName: "profile")
+        var plan = Self.plan(budgets: [1], expiresAt: expiry)
+        plan.auth.insert(
+            AppConnect.AuthGrant(bindingIndex: 1, binding: profile, totalBudget: nil, expiresAt: expiry), at: 0)
+        XCTAssertNil(AppConnect.keyBudgets(for: plan, limit: 1), "one credit cannot fund two keys")
+
+        let terms = AppConnect.defaultTerms(for: plan, now: Date(timeIntervalSince1970: TimeInterval(Self.platformTime) / 1000))
+
+        XCTAssertEqual(terms.fundingLimit, AppConnect.smallestFundingLimit(for: plan))
+        XCTAssertNotNil(AppConnect.keyBudgets(for: plan, limit: terms.fundingLimit))
+    }
+
+    func testTheSheetOpensAtTheAskedLimitWhenItFundsEveryKey() {
+        let plan = Self.plan(budgets: [2000, 1000], expiresAt: Self.platformTime + Self.hour)
+
+        let terms = AppConnect.defaultTerms(for: plan, now: Date(timeIntervalSince1970: TimeInterval(Self.platformTime) / 1000))
+
+        XCTAssertEqual(terms.fundingLimit, 3000)
+    }
+
     // MARK: Balance
 
     func testAConsensusRefusalForTheBalanceOffersATopUp() {

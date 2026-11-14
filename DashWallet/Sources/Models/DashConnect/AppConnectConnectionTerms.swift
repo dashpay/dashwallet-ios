@@ -56,14 +56,16 @@ extension AppConnect {
     /// (`profileKeyShare` when it asks only for DashPay profile keys); and the
     /// earliest expiry the plan gives a key (the app's request capped at a
     /// year, or the default lifetime), so no key lives longer than the app
-    /// asked unless the user chooses so.
+    /// asked unless the user chooses so. The limit is raised to
+    /// `smallestFundingLimit` when that is more, so every key has a budget.
     static func defaultTerms(for plan: GrantPlan, now: Date) -> ConnectionTerms {
         let requested = totalBudget(of: plan)
         let earliest = plan.auth.map(\.expiresAt).min() ?? milliseconds(now.addingTimeInterval(v2DefaultLifetime))
         let profileOnly = !plan.auth.isEmpty && plan.auth.allSatisfy(isProfileKey)
         let limit = requested == 0 ? defaultFundingLimit : min(requested, v2BudgetCapCredits)
+        let shown = profileOnly ? min(limit, profileKeyShare) : limit
         return ConnectionTerms(
-            fundingLimit: profileOnly ? min(limit, profileKeyShare) : limit,
+            fundingLimit: max(shown, smallestFundingLimit(for: plan) ?? 0),
             expiresAt: earliest)
     }
 

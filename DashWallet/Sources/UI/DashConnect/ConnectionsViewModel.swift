@@ -75,6 +75,14 @@ struct ConnectionSheetItem: Identifiable, Equatable {
 
 @MainActor
 final class ConnectionsViewModel: ObservableObject {
+    /// What the wallet knows of the active identity's usernames.
+    enum UsernameState {
+        case present
+        case missing
+        /// The names are not read yet.
+        case unknown
+    }
+
     @Published private(set) var connections: [DAppConnection] = []
     /// The rows were delivered once: until then nothing is known to be
     /// connected or not.
@@ -155,6 +163,9 @@ final class ConnectionsViewModel: ObservableObject {
     /// create one, and a login request that arrives is not approved
     /// (`answerWithoutUsername`).
     @Published private(set) var needsUsername: Bool
+    /// The active identity's names are not read yet: a login request is
+    /// not taken or approved until they are, and is not told to create one.
+    private(set) var usernameUnknown = false
     @Published var pendingRequest: ConnectionRequest? {
         didSet {
             // Terms belong to one request, by its ephemeral key: a sheet for
@@ -196,6 +207,12 @@ final class ConnectionsViewModel: ObservableObject {
     private var termsNow: Date {
         guard let resolved = platformTimeResolved else { return now() }
         return resolved.platform.addingTimeInterval(max(0, now().timeIntervalSince(resolved.phone)))
+    }
+
+    /// Moves the sheet's Platform time up to `platformTime` when it is
+    /// behind, from this phone's clock now.
+    private func platformTimeIsAtLeast(_ platformTime: Date) {
+        platformTimeResolved = (platform: max(termsNow, platformTime), phone: now())
     }
 
     private static func date(ms: UInt64) -> Date {
@@ -241,7 +258,7 @@ final class ConnectionsViewModel: ObservableObject {
     @Published var purchaseApproveError: String?
 
     private let dataSource: any DashConnectDataSource
-    private let hasUsername: @MainActor () -> Bool
+    private let usernameState: @MainActor () -> UsernameState
     private let now: () -> Date
     private var pendingLoginRequest: DashKeyRequest?
     /// Opens an App Connect request's return URL.
@@ -289,14 +306,16 @@ final class ConnectionsViewModel: ObservableObject {
         dataSource: (any DashConnectDataSource)? = nil,
         featureUnavailable: Bool? = nil,
         openURL: (@MainActor (URL) -> Void)? = nil,
-        hasUsername: @escaping @MainActor () -> Bool = { true },
+        usernameState: @escaping @MainActor () -> UsernameState = { .present },
         now: @escaping () -> Date = Date.init,
         notificationCenter: NotificationCenter = .default
     ) {
         let computedFeatureUnavailable = featureUnavailable ?? !WalletEnvironment.isTestNetwork
         self.featureUnavailable = computedFeatureUnavailable
-        self.hasUsername = hasUsername
-        self.needsUsername = !hasUsername()
+        self.usernameState = usernameState
+        let username = usernameState()
+        self.needsUsername = username == .missing
+        self.usernameUnknown = username == .unknown
         self.now = now
         self.dataSource = dataSource ?? Self.defaultDataSource(featureUnavailable: computedFeatureUnavailable)
         self.openURL = openURL ?? { UIApplication.shared.open($0) }
@@ -564,7 +583,17 @@ final class ConnectionsViewModel: ObservableObject {
     /// Reads again whether the wallet has a username, for a page coming back
     /// from creating one.
     func refreshUsername() {
-        needsUsername = !hasUsername()
+        let username = usernameState()
+        needsUsername = username == .missing
+        usernameUnknown = username == .unknown
+    }
+
+    /// Why a login is not taken or approved without a known username, or
+    /// nil when the active identity has one.
+    private var usernameRefusal: String? {
+        if needsUsername { return Self.usernameNeededText }
+        if usernameUnknown { return Self.usernameUnreadText }
+        return nil
     }
 
     private func receive(_ content: String, byLink: Bool) {
@@ -579,7 +608,8 @@ final class ConnectionsViewModel: ObservableObject {
         // is refused once parsed, before the network is read for it
         // (`handleStateTransition`). Any other request is not approved
         // (`answerWithoutUsername`).
-        if needsUsername, !DashConnectUri.isStUri(content.trimmingCharacters(in: .whitespacesAndNewlines)) {
+        if needsUsername || usernameUnknown,
+           !DashConnectUri.isStUri(content.trimmingCharacters(in: .whitespacesAndNewlines)) {
             answerWithoutUsername()
             return
         }
@@ -626,9 +656,6 @@ final class ConnectionsViewModel: ObservableObject {
             return
         }
 
-        // A new request ends the return step of the one before: its
-        // return is not opened.
-        pendingReturn = nil
         requestGeneration &+= 1
         let generation = requestGeneration
         isResolvingRequest = true
@@ -641,6 +668,10 @@ final class ConnectionsViewModel: ObservableObject {
                 // still resolving from publishing one.
                 let parsed = try await dataSource.parseQR(content)
                 guard generation == requestGeneration else { return }
+                // A request that reads ends the return step of the one
+                // before: its return is not opened. One that does not read
+                // leaves that choice on screen.
+                pendingReturn = nil
                 switch parsed {
                 case let .login(request):
                     // Resolve first, publish second, and publish the pair
@@ -668,7 +699,7 @@ final class ConnectionsViewModel: ObservableObject {
                     let action: DashConnectStAction
                     do {
                         action = try await dataSource.handleStateTransition(
-                            request, refusesTokenPurchase: needsUsername)
+                            request, refusesTokenPurchase: needsUsername || usernameUnknown)
                     } catch let error as DashConnectPlatformError
                         where error == .tokenPurchaseNeedsUsername || (needsUsername && error == .noIdentity) {
                         // Said on every page, the create-username one too:
@@ -678,7 +709,9 @@ final class ConnectionsViewModel: ObservableObject {
                         // one is told to create a username for apps at all.
                         message = ConnectionsScreenMessage(
                             kind: .error,
-                            text: error == .tokenPurchaseNeedsUsername
+                            text: usernameUnknown
+                                ? Self.usernameUnreadText
+                                : error == .tokenPurchaseNeedsUsername
                                 ? DashConnectPlatformError.tokenPurchaseNeedsUsername.localizedDescription
                                 : Self.usernameNeededText)
                         return
@@ -714,19 +747,15 @@ final class ConnectionsViewModel: ObservableObject {
     /// Nothing is opened and no return step starts: the user never saw this
     /// request's sheet, so its return address was not shown to anyone.
     private func answerWithoutUsername() {
+        guard let refusal = usernameRefusal else { return }
         guard pendingReturn == nil else {
-            returnStepNote = Self.usernameNeededText
+            returnStepNote = refusal
             return
         }
-        sayUsernameIsNeeded()
-    }
-
-    /// Why a request was not taken without a username.
-    private func sayUsernameIsNeeded() {
         // The create-username page says it by itself; a page that may show
         // connections says it where the user is looking.
-        if hasConnectionsOrHistory || !hasReadRows {
-            let note = ConnectionsScreenMessage(kind: .error, text: Self.usernameNeededText)
+        if usernameUnknown || hasConnectionsOrHistory || !hasReadRows {
+            let note = ConnectionsScreenMessage(kind: .error, text: refusal)
             if shownConnection != nil { connectionSheetMessage = note } else { message = note }
         }
     }
@@ -735,6 +764,18 @@ final class ConnectionsViewModel: ObservableObject {
         NSLocalizedString(
             "Create a username to connect apps, then ask the app for a new code.",
             comment: "DashConnect: a request arrived while the wallet has no username")
+    }
+
+    static var topUpThenAskAgainText: String {
+        NSLocalizedString(
+            "Your identity's balance is too low for this connection. Top up, then ask the app for a new code.",
+            comment: "DashConnect approve sheet: Platform refused the approval for the identity's balance")
+    }
+
+    static var usernameUnreadText: String {
+        NSLocalizedString(
+            "The wallet is still reading your username. Try again in a moment.",
+            comment: "DashConnect: a request arrived before the wallet read the identity's usernames")
     }
 
     /// A `dash-key:` / `dash-st:` link opened by an app running on this phone.
@@ -751,12 +792,12 @@ final class ConnectionsViewModel: ObservableObject {
         // An unresolved login has nothing to approve; the sheet offers
         // `retryPendingRequest` for it instead.
         guard var consent = pendingRequest, consent.login.isApprovable,
-              let pendingLoginRequest, !isApproving, !isResolvingRequest else { return }
+              let pendingLoginRequest, !isApproving, !isResolvingRequest, !approveNeedsTopUp else { return }
         // Read again: the active identity may have lost its username, or
         // another one become active, since the request came.
         refreshUsername()
-        guard !needsUsername else {
-            approveError = Self.usernameNeededText
+        if let refusal = usernameRefusal {
+            approveError = refusal
             return
         }
 
@@ -795,15 +836,21 @@ final class ConnectionsViewModel: ObservableObject {
                 self.pendingRequest = await dataSource.makeConnectionRequest(from: pendingLoginRequest)
                 // The identity it was rebuilt for may have no username.
                 self.refreshUsername()
-                self.approveError = self.needsUsername
-                    ? Self.usernameNeededText : DashConnectPlatformError.approvalOutOfDate.localizedDescription
+                self.approveError = self.usernameRefusal
+                    ?? DashConnectPlatformError.approvalOutOfDate.localizedDescription
             } catch DashConnectPlatformError.approvalTermsExpired {
                 // The expiry went by while the PIN prompt was up. Nothing
                 // was signed: the sheet stays, and says why itself
                 // (`approveDisabledReason`). Closing the sheet now is a
-                // decline, not a failure.
+                // decline, not a failure. Platform's time is at least that
+                // expiry now, though the sheet's estimate may be behind it:
+                // the estimate moves up, so the same terms are not offered
+                // again.
                 self.pendingFailureStatus = nil
                 self.approveError = nil
+                if let expiresAt = self.approvalTerms?.expiresAt {
+                    self.platformTimeIsAtLeast(Self.date(ms: expiresAt))
+                }
             } catch DashConnectPlatformError.loginUnresolved {
                 // The wallet could not check which login this network gets.
                 // Nothing was signed. The sheet is rebuilt: when it still
@@ -828,13 +875,18 @@ final class ConnectionsViewModel: ObservableObject {
                 self.pendingFailureStatus = error as? DashConnectPlatformError == .authorizationCancelled
                     ? nil
                     : .failed
-                self.approveError = String(
-                    format: NSLocalizedString("Could not complete the DashConnect request: %@", comment: "DashConnect"),
-                    error.localizedDescription
-                )
-                let needsTopUp = AppConnect.isInsufficientBalance(error)
                 // Platform refused the identity update, or the response's
-                // publish after it, for the identity's balance.
+                // publish after it, for the identity's balance. The attempt
+                // was recorded before it was sent, so this request counts as
+                // answered and is not approved again: the user tops up and
+                // asks the app for a new code.
+                let needsTopUp = AppConnect.isInsufficientBalance(error)
+                self.approveError = needsTopUp
+                    ? Self.topUpThenAskAgainText
+                    : String(
+                        format: NSLocalizedString("Could not complete the DashConnect request: %@", comment: "DashConnect"),
+                        error.localizedDescription
+                    )
                 self.approveNeedsTopUp = needsTopUp
             }
         }
@@ -895,7 +947,7 @@ final class ConnectionsViewModel: ObservableObject {
 
     /// How long ago the pending v2 request was made.
     var approvalRequestAge: String? {
-        pendingRequest?.login.grantPlan.map { AppConnectOriginText.age($0, now: now()) }
+        pendingRequest?.login.grantPlan.map { AppConnectOriginText.age($0, now: termsNow) }
     }
 
     /// The host of the return the step asks about (`pendingReturn`) or,

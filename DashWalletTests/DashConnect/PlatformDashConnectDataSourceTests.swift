@@ -1292,8 +1292,20 @@ private final class LoginApprovalSpy: DashConnectDataSource {
         }
     }
 
+    private var storedParseFailure: Error?
+
+    /// Thrown by every parse when set: the code does not read.
+    var parseFailure: Error? {
+        get { lock.withLock { storedParseFailure } }
+        set { lock.withLock { storedParseFailure = newValue } }
+    }
+
     func parseQR(_ content: String) async throws -> DashConnectQr {
-        lock.withLock { storedParseCount += 1 }
+        let failure = lock.withLock { () -> Error? in
+            storedParseCount += 1
+            return storedParseFailure
+        }
+        if let failure { throw failure }
         return parsed ?? .login(loginRequest)
     }
 
@@ -5638,5 +5650,111 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
 
         XCTAssertEqual(viewModel.pendingRequest?.appContractId, Self.appId)
         XCTAssertTrue(viewModel.pendingIsFirstConnection)
+    }
+
+    // MARK: Username
+
+    func testALoginIsNotTakenWhileTheUsernameIsUnread() async {
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, usernameState: { .unknown }, now: { Self.phone })
+
+        viewModel.onQRScanned("login")
+
+        XCTAssertEqual(spy.parseCount, 0)
+        XCTAssertNil(viewModel.pendingRequest)
+        XCTAssertFalse(viewModel.needsUsername, "the user is not asked to create a name they may have")
+        XCTAssertEqual(viewModel.message?.text, ConnectionsViewModel.usernameUnreadText)
+    }
+
+    func testALoginIsNotApprovedWhileTheUsernameIsUnread() async {
+        var username = ConnectionsViewModel.UsernameState.present
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, usernameState: { username }, now: { Self.phone })
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+
+        username = .unknown
+        viewModel.approvePendingRequest()
+
+        XCTAssertEqual(spy.approvedConsents, [])
+        XCTAssertEqual(viewModel.approveError, ConnectionsViewModel.usernameUnreadText)
+    }
+
+    // MARK: Expiry refused at Platform's time
+
+    func testAnExpiryPlatformRefusedTurnsApproveOff() async {
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        spy.approveFailures = [DashConnectPlatformError.approvalTermsExpired]
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, now: { Self.phone })
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        XCTAssertNotNil(viewModel.termsAppliedPlan)
+
+        viewModel.approvePendingRequest()
+        await waitUntil { spy.approvedConsents.count == 1 && !viewModel.isApproving }
+
+        // The phone's clock has not moved, but Platform's time is past the
+        // expiry: the same terms are not offered again.
+        XCTAssertNil(viewModel.termsAppliedPlan)
+        XCTAssertEqual(
+            viewModel.approveDisabledReason,
+            NSLocalizedString(
+                "This expiry has passed. Pick another one, then approve.",
+                comment: "DashConnect approve sheet: the chosen expiry is in the past"))
+        XCTAssertNotNil(viewModel.pendingRequest)
+    }
+
+    // MARK: Balance
+
+    func testABalanceRefusalOffersATopUpAndNoSecondApproval() async {
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        spy.approveFailures = [DashConnectPlatformError.networkRefused(code: AppConnect.identityInsufficientBalanceCode)]
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, now: { Self.phone })
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+
+        viewModel.approvePendingRequest()
+        await waitUntil { spy.approvedConsents.count == 1 && !viewModel.isApproving }
+
+        XCTAssertTrue(viewModel.approveNeedsTopUp)
+        XCTAssertEqual(viewModel.approveError, ConnectionsViewModel.topUpThenAskAgainText)
+        // The attempt was recorded before it was sent: this request counts
+        // as answered, so the app is asked for a new one.
+        viewModel.approvePendingRequest()
+        XCTAssertEqual(spy.approvedConsents.count, 1)
+    }
+
+    // MARK: Return step
+
+    func testALinkThatDoesNotReadKeepsTheReturnStep() async throws {
+        var request = MockDashConnectDataSource.sampleLoginRequest
+        request.appConnect = try DashConnectUri.parseAppConnectRequest("dash-key:2fAANHHASdojyjV9Sqa2wf2nwZE8kLLqmeHpZWa8sBfaGsddVqyMG2ZVte7xJkTKsXvmFYbXzXbNnMo7bJQBxNcf79N8YWi7pLKyb39Rqv6b1KUmxw9UeJGYz2CV9hFGNUQtcyMYVq2Fg6vAxtxpYays61H8gLMcWqaG8TfgGA3H7setGAYiBsM5YmdZgeuCdGAHSwfNfav5cfFjXNDkPWv37UNSgFxj6o58jfXc3kCLKqLJtc5ZPjm1thEGYxK8HVYBi8fRQeEVy76n27DXGrVTyHz94CfJRuMnH76xGYbMgeuvurxjJMLrQgWUu53cjocYyzzNWdJrgs2D5?n=d&v=2&cb=https%3A%2F%2Fyap.pr%2Fconnect%3Fr%3Dd77dc0da9df83a47755a15c42c5d9db9d7a7fd62")
+        let shown = Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)
+        let spy = LoginApprovalSpy(shown: [shown], loginRequest: request)
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, openURL: { _ in }, now: { Self.phone })
+        viewModel.onURIReceived("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        viewModel.approvePendingRequest()
+        await waitUntil { viewModel.pendingRequest == nil }
+        let asked = try XCTUnwrap(viewModel.pendingReturn)
+
+        spy.parseFailure = DashConnectPlatformError.noIdentity
+        viewModel.onURIReceived("not a request")
+        await waitUntil { viewModel.message != nil }
+        XCTAssertEqual(spy.parseCount, 2)
+
+        XCTAssertEqual(viewModel.pendingReturn, asked)
+    }
+
+    private static var platformNow: UInt64 { AppConnect.milliseconds(phone) }
+
+    private func waitUntil(timeout: TimeInterval = 2, _ condition: () -> Bool) async {
+        let deadline = Date().addingTimeInterval(timeout)
+        while !condition(), Date() < deadline {
+            try? await Task.sleep(nanoseconds: 2_000_000)
+        }
     }
 }

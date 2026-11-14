@@ -269,7 +269,7 @@ struct AppConnectApproveSheet: View {
             }
             DashUIKit.DashButton(
                 text: NSLocalizedString("Approve", comment: "DashConnect"),
-                isEnabled: !viewModel.isApproving && viewModel.termsAppliedPlan != nil,
+                isEnabled: !viewModel.isApproving && !viewModel.approveNeedsTopUp && viewModel.termsAppliedPlan != nil,
                 isLoading: viewModel.isApproving,
                 fillsWidth: true, size: .large, style: .filledBlue,
                 action: viewModel.approvePendingRequest)
@@ -354,6 +354,8 @@ struct FundingLimitSheet: View {
 
     @State private var isTyping = false
     @State private var typed = ""
+    /// The typed amount's size, scaled with the user's text size.
+    @ScaledMetric(relativeTo: .largeTitle) private var amountSize: CGFloat = 32
 
     var body: some View {
         BottomSheet(
@@ -415,7 +417,7 @@ struct FundingLimitSheet: View {
             VStack(spacing: 4) {
                 HStack(spacing: 4) {
                     Text(typed.isEmpty ? "0" : typed)
-                        .font(.system(size: 32, weight: .medium))
+                        .font(.system(size: amountSize, weight: .medium))
                         .lineLimit(1)
                         .minimumScaleFactor(0.5)
                     DashIcon.Common.iconDashCurrency.image
