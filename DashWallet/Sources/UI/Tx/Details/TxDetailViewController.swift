@@ -363,6 +363,13 @@ extension TXDetailViewController {
                 switch outcome {
                 case .completed:
                     toast = (NSLocalizedString("Transfer completed", comment: "Asset-lock retry finished"), .success)
+                case .addedToOwnShielded:
+                    // Finished, but to the wallet's own Shielded address: the
+                    // lock had no recorded recipient, so this screen cannot
+                    // say the transfer it was built for completed.
+                    toast = (NSLocalizedString(
+                        "Funds added to your Shielded balance",
+                        comment: "A transfer whose recipient was not on record was finished to the wallet's own Shielded balance"), .info)
                 case .completionUnconfirmed:
                     // Platform said the outpoint is already spent, but that
                     // report is not quorum-authenticated. Say only what was

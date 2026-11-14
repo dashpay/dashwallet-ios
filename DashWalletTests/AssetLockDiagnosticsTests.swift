@@ -471,6 +471,10 @@ final class AssetLockDiagnosticsTests: XCTestCase {
         guard case .failed = coordinator.phase else {
             return XCTFail("expected a refused resume, got \(coordinator.phase)")
         }
+        // Refused before a recipient was decided: no source, and nothing
+        // reported as added to the Shielded balance.
+        XCTAssertNil(coordinator.lastResumeRecipientSource)
+        XCTAssertFalse(coordinator.resumePaidOwnBalanceWithoutRecord)
         XCTAssertNil(store.failure(txidWire: txid, vout: 2))
         XCTAssertTrue(store.allFailures().isEmpty)
     }

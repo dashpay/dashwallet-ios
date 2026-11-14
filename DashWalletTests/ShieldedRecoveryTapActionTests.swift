@@ -54,6 +54,21 @@ final class ShieldedRecoveryTapActionTests: XCTestCase {
         XCTAssertFalse(TxDetailModel.statusAllowsRetry(6))
     }
 
+    /// A lock with no recorded recipient is finished to the wallet's own
+    /// Shielded address (#1370). The sheet cannot know what the transfer was
+    /// for, so it must not call that a completed transfer.
+    func testAResumeToTheOwnBalanceWithNoRecordIsNotCalledACompletedTransfer() {
+        let ordinary = ShieldedRecoveryViewModel.successCopy(paidOwnBalanceWithoutRecord: false)
+        XCTAssertEqual(ordinary.title, "Transfer complete")
+        XCTAssertNil(ordinary.detail)
+
+        let added = ShieldedRecoveryViewModel.successCopy(paidOwnBalanceWithoutRecord: true)
+        XCTAssertEqual(added.title, "Funds added to your Shielded balance")
+        XCTAssertEqual(
+            added.detail,
+            "This wallet has no record of the address this transfer was going to, so it was finished to your own Shielded balance.")
+    }
+
     func testLongWaitStartsAfterTheCopysMinute() {
         XCTAssertEqual(ShieldedRecoveryViewModel.longProofWaitThreshold, .seconds(60))
     }

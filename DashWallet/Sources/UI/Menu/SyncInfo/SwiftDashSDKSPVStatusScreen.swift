@@ -866,51 +866,8 @@ extension SwiftDashSDKSPVStatusScreen {
                 return
             }
 
-            // Report each bucket separately: "finished" and "was already spent"
-            // are different facts about the user's money, and only the first is
-            // a completion this pass witnessed.
-            var parts: [String] = []
-            if outcome.completed > 0 {
-                parts.append(String.localizedStringWithFormat(
-                    NSLocalizedString("%d finished", comment: "SPV diagnostics"),
-                    outcome.completed))
-            }
-            if outcome.alreadySpent > 0 {
-                parts.append(String.localizedStringWithFormat(
-                    NSLocalizedString("%d already spent", comment: "SPV diagnostics"),
-                    outcome.alreadySpent))
-            }
-            if outcome.awaitingSync > 0 {
-                parts.append(String.localizedStringWithFormat(
-                    NSLocalizedString("%d waiting for the network", comment: "SPV diagnostics"),
-                    outcome.awaitingSync))
-            }
-            if outcome.inProgress > 0 {
-                parts.append(String(
-                    format: NSLocalizedString("%d still in progress", comment: "SPV diagnostics"),
-                    outcome.inProgress))
-            }
-            if outcome.failed > 0 {
-                parts.append(String.localizedStringWithFormat(
-                    NSLocalizedString("%d could not be reached", comment: "SPV diagnostics"),
-                    outcome.failed))
-            }
-            if outcome.cancelled {
-                parts.append(NSLocalizedString("stopped early", comment: "SPV diagnostics"))
-            }
-            if outcome.stoppedAfterRepeatedFailures {
-                parts.append(NSLocalizedString("stopped after repeated failures", comment: "SPV diagnostics"))
-            }
             recoveryResultIsError = outcome.failed > 0
-            var summary = parts.isEmpty
-                ? NSLocalizedString("Nothing to finish.", comment: "SPV diagnostics")
-                : parts.joined(separator: ", ")
-            // A count of failures with no reason is undiagnosable; carry the
-            // first one's text so the screen says what actually went wrong.
-            if let reason = outcome.firstFailureMessage {
-                summary += "\n\(reason)"
-            }
-            recoveryResultMessage = summary
+            recoveryResultMessage = outcome.summary
         }
     }
 

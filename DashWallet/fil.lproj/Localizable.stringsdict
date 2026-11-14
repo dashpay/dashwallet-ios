@@ -712,6 +712,20 @@ Dapat mong suriin at kung kinakailangan itama ang iyong mga setting ng petsa, or
 			<string>%d finished</string>
 		</dict>
 	</dict>
+	<key>%d transfers added to your Shielded balance</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d transfers added to your Shielded balance</string>
+		</dict>
+	</dict>
 	<key>%d already spent</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
