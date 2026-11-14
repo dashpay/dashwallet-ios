@@ -217,7 +217,9 @@ final class ConnectionsViewModel: ObservableObject {
         featureUnavailable: Bool? = nil,
         openURL: (@MainActor (URL) -> Void)? = nil
     ) {
-        let computedFeatureUnavailable = featureUnavailable ?? !WalletEnvironment.isTestNetwork
+        // Every network: a request is refused while the network's Platform
+        // protocol is below the one App Connect needs (14).
+        let computedFeatureUnavailable = featureUnavailable ?? false
         self.featureUnavailable = computedFeatureUnavailable
         self.dataSource = dataSource ?? Self.defaultDataSource(featureUnavailable: computedFeatureUnavailable)
         self.openURL = openURL ?? { UIApplication.shared.open($0) }
@@ -913,11 +915,6 @@ final class ConnectionsViewModel: ObservableObject {
         if isPreview || featureUnavailable {
             return MockDashConnectDataSource()
         }
-
-        assert(
-            WalletEnvironment.isTestNetwork,
-            "DashConnect real data source must only run on testnet or devnet."
-        )
         return PlatformDashConnectDataSource()
     }
 }
