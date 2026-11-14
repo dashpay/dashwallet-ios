@@ -5923,6 +5923,15 @@
 /* Voting */
 "This node will no longer vote from this wallet. You can add its voting key again at any time." = "This node will no longer vote from this wallet. You can add its voting key again at any time.";
 
+/* Payment confirmation: a payment request with several outputs */
+"This payment goes to %ld addresses." = "This payment goes to %ld addresses.";
+
+/* Payment request refused */
+"This payment request does not use a secure connection." = "This payment request does not use a secure connection.";
+
+/* Payment request refused */
+"This payment request is unsigned and pays more than one address." = "This payment request is unsigned and pays more than one address.";
+
 /* No comment provided by engineer. */
 "This permanently removes all wallets, private keys, and recovery phrases stored by this app on this device. They can only be restored from backups. This cannot be undone." = "Permanenteng inaalis nito lahat ng wallet, private key, at recovery phrase na iniimbak ng app na ito sa device na ito. Maibabalik lang ang mga ito mula sa backup. Hindi ito maibabalik.";
 
@@ -6431,6 +6440,15 @@
 
 /* Log export */
 "Unlock with your wallet PIN to export logs." = "Unlock with your wallet PIN to export logs.";
+
+/* Payment confirmation: note supplied by an unsigned payment request */
+"Unverified note: %@" = "Unverified note: %@";
+
+/* Payment confirmation: unsigned payment request without a name */
+"Unverified recipient" = "Unverified recipient";
+
+/* Payment confirmation: name supplied by an unsigned payment request */
+"Unverified recipient: %@" = "Unverified recipient: %@";
 
 /* No comment provided by engineer. */
 "Unshielded" = "Hindi protektado";

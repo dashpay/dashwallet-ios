@@ -35,8 +35,9 @@ typedef NS_ENUM(NSInteger, DWPaymentOutputBroadcastAuthorizationState) {
 @property (readonly, nullable, nonatomic, copy) NSString *localCurrency;
 @property (readonly, nonatomic, assign) DWPaymentOutputBroadcastAuthorizationState broadcastAuthorizationState;
 
-/// YES for an app-side BIP70 merchant request (built from a verified `Confirmation`), so the
-/// confirm screen renders the merchant name + lock instead of a plain "send to" address.
+/// YES for an app-side BIP70 merchant request (built from a verified `Confirmation`). The
+/// confirm screen renders the merchant name + lock instead of the "send to" address only when
+/// `isSecure` is also YES; an unsigned request keeps its address and is labelled unverified.
 @property (readonly, nonatomic, assign) BOOL isMerchantRequest;
 
 /// Opaque `DWBIP70ConfirmationBox` (Swift) carried so the broadcast step can call

@@ -13,6 +13,9 @@ import Foundation
 enum BIP70Error: Error, Equatable {
     /// The payment-request / payment URL was missing or unparseable.
     case badURL
+    /// https was required and a URL on the way was not https: the request URL, a BIP73
+    /// uri-list target, the `payment_url`, or an HTTP redirect from any of them.
+    case insecureTransport
     /// HTTP failure: non-2xx status, missing/non-HTTP response, or wrong content type.
     case unexpectedResponse(host: String?)
     /// Response body exceeded the 50 KB BIP70 cap.
@@ -56,6 +59,9 @@ extension BIP70Error: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .badURL: return "Invalid payment request URL."
+        case .insecureTransport:
+            return NSLocalizedString("This payment request does not use a secure connection.",
+                                     comment: "Payment request refused")
         case let .unexpectedResponse(host): return "Unexpected response from \(host ?? "the payment server")."
         case .payloadTooLarge: return "The payment request is too large."
         case .malformedRequest: return "The payment request could not be read."
