@@ -22,111 +22,26 @@ import Foundation
 import SwiftDashSDK
 import SwiftUI
 
-// MARK: - ContestSort
-
-enum ContestSort: String, CaseIterable, Identifiable {
-    case endingSoonest
-    case name
-    case mostVotes
-    case mostLockVotes
-
-    var id: String { rawValue }
-
-    var title: String {
-        switch self {
-        case .endingSoonest: return NSLocalizedString("Ending soonest", comment: "Voting")
-        case .name: return NSLocalizedString("Name", comment: "Voting")
-        case .mostVotes: return NSLocalizedString("Most votes", comment: "Voting")
-        case .mostLockVotes: return NSLocalizedString("Most lock votes", comment: "Voting")
-        }
-    }
-}
-
 // MARK: - VotingViewModel
 
-/// Backing model for the username-voting section.
-///
-/// Owns the live contest list, the wallet's votable nodes, and the casting
-/// flow. Everything it publishes comes from Platform or from the wallet's
-/// on-chain masternode registrations — there is no local vote arithmetic and
-/// no seeded data.
+/// Backing model for the username-voting section's casting and voting-key
+/// flows. The data every screen reads lives on ``store`` and the list's
+/// presentation state on ``list``; this type composes them for the existing
+/// screens and forwards their reads.
 @MainActor
 final class VotingViewModel: ObservableObject {
+    // MARK: Composition
 
-    // MARK: Published state
-
-    /// The *open* contests. A contest that resolves leaves this list.
-    @Published private(set) var contests: [DPNSContest] = []
-    /// Labels observed to have resolved while the user was looking at them,
-    /// so an already-open detail screen can say so instead of offering a vote
-    /// that can no longer be accepted.
-    @Published private(set) var closedLabels: Set<String> = []
-    @Published private(set) var votableNodes: [VoterNode] = []
-    /// The wallet's voting-key pool could only be read at its shallow
-    /// fallback depth and some active registration went unmatched, so a node
-    /// you can actually vote with may be missing from ``votableNodes``.
-    @Published private(set) var nodeListMayBeIncomplete = false
-    @Published private(set) var isLoading = false
-    /// Set when a refresh fails. The list keeps showing the last good data.
-    @Published private(set) var loadError: String?
-    /// `false` until the first refresh completes, so the empty state is not
-    /// shown while the first fetch is still in flight.
-    @Published private(set) var hasLoadedOnce = false
-
-    @Published var searchQuery: String = ""
-    @Published var sort: ContestSort = .endingSoonest
-
-    /// True once a contest fetch has actually succeeded. Distinct from
-    /// ``hasLoadedOnce``, which only records that a load was attempted.
-    private var didLoadContests = false
-
-    /// Multi-select mode, the replacement for the old "Quick Voting" screen.
-    @Published var isSelecting = false
-    @Published private(set) var selectedLabels: Set<String> = []
-    /// Per-contest results of the most recent bulk run.
-    @Published var bulkReports: [VoteCastReport]?
-
-    /// How many of this wallet's nodes have already voted, per contest, from
-    /// local history. Drives the "2 of 5 votes cast" line and excludes nodes
-    /// that already voted from the next cast.
-    @Published private(set) var castCountsByContest: [String: Int] = [:]
-    /// Which of our nodes voted, per contest. Keyed by contest so a screen can
-    /// never be answered with another contest's history — and so an ABSENT
-    /// entry is distinguishable from "none voted here", which is what makes
-    /// gating on load possible.
-    @Published private(set) var votedProTxHashesByContest: [String: Set<Data>] = [:]
-
-    /// proTxHashes of the nodes the next vote will use, shared by the single
-    /// contest screen and the bulk sheet and persisted so the next contest
-    /// opens with the same nodes ticked.
-    ///
-    /// Persisted rather than re-asked because it is a privacy choice: voting
-    /// with several nodes at once links those masternodes to each other, and
-    /// that should stay the user's standing decision, not something re-made
-    /// under time pressure on every contest.
-    @Published var selectedNodeIDs: Set<Data> = VotingPrefs.shared.votingNodeSelection {
-        didSet { VotingPrefs.shared.votingNodeSelection = selectedNodeIDs }
-    }
-
-    /// The selected nodes, in registration order, restricted to ones that are
-    /// still votable — a remembered node that has since been revoked or left
-    /// the masternode list must not silently come back.
-    var selectedNodes: [VoterNode] {
-        votableNodes.filter { selectedNodeIDs.contains($0.proTxHash) }
-    }
-
-    /// Result banner for the most recent casting run.
-    @Published var lastCastReport: VoteCastReport?
-    /// Error from a casting run that never got as far as broadcasting.
-    @Published var castError: String?
-    @Published private(set) var isCasting = false
+    let store: VotingStore
+    let list: VotingListViewModel
+    private var changes = Set<AnyCancellable>()
+    /// The Quick voting run in flight, so leaving can stop it.
+    private var quickVotingRun: Task<Void, Never>?
+    /// The «Quick voting» menu item: keys, the Quick voting sheet, "One vote left", the run.
+    private(set) lazy var quickVoting = QuickVotingViewModel(host: self)
 
     // MARK: Dependencies
 
-    private let contestsService: ContestedNamesService
-    private let registry: MasternodeVoterRegistry
-    private let caster: MasternodeVoteCaster
-    private let history: VoteHistoryDAO = VoteHistoryDAOImpl.shared
     private let vault: TrackedMasternodeKeyVaulting
     /// Read when needed, not once: the SDK manager comes and goes with the wallet.
     private let tracker: @MainActor () -> VotingKeyMasternodeTracking?
@@ -138,310 +53,81 @@ final class VotingViewModel: ObservableObject {
         contestsService: ContestedNamesService? = nil,
         registry: MasternodeVoterRegistry? = nil,
         vault: TrackedMasternodeKeyVaulting? = nil,
-        tracker: (@MainActor () -> VotingKeyMasternodeTracking?)? = nil
+        tracker: (@MainActor () -> VotingKeyMasternodeTracking?)? = nil,
+        store: VotingStore? = nil,
+        appDidEnterBackground: AnyPublisher<Void, Never>? = nil
     ) {
         let contestsService = contestsService ?? ContestedNamesService()
         let registry = registry ?? MasternodeVoterRegistry()
-        self.contestsService = contestsService
-        self.registry = registry
         self.vault = vault ?? TrackedMasternodeKeyVault()
         self.tracker = tracker ?? { SwiftDashSDKHost.shared.manager }
-        self.caster = MasternodeVoteCaster(registry: registry, contests: contestsService)
+        let store = store ?? VotingStore(
+            contests: contestsService,
+            nodes: registry,
+            caster: MasternodeVoteCaster(
+                registry: registry, contests: contestsService, history: VoteHistoryDAOImpl.shared),
+            history: VoteHistoryDAOImpl.shared,
+            prefs: VotingPrefs.shared)
+        let list = VotingListViewModel(
+            store: store, normalizedLabel: { contestsService.normalizedLabel(for: $0) })
+        self.store = store
+        self.list = list
+        // Screens observe this model; tell them when either part changes.
+        store.objectWillChange.sink { [weak self] in self?.objectWillChange.send() }.store(in: &changes)
+        list.objectWillChange.sink { [weak self] in self?.objectWillChange.send() }.store(in: &changes)
+        // A run stops when the app goes to the background (ADR-0037).
+        let background = appDidEnterBackground
+            ?? NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)
+                .map { _ in () }.eraseToAnyPublisher()
+        background
+            .sink { [weak self] in self?.stopQuickVoting() }
+            .store(in: &changes)
     }
 
-    // MARK: Derived state
+    // MARK: Reads forwarded from the store
 
-    /// Total Platform voting weight this wallet controls. Evonodes count 4×.
-    var totalVoteWeight: UInt32 { votableNodes.totalVoteWeight }
+    var canVote: Bool { store.canVote }
 
-    var canVote: Bool { !votableNodes.isEmpty }
-
-    /// Contests matching the search box, in the selected order.
-    ///
-    /// The query is homograph-normalized before matching because Platform
-    /// stores normalized labels — someone typing "alice" is looking for
-    /// "a11ce", and a raw substring match would find nothing.
-    var visibleContests: [DPNSContest] {
-        let trimmed = searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return sorted(contests) }
-
-        // Normalization needs the SDK, and so does `contests` — a non-empty
-        // list means the handle is up, so this only returns nil when there is
-        // nothing to filter anyway. Leaving the list unfiltered beats
-        // matching against a locally-guessed spelling of the label.
-        guard let needle = contestsService.normalizedLabel(for: trimmed) else {
-            return sorted(contests)
-        }
-        // Match the normalized form *and* the spellings people actually typed,
-        // so searching "pizza" finds the contest whether the row is showing
-        // "pizza" or the normalized "p1zza".
-        let raw = trimmed.lowercased()
-        return sorted(contests.filter { contest in
-            contest.normalizedLabel.contains(needle)
-                || contest.requestedLabels.contains { $0.lowercased().contains(raw) }
-        })
-    }
-
-    private func sorted(_ input: [DPNSContest]) -> [DPNSContest] {
-        switch sort {
-        case .endingSoonest:
-            // Already ordered by the service; keep that order.
-            return input
-        case .name:
-            return input.sorted { $0.normalizedLabel < $1.normalizedLabel }
-        case .mostVotes:
-            return input.sorted { $0.totalVotes > $1.totalVotes }
-        case .mostLockVotes:
-            return input.sorted { $0.lockVotes > $1.lockVotes }
+    /// The running Quick voting run, in words: its progress toast over the
+    /// list and what VoiceOver says as the run starts. `nil` when none runs.
+    var quickVotingStatus: String? {
+        store.quickVotingProgress.map {
+            String(format: NSLocalizedString("Quick voting… %1$d of %2$d done", comment: "Voting"), $0.done, $0.total)
         }
     }
+    var votableNodes: [VoterNode] { store.votableNodes }
+    var toast: VotingToast? { list.toast }
 
-    // MARK: Loading
-
-    func refresh() async {
-        isLoading = true
-        defer {
-            isLoading = false
-            hasLoadedOnce = true
-        }
-
-        refreshVotableNodes()
-
-        castCountsByContest = await history.voteCountsByContest(
-            network: MasternodeVoteCaster.networkKey)
-
-        do {
-            contests = try await contestsService.activeContests()
-            loadError = nil
-            didLoadContests = true
-        } catch {
-            loadError = (error as? LocalizedError)?.errorDescription ?? String(describing: error)
-        }
-    }
-
-    /// Re-resolve which nodes this wallet can vote with, and nothing else.
-    ///
-    /// The voting-key screens call this after adding or removing a key. A full
-    /// ``refresh()`` would also re-query every open contest over the network,
-    /// which a key change does not affect.
-    func refreshVotableNodes() {
-        let resolution = registry.votableNodes()
-        votableNodes = resolution.nodes
-        nodeListMayBeIncomplete = resolution.mayBeIncomplete
-
-        // Settle the remembered selection against the nodes that actually
-        // exist now, so the picker and the "voting with" row agree with what a
-        // tap would really do.
-        //
-        // Only when the node list actually resolved. `votableNodes()` returns
-        // empty while the SDK is starting or the masternode phase has not
-        // synced, and settling against that would compute an empty selection
-        // and PERSIST it — destroying a multi-node choice the user made, with
-        // the next vote silently falling back to one node.
-        if !votableNodes.isEmpty {
-            let settled = effectiveSelectedNodeIDs
-            if settled != selectedNodeIDs {
-                selectedNodeIDs = settled
-            }
-        }
-    }
-
-    /// The screen's initial load, which does nothing once contests are in hand.
-    ///
-    /// `.task` re-runs when the list reappears — including on the way back from
-    /// a contest — and `refresh()` re-queries every active contest over the
-    /// network, which takes long enough to read as the screen hanging. Nothing
-    /// about returning from a contest invalidates the list: casting already
-    /// refreshes the one contest it touched via ``refreshContest(normalizedLabel:)``,
-    /// and pull-to-refresh still forces a real reload.
-    ///
-    /// Keyed on contests actually having loaded rather than on an attempt, so a
-    /// first load that failed still retries instead of stranding the user on an
-    /// empty list.
-    func refreshIfNeeded() async {
-        guard !didLoadContests else { return }
-        await refresh()
-    }
-
-    /// Re-read one contest's tallies after voting on it, so the row reflects
-    /// the vote without a full refresh.
-    ///
-    /// A contest that has since resolved — or that Platform no longer holds
-    /// contenders for — leaves `contests` and is recorded in ``closedLabels``.
-    /// `contests` is the *open* contest list: leaving a settled contest in it
-    /// would offer a Vote button whose only possible outcome is the caster's
-    /// closed-poll rejection.
-    func refreshContest(normalizedLabel: String) async {
-        let state: DPNSContestVoteState?
-        do {
-            state = try await contestsService.voteState(normalizedLabel: normalizedLabel)
-        } catch {
-            // The query failed, so we learned nothing about this contest.
-            // Leave the cached row exactly as it was rather than treating a
-            // network blip as a resolution.
-            return
-        }
-
-        // A successful query returning no contenders means Platform holds no
-        // poll for the label. For a row that was in the active list moments
-        // ago, that is a contest which resolved and was pruned.
-        guard let state, !state.isResolved else {
-            close(normalizedLabel: normalizedLabel)
-            return
-        }
-
-        guard let index = contests.firstIndex(where: { $0.normalizedLabel == normalizedLabel })
-        else { return }
-
-        let existing = contests[index]
-        contests[index] = DPNSContest(
-            normalizedLabel: existing.normalizedLabel,
-            endTime: existing.endTime,
-            hasWinner: false,
-            abstainVotes: state.abstainVotes,
-            lockVotes: state.lockVotes,
-            contenders: state.contenders)
-    }
-
-    private func close(normalizedLabel: String) {
-        contests.removeAll { $0.normalizedLabel == normalizedLabel }
-        closedLabels.insert(normalizedLabel)
-    }
-
-    /// Whether a contest the user is looking at has closed under them. The
-    /// detail screen reads this to swap its vote controls for a closed notice
-    /// instead of silently showing a stale snapshot with live-looking buttons.
-    func isClosed(normalizedLabel: String) -> Bool {
-        closedLabels.contains(normalizedLabel)
-    }
-
-    // MARK: Vote history
-
-    /// One contest's history reduced to what the casting rules read: each
-    /// node's live vote and how many casts it has spent.
-    ///
-    /// Shared by the single-contest screen and the bulk planner so the five-
-    /// cast ceiling is applied by one rule — a planner that only looked at the
-    /// live choice offered exhausted nodes that Platform then rejects.
-    struct NodeVoteHistory {
-        private(set) var latest: [Data: CastVoteRecord] = [:]
-        private(set) var casts: [Data: Int] = [:]
-
-        init(_ records: [CastVoteRecord]) {
-            // One row per node per contest — a change overwrites the row it
-            // came from — so the ceiling is read from the row's own
-            // `castCount`, not from how many rows a node has. Counting rows
-            // could never reach five.
-            for record in records {
-                casts[record.proTxHash] = max(casts[record.proTxHash] ?? 0, record.castCount)
-                if let seen = latest[record.proTxHash], seen.castAt >= record.castAt { continue }
-                latest[record.proTxHash] = record
-            }
-        }
-
-        func liveChoice(of proTxHash: Data) -> VoteChoice? {
-            latest[proTxHash]?.choice
-        }
-
-        /// Whether Platform would still accept another vote from this node here.
-        func hasCastsLeft(_ proTxHash: Data) -> Bool {
-            (casts[proTxHash] ?? 0) < VotingViewModel.maxCastsPerNodePerContest
-        }
-    }
-
-    /// Per contest, rebuilt by `loadVotedNodes(for:)`.
-    private var voteHistoryByContest: [String: NodeVoteHistory] = [:]
-
-    /// Vote *records* this wallet holds on `contest` — a node that changed its
-    /// mind contributes more than one. `votedNodeCount(on:)` is the per-node
-    /// figure the screens show.
-    func castCount(for normalizedLabel: String) -> Int {
-        castCountsByContest[normalizedLabel] ?? 0
-    }
-
-    /// Nodes that have not yet voted on this contest, in registration order.
-    ///
-    /// Empty until this contest's history has loaded. The screen evaluates this
-    /// before its `.task` completes, and treating "not loaded" as "nobody
-    /// voted" would offer nodes that already voted — a duplicate Platform
-    /// rejects, spending one of the masternode's per-contest votes.
-    func nodesYetToVote(on normalizedLabel: String) -> [VoterNode] {
-        guard let voted = votedProTxHashesByContest[normalizedLabel] else { return [] }
-        return votableNodes.filter { !voted.contains($0.proTxHash) }
-    }
-
-    /// Whether this contest's vote history is known yet. Callers disable the
-    /// vote control until it is, rather than acting on an unknown.
+    func latest(_ contest: DPNSContest) -> DPNSContest { store.latest(contest) }
+    func isClosed(normalizedLabel: String) -> Bool { store.isClosed(normalizedLabel: normalizedLabel) }
     func hasLoadedVoteHistory(for normalizedLabel: String) -> Bool {
-        votedProTxHashesByContest[normalizedLabel] != nil
+        store.hasLoadedVoteHistory(for: normalizedLabel)
     }
+    func loadVotedNodes(for normalizedLabel: String) async { await store.loadVotedNodes(for: normalizedLabel) }
+    func refreshVotableNodes() { store.refreshVotableNodes() }
 
-    /// Load which of our nodes already voted on one contest. Called when its
-    /// detail screen opens, so the vote button knows what is left.
-    func loadVotedNodes(for normalizedLabel: String) async {
-        let records = await history.votes(
-            forContest: normalizedLabel,
-            network: MasternodeVoteCaster.networkKey)
-        votedProTxHashesByContest[normalizedLabel] = Set(records.map(\.proTxHash))
-        castCountsByContest[normalizedLabel] = records.count
-        voteHistoryByContest[normalizedLabel] = NodeVoteHistory(records)
-    }
+    /// The voting-key flow opens on "Enter voting key" only when, with the
+    /// wallet's sync done and the node list complete, it has no node (SCR-04
+    /// «no keys»). Before the sync is done, or while the list may miss a node,
+    /// an empty list says nothing yet, so the flow opens on "Add your voting
+    /// keys", whose empty state offers the key input.
+    var keysFlowOpensOnKeyInput: Bool { votableNodes.isEmpty && !store.nodeListMayMissNodes }
+    func isSending(normalizedLabel: String) -> Bool { store.isSending(normalizedLabel: normalizedLabel) }
 
-    /// How many of this wallet's nodes have a live vote here — nodes, not
-    /// records. A node that changed its mind has two records and is still one
-    /// node, which is what "%d of %d nodes voted" is counting.
-    func votedNodeCount(on normalizedLabel: String) -> Int {
-        votedProTxHashesByContest[normalizedLabel]?.count ?? 0
-    }
-
-    /// This node's live choice on this contest, when it has one.
-    func liveChoice(of node: VoterNode, on normalizedLabel: String) -> VoteChoice? {
-        voteHistoryByContest[normalizedLabel]?.liveChoice(of: node.proTxHash)
-    }
-
-    /// The nodes a tap on `choice` should cast with: the remembered selection,
-    /// minus nodes already holding that exact choice (Platform rejects a
-    /// duplicate) and minus nodes that have spent the five casts it allows per
-    /// contest. A node holding a *different* choice belongs here — replacing
-    /// its vote is one state transition, and it is the whole point of being
-    /// able to change your mind from this screen.
-    func nodesForVote(_ choice: VoteChoice, on normalizedLabel: String) -> [VoterNode] {
-        guard hasLoadedVoteHistory(for: normalizedLabel) else { return [] }
-        let chosen = effectiveSelectedNodeIDs
-        let history = voteHistoryByContest[normalizedLabel] ?? NodeVoteHistory([])
-        return votableNodes.filter { node in
-            guard chosen.contains(node.proTxHash) else { return false }
-            guard history.hasCastsLeft(node.proTxHash) else { return false }
-            return history.liveChoice(of: node.proTxHash) != choice
+    /// Names the nodes a vote will use, so the privacy consequence of the
+    /// current selection is legible without opening the picker: the ticked
+    /// masternodes that can vote, or "Select nodes" when a tap would open
+    /// "Add your voting keys": voting not set up, or none ticked (AC-12, AC-14).
+    var votingWithSummary: String {
+        let ticked = store.isVotingSetUp ? store.tickedNodeIDs ?? [] : []
+        let chosen = votableNodes.filter { ticked.contains($0.proTxHash) }
+        guard !chosen.isEmpty else {
+            return NSLocalizedString("Select nodes", comment: "Voting")
         }
-    }
-
-    /// `votes_allowed_per_masternode` in the platform version this app talks
-    /// to; the sixth cast is refused with `MasternodeVotedTooManyTimesError`.
-    static let maxCastsPerNodePerContest = 5
-
-    /// The nodes a single tap should vote with: the remembered selection,
-    /// minus any that already voted on this contest.
-    ///
-    /// Returns empty when every selected node has already voted here — the
-    /// caller disables the control rather than re-broadcasting a vote Platform
-    /// would reject as a duplicate.
-    func nodesForNextVote(on normalizedLabel: String) -> [VoterNode] {
-        let remaining = nodesYetToVote(on: normalizedLabel)
-        let chosen = effectiveSelectedNodeIDs
-        return remaining.filter { chosen.contains($0.proTxHash) }
-    }
-
-    /// The remembered selection, or a single node when nothing was ever
-    /// chosen. Never every node by default: see ``VotingPrefs``.
-    ///
-    /// Also recovers from a selection that no longer matches any votable node
-    /// (nodes revoked, or a different wallet), which would otherwise leave the
-    /// vote button permanently disabled with no way to see why.
-    var effectiveSelectedNodeIDs: Set<Data> {
-        let live = selectedNodeIDs.intersection(Set(votableNodes.map(\.proTxHash)))
-        if !live.isEmpty { return live }
-        return Set(votableNodes.first.map { [$0.proTxHash] } ?? [])
+        if chosen.count == votableNodes.count {
+            return String.localizedStringWithFormat(NSLocalizedString("All %d nodes", comment: "Voting"), chosen.count)
+        }
+        return chosen.map(\.displayName).joined(separator: ", ")
     }
 
     // MARK: Voting keys
@@ -473,6 +159,7 @@ final class VotingViewModel: ObservableObject {
         let othersConfirmedAbsent = TrackedMasternodeKeyVault.managedRoles
             .filter { $0 != .voting }
             .allSatisfy { vault.keyPresence(for: node.proTxHash, role: $0) == .absent }
+        store.forgetNode(node.proTxHash)
         if othersConfirmedAbsent, let manager = tracker() {
             // Best-effort: a registry row left behind holds no key and cannot
             // vote, so a failure here changes nothing the user can see.
@@ -484,237 +171,167 @@ final class VotingViewModel: ObservableObject {
 
     // MARK: Casting
 
-    /// Cast `choice` on `contest` with `nodes`, then refresh that contest.
-    func cast(choice: VoteChoice, on contest: DPNSContest, with nodes: [VoterNode]) async {
-        isCasting = true
-        castError = nil
-        defer { isCasting = false }
-
-        do {
-            let report = try await caster.cast(
-                choice: choice,
-                onNormalizedLabel: contest.normalizedLabel,
-                with: nodes)
-            lastCastReport = report
-            await loadVotedNodes(for: contest.normalizedLabel)
-            await refreshContest(normalizedLabel: contest.normalizedLabel)
-        } catch {
-            castError = (error as? LocalizedError)?.errorDescription ?? String(describing: error)
+    /// Starts a Quick voting run of `plan`, unless one is running; its outcome
+    /// is told as a single vote's (``showToast(for:)``).
+    func startQuickVoting(_ plan: QuickVotePlan) {
+        guard quickVotingRun == nil else { return }
+        list.clearToast()
+        // The task holds the store, not this model: a run of a screen that
+        // is gone keeps no view model alive.
+        let store = store
+        quickVotingRun = Task { [weak self] in
+            // The run's own outcome: a run that did not start leaves the
+            // store's outcome to whichever attempt set it.
+            let outcome = await store.runQuickVoting(plan)
+            self?.showToast(for: outcome)
+            self?.quickVotingRun = nil
+            // The tallies after the toast, so it does not wait on Platform.
+            await store.refreshAfterQuickVoting(outcome)
         }
     }
 
-    func dismissCastResult() {
-        lastCastReport = nil
-        castError = nil
-        bulkReports = nil
+    /// A vote runs that leaving would not stop: a single vote or its Try
+    /// again. Back stops a Quick voting run instead (ADR-0037).
+    var holdsScreen: Bool { store.isVoteBusy && quickVotingRun == nil }
+
+    /// Stops the run in flight: nothing more is sent, and the votes not sent
+    /// are reported as not cast, for Try again.
+    func stopQuickVoting() {
+        quickVotingRun?.cancel()
     }
 
-    // MARK: Multi-select
+    /// A screen torn down without a pop stops its run too: the run's task
+    /// holds the store, not this model.
+    deinit {
+        quickVotingRun?.cancel()
+    }
 
-    func toggleSelection(_ contest: DPNSContest) {
-        // Ineligible rows are not selectable at all rather than selectable and
-        // then dropped at cast time, which would silently vote on fewer names
-        // than the user ticked.
-        guard isBulkEligible(contest) else { return }
-        if selectedLabels.contains(contest.normalizedLabel) {
-            selectedLabels.remove(contest.normalizedLabel)
-        } else {
-            selectedLabels.insert(contest.normalizedLabel)
+    /// Try again after a mixed single vote: the store resends the failed
+    /// masternodes, and a vote that now landed everywhere is told by the
+    /// toast. After a Quick voting run it does nothing: that retry is a run
+    /// too and goes only through ``tryAgainRun()``, which the screen can stop.
+    func retryFailed() async {
+        if case .mixedRun? = store.outcome { return }
+        await store.retryFailed()
+        showToast(for: store.outcome)
+    }
+
+    /// Starts Try again after a Quick voting run as a run, unless one is
+    /// running: leaving the screen or the app going to the background stops
+    /// it (ADR-0037). The returned task ends with the toast, before the
+    /// tallies are re-read, and holds the store, not this model, so a screen
+    /// torn down while it waits stops it too.
+    func tryAgainRun() -> Task<Void, Never>? {
+        guard case .mixedRun? = store.outcome, quickVotingRun == nil else { return nil }
+        let store = store
+        let retry = Task { [weak self] in
+            await store.retryFailed()
+            self?.showToast(for: store.outcome)
+            self?.quickVotingRun = nil
+            // The tallies after the toast, not awaited: the result sheet
+            // closes without waiting on Platform.
+            let outcome = store.outcome
+            Task { await store.refreshAfterQuickVoting(outcome) }
+        }
+        quickVotingRun = retry
+        return retry
+    }
+
+    /// A vote that landed everywhere is a toast, as is one that failed outright;
+    /// a mixed one stays in the store's outcome for the result sheet.
+    private func showToast(for outcome: VoteAttemptOutcome?) {
+        switch outcome {
+        case .success(let toast): list.showToast(toast)
+        case .failure(let reason): list.showToast(.failed(reason))
+        case .mixed, .mixedRun, nil: break
         }
     }
+}
 
-    func isSelected(_ contest: DPNSContest) -> Bool {
-        selectedLabels.contains(contest.normalizedLabel)
+// MARK: - VoteAttemptHosting
+
+extension VotingViewModel: VoteAttemptHosting {
+    var isVotingSetUp: Bool { store.isVotingSetUp }
+    /// The user's own ticks only; none ticked sends the attempt to the keys (AC-14).
+    var tickedNodeIDs: Set<Data> { store.tickedNodeIDs ?? [] }
+
+    /// The last vote's toast and outcome go at the tap that starts the next
+    /// attempt, so neither sits under a dialog of the new one (AC-06).
+    func attemptWillStart(on contest: DPNSContest) {
+        list.clearToast()
+        // Read now, so "Add your voting keys" or "Enter voting key" is
+        // decided on the nodes as they are at the tap.
+        store.refreshVotableNodes()
+        store.beginAttempt(on: contest.normalizedLabel)
     }
 
-    func selectAllVisible() {
-        selectedLabels = Set(visibleContests.filter(isBulkEligible).map(\.normalizedLabel))
+    /// A read that fails is an unknown history, never the last one cached:
+    /// the vote limit is decided on what Platform has now (AC-15).
+    func voteHistory(for normalizedLabel: String) async -> VoteLimit {
+        guard await store.loadVotedNodesForVote(for: normalizedLabel) else { return VoteLimit(nil) }
+        return store.voteHistoryByContest[normalizedLabel] ?? VoteLimit(nil)
     }
 
-    func endSelecting() {
-        isSelecting = false
-        selectedLabels = []
+    /// Cast through the store, which also re-reads that contest; the outcome
+    /// is told as in ``showToast(for:)``.
+    func send(
+        _ choice: VoteChoice, on contest: DPNSContest, from nodeIDs: Set<Data>, skipped: Set<Data>, pill: VoteChoice
+    ) async {
+        // A new vote clears the last outcome, so a toast from the previous
+        // vote never sits next to this one.
+        list.clearToast()
+        let nodes = store.votableNodes.filter { nodeIDs.contains($0.proTxHash) }
+        let skippedNodes = store.votableNodes.filter { skipped.contains($0.proTxHash) }
+        await store.send(choice: choice, on: contest, from: nodes, skipped: skippedNodes, pill: pill)
+        showToast(for: store.outcome)
     }
 
-    /// Combined voting weight this run would add, across every selected
-    /// contest — nodes × contests, since each node votes once per contest.
-    func bulkWeight(nodes: [VoterNode]) -> UInt32 {
-        UInt32(selectedLabels.count) &* nodes.totalVoteWeight
+    /// The name a result sheet shows for `report`.
+    func username(of report: VoteCastReport) -> String {
+        store.contests.first { $0.normalizedLabel == report.normalizedLabel }?.displayTitle
+            ?? report.normalizedLabel
     }
 
-    /// Whether `contest` can be picked for a bulk run.
-    ///
-    /// Only single-contender contests qualify. A bulk run applies one decision
-    /// across many names, and with two or more requesters "approve" has no
-    /// single meaning — the user would be picking a winner per contest without
-    /// seeing who they are. Restricting the selection is what makes
-    /// ``BulkChoice/soleRequester`` well-defined.
-    func isBulkEligible(_ contest: DPNSContest) -> Bool {
-        contest.contenders.count == 1
+    func reportVotingEnded(on contest: DPNSContest) {
+        list.showToast(.votingEnded(username: contest.displayTitle))
     }
 
-    /// The decision a bulk run applies. Unlike ``VoteChoice`` this is not a
-    /// single wire value: `soleRequester` resolves to a different contender
-    /// identity per contest.
-    enum BulkChoice: Hashable {
-        case abstain
-        case lock
-        /// Award each selected name to its only requester.
-        case soleRequester
+    func reportAlreadyVoted(on contest: DPNSContest) {
+        list.showToast(.alreadyVoted(username: contest.displayTitle))
     }
 
-    /// Resolve `choice` against one contest, or `nil` when it cannot apply.
-    private func resolvedChoice(_ choice: BulkChoice, for contest: DPNSContest) -> VoteChoice? {
-        switch choice {
-        case .abstain: return .abstain
-        case .lock: return .lock
-        case .soleRequester:
-            // Guarded rather than force-unwrapped: selection eligibility is a
-            // UI rule, and a contest can gain a contender between the pick and
-            // the cast. Dropping it is safer than voting for the wrong id.
-            guard contest.contenders.count == 1,
-                  let sole = contest.contenders.first else { return nil }
-            return .towards(identityId: sole.identityId)
-        }
+    func reportHistoryUnavailable() {
+        list.showToast(.failed(NSLocalizedString("Couldn't read your vote history.", comment: "Voting")))
+    }
+}
+
+// MARK: - QuickVotingHosting
+
+extension VotingViewModel: QuickVotingHosting {
+    var shownContests: [DPNSContest] { list.visibleContests }
+    var showsOnlyRequestsWithLinks: Bool { list.filter.onlyWithLinks }
+    var nodeListMayMissNodes: Bool { store.nodeListMayMissNodes }
+
+    func reportNodeListMayMissNodes() {
+        list.showToast(.failed(NSLocalizedString("Some of your masternodes may be missing from this list.", comment: "Voting")))
     }
 
-    /// What a bulk run would actually do, given what this wallet already voted.
-    ///
-    /// A masternode may CHANGE its vote on a contest — Platform accepts up to 5
-    /// votes per masternode per contest — so an earlier vote is only an
-    /// obstacle when it was the SAME choice. Those are true no-ops and get
-    /// dropped; a different earlier choice is a deliberate change and is
-    /// carried out, because refusing it would make a recorded vote permanent
-    /// in a way Platform does not.
-    struct BulkPlan {
-        /// Per contest: the wire choice and the nodes that will actually cast.
-        let work: [(label: String, choice: VoteChoice, nodes: [VoterNode])]
-        /// (node, name) pairs dropped because that node already cast THIS same
-        /// choice there — re-sending would spend an allowance to change nothing.
-        let duplicatePairs: Int
-        /// (node, name) pairs that will REPLACE a different earlier vote.
-        let changedPairs: Int
-        /// (node, name) pairs dropped because that node has spent every cast
-        /// Platform allows on that contest. Kept apart from `duplicatePairs`:
-        /// those already hold the requested choice, these could not get it at
-        /// all, and the user should be told which.
-        let exhaustedPairs: Int
-        /// The choice being replaced, when every replaced vote agrees — `nil`
-        /// when they differ, so the prompt never names one falsely.
-        let replacedChoice: VoteChoice?
-
-        var hasWork: Bool { work.contains { !$0.nodes.isEmpty } }
-        var totalPairs: Int { work.reduce(0) { $0 + $1.nodes.count } }
-        /// Whether the user should be asked before this runs.
-        var needsConfirmation: Bool { duplicatePairs > 0 || changedPairs > 0 || exhaustedPairs > 0 }
+    func reloadVoteHistory() async -> Bool {
+        await store.loadAllVoteHistory()
+        return !store.historyUnavailable
     }
 
-    /// How one contest's selected nodes split under a bulk choice.
-    struct BulkContestSplit {
-        var casting: [VoterNode] = []
-        var duplicates = 0
-        var changed = 0
-        var exhausted = 0
-        var replacedChoices = Set<VoteChoice>()
+    func quickVotePlan(for shown: [DPNSContest]) -> QuickVotePlan {
+        store.quickVotePlan(for: shown)
     }
 
-    /// Split `nodes` for one contest by what each already did there.
-    ///
-    /// A node already holding `choice` is a duplicate whatever its allowance —
-    /// nothing is lost by skipping it. Otherwise a node with no casts left is
-    /// dropped as exhausted before it can be counted as a replacement: the
-    /// caster does not re-check the allowance, so anything that reaches the
-    /// batch is broadcast and refused.
-    static func splitForBulk(
-        _ nodes: [VoterNode],
-        choice: VoteChoice,
-        history: NodeVoteHistory
-    ) -> BulkContestSplit {
-        var split = BulkContestSplit()
-        for node in nodes {
-            let prior = history.liveChoice(of: node.proTxHash)
-            if prior == choice {
-                split.duplicates += 1
-            } else if !history.hasCastsLeft(node.proTxHash) {
-                split.exhausted += 1
-            } else if let prior {
-                split.changed += 1
-                split.replacedChoices.insert(prior)
-                split.casting.append(node)
-            } else {
-                split.casting.append(node)
-            }
-        }
-        return split
+    func username(of normalizedLabel: String) -> String {
+        store.contests.first { $0.normalizedLabel == normalizedLabel }?.displayTitle ?? normalizedLabel
     }
 
-    /// Build the plan for the current selection without casting anything.
-    func planBulk(choice: BulkChoice, with nodes: [VoterNode]) async -> BulkPlan {
-        // Order the run the way the list is ordered so the result list reads
-        // in the same sequence the user selected from. `soleRequester`
-        // resolves per contest, so each label carries its own wire choice.
-        let selected = visibleContests.filter { selectedLabels.contains($0.normalizedLabel) }
-
-        var work: [(label: String, choice: VoteChoice, nodes: [VoterNode])] = []
-        var duplicatePairs = 0
-        var changedPairs = 0
-        var exhaustedPairs = 0
-        var replacedChoices = Set<VoteChoice>()
-
-        for contest in selected {
-            guard let wireChoice = resolvedChoice(choice, for: contest) else { continue }
-            let records = await history.votes(
-                forContest: contest.normalizedLabel,
-                network: MasternodeVoteCaster.networkKey)
-
-            let split = Self.splitForBulk(
-                nodes, choice: wireChoice, history: NodeVoteHistory(records))
-            duplicatePairs += split.duplicates
-            changedPairs += split.changed
-            exhaustedPairs += split.exhausted
-            replacedChoices.formUnion(split.replacedChoices)
-
-            if !split.casting.isEmpty {
-                work.append((contest.normalizedLabel, wireChoice, split.casting))
-            }
-        }
-
-        return BulkPlan(
-            work: work,
-            duplicatePairs: duplicatePairs,
-            changedPairs: changedPairs,
-            exhaustedPairs: exhaustedPairs,
-            replacedChoice: replacedChoices.count == 1 ? replacedChoices.first : nil)
-    }
-
-    /// Surface that a planned run had nothing left to do.
-    ///
-    /// Distinct from a failure: the selection was valid, but planning dropped
-    /// every contest in it. Reported here so the sheet does not call the caster
-    /// with an empty batch and get "select at least one masternode" back.
-    func reportNothingToCast() {
-        castError = NSLocalizedString(
-            "None of the selected usernames can take this vote any more — reopen them to see their current requests.",
-            comment: "Voting")
-    }
-
-    /// Cast a plan produced by ``planBulk(choice:with:)``.
-    func castBulk(plan: BulkPlan) async {
-        isCasting = true
-        castError = nil
-        defer { isCasting = false }
-
-        let work = plan.work
-        let labels = work.map(\.label)
-
-        do {
-            let reports = try await caster.castBulk(work)
-            bulkReports = reports
-            for label in labels {
-                await refreshContest(normalizedLabel: label)
-            }
-        } catch {
-            castError = (error as? LocalizedError)?.errorDescription ?? String(describing: error)
-        }
+    func quickVotingWillStart() {
+        list.clearToast()
+        store.refreshVotableNodes()
+        store.beginQuickVoting()
     }
 }

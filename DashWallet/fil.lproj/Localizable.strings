@@ -34,15 +34,6 @@
 /* DashConnect connection sheet: a key's name, then its budget */
 "%1$@: %2$@" = "%1$@: %2$@";
 
-/* Voting */
-"%1$d already voted “%2$@” and will be left as they are." = "%1$d already voted “%2$@” and will be left as they are.";
-
-/* Voting */
-"%1$d of these masternodes already voted differently on names you selected. Voting “%2$@” replaces those votes." = "%1$d of these masternodes already voted differently on names you selected. Voting “%2$@” replaces those votes.";
-
-/* Voting */
-"%1$d of these masternodes already voted “%2$@” on names you selected. Voting “%3$@” replaces those votes." = "%1$d of these masternodes already voted “%2$@” on names you selected. Voting “%3$@” replaces those votes.";
-
 /* No comment provided by engineer. */
 "%@ (payout address)" = "%@ (payout address)";
 
@@ -145,44 +136,17 @@
 /* SPV diagnostics */
 "%d could not be reached" = "%d could not be reached";
 
-/* Voting */
-"%d evonodes" = "%d evonodes";
-
 /* SPV diagnostics */
 "%d finished" = "%d finished";
 
 /* Voting */
-"%d have used all 5 votes Dash Platform allows on one contest and will be skipped." = "%d have used all 5 votes Dash Platform allows on one contest and will be skipped.";
-
-/* Voting */
-"%d masternodes" = "%d masternodes";
-
-/* Voting */
 "%d masternodes that vote with this key are registered to a wallet in this app and were not added. Their voting key cannot be added separately." = "%d masternodes that vote with this key are registered to a wallet in this app and were not added. Their voting key cannot be added separately.";
-
-/* Voting */
-"%d of %d masternodes voted" = "%1$d of %2$d masternodes voted";
-
-/* Voting */
-"%d of %d nodes voted" = "%1$d of %2$d nodes voted";
-
-/* Voting */
-"%d of %d usernames voted on" = "%1$d of %2$d usernames voted on";
-
-/* Voting */
-"%d of your nodes already voted this way and are not listed. Any node voting differently is listed — its vote will be replaced." = "%d of your nodes already voted this way and are not listed. Any node voting differently is listed — its vote will be replaced.";
-
-/* Voting */
-"%d of your nodes have used all 5 votes Dash Platform allows on one contest." = "%d of your nodes have used all 5 votes Dash Platform allows on one contest.";
 
 /* Wallet accounts — address pool */
 "%d receive" = "%d receive";
 
 /* Voting */
 "%d requests" = "%d requests";
-
-/* Voting */
-"%d selected" = "%d selected";
 
 /* SPV diagnostics */
 "%d still in progress" = "%d still in progress";
@@ -222,18 +186,6 @@
 
 /* 10/20 Characters */
 "%ld/%ld Characters" = "%1$ld/%2$ld Mga Karakter";
-
-/* Voting */
-"%u votes" = "%u votes";
-
-/* Voting */
-"%u votes counted for “%@”" = "%1$u votes counted for “%2$@”";
-
-/* Voting */
-"%u votes in total" = "%u votes in total";
-
-/* Voting */
-"%u votes per contest — evonodes count as 4, masternodes as 1" = "%u votes per contest — evonodes count as 4, masternodes as 1";
 
 /* No comment provided by engineer. */
 "(1/3) Processing Payment" = "(1/3) Pagproseso ng Bayad";
@@ -352,9 +304,6 @@
 /* Remove never-accepted transaction: refused while a transfer is running */
 "A transfer is still in progress. Try again when it has finished, or restart the app if it never does." = "A transfer is still in progress. Try again when it has finished, or restart the app if it never does.";
 
-/* Voting */
-"A vote is cast with %d of these nodes, worth %u votes. Choose which ones under “Voting with”." = "A vote is cast with %1$d of these nodes, worth %2$u votes. Choose which ones under “Voting with”.";
-
 /* No comment provided by engineer. */
 "A zero testnet balance cannot prove this wallet is empty on mainnet. Enter the recovery phrase to continue." = "Hindi napapatunayan ng zero na balanse sa testnet na walang laman ang wallet na ito sa mainnet. Ilagay ang recovery phrase para magpatuloy.";
 
@@ -373,9 +322,6 @@
 /* Username marketplace: masternode abstain votes
    Voting */
 "Abstain" = "Umabstain";
-
-/* Voting */
-"Abstain on “%@”" = "Umabstain sa “%@”";
 
 /* No comment provided by engineer. */
 "Accept" = "Tanggapin";
@@ -464,9 +410,6 @@
 /* Usernames */
 "Add to your Shielded balance now and register your username privately a few hours later" = "Magdagdag ng pondo sa protektadong balanse ngayon at iparehistro ang iyong username nang pribado makalipas ang ilang oras";
 
-/* Voting */
-"Add voting key" = "Add voting key";
-
 /* Wallets */
 "Add Wallet" = "Add Wallet";
 
@@ -536,9 +479,6 @@
 
 /* Send confirm sheet: Core drain */
 "All eligible funds in your Transparent balance will be sent to this address when you confirm. Nothing is kept as change. The amount and fees are estimates. CoinJoin funds are excluded. Dash sent to a wrong address can't be recovered." = "All eligible funds in your Transparent balance will be sent to this address when you confirm. Nothing is kept as change. The amount and fees are estimates. CoinJoin funds are excluded. Dash sent to a wrong address can't be recovered.";
-
-/* Voting */
-"All of your masternodes have voted on this username. To change a vote, vote again for the outcome you now prefer — the new vote replaces the old one." = "All of your masternodes have voted on this username. To change a vote, vote again for the outcome you now prefer — the new vote replaces the old one.";
 
 /* CSV Export */
 "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system." = "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.";
@@ -777,12 +717,6 @@
 /* SPV diagnostics */
 "Awaiting completion" = "Awaiting completion";
 
-/* Voting */
-"Award “%@” to this contender" = "Igawad ang “%@” sa kalahok na ito";
-
-/* Voting */
-"Awards each username to the only person who requested it. Available because every selected name has a single requester." = "Awards each username to the only person who requested it. Available because every selected name has a single requester.";
-
 /* Dash DEX */
 "Back home" = "Back home";
 
@@ -914,9 +848,6 @@
 /* Username marketplace: browse-for-sale segment */
 "Browse" = "Mag-browse";
 
-/* Voting */
-"Browsing only" = "Panonood lamang";
-
 /* Masternode unban */
 "Build and sign the transaction and show it here, so you can check it before it's broadcast." = "Build and sign the transaction and show it here, so you can check it before it's broadcast.";
 
@@ -1024,12 +955,6 @@
 /* DashSpend */
 "Cashier instructions" = "Cashier instructions";
 
-/* Voting */
-"Cast %u votes" = "Cast %u votes";
-
-/* Voting */
-"Cast vote" = "Ihulog ang boto";
-
 /* No comment provided by engineer. */
 "Catching up" = "Nakikihabol";
 
@@ -1099,9 +1024,6 @@
 /* Usernames
    Voting */
 "Checking…" = "Sinusuri…";
-
-/* Voting */
-"Choice" = "Pagpipilian";
 
 /* Recovery phrase selection */
 "Choose Wallet" = "Pumili ng Wallet";
@@ -1331,20 +1253,11 @@
 /* No comment provided by engineer. */
 "Contacts" = "Mga Contact";
 
-/* Voting */
-"Contender %@" = "Kalahok %@";
-
-/* Voting */
-"Contender details" = "Contender details";
-
 /* No comment provided by engineer. */
 "Continue" = "Ipagpatuloy";
 
 /* Usernames: unfinished identity top-up */
 "Continue anyway" = "Continue anyway";
-
-/* Voting */
-"Continue with %1$d vote(s) across %2$d username(s)?" = "Continue with %1$d vote(s) across %2$d username(s)?";
 
 /* Usernames */
 "Continue without privacy" = "Continue without privacy";
@@ -1654,9 +1567,6 @@
 /* Send confirm sheet */
 "Dash sent to a wrong address can't be recovered. Make sure the address is exactly the one you intend to pay." = "Hindi na mababawi ang Dash na naipadala sa maling address. Tiyaking eksaktong tama ang address na balak mong bayaran.";
 
-/* Voting */
-"Dash stores usernames in a look-alike-safe form, so the stored name can differ from what each person typed." = "Iniimbak ng Dash ang mga username sa anyong ligtas sa magkakahawig, kaya maaaring iba ang nakaimbak na pangalan sa tinipa ng bawat tao.";
-
 /* No comment provided by engineer. */
 "Dash username" = "Dash username";
 
@@ -1902,9 +1812,6 @@
 /* Devnet */
 "e.g. moutai (matches dashd -devnet=<name>)" = "e.g. moutai (matches dashd -devnet=<name>)";
 
-/* Voting */
-"Each masternode has one live vote per contest. You can change it later, but Dash Platform allows only 5 votes in total per masternode per contest." = "May isang buhay na boto ang bawat masternode sa bawat paligsahan. Mababago mo ito mamaya, pero 5 boto lang sa kabuuan ang pinapayagan ng Dash Platform sa bawat masternode sa bawat paligsahan.";
-
 /* (List of notifications happened) Earlier (some time ago) */
 "Earlier" = "Mas maaga";
 
@@ -1952,9 +1859,6 @@
 
 /* DashPay FAQ */
 "Enabling DashPay costs a small one-time network fee, paid from your identity's credit balance. The exact estimate is shown before you confirm. Sending contact requests and payments costs the usual network fees." = "May maliit at isang beses lang na bayarin sa network ang pag-enable ng DashPay, kinukuha mula sa balanse ng kredito ng iyong pagkakakilanlan. Ipapakita ang tumpak na tantiya bago ka kumpirmahin. Karaniwang bayarin sa network naman ang pagpapadala ng kahilingan sa pakikipag-ugnay at ng bayad.";
-
-/* Voting */
-"Ending soonest" = "Pinakamaagang matatapos";
 
 /* Usernames */
 "Ends around %@" = "Ends around %@";
@@ -2021,9 +1925,6 @@
 
 /* No comment provided by engineer. */
 "Enter your recovery phrase to set a new PIN" = "Ilagay ang iyong recovery phrase para magtakda ng bagong PIN";
-
-/* Voting */
-"Enter your voting key" = "Ilagay ang iyong voting key";
 
 /* No comment provided by engineer. */
 "Epoch" = "Epoch";
@@ -2935,9 +2836,6 @@
    Voting */
 "Lock the name" = "I-lock ang pangalan";
 
-/* Voting */
-"Lock “%@” so nobody gets it" = "I-lock ang “%@” para walang makakuha nito";
-
 /* No comment provided by engineer. */
 "Locked" = "Naka-lock";
 
@@ -3061,9 +2959,6 @@
 /* No comment provided by engineer. */
 "Masternode Update" = "Pag-update ng Masternode";
 
-/* Voting */
-"Masternode Voting Private Key" = "Masternode Voting Private Key";
-
 /* Tools menu */
 "Masternodes" = "Mga Masternode";
 
@@ -3158,12 +3053,6 @@
 /* No comment provided by engineer. */
 "More Control" = "Mas marami pang kontrol";
 
-/* Voting */
-"Most lock votes" = "Pinakamaraming lock vote";
-
-/* Voting */
-"Most votes" = "Pinakamaraming boto";
-
 /* Masternode unban */
 "Move %@ from shielded balance" = "Move %@ from shielded balance";
 
@@ -3248,9 +3137,6 @@
 
 /* Coinbase Two Factor Auth */
 "Need help? " = "Kailangan ng tulong ?";
-
-/* Voting */
-"Needs attention" = "Kailangan ng atensyon";
 
 /* No comment provided by engineer. */
 "Network" = "Network";
@@ -3466,17 +3352,11 @@
 /* Username marketplace: contest with zero masternode votes so far */
 "No votes cast yet" = "Wala pang naitatalang boto";
 
-/* Voting */
-"No votes were cast" = "Walang naihulog na boto";
-
 /* Security — reset wallet */
 "No Wallet Found" = "No Wallet Found";
 
 /* Usernames */
 "No, thanks" = "No, thanks";
-
-/* Voting */
-"Nobody gets it" = "Walang makakakuha nito";
 
 /* SPV sync peer type */
 "Node" = "Node";
@@ -3510,9 +3390,6 @@
 
 /* Sync diagnostics */
 "None found" = "None found";
-
-/* Voting */
-"None of the selected usernames can take this vote any more — reopen them to see their current requests." = "None of the selected usernames can take this vote any more — reopen them to see their current requests.";
 
 /* Core Max has nothing confirmed to spend */
 "None of your %@ DASH is spendable yet — it is still confirming." = "None of your %@ DASH is spendable yet — it is still confirming.";
@@ -3549,9 +3426,6 @@
 
 /* Sync diagnostics */
 "Not bound" = "Not bound";
-
-/* Voting */
-"Not cast" = "Hindi naihulog";
 
 /* Masternodes */
 "Not checked yet" = "Hindi pa nasusuri";
@@ -3628,9 +3502,6 @@
 /* Sync diagnostics */
 "Notes Synced" = "Notes Synced";
 
-/* Voting */
-"Nothing is left to cast." = "Nothing is left to cast.";
-
 /* SPV diagnostics */
 "Nothing to finish." = "Nothing to finish.";
 
@@ -3682,14 +3553,8 @@
 /* DashConnect App Connect v2: the placeholder is the app's website or name */
 "Only approve if you just started signing in on %@." = "Only approve if you just started signing in on %@.";
 
-/* Voting */
-"Only masternodes and evonodes can vote on usernames. Add a masternode voting key to vote from this wallet." = "Only masternodes and evonodes can vote on usernames. Add a masternode voting key to vote from this wallet.";
-
 /* Wallet preparation support */
 "Only the app and system versions, time and error codes. No wallet data, keys or full logs. Nothing is sent automatically." = "Only the app and system versions, time and error codes. No wallet data, keys or full logs. Nothing is sent automatically.";
-
-/* Voting */
-"Only this node votes, so it stays unlinked from your other masternodes. Add more nodes for greater voting weight." = "Only this node votes, so it stays unlinked from your other masternodes. Add more nodes for greater voting weight.";
 
 /* DashPay Contacts */
 "Only visible to you" = "Only visible to you";
@@ -3729,9 +3594,6 @@
 
 /* DashConnect App Connect v2 */
 "Other identities can add their own contracts to this group, and the key will act as you in those too." = "Other identities can add their own contracts to this group, and the key will act as you in those too.";
-
-/* Voting */
-"Other outcomes" = "Iba pang kalalabasan";
 
 /* Masternodes */
 "Outpoint" = "Outpoint";
@@ -4297,9 +4159,6 @@
 /* DashConnect: accessibility, a row's button; the app's name */
 "Reconnect %@" = "Reconnect %@";
 
-/* Voting */
-"Records your masternodes as having voted, without taking a side." = "Itinatala ang iyong mga masternode bilang bumoto na, nang hindi pumapanig.";
-
 /* No comment provided by engineer. */
 "Recover" = "Bawiin";
 
@@ -4506,9 +4365,6 @@
 
 /* Testnet faucet */
 "Requesting tDash…" = "Requesting tDash…";
-
-/* Voting */
-"Requesting this name" = "Humihiling ng pangalang ito";
 
 /* Usernames — Home row title while a contested username is being submitted */
 "Requesting – %@" = "Requesting – %@";
@@ -4757,9 +4613,6 @@
 /* Buy Sell Dash */
 "Select a service to buy, sell, convert and transfer Dash" = "Pumili ng serbisyong bibilhin, ibebenta, iko-convert at ililipat ang Dash";
 
-/* Voting */
-"Select all" = "Piliin lahat";
-
 /* DashSpend denomination selection */
 "Select amount" = "Pumili ng halaga";
 
@@ -4796,9 +4649,6 @@
 
 /* No comment provided by engineer. */
 "Select the wallet whose recovery phrase you want to view." = "Piliin ang wallet na gusto mong makita ang recovery phrase.";
-
-/* Voting */
-"Selecting fewer nodes reveals less about which masternodes you run." = "Kapag mas kaunting node ang pinili, mas kaunti ang naibubunyag tungkol sa kung anong masternode ang pinapatakbo mo.";
 
 /* No comment provided by engineer. */
 "Self-checkout" = "Self-checkout";
@@ -4926,9 +4776,6 @@
 /* No comment provided by engineer. */
 "Setup Wallet" = "Magset up ng wallet";
 
-/* Voting */
-"Several people requested this name — open it to choose between them." = "Several people requested this name — open it to choose between them.";
-
 /* Receive screen */
 "Share" = "Ipamahagi";
 
@@ -5049,9 +4896,6 @@
 /* Username marketplace: departed-name line — buyer identity */
 "Sold to %@" = "Naibenta kay %@";
 
-/* Voting */
-"Sole Requester" = "Sole Requester";
-
 /* Maya */
 "Some coins are not available because of the halted chain" = "Some coins are not available because of the halted chain";
 
@@ -5069,9 +4913,6 @@
 
 /* Usernames */
 "Some usernames can be blocked" = "Maaaring i-block ang ilang mga username";
-
-/* Voting */
-"Some votes already cast" = "Some votes already cast";
 
 /* No comment provided by engineer. */
 "Something went wrong" = "May maling nangyari";
@@ -5164,9 +5005,6 @@
 /* DashPay
    InternalTransfer */
 "Storage is not configured" = "Storage is not configured";
-
-/* Voting */
-"Stored as" = "Nakaimbak bilang";
 
 /* Dash DEX */
 "Stuck" = "Stuck";
@@ -5298,9 +5136,6 @@
 
 /* No comment provided by engineer. */
 "Take a Photo from Camera" = "Kumuha ng Larawan mula sa Camera";
-
-/* Voting */
-"Take no side" = "Huwag pumanig";
 
 /* Enter Address Screen */
 "Tap the address from the clipboard to paste it" = "I-tap ang address mula sa clipboard para i-paste ito";
@@ -5499,9 +5334,6 @@
 
 /* DashPay Invitations */
 "The invitation is still confirming on the network. Try again in a few minutes." = "The invitation is still confirming on the network. Try again in a few minutes.";
-
-/* Voting */
-"The IP address(es) below are associated with this wallet" = "The IP address(es) below are associated with this wallet";
 
 /* Usernames: proof-of-identity link visibility */
 "The link is published on Dash Platform with your identity and the name you requested. Anyone can read it, not only masternode owners." = "The link is published on Dash Platform with your identity and the name you requested. Anyone can read it, not only masternode owners.";
@@ -5755,9 +5587,6 @@
 /* No comment provided by engineer. */
 "These funds move to your Platform Payment balance and are ready to spend right away." = "These funds move to your Platform Payment balance and are ready to spend right away.";
 
-/* Voting */
-"These nodes vote together, which publicly links them to each other. Choosing fewer nodes keeps them unlinked, at less voting weight." = "These nodes vote together, which publicly links them to each other. Choosing fewer nodes keeps them unlinked, at less voting weight.";
-
 /* Wallet accounts */
 "This account derives masternode keys. It has no on-chain addresses or balance." = "This account derives masternode keys. It has no on-chain addresses or balance.";
 
@@ -5802,9 +5631,6 @@
 
 /* DashConnect App Connect v2 */
 "This app's earlier sign-ins left more keys than one approval can replace. Disconnect the app, then sign in again." = "This app's earlier sign-ins left more keys than one approval can replace. Disconnect the app, then sign in again.";
-
-/* Voting */
-"This applies one choice to all %d selected usernames." = "Inilalapat nito ang iisang pagpipilian sa lahat ng %d napiling username.";
 
 /* Core drain input limit preview */
 "This balance is made of too many separate payments to move with Max in one transfer. Enter a smaller amount instead." = "This balance is made of too many separate payments to move with Max in one transfer. Enter a smaller amount instead.";
@@ -5959,9 +5785,6 @@
 /* DashConnect */
 "This sign-in request is dated ahead of the network's time. Ask the app for a new code." = "This sign-in request is dated ahead of the network's time. Ask the app for a new code.";
 
-/* Voting */
-"This still counts as your masternodes having voted in this contest." = "Nabibilang pa rin itong bumoto ang iyong mga masternode sa paligsahang ito.";
-
 /* Dash DEX / dex_error_maya_memo_too_long */
 "This swap's Maya instruction doesn't fit in a Dash transaction. Try a different amount, or a shorter %@ address." = "This swap's Maya instruction doesn't fit in a Dash transaction. Try a different amount, or a shorter %@ address.";
 
@@ -6054,9 +5877,6 @@
 
 /* No comment provided by engineer. */
 "This wallet holds neither the owner key nor the payout address key of this evonode, so its balance can't be withdrawn from here." = "Hindi hawak ng wallet na ito ang owner key o ang key ng payout address ng evonode na ito, kaya hindi mai-withdraw mula rito ang balanse nito.";
-
-/* Voting */
-"This wallet holds no active masternode voting keys, so it cannot vote." = "This wallet holds no active masternode voting keys, so it cannot vote.";
 
 /* No comment provided by engineer. */
 "This wallet holds the evonode's payout address key, so the balance can be withdrawn to any Dash address." = "Hawak ng wallet na ito ang key ng payout address ng evonode, kaya puwedeng i-withdraw ang balanse sa kahit anong Dash address.";
@@ -6526,9 +6346,6 @@
 /* No comment provided by engineer. */
 "Username taken" = "Kinuha na Username";
 
-/* Voting */
-"Username voting" = "Pagboto ng username";
-
 /* Usernames */
 "Username was successfully requested" = "Matagumpay na hiniling ang username";
 
@@ -6616,9 +6433,6 @@
 /* Voting */
 "Vote" = "Bumoto";
 
-/* Voting */
-"Vote cast" = "Naihulog ang boto";
-
 /* Usernames */
 "Vote ended" = "Tapos na ang pagboto";
 
@@ -6627,21 +6441,6 @@
 
 /* Usernames */
 "Vote in progress" = "Isinasagawa ang pagboto";
-
-/* Voting */
-"Vote on %d usernames" = "Vote on %d usernames";
-
-/* Voting */
-"Vote on several" = "Bumoto sa marami";
-
-/* Voting */
-"Vote with" = "Bumoto gamit ang";
-
-/* Voting */
-"Vote ×%d" = "Vote ×%d";
-
-/* Voting */
-"Votes that nobody should receive these usernames." = "Bumoboto na walang dapat makakuha ng mga username na ito.";
 
 /* No comment provided by engineer. */
 "Voting" = "Pagboto";
@@ -6654,9 +6453,6 @@
 
 /* Usernames */
 "Voting ended with no winner" = "Natapos ang pagboto nang walang nanalo";
-
-/* Voting */
-"Voting ends" = "Magtatapos ang pagboto";
 
 /* Usernames */
 "Voting ends around %@" = "Voting ends around %@";
@@ -6681,9 +6477,6 @@
 
 /* Voting keys */
 "Voting keys" = "Mga susi ng pagboto";
-
-/* Voting */
-"Voting on this username has closed. The counts below are the last ones read." = "Sarado na ang pagboto sa username na ito. Ang mga bilang sa ibaba ang huling nabasa.";
 
 /* Voting */
 "Voting on “%@” has already closed. Refresh to see the result." = "Sarado na ang pagboto sa “%@”. Mag-refresh para makita ang resulta.";
@@ -6850,9 +6643,6 @@
 
 /* Usernames */
 "What is username voting?" = "Ano ang pagboto ng username?";
-
-/* Voting */
-"What this person published to show the name is theirs. None of it is verified by the network — it is what you are voting on." = "What this person published to show the name is theirs. None of it is verified by the network — it is what you are voting on.";
 
 /* DashPay FAQ */
 "What's coming next?" = "Ano ang susunod?";
@@ -7035,34 +6825,10 @@
 "You have chosen “%@” as your username. Please note that the username can NOT be changed once it is registered." = "You have chosen “%@” as your username. Please note that the username can NOT be changed once it is registered.";
 
 /* Voting */
-"You have entered a key in hex format, but it should be in WIF format (%@)" = "You have entered a key in hex format, but it should be in WIF format (%@)";
-
-/* Voting */
-"You have entered a key that is for mainnet, but this is testnet. It should look like this: %@" = "You have entered a key that is for mainnet, but this is testnet. It should look like this: %@";
-
-/* Voting */
-"You have entered a key that is for testnet, but this is mainnet. It should look like this: %@" = "You have entered a key that is for testnet, but this is mainnet. It should look like this: %@";
-
-/* Voting */
 "You have entered a key that is not associated to an active Masternode" = "You have entered a key that is not associated to an active Masternode";
 
 /* Voting */
-"You have entered a private key that has an invalid character. Here is an example (%@)" = "You have entered a private key that has an invalid character. Here is an example (%@)";
-
-/* Voting */
-"You have entered a private key that is too short. Here is an example (%@)" = "You have entered a private key that is too short. Here is an example (%@)";
-
-/* Voting */
-"You have entered a private key with some incorrect characters. Here is an example (%@)" = "You have entered a private key with some incorrect characters. Here is an example (%@)";
-
-/* Voting */
-"You have entered an address instead of a masternode voting private key. It should be in WIF format (%@)" = "You have entered an address instead of a masternode voting private key. It should be in WIF format (%@)";
-
-/* Voting */
 "You have entered an invalid key" = "Naglagay ka ng di-wastong key";
-
-/* Voting */
-"You have entered an uncompressed private key. This app can only vote with a compressed voting key. Here is an example (%@)" = "You have entered an uncompressed private key. This app can only vote with a compressed voting key. Here is an example (%@)";
 
 /* DashPay Notifications */
 "You have no notifications" = "You have no notifications";
@@ -7400,9 +7166,6 @@
 /* Identities */
 "Your username, profile, and contacts will follow this identity." = "Susunod sa pagkakakilanlang ito ang iyong username, profile, at mga kontak.";
 
-/* Voting */
-"Your votes" = "Ang iyong mga boto";
-
 /* Wallet preparation failure */
 "Your wallet could not be opened. Your wallet keys are still stored safely on this device. Try again or contact support for help." = "Your wallet could not be opened. Your wallet keys are still stored safely on this device. Try again or contact support for help.";
 
@@ -7459,3 +7222,296 @@
 
 /* DashPay purchase context changed */
 "“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again." = "“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again.";
+
+/* Voting */
+"%1$d of %2$d masternodes cancelled their vote on %3$@." = "%1$d of %2$d masternodes cancelled their vote on %3$@.";
+
+/* Voting */
+"%1$d of %2$d masternodes voted to approve %3$@." = "%1$d of %2$d masternodes voted to approve %3$@.";
+
+/* Voting */
+"%1$d of %2$d masternodes voted to block %3$@." = "%1$d of %2$d masternodes voted to block %3$@.";
+
+/* Voting: filter type, then the duplicates switch */
+"%@ · only duplicates" = "%@ · only duplicates";
+
+/* Voting */
+"%d usernames" = "%d usernames";
+
+/* Voting */
+"%d votes will be cast" = "%d votes will be cast";
+
+/* Voting */
+"1 vote will be cast" = "1 vote will be cast";
+
+/* Voting */
+"Add your voting keys" = "Add your voting keys";
+
+/* Voting */
+"Approve %@" = "Approve %@";
+
+/* Voting */
+"As a masternode owner you can vote to approve requested usernames before users will be able to create it." = "As a masternode owner you can vote to approve requested usernames before users will be able to create it.";
+
+/* Voting */
+"Block %@" = "Block %@";
+
+/* Voting */
+"Block %@?" = "Block %@?";
+
+/* Voting */
+"Can't filter by your votes right now" = "Can't filter by your votes right now";
+
+/* Voting */
+"Cancel approval" = "Cancel approval";
+
+/* Voting */
+"Change the filter or reset it to see every open contest." = "Change the filter or reset it to see every open contest.";
+
+/* Voting */
+"Could not check how many votes this node has left." = "Could not check how many votes this node has left.";
+
+/* Voting */
+"Couldn't check for a link" = "Couldn't check for a link";
+
+/* Voting */
+"Couldn't load the contests" = "Couldn't load the contests";
+
+/* Voting */
+"Couldn't read your vote history." = "Couldn't read your vote history.";
+
+/* Voting */
+"Couldn't refresh the list." = "Couldn't refresh the list.";
+
+/* No comment provided by engineer. */
+"Date: New to old" = "Petsa: Bago sa luma";
+
+/* No comment provided by engineer. */
+"Date: Old to new" = "Petsa: Luma sa bago";
+
+/* Voting */
+"Enter voting key" = "Ilagay ang iyong voting key";
+
+/* No comment provided by engineer. */
+"Filtered by" = "Na-filter ng";
+
+/* Voting */
+"Finish syncing." = "Finish syncing.";
+
+/* No comment provided by engineer. */
+"Has blocked votes" = "May mga botong i-block";
+
+/* Voting */
+"Hide requests for %@" = "Hide requests for %@";
+
+/* Voting */
+"Hides the requests for this name" = "Hides the requests for this name";
+
+/* No comment provided by engineer. */
+"I have approved" = "Naaprubahan ko na";
+
+/* No comment provided by engineer. */
+"I have not voted" = "hindi ako nakaboto";
+
+/* Voting */
+"If block wins when voting ends, nobody can ever request this username again." = "If block wins when voting ends, nobody can ever request this username again.";
+
+/* Voting */
+"If block wins when voting ends, nobody can ever request this username again. You can cancel your vote until voting ends." = "If block wins when voting ends, nobody can ever request this username again. You can cancel your vote until voting ends.";
+
+/* Voting */
+"No usernames match this filter" = "No usernames match this filter";
+
+/* No comment provided by engineer. */
+"No votes left" = "Walang natitirang boto";
+
+/* Voting */
+"Not cast — %@" = "Not cast — %@";
+
+/* Voting */
+"Not provided" = "Not provided";
+
+/* Voting */
+"Not provided – %@" = "Not provided – %@";
+
+/* Voting */
+"One vote left" = "One vote left";
+
+/* No comment provided by engineer. */
+"Only duplicates" = "Mga duplicate lang";
+
+/* No comment provided by engineer. */
+"Only requests with links" = "Mga kahilingan lamang na may mga link";
+
+/* Voting */
+"Opens the request details" = "Opens the request details";
+
+/* Voting */
+"Opens the requests for this name" = "Opens the requests for this name";
+
+/* Voting */
+"Pull down to try again." = "Pull down to try again.";
+
+/* Voting */
+"Reset filters" = "Reset filters";
+
+/* Voting */
+"Review the posting below to verify the ownership of this username" = "Review the posting below to verify the ownership of this username";
+
+/* Voting */
+"Sending…" = "Sending…";
+
+/* Voting */
+"Set up voting to filter by your votes." = "Set up voting to filter by your votes.";
+
+/* Voting */
+"Show requests for %@" = "Show requests for %@";
+
+/* Voting */
+"Some masternodes may be missing." = "Some masternodes may be missing.";
+
+/* Voting */
+"Takes your vote back" = "Takes your vote back";
+
+/* Voting */
+"The IP address(es) below are associated with this wallet. Tick the ones that should vote." = "The IP address(es) below are associated with this wallet. Tick the ones that should vote.";
+
+/* Voting */
+"The other %d votes were not cast." = "The other %d votes were not cast.";
+
+/* Voting */
+"The other vote was not cast." = "The other vote was not cast.";
+
+/* Voting */
+"The vote was not cast. Check your connection and try again." = "The vote was not cast. Check your connection and try again.";
+
+/* Voting */
+"The vote was not cast. Please try again." = "The vote was not cast. Please try again.";
+
+/* Voting */
+"The vote was not cast. This voting key does not belong to an active masternode." = "The vote was not cast. This voting key does not belong to an active masternode.";
+
+/* Voting */
+"The vote was not cast. Voting on this name has closed." = "The vote was not cast. Voting on this name has closed.";
+
+/* Voting */
+"This wallet's masternode voting keys aren't available right now, so it has no votes to filter by." = "This wallet's masternode voting keys aren't available right now, so it has no votes to filter by.";
+
+/* Voting */
+"Username Voting" = "Username Voting";
+
+/* Voting */
+"Vote cancelled on %@" = "Vote cancelled on %@";
+
+/* Voting */
+"Vote partly cast" = "Vote partly cast";
+
+/* Voting */
+"Vote to approve" = "Vote to approve";
+
+/* Voting */
+"Voted %@ username" = "Voted %@ username";
+
+/* No comment provided by engineer. */
+"Votes: High to low" = "Mga Boto: Mataas hanggang mababa";
+
+/* No comment provided by engineer. */
+"Votes: Low to high" = "Mga Boto: Mababa hanggang mataas";
+
+/* Voting */
+"Voting end unknown" = "Voting end unknown";
+
+/* Voting */
+"Voting ends in %d days" = "Voting ends in %d days";
+
+/* Voting */
+"Voting ends today" = "Voting ends today";
+
+/* Voting */
+"Voting is paused." = "Voting is paused.";
+
+/* Voting */
+"Voting on %@ has ended" = "Voting on %@ has ended";
+
+/* Voting */
+"Voting options" = "Voting options";
+
+/* Voting */
+"Voting period" = "Voting period";
+
+/* Voting */
+"Voting with several masternodes at once publicly links them to each other." = "Voting with several masternodes at once publicly links them to each other.";
+
+/* Voting */
+"You can block the creation of the usernames that you feel inappropriate." = "You can block the creation of the usernames that you feel inappropriate.";
+
+/* Voting */
+"You have already voted for this username 4 times. You can only cast one more vote for this username." = "You have already voted for this username 4 times. You can only cast one more vote for this username.";
+
+/* Voting */
+"You have already voted for this username 5 times. You cannot vote on it any more." = "You have already voted for this username 5 times. You cannot vote on it any more.";
+
+/* Voting */
+"You voted" = "You voted";
+
+/* Voting */
+"✓ Voted" = "✓ Voted";
+
+/* Voting */
+"Masternode voting key" = "Masternode voting key";
+
+"Already voted this way on %@" = "Already voted this way on %@";
+
+"Link included" = "Link included";
+
+"Can't filter by links right now" = "Can't filter by links right now";
+
+"Some links couldn't be checked. Apply the filter again to retry, or reset it." = "Some links couldn't be checked. Apply the filter again to retry, or reset it.";
+
+"Quick voting stopped before this vote was sent." = "Quick voting stopped before this vote was sent.";
+
+"Quick voting done" = "Quick voting done";
+
+"A masternode of this wallet blocked this name." = "A masternode of this wallet blocked this name.";
+
+"Vote for all" = "Vote for all";
+
+"Quick voting" = "Quick voting";
+
+"None of the filtered usernames can get a vote." = "None of the filtered usernames can get a vote.";
+
+"Vote for all approves %d usernames" = "Vote for all approves %d usernames";
+
+"Vote for all approves the linked request for %d usernames" = "Vote for all approves the linked request for %d usernames";
+
+"%d usernames are skipped" = "%d usernames are skipped";
+
+"This is your last vote for some of these usernames. After it, you cannot vote on them again." = "This is your last vote for some of these usernames. After it, you cannot vote on them again.";
+
+"Show all usernames" = "Show all usernames";
+
+"Quick voting partly done" = "Quick voting partly done";
+
+"Some votes were not cast. These usernames were not voted for:" = "Some votes were not cast. These usernames were not voted for:";
+
+/* Voting */
+"Some votes were not cast or their result is not confirmed:" = "Some votes were not cast or their result is not confirmed:";
+
+"Quick voting… %1$d of %2$d done" = "Quick voting… %1$d of %2$d done";
+
+/* Voting */
+"Couldn't tell which request came first." = "Couldn't tell which request came first.";
+
+/* Voting */
+"Some of your masternodes may be missing from this list." = "Some of your masternodes may be missing from this list.";
+
+/* Voting */
+"Quick voting did not start: another vote is still being sent." = "Quick voting did not start: another vote is still being sent.";
+
+/* Voting */
+"No votes to filter by" = "No votes to filter by";
+
+"This wallet has no masternode voting keys, so it has no votes to filter by." = "This wallet has no masternode voting keys, so it has no votes to filter by.";
+
+/* Voting */
+"The vote was not cast. This masternode already holds this vote." = "The vote was not cast. This masternode already holds this vote.";

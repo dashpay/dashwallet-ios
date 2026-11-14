@@ -18,7 +18,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 // MARK: - VoteChoice
@@ -71,11 +70,44 @@ enum VoteChoice: Hashable {
 /// so a partial run is reported as a partial run rather than as an error.
 struct VoteOutcome: Identifiable {
     let node: VoterNode
-    /// `nil` on success; the Platform or local error message otherwise.
+    /// `nil` on success; the reason in plain words otherwise.
     let failure: String?
+    /// `false` when Platform accepted the vote but the local history write
+    /// failed, so the stored cast count is one low.
+    var historyRecorded: Bool = true
+    /// The masternode has spent all its votes on this contest, whichever step
+    /// found it: the vote gates, the recheck before a cast, or Platform's
+    /// refusal. Set by ``noVotesLeft(_:)``, never read from the text.
+    private(set) var hasNoVotesLeft = false
+    /// The SDK could not confirm the broadcast, so the vote may have landed.
+    /// Set by ``unconfirmed(_:)``.
+    private(set) var mayHaveLanded = false
 
     var id: Data { node.proTxHash }
     var succeeded: Bool { failure == nil }
+    /// A failed vote Try again may send again: not one with no vote left
+    /// (it cannot land), nor one that may have landed already.
+    var isRetryable: Bool { !succeeded && !hasNoVotesLeft && !mayHaveLanded }
+
+    init(node: VoterNode, failure: String?, historyRecorded: Bool = true) {
+        self.node = node
+        self.failure = failure
+        self.historyRecorded = historyRecorded
+    }
+
+    /// A masternode with no vote left here: "No votes left".
+    static func noVotesLeft(_ node: VoterNode) -> VoteOutcome {
+        var outcome = VoteOutcome(node: node, failure: NSLocalizedString("No votes left", comment: "Voting"))
+        outcome.hasNoVotesLeft = true
+        return outcome
+    }
+
+    /// A broadcast whose result the SDK could not confirm.
+    static func unconfirmed(_ node: VoterNode) -> VoteOutcome {
+        var outcome = VoteOutcome(node: node, failure: NSLocalizedString("Result not confirmed", comment: "Voting"))
+        outcome.mayHaveLanded = true
+        return outcome
+    }
 }
 
 /// Aggregate result of casting one choice with a set of nodes.
@@ -83,12 +115,29 @@ struct VoteCastReport {
     let normalizedLabel: String
     let choice: VoteChoice
     let outcomes: [VoteOutcome]
+    /// Platform answered that the poll is closed, so nothing was sent.
+    var contestClosed = false
 
     var succeeded: [VoteOutcome] { outcomes.filter(\.succeeded) }
     var failed: [VoteOutcome] { outcomes.filter { !$0.succeeded } }
     /// Platform voting weight that was actually accepted.
     var acceptedWeight: UInt32 { succeeded.map(\.node).totalVoteWeight }
     var isCompleteSuccess: Bool { !outcomes.isEmpty && failed.isEmpty }
+    /// Some failed masternode could still land a vote on a retry; one with no
+    /// vote left never can (AC-15), and one that may have landed is not sent
+    /// again.
+    var offersTryAgain: Bool { failed.contains(where: \.isRetryable) }
+}
+
+// MARK: - QuickVoteCast
+
+/// One name of a Quick voting run: the choice and the masternodes that send it.
+struct QuickVoteCast {
+    let normalizedLabel: String
+    let choice: VoteChoice
+    let nodes: [VoterNode]
+    /// The name's known voting end; nothing is sent on it from then on.
+    var endsAt: Date?
 }
 
 // MARK: - MasternodeVoteCaster
@@ -104,12 +153,6 @@ struct VoteCastReport {
 @MainActor
 final class MasternodeVoteCaster {
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.voting")
-
-    private static let history: VoteHistoryDAO = VoteHistoryDAOImpl.shared
-
     /// Vote history is per Platform network — a testnet contest and a mainnet
     /// one can share a label, and their counts must never merge.
     static var networkKey: String {
@@ -118,12 +161,60 @@ final class MasternodeVoteCaster {
         WalletEnvironment.network?.persistenceScope ?? "mainnet"
     }
 
-    private let registry: MasternodeVoterRegistry
     private let contests: ContestedNamesService
+    private let history: VoteHistoryDAO
+    private let votingKey: (VoterNode) -> Data?
+    private let send: VoteSender
+    private let authenticate: @MainActor () async -> AuthenticationGate.Outcome
+    private let isContestOpen: @MainActor (_ normalizedLabel: String) async throws -> Bool
+    private let isSDKConnected: @MainActor () -> Bool
+    private let now: @MainActor () -> Date
 
-    init(registry: MasternodeVoterRegistry, contests: ContestedNamesService) {
-        self.registry = registry
+    /// Broadcasts one vote for one node. Throws on any failure.
+    typealias VoteSender = (
+        _ node: VoterNode, _ votingKey: Data, _ choice: VoteChoice, _ normalizedLabel: String
+    ) async throws -> Void
+
+    /// - Parameters:
+    ///   - votingKey: derives a node's voting key; `nil` uses the registry.
+    ///   - send: broadcasts one vote; `nil` uses the SDK.
+    ///   - authenticate: the PIN/biometric prompt of a Quick voting run;
+    ///     `nil` uses ``AuthenticationGate``.
+    ///   - isContestOpen: a run's pre-flight per name; `nil` asks Platform.
+    ///   - isSDKConnected: whether a run can reach Platform at all; `nil`
+    ///     asks ``SwiftDashSDKHost``.
+    ///   - now: the clock a run checks each name's voting end against.
+    init(
+        registry: MasternodeVoterRegistry,
+        contests: ContestedNamesService,
+        history: VoteHistoryDAO,
+        votingKey: ((VoterNode) -> Data?)? = nil,
+        send: VoteSender? = nil,
+        authenticate: (@MainActor () async -> AuthenticationGate.Outcome)? = nil,
+        isContestOpen: (@MainActor (_ normalizedLabel: String) async throws -> Bool)? = nil,
+        isSDKConnected: (@MainActor () -> Bool)? = nil,
+        now: @escaping @MainActor () -> Date = Date.init
+    ) {
+        self.now = now
         self.contests = contests
+        self.history = history
+        self.authenticate = authenticate ?? {
+            await AuthenticationGate.authenticate(biometric: DWGlobalOptions.sharedInstance().biometricAuthEnabled)
+        }
+        self.isContestOpen = isContestOpen ?? { try await contests.contestIsOpen(normalizedLabel: $0) }
+        self.isSDKConnected = isSDKConnected ?? { SwiftDashSDKHost.shared.sdk != nil }
+        self.votingKey = votingKey ?? { registry.votingPrivateKey(for: $0) }
+        self.send = send ?? { node, votingKey, choice, normalizedLabel in
+            guard let sdk = SwiftDashSDKHost.shared.sdk else { throw CastError.sdkUnavailable }
+            try await sdk.castContestedResourceVote(
+                dataContractId: DPNSVotePoll.contractId,
+                documentTypeName: DPNSVotePoll.documentTypeName,
+                indexName: DPNSVotePoll.indexName,
+                indexValues: DPNSVotePoll.indexValues(normalizedLabel: normalizedLabel),
+                choice: choice.sdkChoice,
+                proTxHash: node.proTxHash,
+                votingPrivateKey: votingKey)
+        }
     }
 
     enum CastError: LocalizedError {
@@ -156,7 +247,7 @@ final class MasternodeVoteCaster {
     /// Cast `choice` on `normalizedLabel` with each node in `nodes`.
     ///
     /// Prompts for PIN/biometric once, then hands off to
-    /// ``castAuthenticated(choice:onNormalizedLabel:with:sdk:)``.
+    /// ``castAfterAuthentication(choice:onNormalizedLabel:with:)``.
     ///
     /// - Throws: ``CastError`` when the run cannot start at all (auth refused,
     ///   poll already closed). Once broadcasting starts, per-node failures are
@@ -168,7 +259,7 @@ final class MasternodeVoteCaster {
         with nodes: [VoterNode]
     ) async throws -> VoteCastReport {
         guard !nodes.isEmpty else { throw CastError.noNodesSelected }
-        guard let sdk = SwiftDashSDKHost.shared.sdk else { throw CastError.sdkUnavailable }
+        guard SwiftDashSDKHost.shared.sdk != nil else { throw CastError.sdkUnavailable }
 
         // Pre-flight: a closed poll otherwise fails only after a long
         // broadcast retry, with an error that says nothing useful.
@@ -186,29 +277,149 @@ final class MasternodeVoteCaster {
             throw CastError.authenticationFailed
         }
 
-        return await castAuthenticated(
-            choice: choice, onNormalizedLabel: normalizedLabel, with: nodes, sdk: sdk)
+        return await castAfterAuthentication(
+            choice: choice, onNormalizedLabel: normalizedLabel, with: nodes)
+    }
+
+    /// Quick voting (ADR-0037): one PIN/biometric prompt, then name by name and
+    /// masternode by masternode through the per-node path, which re-reads the
+    /// vote limit and records each landed vote before the next cast.
+    /// `progress` gets 0 once the prompt is passed, so nothing tells of the
+    /// run before it, then the number of names done after each one.
+    ///
+    /// A name whose poll is closed, whose known voting end has passed (checked
+    /// again before each masternode's send), or whose pre-flight cannot be
+    /// read, sends nothing more and the run goes on. Once the task is cancelled (the screen went
+    /// away, the app went to the background) nothing more is sent, and every
+    /// vote not sent is reported as not cast, so Try again covers it.
+    ///
+    /// - Throws: ``CastError`` when Platform is not connected or the prompt
+    ///   is refused: nothing was sent.
+    func castRun(
+        _ casts: [QuickVoteCast], progress: @escaping @MainActor (Int) -> Void
+    ) async throws -> [VoteCastReport] {
+        guard !casts.isEmpty else { return [] }
+        // Before the prompt, as a single cast does: without Platform no vote
+        // can be sent, and a PIN asked for nothing is a broken promise.
+        guard isSDKConnected() else { throw CastError.sdkUnavailable }
+        // A run stopped before it starts (a Try again stopped while it re-read
+        // the history) asks for no PIN and tells no progress: the loop below
+        // reports every vote as not cast. One stopped while the PIN prompt
+        // was up tells no progress either, and sends nothing.
+        var tellsProgress = !Task.isCancelled
+        if tellsProgress {
+            switch await authenticate() {
+            case .ok:
+                tellsProgress = !Task.isCancelled
+                if tellsProgress { progress(0) }
+            case .cancelled:
+                throw CastError.authenticationCancelled
+            case .failed, .timedOut:
+                throw CastError.authenticationFailed
+            }
+        }
+        var reports: [VoteCastReport] = []
+        for (index, cast) in casts.enumerated() {
+            reports.append(await castAfterAuthentication(cast))
+            if tellsProgress { progress(index + 1) }
+        }
+        return reports
+    }
+
+    /// One name of a run, after authentication.
+    private func castAfterAuthentication(_ cast: QuickVoteCast) async -> VoteCastReport {
+        func notSent(_ reason: String, closed: Bool = false) -> VoteCastReport {
+            DWLogger.log("Voting: Quick voting \(cast.choice.logDescription) on \(cast.normalizedLabel) not sent: \(reason)")
+            return VoteCastReport(
+                normalizedLabel: cast.normalizedLabel, choice: cast.choice,
+                outcomes: cast.nodes.map { VoteOutcome(node: $0, failure: reason) }, contestClosed: closed)
+        }
+        let stopped = NSLocalizedString("Quick voting stopped before this vote was sent.", comment: "Voting")
+        let ended = NSLocalizedString("Voting has ended", comment: "Voting")
+        // The sheet or "One vote left" may have stayed open past the end.
+        func hasEnded() -> Bool { cast.endsAt.map { now() >= $0 } ?? false }
+        guard !Task.isCancelled else { return notSent(stopped) }
+        guard !hasEnded() else { return notSent(ended, closed: true) }
+        do {
+            guard try await isContestOpen(cast.normalizedLabel) else {
+                return notSent(CastError.contestClosed(cast.normalizedLabel).errorDescription ?? stopped, closed: true)
+            }
+        } catch {
+            return notSent(VoteErrorMessage.plain(for: error))
+        }
+        var outcomes: [VoteOutcome] = []
+        var endedWhileSending = false
+        for node in cast.nodes {
+            guard !Task.isCancelled else {
+                DWLogger.log("Voting: Quick voting on \(cast.normalizedLabel) with \(Self.logName(node)) not sent: stopped")
+                outcomes.append(VoteOutcome(node: node, failure: stopped))
+                continue
+            }
+            guard !hasEnded() else {
+                DWLogger.log(
+                    "Voting: Quick voting on \(cast.normalizedLabel) with \(Self.logName(node)) not sent: voting ended")
+                outcomes.append(VoteOutcome(node: node, failure: ended))
+                endedWhileSending = true
+                continue
+            }
+            let report = await castAfterAuthentication(
+                choice: cast.choice, onNormalizedLabel: cast.normalizedLabel, with: [node], endsAt: cast.endsAt)
+            outcomes.append(contentsOf: report.outcomes)
+            endedWhileSending = endedWhileSending || report.contestClosed
+        }
+        return VoteCastReport(
+            normalizedLabel: cast.normalizedLabel, choice: cast.choice, outcomes: outcomes,
+            contestClosed: endedWhileSending)
+    }
+
+    /// A node as the voting log lines name it: its kind, the vote weight
+    /// Platform gives it, and its short pro_tx_hash, which is public in the
+    /// masternode list. Never the voting key.
+    private static func logName(_ node: VoterNode) -> String {
+        "\(node.isEvonode ? "evonode" : "masternode") \(node.typeIndex) \(node.shortProTxHash) (weight \(node.voteWeight))"
     }
 
     /// The per-node broadcast loop, after authentication and pre-flight.
+    /// It asks for no PIN: internal only so the tests can reach it, and every
+    /// app caller goes through ``cast(choice:onNormalizedLabel:with:)``.
     ///
     /// Nodes are processed **serially**: the SDK fetches an identity nonce for
     /// the voter identity on every broadcast, and two concurrent votes from
     /// the same node would race on it. Never throws — a node that fails is
     /// recorded and the loop continues, so one failure cannot discard the
     /// nodes that already succeeded.
-    private func castAuthenticated(
+    func castAfterAuthentication(
         choice: VoteChoice,
         onNormalizedLabel normalizedLabel: String,
         with nodes: [VoterNode],
-        sdk: SDK
+        endsAt: Date? = nil
     ) async -> VoteCastReport {
-        let indexValues = DPNSVotePoll.indexValues(normalizedLabel: normalizedLabel)
         var outcomes: [VoteOutcome] = []
+        var ended = false
         outcomes.reserveCapacity(nodes.count)
 
         for node in nodes {
-            guard let votingKey = registry.votingPrivateKey(for: node) else {
+            let attempt = "\(choice.logDescription) on \(normalizedLabel) with \(Self.logName(node))"
+            // Re-read the count before every cast: Platform refuses the sixth,
+            // and an unreadable count is unknown, never zero.
+            guard let votes = await history.votes(forContest: normalizedLabel, network: Self.networkKey) else {
+                DWLogger.log("Voting: \(attempt) not sent: vote count unreadable")
+                outcomes.append(VoteOutcome(
+                    node: node,
+                    failure: NSLocalizedString(
+                        "Could not check how many votes this node has left.",
+                        comment: "Voting")))
+                continue
+            }
+            let castCount = votes.first { $0.proTxHash == node.proTxHash }?.castCount ?? 0
+            guard castCount < VoteLimit.maxCastsPerNode else {
+                DWLogger.log("Voting: \(attempt) not sent: no votes left (\(castCount) cast)")
+                outcomes.append(.noVotesLeft(node))
+                continue
+            }
+
+            guard let votingKey = votingKey(node) else {
+                DWLogger.log("Voting: \(attempt) not sent: no voting key")
                 outcomes.append(VoteOutcome(
                     node: node,
                     failure: NSLocalizedString(
@@ -217,113 +428,67 @@ final class MasternodeVoteCaster {
                 continue
             }
 
+            // The last point before the broadcast: a run stopped while the
+            // count was being read sends nothing more. Only a Quick voting
+            // run is ever stopped.
+            guard !Task.isCancelled else {
+                DWLogger.log("Voting: \(attempt) not sent: stopped")
+                outcomes.append(VoteOutcome(
+                    node: node,
+                    failure: NSLocalizedString("Quick voting stopped before this vote was sent.", comment: "Voting")))
+                continue
+            }
+            // A Quick voting name's known end may have passed while the count
+            // was read and the key derived.
+            guard !(endsAt.map { now() >= $0 } ?? false) else {
+                DWLogger.log("Voting: \(attempt) not sent: voting ended")
+                outcomes.append(VoteOutcome(
+                    node: node, failure: NSLocalizedString("Voting has ended", comment: "Voting")))
+                ended = true
+                continue
+            }
+
             do {
-                try await sdk.castContestedResourceVote(
-                    dataContractId: DPNSVotePoll.contractId,
-                    documentTypeName: DPNSVotePoll.documentTypeName,
-                    indexName: DPNSVotePoll.indexName,
-                    indexValues: indexValues,
-                    choice: choice.sdkChoice,
-                    proTxHash: node.proTxHash,
-                    votingPrivateKey: votingKey)
-                outcomes.append(VoteOutcome(node: node, failure: nil))
-                // Recorded only on success, so the count the UI shows is
-                // votes Platform accepted — not votes attempted.
-                await Self.history.record(
+                try await send(node, votingKey, choice, normalizedLabel)
+            } catch {
+                // Stored in plain words: Platform's own text is never shown,
+                // and never logged beyond the error's type.
+                // An unconfirmed broadcast may have landed: it is kept apart
+                // so Try again does not send it a second time.
+                if VoteErrorMessage.isNoVotesLeft(error) {
+                    outcomes.append(.noVotesLeft(node))
+                } else if VoteErrorMessage.isUnconfirmed(error) {
+                    outcomes.append(.unconfirmed(node))
+                } else {
+                    outcomes.append(VoteOutcome(node: node, failure: VoteErrorMessage.plain(for: error)))
+                }
+                DWLogger.log("Voting: \(attempt) failed: \(String(describing: type(of: error)))")
+                continue
+            }
+
+            // Recorded only on success, so the count the UI shows is
+            // votes Platform accepted — not votes attempted.
+            var historyRecorded = true
+            do {
+                try await history.record(
                     CastVoteRecord(
                         proTxHash: node.proTxHash,
                         normalizedLabel: normalizedLabel,
                         choice: choice,
                         castAt: Date()),
                     network: Self.networkKey)
-                Self.logger.info(
-                    "🗳️ VOTING :: cast \(choice.logDescription, privacy: .public) on \(normalizedLabel, privacy: .public) with \(node.displayName, privacy: .public)")
             } catch {
-                // Platform's message is the useful one here — "already voted",
-                // "too many vote changes", "masternode not found" each tell
-                // the user something different. Surface it verbatim.
-                let message = (error as? LocalizedError)?.errorDescription
-                    ?? String(describing: error)
-                outcomes.append(VoteOutcome(node: node, failure: message))
-                Self.logger.error(
-                    "🗳️ VOTING :: cast failed on \(normalizedLabel, privacy: .public) with \(node.displayName, privacy: .public): \(message, privacy: .public)")
+                historyRecorded = false
+                DWLogger.log("Voting: history write failed on \(normalizedLabel): \(String(describing: type(of: error)))")
             }
+            outcomes.append(VoteOutcome(node: node, failure: nil, historyRecorded: historyRecorded))
+            DWLogger.log("Voting: \(attempt) landed (cast \(castCount + 1) of \(VoteLimit.maxCastsPerNode))")
         }
 
         return VoteCastReport(
             normalizedLabel: normalizedLabel,
             choice: choice,
-            outcomes: outcomes)
-    }
-
-    /// Cast the same choice across several contests with the same nodes —
-    /// the bulk path behind "Vote on N usernames".
-    ///
-    /// Authenticates once for the whole run, then walks the contests in order.
-    /// A contest that cannot be voted on at all (already closed, for instance)
-    /// becomes a report with every node failed rather than aborting the run,
-    /// so one stale row cannot discard the rest of the batch.
-    ///
-    /// - Note: Each entry carries its own choice. `abstain` and `lock`
-    ///   generalize across contests, but "award it to the only requester"
-    ///   names a different contender identity per contest, so the caller
-    ///   resolves that and passes the result per label. This function does not
-    ///   decide who a contest's contenders are.
-    func castBulk(
-        _ work: [(label: String, choice: VoteChoice, nodes: [VoterNode])]
-    ) async throws -> [VoteCastReport] {
-        // Nothing to do is not the same as nothing selected. An empty batch
-        // means every selected contest was already fully voted or dropped, and
-        // reporting "select a masternode" for that sends the user to fix a
-        // selection that is fine.
-        guard !work.isEmpty else { return [] }
-        guard work.contains(where: { !$0.nodes.isEmpty }) else {
-            throw CastError.noNodesSelected
-        }
-        guard let sdk = SwiftDashSDKHost.shared.sdk else { throw CastError.sdkUnavailable }
-
-        switch await AuthenticationGate.authenticate(
-            biometric: DWGlobalOptions.sharedInstance().biometricAuthEnabled) {
-        case .ok:
-            break
-        case .cancelled:
-            throw CastError.authenticationCancelled
-        case .failed, .timedOut:
-            throw CastError.authenticationFailed
-        }
-
-        var reports: [VoteCastReport] = []
-        reports.reserveCapacity(work.count)
-
-        for (label, choice, nodes) in work {
-            // "The check failed" and "the poll is closed" are different
-            // outcomes: collapsing them would tell the user a live contest had
-            // already resolved whenever the network hiccupped.
-            let isOpen: Bool
-            do {
-                isOpen = try await contests.contestIsOpen(normalizedLabel: label)
-            } catch {
-                let message = (error as? LocalizedError)?.errorDescription
-                    ?? String(describing: error)
-                reports.append(VoteCastReport(
-                    normalizedLabel: label,
-                    choice: choice,
-                    outcomes: nodes.map { VoteOutcome(node: $0, failure: message) }))
-                continue
-            }
-            guard isOpen else {
-                reports.append(VoteCastReport(
-                    normalizedLabel: label,
-                    choice: choice,
-                    outcomes: nodes.map {
-                        VoteOutcome(node: $0, failure: CastError.contestClosed(label).errorDescription)
-                    }))
-                continue
-            }
-            reports.append(await castAuthenticated(
-                choice: choice, onNormalizedLabel: label, with: nodes, sdk: sdk))
-        }
-
-        return reports
+            outcomes: outcomes,
+            contestClosed: ended)
     }
 }

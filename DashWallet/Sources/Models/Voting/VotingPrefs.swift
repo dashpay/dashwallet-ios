@@ -19,6 +19,7 @@ import Foundation
 
 private let kVotingEnabled = "votingEnabledKey"
 private let kVotingNodeSelection = "votingNodeSelectionKey"
+private let kVotingSetUp = "votingSetUpKey"
 
 // MARK: - VotingPrefs
 
@@ -67,5 +68,20 @@ class VotingPrefs {
                 newValue.map { $0.base64EncodedString() }.sorted(),
                 forKey: kVotingNodeSelection)
         }
+    }
+
+    /// Whether the user confirmed "Add your voting keys" once, with its Block
+    /// or Approve button. Until then the default tick is not a choice and a
+    /// vote opens that screen first (AC-12).
+    var isVotingSetUp: Bool {
+        get { UserDefaults.standard.bool(forKey: kVotingSetUp) }
+        set { UserDefaults.standard.set(newValue, forKey: kVotingSetUp) }
+    }
+
+    /// Forget the masternode choice and "voting set up", as a wallet wipe
+    /// does: the next wallet starts at "Add your voting keys".
+    func forgetVotingSetup() {
+        UserDefaults.standard.removeObject(forKey: kVotingNodeSelection)
+        UserDefaults.standard.removeObject(forKey: kVotingSetUp)
     }
 }

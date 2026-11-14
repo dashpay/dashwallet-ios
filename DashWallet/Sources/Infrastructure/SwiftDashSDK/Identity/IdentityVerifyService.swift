@@ -99,15 +99,16 @@ final class IdentityVerifyService {
     /// Read from Platform rather than from a local note: the document is the
     /// thing voters see, and a link published from another install of the same
     /// wallet counts.
-    /// The link published for `label` by a *specific* identity — a rival
-    /// contender's proof of identity, which is what a voter is weighing when
-    /// they open that contender.
+    /// The links published for `label` by *specific* identities — rival
+    /// contenders' proofs of identity, which is what a voter is weighing when
+    /// they open a contender — by identity; one that published none is left
+    /// out.
     ///
     /// Same query as `publishedURL(forLabel:)` (the contract's
     /// `uniqueUsernameIndex` is the only field this document can be found by),
-    /// but it fetches the whole set for the label and picks the owner asked
-    /// for, since a contested label has one document per contender.
-    func publishedURL(forLabel label: String, ownedBy identityIdBase58: String) async throws -> URL? {
+    /// but it fetches the whole set for the label once and picks each owner
+    /// asked for, since a contested label has one document per contender.
+    func publishedURLs(forLabel label: String, ownedBy identityIdsBase58: [String]) async throws -> [String: URL] {
         let contractId = try requireContractIdBase58()
         guard let sdk = SwiftDashSDKHost.shared.sdk else { throw ServiceError.noIdentity }
 
@@ -120,9 +121,14 @@ final class IdentityVerifyService {
         let documents = try await labelDocuments(
             matching: try Self.whereClause(normalizedLabel: normalized),
             contractId: contractId, sdk: sdk)
-        let theirs = documents.first { Self.isOwned(byBase58: identityIdBase58, document: $0) }
-        guard let urlString = theirs?["url"] as? String else { return nil }
-        return URL(string: urlString)
+        var links: [String: URL] = [:]
+        for identityId in identityIdsBase58 {
+            let theirs = documents.first { Self.isOwned(byBase58: identityId, document: $0) }
+            if let urlString = theirs?["url"] as? String, let url = URL(string: urlString) {
+                links[identityId] = url
+            }
+        }
+        return links
     }
 
     func publishedURL(forLabel label: String) async throws -> URL? {
