@@ -41,6 +41,8 @@ enum SendOutcomeDestination: Equatable {
     case success(SendSuccessView)
     /// The sheet closes and an info Toast shows over Home; no Retry.
     case infoToast(title: String, message: String)
+    /// The lock-held sheet: Finish resumes the lock, Close leaves it for the transaction details.
+    case lockHeld(HeldAssetLock)
     /// The only destination with Retry (ADR-0040).
     case sendFailed(SendFailedContent)
 }
@@ -56,6 +58,8 @@ struct SendOutcomeRouter {
                 title: NSLocalizedString("Send in progress", comment: "External send"),
                 message: NSLocalizedString(
                     "It will finish on its own. You don't need to send it again.", comment: "External send"))
+        case .lockHeld(let lock):
+            return .lockHeld(lock)
         case .notSent(let reason):
             return .sendFailed(SendFailedContent(
                 title: NSLocalizedString("Send failed", comment: "External send"),

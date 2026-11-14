@@ -2220,6 +2220,9 @@
 /* No comment provided by engineer. */
 "Finds owner and payout keys, which aren't in the masternode list. Sends the key's public fingerprint to a Platform node." = "Encontra as chaves de proprietário e de pagamento, que não estão na lista de masternodes. Envia a impressão digital pública da chave a um nó da Platform.";
 
+/* External send */
+"Finish" = "Finish";
+
 /* InternalTransfer recovery */
 "Finish now" = "Finish now";
 
@@ -5740,6 +5743,9 @@
 /* Send failed before any bytes reached the network */
 "The transaction wasn't sent, so nothing left your wallet. You can try again." = "The transaction wasn't sent, so nothing left your wallet. You can try again.";
 
+/* External send */
+"The transfer could not be finished. Try again, or finish it later from the transaction details." = "The transfer could not be finished. Try again, or finish it later from the transaction details.";
+
 /* No comment provided by engineer. */
 "The transfer could take up to 10 minutes" = "The transfer could take up to 10 minutes";
 
@@ -6356,6 +6362,9 @@
 
 /* No comment provided by engineer. */
 "Transfer In" = "Transferência de entrada";
+
+/* External send */
+"Transfer not finished" = "Transfer not finished";
 
 /* No comment provided by engineer. */
 "Transfer Out" = "Transferência de saída";
@@ -7303,6 +7312,9 @@
 
 /* DashConnect one-QR login */
 "Your Dash balance" = "Your Dash balance";
+
+/* External send */
+"Your Dash is held for this transfer. Finish it now, or later from the transaction details." = "Your Dash is held for this transfer. Finish it now, or later from the transaction details.";
 
 /* InternalTransfer recovery */
 "Your Dash is safe" = "Your Dash is safe";

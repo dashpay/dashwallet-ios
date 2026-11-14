@@ -593,22 +593,25 @@ final class ExternalSendExecutorTests: XCTestCase {
     // MARK: - Core asset-lock routes: what the coordinator's call reports (AC-19)
 
     func testACompletedCoordinatorCallIsCompleted() {
-        guard case .completed = LiveCoreTwoStepSend.result(phase: .success, lastFailure: nil, lockKept: false) else {
+        guard case .completed = LiveCoreTwoStepSend.result(phase: .success, lastFailure: nil, heldLock: nil) else {
             return XCTFail("expected completed")
         }
     }
 
     func testAnUnconfirmedCoordinatorCallIsUnconfirmed() {
-        let result = LiveCoreTwoStepSend.result(phase: .submittedUnconfirmed, lastFailure: nil, lockKept: true)
+        let result = LiveCoreTwoStepSend.result(
+            phase: .submittedUnconfirmed, lastFailure: nil, heldLock: Self.heldLock)
         guard case .unconfirmed = result else { return XCTFail("expected unconfirmed, got \(result)") }
     }
 
-    /// A lock the coordinator keeps after the failure holds the money: the send is in flight.
+    private static let heldLock = HeldAssetLock(fundingTypeRaw: 4, txidWire: Data(repeating: 0xAB, count: 32), vout: 1)
+
+    /// A lock the coordinator keeps after the failure holds the money: the send reports that lock.
     func testAFailureThatKeptTheBuiltLockReportsTheLock() {
         let failure = PlatformWalletError.transactionBroadcastUnconfirmed("unconfirmed")
-        let result = LiveCoreTwoStepSend.result(phase: .failed("x"), lastFailure: failure, lockKept: true)
-        guard case .failed(_, let recorded) = result else { return XCTFail("expected failed, got \(result)") }
-        XCTAssertTrue(recorded)
+        let result = LiveCoreTwoStepSend.result(phase: .failed("x"), lastFailure: failure, heldLock: Self.heldLock)
+        guard case .lockHeld(let lock) = result else { return XCTFail("expected lockHeld, got \(result)") }
+        XCTAssertEqual(lock, Self.heldLock)
     }
 
     /// A definite broadcast rejection removes the lock again (`keepsLockForRetry`), so the coordinator records no
@@ -618,7 +621,7 @@ final class ExternalSendExecutorTests: XCTestCase {
         XCTAssertFalse(ShieldedTransferCoordinator.keepsLockForRetry(after: rejected))
         let result = LiveCoreTwoStepSend.result(
             phase: .failed("x"), lastFailure: ShieldedTransferCoordinator.CoordinatorError.transferFailed(rejected),
-            lockKept: false)
+            heldLock: nil)
         guard case .failed(let error, let recorded) = result else { return XCTFail("expected failed, got \(result)") }
         XCTAssertFalse(recorded)
         guard case .notSent(.rejected) = SendOutcome(error: error) else {
@@ -627,7 +630,7 @@ final class ExternalSendExecutorTests: XCTestCase {
     }
 
     func testAFailureWithoutAnErrorIsStillAFailure() {
-        let result = LiveCoreTwoStepSend.result(phase: .idle, lastFailure: nil, lockKept: false)
+        let result = LiveCoreTwoStepSend.result(phase: .idle, lastFailure: nil, heldLock: nil)
         guard case .failed(_, let recorded) = result else { return XCTFail("expected failed, got \(result)") }
         XCTAssertFalse(recorded)
     }
@@ -1355,6 +1358,19 @@ final class ExternalSendExecutorTests: XCTestCase {
             let outcome = await executor.send(try await prepare(executor, route))
             XCTAssertTrue(isInFlight(outcome), "the money left; recovery finishes it. \(route): \(outcome)")
         }
+    }
+
+    /// A lock the coordinator recorded is reported with its outpoint, so the user can finish it; nothing else changes.
+    func testTwoStepFailureWithAHeldLockIsLockHeldWithThatLock() async throws {
+        twoStep.result = .lockHeld(Self.heldLock)
+        let executor = makeExecutor()
+        for route in [SendRoute.coreToShielded, .coreToPlatform] {
+            let outcome = await executor.send(try await prepare(executor, route))
+            guard case .lockHeld(let lock) = outcome else { return XCTFail("\(route): \(outcome)") }
+            XCTAssertEqual(lock, Self.heldLock, "\(route)")
+        }
+        XCTAssertEqual(logged.count, 2)
+        XCTAssertTrue(logged.allSatisfy { if case .lockHeld = $0 { return true } else { return false } })
     }
 
     func testTwoStepFailureBeforeBroadcastIsNotSentWithTheMappedReason() async throws {
@@ -2312,17 +2328,19 @@ final class ExternalSendExecutorTests: XCTestCase {
     }
 
     /// A failure after the lock was built, other than a rejection, leaves the lock on chain: the coordinator keeps it
-    /// and the send is in progress, never not sent.
-    func testExternalCoreToPlatformThatKeptItsLockIsInFlight() async throws {
+    /// and the send reports that lock as held, with the outpoint and funding type the resume needs, never not sent.
+    func testExternalCoreToPlatformThatKeptItsLockIsLockHeld() async throws {
         let funding = FakePlatformFunding()
-        funding.built = try builtOutPoint()
+        let built = try builtOutPoint()
+        funding.built = built
         funding.failure = PlatformWalletError.signingKeyUnavailable("funding transition")
         let executor = try executorOverTheCoordinator(funding, CountingAuthorizer())
 
         let outcome = await executor.send(try await prepare(executor, .coreToPlatform))
 
         XCTAssertEqual(funding.calls.count, 1)
-        XCTAssertTrue(isInFlight(outcome), "\(outcome)")
+        guard case .lockHeld(let lock) = outcome else { return XCTFail("expected lockHeld, got \(outcome)") }
+        XCTAssertEqual(lock, HeldAssetLock(fundingTypeRaw: 4, txidWire: built.txid, vout: built.vout))
         XCTAssertFalse(ShieldedAssetLocksInFlight.shared.hasActivity, "the attempt released its claim and call")
     }
 
