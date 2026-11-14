@@ -537,8 +537,9 @@ private final class FakeTransport: PaymentProtocolTransporting {
     var postShouldThrow: BIP70Error?
     var onPost: (() -> Void)?
     private(set) var postedPayment: Payment?
+    var onFetch: (() -> Void)?
     init(_ request: PaymentRequest) { self.request = request }
-    func fetchRequest(from url: URL, scheme: String) async throws -> PaymentRequest { request }
+    func fetchRequest(from url: URL, scheme: String) async throws -> PaymentRequest { onFetch?(); return request }
     func postPayment(_ payment: Payment, to url: URL, scheme: String) async throws -> PaymentACK {
         onPost?(); postedPayment = payment
         if let e = postShouldThrow { throw e }
@@ -572,7 +573,13 @@ private final class FakeReceive: ReceiveAddressProviding {
 
 private final class FakeAuth: SendAuthorizing {
     var error: Error?
-    func authorize() async throws { if let e = error { throw e } }
+    var onAuthorize: (() -> Void)?
+    private(set) var authorizeCount = 0
+    func authorize() async throws {
+        authorizeCount += 1
+        onAuthorize?()
+        if let e = error { throw e }
+    }
 }
 
 final class BIP70PaymentServiceTests: XCTestCase {
@@ -735,6 +742,126 @@ final class BIP70PaymentServiceTests: XCTestCase {
         let svc = service(FakeTransport(unsigned()), w, auth: auth)
         await assertThrowsBIP70(try await svc.confirmAndSendHeadless(from: url, scheme: "dash", network: .testnet), .authCancelled)
         XCTAssertTrue(w.calls.isEmpty)
+    }
+
+    /// The headless flow fetches and verifies the request before it asks for the PIN, so the
+    /// user never authorizes a request nobody has looked at yet.
+    func testHeadlessFetchesRequestBeforeAuthorizing() async throws {
+        var events: [String] = []
+        let t = FakeTransport(unsigned()); t.onFetch = { events.append("fetch") }
+        let auth = FakeAuth(); auth.onAuthorize = { events.append("authorize") }
+        let w = FakeWallet()
+        let svc = service(t, w, auth: auth)
+
+        _ = try await svc.confirmAndSendHeadless(from: url, scheme: "dash", network: .testnet)
+
+        XCTAssertEqual(events, ["fetch", "authorize"])
+        XCTAssertEqual(w.calls, ["build", "broadcast"])
+    }
+
+    /// The caller's check sees the prepared request, and passing it lets the send go ahead.
+    func testHeadlessValidateReceivesThePreparedRequest() async throws {
+        let auth = FakeAuth(); let w = FakeWallet()
+        let svc = service(FakeTransport(unsigned()), w, auth: auth)
+        var seenAmount: UInt64?
+
+        let result = try await svc.confirmAndSendHeadless(
+            from: url, scheme: "dash", network: .testnet,
+            validate: { seenAmount = $0.amount })
+
+        XCTAssertEqual(seenAmount, 100_000)
+        XCTAssertEqual(result.amount, 100_000)
+        XCTAssertEqual(auth.authorizeCount, 1)
+    }
+
+    /// A request the caller refuses ends the flow there: no PIN prompt, nothing built or
+    /// broadcast, nothing posted to the merchant.
+    func testHeadlessValidateRejectionStopsBeforeAuthorizeAndBuild() async {
+        struct Refused: Error {}
+        let t = FakeTransport(unsigned()); let auth = FakeAuth(); let w = FakeWallet()
+        let svc = service(t, w, auth: auth)
+
+        do {
+            _ = try await svc.confirmAndSendHeadless(
+                from: url, scheme: "dash", network: .testnet,
+                validate: { _ in throw Refused() })
+            XCTFail("expected throw")
+        } catch {
+            XCTAssertTrue(error is Refused, "unexpected error: \(error)")
+        }
+
+        XCTAssertEqual(auth.authorizeCount, 0)
+        XCTAssertTrue(w.calls.isEmpty)
+        XCTAssertNil(t.postedPayment)
+    }
+
+    /// A request that fails verification never reaches the caller's check or the PIN prompt.
+    func testHeadlessExpiredRequestStopsBeforeValidateAndAuthorize() async {
+        let auth = FakeAuth(); let w = FakeWallet()
+        let svc = service(FakeTransport(unsigned(expires: 1)), w, auth: auth)
+        var validateCalled = false
+
+        await assertThrowsBIP70(
+            try await svc.confirmAndSendHeadless(from: url, scheme: "dash", network: .testnet,
+                                                 validate: { _ in validateCalled = true }),
+            .expired)
+
+        XCTAssertFalse(validateCalled)
+        XCTAssertEqual(auth.authorizeCount, 0)
+        XCTAssertTrue(w.calls.isEmpty)
+    }
+
+    /// `SendCoinsService.payWithDashUrl` hands the caller's check the fetched request and
+    /// stops on its refusal: no PIN prompt, nothing built.
+    func testPayWithDashUrlRunsTheCallersCheckBeforeAuthorizing() async {
+        struct Refused: Error {}
+        let auth = FakeAuth(); let w = FakeWallet()
+        let svc = service(FakeTransport(unsigned(network: nil)), w, auth: auth)
+        let sender = SendCoinsService(makeBIP70Service: { svc })
+        var seenAmount: UInt64?
+
+        do {
+            _ = try await sender.payWithDashUrl(
+                url: "dash:?r=http%3A%2F%2Fh%2Fpr",
+                validate: { seenAmount = $0.amount; throw Refused() })
+            XCTFail("expected throw")
+        } catch {
+            XCTAssertTrue(error is Refused, "unexpected error: \(error)")
+        }
+
+        XCTAssertEqual(seenAmount, 100_000)
+        XCTAssertEqual(auth.authorizeCount, 0)
+        XCTAssertTrue(w.calls.isEmpty)
+    }
+
+    /// Outputs whose amounts do not sum within UInt64 make the request malformed.
+    func testPrepareRejectsOutputsThatOverflowTheTotal() async {
+        let outputs = [PaymentOutput(amount: UInt64.max, script: p2pkh), PaymentOutput(amount: 1, script: p2pkh)]
+        let svc = service(FakeTransport(unsigned(outputs: outputs)), FakeWallet())
+        await assertThrowsBIP70(try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet),
+                                .malformedRequest)
+    }
+
+    /// A request that is still valid when it is fetched but expires while the PIN prompt is
+    /// open is not sent: the expiry is checked again against the time after the prompt.
+    func testHeadlessRequestExpiringDuringAuthorizationIsNotSent() async {
+        let expiry = UInt64(Date().timeIntervalSince1970) + 60
+        let beforePrompt = Date(timeIntervalSince1970: TimeInterval(expiry) - 30)
+        let afterPrompt = Date(timeIntervalSince1970: TimeInterval(expiry) + 30)
+        var promptAnswered = false
+        let t = FakeTransport(unsigned(expires: expiry))
+        let auth = FakeAuth(); auth.onAuthorize = { promptAnswered = true }
+        let w = FakeWallet()
+        let svc = service(t, w, auth: auth)
+
+        await assertThrowsBIP70(
+            try await svc.confirmAndSendHeadless(from: url, scheme: "dash", network: .testnet,
+                                                 now: { promptAnswered ? afterPrompt : beforePrompt }),
+            .expired)
+
+        XCTAssertEqual(auth.authorizeCount, 1)
+        XCTAssertTrue(w.calls.isEmpty)
+        XCTAssertNil(t.postedPayment)
     }
 
     /// A failed merchant round-trip happens BEFORE broadcast, so the money is unspent: the

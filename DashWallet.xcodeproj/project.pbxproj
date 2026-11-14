@@ -1248,6 +1248,8 @@
 		BAA6E3F11BD5CA5900773205 /* BRAWReceiveMoneyInterfaceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAA6E3F01BD5CA5900773205 /* BRAWReceiveMoneyInterfaceController.swift */; };
 		BAE12C061B2DEEF700895CC5 /* DWTodayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = BAE12C051B2DEEF700895CC5 /* DWTodayViewController.m */; };
 		BB0000012DUMMYID001234567 /* DashSpend/DashSpendError.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000072DUMMYID001234567 /* DashSpend/DashSpendError.swift */; };
+		6C1F7A00000000000000A001 /* DashSpend/GiftCardPaymentGuard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1F7A00000000000000A003 /* DashSpend/GiftCardPaymentGuard.swift */; };
+		6C1F7A00000000000000A002 /* DashSpend/GiftCardPaymentGuard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1F7A00000000000000A003 /* DashSpend/GiftCardPaymentGuard.swift */; };
 		BB0000022DUMMYID001234567 /* DashSpend/DashSpendError.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000072DUMMYID001234567 /* DashSpend/DashSpendError.swift */; };
 		BB0000032DUMMYID001234567 /* DashSpend/DashSpendRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000082DUMMYID001234567 /* DashSpend/DashSpendRepository.swift */; };
 		BB0000042DUMMYID001234567 /* DashSpend/DashSpendRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000082DUMMYID001234567 /* DashSpend/DashSpendRepository.swift */; };
@@ -2034,6 +2036,7 @@
 		BABA10000000000000000006 /* DashPayUserLinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000005 /* DashPayUserLinkTests.swift */; };
 		BABA10000000000000000008 /* DiagnosticLogExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000007 /* DiagnosticLogExporterTests.swift */; };
 		BABA1000000000000000000A /* PaymentProtocolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000009 /* PaymentProtocolTests.swift */; };
+		6C1F7A00000000000000A004 /* GiftCardPaymentGuardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1F7A00000000000000A005 /* GiftCardPaymentGuardTests.swift */; };
 		BABA1000000000000000000C /* PhraseRepairEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000000B /* PhraseRepairEngineTests.swift */; };
 		BABA1000000000000000000E /* WalletLifecycleTransitionStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000000D /* WalletLifecycleTransitionStateTests.swift */; };
 		BABA10000000000000000010 /* WalletLocalStoreResetterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000000F /* WalletLocalStoreResetterTests.swift */; };
@@ -3335,6 +3338,7 @@
 		BAE12BEA1B2DEE7F00895CC5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BAE12C051B2DEEF700895CC5 /* DWTodayViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWTodayViewController.m; sourceTree = "<group>"; };
 		BB0000072DUMMYID001234567 /* DashSpend/DashSpendError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/DashSpendError.swift; sourceTree = "<group>"; };
+		6C1F7A00000000000000A003 /* DashSpend/GiftCardPaymentGuard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/GiftCardPaymentGuard.swift; sourceTree = "<group>"; };
 		BB0000082DUMMYID001234567 /* DashSpend/DashSpendRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/DashSpendRepository.swift; sourceTree = "<group>"; };
 		BB0000092DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/DashSpendRepositoryFactory.swift; sourceTree = "<group>"; };
 		BCD0199D74601A6150ABC8D1 /* WalletAccountDetailViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WalletAccountDetailViewModel.swift; sourceTree = "<group>"; };
@@ -3881,6 +3885,7 @@
 		BABA10000000000000000005 /* DashPayUserLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashPayUserLinkTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000007 /* DiagnosticLogExporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticLogExporterTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000009 /* PaymentProtocolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentProtocolTests.swift; sourceTree = "<group>"; };
+		6C1F7A00000000000000A005 /* GiftCardPaymentGuardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiftCardPaymentGuardTests.swift; sourceTree = "<group>"; };
 		BABA1000000000000000000B /* PhraseRepairEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhraseRepairEngineTests.swift; sourceTree = "<group>"; };
 		BABA1000000000000000000D /* WalletLifecycleTransitionStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletLifecycleTransitionStateTests.swift; sourceTree = "<group>"; };
 		BABA1000000000000000000F /* WalletLocalStoreResetterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletLocalStoreResetterTests.swift; sourceTree = "<group>"; };
@@ -6388,6 +6393,7 @@
 				754565C52DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendEndpoint.swift */,
 				754565C72DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendRepository.swift */,
 				BB0000072DUMMYID001234567 /* DashSpend/DashSpendError.swift */,
+				6C1F7A00000000000000A003 /* DashSpend/GiftCardPaymentGuard.swift */,
 				BB0000082DUMMYID001234567 /* DashSpend/DashSpendRepository.swift */,
 				BB0000092DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift */,
 				GG0000032DUMMYID001234567 /* GeoRestrictionService.swift */,
@@ -7293,6 +7299,7 @@
 				BABA10000000000000000005 /* DashPayUserLinkTests.swift */,
 				BABA10000000000000000007 /* DiagnosticLogExporterTests.swift */,
 				BABA10000000000000000009 /* PaymentProtocolTests.swift */,
+				6C1F7A00000000000000A005 /* GiftCardPaymentGuardTests.swift */,
 				BABA1000000000000000000B /* PhraseRepairEngineTests.swift */,
 				BABA1000000000000000000D /* WalletLifecycleTransitionStateTests.swift */,
 				BABA1000000000000000000F /* WalletLocalStoreResetterTests.swift */,
@@ -10132,6 +10139,7 @@
 				AA00300F2FD000000000000F /* SwapOrderMetadataProvider.swift in Sources */,
 				AA0000042DUMMYID001234567 /* DashSpend/GiftCardProvider.swift in Sources */,
 				BB0000012DUMMYID001234567 /* DashSpend/DashSpendError.swift in Sources */,
+				6C1F7A00000000000000A001 /* DashSpend/GiftCardPaymentGuard.swift in Sources */,
 				BB0000032DUMMYID001234567 /* DashSpend/DashSpendRepository.swift in Sources */,
 				BB0000052DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift in Sources */,
 				GG0000012DUMMYID001234567 /* GeoRestrictionService.swift in Sources */,
@@ -10624,6 +10632,7 @@
 				BABA10000000000000000006 /* DashPayUserLinkTests.swift in Sources */,
 				BABA10000000000000000008 /* DiagnosticLogExporterTests.swift in Sources */,
 				BABA1000000000000000000A /* PaymentProtocolTests.swift in Sources */,
+				6C1F7A00000000000000A004 /* GiftCardPaymentGuardTests.swift in Sources */,
 				BABA1000000000000000000C /* PhraseRepairEngineTests.swift in Sources */,
 				BABA1000000000000000000E /* WalletLifecycleTransitionStateTests.swift in Sources */,
 				BABA10000000000000000010 /* WalletLocalStoreResetterTests.swift in Sources */,
@@ -11193,6 +11202,7 @@
 				AA0030102FD0000000000010 /* SwapOrderMetadataProvider.swift in Sources */,
 				AA0000052DUMMYID001234567 /* DashSpend/GiftCardProvider.swift in Sources */,
 				BB0000022DUMMYID001234567 /* DashSpend/DashSpendError.swift in Sources */,
+				6C1F7A00000000000000A002 /* DashSpend/GiftCardPaymentGuard.swift in Sources */,
 				BB0000042DUMMYID001234567 /* DashSpend/DashSpendRepository.swift in Sources */,
 				BB0000062DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift in Sources */,
 				GG0000022DUMMYID001234567 /* GeoRestrictionService.swift in Sources */,

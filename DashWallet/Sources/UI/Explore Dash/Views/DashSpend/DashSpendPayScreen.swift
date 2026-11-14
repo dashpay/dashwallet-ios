@@ -34,6 +34,7 @@ struct DashSpendPayScreen: View {
     @State private var quantities: [Decimal: Int] = [:]
     @State private var confirmationQuantities: [Decimal: Int] = [:]
     @State private var confirmationOriginalPrice: Decimal = 0
+    @State private var confirmationDiscount: Decimal = 0
     let onPurchaseSuccess: ((Data) -> Void)?
 
     init(
@@ -121,15 +122,19 @@ struct DashSpendPayScreen: View {
             }
         }
         .sheet(isPresented: $showConfirmationDialog) {
+            // Both were captured when Pay was tapped, so the sheet shows the same price and
+            // discount that Confirm passes on, whatever the view model changes to meanwhile.
+            let confirmedPrice = confirmationOriginalPrice
+            let confirmedDiscount = confirmationDiscount
             DashSpendPayConfirmationSheet(
                 merchantName: viewModel.merchantTitle,
                 merchantIconUrl: viewModel.merchantIconUrl,
-                originalPrice: confirmationOriginalPrice,
-                discount: viewModel.displaySavingsFraction,
+                originalPrice: confirmedPrice,
+                discount: confirmedDiscount,
                 quantities: confirmationQuantities.isEmpty ? nil : confirmationQuantities,
                 onConfirm: {
                     showConfirmationDialog = false
-                    purchaseGiftCard()
+                    purchaseGiftCard(confirmedPrice: confirmedPrice, confirmedDiscount: confirmedDiscount)
                 },
                 onCancel: {
                     showConfirmationDialog = false
@@ -208,16 +213,20 @@ struct DashSpendPayScreen: View {
         } else {
             viewModel.updateTotalAmount(snapshotTotal, quantities: snapshotQuantities)
         }
+        confirmationDiscount = viewModel.displaySavingsFraction
 
         DispatchQueue.main.async {
             showConfirmationDialog = true
         }
     }
 
-    private func purchaseGiftCard() {
+    private func purchaseGiftCard(confirmedPrice: Decimal, confirmedDiscount: Decimal) {
         Task {
             do {
-                let txId = try await viewModel.purchaseGiftCardAndPay(selectedQuantities: confirmationQuantities)
+                let txId = try await viewModel.purchaseGiftCardAndPay(
+                    selectedQuantities: confirmationQuantities,
+                    confirmedPrice: confirmedPrice,
+                    confirmedDiscount: confirmedDiscount)
                 showConfirmationDialog = false
                 presentationMode.wrappedValue.dismiss()
                 onPurchaseSuccess?(txId)

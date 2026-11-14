@@ -235,7 +235,13 @@ final class BIP70PaymentService {
         let recipients = try ScriptAddressCodec.resolveOutputs(details.outputs, network: network)
         guard !recipients.isEmpty else { throw BIP70Error.malformedRequest }
 
-        let amount = recipients.reduce(UInt64(0)) { $0 + $1.amount }
+        // A request whose outputs do not sum within UInt64 is malformed, not a crash.
+        var amount: UInt64 = 0
+        for recipient in recipients {
+            let (sum, overflowed) = amount.addingReportingOverflow(recipient.amount)
+            guard !overflowed else { throw BIP70Error.malformedRequest }
+            amount = sum
+        }
         return Confirmation(
             merchantName: verdict.commonName,
             isSecure: verdict.isSecure,
@@ -360,17 +366,29 @@ final class BIP70PaymentService {
                           callbackURL: callbackURL)
     }
 
-    /// One-shot entry for headless flows (CTX gift cards): authorize, then prepare + send.
+    /// One-shot entry for headless flows (CTX gift cards): prepare, let the caller check the
+    /// prepared request, authorize, then send.
+    ///
+    /// The request is fetched and verified BEFORE the PIN/biometric prompt, so the user
+    /// authorizes a request the caller has already accepted. A throw from `validate` ends the
+    /// flow with no prompt shown and nothing built.
+    /// - Parameter validate: the caller's own acceptance check on the prepared request (for
+    ///   example, that `Confirmation.amount` matches what the user approved). This layer holds
+    ///   no such policy; it only runs the hook.
+    /// - Parameter now: the clock. It is read once when the request is prepared and again after
+    ///   the prompt, so a request that expires while the prompt is open is not sent.
     func confirmAndSendHeadless(from requestURL: URL,
                                 scheme: String,
                                 network: PaymentNetwork,
                                 callbackScheme: String? = nil,
-                                now: Date = Date(),
-                                awaitAcceptance: Bool = true) async throws -> SendResult {
-        try await auth.authorize()
+                                now: () -> Date = { Date() },
+                                awaitAcceptance: Bool = true,
+                                validate: ((Confirmation) throws -> Void)? = nil) async throws -> SendResult {
         let confirmation = try await prepareForConfirmation(from: requestURL, scheme: scheme,
-                                                            network: network, callbackScheme: callbackScheme, now: now)
-        return try await confirmAndSend(confirmation, now: now, awaitAcceptance: awaitAcceptance)
+                                                            network: network, callbackScheme: callbackScheme, now: now())
+        try validate?(confirmation)
+        try await auth.authorize()
+        return try await confirmAndSend(confirmation, now: now(), awaitAcceptance: awaitAcceptance)
     }
 
     // MARK: Helpers

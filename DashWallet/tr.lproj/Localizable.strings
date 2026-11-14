@@ -5476,6 +5476,9 @@
 /* No comment provided by engineer. */
 "The evonode's answer couldn't be read." = "Evonode'un yanıtı okunamadı.";
 
+/* DashSpend */
+"The exchange rate is unavailable, so this payment could not be checked. Nothing was sent. Please try again in a moment." = "The exchange rate is unavailable, so this payment could not be checked. Nothing was sent. Please try again in a moment.";
+
 /* Dash DEX */
 "The final amount you receive may differ from this estimate by up to %d%% due to price slippage." = "The final amount you receive may differ from this estimate by up to %d%% due to price slippage.";
 
@@ -5484,6 +5487,12 @@
 
 /* CSV Export */
 "The full transaction history will be exported as a CSV file" = "The full transaction history will be exported as a CSV file";
+
+/* DashSpend */
+"The gift card provider requested more Dash than the price you approved. Nothing was sent. Please try again or contact support." = "The gift card provider requested more Dash than the price you approved. Nothing was sent. Please try again or contact support.";
+
+/* DashSpend */
+"The gift card provider returned an invalid payment address. Nothing was sent. Please try again or contact support." = "The gift card provider returned an invalid payment address. Nothing was sent. Please try again or contact support.";
 
 /* Identity top-up second leg cancelled */
 "The identity top-up result could not be confirmed. Check your balances before continuing." = "The identity top-up result could not be confirmed. Check your balances before continuing.";

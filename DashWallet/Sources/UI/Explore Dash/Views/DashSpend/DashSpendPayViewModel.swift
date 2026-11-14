@@ -37,6 +37,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     private lazy var customIconProvider = CustomIconMetadataProvider.shared
     private lazy var txMetadataDao = TransactionMetadataDAOImpl.shared
     private lazy var sendCoinsService = SendCoinsService()
+    private let exchangeRate: () -> GiftCardPaymentGuard.ExchangeRate
     
     private let repository: [GiftCardProvider: any DashSpendRepository] = {
         var dict: [GiftCardProvider: any DashSpendRepository] = [
@@ -192,8 +193,12 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     }
 
 
-    init(merchant: ExplorePointOfUse, provider: GiftCardProvider = .ctx) {
+    /// - Parameter exchangeRate: reads the wallet's USD rate and when it was retrieved; a
+    ///   purchase is approved against the value read when the buyer confirms.
+    init(merchant: ExplorePointOfUse, provider: GiftCardProvider = .ctx,
+         exchangeRate: @escaping () -> GiftCardPaymentGuard.ExchangeRate = DashSpendPayViewModel.walletExchangeRate) {
         self.provider = provider
+        self.exchangeRate = exchangeRate
 
         merchantTitle = merchant.name
         merchantIconUrl = merchant.logoLocation ?? ""
@@ -318,9 +323,22 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         }
     }
     
-    func purchaseGiftCardAndPay(selectedQuantities: [Decimal: Int] = [:]) async throws -> Data {
+    /// - Parameters:
+    ///   - confirmedPrice: the card value the confirmation sheet showed.
+    ///   - confirmedDiscount: the discount fraction the confirmation sheet showed. Both are
+    ///     the sheet's own values, not this view model's current state, which a merchant
+    ///     refresh can change after the buyer confirmed.
+    func purchaseGiftCardAndPay(selectedQuantities: [Decimal: Int] = [:],
+                                confirmedPrice: Decimal,
+                                confirmedDiscount: Decimal) async throws -> Data {
         isProcessingPayment = true
         defer { isProcessingPayment = false }
+
+        // What the buyer approved, as a Dash ceiling. Resolved before the provider is asked
+        // for an order, so a missing, stale or unusable exchange rate stops the purchase
+        // before anything is created. Each provider's quote is checked through it below.
+        let approval = try GiftCardPaymentGuard.approve(
+            price: confirmedPrice, discount: confirmedDiscount, rate: exchangeRate())
 
         // Wire-order txid (`Transaction.txHashData` convention) — the gift-card
         // metadata key.
@@ -329,7 +347,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
         switch provider {
         case .ctx:
-            let response = try await purchaseGiftCardAPI()
+            let response = try await purchaseGiftCardAPI(cardValue: confirmedPrice)
 
             // Process the payment using the payment URL
             guard let url = response.paymentUrls?.first?.value else {
@@ -343,13 +361,15 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             // blocking the buyer for the SDK's 30 s acceptance window only delays the card that
             // is already being issued (the email routinely arrived before the screen moved on).
             do {
-                txidWire = try await sendCoinsService.payWithDashUrl(url: url, awaitAcceptance: false)
+                txidWire = try await sendCoinsService.payWithDashUrl(
+                    url: url, awaitAcceptance: false,
+                    validate: { try approval.check(requested: $0.amount) })
             } catch DashSpendError.paymentNotAcknowledged(let unacknowledgedTxIdWire, let reason) {
                 // Same loss, one step earlier: the network dropped between posting the payment
                 // and reading the acknowledgement. Record the order — CTX may be fulfilling it
                 // already — but keep the error, since we genuinely cannot say it was received.
                 DWLogger.log("Gift card payment unacknowledged, recording the order anyway: \(reason)")
-                recordPurchase(txidWire: unacknowledgedTxIdWire, giftCardNote: giftCardNote)
+                recordPurchase(txidWire: unacknowledgedTxIdWire, giftCardNote: giftCardNote, price: confirmedPrice)
                 throw DashSpendError.paymentNotAcknowledged(
                     txIdWire: unacknowledgedTxIdWire, reason: reason)
             } catch DashSpendError.paymentStatusUnknown(let unconfirmedTxIdWire, let reason) {
@@ -358,7 +378,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 // txid we do have so the order survives — without this the customer pays,
                 // CTX fulfils the order, and the app keeps no trace of the card at all.
                 DWLogger.log("Gift card payment status unknown, recording the order anyway: \(reason)")
-                recordPurchase(txidWire: unconfirmedTxIdWire, giftCardNote: giftCardNote)
+                recordPurchase(txidWire: unconfirmedTxIdWire, giftCardNote: giftCardNote, price: confirmedPrice)
                 throw DashSpendError.paymentStatusUnknown(txIdWire: unconfirmedTxIdWire, reason: reason)
             }
 
@@ -370,7 +390,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 throw DashSpendError.unauthorized
             }
 
-            let lineItems = buildPiggyOrderLineItems(selectedQuantities: selectedQuantities)
+            let lineItems = buildPiggyOrderLineItems(
+                selectedQuantities: selectedQuantities, cardValue: confirmedPrice)
             let giftCardInfo = try await piggyCardsRepo.orderGiftCards(
                 merchantId: merchantId,
                 lineItems: lineItems,
@@ -381,17 +402,13 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
             // PiggyCards returns a simple address and amount, not a BIP70 URL
             // Convert DASH amount to satoshis (1 DASH = 100,000,000 satoshis)
-            guard giftCardInfo.amount.isFinite,
-                  giftCardInfo.amount >= 0 else {
+            guard let dashAmountInSatoshis = GiftCardPaymentGuard.duffs(fromDashAmount: giftCardInfo.amount) else {
                 throw DashSpendError.paymentProcessingError("Invalid gift card amount")
             }
 
-            let satoshis = NSDecimalNumber(decimal: Decimal(giftCardInfo.amount) * Decimal(100_000_000))
-            guard satoshis.compare(NSDecimalNumber.zero) != .orderedAscending,
-                  satoshis.compare(NSDecimalNumber(value: UInt64.max)) != .orderedDescending else {
-                throw DashSpendError.paymentProcessingError("Gift card amount is out of range")
-            }
-            let dashAmountInSatoshis = satoshis.uint64Value
+            // Checked here, before sendCoins prompts for the PIN: a refused quote shows no
+            // prompt. The payment address was validated when the order response was parsed.
+            try approval.check(requested: dashAmountInSatoshis)
 
             // Use sendCoins directly with address and amount
             // This will properly trigger PIN authorization
@@ -402,23 +419,33 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             )
 
 
-            giftCardNote = buildPiggyOrderNote(orderId: giftCardInfo.orderId, selectedQuantities: selectedQuantities)
+            giftCardNote = buildPiggyOrderNote(
+                orderId: giftCardInfo.orderId, selectedQuantities: selectedQuantities, cardValue: confirmedPrice)
         #endif
         }
 
         // Payment successful - save gift card information
-        recordPurchase(txidWire: txidWire, giftCardNote: giftCardNote)
+        recordPurchase(txidWire: txidWire, giftCardNote: giftCardNote, price: confirmedPrice)
 
         return txidWire
+    }
+
+    /// The wallet's current USD rate and the time it was retrieved.
+    nonisolated static func walletExchangeRate() -> GiftCardPaymentGuard.ExchangeRate {
+        GiftCardPaymentGuard.ExchangeRate(
+            price: try? CurrencyExchanger.shared.rate(for: kDefaultCurrencyCode),
+            retrievedAt: BaseRatesProvider.shared.lastUpdated)
     }
 
     /// Persist everything that ties a paid order to its transaction: the tax/service metadata,
     /// the merchant icon, and the `gift_cards` row whose `note` carries the order id the
     /// details poller needs. Shared by the confirmed and the unconfirmed-broadcast paths.
-    private func recordPurchase(txidWire: Data, giftCardNote: String) {
+    ///
+    /// - Parameter price: the card value the buyer confirmed, stored as the card's price.
+    private func recordPurchase(txidWire: Data, giftCardNote: String, price: Decimal) {
         markGiftCardTransaction(txId: txidWire, provider: provider.displayName)
         customIconProvider.updateIcon(txId: txidWire, iconUrl: merchantIconUrl)
-        saveGiftCardDummy(txHashData: txidWire, giftCardNote: giftCardNote)
+        saveGiftCardDummy(txHashData: txidWire, giftCardNote: giftCardNote, price: price)
     }
 
     var contactSupportButtonText: String {
@@ -733,7 +760,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         }
     }
     
-    private func purchaseGiftCardAPI() async throws -> GiftCardResponse {
+    /// - Parameter cardValue: the card value the buyer confirmed; the order is created for it.
+    private func purchaseGiftCardAPI(cardValue: Decimal) async throws -> GiftCardResponse {
         guard !merchantId.isEmpty, repository[provider]?.isUserSignedIn == true else {
             throw DashSpendError.unauthorized
         }
@@ -748,10 +776,10 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         formatter.usesGroupingSeparator = false
 
         // Round to 2 decimal places without converting to Double
-        let roundedAmount = NSDecimalNumber(decimal: amount)
+        let roundedAmount = NSDecimalNumber(decimal: cardValue)
         let fiatAmountString = formatter.string(from: roundedAmount) ?? "0.00"
 
-        DWLogger.log("Attempting to purchase gift card for merchant \(merchantId) with amount \(amount)")
+        DWLogger.log("Attempting to purchase gift card for merchant \(merchantId) with amount \(cardValue)")
 
         do {
             let response = try await ctxSpendRepository.purchaseGiftCard(
@@ -766,14 +794,14 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         }
     }
     
-    private func saveGiftCardDummy(txHashData: Data, giftCardNote: String) {
+    private func saveGiftCardDummy(txHashData: Data, giftCardNote: String, price: Decimal) {
         DWLogger.log("Gift card saved - txId: \(txHashData.hexEncodedString()), note: \(giftCardNote)")
 
         let giftCard = GiftCard(
             txId: txHashData,
             merchantName: merchantTitle,
             merchantUrl: merchantUrl,
-            price: amount,
+            price: price,
             note: giftCardNote, // Store payment/order metadata in note field temporarily
             provider: provider.displayName  // Store provider (CTX or PiggyCards)
         )
@@ -805,7 +833,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         checkAmountForErrors()
     }
 
-    private func buildPiggyOrderLineItems(selectedQuantities: [Decimal: Int]) -> [PiggyCardsRepository.OrderLineItem] {
+    private func buildPiggyOrderLineItems(selectedQuantities: [Decimal: Int],
+                                          cardValue: Decimal) -> [PiggyCardsRepository.OrderLineItem] {
         let positiveSelections = selectedQuantities
             .filter { $0.value > 0 }
             .map { PiggyCardsRepository.OrderLineItem(denomination: decimalToDouble($0.key), quantity: $0.value) }
@@ -814,17 +843,18 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             return positiveSelections
         }
 
-        return [PiggyCardsRepository.OrderLineItem(denomination: decimalToDouble(amount), quantity: 1)]
+        return [PiggyCardsRepository.OrderLineItem(denomination: decimalToDouble(cardValue), quantity: 1)]
     }
 
-    private func buildPiggyOrderNote(orderId: String, selectedQuantities: [Decimal: Int]) -> String {
+    private func buildPiggyOrderNote(orderId: String, selectedQuantities: [Decimal: Int],
+                                     cardValue: Decimal) -> String {
         var expandedAmounts = selectedQuantities
             .filter { $0.value > 0 }
             .sorted { $0.key < $1.key }
             .flatMap { entry in Array(repeating: entry.key.description, count: entry.value) }
 
         if expandedAmounts.isEmpty {
-            expandedAmounts = [amount.description]
+            expandedAmounts = [cardValue.description]
         }
 
         let metadata = GiftCardOrderMetadata(
