@@ -101,7 +101,7 @@ final class ExternalSendFlowTests: XCTestCase {
 
     private func makeHarness(
         balances: [SendSource: UInt64]? = nil, fetchResult: Result<PaymentRequestDetails, Error>? = nil,
-        executor customExecutor: ExternalSendExecuting? = nil
+        executor customExecutor: ExternalSendExecuting? = nil, lockResumer: HeldAssetLockResuming? = nil
     ) -> Harness {
         let table = balances ?? [.core: 5 * oneDash, .shielded: 3 * oneDash, .platform: 2 * oneDash]
         let fakeBalances = FakeBalances(values: table)
@@ -118,7 +118,7 @@ final class ExternalSendFlowTests: XCTestCase {
             feeEstimator: estimator, maxPlanner: FakeMaxPlanner(), converter: FakeConverter(),
             currentIdentity: identity, paymentRequests: fetcher, clipboard: clipboard,
             initialRestoreSync: Just(false).eraseToAnyPublisher(),
-            initialRestoreSyncNow: { restoreSync.isRunning })
+            initialRestoreSyncNow: { restoreSync.isRunning }, lockResumer: lockResumer ?? FakeLockResumer())
         let log = FinishLog()
         flow.onFinish = { log.all.append($0) }
         return Harness(flow: flow, executor: executor, estimator: estimator, lookup: lookup, fetcher: fetcher,
@@ -972,6 +972,47 @@ final class ExternalSendFlowTests: XCTestCase {
             message: "It will finish on its own. You don't need to send it again.")])
     }
 
+    func testLockHeldOpensTheLockHeldSheetAndKeepsTheFlowOpen() async throws {
+        let lock = HeldAssetLock(fundingTypeRaw: 4, txidWire: Data(repeating: 0x0C, count: 32), vout: 0)
+        let harness = makeHarness()
+        harness.executor.sendOutcome = .lockHeld(lock)
+        let confirm = try await openConfirm(harness)
+
+        await confirm.confirm()
+
+        XCTAssertEqual(harness.flow.step, .lockHeld)
+        XCTAssertEqual(harness.flow.lockHeldViewModel?.lock, lock)
+        XCTAssertTrue(harness.finishes.all.isEmpty, "the flow stays open for Finish or Close")
+    }
+
+    func testFinishOnALockHeldSendResumesTheLockAndShowsTheSentToast() async throws {
+        let lock = HeldAssetLock(fundingTypeRaw: 5, txidWire: Data(repeating: 0x0D, count: 32), vout: 3)
+        let resumer = FakeLockResumer()
+        let harness = makeHarness(lockResumer: resumer)
+        harness.executor.sendOutcome = .lockHeld(lock)
+        let confirm = try await openConfirm(harness)
+        await confirm.confirm()
+
+        await harness.flow.lockHeldViewModel?.finish()
+
+        XCTAssertEqual(resumer.resumed, [lock])
+        XCTAssertEqual(harness.finishes.all, [.success(.toast(message: "Sent"), txidWire: nil, callbackURL: nil)])
+    }
+
+    func testCloseOnALockHeldSendClosesWithoutResuming() async throws {
+        let lock = HeldAssetLock(fundingTypeRaw: 4, txidWire: Data(repeating: 0x0E, count: 32), vout: 0)
+        let resumer = FakeLockResumer()
+        let harness = makeHarness(lockResumer: resumer)
+        harness.executor.sendOutcome = .lockHeld(lock)
+        let confirm = try await openConfirm(harness)
+        await confirm.confirm()
+
+        harness.flow.closeFromLockHeld()
+
+        XCTAssertTrue(resumer.resumed.isEmpty)
+        XCTAssertEqual(harness.finishes.all, [.closed])
+    }
+
     func testNotSentOpensSendFailedWithTheReason() async throws {
         let harness = makeHarness()
         harness.executor.sendOutcome = .notSent(.offline)
@@ -1426,6 +1467,16 @@ private struct FakeConverter: SendAmountConverting {
 
 /// The executor at its protocol. A Core to Core prepare carries a standard plan with `coreTxHash`, as the live one
 /// does, so the flow can read the txid the success screen needs.
+@MainActor
+private final class FakeLockResumer: HeldAssetLockResuming {
+    private(set) var resumed: [HeldAssetLock] = []
+
+    func resume(_ lock: HeldAssetLock) async throws -> AssetLockRecoveryService.Outcome {
+        resumed.append(lock)
+        return .completed
+    }
+}
+
 @MainActor
 private final class FakeExecutor: ExternalSendExecuting {
     var prepareResults: [Result<UInt64, ExternalSendError>] = []

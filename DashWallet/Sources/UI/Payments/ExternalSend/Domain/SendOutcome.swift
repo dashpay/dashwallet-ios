@@ -23,11 +23,24 @@ struct MinimumAmountRefusal: Error {
     let minimumCredits: UInt64
 }
 
+/// A Core asset lock a send broadcast and recorded whose Platform step did not finish: the outpoint and route that
+/// `AssetLockRecoveryService.retry` resumes.
+struct HeldAssetLock: Equatable {
+    /// `PersistentAssetLock.fundingTypeRaw` of the lock: 4 for Core to Platform, 5 for Core to Shielded.
+    let fundingTypeRaw: Int
+    let txidWire: Data
+    let vout: UInt32
+}
+
 /// What happened to a send. Only `notSent` offers Retry; any error not proven to be before the broadcast is
 /// `inFlight` (ADR-0040).
 enum SendOutcome {
     case sent
+    /// Submitted, its result unknown: it settles with sync.
     case inFlight
+    /// The money left the source into an asset lock that is recorded, and the Platform step did not finish: it stays
+    /// in the lock until the lock is resumed.
+    case lockHeld(HeldAssetLock)
     case notSent(NotSentReason)
 
     init(error: Error) {
@@ -61,6 +74,8 @@ enum SendOutcome {
             DWLogger.log("External send outcome: sent")
         case .inFlight:
             DWLogger.log("External send outcome: inFlight")
+        case .lockHeld(let lock):
+            DWLogger.log("External send outcome: lockHeld(type=\(lock.fundingTypeRaw))")
         case .notSent(let reason):
             DWLogger.log("External send outcome: notSent(\(reason.category))")
         }

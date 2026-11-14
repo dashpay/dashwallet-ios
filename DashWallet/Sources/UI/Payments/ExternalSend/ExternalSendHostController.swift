@@ -93,7 +93,7 @@ final class ExternalSendHostController: UIHostingController<ExternalSendFlowScre
             leave()
         case .closed:
             switch flow.step {
-            case .sent, .sendFailed: dismissAll()
+            case .sent, .sendFailed, .lockHeld: dismissAll()
             default: leave()
             }
         case let .toast(title, message):

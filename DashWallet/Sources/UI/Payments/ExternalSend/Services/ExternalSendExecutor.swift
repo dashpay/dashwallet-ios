@@ -82,6 +82,8 @@ enum CoreTwoStepResult {
     case completed
     /// The asset lock is recorded and the second step is not confirmed yet.
     case unconfirmed
+    /// The second step failed after the coordinator recorded the asset lock it built: the money is held in `lock`.
+    case lockHeld(HeldAssetLock)
     /// `assetLockRecorded`: the asset lock exists, so the money has left the source.
     case failed(Error, assetLockRecorded: Bool)
 }
@@ -534,6 +536,8 @@ final class ExternalSendExecutor: ExternalSendExecuting {
             return .sent
         case .unconfirmed:
             return .inFlight
+        case .lockHeld(let lock):
+            return .lockHeld(lock)
         case let .failed(error, recorded):
             return recorded ? .inFlight : SendOutcome(error: error)
         }
@@ -781,20 +785,23 @@ struct LiveCoreTwoStepSend: CoreTwoStepSending {
         } else {
             await coordinator.performAssetLock(recipientAmountDuffs: amount, recipientRaw43: raw43)
         }
-        return Self.result(of: coordinator)
+        return Self.result(
+            of: coordinator, fundingTypeRaw: ShieldedTransferCoordinator.shieldedAssetLockFundingType)
     }
 
     @MainActor
-    private static func result(of coordinator: ShieldedTransferCoordinator) -> CoreTwoStepResult {
+    private static func result(of coordinator: ShieldedTransferCoordinator, fundingTypeRaw: Int) -> CoreTwoStepResult {
         result(
             phase: coordinator.phase, lastFailure: coordinator.lastFailure,
-            lockKept: coordinator.lastAssetLockOutPoint != nil)
+            heldLock: coordinator.lastAssetLockOutPoint.map {
+                HeldAssetLock(fundingTypeRaw: fundingTypeRaw, txidWire: $0.txidWire, vout: $0.vout)
+            })
     }
 
-    /// What a coordinator's asset-lock call reports once it returned. `lockKept` is whether the coordinator recorded a
-    /// built lock that is still there after the failure (`ShieldedTransferCoordinator.keepsLockForRetry`).
+    /// What a coordinator's asset-lock call reports once it returned. `heldLock` is the built lock the coordinator
+    /// recorded and still keeps after the failure (`ShieldedTransferCoordinator.keepsLockForRetry`).
     static func result(
-        phase: ShieldedTransferCoordinator.Phase, lastFailure: Error?, lockKept: Bool
+        phase: ShieldedTransferCoordinator.Phase, lastFailure: Error?, heldLock: HeldAssetLock?
     ) -> CoreTwoStepResult {
         switch phase {
         case .success:
@@ -802,7 +809,8 @@ struct LiveCoreTwoStepSend: CoreTwoStepSending {
         case .submittedUnconfirmed:
             return .unconfirmed
         default:
-            return .failed(lastFailure ?? UnfinishedTransfer(), assetLockRecorded: lockKept)
+            if let heldLock { return .lockHeld(heldLock) }
+            return .failed(lastFailure ?? UnfinishedTransfer(), assetLockRecorded: false)
         }
     }
 
@@ -832,7 +840,7 @@ struct LiveCoreTwoStepSend: CoreTwoStepSending {
         let coordinator = makeCoordinator()
         await coordinator.performFundPlatform(
             recipientAmountDuffs: amount, lockValueDuffs: lockValue, externalDestination: destination.text)
-        return Self.result(of: coordinator)
+        return Self.result(of: coordinator, fundingTypeRaw: ShieldedTransferCoordinator.addressAssetLockFundingType)
     }
 
     /// Whether an asset lock may have been built when a Core top-up threw `error`. Only refusals of the lock's coin
