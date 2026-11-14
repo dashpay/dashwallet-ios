@@ -821,6 +821,23 @@ final class BIP70PaymentServiceTests: XCTestCase {
             try await svc.buildForSend(c, now: Date(timeIntervalSince1970: Double(expires) - 10)), .alreadySent)
     }
 
+    /// The merchant acknowledged the Payment, then the broadcast failed: it holds the signed bytes and may fulfil the
+    /// order, so DashSpend gets the in-progress error with the txid it records the purchase against.
+    func testPayWithDashUrlReportsAFailureAfterTheAcknowledgementAsInProgressWithTheTxid() async {
+        let w = FakeWallet(); w.broadcastError = NSError(domain: "test.local", code: 7)
+        let svc = service(FakeTransport(unsigned(network: nil)), w)
+        let sendCoins = SendCoinsService(makePaymentService: { svc })
+
+        var thrown: Error?
+        do { _ = try await sendCoins.payWithDashUrl(url: "dash:?r=http://h/pr") } catch { thrown = error }
+
+        guard case DashSpendError.paymentStatusUnknown(let txIdWire, _)? = thrown as? DashSpendError else {
+            return XCTFail("expected paymentStatusUnknown, got \(String(describing: thrown))")
+        }
+        XCTAssertEqual(txIdWire, Data(w.prepared.txHashDisplay.reversed()))
+        XCTAssertEqual(w.calls, ["build", "broadcast"])
+    }
+
     func testAuthCancelStopsBeforeBuild() async {
         let w = FakeWallet(); let auth = FakeAuth(); auth.error = BIP70Error.authCancelled
         let svc = service(FakeTransport(unsigned()), w, auth: auth)
