@@ -565,7 +565,6 @@ extension MainTabbarController {
 
         let controller = DashConnectHostingController(
             navigationController: menuNav, uri: uri, dashPayModel: homeModel?.dashPayModel)
-        controller.hidesBottomBarWhenPushed = true
         menuNav.pushViewController(controller, animated: true)
     }
 

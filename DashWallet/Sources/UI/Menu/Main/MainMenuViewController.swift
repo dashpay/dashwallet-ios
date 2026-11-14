@@ -441,7 +441,6 @@ struct MainMenuScreen: View {
             onBack: { vc?.popViewController(animated: true) },
             onRetryCompanion: { name in openCreateUsernameForRecovery(username: name) })
         let controller = UIHostingController(rootView: screen)
-        controller.hidesBottomBarWhenPushed = true
         vc?.pushViewController(controller, animated: true)
     }
     
@@ -558,7 +557,6 @@ struct MainMenuScreen: View {
             onShowGiftCard: { txId in delegateInternal.showGiftCard(txId) }
         )
         let controller = UIHostingController(rootView: screen)
-        controller.hidesBottomBarWhenPushed = true
         vc?.pushViewController(controller, animated: true)
     }
 
@@ -569,7 +567,6 @@ struct MainMenuScreen: View {
             _ = navController?.popViewController(animated: true)
         }
         let hosting = UIHostingController(rootView: UsernameVotingScreen(vc: vc, onClose: popRoot))
-        hosting.hidesBottomBarWhenPushed = true
         vc?.pushViewController(hosting, animated: true)
     }
     #endif
@@ -605,7 +602,6 @@ struct MainMenuScreen: View {
     /// Preselected, not pinned — the form still lets either endpoint change.
     private func shieldFunds() {
         let controller = InternalTransferHostingController(transferTo: .balance(.shielded))
-        controller.hidesBottomBarWhenPushed = true
         vc?.pushViewController(controller, animated: true)
     }
     #endif
@@ -657,7 +653,6 @@ struct MainMenuScreen: View {
             dashPayModel: dashPayModel,
             definedUsername: definedUsername
         )
-        controller.hidesBottomBarWhenPushed = true
         controller.completionHandler = { [weak navigationController] result in
             let message = result 
                 ? NSLocalizedString("Username was successfully requested", comment: "Usernames")

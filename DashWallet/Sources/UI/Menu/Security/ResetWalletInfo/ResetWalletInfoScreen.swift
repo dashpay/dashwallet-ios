@@ -104,7 +104,6 @@ final class ResetWalletInfoHostingController: UIHostingController<ResetWalletInf
             onContinue: { target.controller?.showRecoveryPhraseCheck() },
             onCancel: { target.controller?.navigationController?.popViewController(animated: true) }))
         target.controller = self
-        hidesBottomBarWhenPushed = true
     }
 
     @available(*, unavailable)
@@ -114,7 +113,6 @@ final class ResetWalletInfoHostingController: UIHostingController<ResetWalletInf
 
     private func showRecoveryPhraseCheck() {
         let controller = DWRecoverViewController()
-        controller.hidesBottomBarWhenPushed = true
         controller.action = .wipe
         controller.delegate = self
         navigationController?.pushViewController(controller, animated: true)

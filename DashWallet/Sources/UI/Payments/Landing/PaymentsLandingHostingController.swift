@@ -399,7 +399,6 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     /// An address that did not decode keeps the address step: it is the screen
     /// that says so.
     private func pushScannedSend(_ controller: SendScreenViewController) {
-        controller.hidesBottomBarWhenPushed = true
         guard let navigationController else { return }
         guard controller.hasResolvedDestination else {
             navigationController.pushViewController(controller, animated: true)

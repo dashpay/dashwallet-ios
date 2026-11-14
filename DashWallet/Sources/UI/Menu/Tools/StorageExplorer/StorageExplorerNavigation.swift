@@ -31,7 +31,6 @@ final class StorageExplorerNavigator {
         } else {
             hosting = UIHostingController(rootView: page)
         }
-        hosting.hidesBottomBarWhenPushed = true
         return hosting
     }
 
