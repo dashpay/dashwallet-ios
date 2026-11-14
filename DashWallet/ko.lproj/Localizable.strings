@@ -5061,9 +5061,6 @@
 /* CoinJoin */
 "Some of your CoinJoin funds were moved. Please try again to move the rest." = "Some of your CoinJoin funds were moved. Please try again to move the rest.";
 
-/* Voting */
-"Some of your masternodes may be missing from this list — the wallet could not read your full voting-key pool. Finish syncing and reopen this screen." = "일부 마스터노드가 이 목록에서 빠져 있을 수 있습니다. 지갑이 투표 키 전체를 읽지 못했습니다. 동기화를 마친 뒤 이 화면을 다시 열어 주세요.";
-
 /* CoinJoin */
 "Some of your mixed coins were prepared. Please try again to move them to your Shielded balance." = "Some of your mixed coins were prepared. Please try again to move them to your Shielded balance.";
 
@@ -7285,6 +7282,9 @@
 
 /* CoinJoin */
 "Your mixed Dash was moved to your spendable balance using these transactions." = "Your mixed Dash was moved to your spendable balance using these transactions.";
+
+/* Voting */
+"Your own masternodes aren't listed because this wallet has no masternode voting-key account." = "Your own masternodes aren't listed because this wallet has no masternode voting-key account.";
 
 /* DashSpend */
 "Your payment was sent, but the network has not confirmed it yet. Your gift card will appear as soon as it is confirmed." = "결제가 전송되었지만 네트워크가 아직 확인하지 않았습니다. 확인되는 즉시 기프트 카드가 표시됩니다.";

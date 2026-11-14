@@ -91,17 +91,11 @@ final class MasternodeVoterRegistry {
     init() {}
 
     /// Outcome of a votable-node resolution.
-    ///
-    /// `mayBeIncomplete` says the answer cannot be trusted as exhaustive: the
-    /// running wallet has no provider voting account *and* at least one active
-    /// registration went unmatched, so a node this wallet really can vote with
-    /// may be missing from `nodes`. The UI says so rather than presenting a
-    /// short list as the full picture.
     struct Resolution {
         let nodes: [VoterNode]
-        let mayBeIncomplete: Bool
-
-        static let empty = Resolution(nodes: [], mayBeIncomplete: false)
+        /// Whether the wallet has active masternodes but no provider voting
+        /// account, so none of its own nodes can vote.
+        let ownNodesCannotVote: Bool
     }
 
     /// The wallet's votable nodes, ordered by registration.
@@ -113,12 +107,13 @@ final class MasternodeVoterRegistry {
     ///  - that address matches a key this wallet derives, so we can sign.
     ///
     /// Returns empty (not an error) when the wallet has no masternodes, when
-    /// the SDK is not running, or when the masternode phase has not synced —
-    /// the caller renders the browse-only state.
+    /// it has no provider voting account, when the SDK is not running, or
+    /// when the masternode phase has not synced — the caller renders the
+    /// browse-only state.
     func votableNodes() -> Resolution {
         guard let manager = SwiftDashSDKHost.shared.manager,
               let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {
-            return .empty
+            return Resolution(nodes: [], ownNodesCannotVote: false)
         }
 
         let eligible = manager.masternodes(for: walletId)
@@ -129,13 +124,12 @@ final class MasternodeVoterRegistry {
         let trackedNodes = trackedVotableNodes(
             excluding: Set(eligible.map(\.proTxHash)))
         guard !eligible.isEmpty else {
-            return Resolution(nodes: trackedNodes, mayBeIncomplete: false)
+            return Resolution(nodes: trackedNodes, ownNodesCannotVote: false)
         }
 
-        let resolution = MasternodeKeyUsage.resolveAddressIndexes(
+        let indexByAddress = MasternodeKeyUsage.indexByAddress(
             family: .voting,
             targets: Set(eligible.compactMap(\.votingAddress)))
-        let indexByAddress = resolution.map
 
         let nodes = eligible
             .compactMap { masternode -> (PlatformMasternode, UInt32)? in
@@ -163,15 +157,16 @@ final class MasternodeVoterRegistry {
                     keySource: .walletIndex(index))
             }
 
-        // Only a missing provider voting account can hide a node we own. If
-        // every active registration matched, the account did not matter.
-        let mayBeIncomplete = !resolution.hasProviderPool && nodes.count < eligible.count
         Self.logger.info(
-            "🗳️ VOTING :: votable nodes=\(nodes.count, privacy: .public) of \(eligible.count, privacy: .public) active registrations providerPool=\(resolution.hasProviderPool, privacy: .public)")
+            "🗳️ VOTING :: votable nodes=\(nodes.count, privacy: .public) of \(eligible.count, privacy: .public) active registrations")
+        // No match at all can also mean the voting keys belong to someone
+        // else, so only an empty voting pool means a missing account.
+        let ownNodesCannotVote = nodes.isEmpty
+            && (MasternodeProviderKeyDeriver(key: .voting).map { $0.highestAddressIndex == nil } ?? false)
         // Exclusion is by the wallet's ELIGIBLE set (not just the votable
         // subset): a wallet-registered node stays out of the tracked list
         // even when its derived key didn't resolve.
-        return Resolution(nodes: nodes + trackedNodes, mayBeIncomplete: mayBeIncomplete)
+        return Resolution(nodes: nodes + trackedNodes, ownNodesCannotVote: ownNodesCannotVote)
     }
 
     /// Tracked (wallet-independent) masternodes whose voting key the user

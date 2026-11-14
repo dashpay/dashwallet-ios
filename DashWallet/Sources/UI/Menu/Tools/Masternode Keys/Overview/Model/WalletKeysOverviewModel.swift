@@ -160,22 +160,8 @@ struct MasternodeKeyUsage {
     /// Returns an empty map for key families with no on-chain address
     /// (operator / evonode operator); Rust resolves those instead.
     static func indexByAddress(family: MNKey, targets: Set<String>) -> [String: UInt32] {
-        resolveAddressIndexes(family: family, targets: targets).map
-    }
-
-    /// The address join plus whether the wallet has a provider account of
-    /// this family.
-    ///
-    /// `hasProviderPool == false` means the running wallet has no provider
-    /// account to join against, so an address that is genuinely ours is
-    /// missing from `map`. Callers that present the result as "these are all
-    /// of them" must say so. A caller that only labels known rows can ignore it.
-    static func resolveAddressIndexes(
-        family: MNKey,
-        targets: Set<String>
-    ) -> (map: [String: UInt32], hasProviderPool: Bool) {
         guard !targets.isEmpty,
-              let deriver = MasternodeProviderKeyDeriver(key: family) else { return ([:], true) }
+              let deriver = MasternodeProviderKeyDeriver(key: family) else { return [:] }
         var map: [String: UInt32] = [:]
         let upperBound = deriver.highestAddressIndex.map { $0 + 1 } ?? 0
         for index in 0..<upperBound {
@@ -183,6 +169,6 @@ struct MasternodeKeyUsage {
                   targets.contains(address) else { continue }
             map[address] = index
         }
-        return (map, deriver.hasProviderPool)
+        return map
     }
 }
