@@ -20,12 +20,13 @@
 import DashUIKit
 import SwiftUI
 
-/// The apps of the Connections page, in one card.
+/// The apps of one tab of the Connections page, in one card.
 struct ConnectionsList: View {
     let items: [ConnectionSheetItem]
     let onOpen: (ConnectionSheetItem) -> Void
     let onDisconnect: (ConnectionSheetItem) -> Void
     let onRemove: (ConnectionSheetItem) -> Void
+    let onReconnect: () -> Void
 
     var body: some View {
         VStack(spacing: 2) {
@@ -33,7 +34,8 @@ struct ConnectionsList: View {
                 ConnectionRow(
                     item: item, onOpen: { onOpen(item) },
                     onDisconnect: { onDisconnect(item) },
-                    onRemove: { onRemove(item) })
+                    onRemove: { onRemove(item) },
+                    onReconnect: onReconnect)
             }
         }
         .modifier(MenuViewModifier())
@@ -44,18 +46,19 @@ struct ConnectionsList: View {
     ConnectionsList(
         items: ConnectionStatus.allCases.map { status in
             ConnectionSheetItem(
-                id: status.rawValue, name: "Example App \(status.rawValue)", url: "example.org", status: status,
-                connection: nil)
+                id: "\(status)", name: "Example App \(status)", url: "example.org", status: status,
+                connection: nil, entry: nil, scope: nil)
         },
-        onOpen: { _ in }, onDisconnect: { _ in }, onRemove: { _ in })
+        onOpen: { _ in }, onDisconnect: { _ in }, onRemove: { _ in }, onReconnect: {})
     .padding(20)
     .background(Color.primaryBackground)
 }
 
 #Preview("One app") {
     ConnectionsList(
-        items: [ConnectionSheetItem(id: "one", name: "Yappr", url: "yap.pr", status: .active, connection: nil)],
-        onOpen: { _ in }, onDisconnect: { _ in }, onRemove: { _ in })
+        items: [ConnectionSheetItem(
+            id: "one", name: "Yappr", url: "yap.pr", status: .active, connection: nil, entry: nil, scope: nil)],
+        onOpen: { _ in }, onDisconnect: { _ in }, onRemove: { _ in }, onReconnect: {})
     .padding(20)
     .background(Color.primaryBackground)
 }

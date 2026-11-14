@@ -26,11 +26,12 @@ import DashUIKit
 import UIKit
 
 struct SyncInfoMenuScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
 
     @StateObject private var viewModel = SyncInfoMenuViewModel()
 
-    init(vc: UINavigationController) {
+    init(vc: UINavigationController?) {
         self.vc = vc
     }
 
@@ -38,7 +39,7 @@ struct SyncInfoMenuScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             DashUIKit.NavigationBar(leading: {
                 DashUIKit.NavigationBarElement.back.button {
-                    vc.popViewController(animated: true)
+                    vc?.popViewController(animated: true)
                 }
             })
 
@@ -101,7 +102,6 @@ struct SyncInfoMenuScreen: View {
 
     private func push<Content: View>(_ screen: Content) {
         let hosting = UIHostingController(rootView: screen)
-        hosting.hidesBottomBarWhenPushed = true
-        vc.pushViewController(hosting, animated: true)
+        vc?.pushViewController(hosting, animated: true)
     }
 }

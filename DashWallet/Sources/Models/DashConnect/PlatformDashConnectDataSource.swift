@@ -434,7 +434,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// The owners of contracts and contract groups this process has read,
     /// for every data source of the app's run: Platform never changes one.
     private static let ownerMemory = OwnerMemory()
-    private let subject: CurrentValueSubject<[DAppConnection], Never>
+    private let subject: CurrentValueSubject<DashConnectListing, Never>
     private let shownRows: ShownRows
     private let operationGate: DashConnectOperationGate
     private let activeWalletIdHex: () -> String?
@@ -518,7 +518,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             walletIdHex: activeWalletIdHex(), store: self.store, intentStore: self.intentStore,
             endpoint: networkEndpoint())
         self.shownRows = ShownRows(scope: active?.scope)
-        self.subject = CurrentValueSubject(active.map { $0.published($0.connections.load()) } ?? [])
+        self.subject = CurrentValueSubject(Self.listing(of: active, rows: active?.connections.load() ?? []))
         // The list is loaded once, and the active wallet can change while
         // this data source lives.
         self.walletChangeObserver = notificationCenter
@@ -536,7 +536,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             }
     }
 
-    var connections: AnyPublisher<[DAppConnection], Never> {
+    var listing: AnyPublisher<DashConnectListing, Never> {
         subject.eraseToAnyPublisher()
     }
 
@@ -1161,9 +1161,15 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
         let all = stores.intents.load()
         let projection = AppConnect.project([snapshot], intents: all, owners: knownOwners)
-        let elsewhere = all.filter { $0.identityId != snapshot.identityId && $0.closedAt == nil }
+        let elsewhere = all.filter { $0.identityId != snapshot.identityId }
+        // An intent of this identity the store could not read may be the
+        // disconnect a Disconnected row stands for: those rows stay.
+        let hasUnreadableIntent = stores.intents.hasUnreadableRows(identityId: snapshot.identityId)
         await updateRows(in: stores) { rows in
-            Self.rows(rows, after: projection, of: snapshot.identityId, intents: elsewhere, at: updatedAt, keeping: kept)
+            let unread = hasUnreadableIntent ? Set(rows.filter { $0.status == .disconnected }.map(\.id)) : []
+            return Self.rows(
+                rows, after: projection, of: snapshot.identityId, intents: elsewhere, at: updatedAt,
+                keeping: kept.union(unread))
         }
     }
 
@@ -1182,8 +1188,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// Refused, or Disconnected by the user has a row of that status, named
     /// after those intents; one whose update never landed, or whose keys went
     /// off without a disconnect, has none, unless another identity's intents
-    /// hold it or its last read saw keys there no approval names (`seenOn`).
+    /// hold it or its last read saw live keys there no approval names (`seenOn`).
     /// Such access elsewhere also keeps a row from showing Disconnected.
+    /// `elsewhere` are the other identities' intents: their open ones hold a
+    /// row, and a Disconnected row whose disconnect closed one of them stays
+    /// Disconnected, since this read says nothing of it.
     /// A row whose app is in `keeping` stays as it is. While the read has a
     /// key whose bound is unknown, that key may be any app's: no row goes;
     /// one that would is Confirming, so it keeps its Disconnect until a
@@ -1212,14 +1221,19 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let shownIds = Set(projection.connections.filter { shownStatus($0) != nil }.map { $0.appId.toBase58String() })
         // An App Connect row stands for intents: it stays only while another
         // identity's intents hold it, since this read says nothing of them.
-        let heldElsewhere = Set(elsewhere.map { $0.appId.toBase58String() })
+        let heldElsewhere = Set(elsewhere.filter { $0.closedAt == nil }.map { $0.appId.toBase58String() })
+        let disconnectedElsewhere = Set(
+            elsewhere.filter { $0.closedAt != nil && $0.disconnectedAt != nil }.map { $0.appId.toBase58String() })
         let hasUnplacedKey = projection.unplacedKeyIds[identityId]?.isEmpty == false
         var result: [DAppConnection] = rows.compactMap { row in
             if keeping.contains(row.id) { return row }
             guard !shownIds.contains(row.id) else { return nil }
             var seenOn = row.seenOn
             seenOn.remove(me)
-            if heldElsewhere.contains(row.id) { return DAppConnection(row, seenOn: seenOn) }
+            if heldElsewhere.contains(row.id)
+                || (row.status == .disconnected && disconnectedElsewhere.contains(row.id)) {
+                return DAppConnection(row, seenOn: seenOn)
+            }
             // Live keys seen on another identity: that is the access left.
             guard !seenOn.isEmpty else {
                 // A key of unknown bound may still be the app's: the row
@@ -1240,7 +1254,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             let name = latest?.appLabel ?? existing?.name ?? fallback.name
             var seenOn = existing?.seenOn ?? []
             seenOn.remove(me)
-            if connection.unrecordedKeyIds[identityId]?.isEmpty == false { seenOn.insert(me) }
+            // Only live keys are access left: an identity whose unrecorded
+            // keys are all past their expiry does not hold the row Active.
+            if connection.liveUnrecordedIdentities.contains(identityId) { seenOn.insert(me) }
             // Disconnected here, but another identity of the wallet still
             // holds the app (its intents, or live keys its last read saw):
             // the row keeps that access, and its Disconnect, until that
@@ -2656,43 +2672,89 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return await details(of: id, stores: stores)
     }
 
-    /// The app's connection on the active identity, as the intents that hold
-    /// it show it: the identity, its username and when the connection was
-    /// made. With a read of the identity, only the intents whose keys are
-    /// live, expired or may still land count; without one, every open intent.
-    private func details(of appId: String, stores: Stores) async -> ConnectionDetails? {
-        // Not read: the sheet says so and keeps details it already shows.
+    func connectionFunding(for basis: ConnectionBasis, scope: String?) async -> ConnectionFundingRead {
+        guard let stores = await showActiveWalletRows(), scope == stores.scope,
+              let context = try? await requireContext(pinnedTo: stores),
+              context.identityId == basis.snapshot.identityId else { return .notRead }
+        let keyIds = basis.fundedKeyIds
+        guard !keyIds.isEmpty else { return .notRead }
+        // A read-only query, off the main actor: it does not touch the
+        // identity copy the operations that sign use, so it does not wait on
+        // them, and the UI does not wait on the network.
+        guard let remaining = try? await DashConnectPlatformQueries.keysRemainingBudgets(
+            sdk: context.sdk, identityId: context.identityId.toBase58String(), keyIds: keyIds)
+        else { return .failed }
+        return basis.funding(remaining: remaining)
+    }
+
+    /// What the sheet of `appId` is told from: the active identity, its open
+    /// intents that hold the app, and, with a read of the identity, the
+    /// basis of the sheet's access and funding. `nil` when the identity
+    /// cannot be read.
+    private struct HeldConnection {
+        let context: Context
+        let held: [AppConnect.ConnectionIntent]
+        let basis: ConnectionBasis?
+    }
+
+    private func heldConnection(of appId: String, stores: Stores) async -> HeldConnection? {
         guard let context = try? await requireContext(pinnedTo: stores) else { return nil }
         let open = stores.intents.load().filter {
             $0.identityId == context.identityId && $0.appId.toBase58String() == appId && $0.closedAt == nil
         }
-        let snapshot = Self.newestSnapshots.withLock { $0[context.identityId] }
-        let held = snapshot.map { snapshot in
-            open.filter {
-                switch AppConnect.status(of: $0, in: snapshot) {
-                case .active, .expired, .confirming: return true
-                case .refused, .disconnected, .neverLanded: return false
-                }
+        // One read of the identity for everything the sheet says of the keys.
+        guard let snapshot = Self.newestSnapshots.withLock({ $0[context.identityId] }) else {
+            return HeldConnection(context: context, held: open, basis: nil)
+        }
+        let held = open.filter {
+            switch AppConnect.status(of: $0, in: snapshot) {
+            case .active, .expired, .confirming: return true
+            case .refused, .disconnected, .neverLanded: return false
             }
-        } ?? open
-        guard !held.isEmpty else {
-            // A row of keys no intent names (a restore, another device's
-            // grant, the profile keys) is the active identity's when the
-            // projection shows them on it; when it was made is not known.
-            let all = stores.intents.load()
-            if let snapshot, Self.showsUnrecordedKeys(
-                of: appId, on: snapshot, intents: all,
-                owners: await Self.ownerReader(context: context).knownOwners(for: snapshot, intents: all)) {
-                return ConnectionDetails(
-                    appId: appId, identityId: context.identityId.toBase58String(), username: context.storedUsername)
-            }
-            // The app's row is held by another identity of the wallet: its
-            // intents are not the active identity's to show.
+        }
+        // Keys the row shows that no intent names (another device's, or
+        // attributed by owner) are the app's access too, from the same
+        // projection, with the owners it reads. The same projection names the
+        // intents the row follows.
+        let all = stores.intents.load()
+        let owners = await Self.ownerReader(context: context).knownOwners(for: snapshot, intents: all)
+        let connection = AppConnect.project([snapshot], intents: all, owners: owners).connections
+            .first { $0.appId.toBase58String() == appId }
+        let unrecordedIds = Set(connection?.unrecordedKeyIds[snapshot.identityId] ?? [])
+        let unrecorded = snapshot.keys.filter { unrecordedIds.contains($0.id) }
+        let followedIds = Set(connection?.followedIntents.map(\.id) ?? [])
+        return HeldConnection(
+            context: context, held: held,
+            basis: ConnectionBasis(
+                snapshot: snapshot, intents: held, followedIntentIds: followedIds, unrecorded: unrecorded,
+                administeredGroups: Self.mayBeAdministered(unrecorded, owners: owners)))
+    }
+
+    /// The app's connection on the active identity, as the intents that hold
+    /// it show it. With a read of the identity, only the intents whose keys
+    /// are live, expired or may still land count. What is left of the keys'
+    /// budgets is read apart, for the same basis (`connectionFunding`).
+    private func details(of appId: String, stores: Stores) async -> ConnectionDetails? {
+        // Not read: the sheet says so and keeps details it already shows.
+        guard let shown = await heldConnection(of: appId, stores: stores) else { return nil }
+        // The app's row is held by another identity of the wallet: its
+        // intents are not the active identity's to show.
+        guard !shown.held.isEmpty || shown.basis?.unrecorded.isEmpty == false else {
             return ConnectionDetails(appId: appId, identityId: nil, username: nil)
         }
         return ConnectionDetails(
-            appId: appId, identityId: context.identityId.toBase58String(), username: context.storedUsername,
-            connectedAt: held.map(\.createdAt).max())
+            appId: appId, identityId: shown.context.identityId.toBase58String(), username: shown.context.storedUsername,
+            basis: shown.basis, connectedAt: shown.held.map(\.createdAt).max())
+    }
+
+    /// The groups of `keys` that may have administrators: the owner read
+    /// as administered, or not read. Unknown is not said to be absent.
+    static func mayBeAdministered(_ keys: [AppConnect.PlatformKey], owners: [Data: Data]) -> Set<Data> {
+        Set(keys.compactMap { key -> Data? in
+            guard case .contractGroup(let id) = key.bound else { return nil }
+            let owner = owners[id]
+            return owner == nil || owner == AppConnect.administeredGroupOwnerId ? id : nil
+        })
     }
 
     /// Whether the projection of `snapshot`, with the owners known, shows
@@ -3315,7 +3377,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let active = pinnedActiveStores()
         guard shownRows.scope != active?.scope else { return active }
         shownRows.scope = active?.scope
-        subject.send(active.map { $0.published($0.connections.load()) } ?? [])
+        subject.send(Self.listing(of: active, rows: active?.connections.load() ?? []))
         return active
     }
 
@@ -3328,7 +3390,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 
     @MainActor
     private func shownRow(id: String) -> DAppConnection? {
-        subject.value.first { $0.id == id }
+        subject.value.rows.first { $0.id == id }
     }
 
     /// Publishes the active wallet's rows as stored, after a save under
@@ -3338,7 +3400,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         guard store.scopeKey == scopeKey, let active = pinnedActiveStores(),
               active.connections.scopeKey == scopeKey,
               shownRows.scope == active.scope else { return }
-        subject.send(active.published(rows(in: active)))
+        subject.send(Self.listing(of: active, rows: rows(in: active)))
     }
 
     /// Changes the rows of the wallet `stores` belongs to in one step, saves
@@ -3348,7 +3410,38 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private func updateRows(in stores: Stores, _ change: ([DAppConnection]) -> [DAppConnection]) {
         let sorted = Stores.stored(change(rows(in: stores))).sorted(by: { $0.updatedAt > $1.updatedAt })
         stores.connections.save(sorted)
-        if shownRows.scope == stores.scope { subject.send(stores.published(sorted)) }
+        if shownRows.scope == stores.scope { subject.send(Self.listing(of: stores, rows: sorted)) }
+    }
+
+    /// What the page lists for the wallet `stores` belongs to: its rows,
+    /// and the rows on the Disconnected tab as disconnected apps, most recent
+    /// first (ADR 0013). Nothing without a wallet.
+    private static func listing(of stores: Stores?, rows: [DAppConnection]) -> DashConnectListing {
+        guard let stores else { return DashConnectListing(scope: nil, rows: [], disconnected: []) }
+        let published = stores.published(rows)
+        let isDisconnected = { (row: DAppConnection) in AppConnect.StateActions.row(for: row.status).tab == .disconnected }
+        let intents = stores.intents.load()
+        return DashConnectListing(
+            scope: stores.scope, rows: published.filter { !isDisconnected($0) },
+            disconnected: published.filter(isDisconnected)
+                .map { disconnectedEntry(of: $0, intents: intents) }
+                .sorted { ($0.disconnectedAt ?? .distantPast) > ($1.disconnectedAt ?? .distantPast) })
+    }
+
+    /// A Disconnected row as the page lists it: what the intents the
+    /// disconnect marked gave the app, and when it was disconnected. With no
+    /// marked intent to read, neither is known.
+    static func disconnectedEntry(of row: DAppConnection, intents: [AppConnect.ConnectionIntent]) -> DisconnectedConnection {
+        let marked = intents.filter { $0.appId.toBase58String() == row.id && $0.disconnectedAt != nil }
+        let disconnectedAt = marked.compactMap(\.disconnectedAt).max()
+        // The connection the disconnect ended: the intents it marked last.
+        let ended = disconnectedAt.map { last in marked.filter { $0.disconnectedAt == last } } ?? []
+        return DisconnectedConnection(
+            id: row.id, name: row.name, url: row.url,
+            identityId: ended.first?.identityId.toBase58String(), username: nil,
+            disconnectedAt: disconnectedAt, access: ConnectionAccess(recorded: ended),
+            // The latest approval, as the sheet of a live connection shows it.
+            connectedAt: ended.map(\.createdAt).max())
     }
 
     private func validateNetwork(_ network: DashConnectNetwork) throws {
@@ -3701,12 +3794,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 }
 
 /// Platform reads the Swift SDK offers only on the main actor (the current
-/// epoch and an identity's contract keys), where their blocking FFI calls
+/// epoch, an identity's contract keys, and what is left of keys' budgets), where their blocking FFI calls
 /// would hold the UI for a network round trip. They run here on queues of
 /// their own instead, with the SDK kept alive for the call; each copies the
 /// native result and releases it before returning.
-/// TODO(dashconnect-off-main-queries): use the SDK's own off-main reads once
-/// it has them for these, as it has for `documentList`.
+/// TODO(dashconnect-off-main-queries): use the SDK's own off-main reads for
+/// these once dashpay/platform#5867 provides them (the remaining budgets
+/// included), as it has for `documentList`; then remove these wrappers and
+/// the budgets parser.
 enum DashConnectPlatformQueries {
     /// One queue per kind of read, so a slow contract-keys read does not hold
     /// back the protocol-version read a sheet waits for.
@@ -3715,6 +3810,47 @@ enum DashConnectPlatformQueries {
     /// stopped, and must not hold back the next login's read.
     private static let contractKeysQueue = DispatchQueue(
         label: "org.dashfoundation.dash.dashconnect.contract-keys-query", attributes: .concurrent)
+
+    /// Concurrent, like the contract-keys reads: a sheet's read it no longer
+    /// waits for must not hold back the next one.
+    private static let budgetsQueue = DispatchQueue(
+        label: "org.dashfoundation.dash.dashconnect.key-budgets-query", attributes: .concurrent)
+
+    /// `SDK.fetchKeysRemainingBudgets(identityId:keyIds:)` off the main
+    /// actor: what is left of each key's budget in credits, `nil` for a key
+    /// with no budget or that the identity does not have.
+    static func keysRemainingBudgets(sdk: SDK, identityId: String, keyIds: [UInt32]) async throws -> [UInt32: UInt64?] {
+        guard !keyIds.isEmpty else { throw SDKError.invalidParameter("At least one key id is required") }
+        let answer = try await run(sdk, on: budgetsQueue) { handle in
+            try keyIds.withUnsafeBufferPointer { buffer in
+                try json(from: dash_sdk_identity_fetch_keys_remaining_budgets(
+                    handle, identityId, buffer.baseAddress, UInt(buffer.count)))
+            }
+        }
+        return try remainingBudgets(answer)
+    }
+
+    /// The remaining-budgets answer: a JSON object keyed by key id whose
+    /// values are decimal strings (credits are `u64`, which JSON numbers
+    /// cannot carry losslessly) or null.
+    static func remainingBudgets(_ answer: [String: Any]) throws -> [UInt32: UInt64?] {
+        var budgets: [UInt32: UInt64?] = [:]
+        for (rawKeyId, value) in answer {
+            guard let keyId = UInt32(rawKeyId) else {
+                throw SDKError.serializationError("Unparseable key id in remaining-budgets answer: \(rawKeyId)")
+            }
+            if value is NSNull {
+                // `updateValue`: assigning `nil` through the subscript removes the entry.
+                budgets.updateValue(nil, forKey: keyId)
+                continue
+            }
+            guard let text = value as? String, let credits = UInt64(text) else {
+                throw SDKError.serializationError("Unparseable remaining budget for key \(keyId)")
+            }
+            budgets.updateValue(credits, forKey: keyId)
+        }
+        return budgets
+    }
 
     /// The protocol version the network runs, from a proved read of the
     /// current epoch. It throws when that read fails: there is no fallback

@@ -26,7 +26,8 @@ import UIKit
 
 struct KeysOverviewContentView: View {
     @StateObject private var viewModel = KeysOverviewViewModel()
-    private let navigationController: UINavigationController?
+    /// Weak: this page sits in `navigationController`'s own stack.
+    private weak var navigationController: UINavigationController?
 
     init(navigationController: UINavigationController? = nil) {
         self.navigationController = navigationController
@@ -69,7 +70,6 @@ struct KeysOverviewContentView: View {
 
             DispatchQueue.main.async {
                 let vc = DerivationPathKeysViewController(with: item)
-                vc.hidesBottomBarWhenPushed = true
                 navigationController?.pushViewController(vc, animated: true)
             }
         }

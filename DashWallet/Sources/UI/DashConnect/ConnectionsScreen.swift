@@ -25,21 +25,27 @@ import DashUIKit
 /// `Components/`; this type owns navigation, the QR scanner and the approval
 /// sheet.
 struct ConnectionsScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
 
     @StateObject private var viewModel: ConnectionsViewModel
 
-    init(vc: UINavigationController, viewModel: ConnectionsViewModel? = nil) {
+    init(vc: UINavigationController?, viewModel: ConnectionsViewModel? = nil) {
         self.vc = vc
         _viewModel = StateObject(wrappedValue: viewModel ?? ConnectionsViewModel())
     }
+
+    @State private var showsFundingLimitsInfo = false
+    /// Reconnect closes the connection sheet first: the scanner is
+    /// presented once it is gone.
+    @State private var scansAfterSheet = false
 
     var body: some View {
         ZStack {
             VStack(alignment: .leading, spacing: 0) {
                 DashUIKit.NavigationBar(
                     leading: {
-                        DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
+                        DashUIKit.NavigationBarElement.back.button { vc?.popViewController(animated: true) }
                     },
                     trailing: {
                         if !viewModel.featureUnavailable {
@@ -88,7 +94,11 @@ struct ConnectionsScreen: View {
             }
         }
         .sheet(item: shownConnectionBinding, onDismiss: {
+            showsFundingLimitsInfo = false
             viewModel.connectionSheetDismissed()
+            guard scansAfterSheet else { return }
+            scansAfterSheet = false
+            showScanner()
         }) { item in
             connectionSheet(for: item)
         }
@@ -101,26 +111,25 @@ struct ConnectionsScreen: View {
             title
             ConnectionsUnavailableState()
         } else if !viewModel.hasReadRows {
-            // No empty state that the rows replace a moment later.
+            // Not known yet whether anything was connected: no empty state
+            // that the rows and the history replace a moment later.
             title
             SwiftUI.ProgressView()
                 .frame(maxWidth: .infinity)
                 .padding(.top, 40)
             Spacer()
-        } else if viewModel.connections.isEmpty {
+        } else if !viewModel.hasConnectionsOrHistory {
             title
             ConnectionsEmptyState(onScanQR: showScanner, onMockScan: mockScan)
         } else {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 20) {
                     title
-                    ConnectionsList(
-                        items: viewModel.rows,
-                        onOpen: { viewModel.showConnection($0) },
-                        onDisconnect: { viewModel.showConnection($0, asksToDisconnect: true) },
-                        onRemove: { item in
-                            if let connection = item.connection { viewModel.removeConnection(connection) }
-                        })
+                    SegmentedControl(
+                        options: ConnectionsTab.allCases,
+                        selection: $viewModel.selectedTab,
+                        label: Self.tabName)
+                    tabContent
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
@@ -130,8 +139,50 @@ struct ConnectionsScreen: View {
 
     private var title: some View {
         TopIntro(title: NSLocalizedString("Connections", comment: "DashConnect"))
-            .padding(.horizontal, !viewModel.connections.isEmpty && !viewModel.featureUnavailable ? 0 : 20)
+            .padding(.horizontal, viewModel.hasConnectionsOrHistory && !viewModel.featureUnavailable ? 0 : 20)
             .padding(.top, 10)
+    }
+
+    @ViewBuilder private var tabContent: some View {
+        let tab = viewModel.selectedTab
+        let rows = viewModel.rows(for: tab)
+        if !rows.isEmpty {
+            ConnectionsList(
+                items: rows,
+                onOpen: { viewModel.showConnection($0) },
+                onDisconnect: { viewModel.showConnection($0, asksToDisconnect: true) },
+                onRemove: { item in
+                    if let connection = item.connection { viewModel.removeConnection(connection) }
+                },
+                onReconnect: showScanner)
+        } else {
+            tabNote(Self.emptyTabText(tab))
+        }
+    }
+
+    private func tabNote(_ text: String) -> some View {
+        Text(text)
+            .dashFont(.subhead)
+            .foregroundColor(Color.dash.secondaryText)
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
+            .padding(.top, 20)
+    }
+
+    private static func emptyTabText(_ tab: ConnectionsTab) -> String {
+        switch tab {
+        case .active: return NSLocalizedString("No active connections", comment: "DashConnect: an empty tab")
+        case .disconnected: return NSLocalizedString("No disconnected connections", comment: "DashConnect: an empty tab")
+        case .expired: return NSLocalizedString("No expired connections", comment: "DashConnect: an empty tab")
+        }
+    }
+
+    private static func tabName(_ tab: ConnectionsTab) -> String {
+        switch tab {
+        case .active: return NSLocalizedString("Active", comment: "DashConnect connection status")
+        case .disconnected: return NSLocalizedString("Disconnected", comment: "DashConnect connection status")
+        case .expired: return NSLocalizedString("Expired", comment: "DashConnect connection status")
+        }
     }
 
     private func connectionSheet(for item: ConnectionSheetItem) -> some View {
@@ -139,7 +190,10 @@ struct ConnectionsScreen: View {
             item: item,
             details: viewModel.shownDetails,
             detailsFailed: viewModel.shownDetailsFailed,
+            granted: viewModel.shownGrantedLines,
             withheld: viewModel.shownWithheldLines,
+            funding: viewModel.shownFundingLines,
+            fundingFailed: viewModel.shownFundingFailed,
             connectedAt: viewModel.shownConnectedAt,
             isBusy: viewModel.isDisconnecting,
             message: viewModel.connectionSheetMessage,
@@ -150,9 +204,21 @@ struct ConnectionsScreen: View {
                 viewModel.hideConnection()
             },
             takeDisconnectQuestion: viewModel.takeDisconnectQuestion,
-            disconnectQuestion: viewModel.disconnectQuestion
+            disconnectQuestion: viewModel.disconnectQuestion,
+            onScan: {
+                scansAfterSheet = true
+                viewModel.hideConnection()
+            },
+            onShowFundingLimitsInfo: { showsFundingLimitsInfo = true }
         )
         .presentationDragIndicator(.visible)
+        .sheet(isPresented: $showsFundingLimitsInfo) {
+            FundingLimitsInfoSheet(onClose: { showsFundingLimitsInfo = false })
+                // Starts at the tallest it may be, so the first measurement
+                // is of the whole text; the sheet then settles at its height.
+                .selfSizingSheet(fallback: .greatestFiniteMagnitude, background: Color.dash.secondaryBackground)
+                .presentationDragIndicator(.visible)
+        }
     }
 
     private func approveSheet(for request: ConnectionRequest) -> some View {
@@ -227,15 +293,15 @@ struct ConnectionsScreen: View {
         let scanner = GenericQRScannerController()
 
         scanner.onQRCodeScanned = { value in
-            vc.dismiss(animated: true) {
+            vc?.dismiss(animated: true) {
                 viewModel.onQRScanned(value)
             }
         }
         scanner.onCancel = {
-            vc.dismiss(animated: true)
+            vc?.dismiss(animated: true)
         }
 
-        vc.present(scanner, animated: true)
+        vc?.present(scanner, animated: true)
     }
 
     private func mockScan() {
@@ -290,6 +356,16 @@ struct ConnectionsScreen: View {
         vc: UINavigationController(),
         viewModel: ConnectionsViewModel(
             dataSource: MockDashConnectDataSource(initial: [MockDashConnectDataSource.sample(.active)]),
+            featureUnavailable: false
+        )
+    )
+}
+
+#Preview("Expired") {
+    ConnectionsScreen(
+        vc: UINavigationController(),
+        viewModel: ConnectionsViewModel(
+            dataSource: MockDashConnectDataSource(initial: [MockDashConnectDataSource.sample(.expired)]),
             featureUnavailable: false
         )
     )

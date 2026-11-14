@@ -29,12 +29,13 @@ import DashUIKit
 import UIKit
 
 struct WalletAccountsScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
     private let walletId: Data
 
     @StateObject private var viewModel: WalletAccountsViewModel
 
-    init(vc: UINavigationController, walletId: Data, walletName: String) {
+    init(vc: UINavigationController?, walletId: Data, walletName: String) {
         self.vc = vc
         self.walletId = walletId
         _viewModel = StateObject(
@@ -86,14 +87,13 @@ struct WalletAccountsScreen: View {
     private func showDetail(_ row: WalletAccountRow) {
         let controller = UIHostingController(
             rootView: WalletAccountDetailScreen(vc: vc, walletId: walletId, account: row))
-        controller.hidesBottomBarWhenPushed = true
-        vc.pushViewController(controller, animated: true)
+        vc?.pushViewController(controller, animated: true)
     }
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 0) {
             DashUIKit.NavigationBar(
-                leading: { DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) } },
+                leading: { DashUIKit.NavigationBarElement.back.button { vc?.popViewController(animated: true) } },
                 central: {
                     Text(viewModel.walletName)
                         .dashFont(.subheadMedium)

@@ -1000,6 +1000,7 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		7A30002030A1000000000020 /* TxDetailRecoveryRowsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30001930A1000000000019 /* TxDetailRecoveryRowsTests.swift */; };
 		7A3000A230A10000000000A2 /* AssetLockRecoveryPassTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A3000A130A10000000000A1 /* AssetLockRecoveryPassTests.swift */; };
 		7A11E5E70000000000000012 /* ResetWalletInfoWipeForwardingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11E5E70000000000000011 /* ResetWalletInfoWipeForwardingTests.swift */; };
+		C0FFEE012E0A000100A10024 /* AtmSegmentTypesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE012E0A000100A10023 /* AtmSegmentTypesTests.swift */; };
 		C0FFEE012E0A000100A10022 /* ExploreListNavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE012E0A000100A10021 /* ExploreListNavigationTests.swift */; };
 		C0FFEE012E0A000100A10012 /* BaseNavigationControllerTabBarTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE012E0A000100A10011 /* BaseNavigationControllerTabBarTests.swift */; };
 		7B18F4580CB3D24E417435DE /* StorageRecordDetailViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DCBA057E553F81F54ACE6E1 /* StorageRecordDetailViews.swift */; };
@@ -2279,7 +2280,6 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		225383001C694D7400968BEE /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 		226154FFBC684D1FDFCA35E4 /* Pods-DashWalletScreenshotsUITests.testflight.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DashWalletScreenshotsUITests.testflight.xcconfig"; path = "Target Support Files/Pods-DashWalletScreenshotsUITests/Pods-DashWalletScreenshotsUITests.testflight.xcconfig"; sourceTree = "<group>"; };
 		22B6A4471C0E963900673913 /* libbz2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbz2.tbd; path = usr/lib/libbz2.tbd; sourceTree = SDKROOT; };
-		22D3613C1C56F2CD0057CF76 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		22F45A0A1C30EAB700B07A15 /* BRAWKeypad.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BRAWKeypad.swift; sourceTree = "<group>"; };
 		24DC91C11E382E22D1C17F05 /* DWParsedPaymentURI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DWParsedPaymentURI.swift; sourceTree = "<group>"; };
 		2537FCF252FB799EB4103150 /* Pods-dashwallet.testnet.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-dashwallet.testnet.xcconfig"; path = "Target Support Files/Pods-dashwallet/Pods-dashwallet.testnet.xcconfig"; sourceTree = "<group>"; };
@@ -3233,6 +3233,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		7A30001930A1000000000019 /* TxDetailRecoveryRowsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxDetailRecoveryRowsTests.swift; sourceTree = "<group>"; };
 		7A3000A130A10000000000A1 /* AssetLockRecoveryPassTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetLockRecoveryPassTests.swift; sourceTree = "<group>"; };
 		7A11E5E70000000000000011 /* ResetWalletInfoWipeForwardingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResetWalletInfoWipeForwardingTests.swift; sourceTree = "<group>"; };
+		C0FFEE012E0A000100A10023 /* AtmSegmentTypesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtmSegmentTypesTests.swift; sourceTree = "<group>"; };
 		C0FFEE012E0A000100A10021 /* ExploreListNavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreListNavigationTests.swift; sourceTree = "<group>"; };
 		C0FFEE012E0A000100A10011 /* BaseNavigationControllerTabBarTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseNavigationControllerTabBarTests.swift; sourceTree = "<group>"; };
 		7B56B94951BA51EAC9E0A6E1 /* libPods-DashWalletScreenshotsUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DashWalletScreenshotsUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -7347,7 +7348,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				FBF3F42C1E42B00C00C7248E /* UIKit.framework */,
 				FBF3F42A1E42AF8F00C7248E /* QuartzCore.framework */,
 				225383001C694D7400968BEE /* CoreLocation.framework */,
-				22D3613C1C56F2CD0057CF76 /* libsqlite3.tbd */,
 				222E7F571C46E9BE009AB45D /* SystemConfiguration.framework */,
 				222E7F551C46E9B8009AB45D /* Security.framework */,
 				222040C51C1A1940005CE1C3 /* WebKit.framework */,
@@ -7504,6 +7504,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				7A3000A130A10000000000A1 /* AssetLockRecoveryPassTests.swift */,
 				7A11E5E70000000000000011 /* ResetWalletInfoWipeForwardingTests.swift */,
 				C0FFEE012E0A000100A10011 /* BaseNavigationControllerTabBarTests.swift */,
+				C0FFEE012E0A000100A10023 /* AtmSegmentTypesTests.swift */,
 				C0FFEE012E0A000100A10021 /* ExploreListNavigationTests.swift */,
 				CB9200012FE3000000000001 /* PassiveWalletStateUITailTests.swift */,
 				AA0003032CA0F58E00A1B402 /* SwapAddressValidatorTests.swift */,
@@ -10863,6 +10864,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				7A3000A230A10000000000A2 /* AssetLockRecoveryPassTests.swift in Sources */,
 				7A11E5E70000000000000012 /* ResetWalletInfoWipeForwardingTests.swift in Sources */,
 				C0FFEE012E0A000100A10012 /* BaseNavigationControllerTabBarTests.swift in Sources */,
+				C0FFEE012E0A000100A10024 /* AtmSegmentTypesTests.swift in Sources */,
 				C0FFEE012E0A000100A10022 /* ExploreListNavigationTests.swift in Sources */,
 				CB9200022FE3000000000002 /* PassiveWalletStateUITailTests.swift in Sources */,
 				AA0003042CA0F58E00A1B402 /* SwapAddressValidatorTests.swift in Sources */,
@@ -12409,7 +12411,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 					"-l\"iconv\"",
 					"-l\"nanopb\"",
 					"-l\"resolv\"",
-					"-l\"sqlite3\"",
 					"-l\"z\"",
 					"-framework",
 					"\"BackgroundTasks\"",
@@ -12537,7 +12538,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 					"-l\"iconv\"",
 					"-l\"nanopb\"",
 					"-l\"resolv\"",
-					"-l\"sqlite3\"",
 					"-l\"z\"",
 					"-framework",
 					"\"BackgroundTasks\"",
@@ -12876,7 +12876,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 					"-l\"iconv\"",
 					"-l\"nanopb\"",
 					"-l\"resolv\"",
-					"-l\"sqlite3\"",
 					"-l\"z\"",
 					"-framework",
 					"\"BackgroundTasks\"",
@@ -12993,7 +12992,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 					"-l\"iconv\"",
 					"-l\"nanopb\"",
 					"-l\"resolv\"",
-					"-l\"sqlite3\"",
 					"-l\"z\"",
 					"-framework",
 					"\"BackgroundTasks\"",
@@ -13121,7 +13119,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 					"-l\"iconv\"",
 					"-l\"nanopb\"",
 					"-l\"resolv\"",
-					"-l\"sqlite3\"",
 					"-l\"z\"",
 					"-framework",
 					"\"BackgroundTasks\"",
@@ -13248,7 +13245,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 					"-l\"iconv\"",
 					"-l\"nanopb\"",
 					"-l\"resolv\"",
-					"-l\"sqlite3\"",
 					"-l\"z\"",
 					"-framework",
 					"\"BackgroundTasks\"",
@@ -13438,7 +13434,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 					"-l\"iconv\"",
 					"-l\"nanopb\"",
 					"-l\"resolv\"",
-					"-l\"sqlite3\"",
 					"-l\"z\"",
 					"-framework",
 					"\"BackgroundTasks\"",
@@ -13735,7 +13730,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 					"-l\"iconv\"",
 					"-l\"nanopb\"",
 					"-l\"resolv\"",
-					"-l\"sqlite3\"",
 					"-l\"z\"",
 					"-framework",
 					"\"BackgroundTasks\"",
