@@ -58,12 +58,6 @@ struct InternalTransferScreen: View {
     /// swappable transfer screen.
     var receiveInto: ChainNetwork? = nil
 
-    /// Send-sheet variant (the balance-row out arrows): fixes the source
-    /// card (the balance being sent from) at the top, turns the rows below
-    /// it into the destination picker, and hides the swap badge. Takes
-    /// precedence over `receiveInto`.
-    var sendFrom: ChainNetwork? = nil
-
     @State private var confirmation: InternalTransferConfirmation?
 
     /// Set when Confirm handed the transfer off, consumed by the sheet's
@@ -115,7 +109,6 @@ struct InternalTransferScreen: View {
 
                         TransferEndpointCards(
                             viewModel: viewModel,
-                            sendFrom: sendFrom,
                             receiveInto: receiveInto
                         )
                         .padding(.horizontal, 20)
@@ -374,7 +367,6 @@ private func transferScreenSample(
     target: ChainNetwork = .platform,
     identityDestination: Bool = false,
     amountText: String = "0",
-    sendFrom: ChainNetwork? = nil,
     receiveInto: ChainNetwork? = nil,
     showsHeader: Bool = true,
     isChainSynced: Bool = true,
@@ -384,15 +376,13 @@ private func transferScreenSample(
         viewModel: .makeForPreview(
             source: source,
             target: target,
-            sendFrom: sendFrom,
             receiveInto: receiveInto,
             identityDestination: identityDestination,
             amountText: amountText,
             isChainSynced: isChainSynced,
             isResyncingWallet: isResyncingWallet),
         showsHeader: showsHeader,
-        receiveInto: receiveInto,
-        sendFrom: sendFrom)
+        receiveInto: receiveInto)
 }
 
 @available(iOS 17, *)
@@ -456,16 +446,6 @@ private func transferScreenSample(
         amountText: "0.1",
         isChainSynced: false,
         isResyncingWallet: true)
-}
-
-/// Send-sheet embedding: source pinned, host draws its own title.
-@available(iOS 17, *)
-#Preview("Send sheet · no header") {
-    transferScreenSample(
-        source: .core,
-        amountText: "0.5",
-        sendFrom: .core,
-        showsHeader: false)
 }
 
 /// Receive-sheet embedding: destination pinned at the bottom.
