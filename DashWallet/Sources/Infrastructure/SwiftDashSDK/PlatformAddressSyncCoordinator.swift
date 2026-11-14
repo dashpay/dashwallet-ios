@@ -689,6 +689,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
               let network = runningNetwork
         else { throw SendError.coordinatorNotReady }
 
+        // Another network's address is refused before anything is built.
+        try Self.requireExternalDestination(destination, on: network)
         guard let recipient = Self.parsePlatformRecipient(bech32m: destination)
         else { throw SendError.invalidDestination }
         // FFI's `PlatformAddressFFI → PlatformAddress` conversion in
@@ -885,7 +887,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     /// asset lock (funding type 4, `AssetLockAddressTopUp`). The lock carries
     /// a static reserve on top of `recipientAmountDuffs`; the requested amount
     /// is paid explicitly to one own Platform address and the reserve remainder
-    /// is returned to a second own Platform address.
+    /// is returned to a second own Platform address. The built lock is marked own, which is what lets
+    /// `resumeFundFromCore` resume it to these addresses.
     public func fundFromCore(
         recipientAmountDuffs: UInt64,
         lockValueDuffs: UInt64,
@@ -897,16 +900,49 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         Self.logger.info(
             "🛰️ PLATFORM-FUND :: core → platform recipient=\(recipientAmountDuffs) lock=\(lockValueDuffs) account=\(env.accountIndex)")
 
-        let updated = try await env.addressWallet.fundFromAssetLock(
-            amountDuffs: lockValueDuffs,
-            fundingAccountIndex: 0,
-            platformAccountIndex: env.accountIndex,
-            recipients: env.recipients,
-            signer: signer,
+        let funder = CoreFunder(
+            edge: SignedPlatformAddressWallet(wallet: env.addressWallet, signer: signer),
+            recipientStore: recipientStore)
+        let updated = try await funder.fundOwn(
+            lockValueDuffs: lockValueDuffs, platformAccountIndex: env.accountIndex, recipients: env.recipients,
             onAssetLockBuilt: onAssetLockBuilt)
 
         applyUpdatedBalances(updated, context: env.container.mainContext)
         await ShieldedTxLookup.shared.refresh(reason: "platform-fund-completed")
+        removeFinishedFundingRecipients(container: env.container)
+        Task { await self.syncNow() }
+    }
+
+    /// Pay another party's Platform address from the Core L1 balance via an asset lock. The recipient
+    /// receives exactly `recipientAmountDuffs`; the reserve remainder of the lock returns to an own
+    /// Platform address. Only P2PKH destinations are accepted (the SDK's FFI takes no other type).
+    /// `onAssetLockBuilt` fires once the lock's outpoint exists.
+    public func fundExternalFromCore(
+        destination: String,
+        recipientAmountDuffs: UInt64,
+        lockValueDuffs: UInt64,
+        onAssetLockBuilt: AssetLockBuiltHandler? = nil
+    ) async throws {
+        guard let parsed = Self.parsePlatformRecipient(bech32m: destination) else { throw SendError.invalidDestination }
+        guard parsed.ffiAddressType == 0 else { throw SendError.p2shNotSupported }
+        let env = try resolveFundEnvironment(recipientAmountDuffs: recipientAmountDuffs, externalRecipient: parsed)
+        try Self.requireExternalDestination(destination, on: env.network)
+        let signer = KeychainSigner(modelContainer: env.container, network: env.network)
+        let record = ExternalFundingRecipientRecord(
+            addressType: parsed.ffiAddressType, hash: parsed.hash, recipientAmountDuffs: recipientAmountDuffs)
+
+        DWLogger.log("🛰️ PLATFORM-FUND :: core → external recipient=\(recipientAmountDuffs) lock=\(lockValueDuffs)")
+
+        let funder = CoreFunder(
+            edge: SignedPlatformAddressWallet(wallet: env.addressWallet, signer: signer),
+            recipientStore: recipientStore)
+        let updated = try await funder.fundExternal(
+            record: record, lockValueDuffs: lockValueDuffs, platformAccountIndex: env.accountIndex,
+            recipients: env.recipients, onAssetLockBuilt: onAssetLockBuilt)
+
+        applyUpdatedBalances(updated, context: env.container.mainContext)
+        await ShieldedTxLookup.shared.refresh(reason: "platform-fund-external-completed")
+        removeFinishedFundingRecipients(container: env.container)
         Task { await self.syncNow() }
     }
 
@@ -926,23 +962,54 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
         Self.logger.info("🛰️ PLATFORM-FUND :: resume core → platform vout=\(outPointVout)")
 
-        let updated = try await env.addressWallet.resumeFundFromAssetLock(
+        let resumer = CoreFundingResumer(
+            edge: SignedPlatformAddressWallet(wallet: env.addressWallet, signer: signer),
+            recipientStore: recipientStore,
+            container: env.container,
+            ownAddresses: .init(
+                recipientHash: env.recipients[0].hash, remainderHash: env.recipients[1].hash,
+                accountIndex: env.accountIndex),
+            log: { DWLogger.log("🛰️ PLATFORM-FUND :: \($0)") })
+        let updated = try await resumer.resume(
             outPointTxid: outPointTxid,
             outPointVout: outPointVout,
-            platformAccountIndex: env.accountIndex,
-            recipients: env.recipients,
-            signer: signer)
+            ownRecipientAmountDuffs: recipientAmountDuffs)
 
         applyUpdatedBalances(updated, context: env.container.mainContext)
         await ShieldedTxLookup.shared.refresh(reason: "platform-fund-resume-completed")
+        removeFinishedFundingRecipients(container: env.container)
         Task { await self.syncNow() }
+    }
+
+    /// Throws the refusal `resumeFundFromCore` would end with because the lock's recipient cannot be established
+    /// (`CoreFundingRecipientCheck`), so a resume refuses before it asks for the PIN. Before the coordinator has
+    /// started there is nothing to check against, so it throws `coordinatorNotReady`, as the resume itself would.
+    @MainActor
+    public func checkFundFromCoreResumable(outPointTxid: Data, outPointVout: UInt32) throws {
+        guard let container = modelContainer else { throw SendError.coordinatorNotReady }
+        _ = try CoreFundingRecipientCheck(
+            recipientStore: recipientStore, container: container,
+            log: { DWLogger.log("🛰️ PLATFORM-FUND :: \($0)") }
+        ).recipient(outPointTxid: outPointTxid, outPointVout: outPointVout)
+    }
+
+    /// `CoreFundingRecipientSweep` when the coordinator starts and after a funding or a resume returned; a failed read
+    /// only leaves entries for the next one.
+    private func removeFinishedFundingRecipients(container: ModelContainer) {
+        do {
+            try CoreFundingRecipientSweep(recipientStore: recipientStore, container: container).removeFinished()
+        } catch {
+            let described = String(describing: error)
+            DWLogger.log("🛰️ PLATFORM-FUND :: funding recipient sweep failed: \(described)")
+        }
     }
 
     /// Shared readiness + recipient resolution for `fundFromCore` /
     /// `resumeFundFromCore`: one own address receives the requested amount
     /// explicitly, and a second own address receives the remainder/change.
     private func resolveFundEnvironment(
-        recipientAmountDuffs: UInt64
+        recipientAmountDuffs: UInt64,
+        externalRecipient: PlatformRecipient? = nil
     ) throws -> FundFromCoreEnvironment {
         guard isRunning,
               let addressWallet = platformAddressWallet,
@@ -957,8 +1024,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         }
 
         let recipient = ManagedPlatformAddressWallet.FundFromAssetLockRecipient(
-            addressType: 0,
-            hash: addressPair.recipient.hash,
+            addressType: externalRecipient?.ffiAddressType ?? 0,
+            hash: externalRecipient?.hash ?? addressPair.recipient.hash,
             credits: recipientCredits.partialValue)
         let remainder = ManagedPlatformAddressWallet.FundFromAssetLockRecipient(
             addressType: 0,
@@ -1333,6 +1400,13 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         self.isRunning = platformLoopError == nil
         self.addressWalletStartupError = addressWalletError
         self.lastError = platformLoopError ?? addressWalletError
+        // A lock whose row turned consumed after its funding or resume
+        // returned keeps its recipient entry until the next sweep; this one
+        // runs on every start, so such an entry does not wait for another
+        // Core → Platform funding.
+        if let modelContainer {
+            removeFinishedFundingRecipients(container: modelContainer)
+        }
 
         startShieldedRecoveryMonitoring()
         await subscribeToManager(manager: manager, walletId: resolvedWallet.walletId)
@@ -1892,6 +1966,9 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         let remainder: CoreToPlatformFundingAddress
     }
 
+    /// Recipients of in-flight external payments, keyed by asset-lock outpoint.
+    private let recipientStore: ExternalFundingRecipientStoring = UserDefaultsFundingRecipientStore()
+
     private struct FundFromCoreEnvironment {
         let addressWallet: ManagedPlatformAddressWallet
         let container: ModelContainer
@@ -1921,6 +1998,14 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         return PlatformRecipient(
             ffiAddressType: ffiType,
             hash: decoded.data.subdata(in: 1..<21))
+    }
+
+    /// Throws `invalidDestination` unless the bech32m HRP of `destination` names `network` (`dash` on mainnet,
+    /// `tdash` on any other network), so `fundExternalFromCore` never builds a lock for another network's address.
+    static func requireExternalDestination(_ destination: String, on network: Network) throws {
+        guard DashAddressClassifier.decodeBech32m(destination)?.isMainnet == (network == .mainnet) else {
+            throw SendError.invalidDestination
+        }
     }
 
     static func resolveCoreToPlatformAddressPair(

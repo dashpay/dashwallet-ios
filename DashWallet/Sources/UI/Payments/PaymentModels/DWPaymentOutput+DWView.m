@@ -25,13 +25,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static NSString *sanitizeString(NSString *s) {
-    NSMutableString *sane = [NSMutableString stringWithString:(s) ? s : @""];
-    CFStringTransform((CFMutableStringRef)sane, NULL, kCFStringTransformToUnicodeName, NO);
-    return sane;
-}
-
-
 @implementation DWPaymentOutput (DWView)
 
 //- (id<DWTitleDetailItem> _Nullable)addressWith:(UIFont * _Nonnull)font tintColor:(UIColor * _Nonnull)tintColor {
@@ -163,7 +156,7 @@ static NSString *sanitizeString(NSString *s) {
 
 - (nullable NSString *)nameString {
     if (self.name.length > 0) {
-        NSString *sanitizedName = sanitizeString(self.name);
+        NSString *sanitizedName = self.name.spellingOutUnicodeNames;
         if (self.isSecure) {
             return [NSString stringWithFormat:@"🔒 %@", sanitizedName];
         }
@@ -179,7 +172,7 @@ static NSString *sanitizeString(NSString *s) {
     BOOL hasInfo = NO;
     NSString *info = @"";
     if (self.memo.length > 0) {
-        info = sanitizeString(self.memo);
+        info = self.memo.spellingOutUnicodeNames;
         hasInfo = YES;
     }
 

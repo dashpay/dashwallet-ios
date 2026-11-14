@@ -69,6 +69,14 @@ struct CoreShieldedDrainConfirmation: Equatable {
     let estimatedL1FeeDuffs: UInt64?
     let poolFeeCredits: UInt64
 }
+extension CoreShieldedDrainConfirmation {
+    init(context: CoreShieldedDrainContext, quote: WalletDrainPreview) {
+        self.init(
+            context: context, candidateBalanceDuffs: quote.candidateBalanceDuffs,
+            estimatedRecipientCredits: quote.estimatedRecipientCredits,
+            estimatedL1FeeDuffs: quote.estimatedL1FeeDuffs, poolFeeCredits: quote.poolFeeCredits)
+    }
+}
 @MainActor struct CoreShieldedDrainService {
     static var context = CoreShieldedDrainContext(walletId: Data([1]), networkScope: "testnet")
     static var recorded: CoreShieldedDrainOperation?

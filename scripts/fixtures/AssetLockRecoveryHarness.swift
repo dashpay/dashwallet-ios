@@ -117,7 +117,21 @@ final class ShieldedTransferCoordinator {
     struct ResumeRow {
         let identity: CoreShieldedDrainRowIdentity
         let recordedRecipientRaw43: Data?
+
+        func recipient(
+            marker: () -> CoreShieldedDrainMarkerLookup,
+            callerRaw43: Data?,
+            ownRaw43: Data
+        ) -> ShieldedResumeRecipient {
+            ShieldedResumeRecipient.resolve(
+                recordedRaw43: recordedRecipientRaw43,
+                row: identity,
+                marker: marker,
+                callerRaw43: callerRaw43,
+                ownRaw43: ownRaw43)
+        }
     }
+    var platformFunding: PlatformAddressSyncCoordinator { .shared }
     static var rowLookup: (() -> CoreShieldedDrainRowIdentity?)?
     /// The recipient the SDK recorded on the row; `nil` for a row tracked
     /// before the SDK recorded recipients.
@@ -298,6 +312,7 @@ enum DWLogger { static func log(_ message: String) {} }
 @MainActor final class PlatformAddressSyncCoordinator {
     static let shared = PlatformAddressSyncCoordinator()
     var resume: ((Data, UInt32, UInt64) async throws -> Void)?
+    func checkFundFromCoreResumable(outPointTxid: Data, outPointVout: UInt32) throws {}
     func resumeFundFromCore(outPointTxid: Data, outPointVout: UInt32, recipientAmountDuffs: UInt64) async throws {
         guard let resume else { preconditionFailure("Test must supply the native resume outcome") }
         try await resume(outPointTxid, outPointVout, recipientAmountDuffs)

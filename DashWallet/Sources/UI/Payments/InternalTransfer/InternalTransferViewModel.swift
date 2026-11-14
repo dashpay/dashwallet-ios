@@ -135,7 +135,7 @@ enum CoreToShieldedAmountPolicy {
     /// A ShieldFromAssetLock pool fee from the shielded fee for the fixed
     /// `(transfer, 2)` shape: that fee plus the asset-lock base cost; nil
     /// when there is no estimate or the sum overflows, so callers fail closed.
-    static func poolFeeCredits(addingBaseCostTo shieldedFeeCredits: UInt64?) -> UInt64? {
+    nonisolated static func poolFeeCredits(addingBaseCostTo shieldedFeeCredits: UInt64?) -> UInt64? {
         guard let shieldedFeeCredits else { return nil }
         let (total, overflow) = shieldedFeeCredits.addingReportingOverflow(assetLockBaseCostCredits)
         return overflow ? nil : total
@@ -143,7 +143,7 @@ enum CoreToShieldedAmountPolicy {
 
     /// Pool fee in whole duffs, rounded UP so a duff-denominated lock always
     /// covers the full credit-denominated fee.
-    static func poolFeeDuffs(poolFeeCredits: UInt64) -> UInt64 {
+    nonisolated static func poolFeeDuffs(poolFeeCredits: UInt64) -> UInt64 {
         poolFeeCredits / 1000 + (poolFeeCredits.isMultiple(of: 1000) ? 0 : 1)
     }
 
@@ -198,7 +198,7 @@ enum CoreToPlatformAmountPolicy {
         return reserveDuffs(reserveCredits: reserveCredits)
     }
 
-    static func reserveDuffs(reserveCredits: UInt64) -> UInt64 {
+    nonisolated static func reserveDuffs(reserveCredits: UInt64) -> UInt64 {
         reserveCredits / 1000 + (reserveCredits.isMultiple(of: 1000) ? 0 : 1)
     }
 

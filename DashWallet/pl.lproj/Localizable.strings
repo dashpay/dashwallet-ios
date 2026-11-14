@@ -5590,6 +5590,9 @@
 /* External send */
 "The payment request has expired. Your funds were not sent." = "The payment request has expired. Your funds were not sent.";
 
+/* External send */
+"The payment request has no address" = "The payment request has no address";
+
 /* Send: Core drain recovery success */
 "The pending Max transfer completed." = "The pending Max transfer completed.";
 
@@ -5994,6 +5997,9 @@
 
 /* InternalTransfer recovery: resume recipient differs from the recorded one */
 "This transfer can only be finished to the recipient it was started with. Nothing was sent. Your funds remain locked and safe." = "This transfer can only be finished to the recipient it was started with. Nothing was sent. Your funds remain locked and safe.";
+
+/* Recovery refuses a Core to Platform transfer whose recipient is unknown */
+"This transfer can't be finished automatically because the wallet can't confirm who it should pay. Nothing was sent. Your funds remain locked and safe." = "This transfer can't be finished automatically because the wallet can't confirm who it should pay. Nothing was sent. Your funds remain locked and safe.";
 
 /* Asset-lock retry: unsupported funding route */
 "This transfer can't be retried from here." = "Tego transferu nie można ponowić stąd.";

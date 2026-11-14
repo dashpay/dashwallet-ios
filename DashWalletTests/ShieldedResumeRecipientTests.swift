@@ -185,6 +185,41 @@ final class ShieldedResumeRecipientTests: XCTestCase {
             outPointTxidWire: drainTxid, vout: 1, walletId: walletId, in: container))
     }
 
+    /// AC-19: ExternalSend's non-Max Core → Shielded lock is a plain row (no drain operation) with the SDK's recorded
+    /// external recipient. Generic recovery resumes it with no caller recipient and pays that recipient, never the
+    /// wallet's own address; the recipient is decided through the same `ResumeRow.recipient` call `resumeAssetLock`
+    /// makes.
+    func testGenericRecoveryOfAnUnfinishedExternalSendLockPaysItsRecordedRecipient() throws {
+        let container = try DashModelContainer.inMemoryWithoutCloudKit()
+        let walletId = Data(repeating: 0xA1, count: 32)
+        let txid = Data((0..<32).map { UInt8($0) })
+        container.mainContext.insert(PersistentAssetLock(
+            outPointHex: "\(AssetLockFailureStore.displayHex(txidWire: txid)):0",
+            walletId: walletId,
+            transactionBytes: Data(),
+            fundingTypeRaw: 5,
+            identityIndexRaw: -1,
+            amountDuffs: 250_000_000,
+            statusRaw: 2,
+            operationId: nil,
+            shieldedRecipientRaw43: recorded))
+        try container.mainContext.save()
+
+        let row = try XCTUnwrap(ShieldedTransferCoordinator.resumeRow(
+            outPointTxidWire: txid, vout: 0, walletId: walletId, in: container))
+        var markerReads = 0
+        let resolution = row.recipient(
+            marker: {
+                markerReads += 1
+                return .loaded(nil)
+            },
+            callerRaw43: nil,
+            ownRaw43: own)
+
+        XCTAssertEqual(resolution, .pay(recorded, source: .recorded))
+        XCTAssertEqual(markerReads, 0)
+    }
+
     // MARK: - What a mismatch refusal shows and records
 
     func testSDKMismatchShowsTheAppsMessageNotTheSDKText() {
