@@ -47,6 +47,12 @@ enum VoteErrorMessage {
         return false
     }
 
+    /// The SDK could not confirm the broadcast: the vote may have landed.
+    static func isUnconfirmed(_ error: Error) -> Bool {
+        if case .stateTransitionResultUnconfirmed = error as? SDKError { return true }
+        return false
+    }
+
     static func plain(for error: Error) -> String {
         if let castError = error as? MasternodeVoteCaster.CastError {
             switch castError {

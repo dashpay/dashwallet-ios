@@ -107,10 +107,11 @@ final class VotingViewModel: ObservableObject {
     func refreshVotableNodes() { store.refreshVotableNodes() }
 
     /// The voting-key flow opens on "Enter voting key" only when, with the
-    /// wallet's sync done, it has no node (SCR-04 «no keys»). Before the sync
-    /// is done an empty list says nothing yet, so the flow opens on "Add your
-    /// voting keys", whose empty state offers the key input.
-    var keysFlowOpensOnKeyInput: Bool { votableNodes.isEmpty && store.nodeListSynced }
+    /// wallet's sync done and the node list complete, it has no node (SCR-04
+    /// «no keys»). Before the sync is done, or while the list may miss a node,
+    /// an empty list says nothing yet, so the flow opens on "Add your voting
+    /// keys", whose empty state offers the key input.
+    var keysFlowOpensOnKeyInput: Bool { votableNodes.isEmpty && !store.nodeListMayMissNodes }
     func isSending(normalizedLabel: String) -> Bool { store.isSending(normalizedLabel: normalizedLabel) }
 
     /// Names the nodes a vote will use, so the privacy consequence of the
@@ -308,6 +309,12 @@ extension VotingViewModel: VoteAttemptHosting {
 
 extension VotingViewModel: QuickVotingHosting {
     var shownContests: [DPNSContest] { list.visibleContests }
+    var showsOnlyRequestsWithLinks: Bool { list.filter.onlyWithLinks }
+    var nodeListMayMissNodes: Bool { store.nodeListMayMissNodes }
+
+    func reportNodeListMayMissNodes() {
+        list.showToast(.failed(NSLocalizedString("Some of your masternodes may be missing from this list.", comment: "Voting")))
+    }
 
     func reloadVoteHistory() async -> Bool {
         await store.loadAllVoteHistory()

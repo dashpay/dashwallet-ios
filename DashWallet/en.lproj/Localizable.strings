@@ -7458,6 +7458,8 @@
 
 "Vote for all approves %d usernames" = "Vote for all approves %d usernames";
 
+"Vote for all approves the linked request for %d usernames" = "Vote for all approves the linked request for %d usernames";
+
 "%d usernames are skipped" = "%d usernames are skipped";
 
 "This is your last vote for some of these usernames. After it, you cannot vote on them again." = "This is your last vote for some of these usernames. After it, you cannot vote on them again.";
@@ -7467,6 +7469,9 @@
 "Quick voting partly done" = "Quick voting partly done";
 
 "Some votes were not cast. These usernames were not voted for:" = "Some votes were not cast. These usernames were not voted for:";
+
+/* Voting */
+"Some votes were not cast or their result is not confirmed:" = "Some votes were not cast or their result is not confirmed:";
 
 "Quick voting… %1$d of %2$d done" = "Quick voting… %1$d of %2$d done";
 

@@ -76,7 +76,14 @@ final class VotingKeysViewModel: ObservableObject {
     init(mode: Mode, source: VotingKeysSource) {
         self.mode = mode
         self.source = source
-        ticked = source.tickedNodeIDs ?? Set(source.votableNodes.first.map { [$0.proTxHash] } ?? [])
+        // A remembered node the list does not show is a choice too (see ``rowsChanged()``).
+        let fallback: Set<Data>
+        if case .vote = mode, source.remembersHiddenNodes {
+            fallback = []
+        } else {
+            fallback = Set(source.votableNodes.first.map { [$0.proTxHash] } ?? [])
+        }
+        ticked = source.tickedNodeIDs ?? fallback
     }
 
     var rows: [VoterNode] { source.votableNodes }

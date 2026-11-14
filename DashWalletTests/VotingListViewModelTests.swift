@@ -389,6 +389,19 @@ final class VotingListViewModelTests: XCTestCase {
         XCTAssertFalse(voting.keysFlowOpensOnKeyInput, "a node to tick")
     }
 
+    /// An empty list that may be incomplete (a key the keychain could not
+    /// read) does not prove the wallet has no node, even after the sync.
+    func testTheKeysFlowDoesNotOpenOnTheKeyInputWhileTheListMayBeIncomplete() {
+        let store = makeStore()
+        let voting = VotingViewModel(store: store)
+        nodes.isNodeListSynced = true
+        nodes.resolution = .init(nodes: [], mayBeIncomplete: true)
+
+        store.refreshVotableNodes()
+
+        XCTAssertFalse(voting.keysFlowOpensOnKeyInput)
+    }
+
     /// A masternode found after the last refresh (the wallet's scan found its
     /// registration) is seen at the tap that starts a vote, so the key flow
     /// does not open on "Enter voting key" from a stale empty list.
@@ -536,7 +549,7 @@ final class VotingListViewModelTests: XCTestCase {
     }
 
     /// AC-09, no voting keys found before the node list synced: they may
-    /// still turn up, so the filter cannot tell right now.
+    /// still turn up, so the filter cannot tell until the sync is done.
     func testMyVotesFilterBeforeTheNodeListSyncedCannotFilter() async {
         nodes.isNodeListSynced = false
         contests.result = .success([single("alice")])
@@ -549,7 +562,7 @@ final class VotingListViewModelTests: XCTestCase {
         guard case .cannotFilterByMyVotes(let reason)? = list.emptyState else {
             return XCTFail("expected cannot-filter, got \(String(describing: list.emptyState))")
         }
-        XCTAssertTrue(reason.contains("voting keys"))
+        XCTAssertEqual(reason, "The masternode list is still syncing. Try again in a moment.")
     }
 
     /// AC-09, history unavailable.
@@ -584,6 +597,25 @@ final class VotingListViewModelTests: XCTestCase {
             return XCTFail("expected cannot-filter, got \(String(describing: list.emptyState))")
         }
         XCTAssertTrue(reason.contains("missing from this list"))
+    }
+
+    /// Before the wallet's sync is done the nodes read so far may not be all
+    /// of this wallet's, so its own votes cannot be told yet.
+    func testMyVotesFilterBeforeTheWalletsSyncIsDoneCannotFilter() async {
+        votingWallet()
+        nodes.isNodeListSynced = false
+        contests.result = .success([single("alice")])
+        let store = makeStore()
+        let list = makeList(store)
+        await store.refresh()
+
+        list.filter.type = .notVoted
+
+        XCTAssertFalse(list.canFilterByMyVotes)
+        guard case .cannotFilterByMyVotes(let reason)? = list.emptyState else {
+            return XCTFail("expected cannot-filter, got \(String(describing: list.emptyState))")
+        }
+        XCTAssertEqual(reason, "The masternode list is still syncing. Try again in a moment.")
     }
 
     /// AC-09, AC-12: before voting is set up no vote is this wallet's own, so

@@ -33,16 +33,34 @@ final class QuickVotingViewModelTests: XCTestCase {
         private(set) var historyReloads = 0
         /// What the reload answers: `false` is a store that could not be read.
         var historyReadable = true
+        var nodeListMayMissNodes = false
+        var showsOnlyRequestsWithLinks = false
+        private(set) var nodeListReports = 0
         private(set) var attemptsStarted = 0
         private(set) var planned: [[String]] = []
         private(set) var started: [QuickVotePlan] = []
 
+        /// The next reload waits for ``releaseReload()``.
+        var holdReload = false
+        private var reloadGate: CheckedContinuation<Void, Never>?
+
         func reloadVoteHistory() async -> Bool {
             historyReloads += 1
+            if holdReload {
+                holdReload = false
+                await withCheckedContinuation { reloadGate = $0 }
+            }
             return historyReadable
         }
 
+        func releaseReload() {
+            reloadGate?.resume()
+            reloadGate = nil
+        }
+
         func quickVotingWillStart() { attemptsStarted += 1 }
+
+        func reportNodeListMayMissNodes() { nodeListReports += 1 }
 
         func quickVotePlan(for shown: [DPNSContest]) -> QuickVotePlan {
             planned.append(shown.map(\.normalizedLabel))
@@ -154,6 +172,79 @@ final class QuickVotingViewModelTests: XCTestCase {
         XCTAssertTrue(host.planned.isEmpty, "no plan on a stale history")
         quick.voteForAll()
         XCTAssertTrue(host.started.isEmpty)
+    }
+
+    /// AC-18: with "Only requests with links" on, the sheet says the linked
+    /// request gets the approve.
+    func testTheSheetSaysTheLinkedRequestWhenOnlyLinksAreShown() async {
+        let host = Host()
+        host.showsOnlyRequestsWithLinks = true
+        host.shownContests = [contest("alice", dates: [nine])]
+        let quick = QuickVotingViewModel(host: host)
+
+        await quick.start()
+
+        XCTAssertEqual(quick.step, .confirm)
+        XCTAssertTrue(quick.approvesLinkedRequests)
+        XCTAssertEqual(
+            QuickVotingSheet.description(votedCount: 2, skippedCount: 0, approvesLinkedRequests: true),
+            "By tapping Vote for all, you approve the linked request submitted first for 2 usernames.")
+    }
+
+    /// AC-20: the wallet's sync is not done, or the list may be incomplete,
+    /// at the tap: no sheet, and the user is told why.
+    func testANodeListThatMayMissNodesOpensNoSheetAndSaysWhy() async {
+        let host = Host()
+        host.nodeListMayMissNodes = true
+        host.shownContests = [contest("alice", dates: [nine])]
+        let quick = QuickVotingViewModel(host: host)
+
+        await quick.start()
+
+        XCTAssertNil(quick.step)
+        XCTAssertTrue(host.planned.isEmpty)
+        XCTAssertEqual(host.nodeListReports, 1)
+    }
+
+    /// A second tap while the first is still reading the history starts nothing.
+    func testATapWhileTheSheetIsOpeningIsIgnored() async {
+        let host = Host()
+        host.shownContests = [contest("alice", dates: [nine])]
+        host.holdReload = true
+        let quick = QuickVotingViewModel(host: host)
+
+        let first = Task { await quick.start() }
+        while host.historyReloads == 0 { await Task.yield() }
+        await quick.start()
+        host.releaseReload()
+        await first.value
+
+        XCTAssertEqual(host.attemptsStarted, 1)
+        XCTAssertEqual(host.historyReloads, 1)
+        XCTAssertEqual(host.planned.count, 1)
+        XCTAssertEqual(quick.step, .confirm)
+    }
+
+    /// The keys' vote button opens the sheet under the same guard as the menu.
+    func testATapWhileTheSheetOpensAfterKeySetupIsIgnored() async {
+        let host = Host()
+        host.isVotingSetUp = false
+        host.shownContests = [contest("alice", dates: [nine])]
+        let quick = QuickVotingViewModel(host: host)
+        await quick.start()
+        host.isVotingSetUp = true
+        host.holdReload = true
+        let reloadsBefore = host.historyReloads
+
+        let opening = Task { await quick.finishKeys(continueToVote: true) }
+        while host.historyReloads == reloadsBefore { await Task.yield() }
+        await quick.start()
+        host.releaseReload()
+        await opening.value
+
+        XCTAssertEqual(host.attemptsStarted, 1)
+        XCTAssertEqual(host.historyReloads, reloadsBefore + 1)
+        XCTAssertEqual(quick.step, .confirm)
     }
 
     func testNothingToVoteOffersCloseOnly() async {

@@ -30,8 +30,15 @@ protocol QuickVotingHosting: AnyObject {
     var isVotingSetUp: Bool { get }
     /// The masternodes the user votes with.
     var tickedNodeIDs: Set<Data> { get }
+    /// A masternode of this wallet may be missing from the list (the sync is
+    /// not done, or the list may be incomplete), so a plan cannot be trusted (AC-20).
+    var nodeListMayMissNodes: Bool { get }
+    /// Tells why Quick voting did not open while ``nodeListMayMissNodes``.
+    func reportNodeListMayMissNodes()
     /// The names on screen, the filter and the search together, each with its shown requests.
     var shownContests: [DPNSContest] { get }
+    /// "Only requests with links" is on: each name shows only its linked requests.
+    var showsOnlyRequestsWithLinks: Bool { get }
     /// Reads this wallet's vote history again, so the plan decides on today's;
     /// `false` when it could not be read, and the list's lasting card then
     /// says voting is paused.
@@ -66,6 +73,11 @@ final class QuickVotingViewModel: ObservableObject {
     @Published private(set) var step: Step?
     /// The plan the sheet shows and Vote for all sends.
     private(set) var plan: QuickVotePlan?
+    /// The plan approves the first linked request of each name, as the list shows only those (AC-18).
+    private(set) var approvesLinkedRequests = false
+
+    /// A tap is reading the history before the sheet opens.
+    private var isOpening = false
 
     /// Weak: the host owns this model.
     private weak var host: QuickVotingHosting?
@@ -81,9 +93,12 @@ final class QuickVotingViewModel: ObservableObject {
     /// Some name gets a vote; otherwise the sheet offers Close only.
     var canVote: Bool { votedCount > 0 }
 
-    /// «Quick voting» tapped in the list's menu. Ignored while a step is up.
+    /// «Quick voting» tapped in the list's menu. Ignored while a step is up,
+    /// and while an earlier tap is still opening the sheet.
     func start() async {
-        guard step == nil else { return }
+        guard step == nil, !isOpening else { return }
+        isOpening = true
+        defer { isOpening = false }
         host?.quickVotingWillStart()
         await openSheetOrKeys()
     }
@@ -92,7 +107,11 @@ final class QuickVotingViewModel: ObservableObject {
     func finishKeys(continueToVote: Bool) async {
         guard step == .addKeys else { return }
         step = nil
-        if continueToVote { await openSheetOrKeys() }
+        guard continueToVote else { return }
+        // A menu tap while this opens is ignored, as during ``start()``.
+        isOpening = true
+        defer { isOpening = false }
+        await openSheetOrKeys()
     }
 
     /// The sheet's «Vote for all».
@@ -124,11 +143,18 @@ final class QuickVotingViewModel: ObservableObject {
             step = .addKeys
             return
         }
+        // Read at the tap (``QuickVotingHosting/quickVotingWillStart()``), so a
+        // sync that finished since the list was read does not hold it back.
+        guard !host.nodeListMayMissNodes else {
+            host.reportNodeListMayMissNodes()
+            return
+        }
         // Voting is paused on an unreadable history (AC-15): a plan on the
         // last one cached could replace votes it does not know about. The
         // list's card says so; a lasting state gets no toast as well.
         guard await host.reloadVoteHistory() else { return }
         plan = host.quickVotePlan(for: host.shownContests)
+        approvesLinkedRequests = host.showsOnlyRequestsWithLinks
         step = .confirm
     }
 

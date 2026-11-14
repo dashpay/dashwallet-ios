@@ -88,7 +88,7 @@ struct VoteResultSheet: View {
             Spacer(minLength: 8)
             Text(Self.status(of: outcome, isRetrying: isRetrying))
                 .dashFont(.footnote)
-                .foregroundStyle(outcome.succeeded ? Color.dash.green : Color.dash.red)
+                .foregroundStyle(Self.color(of: outcome))
                 .multilineTextAlignment(.trailing)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -98,6 +98,7 @@ struct VoteResultSheet: View {
     }
 
     /// "1 of 2 masternodes voted to approve johndoe. The other vote was not cast."
+    /// A vote that may have landed is not counted as not cast; its row says so.
     static func summary(of report: VoteCastReport, username: String) -> String {
         let landed = report.succeeded.count, total = report.outcomes.count
         let format: String
@@ -109,18 +110,29 @@ struct VoteResultSheet: View {
         case .abstain:
             format = NSLocalizedString("%1$d of %2$d masternodes cancelled their vote on %3$@.", comment: "Voting")
         }
-        let notCast = report.failed.count == 1
+        let landedSentence = String(format: format, landed, total, username)
+        let notCastCount = report.failed.filter { !$0.mayHaveLanded }.count
+        guard notCastCount > 0 else { return landedSentence }
+        let notCast = notCastCount == 1
             ? NSLocalizedString("The other vote was not cast.", comment: "Voting")
             : String(format: NSLocalizedString("The other %d votes were not cast.", comment: "Voting"),
-                     report.failed.count)
-        return String(format: format, landed, total, username) + " " + notCast
+                     notCastCount)
+        return landedSentence + " " + notCast
     }
 
-    /// "✓ Voted", "Not cast — <reason>", or "Sending…" while Try again runs.
+    /// "✓ Voted", "Not cast — <reason>", "Result not confirmed" for a vote
+    /// that may have landed, or "Sending…" while Try again runs.
     static func status(of outcome: VoteOutcome, isRetrying: Bool) -> String {
         if outcome.succeeded { return NSLocalizedString("✓ Voted", comment: "Voting") }
         if isRetrying { return NSLocalizedString("Sending…", comment: "Voting") }
+        if outcome.mayHaveLanded { return outcome.failure ?? "" }
         return String(format: NSLocalizedString("Not cast — %@", comment: "Voting"), outcome.failure ?? "")
+    }
+
+    /// Green for a vote that landed, neutral for one that may have, red otherwise.
+    static func color(of outcome: VoteOutcome) -> Color {
+        if outcome.succeeded { return Color.dash.green }
+        return outcome.mayHaveLanded ? Color.dash.secondaryText : Color.dash.red
     }
 }
 
@@ -142,8 +154,7 @@ struct QuickVotingResultSheet: View {
             VStack(alignment: .leading, spacing: 20) {
                 DashUIKit.TopIntroView(
                     title: NSLocalizedString("Quick voting partly done", comment: "Voting"),
-                    mainDescription: NSLocalizedString(
-                        "Some votes were not cast. These usernames were not voted for:", comment: "Voting"),
+                    mainDescription: Self.description(of: run),
                     descriptionColor: Color.dash.secondaryText)
 
                 ScrollView {
@@ -190,18 +201,27 @@ struct QuickVotingResultSheet: View {
                 .lineLimit(1)
                 .truncationMode(.middle)
             Spacer(minLength: 8)
-            Text(isRetrying
-                 ? NSLocalizedString("Sending…", comment: "Voting")
-                 : String(format: NSLocalizedString("Not cast — %@", comment: "Voting"),
-                          report.failed.first?.failure ?? ""))
+            Text(Self.status(of: report, isRetrying: isRetrying))
                 .dashFont(.footnote)
-                .foregroundStyle(Color.dash.red)
+                .foregroundStyle(report.failed.first.map(VoteResultSheet.color(of:)) ?? Color.dash.red)
                 .multilineTextAlignment(.trailing)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
         .accessibilityElement(children: .combine)
+    }
+
+    /// Not "were not voted for" while some vote may have landed.
+    static func description(of run: QuickVoteRunReport) -> String {
+        run.reports.contains { $0.failed.contains(where: \.mayHaveLanded) }
+            ? NSLocalizedString("Some votes were not cast or their result is not confirmed:", comment: "Voting")
+            : NSLocalizedString("Some votes were not cast. These usernames were not voted for:", comment: "Voting")
+    }
+
+    /// The status of a name's first failed vote, as on the single vote's sheet.
+    static func status(of report: VoteCastReport, isRetrying: Bool) -> String {
+        report.failed.first.map { VoteResultSheet.status(of: $0, isRetrying: isRetrying) } ?? ""
     }
 }
 
@@ -257,6 +277,19 @@ private let quickRunPreview = QuickVoteRunReport(reports: [
     }
 }
 
+#Preview("Quick voting, one result not confirmed") {
+    Color.clear.sheet(isPresented: .constant(true)) {
+        QuickVotingResultSheet(
+            run: QuickVoteRunReport(reports: [
+                VoteCastReport(normalizedLabel: "alice", choice: .towards(identityId: "a"),
+                               outcomes: [VoteOutcome.unconfirmed(resultPreviewNode(1))]),
+                VoteCastReport(normalizedLabel: "johndoe", choice: .towards(identityId: "j"),
+                               outcomes: [VoteOutcome(node: resultPreviewNode(1), failure: "No answer.")]),
+            ]),
+            username: { $0 }, isRetrying: false, onTryAgain: {}, onClose: {})
+    }
+}
+
 #Preview("Quick voting, retrying") {
     Color.clear.sheet(isPresented: .constant(true)) {
         QuickVotingResultSheet(run: quickRunPreview, username: { $0 }, isRetrying: true,
@@ -273,6 +306,22 @@ private let quickRunPreview = QuickVoteRunReport(reports: [
                 outcomes: [
                     VoteOutcome(node: resultPreviewNode(1), failure: nil),
                     VoteOutcome.noVotesLeft(resultPreviewNode(2)),
+                ]),
+            username: "johndoe", isRetrying: false,
+            onTryAgain: {}, onClose: {})
+    }
+}
+
+#Preview("One result not confirmed") {
+    Color.clear.sheet(isPresented: .constant(true)) {
+        VoteResultSheet(
+            report: VoteCastReport(
+                normalizedLabel: "johndoe",
+                choice: .towards(identityId: "contender"),
+                outcomes: [
+                    VoteOutcome(node: resultPreviewNode(1), failure: nil),
+                    VoteOutcome.unconfirmed(resultPreviewNode(2)),
+                    VoteOutcome(node: resultPreviewNode(3), failure: "The network did not answer."),
                 ]),
             username: "johndoe", isRetrying: false,
             onTryAgain: {}, onClose: {})

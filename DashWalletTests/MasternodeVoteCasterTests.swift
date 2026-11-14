@@ -189,6 +189,19 @@ final class MasternodeVoteCasterTests: XCTestCase {
         XCTAssertTrue(outcome.hasNoVotesLeft)
     }
 
+    /// The SDK could not confirm the broadcast, so the vote may have landed:
+    /// Try again must not send it a second time.
+    func testAnUnconfirmedBroadcastMayHaveLandedAndIsNotOfferedAgain() async {
+        let outcome = await castFailing(with: SDKError.stateTransitionResultUnconfirmed("RAW-PLATFORM-TEXT"))
+
+        XCTAssertFalse(outcome.succeeded)
+        XCTAssertTrue(outcome.mayHaveLanded)
+        XCTAssertFalse(outcome.hasNoVotesLeft)
+        XCTAssertEqual(outcome.failure, "Result not confirmed")
+        let report = VoteCastReport(normalizedLabel: label, choice: choice, outcomes: [outcome])
+        XCTAssertFalse(report.offersTryAgain)
+    }
+
     func testGenericSendErrorNeverStoresRawText() async {
         struct Odd: LocalizedError { var errorDescription: String? { "RAW-PLATFORM-TEXT odd" } }
 
@@ -210,7 +223,14 @@ private final class RunLog {
     var sent: [String] = []
     var closed: Set<String> = []
     var cancelAfterSends: Int?
+    /// The run is stopped while the PIN prompt is up, and the PIN then passes.
+    var cancelDuringAuthentication = false
     var sdkConnected = true
+    var now = Date(timeIntervalSince1970: 1_800_000_000)
+    /// Seconds the clock moves on with each send.
+    var sendTakes: TimeInterval = 0
+    /// Seconds the clock moves on while a voting key is derived.
+    var keyTakes: TimeInterval = 0
 }
 
 extension MasternodeVoteCasterTests {
@@ -219,17 +239,23 @@ extension MasternodeVoteCasterTests {
             registry: MasternodeVoterRegistry(),
             contests: ContestedNamesService(),
             history: history,
-            votingKey: { _ in Data(repeating: 1, count: 32) },
+            votingKey: { _ in
+                log.now.addTimeInterval(log.keyTakes)
+                return Data(repeating: 1, count: 32)
+            },
             send: { node, _, _, label in
                 log.sent.append("\(label)/\(node.proTxHash[0])")
+                log.now.addTimeInterval(log.sendTakes)
                 if log.sent.count == log.cancelAfterSends { withUnsafeCurrentTask { $0?.cancel() } }
             },
             authenticate: {
                 log.authentications += 1
+                if log.cancelDuringAuthentication { withUnsafeCurrentTask { $0?.cancel() } }
                 return log.authOutcome
             },
             isContestOpen: { !log.closed.contains($0) },
-            isSDKConnected: { log.sdkConnected })
+            isSDKConnected: { log.sdkConnected },
+            now: { log.now })
     }
 
     private func casts(_ labels: [String], nodes: [VoterNode]) -> [QuickVoteCast] {
@@ -249,6 +275,55 @@ extension MasternodeVoteCasterTests {
         XCTAssertEqual(reports.map(\.normalizedLabel), ["alice", "bob"])
         XCTAssertTrue(reports.allSatisfy(\.isCompleteSuccess))
         XCTAssertEqual(progress, [0, 1, 2], "0 once the prompt is passed, then after each name")
+    }
+
+    /// A sheet or "One vote left" left open past a name's known voting end:
+    /// that name sends nothing and reads as ended, the others go on.
+    func testARunSendsNothingOnANameWhoseVotingEndHasPassed() async throws {
+        let log = RunLog()
+        let caster = makeRunCaster(history: FakeVoteHistory(records: []), log: log)
+        var planned = casts(["alice", "bob"], nodes: [node(1)])
+        planned[0].endsAt = log.now
+        planned[1].endsAt = log.now.addingTimeInterval(60)
+
+        let reports = try await caster.castRun(planned) { _ in }
+
+        XCTAssertEqual(log.sent, ["bob/1"])
+        XCTAssertTrue(reports[0].contestClosed)
+        XCTAssertEqual(reports[0].failed.first?.failure, "Voting has ended")
+        XCTAssertTrue(reports[1].isCompleteSuccess)
+    }
+
+    /// The end is checked before every masternode's send, not only once per name.
+    func testARunStopsANameWhoseVotingEndsWhileItSends() async throws {
+        let log = RunLog()
+        log.sendTakes = 60
+        let caster = makeRunCaster(history: FakeVoteHistory(records: []), log: log)
+        var planned = casts(["alice"], nodes: [node(1), node(2)])
+        planned[0].endsAt = log.now.addingTimeInterval(30)
+
+        let reports = try await caster.castRun(planned) { _ in }
+
+        XCTAssertEqual(log.sent, ["alice/1"])
+        XCTAssertTrue(reports[0].outcomes[0].succeeded)
+        XCTAssertEqual(reports[0].outcomes[1].failure, "Voting has ended")
+        XCTAssertTrue(reports[0].contestClosed)
+    }
+
+    /// The end is checked at the last point before the send, after the vote
+    /// count is read and the key derived, not only before them.
+    func testARunSendsNothingWhenTheVotingEndPassesWhileTheKeyIsDerived() async throws {
+        let log = RunLog()
+        log.keyTakes = 60
+        let caster = makeRunCaster(history: FakeVoteHistory(records: []), log: log)
+        var planned = casts(["alice"], nodes: [node(1)])
+        planned[0].endsAt = log.now.addingTimeInterval(30)
+
+        let reports = try await caster.castRun(planned) { _ in }
+
+        XCTAssertTrue(log.sent.isEmpty)
+        XCTAssertEqual(reports[0].outcomes[0].failure, "Voting has ended")
+        XCTAssertTrue(reports[0].contestClosed)
     }
 
     func testARunWhoseAuthenticationIsCancelledSendsNothing() async {
@@ -343,6 +418,22 @@ extension MasternodeVoteCasterTests {
         XCTAssertEqual(reports.map(\.normalizedLabel), ["alice", "bob"], "every planned name is reported")
         XCTAssertEqual(reports.flatMap(\.failed).count, 2, "as not cast, for Try again")
         XCTAssertFalse(reports.contains(where: \.contestClosed))
+    }
+
+    /// The screen is left while the PIN prompt is up and the PIN then
+    /// passes: the run sends nothing and tells no progress for it.
+    func testARunStoppedDuringAuthenticationTellsNoProgressAndSendsNothing() async throws {
+        let log = RunLog()
+        log.cancelDuringAuthentication = true
+        let caster = makeRunCaster(history: FakeVoteHistory(records: []), log: log)
+        var progress: [Int] = []
+
+        let reports = try await caster.castRun(casts(["alice", "bob"], nodes: [node(1)])) { progress.append($0) }
+
+        XCTAssertEqual(log.authentications, 1)
+        XCTAssertTrue(progress.isEmpty, "no progress for a run that stopped at the prompt")
+        XCTAssertTrue(log.sent.isEmpty)
+        XCTAssertEqual(reports.flatMap(\.failed).count, 2, "every vote is reported as not cast")
     }
 
     func testARunReChecksTheVoteLimitBeforeEachCast() async throws {

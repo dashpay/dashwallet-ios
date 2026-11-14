@@ -158,6 +158,8 @@ private final class RunCaster: VoteCasting {
     var failing: [String: Set<Data>] = [:]
     /// Masternodes Platform refuses for having no vote left, per name.
     var noVotesLeft: [String: Set<Data>] = [:]
+    /// Masternodes whose broadcast the SDK could not confirm, per name.
+    var unconfirmed: [String: Set<Data>] = [:]
     /// Names whose poll the run finds closed: nothing is sent on them.
     var closed: Set<String> = []
     var refusal: Error?
@@ -199,6 +201,7 @@ private final class RunCaster: VoteCasting {
                 normalizedLabel: cast.normalizedLabel, choice: cast.choice,
                 outcomes: cast.nodes.map { node in
                     if noVotesLeft[cast.normalizedLabel]?.contains(node.proTxHash) == true { return .noVotesLeft(node) }
+                    if unconfirmed[cast.normalizedLabel]?.contains(node.proTxHash) == true { return .unconfirmed(node) }
                     return VoteOutcome(
                         node: node,
                         failure: failing[cast.normalizedLabel]?.contains(node.proTxHash) == true ? "refused" : nil)
@@ -986,6 +989,34 @@ final class VotingStoreTests: XCTestCase {
         XCTAssertEqual(caster.runs.last?.map(\.normalizedLabel), ["bob"], "alice's refused node is not retried")
     }
 
+    /// A vote the SDK could not confirm may have landed: Try again after a
+    /// run does not send it again.
+    func testTryAgainAfterARunLeavesAnUnconfirmedVoteAlone() async {
+        let caster = RunCaster()
+        caster.unconfirmed = ["alice": [Data([1])]]
+        caster.failing = ["bob": [Data([2])]]
+        let store = await makeRunStore(caster)
+        await store.runQuickVoting(store.quickVotePlan(for: store.contests))
+        caster.unconfirmed = [:]
+        caster.failing = [:]
+
+        await store.retryFailed()
+
+        XCTAssertEqual(caster.runs.count, 2)
+        XCTAssertEqual(caster.runs.last?.map(\.normalizedLabel), ["bob"], "alice's unconfirmed vote is not sent again")
+    }
+
+    /// The run gets each name's known voting end, so the caster can refuse a
+    /// name whose end passed while the sheet was open.
+    func testQuickVotingCarriesEachNamesVotingEndIntoTheRun() async {
+        let caster = RunCaster()
+        let store = await makeRunStore(caster)
+
+        await store.runQuickVoting(store.quickVotePlan(for: store.contests))
+
+        XCTAssertEqual(caster.runs.first?.map(\.endsAt), store.contests.map(\.endTime))
+    }
+
     /// AC-20: a masternode missing from the list may have blocked a name, so
     /// Quick voting sends nothing while the list may be incomplete.
     func testQuickVotingSendsNothingWhileTheNodeListMayBeIncomplete() async {
@@ -1000,6 +1031,42 @@ final class VotingStoreTests: XCTestCase {
         guard case .failure(let reason) = result else { return XCTFail("the run says why it did not start") }
         XCTAssertEqual(reason, "Some of your masternodes may be missing from this list.")
         XCTAssertTrue(caster.runs.isEmpty)
+    }
+
+    /// AC-20: before the wallet's sync is done the registry may answer only
+    /// some of this wallet's masternodes, with nothing marking the list
+    /// incomplete; Quick voting sends nothing then either.
+    func testQuickVotingSendsNothingBeforeTheWalletSyncIsDone() async {
+        let caster = RunCaster()
+        let store = await makeRunStore(caster)
+        let plan = store.quickVotePlan(for: store.contests)
+        nodes.isNodeListSynced = false
+        await store.refresh()
+        XCTAssertFalse(store.nodeListMayBeIncomplete)
+
+        let result = await store.runQuickVoting(plan)
+
+        guard case .failure(let reason) = result else { return XCTFail("the run says why it did not start") }
+        XCTAssertEqual(reason, "Some of your masternodes may be missing from this list.")
+        XCTAssertTrue(caster.runs.isEmpty)
+    }
+
+    /// A planned masternode left the wallet between the sheet and the run:
+    /// the plan is stale, so nothing is sent rather than a run whose report
+    /// leaves that name or masternode out.
+    func testQuickVotingSendsNothingWhenAPlannedMasternodeIsNoLongerVotable() async {
+        let caster = RunCaster()
+        let store = await makeRunStore(caster)
+        let plan = store.quickVotePlan(for: store.contests)
+        nodes.resolution = .init(nodes: [node(1)], mayBeIncomplete: false)
+        await store.refresh()
+
+        let result = await store.runQuickVoting(plan)
+
+        guard case .failure(let reason) = result else { return XCTFail("the run says why it did not start") }
+        XCTAssertEqual(reason, "The vote was not cast. Please try again.")
+        XCTAssertTrue(caster.runs.isEmpty)
+        XCTAssertNil(store.outcome, "not this run's outcome")
     }
 
     /// Its Try again too: the failed masternodes are told why, and nothing is sent.
@@ -1680,6 +1747,27 @@ final class VotingStoreTests: XCTestCase {
 
         nodes.resolution = .init(nodes: [a, b], mayBeIncomplete: false)
         store.refreshVotableNodes()
+        XCTAssertEqual(store.tickedNodeIDs, [a.proTxHash, b.proTxHash])
+    }
+
+    /// Before the wallet's sync is done the registry may already return the
+    /// imported nodes and not yet this wallet's own: that is a partial list,
+    /// and the remembered choice stays as the user made it.
+    func testANodeListReadBeforeTheWalletsSyncIsDoneKeepsTheRememberedChoice() async {
+        let a = node(1), b = node(2)
+        nodes.isNodeListSynced = false
+        nodes.resolution = .init(nodes: [a], mayBeIncomplete: false)
+        prefs.votingNodeSelection = [a.proTxHash, b.proTxHash]
+        let store = makeStore()
+        await store.refresh()
+
+        XCTAssertEqual(store.nodeResolution, .partial)
+        XCTAssertEqual(prefs.votingNodeSelection, [a.proTxHash, b.proTxHash])
+
+        nodes.isNodeListSynced = true
+        nodes.resolution = .init(nodes: [a, b], mayBeIncomplete: false)
+        store.refreshVotableNodes()
+        XCTAssertEqual(store.nodeResolution, .complete)
         XCTAssertEqual(store.tickedNodeIDs, [a.proTxHash, b.proTxHash])
     }
 
@@ -2475,6 +2563,21 @@ final class VotingStoreTests: XCTestCase {
 
         await store.retryFailed()
         XCTAssertEqual(caster.calls.count, 2, "nothing is sent from a node with no vote left")
+    }
+
+    /// A vote the SDK could not confirm may have landed: Try again after a
+    /// single vote does not send it again.
+    func testTryAgainDoesNotSendAnUnconfirmedVoteAgain() async {
+        let (store, a, b, johndoe) = await makeVotingStore()
+        caster.script = .outcomes([landed(a), .unconfirmed(b)])
+        await store.send(choice: approve, on: johndoe, from: [a, b])
+
+        guard case .mixed(let report)? = store.outcome else {
+            return XCTFail("expected .mixed, got \(String(describing: store.outcome))")
+        }
+        XCTAssertFalse(report.offersTryAgain)
+        await store.retryFailed()
+        XCTAssertEqual(caster.calls.count, 1, "nothing is sent again")
     }
 
     func testTryAgainSendsOnlyTheFailedMasternodes() async {
