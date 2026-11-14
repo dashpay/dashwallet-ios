@@ -533,13 +533,11 @@ extension ConnectionRequest {
     /// so this convenience lives in an extension.
     init(loginRequest: DashKeyRequest) {
         let contractId = loginRequest.contractId.toBase58String()
-        let branding = DashConnectFallbackAppMetadata.resolve(
-            contractId: contractId,
-            unauthenticatedLabel: loginRequest.label
-        )
+        // The label the request gives: the wallet knows no app's name or
+        // website of its own.
         self.init(
-            appLabel: branding.name,
-            appUrl: branding.url,
+            appLabel: loginRequest.label.trimmingCharacters(in: .whitespacesAndNewlines),
+            appUrl: "",
             appContractId: contractId,
             walletUsername: nil,
             walletIdentityId: nil,

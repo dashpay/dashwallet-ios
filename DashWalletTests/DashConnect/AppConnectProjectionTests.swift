@@ -1532,7 +1532,7 @@ final class AppConnectProjectionTests: XCTestCase {
             appId: app, appEphemeralPubKeyHash: Data(repeating: 0xEE, count: 20),
             auth: [AppConnect.AuthGrant(bindingIndex: 0, binding: binding, totalBudget: budget, expiresAt: expiresAt)],
             encryption: encryption.enumerated().map { AppConnect.EncryptionGrant(bindingIndex: $0.offset, binding: $0.element) },
-            connectionId: connectionId, identityHint: nil, createdAt: 0, callbackHost: nil)
+            connectionId: connectionId, identityHint: nil, createdAt: 0)
     }
 
     // MARK: Fence

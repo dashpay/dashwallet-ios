@@ -187,6 +187,28 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         XCTAssertEqual(found, existing)
     }
 
+    /// A Refused attempt connected nothing: the sheet of a new request does
+    /// not offer it as the connection to sign in to again.
+    func testMakeConnectionRequestDoesNotCarryARefusedAttempt() async {
+        let refused = DAppConnection(
+            id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F",
+            name: "Yappr",
+            url: "yap.pr",
+            status: .refused,
+            updatedAt: Date(timeIntervalSince1970: 1_773_132_300)
+        )
+        let dataSource = PlatformDashConnectDataSource(
+            supportedNetwork: .testnet,
+            store: TestDashConnectStore(initialConnections: [refused]),
+            activeWalletIdHex: { "wallet" }
+        )
+
+        let request = await dataSource.makeConnectionRequest(from: MockDashConnectDataSource.sampleLoginRequest)
+
+        XCTAssertEqual(request.appContractId, refused.id)
+        XCTAssertNil(request.existingConnection)
+    }
+
     /// A sheet whose details could not be read says so: a failed read is
     /// not details with only the app's id, which would replace the ones
     /// shown.
@@ -550,7 +572,7 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
 private extension AppConnect.GrantPlan {
     static let sample = AppConnect.GrantPlan(
         appId: Data(repeating: 0xA1, count: 32), appEphemeralPubKeyHash: Data(repeating: 0xEE, count: 20),
-        auth: [], encryption: [], connectionId: nil, identityHint: nil, createdAt: 0, callbackHost: nil)
+        auth: [], encryption: [], connectionId: nil, identityHint: nil, createdAt: 0)
 }
 
 private final class TestDashConnectStore: DashConnectStore {
@@ -856,7 +878,7 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
 
     /// An App Connect request with a callback, approved from a scanned QR
     /// code or from a link opened on this phone.
-    private func approveAppConnectRequest(byLink: Bool) async throws -> [URL] {
+    private func approveAppConnectRequest(byLink: Bool) async throws -> (opened: [URL], asked: URL?) {
         var request = MockDashConnectDataSource.sampleLoginRequest
         request.appConnect = try DashConnectUri.parseAppConnectRequest(
             "dash-key:2fAANHHASdojyjV9Sqa2wf2nwZE8kLLqmeHpZWa8sBfaGsddVqyMG2ZVte7xJkTKsXvmFYbXzXbNnMo7bJQBxNcf79N8YWi7pLKyb39Rqv6b1KUmxw9UeJGYz2CV9hFGNUQtcyMYVq2Fg6vAxtxpYays61H8gLMcWqaG8TfgGA3H7setGAYiBsM5YmdZgeuCdGAHSwfNfav5cfFjXNDkPWv37UNSgFxj6o58jfXc3kCLKqLJtc5ZPjm1thEGYxK8HVYBi8fRQeEVy76n27DXGrVTyHz94CfJRuMnH76xGYbMgeuvurxjJMLrQgWUu53cjocYyzzNWdJrgs2D5?n=d&v=2&cb=https%3A%2F%2Fyap.pr%2Fconnect%3Fr%3Dd77dc0da9df83a47755a15c42c5d9db9d7a7fd62")
@@ -873,21 +895,24 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         viewModel.approvePendingRequest()
         await waitUntil { viewModel.pendingRequest == nil }
         XCTAssertEqual(spy.approvedConsents.count, 1)
-        return opened.urls
+        return (opened.urls, viewModel.pendingReturn)
     }
 
     /// A QR code scanned off another screen is answered there: opening the
     /// callback on this phone would start an unrelated session of the app.
     func testApprovingAScannedAppConnectRequestDoesNotOpenItsCallback() async throws {
-        let opened = try await approveAppConnectRequest(byLink: false)
-        XCTAssertEqual(opened, [])
+        let answered = try await approveAppConnectRequest(byLink: false)
+        XCTAssertEqual(answered.opened, [])
+        XCTAssertNil(answered.asked, "nothing to ask about either")
     }
 
-    /// A link opened by the app on this phone returns to it when answered.
-    func testApprovingALinkedAppConnectRequestOpensItsCallback() async throws {
-        let opened = try await approveAppConnectRequest(byLink: true)
-        XCTAssertEqual(opened.map(\.host), ["yap.pr"])
-        XCTAssertEqual(opened.first?.absoluteString.contains("ac=ok"), true)
+    /// A link opened by the app on this phone returns to it when answered,
+    /// once the user says yes on the sheet.
+    func testApprovingALinkedAppConnectRequestAsksAboutItsCallback() async throws {
+        let answered = try await approveAppConnectRequest(byLink: true)
+        XCTAssertEqual(answered.opened, [])
+        XCTAssertEqual(answered.asked?.host, "yap.pr")
+        XCTAssertEqual(answered.asked?.absoluteString.contains("ac=ok"), true)
     }
 
     /// An attempt failed, the next one was cancelled at the PIN prompt, and
@@ -908,10 +933,10 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         await waitUntil { spy.approvedConsents.count == 1 && !viewModel.isApproving }
         viewModel.approvePendingRequest()
         await waitUntil { spy.approvedConsents.count == 2 && !viewModel.isApproving }
-        viewModel.denyPendingRequest()
+        viewModel.denyPendingRequest(asksToReturn: true)
 
-        XCTAssertEqual(opened.urls.count, 1)
-        XCTAssertEqual(opened.urls.first?.absoluteString.contains("ac=declined"), true)
+        XCTAssertEqual(opened.urls, [])
+        XCTAssertEqual(viewModel.pendingReturn?.absoluteString.contains("ac=declined"), true)
     }
 
     /// The request was refused when the user tapped Approve, after the sheet
@@ -930,10 +955,11 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         viewModel.approvePendingRequest()
         await waitUntil { spy.approvedConsents.count == 1 && !viewModel.isApproving }
         XCTAssertEqual(viewModel.pendingRequest?.login.isApprovable, false)
-        viewModel.denyPendingRequest()
+        viewModel.denyPendingRequest(asksToReturn: true)
 
-        XCTAssertEqual(opened.urls.count, 1)
-        XCTAssertEqual(opened.urls.first?.absoluteString.contains("ac=stale"), true)
+        // The return is asked about first, as every return is.
+        XCTAssertEqual(opened.urls, [])
+        XCTAssertEqual(viewModel.pendingReturn?.absoluteString.contains("ac=stale"), true)
     }
 
     /// Another identity became active, or the network answers with the other
@@ -1096,7 +1122,7 @@ private final class PurchaseApprovalSpy: DashConnectDataSource {
         throw PurchaseSpyError.unsupported
     }
 
-    func handleStateTransition(_ request: DashStRequest) async throws -> DashConnectStAction {
+    func handleStateTransition(_ request: DashStRequest, refusesTokenPurchase: Bool) async throws -> DashConnectStAction {
         throw PurchaseSpyError.unsupported
     }
 
@@ -1168,6 +1194,11 @@ private final class LoginApprovalSpy: DashConnectDataSource {
         lock.withLock { storedApprovedConsents }
     }
 
+
+    /// The disconnected apps the page lists; `nil` reads as unreadable.
+    var history: [DisconnectedConnection] = []
+    /// The connections the page lists.
+    var rows: [DAppConnection] = []
     private var storedSuspendsApproval = false
     private var storedIsApprovalSuspended = false
     private var approvalGate: CheckedContinuation<Void, Never>?
@@ -1195,7 +1226,37 @@ private final class LoginApprovalSpy: DashConnectDataSource {
     }
 
     var listing: AnyPublisher<DashConnectListing, Never> {
-        Just(DashConnectListing(scope: nil, rows: [], disconnected: [])).eraseToAnyPublisher()
+        Just(DashConnectListing(scope: nil, rows: rows, disconnected: history)).eraseToAnyPublisher()
+    }
+
+    private var storedParsed: DashConnectQr?
+    private var storedHandledStateTransitions = 0
+
+    /// What every scanned code reads as; the sample login when `nil`.
+    var parsed: DashConnectQr? {
+        get { lock.withLock { storedParsed } }
+        set { lock.withLock { storedParsed = newValue } }
+    }
+
+    private var storedStateTransitionAction: DashConnectStAction?
+
+    /// What every state transition comes to; refused when `nil`.
+    var stateTransitionAction: DashConnectStAction? {
+        get { lock.withLock { storedStateTransitionAction } }
+        set { lock.withLock { storedStateTransitionAction = newValue } }
+    }
+
+    private var storedStateTransitionFailure: Error?
+
+    /// Thrown by every state transition when set.
+    var stateTransitionFailure: Error? {
+        get { lock.withLock { storedStateTransitionFailure } }
+        set { lock.withLock { storedStateTransitionFailure = newValue } }
+    }
+
+    /// How many state transitions ran.
+    var handledStateTransitions: Int {
+        lock.withLock { storedHandledStateTransitions }
     }
 
     private var storedParseCount = 0
@@ -1231,9 +1292,21 @@ private final class LoginApprovalSpy: DashConnectDataSource {
         }
     }
 
+    private var storedParseFailure: Error?
+
+    /// Thrown by every parse when set: the code does not read.
+    var parseFailure: Error? {
+        get { lock.withLock { storedParseFailure } }
+        set { lock.withLock { storedParseFailure = newValue } }
+    }
+
     func parseQR(_ content: String) async throws -> DashConnectQr {
-        lock.withLock { storedParseCount += 1 }
-        return .login(loginRequest)
+        let failure = lock.withLock { () -> Error? in
+            storedParseCount += 1
+            return storedParseFailure
+        }
+        if let failure { throw failure }
+        return parsed ?? .login(loginRequest)
     }
 
     func makeConnectionRequest(from loginRequest: DashKeyRequest) async -> ConnectionRequest {
@@ -1257,8 +1330,26 @@ private final class LoginApprovalSpy: DashConnectDataSource {
         return MockDashConnectDataSource.sample(.active)
     }
 
-    func handleStateTransition(_ request: DashStRequest) async throws -> DashConnectStAction {
-        throw PurchaseSpyError.unsupported
+    private var storedLastRefusesTokenPurchase: Bool?
+
+    /// Whether the last state transition was asked to refuse a token
+    /// purchase.
+    var lastRefusesTokenPurchase: Bool? {
+        lock.withLock { storedLastRefusesTokenPurchase }
+    }
+
+    func handleStateTransition(_ request: DashStRequest, refusesTokenPurchase: Bool) async throws -> DashConnectStAction {
+        let (stored, failure) = lock.withLock { () -> (DashConnectStAction?, Error?) in
+            storedHandledStateTransitions += 1
+            storedLastRefusesTokenPurchase = refusesTokenPurchase
+            return (storedStateTransitionAction, storedStateTransitionFailure)
+        }
+        if let failure { throw failure }
+        guard let action = stored else { throw PurchaseSpyError.unsupported }
+        if refusesTokenPurchase, case .tokenPurchaseApprovalRequired = action {
+            throw DashConnectPlatformError.tokenPurchaseNeedsUsername
+        }
+        return action
     }
 
     func approveTokenPurchase(_ request: DashConnectTokenPurchaseRequest) async throws {
@@ -1791,7 +1882,7 @@ private final class ConnectionStatusSpy: DashConnectDataSource {
     func approveLogin(_ request: DashKeyRequest, consent: ConnectionRequest) async throws -> DAppConnection {
         throw PurchaseSpyError.unsupported
     }
-    func handleStateTransition(_ request: DashStRequest) async throws -> DashConnectStAction {
+    func handleStateTransition(_ request: DashStRequest, refusesTokenPurchase: Bool) async throws -> DashConnectStAction {
         throw PurchaseSpyError.unsupported
     }
     func approveTokenPurchase(_ request: DashConnectTokenPurchaseRequest) async throws {
@@ -1816,6 +1907,16 @@ private final class ConnectionStatusSpy: DashConnectDataSource {
 }
 
 /// The URLs a view model asked to open, in order.
+/// A v2 request's sheet.
+private func appConnectConsent(_ loginRequest: DashKeyRequest) -> ConnectionRequest {
+    let plan = AppConnect.GrantPlan(
+        appId: loginRequest.contractId, appEphemeralPubKeyHash: Data(repeating: 0x01, count: 20), auth: [],
+        encryption: [], connectionId: nil, identityHint: nil, createdAt: 0)
+    var request = ConnectionRequest(loginRequest: loginRequest)
+    request.login = .appConnect(plan)
+    return request
+}
+
 @MainActor
 private final class OpenedURLs {
     var urls: [URL] = []
@@ -2751,7 +2852,7 @@ extension ConnectionsViewModelPurchaseTests {
 
         viewModel.onQRScanned("login")
         await waitUntil { viewModel.pendingRequest != nil }
-        viewModel.denyPendingRequest()
+        viewModel.denyPendingRequest(asksToReturn: true)
 
         XCTAssertNil(viewModel.pendingRequest)
         XCTAssertNil(viewModel.approveError)
@@ -2770,8 +2871,9 @@ extension ConnectionsViewModelPurchaseTests {
 
     // MARK: - R2: a link received while the version read is out
 
-    /// An app that asked through a link is told the user declined; one that
-    /// asked through a scanned code is answered on the other screen.
+    /// An app that asked through a link is told the user declined once the
+    /// user agrees to return; one that asked through a scanned code is
+    /// answered on the other screen.
     func testDenyingALinkRequestTellsTheAppTheUserDeclinedAndAScannedOneOpensNothing() async throws {
         var request = MockDashConnectDataSource.sampleLoginRequest
         request.appConnect = try DashConnectUri.parseAppConnectRequest(Self.callbackUri)
@@ -2782,7 +2884,9 @@ extension ConnectionsViewModelPurchaseTests {
         let linked = ConnectionsViewModel(dataSource: linkSpy, featureUnavailable: false, openURL: { linkOpened.urls.append($0) })
         linked.onURIReceived("login")
         await waitUntil { linked.pendingRequest != nil }
-        linked.denyPendingRequest()
+        linked.denyPendingRequest(asksToReturn: true)
+        XCTAssertEqual(linkOpened.urls, [], "the return is asked about first")
+        linked.openPendingReturn()
 
         XCTAssertEqual(linkOpened.urls.count, 1)
         XCTAssertEqual(linkOpened.urls.first?.host, "yap.pr")
@@ -2794,7 +2898,7 @@ extension ConnectionsViewModelPurchaseTests {
         let scanned = ConnectionsViewModel(dataSource: scanSpy, featureUnavailable: false, openURL: { scanOpened.urls.append($0) })
         scanned.onQRScanned("login")
         await waitUntil { scanned.pendingRequest != nil }
-        scanned.denyPendingRequest()
+        scanned.denyPendingRequest(asksToReturn: true)
 
         XCTAssertEqual(scanOpened.urls, [])
         XCTAssertEqual(scanSpy.approvedConsents, [])
@@ -2814,7 +2918,7 @@ extension ConnectionsViewModelPurchaseTests {
         await waitUntil { spy.isApprovalSuspended }
         XCTAssertTrue(viewModel.isApproving)
 
-        viewModel.denyPendingRequest()
+        viewModel.denyPendingRequest(asksToReturn: true)
         XCTAssertEqual(viewModel.pendingRequest, shown, "dismissal is locked while connecting")
 
         spy.releaseApproval()
@@ -5470,5 +5574,187 @@ final class AppConnectOwnersThroughSeamsTests: XCTestCase {
         let result = try await h.dataSource.disconnect(id: Self.sibling.toBase58String(), scope: "wallet  ")
         XCTAssertEqual(h.platform.disabled, [20])
         XCTAssertEqual(result.keysTurnedOff, 1)
+    }
+}
+
+/// The approve sheet's terms and caution: expiries set and bounded at the
+/// Platform time the request was resolved at, and a Refused attempt that
+/// connected nothing.
+@MainActor
+final class ConnectionsViewModelTermsTests: XCTestCase {
+    private static let phone = Date(timeIntervalSince1970: 1_791_676_800)
+    private static let appId = "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F"
+
+    private static func request(platformTimeMs: UInt64, expiresAt: UInt64) -> ConnectionRequest {
+        let app = Data(repeating: 0xA1, count: 32)
+        let binding = AppConnectRequest.AuthBinding(
+            kind: .singleContract, securityLevel: .high, id: app,
+            totalBudget: 1000, expiresAt: expiresAt, documentTypeName: nil)
+        var plan = AppConnect.GrantPlan(
+            appId: app, appEphemeralPubKeyHash: Data(repeating: 0x01, count: 20),
+            auth: [AppConnect.AuthGrant(bindingIndex: 0, binding: binding, totalBudget: 1000, expiresAt: expiresAt)],
+            encryption: [], connectionId: nil, identityHint: nil, createdAt: 0)
+        plan.platformTimeMs = platformTimeMs
+        var request = ConnectionRequest(loginRequest: MockDashConnectDataSource.sampleLoginRequest)
+        request.login = .appConnect(plan)
+        return request
+    }
+
+    func testTheYearPresetIsInBoundsAtAPlatformTimeBehindThePhone() {
+        let platform = AppConnect.milliseconds(Self.phone) - 120_000
+        let viewModel = ConnectionsViewModel(
+            dataSource: MockDashConnectDataSource(store: TestDashConnectStore()), featureUnavailable: false,
+            now: { Self.phone })
+        viewModel.pendingRequest = Self.request(platformTimeMs: platform, expiresAt: platform + 3_600_000)
+
+        viewModel.setExpiry(days: 365)
+
+        let applied = viewModel.termsAppliedPlan
+        XCTAssertNotNil(applied)
+        XCTAssertNil(applied.flatMap { AppConnect.termsFailure(of: $0, platformTimeMs: platform) })
+        XCTAssertNil(applied.flatMap { AppConnect.termsFailure(of: $0, platformTimeMs: platform + 60_000) })
+    }
+
+    func testAnExpiryPastAtPlatformTimeTurnsApproveOffWhileThePhoneClockIsBehind() {
+        var phone = Self.phone
+        let platform = AppConnect.milliseconds(Self.phone) + 2 * 3_600_000
+        let viewModel = ConnectionsViewModel(
+            dataSource: MockDashConnectDataSource(store: TestDashConnectStore()), featureUnavailable: false,
+            now: { phone })
+        viewModel.pendingRequest = Self.request(platformTimeMs: platform, expiresAt: platform + 3_600_000)
+        XCTAssertNotNil(viewModel.termsAppliedPlan)
+
+        // Two hours on: past the expiry at Platform's time, an hour before
+        // it by this phone's clock.
+        phone = phone.addingTimeInterval(2 * 3600)
+
+        XCTAssertNil(viewModel.termsAppliedPlan)
+        XCTAssertEqual(
+            viewModel.approveDisabledReason,
+            NSLocalizedString(
+                "This expiry has passed. Pick another one, then approve.",
+                comment: "DashConnect approve sheet: the chosen expiry is in the past"))
+    }
+
+    func testARefusedAttemptKeepsTheFirstConnectionCaution() async {
+        let refused = DAppConnection(
+            id: Self.appId, name: "Yappr", url: "yap.pr", status: .refused, updatedAt: Self.phone)
+        let viewModel = ConnectionsViewModel(
+            dataSource: MockDashConnectDataSource(initial: [refused], store: TestDashConnectStore()),
+            featureUnavailable: false, now: { Self.phone })
+        let deadline = Date().addingTimeInterval(2)
+        while !viewModel.hasReadRows, Date() < deadline { try? await Task.sleep(nanoseconds: 2_000_000) }
+        XCTAssertTrue(viewModel.hasReadRows)
+
+        viewModel.pendingRequest = ConnectionRequest(loginRequest: MockDashConnectDataSource.sampleLoginRequest)
+
+        XCTAssertEqual(viewModel.pendingRequest?.appContractId, Self.appId)
+        XCTAssertTrue(viewModel.pendingIsFirstConnection)
+    }
+
+    // MARK: Username
+
+    func testALoginIsNotTakenWhileTheUsernameIsUnread() async {
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, usernameState: { .unknown }, now: { Self.phone })
+
+        viewModel.onQRScanned("login")
+
+        XCTAssertEqual(spy.parseCount, 0)
+        XCTAssertNil(viewModel.pendingRequest)
+        XCTAssertFalse(viewModel.needsUsername, "the user is not asked to create a name they may have")
+        XCTAssertEqual(viewModel.message?.text, ConnectionsViewModel.usernameUnreadText)
+    }
+
+    func testALoginIsNotApprovedWhileTheUsernameIsUnread() async {
+        var username = ConnectionsViewModel.UsernameState.present
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, usernameState: { username }, now: { Self.phone })
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+
+        username = .unknown
+        viewModel.approvePendingRequest()
+
+        XCTAssertEqual(spy.approvedConsents, [])
+        XCTAssertEqual(viewModel.approveError, ConnectionsViewModel.usernameUnreadText)
+    }
+
+    // MARK: Expiry refused at Platform's time
+
+    func testAnExpiryPlatformRefusedTurnsApproveOff() async {
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        spy.approveFailures = [DashConnectPlatformError.approvalTermsExpired]
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, now: { Self.phone })
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        XCTAssertNotNil(viewModel.termsAppliedPlan)
+
+        viewModel.approvePendingRequest()
+        await waitUntil { spy.approvedConsents.count == 1 && !viewModel.isApproving }
+
+        // The phone's clock has not moved, but Platform's time is past the
+        // expiry: the same terms are not offered again.
+        XCTAssertNil(viewModel.termsAppliedPlan)
+        XCTAssertEqual(
+            viewModel.approveDisabledReason,
+            NSLocalizedString(
+                "This expiry has passed. Pick another one, then approve.",
+                comment: "DashConnect approve sheet: the chosen expiry is in the past"))
+        XCTAssertNotNil(viewModel.pendingRequest)
+    }
+
+    // MARK: Balance
+
+    func testABalanceRefusalOffersATopUpAndNoSecondApproval() async {
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        spy.approveFailures = [DashConnectPlatformError.networkRefused(code: AppConnect.identityInsufficientBalanceCode)]
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, now: { Self.phone })
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+
+        viewModel.approvePendingRequest()
+        await waitUntil { spy.approvedConsents.count == 1 && !viewModel.isApproving }
+
+        XCTAssertTrue(viewModel.approveNeedsTopUp)
+        XCTAssertEqual(viewModel.approveError, ConnectionsViewModel.topUpThenAskAgainText)
+        // The attempt was recorded before it was sent: this request counts
+        // as answered, so the app is asked for a new one.
+        viewModel.approvePendingRequest()
+        XCTAssertEqual(spy.approvedConsents.count, 1)
+    }
+
+    // MARK: Return step
+
+    func testALinkThatDoesNotReadKeepsTheReturnStep() async throws {
+        var request = MockDashConnectDataSource.sampleLoginRequest
+        request.appConnect = try DashConnectUri.parseAppConnectRequest("dash-key:2fAANHHASdojyjV9Sqa2wf2nwZE8kLLqmeHpZWa8sBfaGsddVqyMG2ZVte7xJkTKsXvmFYbXzXbNnMo7bJQBxNcf79N8YWi7pLKyb39Rqv6b1KUmxw9UeJGYz2CV9hFGNUQtcyMYVq2Fg6vAxtxpYays61H8gLMcWqaG8TfgGA3H7setGAYiBsM5YmdZgeuCdGAHSwfNfav5cfFjXNDkPWv37UNSgFxj6o58jfXc3kCLKqLJtc5ZPjm1thEGYxK8HVYBi8fRQeEVy76n27DXGrVTyHz94CfJRuMnH76xGYbMgeuvurxjJMLrQgWUu53cjocYyzzNWdJrgs2D5?n=d&v=2&cb=https%3A%2F%2Fyap.pr%2Fconnect%3Fr%3Dd77dc0da9df83a47755a15c42c5d9db9d7a7fd62")
+        let shown = Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)
+        let spy = LoginApprovalSpy(shown: [shown], loginRequest: request)
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, openURL: { _ in }, now: { Self.phone })
+        viewModel.onURIReceived("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        viewModel.approvePendingRequest()
+        await waitUntil { viewModel.pendingRequest == nil }
+        let asked = try XCTUnwrap(viewModel.pendingReturn)
+
+        spy.parseFailure = DashConnectPlatformError.noIdentity
+        viewModel.onURIReceived("not a request")
+        await waitUntil { viewModel.message != nil }
+        XCTAssertEqual(spy.parseCount, 2)
+
+        XCTAssertEqual(viewModel.pendingReturn, asked)
+    }
+
+    private static var platformNow: UInt64 { AppConnect.milliseconds(phone) }
+
+    private func waitUntil(timeout: TimeInterval = 2, _ condition: () -> Bool) async {
+        let deadline = Date().addingTimeInterval(timeout)
+        while !condition(), Date() < deadline {
+            try? await Task.sleep(nanoseconds: 2_000_000)
+        }
     }
 }

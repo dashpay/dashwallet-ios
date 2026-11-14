@@ -22,6 +22,13 @@ import Foundation
 /// The lines that say what an App Connect v2 key lets an app do, shared by
 /// the approval sheet and the connection sheet.
 enum DashConnectPermissionText {
+    /// Whether the lines describe a connection that is on (the approval
+    /// sheet, an active connection) or one that ended.
+    enum Tense {
+        case present
+        case past
+    }
+
     /// What one key can do, what it can spend and until when. `isAdministered`:
     /// the group has administrators who can add their own contracts to it.
     static func key(
@@ -30,8 +37,15 @@ enum DashConnectPermissionText {
         totalBudget: UInt64?,
         expiresAt: UInt64,
         isAdministered: Bool,
-        appLabel: String
+        appLabel: String,
+        tense: Tense = .present
     ) -> String {
+        let expiry = expiryFormatter.string(from: Date(timeIntervalSince1970: TimeInterval(expiresAt) / 1000))
+        if case .contractGroup = bound, isCritical, let totalBudget {
+            return criticalGroupKey(
+                appLabel: appLabel, budget: PlatformCreditsFormatter.dashString(totalBudget), expiry: expiry,
+                isAdministered: isAdministered, tense: tense)
+        }
         let action: String
         var isGroup = false
         switch bound {
@@ -63,7 +77,6 @@ enum DashConnectPermissionText {
                     name)
             }
         }
-        let expiry = expiryFormatter.string(from: Date(timeIntervalSince1970: TimeInterval(expiresAt) / 1000))
         var text: String
         if let totalBudget {
             text = String(
@@ -96,12 +109,47 @@ enum DashConnectPermissionText {
         return text
     }
 
+    /// A CRITICAL key on the app's contract group: it acts in all of the
+    /// app's contracts and moves its tokens, which its credit budget does not
+    /// limit. Who receives a token purchase is left out: the user approves an
+    /// amount, and the limit caps it.
+    static func criticalGroupKey(
+        appLabel: String,
+        budget: String,
+        expiry: String,
+        isAdministered: Bool,
+        tense: Tense
+    ) -> String {
+        var text: String
+        switch tense {
+        case .present:
+            text = String(
+                format: NSLocalizedString(
+                    "Act as you in %1$@ until %2$@, including buying and sending its tokens. It can spend up to %3$@ of your identity balance on fees and token purchases, but can send any amount of your %1$@ tokens.",
+                    comment: "DashConnect App Connect v2: the app's name, a date (29 Oct 2027), an amount with its unit (0.5 DASH); the app's name again"),
+                appLabel, expiry, budget)
+        case .past:
+            text = String(
+                format: NSLocalizedString(
+                    "Could act as you in %1$@ until %2$@, including buying and sending its tokens. It could spend up to %3$@ of your identity balance on fees and token purchases, but could send any amount of your %1$@ tokens.",
+                    comment: "DashConnect connection sheet, a connection that ended: the app's name, a date, an amount with its unit; the app's name again"),
+                appLabel, expiry, budget)
+        }
+        // Group membership is read when the key signs, not when it is granted.
+        if isAdministered {
+            text += " " + NSLocalizedString(
+                "Other identities can add their own contracts to this group, and the key will act as you in those too.",
+                comment: "DashConnect App Connect v2")
+        }
+        return text
+    }
+
     /// What an approval gave the app, one line each, as its sheet listed it.
-    static func granted(_ access: AppConnect.GrantedAccess, appLabel: String) -> [String] {
+    static func granted(_ access: AppConnect.GrantedAccess, appLabel: String, tense: Tense = .present) -> [String] {
         [NSLocalizedString("See your username", comment: "DashConnect")]
             + access.keys.map {
                 key(bound: $0.bound, isCritical: $0.isCritical, totalBudget: $0.totalBudget, expiresAt: $0.expiresAt,
-                    isAdministered: $0.isAdministered, appLabel: appLabel)
+                    isAdministered: $0.isAdministered, appLabel: appLabel, tense: tense)
             }
             + (access.receivesMessages ? [receivesMessages(appLabel: appLabel)] : [])
     }
@@ -140,10 +188,25 @@ enum DashConnectPermissionText {
         ]
     }
 
+    /// Dates as the design writes them: "29 Oct 2027".
     static let expiryFormatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateStyle = .long
-        formatter.timeStyle = .none
+        formatter.setLocalizedDateFormatFromTemplate("d MMM yyyy")
+        return formatter
+    }()
+}
+
+/// When a v2 request was made, as the approval sheet says it.
+enum AppConnectOriginText {
+    /// How long ago the request was made, e.g. "14 seconds ago".
+    static func age(_ plan: AppConnect.GrantPlan, now: Date = Date()) -> String {
+        ageFormatter.localizedString(
+            for: Date(timeIntervalSince1970: TimeInterval(plan.createdAt) / 1000), relativeTo: now)
+    }
+
+    private static let ageFormatter: RelativeDateTimeFormatter = {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .full
         return formatter
     }()
 }

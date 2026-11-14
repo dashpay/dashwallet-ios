@@ -563,7 +563,8 @@ extension MainTabbarController {
             return
         }
 
-        let controller = DashConnectHostingController(navigationController: menuNav, uri: uri)
+        let controller = DashConnectHostingController(
+            navigationController: menuNav, uri: uri, dashPayModel: homeModel?.dashPayModel)
         menuNav.pushViewController(controller, animated: true)
     }
 

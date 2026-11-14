@@ -86,12 +86,12 @@ struct ConnectionSheet: View {
                     }
                     limitsCard
                     if let granted {
-                        collapsible(title: grantedTitle, isExpanded: $showsGranted) {
+                        DashConnectCollapsibleCard(title: grantedTitle, isExpanded: $showsGranted) {
                             ForEach(Array(granted.enumerated()), id: \.offset) {
                                 PermissionRow(icon: .custom("dashconnect.check.circle", maxHeight: 18), text: $0.element)
                             }
                         }
-                        collapsible(title: withheldTitle, isExpanded: $showsWithheld) {
+                        DashConnectCollapsibleCard(title: withheldTitle, isExpanded: $showsWithheld) {
                             ForEach(withheld, id: \.self) {
                                 PermissionRow(icon: .custom("dashconnect.xmark.circle", maxHeight: 18), text: $0)
                             }
@@ -190,12 +190,12 @@ struct ConnectionSheet: View {
 
     private var detailsCard: some View {
         VStack(spacing: 2) {
-            DetailLine(title: NSLocalizedString("App ID", comment: "DashConnect connection sheet"), value: item.id)
+            DashConnectDetailLine(title: NSLocalizedString("App ID", comment: "DashConnect connection sheet"), value: item.id)
             if let username = details?.username, !username.isEmpty {
-                DetailLine(title: NSLocalizedString("Username", comment: "DashConnect connection sheet"), value: username)
+                DashConnectDetailLine(title: NSLocalizedString("Username", comment: "DashConnect connection sheet"), value: username)
             }
             if let identityId = details?.identityId {
-                DetailLine(
+                DashConnectDetailLine(
                     title: NSLocalizedString("Identity", comment: "DashConnect connection sheet"),
                     value: DashConnectIdentifierFormatting.truncateMiddle(identityId))
             }
@@ -311,47 +311,6 @@ struct ConnectionSheet: View {
         }
     }
 
-    private func collapsible<Content: View>(
-        title: String,
-        isExpanded: Binding<Bool>,
-        @ViewBuilder content: @escaping () -> Content
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Button(action: { withAnimation { isExpanded.wrappedValue.toggle() } }) {
-                HStack(spacing: 20) {
-                    Text(title)
-                        .dashFont(.subhead)
-                        .foregroundColor(Color.dash.primaryText)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    ChevronIcon(direction: isExpanded.wrappedValue ? .up : .down, size: 10, color: Color.dash.primaryText)
-                        .frame(width: 28, height: 28)
-                        .background(Circle().fill(Color.dash.gray300Alpha10))
-                }
-                .padding(.leading, 14)
-                .padding(.vertical, 8)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityAddTraits(.isButton)
-            .accessibilityValue(Text(isExpanded.wrappedValue
-                ? NSLocalizedString("Expanded", comment: "Accessibility: a section that is open")
-                : NSLocalizedString("Collapsed", comment: "Accessibility: a section that is closed")))
-
-            if isExpanded.wrappedValue {
-                VStack(alignment: .leading, spacing: 12) { content() }
-                    .padding(.horizontal, 14)
-                    .padding(.bottom, 12)
-            }
-        }
-        .padding(6)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .overlay(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .strokeBorder(Color.dash.gray300Alpha20, lineWidth: 2))
-    }
-
-    /// The action the status allows (ADR-0019).
-    @ViewBuilder
     /// Every action the table allows: an expired connection's keys stay on
     /// Platform until a disconnect, or a renewal of the same connection,
     /// turns them off, so it offers both.
@@ -465,28 +424,6 @@ struct ConnectionSheet: View {
         formatter.timeStyle = .none
         return formatter
     }()
-}
-
-/// A caption over its value.
-private struct DetailLine: View {
-    let title: String
-    let value: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(title)
-                .dashFont(.caption1)
-                .foregroundColor(Color.dash.tertiaryText)
-            Text(value)
-                .dashFont(.callout)
-                .foregroundColor(Color.dash.primaryText)
-                .textSelection(.enabled)
-        }
-        .accessibilityElement(children: .combine)
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
 }
 
 private enum ConnectionSheetPreview {

@@ -67,6 +67,9 @@
 /* DashPay Contacts: scanned username doesn't resolve to the scanned identity */
 "%@ couldn't be verified on the Dash network. The QR code may be outdated." = "%@ se nepodařilo ověřit v síti Dash. QR kód může být zastaralý.";
 
+/* DashConnect funding limit keypad: a typed amount */
+"%@ DASH" = "%@ DASH";
+
 /* Username marketplace: contested request cost value — the vote-resolution fund amount */
 "%@ DASH + network fee" = "%@ DASH + poplatek síti";
 
@@ -144,6 +147,9 @@
 
 /* SPV diagnostics */
 "%d could not be reached" = "%d could not be reached";
+
+/* DashConnect expiry presets: a number of days */
+"%d days" = "%d days";
 
 /* Voting */
 "%d evonodes" = "%d evonodes";
@@ -313,9 +319,6 @@
 /* Balance info sheet */
 "A credit balance on Dash Platform used for instant payments between Platform addresses and for features like usernames." = "Kreditní zůstatek na Dash Platform, který se používá pro okamžité platby mezi adresami Platform a pro funkce, jako jsou uživatelská jména.";
 
-/* DashConnect */
-"A DashPay username is needed to buy tokens. Create one, then open the link again." = "A DashPay username is needed to buy tokens. Create one, then open the link again.";
-
 /* No comment provided by engineer. */
 "A device passcode is needed to safeguard your wallet. Go to settings and turn passcode on to continue." = "Přístupový kód zařízení je třeba k zabezpečení vaší peněženky. Přejděte do nastavení a pokračujte zapnutím přístupového kódu.";
 
@@ -403,6 +406,9 @@
 
 /* Wallet accounts */
 "Accounts are created automatically when the wallet syncs." = "Accounts are created automatically when the wallet syncs.";
+
+/* DashConnect App Connect v2: the app's name, a date (29 Oct 2027), an amount with its unit (0.5 DASH); the app's name again */
+"Act as you in %1$@ until %2$@, including buying and sending its tokens. It can spend up to %3$@ of your identity balance on fees and token purchases, but can send any amount of your %1$@ tokens." = "Act as you in %1$@ until %2$@, including buying and sending its tokens. It can spend up to %3$@ of your identity balance on fees and token purchases, but can send any amount of your %1$@ tokens.";
 
 /* DashConnect App Connect v2: the placeholder is the app's name */
 "Act as you in all of %@'s contracts" = "Act as you in all of %@'s contracts";
@@ -687,6 +693,9 @@
 
 /* DashConnect token purchase */
 "Approving pays the total price from this identity's Platform credits." = "Approving pays the total price from this identity's Platform credits.";
+
+/* DashConnect: no username */
+"Apps on the Dash network use your Platform identity instead of accounts and passwords" = "Apps on the Dash network use your Platform identity instead of accounts and passwords";
 
 /* Coinbase/Buy Dash/Cancel Order     */
 "Are you sure you want to cancel this order?" = "Are you sure you want to cancel this order?";
@@ -1060,6 +1069,12 @@
 /* Username marketplace */
 "Change Price" = "Změnit cenu";
 
+/* DashConnect approve sheet: accessibility */
+"Change the identity funding limit" = "Change the identity funding limit";
+
+/* DashConnect approve sheet: accessibility */
+"Change when the connection expires" = "Change when the connection expires";
+
 /* TimeSkew */
 "Check date & time settings" = "Check date & time settings";
 
@@ -1279,11 +1294,17 @@
 /* DashSpend */
 "Connection Error" = "Connection Error";
 
+/* DashConnect expiry presets */
+"Connection expiration period" = "Connection expiration period";
+
 /* DashConnect connection sheet */
 "Connection expired" = "Connection expired";
 
 /* DashConnect connection sheet: the date its keys expire */
 "Connection expiry" = "Connection expiry";
+
+/* DashConnect approve sheet */
+"Connection will expire" = "Connection will expire";
 
 /* DashConnect */
 "Connections" = "Connections";
@@ -1406,6 +1427,9 @@
 /* SPV diagnostics
    Sync Info */
 "Core Sync Status" = "Core Sync Status";
+
+/* DashConnect connection sheet, a connection that ended: the app's name, a date, an amount with its unit; the app's name again */
+"Could act as you in %1$@ until %2$@, including buying and sending its tokens. It could spend up to %3$@ of your identity balance on fees and token purchases, but could send any amount of your %1$@ tokens." = "Could act as you in %1$@ until %2$@, including buying and sending its tokens. It could spend up to %3$@ of your identity balance on fees and token purchases, but could send any amount of your %1$@ tokens.";
 
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "Nelze automaticky obnovit chybějící nebo nesprávná slova";
@@ -1547,6 +1571,24 @@
 
 /* DashPay Invitations */
 "Create a username and say goodbye to numerical addresses" = "Create a username and say goodbye to numerical addresses";
+
+/* DashConnect approve sheet */
+"The wallet could not read the network's time to check this connection's expiry. Try again." = "The wallet could not read the network's time to check this connection's expiry. Try again.";
+
+/* DashConnect: a token purchase arrived and the username lookup failed */
+"This wallet could not check your username. Ask the app again." = "This wallet could not check your username. Ask the app again.";
+
+/* DashConnect: a token purchase arrived while the wallet has no username */
+"Create a username to buy tokens in apps, then ask the app again." = "Create a username to buy tokens in apps, then ask the app again.";
+
+/* DashConnect: a request arrived while the wallet has no username */
+"Create a username to connect apps, then ask the app for a new code." = "Create a username to connect apps, then ask the app for a new code.";
+
+/* DashConnect: a request arrived before the wallet read the identity's usernames */
+"The wallet is still reading your username. Try again in a moment." = "The wallet is still reading your username. Try again in a moment.";
+
+/* DashConnect approve sheet: Platform refused the approval for the identity's balance */
+"Your identity's balance is too low for this connection. Top up, then ask the app for a new code." = "Your identity's balance is too low for this connection. Top up, then ask the app for a new code.";
 
 /* Create DashSpend account */
 "Create account" = "Create account";
@@ -2301,6 +2343,9 @@
 /* DashConnect connection sheet */
 "Funding left" = "Funding left";
 
+/* DashConnect funding limit keypad */
+"Funding limit" = "Funding limit";
+
 /* Masternode unban */
 "Funds are on the way…" = "Funds are on the way…";
 
@@ -2488,6 +2533,9 @@
 
 /* Destination of an identity funding asset lock */
 "Identity credits" = "Kredity identity";
+
+/* DashConnect approve sheet */
+"Identity funding limit" = "Identity funding limit";
 
 /* DashConnect connection sheet */
 "Identity funding limits" = "Identity funding limits";
@@ -2722,6 +2770,9 @@
 
 /* Inactivity reminder */
 "It's been a while since you opened Dash Wallet." = "It's been a while since you opened Dash Wallet.";
+
+/* DashConnect: what spendable Dash is */
+"It's separate from your identity's balance, which only pays for network actions." = "It's separate from your identity's balance, which only pays for network actions.";
 
 /* DashConnect: what a disconnect does, in its confirmation */
 "Its keys are turned off on Platform for good. To connect again, the app asks with a new code." = "Its keys are turned off on Platform for good. To connect again, the app asks with a new code.";
@@ -3091,6 +3142,9 @@
 /* Dash DEX / maya_max_amount_error */
 "Max %@" = "Max %@";
 
+/* DashConnect funding limit keypad: the cap with its unit, e.g. 5 DASH */
+"Max limit is %@" = "Max limit is %@";
+
 /* Core drain estimate */
 "Max moves all eligible funds available at confirmation. The displayed amount and fees are estimates." = "Max moves all eligible funds available at confirmation. The displayed amount and fees are estimates.";
 
@@ -3136,6 +3190,9 @@
 
 /* No comment provided by engineer. */
 "Merchant search works better with Location Services turned on." = "Vyhledávání obchodníků funguje lépe se zapnutým určením polohy.";
+
+/* DashConnect funding limit keypad: the smallest limit with its unit */
+"Min limit is %@" = "Min limit is %@";
 
 /* DashSpend */
 "Min: %@" = "Min: %@";
@@ -3679,9 +3736,6 @@
 /* Transaction filter */
 "Only" = "Only";
 
-/* DashConnect App Connect v2: the placeholder is the app's website or name */
-"Only approve if you just started signing in on %@." = "Only approve if you just started signing in on %@.";
-
 /* Voting */
 "Only masternodes and evonodes can vote on usernames. Add a masternode voting key to vote from this wallet." = "Only masternodes and evonodes can vote on usernames. Add a masternode voting key to vote from this wallet.";
 
@@ -3693,6 +3747,9 @@
 
 /* DashPay Contacts */
 "Only visible to you" = "Only visible to you";
+
+/* DashConnect: return to an app the wallet does not know; the placeholder is a website, e.g. yap.pr */
+"Open %@" = "Open %@";
 
 /* Notifications */
 "Open Settings" = "Open Settings";
@@ -4493,11 +4550,8 @@
 /* Username marketplace: contested register sheet title */
 "Request “%@”" = "Požádat o „%@“";
 
-/* DashConnect App Connect v2: a relative time (12 seconds ago), then a website (yap.pr) */
-"Requested %1$@ · returns to %2$@" = "Requested %1$@ · returns to %2$@";
-
-/* DashConnect App Connect v2: the placeholder is a relative time, e.g. 12 seconds ago */
-"Requested %@" = "Requested %@";
+/* DashConnect approve sheet: when the app asked */
+"Requested" = "Requested";
 
 /* Username marketplace: search row for a contested label this identity already requested */
 "Requested by you — the network vote is in progress" = "Zažádáno vámi — probíhá hlasování sítě";
@@ -4600,6 +4654,9 @@
 
 /* Asset-lock retry in progress */
 "Retrying transfer…" = "Opakujeme převod…";
+
+/* DashConnect: asks before returning to an app the wallet does not know; the placeholder is a website, e.g. yap.pr */
+"Return to %@?" = "Return to %@?";
 
 /* Wallet preparation support */
 "Review and send the message in your mail app, or choose a sharing option." = "Review and send the message in your mail app, or choose a sharing option.";
@@ -4907,6 +4964,9 @@
 /* Masternodes */
 "Service" = "Služba";
 
+/* DashConnect approve sheet: the terms are out of bounds */
+"Set a funding limit and an expiry within the limits, then approve." = "Set a funding limit and an expiry within the limits, then approve.";
+
 /* Username marketplace: set price sheet title */
 "Set a price for “%@”" = "Nastavit cenu pro „%@“";
 
@@ -4915,6 +4975,13 @@
 
 /* Identities */
 "Set as Main Identity" = "Nastavit jako hlavní identitu";
+
+/* DashConnect expiry date picker
+   DashConnect expiry presets */
+"Set date" = "Set date";
+
+/* DashConnect funding limit presets */
+"Set limit" = "Set limit";
 
 /* No comment provided by engineer. */
 "Set PIN" = "Nastavit PIN";
@@ -5011,6 +5078,9 @@
 
 /* DashConnect re-login */
 "Sign in to %@ again?" = "Sign in to %@ again?";
+
+/* DashConnect: no username */
+"Sign in to apps without passwords" = "Sign in to apps without passwords";
 
 /* No comment provided by engineer. */
 "Signed with" = "Podepsáno klíčem";
@@ -5130,6 +5200,9 @@
 /* Transaction details */
 "Status" = "Stav";
 
+/* DashConnect: do not return to an app the wallet does not know */
+"Stay in the wallet" = "Stay in the wallet";
+
 /* Step 1 */
 "Step %ld" = "Krok %ld";
 
@@ -5172,6 +5245,9 @@
 
 /* Dash DEX */
 "Stuck" = "Stuck";
+
+/* DashConnect funding limit keypad */
+"Submit" = "Submit";
 
 /* InternalTransfer */
 "Submitted — confirming" = "Submitted — confirming";
@@ -5832,8 +5908,14 @@
 /* DashPay Contacts */
 "This contact's payment details couldn't be set up. Ask them to send you a new contact request." = "This contact's payment details couldn't be set up. Ask them to send you a new contact request.";
 
+/* DashConnect expiry date picker: the picked date was refused */
+"This date has passed or is too far away. Pick another one." = "This date has passed or is too far away. Pick another one.";
+
 /* No comment provided by engineer. */
 "This evonode's DAPI address isn't known, so it can't be asked for its status." = "DAPI adresa tohoto evonodu není známa, takže jej nelze požádat o stav.";
+
+/* DashConnect approve sheet: the chosen expiry is in the past */
+"This expiry has passed. Pick another one, then approve." = "This expiry has passed. Pick another one, then approve.";
 
 /* Coinbase Two Factor Auth */
 "This extra step shows it’s really you trying to make a transaction." = "This extra step shows it’s really you trying to make a transaction.";
@@ -5855,6 +5937,9 @@
 
 /* DashPay Invitations */
 "This is not a valid invitation link" = "Toto není platný pozvánkový odkaz";
+
+/* DashConnect: what spendable Dash is */
+"This is the Dash on your wallet's home screen – the balance you can send to anyone." = "This is the Dash on your wallet's home screen – the balance you can send to anyone.";
 
 /* No comment provided by engineer. */
 "This is the evonode's registered payout address." = "Toto je registrovaná výplatní adresa tohoto evonodu.";
@@ -5879,6 +5964,9 @@
 
 /* DashConnect */
 "This kind of code is not accepted on mainnet. Ask the app for a DashPay connect link or code." = "This kind of code is not accepted on mainnet. Ask the app for a DashPay connect link or code.";
+
+/* DashConnect funding limit keypad */
+"This limit cannot be shared between the app's keys." = "This limit cannot be shared between the app's keys.";
 
 /* No comment provided by engineer. */
 "This link needs a newer version of the wallet." = "This link needs a newer version of the wallet.";
@@ -5942,12 +6030,6 @@
 
 /* Wallets */
 "This removes this wallet from this device on every network where it is stored, including its private keys and synced data. Other wallets are not affected. Your funds are NOT deleted — they remain on the Dash network and can only be recovered with this wallet's recovery phrase. If you have not backed up the phrase, you will lose access to these funds." = "This removes this wallet from this device on every network where it is stored, including its private keys and synced data. Other wallets are not affected. Your funds are NOT deleted — they remain on the Dash network and can only be recovered with this wallet's recovery phrase. If you have not backed up the phrase, you will lose access to these funds.";
-
-/* DashConnect App Connect v2: the placeholder is the app's website, e.g. yap.pr */
-"This request does not return to %@. It may not come from the app's website." = "This request does not return to %@. It may not come from the app's website.";
-
-/* DashConnect App Connect v2: the placeholder is a website, e.g. yap.pr */
-"This request would return to %@, which is not the app's website." = "This request would return to %@, which is not the app's website.";
 
 /* DashConnect App Connect v2 */
 "This sign-in is for another identity. Switch to it in this wallet and ask the app again." = "This sign-in is for another identity. Switch to it in this wallet and ask the app again.";
@@ -6039,8 +6121,14 @@
 /* DashConnect: after a disconnect that found keys whose app is not known yet */
 "This wallet could not tell yet which app holds some keys on your identity (%d), so it left them on. Open Connections again later to check them." = "This wallet could not tell yet which app holds some keys on your identity (%d), so it left them on. Open Connections again later to check them.";
 
-/* DashConnect App Connect v2 */
-"This wallet does not know this app, so it cannot confirm the name shown or where the request came from." = "This wallet does not know this app, so it cannot confirm the name shown or where the request came from.";
+/* DashConnect approve sheet: an app the wallet does not know; the placeholder is a website, e.g. yap.pr */
+"This wallet does not know this app, so it cannot confirm where it will return you (%@)." = "This wallet does not know this app, so it cannot confirm where it will return you (%@).";
+
+/* DashConnect: asks before returning to an app the wallet does not know */
+"This wallet does not know this app, so it cannot confirm where this address leads. Open it only if you started this on that website." = "This wallet does not know this app, so it cannot confirm where this address leads. Open it only if you started this on that website.";
+
+/* DashConnect approve sheet: an app the wallet does not know */
+"This wallet does not know this app." = "This wallet does not know this app.";
 
 /* Masternode unban */
 "This wallet doesn't hold this masternode's operator key, so it can't be unbanned from here." = "This wallet doesn't hold this masternode's operator key, so it can't be unbanned from here.";
@@ -6140,6 +6228,9 @@
 
 /* SDK identity profile sheet — add credits to the identity */
 "Top Up" = "Dobít";
+
+/* DashConnect approve sheet */
+"Top up identity" = "Top up identity";
 
 /* Identity top-up sheet — title */
 "Top Up Identity Balance" = "Dobít zůstatek identity";
@@ -6472,6 +6563,9 @@
 
 /* Dash DEX */
 "URI" = "URI";
+
+/* DashConnect funding limit keypad: the number of decimal places a limit can have */
+"Use at most %ld digits after the decimal point" = "Use at most %ld digits after the decimal point";
 
 /* No comment provided by engineer. */
 "Use the payout address" = "Použít výplatní adresu";
@@ -6850,6 +6944,9 @@
 /* DashConnect connection sheet */
 "What is left of the keys' budgets could not be read." = "What is left of the keys' budgets could not be read.";
 
+/* DashConnect approve sheet */
+"What is spendable Dash?" = "What is spendable Dash?";
+
 /* Usernames */
 "What is username voting?" = "What is username voting?";
 
@@ -7065,6 +7162,9 @@
 
 /* Voting */
 "You have entered an uncompressed private key. This app can only vote with a compressed voting key. Here is an example (%@)" = "You have entered an uncompressed private key. This app can only vote with a compressed voting key. Here is an example (%@)";
+
+/* DashConnect: approve sheet, first connection caution */
+"You have never connected to this app before. Only approve if you trust it." = "You have never connected to this app before. Only approve if you trust it.";
 
 /* DashPay Notifications */
 "You have no notifications" = "You have no notifications";
@@ -7359,6 +7459,9 @@
 
 /* Usernames */
 "Your shielded funds are resting. They will be ready around %@ — creating your username before then links it to where the funds came from." = "Your shielded funds are resting. They will be ready around %@ — creating your username before then links it to where the funds came from.";
+
+/* DashConnect approve sheet */
+"Your spendable Dash balance" = "Your spendable Dash balance";
 
 /* Dash DEX */
 "Your swap can NOT be processed without a refund address" = "Your swap can NOT be processed without a refund address";
