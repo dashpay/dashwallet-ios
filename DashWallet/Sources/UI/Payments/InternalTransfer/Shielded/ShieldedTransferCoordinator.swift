@@ -2270,7 +2270,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// The most one Shielded withdrawal may carry, Core fee included: the
     /// protocol's `max_withdrawal_amount` (500 DASH), which
     /// `ShieldedWithdrawalTransition` checks against the amount it reserves.
-    /// Platform address withdrawals have no such limit.
+    /// `AddressCreditWithdrawalTransition` holds a Platform withdrawal to the
+    /// same maximum. A Platform contact payment stays under it because it
+    /// needs a successful full-account preflight, whose payout the SDK holds
+    /// to that maximum, and spends only part of one address.
     nonisolated static let shieldedWithdrawalMaximumCredits: UInt64 = 50_000_000_000_000
 
     nonisolated static var contactShieldedMaximumMessage: String {
