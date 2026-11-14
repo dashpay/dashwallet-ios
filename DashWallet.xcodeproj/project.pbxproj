@@ -7,6 +7,22 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E5E0D0C90000000000000002 /* ConfirmViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0C90000000000000001 /* ConfirmViewModel.swift */; };
+		E5E0D0CA0000000000000002 /* ConfirmSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0CA0000000000000001 /* ConfirmSheet.swift */; };
+		E5E0D0C90000000000000003 /* ConfirmViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0C90000000000000001 /* ConfirmViewModel.swift */; };
+		E5E0D0CA0000000000000003 /* ConfirmSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0CA0000000000000001 /* ConfirmSheet.swift */; };
+		E5E0D0130000000000000002 /* AddressScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0130000000000000001 /* AddressScreen.swift */; };
+		E5E0D0130000000000000003 /* AddressScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0130000000000000001 /* AddressScreen.swift */; };
+		E5E0D0120000000000000002 /* AddressViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0120000000000000001 /* AddressViewModel.swift */; };
+		E5E0D0A10000000000000002 /* SelectSourceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0A10000000000000001 /* SelectSourceViewModel.swift */; };
+		E5E0D0A20000000000000002 /* SelectSourceSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0A20000000000000001 /* SelectSourceSheet.swift */; };
+		E5E0D0120000000000000003 /* AddressViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0120000000000000001 /* AddressViewModel.swift */; };
+		E5E0D0C10000000000000002 /* SendAmountViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0C10000000000000001 /* SendAmountViewModel.swift */; };
+		E5E0D0C20000000000000002 /* SendAmountStepScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0C20000000000000001 /* SendAmountStepScreen.swift */; };
+		E5E0D0C10000000000000003 /* SendAmountViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0C10000000000000001 /* SendAmountViewModel.swift */; };
+		E5E0D0C20000000000000003 /* SendAmountStepScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0C20000000000000001 /* SendAmountStepScreen.swift */; };
+		E5E0D0A10000000000000003 /* SelectSourceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0A10000000000000001 /* SelectSourceViewModel.swift */; };
+		E5E0D0A20000000000000003 /* SelectSourceSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0A20000000000000001 /* SelectSourceSheet.swift */; };
 		E5E0D0080000000000000002 /* IdentityLookupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0080000000000000001 /* IdentityLookupService.swift */; };
 		E5E0D00A0000000000000002 /* ExternalSendFeeEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D00A0000000000000001 /* ExternalSendFeeEstimator.swift */; };
 		E5E0D00C0000000000000002 /* ExternalSendExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D00C0000000000000001 /* ExternalSendExecutor.swift */; };
@@ -31,12 +47,18 @@
 		E5E0D0010000000000000033 /* Destination.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0010000000000000021 /* Destination.swift */; };
 		E5E0D0010000000000000034 /* DestinationParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0010000000000000022 /* DestinationParser.swift */; };
 		E5E0D0010000000000000035 /* DestinationParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0010000000000000022 /* DestinationParser.swift */; };
+		E5E0D0010000000000000002 /* SendMenuTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0010000000000000001 /* SendMenuTests.swift */; };
 		E5E0D0040000000000000002 /* AmountRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0040000000000000001 /* AmountRulesTests.swift */; };
 		E5E0D0090000000000000002 /* ExternalSendFeeEstimatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0090000000000000001 /* ExternalSendFeeEstimatorTests.swift */; };
 		E5E0D00B0000000000000002 /* ExternalSendExecutorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D00B0000000000000001 /* ExternalSendExecutorTests.swift */; };
 		E5E0D0030000000000000002 /* SendPairPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0030000000000000001 /* SendPairPolicyTests.swift */; };
 		E5E0D0210000000000000002 /* ExternalPlatformFundingResumeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0210000000000000001 /* ExternalPlatformFundingResumeTests.swift */; };
+		E5E0D0110000000000000002 /* AddressViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0110000000000000001 /* AddressViewModelTests.swift */; };
+		E5E0D0990000000000000002 /* SelectSourceViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0990000000000000001 /* SelectSourceViewModelTests.swift */; };
+		E5E0D0B90000000000000002 /* SendAmountViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0B90000000000000001 /* SendAmountViewModelTests.swift */; };
+		E5E0D0C80000000000000002 /* ConfirmViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0C80000000000000001 /* ConfirmViewModelTests.swift */; };
 		E5E0D0070000000000000002 /* IdentityLookupServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0070000000000000001 /* IdentityLookupServiceTests.swift */; };
+		E5E0D0010000000000000071 /* SendOutcomeRouterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0010000000000000070 /* SendOutcomeRouterTests.swift */; };
 		E5E0D0010000000000000051 /* SendOutcomeMappingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0010000000000000050 /* SendOutcomeMappingTests.swift */; };
 		E5E0D0010000000000000005 /* DestinationParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0010000000000000004 /* DestinationParserTests.swift */; };
 		A11C00001274000000000002 /* AssetLockInputPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C00001274000000000001 /* AssetLockInputPolicy.swift */; };
@@ -675,6 +697,8 @@
 		58825FFD2913876CC5D4AA21 /* InternalTransferScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62C70E4EBB7458C362B7669 /* InternalTransferScreen.swift */; };
 		C0172000000000000003A2 /* PaymentsTabRootController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000003A1 /* PaymentsTabRootController.swift */; };
 		C0172000000000000003A3 /* PaymentsTabRootController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000003A1 /* PaymentsTabRootController.swift */; };
+		E5E0D0010000000000000011 /* SendMenuRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0010000000000000010 /* SendMenuRow.swift */; };
+		E5E0D0010000000000000012 /* SendMenuRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0010000000000000010 /* SendMenuRow.swift */; };
 		C0172000000000000006A2 /* PaymentsSendCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000006A1 /* PaymentsSendCard.swift */; };
 		C0172000000000000006A3 /* PaymentsSendCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000006A1 /* PaymentsSendCard.swift */; };
 		C0172000000000000007A2 /* PaymentsReceiveContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0172000000000000007A1 /* PaymentsReceiveContent.swift */; };
@@ -2092,7 +2116,18 @@
 		AE4A372E7EC798A350694542 /* ShieldedWithdrawalHistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E12F7F1F376A7ED784840839 /* ShieldedWithdrawalHistoryTests.swift */; };
 		6E2230E18A5A739428FB9172 /* ShieldedWithdrawalHistoryUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17AA5286B0A6B87FBDBFECF4 /* ShieldedWithdrawalHistoryUITests.swift */; };
 		74648FE9B1A4F560BD376049 /* ShieldedWithdrawalHistoryFixture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E6EC867403319C64E4E6101 /* ShieldedWithdrawalHistoryFixture.swift */; };
+		E5E0D0D10000000000000002 /* SendOutcomeRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0D10000000000000001 /* SendOutcomeRouter.swift */; };
+		E5E0D0F30000000000000002 /* ExternalSendHostController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0F30000000000000001 /* ExternalSendHostController.swift */; };
+		E5E0D0F30000000000000003 /* ExternalSendHostController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0F30000000000000001 /* ExternalSendHostController.swift */; };
+		E5E0D0F20000000000000002 /* ExternalSendFlowScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0F20000000000000001 /* ExternalSendFlowScreen.swift */; };
+		E5E0D0F20000000000000003 /* ExternalSendFlowScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0F20000000000000001 /* ExternalSendFlowScreen.swift */; };
+		E5E0D0F10000000000000002 /* ExternalSendFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0F10000000000000001 /* ExternalSendFlow.swift */; };
+		E5E0D0F10000000000000003 /* ExternalSendFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0F10000000000000001 /* ExternalSendFlow.swift */; };
+		E5E0D0D10000000000000003 /* SendOutcomeRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0D10000000000000001 /* SendOutcomeRouter.swift */; };
+		E5E0D0D20000000000000002 /* SendFailedSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0D20000000000000001 /* SendFailedSheet.swift */; };
+		E5E0D0D20000000000000003 /* SendFailedSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0D20000000000000001 /* SendFailedSheet.swift */; };
 		E5E0D0D30000000000000002 /* PreparedExternalSendTxidTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0D30000000000000001 /* PreparedExternalSendTxidTests.swift */; };
+		E5E0D0E10000000000000002 /* ExternalSendFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0E10000000000000001 /* ExternalSendFlowTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -2176,6 +2211,14 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		E5E0D0C90000000000000001 /* ConfirmViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmViewModel.swift; sourceTree = "<group>"; };
+		E5E0D0CA0000000000000001 /* ConfirmSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmSheet.swift; sourceTree = "<group>"; };
+		E5E0D0130000000000000001 /* AddressScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressScreen.swift; sourceTree = "<group>"; };
+		E5E0D0120000000000000001 /* AddressViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressViewModel.swift; sourceTree = "<group>"; };
+		E5E0D0C10000000000000001 /* SendAmountViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendAmountViewModel.swift; sourceTree = "<group>"; };
+		E5E0D0C20000000000000001 /* SendAmountStepScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendAmountStepScreen.swift; sourceTree = "<group>"; };
+		E5E0D0A10000000000000001 /* SelectSourceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectSourceViewModel.swift; sourceTree = "<group>"; };
+		E5E0D0A20000000000000001 /* SelectSourceSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectSourceSheet.swift; sourceTree = "<group>"; };
 		E5E0D0080000000000000001 /* IdentityLookupService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityLookupService.swift; sourceTree = "<group>"; };
 		E5E0D00C0000000000000001 /* ExternalSendExecutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalSendExecutor.swift; sourceTree = "<group>"; };
 		E5E0D0F40000000000000001 /* PaymentRequestFetching.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentRequestFetching.swift; sourceTree = "<group>"; };
@@ -2188,12 +2231,18 @@
 		E5E0D0010000000000000020 /* SendSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendSource.swift; sourceTree = "<group>"; };
 		E5E0D0010000000000000021 /* Destination.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Destination.swift; sourceTree = "<group>"; };
 		E5E0D0010000000000000022 /* DestinationParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DestinationParser.swift; sourceTree = "<group>"; };
+		E5E0D0010000000000000001 /* SendMenuTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendMenuTests.swift; sourceTree = "<group>"; };
 		E5E0D0040000000000000001 /* AmountRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountRulesTests.swift; sourceTree = "<group>"; };
 		E5E0D0090000000000000001 /* ExternalSendFeeEstimatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalSendFeeEstimatorTests.swift; sourceTree = "<group>"; };
 		E5E0D00B0000000000000001 /* ExternalSendExecutorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalSendExecutorTests.swift; sourceTree = "<group>"; };
 		E5E0D0030000000000000001 /* SendPairPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendPairPolicyTests.swift; sourceTree = "<group>"; };
 		E5E0D0210000000000000001 /* ExternalPlatformFundingResumeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPlatformFundingResumeTests.swift; sourceTree = "<group>"; };
+		E5E0D0110000000000000001 /* AddressViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressViewModelTests.swift; sourceTree = "<group>"; };
+		E5E0D0990000000000000001 /* SelectSourceViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectSourceViewModelTests.swift; sourceTree = "<group>"; };
+		E5E0D0B90000000000000001 /* SendAmountViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendAmountViewModelTests.swift; sourceTree = "<group>"; };
+		E5E0D0C80000000000000001 /* ConfirmViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmViewModelTests.swift; sourceTree = "<group>"; };
 		E5E0D0070000000000000001 /* IdentityLookupServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityLookupServiceTests.swift; sourceTree = "<group>"; };
+		E5E0D0010000000000000070 /* SendOutcomeRouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendOutcomeRouterTests.swift; sourceTree = "<group>"; };
 		E5E0D0010000000000000050 /* SendOutcomeMappingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendOutcomeMappingTests.swift; sourceTree = "<group>"; };
 		E5E0D0010000000000000004 /* DestinationParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DestinationParserTests.swift; sourceTree = "<group>"; };
 		A11C00001274000000000001 /* AssetLockInputPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetLockInputPolicy.swift; sourceTree = "<group>"; };
@@ -3260,6 +3309,7 @@
 		A59D5720437F8A4137605940 /* PaymentRequestVerifier.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PaymentRequestVerifier.swift; sourceTree = "<group>"; };
 		A62C70E4EBB7458C362B7669 /* InternalTransferScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InternalTransferScreen.swift; sourceTree = "<group>"; };
 		C0172000000000000003A1 /* PaymentsTabRootController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsTabRootController.swift; sourceTree = "<group>"; };
+		E5E0D0010000000000000010 /* SendMenuRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendMenuRow.swift; sourceTree = "<group>"; };
 		C0172000000000000006A1 /* PaymentsSendCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsSendCard.swift; sourceTree = "<group>"; };
 		C0172000000000000007A1 /* PaymentsReceiveContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsReceiveContent.swift; sourceTree = "<group>"; };
 		C0172000000000000002A1 /* PaymentsActionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentsActionCard.swift; sourceTree = "<group>"; };
@@ -3958,7 +4008,13 @@
 		0E6EC867403319C64E4E6101 /* ShieldedWithdrawalHistoryFixture.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedWithdrawalHistoryFixture.swift; sourceTree = "<group>"; };
 		E12F7F1F376A7ED784840839 /* ShieldedWithdrawalHistoryTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedWithdrawalHistoryTests.swift; sourceTree = "<group>"; };
 		17AA5286B0A6B87FBDBFECF4 /* ShieldedWithdrawalHistoryUITests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedWithdrawalHistoryUITests.swift; sourceTree = "<group>"; };
+		E5E0D0D10000000000000001 /* SendOutcomeRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendOutcomeRouter.swift; sourceTree = "<group>"; };
+		E5E0D0F30000000000000001 /* ExternalSendHostController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalSendHostController.swift; sourceTree = "<group>"; };
+		E5E0D0F20000000000000001 /* ExternalSendFlowScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalSendFlowScreen.swift; sourceTree = "<group>"; };
+		E5E0D0F10000000000000001 /* ExternalSendFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalSendFlow.swift; sourceTree = "<group>"; };
+		E5E0D0D20000000000000001 /* SendFailedSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendFailedSheet.swift; sourceTree = "<group>"; };
 		E5E0D0D30000000000000001 /* PreparedExternalSendTxidTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreparedExternalSendTxidTests.swift; sourceTree = "<group>"; };
+		E5E0D0E10000000000000001 /* ExternalSendFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalSendFlowTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -4064,6 +4120,51 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		E5E0D0D40000000000000001 /* Sending */ = {
+			isa = PBXGroup;
+			children = (
+				E5E0D0D10000000000000001 /* SendOutcomeRouter.swift */,
+				E5E0D0D20000000000000001 /* SendFailedSheet.swift */,
+			);
+			path = Sending;
+			sourceTree = "<group>";
+		};
+		E5E0D0CB0000000000000001 /* Confirm */ = {
+			isa = PBXGroup;
+			children = (
+				E5E0D0C90000000000000001 /* ConfirmViewModel.swift */,
+				E5E0D0CA0000000000000001 /* ConfirmSheet.swift */,
+			);
+			path = Confirm;
+			sourceTree = "<group>";
+		};
+		E5E0D0C30000000000000001 /* Send */ = {
+			isa = PBXGroup;
+			children = (
+				E5E0D0C10000000000000001 /* SendAmountViewModel.swift */,
+				E5E0D0C20000000000000001 /* SendAmountStepScreen.swift */,
+			);
+			path = Send;
+			sourceTree = "<group>";
+		};
+		E5E0D0A30000000000000001 /* SelectSource */ = {
+			isa = PBXGroup;
+			children = (
+				E5E0D0A10000000000000001 /* SelectSourceViewModel.swift */,
+				E5E0D0A20000000000000001 /* SelectSourceSheet.swift */,
+			);
+			path = SelectSource;
+			sourceTree = "<group>";
+		};
+		E5E0D0140000000000000001 /* Address */ = {
+			isa = PBXGroup;
+			children = (
+				E5E0D0120000000000000001 /* AddressViewModel.swift */,
+				E5E0D0130000000000000001 /* AddressScreen.swift */,
+			);
+			path = Address;
+			sourceTree = "<group>";
+		};
 		E5E0D0080000000000000004 /* Services */ = {
 			isa = PBXGroup;
 			children = (
@@ -4093,6 +4194,14 @@
 		E5E0D0010000000000000040 /* ExternalSend */ = {
 			isa = PBXGroup;
 			children = (
+				E5E0D0F30000000000000001 /* ExternalSendHostController.swift */,
+				E5E0D0F20000000000000001 /* ExternalSendFlowScreen.swift */,
+				E5E0D0F10000000000000001 /* ExternalSendFlow.swift */,
+				E5E0D0140000000000000001 /* Address */,
+				E5E0D0A30000000000000001 /* SelectSource */,
+				E5E0D0CB0000000000000001 /* Confirm */,
+				E5E0D0D40000000000000001 /* Sending */,
+				E5E0D0C30000000000000001 /* Send */,
 				E5E0D0010000000000000041 /* Domain */,
 				E5E0D0080000000000000004 /* Services */,
 			);
@@ -4102,6 +4211,7 @@
 		E5E0D0010000000000000003 /* ExternalSend */ = {
 			isa = PBXGroup;
 			children = (
+				E5E0D0010000000000000001 /* SendMenuTests.swift */,
 				E5E0D0030000000000000001 /* SendPairPolicyTests.swift */,
 				E5E0D0210000000000000001 /* ExternalPlatformFundingResumeTests.swift */,
 				E5E0D0040000000000000001 /* AmountRulesTests.swift */,
@@ -4109,8 +4219,14 @@
 				E5E0D00B0000000000000001 /* ExternalSendExecutorTests.swift */,
 				E5E0D0010000000000000004 /* DestinationParserTests.swift */,
 				E5E0D0010000000000000050 /* SendOutcomeMappingTests.swift */,
+				E5E0D0010000000000000070 /* SendOutcomeRouterTests.swift */,
 				E5E0D0070000000000000001 /* IdentityLookupServiceTests.swift */,
+				E5E0D0110000000000000001 /* AddressViewModelTests.swift */,
+				E5E0D0990000000000000001 /* SelectSourceViewModelTests.swift */,
+				E5E0D0B90000000000000001 /* SendAmountViewModelTests.swift */,
+				E5E0D0C80000000000000001 /* ConfirmViewModelTests.swift */,
 				E5E0D0D30000000000000001 /* PreparedExternalSendTxidTests.swift */,
+				E5E0D0E10000000000000001 /* ExternalSendFlowTests.swift */,
 			);
 			path = ExternalSend;
 			sourceTree = "<group>";
@@ -7029,6 +7145,7 @@
 				C0172000000000000002A1 /* PaymentsActionCard.swift */,
 				C0172000000000000007A1 /* PaymentsReceiveContent.swift */,
 				C0172000000000000006A1 /* PaymentsSendCard.swift */,
+				E5E0D0010000000000000010 /* SendMenuRow.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -10569,6 +10686,19 @@
 				E5E0D0010000000000000032 /* Destination.swift in Sources */,
 				E5E0D0010000000000000034 /* DestinationParser.swift in Sources */,
 				E5E0D0080000000000000002 /* IdentityLookupService.swift in Sources */,
+				E5E0D0120000000000000002 /* AddressViewModel.swift in Sources */,
+				E5E0D0130000000000000002 /* AddressScreen.swift in Sources */,
+				E5E0D0A10000000000000002 /* SelectSourceViewModel.swift in Sources */,
+				E5E0D0C90000000000000002 /* ConfirmViewModel.swift in Sources */,
+				E5E0D0CA0000000000000002 /* ConfirmSheet.swift in Sources */,
+				E5E0D0D10000000000000002 /* SendOutcomeRouter.swift in Sources */,
+				E5E0D0F30000000000000002 /* ExternalSendHostController.swift in Sources */,
+				E5E0D0F20000000000000002 /* ExternalSendFlowScreen.swift in Sources */,
+				E5E0D0F10000000000000002 /* ExternalSendFlow.swift in Sources */,
+				E5E0D0D20000000000000002 /* SendFailedSheet.swift in Sources */,
+				E5E0D0C10000000000000002 /* SendAmountViewModel.swift in Sources */,
+				E5E0D0C20000000000000002 /* SendAmountStepScreen.swift in Sources */,
+				E5E0D0A20000000000000002 /* SelectSourceSheet.swift in Sources */,
 				E5E0D00A0000000000000002 /* ExternalSendFeeEstimator.swift in Sources */,
 				E5E0D00C0000000000000002 /* ExternalSendExecutor.swift in Sources */,
 				E5E0D0F40000000000000002 /* PaymentRequestFetching.swift in Sources */,
@@ -10642,6 +10772,7 @@
 				C0172000000000000002A2 /* PaymentsActionCard.swift in Sources */,
 				C0172000000000000007A2 /* PaymentsReceiveContent.swift in Sources */,
 				C0172000000000000006A2 /* PaymentsSendCard.swift in Sources */,
+				E5E0D0010000000000000011 /* SendMenuRow.swift in Sources */,
 				C0172000000000000003A2 /* PaymentsTabRootController.swift in Sources */,
 				C0171F000000000000001A2 /* TransferSourceRow.swift in Sources */,
 				C0172000000000000011A2 /* TransferPrivacyTip.swift in Sources */,
@@ -10773,15 +10904,22 @@
 				AA06A0012FF6000000000001 /* PlatformDashConnectDataSourceTests.swift in Sources */,
 				47976E4A2987772700612988 /* AmountObjectTests.swift in Sources */,
 				A17EED0126C7000000000001 /* WalletWipeSerialExecutorTests.swift in Sources */,
+				E5E0D0010000000000000002 /* SendMenuTests.swift in Sources */,
 				E5E0D0030000000000000002 /* SendPairPolicyTests.swift in Sources */,
 				E5E0D0210000000000000002 /* ExternalPlatformFundingResumeTests.swift in Sources */,
 				E5E0D0070000000000000002 /* IdentityLookupServiceTests.swift in Sources */,
+				E5E0D0110000000000000002 /* AddressViewModelTests.swift in Sources */,
+				E5E0D0990000000000000002 /* SelectSourceViewModelTests.swift in Sources */,
+				E5E0D0B90000000000000002 /* SendAmountViewModelTests.swift in Sources */,
+				E5E0D0C80000000000000002 /* ConfirmViewModelTests.swift in Sources */,
 				E5E0D0040000000000000002 /* AmountRulesTests.swift in Sources */,
 				E5E0D0090000000000000002 /* ExternalSendFeeEstimatorTests.swift in Sources */,
 				E5E0D00B0000000000000002 /* ExternalSendExecutorTests.swift in Sources */,
 				E5E0D0010000000000000005 /* DestinationParserTests.swift in Sources */,
 				E5E0D0010000000000000051 /* SendOutcomeMappingTests.swift in Sources */,
+				E5E0D0010000000000000071 /* SendOutcomeRouterTests.swift in Sources */,
 				E5E0D0D30000000000000002 /* PreparedExternalSendTxidTests.swift in Sources */,
+				E5E0D0E10000000000000002 /* ExternalSendFlowTests.swift in Sources */,
 				7D4F1A2B3C4D5E6F7A8B9D04 /* SPVChainStoreRebuildTests.swift in Sources */,
 				D14F9F63DD9D8AE57D14B3F1 /* MainNamePickSaveTests.swift in Sources */,
 				B7C072AA26C7000000000001 /* DWContestedNameStatusServiceTests.swift in Sources */,
@@ -11673,6 +11811,19 @@
 				E5E0D0010000000000000033 /* Destination.swift in Sources */,
 				E5E0D0010000000000000035 /* DestinationParser.swift in Sources */,
 				E5E0D0080000000000000003 /* IdentityLookupService.swift in Sources */,
+				E5E0D0120000000000000003 /* AddressViewModel.swift in Sources */,
+				E5E0D0130000000000000003 /* AddressScreen.swift in Sources */,
+				E5E0D0A10000000000000003 /* SelectSourceViewModel.swift in Sources */,
+				E5E0D0C90000000000000003 /* ConfirmViewModel.swift in Sources */,
+				E5E0D0CA0000000000000003 /* ConfirmSheet.swift in Sources */,
+				E5E0D0D10000000000000003 /* SendOutcomeRouter.swift in Sources */,
+				E5E0D0F30000000000000003 /* ExternalSendHostController.swift in Sources */,
+				E5E0D0F20000000000000003 /* ExternalSendFlowScreen.swift in Sources */,
+				E5E0D0F10000000000000003 /* ExternalSendFlow.swift in Sources */,
+				E5E0D0D20000000000000003 /* SendFailedSheet.swift in Sources */,
+				E5E0D0C10000000000000003 /* SendAmountViewModel.swift in Sources */,
+				E5E0D0C20000000000000003 /* SendAmountStepScreen.swift in Sources */,
+				E5E0D0A20000000000000003 /* SelectSourceSheet.swift in Sources */,
 				E5E0D00A0000000000000003 /* ExternalSendFeeEstimator.swift in Sources */,
 				E5E0D00C0000000000000003 /* ExternalSendExecutor.swift in Sources */,
 				E5E0D0F40000000000000003 /* PaymentRequestFetching.swift in Sources */,
@@ -11775,6 +11926,7 @@
 				C0172000000000000002A3 /* PaymentsActionCard.swift in Sources */,
 				C0172000000000000007A3 /* PaymentsReceiveContent.swift in Sources */,
 				C0172000000000000006A3 /* PaymentsSendCard.swift in Sources */,
+				E5E0D0010000000000000012 /* SendMenuRow.swift in Sources */,
 				C0172000000000000003A3 /* PaymentsTabRootController.swift in Sources */,
 				C0171F000000000000001A3 /* TransferSourceRow.swift in Sources */,
 				C0172000000000000011A3 /* TransferPrivacyTip.swift in Sources */,

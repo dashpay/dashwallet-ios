@@ -133,6 +133,9 @@
 /* No comment provided by engineer. */
 "%@ · Platform balance" = "%@ · Баланс Platform";
 
+/* External send */
+"%@, so the source was changed to %@." = "%1$@, so the source was changed to %2$@.";
+
 /* SPV diagnostics */
 "%d already spent" = "%d already spent";
 
@@ -363,6 +366,9 @@
 
 /* No comment provided by engineer. */
 "About" = "Про програму";
+
+/* External send */
+"about %@" = "about %@";
 
 /* DashPay FAQ title */
 "About DashPay" = "Про DashPay";
@@ -825,6 +831,9 @@
 /* Platform address payment detail */
 "Balance after" = "Баланс після";
 
+/* External send */
+"Balance not enough" = "Balance not enough";
+
 /* Balance not restored
    Max requires a known source balance
    Selected source balance not restored */
@@ -993,6 +1002,9 @@
 
 /* Buy/Sell */
 "Buy/Sell" = "Купити/Продати";
+
+/* External send */
+"Calculating…" = "Calculating…";
 
 /* No comment provided by engineer. */
 "Camera is required to scan QR codes." = "Camera is required to scan QR codes.";
@@ -1407,6 +1419,9 @@
 "Core" = "Core";
 
 /* External send */
+"Core address" = "Core address";
+
+/* External send */
 "Core can't pay someone else's identity" = "Core can't pay someone else's identity";
 
 /* External send */
@@ -1487,6 +1502,12 @@
 
 /* SPV diagnostics */
 "Couldn't authenticate: %@" = "Couldn't authenticate: %@";
+
+/* External send */
+"Couldn't calculate the network fee. Check your connection and try again." = "Couldn't calculate the network fee. Check your connection and try again.";
+
+/* External send */
+"Couldn't check the identity. Check your connection and try again." = "Couldn't check the identity. Check your connection and try again.";
 
 /* No comment provided by engineer. */
 "Couldn't check which keys of this evonode are in the wallet." = "Не вдалося перевірити, які ключі цієї евоноди є в гаманці.";
@@ -1634,6 +1655,9 @@
 
 /* No comment provided by engineer. */
 "Dash address" = "Адреса Dash";
+
+/* External send */
+"DASH address" = "DASH address";
 
 /* No comment provided by engineer. */
 "Dash balance" = "Баланс Dash";
@@ -2057,6 +2081,9 @@
 
 /* DashPay: fee line of the Enable DashPay confirmation */
 "Estimated network fee" = "Орієнтовна комісія мережі";
+
+/* External send */
+"Everything above the DashPay reserve is already spent, so Max is off. You can still type an amount." = "Everything above the DashPay reserve is already spent, so Max is off. You can still type an amount.";
 
 /* SPV sync peer type */
 "Evonode" = "Evonode";
@@ -2519,6 +2546,9 @@
 /* Identity recovery */
 "Identity is still loading" = "Identity is still loading";
 
+/* External send */
+"Identity not found" = "Identity not found";
+
 /* Asset lock funding a DashPay identity registration */
 "Identity registration" = "Реєстрація ідентифікатора";
 
@@ -2732,6 +2762,9 @@
 /* Settings */
 "It unlocks powerful features for managing your Dash across the network" = "It unlocks powerful features for managing your Dash across the network";
 
+/* External send */
+"It will finish on its own. You don't need to send it again." = "It will finish on its own. You don't need to send it again.";
+
 /* No comment provided by engineer. */
 "It would seem like you are attempting to restore your wallet a using a 12 word recovery phrase, however you have only entered 10 words, would you like to automatically recover missing words? This might take around an hour. We recommend plugging in your device." = "Ви намагаєтеся відновити свій гаманець за допомогою фрази відновлення з 12 слів. Однак, ви ввели лише 10 слів. Бажаєте автоматично відновити пропущені слова? Це займе приблизно годину. Рекомендуємо підключити гаджет до зарядного пристрою.";
 
@@ -2909,6 +2942,9 @@
 
 /* Username marketplace: set price fee note */
 "Listing is a network transaction with a small fee, paid from your identity balance." = "Виставлення на продаж — це транзакція мережі з невеликою комісією, яка сплачується з балансу вашого ідентифікатора.";
+
+/* External send */
+"Loading" = "Loading";
 
 /* Username marketplace: browse feed loading */
 "Loading activity…" = "Завантажуємо активність…";
@@ -3331,6 +3367,9 @@
 /* No comment provided by engineer. */
 "No address available" = "No address available";
 
+/* External send */
+"No address, Identity ID or dash: link on the clipboard" = "No address, Identity ID or dash: link on the clipboard";
+
 /* Sync diagnostics */
 "No addresses derived yet" = "No addresses derived yet";
 
@@ -3544,6 +3583,9 @@
 /* No comment provided by engineer. */
 "Not a Dash URL" = "Не є посиланням Dash";
 
+/* External send */
+"Not a valid address for this network" = "Not a valid address for this network";
+
 /* No comment provided by engineer. */
 "Not a valid Dash address" = "Неправильна Dash адреса";
 
@@ -3654,6 +3696,9 @@
 
 /* Usernames: confirm the funding source */
 "Nothing was sent" = "Nothing was sent";
+
+/* External send */
+"Nothing was sent. Your money is still in your %@ balance." = "Nothing was sent. Your money is still in your %@ balance.";
 
 /* No comment provided by engineer. */
 "Notifications" = "Сповіщення";
@@ -3796,6 +3841,9 @@
 /* DashSpend */
 "Password" = "Пароль";
 
+/* External send */
+"Paste %@" = "Paste %@";
+
 /* Maya */
 "Paste address from" = "Paste address from";
 
@@ -3870,6 +3918,9 @@
 
 /* CTXSpend error */
 "Payment processing error: %@" = "Помилка обробки платежу: %@";
+
+/* External send */
+"Payment request" = "Payment request";
 
 /* DashPay Contacts */
 "Payments" = "Payments";
@@ -4812,6 +4863,9 @@
 /* No comment provided by engineer. */
 "Select option" = "Виберіть опцію";
 
+/* External send */
+"Select source" = "Select source";
+
 /* Coinbase */
 "Select the coin" = "Виберіть монету";
 
@@ -4847,6 +4901,12 @@
 
 /* No comment provided by engineer. */
 "Send Contact Request" = "Надіслати запит на додавання до контактів";
+
+/* External send */
+"Send failed" = "Send failed";
+
+/* External send */
+"Send in progress" = "Send in progress";
 
 /* Username marketplace: transfer sheet body */
 "Send this name to another identity for free. The transfer also removes any sale listing. This can't be undone — the new owner would have to transfer it back." = "Надішліть це ім'я іншому ідентифікатору безкоштовно. Передача також знімає будь-яке оголошення про продаж. Це не можна скасувати — новому власнику довелося б передати ім'я назад.";
@@ -4890,6 +4950,9 @@
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Відправка";
 
+/* External send */
+"Sending from Shielded to an address that is not Shielded makes the amount and the destination public." = "Sending from Shielded to an address that is not Shielded makes the amount and the destination public.";
+
 /* Buy Dash */
 "Sending to:" = "Відправка:";
 
@@ -4901,6 +4964,9 @@
 
 /* 4 out of 4 in the Sending Animation */
 "Sending..." = "Відправка...";
+
+/* External send */
+"Sending…" = "Sending…";
 
 /* Send confirm sheet: Core drain */
 "Sends all eligible Transparent funds" = "Sends all eligible Transparent funds";
@@ -5015,6 +5081,9 @@
 
 /* Send screen: reveal the funding balance */
 "Show balance" = "Show balance";
+
+/* External send */
+"Show clipboard" = "Show clipboard";
 
 /* Enter Address Screen */
 "Show content in the clipboard" = "Показати вміст у буфері обміну";
@@ -5398,6 +5467,9 @@
 /* Dash DEX / dex_error_insufficient_balance */
 "The amount is more than what you're sending." = "The amount is more than what you're sending.";
 
+/* External send */
+"The amount is set by the payment request." = "The amount is set by the payment request.";
+
 /* InternalTransfer */
 "The amount is too large to transfer." = "The amount is too large to transfer.";
 
@@ -5572,6 +5644,9 @@
 /* DashConnect */
 "The network answered with an older copy of your identity. Try again in a moment." = "The network answered with an older copy of your identity. Try again in a moment.";
 
+/* External send */
+"The network fee includes a Platform fee reserve. What is not used returns to your Platform balance." = "The network fee includes a Platform fee reserve. What is not used returns to your Platform balance.";
+
 /* DashConnect App Connect v2 */
 "The network has not caught up with your identity's keys yet. Try again in a moment." = "The network has not caught up with your identity's keys yet. Try again in a moment.";
 
@@ -5628,6 +5703,9 @@
 
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "У збереженого запису гаманця немає мережі — неможливо підготувати пересинхронізацію.";
+
+/* External send */
+"The Platform fee is taken from the amount the identity receives." = "The Platform fee is taken from the amount the identity receives.";
 
 /* Dash DEX / dex_error_price_moved */
 "The price moved too much. Please go back and try again." = "The price moved too much. Please go back and try again.";
@@ -5923,6 +6001,9 @@
 /* DashConnect */
 "This kind of code is not accepted on mainnet. Ask the app for a DashPay connect link or code." = "This kind of code is not accepted on mainnet. Ask the app for a DashPay connect link or code.";
 
+/* External send */
+"This leaves less than the DashPay reserve. DashPay actions, like contact requests and profile updates, may stop working." = "This leaves less than the DashPay reserve. DashPay actions, like contact requests and profile updates, may stop working.";
+
 /* No comment provided by engineer. */
 "This link needs a newer version of the wallet." = "This link needs a newer version of the wallet.";
 
@@ -6012,6 +6093,9 @@
 
 /* Dash DEX / dex_error_allowance */
 "This token needs approval before it can be swapped." = "This token needs approval before it can be swapped.";
+
+/* External send */
+"This tops up your own Identity credits." = "This tops up your own Identity credits.";
 
 /* Remove never-accepted transaction: local state says it's on-chain */
 "This transaction is confirmed and can't be removed." = "Ця транзакція підтверджена, її не можна видалити.";
@@ -6905,6 +6989,12 @@
 /* DashPay FAQ */
 "What's coming next?" = "Що буде далі?";
 
+/* External send */
+"When sending from Shielded balance to Core the amount and destination becomes public" = "When sending from Shielded balance to Core the amount and destination becomes public";
+
+/* External send */
+"When sending from Shielded balance, the transaction is not instant and takes some time" = "When sending from Shielded balance, the transaction is not instant and takes some time";
+
 /* DashPay FAQ */
 "When will contact requests become private?" = "Коли запити на додавання до контактів стануть приватними?";
 
@@ -7276,6 +7366,9 @@
 
 /* DashPay intro: feature title */
 "Your history, organized" = "Ваша історія, упорядкована";
+
+/* External send */
+"Your identity" = "Your identity";
 
 /* Identity withdrawal — Platform refused the amount as more than the balance can cover */
 "Your Identity balance can't cover this amount plus the network fee. Enter a smaller amount and try again." = "Your Identity balance can't cover this amount plus the network fee. Enter a smaller amount and try again.";

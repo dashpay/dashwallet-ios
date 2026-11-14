@@ -160,7 +160,7 @@ NS_ASSUME_NONNULL_END
 
         NSString *addr = [codeObject.stringValue stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
         DWParsedPaymentURI *parsed = [DWParsedPaymentURI parsePaymentString:addr];
-        if (parsed.isValidDashPaymentIntent) {
+        if (parsed.isValidDashPaymentIntent || [DWParsedPaymentURI isIdentityIDString:addr]) {
             return codeObject;
         }
         else if (!anyObject) {
@@ -195,7 +195,7 @@ NS_ASSUME_NONNULL_END
     DWParsedPaymentURI *parsed = [DWParsedPaymentURI parsePaymentString:addr];
     // The URI parse, `pay:` normalization and address validity are app-side now (the box). (Paper-wallet
     // sweep — the old WIF/BIP38 arm — was dropped in C8 step 5.)
-    if (parsed.isValidDashPaymentIntent) {
+    if (parsed.isValidDashPaymentIntent || [DWParsedPaymentURI isIdentityIDString:addr]) {
         if (parsed.rURL != nil) {                       // start fetching payment protocol request right away
             dispatch_sync(dispatch_get_main_queue(), ^{ // sync!
                 QRCodeObject *qrCodeObject = [[QRCodeObject alloc] initWithMetadataObject:codeObject];
@@ -236,6 +236,7 @@ NS_ASSUME_NONNULL_END
                                                    [paymentInput attachParsedURI:cleared];
                                                }
                                                else {
+                                                   [paymentInput attachParsedURI:parsed];
                                                    paymentInput.bip70Confirmation = box;
                                                }
 
@@ -277,6 +278,7 @@ NS_ASSUME_NONNULL_END
                                            if (box) {
                                                [strongSelf.qrCodeObject setValid];
                                                DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:DWPaymentInputSource_ScanQR];
+                                               [paymentInput attachParsedURI:parsed];
                                                paymentInput.bip70Confirmation = box;
                                                [strongSelf.delegate qrScanModel:strongSelf didScanPaymentInput:paymentInput];
                                            }

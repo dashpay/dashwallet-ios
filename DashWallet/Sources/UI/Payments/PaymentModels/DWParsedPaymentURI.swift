@@ -210,6 +210,21 @@ final class ParsedPaymentURI: NSObject {
                                 requiresSendScreenRouting: isBech32Destination)
     }
 
+    /// True when `string` is an Identity ID, bare or in a `dash:` link, which the QR scanner accepts for the external
+    /// send.
+    @objc(isIdentityIDString:)
+    static func isIdentityID(string: String) -> Bool {
+        let network = WalletEnvironment.networkKind
+        guard case .success(let destination) = DestinationParser.parse(string, network: network) else { return false }
+        return destination.type == .identityID
+    }
+
+    /// `raw` as the deep-link router reads it: a `dashwallet://pay=…` link rewritten to its `dash:` URI, anything
+    /// else unchanged.
+    static func paymentString(for raw: String) -> String {
+        deepLinkPaymentString(for: raw) ?? raw
+    }
+
     /// The `dash:` URI that `DWURLParser`, the deep-link router, rewrites a `dashwallet://pay=…`
     /// link to. Read raw, `pay=<address>` would be taken for the address. A deep link is rewritten
     /// before it gets here, so this is a link the wallet read itself (a scan, a paste, an NFC tag):

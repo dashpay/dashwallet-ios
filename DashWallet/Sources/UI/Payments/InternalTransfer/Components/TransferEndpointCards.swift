@@ -18,24 +18,20 @@
 import SwiftUI
 import DashUIKit
 
-/// The From / To endpoint cards, in whichever of the three shapes the host
+/// The From / To endpoint cards, in whichever of the two shapes the host
 /// asked for.
 ///
 /// The screen used to build all three inline, which is why choosing a layout
 /// and drawing a balance row lived in the same 200 lines. Which shape applies
-/// still follows from `sendFrom` / `receiveInto` alone, so the decision travels
+/// still follows from `receiveInto` alone, so the decision travels
 /// with the drawing rather than with the screen.
 ///
 /// Every shape is the design system's `ConverterCard` over one picker sheet.
-/// The pinned variants used to be a hand-rolled row with its own radio list
+/// The pinned variant used to be a hand-rolled row with its own radio list
 /// instead — a second visual language and a second way to choose the same
 /// endpoint, left behind when the standalone form moved to the card.
 struct TransferEndpointCards: View {
     @ObservedObject var viewModel: InternalTransferViewModel
-
-    /// Send-sheet variant: fixes the source card at the top and turns the rows
-    /// below it into the destination picker. Takes precedence over `receiveInto`.
-    var sendFrom: ChainNetwork?
 
     /// Receive-sheet variant: fixes the destination card at the bottom and
     /// turns the rows above it into the source picker.
@@ -48,7 +44,7 @@ struct TransferEndpointCards: View {
 
     var body: some View {
         layout
-            // One sheet for all three layouts: what changes between them is
+            // One sheet for both layouts: what changes between them is
             // which endpoints it offers, not that it exists. No detent and no
             // drag indicator here — the picker is a `BottomSheet.selfSizing`,
             // which sets its own height detent and draws its own grabber.
@@ -63,35 +59,21 @@ struct TransferEndpointCards: View {
 
     // MARK: - Layouts
 
-    /// All three shapes are the design system's `ConverterCard` — they differ
+    /// Both shapes are the design system's `ConverterCard` — they differ
     /// only in which row carries a tap and whether the seam badge swaps.
     @ViewBuilder
     private var layout: some View {
-        if let source = sendFrom {
-            sendCards(source: source)
-        } else if let target = receiveInto {
+        if let target = receiveInto {
             receiveCards(target: target)
         } else {
             swappableCards
         }
     }
 
-    /// Send-sheet layout: the source is the fixed top row — the balance row
-    /// that opened this sheet chose it — and the bottom row picks the
-    /// destination among the other two balances. `onSwap: nil` leaves the
-    /// static arrow on the seam: with the source pinned there is nothing to
+    /// Receive-sheet layout: the destination is the fixed bottom row and the
+    /// top one picks the source among the other balances. `onSwap: nil` leaves
+    /// the static arrow on the seam: with one side pinned there is nothing to
     /// exchange, only a direction to state.
-    private func sendCards(source: ChainNetwork) -> some View {
-        DashUIKit.ConverterCard(
-            fromItem: converterItem(source),
-            toItem: converterItem(
-                viewModel.resolvedSendTarget,
-                onTap: { picker = .destination }),
-            onSwap: nil)
-    }
-
-    /// Receive-sheet layout: the mirror — the destination is the fixed bottom
-    /// row and the top one picks the source.
     private func receiveCards(target: ChainNetwork) -> some View {
         DashUIKit.ConverterCard(
             fromItem: converterItem(
@@ -114,17 +96,11 @@ struct TransferEndpointCards: View {
                 : nil)
     }
 
-    /// What the picker offers, which is the one thing the three layouts
-    /// disagree on. A pinned sheet reaches no identity and never lists the
+    /// What the picker offers, which is the one thing the two layouts
+    /// disagree on. The pinned sheet reaches no identity and never lists the
     /// endpoint it has fixed, so it picks a plain balance through its own
     /// side's setter.
     private var pickerOptions: TransferEndpointPicker.Options {
-        if let source = sendFrom {
-            return .balances(
-                availableTargets(for: source),
-                selected: viewModel.resolvedSendTarget,
-                select: viewModel.selectSendTarget)
-        }
         if let target = receiveInto {
             return .balances(
                 availableSources(for: target),
@@ -201,13 +177,9 @@ struct TransferEndpointCards: View {
 
     // MARK: - Helpers
 
-    /// Pinned-sheet picker lists (the balance-row arrow sheets): the fixed
-    /// endpoint's balance is left out entirely — only the standalone screen
-    /// shows all three with same-balance taps rejected.
-    private func availableTargets(for source: ChainNetwork) -> [ChainNetwork] {
-        viewModel.availableNetworks.filter { $0 != source }
-    }
-
+    /// The pinned sheet's picker list: the fixed endpoint's balance is left
+    /// out entirely — only the standalone screen shows all three with
+    /// same-balance taps rejected.
     private func availableSources(for target: ChainNetwork) -> [ChainNetwork] {
         viewModel.availableNetworks.filter { $0 != target }
     }
@@ -217,7 +189,6 @@ struct TransferEndpointCards: View {
 
 @MainActor
 private func endpointCardsSample(
-    sendFrom: ChainNetwork? = nil,
     receiveInto: ChainNetwork? = nil,
     source: ChainNetwork = .core,
     target: ChainNetwork = .platform
@@ -226,9 +197,7 @@ private func endpointCardsSample(
         viewModel: .makeForPreview(
             source: source,
             target: target,
-            sendFrom: sendFrom,
             receiveInto: receiveInto),
-        sendFrom: sendFrom,
         receiveInto: receiveInto)
         .padding(20)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -250,7 +219,6 @@ private func endpointCardsSample(
 #Preview("Standalone · to Identity") {
     TransferEndpointCards(
         viewModel: .makeForPreview(identityDestination: true),
-        sendFrom: nil,
         receiveInto: nil)
         .padding(20)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -263,7 +231,6 @@ private func endpointCardsSample(
 #Preview("Standalone · from Identity") {
     TransferEndpointCards(
         viewModel: .makeForPreview(target: .core, identitySource: true),
-        sendFrom: nil,
         receiveInto: nil)
         .padding(20)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -276,22 +243,10 @@ private func endpointCardsSample(
 #Preview("Standalone · Shielded → Identity") {
     TransferEndpointCards(
         viewModel: .makeForPreview(source: .shielded, identityDestination: true),
-        sendFrom: nil,
         receiveInto: nil)
         .padding(20)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Color.dash.primaryBackground)
-}
-
-/// Send sheet: the From card is pinned, the To rows are the picker.
-@available(iOS 17, *)
-#Preview("Send · from Transparent") {
-    endpointCardsSample(sendFrom: .core, source: .core, target: .shielded)
-}
-
-@available(iOS 17, *)
-#Preview("Send · from Shielded") {
-    endpointCardsSample(sendFrom: .shielded, source: .shielded, target: .core)
 }
 
 /// Receive sheet: the To card is pinned at the bottom, the From rows above it.
@@ -302,7 +257,7 @@ private func endpointCardsSample(
 
 @available(iOS 17, *)
 #Preview("Dark") {
-    endpointCardsSample(sendFrom: .core, source: .core, target: .shielded)
+    endpointCardsSample(receiveInto: .shielded, source: .core, target: .shielded)
         .preferredColorScheme(.dark)
 }
 
@@ -314,7 +269,6 @@ private func endpointCardsSample(
             coreDuffs: 0,
             platformCredits: 0,
             shieldedCredits: 0),
-        sendFrom: nil,
         receiveInto: nil)
         .padding(20)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)

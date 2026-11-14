@@ -252,7 +252,7 @@ final class PreparedExternalSend {
 
 @MainActor
 protocol ExternalSendExecuting: AnyObject {
-    /// `sweepCredits`: the Shielded sweep plan's exact credits on a Shielded Max.
+    /// `sweepCredits`: the Shielded sweep plan's exact credits on a Shielded Max (`SendAmountRequest.sweepCredits`).
     func prepare(
         route: SendRoute, destination: Destination, amount: UInt64, isMax: Bool, sweepCredits: UInt64?
     ) async throws -> PreparedExternalSend
@@ -713,7 +713,7 @@ struct LivePlatformFundingCandidates: PlatformFundingCandidatesReading {
     }
 }
 
-/// The same preview the Send screen's Max is planned from and the drain re-checks.
+/// The same preview the Send screen's Max is planned from (`LiveSendMaxPlanner`) and the drain re-checks.
 struct LiveCoreDrainPreview: CoreDrainPreviewing {
     @MainActor
     func drainPreview() async -> CoreDrainPreview? {
