@@ -361,6 +361,9 @@
 /* No comment provided by engineer. */
 "About" = "À propos";
 
+/* Balance help button; placeholder is the balance name */
+"About %@ balance" = "About %@ balance";
+
 /* DashPay FAQ title */
 "About DashPay" = "À propos de DashPay";
 
@@ -1587,6 +1590,9 @@
 /* Raw transaction */
 "Credit outputs" = "Credit outputs";
 
+/* Brief explanation of Identity balance and why to fund it */
+"Credits that power your Dash identity. Add funds here to register usernames and pay for actions in apps that use your identity." = "Credits that power your Dash identity. Add funds here to register usernames and pay for actions in apps that use your identity.";
+
 /* No comment provided by engineer. */
 "CSV Export" = "Exportation CSV";
 
@@ -1638,6 +1644,12 @@
 /* Dash DEX Portal
    Translate it as short as possible! (24 symbols max) */
 "Dash DEX" = "Dash DEX";
+
+/* Brief explanation of Platform balance and why to fund it */
+"Dash for payments on Dash Platform. Keep funds here to send to Platform addresses or move into your Shielded or Identity balance." = "Dash for payments on Dash Platform. Keep funds here to send to Platform addresses or move into your Shielded or Identity balance.";
+
+/* Brief explanation of Shielded balance and why to fund it */
+"Dash held privately, with your balance hidden from public view. Use it for private payments to other shielded addresses." = "Dash held privately, with your balance hidden from public view. Use it for private payments to other shielded addresses.";
 
 /* No comment provided by engineer. */
 "Dash payments can't be less than %@" = "Les paiements Dash ne peuvent pas être inférieurs à %@";
@@ -7222,6 +7234,9 @@
 
 /* Email is only used for OTP */
 "Your email is only used to send a one-time password." = "Votre adresse e-mail n'est utilisée que pour vous envoyer un mot de passe temporaire.";
+
+/* Brief explanation of Transparent balance and why to fund it */
+"Your everyday Dash balance. Use it to pay merchants or send to other Dash wallets and exchanges; amounts and addresses are public." = "Your everyday Dash balance. Use it to pay merchants or send to other Dash wallets and exchanges; amounts and addresses are public.";
 
 /* DashPay intro: feature title */
 "Your history, organized" = "Votre historique, organisé";
