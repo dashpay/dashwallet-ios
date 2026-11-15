@@ -57,15 +57,17 @@ final class SendViewModel: ObservableObject {
     /// The wallet and DashPay identity the contact was chosen from,
     /// captured with it. A Platform- or Shielded-funded payment is checked
     /// against it before and after every await; nil when either was not
-    /// ready, which leaves only the Transparent balance on offer. Plain data,
-    /// so declared in every target; only `setContactRecipient` sets either.
+    /// ready, which leaves only the Transparent balance on offer and Send
+    /// refusing. Plain data, so declared in every target; only
+    /// `setContactRecipient` sets either.
     private(set) var contactPaymentRecipient: ContactPaymentRecipient?
     /// True when more than one balance could fund this contact payment at
     /// the time the contact was chosen, so the flow asks which one (the
     /// From step) instead of going straight to the amount.
     private(set) var contactOffersSourceChoice = false
-    /// Set by a host that pays a contact only from the Transparent balance.
-    private var contactIsTransparentOnly = false
+    /// The balances this contact payment may be paid from, fixed with the
+    /// source when the contact is chosen (`contactSourcePlan`).
+    private var contactSources: [ChainNetwork] = [.core]
     #if DASHPAY
     /// The DashPay contact this send pays, when the flow was opened from the
     /// contact picker instead of the address field.
@@ -126,10 +128,17 @@ final class SendViewModel: ObservableObject {
 
     /// A contact send step that reads contacts from `contactLookup` instead
     /// of the contacts service.
-    convenience init(contactLookup: @escaping @MainActor (Data) -> ContactItem?) {
+    convenience init(
+        contactLookup: @escaping @MainActor (Data) -> ContactItem?,
+        contactPayableDuffs: (@MainActor (ChainNetwork) -> UInt64)? = nil
+    ) {
         self.init()
         self.contactLookup = contactLookup
+        self.contactPayableDuffsOverride = contactPayableDuffs
     }
+
+    /// Replaces `contactPayableDuffs(from:)` for a test.
+    private var contactPayableDuffsOverride: (@MainActor (ChainNetwork) -> UInt64)?
 
     /// The contact is not among the active wallet's established contacts any
     /// more — removed, or the active wallet has no such contact. Cleared when
@@ -711,9 +720,9 @@ final class SendViewModel: ObservableObject {
     /// Core address can. The source starts on the first of those with funds.
     ///
     /// - Parameters:
-    ///   - paymentRecipient: the wallet, identity and network the host opened
-    ///     on, when it captured them earlier (the contact profile); otherwise
-    ///     the ones active now.
+    ///   - paymentRecipient: the wallet, identity and network the host
+    ///     captured when the contact was chosen; nil when they were not ready,
+    ///     which leaves the payment unable to send.
     ///   - transparentOnly: offer only the Transparent balance, for a host that
     ///     has no From step and no withdrawal confirmation (the contact
     ///     profile's Pay).
@@ -723,7 +732,6 @@ final class SendViewModel: ObservableObject {
         transparentOnly: Bool = false
     ) {
         contactRecipient = contact
-        contactIsTransparentOnly = transparentOnly
         // Every host of the amount step gets the newer snapshots, not just one:
         // `paymentChannelBroken` can change while the step is open. Only
         // `contactRecipient` is replaced — the destination and source stay as
@@ -737,7 +745,7 @@ final class SendViewModel: ObservableObject {
         refreshContactRecipient()
         contactPaymentRecipient = paymentRecipient.flatMap {
             $0.identityId == contact.contactIdentityId ? $0 : nil
-        } ?? ContactPaymentRecipient.current(for: contact)
+        }
         // A fresh amount step for a contact whose last payment has an unknown
         // outcome opens already locked — otherwise Back and reselecting the
         // contact would hand back the Send button the lock exists to withhold.
@@ -746,10 +754,14 @@ final class SendViewModel: ObservableObject {
             recipient: contactPaymentRecipient)
         destination = .core
         // Each balance counts by what one contact payment from it can send,
-        // so dust doesn't open the payment on a source that pays nothing.
+        // so dust neither opens the payment on nor offers a source that pays
+        // nothing.
         let plan = Self.contactSourcePlan(
-            validSources: validSources,
-            balanceDuffs: { self.contactPayableDuffs(from: $0) })
+            validSources: Self.contactValidSources(
+                hasWalletContext: contactPaymentRecipient != nil,
+                transparentOnly: transparentOnly),
+            balanceDuffs: { self.contactPayableDuffsOverride?($0) ?? self.contactPayableDuffs(from: $0) })
+        contactSources = plan.sources
         contactOffersSourceChoice = plan.offersChoice
         // Not the user's pick, so the From step still reads as a suggestion.
         // The assignment refreshes the route-dependent preflights.
@@ -813,15 +825,17 @@ final class SendViewModel: ObservableObject {
         return (credits - coreFee) / 1000
     }
 
-    /// Which source a contact payment opens on, and whether the From step is
-    /// shown: the first funded valid source (Transparent when none is), with
-    /// a choice offered only when more than one is funded.
+    /// Which balances a contact payment offers, which it opens on, and
+    /// whether the From step is shown: the funded valid sources (Transparent
+    /// alone when none is), opening on the first, with a choice offered only
+    /// when more than one is funded.
     static func contactSourcePlan(
         validSources: [ChainNetwork],
         balanceDuffs: (ChainNetwork) -> UInt64
-    ) -> (initialSource: ChainNetwork, offersChoice: Bool) {
+    ) -> (sources: [ChainNetwork], initialSource: ChainNetwork, offersChoice: Bool) {
         let funded = validSources.filter { balanceDuffs($0) > 0 }
-        return (funded.first ?? .core, funded.count > 1)
+        let sources = funded.isEmpty ? [ChainNetwork.core] : funded
+        return (sources, sources[0], sources.count > 1)
     }
 
     /// Which balances can pay a contact. Transparent pays through
@@ -831,12 +845,6 @@ final class SendViewModel: ObservableObject {
     /// is confirmed; without the captured wallet context there is nothing to
     /// check that reservation against, so only Transparent remains — as it
     /// does for a host that offers only Transparent.
-    private var contactValidSources: [ChainNetwork] {
-        Self.contactValidSources(
-            hasWalletContext: contactPaymentRecipient != nil,
-            transparentOnly: contactIsTransparentOnly)
-    }
-
     static func contactValidSources(hasWalletContext: Bool, transparentOnly: Bool = false) -> [ChainNetwork] {
         hasWalletContext && !transparentOnly ? [.core, .platform, .shielded] : [.core]
     }
@@ -969,12 +977,17 @@ final class SendViewModel: ObservableObject {
         contactSendError = nil
         contactBalanceMissDuffs = nil
 
+        guard let capturedRecipient = contactPaymentRecipient else {
+            reportContactSendFailure(WalletSendService.contactPaymentUnavailableError())
+            return false
+        }
+
         let prepared: WalletSendService.PreparedContactPayment
         do {
             prepared = try await WalletSendService.shared.prepareContactPayment(
                 contactIdentityId: contact.contactIdentityId,
                 amount: duffs,
-                recipient: contactPaymentRecipient)
+                recipient: capturedRecipient)
         } catch {
             reportContactSendFailure(error)
             return false
@@ -1177,7 +1190,7 @@ final class SendViewModel: ObservableObject {
     /// Platform credits (`shieldedShieldToRecipient`).
     var validSources: [ChainNetwork] {
         #if DASHPAY
-        if contactRecipient != nil { return contactValidSources }
+        if contactRecipient != nil { return contactSources }
         #endif
         switch destination {
         case .core: return [.core, .platform, .shielded]
@@ -1189,7 +1202,7 @@ final class SendViewModel: ObservableObject {
 
     var route: Route? {
         #if DASHPAY
-        // A source `contactValidSources` withholds is not a route this flow
+        // A source `contactSources` withholds is not a route this flow
         // can execute; the rest map like any Core destination.
         if contactRecipient != nil, !validSources.contains(source) { return nil }
         #endif

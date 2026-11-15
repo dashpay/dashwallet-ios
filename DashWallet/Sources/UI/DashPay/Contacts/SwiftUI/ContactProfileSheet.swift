@@ -31,6 +31,7 @@ struct ContactProfileSheet: View {
     @State private var isClosing = false
     /// The wallet and identity this profile opened on, handed to the pay
     /// sheet so a wallet switch while the profile is open can't rebind it.
+    /// Captured once; nil when either was not ready, and never filled in later.
     @State private var paymentRecipient: ContactPaymentRecipient?
 
     // Owner-private contact meta, editable for established contacts.
@@ -64,6 +65,7 @@ struct ContactProfileSheet: View {
 
     init(contact: ContactItem) {
         _contact = State(initialValue: contact)
+        _paymentRecipient = State(initialValue: ContactPaymentRecipient.current(for: contact))
     }
 
     var body: some View {
@@ -128,9 +130,6 @@ struct ContactProfileSheet: View {
                     .onAppear { isPayPresented = true }
             }
             .onAppear {
-                if paymentRecipient == nil {
-                    paymentRecipient = ContactPaymentRecipient.current(for: contact)
-                }
                 aliasText = contact.alias ?? ""
                 noteText = contact.note ?? ""
                 isHidden = contact.isHidden
@@ -790,8 +789,8 @@ struct PayContactSheet: View {
     @State private var sentDetails: TxDetailModel?
 
     /// - Parameter recipient: the wallet and identity the profile opened on;
-    ///   nil leaves the view model to take the ones active now. The payment
-    ///   is bound to them, so a wallet switch voids it.
+    ///   nil leaves the payment unavailable until the profile is reopened in a
+    ///   ready wallet context.
     init(contact: ContactItem, recipient: ContactPaymentRecipient?, onSent: @escaping () -> Void) {
         self.contact = contact
         self.onSent = onSent
