@@ -172,6 +172,26 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
         XCTAssertEqual(try failing.entries(scope: scope, contactIdentityId: contact), [entry])
     }
 
+    /// A retired copy the sweep cannot delete fails the clear and the wipe:
+    /// its records would otherwise survive both.
+    func testUndeletableRetiredCopyFailsTheClearAndTheWipe() throws {
+        struct RemovalFailed: Error {}
+        let journal = directory.appendingPathComponent("journal")
+        let failing = DashPayWithdrawalStore(directory: journal, removeItem: { _ in throw RemovalFailed() })
+        try FileManager.default.createDirectory(
+            at: directory.appendingPathComponent(".journal-retired-left-by-a-crash"),
+            withIntermediateDirectories: true)
+
+        XCTAssertThrowsError(try failing.clearForWallet(walletId: scope.walletId)) {
+            XCTAssertTrue($0 is RemovalFailed, "\($0)")
+        }
+        XCTAssertThrowsError(try failing.resetForWipe()) {
+            XCTAssertTrue($0 is RemovalFailed, "\($0)")
+        }
+        try DashPayWithdrawalStore(directory: journal).resetForWipe()
+        XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: directory.path), [])
+    }
+
     /// A clear interrupted after staging some files leaves their records
     /// counted, and the next clear retires them with the rest.
     func testInterruptedClearKeepsLocksUntilTheNextClearRetiresThem() throws {
@@ -734,6 +754,39 @@ final class ContactWithdrawalTotalTests: XCTestCase {
         XCTAssertTrue(claims.claim(contactIdentityId: Data(repeating: 4, count: 32)))
         claims.release(contactIdentityId: contact)
         XCTAssertTrue(claims.claim(contactIdentityId: contact))
+    }
+
+    /// Wallet deletion waits for no payment: it is refused while one holds a
+    /// claim, and no payment starts while it runs.
+    func testWalletDeletionAndContactPaymentsExcludeEachOther() {
+        let claims = ContactPaymentClaims()
+        let contact = Data(repeating: 3, count: 32)
+        XCTAssertTrue(claims.claim(contactIdentityId: contact))
+        XCTAssertFalse(claims.suspendForWalletDeletion())
+        claims.release(contactIdentityId: contact)
+
+        XCTAssertTrue(claims.suspendForWalletDeletion())
+        XCTAssertFalse(claims.claim(contactIdentityId: contact))
+        XCTAssertFalse(claims.suspendForWalletDeletion())
+        claims.resumeAfterWalletDeletion()
+        XCTAssertTrue(claims.claim(contactIdentityId: contact))
+    }
+
+    /// A contact payment suspended in the SDK keeps its wallet: removal is
+    /// refused before anything is deleted.
+    @MainActor
+    func testWalletRemovalIsRefusedWhileAContactPaymentIsInFlight() async {
+        let claims = WalletSendService.shared.contactPaymentClaims
+        let contact = Data((0..<32).map { _ in UInt8.random(in: 0...255) })
+        XCTAssertTrue(claims.claim(contactIdentityId: contact))
+        defer { claims.release(contactIdentityId: contact) }
+        do {
+            try await SwiftDashSDKWalletWiper.deleteLogicalWallet(mnemonic: "not a recovery phrase")
+            XCTFail("the removal ran while a payment was in flight")
+        } catch {
+            XCTAssertEqual(error as? SwiftDashSDKWalletDeletionError, .walletDeletionIncomplete)
+        }
+        XCTAssertFalse(claims.suspendForWalletDeletion(), "the claim is still held")
     }
 
     /// A non-sweep Shielded payment is priced from the notes Rust would select,

@@ -225,6 +225,12 @@ final class SwiftDashSDKWalletWiper: NSObject {
         // which networks hold material is about to be wrong.
         defer { WalletEnvironment.invalidateWalletMaterialCache() }
         #if DASHPAY
+        let claims = WalletSendService.shared.contactPaymentClaims
+        guard claims.suspendForWalletDeletion() else {
+            logger.error("a contact payment is in flight; refusing the wipe")
+            return false
+        }
+        defer { claims.resumeAfterWalletDeletion() }
         // Invitation receipt is suspended by the first erase and stays so
         // until the wipe — registry reset and teardown included — is over.
         defer {
@@ -813,6 +819,14 @@ final class SwiftDashSDKWalletWiper: NSObject {
     /// inactive-network deletion fails.
     @MainActor
     static func deleteLogicalWallet(mnemonic phrase: String) async throws {
+#if DASHPAY
+        let claims = WalletSendService.shared.contactPaymentClaims
+        guard claims.suspendForWalletDeletion() else {
+            logger.error("a contact payment is in flight; refusing the removal")
+            throw SwiftDashSDKWalletDeletionError.walletDeletionIncomplete
+        }
+        defer { claims.resumeAfterWalletDeletion() }
+#endif
         let mnemonic = Mnemonic.normalizePhrase(phrase)
         guard Mnemonic.validate(mnemonic) else {
             throw SwiftDashSDKWalletDeletionError.invalidMnemonic
