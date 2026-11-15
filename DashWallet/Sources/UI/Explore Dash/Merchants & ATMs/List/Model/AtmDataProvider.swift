@@ -76,8 +76,16 @@ class AllAtmsDataProvider: BaseAtmsDataProvider { }
 
 // MARK: - BuyAtmsDataProvider
 
+/// Every ATM that sells Dash to the user: buy-only and two-way machines.
 class BuyAtmsDataProvider: BaseAtmsDataProvider {
-    override var types: [ExplorePointOfUse.Atm.`Type`] { [.buy] }
+    override var types: [ExplorePointOfUse.Atm.`Type`] { [.buy, .buySell] }
+}
+
+// MARK: - SellAtmsDataProvider
+
+/// Every ATM that buys Dash from the user: sell-only and two-way machines.
+class SellAtmsDataProvider: BaseAtmsDataProvider {
+    override var types: [ExplorePointOfUse.Atm.`Type`] { [.sell, .buySell] }
 }
 
 // MARK: - BuyAndSellAtmsDataProvider

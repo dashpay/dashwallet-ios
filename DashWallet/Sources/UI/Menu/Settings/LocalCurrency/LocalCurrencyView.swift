@@ -33,7 +33,6 @@ struct LocalCurrencyView: View {
     @StateObject private var viewModel: LocalCurrencyViewModel
 
     @State private var scrollViewOffcet: CGFloat = 0
-    @State private var fullHeaderSize: CGSize = .zero
 
     var onSelect: (String) -> Void
     var leadingAction: LeadingAction?
@@ -56,7 +55,6 @@ struct LocalCurrencyView: View {
             background
 
             LocalCurrencyScrollContentView(
-                headerHeight: fullHeaderSize.height,
                 onScrollChanged: { offset in
                     scrollViewOffcet = min(offset.y, 0)
                 },
@@ -67,22 +65,25 @@ struct LocalCurrencyView: View {
                 onSelect: onSelect
             )
             .padding(.horizontal, 20)
-
-            LocalCurrencyTopOverlayView(
-                scrollOffset: scrollViewOffcet,
-                leadingAction: leadingAction,
-                searchQuery: $viewModel.searchQuery
-            )
-            .readingFrame { frame in
-                if fullHeaderSize == .zero {
-                    fullHeaderSize = frame.size
-                }
+            // The header is a top inset, so the list starts right under the
+            // search bar and scrolls beneath it. A measured spacer sometimes
+            // took the header's height with the status bar in it and left a
+            // gap that tall above the list.
+            .safeAreaInset(edge: .top, spacing: 0) {
+                LocalCurrencyTopOverlayView(
+                    scrollOffset: scrollViewOffcet,
+                    leadingAction: leadingAction,
+                    searchQuery: $viewModel.searchQuery
+                )
             }
         }
     }
 
+    /// Runs under the home indicator too; stopping at the safe area let the
+    /// host controller's lighter background show as a band at the bottom.
     private var background: some View {
         Color.dash.primaryBackground
+            .ignoresSafeArea()
     }
 }
 
@@ -117,8 +118,9 @@ private struct LocalCurrencyScrollContentView: View {
     }
 
     private static let topID = "LocalCurrencyScrollContentView.top"
+    /// Rows that fit on the smallest supported screen under the search bar.
+    private static let rowsShownAtTop = 6
 
-    let headerHeight: CGFloat
     let onScrollChanged: (CGPoint) -> Void
     var filteredItems: [CurrencyItem]
     var selectedCurrencyCode: String
@@ -194,9 +196,9 @@ private struct LocalCurrencyScrollContentView: View {
         ScrollViewReader { proxy in
             ScrollViewWithOnScrollChanged(.vertical, showsIndicators: false) {
                 VStack {
-                    Rectangle()
-                        .opacity(0)
-                        .frame(height: headerHeight)
+                    // Anchor for scrolling back to the top on a new search.
+                    Color.clear
+                        .frame(height: 0)
                         .id(Self.topID)
 
                     // Currency list
@@ -207,6 +209,12 @@ private struct LocalCurrencyScrollContentView: View {
             }
             .onAppear {
                 // Open on the current currency, as the list is ~160 rows long.
+                // A currency in the first rows is already on screen: centring
+                // it overshot the top of the lazy list and left an empty band
+                // above the first row, so the list stays at the top then.
+                guard let index = filteredItems.firstIndex(where: { $0.code == selectedCurrencyCode }),
+                      index >= Self.rowsShownAtTop
+                else { return }
                 // Deferred a runloop so the rows exist before scrolling to one.
                 DispatchQueue.main.async {
                     proxy.scrollTo(selectedCurrencyCode, anchor: .center)
