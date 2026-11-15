@@ -47,7 +47,6 @@ final class BuySellPortalViewController: UIViewController, NavigationBarDisplaya
     @objc
     func upholdAction() {
         let vc = IntegrationViewController.controller(model: UpholdPortalModel())
-        vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
     }
     
@@ -89,11 +88,9 @@ final class BuySellPortalViewController: UIViewController, NavigationBarDisplaya
                     }
                 }
             }
-            vc.hidesBottomBarWhenPushed = true
             navigationController?.pushViewController(vc, animated: true)
         } else {
             let vc = ServiceOverviewViewController.controller()
-            vc.hidesBottomBarWhenPushed = true
             navigationController?.pushViewController(vc, animated: true)
         }
     }
@@ -113,13 +110,11 @@ final class BuySellPortalViewController: UIViewController, NavigationBarDisplaya
         // so a thin UIViewController wrapper is required for BaseNavigationController
         // to provide its custom back button.
         let vc = MayaPortalViewController()
-        vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
     }
 
     func swapKitAction() {
         let vc = SwapKitPortalViewController()
-        vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
     }
     

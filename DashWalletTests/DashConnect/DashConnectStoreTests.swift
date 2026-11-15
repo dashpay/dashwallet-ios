@@ -297,6 +297,33 @@ final class DashConnectStoreTests: XCTestCase {
         XCTAssertEqual(store.load(), [])
     }
 
+    /// Every save is announced under the key it wrote, the last row's
+    /// removal too; a store with nowhere to write announces nothing.
+    func testASaveIsAnnouncedUnderItsKey() {
+        let center = NotificationCenter()
+        let keys = AnnouncedKeys()
+        let observer = center.addObserver(
+            forName: UserDefaultsDashConnectStore.didSaveNotification, object: nil, queue: nil
+        ) { keys.append($0.userInfo?[UserDefaultsDashConnectStore.scopeKeyUserInfoKey] as? String) }
+        defer { center.removeObserver(observer) }
+        let store = makeStore(network: .testnet, walletIdHex: "wallet-a", notificationCenter: center)
+        let row = sampleConnection(
+            id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F", status: .active,
+            updatedAt: Date(timeIntervalSince1970: 10))
+
+        store.save([row])
+        store.save([])
+        XCTAssertEqual(keys.all, [store.scopeKey, store.scopeKey])
+
+        let pinned = store.pinned(toWalletIdHex: "wallet-b")
+        pinned.save([row])
+        XCTAssertEqual(keys.all.last, pinned.scopeKey, "a pinned store announces on the same center")
+
+        makeStore(network: .testnet, walletIdHex: nil, notificationCenter: center).save([row])
+        makeStore(network: .devnet, walletIdHex: "wallet-a", devnetName: nil, notificationCenter: center).save([row])
+        XCTAssertEqual(keys.all.count, 3, "nowhere to write, nothing announced")
+    }
+
     // MARK: - Wallet wipe (AC-19)
 
     private let wipedWalletHex = String(repeating: "a1", count: 32)
@@ -474,13 +501,15 @@ final class DashConnectStoreTests: XCTestCase {
     private func makeStore(
         network: DashConnectNetwork,
         walletIdHex: String?,
-        devnetName: String? = "moutai"
+        devnetName: String? = "moutai",
+        notificationCenter: NotificationCenter = NotificationCenter()
     ) -> UserDefaultsDashConnectStore {
         UserDefaultsDashConnectStore(
             defaults: defaults,
             network: network,
             walletIdHexProvider: { walletIdHex },
-            devnetNameProvider: { devnetName }
+            devnetNameProvider: { devnetName },
+            notificationCenter: notificationCenter
         )
     }
 
@@ -493,4 +522,15 @@ final class DashConnectStoreTests: XCTestCase {
     ) -> DAppConnection {
         DAppConnection(id: id, name: name, url: url, status: status, updatedAt: updatedAt)
     }
+}
+
+/// The keys announced to a test's observer, which may be called on any
+/// thread.
+private final class AnnouncedKeys: @unchecked Sendable {
+    private let lock = NSLock()
+    private var keys: [String?] = []
+
+    var all: [String?] { lock.withLock { keys } }
+
+    func append(_ key: String?) { lock.withLock { keys.append(key) } }
 }
