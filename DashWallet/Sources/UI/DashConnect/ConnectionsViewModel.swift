@@ -333,6 +333,13 @@ final class ConnectionsViewModel: ObservableObject {
                 self.updateShownConnection()
             }
             .store(in: &cancellables)
+
+        // The identity's names may still be loading when the page opens:
+        // they are read again once they load, or the identity changes.
+        notificationCenter.publisher(for: .DWDashPayRegistrationStatusUpdated)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in self?.refreshUsername() }
+            .store(in: &cancellables)
     }
 
     /// The rows of `tab`. A disconnected app is listed while it is not a row.

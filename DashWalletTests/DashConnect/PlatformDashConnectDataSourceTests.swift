@@ -5682,6 +5682,23 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
         XCTAssertEqual(viewModel.approveError, ConnectionsViewModel.usernameUnreadText)
     }
 
+    func testTheUsernameIsReadAgainOnceTheNamesLoad() async {
+        var username = ConnectionsViewModel.UsernameState.unknown
+        let center = NotificationCenter()
+        let viewModel = ConnectionsViewModel(
+            dataSource: MockDashConnectDataSource(store: TestDashConnectStore()), featureUnavailable: false,
+            usernameState: { username }, now: { Self.phone }, notificationCenter: center)
+        XCTAssertTrue(viewModel.usernameUnknown)
+        XCTAssertFalse(viewModel.needsUsername)
+
+        username = .missing
+        center.post(name: .DWDashPayRegistrationStatusUpdated, object: nil)
+        await waitUntil { viewModel.needsUsername }
+
+        XCTAssertTrue(viewModel.needsUsername)
+        XCTAssertFalse(viewModel.usernameUnknown)
+    }
+
     // MARK: Expiry refused at Platform's time
 
     func testAnExpiryPlatformRefusedTurnsApproveOff() async {
