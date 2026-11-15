@@ -268,8 +268,24 @@ final class QuickVotingViewModelTests: XCTestCase {
 
         quick.voteForAll()
 
-        XCTAssertEqual(host.started.map { $0.votes.map(\.normalizedLabel) }, [["alice"]])
         XCTAssertNil(quick.step)
+        XCTAssertTrue(host.started.isEmpty, "the run waits for the sheet to be gone: its PIN prompt cannot show over a leaving sheet")
+        quick.modalDidClose()
+        XCTAssertEqual(host.started.map { $0.votes.map(\.normalizedLabel) }, [["alice"]])
+        quick.modalDidClose()
+        XCTAssertEqual(host.started.count, 1, "started once")
+    }
+
+    func testASheetClosedWithoutVoteForAllStartsNothing() async {
+        let host = Host()
+        host.shownContests = [contest("alice", dates: [nine])]
+        let quick = QuickVotingViewModel(host: host)
+        await quick.start()
+
+        quick.cancel()
+        quick.modalDidClose()
+
+        XCTAssertTrue(host.started.isEmpty)
     }
 
     func testNamesGettingTheirLastVoteAreAskedFirst() async {
@@ -284,8 +300,10 @@ final class QuickVotingViewModelTests: XCTestCase {
         XCTAssertEqual(quick.step, .lastVotes(usernames: ["BOB"]))
         XCTAssertTrue(host.started.isEmpty)
         quick.confirmLastVotes()
-        XCTAssertEqual(host.started.count, 1)
         XCTAssertNil(quick.step)
+        XCTAssertTrue(host.started.isEmpty, "the run waits for \"One vote left\" to be gone")
+        quick.modalDidClose()
+        XCTAssertEqual(host.started.count, 1)
     }
 
     func testCancelOnOneVoteLeftStopsTheWholeRun() async {
@@ -301,6 +319,7 @@ final class QuickVotingViewModelTests: XCTestCase {
         XCTAssertNil(quick.step)
         XCTAssertTrue(host.started.isEmpty, "nothing is sent")
         quick.confirmLastVotes()
+        quick.modalDidClose()
         XCTAssertTrue(host.started.isEmpty)
     }
 }

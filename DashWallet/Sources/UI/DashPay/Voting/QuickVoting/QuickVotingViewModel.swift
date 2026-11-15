@@ -78,6 +78,10 @@ final class QuickVotingViewModel: ObservableObject {
 
     /// A tap is reading the history before the sheet opens.
     private var isOpening = false
+    /// Vote for all (or "One vote left"'s Vote) was tapped: the run waits for
+    /// that sheet or dialog to be gone, since the PIN prompt it asks for first
+    /// cannot be presented while a modal is still leaving.
+    private var planToRun: QuickVotePlan?
 
     /// Weak: the host owns this model.
     private weak var host: QuickVotingHosting?
@@ -135,6 +139,14 @@ final class QuickVotingViewModel: ObservableObject {
     func cancel() {
         step = nil
         plan = nil
+        planToRun = nil
+    }
+
+    /// The Quick voting sheet or "One vote left" is gone: a run they started starts now.
+    func modalDidClose() {
+        guard let planToRun else { return }
+        self.planToRun = nil
+        host?.startQuickVoting(planToRun)
     }
 
     private func openSheetOrKeys() async {
@@ -160,6 +172,6 @@ final class QuickVotingViewModel: ObservableObject {
 
     private func run(_ plan: QuickVotePlan) {
         cancel()
-        host?.startQuickVoting(plan)
+        planToRun = plan
     }
 }
