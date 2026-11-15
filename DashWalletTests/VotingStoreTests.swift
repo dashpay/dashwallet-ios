@@ -1468,6 +1468,22 @@ final class VotingStoreTests: XCTestCase {
         XCTAssertFalse(store.isVoteBusy)
     }
 
+    /// The slot stays held from the retry's history read to its outcome: no
+    /// moment between them is free for another vote to start.
+    func testTryAgainHoldsTheVoteSlotUntilItsOutcome() async {
+        let (store, a, b, johndoe) = await makeVotingStore()
+        caster.script = .outcomes([landed(a), refused(b, "Network error")])
+        await store.send(choice: approve, on: johndoe, from: [a, b])
+        var busy: [Bool] = []
+        let watch = store.isVoteBusyPublisher.dropFirst().sink { busy.append($0) }
+        caster.script = .outcomes([landed(b)])
+
+        await store.retryFailed()
+
+        watch.cancel()
+        XCTAssertEqual(busy, [true, false], "busy once, through the read and the resend")
+    }
+
     /// A newer attempt that replaced the outcome while Try again ran keeps it:
     /// the retry does not put its old report back.
     func testTryAgainDoesNotOverwriteANewerOutcome() async {

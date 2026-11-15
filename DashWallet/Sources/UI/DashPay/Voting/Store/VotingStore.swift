@@ -684,11 +684,15 @@ final class VotingStore: ObservableObject {
               sent.normalizedLabel == report.normalizedLabel,
               !isVoteBusy
         else { return }
+        // The slot is held from the history read to the merged outcome, so no
+        // other vote starts while the retry resolves or resends.
+        voteReads += 1
+        defer { voteReads -= 1 }
         let version = outcomeVersion
         let label = report.normalizedLabel
         let contest = latest(sent)
         let failed = report.failed.map(\.node)
-        let history = await loadVotedNodesForVote(for: label)
+        let history = await loadVotedNodes(for: label)
             ? voteHistoryByContest[label] ?? VoteLimit(nil) : VoteLimit(nil)
         var attempt = VoteAttempt(
             intent: .vote(report.choice),
