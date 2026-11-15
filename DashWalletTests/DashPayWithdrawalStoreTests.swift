@@ -600,6 +600,13 @@ final class ContactPaymentSourceTests: XCTestCase {
 
 /// The Total a contact payment from Platform or Shielded confirms.
 final class ContactWithdrawalTotalTests: XCTestCase {
+    func testCreditsSaturateInsteadOfWrapping() {
+        XCTAssertEqual(SendViewModel.credits(fromDuffs: 150_000), 150_000_000)
+        XCTAssertEqual(SendViewModel.credits(fromDuffs: UInt64.max / 1000), UInt64.max / 1000 * 1000)
+        XCTAssertEqual(SendViewModel.credits(fromDuffs: UInt64.max / 1000 + 1), .max)
+        XCTAssertEqual(SendViewModel.credits(fromDuffs: .max), .max)
+    }
+
     func testTotalAddsTheFee() {
         // 0.02 DASH plus a 0.0001 DASH fee (1e7 credits).
         XCTAssertEqual(SendConfirmSheet.withdrawalDebitDuffs(amountDuffs: 2_000_000, feeCredits: 10_000_000), 2_010_000)
@@ -754,6 +761,27 @@ final class ContactWithdrawalTotalTests: XCTestCase {
         XCTAssertTrue(claims.claim(contactIdentityId: Data(repeating: 4, count: 32)))
         claims.release(contactIdentityId: contact)
         XCTAssertTrue(claims.claim(contactIdentityId: contact))
+    }
+
+    /// A prepared payment's hold releases its contact once, never a later
+    /// payment's claim, and is released if the payment is dropped unsent.
+    func testClaimHoldReleasesOnlyItsOwnClaimOnce() {
+        let claims = ContactPaymentClaims()
+        let contact = Data(repeating: 3, count: 32)
+        XCTAssertTrue(claims.claim(contactIdentityId: contact))
+        let hold = ContactPaymentClaimHold(contactIdentityId: contact, claims: claims)
+        XCTAssertFalse(claims.claim(contactIdentityId: contact), "held while the payment waits")
+        hold.release()
+        XCTAssertTrue(claims.claim(contactIdentityId: contact), "a later payment")
+        hold.release()
+        XCTAssertTrue(claims.isClaimed(contactIdentityId: contact), "the later claim stands")
+        claims.release(contactIdentityId: contact)
+
+        XCTAssertTrue(claims.claim(contactIdentityId: contact))
+        var dropped: ContactPaymentClaimHold? = ContactPaymentClaimHold(contactIdentityId: contact, claims: claims)
+        XCTAssertNotNil(dropped)
+        dropped = nil
+        XCTAssertFalse(claims.isClaimed(contactIdentityId: contact))
     }
 
     /// Wallet deletion waits for no payment: it is refused while one holds a

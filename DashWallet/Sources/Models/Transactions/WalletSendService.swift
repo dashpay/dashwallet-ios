@@ -352,6 +352,30 @@ final class ContactPaymentClaims {
         contactIdentityIds.remove(contactIdentityId)
     }
 }
+
+/// One payment's claim on its contact, taken by the caller and released
+/// exactly once: by `release()`, or when the hold is deallocated. A later
+/// payment's claim on the same contact is never released by it.
+final class ContactPaymentClaimHold {
+    let contactIdentityId: Data
+    private let lock = NSLock()
+    private var claims: ContactPaymentClaims?
+
+    init(contactIdentityId: Data, claims: ContactPaymentClaims) {
+        self.contactIdentityId = contactIdentityId
+        self.claims = claims
+    }
+
+    func release() {
+        lock.lock()
+        let claims = self.claims
+        self.claims = nil
+        lock.unlock()
+        claims?.release(contactIdentityId: contactIdentityId)
+    }
+
+    deinit { release() }
+}
 #endif
 
 @objc(DWWalletSendService)
@@ -605,7 +629,9 @@ final class WalletSendService: NSObject {
     /// A DashPay contact payment that is signed and not broadcast: its inputs
     /// are reserved and the contact's next DIP-15 address is claimed, Rust-side,
     /// until `broadcastContactPayment` or `abandonContactPayment` takes it.
-    /// Releasing it without either abandons it too.
+    /// Releasing it without either abandons it too. It holds the contact's
+    /// claim from before the PIN until then, so no other payment to the
+    /// contact runs while it waits for confirmation.
     final class PreparedContactPayment {
         let contactIdentityId: Data
         let amount: UInt64
@@ -622,6 +648,7 @@ final class WalletSendService: NSObject {
         /// from; the broadcast is bound to it as the signing was.
         fileprivate let recipient: ContactPaymentRecipient
         fileprivate let payment: PreparedDashPayPayment
+        fileprivate let claim: ContactPaymentClaimHold
 
         fileprivate init(
             contactIdentityId: Data,
@@ -629,7 +656,8 @@ final class WalletSendService: NSObject {
             senderIdentityId: Data,
             network: WalletEnvironment.NetworkKind,
             recipient: ContactPaymentRecipient,
-            payment: PreparedDashPayPayment
+            payment: PreparedDashPayPayment,
+            claim: ContactPaymentClaimHold
         ) {
             self.contactIdentityId = contactIdentityId
             self.recipient = recipient
@@ -640,6 +668,7 @@ final class WalletSendService: NSObject {
             self.senderIdentityId = senderIdentityId
             self.network = network
             self.payment = payment
+            self.claim = claim
         }
     }
 
@@ -663,10 +692,10 @@ final class WalletSendService: NSObject {
             guard recipient.identityId == contactIdentityId else { throw Self.contactPaymentUnavailableError() }
             try Self.validateContactRecipient(recipient)
         }
-        // Claimed before the lock is checked, and held to the end of the
-        // signing; `broadcastContactPayment` claims again for the broadcast.
+        // Claimed before the lock is checked; the prepared payment takes the
+        // claim over and holds it until it is broadcast or abandoned.
         try claimContactPayment(contactIdentityId)
-        defer { contactPaymentClaims.release(contactIdentityId: contactIdentityId) }
+        let claim = ContactPaymentClaimHold(contactIdentityId: contactIdentityId, claims: contactPaymentClaims)
         try rejectIfContactPaymentOutcomeUnknown(contactIdentityId, recipient: recipient)
         try Self.ensureInitialRestoreSyncCompleted()
         try Self.ensureOnline()
@@ -709,7 +738,8 @@ final class WalletSendService: NSObject {
             senderIdentityId: context.ourId,
             network: context.network,
             recipient: recipient,
-            payment: payment)
+            payment: payment,
+            claim: claim)
     }
 
     /// DashPay pay-to-contact, second half: broadcasts the payment the user
@@ -721,18 +751,11 @@ final class WalletSendService: NSObject {
     @discardableResult
     func broadcastContactPayment(_ prepared: PreparedContactPayment, contact: ContactItem?) async throws -> Data {
         let contactIdentityId = prepared.contactIdentityId
-        // While this one waited on the confirmation, another payment to this
-        // contact may have started or ended unknown (from any balance), the
-        // device may have gone offline, or another wallet or DashPay identity
-        // may have become active. The claim is held through the broadcast, so
-        // no other payment to the contact can pass its lock check meanwhile.
-        do {
-            try claimContactPayment(contactIdentityId)
-        } catch {
-            await abandonContactPayment(prepared)
-            throw error
-        }
-        defer { contactPaymentClaims.release(contactIdentityId: contactIdentityId) }
+        // The claim taken for the signing is held until here, so no other
+        // payment to the contact has run meanwhile. The device may still have
+        // gone offline, or another wallet or DashPay identity may have become
+        // active, while the confirmation was up.
+        defer { prepared.claim.release() }
         do {
             try rejectIfContactPaymentOutcomeUnknown(contactIdentityId, recipient: prepared.recipient)
             try Self.ensureOnline()
@@ -789,6 +812,7 @@ final class WalletSendService: NSObject {
     /// its inputs and returns the address to the pool. A failure is only
     /// logged — the reservation then lapses on its own.
     func abandonContactPayment(_ prepared: PreparedContactPayment) async {
+        defer { prepared.claim.release() }
         do {
             try await prepared.wallet.abandonPreparedDashPayPayment(prepared.payment)
         } catch {
