@@ -4049,11 +4049,11 @@ final class DashConnectDisconnectThroughSeamsTests: XCTestCase {
         data: Data(repeating: 13, count: 20), readOnly: false,
         bound: .singleContract(app), totalBudget: 1000, expiresAt: nil)
 
-    private static func onPlatform(disabledAt: UInt64? = nil) -> AppConnect.PlatformKey {
+    private static func onPlatform(disabledAt: UInt64? = nil, expiresAt: UInt64? = key.expiresAt) -> AppConnect.PlatformKey {
         AppConnect.PlatformKey(
             id: key.id, purpose: key.purpose, securityLevel: key.securityLevel, keyType: key.keyType, data: key.data,
             readOnly: key.readOnly, bound: key.bound, boundKnown: true, totalBudget: key.totalBudget,
-            expiresAt: key.expiresAt, disabledAt: disabledAt)
+            expiresAt: expiresAt, disabledAt: disabledAt)
     }
 
     /// A live key of the wallet's auth shape that no intent names and whose
@@ -4119,13 +4119,14 @@ final class DashConnectDisconnectThroughSeamsTests: XCTestCase {
     private static func snapshot(
         disabled: Bool, withUnknownBoundKey: Bool = false, confirming: Bool = false, offElsewhere: Bool = false,
         liveFence: Bool = false, foreignKeyId: UInt32? = nil, otherAppFenceOff: Bool = false,
-        closedIntentFenceOff: Bool = false
+        closedIntentFenceOff: Bool = false, keyExpiresAt: UInt64? = nil
     ) -> AppConnect.IdentitySnapshot {
         let appKeys: [AppConnect.PlatformKey]
         if confirming {
             appKeys = disabled || liveFence ? [fence(live: liveFence)] : []
         } else {
-            appKeys = [onPlatform(disabledAt: disabled || offElsewhere ? 1_800_000_000_000 : nil)]
+            appKeys = [onPlatform(
+                disabledAt: disabled || offElsewhere ? 1_800_000_000_000 : nil, expiresAt: keyExpiresAt ?? key.expiresAt)]
         }
         return AppConnect.IdentitySnapshot(
             identityId: identity, revision: disabled ? 6 : 5,
@@ -4233,6 +4234,8 @@ final class DashConnectDisconnectThroughSeamsTests: XCTestCase {
         var leftoverFence = false
         /// T44 (J3): the identity holds a key of another device under this id.
         var foreignKeyId: UInt32?
+        /// The app's key on Platform expires at this block time (ms).
+        var keyExpiresAt: UInt64?
         /// T50 (L1): with `confirming`, an earlier try placed the fence and it
         /// was turned off later, so the plan's read shows it turned off.
         var earlierFenceOff = false
@@ -4304,7 +4307,8 @@ final class DashConnectDisconnectThroughSeamsTests: XCTestCase {
                 disabled: chain.updateLanded || earlierFenceOff, withUnknownBoundKey: withUnknownBoundKey,
                 confirming: confirming,
                 offElsewhere: offElsewhere, liveFence: liveFence, foreignKeyId: foreignKeyId,
-                otherAppFenceOff: otherAppFenceOff, closedIntentFenceOff: closedIntentFenceOff)
+                otherAppFenceOff: otherAppFenceOff, closedIntentFenceOff: closedIntentFenceOff,
+                keyExpiresAt: keyExpiresAt)
             guard withoutPlatformTime || platformTimeOverride != nil else { return read }
             return AppConnect.IdentitySnapshot(
                 identityId: read.identityId, revision: read.revision, keys: read.keys,
@@ -4451,10 +4455,12 @@ final class DashConnectDisconnectThroughSeamsTests: XCTestCase {
     }
 
     private func refreshed(
-        _ intent: AppConnect.ConnectionIntent, gone: Bool, lookupFails: Bool = false, noPlatformTime: Bool = false
+        _ intent: AppConnect.ConnectionIntent, gone: Bool, lookupFails: Bool = false, noPlatformTime: Bool = false,
+        keyExpiresAt: UInt64? = nil
     ) async -> Refreshed {
         let chain = Chain()
         let platform = FakePlatform(chain: chain, response: (Self.documentId, intent.response))
+        platform.keyExpiresAt = keyExpiresAt
         platform.responseGone = gone
         platform.lookupFails = lookupFails
         platform.withoutPlatformTime = noPlatformTime
@@ -4619,6 +4625,25 @@ final class DashConnectDisconnectThroughSeamsTests: XCTestCase {
 
         XCTAssertEqual(run.platform.lookupCount, 1)
         XCTAssertEqual(run.stored?.responseDocumentId, Self.documentId)
+    }
+
+    /// PastaClaw round 6: an open intent whose keys expired is still looked
+    /// up while its publish is unresolved.
+    func testARefreshLooksUpAnOpenIntentWhoseKeysExpiredWhilePublishIsUnresolved() async {
+        let open = Self.intent(responseDocumentId: nil, publishStartBlockTimeMs: Self.freshStart)
+        let run = await refreshed(open, gone: false, keyExpiresAt: 1_700_000_000_000)
+
+        XCTAssertEqual(run.platform.lookupCount, 1)
+        XCTAssertEqual(run.stored?.responseDocumentId, Self.documentId)
+    }
+
+    /// An open intent whose keys expired and whose publish is resolved is not looked up.
+    func testARefreshDoesNotLookUpAnOpenIntentWhoseKeysExpiredAfterTheWindow() async {
+        let open = Self.intent(
+            responseDocumentId: nil, publishStartBlockTimeMs: Self.staleStart, createdAt: Self.at.addingTimeInterval(-60))
+        let run = await refreshed(open, gone: false, keyExpiresAt: 1_700_000_000_000)
+
+        XCTAssertEqual(run.platform.lookupCount, 0)
     }
 
     /// Past the window, the day-old open intent is not looked up again.

@@ -1567,8 +1567,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 
     /// The intents of the identity whose response may be on Platform: closed
     /// ones not recorded removed, and open active ones with no response
-    /// recorded, made in the last day or with a publish still unresolved at
-    /// the read's block time.
+    /// recorded: any whose publish is still unresolved at the read's block
+    /// time, whatever its keys show, and an active one made in the last day.
     private func responseCandidates(
         in snapshot: AppConnect.IdentitySnapshot, intents: any AppConnectIntentStore
     ) -> [AppConnect.ConnectionIntent] {
@@ -1579,10 +1579,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         return intents.load().filter { intent in
             guard intent.identityId == snapshot.identityId else { return false }
             if intent.closedAt != nil { return !intent.responseRemoved }
-            guard intent.responseDocumentId == nil,
-                  intent.createdAt > since
-                  || AppConnect.isPublishUnresolved(intent, platformTime: snapshot.platformTime),
-                  case .active = AppConnect.status(of: intent, in: snapshot) else { return false }
+            guard intent.responseDocumentId == nil else { return false }
+            if AppConnect.isPublishUnresolved(intent, platformTime: snapshot.platformTime) { return true }
+            guard intent.createdAt > since, case .active = AppConnect.status(of: intent, in: snapshot) else { return false }
             return true
         }
     }
