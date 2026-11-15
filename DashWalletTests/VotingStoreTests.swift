@@ -1383,6 +1383,63 @@ final class VotingStoreTests: XCTestCase {
         XCTAssertTrue(caster.sawCancellation, "nothing more is sent once the app leaves the screen")
     }
 
+    func testTheAppGoingToTheBackgroundDropsARunWaitingForItsSheet() async {
+        let caster = RunCaster()
+        let store = await makeRunStore(caster)
+        let center = NotificationCenter()
+        let voting = VotingViewModel(
+            store: store,
+            appDidEnterBackground: center.publisher(for: UIApplication.didEnterBackgroundNotification)
+                .map { _ in () }.eraseToAnyPublisher())
+        await yield(until: { !voting.list.visibleContests.isEmpty })
+        await voting.quickVoting.start()
+        voting.quickVoting.voteForAll()
+
+        center.post(name: UIApplication.didEnterBackgroundNotification, object: nil)
+        // The sheet's dismissal ends after the app left.
+        voting.quickVoting.modalDidClose()
+        for _ in 0..<20 { await Task.yield() }
+
+        XCTAssertTrue(caster.runs.isEmpty, "no PIN prompt and no vote after the app went to the background")
+        XCTAssertFalse(store.isSendingAny)
+    }
+
+    func testQuickVotingsHistoryReadHoldsTheVoteSlot() async {
+        let store = await makeRunStore(RunCaster())
+        let voting = VotingViewModel(store: store)
+        history.holdNextListRead = true
+
+        let reload = Task { await voting.reloadVoteHistory() }
+        await yield(until: { self.history.listReadHeld })
+
+        XCTAssertTrue(store.isVoteBusy, "no pill vote starts while the plan's history is read")
+        history.releaseListRead()
+        _ = await reload.value
+        XCTAssertFalse(store.isVoteBusy)
+    }
+
+    func testTheRunKeepsThePlannedEndWhenARefreshDropsTheName() async {
+        let caster = RunCaster()
+        var clock = epoch
+        nodes.resolution = .init(nodes: [node(1)], mayBeIncomplete: false)
+        prefs.votingNodeSelection = [Data([1])]
+        contests.result = .success([dated("alice")])
+        let store = VotingStore(contests: contests, nodes: nodes, caster: caster, history: history, prefs: prefs,
+                                now: { clock })
+        await store.refresh()
+        let plan = store.quickVotePlan(for: store.contests)
+        // The sheet stayed open past alice's end, and a refresh dropped her.
+        clock = epoch.addingTimeInterval(86_400 * 401)
+        contests.result = .success([])
+        await store.refresh()
+        XCTAssertTrue(store.contests.isEmpty)
+
+        await store.runQuickVoting(plan)
+
+        XCTAssertEqual(caster.runs.first?.first?.endsAt, epoch.addingTimeInterval(86_400 * 400),
+                       "the caster still checks the end the plan saw, and sends nothing after it")
+    }
+
     // MARK: Load states
 
     func testLoadingThenEmptyWhenNoOpenContests() async {

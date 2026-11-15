@@ -44,6 +44,8 @@ struct QuickVotePlan: Equatable {
         let nodes: Set<Data>
         /// The vote is the last one for at least one of ``nodes``.
         let isLastVote: Bool
+        /// The name's voting end when the plan was made: no send goes after it.
+        let endsAt: Date
     }
 
     /// Why a name gets no vote.
@@ -125,7 +127,7 @@ struct QuickVotePlan: Equatable {
     private static func plan(
         _ contest: DPNSContest, tickedNodes: Set<Data>, history: VoteLimit
     ) -> Result<Vote, SkipError> {
-        guard contest.endTime != nil else { return .failure(SkipError(reason: .unknownVotingEnd)) }
+        guard let endsAt = contest.endTime else { return .failure(SkipError(reason: .unknownVotingEnd)) }
         guard history.isKnown else { return .failure(SkipError(reason: .historyUnknown)) }
         // A block by any masternode of this wallet keeps the name out, ticked
         // or not, votable today or not (a banned node, a removed key): this
@@ -149,7 +151,8 @@ struct QuickVotePlan: Equatable {
             normalizedLabel: contest.normalizedLabel,
             identityId: first.identityId,
             nodes: senders,
-            isLastVote: history.fewestVotesLeft(among: senders) == 1))
+            isLastVote: history.fewestVotesLeft(among: senders) == 1,
+            endsAt: endsAt))
     }
 
     /// The request with the earliest date, compared to the millisecond as

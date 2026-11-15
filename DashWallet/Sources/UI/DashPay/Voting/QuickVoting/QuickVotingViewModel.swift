@@ -142,6 +142,12 @@ final class QuickVotingViewModel: ObservableObject {
         planToRun = nil
     }
 
+    /// The screen stops Quick voting (the app went to the background, the
+    /// screen left): a run still waiting for its sheet to be gone never starts.
+    func dropPendingRun() {
+        planToRun = nil
+    }
+
     /// The Quick voting sheet or "One vote left" is gone: a run they started starts now.
     func modalDidClose() {
         guard let planToRun else { return }

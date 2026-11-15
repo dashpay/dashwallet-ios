@@ -786,6 +786,14 @@ final class VotingStore: ObservableObject {
             .eraseToAnyPublisher()
     }
 
+    /// ``loadAllVoteHistory()`` for Quick voting's plan: the read holds the
+    /// vote slot, so no single vote starts while the plan's history is read.
+    func loadAllVoteHistoryForVote() async {
+        voteReads += 1
+        defer { voteReads -= 1 }
+        await loadAllVoteHistory()
+    }
+
     /// ``loadVotedNodes(for:)`` for a vote's gates: the read holds the vote slot.
     func loadVotedNodesForVote(for normalizedLabel: String) async -> Bool {
         voteReads += 1
@@ -973,9 +981,10 @@ final class VotingStore: ObservableObject {
             QuickVoteCast(
                 normalizedLabel: vote.normalizedLabel, choice: .towards(identityId: vote.identityId),
                 nodes: votableNodes.filter { vote.nodes.contains($0.proTxHash) },
-                // The caster checks it again before each send: the sheet may
-                // have stayed open past the end.
-                endsAt: contests.first { $0.normalizedLabel == vote.normalizedLabel }?.endTime)
+                // The plan's end, not the list's: a refresh since the sheet may
+                // have dropped the name. The caster checks it again before each
+                // send: the sheet may have stayed open past the end.
+                endsAt: vote.endsAt)
         }
         // A planned masternode that left the wallet since the sheet would send
         // nothing and be missing from the report: the plan is stale, so the

@@ -195,8 +195,10 @@ final class VotingViewModel: ObservableObject {
     var holdsScreen: Bool { store.isVoteBusy && quickVotingRun == nil }
 
     /// Stops the run in flight: nothing more is sent, and the votes not sent
-    /// are reported as not cast, for Try again.
+    /// are reported as not cast, for Try again. A run still waiting for its
+    /// sheet to be gone is dropped and never starts.
     func stopQuickVoting() {
+        quickVoting.dropPendingRun()
         quickVotingRun?.cancel()
     }
 
@@ -317,7 +319,7 @@ extension VotingViewModel: QuickVotingHosting {
     }
 
     func reloadVoteHistory() async -> Bool {
-        await store.loadAllVoteHistory()
+        await store.loadAllVoteHistoryForVote()
         return !store.historyUnavailable
     }
 
