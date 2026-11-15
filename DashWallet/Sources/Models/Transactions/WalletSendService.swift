@@ -356,6 +356,14 @@ final class WalletSendService: NSObject {
     /// it, for a caller that shows it without that error in hand.
     static var unknownBroadcastOutcomeNotice: String { BroadcastOutcomeCopy.unknown }
 
+    static func contactPaymentUnavailableError() -> NSError {
+        makeError(
+            code: .dashPayPaymentUnavailable,
+            description: NSLocalizedString(
+                "Wallet or DashPay identity is not ready",
+                comment: "Send to contact: wallet or identity not available"))
+    }
+
     /// See `RecentSendsRegistry` — the send-success screen's fallback source.
     let recentSends = RecentSendsRegistry()
     #if DASHPAY
@@ -668,26 +676,16 @@ final class WalletSendService: NSObject {
         contactIdentityId: Data,
         amount: UInt64,
         memo: String? = nil,
-        recipient captured: ContactPaymentRecipient? = nil
+        recipient: ContactPaymentRecipient
     ) async throws -> PreparedContactPayment {
         Self.logger.info("💸 TXSEND :: pay-to-contact preparing — \(amount, privacy: .public) duffs")
-        // The wallet, identity and network the contact was chosen from, when
-        // the caller captured them; otherwise the active ones. Either way the
-        // payment is bound to it: the journal of unresolved withdrawals is
-        // checked for it, and it is validated again before and after the PIN.
-        let recipient = try await MainActor.run { () throws -> ContactPaymentRecipient? in
-            guard let captured else {
-                return ContactPaymentRecipient.current(contactIdentityId: contactIdentityId, displayName: "")
-            }
-            guard captured.identityId == contactIdentityId else { return nil }
-            try Self.validateContactRecipient(captured)
-            return captured
-        }
-        guard let recipient else {
-            throw Self.makeError(
-                code: .dashPayPaymentUnavailable,
-                description: "Wallet or DashPay identity is not ready"
-            )
+        // The wallet, identity and network the contact was chosen from are
+        // bound to the payment: the journal of unresolved withdrawals is
+        // checked for them, and they are validated again before and after the
+        // PIN.
+        try await MainActor.run {
+            guard recipient.identityId == contactIdentityId else { throw Self.contactPaymentUnavailableError() }
+            try Self.validateContactRecipient(recipient)
         }
         // Claimed before the lock is checked, and held to the end of the
         // signing; `broadcastContactPayment` claims again for the broadcast.
@@ -715,12 +713,7 @@ final class WalletSendService: NSObject {
                 return (wallet, recipient.ownerIdentityId, recipient.network)
             }
         guard let context else {
-            throw Self.makeError(
-                code: .dashPayPaymentUnavailable,
-                description: String(
-                    localized: "Wallet or DashPay identity is not ready",
-                    comment: "Send to contact: wallet or identity not available")
-            )
+            throw Self.contactPaymentUnavailableError()
         }
 
         let payment: PreparedDashPayPayment
@@ -978,9 +971,7 @@ final class WalletSendService: NSObject {
     ) async throws -> Record {
         guard contactPaymentClaims.isClaimed(contactIdentityId: recipient.identityId) else {
             assertionFailure("contact payment address reserved outside beginContactPayment")
-            throw Self.makeError(
-                code: .dashPayPaymentUnavailable,
-                description: "Wallet or DashPay identity is not ready")
+            throw Self.contactPaymentUnavailableError()
         }
         // At the boundary rather than on the screen: one opened before the
         // lock was taken must not be able to start a second payment.
@@ -988,9 +979,7 @@ final class WalletSendService: NSObject {
         try Self.validateContactRecipient(recipient)
         try Self.ensureOnline()
         guard let wallet = SwiftDashSDKHost.shared.wallet else {
-            throw Self.makeError(
-                code: .dashPayPaymentUnavailable,
-                description: "Wallet or DashPay identity is not ready")
+            throw Self.contactPaymentUnavailableError()
         }
         let address: String
         do {

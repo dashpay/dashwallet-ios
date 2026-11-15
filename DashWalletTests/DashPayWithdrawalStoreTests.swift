@@ -395,7 +395,7 @@ final class ContactPaymentSourceTests: XCTestCase {
     private func plan(
         hasWalletContext: Bool = true,
         _ balances: [ChainNetwork: UInt64]
-    ) -> (initialSource: ChainNetwork, offersChoice: Bool) {
+    ) -> (sources: [ChainNetwork], initialSource: ChainNetwork, offersChoice: Bool) {
         SendViewModel.contactSourcePlan(
             validSources: SendViewModel.contactValidSources(hasWalletContext: hasWalletContext),
             balanceDuffs: { balances[$0] ?? 0 })
@@ -475,9 +475,80 @@ final class ContactPaymentSourceTests: XCTestCase {
         XCTAssertEqual(profile.route, .coreToCore)
         XCTAssertFalse(profile.contactOffersSourceChoice)
 
-        let picker = SendViewModel(contactLookup: { _ in contact })
+        let picker = SendViewModel(contactLookup: { _ in contact }, contactPayableDuffs: { _ in 1_000 })
         picker.setContactRecipient(contact, paymentRecipient: captured)
         XCTAssertEqual(picker.validSources, [.core, .platform, .shielded])
+    }
+
+    /// The From step lists only the balances one contact payment can be
+    /// paid from; a Platform balance whose largest address can't cover the
+    /// fees and the floor is not offered.
+    func testFromStepOffersOnlyBalancesThatCanPayTheContact() {
+        let contact = ContactItem.fixture(relationship: .established, createdAt: Date(timeIntervalSince1970: 0))
+        let payable: [ChainNetwork: UInt64] = [.core: 5_000, .platform: 0, .shielded: 2_000]
+        let viewModel = SendViewModel(contactLookup: { _ in contact }, contactPayableDuffs: { payable[$0] ?? 0 })
+        viewModel.setContactRecipient(contact, paymentRecipient: capturedRecipient(for: contact))
+        XCTAssertEqual(viewModel.validSources, [.core, .shielded])
+        XCTAssertTrue(viewModel.contactOffersSourceChoice)
+        XCTAssertEqual(viewModel.source, .core)
+        viewModel.source = .platform
+        XCTAssertNil(viewModel.route)
+    }
+
+    /// Nothing can pay: Transparent alone, so the amount step still opens
+    /// and says what is short.
+    func testFromStepFallsBackToTransparentWhenNothingCanPay() {
+        let contact = ContactItem.fixture(relationship: .established, createdAt: Date(timeIntervalSince1970: 0))
+        let viewModel = SendViewModel(contactLookup: { _ in contact }, contactPayableDuffs: { _ in 0 })
+        viewModel.setContactRecipient(contact, paymentRecipient: capturedRecipient(for: contact))
+        XCTAssertEqual(viewModel.validSources, [.core])
+        XCTAssertFalse(viewModel.contactOffersSourceChoice)
+        XCTAssertEqual(viewModel.route, .coreToCore)
+    }
+
+    /// Without a captured context the payment is not bound to whatever wallet
+    /// is active later: no context is taken from the active wallet, and only
+    /// Transparent is listed, however much the other balances could pay.
+    func testMissingCapturedContextIsNotFilledInFromTheActiveWallet() {
+        let contact = ContactItem.fixture(relationship: .established, createdAt: Date(timeIntervalSince1970: 0))
+        let viewModel = SendViewModel(contactLookup: { _ in contact }, contactPayableDuffs: { _ in 1_000 })
+        viewModel.setContactRecipient(contact)
+        XCTAssertNil(viewModel.contactPaymentRecipient)
+        XCTAssertEqual(viewModel.validSources, [.core])
+    }
+
+    /// The send boundary refuses a context captured for another contact with
+    /// the "not ready" error, before any PIN prompt or signing, rather than
+    /// taking the wallet and identity active now.
+    func testPrepareRefusesAContextCapturedForAnotherContact() async {
+        let contact = ContactItem.fixture(relationship: .established, createdAt: Date(timeIntervalSince1970: 0))
+        let other = ContactItem.fixture(idByte: 0xbb, relationship: .established, createdAt: Date(timeIntervalSince1970: 0))
+        do {
+            _ = try await WalletSendService.shared.prepareContactPayment(
+                contactIdentityId: contact.contactIdentityId,
+                amount: 1_000,
+                recipient: capturedRecipient(for: other))
+            XCTFail("a payment bound to another contact's context was prepared")
+        } catch {
+            let expected = WalletSendService.contactPaymentUnavailableError()
+            XCTAssertEqual((error as NSError).domain, expected.domain)
+            XCTAssertEqual((error as NSError).code, expected.code)
+            XCTAssertEqual(error.localizedDescription, expected.localizedDescription)
+        }
+    }
+
+    /// A context whose wallet is not the one active is refused, not replaced.
+    func testPrepareRefusesAContextFromAnotherWallet() async {
+        let contact = ContactItem.fixture(relationship: .established, createdAt: Date(timeIntervalSince1970: 0))
+        do {
+            _ = try await WalletSendService.shared.prepareContactPayment(
+                contactIdentityId: contact.contactIdentityId,
+                amount: 1_000,
+                recipient: capturedRecipient(for: contact))
+            XCTFail("a payment bound to an inactive wallet was prepared")
+        } catch {
+            XCTAssertEqual((error as NSError).code, WalletSendService.contactPaymentUnavailableError().code)
+        }
     }
 
     /// A context captured for another contact never binds this payment.

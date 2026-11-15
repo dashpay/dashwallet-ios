@@ -68,7 +68,9 @@ final class SendToContactPickerViewController: DWBasePayViewController, Navigati
     /// the flow goes straight to the amount. Back from either returns here.
     private func pushPaymentSteps(for contact: ContactItem) {
         let sendViewModel = SendViewModel()
-        sendViewModel.setContactRecipient(contact)
+        sendViewModel.setContactRecipient(
+            contact,
+            paymentRecipient: ContactPaymentRecipient.current(for: contact))
         let onSendCompleted: () -> Void = { [weak self] in self?.finishSendFlow() }
         if sendViewModel.contactOffersSourceChoice {
             pushExternalSendSource(viewModel: sendViewModel, onSendCompleted: onSendCompleted)
