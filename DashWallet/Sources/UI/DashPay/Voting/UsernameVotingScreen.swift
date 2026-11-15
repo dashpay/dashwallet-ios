@@ -71,10 +71,11 @@ struct UsernameVotingScreen: View {
                 onAddKey: { keyFlowStart = .addKey },
                 onShowKeys: { keyFlowStart = .keyList })
 
-            if viewModel.nodeListMayBeIncomplete {
+            // An empty list already gets the browse-only header.
+            if viewModel.ownNodesCannotVote && !viewModel.votableNodes.isEmpty {
                 VotingBanner(
                     text: NSLocalizedString(
-                        "Some of your masternodes may be missing from this list — the wallet could not read your full voting-key pool. Finish syncing and reopen this screen.",
+                        "Your own masternodes aren't listed because this wallet has no masternode voting-key account.",
                         comment: "Voting"),
                     tone: .warning)
             }

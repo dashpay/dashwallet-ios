@@ -62,10 +62,9 @@ final class VotingViewModel: ObservableObject {
     /// that can no longer be accepted.
     @Published private(set) var closedLabels: Set<String> = []
     @Published private(set) var votableNodes: [VoterNode] = []
-    /// The wallet's voting-key pool could only be read at its shallow
-    /// fallback depth and some active registration went unmatched, so a node
-    /// you can actually vote with may be missing from ``votableNodes``.
-    @Published private(set) var nodeListMayBeIncomplete = false
+    /// Whether the wallet has active masternodes but no provider voting
+    /// account, so none of its own nodes are in ``votableNodes``.
+    @Published private(set) var ownNodesCannotVote = false
     @Published private(set) var isLoading = false
     /// Set when a refresh fails. The list keeps showing the last good data.
     @Published private(set) var loadError: String?
@@ -227,7 +226,7 @@ final class VotingViewModel: ObservableObject {
     func refreshVotableNodes() {
         let resolution = registry.votableNodes()
         votableNodes = resolution.nodes
-        nodeListMayBeIncomplete = resolution.mayBeIncomplete
+        ownNodesCannotVote = resolution.ownNodesCannotVote
 
         // Settle the remembered selection against the nodes that actually
         // exist now, so the picker and the "voting with" row agree with what a
