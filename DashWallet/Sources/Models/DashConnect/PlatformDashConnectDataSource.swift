@@ -1200,7 +1200,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// row, and a Disconnected row whose disconnect closed one of them stays
     /// Disconnected, since this read says nothing of it.
     /// A row whose app is in `keeping` keeps its status; its response mark
-    /// (`responseMayRemain`) follows the read. While the read has a
+    /// (`responseMayRemain`) follows the read when the read has the app's
+    /// connection, and stays as it was when it has none (its intents could
+    /// not be read). While the read has a
     /// key whose bound is unknown, that key may be any app's: no row goes;
     /// one that would is Confirming, so it keeps its Disconnect until a
     /// read places every key.
@@ -1234,10 +1236,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let hasUnplacedKey = projection.unplacedKeyIds[identityId]?.isEmpty == false
         var result: [DAppConnection] = rows.compactMap { row in
             if keeping.contains(row.id) {
-                // Its status stays; its response mark follows this read.
+                // Its status stays; its response mark follows this read, or,
+                // with no connection of the app in it, stays as it was.
                 var kept = row
-                kept.responseMayRemain = row.status == .disconnected && projection.connections.contains {
-                    $0.appId.toBase58String() == row.id && $0.responseMayRemain
+                if let read = projection.connections.first(where: { $0.appId.toBase58String() == row.id }) {
+                    kept.responseMayRemain = row.status == .disconnected && read.responseMayRemain
                 }
                 return kept
             }
@@ -3648,7 +3651,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             identityId: ended.first?.identityId.toBase58String(), username: nil,
             disconnectedAt: disconnectedAt, access: ConnectionAccess(recorded: ended),
             // The latest approval, as the sheet of a live connection shows it.
-            connectedAt: ended.map(\.createdAt).max())
+            connectedAt: ended.map(\.createdAt).max(), responseMayRemain: row.responseMayRemain)
     }
 
     private func validateNetwork(_ network: DashConnectNetwork) throws {

@@ -395,6 +395,19 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertEqual(entry.connectedAt, Date(timeIntervalSince1970: 300))
     }
 
+    /// The Disconnected tab lists entries, not rows: an entry carries its
+    /// row's "response may still be on Platform" mark (CodeRabbit, #1414).
+    func testADisconnectedEntryCarriesItsRowsResponseMark() {
+        var row = DAppConnection(
+            id: Self.app.toBase58String(), name: "App", url: "app.example", status: .disconnected,
+            updatedAt: Date(timeIntervalSince1970: 1))
+        XCTAssertFalse(PlatformDashConnectDataSource.disconnectedEntry(of: row, intents: []).responseMayRemain)
+
+        row.responseMayRemain = true
+
+        XCTAssertTrue(PlatformDashConnectDataSource.disconnectedEntry(of: row, intents: []).responseMayRemain)
+    }
+
     /// A Disconnected row whose marked intents cannot be read (none loaded)
     /// is listed with no disconnect time and no access, not with the row's
     /// own time.
@@ -1087,6 +1100,22 @@ final class AppConnectProjectionTests: XCTestCase {
 
         XCTAssertEqual(rows.map(\.status), [.disconnected], "the kept row keeps its status")
         XCTAssertEqual(rows.first?.responseMayRemain, false, "the mark follows the read")
+    }
+
+    /// A row kept because its intents could not be read: the read has no
+    /// connection of the app, so its mark stays (CodeRabbit, #1414).
+    func testARowKeptWithNoConnectionInTheReadKeepsItsMark() {
+        let projection = AppConnect.project([Self.snapshot([])], intents: [])
+        var row = DAppConnection(
+            id: Self.app.toBase58String(), name: "App", url: "", status: .disconnected,
+            updatedAt: Date(timeIntervalSince1970: 1))
+        row.responseMayRemain = true
+
+        let rows = PlatformDashConnectDataSource.rows(
+            [row], after: projection, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 2),
+            keeping: [Self.app.toBase58String()])
+
+        XCTAssertEqual(rows.first?.responseMayRemain, true)
     }
 
     /// Edge: every closed intent of the Disconnected app has its response removed.

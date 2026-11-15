@@ -876,6 +876,29 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         XCTAssertFalse(text.contains("keys are off"), text)
     }
 
+    /// Keys left on that may be the app's (not checked, not attributable, on
+    /// another identity): the note does not say the keys are off (CodeRabbit, #1414).
+    func testTheResponseMayAppearNoteDoesNotSayTheKeysAreOffBehindKeysLeftOn() async {
+        var notChecked = DashConnectDisconnectResult(keysTurnedOff: 3)
+        notChecked.keysNotChecked = 1
+        var notAttributable = DashConnectDisconnectResult(keysTurnedOff: 3)
+        notAttributable.keysNotAttributable = 1
+        var elsewhere = DashConnectDisconnectResult(keysTurnedOff: 3)
+        elsewhere.keysOnAnotherIdentity = true
+        for var result in [notChecked, notAttributable, elsewhere] {
+            let spy = PurchaseApprovalSpy()
+            let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+            result.responsesMayAppear = true
+            spy.disconnectResult = result
+            viewModel.disconnect(Self.connection)
+            await waitUntil { !viewModel.isDisconnecting && spy.disconnectedIds.count == 1 }
+
+            let text = viewModel.message?.text ?? ""
+            XCTAssertTrue(text.hasSuffix("\n\n" + Self.responseMayAppearAfterWarning), "\(result): \(text)")
+            XCTAssertFalse(text.contains("keys are off"), "\(result): \(text)")
+        }
+    }
+
     /// AC-08: no unresolved publish, no note: the message is what it was.
     func testNoNoteWhenNoResponseMayAppear() async {
         let spy = PurchaseApprovalSpy()

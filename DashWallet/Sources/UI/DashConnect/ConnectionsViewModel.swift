@@ -860,9 +860,11 @@ final class ConnectionsViewModel: ObservableObject {
             }
             if result.responsesMayAppear {
                 // swiftlint:disable line_length
-                // Behind a warning that keys stay on, the note does not say
-                // they are off.
-                texts.append(notTurnedOff
+                // Behind a warning that keys stay on, or that some may be
+                // the app's and were left on, the note does not say they are off.
+                let someLeftOn = notTurnedOff || result.keysNotChecked > 0 || result.keysNotAttributable > 0
+                    || result.keysOnAnotherIdentity
+                texts.append(someLeftOn
                     ? NSLocalizedString(
                         "The app's response may still appear; an App Connect approval or disconnect on this identity after it appears deletes it.",
                         comment: "DashConnect: after a disconnect that left keys on, whose app's response may still land on Platform")

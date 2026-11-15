@@ -54,7 +54,7 @@ struct ConnectionRow: View {
                     }
 
                     // Only a Disconnected row carries the mark (ADR-0019 badge unchanged).
-                    if item.status == .disconnected, item.connection?.responseMayRemain == true {
+                    if item.status == .disconnected, item.entry?.responseMayRemain == true {
                         Text(NSLocalizedString(
                             "Response may still be on Platform",
                             comment: "DashConnect: on a disconnected app's row whose response the wallet has not seen deleted yet"))
@@ -141,29 +141,29 @@ private func previewItem(
 }
 
 #Preview("Disconnected, response may remain") {
-    var connection = DAppConnection(
-        id: "disconnected", name: "Example App", url: "example.org", status: .disconnected,
-        updatedAt: Date(timeIntervalSince1970: 1_754_232_520))
-    connection.responseMayRemain = true
-    return ConnectionRow(
-        item: ConnectionSheetItem(
-            id: connection.id, name: connection.name, url: connection.url, status: .disconnected,
-            connection: connection, entry: nil, scope: nil),
+    ConnectionRow(
+        item: disconnectedItem("disconnected", name: "Example App"),
         onOpen: {}, onDisconnect: {}, onRemove: {}, onReconnect: {})
     .background(Color.dash.secondaryBackground)
 }
 
 #Preview("Disconnected, response may remain, long name") {
-    var connection = DAppConnection(
-        id: "disconnected-long", name: String(repeating: "Extremely Long Application Name ", count: 4),
-        url: "example.org", status: .disconnected, updatedAt: Date(timeIntervalSince1970: 1_754_232_520))
-    connection.responseMayRemain = true
-    return ConnectionRow(
-        item: ConnectionSheetItem(
-            id: connection.id, name: connection.name, url: connection.url, status: .disconnected,
-            connection: connection, entry: nil, scope: nil),
+    ConnectionRow(
+        item: disconnectedItem(
+            "disconnected-long", name: String(repeating: "Extremely Long Application Name ", count: 4)),
         onOpen: {}, onDisconnect: {}, onRemove: {}, onReconnect: {})
     .background(Color.dash.secondaryBackground)
+}
+
+/// A Disconnected row as the page lists it: from its entry, whose response
+/// may still be on Platform.
+private func disconnectedItem(_ id: String, name: String) -> ConnectionSheetItem {
+    var entry = DisconnectedConnection(
+        id: id, name: name, url: "example.org", identityId: nil, username: nil,
+        disconnectedAt: Date(timeIntervalSince1970: 1_754_232_520), access: nil)
+    entry.responseMayRemain = true
+    return ConnectionSheetItem(
+        id: id, name: name, url: entry.url, status: .disconnected, connection: nil, entry: entry, scope: nil)
 }
 
 #Preview("Refused") {

@@ -49,6 +49,8 @@ struct DisconnectedConnection: Equatable, Identifiable {
     let access: ConnectionAccess?
     /// When the connection was made.
     var connectedAt: Date? = nil
+    /// Its response may still be on Platform (`DAppConnection.responseMayRemain`).
+    var responseMayRemain = false
 }
 
 protocol DashConnectDataSource {
