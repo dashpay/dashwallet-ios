@@ -5434,10 +5434,10 @@
 "The app's encryption key on this identity changed after this sign-in was first approved. Ask the app to sign in again." = "The app's encryption key on this identity changed after this sign-in was first approved. Ask the app to sign in again.";
 
 /* DashConnect: after a disconnect whose app's response may still land on Platform */
-"The app's keys are off. Its response may still appear; it is deleted with your next App Connect approval or disconnect on this identity." = "The app's keys are off. Its response may still appear; it is deleted with your next App Connect approval or disconnect on this identity.";
+"The app's keys are off. Its response may still appear; an App Connect approval or disconnect on this identity after it appears deletes it." = "The app's keys are off. Its response may still appear; an App Connect approval or disconnect on this identity after it appears deletes it.";
 
 /* DashConnect: after a disconnect that left keys on, whose app's response may still land on Platform */
-"The app's response may still appear; it is deleted with your next App Connect approval or disconnect on this identity." = "The app's response may still appear; it is deleted with your next App Connect approval or disconnect on this identity.";
+"The app's response may still appear; an App Connect approval or disconnect on this identity after it appears deletes it." = "The app's response may still appear; an App Connect approval or disconnect on this identity after it appears deletes it.";
 
 /* No comment provided by engineer. */
 "The chain is syncing…" = "بلاکچین در حال به‌روزرسانی...";

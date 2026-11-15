@@ -17,7 +17,7 @@ An approval's response publish can land after its publish timeout, and nothing t
 
 ## Considered options
 
-1. **An optional field on the intent** — `publishStartBlockTimeMs: UInt64?`, written in the same store update just before the executor submits the publish.
+1. **An optional field on the intent** — `publishStartBlockTimeMs: UInt64?`, written in the same store update just before the executor submits the publish, and cleared when the publish failed for good: its submit threw an error that is neither the caller's cancellation nor one the SDK reports as an unconfirmed result. The SDK reports every failure after a possible broadcast as unconfirmed (`wait_after_broadcast` in platform's rs-sdk), so no response can land from any other.
 2. **A separate pending-publish store** — a new UserDefaults key mapping intent id to start, removed once the publish is resolved.
 
 ## Decision outcome
@@ -29,6 +29,7 @@ An approval's response publish can land after its publish timeout, and nothing t
 **Positive**
 - One write records the start; no second store to add to the wipe suffixes or to keep in step with the intents.
 - Old intents need nothing: `nil` means "no unresolved publish".
+- A publish that failed before Platform accepted it, or that Platform refused, leaves nothing to wait for: the disconnect gives no "may still appear" note and the row no mark (architecture review 2026-11-14).
 
 **Negative**
 - One more optional field on an already wide model; every reader must treat `nil` as "no start recorded", never as "started at 0".
@@ -39,5 +40,5 @@ An approval's response publish can land after its publish timeout, and nothing t
 ## Links
 
 - Feature summary: [docs/features/app-connect/README.md](../features/app-connect/README.md)
-- Related ADR: [0050](0050-bound-an-unresolved-publish-by-24-hours-of-proved-platform-block-time.md)
+- Related ADR: [0050](0050-bound-an-unresolved-publish-by-48-hours-of-proved-platform-block-time.md)
 - Issue: #1374

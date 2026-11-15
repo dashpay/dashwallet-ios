@@ -73,12 +73,12 @@ one-scan login possible, and with it DashConnect on mainnet once mainnet runs pr
   An approval stops waiting for the publish of the app's response at its timeout, but the publish
   keeps running. The intent records when the publish started
   ([ADR-0049](../../adr/0049-record-the-publish-start-on-the-connection-intent.md)); until the
-  wallet knows its document, or it is a day old in proved Platform block time
-  ([ADR-0050](../../adr/0050-bound-an-unresolved-publish-by-24-hours-of-proved-platform-block-time.md)),
+  wallet knows its document, or it is 48 hours old in proved Platform block time
+  ([ADR-0050](../../adr/0050-bound-an-unresolved-publish-by-48-hours-of-proved-platform-block-time.md)),
   no operation records the response removed
-  ([ADR-0052](../../adr/0052-refuse-response-removed-at-its-one-write-point-while-the-publish-is-unresolved.md)),
-  and a submit that ends late is recorded on the wallet that started it
-  ([ADR-0051](../../adr/0051-hand-a-submit-that-ends-after-its-timeout-to-the-wallet-that-started-it.md)).
+  ([ADR-0052](../../adr/0052-refuse-response-removed-at-its-one-write-point-while-the-publish-is-unresolved.md)).
+  A publish that failed for good, before Platform accepted it or refused by it, leaves nothing to
+  wait for. A submit that ends late is only logged; the next read decides.
   A disconnect in that window still turns the keys off at once and says the response may still
   appear; the Disconnected row shows "Response may still be on Platform". Opening Connections
   finds a late response without the PIN, and the next approval or disconnect on the identity

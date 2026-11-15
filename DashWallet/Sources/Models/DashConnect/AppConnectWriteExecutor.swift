@@ -37,8 +37,8 @@ enum PlatformWrite {
 /// decides; the loser is cancelled but not awaited. The real submits block
 /// inside Rust and ignore cancellation, so `run` returns `timedOut` on time
 /// while such a submit is still running; when that submit ends it logs a late
-/// line and hands its outcome to the optional `onLateOutcome` of `run`. A submit
-/// that ends after the caller cancelled gets neither.
+/// line, and its outcome is dropped: the caller's next read decides. A submit
+/// that ends after the caller cancelled logs nothing more.
 struct AppConnectWriteExecutor {
     /// How long a write may run before it is reported `timedOut` (Roman,
     /// 2026-11-06).
@@ -75,12 +75,7 @@ struct AppConnectWriteExecutor {
         self.submit = submit
     }
 
-    /// `onLateOutcome` is called once, with `.submitted` or `.failed`, when the
-    /// submit ends after `run` returned `.timedOut`; never otherwise.
-    func run(
-        _ write: PlatformWrite,
-        onLateOutcome: (@Sendable (Outcome) async -> Void)? = nil
-    ) async -> Outcome {
+    func run(_ write: PlatformWrite) async -> Outcome {
         let kind = write.kind
         log("platform write \(kind): start")
 
@@ -106,7 +101,6 @@ struct AppConnectWriteExecutor {
                     default:
                         log("platform write \(kind): late submitted")
                     }
-                    await onLateOutcome?(result)
                 }
                 let timer = Task {
                     // Throws when cancelled: by the winner of the race (the finish

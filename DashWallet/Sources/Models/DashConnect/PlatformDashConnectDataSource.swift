@@ -1190,7 +1190,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// off without a disconnect, has none, unless another identity's intents
     /// hold it or its last read saw keys there no approval names (`seenOn`).
     /// Such access elsewhere also keeps a row from showing Disconnected.
-    /// A row whose app is in `keeping` stays as it is. While the read has a
+    /// A row whose app is in `keeping` keeps its status; its response mark
+    /// (`responseMayRemain`) follows the read. While the read has a
     /// key whose bound is unknown, that key may be any app's: no row goes;
     /// one that would is Confirming, so it keeps its Disconnect until a
     /// read places every key.
@@ -1221,7 +1222,14 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let heldElsewhere = Set(elsewhere.map { $0.appId.toBase58String() })
         let hasUnplacedKey = projection.unplacedKeyIds[identityId]?.isEmpty == false
         var result: [DAppConnection] = rows.compactMap { row in
-            if keeping.contains(row.id) { return row }
+            if keeping.contains(row.id) {
+                // Its status stays; its response mark follows this read.
+                var kept = row
+                kept.responseMayRemain = row.status == .disconnected && projection.connections.contains {
+                    $0.appId.toBase58String() == row.id && $0.responseMayRemain
+                }
+                return kept
+            }
             guard !shownIds.contains(row.id) else { return nil }
             var seenOn = row.seenOn
             seenOn.remove(me)
@@ -1469,8 +1477,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// its row would show "Not delivered"), and of each closed intent whose
     /// response is not recorded removed (a publish can land after the
     /// disconnect). A response found is recorded; one absent of a closed
-    /// intent is recorded removed once its publish is resolved
-    /// (`markResponseRemoved`). A lookup that fails decides nothing.
+    /// intent whose document is unknown is recorded removed once its publish
+    /// is resolved (`markResponseRemoved`). A lookup that fails decides
+    /// nothing.
     private func recordPublishedResponses(
         in snapshot: AppConnect.IdentitySnapshot, stores: Stores, port: any DashConnectPlatformPort
     ) async {
@@ -1494,9 +1503,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             case .absent(let id):
                 // An open intent's response is still looked for by its
                 // disconnect; a read without a proved block time resolves no
-                // publish.
+                // publish. A known document is retired only by the delete
+                // path: a node behind its creation finds none either.
                 guard closed.contains(id), snapshot.platformTime != nil else { continue }
-                Self.markResponseRemoved(id, in: stores.intents, platformTime: snapshot.platformTime)
+                Self.markResponseRemoved(
+                    id, in: stores.intents, platformTime: snapshot.platformTime, retiringAKnownDocument: false)
             }
         }
         let counts = Self.newlyFound(found, among: candidates)
@@ -2275,7 +2286,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
         try await Self.publishAndRecord(
             intent, intents: context.stores.intents, executor: executor, now: now,
-            platformTime: platformTime, walletIdHex: context.stores.walletIdHex, operationGate: operationGate,
+            platformTime: platformTime,
             createdDocumentId: { created.value },
             lookUp: {
                 try await Self.findAppConnectResponse(
@@ -2291,17 +2302,15 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// if the publish was submitted and created a document, or `lookUp` shows
     /// the response on Platform; otherwise the publish's failure is thrown.
     /// `platformTime`, when known, is stored on the intent as the publish start
-    /// before the submit. A submit that ends after its timeout records its
-    /// document on `intents` through the gate of `walletIdHex` (`recordLate`).
+    /// before the submit, and cleared again when the publish failed for good
+    /// (`publishFailedForGood`).
     static func publishAndRecord(
         _ intent: AppConnect.ConnectionIntent,
         intents: any AppConnectIntentStore,
         executor: AppConnectWriteExecutor,
         now: () -> Date,
         platformTime: UInt64? = nil,
-        walletIdHex: String? = nil,
-        operationGate: DashConnectOperationGate = .shared,
-        createdDocumentId: @escaping @Sendable () -> Data?,
+        createdDocumentId: () -> Data?,
         lookUp: () async throws -> Data?
     ) async throws {
         let write = PlatformWrite.publish(requestHash: intent.requestHash)
@@ -2311,12 +2320,15 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 intents[index].publishStartBlockTimeMs = platformTime
             }
         }
-        let intentId = intent.id
-        let outcome = await executor.run(write, onLateOutcome: { late in
-            await recordLate(
-                late, of: intentId, intents: intents, walletIdHex: walletIdHex, operationGate: operationGate,
-                createdDocumentId: createdDocumentId)
-        })
+        let outcome = await executor.run(write)
+        if publishFailedForGood(outcome), platformTime != nil {
+            // No response can land from it: a lookup that finds none decides.
+            update(intents) { intents in
+                guard let index = intents.firstIndex(where: { $0.id == intent.id }) else { return }
+                intents[index].publishStartBlockTimeMs = nil
+            }
+            DWLogger.log("DashConnect: publish failed for good, its start cleared")
+        }
         let documentId: Data
         switch AppConnect.nextStep(after: write, outcome: outcome, at: now()) {
         case .done where createdDocumentId() != nil:
@@ -2337,47 +2349,21 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
     }
 
-    /// A submit of the publish of `intentId` that ended after its timeout:
-    /// the document it created is recorded on `intents`, through the gate of
-    /// `walletIdHex`, only while the intent is there and its document is not
-    /// known yet; anything else is only logged.
-    private static func recordLate(
-        _ late: AppConnectWriteExecutor.Outcome,
-        of intentId: UUID,
-        intents: any AppConnectIntentStore,
-        walletIdHex: String?,
-        operationGate: DashConnectOperationGate,
-        createdDocumentId: @Sendable () -> Data?
-    ) async {
-        if case let .failed(error) = late {
-            let reason = AppConnectWriteExecutor.logDescription(of: error)
-            DWLogger.log("DashConnect: late publish failed, nothing recorded — \(reason)")
-            return
+    /// Whether a publish that ended as `outcome` can no longer land: its submit
+    /// threw, and the error is neither the caller's cancellation (the submit
+    /// may still be running) nor one the SDK reports as an unconfirmed result.
+    /// The SDK reports every failure after a possible broadcast as unconfirmed
+    /// (`wait_after_broadcast` in platform's rs-sdk), so any other error ended
+    /// before Platform accepted the transition, or Platform refused it.
+    static func publishFailedForGood(_ outcome: AppConnectWriteExecutor.Outcome) -> Bool {
+        guard case .failed(let error) = outcome else { return false }
+        switch error {
+        case is CancellationError, SDKError.stateTransitionResultUnconfirmed,
+             PlatformWalletError.transactionBroadcastUnconfirmed:
+            return false
+        default:
+            return true
         }
-        guard case .submitted = late, let documentId = createdDocumentId() else {
-            DWLogger.log("DashConnect: late publish ended without a document, nothing recorded")
-            return
-        }
-        guard let walletIdHex else {
-            DWLogger.log("DashConnect: late publish document dropped, no wallet bound")
-            return
-        }
-        let recorded = await operationGate.run(for: walletIdHex) {
-            update(intents) { intents in
-                guard let index = intents.firstIndex(where: { $0.id == intentId }) else {
-                    return "dropped, intent not in its wallet"
-                }
-                // A lookup found the document first; a disconnect may have
-                // deleted it and recorded it removed since.
-                guard intents[index].responseDocumentId == nil else {
-                    return "not recorded, the document is already known"
-                }
-                intents[index].responseDocumentId = documentId
-                intents[index].responseRemoved = false
-                return "recorded"
-            }
-        }
-        DWLogger.log("DashConnect: late publish document \(recorded)")
     }
 
     /// Records that the response of the intent `id` is on Platform.
@@ -2520,17 +2506,20 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 
     /// The one write point of `responseRemoved`: it refuses while the
     /// publish of the response is unresolved at `platformTime`, since the
-    /// response may still land.
+    /// response may still land, and, unless `retiringAKnownDocument`, while
+    /// the response's document is known.
     @discardableResult
     private static func markResponseRemoved(
-        _ id: UUID, in intents: any AppConnectIntentStore, platformTime: UInt64?
+        _ id: UUID, in intents: any AppConnectIntentStore, platformTime: UInt64?, retiringAKnownDocument: Bool = true
     ) -> Removal {
-        let removal = update(intents) { intents -> Removal in
+        let removal = update(intents) { intents -> Removal? in
             guard let index = intents.firstIndex(where: { $0.id == id }) else { return .removed }
+            if !retiringAKnownDocument, intents[index].responseDocumentId != nil { return nil }
             if AppConnect.isPublishUnresolved(intents[index], platformTime: platformTime) { return .kept }
             intents[index].responseRemoved = true
             return .removed
         }
+        guard let removal else { return .kept }
         if removal == .kept {
             DWLogger.log("DashConnect: response not recorded removed, its publish may still land")
         }

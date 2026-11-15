@@ -741,10 +741,10 @@ final class ConnectionsViewModel: ObservableObject {
                 // they are off.
                 texts.append(notTurnedOff
                     ? NSLocalizedString(
-                        "The app's response may still appear; it is deleted with your next App Connect approval or disconnect on this identity.",
+                        "The app's response may still appear; an App Connect approval or disconnect on this identity after it appears deletes it.",
                         comment: "DashConnect: after a disconnect that left keys on, whose app's response may still land on Platform")
                     : NSLocalizedString(
-                        "The app's keys are off. Its response may still appear; it is deleted with your next App Connect approval or disconnect on this identity.",
+                        "The app's keys are off. Its response may still appear; an App Connect approval or disconnect on this identity after it appears deletes it.",
                         comment: "DashConnect: after a disconnect whose app's response may still land on Platform"))
                 // swiftlint:enable line_length
             }

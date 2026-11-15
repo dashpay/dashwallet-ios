@@ -39,5 +39,5 @@ Several paths record a response removed: a disconnect whose lookup found nothing
 ## Links
 
 - Feature summary: [docs/features/app-connect/README.md](../features/app-connect/README.md)
-- Related ADR: [0050](0050-bound-an-unresolved-publish-by-24-hours-of-proved-platform-block-time.md)
+- Related ADR: [0050](0050-bound-an-unresolved-publish-by-48-hours-of-proved-platform-block-time.md)
 - Issue: #1374

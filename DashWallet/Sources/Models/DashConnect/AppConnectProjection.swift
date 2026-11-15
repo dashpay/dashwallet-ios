@@ -93,8 +93,8 @@ extension AppConnect {
         var disconnectedAt: Date?
         /// The proved Platform block time, in milliseconds, of the identity
         /// read the approval stood on, written just before the publish is
-        /// submitted. Absent when no start was recorded, and on an intent
-        /// written before the field existed.
+        /// submitted. Absent when no start was recorded, when the publish
+        /// failed for good, and on an intent written before the field existed.
         var publishStartBlockTimeMs: UInt64?
 
         var authKeys: [IntendedKey] { keys.filter(\.isAuthentication) }
@@ -253,12 +253,14 @@ extension AppConnect {
     }
 
     /// How long, in milliseconds of proved Platform block time, a publish
-    /// stays unresolved after its start.
-    private static let publishUnresolvedWindowMs: UInt64 = 86_400_000
+    /// stays unresolved after its start: twice the 24-hour mempool TTL that
+    /// dashmate sets for mainnet and testnet nodes, since the start is read
+    /// before the submit and a node's clock is not the block time (ADR-0050).
+    private static let publishUnresolvedWindowMs: UInt64 = 172_800_000
 
     /// Whether the response's publish may still land: its start is recorded,
     /// its document is unknown, and `platformTime` (the deciding operation's
-    /// proved block time) is unknown, before the start, or less than 24 hours
+    /// proved block time) is unknown, before the start, or less than 48 hours
     /// past it.
     static func isPublishUnresolved(_ intent: ConnectionIntent, platformTime: UInt64?) -> Bool {
         guard let start = intent.publishStartBlockTimeMs, intent.responseDocumentId == nil else { return false }

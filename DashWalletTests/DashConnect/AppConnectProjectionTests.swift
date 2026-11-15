@@ -116,7 +116,7 @@ final class AppConnectProjectionTests: XCTestCase {
 
     // MARK: The publish start and the unresolved predicate
 
-    private static let day: UInt64 = 86_400_000
+    private static let window: UInt64 = 172_800_000
     private static let start: UInt64 = 1_799_000_000_000
 
     /// Edge case: start nil (written before the change, or no publish).
@@ -134,13 +134,13 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertFalse(AppConnect.isPublishUnresolved(intent, platformTime: nil))
     }
 
-    /// Edge cases: 24 h minus 1 ms, exactly 24 h.
-    func testAPublishIsUnresolvedUntilTwentyFourHoursOfPlatformTimePassed() {
+    /// Edge cases: 48 h minus 1 ms, exactly 48 h.
+    func testAPublishIsUnresolvedUntilFortyEightHoursOfPlatformTimePassed() {
         let intent = Self.intent([Self.authKey(10)], publishStartBlockTimeMs: Self.start)
         XCTAssertNil(intent.responseDocumentId)
-        XCTAssertTrue(AppConnect.isPublishUnresolved(intent, platformTime: Self.start + Self.day - 1))
-        XCTAssertFalse(AppConnect.isPublishUnresolved(intent, platformTime: Self.start + Self.day))
-        XCTAssertFalse(AppConnect.isPublishUnresolved(intent, platformTime: Self.start + Self.day + 1))
+        XCTAssertTrue(AppConnect.isPublishUnresolved(intent, platformTime: Self.start + Self.window - 1))
+        XCTAssertFalse(AppConnect.isPublishUnresolved(intent, platformTime: Self.start + Self.window))
+        XCTAssertFalse(AppConnect.isPublishUnresolved(intent, platformTime: Self.start + Self.window + 1))
     }
 
     /// Edge case: no fresh block time keeps the publish unresolved (ADR-0002).
@@ -719,6 +719,30 @@ final class AppConnectProjectionTests: XCTestCase {
         removed.responseRemoved = true
         XCTAssertFalse(try XCTUnwrap(Self.connection([removed], keys)).responseMayRemain)
         XCTAssertEqual(Self.projectedRows([removed], keys).first?.responseMayRemain, false, "the mark goes once the response is removed")
+    }
+
+    /// A row kept while a key's bound is unknown (an open intent C a
+    /// disconnect marked) keeps its status, but its mark follows the read:
+    /// the older closed A's response recorded removed clears it.
+    func testARowKeptWhileAKeyIsUnplacedTakesItsMarkFromTheRead() {
+        let a = Self.authKey(10), c = Self.authKey(11)
+        let older = Self.closed(Self.intent([a], published: false, createdAt: 1))
+        XCTAssertTrue(older.responseRemoved)
+        var marked = Self.intent([c], published: true, createdAt: 2)
+        marked.disconnectedAt = Date(timeIntervalSince1970: 5)
+        let projection = AppConnect.project(
+            [Self.snapshot([Self.onPlatform(a, disabledAt: 1), Self.onPlatform(c, disabledAt: 1)])], intents: [older, marked])
+        var row = DAppConnection(
+            id: Self.app.toBase58String(), name: "App", url: "", status: .disconnected,
+            updatedAt: Date(timeIntervalSince1970: 1))
+        row.responseMayRemain = true
+
+        let rows = PlatformDashConnectDataSource.rows(
+            [row], after: projection, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 2),
+            keeping: [Self.app.toBase58String()])
+
+        XCTAssertEqual(rows.map(\.status), [.disconnected], "the kept row keeps its status")
+        XCTAssertEqual(rows.first?.responseMayRemain, false, "the mark follows the read")
     }
 
     /// Edge: every closed intent of the Disconnected app has its response removed.
