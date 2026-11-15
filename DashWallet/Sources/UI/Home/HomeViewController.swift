@@ -496,7 +496,6 @@ extension HomeViewController: HomeViewDelegate {
             onBack: { [weak self] in self?.navigationController?.popViewController(animated: true) },
             onRetryCompanion: { [weak self] name in self?.showCreateUsernameForRecovery(definedUsername: name) })
         let controller = UIHostingController(rootView: screen)
-        controller.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(controller, animated: true)
     }
 
@@ -504,7 +503,6 @@ extension HomeViewController: HomeViewDelegate {
         // Preselected, not pinned — the transfer form still lets the user
         // change their mind about either endpoint.
         let controller = InternalTransferHostingController(transferTo: .balance(.shielded))
-        controller.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(controller, animated: true)
     }
     #endif
