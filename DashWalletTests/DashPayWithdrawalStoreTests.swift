@@ -128,6 +128,35 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
         XCTAssertThrowsError(try nested.resetForWipe())
     }
 
+    /// A deletion that fails leaves the records where they are read, and the
+    /// clear or wipe throws, so neither reports success while they survive.
+    func testFailedDeletionKeepsRecordsReadableAndThrows() throws {
+        struct RemovalFailed: Error {}
+        let journal = directory.appendingPathComponent("journal")
+        let failing = DashPayWithdrawalStore(directory: journal, removeItem: { _ in throw RemovalFailed() })
+        let entry = try failing.begin(
+            scope: scope, contactIdentityId: contact, address: "yAddress",
+            amountDuffs: 1_000, source: .shielded)
+        let since = Date.distantPast
+
+        XCTAssertThrowsError(try failing.clearForWallet(walletId: scope.walletId)) {
+            XCTAssertTrue($0 is RemovalFailed, "\($0)")
+        }
+        XCTAssertEqual(try failing.entries(scope: scope, contactIdentityId: contact), [entry])
+        XCTAssertTrue(try failing.hasUnresolvedEntry(scope: scope, contactIdentityId: contact, since: since))
+
+        XCTAssertThrowsError(try failing.resetForWipe()) {
+            XCTAssertTrue($0 is RemovalFailed, "\($0)")
+        }
+        XCTAssertEqual(try failing.entries(scope: scope, contactIdentityId: contact), [entry])
+        let leftovers = try FileManager.default.contentsOfDirectory(atPath: directory.path)
+        XCTAssertEqual(leftovers, ["journal"])
+
+        let working = DashPayWithdrawalStore(directory: journal)
+        try working.resetForWipe()
+        XCTAssertTrue(try working.entries(scope: scope, contactIdentityId: contact).isEmpty)
+    }
+
     /// A clear interrupted after staging some files leaves their records
     /// counted, and the next clear retires them with the rest.
     func testInterruptedClearKeepsLocksUntilTheNextClearRetiresThem() throws {
