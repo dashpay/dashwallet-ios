@@ -1567,17 +1567,21 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
 
     /// The intents of the identity whose response may be on Platform: closed
     /// ones not recorded removed, and open active ones with no response
-    /// recorded.
+    /// recorded, made in the last day or with a publish still unresolved at
+    /// the read's block time.
     private func responseCandidates(
         in snapshot: AppConnect.IdentitySnapshot, intents: any AppConnectIntentStore
     ) -> [AppConnect.ConnectionIntent] {
         // A publish lands within the approval that made it, minutes after
-        // the request; an open intent a day old has nothing more to find.
+        // the request, or, after a timeout, while it is unresolved; an open
+        // intent a day old with no unresolved publish has nothing more to find.
         let since = now().addingTimeInterval(-24 * 60 * 60)
         return intents.load().filter { intent in
             guard intent.identityId == snapshot.identityId else { return false }
             if intent.closedAt != nil { return !intent.responseRemoved }
-            guard intent.responseDocumentId == nil, intent.createdAt > since,
+            guard intent.responseDocumentId == nil,
+                  intent.createdAt > since
+                  || AppConnect.isPublishUnresolved(intent, platformTime: snapshot.platformTime),
                   case .active = AppConnect.status(of: intent, in: snapshot) else { return false }
             return true
         }
@@ -1627,13 +1631,17 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// case of its own (an address-nonce race) carries no code and is one to
     /// retry. The refusal holds the code and the date, never Platform's text.
     static func consensusRefusal(from error: Error, at date: Date) -> AppConnect.ConsensusRefusal? {
-        let consensus: PlatformConsensusError?
+        consensusError(in: error).map { AppConnect.ConsensusRefusal(code: $0.code, at: date) }
+    }
+
+    /// The consensus rejection `error` carries, from the SDK or from the
+    /// wallet layer; `nil` for any other error.
+    private static func consensusError(in error: Error) -> PlatformConsensusError? {
         switch error {
-        case let error as SDKError: consensus = error.consensusError
-        case let error as PlatformWalletError: consensus = error.consensusError
-        default: consensus = nil
+        case let error as SDKError: error.consensusError
+        case let error as PlatformWalletError: error.consensusError
+        default: nil
         }
-        return consensus.map { AppConnect.ConsensusRefusal(code: $0.code, at: date) }
     }
 
     /// What an identity update that ended with `error` (a failure or a
@@ -2366,20 +2374,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     }
 
     /// Whether a publish that ended as `outcome` can no longer land: its submit
-    /// threw, and the error is neither the caller's cancellation (the submit
-    /// may still be running) nor one the SDK reports as an unconfirmed result.
-    /// The SDK reports every failure after a possible broadcast as unconfirmed
-    /// (`wait_after_broadcast` in platform's rs-sdk), so any other error ended
-    /// before Platform accepted the transition, or Platform refused it.
+    /// threw a consensus rejection, Platform's own verdict on the transition,
+    /// the one kind of refusal ADR-0021 counts as permanent (`consensusRefusal`).
+    /// Any other error, known or not, says nothing of what Platform did with
+    /// the transition, so the publish stays unresolved.
     static func publishFailedForGood(_ outcome: AppConnectWriteExecutor.Outcome) -> Bool {
         guard case .failed(let error) = outcome else { return false }
-        switch error {
-        case is CancellationError, SDKError.stateTransitionResultUnconfirmed,
-             PlatformWalletError.transactionBroadcastUnconfirmed:
-            return false
-        default:
-            return true
-        }
+        return consensusError(in: error) != nil
     }
 
     /// Records that the response of the intent `id` is on Platform.
@@ -2809,11 +2810,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     static func hideRefused(
         appId: Data, intents: any AppConnectIntentStore, snapshot: AppConnect.IdentitySnapshot, at removedAt: Date
     ) -> Bool {
-        let loaded = intents.load()
-        guard let hidden = AppConnect.removing(
-            appId: appId, intents: loaded, snapshots: [snapshot], at: removedAt) else { return false }
-        intents.save(hidden)
-        return true
+        DashConnectStores.excludingWipe {
+            let loaded = intents.load()
+            guard let hidden = AppConnect.removing(
+                appId: appId, intents: loaded, snapshots: [snapshot], at: removedAt) else { return false }
+            intents.save(hidden)
+            return true
+        }
     }
 
     /// Sets `removedAt` on the Refused intents of `appId` after a fresh read

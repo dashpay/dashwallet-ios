@@ -81,8 +81,8 @@ one-scan login possible, and with it DashConnect on mainnet once mainnet runs pr
   ([ADR-0050](../../adr/0050-bound-an-unresolved-publish-by-48-hours-of-proved-platform-block-time.md)),
   no operation records the response removed
   ([ADR-0052](../../adr/0052-refuse-response-removed-at-its-one-write-point-while-the-publish-is-unresolved.md)).
-  A publish that failed for good, before Platform accepted it or refused by it, leaves nothing to
-  wait for. A submit that ends late is only logged; the next read decides.
+  A publish Platform refused (a consensus rejection) leaves nothing to wait for; any other error
+  keeps it unresolved. A submit that ends late is only logged; the next read decides.
   A disconnect in that window still turns the keys off at once and says the response may still
   appear; the Disconnected row shows "Response may still be on Platform". Opening Connections
   finds a late response without the PIN, and the next approval or disconnect on the identity

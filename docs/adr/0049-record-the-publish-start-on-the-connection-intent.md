@@ -17,7 +17,7 @@ An approval's response publish can land after its publish timeout, and nothing t
 
 ## Considered options
 
-1. **An optional field on the intent** — `publishStartBlockTimeMs: UInt64?`, written in the same store update just before the executor submits the publish, and cleared when the publish failed for good: its submit threw an error that is neither the caller's cancellation nor one the SDK reports as an unconfirmed result. The SDK reports every failure after a possible broadcast as unconfirmed (`wait_after_broadcast` in platform's rs-sdk), so no response can land from any other.
+1. **An optional field on the intent** — `publishStartBlockTimeMs: UInt64?`, written in the same store update just before the executor submits the publish, and cleared when the publish failed for good: its submit threw a consensus rejection, Platform's own verdict on the transition and the one refusal ADR-0021 counts as permanent. Any other error, known or not, keeps the start: a cancellation or an unconfirmed result says nothing of what Platform did, and an error the wallet does not recognise cannot prove that nothing landed.
 2. **A separate pending-publish store** — a new UserDefaults key mapping intent id to start, removed once the publish is resolved.
 
 ## Decision outcome

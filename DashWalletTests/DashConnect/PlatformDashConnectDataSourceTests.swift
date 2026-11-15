@@ -4611,6 +4611,24 @@ final class DashConnectDisconnectThroughSeamsTests: XCTestCase {
         XCTAssertNil(run.stored?.responseDocumentId)
     }
 
+    /// PastaClaw round 5: an open intent older than a day by the device clock
+    /// is still looked up while its publish is unresolved by block time.
+    func testARefreshLooksUpAnOpenIntentOlderThanADayWhilePublishIsUnresolved() async {
+        let open = Self.intent(responseDocumentId: nil, publishStartBlockTimeMs: Self.freshStart)
+        let run = await refreshed(open, gone: false)
+
+        XCTAssertEqual(run.platform.lookupCount, 1)
+        XCTAssertEqual(run.stored?.responseDocumentId, Self.documentId)
+    }
+
+    /// Past the window, the day-old open intent is not looked up again.
+    func testARefreshDoesNotLookUpAnOpenIntentOlderThanADayAfterTheWindow() async {
+        let open = Self.intent(responseDocumentId: nil, publishStartBlockTimeMs: Self.staleStart)
+        let run = await refreshed(open, gone: false)
+
+        XCTAssertEqual(run.platform.lookupCount, 0)
+    }
+
     // MARK: - Response removed has one guarded write point (response-publish-lifetime T4)
 
     /// A publish started 1000 s before the snapshot's block time: unresolved.
@@ -5566,6 +5584,11 @@ private final class HeldSubmit: @unchecked Sendable {
 
 private struct SubmitEndedBadly: Error {}
 
+/// Platform's refusal of a publish: a consensus rejection, the one failure
+/// that ends a publish for good.
+private let publishRefusal = SDKError.consensusRejection(
+    PlatformConsensusError(code: 10_212, kind: .basic), "rendered text")
+
 /// The lifecycle of a response across the seams: a publish that times out, the disconnect, the late landing,
 /// the next signed operation and a restart. The approval itself needs the live SDK, so its
 /// steps are composed from `publishAndRecord`, `disconnect` and `refreshConnections`.
@@ -5780,13 +5803,13 @@ extension DashConnectDisconnectThroughSeamsTests {
         XCTAssertEqual(current(life)?.responseRemoved, true)
     }
 
-    /// Architecture review of #1414: a publish that failed for good leaves nothing that may still appear, so
+    /// Architecture review of #1414: a publish Platform refused leaves nothing that may still appear, so
     /// the disconnect gives no note and records the response removed.
     func testEndToEndADisconnectAfterAPublishThatFailedForGoodGivesNoNote() async throws {
         let life = lifetime()
         let executor = AppConnectWriteExecutor(
             sleep: { _ in try await Task.sleep(for: .seconds(1_000_000)) }, log: { _ in },
-            submit: { _ in throw SubmitEndedBadly() })
+            submit: { _ in throw publishRefusal })
         _ = try? await PlatformDashConnectDataSource.publishAndRecord(
             life.intent, intents: life.intents, executor: executor, now: { Self.at },
             platformTime: Self.freshStart, createdDocumentId: { nil }, lookUp: { nil })
@@ -6527,26 +6550,28 @@ final class AppConnectPublishLifetimeTests: XCTestCase {
         } catch {}
     }
 
-    /// A failure the SDK does not report as unconfirmed ended before Platform
-    /// accepted the publish, or Platform refused it: nothing can land, so the
-    /// start is cleared and a lookup that finds nothing decides.
+    /// A consensus rejection is Platform's verdict on the publish: nothing
+    /// can land, so the start is cleared and a lookup that finds nothing
+    /// decides.
     func testAPublishThatFailedForGoodClearsItsStart() async throws {
         let intent = Self.intent()
         let intents = store(Self.walletA)
         intents.save([intent])
 
-        await publishThatFails(intent, in: intents, with: SubmitFailed())
+        await publishThatFails(intent, in: intents, with: publishRefusal)
 
         let stored = try XCTUnwrap(intents.load().first)
         XCTAssertNil(stored.publishStartBlockTimeMs)
         XCTAssertFalse(AppConnect.isPublishUnresolved(stored, platformTime: Self.start + 1))
     }
 
-    /// An unconfirmed result may still land: the start stays.
-    func testAPublishWithAnUnconfirmedResultKeepsItsStart() async throws {
+    /// An unconfirmed result may still land, and an error with no verdict
+    /// says nothing of what Platform did: the start stays (PastaClaw round 5).
+    func testAPublishWithAnUnconfirmedResultOrAnUnknownErrorKeepsItsStart() async throws {
         for error: Error in [
             SDKError.stateTransitionResultUnconfirmed("lost acknowledgement"),
             PlatformWalletError.transactionBroadcastUnconfirmed("lost acknowledgement"),
+            SubmitFailed(),
         ] {
             let intent = Self.intent()
             let intents = store(Self.walletA)
@@ -6560,9 +6585,12 @@ final class AppConnectPublishLifetimeTests: XCTestCase {
         }
     }
 
-    func testOnlyAFailureThatIsNeitherUnconfirmedNorACancellationIsForGood() {
+    func testOnlyAConsensusRejectionIsAFailureForGood() {
         let failedForGood = PlatformDashConnectDataSource.publishFailedForGood
-        XCTAssertTrue(failedForGood(.failed(SubmitFailed())))
+        XCTAssertTrue(failedForGood(.failed(publishRefusal)))
+        XCTAssertTrue(failedForGood(.failed(
+            PlatformWalletError.consensusRejection(PlatformConsensusError(code: 10_212, kind: .basic), "rendered text"))))
+        XCTAssertFalse(failedForGood(.failed(SubmitFailed())), "an error with no verdict may have been accepted")
         XCTAssertFalse(failedForGood(.failed(SDKError.stateTransitionResultUnconfirmed("x"))))
         XCTAssertFalse(failedForGood(.failed(PlatformWalletError.transactionBroadcastUnconfirmed("x"))))
         XCTAssertFalse(failedForGood(.failed(CancellationError())), "the submit may still be running")
