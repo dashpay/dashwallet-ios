@@ -5763,6 +5763,23 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
         XCTAssertTrue(viewModel.setExpiry(days: 90))
     }
 
+    func testThePickerRangeHoldsWhenThePhoneClockRunsPastTheLatestExpiry() {
+        var phone = Self.phone
+        let viewModel = ConnectionsViewModel(
+            dataSource: MockDashConnectDataSource(store: TestDashConnectStore()), featureUnavailable: false,
+            now: { phone })
+        viewModel.pendingRequest = Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)
+        let before = viewModel.approvalTerms?.expiresAt
+
+        phone = phone.addingTimeInterval(AppConnect.v2LifetimeCap + 24 * 3600)
+
+        let range = viewModel.expiryDateRange
+        XCTAssertEqual(range.lowerBound, range.upperBound)
+        XCTAssertEqual(range.upperBound, viewModel.latestExpiry)
+        XCTAssertFalse(viewModel.setExpiry(date: range.upperBound))
+        XCTAssertEqual(viewModel.approvalTerms?.expiresAt, before)
+    }
+
     // MARK: Return step
 
     func testALinkThatDoesNotReadKeepsTheReturnStep() async throws {

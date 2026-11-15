@@ -502,7 +502,7 @@ struct ExpirySheet: View {
                 isSelected: viewModel.customExpiryText != nil,
                 action: {
                     // Opens on the expiry in effect, not on today.
-                    date = viewModel.approvalExpiryDate ?? viewModel.earliestExpiry
+                    date = viewModel.approvalExpiryDate ?? viewModel.expiryDateRange.lowerBound
                     dateError = nil
                     withAnimation(.smooth(duration: 0.3)) { isPickingDate = true }
                 })
@@ -517,7 +517,7 @@ struct ExpirySheet: View {
             DatePicker(
                 NSLocalizedString("Connection will expire", comment: "DashConnect approve sheet"),
                 selection: $date,
-                in: viewModel.earliestExpiry...viewModel.latestExpiry,
+                in: viewModel.expiryDateRange,
                 displayedComponents: .date)
                 .datePickerStyle(.graphical)
             DashConnectInlineErrorToast(message: dateError)

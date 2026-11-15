@@ -1167,8 +1167,13 @@ final class ConnectionsViewModel: ObservableObject {
         approvalTerms.map { Date(timeIntervalSince1970: TimeInterval($0.expiresAt) / 1000) }
     }
 
-    /// The earliest expiry the user may pick now.
-    var earliestExpiry: Date { termsNow }
+    /// The dates the date picker offers: from now to the latest expiry
+    /// allowed. Once now is past that latest expiry (a phone clock far
+    /// ahead), only the latest is offered, and `setExpiry(date:)` refuses it.
+    var expiryDateRange: ClosedRange<Date> {
+        let latest = latestExpiry
+        return min(termsNow, latest)...latest
+    }
 
     /// Sets the expiry to `days` from now.
     /// False when that expiry is not after now.
