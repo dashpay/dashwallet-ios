@@ -109,7 +109,6 @@ extension HomeViewController {
         } else {
             guard let navigationController else { return }
             let controller = UIHostingController(rootView: WalletsScreen(vc: navigationController))
-            controller.hidesBottomBarWhenPushed = true
             navigationController.pushViewController(controller, animated: true)
         }
     }
@@ -180,7 +179,6 @@ extension HomeViewController {
         guard let uri = invitation.normalizedURI,
               navigationController?.topViewController === self else { return }
         let controller = CreateUsernameViewController(invitation: invitation, invitationURI: uri, invitationAmountDuffs: amountDuffs)
-        controller.hidesBottomBarWhenPushed = true
         controller.completionHandler = { [weak self] result in
             guard result else { return }
             self?.view.dw_showInfoHUD(withText: NSLocalizedString("Username was successfully requested", comment: "Usernames"), offsetForNavBar: true)
@@ -240,7 +238,6 @@ extension HomeViewController {
     #if DASHPAY
     private func pushCreateUsernameForm(definedUsername: String? = nil) {
         let controller = CreateUsernameViewController(dashPayModel: model.dashPayModel, definedUsername: definedUsername)
-        controller.hidesBottomBarWhenPushed = true
         controller.completionHandler = { result in
             if (result) {
                 self.view.dw_showInfoHUD(withText: NSLocalizedString("Username was successfully requested", comment: "Usernames"), offsetForNavBar:true)
@@ -267,7 +264,6 @@ extension HomeViewController {
             }
         )
         let hostingController = UIHostingController(rootView: screen)
-        hostingController.hidesBottomBarWhenPushed = true
         navController.pushViewController(hostingController, animated: true)
     }
 
