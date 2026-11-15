@@ -487,8 +487,9 @@ struct ExpirySheet: View {
                             preset.days),
                         isSelected: preset.isSelected,
                         action: {
-                            viewModel.setExpiry(days: preset.days)
-                            onClose()
+                            // A preset already past at Platform's time is
+                            // not taken: the picker stays for another choice.
+                            if viewModel.setExpiry(days: preset.days) { onClose() }
                         })
                 }
             }

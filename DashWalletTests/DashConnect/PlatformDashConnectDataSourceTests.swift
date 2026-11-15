@@ -5726,6 +5726,43 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
         XCTAssertEqual(spy.approvedConsents.count, 1)
     }
 
+    func testANetworkRefusalOtherThanBalanceIsTheRequestsAnswer() async {
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        spy.approveFailures = [DashConnectPlatformError.networkRefused(code: 40100)]
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, now: { Self.phone })
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+
+        viewModel.approvePendingRequest()
+        await waitUntil { spy.approvedConsents.count == 1 && !viewModel.isApproving }
+
+        XCTAssertEqual(viewModel.pendingRequest?.login.isApprovable, false)
+        XCTAssertEqual(
+            viewModel.pendingRequest?.login,
+            .refused(AppConnect.Refusal(.failed, DashConnectPlatformError.networkRefused(code: 40100).localizedDescription)))
+        XCTAssertFalse(viewModel.approveNeedsTopUp)
+        XCTAssertNil(viewModel.approveError)
+        viewModel.approvePendingRequest()
+        XCTAssertEqual(spy.approvedConsents.count, 1)
+    }
+
+    // MARK: Expiry presets
+
+    func testAPresetAlreadyPastIsNotTaken() {
+        var phone = Self.phone
+        let viewModel = ConnectionsViewModel(
+            dataSource: MockDashConnectDataSource(store: TestDashConnectStore()), featureUnavailable: false,
+            now: { phone })
+        viewModel.pendingRequest = Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)
+        let before = viewModel.approvalTerms?.expiresAt
+
+        phone = phone.addingTimeInterval(31 * 24 * 3600)
+
+        XCTAssertFalse(viewModel.setExpiry(days: 30))
+        XCTAssertEqual(viewModel.approvalTerms?.expiresAt, before)
+        XCTAssertTrue(viewModel.setExpiry(days: 90))
+    }
+
     // MARK: Return step
 
     func testALinkThatDoesNotReadKeepsTheReturnStep() async throws {

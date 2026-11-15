@@ -862,6 +862,16 @@ final class ConnectionsViewModel: ObservableObject {
                 self.pendingRequest = rebuilt
                 self.approveError = rebuilt.login == .unresolved
                     ? nil : DashConnectPlatformError.loginUnresolved.localizedDescription
+            } catch DashConnectPlatformError.networkRefused(let code) where code != AppConnect.identityInsufficientBalanceCode {
+                // Platform refused the attempt for a reason a top-up does not
+                // fix. The attempt was recorded before it was sent, so the
+                // request is answered: the sheet shows the refusal as its
+                // answer, and offers no Approve.
+                let refusal = AppConnect.Refusal(
+                    .failed, DashConnectPlatformError.networkRefused(code: code).localizedDescription)
+                self.pendingFailureStatus = refusal.status
+                self.pendingRequest?.login = .refused(refusal)
+                self.approveError = nil
             } catch let refusal as AppConnect.Refusal {
                 // A refusal fails the same way on every try: the sheet shows
                 // it as the request's answer, and offers no Approve.
@@ -1161,7 +1171,9 @@ final class ConnectionsViewModel: ObservableObject {
     var earliestExpiry: Date { termsNow }
 
     /// Sets the expiry to `days` from now.
-    func setExpiry(days: Int) {
+    /// False when that expiry is not after now.
+    @discardableResult
+    func setExpiry(days: Int) -> Bool {
         setExpiry(AppConnect.expiry(days: days, from: termsStart))
     }
 
