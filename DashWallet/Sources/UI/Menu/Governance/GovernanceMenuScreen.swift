@@ -22,11 +22,12 @@ import UIKit
 /// main menu's "Governance" row in advanced mode. Username voting is not here:
 /// it has its own row on the main menu, available in every mode.
 struct GovernanceMenuScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
 
     @StateObject private var viewModel = GovernanceMenuViewModel()
 
-    init(vc: UINavigationController) {
+    init(vc: UINavigationController?) {
         self.vc = vc
     }
 
@@ -34,7 +35,7 @@ struct GovernanceMenuScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             DashUIKit.NavigationBar(leading: {
                 DashUIKit.NavigationBarElement.back.button {
-                    vc.popViewController(animated: true)
+                    vc?.popViewController(animated: true)
                 }
             })
 
@@ -91,6 +92,7 @@ struct GovernanceMenuScreen: View {
     /// SwiftUI list needs its own `NavigationStack` for row drill-downs, so
     /// the back button is wired explicitly to pop the UIKit stack.
     private func showMasternodes() {
+        guard let vc else { return }
         vc.pushViewController(MasternodesScreen.hostingController(popFrom: vc), animated: true)
     }
 }

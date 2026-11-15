@@ -20,8 +20,39 @@
 import Combine
 import Foundation
 
+/// What the Connections page lists for the active wallet, as published in
+/// one value: its rows and its disconnected apps, under the scope the rows
+/// name.
+struct DashConnectListing: Equatable {
+    /// The wallet, network and endpoint the rows were published for
+    /// (`DAppConnection.scope`); `nil` with no wallet.
+    let scope: String?
+    let rows: [DAppConnection]
+    /// The apps disconnected on that wallet, most recent first.
+    let disconnected: [DisconnectedConnection]
+}
+
+/// An app disconnected on this wallet, as the Connections page lists it
+/// under Disconnected: worked out from the intents a disconnect marked
+/// (ADR 0013), for as long as the wallet keeps them. A later connection of
+/// the app takes its place.
+struct DisconnectedConnection: Equatable, Identifiable {
+    /// The app's contract id (Base58).
+    let id: String
+    let name: String
+    let url: String
+    let identityId: String?
+    let username: String?
+    /// `nil` when the intents of the disconnect cannot be read.
+    let disconnectedAt: Date?
+    /// What the connection gave the app when it was disconnected.
+    let access: ConnectionAccess?
+    /// When the connection was made.
+    var connectedAt: Date? = nil
+}
+
 protocol DashConnectDataSource {
-    var connections: AnyPublisher<[DAppConnection], Never> { get }
+    var listing: AnyPublisher<DashConnectListing, Never> { get }
 
     func parseQR(_ content: String) async throws -> DashConnectQr
     func makeConnectionRequest(from loginRequest: DashKeyRequest) async -> ConnectionRequest
@@ -43,13 +74,17 @@ protocol DashConnectDataSource {
     /// every key the wallet's approvals of the app gave on the active
     /// identity, puts a key of the wallet's own under each id an approval
     /// may still land on so it never does, and deletes the published
-    /// responses; it throws when a key could not be shown off, and the
-    /// connection then stays. Keys no approval of this wallet names (the
-    /// app's from another device or from before a restore, DashPay profile
-    /// keys no app can be told to hold) are turned off only when listed in
-    /// `unrecordedKeys`, what the result of a disconnect without them
-    /// offered (nil: none listed); only those still the app's go, and none
-    /// when the active identity is not the one they were offered on. The
+    /// responses. It also turns off, with no further question, the live keys
+    /// bound to the app's contracts that no approval of this wallet names
+    /// (from another device or from before a restore), the live keys on the
+    /// other contracts and contract groups of the app's owner it can
+    /// attribute to the app by owner, and every DashPay profile key no
+    /// approval names. An update that fails stops it: the result says how
+    /// many keys are still live, and the connection stays. Keys whose bound
+    /// the wallet cannot tell yet, or whose owner, the app's owner or another
+    /// app's owner here could not be read, are not turned off and are counted
+    /// as not checked; keys of the app's owner that another app here has too
+    /// are not turned off and are counted as not attributable. The
     /// connection also stays, and that is thrown, while an approval of the
     /// app on another identity of the wallet is not done.
     ///
@@ -57,15 +92,35 @@ protocol DashConnectDataSource {
     /// both calls act only while it still names the wallet they would act
     /// on.
     @discardableResult
-    func disconnect(id: String, scope: String?, unrecordedKeys: DashConnectOfferedKeys?) async throws -> DashConnectDisconnectResult
+    func disconnect(id: String, scope: String?) async throws -> DashConnectDisconnectResult
+    /// Hides a row. For an App Connect connection that Platform refused for
+    /// good it records the remove date on the connection's refused approvals,
+    /// without a PIN and without writing to Platform; a connection that does
+    /// not show Refused is left as it is.
     func remove(id: String, scope: String?) async
     /// Puts the App Connect rows in step with the active identity's keys on
     /// Platform. Best effort: a failed read leaves the rows as they were.
     func refreshConnections() async
+    /// What the connection sheet shows for the row `id`, from the active
+    /// identity's intents for the app; `nil` when there is no active wallet
+    /// or `scope` is not its.
+    func connectionDetails(id: String, scope: String?) async -> ConnectionDetails?
+    /// What is left of the budgets of the keys `basis` gives the app, read
+    /// after the details told from it and apart from them, so the sheet
+    /// shows them first; `.notRead` when `basis` is not of the active
+    /// identity of the wallet `scope` names.
+    func connectionFunding(for basis: ConnectionBasis, scope: String?) async -> ConnectionFundingRead
 }
 
 extension DashConnectDataSource {
     func refreshConnections() async {}
+    /// The rows `listing` publishes.
+    var connections: AnyPublisher<[DAppConnection], Never> {
+        listing.map(\.rows).eraseToAnyPublisher()
+    }
+
+    func connectionDetails(id: String, scope: String?) async -> ConnectionDetails? { nil }
+    func connectionFunding(for basis: ConnectionBasis, scope: String?) async -> ConnectionFundingRead { .notRead }
 }
 
 /// Why a token purchase failed, and — the part that decides what the UI may
@@ -200,8 +255,9 @@ final class MockDashConnectDataSource: DashConnectDataSource {
         self.subject = CurrentValueSubject(restored)
     }
 
-    var connections: AnyPublisher<[DAppConnection], Never> {
-        subject.eraseToAnyPublisher()
+    /// The mock keeps no history: no disconnected apps.
+    var listing: AnyPublisher<DashConnectListing, Never> {
+        subject.map { DashConnectListing(scope: nil, rows: $0, disconnected: []) }.eraseToAnyPublisher()
     }
 
     var connectionsSnapshot: [DAppConnection] {
@@ -279,13 +335,19 @@ final class MockDashConnectDataSource: DashConnectDataSource {
     }
 
     @discardableResult
-    func disconnect(id: String, scope: String?, unrecordedKeys: DashConnectOfferedKeys?) async throws -> DashConnectDisconnectResult {
+    func disconnect(id: String, scope: String?) async throws -> DashConnectDisconnectResult {
         persistAndSend(subject.value.filter { $0.id != id })
         return DashConnectDisconnectResult()
     }
 
     func remove(id: String, scope: String?) async {
         persistAndSend(subject.value.filter { $0.id != id })
+    }
+
+    /// The mock grants no keys: no details beyond the row.
+    func connectionDetails(id: String, scope: String?) async -> ConnectionDetails? {
+        guard subject.value.contains(where: { $0.id == id }) else { return nil }
+        return ConnectionDetails(appId: id, identityId: nil, username: nil)
     }
 
     private func validateNetwork(_ network: DashConnectNetwork) throws {

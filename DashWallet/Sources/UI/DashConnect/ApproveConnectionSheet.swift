@@ -231,20 +231,8 @@ struct ApproveConnectionSheet: View {
     private func appConnectPermissions(_ plan: AppConnect.GrantPlan) -> some View {
         VStack(alignment: .leading, spacing: 20) {
             permissions(
-                granted: [NSLocalizedString("See your username", comment: "DashConnect")]
-                    + plan.auth.map { authGrantText($0, administered: plan.administeredGroupIds.contains($0.binding.id)) }
-                    + plan.encryption.map { _ in
-                        String(
-                            format: NSLocalizedString(
-                                "Receive messages encrypted to you in %@",
-                                comment: "DashConnect App Connect v2: the placeholder is the app's name"),
-                            resolvedAppLabel)
-                    },
-                withheld: [
-                    NSLocalizedString("Your recovery phrase or wallet keys", comment: "DashConnect App Connect"),
-                    NSLocalizedString("Your Dash balance", comment: "DashConnect App Connect"),
-                    NSLocalizedString("Registering names or changing your keys", comment: "DashConnect App Connect v2"),
-                ]
+                granted: DashConnectPermissionText.requested(plan, appLabel: resolvedAppLabel),
+                withheld: DashConnectPermissionText.withheld
             )
 
             VStack(alignment: .leading, spacing: 4) {
@@ -268,73 +256,6 @@ struct ApproveConnectionSheet: View {
                 .foregroundColor(.secondaryText)
             }
         }
-    }
-
-    /// What one key can do, what it can spend and until when. `administered`:
-    /// the group has administrators who can add their own contracts to it.
-    private func authGrantText(_ grant: AppConnect.AuthGrant, administered: Bool) -> String {
-        let binding = grant.binding
-        let action: String
-        switch binding.kind {
-        case .contractGroup:
-            action = String(
-                format: grant.securityLevel == .critical
-                    ? NSLocalizedString(
-                        "Act as you in all of %@'s contracts, including claiming and spending its tokens",
-                        comment: "DashConnect App Connect v2: the placeholder is the app's name")
-                    : NSLocalizedString(
-                        "Act as you in all of %@'s contracts",
-                        comment: "DashConnect App Connect v2: the placeholder is the app's name"),
-                resolvedAppLabel)
-        case .singleContract:
-            action = String(
-                format: NSLocalizedString(
-                    "Act as you in one of %@'s contracts",
-                    comment: "DashConnect App Connect v2: the placeholder is the app's name"),
-                resolvedAppLabel)
-        case .documentType:
-            if binding.id.toBase58String() == AppConnect.dashPayContractId, binding.documentTypeName == "profile" {
-                action = NSLocalizedString("Edit your DashPay profile", comment: "DashConnect App Connect v2")
-            } else {
-                action = String(
-                    format: NSLocalizedString(
-                        "Write \"%@\" documents as you",
-                        comment: "DashConnect App Connect v2: the placeholder is a document type name"),
-                    binding.documentTypeName ?? "")
-            }
-        }
-        let expiry = Self.expiryFormatter.string(from: Date(timeIntervalSince1970: TimeInterval(grant.expiresAt) / 1000))
-        var text: String
-        if let budget = grant.totalBudget {
-            text = String(
-                format: NSLocalizedString(
-                    "%1$@, spending up to %2$@ of your identity's credits until %3$@",
-                    comment: "DashConnect App Connect v2: what a key can do, an amount with its unit (0.5 DASH), a date"),
-                action, PlatformCreditsFormatter.dashString(budget), expiry)
-        } else {
-            // The app asked for no budget, and the wallet adds none: the key
-            // can spend the identity's credits without a cap, so the sheet
-            // says so.
-            text = String(
-                format: NSLocalizedString(
-                    "%1$@, with no limit on spending your identity's credits, until %2$@",
-                    comment: "DashConnect App Connect v2: what a key can do, a date"),
-                action, expiry)
-        }
-        // A budget is in credits: Platform checks a token transfer against
-        // the token balance, not against the key's credit budget.
-        if binding.kind == .contractGroup, grant.securityLevel == .critical {
-            text += " " + NSLocalizedString(
-                "The credit limit does not limit how many of your tokens it can move.",
-                comment: "DashConnect App Connect v2")
-        }
-        // Group membership is read when the key signs, not when it is granted.
-        if binding.kind == .contractGroup, administered {
-            text += " " + NSLocalizedString(
-                "Other identities can add their own contracts to this group, and the key will act as you in those too.",
-                comment: "DashConnect App Connect v2")
-        }
-        return text
     }
 
     /// The profile's warnings. Nothing in a request proves where it came
@@ -380,13 +301,6 @@ struct ApproveConnectionSheet: View {
                 comment: "DashConnect App Connect v2: a relative time (12 seconds ago), then a website (yap.pr)"),
             requested, host)
     }
-
-    private static let expiryFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .long
-        formatter.timeStyle = .none
-        return formatter
-    }()
 
     private static let ageFormatter: RelativeDateTimeFormatter = {
         let formatter = RelativeDateTimeFormatter()
@@ -451,7 +365,8 @@ struct ApproveConnectionSheet: View {
     }()
 }
 
-private struct PermissionRow: View {
+/// One thing an app can or cannot do, with its mark.
+struct PermissionRow: View {
     let icon: IconName
     let text: String
 
