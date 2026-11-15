@@ -101,9 +101,6 @@
 "%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ non è autorizzato ad accedere a Face ID. Consenti l'accesso a Face ID nelle Impostazioni";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access the camera" = "%@ non ha il permesso di accedere alla videocamera";
-
-/* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ non è autorizzato ad accedere a Touch ID. Consenti l'accesso Touch ID nelle Impostazioni";
 
 /* DashPay Notifications: established contact, accepting side unknown */
@@ -993,9 +990,6 @@
 
 /* Reclassify info: sentence start; a tag with the default category follows it */
 "by default will be marked as" = "by default will be marked as";
-
-/* No comment provided by engineer. */
-"Camera is required to scan QR codes." = "Camera is required to scan QR codes.";
 
 /* No comment provided by engineer. */
 "Camera Unavailable" = "Camera Unavailable";
