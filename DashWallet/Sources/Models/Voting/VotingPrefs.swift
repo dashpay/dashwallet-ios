@@ -27,11 +27,27 @@ private let kVotingSetUp = "votingSetUpKey"
 /// Voting). Defaults on for DASHPAY builds.
 class VotingPrefs {
     public static let shared: VotingPrefs = .init()
-    
-    init() {
+
+    private let defaults: UserDefaults
+    /// The Platform network the voting choice belongs to; read on every
+    /// access, so a network switch reads that network's choice.
+    private let network: () -> String
+
+    init(defaults: UserDefaults = .standard,
+         network: @escaping () -> String = { MasternodeVoteCaster.networkKey }) {
+        self.defaults = defaults
+        self.network = network
         UserDefaults.standard.register(defaults: [
             kVotingEnabled: true,
         ])
+    }
+
+    /// The masternode choice and "voting set up" are kept per network: a
+    /// testnet masternode is not a mainnet one. Mainnet keeps the plain key,
+    /// so a selection saved before the split stays mainnet's.
+    private func scoped(_ key: String) -> String {
+        let network = network()
+        return network == "mainnet" ? key : "\(key).\(network)"
     }
     
     private var _votingEnabled: Bool? = nil
@@ -60,13 +76,13 @@ class VotingPrefs {
     /// node is permitted to do.
     var votingNodeSelection: Set<Data> {
         get {
-            let stored = UserDefaults.standard.array(forKey: kVotingNodeSelection) as? [String] ?? []
+            let stored = defaults.array(forKey: scoped(kVotingNodeSelection)) as? [String] ?? []
             return Set(stored.compactMap { Data(base64Encoded: $0) })
         }
         set {
-            UserDefaults.standard.set(
+            defaults.set(
                 newValue.map { $0.base64EncodedString() }.sorted(),
-                forKey: kVotingNodeSelection)
+                forKey: scoped(kVotingNodeSelection))
         }
     }
 
@@ -74,14 +90,16 @@ class VotingPrefs {
     /// or Approve button. Until then the default tick is not a choice and a
     /// vote opens that screen first (AC-12).
     var isVotingSetUp: Bool {
-        get { UserDefaults.standard.bool(forKey: kVotingSetUp) }
-        set { UserDefaults.standard.set(newValue, forKey: kVotingSetUp) }
+        get { defaults.bool(forKey: scoped(kVotingSetUp)) }
+        set { defaults.set(newValue, forKey: scoped(kVotingSetUp)) }
     }
 
-    /// Forget the masternode choice and "voting set up", as a wallet wipe
-    /// does: the next wallet starts at "Add your voting keys".
+    /// Forget the masternode choice and "voting set up" on every network, as
+    /// a wallet wipe does: the next wallet starts at "Add your voting keys".
     func forgetVotingSetup() {
-        UserDefaults.standard.removeObject(forKey: kVotingNodeSelection)
-        UserDefaults.standard.removeObject(forKey: kVotingSetUp)
+        for key in defaults.dictionaryRepresentation().keys
+            where [kVotingNodeSelection, kVotingSetUp].contains(where: { key == $0 || key.hasPrefix("\($0).") }) {
+            defaults.removeObject(forKey: key)
+        }
     }
 }

@@ -1700,6 +1700,35 @@ final class VotingStoreTests: XCTestCase {
         XCTAssertEqual(prefs.votingNodeSelection, [])
     }
 
+    /// The masternode choice and "voting set up" belong to one network: a
+    /// testnet wallet does not start with mainnet's ticks, and a wipe forgets both.
+    func testVotingSetupIsKeptPerNetwork() throws {
+        let suite = "VotingPrefsNetworkTests"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        var network = "mainnet"
+        let prefs = VotingPrefs(defaults: defaults, network: { network })
+        prefs.isVotingSetUp = true
+        prefs.votingNodeSelection = [Data([1])]
+
+        network = "testnet"
+        XCTAssertFalse(prefs.isVotingSetUp)
+        XCTAssertEqual(prefs.votingNodeSelection, [])
+        prefs.isVotingSetUp = true
+        prefs.votingNodeSelection = [Data([2])]
+
+        network = "mainnet"
+        XCTAssertTrue(prefs.isVotingSetUp)
+        XCTAssertEqual(prefs.votingNodeSelection, [Data([1])])
+
+        prefs.forgetVotingSetup()
+        XCTAssertFalse(prefs.isVotingSetUp)
+        XCTAssertEqual(prefs.votingNodeSelection, [])
+        network = "testnet"
+        XCTAssertFalse(prefs.isVotingSetUp)
+        XCTAssertEqual(prefs.votingNodeSelection, [])
+    }
+
     /// AC-12, AC-14: the vote button of "Add your voting keys" keeps the ticks and sets voting up.
     func testConfirmingTheTicksSetsVotingUp() async {
         let a = node(1), b = node(2)
