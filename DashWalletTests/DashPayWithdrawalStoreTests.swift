@@ -319,6 +319,73 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
             XCTAssertFalse(ShieldedTransferCoordinator.provesWithdrawalNotSubmitted(error), "\(error)")
         }
     }
+
+    // MARK: - What the coordinator does with a failed contact withdrawal
+
+    @MainActor
+    private func coordinatorAndAttempt() throws -> (ShieldedTransferCoordinator, DashPayWithdrawalStore.Entry) {
+        (ShieldedTransferCoordinator(contactWithdrawalStore: store), try begin())
+    }
+
+    @MainActor
+    func testProvenNonSubmissionDropsTheAttemptAndAllowsRetry() throws {
+        let (coordinator, attempt) = try coordinatorAndAttempt()
+        let concluded = coordinator.concludeUncertainContactWithdrawal(
+            attempt, error: PlatformWalletError.shieldedBroadcastFailed("rejected"))
+        XCTAssertFalse(concluded)
+        XCTAssertTrue(try store.entries(scope: scope, contactIdentityId: contact).isEmpty)
+        XCTAssertFalse(coordinator.contactWithdrawalOutcomeUnknown)
+        XCTAssertNotEqual(coordinator.phase, .submittedUnconfirmed)
+    }
+
+    @MainActor
+    func testAmbiguousFailureKeepsAnUnconfirmedAttemptAndEndsUnknown() throws {
+        let (coordinator, attempt) = try coordinatorAndAttempt()
+        let concluded = coordinator.concludeUncertainContactWithdrawal(attempt, error: URLError(.timedOut))
+        XCTAssertTrue(concluded)
+        XCTAssertEqual(coordinator.phase, .submittedUnconfirmed)
+        XCTAssertTrue(coordinator.contactWithdrawalOutcomeUnknown)
+        XCTAssertTrue(WalletSendService.shared.unknownContactPaymentOutcomes.contains(contactIdentityId: contact))
+        let reopened = DashPayWithdrawalStore(directory: directory)
+        XCTAssertEqual(try reopened.entries(scope: scope, contactIdentityId: contact).map(\.status), [.unconfirmed])
+        XCTAssertTrue(try reopened.hasUnresolvedEntry(scope: scope, contactIdentityId: contact, since: .distantPast))
+    }
+
+    /// The journal can't be written: the attempt that proves it never left
+    /// can't be dropped, and the `.unconfirmed` update fails too. The
+    /// `.submitting` record still locks the contact, and nothing is retried.
+    @MainActor
+    func testUnwritableJournalEndsUnknownAndTheSubmittingRecordStillLocks() throws {
+        let (coordinator, attempt) = try coordinatorAndAttempt()
+        try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: directory.path)
+        let concluded: Bool
+        do {
+            defer {
+                try? FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: directory.path)
+            }
+            concluded = coordinator.concludeUncertainContactWithdrawal(
+                attempt, error: PlatformWalletError.shieldedBroadcastFailed("rejected"))
+        }
+        XCTAssertTrue(concluded)
+        XCTAssertEqual(coordinator.phase, .submittedUnconfirmed)
+        let reopened = DashPayWithdrawalStore(directory: directory)
+        XCTAssertEqual(try reopened.entries(scope: scope, contactIdentityId: contact).map(\.status), [.submitting])
+        XCTAssertTrue(try reopened.hasUnresolvedEntry(scope: scope, contactIdentityId: contact, since: .distantPast))
+    }
+
+    /// Refused after its record was written but before the SDK was called:
+    /// the record is dropped and the transfer fails as retryable.
+    @MainActor
+    func testRefusalBeforeSubmissionFailsRetryably() throws {
+        let (coordinator, attempt) = try coordinatorAndAttempt()
+        coordinator.failUnsubmittedContactWithdrawal(
+            attempt, error: PlatformAddressSyncCoordinator.SendError.coordinatorNotReady)
+        guard case .failed = coordinator.phase else {
+            return XCTFail("expected a retryable failure, got \(coordinator.phase)")
+        }
+        XCTAssertFalse(coordinator.contactWithdrawalOutcomeUnknown)
+        XCTAssertTrue(try store.entries(scope: scope, contactIdentityId: contact).isEmpty)
+    }
 }
 
 /// Which balance a DashPay contact payment opens on, and when the From step

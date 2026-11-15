@@ -331,9 +331,15 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// lock's last failure. Injected so a test reads what it wrote without
     /// touching the shared store.
     private let failureStore: AssetLockFailureStore
+    /// The journal of contact withdrawals; injected for the same reason.
+    private let contactWithdrawalStore: DashPayWithdrawalStore
 
-    init(failureStore: AssetLockFailureStore = .shared) {
+    init(
+        failureStore: AssetLockFailureStore = .shared,
+        contactWithdrawalStore: DashPayWithdrawalStore = .shared
+    ) {
         self.failureStore = failureStore
+        self.contactWithdrawalStore = contactWithdrawalStore
     }
 
     /// Outpoint (wire-order txid + vout) of the asset lock the most recent
@@ -2331,7 +2337,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         return credits / 1000 + (credits % 1000 == 0 ? 0 : 1)
     }
 
-    private typealias ContactWithdrawal = DashPayWithdrawalStore.Entry
+    typealias ContactWithdrawal = DashPayWithdrawalStore.Entry
 
     /// Claims the contact for the whole payment, before its first await
     /// (`WalletSendService.beginContactPayment`), so no other payment to it,
@@ -2374,7 +2380,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         guard let recipient else { return nil }
         #if DASHPAY
         return try await WalletSendService.shared.reserveContactPaymentAddress(for: recipient) { address in
-            try DashPayWithdrawalStore.shared.begin(
+            try self.contactWithdrawalStore.begin(
                 scope: .init(
                     networkRaw: recipient.network.rawValue,
                     walletId: recipient.walletId,
@@ -2419,7 +2425,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// error proves never executed once its record is dropped: the caller
     /// fails it as retryable like any other. A record that can't be dropped
     /// ends on the unknown outcome too.
-    private func concludeUncertainContactWithdrawal(_ withdrawal: ContactWithdrawal?, error: Error) -> Bool {
+    func concludeUncertainContactWithdrawal(_ withdrawal: ContactWithdrawal?, error: Error) -> Bool {
         guard let withdrawal else { return false }
         if Self.provesWithdrawalNotSubmitted(error) {
             if dropUnsubmittedContactWithdrawal(withdrawal) { return false }
@@ -2432,7 +2438,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
     /// Fails a contact withdrawal refused after its record was written but
     /// before the SDK was called, as retryable once its record is dropped.
-    private func failUnsubmittedContactWithdrawal(_ withdrawal: ContactWithdrawal, error: Error) {
+    func failUnsubmittedContactWithdrawal(_ withdrawal: ContactWithdrawal, error: Error) {
         if dropUnsubmittedContactWithdrawal(withdrawal) {
             handleFailure(error)
         } else {
@@ -2447,7 +2453,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// on the unknown outcome instead.
     private func dropUnsubmittedContactWithdrawal(_ withdrawal: ContactWithdrawal) -> Bool {
         do {
-            try DashPayWithdrawalStore.shared.remove(withdrawal)
+            try contactWithdrawalStore.remove(withdrawal)
             return true
         } catch {
             Self.logger.error("🛡️ SHIELD-TX :: unsubmitted contact withdrawal record could not be dropped \(String(describing: error), privacy: .public)")
@@ -2458,7 +2464,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     private func endOnUnknownContactOutcome(_ withdrawal: ContactWithdrawal) {
         // The `.submitting` record already on disk reads as unknown too, so a
         // failure of this write loses nothing.
-        try? DashPayWithdrawalStore.shared.update(withdrawal, status: .unconfirmed)
+        try? contactWithdrawalStore.update(withdrawal, status: .unconfirmed)
         #if DASHPAY
         // The same per-contact lock an unknown Transparent contact payment
         // takes, so reopening the contact cannot start a duplicate.
@@ -2473,7 +2479,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         guard let withdrawal else { return }
         // Never turn an accepted withdrawal into an error because this write
         // failed: the record then stays `.submitting`, shown as unknown.
-        try? DashPayWithdrawalStore.shared.update(withdrawal, status: .submitted)
+        try? contactWithdrawalStore.update(withdrawal, status: .submitted)
     }
 
     /// Reset to `.idle` so the user can retry from a `.failed` state.
