@@ -80,7 +80,35 @@ enum BarcodeFormat: String {
     /// (Data Matrix) gets no image rather than one in the wrong symbology.
     var generatorFilterName: String? {
         if let ciFilterName { return ciFilterName }
-        return isTwoDimensional ? nil : BarcodeFormat.code128.ciFilterName
+        if self == .unknown || isTwoDimensional { return nil }
+        return BarcodeFormat.code128.ciFilterName
+    }
+
+    /// The format a CTX `barcodeType` or a stored format string names. CTX sends
+    /// `code39`, `code93`, `code128`, `pdf417`, `aztec` and `qr`; raw values and the
+    /// legacy `CODE128` spelling are accepted too. nil or empty means the Code 128
+    /// default that older cards were stored with; anything else unrecognised stays
+    /// `.unknown` so no stand-in barcode is drawn for it.
+    static func normalized(_ rawFormat: String?) -> BarcodeFormat {
+        guard let rawFormat, !rawFormat.isEmpty else { return .code128 }
+        let normalized = rawFormat
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .uppercased()
+            .replacingOccurrences(of: "-", with: "_")
+
+        if let format = BarcodeFormat(rawValue: normalized) {
+            return format
+        }
+        switch normalized {
+        case "CODE128": return .code128
+        case "CODE39": return .code39
+        case "CODE93": return .code93
+        case "QR", "QRCODE": return .qrCode
+        case "PDF417": return .pdf417
+        case "AZTEC_CODE": return .aztec
+        case "DATAMATRIX": return .dataMatrix
+        default: return .unknown
+        }
     }
 
     /// Get CIFilter name for generating barcode images

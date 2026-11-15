@@ -324,7 +324,7 @@ class GiftCardDetailsViewModel: ObservableObject {
                     await giftCardsDAO.updateBarcode(
                         txId: txId,
                         value: barcodeValue,
-                        format: normalizeBarcodeFormat(response.barcodeType).rawValue
+                        format: BarcodeFormat.normalized(response.barcodeType).rawValue
                     )
                     stopTicker()
                     DWLogger.log("DashSpend: Gift card details fetched successfully")
@@ -584,30 +584,9 @@ class GiftCardDetailsViewModel: ObservableObject {
         let normalizedValue = rawValue
             .replacingOccurrences(of: " ", with: "")
             .replacingOccurrences(of: "-", with: "")
-        return (normalizedValue, normalizeBarcodeFormat(formatCandidate).rawValue)
+        return (normalizedValue, BarcodeFormat.normalized(formatCandidate).rawValue)
     }
 
-    private func normalizeBarcodeFormat(_ rawFormat: String?) -> BarcodeFormat {
-        guard let rawFormat, !rawFormat.isEmpty else { return .code128 }
-        let normalized = rawFormat
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .uppercased()
-            .replacingOccurrences(of: "-", with: "_")
-
-        if let format = BarcodeFormat(rawValue: normalized), format != .unknown {
-            return format
-        }
-        switch normalized {
-        case "CODE128": return .code128
-        case "CODE39": return .code39
-        case "CODE93": return .code93
-        case "QR", "QRCODE": return .qrCode
-        case "PDF417": return .pdf417
-        case "AZTEC_CODE": return .aztec
-        case "DATAMATRIX": return .dataMatrix
-        default: return .code128
-        }
-    }
 
     private func loadExistingMetadata() {
         Task {
@@ -631,7 +610,7 @@ class GiftCardDetailsViewModel: ObservableObject {
 
     private func imageFromBarcode(value: String?, format: String?) -> UIImage? {
         guard let value, !value.isEmpty else { return nil }
-        let barcodeFormat = normalizeBarcodeFormat(format)
+        let barcodeFormat = BarcodeFormat.normalized(format)
         let filterName = barcodeFormat.generatorFilterName
 
         let transform: CGAffineTransform
