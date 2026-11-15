@@ -151,7 +151,9 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
                 "The details of this sign-in changed while it was on screen. Check them and approve again.",
                 comment: "DashConnect")
         case .approvalTermsExpired:
-            return "The connection's expiry passed before the approval was signed."
+            return NSLocalizedString(
+                "The connection's expiry passed before the approval was signed.",
+                comment: "DashConnect approve sheet: the chosen expiry passed before signing")
         case .approvalTermsUncheckable:
             return NSLocalizedString(
                 "The wallet could not read the network's time to check this connection's expiry. Try again.",
@@ -1338,6 +1340,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             throw DashConnectPlatformError.intentsUnreadable
         }
         let (snapshot, currentPublicKeys) = try await identitySnapshot(context: context)
+        let snapshotReadAt = now()
         // The app stops looking for an answer ten minutes after it asked.
         try Self.requireFreshRequest(age: uri.request.age(blockTimeMs: snapshot.platformTime))
         // The PIN prompt can outlast the expiry the user chose (a date ends
@@ -1358,9 +1361,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let (intent, read) = try await newAppConnectIntent(
             request: request, plan: plan, consent: consent, snapshot: snapshot,
             currentPublicKeys: currentPublicKeys, context: context)
-        // A fence reads the identity again, later: the expiry is checked at
-        // that read's Platform time too, before the intent is recorded.
-        if let failure = AppConnect.termsFailure(of: plan, platformTimeMs: read.platformTime) {
+        // Making the keys can outlast the expiry too: checked again before
+        // the intent is recorded, at the latest Platform time known — a
+        // fence's later read, or the first read moved on by this phone's
+        // clock since.
+        let elapsedMs = UInt64(max(0, now().timeIntervalSince(snapshotReadAt)) * 1000)
+        let platformNow = [read.platformTime, snapshot.platformTime.map { $0 + elapsedMs }].compactMap { $0 }.max()
+        if let failure = AppConnect.termsFailure(of: plan, platformTimeMs: platformNow) {
             throw failure
         }
         do {
