@@ -894,13 +894,13 @@ final class WalletSendService: NSObject {
               SwiftDashSDKHost.shared.runningNetwork == WalletEnvironment.network,
               recipient.ownerIdentityId == DWCurrentUserIdentityInfo.shared.identityId
         else {
-            throw makeError(
-                code: .dashPayPaymentUnavailable,
-                description: NSLocalizedString(
-                    "Your wallet or DashPay identity changed. Reopen the payment and try again.",
-                    comment: "DashPay: the wallet or identity changed while a contact payment was open"))
+            throw makeError(code: .dashPayPaymentUnavailable, description: contactContextChangedMessage)
         }
     }
+
+    static let contactContextChangedMessage = NSLocalizedString(
+        "Your wallet or DashPay identity changed. Reopen the payment and try again.",
+        comment: "DashPay: the wallet or identity changed while a contact payment was open")
 
     /// The spend gate a Platform- or Shielded-funded contact payment passes
     /// before its address is reserved — the same one `sendToContact` uses, so
