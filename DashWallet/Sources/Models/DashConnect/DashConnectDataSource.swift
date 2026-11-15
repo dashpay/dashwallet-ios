@@ -195,8 +195,8 @@ enum DashConnectMockError: LocalizedError, Equatable {
 final class MockDashConnectDataSource: DashConnectDataSource {
     static let sampleLoginRequest = DashKeyRequest(
         appEphemeralPubKey: Data(hex: "031b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f")!,
-        // Yappr's real testnet contract, so the sample resolves to Yappr branding and
-        // matches `sample(_:)`'s id.
+        // Yappr's real testnet contract, matching `sample(_:)`'s id. The sheet
+        // shows the request's own label, with no website.
         contractId: Data([
             0xc8, 0xb1, 0x02, 0xb5, 0x6e, 0xa7, 0xbb, 0xac,
             0xf7, 0x72, 0xd8, 0x36, 0x23, 0xf8, 0xd1, 0x8c,
