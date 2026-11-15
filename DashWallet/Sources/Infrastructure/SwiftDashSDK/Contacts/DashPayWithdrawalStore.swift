@@ -71,9 +71,14 @@ final class DashPayWithdrawalStore {
 
     private let directory: URL
     private let lock = NSLock()
+    private let removeItem: (URL) throws -> Void
 
-    init(directory: URL) {
+    init(
+        directory: URL,
+        removeItem: @escaping (URL) throws -> Void = { try FileManager.default.removeItem(at: $0) }
+    ) {
         self.directory = directory
+        self.removeItem = removeItem
     }
 
     /// Call after authorization and address reservation, immediately BEFORE
@@ -211,13 +216,19 @@ final class DashPayWithdrawalStore {
     }
 
     /// Renames `url` out of the journal — the one step that drops its
-    /// records — then deletes it. A copy the deletion leaves behind is no
-    /// longer read, and the next clear or wipe sweeps it.
+    /// records — then deletes it. A deletion that fails renames what is left
+    /// back, so the records still read and the clear or wipe throws; only a
+    /// copy a crash left behind is found by the next sweep.
     private func retire(_ url: URL, in parent: URL) throws {
         let retired = parent.appendingPathComponent(
             "\(retiredPrefix)\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.moveItem(at: url, to: retired)
-        try? FileManager.default.removeItem(at: retired)
+        do {
+            try removeItem(retired)
+        } catch {
+            try FileManager.default.moveItem(at: retired, to: url)
+            throw error
+        }
     }
 
     private func sweepRetired(in parent: URL) {
