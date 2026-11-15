@@ -265,7 +265,6 @@ extension IntegrationViewController: UITableViewDelegate, UITableViewDataSource 
         }
     
         if let vc = getViewControllerFor(operation: item.type) {
-            vc.hidesBottomBarWhenPushed = true
             navigationController?.pushViewController(vc, animated: true)
         }
     }

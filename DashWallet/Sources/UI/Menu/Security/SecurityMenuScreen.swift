@@ -157,7 +157,6 @@ struct SecurityMenuScreen: View {
                 if authenticated {
                     let controller = DWSetPinViewController(intent: .changePin)
                     controller.delegate = delegateInternal
-                    controller.hidesBottomBarWhenPushed = true
                     self.vc?.pushViewController(controller, animated: true)
                 }
             }
