@@ -1358,6 +1358,11 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let (intent, read) = try await newAppConnectIntent(
             request: request, plan: plan, consent: consent, snapshot: snapshot,
             currentPublicKeys: currentPublicKeys, context: context)
+        // A fence reads the identity again, later: the expiry is checked at
+        // that read's Platform time too, before the intent is recorded.
+        if let failure = AppConnect.termsFailure(of: plan, platformTimeMs: read.platformTime) {
+            throw failure
+        }
         do {
             try await submitAndPublish(
                 intent, request: request, plan: plan, snapshot: read, responseContractId: responseContractId,

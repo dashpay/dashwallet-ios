@@ -846,8 +846,9 @@ final class ConnectionsViewModel: ObservableObject {
                 self.approveError = self.usernameRefusal
                     ?? DashConnectPlatformError.approvalOutOfDate.localizedDescription
             } catch DashConnectPlatformError.approvalTermsExpired {
-                // The expiry went by while the PIN prompt was up. Nothing
-                // was signed: the sheet stays, and says why itself
+                // The expiry went by while the PIN prompt was up, or while
+                // the earlier grant was fenced. No key was added and the
+                // request was not recorded: the sheet stays, and says why itself
                 // (`approveDisabledReason`). Closing the sheet now is a
                 // decline, not a failure. Platform's time is at least that
                 // expiry now, though the sheet's estimate may be behind it:
