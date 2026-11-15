@@ -364,6 +364,13 @@ final class ConnectionsViewModel: ObservableObject {
         !connections.isEmpty || !history.isEmpty
     }
 
+    /// Whether anything was ever connected: a refused attempt connected
+    /// nothing, so a wallet with only those still offers to create a
+    /// username, and lists them once it has one.
+    var hasConnectedOrHistory: Bool {
+        connections.contains { $0.status != .refused } || !history.isEmpty
+    }
+
     private func item(for connection: DAppConnection) -> ConnectionSheetItem {
         ConnectionSheetItem(
             id: connection.id, name: connection.name, url: connection.url, status: connection.status,
@@ -761,7 +768,7 @@ final class ConnectionsViewModel: ObservableObject {
         }
         // The create-username page says it by itself; a page that may show
         // connections says it where the user is looking.
-        if usernameUnknown || hasConnectionsOrHistory || !hasReadRows {
+        if usernameUnknown || hasConnectedOrHistory || !hasReadRows {
             let note = ConnectionsScreenMessage(kind: .error, text: refusal)
             if shownConnection != nil { connectionSheetMessage = note } else { message = note }
         }

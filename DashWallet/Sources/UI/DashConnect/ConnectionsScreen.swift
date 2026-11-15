@@ -148,9 +148,10 @@ struct ConnectionsScreen: View {
 
     /// A wallet without a username and with nothing ever connected: the page
     /// offers to create one. A wallet that has connections keeps its list,
-    /// so their keys can still be turned off.
+    /// so their keys can still be turned off; refused attempts connected
+    /// nothing, and are listed once the wallet has a username.
     private var showsNoUsernameState: Bool {
-        viewModel.needsUsername && viewModel.hasReadRows && !viewModel.hasConnectionsOrHistory
+        viewModel.needsUsername && viewModel.hasReadRows && !viewModel.hasConnectedOrHistory
     }
 
     /// Creating a username starts on the Join DashPay sheet, as from More.
@@ -444,6 +445,28 @@ struct ConnectionsScreen: View {
         viewModel: ConnectionsViewModel(
             dataSource: MockDashConnectDataSource(initial: [MockDashConnectDataSource.sample(.expired)]),
             featureUnavailable: false
+        )
+    )
+}
+
+#Preview("No Username") {
+    ConnectionsScreen(
+        vc: UINavigationController(),
+        viewModel: ConnectionsViewModel(
+            dataSource: MockDashConnectDataSource(),
+            featureUnavailable: false,
+            usernameState: { .missing }
+        )
+    )
+}
+
+#Preview("No Username, Refused Attempt Only") {
+    ConnectionsScreen(
+        vc: UINavigationController(),
+        viewModel: ConnectionsViewModel(
+            dataSource: MockDashConnectDataSource(initial: [MockDashConnectDataSource.sample(.refused)]),
+            featureUnavailable: false,
+            usernameState: { .missing }
         )
     )
 }

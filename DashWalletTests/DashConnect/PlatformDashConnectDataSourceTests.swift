@@ -5699,6 +5699,18 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
         XCTAssertFalse(viewModel.usernameUnknown)
     }
 
+    func testARefusedAttemptAloneIsNothingConnected() async {
+        let refused = DAppConnection(
+            id: Self.appId, name: "Yappr", url: "yap.pr", status: .refused, updatedAt: Self.phone)
+        let viewModel = ConnectionsViewModel(
+            dataSource: MockDashConnectDataSource(initial: [refused], store: TestDashConnectStore()),
+            featureUnavailable: false, usernameState: { .missing }, now: { Self.phone })
+        await waitUntil { viewModel.hasReadRows }
+
+        XCTAssertTrue(viewModel.hasConnectionsOrHistory, "the row is still listed, with its Remove action")
+        XCTAssertFalse(viewModel.hasConnectedOrHistory, "the page still offers to create a username")
+    }
+
     // MARK: Expiry refused at Platform's time
 
     func testAnExpiryPlatformRefusedTurnsApproveOff() async {
