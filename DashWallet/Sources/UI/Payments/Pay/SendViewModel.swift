@@ -1041,6 +1041,10 @@ final class SendViewModel: ObservableObject {
     var contactUnavailableMessage: String? {
         if isContactRecipientGone { return Self.contactGoneMessage }
         if isContactPaymentUnavailable { return Self.contactPaymentsUnavailableMessage }
+        // Nothing to bind the payment to: Send would only be refused.
+        if contactRecipient != nil && contactPaymentRecipient == nil {
+            return WalletSendService.contactContextChangedMessage
+        }
         return nil
     }
 

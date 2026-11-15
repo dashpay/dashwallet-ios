@@ -6,7 +6,8 @@ import XCTest
 final class DashPayWithdrawalStoreTests: XCTestCase {
     private var directory: URL!
     private var store: DashPayWithdrawalStore!
-    private let contact = Data(repeating: 3, count: 32)
+    /// Fresh per test: an unknown outcome is remembered process-wide.
+    private let contact = Data((0..<32).map { _ in UInt8.random(in: 0...255) })
     private let scope = DashPayWithdrawalStore.Scope(
         networkRaw: 1, walletId: Data(repeating: 1, count: 32),
         ownerIdentityId: Data(repeating: 2, count: 32))
@@ -155,6 +156,20 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
         let working = DashPayWithdrawalStore(directory: journal)
         try working.resetForWipe()
         XCTAssertTrue(try working.entries(scope: scope, contactIdentityId: contact).isEmpty)
+    }
+
+    /// A deletion failing with "no such file" is still a failure, not a
+    /// journal that was never created.
+    func testWipeWhoseDeletionFindsAFileMissingThrows() throws {
+        let journal = directory.appendingPathComponent("journal")
+        let failing = DashPayWithdrawalStore(
+            directory: journal, removeItem: { _ in throw CocoaError(.fileNoSuchFile) })
+        let entry = try failing.begin(
+            scope: scope, contactIdentityId: contact, address: "yAddress",
+            amountDuffs: 1_000, source: .shielded)
+
+        XCTAssertThrowsError(try failing.resetForWipe())
+        XCTAssertEqual(try failing.entries(scope: scope, contactIdentityId: contact), [entry])
     }
 
     /// A clear interrupted after staging some files leaves their records
@@ -356,6 +371,7 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
     /// `.submitting` record still locks the contact, and nothing is retried.
     @MainActor
     func testUnwritableJournalEndsUnknownAndTheSubmittingRecordStillLocks() throws {
+        try XCTSkipIf(getuid() == 0, "root writes through the read-only permissions")
         let (coordinator, attempt) = try coordinatorAndAttempt()
         try FileManager.default.setAttributes([.posixPermissions: 0o500], ofItemAtPath: directory.path)
         let concluded: Bool
@@ -515,6 +531,7 @@ final class ContactPaymentSourceTests: XCTestCase {
         viewModel.setContactRecipient(contact)
         XCTAssertNil(viewModel.contactPaymentRecipient)
         XCTAssertEqual(viewModel.validSources, [.core])
+        XCTAssertEqual(viewModel.contactUnavailableMessage, WalletSendService.contactContextChangedMessage)
     }
 
     /// The send boundary refuses a context captured for another contact with

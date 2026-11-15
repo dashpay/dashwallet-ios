@@ -170,7 +170,10 @@ final class ContactPaymentReviewTests: XCTestCase {
         let contact = ContactItem.fixture(relationship: .established, createdAt: Date(timeIntervalSince1970: 0))
         let viewModel = SendViewModel(contactLookup: { _ in contact })
 
-        viewModel.setContactRecipient(contact)
+        viewModel.setContactRecipient(contact, paymentRecipient: ContactPaymentRecipient(
+            identityId: contact.contactIdentityId, displayName: "",
+            walletId: Data(repeating: 1, count: 32), ownerIdentityId: Data(repeating: 2, count: 32),
+            network: .testnet))
 
         XCTAssertFalse(viewModel.isContactPaymentUnavailable)
         XCTAssertNil(viewModel.contactUnavailableMessage)

@@ -168,8 +168,8 @@ final class DashPayWithdrawalStore {
     func clearForWallets(walletIds: [Data]) throws {
         lock.lock()
         defer { lock.unlock() }
-        sweepRetired(in: directory)
-        sweepRetired(in: directory.deletingLastPathComponent())
+        try? sweepRetired(in: directory)
+        try? sweepRetired(in: directory.deletingLastPathComponent())
         let walletHexes = Set(walletIds.map(Self.hex))
         // Records an earlier, interrupted clear staged first: a live file of
         // the same name was written after it, from its contents, so it is
@@ -206,12 +206,9 @@ final class DashPayWithdrawalStore {
         lock.lock()
         defer { lock.unlock() }
         let parent = directory.deletingLastPathComponent()
-        sweepRetired(in: parent)
-        do {
-            try retire(directory, in: parent)
-        } catch CocoaError.fileNoSuchFile {
-            // Nothing was ever journaled.
-        }
+        // A leftover that cannot be deleted fails the wipe: it holds records.
+        try sweepRetired(in: parent)
+        try retire(directory, in: parent, skippingMissing: true)
         notifyChange()
     }
 
@@ -219,10 +216,16 @@ final class DashPayWithdrawalStore {
     /// records — then deletes it. A deletion that fails renames what is left
     /// back, so the records still read and the clear or wipe throws; only a
     /// copy a crash left behind is found by the next sweep.
-    private func retire(_ url: URL, in parent: URL) throws {
+    /// `skippingMissing` skips a `url` that was never created; a deletion
+    /// failing with "no such file" still throws.
+    private func retire(_ url: URL, in parent: URL, skippingMissing: Bool = false) throws {
         let retired = parent.appendingPathComponent(
             "\(retiredPrefix)\(UUID().uuidString)", isDirectory: true)
-        try FileManager.default.moveItem(at: url, to: retired)
+        do {
+            try FileManager.default.moveItem(at: url, to: retired)
+        } catch CocoaError.fileNoSuchFile where skippingMissing {
+            return
+        }
         do {
             try removeItem(retired)
         } catch {
@@ -231,11 +234,11 @@ final class DashPayWithdrawalStore {
         }
     }
 
-    private func sweepRetired(in parent: URL) {
+    private func sweepRetired(in parent: URL) throws {
         let leftovers = (try? FileManager.default.contentsOfDirectory(
             at: parent, includingPropertiesForKeys: nil)) ?? []
         for leftover in leftovers where leftover.lastPathComponent.hasPrefix(retiredPrefix) {
-            try? FileManager.default.removeItem(at: leftover)
+            try removeItem(leftover)
         }
     }
 
