@@ -910,7 +910,7 @@ final class ConnectionsViewModel: ObservableObject {
         }
     }
 
-    private static func defaultDataSource(featureUnavailable: Bool) -> any DashConnectDataSource {
+    static func defaultDataSource(featureUnavailable: Bool) -> any DashConnectDataSource {
         let isPreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
         if isPreview || featureUnavailable {
             return MockDashConnectDataSource()

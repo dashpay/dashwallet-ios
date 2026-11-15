@@ -2724,9 +2724,13 @@ extension ConnectionsViewModelPurchaseTests {
         defer { defaults.set(stored, forKey: key) }
         XCTAssertTrue(WalletEnvironment.isMainnet)
 
-        let viewModel = ConnectionsViewModel(dataSource: LoginApprovalSpy(shown: []))
+        // No data source injected: the page builds its own, as in the app.
+        let viewModel = ConnectionsViewModel()
 
         XCTAssertFalse(viewModel.featureUnavailable)
+        XCTAssertTrue(
+            ConnectionsViewModel.defaultDataSource(featureUnavailable: viewModel.featureUnavailable)
+                is PlatformDashConnectDataSource)
     }
 }
 
