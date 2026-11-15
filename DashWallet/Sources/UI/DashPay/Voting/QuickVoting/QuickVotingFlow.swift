@@ -58,7 +58,7 @@ private struct QuickVotingFlowModifier: ViewModifier {
                     onVote: quick.voteForAll,
                     onCancel: quick.cancel)
             }
-            .fullScreenCover(isPresented: $showsLastVotes) {
+            .fullScreenCover(isPresented: $showsLastVotes, onDismiss: { quick.modalDidClose() }) {
                 ZStack {
                     Color.dash.backgroundOverlay.ignoresSafeArea()
                     if case .lastVotes(let usernames) = quick.step {
@@ -111,9 +111,13 @@ private struct QuickVotingFlowModifier: ViewModifier {
     }
 
     /// "One vote left" comes up once the sheet is gone; a second modal cannot
-    /// be presented while the first one leaves.
+    /// be presented while the first one leaves. So does the run Vote for all
+    /// started: its PIN prompt is a modal too.
     private func confirmDismissed() {
-        guard case .lastVotes = quick.step else { return }
+        guard case .lastVotes = quick.step else {
+            quick.modalDidClose()
+            return
+        }
         var noSlide = SwiftUI.Transaction()
         noSlide.disablesAnimations = true
         withTransaction(noSlide) { showsLastVotes = true }

@@ -829,6 +829,8 @@ final class VotingStoreTests: XCTestCase {
 
         await voting.quickVoting.start()
         voting.quickVoting.voteForAll()
+        // What the sheet does once it is gone
+        voting.quickVoting.modalDidClose()
         await yield(until: { caster.runs.count == 1 })
 
         XCTAssertEqual(caster.runs.first?.map(\.normalizedLabel), ["alice"], "alina and bob have no link")
