@@ -312,6 +312,25 @@ final class UnknownContactPaymentOutcomes {
 final class ContactPaymentClaims {
     private let lock = NSLock()
     private var contactIdentityIds: Set<Data> = []
+    private var isSuspended = false
+
+    /// Wallet removal and the wipe run with claims suspended: a payment
+    /// suspended in the SDK would otherwise outlive its wallet and journal,
+    /// and the record of its outcome with them. False, suspending nothing,
+    /// while a payment holds a claim.
+    func suspendForWalletDeletion() -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        guard contactIdentityIds.isEmpty, !isSuspended else { return false }
+        isSuspended = true
+        return true
+    }
+
+    func resumeAfterWalletDeletion() {
+        lock.lock()
+        defer { lock.unlock() }
+        isSuspended = false
+    }
 
     func isClaimed(contactIdentityId: Data) -> Bool {
         lock.lock()
@@ -323,6 +342,7 @@ final class ContactPaymentClaims {
     func claim(contactIdentityId: Data) -> Bool {
         lock.lock()
         defer { lock.unlock() }
+        guard !isSuspended else { return false }
         return contactIdentityIds.insert(contactIdentityId).inserted
     }
 

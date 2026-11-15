@@ -168,8 +168,8 @@ final class DashPayWithdrawalStore {
     func clearForWallets(walletIds: [Data]) throws {
         lock.lock()
         defer { lock.unlock() }
-        try? sweepRetired(in: directory)
-        try? sweepRetired(in: directory.deletingLastPathComponent())
+        try sweepRetired(in: directory)
+        try sweepRetired(in: directory.deletingLastPathComponent())
         let walletHexes = Set(walletIds.map(Self.hex))
         // Records an earlier, interrupted clear staged first: a live file of
         // the same name was written after it, from its contents, so it is
@@ -234,9 +234,16 @@ final class DashPayWithdrawalStore {
         }
     }
 
+    /// Throws when a leftover cannot be deleted, or `parent` cannot be
+    /// listed for any reason but its absence: either way records may survive.
     private func sweepRetired(in parent: URL) throws {
-        let leftovers = (try? FileManager.default.contentsOfDirectory(
-            at: parent, includingPropertiesForKeys: nil)) ?? []
+        let leftovers: [URL]
+        do {
+            leftovers = try FileManager.default.contentsOfDirectory(
+                at: parent, includingPropertiesForKeys: nil)
+        } catch CocoaError.fileReadNoSuchFile {
+            return
+        }
         for leftover in leftovers where leftover.lastPathComponent.hasPrefix(retiredPrefix) {
             try removeItem(leftover)
         }
