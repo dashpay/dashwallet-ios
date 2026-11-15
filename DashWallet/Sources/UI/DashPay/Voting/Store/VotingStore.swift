@@ -1102,18 +1102,22 @@ final class VotingStore: ObservableObject {
         defer { sendingLabels.subtract(failedLabels) }
         var updated: [String: [Data: VoteOutcome]] = [:]
         var casts: [QuickVoteCast] = []
+        // A name found closed stays closed through the merge: no Try again for it.
+        var closed = Set(run.reports.filter(\.contestClosed).map(\.normalizedLabel))
         for report in run.reports where !report.failed.isEmpty {
             // A node with no vote left here stays as reported: nothing a retry
             // sends from it can land. So does one whose vote may have landed.
             let failed = report.failed.filter(\.isRetryable).map(\.node)
             guard !failed.isEmpty else { continue }
-            let (outcomes, cast) = await replan(report, failed: failed)
+            let (outcomes, cast, ended) = await replan(report, failed: failed)
+            if ended { closed.insert(report.normalizedLabel) }
             updated[report.normalizedLabel] = outcomes
             if let cast { casts.append(cast) }
         }
         if !casts.isEmpty {
             switch await castRun(casts) {
             case .success(let reports):
+                closed.formUnion(reports.filter(\.contestClosed).map(\.normalizedLabel))
                 for report in reports {
                     for outcome in report.outcomes {
                         updated[report.normalizedLabel, default: [:]][outcome.node.proTxHash] = outcome
@@ -1131,16 +1135,18 @@ final class VotingStore: ObservableObject {
         let merged = QuickVoteRunReport(reports: run.reports.map { report in
             VoteCastReport(
                 normalizedLabel: report.normalizedLabel, choice: report.choice,
-                outcomes: report.outcomes.map { updated[report.normalizedLabel]?[$0.node.proTxHash] ?? $0 })
+                outcomes: report.outcomes.map { updated[report.normalizedLabel]?[$0.node.proTxHash] ?? $0 },
+                contestClosed: closed.contains(report.normalizedLabel))
         })
         guard outcomeVersion == version else { return }
         outcome = merged.reports.allSatisfy(\.isCompleteSuccess) ? .success(.quickVotingDone()) : .mixedRun(merged)
     }
 
     /// One failed name of a run, planned again: the outcomes of the failed
-    /// masternodes that will not send, and the cast of those that will.
+    /// masternodes that will not send, the cast of those that will, and
+    /// whether its voting has ended.
     private func replan(_ report: VoteCastReport, failed: [VoterNode]) async
-        -> (outcomes: [Data: VoteOutcome], cast: QuickVoteCast?) {
+        -> (outcomes: [Data: VoteOutcome], cast: QuickVoteCast?, ended: Bool) {
         let label = report.normalizedLabel
         func all(_ reason: String) -> [Data: VoteOutcome] {
             Dictionary(uniqueKeysWithValues: failed.map { ($0.proTxHash, VoteOutcome(node: $0, failure: reason)) })
@@ -1149,10 +1155,10 @@ final class VotingStore: ObservableObject {
               let contest = contests.first(where: { $0.normalizedLabel == label }),
               let request = contest.contenders.first(where: { $0.identityId == identityId }),
               !isClosed(normalizedLabel: label), (contest.endTime ?? .distantFuture) > now()
-        else { return (all(NSLocalizedString("Voting has ended", comment: "Voting")), nil) }
+        else { return (all(NSLocalizedString("Voting has ended", comment: "Voting")), nil, true) }
         // As the first run: a block by a missing masternode would go unseen.
         guard !nodeListMayMissNodes else {
-            return (all(NSLocalizedString("Some of your masternodes may be missing from this list.", comment: "Voting")), nil)
+            return (all(NSLocalizedString("Some of your masternodes may be missing from this list.", comment: "Voting")), nil, false)
         }
         let history = await loadVotedNodes(for: label) ? voteHistoryByContest[label] ?? VoteLimit(nil) : VoteLimit(nil)
         // Only this request, so the plan sends towards it again.
@@ -1165,7 +1171,7 @@ final class VotingStore: ObservableObject {
             contests: [target], tickedNodes: failedIDs,
             closedLabels: closedLabels, requestsMayBeCut: requestsMayBeCut, now: now(), history: { _ in history })
         if let skip = plan.skipped.first?.reason, skip != .nothingToSend {
-            return (all(Self.retryReason(skip)), nil)
+            return (all(Self.retryReason(skip)), nil, skip == .votingEnded)
         }
         let senders = plan.votes.first?.nodes ?? []
         let holders = history.nodes(holding: report.choice, among: failedIDs) ?? []
@@ -1175,9 +1181,9 @@ final class VotingStore: ObservableObject {
                 ? VoteOutcome(node: node, failure: nil) : .noVotesLeft(node)
         }
         let sending = failed.filter { senders.contains($0.proTxHash) }
-        guard !sending.isEmpty else { return (outcomes, nil) }
+        guard !sending.isEmpty else { return (outcomes, nil, false) }
         return (outcomes, QuickVoteCast(
-            normalizedLabel: label, choice: report.choice, nodes: sending, endsAt: contest.endTime))
+            normalizedLabel: label, choice: report.choice, nodes: sending, endsAt: contest.endTime), false)
     }
 
     private static func retryReason(_ reason: QuickVotePlan.SkipReason) -> String {
@@ -1209,6 +1215,10 @@ final class VotingStore: ObservableObject {
               sent.normalizedLabel == report.normalizedLabel,
               !isVoteBusy
         else { return }
+        // The slot is held from the history read to the merged outcome, so no
+        // other vote starts while the retry resolves or resends.
+        voteReads += 1
+        defer { voteReads -= 1 }
         let version = outcomeVersion
         let label = report.normalizedLabel
         let contest = latest(sent)
@@ -1216,7 +1226,7 @@ final class VotingStore: ObservableObject {
         // reported (see ``retryRun(_:)``).
         let failed = report.failed.filter(\.isRetryable).map(\.node)
         guard !failed.isEmpty else { return }
-        let history = await loadVotedNodesForVote(for: label)
+        let history = await loadVotedNodes(for: label)
             ? voteHistoryByContest[label] ?? VoteLimit(nil) : VoteLimit(nil)
         var attempt = VoteAttempt(
             intent: .vote(report.choice),

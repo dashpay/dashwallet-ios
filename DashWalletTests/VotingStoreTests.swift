@@ -879,6 +879,33 @@ final class VotingStoreTests: XCTestCase {
         XCTAssertEqual(bobsFailure(store), "Voting has ended")
     }
 
+    func testANameThatClosedBeforeTryAgainOffersNoFurtherTryAgain() async {
+        let caster = RunCaster()
+        let store = await mixedRunStore(caster)
+        contests.voteStateResult = .success(resolved("bob", lock: 0))
+        await store.refreshContest(normalizedLabel: "bob")
+
+        await store.retryFailed()
+
+        guard case .mixedRun(let run)? = store.outcome else { return XCTFail("bob's vote did not land") }
+        XCTAssertFalse(run.offersTryAgain, "nothing can land on a closed name")
+    }
+
+    func testANameTheRunFoundClosedStaysClosedThroughTryAgain() async {
+        let caster = RunCaster()
+        caster.closed = ["alice"]
+        caster.failing = ["bob": [Data([2])]]
+        let store = await makeRunStore(caster)
+        await store.runQuickVoting(store.quickVotePlan(for: store.contests))
+        caster.failing = [:]
+
+        await store.retryFailed()
+
+        guard case .mixedRun(let run)? = store.outcome else { return XCTFail("alice's votes did not land") }
+        XCTAssertEqual(run.reports.first { $0.normalizedLabel == "alice" }?.contestClosed, true)
+        XCTAssertFalse(run.offersTryAgain, "bob landed, and alice is closed")
+    }
+
     func testTryAgainOnANameBlockedMeanwhileSaysSo() async {
         let caster = RunCaster()
         let store = await mixedRunStore(caster)
@@ -2723,6 +2750,22 @@ final class VotingStoreTests: XCTestCase {
         await retry.value
         await other.value
         XCTAssertFalse(store.isVoteBusy)
+    }
+
+    /// The slot stays held from the retry's history read to its outcome: no
+    /// moment between them is free for another vote to start.
+    func testTryAgainHoldsTheVoteSlotUntilItsOutcome() async {
+        let (store, a, b, johndoe) = await makeVotingStore()
+        caster.script = .outcomes([landed(a), refused(b, "Network error")])
+        await store.send(choice: approve, on: johndoe, from: [a, b])
+        var busy: [Bool] = []
+        let watch = store.isVoteBusyPublisher.dropFirst().sink { busy.append($0) }
+        caster.script = .outcomes([landed(b)])
+
+        await store.retryFailed()
+
+        watch.cancel()
+        XCTAssertEqual(busy, [true, false], "busy once, through the read and the resend")
     }
 
     /// A newer attempt that replaced the outcome while Try again ran keeps it:

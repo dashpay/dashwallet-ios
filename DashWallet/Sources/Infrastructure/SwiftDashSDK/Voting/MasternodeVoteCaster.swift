@@ -125,8 +125,8 @@ struct VoteCastReport {
     var isCompleteSuccess: Bool { !outcomes.isEmpty && failed.isEmpty }
     /// Some failed masternode could still land a vote on a retry; one with no
     /// vote left never can (AC-15), and one that may have landed is not sent
-    /// again.
-    var offersTryAgain: Bool { failed.contains(where: \.isRetryable) }
+    /// again. Nothing can land on a closed contest.
+    var offersTryAgain: Bool { !contestClosed && failed.contains(where: \.isRetryable) }
 }
 
 // MARK: - QuickVoteCast
