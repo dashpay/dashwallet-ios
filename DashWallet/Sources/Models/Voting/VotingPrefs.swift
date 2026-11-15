@@ -29,27 +29,33 @@ class VotingPrefs {
     public static let shared: VotingPrefs = .init()
 
     private let defaults: UserDefaults
-    /// The Platform network the voting choice belongs to; read on every
-    /// access, so a network switch reads that network's choice.
-    private let network: () -> String
+    /// Whose voting choice it is: the Platform network and the active wallet
+    /// on it. Read on every access, so a network or wallet switch reads that
+    /// wallet's choice.
+    private let owner: () -> String
 
     init(defaults: UserDefaults = .standard,
-         network: @escaping () -> String = { MasternodeVoteCaster.networkKey }) {
+         owner: @escaping () -> String = VotingPrefs.activeWalletOwner) {
         self.defaults = defaults
-        self.network = network
+        self.owner = owner
         UserDefaults.standard.register(defaults: [
             kVotingEnabled: true,
         ])
     }
 
-    /// The masternode choice and "voting set up" are kept per network: a
-    /// testnet masternode is not a mainnet one. Mainnet keeps the plain key,
-    /// so a selection saved before the split stays mainnet's.
-    private func scoped(_ key: String) -> String {
-        let network = network()
-        return network == "mainnet" ? key : "\(key).\(network)"
+    /// The network and the active wallet on it, e.g. `testnet.<walletId hex>`.
+    static func activeWalletOwner() -> String {
+        let wallet = WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind)?.hexEncodedString() ?? "none"
+        return "\(MasternodeVoteCaster.networkKey).\(wallet)"
     }
-    
+
+    /// The masternode choice and "voting set up" are kept per network and
+    /// wallet: one wallet's masternodes are not another's, and a testnet
+    /// masternode is not a mainnet one.
+    private func scoped(_ key: String) -> String {
+        "\(key).\(owner())"
+    }
+
     private var _votingEnabled: Bool? = nil
     var votingEnabled: Bool {
         get {

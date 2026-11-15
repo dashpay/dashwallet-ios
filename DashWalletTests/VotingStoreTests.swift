@@ -1700,33 +1700,36 @@ final class VotingStoreTests: XCTestCase {
         XCTAssertEqual(prefs.votingNodeSelection, [])
     }
 
-    /// The masternode choice and "voting set up" belong to one network: a
-    /// testnet wallet does not start with mainnet's ticks, and a wipe forgets both.
-    func testVotingSetupIsKeptPerNetwork() throws {
-        let suite = "VotingPrefsNetworkTests"
+    /// The masternode choice and "voting set up" belong to one wallet on one
+    /// network: another wallet or network does not start with these ticks,
+    /// and a wipe forgets them all.
+    func testVotingSetupIsKeptPerWalletAndNetwork() throws {
+        let suite = "VotingPrefsOwnerTests"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
         defer { defaults.removePersistentDomain(forName: suite) }
-        var network = "mainnet"
-        let prefs = VotingPrefs(defaults: defaults, network: { network })
+        var owner = "mainnet.walletA"
+        let prefs = VotingPrefs(defaults: defaults, owner: { owner })
         prefs.isVotingSetUp = true
         prefs.votingNodeSelection = [Data([1])]
 
-        network = "testnet"
-        XCTAssertFalse(prefs.isVotingSetUp)
-        XCTAssertEqual(prefs.votingNodeSelection, [])
+        for other in ["mainnet.walletB", "testnet.walletA"] {
+            owner = other
+            XCTAssertFalse(prefs.isVotingSetUp, other)
+            XCTAssertEqual(prefs.votingNodeSelection, [], other)
+        }
         prefs.isVotingSetUp = true
         prefs.votingNodeSelection = [Data([2])]
 
-        network = "mainnet"
+        owner = "mainnet.walletA"
         XCTAssertTrue(prefs.isVotingSetUp)
         XCTAssertEqual(prefs.votingNodeSelection, [Data([1])])
 
         prefs.forgetVotingSetup()
-        XCTAssertFalse(prefs.isVotingSetUp)
-        XCTAssertEqual(prefs.votingNodeSelection, [])
-        network = "testnet"
-        XCTAssertFalse(prefs.isVotingSetUp)
-        XCTAssertEqual(prefs.votingNodeSelection, [])
+        for each in ["mainnet.walletA", "testnet.walletA"] {
+            owner = each
+            XCTAssertFalse(prefs.isVotingSetUp, each)
+            XCTAssertEqual(prefs.votingNodeSelection, [], each)
+        }
     }
 
     /// AC-12, AC-14: the vote button of "Add your voting keys" keeps the ticks and sets voting up.
