@@ -65,25 +65,6 @@ enum BarcodeFormat: String {
         }
     }
 
-    /// Two-dimensional symbologies: a one-dimensional barcode cannot stand in for them
-    var isTwoDimensional: Bool {
-        switch self {
-        case .qrCode, .pdf417, .aztec, .dataMatrix:
-            return true
-        default:
-            return false
-        }
-    }
-
-    /// Generator to draw this format with: Core Image's own, or Code 128 standing in for the
-    /// one-dimensional formats it cannot draw. A two-dimensional format without a generator
-    /// (Data Matrix) gets no image rather than one in the wrong symbology.
-    var generatorFilterName: String? {
-        if let ciFilterName { return ciFilterName }
-        if self == .unknown || isTwoDimensional { return nil }
-        return BarcodeFormat.code128.ciFilterName
-    }
-
     /// The format a CTX `barcodeType` or a stored format string names. CTX sends
     /// `code39`, `code93`, `code128`, `pdf417`, `aztec` and `qr`; raw values and the
     /// legacy `CODE128` spelling are accepted too. nil or empty means the Code 128
@@ -111,7 +92,8 @@ enum BarcodeFormat: String {
         }
     }
 
-    /// Get CIFilter name for generating barcode images
+    /// Core Image's generator for this format. The formats it cannot draw (Code 39, Code 93,
+    /// Data Matrix) and `.unknown` get no image rather than one in another symbology.
     var ciFilterName: String? {
         switch self {
         case .code128:
@@ -123,7 +105,6 @@ enum BarcodeFormat: String {
         case .aztec:
             return "CIAztecCodeGenerator"
         default:
-            // Core Image has no generator for the other formats (Code 39/93, Data Matrix)
             return nil
         }
     }

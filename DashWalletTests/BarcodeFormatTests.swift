@@ -38,15 +38,16 @@ final class BarcodeFormatTests: XCTestCase {
     func testUnrecognisedFormatStaysUnknownAndDrawsNothing() {
         XCTAssertEqual(BarcodeFormat.normalized("maxicode"), .unknown)
         XCTAssertEqual(BarcodeFormat.normalized("UNKNOWN"), .unknown)
-        XCTAssertNil(BarcodeFormat.unknown.generatorFilterName)
+        XCTAssertNil(BarcodeFormat.unknown.ciFilterName)
     }
 
-    func testCode128StandsInOnlyForOneDimensionalFormats() {
-        XCTAssertEqual(BarcodeFormat.code39.generatorFilterName, "CICode128BarcodeGenerator")
-        XCTAssertEqual(BarcodeFormat.code93.generatorFilterName, "CICode128BarcodeGenerator")
-        XCTAssertEqual(BarcodeFormat.qrCode.generatorFilterName, "CIQRCodeGenerator")
-        XCTAssertEqual(BarcodeFormat.pdf417.generatorFilterName, "CIPDF417BarcodeGenerator")
-        XCTAssertEqual(BarcodeFormat.aztec.generatorFilterName, "CIAztecCodeGenerator")
-        XCTAssertNil(BarcodeFormat.dataMatrix.generatorFilterName)
+    func testFormatsCoreImageCannotDrawGetNoStandIn() {
+        XCTAssertEqual(BarcodeFormat.code128.ciFilterName, "CICode128BarcodeGenerator")
+        XCTAssertEqual(BarcodeFormat.qrCode.ciFilterName, "CIQRCodeGenerator")
+        XCTAssertEqual(BarcodeFormat.pdf417.ciFilterName, "CIPDF417BarcodeGenerator")
+        XCTAssertEqual(BarcodeFormat.aztec.ciFilterName, "CIAztecCodeGenerator")
+        XCTAssertNil(BarcodeFormat.code39.ciFilterName)
+        XCTAssertNil(BarcodeFormat.code93.ciFilterName)
+        XCTAssertNil(BarcodeFormat.dataMatrix.ciFilterName)
     }
 }
