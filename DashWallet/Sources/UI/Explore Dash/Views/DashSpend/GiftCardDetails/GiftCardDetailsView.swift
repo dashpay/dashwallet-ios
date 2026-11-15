@@ -72,14 +72,16 @@ struct GiftCardDetailsView: View {
     }
     
     var body: some View {
-        VStack(spacing: 20) {
-            merchantHeaderSection
-            giftCardInfoSection
-            transactionDetailsSection
-            howToUseSection
-            poweredBySection
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 20) {
+                merchantHeaderSection
+                giftCardInfoSection
+                transactionDetailsSection
+                howToUseSection
+                poweredBySection
+            }
+            .padding(.horizontal, 20)
         }
-        .padding(.horizontal, 20)
         .background(Color.dash.primaryBackground)
         .onAppear {
             guard !isPreview else { return }
