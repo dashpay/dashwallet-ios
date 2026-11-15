@@ -108,7 +108,7 @@ final class MasternodeVoteCaster {
 
     /// Vote history is per Platform network — a testnet contest and a mainnet
     /// one can share a label, and their counts must never merge.
-    static var networkKey: String {
+    nonisolated static var networkKey: String {
         // Same "mainnet"/"testnet" strings as before; each configured devnet's
         // contests are recorded under their own key.
         WalletEnvironment.network?.persistenceScope ?? "mainnet"
