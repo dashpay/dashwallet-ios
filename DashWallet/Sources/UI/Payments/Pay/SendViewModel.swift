@@ -1940,7 +1940,7 @@ final class SendViewModel: ObservableObject {
         // conversion would otherwise produce is small enough to pass them.
         guard dashDuffsIfRepresentable != nil else { return false }
         #if DASHPAY
-        if isPreparingContactPayment || isSendingToContact || isContactPaymentUnavailable { return false }
+        if isPreparingContactPayment || isSendingToContact || contactUnavailableMessage != nil { return false }
         #endif
         if isCoreShieldedDrain {
             // A whole-wallet spend is never authorized without an amount and
