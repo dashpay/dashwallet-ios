@@ -1474,7 +1474,14 @@ final class SendViewModel: ObservableObject {
         if isFullShieldedSweep, let shieldedSweepAmountCredits {
             return shieldedSweepAmountCredits
         }
-        return NSDecimalNumber(decimal: Decimal(dashDuffsUnsigned) * 1000).uint64Value
+        return Self.credits(fromDuffs: dashDuffsUnsigned)
+    }
+
+    /// Saturates instead of wrapping: an amount too large to count in credits
+    /// fails every balance and cap check rather than becoming a small one.
+    nonisolated static func credits(fromDuffs duffs: UInt64) -> UInt64 {
+        let (credits, overflow) = duffs.multipliedReportingOverflow(by: 1000)
+        return overflow ? .max : credits
     }
 
     var fiatAmountString: String {
@@ -1930,7 +1937,9 @@ final class SendViewModel: ObservableObject {
         // An amount that cannot be represented in duffs is not spendable on
         // any route — checked before the routes, because the wrapped value the
         // conversion would otherwise produce is small enough to pass them.
-        guard dashDuffsIfRepresentable != nil else { return false }
+        guard let duffs = dashDuffsIfRepresentable,
+              !duffs.multipliedReportingOverflow(by: 1000).overflow
+        else { return false }
         #if DASHPAY
         if isPreparingContactPayment || isSendingToContact || contactUnavailableMessage != nil { return false }
         #endif
