@@ -76,7 +76,7 @@ struct ConnectionSheetItem: Identifiable, Equatable {
 @MainActor
 final class ConnectionsViewModel: ObservableObject {
     /// What the wallet knows of the active identity's usernames.
-    enum UsernameState {
+    enum UsernameState: Equatable {
         case present
         case missing
         /// The names are not read yet.
