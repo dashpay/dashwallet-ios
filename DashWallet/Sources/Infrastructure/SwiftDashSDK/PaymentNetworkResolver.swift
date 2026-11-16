@@ -22,7 +22,12 @@ enum PaymentNetworkResolver {
     /// is now rejected as a network mismatch instead of being signed and
     /// broadcast by a host running on a devnet.
     static func current() throws -> PaymentNetwork {
-        switch WalletEnvironment.networkKind {
+        token(for: WalletEnvironment.networkKind)
+    }
+
+    /// The `PaymentNetwork` token of a given network (see `current()` for why devnet stays distinct).
+    static func token(for kind: WalletEnvironment.NetworkKind) -> PaymentNetwork {
+        switch kind {
         case .mainnet: return .mainnet
         case .testnet: return .testnet
         case .devnet: return .devnet

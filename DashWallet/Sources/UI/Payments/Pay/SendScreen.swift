@@ -1570,40 +1570,23 @@ struct SendConfirmSheet: View {
     }
 
     private var infoTitle: String {
-        if isCoreDrain {
-            return NSLocalizedString("Sends all eligible Transparent funds", comment: "Send confirm sheet: Core drain")
-        }
+        if isCoreDrain { return SendWarningText.coreDrainTitle }
         switch route {
-        case .platformToCore, .shieldedToCore:
-            return NSLocalizedString("Processing time", comment: "")
-        default:
-            return NSLocalizedString("Double-check the address", comment: "Send confirm sheet")
+        case .platformToCore, .shieldedToCore: return SendWarningText.processingTimeTitle
+        default: return SendWarningText.doubleCheckTitle
         }
     }
 
     private var infoBody: String {
-        if isCoreDrain {
-            return NSLocalizedString(
-                "All eligible funds in your Transparent balance will be sent to this address when you confirm. Nothing is kept as change. The amount and fees are estimates. CoinJoin funds are excluded. Dash sent to a wrong address can't be recovered.",
-                comment: "Send confirm sheet: Core drain")
-        }
+        if isCoreDrain { return SendWarningText.coreDrainBody }
         switch route {
         case .shieldedToCore:
-            return NSLocalizedString(
-                "The Dash arrives at the recipient's address after the network processes the withdrawal — this can take up to 10 minutes.",
-                comment: "Send confirm sheet")
+            return SendWarningText.shieldedWithdrawalBody
         case .platformToCore:
             return isFullPlatformWithdrawal
-                ? NSLocalizedString(
-                    "This withdraws your entire Platform balance in one transfer. The Dash arrives at the recipient's address once the network processes the withdrawal.",
-                    comment: "Send confirm sheet")
-                : NSLocalizedString(
-                    "The Dash arrives at the recipient's address once the network processes the withdrawal.",
-                    comment: "Send confirm sheet")
+                ? SendWarningText.fullPlatformWithdrawalBody : SendWarningText.platformWithdrawalBody
         default:
-            return NSLocalizedString(
-                "Dash sent to a wrong address can't be recovered. Make sure the address is exactly the one you intend to pay.",
-                comment: "Send confirm sheet")
+            return SendWarningText.doubleCheckBody
         }
     }
 
