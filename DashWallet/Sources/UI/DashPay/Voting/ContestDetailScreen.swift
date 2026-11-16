@@ -26,46 +26,18 @@ import SwiftUI
 /// One contest: who is competing for the name, how the masternode vote stands,
 /// and the controls to add this wallet's own votes.
 struct ContestDetailScreen: View {
-    /// The UIKit stack this screen is pushed on: back pops it, and contender
-    /// details are pushed onto it.
-    /// Weak: this page sits in `vc`'s own stack.
-    weak var vc: UINavigationController?
     let contest: DPNSContest
     @ObservedObject var viewModel: VotingViewModel
 
-    /// The choice the user tapped, held until they confirm in the sheet.
-    @State private var pendingChoice: VoteChoice?
-    /// The voting-key flow, open because this wallet had no node to vote with.
-    @State private var keyFlow: KeyFlowRequest?
-    /// Set when the key flow ended with "Continue": the vote to open the cast
-    /// sheet for once the flow's sheet is gone.
-    @State private var voteAfterKeyFlow: VoteChoice?
+    /// A vote (or a key-only request) handed to ``View/voteFlow(_:viewModel:)``.
+    @State private var voteRequest: VoteFlowRequest?
 
-    /// Why the voting-key flow is open. `choice` is the vote that opened it,
-    /// or `nil` when it was opened from the "Add voting key" button.
-    private struct KeyFlowRequest: Identifiable {
-        let id = UUID()
-        let choice: VoteChoice?
-    }
-
-    private var current: DPNSContest {
-        viewModel.contests.first { $0.normalizedLabel == contest.normalizedLabel } ?? contest
-    }
+    private var current: DPNSContest { viewModel.latest(contest) }
 
     /// The contest resolved while this screen was open. The tallies below are
     /// the last ones read, and no further vote can be accepted.
     private var isClosed: Bool {
         viewModel.isClosed(normalizedLabel: contest.normalizedLabel)
-    }
-
-    /// Whether this screen may offer votes at all. Deliberately NOT gated on
-    /// "every node has already voted": Platform replaces a vote with one state
-    /// transition (five per node per contest), so a node that already voted can
-    /// still change its mind — which is what the hint at the bottom of this
-    /// screen has always told the user to do. Whether a *particular* choice is
-    /// castable is decided per row by `nodes(for:)`.
-    private var canVote: Bool {
-        viewModel.canVote && !isClosed && viewModel.hasLoadedVoteHistory(for: contest.normalizedLabel)
     }
 
     /// The nodes one tap on `choice` would cast with — none when every selected
@@ -83,17 +55,13 @@ struct ContestDetailScreen: View {
     }
 
     private func canVote(_ choice: VoteChoice) -> Bool {
-        needsVotingKey || (canVote && !nodes(for: choice).isEmpty)
+        viewModel.canStartVote(choice, on: contest.normalizedLabel)
     }
 
     /// A Vote tap: the cast sheet when a node can cast it, else the key flow,
     /// which comes back here with the same choice.
     private func vote(_ choice: VoteChoice) {
-        if needsVotingKey {
-            keyFlow = KeyFlowRequest(choice: choice)
-        } else {
-            pendingChoice = choice
-        }
+        voteRequest = VoteFlowRequest(contest: current, choice: choice)
     }
 
     /// What a tap on this choice will do, so the button says it rather than
@@ -120,48 +88,6 @@ struct ContestDetailScreen: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            DashUIKit.NavigationBar(
-                leading: {
-                    DashUIKit.NavigationBarElement.back.button {
-                        vc?.popViewController(animated: true)
-                    }
-                },
-                central: {
-                    Text(current.displayTitle)
-                        .dashFont(.subheadMedium)
-                        .foregroundColor(.dash.primaryText)
-                        .lineLimit(1)
-                        .padding(.horizontal, 60)
-                })
-
-            contestList
-        }
-        .background(Color(UIColor.systemGroupedBackground))
-        .navigationBarHidden(true)
-        .task { await viewModel.loadVotedNodes(for: contest.normalizedLabel) }
-        // A swipe-down skips the sheet's close button, so the result it
-        // leaves behind is cleared here as well.
-        .sheet(item: $pendingChoice, onDismiss: { viewModel.dismissCastResult() }) { choice in
-            CastVoteSheet(
-                contest: current,
-                choice: choice,
-                viewModel: viewModel)
-                .presentationDragIndicator(.hidden)
-        }
-        .sheet(item: $keyFlow, onDismiss: openVoteAfterKeyFlow) { request in
-            VotingKeysFlow(
-                start: .addKey,
-                continuesToVote: request.choice != nil,
-                viewModel: viewModel,
-                onFinish: { continueToVote in
-                    voteAfterKeyFlow = continueToVote ? request.choice : nil
-                    keyFlow = nil
-                })
-        }
-    }
-
-    private var contestList: some View {
         List {
             if isClosed {
                 Section {
@@ -222,7 +148,6 @@ struct ContestDetailScreen: View {
             Section(NSLocalizedString("Requesting this name", comment: "Voting")) {
                 ForEach(current.contenders) { contender in
                     ContenderRow(
-                        vc: vc,
                         contender: contender,
                         normalizedLabel: contest.normalizedLabel,
                         votingEndsAt: current.endTime,
@@ -277,7 +202,7 @@ struct ContestDetailScreen: View {
                             .font(.caption)
                             .foregroundColor(Color.dash.secondaryText)
                         Button(NSLocalizedString("Add voting key", comment: "Voting")) {
-                            keyFlow = KeyFlowRequest(choice: nil)
+                            voteRequest = VoteFlowRequest(contest: current, choice: nil)
                         }
                         .font(.caption.weight(.semibold))
                         .buttonStyle(.borderless)
@@ -285,25 +210,28 @@ struct ContestDetailScreen: View {
                 }
             }
         }
+        .navigationTitle(current.displayTitle)
+        .navigationBarTitleDisplayMode(.inline)
+        .task { await viewModel.loadVotedNodes(for: contest.normalizedLabel) }
         .refreshable { await viewModel.refreshContest(normalizedLabel: contest.normalizedLabel) }
-    }
-
-    /// Open the cast sheet for the vote that sent the user to the key flow.
-    /// Deferred to the flow's `onDismiss`: a second sheet cannot be presented
-    /// while the first is still on screen.
-    private func openVoteAfterKeyFlow() {
-        defer { voteAfterKeyFlow = nil }
-        guard let choice = voteAfterKeyFlow, viewModel.canVote, !isClosed else { return }
-        pendingChoice = choice
+        .voteFlow($voteRequest, viewModel: viewModel)
+        // A vote that landed on every node says so here too: the cast sheet
+        // closes on success instead of showing its result.
+        .overlay(alignment: .bottom) {
+            if let toast = viewModel.toast {
+                toast.view
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 12)
+                    .transition(.opacity)
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: viewModel.toast?.id)
     }
 }
 
 // MARK: - ContenderRow
 
 private struct ContenderRow: View {
-    /// The UIKit stack the contender details are pushed on.
-    /// Weak: this page sits in `vc`'s own stack.
-    weak var vc: UINavigationController?
     let contender: DPNSContender
     /// Passed through to the details screen, which shows the stored form and
     /// looks this contender's published link up by it.
@@ -317,18 +245,16 @@ private struct ContenderRow: View {
     var body: some View {
         HStack {
             // The name opens this contender; the button votes. Two controls in
-            // one row, so the push wraps only the text — wrapping the row would
+            // one row, so the link wraps only the text — wrapping the row would
             // swallow the button's tap.
-            Button {
-                let screen = ContenderDetailScreen(
-                    vc: vc,
+            NavigationLink {
+                ContenderDetailScreen(
                     contender: contender,
                     normalizedLabel: normalizedLabel,
                     votingEndsAt: votingEndsAt,
                     canVote: canVote,
                     voteTitle: voteTitle,
                     onVote: onVote)
-                vc?.pushViewController(UIHostingController(rootView: screen), animated: true)
             } label: {
                 HStack(spacing: 6) {
                     VStack(alignment: .leading, spacing: 2) {
@@ -341,6 +267,9 @@ private struct ContenderRow: View {
                             .foregroundColor(isLeading ? .green : Color.dash.secondaryText)
                             .fontWeight(isLeading ? .semibold : .regular)
                     }
+                    // No chevron of our own: the List already draws the
+                    // disclosure for a NavigationLink row, and two read as a
+                    // glitch.
                 }
                 .contentShape(Rectangle())
             }
@@ -353,13 +282,6 @@ private struct ContenderRow: View {
                     .buttonStyle(.bordered)
                     .controlSize(.small)
             }
-
-            // The disclosure a List draws for a navigation row, at the row's
-            // trailing edge. Decorative: the name is the control.
-            Image(systemName: "chevron.right")
-                .font(.footnote.weight(.semibold))
-                .foregroundColor(Color(UIColor.tertiaryLabel))
-                .accessibilityHidden(true)
         }
         .padding(.vertical, 2)
     }
@@ -426,9 +348,6 @@ extension VoteChoice: Identifiable {
 /// result is due. The vote control comes along so the decision can be made
 /// where the evidence is.
 private struct ContenderDetailScreen: View {
-    /// The UIKit stack this screen is pushed on; back pops it.
-    /// Weak: this page sits in `vc`'s own stack.
-    weak var vc: UINavigationController?
     let contender: DPNSContender
     let normalizedLabel: String
     let votingEndsAt: Date?
@@ -436,6 +355,7 @@ private struct ContenderDetailScreen: View {
     let voteTitle: String
     let onVote: () -> Void
 
+    @Environment(\.dismiss) private var dismiss
     /// What the link lookup has to say. Reading, a link, nothing published, or
     /// a failure — four answers, because collapsing the last two tells a voter
     /// this contender published no proof when in truth the query did not run.
@@ -462,11 +382,7 @@ private struct ContenderDetailScreen: View {
     var body: some View {
         VStack(spacing: 0) {
             DashUIKit.NavigationBar(
-                leading: {
-                    DashUIKit.NavigationBarElement.back.button {
-                        vc?.popViewController(animated: true)
-                    }
-                })
+                leading: { DashUIKit.NavigationBarElement.back.button(action: { dismiss() }) })
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
@@ -505,15 +421,10 @@ private struct ContenderDetailScreen: View {
                             style: .filledBlue,
                             action: {
                                 // The cast sheet belongs to the screen behind
-                                // this one; step back first, and open it once
-                                // the pop has finished so it is not presented
-                                // mid-transition.
-                                vc?.popViewController(animated: true)
-                                if let coordinator = vc?.transitionCoordinator {
-                                    coordinator.animate(alongsideTransition: nil) { _ in onVote() }
-                                } else {
-                                    onVote()
-                                }
+                                // this one; step back rather than stack a
+                                // second presentation on top of it.
+                                dismiss()
+                                onVote()
                             })
                             .padding(.horizontal, 20)
                     }

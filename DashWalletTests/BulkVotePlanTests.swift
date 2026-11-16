@@ -143,9 +143,9 @@ final class VoteHistoryPersistenceTests: XCTestCase {
 
         XCTAssertEqual(try castCounts(db), [5], "one row, five casts")
         let stored = await dao.votes(forContest: label, network: network)
-        XCTAssertEqual(stored.count, 1)
-        XCTAssertEqual(stored.first?.castCount, 5)
-        XCTAssertEqual(stored.first?.choice, .lock, "the row holds the latest vote")
+        XCTAssertEqual(stored?.count, 1)
+        XCTAssertEqual(stored?.first?.castCount, 5)
+        XCTAssertEqual(stored?.first?.choice, .lock, "the row holds the latest vote")
     }
 
     func testAFreshStoreStartsEachNodeAtOneCast() async throws {
@@ -159,8 +159,12 @@ final class VoteHistoryPersistenceTests: XCTestCase {
             network: network)
 
         let stored = await dao.votes(forContest: label, network: network)
-        XCTAssertEqual(stored.map(\.castCount), [1])
-        let counts = await dao.voteCountsByContest(network: network)
-        XCTAssertEqual(counts, [label: 1])
+        XCTAssertEqual(stored?.map(\.castCount), [1])
+        // The list reads every contest's history in one query; it sees the same row.
+        let listed = await dao.votes(forContests: [label, "other"], network: network)
+        XCTAssertEqual(listed?.map(\.normalizedLabel), [label])
+        XCTAssertEqual(listed?.map(\.castCount), [1])
+        let unlisted = await dao.votes(forContests: ["other"], network: network)
+        XCTAssertEqual(unlisted?.isEmpty, true)
     }
 }

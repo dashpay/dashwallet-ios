@@ -33,6 +33,10 @@ struct CastVoteSheet: View {
     @Environment(\.dismiss)
     private var dismiss
     @State private var selectedNodeIDs: Set<Data> = []
+    /// What the sheet showed when Cast was tapped. A successful cast reloads
+    /// the history while the sheet is still closing, and the live lists would
+    /// then flash "already voted" with nothing left to cast.
+    @State private var castSnapshot: (candidates: [VoterNode], holding: Int)?
 
     private var selectedNodes: [VoterNode] {
         candidateNodes.filter { selectedNodeIDs.contains($0.proTxHash) }
@@ -46,7 +50,7 @@ struct CastVoteSheet: View {
     /// single state transition, and excluding it was what made changing your
     /// mind impossible from this sheet.
     private var candidateNodes: [VoterNode] {
-        viewModel.nodesForVote(choice, on: contest.normalizedLabel)
+        castSnapshot?.candidates ?? viewModel.nodesForVote(choice, on: contest.normalizedLabel)
     }
 
     /// The nodes this sheet is talking about at all: `candidateNodes` is
@@ -60,7 +64,8 @@ struct CastVoteSheet: View {
 
     /// Nodes left out because they already hold this exact choice.
     private var holdingThisChoice: Int {
-        selectedVotableNodes.filter {
+        if let castSnapshot { return castSnapshot.holding }
+        return selectedVotableNodes.filter {
             viewModel.liveChoice(of: $0, on: contest.normalizedLabel) == choice
         }.count
     }
@@ -92,6 +97,9 @@ struct CastVoteSheet: View {
                 confirmForm
             }
         }
+        // Not swiped away mid-cast: the outcome belongs to this sheet, and the
+        // next sheet would otherwise open into it.
+        .interactiveDismissDisabled(viewModel.isCasting)
         .onAppear {
             if selectedNodeIDs.isEmpty {
                 // Honour the privacy mode: one node preselected by default,
@@ -167,8 +175,16 @@ struct CastVoteSheet: View {
 
             Section {
                 Button {
+                    castSnapshot = (candidateNodes, holdingThisChoice)
                     Task {
-                        await viewModel.cast(choice: choice, on: contest, with: selectedNodes)
+                        // Every node's vote landed: the screen behind says so in
+                        // a toast. A partial or failed cast stays here, where the
+                        // per-node outcomes can be read.
+                        if await viewModel.cast(choice: choice, on: contest, with: selectedNodes) {
+                            dismiss()
+                        } else {
+                            castSnapshot = nil
+                        }
                     }
                 } label: {
                     HStack {

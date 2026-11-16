@@ -56,12 +56,18 @@ final class VotingViewModel: ObservableObject {
     // MARK: Published state
 
     /// The *open* contests. A contest that resolves leaves this list.
-    @Published private(set) var contests: [DPNSContest] = []
+    @Published private(set) var contests: [DPNSContest] = [] {
+        didSet { recomputeVisible() }
+    }
     /// Labels observed to have resolved while the user was looking at them,
     /// so an already-open detail screen can say so instead of offering a vote
     /// that can no longer be accepted.
     @Published private(set) var closedLabels: Set<String> = []
-    @Published private(set) var votableNodes: [VoterNode] = []
+    @Published private(set) var votableNodes: [VoterNode] = [] {
+        didSet { votableNodeIDs = Set(votableNodes.map(\.proTxHash)) }
+    }
+    /// ``votableNodes`` as a set, kept with it rather than rebuilt per row.
+    private(set) var votableNodeIDs: Set<Data> = []
     /// The wallet's voting-key pool could only be read at its shallow
     /// fallback depth and some active registration went unmatched, so a node
     /// you can actually vote with may be missing from ``votableNodes``.
@@ -73,8 +79,45 @@ final class VotingViewModel: ObservableObject {
     /// shown while the first fetch is still in flight.
     @Published private(set) var hasLoadedOnce = false
 
-    @Published var searchQuery: String = ""
-    @Published var sort: ContestSort = .endingSoonest
+    @Published var searchQuery: String = "" {
+        didSet {
+            normalizedNeedle = contestsService.normalizedLabel(
+                for: searchQuery.trimmingCharacters(in: .whitespacesAndNewlines))
+            recomputeVisible()
+        }
+    }
+    /// The search query, homograph-normalized once per edit rather than on
+    /// every recompute of the list.
+    private var normalizedNeedle: String?
+    @Published var sort: ContestSort = .endingSoonest {
+        didSet { recomputeVisible() }
+    }
+
+    /// Contests matching the search box, in the selected order. Recomputed when
+    /// the contests, the search or the sort change — not on every render, since
+    /// matching a search normalizes it through the SDK.
+    @Published private(set) var visibleContests: [DPNSContest] = []
+    /// ``visibleContests`` grouped by the day voting ends.
+    @Published private(set) var sections: [VotingListSection] = []
+
+    /// Also called when the day changes, so "Voting ends today / in N days"
+    /// stays true on a screen left open past midnight.
+    func recomputeVisible() {
+        let visible = filteredContests()
+        visibleContests = visible
+        // Grouped by end day only for the end-day order; another sort is one
+        // run across the whole list, or "Most votes" would not put the most
+        // voted contest first.
+        sections = sort == .endingSoonest
+            ? VotingListSection.group(visible, now: Date(), calendar: .current)
+            : [VotingListSection(daysLeft: nil, contests: visible, isUngrouped: true)]
+    }
+
+    /// The latest copy of `contest` in the list, so a screen opened from an
+    /// older snapshot shows today's counts.
+    func latest(_ contest: DPNSContest) -> DPNSContest {
+        contests.first { $0.normalizedLabel == contest.normalizedLabel } ?? contest
+    }
 
     /// True once a contest fetch has actually succeeded. Distinct from
     /// ``hasLoadedOnce``, which only records that a load was attempted.
@@ -86,10 +129,6 @@ final class VotingViewModel: ObservableObject {
     /// Per-contest results of the most recent bulk run.
     @Published var bulkReports: [VoteCastReport]?
 
-    /// How many of this wallet's nodes have already voted, per contest, from
-    /// local history. Drives the "2 of 5 votes cast" line and excludes nodes
-    /// that already voted from the next cast.
-    @Published private(set) var castCountsByContest: [String: Int] = [:]
     /// Which of our nodes voted, per contest. Keyed by contest so a screen can
     /// never be answered with another contest's history — and so an ABSENT
     /// entry is distinguishable from "none voted here", which is what makes
@@ -151,17 +190,29 @@ final class VotingViewModel: ObservableObject {
 
     // MARK: Derived state
 
-    /// Total Platform voting weight this wallet controls. Evonodes count 4×.
-    var totalVoteWeight: UInt32 { votableNodes.totalVoteWeight }
 
     var canVote: Bool { !votableNodes.isEmpty }
 
-    /// Contests matching the search box, in the selected order.
+    /// Names the nodes a vote will use, so the privacy consequence of the
+    /// current selection is legible without opening the picker. Describes the
+    /// selection a vote will actually use, not the raw persisted one.
+    var votingWithSummary: String {
+        let chosen = votableNodes.filter { effectiveSelectedNodeIDs.contains($0.proTxHash) }
+        guard !chosen.isEmpty else {
+            return NSLocalizedString("Select nodes", comment: "Voting")
+        }
+        if chosen.count == votableNodes.count {
+            return String.localizedStringWithFormat(NSLocalizedString("All %d nodes", comment: "Voting"), chosen.count)
+        }
+        return chosen.map(\.displayName).joined(separator: ", ")
+    }
+
+    /// The contests matching the search box, in the selected order.
     ///
     /// The query is homograph-normalized before matching because Platform
     /// stores normalized labels — someone typing "alice" is looking for
     /// "a11ce", and a raw substring match would find nothing.
-    var visibleContests: [DPNSContest] {
+    private func filteredContests() -> [DPNSContest] {
         let trimmed = searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return sorted(contests) }
 
@@ -169,7 +220,12 @@ final class VotingViewModel: ObservableObject {
         // list means the handle is up, so this only returns nil when there is
         // nothing to filter anyway. Leaving the list unfiltered beats
         // matching against a locally-guessed spelling of the label.
-        guard let needle = contestsService.normalizedLabel(for: trimmed) else {
+        // Normalized when the query was typed; again here only if the SDK was
+        // not up yet then.
+        if normalizedNeedle == nil {
+            normalizedNeedle = contestsService.normalizedLabel(for: trimmed)
+        }
+        guard let needle = normalizedNeedle else {
             return sorted(contests)
         }
         // Match the normalized form *and* the spellings people actually typed,
@@ -198,7 +254,31 @@ final class VotingViewModel: ObservableObject {
 
     // MARK: Loading
 
+    /// The loads below — the whole list, every contest's history, one
+    /// contest's history, one contest's tallies — run one at a time, in the
+    /// order they were asked for. Each reads the store or Platform when its
+    /// turn comes and applies what it read before the next one starts, so a
+    /// load that read earlier can never land after one that read later and
+    /// put back what was there before a vote.
+    private var loadQueueTail: Task<Void, Never>?
+
+    /// A queued load must call only `perform…` functions, never the public
+    /// wrappers: those wait for the queue's tail, which would be itself.
+    private func serially(_ load: @escaping @MainActor () async -> Void) async {
+        let previous = loadQueueTail
+        let next = Task { @MainActor in
+            await previous?.value
+            await load()
+        }
+        loadQueueTail = next
+        await next.value
+    }
+
     func refresh() async {
+        await serially { [weak self] in await self?.performRefresh() }
+    }
+
+    private func performRefresh() async {
         isLoading = true
         defer {
             isLoading = false
@@ -207,17 +287,60 @@ final class VotingViewModel: ObservableObject {
 
         refreshVotableNodes()
 
-        castCountsByContest = await history.voteCountsByContest(
-            network: MasternodeVoteCaster.networkKey)
-
         do {
             contests = try await contestsService.activeContests()
+            // A contest Platform lists as open again is not closed.
+            closedLabels.subtract(contests.map(\.normalizedLabel))
             loadError = nil
             didLoadContests = true
         } catch {
             loadError = (error as? LocalizedError)?.errorDescription ?? String(describing: error)
         }
+
+        // After the contests, so every listed contest gets a known history —
+        // an empty one included — and its vote controls are not held back
+        // waiting for a per-contest load.
+        await performLoadAllVoteHistory()
     }
+
+    /// This wallet's vote history for every contest, in one query, so the list
+    /// can mark the user's own vote on every row without a query per row.
+    ///
+    /// Fills the same per-contest maps ``loadVotedNodes(for:)`` fills for one
+    /// contest. A listed contest with no records gets an empty history: after a
+    /// full load "no records" means "nobody voted", not "not loaded yet".
+    private func loadAllVoteHistory() async {
+        await serially { [weak self] in await self?.performLoadAllVoteHistory() }
+    }
+
+    private func performLoadAllVoteHistory() async {
+        let labels = Set(contests.map(\.normalizedLabel))
+        // A failed read leaves every history unknown — not "nobody voted",
+        // which would offer nodes for votes they already hold — and says so.
+        guard let records = await history.votes(
+            forContests: labels, network: MasternodeVoteCaster.networkKey)
+        else {
+            historyUnavailable = true
+            return
+        }
+        historyUnavailable = false
+        let byLabel = Dictionary(grouping: records, by: \.normalizedLabel)
+        // Merged in: a contest not in the list (one open on its own screen
+        // after it closed) keeps the history it has.
+        var voted = votedProTxHashesByContest
+        var histories = voteHistoryByContest
+        for label in labels {
+            let contestRecords = byLabel[label] ?? []
+            voted[label] = Set(contestRecords.map(\.proTxHash))
+            histories[label] = NodeVoteHistory(contestRecords)
+        }
+        votedProTxHashesByContest = voted
+        voteHistoryByContest = histories
+    }
+
+    /// This wallet's vote history could not be read, so the list cannot tell
+    /// which votes are already cast and holds its vote controls back.
+    @Published private(set) var historyUnavailable = false
 
     /// Re-resolve which nodes this wallet can vote with, and nothing else.
     ///
@@ -259,8 +382,12 @@ final class VotingViewModel: ObservableObject {
     /// first load that failed still retries instead of stranding the user on an
     /// empty list.
     func refreshIfNeeded() async {
-        guard !didLoadContests else { return }
-        await refresh()
+        // Checked when its turn comes: a list that reappears while the first
+        // load is still queued must not queue a second full refresh.
+        await serially { [weak self] in
+            guard let self, !self.didLoadContests else { return }
+            await self.performRefresh()
+        }
     }
 
     /// Re-read one contest's tallies after voting on it, so the row reflects
@@ -272,6 +399,10 @@ final class VotingViewModel: ObservableObject {
     /// would offer a Vote button whose only possible outcome is the caster's
     /// closed-poll rejection.
     func refreshContest(normalizedLabel: String) async {
+        await serially { [weak self] in await self?.performRefreshContest(normalizedLabel: normalizedLabel) }
+    }
+
+    private func performRefreshContest(normalizedLabel: String) async {
         let state: DPNSContestVoteState?
         do {
             state = try await contestsService.voteState(normalizedLabel: normalizedLabel)
@@ -300,7 +431,10 @@ final class VotingViewModel: ObservableObject {
             hasWinner: false,
             abstainVotes: state.abstainVotes,
             lockVotes: state.lockVotes,
-            contenders: state.contenders)
+            contenders: state.contenders,
+            // The vote state carries no requested spellings; without these the
+            // row would fall back to the normalized label ("p1zza") after a vote.
+            requestedLabels: existing.requestedLabels)
     }
 
     private func close(normalizedLabel: String) {
@@ -343,21 +477,31 @@ final class VotingViewModel: ObservableObject {
             latest[proTxHash]?.choice
         }
 
+        /// The live choices of `nodes`, for marking "my vote" on a list row.
+        func liveChoices(of nodes: Set<Data>) -> Set<VoteChoice> {
+            Set(latest.filter { nodes.contains($0.key) }.values.map(\.choice))
+        }
+
+        /// One more cast by `node`, now holding `choice`, as the store records it.
+        mutating func recordCast(of node: Data, on normalizedLabel: String, choice: VoteChoice, at date: Date) {
+            casts[node, default: 0] += 1
+            latest[node] = CastVoteRecord(
+                proTxHash: node,
+                normalizedLabel: normalizedLabel,
+                choice: choice,
+                castAt: date,
+                castCount: casts[node] ?? 1)
+        }
+
         /// Whether Platform would still accept another vote from this node here.
         func hasCastsLeft(_ proTxHash: Data) -> Bool {
             (casts[proTxHash] ?? 0) < VotingViewModel.maxCastsPerNodePerContest
         }
     }
 
-    /// Per contest, rebuilt by `loadVotedNodes(for:)`.
+    /// Per contest, rebuilt for one contest by `loadVotedNodes(for:)` and for
+    /// every listed contest by `loadAllVoteHistory()`.
     private var voteHistoryByContest: [String: NodeVoteHistory] = [:]
-
-    /// Vote *records* this wallet holds on `contest` — a node that changed its
-    /// mind contributes more than one. `votedNodeCount(on:)` is the per-node
-    /// figure the screens show.
-    func castCount(for normalizedLabel: String) -> Int {
-        castCountsByContest[normalizedLabel] ?? 0
-    }
 
     /// Nodes that have not yet voted on this contest, in registration order.
     ///
@@ -379,11 +523,17 @@ final class VotingViewModel: ObservableObject {
     /// Load which of our nodes already voted on one contest. Called when its
     /// detail screen opens, so the vote button knows what is left.
     func loadVotedNodes(for normalizedLabel: String) async {
-        let records = await history.votes(
+        await serially { [weak self] in await self?.performLoadVotedNodes(for: normalizedLabel) }
+    }
+
+    private func performLoadVotedNodes(for normalizedLabel: String) async {
+        // A failed read leaves what was known: an empty history would offer
+        // nodes for votes they already hold.
+        guard let records = await history.votes(
             forContest: normalizedLabel,
             network: MasternodeVoteCaster.networkKey)
+        else { return }
         votedProTxHashesByContest[normalizedLabel] = Set(records.map(\.proTxHash))
-        castCountsByContest[normalizedLabel] = records.count
         voteHistoryByContest[normalizedLabel] = NodeVoteHistory(records)
     }
 
@@ -420,18 +570,6 @@ final class VotingViewModel: ObservableObject {
     /// to; the sixth cast is refused with `MasternodeVotedTooManyTimesError`.
     static let maxCastsPerNodePerContest = 5
 
-    /// The nodes a single tap should vote with: the remembered selection,
-    /// minus any that already voted on this contest.
-    ///
-    /// Returns empty when every selected node has already voted here — the
-    /// caller disables the control rather than re-broadcasting a vote Platform
-    /// would reject as a duplicate.
-    func nodesForNextVote(on normalizedLabel: String) -> [VoterNode] {
-        let remaining = nodesYetToVote(on: normalizedLabel)
-        let chosen = effectiveSelectedNodeIDs
-        return remaining.filter { chosen.contains($0.proTxHash) }
-    }
-
     /// The remembered selection, or a single node when nothing was ever
     /// chosen. Never every node by default: see ``VotingPrefs``.
     ///
@@ -439,7 +577,7 @@ final class VotingViewModel: ObservableObject {
     /// (nodes revoked, or a different wallet), which would otherwise leave the
     /// vote button permanently disabled with no way to see why.
     var effectiveSelectedNodeIDs: Set<Data> {
-        let live = selectedNodeIDs.intersection(Set(votableNodes.map(\.proTxHash)))
+        let live = selectedNodeIDs.intersection(votableNodeIDs)
         if !live.isEmpty { return live }
         return Set(votableNodes.first.map { [$0.proTxHash] } ?? [])
     }
@@ -485,23 +623,110 @@ final class VotingViewModel: ObservableObject {
     // MARK: Casting
 
     /// Cast `choice` on `contest` with `nodes`, then refresh that contest.
-    func cast(choice: VoteChoice, on contest: DPNSContest, with nodes: [VoterNode]) async {
+    /// Returns `true` when every node's vote landed. That outcome is told by a
+    /// toast, so the caller can close its sheet right away; anything less is
+    /// left in ``lastCastReport`` / ``castError`` for the sheet to show.
+    ///
+    /// The toast is shown as soon as the votes are recorded, and the contest's
+    /// tallies are re-read from Platform afterwards — waiting for that network
+    /// query first could let the toast expire under the still-open sheet.
+    @discardableResult
+    func cast(choice: VoteChoice, on contest: DPNSContest, with nodes: [VoterNode]) async -> Bool {
+        let label = contest.normalizedLabel
         isCasting = true
         castError = nil
+        castingLabels.insert(label)
+        // A new vote clears the last outcome, so a toast from the previous
+        // vote never sits next to this one.
+        toast = nil
         defer { isCasting = false }
 
         do {
             let report = try await caster.cast(
                 choice: choice,
-                onNormalizedLabel: contest.normalizedLabel,
+                onNormalizedLabel: label,
                 with: nodes)
+            // What was just recorded is known here: apply it now rather than
+            // wait for the store read, which may queue behind a slow refresh.
+            applyRecordedVotes(of: report, on: label)
+            // Then confirm from the store and Platform. The contest's pills stay
+            // busy until that lands, so a queued earlier read cannot offer a
+            // node for the vote it now holds in between.
+            Task { [weak self] in
+                await self?.loadVotedNodes(for: label)
+                await self?.refreshContest(normalizedLabel: label)
+                self?.castingLabels.remove(label)
+            }
+            if report.isCompleteSuccess {
+                showToast(.voted(username: contest.displayTitle))
+                return true
+            }
             lastCastReport = report
-            await loadVotedNodes(for: contest.normalizedLabel)
-            await refreshContest(normalizedLabel: contest.normalizedLabel)
+            return false
         } catch {
+            castingLabels.remove(label)
             castError = (error as? LocalizedError)?.errorDescription ?? String(describing: error)
+            return false
         }
     }
+
+    /// Adds the votes `report` says landed to the contest's known history, as
+    /// the caster recorded them. Nothing when the history is not known yet:
+    /// the store reload that follows fills it.
+    private func applyRecordedVotes(of report: VoteCastReport, on normalizedLabel: String) {
+        guard var contestHistory = voteHistoryByContest[normalizedLabel] else { return }
+        let now = Date()
+        for outcome in report.succeeded {
+            contestHistory.recordCast(
+                of: outcome.node.proTxHash, on: normalizedLabel, choice: report.choice, at: now)
+        }
+        voteHistoryByContest[normalizedLabel] = contestHistory
+        votedProTxHashesByContest[normalizedLabel, default: []]
+            .formUnion(report.succeeded.map(\.node.proTxHash))
+    }
+
+    /// Whether a tap on `choice` may start a vote on this contest: the key flow
+    /// when the wallet has no node, otherwise only once the contest's history
+    /// is known and some selected node can still cast that choice — not one
+    /// already holding it, not one out of casts. One rule for the list and the
+    /// contest screen.
+    func canStartVote(_ choice: VoteChoice, on normalizedLabel: String) -> Bool {
+        guard !isClosed(normalizedLabel: normalizedLabel) else { return false }
+        guard canVote else { return true }
+        return !nodesForVote(choice, on: normalizedLabel).isEmpty
+    }
+
+    // MARK: List state
+
+    /// Contests with a vote in flight. Their pills show a spinner and take no
+    /// taps while it is sent.
+    @Published private(set) var castingLabels: Set<String> = []
+
+    /// The outcome of the last vote, shown in the list's bottom bar and over
+    /// the contest screen.
+    @Published private(set) var toast: VotingToast?
+
+    /// How long a toast stays before it clears itself.
+    static let toastDuration: Duration = .seconds(3)
+
+    private func showToast(_ toast: VotingToast) {
+        self.toast = toast
+        Task { [weak self, id = toast.id] in
+            try? await Task.sleep(for: Self.toastDuration)
+            // Only the toast this task was started for: a newer one has its own timer.
+            if self?.toast?.id == id { self?.toast = nil }
+        }
+    }
+
+    /// The choices this wallet's nodes currently hold on a contest, from local
+    /// history. Empty when none of them voted, or before the history loaded.
+    func myChoices(on normalizedLabel: String) -> Set<VoteChoice> {
+        guard let history = voteHistoryByContest[normalizedLabel] else { return [] }
+        // Only nodes this wallet votes with: the history table is per device,
+        // and a node whose key was removed is no longer this wallet's vote.
+        return history.liveChoices(of: votableNodeIDs)
+    }
+
 
     func dismissCastResult() {
         lastCastReport = nil
@@ -663,9 +888,12 @@ final class VotingViewModel: ObservableObject {
 
         for contest in selected {
             guard let wireChoice = resolvedChoice(choice, for: contest) else { continue }
-            let records = await history.votes(
+            // Unreadable history: leave the contest out rather than plan as if
+            // none of the nodes had voted there.
+            guard let records = await history.votes(
                 forContest: contest.normalizedLabel,
                 network: MasternodeVoteCaster.networkKey)
+            else { continue }
 
             let split = Self.splitForBulk(
                 nodes, choice: wireChoice, history: NodeVoteHistory(records))
@@ -710,11 +938,77 @@ final class VotingViewModel: ObservableObject {
         do {
             let reports = try await caster.castBulk(work)
             bulkReports = reports
+            // The list's pills read this history, so the next tap must not
+            // offer a node for a vote it now already holds.
+            await loadAllVoteHistory()
             for label in labels {
                 await refreshContest(normalizedLabel: label)
             }
         } catch {
             castError = (error as? LocalizedError)?.errorDescription ?? String(describing: error)
         }
+    }
+}
+
+// MARK: - VotingListSection
+
+/// The voting list's groups: contests whose voting ends on the same calendar
+/// day, soonest first. Rows inside a group keep the order they came in, which
+/// is the list's chosen sort.
+struct VotingListSection: Identifiable, Equatable {
+    /// Days from today to the day voting ends; `nil` when the end is unknown.
+    let daysLeft: Int?
+    let contests: [DPNSContest]
+    /// The whole list as one run, shown without a header (a sort other than
+    /// the end-day order).
+    var isUngrouped = false
+
+    var id: Int { isUngrouped ? Int.min : (daysLeft ?? Int.max) }
+
+    var title: String {
+        switch daysLeft {
+        case nil:
+            return NSLocalizedString("Voting end unknown", comment: "Voting")
+        case 0:
+            return NSLocalizedString("Voting ends today", comment: "Voting")
+        case let days?:
+            return String.localizedStringWithFormat(
+                NSLocalizedString("Voting ends in %d days", comment: "Voting"), days)
+        }
+    }
+
+    /// Group `contests` by end day relative to `now` in `calendar`. A contest
+    /// whose end has already passed today is still "today" (it is closing); an
+    /// end on an earlier day also counts as today rather than a negative count.
+    static func group(_ contests: [DPNSContest], now: Date, calendar: Calendar) -> [VotingListSection] {
+        let today = calendar.startOfDay(for: now)
+        var order: [Int?] = []
+        var buckets: [Int?: [DPNSContest]] = [:]
+        for contest in contests {
+            let key: Int? = contest.endTime.map { end in
+                let days = calendar.dateComponents([.day], from: today, to: calendar.startOfDay(for: end)).day ?? 0
+                return max(days, 0)
+            }
+            if buckets[key] == nil { order.append(key) }
+            buckets[key, default: []].append(contest)
+        }
+        return order
+            .sorted { ($0 ?? Int.max) < ($1 ?? Int.max) }
+            .map { VotingListSection(daysLeft: $0, contests: buckets[$0] ?? []) }
+    }
+}
+
+// MARK: - VotingToast
+
+/// A vote that landed on every node, told briefly in the list's bottom bar or
+/// over the contest screen. A
+/// partial or failed vote is not a toast: the cast sheet stays open and lists
+/// each node's outcome.
+struct VotingToast: Identifiable, Equatable {
+    let id = UUID()
+    let message: String
+
+    static func voted(username: String) -> VotingToast {
+        VotingToast(message: String(format: NSLocalizedString("Voted %@ username", comment: "Voting"), username))
     }
 }
