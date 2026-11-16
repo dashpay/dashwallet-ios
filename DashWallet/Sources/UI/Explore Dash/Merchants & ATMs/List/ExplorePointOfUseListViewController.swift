@@ -660,13 +660,17 @@ extension ExplorePointOfUseListViewController {
     }
 
     private func segmentedControlDidChange(index: Int) {
-        let selection = viewModel.selectSegment(at: index)
+        let selection = viewModel.selectSegment(at: index) { radius in
+            mapView.mapBounds(with: radius)
+        }
+        mapView.searchRadius = viewModel.searchRadius
 
         if selection.appliedDefaultFilters {
             updateAppliedFiltersView()
-        } else {
-            refreshView()
         }
+        // Opens the map for a segment that has one (Nearby, All) and closes
+        // it for one that does not (Online), on the first visit too.
+        refreshView()
 
         if selection.needsLocationPrompt {
             PointOfUseLocationServicePopup

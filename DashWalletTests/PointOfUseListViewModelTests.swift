@@ -44,7 +44,7 @@ final class PointOfUseListViewModelTests: XCTestCase {
     func testFirstVisitToASegmentAppliesDefaultFilters() {
         let viewModel = makeViewModel(segments: [segment(tag: 0), segment(tag: 2)])
 
-        let selection = viewModel.selectSegment(at: 1)
+        let selection = viewModel.selectSegment(at: 1, searchBounds: { _ in self.bounds })
 
         XCTAssertTrue(selection.appliedDefaultFilters)
         XCTAssertEqual(viewModel.filters, .defaults(sortBy: .name))
@@ -52,13 +52,13 @@ final class PointOfUseListViewModelTests: XCTestCase {
 
     func testASegmentKeepsItsFiltersOnTheNextVisit() {
         let viewModel = makeViewModel(segments: [segment(tag: 0), segment(tag: 2)])
-        _ = viewModel.selectSegment(at: 1)
+        _ = viewModel.selectSegment(at: 1, searchBounds: { _ in self.bounds })
         var narrowed = PointOfUseListFilters.defaults(sortBy: .name)
         narrowed.radius = .one
         viewModel.apply(filters: narrowed, searchBounds: bounds)
-        _ = viewModel.selectSegment(at: 0)
+        _ = viewModel.selectSegment(at: 0, searchBounds: { _ in self.bounds })
 
-        let selection = viewModel.selectSegment(at: 1)
+        let selection = viewModel.selectSegment(at: 1, searchBounds: { _ in self.bounds })
 
         XCTAssertFalse(selection.appliedDefaultFilters)
         XCTAssertEqual(viewModel.filters, narrowed)
@@ -68,7 +68,7 @@ final class PointOfUseListViewModelTests: XCTestCase {
         location.needsAuthorization = true
         let viewModel = makeViewModel(segments: [segment(tag: 0), segment(tag: MerchantsListSegment.nearby.rawValue)])
 
-        let selection = viewModel.selectSegment(at: 1)
+        let selection = viewModel.selectSegment(at: 1, searchBounds: { _ in self.bounds })
 
         XCTAssertTrue(selection.needsLocationPrompt)
         XCTAssertEqual(viewModel.filters?.sortBy, .distance)
@@ -78,7 +78,37 @@ final class PointOfUseListViewModelTests: XCTestCase {
         location.isAuthorized = true
         let viewModel = makeViewModel(segments: [segment(tag: 0), segment(tag: MerchantsListSegment.nearby.rawValue)])
 
-        XCTAssertFalse(viewModel.selectSegment(at: 1).needsLocationPrompt)
+        XCTAssertFalse(viewModel.selectSegment(at: 1, searchBounds: { _ in self.bounds }).needsLocationPrompt)
+    }
+
+    func testFirstVisitFetchesOnceWithTheDefaults() async {
+        let nearby = StubDataProvider(items: [atm(1)])
+        let viewModel = makeViewModel(segments: [segment(tag: 0), segment(tag: MerchantsListSegment.nearby.rawValue, provider: nearby)])
+
+        _ = viewModel.selectSegment(at: 1, searchBounds: { _ in self.bounds })
+        await waitForReplacedList(of: viewModel)
+
+        XCTAssertEqual(nearby.requestedFilters, [.defaults(sortBy: .distance)])
+    }
+
+    func testSwitchingSearchesTheAreaOfTheNewRadius() {
+        let target = StubDataProvider(items: [])
+        var narrowed = PointOfUseListFilters.defaults(sortBy: .name)
+        narrowed.radius = .one
+        let viewModel = makeViewModel(segments: [segment(tag: 0), segment(tag: 2, provider: target)])
+        _ = viewModel.selectSegment(at: 1, searchBounds: { _ in self.bounds })
+        viewModel.apply(filters: narrowed, searchBounds: bounds)
+        _ = viewModel.selectSegment(at: 0, searchBounds: { _ in self.bounds })
+
+        var requestedRadius: CLLocationDistance?
+        let area = ExploreMapBounds(rect: MKMapRect(x: 5, y: 5, width: 10, height: 10))
+        _ = viewModel.selectSegment(at: 1, searchBounds: { radius in
+            requestedRadius = radius
+            return area
+        })
+
+        XCTAssertEqual(requestedRadius, PointOfUseListFilters.Radius.one.meters)
+        XCTAssertEqual(target.requestedBounds.last, area)
     }
 
     // MARK: - Filter screen
@@ -131,6 +161,23 @@ final class PointOfUseListViewModelTests: XCTestCase {
     func testAtmMapPinsEveryRow() async {
         let viewModel = makeViewModel(segments: [segment(tag: 0, items: [atm(1), atm(2)])])
         await waitForReplacedList(of: viewModel)
+
+        XCTAssertEqual(viewModel.mapItems.map(\.id), [1, 2])
+    }
+
+    func testAtmMapPinsAnAppendedPage() async {
+        let provider = StubDataProvider(items: [atm(1)], nextPage: [atm(2)])
+        let viewModel = makeViewModel(segments: [segment(tag: 0, provider: provider)])
+        await waitForReplacedList(of: viewModel)
+        let appended = expectation(description: "page appended")
+        viewModel.listUpdates
+            .filter { $0 == .appended }
+            .first()
+            .sink { _ in appended.fulfill() }
+            .store(in: &cancellables)
+
+        viewModel.fetchNextPage()
+        await fulfillment(of: [appended], timeout: 2)
 
         XCTAssertEqual(viewModel.mapItems.map(\.id), [1, 2])
     }
@@ -257,13 +304,14 @@ final class PointOfUseListViewModelTests: XCTestCase {
     private func segment(tag: Int,
                          showMap: Bool = true,
                          sortOptions: [PointOfUseListFilters.SortBy] = [.name, .distance],
-                         items: [ExplorePointOfUse] = []) -> PointOfUseListSegment {
+                         items: [ExplorePointOfUse] = [],
+                         provider: StubDataProvider? = nil) -> PointOfUseListSegment {
         PointOfUseListSegment(tag: tag,
                               title: "Segment \(tag)",
                               showMap: showMap,
                               showLocationServiceSettings: false,
                               showReversedLocation: false,
-                              dataProvider: StubDataProvider(items: items),
+                              dataProvider: provider ?? StubDataProvider(items: items),
                               filterGroups: [],
                               territoriesDataSource: nil,
                               sortOptions: sortOptions)
@@ -290,17 +338,28 @@ final class PointOfUseListViewModelTests: XCTestCase {
 
 private final class StubDataProvider: PointOfUseDataProvider {
     private let stubItems: [ExplorePointOfUse]
+    private let stubNextPage: [ExplorePointOfUse]
+    private(set) var requestedFilters: [PointOfUseListFilters?] = []
+    private(set) var requestedBounds: [ExploreMapBounds?] = []
 
-    init(items: [ExplorePointOfUse]) {
+    init(items: [ExplorePointOfUse], nextPage: [ExplorePointOfUse] = []) {
         stubItems = items
+        stubNextPage = nextPage
         super.init()
     }
 
     override func items(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
                         with filters: PointOfUseListFilters?,
                         completion: @escaping (Result<[ExplorePointOfUse], Error>) -> Void) {
+        requestedFilters.append(filters)
+        requestedBounds.append(bounds)
         items = stubItems
         completion(.success(stubItems))
+    }
+
+    override func nextPage(completion: @escaping (Result<[ExplorePointOfUse], Error>) -> Void) {
+        items += stubNextPage
+        completion(.success(stubNextPage))
     }
 }
 

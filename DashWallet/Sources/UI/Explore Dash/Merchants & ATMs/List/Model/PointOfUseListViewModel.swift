@@ -123,15 +123,33 @@ final class PointOfUseListViewModel: ObservableObject {
     var segmentTitles: [String] { model.segmentTitles }
     var currentSegment: PointOfUseListSegment { model.currentSegment }
 
-    func selectSegment(at index: Int) -> SegmentSelection {
+    /// Switches to the segment at `index` and fetches it once, with its
+    /// filters and the map area `searchBounds` gives for its radius.
+    func selectSegment(at index: Int,
+                       searchBounds: (_ radius: CLLocationDistance) -> ExploreMapBounds) -> SegmentSelection {
         let segment = model.segments[index]
-        model.currentSegment = segment
 
         // A segment keeps its filters once it has been shown; the first visit
-        // gets the defaults.
-        let appliesDefaults = model.filters == nil
+        // gets the defaults. Both are in place before the switch, whose fetch
+        // would otherwise run unfiltered and could land after the filtered one.
+        let appliesDefaults = model.filters(for: segment) == nil
         if appliesDefaults {
-            model.apply(filters: .defaults(sortBy: defaultSortBy(for: segment)))
+            model.setFilters(.defaults(sortBy: defaultSortBy(for: segment)), for: segment)
+        }
+
+        // The previous segment's area may have another radius, or be unset.
+        if segment.showMap {
+            let radius = model.filters(for: segment)?.currentRadius ?? kDefaultRadius
+            model.currentMapBounds = searchBounds(radius)
+        }
+
+        if model.currentSegment == segment {
+            // Re-selecting the current segment does not fetch on its own.
+            if appliesDefaults {
+                model.refreshItems()
+            }
+        } else {
+            model.currentSegment = segment
         }
 
         // TODO(atm-segments): tag 1 is Nearby for merchants but Buy for ATMs,
@@ -340,6 +358,11 @@ final class PointOfUseListViewModel: ObservableObject {
 
     private func modelDidAppendItems() {
         items = model.items
+        // Merchant pins cover the whole search area already; a page adds
+        // none of their locations.
+        if configuration.kind == .atms, model.showMap {
+            mapItems = model.items
+        }
         listUpdatesSubject.send(.appended)
     }
 
