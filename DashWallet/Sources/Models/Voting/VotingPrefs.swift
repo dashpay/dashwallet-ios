@@ -82,7 +82,13 @@ class VotingPrefs {
     /// node is permitted to do.
     var votingNodeSelection: Set<Data> {
         get {
-            let stored = defaults.array(forKey: scoped(kVotingNodeSelection)) as? [String] ?? []
+            // A mainnet wallet that has not saved its own choice yet reads the
+            // single choice stored before the choice was kept per wallet. It
+            // ticks only the nodes this wallet can vote with (`VotingStore`
+            // intersects it with them), and the wallet's next save replaces it.
+            let key = scoped(kVotingNodeSelection)
+            let legacy = defaults.object(forKey: key) == nil && owner().hasPrefix("mainnet.")
+            let stored = defaults.array(forKey: legacy ? kVotingNodeSelection : key) as? [String] ?? []
             return Set(stored.compactMap { Data(base64Encoded: $0) })
         }
         set {
