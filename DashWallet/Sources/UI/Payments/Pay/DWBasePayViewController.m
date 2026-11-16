@@ -102,9 +102,7 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)performPayToURL:(NSURL *)url {
-    DWPaymentInput *paymentInput = [self.payModel paymentInputWithURL:url];
-
-    [self processPaymentInput:paymentInput];
+    [DWExternalSendLauncher presentLink:url from:self];
 }
 
 - (void)performPayToAddress:(NSString *)address amount:(uint64_t)amount {
@@ -189,43 +187,9 @@ NS_ASSUME_NONNULL_BEGIN
     self.view.userInteractionEnabled = NO;
     [self dismissViewControllerAnimated:YES
                              completion:^{
-                                 // A bech32m Platform/Shielded destination can't ride the classic
-                                 // L1 payment processor — open the Send screen prefilled instead
-                                 // (its route model handles all destination forms). Base58 Core
-                                 // scans keep the legacy processor path unchanged.
-                                 DWParsedPaymentURI *parsed = paymentInput.parsedURI;
-                                 if (parsed.requiresSendScreenRouting && parsed.address != nil) {
-                                     [self routeScannedBech32Address:parsed];
-                                 }
-                                 else {
-                                     [self processPaymentInput:paymentInput];
-                                 }
-
+                                 [DWExternalSendLauncher presentScanned:paymentInput from:self];
                                  self.view.userInteractionEnabled = YES;
                              }];
-}
-
-/// Present the Send screen prefilled with a scanned bech32m destination —
-/// same presentation chrome as the payments landing (hidden-bar navigation
-/// controller, full screen; the screen draws its own X/title header).
-///
-/// Opened on the From picker, with the address step behind it: the scan named
-/// the recipient, so that step has nothing left to ask, and a BIP21 amount
-/// does not become visible until the step after it. Same rule as the landing's
-/// own scan (`pushScannedSend`). An address that did not decode stays on the
-/// address step, which is the screen that says so.
-- (void)routeScannedBech32Address:(DWParsedPaymentURI *)parsed {
-    DWSendScreenViewController *controller = [[DWSendScreenViewController alloc] init];
-    [controller prefillWithAddress:parsed.address amountDuffs:parsed.amount];
-    DWNavigationController *navigationController =
-        [[DWNavigationController alloc] initWithRootViewController:controller];
-    if (controller.hasResolvedDestination) {
-        [navigationController setViewControllers:@[ controller, [controller makeSourceStep] ]
-                                        animated:NO];
-    }
-    navigationController.navigationBarHidden = YES;
-    navigationController.modalPresentationStyle = UIModalPresentationFullScreen;
-    [self presentViewController:navigationController animated:YES completion:nil];
 }
 
 - (void)qrScanModelDidCancel:(DWQRScanModel *)viewModel {
