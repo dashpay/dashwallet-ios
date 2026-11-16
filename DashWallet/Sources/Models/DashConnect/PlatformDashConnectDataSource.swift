@@ -1496,9 +1496,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     }
 
     /// Looks up, through `port` and without writing to Platform, the response
-    /// of each open intent whose keys are live but whose response this wallet
-    /// did not record publishing (a publish can land without confirming, and
-    /// its row would show "Not delivered"), and of each closed intent with no
+    /// of each open intent whose response this wallet did not record
+    /// publishing, while its keys are live or its publish started (a publish
+    /// can land without confirming, and its row would show "Not delivered"), and of each closed intent with no
     /// response recorded, published or removed (a publish can land after the
     /// disconnect). A response found is recorded; one absent of a closed
     /// intent is recorded removed once its publish
@@ -1574,14 +1574,18 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     }
 
     /// The intents of the identity whose response may be on Platform and is
-    /// not recorded: closed ones not recorded removed, and open active ones: any whose publish is still unresolved at the read's block
-    /// time, whatever its keys show, and an active one made in the last day.
+    /// not recorded: closed ones not recorded removed, and open ones: any
+    /// whose publish started and found no document yet, whatever its keys
+    /// show and however long ago, and an active one made in the last day.
     private func responseCandidates(
         in snapshot: AppConnect.IdentitySnapshot, intents: any AppConnectIntentStore
     ) -> [AppConnect.ConnectionIntent] {
         // A publish lands within the approval that made it, minutes after
-        // the request, or, after a timeout, while it is unresolved; an open
-        // intent a day old with no unresolved publish has nothing more to find.
+        // the request, or, after a timeout, while it is unresolved. One that
+        // landed then stays to be found after the window: a started publish
+        // with no document is looked up until one is found (one that failed
+        // for good has no start). An open intent a day old with no started
+        // publish has nothing more to find.
         let since = now().addingTimeInterval(-24 * 60 * 60)
         return intents.load().filter { intent in
             guard intent.identityId == snapshot.identityId else { return false }
@@ -1589,7 +1593,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             // the next disconnect or approval looks it up and deletes it.
             guard intent.responseDocumentId == nil else { return false }
             if intent.closedAt != nil { return !intent.responseRemoved }
-            if AppConnect.isPublishUnresolved(intent, platformTime: snapshot.platformTime) { return true }
+            if intent.publishStartBlockTimeMs != nil { return true }
             guard intent.createdAt > since, case .active = AppConnect.status(of: intent, in: snapshot) else { return false }
             return true
         }

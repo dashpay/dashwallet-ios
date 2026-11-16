@@ -4660,21 +4660,38 @@ final class DashConnectDisconnectThroughSeamsTests: XCTestCase {
         XCTAssertEqual(run.stored?.responseDocumentId, Self.documentId)
     }
 
-    /// An open intent whose keys expired and whose publish is resolved is not looked up.
-    func testARefreshDoesNotLookUpAnOpenIntentWhoseKeysExpiredAfterTheWindow() async {
+    /// PastaClaw round 9, CodeRabbit (#1414): a response that landed while
+    /// the publish was unresolved is still found by a first refresh after the
+    /// window, though the intent's keys expired.
+    func testARefreshLooksUpAnOpenIntentWhoseKeysExpiredAfterTheWindow() async {
         let open = Self.intent(
             responseDocumentId: nil, publishStartBlockTimeMs: Self.staleStart, createdAt: Self.at.addingTimeInterval(-60))
         let run = await refreshed(open, gone: false, keyExpiresAt: 1_700_000_000_000)
 
-        XCTAssertEqual(run.platform.lookupCount, 0)
+        XCTAssertEqual(run.platform.lookupCount, 1)
+        XCTAssertEqual(run.stored?.responseDocumentId, Self.documentId)
     }
 
-    /// Past the window, the day-old open intent is not looked up again.
-    func testARefreshDoesNotLookUpAnOpenIntentOlderThanADayAfterTheWindow() async {
+    /// The same for a day-old open intent after the window.
+    func testARefreshLooksUpAnOpenIntentOlderThanADayAfterTheWindow() async {
         let open = Self.intent(responseDocumentId: nil, publishStartBlockTimeMs: Self.staleStart)
         let run = await refreshed(open, gone: false)
 
-        XCTAssertEqual(run.platform.lookupCount, 0)
+        XCTAssertEqual(run.platform.lookupCount, 1)
+        XCTAssertEqual(run.stored?.responseDocumentId, Self.documentId)
+    }
+
+    /// A started publish found absent after the window decides nothing for an
+    /// open intent, and the next refresh looks again.
+    func testARefreshKeepsLookingForAStartedPublishOfAnOpenIntentAfterTheWindow() async {
+        let open = Self.intent(responseDocumentId: nil, publishStartBlockTimeMs: Self.staleStart)
+        let run = await refreshed(open, gone: true)
+        XCTAssertEqual(run.platform.lookupCount, 1)
+        XCTAssertEqual(run.stored?.responseRemoved, false)
+
+        await run.dataSource.refreshConnections()
+
+        XCTAssertEqual(run.platform.lookupCount, 2)
     }
 
     // MARK: - Response removed has one guarded write point (response-publish-lifetime T4)
