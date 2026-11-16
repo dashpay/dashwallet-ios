@@ -29,11 +29,18 @@ protocol ShieldedReceiveAddressSource {
     func receiveAddress(walletId: Data) async -> ShieldedReceiveAddress
 }
 
+/// A source that derives on the main actor and can answer at once. Receive
+/// takes the answer inside the switch to Shielded, so the card slides in with
+/// its QR instead of the QR popping in after the slide.
+protocol ImmediateShieldedReceiveAddressSource: ShieldedReceiveAddressSource {
+    @MainActor func receiveAddressNow(walletId: Data) -> ShieldedReceiveAddress
+}
+
 /// The SwiftDashSDK-backed source. The SDK calls and the running network are
 /// injected so the mapping is testable without the SDK; the defaults read
 /// `SwiftDashSDKHost.shared`. `PlatformWalletManager` is main-actor isolated,
 /// so the SDK calls run on the main actor.
-struct SDKShieldedReceiveAddressSource: ShieldedReceiveAddressSource {
+struct SDKShieldedReceiveAddressSource: ImmediateShieldedReceiveAddressSource {
     typealias AddressCall = @MainActor (Data) throws -> Data?
 
     let freshAddress: AddressCall
@@ -60,22 +67,25 @@ struct SDKShieldedReceiveAddressSource: ShieldedReceiveAddressSource {
     }
 
     func receiveAddress(walletId: Data) async -> ShieldedReceiveAddress {
-        await MainActor.run {
-            guard let mainnet = isMainnet() else { return .notReady }
-            do {
-                guard let raw = try freshAddress(walletId) else { return .notReady }
-                return Self.encode(raw: raw, mainnet: mainnet).map(ShieldedReceiveAddress.fresh) ?? .unavailable
-            } catch {
-                let summary = WalletSendService.logSummary(of: error)
-                DWLogger.log("shielded receive: fresh address failed, trying default: \(summary)")
-            }
-            do {
-                guard let raw = try defaultAddress(walletId) else { return .unavailable }
-                return Self.encode(raw: raw, mainnet: mainnet).map(ShieldedReceiveAddress.fallback) ?? .unavailable
-            } catch {
-                DWLogger.log("shielded receive: default address failed: \(WalletSendService.logSummary(of: error))")
-                return .unavailable
-            }
+        await MainActor.run { receiveAddressNow(walletId: walletId) }
+    }
+
+    @MainActor
+    func receiveAddressNow(walletId: Data) -> ShieldedReceiveAddress {
+        guard let mainnet = isMainnet() else { return .notReady }
+        do {
+            guard let raw = try freshAddress(walletId) else { return .notReady }
+            return Self.encode(raw: raw, mainnet: mainnet).map(ShieldedReceiveAddress.fresh) ?? .unavailable
+        } catch {
+            let summary = WalletSendService.logSummary(of: error)
+            DWLogger.log("shielded receive: fresh address failed, trying default: \(summary)")
+        }
+        do {
+            guard let raw = try defaultAddress(walletId) else { return .unavailable }
+            return Self.encode(raw: raw, mainnet: mainnet).map(ShieldedReceiveAddress.fallback) ?? .unavailable
+        } catch {
+            DWLogger.log("shielded receive: default address failed: \(WalletSendService.logSummary(of: error))")
+            return .unavailable
         }
     }
 

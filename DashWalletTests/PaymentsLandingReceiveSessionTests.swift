@@ -227,6 +227,33 @@ final class PaymentsLandingReceiveSessionTests: XCTestCase {
         XCTAssertEqual(source.callCount, 0)
     }
 
+    /// The live source answers on the main actor at once: the switch itself
+    /// carries the fresh address, so the card slides in with its QR.
+    func testSwitchingToShieldedWithAnImmediateSourceShowsTheAddressInTheSameCall() {
+        final class ImmediateSource: ImmediateShieldedReceiveAddressSource {
+            var calls = 0
+            func receiveAddress(walletId: Data) async -> ShieldedReceiveAddress { .unavailable }
+            func receiveAddressNow(walletId: Data) -> ShieldedReceiveAddress {
+                calls += 1
+                return .fresh("tdash1fresh\(calls)")
+            }
+        }
+        let source = ImmediateSource()
+        let viewModel = PaymentsLandingViewModel(
+            activeTab: .receive,
+            network: .core,
+            shieldedAddressSource: source,
+            activeWalletId: { Self.walletId },
+            receiptSources: .live,
+            shieldedRunning: Empty().eraseToAnyPublisher())
+
+        viewModel.network = .shielded
+
+        XCTAssertEqual(viewModel.shieldedReceiveState, .ready(.fresh("tdash1fresh1")))
+        XCTAssertEqual(viewModel.currentAddress, "tdash1fresh1")
+        XCTAssertEqual(source.calls, 1)
+    }
+
     func testSwitchingToShieldedBeginsASession() async {
         let source = ControlledShieldedAddressSource()
         let viewModel = makeViewModel(network: .core, source: source)

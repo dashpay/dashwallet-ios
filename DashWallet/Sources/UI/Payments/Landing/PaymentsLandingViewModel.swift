@@ -181,7 +181,11 @@ struct ReceiptWatchingSources {
 final class PaymentsLandingViewModel: ObservableObject {
 
     @Published var activeTab: PaymentsLandingTab
-    @Published var network: ChainNetwork = .core
+    /// Synchronous on purpose: the switch to Shielded begins its session in
+    /// the same transaction, so the card slides in with the fresh QR.
+    @Published var network: ChainNetwork = .core {
+        didSet { networkDidChange() }
+    }
     /// Which hero tabs this presentation offers. The full landing shows all
     /// three; the balance-row receive sheet narrows to Receive + Internal.
     let visibleTabs: [PaymentsLandingTab]
@@ -429,17 +433,14 @@ final class PaymentsLandingViewModel: ObservableObject {
             }
             .store(in: &cancellables)
 
-        $network
-            .dropFirst()
-            .receive(on: RunLoop.main)
-            .sink { [weak self] _ in
-                self?.resetForRouteChange()
-                // Switching back to Shielded is a gain of focus for its
-                // address — the one that originates inside the view model.
-                // Switching away ends the shielded session.
-                self?.beginReceiveSession()
-            }
-            .store(in: &cancellables)
+    }
+
+    private func networkDidChange() {
+        resetForRouteChange()
+        // Switching back to Shielded is a gain of focus for its address — the
+        // one that originates inside the view model. Switching away ends the
+        // shielded session.
+        beginReceiveSession()
     }
 
     #if DEBUG
@@ -553,6 +554,11 @@ final class PaymentsLandingViewModel: ObservableObject {
         }
         guard let walletId = activeWalletId() else {
             shieldedReceiveState = .ready(.unavailable)
+            return
+        }
+        if let immediate = shieldedAddressSource as? ImmediateShieldedReceiveAddressSource {
+            shieldedReceiveState = .ready(immediate.receiveAddressNow(walletId: walletId))
+            reconcileReceiptWatching()
             return
         }
         shieldedReceiveState = .deriving
