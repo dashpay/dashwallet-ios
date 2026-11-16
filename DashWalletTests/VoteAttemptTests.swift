@@ -222,3 +222,44 @@ final class VoteAttemptTests: XCTestCase {
         XCTAssertEqual(attempt(.cancel(approve), endsAt: past, history: holds).step, .votingEnded)
     }
 }
+
+/// The result sheets never call a vote that may have landed "not cast".
+@MainActor
+final class VoteResultTextTests: XCTestCase {
+    private func node(_ byte: UInt8) -> VoterNode {
+        VoterNode(proTxHash: Data([byte]), isEvonode: false, typeIndex: UInt32(byte),
+                  serviceAddress: nil, keySource: .walletIndex(UInt32(byte)))
+    }
+
+    func testAnUnconfirmedVoteReadsAsNotConfirmedNotAsNotCast() {
+        let outcome = VoteOutcome.unconfirmed(node(1))
+        XCTAssertEqual(VoteResultSheet.status(of: outcome, isRetrying: false), "Result not confirmed")
+        XCTAssertEqual(
+            VoteResultSheet.status(of: VoteOutcome(node: node(2), failure: "No answer"), isRetrying: false),
+            "Not cast — No answer")
+    }
+
+    func testTheSummaryCountsOnlyVotesThatWereNotCast() {
+        let report = VoteCastReport(
+            normalizedLabel: "johndoe", choice: .towards(identityId: "c"),
+            outcomes: [VoteOutcome(node: node(1), failure: nil), .unconfirmed(node(2))])
+        XCTAssertEqual(
+            VoteResultSheet.summary(of: report, username: "johndoe"),
+            "1 of 2 masternodes voted to approve johndoe.")
+    }
+
+    func testQuickVotingSaysWhenAResultIsNotConfirmed() {
+        let unconfirmed = VoteCastReport(
+            normalizedLabel: "alice", choice: .towards(identityId: "a"), outcomes: [.unconfirmed(node(1))])
+        let failed = VoteCastReport(
+            normalizedLabel: "bob", choice: .towards(identityId: "b"),
+            outcomes: [VoteOutcome(node: node(1), failure: "No answer")])
+        XCTAssertEqual(
+            QuickVotingResultSheet.description(of: QuickVoteRunReport(reports: [failed])),
+            "Some votes were not cast. These usernames were not voted for:")
+        XCTAssertEqual(
+            QuickVotingResultSheet.description(of: QuickVoteRunReport(reports: [unconfirmed, failed])),
+            "Some votes were not cast or their result is not confirmed:")
+        XCTAssertEqual(QuickVotingResultSheet.status(of: unconfirmed, isRetrying: false), "Result not confirmed")
+    }
+}

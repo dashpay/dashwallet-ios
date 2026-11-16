@@ -59,14 +59,11 @@ struct VotingFiltersSheet: View {
                                 isSelected: draft.onlyDuplicates,
                                 style: .checkbox) { draft.onlyDuplicates.toggle() }
                         }
-                        // TODO(voting-5b): "Only requests with links", once each request's link is known.
                         card {
                             DashUIKit.RadioButtonRow(
                                 title: NSLocalizedString("Only requests with links", comment: "Voting"),
-                                isSelected: false,
-                                style: .checkbox) {}
-                                .disabled(true)
-                                .accessibilityHint(NSLocalizedString("Coming soon", comment: "Voting"))
+                                isSelected: draft.onlyWithLinks,
+                                style: .checkbox) { draft.onlyWithLinks.toggle() }
                         }
                         DashUIKit.DashButton(
                             text: NSLocalizedString("Reset filters", comment: "Voting"),
@@ -151,6 +148,15 @@ struct VotingFiltersSheet: View {
         .sheet(isPresented: .constant(true)) {
             VotingFiltersSheet(
                 filter: VotingFilter(sort: .votesHighToLow, type: .approved, onlyDuplicates: true)) { _ in }
+        }
+}
+
+#Preview("Only requests with links") {
+    Color.dash.primaryBackground
+        .sheet(isPresented: .constant(true)) {
+            VotingFiltersSheet(
+                filter: VotingFilter(
+                    sort: .dateOldToNew, type: .all, onlyDuplicates: true, onlyWithLinks: true)) { _ in }
         }
 }
 

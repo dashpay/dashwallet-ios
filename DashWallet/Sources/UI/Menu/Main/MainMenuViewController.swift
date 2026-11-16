@@ -565,7 +565,7 @@ struct MainMenuScreen: View {
         let popRoot: () -> Void = { [weak navController] in
             _ = navController?.popViewController(animated: true)
         }
-        let hosting = UsernameVotingHostingController(onClose: popRoot)
+        let hosting = UsernameVotingHostingController(viewModel: VotingViewModel(), onClose: popRoot)
         vc?.pushViewController(hosting, animated: true)
     }
     #endif

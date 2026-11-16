@@ -331,6 +331,95 @@ final class VotingListViewModelTests: XCTestCase {
         XCTAssertNil(list.toast)
     }
 
+    /// A success toast has no close button and hides itself after 3 s (owner, stage 5b live run).
+    func testASuccessToastHasNoCloseButtonAndHidesAfterThreeSeconds() {
+        let toasts: [VotingToast] = [
+            .voted(username: "johndoe"), .voteCancelled(username: "johndoe"),
+            .alreadyVoted(username: "johndoe"), .quickVotingDone(),
+        ]
+        for toast in toasts {
+            XCTAssertFalse(toast.showsCloseButton, toast.message)
+            XCTAssertEqual(toast.hidesAfter, .seconds(3), toast.message)
+        }
+    }
+
+    /// AC-06: an error toast keeps its close button and stays until closed.
+    func testAnErrorToastKeepsItsCloseButtonAndStays() {
+        for toast in [VotingToast.failed("No connection"), .votingEnded(username: "johndoe")] {
+            XCTAssertTrue(toast.showsCloseButton, toast.message)
+            XCTAssertNil(toast.hidesAfter, toast.message)
+        }
+    }
+
+    /// An older toast's timer running out never clears the toast that replaced it.
+    func testAnOlderToastsTimerDoesNotClearANewerToast() {
+        let list = makeList(makeStore())
+        let older = VotingToast.voted(username: "johndoe")
+        let newer = VotingToast.failed("No connection")
+        list.showToast(older)
+        list.showToast(newer)
+
+        list.clearToast(id: older.id)
+        XCTAssertEqual(list.toast?.id, newer.id)
+
+        list.clearToast(id: newer.id)
+        XCTAssertNil(list.toast)
+    }
+
+    // MARK: Voting keys flow (SCR-04 «no keys», AC-12)
+
+    /// The flow opens on "Enter voting key" only when the wallet has finished
+    /// syncing and the list still holds no node of this wallet: an empty list
+    /// read before the sync says nothing yet, so an owner is never asked for a
+    /// key the wallet derives.
+    func testTheKeysFlowOpensOnTheKeyInputOnlyWhenTheSyncedWalletHasNoNode() {
+        let store = makeStore()
+        let voting = VotingViewModel(store: store)
+
+        nodes.isNodeListSynced = false
+        store.refreshVotableNodes()
+        XCTAssertFalse(voting.keysFlowOpensOnKeyInput, "an empty list before the sync")
+
+        nodes.isNodeListSynced = true
+        store.refreshVotableNodes()
+        XCTAssertTrue(voting.keysFlowOpensOnKeyInput, "a synced wallet with no node")
+
+        nodes.resolution = .init(nodes: [node(1)], mayBeIncomplete: false)
+        store.refreshVotableNodes()
+        XCTAssertFalse(voting.keysFlowOpensOnKeyInput, "a node to tick")
+    }
+
+    /// An empty list that may be incomplete (a key the keychain could not
+    /// read) does not prove the wallet has no node, even after the sync.
+    func testTheKeysFlowDoesNotOpenOnTheKeyInputWhileTheListMayBeIncomplete() {
+        let store = makeStore()
+        let voting = VotingViewModel(store: store)
+        nodes.isNodeListSynced = true
+        nodes.resolution = .init(nodes: [], mayBeIncomplete: true)
+
+        store.refreshVotableNodes()
+
+        XCTAssertFalse(voting.keysFlowOpensOnKeyInput)
+    }
+
+    /// A masternode found after the last refresh (the wallet's scan found its
+    /// registration) is seen at the tap that starts a vote, so the key flow
+    /// does not open on "Enter voting key" from a stale empty list.
+    func testTheAttemptsTapReReadsTheNodesBeforeTheKeyFlowDecides() {
+        let store = makeStore()
+        let voting = VotingViewModel(store: store)
+        store.refreshVotableNodes()
+        XCTAssertTrue(voting.keysFlowOpensOnKeyInput)
+
+        nodes.resolution = .init(nodes: [node(1)], mayBeIncomplete: false)
+        voting.attemptWillStart(on: single("johndoe"))
+        XCTAssertFalse(voting.keysFlowOpensOnKeyInput, "the attempt's tap re-read the nodes")
+
+        nodes.resolution = .init(nodes: [], mayBeIncomplete: false)
+        voting.quickVotingWillStart()
+        XCTAssertTrue(voting.keysFlowOpensOnKeyInput, "so does Quick voting's")
+    }
+
     /// The tap that starts an attempt clears the last toast, before any dialog.
     func testAnAttemptStartingClearsTheToast() {
         let voting = VotingViewModel(store: makeStore())
@@ -365,7 +454,7 @@ final class VotingListViewModelTests: XCTestCase {
 
         voting.reportAlreadyVoted(on: single("johndoe"))
 
-        XCTAssertEqual(voting.toast?.message, "Your masternodes already voted this way on johndoe")
+        XCTAssertEqual(voting.toast?.message, "Already voted this way on johndoe")
         XCTAssertEqual(voting.toast?.style, .success)
     }
 
@@ -446,8 +535,23 @@ final class VotingListViewModelTests: XCTestCase {
         XCTAssertNil(list.emptyState)
     }
 
-    /// AC-09, no voting keys: the wallet holds no vote to filter by.
-    func testMyVotesFilterWithoutVotingKeysCannotFilter() async {
+    /// AC-09, no voting keys in a synced node list: the wallet holds no vote
+    /// to filter by, which is not a passing fault.
+    func testMyVotesFilterWithoutVotingKeysSaysTheWalletHasNone() async {
+        contests.result = .success([single("alice")])
+        let store = makeStore()
+        let list = makeList(store)
+        await store.refresh()
+
+        list.filter.type = .notVoted
+
+        XCTAssertEqual(list.emptyState, .noVotingKeys)
+    }
+
+    /// AC-09, no voting keys found before the node list synced: they may
+    /// still turn up, so the filter cannot tell until the sync is done.
+    func testMyVotesFilterBeforeTheNodeListSyncedCannotFilter() async {
+        nodes.isNodeListSynced = false
         contests.result = .success([single("alice")])
         let store = makeStore()
         let list = makeList(store)
@@ -458,7 +562,7 @@ final class VotingListViewModelTests: XCTestCase {
         guard case .cannotFilterByMyVotes(let reason)? = list.emptyState else {
             return XCTFail("expected cannot-filter, got \(String(describing: list.emptyState))")
         }
-        XCTAssertTrue(reason.contains("voting keys"))
+        XCTAssertEqual(reason, "The masternode list is still syncing. Try again in a moment.")
     }
 
     /// AC-09, history unavailable.
@@ -741,6 +845,162 @@ final class VotingListViewModelTests: XCTestCase {
         XCTAssertEqual(rows.map(\.votes), [2, 4, 6])
     }
 
+    func testAnExpandedRequestShowsItsDateAndLinkIncluded() async throws {
+        let submitted = Date(timeIntervalSince1970: 1_762_000_000)
+        let johndoe = DPNSContest(
+            normalizedLabel: "johndoe", endTime: nil, hasWinner: false, abstainVotes: 0, lockVotes: 0,
+            contenders: [
+                DPNSContender(identityId: "johndoe-id1", voteTally: 0, createdAt: submitted),
+                DPNSContender(identityId: "johndoe-id2", voteTally: 0, createdAt: nil),
+            ])
+        contests.result = .success([johndoe])
+        let url = try XCTUnwrap(URL(string: "https://example.com/proof"))
+        var asked: [String] = []
+        let store = VotingStore(contests: contests, nodes: nodes, caster: FakeCaster(), history: history,
+                                prefs: prefs, linkLookup: VotingStore.lookingUpEachRequest { _, identity in
+                                    asked.append(identity)
+                                    return identity == "johndoe-id1" ? url : nil
+                                })
+        let list = makeList(store)
+        await store.refresh()
+        XCTAssertEqual(list.requestRows(for: johndoe).map(\.hasLink), [false, false], "unknown is not a link")
+
+        list.toggleExpanded("johndoe")
+        await yield(until: {
+            asked.count == 2
+                && store.linkState(normalizedLabel: "johndoe", identityId: "johndoe-id2") == RequestLinkState.none
+        })
+
+        let rows = list.requestRows(for: johndoe)
+        XCTAssertEqual(Set(asked), ["johndoe-id1", "johndoe-id2"], "opening the row looks up each request's link")
+        XCTAssertEqual(rows.map(\.hasLink), [true, false])
+        XCTAssertEqual(rows[0].dateText, list.requestDateFormatter.string(from: submitted))
+        XCTAssertEqual(rows[0].timeText, list.requestTimeFormatter.string(from: submitted))
+        XCTAssertNil(rows[1].dateText, "no date is shown for a request without one")
+        XCTAssertNil(rows[1].timeText)
+    }
+
+    // MARK: Only requests with links (AC-07b, AC-09b)
+
+    private func makeLinkedList(
+        _ answer: @escaping @MainActor (String) async throws -> URL?
+    ) async -> (VotingStore, VotingListViewModel) {
+        contests.result = .success([contest("johndoe", requests: 3), contest("alice", requests: 2)])
+        let store = VotingStore(contests: contests, nodes: nodes, caster: FakeCaster(), history: history,
+                                prefs: prefs,
+                                linkLookup: VotingStore.lookingUpEachRequest { _, identity in
+                                    try await answer(identity)
+                                })
+        let list = makeList(store)
+        await store.refresh()
+        return (store, list)
+    }
+
+    func testTheLinksFilterKeepsOnlyLinkedRequestsOnceEveryLinkIsKnown() async throws {
+        let url = try XCTUnwrap(URL(string: "https://example.com/proof"))
+        let (_, list) = await makeLinkedList { $0 == "johndoe-id2" ? url : nil }
+
+        list.filter.onlyWithLinks = true
+        await yield(until: { list.emptyState == nil })
+
+        XCTAssertEqual(list.visibleContests.map(\.normalizedLabel), ["johndoe"])
+        XCTAssertEqual(list.visibleContests.first?.contenders.map(\.identityId), ["johndoe-id2"])
+    }
+
+    func testTheLinksFilterShowsLoadingWhileAShownLinkIsUnknown() async {
+        var held: [CheckedContinuation<URL?, Error>] = []
+        let (_, list) = await makeLinkedList { _ in try await withCheckedThrowingContinuation { held.append($0) } }
+
+        list.filter.onlyWithLinks = true
+        // One lookup per name at a time: johndoe's and alice's first request.
+        await yield(until: { held.count == 2 })
+
+        XCTAssertEqual(list.emptyState, .loading, "not a list that may be wrong")
+        XCTAssertTrue(list.visibleContests.isEmpty)
+        for _ in 1...5 {
+            await yield(until: { !held.isEmpty })
+            held.removeFirst().resume(returning: nil)
+        }
+        await yield(until: { list.emptyState != .loading })
+    }
+
+    func testTheLinksFilterCannotFilterWhenALinkCouldNotBeChecked() async {
+        struct Down: Error {}
+        let (_, list) = await makeLinkedList { identity in
+            if identity == "alice-id1" { throw Down() }
+            return nil
+        }
+
+        list.filter.onlyWithLinks = true
+        await yield(until: { list.emptyState != .loading })
+
+        XCTAssertEqual(list.emptyState, .cannotFilterByLinks)
+        XCTAssertTrue(list.visibleContests.isEmpty)
+    }
+
+    func testTheLinksFilterLooksUpEachNameOnce() async {
+        var asked: [String] = []
+        contests.result = .success([contest("johndoe", requests: 3), contest("alice", requests: 2)])
+        let store = VotingStore(contests: contests, nodes: nodes, caster: FakeCaster(), history: history,
+                                prefs: prefs, linkLookup: { label, _ in
+                                    asked.append(label)
+                                    return [:]
+                                })
+        let list = makeList(store)
+        await store.refresh()
+
+        list.filter.onlyWithLinks = true
+        await yield(until: { list.emptyState != .loading })
+        for _ in 0..<100 { await Task.yield() }
+
+        XCTAssertEqual(asked.sorted(), ["alice", "johndoe"], "one lookup per name, not per request or recompute")
+    }
+
+    func testAnExpandedRowsLinksAreLookedUpBeforeTheLinksFilterBacklog() async {
+        var held: [(label: String, answer: CheckedContinuation<[String: URL], Error>)] = []
+        contests.result = .success((1...6).map { contest("name\($0)", requests: 2) })
+        let store = VotingStore(contests: contests, nodes: nodes, caster: FakeCaster(), history: history,
+                                prefs: prefs, linkLookup: { label, _ in
+                                    try await withCheckedThrowingContinuation { held.append((label, $0)) }
+                                })
+        let list = makeList(store)
+        await store.refresh()
+        list.filter.onlyWithLinks = true
+        await yield(until: { held.count == 4 })
+
+        list.toggleExpanded("name6")
+        held.removeFirst().answer.resume(returning: [:])
+        await yield(until: { held.count == 4 })
+
+        XCTAssertEqual(held.last?.label, "name6", "the row the owner opened goes before the names the filter queued")
+        for _ in 1...5 {
+            await yield(until: { !held.isEmpty })
+            held.removeFirst().answer.resume(returning: [:])
+        }
+        await yield(until: { list.emptyState != .loading })
+    }
+
+    func testApplyingTheSameLinksFilterAgainAsksAgainForTheLinksThatFailed() async throws {
+        struct Down: Error {}
+        let url = try XCTUnwrap(URL(string: "https://example.com/proof"))
+        var platformDown = true
+        let (_, list) = await makeLinkedList { identity in
+            if platformDown { throw Down() }
+            return identity == "alice-id1" ? url : nil
+        }
+        var withLinks = list.filter
+        withLinks.onlyWithLinks = true
+        list.filter = withLinks
+        await yield(until: { list.emptyState == .cannotFilterByLinks })
+        platformDown = false
+
+        // «Apply the filter again», as the empty state says: the sheet hands back the same filter.
+        list.filter = withLinks
+        await yield(until: { list.emptyState == nil })
+
+        XCTAssertEqual(list.visibleContests.map(\.normalizedLabel), ["alice"])
+    }
+
     func testNoRequestIsFilledWhenOnlyAnUntickedNodeVoted() async {
         let a = node(1), b = node(2)
         nodes.resolution = .init(nodes: [a, b], mayBeIncomplete: false)
@@ -862,6 +1122,25 @@ final class VotingListViewModelTests: XCTestCase {
         store.setTick(a.proTxHash, false)
 
         XCTAssertEqual(voting.votingWithSummary, "Select nodes")
+    }
+
+    /// AC-14: with every masternode ticked «Voting with» counts them by the
+    /// locale's plural rules: «All 1 node», «All 2 nodes».
+    func testVotingWithCountsAllNodesWithPluralRules() async {
+        let a = node(1), b = node(2)
+        nodes.resolution = .init(nodes: [a], mayBeIncomplete: false)
+        prefs.votingNodeSelection = [a.proTxHash]
+        let one = makeStore()
+        let votingOne = VotingViewModel(store: one)
+        await one.refresh()
+        XCTAssertEqual(votingOne.votingWithSummary, "All 1 node")
+
+        nodes.resolution = .init(nodes: [a, b], mayBeIncomplete: false)
+        prefs.votingNodeSelection = [a.proTxHash, b.proTxHash]
+        let two = makeStore()
+        let votingTwo = VotingViewModel(store: two)
+        await two.refresh()
+        XCTAssertEqual(votingTwo.votingWithSummary, "All 2 nodes")
     }
 
     /// Before voting is set up a tap opens «Add your voting keys», so «Voting
@@ -1046,7 +1325,7 @@ final class VotingRequestRowTests: XCTestCase {
     /// VoiceOver reads a request by its first and last four characters, not
     /// the whole 44-character id.
     func testARequestIsSpokenByAShortIdentity() {
-        let row = VotingRequestRow(identityId: "Hx4kP9mT2pLw8RzYb5NcHf7Ud4EaQ1sV3jK6nB2cD8gF", votes: 3, isMine: false)
+        let row = VotingRequestRow(identityId: "Hx4kP9mT2pLw8RzYb5NcHf7Ud4EaQ1sV3jK6nB2cD8gF", votes: 3, isMine: false, dateText: nil, timeText: nil, hasLink: false)
 
         XCTAssertEqual(row.spokenIdentity, "Hx4k … D8gF")
         XCTAssertFalse(row.accessibilityLabel.contains(row.identityId))
@@ -1054,6 +1333,6 @@ final class VotingRequestRowTests: XCTestCase {
     }
 
     func testAShortIdIsSpokenWhole() {
-        XCTAssertEqual(VotingRequestRow(identityId: "abc", votes: 0, isMine: false).spokenIdentity, "abc")
+        XCTAssertEqual(VotingRequestRow(identityId: "abc", votes: 0, isMine: false, dateText: nil, timeText: nil, hasLink: false).spokenIdentity, "abc")
     }
 }

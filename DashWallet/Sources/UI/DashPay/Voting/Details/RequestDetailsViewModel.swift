@@ -25,18 +25,11 @@ import SwiftDashSDK
 
 /// One request for a username, as the owner checks it before approving: the
 /// name, the identity behind it, the proof it published and the voting period.
-/// Everything but the link comes from the already-loaded ``VotingStore``.
+/// Everything comes from the ``VotingStore``, the link too: it looks the link
+/// up once per request and keeps it for the list.
 @MainActor
 final class RequestDetailsViewModel: ObservableObject {
-    /// What the link lookup has to say. Four answers, because collapsing
-    /// "nothing published" and "the check failed" tells the owner there is no
-    /// proof when in truth the query did not run.
-    enum LinkState: Equatable {
-        case reading
-        case published(URL)
-        case none
-        case failed
-    }
+    typealias LinkState = RequestLinkState
 
     enum ApproveAction: Equatable {
         case voteToApprove
@@ -46,10 +39,7 @@ final class RequestDetailsViewModel: ObservableObject {
     let identityId: String
     let normalizedLabel: String
 
-    @Published private(set) var linkState: LinkState = .reading
-
     private let store: VotingStore
-    private let linkLookup: (_ normalizedLabel: String, _ identityId: String) async throws -> URL?
     private let dateFormatter: DateFormatter
     private let openLink: @MainActor (URL) -> Void
     private var changes = Set<AnyCancellable>()
@@ -61,24 +51,17 @@ final class RequestDetailsViewModel: ObservableObject {
         store: VotingStore,
         normalizedLabel: String,
         identityId: String,
-        linkLookup: @escaping (_ normalizedLabel: String, _ identityId: String) async throws -> URL?,
         dateFormatter: DateFormatter,
         openLink: @escaping @MainActor (URL) -> Void
     ) {
         self.store = store
         self.normalizedLabel = normalizedLabel
         self.identityId = identityId
-        self.linkLookup = linkLookup
         self.dateFormatter = dateFormatter
         self.openLink = openLink
         self.lastKnownContest = store.contests.first { $0.normalizedLabel == normalizedLabel }
         // The approve button follows votes cast from the sheet this screen opens.
         store.objectWillChange.sink { [weak self] in self?.objectWillChange.send() }.store(in: &changes)
-    }
-
-    /// The screen's lookup: the link this identity published for the name.
-    static func publishedLink(normalizedLabel: String, identityId: String) async throws -> URL? {
-        try await IdentityVerifyService.shared.publishedURL(forLabel: normalizedLabel, ownedBy: identityId)
     }
 
     // MARK: Fields
@@ -97,23 +80,32 @@ final class RequestDetailsViewModel: ObservableObject {
 
     var votingEnd: Date? { contest?.endTime }
 
-    // TODO(voting-5b): the request's date, once the request dates are read.
-    /// Always unknown for now; `createdAt` is not the request date.
-    var requestDate: Date? { nil }
+    /// The earliest request date of the name, which may be another request's;
+    /// unknown while the name's requests may not all have been read
+    /// (dashpay/platform#5876), as the earliest one may be missing.
+    var votingPeriodStart: Date? {
+        guard !store.requestsMayBeCut.contains(normalizedLabel) else { return nil }
+        return contest?.votingPeriodStart
+    }
 
-    /// «<start> – <end>». Without a request date the start reads «Not provided»;
-    /// without a voting end either, the whole field does.
+    /// «<start> – <end>». Without every request's date the start reads «Not
+    /// provided»; without a voting end either, the whole field does.
     var votingPeriodText: String {
         let notProvided = NSLocalizedString("Not provided", comment: "Voting")
         guard let votingEnd else { return notProvided }
         let end = dateFormatter.string(from: votingEnd)
-        guard let requestDate else {
+        guard let votingPeriodStart else {
             return String(format: NSLocalizedString("Not provided – %@", comment: "Voting"), end)
         }
-        return "\(dateFormatter.string(from: requestDate)) – \(end)"
+        return "\(dateFormatter.string(from: votingPeriodStart)) – \(end)"
     }
 
     // MARK: Link
+
+    /// Reading until the store has an answer.
+    var linkState: LinkState {
+        store.linkState(normalizedLabel: normalizedLabel, identityId: identityId) ?? .reading
+    }
 
     /// `nil` while the check is in flight.
     var linkText: String? {
@@ -138,17 +130,17 @@ final class RequestDetailsViewModel: ObservableObject {
         return scheme == "http" || scheme == "https"
     }
 
+    /// Asks the store for the link and waits for the answer.
     func loadLink() async {
-        linkState = .reading
-        do {
-            if let url = try await linkLookup(normalizedLabel, identityId) {
-                linkState = .published(url)
-            } else {
-                linkState = .none
-            }
-        } catch {
-            linkState = .failed
-        }
+        await store.loadLink(normalizedLabel: normalizedLabel, identityId: identityId)
+    }
+
+    /// Try again after a failed check: asks the store again, ahead of the
+    /// waiting names, without waiting — ``linkState`` follows the store, so
+    /// nothing is left waiting when the screen closes.
+    func retryLink() {
+        store.askForLinks([VotingStore.RequestKey(normalizedLabel: normalizedLabel, identityId: identityId)],
+                          retryingFailed: true, first: true)
     }
 
     // MARK: Approve

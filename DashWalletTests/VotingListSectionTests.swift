@@ -131,8 +131,13 @@ final class VotingListSectionTests: XCTestCase {
 
     /// AC-21: a pill's spoken vote count follows the plural rules: «1 vote», «3 votes».
     func testVoteCountIsSpokenWithPluralRules() {
+        let row = { (votes: Int) in
+            VotingRequestRow(
+                identityId: "id", votes: votes, isMine: false, dateText: nil, timeText: nil, hasLink: false)
+        }
+        XCTAssertEqual(row(1).accessibilityValue, "1 vote")
+        XCTAssertEqual(row(3).accessibilityValue, "3 votes")
         XCTAssertEqual(VotingContestCard.votesValue(count: 1), "1 vote")
-        XCTAssertEqual(VotingContestCard.votesValue(count: 3), "3 votes")
         XCTAssertEqual(VotingContestCard.votesValue(count: 0), "0 votes")
     }
 

@@ -140,10 +140,10 @@ final class RequestDetailsViewModelTests: XCTestCase {
                   serviceAddress: nil, keySource: .walletIndex(0))
     }
 
-    private func contest(endTime: Date? = nil) -> DPNSContest {
+    private func contest(endTime: Date? = nil, requestDates: [Date?] = [nil, nil]) -> DPNSContest {
         let contenders = [
-            DPNSContender(identityId: "johndoe-id1", voteTally: 2, displayLabel: "JohnDoe"),
-            DPNSContender(identityId: identityId, voteTally: 4, displayLabel: "johndoe")
+            DPNSContender(identityId: "johndoe-id1", voteTally: 2, displayLabel: "JohnDoe", createdAt: requestDates[0]),
+            DPNSContender(identityId: identityId, voteTally: 4, displayLabel: "johndoe", createdAt: requestDates[1])
         ]
         return DPNSContest(normalizedLabel: label, endTime: endTime, hasWinner: false,
                            abstainVotes: 0, lockVotes: 0, contenders: contenders)
@@ -153,9 +153,11 @@ final class RequestDetailsViewModelTests: XCTestCase {
         CastVoteRecord(proTxHash: node.proTxHash, normalizedLabel: label, choice: choice, castAt: epoch)
     }
 
-    private func makeStore() async -> VotingStore {
+    private func makeStore(
+        link: @escaping @MainActor (String, String) async throws -> URL? = { _, _ in nil }
+    ) async -> VotingStore {
         let store = VotingStore(contests: contests, nodes: nodes, caster: FakeCaster(), history: history,
-                                prefs: prefs)
+                                prefs: prefs, linkLookup: VotingStore.lookingUpEachRequest(link))
         await store.refresh()
         return store
     }
@@ -163,12 +165,9 @@ final class RequestDetailsViewModelTests: XCTestCase {
     /// Links handed to the system to open.
     private var opened: [URL] = []
 
-    private func makeVM(
-        _ store: VotingStore,
-        link: @escaping (String, String) async throws -> URL? = { _, _ in nil }
-    ) -> RequestDetailsViewModel {
+    private func makeVM(_ store: VotingStore) -> RequestDetailsViewModel {
         RequestDetailsViewModel(store: store, normalizedLabel: label, identityId: identityId,
-                                linkLookup: link, dateFormatter: formatter,
+                                dateFormatter: formatter,
                                 openLink: { [weak self] in self?.opened.append($0) })
     }
 
@@ -183,11 +182,39 @@ final class RequestDetailsViewModelTests: XCTestCase {
         XCTAssertEqual(vm.votingEnd, votingEnd)
     }
 
-    func testRequestDateIsUnknownBeforeStage5bSoThePeriodReadsNotProvidedThenTheVotingEnd() async {
-        contests.result = .success([contest(endTime: votingEnd)])
+    func testTheVotingPeriodRunsFromTheEarliestRequestDateToTheVotingEnd() async {
+        let earlier = votingEnd.addingTimeInterval(-14 * 86_400)
+        contests.result = .success([contest(
+            endTime: votingEnd, requestDates: [earlier, earlier.addingTimeInterval(86_400)])])
         let vm = makeVM(await makeStore())
 
-        XCTAssertNil(vm.requestDate)
+        XCTAssertEqual(vm.votingPeriodStart, earlier, "the other request was first, not this one")
+        XCTAssertEqual(vm.votingPeriodText, "\(formatter.string(from: earlier)) – Oct 25, 2026")
+    }
+
+    /// A one-contest read that returned a full page may have cut the first
+    /// request off: the start is not provided until a list refresh.
+    func testAPossiblyCutReadLeavesThePeriodStartNotProvided() async {
+        contests.result = .success([contest(endTime: votingEnd, requestDates: [votingEnd, votingEnd])])
+        let store = await makeStore()
+        contests.state = DPNSContestVoteState(
+            normalizedLabel: label,
+            contenders: (1...VotingStore.contestReadRequestLimit).map {
+                DPNSContender(identityId: "\(label)-id\($0)", voteTally: 0, createdAt: votingEnd)
+            },
+            abstainVotes: 0, lockVotes: 0, outcome: .ongoing, resolvedAt: nil)
+        await store.refreshContest(normalizedLabel: label)
+        let vm = makeVM(store)
+
+        XCTAssertNil(vm.votingPeriodStart)
+        XCTAssertEqual(vm.votingPeriodText, "Not provided – Oct 25, 2026")
+    }
+
+    func testAnUndatedRequestLeavesThePeriodStartNotProvided() async {
+        contests.result = .success([contest(endTime: votingEnd, requestDates: [nil, votingEnd])])
+        let vm = makeVM(await makeStore())
+
+        XCTAssertNil(vm.votingPeriodStart)
         XCTAssertEqual(vm.votingPeriodText, "Not provided – Oct 25, 2026")
     }
 
@@ -203,7 +230,7 @@ final class RequestDetailsViewModelTests: XCTestCase {
 
     func testNoPublishedLinkReadsNotProvided() async {
         contests.result = .success([contest()])
-        let vm = makeVM(await makeStore(), link: { _, _ in nil })
+        let vm = makeVM(await makeStore(link: { _, _ in nil }))
 
         await vm.loadLink()
 
@@ -213,7 +240,7 @@ final class RequestDetailsViewModelTests: XCTestCase {
 
     func testFailedLookupReadsCouldntCheckAndNeverNotProvided() async {
         contests.result = .success([contest()])
-        let vm = makeVM(await makeStore(), link: { _, _ in throw LookupFailure() })
+        let vm = makeVM(await makeStore(link: { _, _ in throw LookupFailure() }))
 
         await vm.loadLink()
 
@@ -225,7 +252,7 @@ final class RequestDetailsViewModelTests: XCTestCase {
     func testPublishedLinkShowsTheFullURL() async {
         contests.result = .success([contest()])
         let url = URL(string: "https://example.com/proof/johndoe")!
-        let vm = makeVM(await makeStore(), link: { _, _ in url })
+        let vm = makeVM(await makeStore(link: { _, _ in url }))
 
         await vm.loadLink()
 
@@ -236,10 +263,10 @@ final class RequestDetailsViewModelTests: XCTestCase {
     func testLookupIsAskedForThisRequestsLabelAndIdentity() async {
         contests.result = .success([contest()])
         var asked: (String, String)?
-        let vm = makeVM(await makeStore(), link: { label, identity in
+        let vm = makeVM(await makeStore(link: { label, identity in
             asked = (label, identity)
             return nil
-        })
+        }))
 
         await vm.loadLink()
 
@@ -247,25 +274,81 @@ final class RequestDetailsViewModelTests: XCTestCase {
         XCTAssertEqual(asked?.1, "johndoe-id2")
     }
 
-    func testStateIsReadingWhileALaterLookupIsInFlight() async {
+    func testStateIsReadingWhileAReopenChecksAFailedLinkAgain() async {
         contests.result = .success([contest()])
         var release: CheckedContinuation<URL?, Error>?
         var started = false
         var first = true
-        let vm = makeVM(await makeStore(), link: { _, _ in
-            if first { first = false; return nil }
+        let vm = makeVM(await makeStore(link: { _, _ in
+            if first { first = false; throw LookupFailure() }
             started = true
             return try await withCheckedThrowingContinuation { release = $0 }
-        })
+        }))
         await vm.loadLink()
-        XCTAssertEqual(vm.linkState, .none)
+        XCTAssertEqual(vm.linkState, .failed)
 
+        // Request details opened again: its `.task` asks once more.
         let retry = Task { await vm.loadLink() }
-        while !started { await Task.yield() }
+        await yield(until: { started })
 
         XCTAssertEqual(vm.linkState, .reading)
         release?.resume(returning: nil)
         await retry.value
+        XCTAssertEqual(vm.linkState, .none)
+    }
+
+    func testTryAgainAsksForTheLinkWithoutWaitingForIt() async {
+        contests.result = .success([contest()])
+        var release: CheckedContinuation<URL?, Error>?
+        var first = true
+        let vm = makeVM(await makeStore(link: { _, _ in
+            if first { first = false; throw LookupFailure() }
+            return try await withCheckedThrowingContinuation { release = $0 }
+        }))
+        await vm.loadLink()
+        XCTAssertEqual(vm.linkState, .failed)
+
+        // Returns at once: nothing is left waiting when the screen closes.
+        vm.retryLink()
+        XCTAssertEqual(vm.linkState, .reading)
+
+        await yield(until: { release != nil })
+        release?.resume(returning: nil)
+        await yield(until: { vm.linkState != .reading })
+        XCTAssertEqual(vm.linkState, .none, "the lookup itself still fills the store")
+    }
+
+    func testTryAgainIsLookedUpBeforeTheNamesWaitingForTheFilter() async {
+        contests.result = .success([contest()])
+        var held: [(label: String, answer: CheckedContinuation<URL?, Error>)] = []
+        var first = true
+        let store = await makeStore(link: { label, _ in
+            if first { first = false; throw LookupFailure() }
+            return try await withCheckedThrowingContinuation { held.append((label, $0)) }
+        })
+        let vm = makeVM(store)
+        await vm.loadLink()
+        XCTAssertEqual(vm.linkState, .failed)
+
+        // The links filter: four names looked up, name5 waiting.
+        store.askForLinks(Set((1...5).map { VotingStore.RequestKey(normalizedLabel: "name\($0)", identityId: "id") }),
+                          retryingFailed: false)
+        await yield(until: { held.count == 4 })
+        guard held.count == 4 else { return }
+
+        vm.retryLink()
+        held.removeFirst().answer.resume(returning: nil)
+        await yield(until: { held.count == 4 })
+        guard held.count == 4 else { return }
+        XCTAssertEqual(held[3].label, label, "Try again goes before the filter's backlog")
+
+        // The other three of the filter, this name, then name5.
+        for _ in 1...5 {
+            await yield(until: { !held.isEmpty })
+            guard !held.isEmpty else { return }
+            held.removeFirst().answer.resume(returning: nil)
+        }
+        await yield(until: { vm.linkState != .reading })
         XCTAssertEqual(vm.linkState, .none)
     }
 
@@ -553,7 +636,7 @@ final class RequestDetailsViewModelTests: XCTestCase {
 
         XCTAssertNil(store.outcome, "nothing was sent")
         let notice = try XCTUnwrap(voting.toast)
-        XCTAssertEqual(notice.message, "Your masternodes already voted this way on johndoe")
+        XCTAssertEqual(notice.message, "Already voted this way on johndoe")
         XCTAssertTrue(vm.showsToast(notice))
         XCTAssertFalse(vm.returnsToList(after: store.outcome))
 

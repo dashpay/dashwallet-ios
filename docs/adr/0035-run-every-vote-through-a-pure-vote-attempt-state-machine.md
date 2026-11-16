@@ -27,7 +27,7 @@ A vote passes gates in a fixed order: contest still open → voting set up (else
 
 **Positive**
 - The gate order, abstain's missing confirmation and the per-masternode counting are tested without UI.
-- List, Request details and Quick voting cannot drift apart; adding a gate is one change.
+- List and Request details cannot drift apart; adding a gate is one change (and one in Quick voting's plan, see Deviation).
 
 **Negative**
 - New types and a rewrite of `VoteFlow.swift`; stage 4 carries most of it.
@@ -35,6 +35,9 @@ A vote passes gates in a fixed order: contest still open → voting set up (else
 
 **Neutral**
 - `CastVoteSheet`'s confirmation is replaced by the coordinator's steps; its per-masternode result view lives on as the result sheet (AC-06b).
+
+**Deviation (2026-11-10, review-2026-11-10i finding 1)**
+- Quick voting does not run one `VoteAttempt` per name. `QuickVotePlan` plans every name on screen at once with its own gate chain — voting ended (closed or past its end), voting end known, history known, blocked by any wallet masternode, the first request, votes left — because the run asks "Add your voting keys" and "One vote left" once for all names, not per name. The plan checks what the gates check, in their order, and `QuickVotePlanTests` covers each skip; a new gate must be added to both.
 
 ## Links
 

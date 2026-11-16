@@ -124,8 +124,8 @@ final class MasternodeVoterRegistry {
     ///  - that address matches a key this wallet derives, so we can sign.
     ///
     /// Returns empty (not an error) when the wallet has no masternodes, when
-    /// the SDK is not running, or when the masternode phase has not synced —
-    /// the caller renders the browse-only state.
+    /// the SDK is not running, or when the sync has not found them yet — the
+    /// caller checks ``isNodeListSynced`` to tell these apart.
     func votableNodes() -> Resolution {
         guard let manager = SwiftDashSDKHost.shared.manager,
               let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {

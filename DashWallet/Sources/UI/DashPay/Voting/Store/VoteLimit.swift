@@ -71,6 +71,12 @@ struct VoteLimit {
         return nodes.filter { (votesLeft($0) ?? 0) > 0 }
     }
 
+    /// Whether any node with a vote here holds `choice`; `nil` when unknown.
+    func anyNode(holding choice: VoteChoice) -> Bool? {
+        guard isKnown else { return nil }
+        return latest.values.contains { $0.choice == choice }
+    }
+
     /// The nodes of `nodes` whose live vote is `choice`, abstain included.
     func nodes(holding choice: VoteChoice, among nodes: Set<Data>) -> Set<Data>? {
         guard isKnown else { return nil }

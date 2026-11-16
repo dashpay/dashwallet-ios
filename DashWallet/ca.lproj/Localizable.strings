@@ -7357,9 +7357,6 @@
 "If block wins when voting ends, nobody can ever request this username again. You can cancel your vote until voting ends." = "If block wins when voting ends, nobody can ever request this username again. You can cancel your vote until voting ends.";
 
 /* Voting */
-"Masternode voting private key" = "Masternode voting private key";
-
-/* Voting */
 "Not cast — %@" = "Not cast — %@";
 
 /* Voting */
@@ -7408,9 +7405,66 @@
 /* Voting */
 "✓ Voted" = "✓ Voted";
 
-"Your masternodes already voted this way on %@" = "Your masternodes already voted this way on %@";
-
 "Set up voting to filter by your votes." = "Set up voting to filter by your votes.";
 
 /* Voting */
 "If block wins when voting ends, nobody can ever request this username again." = "If block wins when voting ends, nobody can ever request this username again.";
+
+/* Voting */
+"Masternode voting key" = "Masternode voting key";
+
+"Already voted this way on %@" = "Already voted this way on %@";
+
+"Link included" = "Link included";
+
+"Can't filter by links right now" = "Can't filter by links right now";
+
+"Some links couldn't be checked. Apply the filter again to retry, or reset it." = "Some links couldn't be checked. Apply the filter again to retry, or reset it.";
+
+"Quick voting stopped before this vote was sent." = "Quick voting stopped before this vote was sent.";
+
+"Quick voting done" = "Quick voting done";
+
+"A masternode of this wallet blocked this name." = "A masternode of this wallet blocked this name.";
+
+"Vote for all" = "Vote for all";
+
+"Quick voting" = "Quick voting";
+
+"None of the filtered usernames can get a vote." = "None of the filtered usernames can get a vote.";
+
+"Vote for all approves %d usernames" = "Vote for all approves %d usernames";
+
+"Vote for all approves the linked request for %d usernames" = "Vote for all approves the linked request for %d usernames";
+
+"%d usernames are skipped" = "%d usernames are skipped";
+
+"This is your last vote for some of these usernames. After it, you cannot vote on them again." = "This is your last vote for some of these usernames. After it, you cannot vote on them again.";
+
+"Show all usernames" = "Show all usernames";
+
+"Quick voting partly done" = "Quick voting partly done";
+
+"Some votes were not cast. These usernames were not voted for:" = "Some votes were not cast. These usernames were not voted for:";
+
+/* Voting */
+"Some votes were not cast or their result is not confirmed:" = "Some votes were not cast or their result is not confirmed:";
+
+"Quick voting… %1$d of %2$d done" = "Quick voting… %1$d of %2$d done";
+
+/* Voting */
+"Couldn't tell which request came first." = "Couldn't tell which request came first.";
+
+/* Voting */
+"Some of your masternodes may be missing from this list." = "Some of your masternodes may be missing from this list.";
+
+/* Voting */
+"Quick voting did not start: another vote is still being sent." = "Quick voting did not start: another vote is still being sent.";
+
+/* Voting */
+"No votes to filter by" = "No votes to filter by";
+
+"This wallet has no masternode voting keys, so it has no votes to filter by." = "This wallet has no masternode voting keys, so it has no votes to filter by.";
+
+/* Voting */
+"The vote was not cast. This masternode already holds this vote." = "The vote was not cast. This masternode already holds this vote.";

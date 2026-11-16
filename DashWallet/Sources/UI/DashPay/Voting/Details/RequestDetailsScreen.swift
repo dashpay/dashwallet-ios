@@ -41,7 +41,6 @@ struct RequestDetailsScreen: View {
             store: voting.store,
             normalizedLabel: normalizedLabel,
             identityId: identityId,
-            linkLookup: RequestDetailsViewModel.publishedLink,
             dateFormatter: formatter,
             openLink: { UIApplication.shared.open($0) }))
     }
@@ -56,9 +55,9 @@ struct RequestDetailsScreen: View {
             approveTitle: viewModel.approveTitle,
             isApproveEnabled: viewModel.canApprove,
             isSending: voting.isSending(normalizedLabel: viewModel.normalizedLabel),
-            isBackEnabled: !voting.store.isVoteBusy,
+            isBackEnabled: !voting.holdsScreen,
             onBack: { dismiss() },
-            onRetry: { Task { await viewModel.loadLink() } },
+            onRetry: viewModel.retryLink,
             onOpenLink: viewModel.open,
             onApprove: { voteRequest = viewModel.voteRequest() })
             .task { await viewModel.loadLink() }
@@ -71,12 +70,13 @@ struct RequestDetailsScreen: View {
             .voteFlow($voteRequest, viewModel: voting)
             // A vote started here shows its result here; leaving mid-vote
             // would take the result sheet with it. Hiding the system back
-            // button also holds the swipe-back.
-            .navigationBarBackButtonHidden(voting.store.isVoteBusy)
+            // button also holds the swipe-back. A Quick voting run is not
+            // held: it reports on the list (see VotingViewModel.holdsScreen).
+            .navigationBarBackButtonHidden(voting.holdsScreen)
             // A failed or already held vote is told here; a vote that landed is told by the list.
             .overlay(alignment: .bottom) {
                 if let toast = voting.toast, viewModel.showsToast(toast) {
-                    toast.view(onClose: voting.list.clearToast)
+                    toast.view(onClose: voting.list.clearToast(id:))
                         .padding(.horizontal, 20)
                         .padding(.bottom, 92)
                 }
@@ -119,7 +119,8 @@ struct RequestDetailsContent: View {
                         title: NSLocalizedString("Request details", comment: "Voting"),
                         mainDescription: NSLocalizedString(
                             "Review the posting below to verify the ownership of this username",
-                            comment: "Voting"))
+                            comment: "Voting"),
+                        descriptionColor: Color.dash.secondaryText)
                         .padding(.horizontal, 20)
 
                     VStack(spacing: 10) {

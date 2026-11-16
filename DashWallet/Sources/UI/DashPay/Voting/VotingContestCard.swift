@@ -164,26 +164,42 @@ struct VotingContestCard: View {
         .padding(.leading, 10)
     }
 
-    /// One request of an open several-request name: its identity (the request
-    /// details open on tap) and its own approve pill.
+    /// One request of an open several-request name: its date (its identity
+    /// when Platform gave no date; the request details open on tap), «Link
+    /// included» under it when it has one, and its own approve pill.
     private func requestRow(_ request: VotingRequestRow) -> some View {
         let choice = VoteChoice.towards(identityId: request.identityId)
         let status = Self.pillStatus(
             of: choice, isCasting: isCasting, sendingPill: sendingPill, canTap: canTapPill(choice))
         return HStack(spacing: 20) {
             Button(action: { onOpenRequest(request.identityId) }) {
-                Text(request.identityId)
-                    .dashFont(.footnote)
-                    .monospaced()
-                    .foregroundStyle(Color.dash.secondaryText)
-                    .lineLimit(1)
-                    .truncationMode(.middle)
-                    .padding(.leading, 4)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .contentShape(Rectangle())
+                VStack(alignment: .leading, spacing: 0) {
+                    if let dateText = request.dateText {
+                        // The day, then the time in a lighter colour (design 3830:20798).
+                        (Text(dateText).foregroundStyle(Color.dash.primaryText)
+                            + Text(request.timeText.map { " " + $0 } ?? "").foregroundStyle(Color.dash.tertiaryText))
+                            .dashFont(.footnote)
+                    } else {
+                        Text(request.identityId)
+                            .dashFont(.footnote)
+                            .monospaced()
+                            .foregroundStyle(Color.dash.secondaryText)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                            .accessibilityLabel(Text(request.spokenIdentity))
+                    }
+                    if request.hasLink {
+                        Text(NSLocalizedString("Link included", comment: "Voting"))
+                            .dashFont(.footnote)
+                            .foregroundStyle(Color.dash.tertiaryText)
+                    }
+                }
+                .padding(.leading, 4)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(Text(request.spokenIdentity))
+            .accessibilityElement(children: .combine)
             .accessibilityHint(NSLocalizedString("Opens the request details", comment: "Voting"))
 
             VotePill(
@@ -199,7 +215,9 @@ struct VotingContestCard: View {
                 .accessibilityHint(Self.pillAccessibilityHint(isSelected: request.isMine, status: status) ?? "")
         }
         .padding(.leading, 10)
-        .padding(.top, 8)
+        // Each request takes the design's 56 pt row: 8 pt above and below its pill.
+        .padding(.vertical, 8)
+        .frame(minHeight: 56)
     }
 
     /// A pill's look: while a vote on the contest is sent, the tapped pill is
@@ -251,11 +269,20 @@ struct VotingContestCard: View {
 // MARK: - VotingToast view
 
 extension VotingToast {
-    /// The toast as drawn, shared by the list and Request details, with the
-    /// close button that takes it away (AC-06).
-    func view(onClose: @escaping () -> Void) -> some View {
-        DashUIKit.Toast(style: style == .success ? .success : .error, message: message, onDismiss: onClose)
+    /// The toast as drawn, shared by the list and Request details: the close
+    /// button and the self-hide follow ``showsCloseButton`` and ``hidesAfter``.
+    /// `onClose` gets this toast's id, so closing it never clears a newer one.
+    func view(onClose: @escaping (ID) -> Void) -> some View {
+        DashUIKit.Toast(
+            style: style == .success ? .success : .error,
+            message: message,
+            onDismiss: showsCloseButton ? { onClose(id) } : nil)
             .id(id)
+            .task(id: id) {
+                guard let hidesAfter else { return }
+                try? await Task.sleep(for: hidesAfter)
+                if !Task.isCancelled { onClose(id) }
+            }
     }
 }
 
@@ -263,19 +290,40 @@ extension VotingToast {
 
 #if DEBUG
 private enum CardPreview {
-    static func contest(requests: Int, label: String = "johndoe") -> DPNSContest {
+    /// 12 Feb 2023 9:45 UTC, then an hour apart.
+    static let firstRequest = Date(timeIntervalSince1970: 1_676_195_100)
+
+    static func contest(requests: Int, label: String = "johndoe", dated: Bool = false) -> DPNSContest {
         DPNSContest(
             normalizedLabel: label, endTime: nil, hasWinner: false, abstainVotes: 0, lockVotes: 3,
-            contenders: (0..<requests).map { $0 + 1 }.map {
-                DPNSContender(identityId: "identity\($0)Xk3vQ9mT2pLw8RzYb5NcHf7Ud4Ea", voteTally: UInt32($0 * 2))
+            contenders: (0..<requests).map { (offset: Int) -> DPNSContender in
+                // Typed step by step: one inferred expression is too slow for CI's type checker.
+                let index = offset + 1
+                let createdAt: Date? = dated ? firstRequest.addingTimeInterval(Double(index - 1) * 3600) : nil
+                return DPNSContender(
+                    identityId: "identity\(index)Xk3vQ9mT2pLw8RzYb5NcHf7Ud4Ea",
+                    voteTally: UInt32(index * 2),
+                    createdAt: createdAt)
             })
     }
 
     static func card(
-        _ contest: DPNSContest, expanded: Bool = false, mine: Int? = nil, sending: VoteChoice? = nil
+        _ contest: DPNSContest, expanded: Bool = false, mine: Int? = nil, sending: VoteChoice? = nil,
+        linked: Set<Int> = []
     ) -> some View {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        formatter.timeZone = TimeZone(identifier: "UTC")
+        let time = DateFormatter()
+        time.dateStyle = .none
+        time.timeStyle = .short
+        time.timeZone = TimeZone(identifier: "UTC")
         let rows = contest.contenders.enumerated().map { index, contender in
-            VotingRequestRow(identityId: contender.identityId, votes: Int(contender.voteTally), isMine: index == mine)
+            VotingRequestRow(
+                identityId: contender.identityId, votes: Int(contender.voteTally), isMine: index == mine,
+                dateText: contender.createdAt.map(formatter.string(from:)),
+                timeText: contender.createdAt.map(time.string(from:)), hasLink: linked.contains(index))
         }
         let myChoices: Set<VoteChoice> = mine.map { [.towards(identityId: contest.contenders[$0].identityId)] } ?? []
         return VotingContestCard(
@@ -298,6 +346,16 @@ private enum CardPreview {
 #Preview("No requests") { CardPreview.card(CardPreview.contest(requests: 0)) }
 #Preview("Several collapsed") { CardPreview.card(CardPreview.contest(requests: 3)) }
 #Preview("Several expanded") { CardPreview.card(CardPreview.contest(requests: 3), expanded: true) }
+#Preview("Expanded, dates and links") {
+    CardPreview.card(CardPreview.contest(requests: 3, dated: true), expanded: true, linked: [0, 2])
+}
+#Preview("Expanded, one request undated") {
+    let dated = CardPreview.contest(requests: 2, dated: true)
+    let contest = DPNSContest(
+        normalizedLabel: dated.normalizedLabel, endTime: nil, hasWinner: false, abstainVotes: 0, lockVotes: 3,
+        contenders: dated.contenders + [DPNSContender(identityId: "identity3NoDateXk3vQ9mT2pLw8RzYb5", voteTally: 1)])
+    return CardPreview.card(contest, expanded: true, linked: [2])
+}
 #Preview("Sending") { CardPreview.card(CardPreview.contest(requests: 1), sending: .lock) }
 #Preview("Sending, several expanded") {
     let contest = CardPreview.contest(requests: 3)
