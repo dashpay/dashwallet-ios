@@ -16,9 +16,9 @@
     "A11Y010": 3,
     "A11Y011": 5,
     "A11Y012": 31,
-    "A11Y007": 559
+    "A11Y007": 558
   },
-  "total": 656,
+  "total": 655,
   "findings": [
     {
       "rule": "A11Y008",
@@ -1804,13 +1804,6 @@
       "fingerprint": "14af6813ff6d4295",
       "line_when_recorded": 263,
       "snippet": ".font(.system(size: 13, weight: .semibold))"
-    },
-    {
-      "rule": "A11Y007",
-      "path": "DashWallet/Sources/UI/DashPay/Voting/BulkVoteSheet.swift",
-      "fingerprint": "72f4df17cc41f548",
-      "line_when_recorded": 378,
-      "snippet": ".font(.system(size: 40))"
     },
     {
       "rule": "A11Y007",

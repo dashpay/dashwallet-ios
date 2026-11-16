@@ -310,7 +310,9 @@ final class ConnectionsViewModel: ObservableObject {
         now: @escaping () -> Date = Date.init,
         notificationCenter: NotificationCenter = .default
     ) {
-        let computedFeatureUnavailable = featureUnavailable ?? !WalletEnvironment.isTestNetwork
+        // Every network: a request is refused while the network's Platform
+        // protocol is below the one App Connect needs (14).
+        let computedFeatureUnavailable = featureUnavailable ?? false
         self.featureUnavailable = computedFeatureUnavailable
         self.usernameState = usernameState
         let username = usernameState()
@@ -1491,16 +1493,11 @@ final class ConnectionsViewModel: ObservableObject {
         }
     }
 
-    private static func defaultDataSource(featureUnavailable: Bool) -> any DashConnectDataSource {
+    static func defaultDataSource(featureUnavailable: Bool) -> any DashConnectDataSource {
         let isPreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
         if isPreview || featureUnavailable {
             return MockDashConnectDataSource()
         }
-
-        assert(
-            WalletEnvironment.isTestNetwork,
-            "DashConnect real data source must only run on testnet or devnet."
-        )
         return PlatformDashConnectDataSource()
     }
 }
