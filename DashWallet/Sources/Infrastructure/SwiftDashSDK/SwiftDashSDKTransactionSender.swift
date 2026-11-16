@@ -800,14 +800,19 @@ final class SwiftDashSDKTransactionSender: NSObject {
     /// no UTXOs) falls back to the flat reserve, i.e. the previous behaviour —
     /// the change never makes Max worse than before, only tighter when it can.
     static func maxSendFeeReserveDuffs() -> UInt64 {
-        let dynamic = readSendPool { manager, walletId, pooled -> UInt64? in
+        poolSizedSendFeeDuffs() ?? WalletBalance.sendFeeReserveDuffs
+    }
+
+    /// The pool-sized fee from `maxSendFeeReserveDuffs`, without the flat fallback: `nil` when the
+    /// accounts cannot be enumerated or hold no UTXO.
+    static func poolSizedSendFeeDuffs() -> UInt64? {
+        readSendPool { manager, walletId, pooled -> UInt64? in
             let count = pooled.reduce(0) { total, balance in
                 total + manager.accountUtxos(for: walletId, balance: balance).count
             }
             guard count > 0 else { return nil }
             return maxSendFeeReserve(forInputCount: count)
         }
-        return dynamic ?? WalletBalance.sendFeeReserveDuffs
     }
 
     /// The send pool's `confirmed` and `unconfirmed` sums over the same

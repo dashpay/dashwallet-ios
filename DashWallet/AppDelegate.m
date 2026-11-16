@@ -187,6 +187,8 @@ NS_ASSUME_NONNULL_BEGIN
     // DEBUG builds only.
     [DWSwiftDashSDKKeyMigrator debugInstallLegacyFixtureIfRequested];
 #endif
+    // Before the runtime starts, so no asset-lock row of this launch predates it.
+    [DWOwnFundingLockMarks recordStartIfNeeded];
     [DWSwiftDashSDKKeyMigrator migrateIfNeeded];
     [DWSwiftDashSDKWalletRuntime startObservingNetworkChanges];
     [DWSwiftDashSDKWalletRuntime startIfReady];

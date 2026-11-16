@@ -135,6 +135,13 @@ struct Confirmation {
     var primaryAddress: String? { recipients.first?.address }
 }
 
+/// A signed transaction for a `Confirmation`, not yet POSTed or broadcast. It carries the confirmation's
+/// single-use claim from `buildForSend` to `postAndBroadcast`.
+struct BuiltSend {
+    let confirmation: Confirmation
+    let prepared: PreparedSend
+}
+
 /// Outcome of a completed send: the tx was broadcast; the merchant round-trip was attempted.
 struct SendResult {
     /// Display-order txid hex — logging / UI / callback only (NOT the CTX authoritative txid).
@@ -166,19 +173,23 @@ final class BIP70PaymentService {
     /// When true, allow unsigned (`pki_type == "none"`) requests. Invalid SIGNED requests are
     /// always blocked regardless of this flag.
     private let allowUntrustedUnsigned: Bool
+    /// The time `postAndBroadcast` re-checks expiry against once the merchant acknowledged the Payment.
+    private let clock: () -> Date
 
     init(transport: PaymentProtocolTransporting = PaymentProtocolTransport(),
          verifier: PaymentRequestVerifier = PaymentRequestVerifier(),
          wallet: WalletSending,
          receiveAddress: ReceiveAddressProviding,
          auth: SendAuthorizing,
-         allowUntrustedUnsigned: Bool = true) {
+         allowUntrustedUnsigned: Bool = true,
+         clock: @escaping () -> Date = Date.init) {
         self.transport = transport
         self.verifier = verifier
         self.wallet = wallet
         self.receiveAddress = receiveAddress
         self.auth = auth
         self.allowUntrustedUnsigned = allowUntrustedUnsigned
+        self.clock = clock
     }
 
     // MARK: Prepare (no build, no spend)
@@ -270,6 +281,14 @@ final class BIP70PaymentService {
     func confirmAndSend(_ confirmation: Confirmation,
                         now: Date = Date(),
                         awaitAcceptance: Bool = true) async throws -> SendResult {
+        let built = try await buildForSend(confirmation, now: now)
+        return try await postAndBroadcast(built, now: now, awaitAcceptance: awaitAcceptance)
+    }
+
+    /// The first half of the send: the pre-spend checks, the single-use claim and build + sign. Nothing is
+    /// POSTed or broadcast, so a throw releases the claim and the caller can retry. The returned `BuiltSend`
+    /// holds the claim until `postAndBroadcast` consumes it.
+    func buildForSend(_ confirmation: Confirmation, now: Date = Date()) async throws -> BuiltSend {
 
         // 1. Expiry re-check at send time (the user may have lingered on the confirm screen).
         try Self.assertNotExpired(confirmation.request.details.expires, now: now)
@@ -289,6 +308,25 @@ final class BIP70PaymentService {
         do {
             let sdkRecipients = confirmation.recipients.map { (address: $0.address, amountDuffs: $0.amount) }
             prepared = try await wallet.buildSignedTransaction(recipients: sdkRecipients)
+        } catch {
+            confirmation.sendGuard.reset()
+            throw error
+        }
+        return BuiltSend(confirmation: confirmation, prepared: prepared)
+    }
+
+    /// The second half of the send: POST the Payment, then broadcast. Spends the claim `buildForSend` took.
+    /// Re-checks expiry first: Confirm builds when it opens and this runs at the tap, so the request may have
+    /// expired in between. An expired request releases the claim with nothing POSTed or broadcast. Checks it again
+    /// by `clock` once the merchant acknowledged the Payment: a request that expired during the POST is not
+    /// broadcast, and as the merchant holds the signed bytes it throws `failedAfterAcknowledgement`.
+    func postAndBroadcast(_ built: BuiltSend, now: Date = Date(),
+                          awaitAcceptance: Bool = true) async throws -> SendResult {
+        let confirmation = built.confirmation
+        let prepared = built.prepared
+
+        do {
+            try Self.assertNotExpired(confirmation.request.details.expires, now: now)
         } catch {
             confirmation.sendGuard.reset()
             throw error
@@ -320,6 +358,12 @@ final class BIP70PaymentService {
                     txHashDisplay: prepared.txHashDisplay,
                     reason: (error as? BIP70Error)?.errorDescription ?? error.localizedDescription)
             }
+            do {
+                try Self.assertNotExpired(confirmation.request.details.expires, now: clock())
+            } catch {
+                throw BIP70Error.failedAfterAcknowledgement(
+                    txHashDisplay: prepared.txHashDisplay, reason: error.localizedDescription)
+            }
         }
 
         // 6. Broadcast. From this point the guard is never reset — see the invariant above.
@@ -331,7 +375,17 @@ final class BIP70PaymentService {
 
         let txidHexDisplay: String
         if awaitAcceptance || !acknowledged {
-            txidHexDisplay = try await wallet.broadcast(prepared)
+            do {
+                txidHexDisplay = try await wallet.broadcast(prepared)
+            } catch let error as BIP70Error {
+                throw error
+            } catch {
+                // After the merchant's ACK any broadcast error leaves the spend committed, so type it
+                // as such instead of letting the underlying error's own kind decide the outcome.
+                guard acknowledged else { throw error }
+                throw BIP70Error.failedAfterAcknowledgement(
+                    txHashDisplay: prepared.txHashDisplay, reason: error.localizedDescription)
+            }
         } else {
             // The merchant already acknowledged the signed bytes, so the spend is committed
             // whatever the network verdict turns out to be. Hand the broadcast off and report
