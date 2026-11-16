@@ -38,15 +38,11 @@ class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
             return
         }
 
-        lastQuery = query
-        lastUserPoint = userPoint
-        lastBounds = bounds
-        lastFilters = filters
-
         // ALL TAB: Never filter by bounds - show ALL merchants regardless of location.
         // userPoint is still passed so each merchant is represented by its closest location.
         fetch(by: query, in: nil, userPoint: userPoint, with: filters, offset: 0) { [weak self] result in
-            self?.handle(result: result, completion: completion)
+            self?.handleFirstPage(result: result, query: query, bounds: bounds, userPoint: userPoint, filters: filters,
+                                  completion: completion)
         }
     }
 
@@ -100,13 +96,9 @@ class NearbyMerchantsDataProvider: PointOfUseDataProvider {
             return
         }
 
-        lastQuery = query
-        lastUserPoint = userPoint
-        lastBounds = bounds
-        lastFilters = filters
-
         fetch(by: query, in: bounds, userPoint: userLocation, with: filters, offset: 0) { [weak self] result in
-            self?.handle(result: result, completion: completion)
+            self?.handleFirstPage(result: result, query: query, bounds: bounds, userPoint: userPoint, filters: filters,
+                                  completion: completion)
         }
     }
 
@@ -137,12 +129,10 @@ class OnlineMerchantsDataProvider: PointOfUseDataProvider {
             return
         }
 
-        lastQuery = query
-        lastUserPoint = userPoint
-        lastFilters = filters
-
         fetch(by: query, onlineOnly: true, userPoint: userPoint, with: filters, offset: 0) { [weak self] result in
-            self?.handle(result: result, completion: completion)
+            // Online rows ignore the map, so no bounds are recorded.
+            self?.handleFirstPage(result: result, query: query, bounds: nil, userPoint: userPoint, filters: filters,
+                                  completion: completion)
         }
     }
 

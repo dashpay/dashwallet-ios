@@ -73,6 +73,23 @@ class PointOfUseDataProvider {
         // NOTE: must be overriden
     }
 
+    /// Handles a first page and records the parameters it answered together
+    /// with its rows. Recording them only when the rows land keeps the cache
+    /// check and paging from pairing one request's parameters with an earlier
+    /// request's rows while it is still in flight.
+    internal func handleFirstPage(result: Swift.Result<PaginationResult<ExplorePointOfUse>, Error>,
+                                  query: String?, bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
+                                  filters: PointOfUseListFilters?,
+                                  completion: (Result<[ExplorePointOfUse], Error>) -> Void) {
+        if case .success = result {
+            lastQuery = query
+            lastUserPoint = userPoint
+            lastBounds = bounds
+            lastFilters = filters
+        }
+        handle(result: result, completion: completion)
+    }
+
     internal func handle(result: Swift.Result<PaginationResult<ExplorePointOfUse>, Error>, appending: Bool = false,
                          completion: (Result<[ExplorePointOfUse], Error>) -> Void) {
         switch result {
@@ -119,6 +136,8 @@ struct PointOfUseListSegment: Hashable {
 final class PointOfUseListModel {
     internal var lastQuery: String?
     internal var isFetching = false
+    /// Numbers each request; see `beginRequest()`.
+    private var requestGeneration = 0
 
     var items: [ExplorePointOfUse] = []
     var itemsDidChange: (() -> Void)?
@@ -251,62 +270,64 @@ extension PointOfUseListModel {
     }
 
     internal func _fetch(query: String?) {
-        let segment = currentSegment
-        isFetching = true
-        DispatchQueue.main.async { [weak self] in
-            self?.fetchingStateDidChange?()
-        }
+        let request = beginRequest()
         currentDataProvider?
             .items(query: query, in: currentMapBounds, userPoint: userCoordinates, with: filters) { [weak self] result in
-                guard self?.currentSegment == segment else { return }
+                DispatchQueue.main.async {
+                    guard let self, self.isLatest(request) else { return }
 
-                switch result {
-                case .success(let items):
-                    DispatchQueue.main.async {
-                        self?.items = items
-                        self?.isFetching = false
-                        self?.fetchingStateDidChange?()
-                        self?.itemsDidChange?()
+                    switch result {
+                    case .success(let items):
+                        self.items = items
+                        self.endRequest()
+                        self.itemsDidChange?()
+                    case .failure:
+                        // TODO(explore-errors): a failed fetch keeps the previous rows and shows no error.
+                        self.endRequest()
                     }
-                    break
-                case .failure:
-                    DispatchQueue.main.async {
-                        self?.isFetching = false
-                        self?.fetchingStateDidChange?()
-                    }
-                    break // TODO: handler failure
                 }
             }
     }
 
     public func fetchNextPage() {
-        let segment = currentSegment
+        let request = beginRequest()
+        currentDataProvider?.nextPage { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self, self.isLatest(request) else { return }
+
+                switch result {
+                case .success(let items):
+                    let offset = self.items.count
+                    self.items += items
+                    self.endRequest()
+                    self.nextPageDidLoaded?(offset, items.count)
+                case .failure:
+                    // TODO(explore-errors): a failed page shows no error.
+                    self.endRequest()
+                }
+            }
+        }
+    }
+
+    /// Starts a request that supersedes every one still in flight: a segment
+    /// switch, a new search, a map move or a page. Only the latest request's
+    /// response is applied, so an earlier one that lands late can neither
+    /// overwrite newer rows nor end the loading state early.
+    private func beginRequest() -> Int {
+        requestGeneration += 1
         isFetching = true
         DispatchQueue.main.async { [weak self] in
             self?.fetchingStateDidChange?()
         }
-        currentDataProvider?.nextPage { [weak self] result in
-            guard self?.currentSegment == segment else { return }
+        return requestGeneration
+    }
 
-            switch result {
-            case .success(let items):
-                let offset = self?.items.count ?? 0
-                let count = items.count
+    private func endRequest() {
+        isFetching = false
+        fetchingStateDidChange?()
+    }
 
-                DispatchQueue.main.async {
-                    self?.items += items
-                    self?.isFetching = false
-                    self?.fetchingStateDidChange?()
-                    self?.nextPageDidLoaded?(offset, count)
-                }
-                break
-            case .failure:
-                DispatchQueue.main.async {
-                    self?.isFetching = false
-                    self?.fetchingStateDidChange?()
-                }
-                break // TODO: handler failure
-            }
-        }
+    private func isLatest(_ request: Int) -> Bool {
+        request == requestGeneration
     }
 }

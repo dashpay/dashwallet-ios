@@ -340,6 +340,67 @@ final class PointOfUseListViewModelTests: XCTestCase {
         await fulfillment(of: [cleared], timeout: 3)
     }
 
+    // MARK: - Stale responses
+
+    func testALateResponseDoesNotReplaceNewerRows() async {
+        let provider = DeferredDataProvider()
+        let viewModel = makeViewModel(segments: [segment(tag: 0, provider: provider)])
+        viewModel.search(query: "newer")
+
+        provider.completeFirstPage(1, with: [atm(2)])
+        provider.completeFirstPage(0, with: [atm(1)])
+        await drainMainQueue()
+
+        XCTAssertEqual(viewModel.items.map(\.id), [2])
+    }
+
+    /// An earlier empty response does not end the loading state, so "no
+    /// results" does not flash while the newer request is still running.
+    func testALateResponseDoesNotEndLoading() async {
+        let provider = DeferredDataProvider()
+        let viewModel = makeViewModel(segments: [segment(tag: 0, provider: provider)],
+                                      initialFilters: .defaults(sortBy: .name))
+        viewModel.search(query: "newer")
+
+        provider.completeFirstPage(0, with: [])
+        await drainMainQueue()
+
+        XCTAssertFalse(viewModel.showsEmptyResults)
+    }
+
+    func testAPageThatLandsAfterANewSearchIsDropped() async {
+        let provider = DeferredDataProvider()
+        let viewModel = makeViewModel(segments: [segment(tag: 0, provider: provider)])
+        provider.completeFirstPage(0, with: [atm(1)])
+        await drainMainQueue()
+        viewModel.fetchNextPage()
+        viewModel.search(query: "newer")
+
+        provider.completeFirstPage(1, with: [atm(5)])
+        provider.completeNextPage(0, with: [atm(2)])
+        await drainMainQueue()
+
+        XCTAssertEqual(viewModel.items.map(\.id), [5])
+    }
+
+    /// A provider records the parameters of a request only with its rows, so
+    /// an identical request made while the first is in flight is not answered
+    /// from the previous request's rows.
+    func testAProviderRecordsParametersOnlyWithItsRows() {
+        let provider = PointOfUseDataProvider()
+        let page = PaginationResult<ExplorePointOfUse>(items: [atm(1)], offset: 0)
+
+        provider.handleFirstPage(result: .failure(StubError()), query: "q", bounds: bounds, userPoint: nil,
+                                 filters: nil) { _ in }
+        XCTAssertNil(provider.lastQuery)
+
+        provider.handleFirstPage(result: .success(page), query: "q", bounds: bounds, userPoint: nil,
+                                 filters: nil) { _ in }
+        XCTAssertEqual(provider.lastQuery, "q")
+        XCTAssertEqual(provider.lastBounds, bounds)
+        XCTAssertEqual(provider.items.map(\.id), [1])
+    }
+
     // MARK: - Helpers
 
     private let bounds = ExploreMapBounds(rect: MKMapRect(x: 0, y: 0, width: 1000, height: 1000))
@@ -363,6 +424,14 @@ final class PointOfUseListViewModelTests: XCTestCase {
                                        notificationCenter: notificationCenter)
     }
 
+    /// Responses reach the list through `DispatchQueue.main.async`; this
+    /// returns once everything queued before it has run.
+    private func drainMainQueue() async {
+        let drained = expectation(description: "main queue drained")
+        DispatchQueue.main.async { drained.fulfill() }
+        await fulfillment(of: [drained], timeout: 2)
+    }
+
     private func waitForReplacedList(of viewModel: PointOfUseListViewModel) async {
         let replaced = expectation(description: "list replaced")
         viewModel.listUpdates
@@ -377,7 +446,7 @@ final class PointOfUseListViewModelTests: XCTestCase {
                          showMap: Bool = true,
                          sortOptions: [PointOfUseListFilters.SortBy] = [.name, .distance],
                          items: [ExplorePointOfUse] = [],
-                         provider: StubDataProvider? = nil) -> PointOfUseListSegment {
+                         provider: PointOfUseDataProvider? = nil) -> PointOfUseListSegment {
         PointOfUseListSegment(tag: tag,
                               title: "Segment \(tag)",
                               showMap: showMap,
@@ -434,6 +503,32 @@ private final class StubDataProvider: PointOfUseDataProvider {
         completion(.success(stubNextPage))
     }
 }
+
+/// Holds every request until the test answers it, in any order.
+private final class DeferredDataProvider: PointOfUseDataProvider {
+    private var firstPages: [(Result<[ExplorePointOfUse], Error>) -> Void] = []
+    private var nextPages: [(Result<[ExplorePointOfUse], Error>) -> Void] = []
+
+    override func items(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
+                        with filters: PointOfUseListFilters?,
+                        completion: @escaping (Result<[ExplorePointOfUse], Error>) -> Void) {
+        firstPages.append(completion)
+    }
+
+    override func nextPage(completion: @escaping (Result<[ExplorePointOfUse], Error>) -> Void) {
+        nextPages.append(completion)
+    }
+
+    func completeFirstPage(_ index: Int, with items: [ExplorePointOfUse]) {
+        firstPages[index](.success(items))
+    }
+
+    func completeNextPage(_ index: Int, with items: [ExplorePointOfUse]) {
+        nextPages[index](.success(items))
+    }
+}
+
+private struct StubError: Error { }
 
 private final class StubLocationService: PointOfUseLocationService {
     var isAuthorized = false

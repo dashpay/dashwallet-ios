@@ -84,14 +84,10 @@ class AllMerchantLocationsDataProvider: PointOfUseDataProvider {
             return
         }
 
-        lastQuery = query
-        lastUserPoint = userPoint
-        lastBounds = bounds
-        lastFilters = filters
-
         refreshTotalCount(in: bounds, userPoint: userPoint) { [weak self] in
             self?.fetch(by: query, in: bounds, userPoint: userPoint, with: filters, offset: 0) { result in
-                self?.handle(result: result, completion: completion)
+                self?.handleFirstPage(result: result, query: query, bounds: bounds, userPoint: userPoint, filters: filters,
+                                      completion: completion)
             }
         }
     }
