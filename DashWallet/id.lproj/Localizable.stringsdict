@@ -170,20 +170,6 @@
 			<string>%d evonode</string>
 		</dict>
 	</dict>
-	<key>%u votes in total</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>u</string>
-			<key>other</key>
-			<string>%u suara secara keseluruhan</string>
-		</dict>
-	</dict>
 	<key>%d masternodes</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -196,20 +182,6 @@
 			<string>d</string>
 			<key>other</key>
 			<string>%d masternode</string>
-		</dict>
-	</dict>
-	<key>%d selected</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>other</key>
-			<string>%d dipilih</string>
 		</dict>
 	</dict>
 	<key>%d of your nodes already voted here and are not listed.</key>
@@ -238,20 +210,6 @@
 			<string>u</string>
 			<key>other</key>
 			<string>%u suara per sengketa — evonode dihitung 4, masternode 1</string>
-		</dict>
-	</dict>
-	<key>Vote on %d usernames</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>other</key>
-			<string>Beri suara untuk %d nama pengguna</string>
 		</dict>
 	</dict>
 	<key>%u votes</key>

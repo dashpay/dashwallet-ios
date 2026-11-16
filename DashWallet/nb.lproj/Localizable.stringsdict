@@ -194,22 +194,6 @@
 			<string>%d evonoder</string>
 		</dict>
 	</dict>
-	<key>%u votes in total</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>u</string>
-			<key>one</key>
-			<string>%u stemme totalt</string>
-			<key>other</key>
-			<string>%u stemmer totalt</string>
-		</dict>
-	</dict>
 	<key>%d masternodes</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -224,22 +208,6 @@
 			<string>%d masternode</string>
 			<key>other</key>
 			<string>%d masternoder</string>
-		</dict>
-	</dict>
-	<key>%d selected</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>%d valgt</string>
-			<key>other</key>
-			<string>%d valgt</string>
 		</dict>
 	</dict>
 	<key>%d of your nodes already voted here and are not listed.</key>
@@ -272,22 +240,6 @@
 			<string>%u stemme per tvist — evonoder teller som 4, masternoder som 1</string>
 			<key>other</key>
 			<string>%u stemmer per tvist — evonoder teller som 4, masternoder som 1</string>
-		</dict>
-	</dict>
-	<key>Vote on %d usernames</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>Stem over %d brukernavn</string>
-			<key>other</key>
-			<string>Stem over %d brukernavn</string>
 		</dict>
 	</dict>
 	<key>%u votes</key>

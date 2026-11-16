@@ -242,26 +242,6 @@
 			<string>%d evonoda</string>
 		</dict>
 	</dict>
-	<key>%u votes in total</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>u</string>
-			<key>one</key>
-			<string>łącznie %u głos</string>
-			<key>few</key>
-			<string>łącznie %u głosy</string>
-			<key>many</key>
-			<string>łącznie %u głosów</string>
-			<key>other</key>
-			<string>łącznie %u głosu</string>
-		</dict>
-	</dict>
 	<key>%d masternodes</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -280,26 +260,6 @@
 			<string>%d masternodów</string>
 			<key>other</key>
 			<string>%d masternoda</string>
-		</dict>
-	</dict>
-	<key>%d selected</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>%d wybrany</string>
-			<key>few</key>
-			<string>%d wybrane</string>
-			<key>many</key>
-			<string>%d wybranych</string>
-			<key>other</key>
-			<string>%d wybranego</string>
 		</dict>
 	</dict>
 	<key>%d of your nodes already voted here and are not listed.</key>
@@ -340,26 +300,6 @@
 			<string>%u głosów na spór — evonody liczą się jako 4, masternody jako 1</string>
 			<key>other</key>
 			<string>%u głosu na spór — evonody liczą się jako 4, masternody jako 1</string>
-		</dict>
-	</dict>
-	<key>Vote on %d usernames</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>Głosuj nad %d nazwą użytkownika</string>
-			<key>few</key>
-			<string>Głosuj nad %d nazwami użytkowników</string>
-			<key>many</key>
-			<string>Głosuj nad %d nazwami użytkowników</string>
-			<key>other</key>
-			<string>Głosuj nad %d nazwami użytkowników</string>
 		</dict>
 	</dict>
 	<key>%u votes</key>

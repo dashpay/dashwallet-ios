@@ -194,22 +194,6 @@
 			<string>%d evonodes</string>
 		</dict>
 	</dict>
-	<key>%u votes in total</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>u</string>
-			<key>one</key>
-			<string>%u stem in totaal</string>
-			<key>other</key>
-			<string>%u stemmen in totaal</string>
-		</dict>
-	</dict>
 	<key>%d masternodes</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -224,22 +208,6 @@
 			<string>%d masternode</string>
 			<key>other</key>
 			<string>%d masternodes</string>
-		</dict>
-	</dict>
-	<key>%d selected</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>%d geselecteerd</string>
-			<key>other</key>
-			<string>%d geselecteerd</string>
 		</dict>
 	</dict>
 	<key>%d of your nodes already voted here and are not listed.</key>
@@ -272,22 +240,6 @@
 			<string>%u stem per geschil — evonodes tellen als 4, masternodes als 1</string>
 			<key>other</key>
 			<string>%u stemmen per geschil — evonodes tellen als 4, masternodes als 1</string>
-		</dict>
-	</dict>
-	<key>Vote on %d usernames</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>Stemmen over %d gebruikersnaam</string>
-			<key>other</key>
-			<string>Stemmen over %d gebruikersnamen</string>
 		</dict>
 	</dict>
 	<key>%u votes</key>

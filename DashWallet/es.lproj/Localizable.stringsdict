@@ -206,22 +206,6 @@
 			<string>%d evonodes</string>
 		</dict>
 	</dict>
-	<key>%u votes in total</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>u</string>
-			<key>one</key>
-			<string>%u voto en total</string>
-			<key>other</key>
-			<string>%u votos en total</string>
-		</dict>
-	</dict>
 	<key>%d masternodes</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -236,22 +220,6 @@
 			<string>%d masternode</string>
 			<key>other</key>
 			<string>%d masternodes</string>
-		</dict>
-	</dict>
-	<key>%d selected</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>%d seleccionado</string>
-			<key>other</key>
-			<string>%d seleccionados</string>
 		</dict>
 	</dict>
 	<key>%d of your nodes already voted here and are not listed.</key>
@@ -284,22 +252,6 @@
 			<string>%u voto por disputa: los evonodes cuentan como 4 y los masternodes como 1</string>
 			<key>other</key>
 			<string>%u votos por disputa: los evonodes cuentan como 4 y los masternodes como 1</string>
-		</dict>
-	</dict>
-	<key>Vote on %d usernames</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>Votar sobre %d nombre de usuario</string>
-			<key>other</key>
-			<string>Votar sobre %d nombres de usuario</string>
 		</dict>
 	</dict>
 	<key>%u votes</key>

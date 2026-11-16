@@ -35,8 +35,6 @@ struct VotingContestCard: View {
     let myChoices: Set<VoteChoice>
     /// A vote on this contest is being sent.
     let isCasting: Bool
-    /// Show when voting ends on the card: the list is not grouped by end day.
-    var showsDeadline = false
     /// Whether a tap on this choice may start a vote (it may lead to the key flow).
     let canStartVote: (VoteChoice) -> Bool
     let onVote: (VoteChoice) -> Void
@@ -79,9 +77,6 @@ struct VotingContestCard: View {
                             contest.contenders.count))
                             .dashFont(.footnote)
                             .foregroundStyle(Color.dash.tertiaryText)
-                    }
-                    if showsDeadline {
-                        ContestDeadlineLabel(endTime: contest.endTime)
                     }
                     // A vote no pill on this row carries (an approve on a
                     // several-request name, an abstain anywhere): say it, so

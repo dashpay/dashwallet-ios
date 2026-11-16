@@ -194,22 +194,6 @@
 			<string>%d requests</string>
 		</dict>
 	</dict>
-	<key>%d selected</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>%d selected</string>
-			<key>other</key>
-			<string>%d selected</string>
-		</dict>
-	</dict>
 	<key>%d transaction(s)</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -274,22 +258,6 @@
 			<string>%1$u votes</string>
 		</dict>
 	</dict>
-	<key>%u votes in total</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>u</string>
-			<key>one</key>
-			<string>%u vote in total</string>
-			<key>other</key>
-			<string>%u votes in total</string>
-		</dict>
-	</dict>
 	<key>%u votes per contest — evonodes count as 4, masternodes as 1</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -320,22 +288,6 @@
 			<string>Cast %u vote</string>
 			<key>other</key>
 			<string>Cast %u votes</string>
-		</dict>
-	</dict>
-	<key>Vote on %d usernames</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>Vote on %d username</string>
-			<key>other</key>
-			<string>Vote on %d usernames</string>
 		</dict>
 	</dict>
 	<key>Vote ×%d</key>

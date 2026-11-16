@@ -194,22 +194,6 @@
 			<string>%d evonodea</string>
 		</dict>
 	</dict>
-	<key>%u votes in total</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>u</string>
-			<key>one</key>
-			<string>%u ääni yhteensä</string>
-			<key>other</key>
-			<string>%u ääntä yhteensä</string>
-		</dict>
-	</dict>
 	<key>%d masternodes</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -224,22 +208,6 @@
 			<string>%d masternode</string>
 			<key>other</key>
 			<string>%d masternodea</string>
-		</dict>
-	</dict>
-	<key>%d selected</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>%d valittu</string>
-			<key>other</key>
-			<string>%d valittu</string>
 		</dict>
 	</dict>
 	<key>%d of your nodes already voted here and are not listed.</key>
@@ -272,22 +240,6 @@
 			<string>%u ääni kiistaa kohden — evonodet lasketaan neljäksi, masternodet yhdeksi</string>
 			<key>other</key>
 			<string>%u ääntä kiistaa kohden — evonodet lasketaan neljäksi, masternodet yhdeksi</string>
-		</dict>
-	</dict>
-	<key>Vote on %d usernames</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>Äänestä %d käyttäjätunnuksesta</string>
-			<key>other</key>
-			<string>Äänestä %d käyttäjätunnuksesta</string>
 		</dict>
 	</dict>
 	<key>%u votes</key>
