@@ -41,14 +41,18 @@ one-scan login possible, and with it DashConnect on mainnet once mainnet runs pr
   and the result says how many there were. Keys it could not check, keys another app of the same
   owner may hold, and keys still live after a failed write are left on and named in the result; a
   failure keeps the row and Disconnect can run again.
-- **Mainnet stays off** in this change: the Connections page uses its mock data source there.
+- **DashConnect on mainnet.** The Connections page uses the real data source on every network. A
+  request on a network below protocol 14 is refused; on mainnet a `dash-key:` v2 code is refused and
+  a `dashpay://connect` request is answered
+  ([ADR-0053](../../adr/0053-open-dashconnect-on-mainnet-and-gate-each-request-by-protocol-14.md)).
 - **App Connect request v2** ([#1210](https://github.com/dashpay/dashwallet-ios/pull/1210)). A `v=2`
   code can name up to four auth bindings (a contract, a contract group or one document type) and
   two encryption bindings, each with the limits the app proposes. The wallet checks the request
   against Platform (who owns each contract, the identity hint), clamps the limits, derives one key
   per binding, and registers them in one identity update that also turns off the keys of its
   earlier grant on the same connection. The keys are published sealed on the App Connect contract,
-  and the app's callback opens after the user answers. A v2 code for mainnet is refused.
+  and the app's callback opens after the user answers. A `dash-key:` v2 code for mainnet is refused; a
+  `dashpay://connect` one is answered ([ADR-0053](../../adr/0053-open-dashconnect-on-mainnet-and-gate-each-request-by-protocol-14.md)).
   [ADR-0009](../../adr/0009-answer-app-connect-request-v2-with-wallet-derived-keys-under-wallet-limits.md).
 
 - **Connection states and disconnect** ([#1334](https://github.com/dashpay/dashwallet-ios/pull/1334)).
@@ -90,6 +94,5 @@ The later DashConnect PRs build on this one. Each of them adds its own ADRs to t
   [#1278](https://github.com/dashpay/dashwallet-ios/pull/1278),
   [#1293](https://github.com/dashpay/dashwallet-ios/pull/1293),
   [#1289](https://github.com/dashpay/dashwallet-ios/pull/1289)).
-- Turning DashConnect on for mainnet.
 
 The screens follow the design canon in [`docs/design-system.md`](../../design-system.md).
