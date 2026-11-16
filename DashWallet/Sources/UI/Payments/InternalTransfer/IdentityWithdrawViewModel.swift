@@ -79,12 +79,16 @@ final class IdentityWithdrawViewModel: ObservableObject {
     /// - `.platform`: IdentityCreditTransferToAddresses to one address —
     ///   `credit_transfer_to_addresses` (500,000) plus one
     ///   `address_funds_transfer_output_cost` (6,000,000).
-    static func minimumFeeCredits(target: IdentityWithdrawalTarget) -> UInt64 {
+    nonisolated static func minimumFeeCredits(target: IdentityWithdrawalTarget) -> UInt64 {
         switch target {
         case .transparent: return 400_000_000
         case .platform: return 500_000 + 6_000_000
         }
     }
+
+    /// Platform's minimum fee for an IdentityCreditTransfer to another identity, mirroring
+    /// `STATE_TRANSITION_MIN_FEES_VERSION1` `credit_transfer` (100,000 credits).
+    static let identityCreditTransferMinimumFeeCredits: UInt64 = 100_000
 
     /// Held back from the identity balance so the transition can pay its own
     /// fee, which is charged to the identity on top of the amount. Must be at
@@ -204,20 +208,31 @@ final class IdentityWithdrawViewModel: ObservableObject {
         guard let destination = PlatformAddressSyncCoordinator.shared
             .derivedAddresses.nextReceiveAddress?.address,
             !destination.isEmpty,
-            let storageBytes = AddressTransformer.parseBech32mAddress(destination),
-            storageBytes.count == 21 else {
+            let recipient = PlatformAddressCreditOutput(
+                bech32mAddress: destination, credits: amountCredits, onMainnet: WalletEnvironment.isMainnet) else {
             // Typed so the generic catch surfaces THIS message instead of
             // overwriting it with an unrelated one.
             throw WithdrawError.noPlatformReceiveAddress
         }
-        let recipient = PlatformAddressCreditOutput(
-            addressType: storageBytes[storageBytes.startIndex],
-            hash: Data(storageBytes.dropFirst()),
-            credits: amountCredits)
         try await wallet.transferCreditsToAddresses(
             fromIdentityId: identityId,
             recipients: [recipient],
             signer: signer)
         Task { await PlatformAddressSyncCoordinator.shared.syncNow() }
+    }
+}
+
+extension PlatformAddressCreditOutput {
+    /// A Platform address in bech32m as the 21 storage bytes the SDK takes: the first is the address type, the rest the
+    /// 20-byte hash. Nil when the text is not such an address, or when its network is not the running one
+    /// (`onMainnet`).
+    init?(bech32mAddress: String, credits: UInt64, onMainnet: Bool) {
+        guard DashAddressClassifier.decodeBech32m(bech32mAddress)?.isMainnet == onMainnet,
+              let storageBytes = AddressTransformer.parseBech32mAddress(bech32mAddress),
+              storageBytes.count == 21 else { return nil }
+        self.init(
+            addressType: storageBytes[storageBytes.startIndex],
+            hash: Data(storageBytes.dropFirst()),
+            credits: credits)
     }
 }

@@ -823,6 +823,16 @@ extension TxDetailModel {
         AssetLockRecoveryService.statusAllowsRetry(statusRaw)
     }
 
+    /// Whether a retry of this lock reaches the network. The resume of a Core → Platform lock (4) whose recipient
+    /// cannot be established refuses before the PIN (`checkResumable` throws, `CoreFundingRecipientCheck`), so such a
+    /// lock is not offered a retry. Other funding types pass.
+    static func recoveryKnowsRecipient(
+        fundingTypeRaw: Int, txidWire: Data, vout: UInt32, checkResumable: (Data, UInt32) throws -> Void
+    ) -> Bool {
+        guard fundingTypeRaw == 4 else { return true }
+        return (try? checkResumable(txidWire, vout)) != nil
+    }
+
     struct StuckAssetLockRetry {
         let fundingTypeRaw: Int
         let statusRaw: Int
@@ -982,7 +992,15 @@ extension TxDetailModel {
             ?? ShieldedTxLookup.shared.info(forTxidHex: transactionId)
         guard let info,
               Self.statusAllowsRetry(info.statusRaw),
-              AssetLockRecoveryService.supportsRetry(fundingTypeRaw: info.fundingTypeRaw)
+              AssetLockRecoveryService.supportsRetry(fundingTypeRaw: info.fundingTypeRaw),
+              Self.recoveryKnowsRecipient(
+                  fundingTypeRaw: info.fundingTypeRaw, txidWire: transaction.txHashData, vout: info.vout,
+                  checkResumable: { txidWire, vout in
+                      try MainActor.assumeIsolated {
+                          try PlatformAddressSyncCoordinator.shared.checkFundFromCoreResumable(
+                              outPointTxid: txidWire, outPointVout: vout)
+                      }
+                  })
         else { return nil }
         return StuckAssetLockRetry(
             fundingTypeRaw: info.fundingTypeRaw,
