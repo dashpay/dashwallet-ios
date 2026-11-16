@@ -10,9 +10,8 @@ import SwiftDashSDK
 extension AppConnect {
     // MARK: Limits (profile wallet rule 5)
 
-    /// The most budget the wallet grants a key the app proposes a budget
-    /// for. A binding that asks for none gets none, and the sheet says the
-    /// key can spend without a limit.
+    /// The most a connection's funding limit can be; every key's budget comes
+    /// out of it (`AppConnect.keyBudgets`).
     static let v2BudgetCapCredits: UInt64 = 5 * PlatformCreditsFormatter.creditsPerDash
     /// The longest a key the wallet grants may live.
     static let v2LifetimeCap: TimeInterval = 365 * 24 * 60 * 60
@@ -61,7 +60,8 @@ extension AppConnect {
         /// derivation, so the key does not depend on what else is granted.
         let bindingIndex: Int
         let binding: AppConnectRequest.AuthBinding
-        /// Set exactly when the binding asked for a budget.
+        /// Set when the binding asked for a budget, and on every key once the
+        /// user's terms are applied (`AppConnect.applying(_:to:now:)`).
         let totalBudget: UInt64?
         /// Block time in milliseconds. Always set.
         let expiresAt: UInt64
@@ -214,18 +214,14 @@ extension AppConnect {
         let appId: Data
         /// `hash160(appEphPub)`: names the request the plan was made for.
         let appEphemeralPubKeyHash: Data
-        let auth: [AuthGrant]
+        /// Set from the request, then from what the user chose on the sheet
+        /// (`AppConnect.applying(_:to:now:)`).
+        var auth: [AuthGrant]
         let encryption: [EncryptionGrant]
         let connectionId: Data?
         let identityHint: Data?
         /// Milliseconds since the epoch.
         let createdAt: UInt64
-        /// Where the wallet returns when it is done; shown on the sheet.
-        let callbackHost: String?
-        /// The app's website in the wallet's brand map, or nil for an app the
-        /// wallet does not know: then the name on the sheet is the one the
-        /// request gives.
-        var brandHost: String? = nil
         /// The groups among the bindings that have administrators besides
         /// their owner, as Platform proves them. Each administrator can add
         /// contracts of its own to the group, and a group key acts in every
@@ -235,6 +231,9 @@ extension AppConnect {
         /// How the app's contract keeps the current key of each encryption
         /// purpose asked, as Platform proves the contract.
         var currentKeyRules: [KeyPurpose: CurrentKeyRule] = [:]
+        /// The proved Platform block time, in milliseconds, the plan was
+        /// made at: the clock its expiries are set from and checked by.
+        var platformTimeMs: UInt64? = nil
 
         /// The largest budget among the keys, for the summary line.
         var totalBudget: UInt64? {
@@ -339,36 +338,8 @@ extension AppConnect {
             connectionId: request.connectionId,
             identityHint: request.identityHint,
             createdAt: request.createdAt,
-            callbackHost: uri.callback?.host
+            platformTimeMs: blockTimeMs
         )
-    }
-
-    /// What the sheet warns about where a request came from.
-    enum OriginWarning: Equatable {
-        /// The app is not in the wallet's brand map: its name comes from the
-        /// request alone.
-        case unknownApp
-        /// A known app's request carries no callback.
-        case noCallback(website: String)
-        /// A known app's request returns to a host that is not its website.
-        case returnsElsewhere(callbackHost: String)
-    }
-
-    /// The request itself proves nothing about where it came from: anyone
-    /// can put the app's id and the app's host in a QR code. The brand map
-    /// only names an app and never changes which requests are accepted
-    /// (dips#181, App Identity), so what does not agree with it is a
-    /// warning on the sheet, never a refusal.
-    static func originWarning(callbackHost: String?, brandHost: String?) -> OriginWarning? {
-        guard let brandHost else { return .unknownApp }
-        guard let callbackHost else { return .noCallback(website: brandHost) }
-        return isHost(callbackHost, of: brandHost) ? nil : .returnsElsewhere(callbackHost: callbackHost)
-    }
-
-    /// Whether `host` is `brandHost` or one of its subdomains. Both are
-    /// lowercase DNS names: the callback parser takes no other host.
-    static func isHost(_ host: String, of brandHost: String) -> Bool {
-        host == brandHost || host.hasSuffix("." + brandHost)
     }
 
     /// Wallet rule 3, owner consistency, from what the network says:
@@ -925,5 +896,9 @@ extension AppConnect {
     static func expiry(after lifetime: TimeInterval, from blockTimeMs: UInt64) -> UInt64 {
         let (sum, overflow) = blockTimeMs.addingReportingOverflow(UInt64(lifetime * 1000))
         return overflow ? .max : sum
+    }
+
+    static func milliseconds(_ date: Date) -> UInt64 {
+        UInt64(max(0, (date.timeIntervalSince1970 * 1000).rounded()))
     }
 }
