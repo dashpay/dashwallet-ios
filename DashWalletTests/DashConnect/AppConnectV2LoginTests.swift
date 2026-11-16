@@ -1119,8 +1119,8 @@ final class AppConnectConnectionTermsTests: XCTestCase {
     }
 
     func testTheSheetOpensAtTheEarliestExpiryOfThePlan() {
-        var plan = Self.plan(budgets: [1000, 1000], expiresAt: Self.platformTime + 2 * Self.hour)
-        plan.auth[1].expiresAt = Self.platformTime + Self.hour
+        var plan = Self.plan(budgets: [1000], expiresAt: Self.platformTime + 2 * Self.hour)
+        plan.auth += Self.plan(budgets: [1000], expiresAt: Self.platformTime + Self.hour).auth
 
         XCTAssertEqual(AppConnect.defaultTerms(for: plan, now: Self.now).expiresAt, Self.platformTime + Self.hour)
     }
@@ -1133,8 +1133,8 @@ final class AppConnectConnectionTermsTests: XCTestCase {
         let applied = try XCTUnwrap(
             AppConnect.applying(AppConnect.ConnectionTerms(fundingLimit: limit, expiresAt: expiry), to: plan, now: Self.now))
 
-        XCTAssertEqual(applied.auth.map(\.totalBudget), AppConnect.keyBudgets(for: plan, limit: limit))
-        XCTAssertEqual(applied.auth.map(\.totalBudget).compactMap { $0 }.reduce(0, +), limit)
+        XCTAssertEqual(applied.auth.compactMap(\.totalBudget), try XCTUnwrap(AppConnect.keyBudgets(for: plan, limit: limit)))
+        XCTAssertEqual(applied.auth.compactMap(\.totalBudget).reduce(0, +), limit)
         XCTAssertEqual(applied.auth[0].totalBudget, AppConnect.profileKeyShare)
         XCTAssertTrue(applied.auth.allSatisfy { $0.expiresAt == expiry })
         XCTAssertEqual(applied.auth.map(\.bindingIndex), plan.auth.map(\.bindingIndex))
