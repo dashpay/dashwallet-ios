@@ -1369,6 +1369,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let elapsedMs = UInt64(max(0, now().timeIntervalSince(snapshotReadAt)) * 1000)
         let platformNow = [latest.platformTime, read.platformTime, snapshot.platformTime.map { $0 + elapsedMs }]
             .compactMap { $0 }.max()
+        // The app's ten-minute window can pass during this work as well.
+        try Self.requireFreshRequest(age: request.age(blockTimeMs: platformNow))
         if let failure = AppConnect.termsFailure(of: plan, platformTimeMs: platformNow) {
             throw failure
         }
