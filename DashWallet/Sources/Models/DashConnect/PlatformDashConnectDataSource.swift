@@ -1363,10 +1363,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             currentPublicKeys: currentPublicKeys, context: context)
         // Making the keys can outlast the expiry too: checked again before
         // the intent is recorded, at the latest Platform time known — a
-        // fence's later read, or the first read moved on by this phone's
-        // clock since.
+        // proved read taken now, a fence's read, or the first read moved on
+        // by this phone's clock since.
+        let latest = try await identitySnapshot(context: context).snapshot
         let elapsedMs = UInt64(max(0, now().timeIntervalSince(snapshotReadAt)) * 1000)
-        let platformNow = [read.platformTime, snapshot.platformTime.map { $0 + elapsedMs }].compactMap { $0 }.max()
+        let platformNow = [latest.platformTime, read.platformTime, snapshot.platformTime.map { $0 + elapsedMs }]
+            .compactMap { $0 }.max()
         if let failure = AppConnect.termsFailure(of: plan, platformTimeMs: platformNow) {
             throw failure
         }
