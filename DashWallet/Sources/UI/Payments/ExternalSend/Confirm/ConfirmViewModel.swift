@@ -65,6 +65,9 @@ final class ConfirmViewModel: ObservableObject {
     }
 
     @Published private(set) var state: State = .preparing
+    /// A Core asset-lock send is still waiting for the network's proof of its lock: the sheet explains the wait and
+    /// offers Close, which hands the flow `inFlight` while the send finishes.
+    @Published private(set) var isWaitingForNetwork = false
     @Published private(set) var warningItems: [Warning] = []
     /// The To row shows the whole recipient instead of the short one.
     @Published private(set) var isRecipientExpanded = false
@@ -87,6 +90,8 @@ final class ConfirmViewModel: ObservableObject {
     private var prepared: PreparedExternalSend?
     private var hasStarted = false
     private var isClosed = false
+    /// Close was tapped while the send went on: its outcome no longer reaches the flow.
+    private var isReleasedWhileSending = false
 
     init(request: SendAmountRequest, recipient: IdentityRecipient?, executor: ExternalSendExecuting,
          balances: ExternalSendBalanceReading = LiveExternalSendBalances(),
@@ -163,7 +168,9 @@ final class ConfirmViewModel: ObservableObject {
         guard state == .ready, let prepared else { return }
         state = .sending
         self.prepared = nil
+        prepared.onSlowNetwork = { [weak self] in self?.isWaitingForNetwork = true }
         let outcome = await executor.send(prepared)
+        guard !isReleasedWhileSending else { return }
         switch outcome {
         case .notSent(.balanceChanged), .notSent(.balanceNotEnough):
             // Nothing was sent: Send recomputes Max against the balance as it is now.
@@ -173,6 +180,14 @@ final class ConfirmViewModel: ObservableObject {
             break
         }
         onOutcome?(outcome)
+    }
+
+    /// Leaves a send that waits for the network: the flow shows it as in progress (it finishes on its own, ADR-0040)
+    /// and the send's own result, when it comes, is only logged.
+    func closeWhileWaitingForNetwork() {
+        guard state == .sending, isWaitingForNetwork, !isReleasedWhileSending else { return }
+        isReleasedWhileSending = true
+        onOutcome?(.inFlight)
     }
 
     /// Discards the prepared send and returns to Send; does nothing while sending.
@@ -188,8 +203,9 @@ final class ConfirmViewModel: ObservableObject {
 
     #if DEBUG
     /// Lets a SwiftUI preview show a state without the executor and the balance readers.
-    func setPreview(state: State, feeDuffs: UInt64?, warnings: [Warning] = []) {
+    func setPreview(state: State, feeDuffs: UInt64?, warnings: [Warning] = [], waitingForNetwork: Bool = false) {
         self.state = state
+        isWaitingForNetwork = waitingForNetwork
         self.feeDuffs = feeDuffs
         warningItems = warnings
     }

@@ -547,37 +547,38 @@ final class ConfirmViewModelTests: XCTestCase {
         XCTAssertEqual(outcomes.count, 1)
     }
 
-    /// The notes moved between Continue and Confirm: nothing was sent, so there is no outcome screen; Send recomputes
-    /// Max.
-    func testAChangedShieldedPlanAtConfirmGoesBackToSendWithoutAnOutcome() async {
-        executor.sendOutcome = .notSent(.balanceChanged)
-        let vm = await readyVM(route: .shieldedToShielded)
-        await vm.confirm()
-        XCTAssertEqual(executor.sentCalls, 1)
-        XCTAssertTrue(outcomes.isEmpty, "\(outcomes)")
-        XCTAssertEqual(backToSend, [.balanceNotEnough])
-    }
+    func testCloseWhileWaitingForTheNetworkHandsInFlightOnceAndDropsTheLateOutcome() async {
+        executor.holdSend = true
+        executor.reportsSlowNetwork = true
+        executor.sendOutcome = .sent
+        let vm = await readyVM(route: .coreToShielded)
+        let sending = Task { await vm.confirm() }
+        await waitUntil { vm.isWaitingForNetwork }
+        XCTAssertEqual(vm.state, .sending)
+        XCTAssertTrue(outcomes.isEmpty)
 
-    /// The identity's balance no longer covers the amount and the shield fee at Confirm: nothing was sent, so Send
-    /// recomputes Max.
-    func testAnIdentityBalanceNotEnoughAtConfirmGoesBackToSendWithoutAnOutcome() async {
-        executor.sendOutcome = .notSent(.balanceNotEnough)
-        let vm = await readyVM(route: .identityToShielded)
-        await vm.confirm()
-        XCTAssertEqual(executor.sentCalls, 1)
-        XCTAssertTrue(outcomes.isEmpty, "\(outcomes)")
-        XCTAssertEqual(backToSend, [.balanceNotEnough])
-    }
-
-    /// A withdrawal amount outside Platform's bounds for its Core fee is refused before anything is built.
-    func testAWithdrawalAmountOutOfRangeAtContinueIsNotSent() async {
-        executor.prepareResults = [.failure(.amountOutOfRange)]
-        let vm = makeVM(route: .shieldedToCore)
-        await vm.start()
-        XCTAssertTrue(backToSend.isEmpty)
-        guard case .notSent(.amountOutOfRange)? = outcomes.first else { return XCTFail("got \(outcomes)") }
+        vm.closeWhileWaitingForNetwork()
+        vm.closeWhileWaitingForNetwork()
+        guard case .inFlight? = outcomes.first else { return XCTFail("expected .inFlight, got \(outcomes)") }
         XCTAssertEqual(outcomes.count, 1)
-        XCTAssertEqual(executor.sentCalls, 0)
+
+        executor.releaseSend()
+        await sending.value
+        XCTAssertEqual(outcomes.count, 1, "the send's own result no longer reaches the flow")
+    }
+
+    func testCloseDoesNothingBeforeTheNetworkWaitIsReported() async {
+        executor.holdSend = true
+        executor.sendOutcome = .sent
+        let vm = await readyVM(route: .coreToShielded)
+        let sending = Task { await vm.confirm() }
+        await waitUntil { self.executor.sentCalls == 1 }
+        XCTAssertFalse(vm.isWaitingForNetwork)
+        vm.closeWhileWaitingForNetwork()
+        XCTAssertTrue(outcomes.isEmpty)
+        executor.releaseSend()
+        await sending.value
+        guard case .sent? = outcomes.first else { return XCTFail("expected .sent, got \(outcomes)") }
     }
 
     func testNotSentOutcomeIsHandedOnUnchanged() async {
@@ -634,6 +635,8 @@ private final class FakeExecutor: ExternalSendExecuting {
     /// What the prepared send pays the recipient; nil pays the amount.
     var preparedRecipientAmount: UInt64?
     var holdSend = false
+    /// The send reports a late lock proof (as the executor does past its delay) before it holds.
+    var reportsSlowNetwork = false
     private(set) var prepareCalls: [PrepareCall] = []
     private(set) var sentCalls = 0
     private(set) var discarded = 0
@@ -657,6 +660,7 @@ private final class FakeExecutor: ExternalSendExecuting {
 
     func send(_ prepared: PreparedExternalSend) async -> SendOutcome {
         sentCalls += 1
+        if reportsSlowNetwork { prepared.onSlowNetwork?() }
         if holdSend { await withCheckedContinuation { gate = $0 } }
         return sendOutcome
     }

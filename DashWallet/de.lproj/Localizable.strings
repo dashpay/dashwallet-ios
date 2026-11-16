@@ -1263,6 +1263,9 @@
 /* SPV diagnostics */
 "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. Fully close and relaunch the app to start; the in-app Restart button does not apply this reset." = "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. Fully close and relaunch the app to start; the in-app Restart button does not apply this reset.";
 
+/* External send */
+"Confirming this send can take a few minutes. You can close this screen: the send will finish on its own." = "Confirming this send can take a few minutes. You can close this screen: the send will finish on its own.";
+
 /* DashConnect */
 "Connect an app" = "Connect an app";
 
@@ -6883,6 +6886,9 @@
 
 /* Usernames */
 "Waiting for Dash Platform" = "Warte auf Dash Platform";
+
+/* External send */
+"Waiting for the network" = "Waiting for the network";
 
 /* Dash DEX */
 "Waiting for the provider" = "Waiting for the provider";

@@ -138,12 +138,33 @@ struct ConfirmSheet: View {
                     .accessibilityIdentifier("send_confirm_button")
             }
         } else {
-            DashUIKit.DashButton(
-                text: NSLocalizedString("Sending…", comment: "External send"),
-                isLoading: true,
-                fillsWidth: true,
-                size: .large,
-                style: .filledBlue)
+            VStack(spacing: 8) {
+                if viewModel.isWaitingForNetwork {
+                    DashUIKit.SystemMessageView(
+                        title: NSLocalizedString("Waiting for the network", comment: "External send"),
+                        subtitle: NSLocalizedString(
+                            "Confirming this send can take a few minutes. You can close this screen: the send will finish on its own.",
+                            comment: "External send"),
+                        icon: DashIcon.SystemMessage.timerSmall.source,
+                        backgroundColor: Color.dash.blueAlpha5)
+                        .padding(.bottom, 8)
+                }
+                DashUIKit.DashButton(
+                    text: NSLocalizedString("Sending…", comment: "External send"),
+                    isLoading: true,
+                    fillsWidth: true,
+                    size: .large,
+                    style: .filledBlue)
+                if viewModel.isWaitingForNetwork {
+                    DashUIKit.DashButton(
+                        text: NSLocalizedString("Close", comment: "External send"),
+                        fillsWidth: true,
+                        size: .large,
+                        style: .tintedGray,
+                        action: viewModel.closeWhileWaitingForNetwork)
+                        .accessibilityIdentifier("send_confirm_close_while_sending")
+                }
+            }
         }
     }
 }
@@ -195,14 +216,14 @@ private let reserveWarning = previewWarning(0, .caution, SendAmountViewModel.res
 private func previewSheet(
     route: SendRoute = .coreToCore, destination: Destination? = nil, recipient: IdentityRecipient? = nil,
     amount: UInt64 = 150_000_000, state: ConfirmViewModel.State = .ready, fee: UInt64? = 1_000,
-    warnings: [ConfirmViewModel.Warning] = [], expanded: Bool = false
+    warnings: [ConfirmViewModel.Warning] = [], expanded: Bool = false, waitingForNetwork: Bool = false
 ) -> some View {
     let target = destination ?? Destination(type: .coreAddress, text: previewAddress)
     let vm = ConfirmViewModel(
         request: SendAmountRequest(route: route, destination: target, amount: amount, isMax: false),
         recipient: recipient, executor: PreviewExecutor(), balances: PreviewBalances(),
         converter: PreviewConverter())
-    vm.setPreview(state: state, feeDuffs: fee, warnings: warnings)
+    vm.setPreview(state: state, feeDuffs: fee, warnings: warnings, waitingForNetwork: waitingForNetwork)
     if expanded { vm.toggleRecipient() }
     return Color.dash.primaryBackground.ignoresSafeArea()
         .sheet(isPresented: .constant(true)) { ConfirmSheet(viewModel: vm) }
@@ -229,6 +250,16 @@ private let identityDestination = Destination(type: .identityID, text: previewId
 }
 
 #Preview("Sending") { previewSheet(state: .sending) }
+
+/// The lock's proof is late: the wait is explained and Close leaves the send running.
+#Preview("Sending, waiting for the network") {
+    previewSheet(route: .coreToShielded, state: .sending, waitingForNetwork: true)
+}
+
+#Preview("Sending, waiting for the network, large Dynamic Type") {
+    previewSheet(route: .coreToShielded, state: .sending, waitingForNetwork: true)
+        .dynamicTypeSize(.xxxLarge)
+}
 
 #Preview("Identity, reserve warning") {
     previewSheet(route: .identityToCore, warnings: [reserveWarning])

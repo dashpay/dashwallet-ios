@@ -1468,18 +1468,16 @@ final class SendAmountViewModelTests: XCTestCase {
         IdentityRecipient(id: id ?? (own ? ownID : otherID), username: username, isOwnCurrentIdentity: own)
     }
 
-    func testAnotherIdentityShowsItsUsernameAndNoNotice() async {
+    func testAnotherIdentityShowsItsUsername() async {
         let vm = await makeVM(destination(.identityID, text: otherID), recipient: recipient())
         XCTAssertEqual(vm.recipientName, "bob")
-        XCTAssertNil(vm.recipientNotice)
         XCTAssertEqual(vm.shortAddress.count, 12)
         XCTAssertNil(vm.sourceChangedNotice)
     }
 
-    func testAnIdentityWithoutAUsernameShowsTheShortIDAloneAndNoNotice() async {
+    func testAnIdentityWithoutAUsernameShowsTheShortIDAlone() async {
         let vm = await makeVM(destination(.identityID, text: otherID), recipient: recipient(username: nil))
         XCTAssertNil(vm.recipientName, "the To row falls back to the short ID")
-        XCTAssertNil(vm.recipientNotice)
     }
 
     func testTheCurrentIdentityFromCoreIsATopUpOfYourIdentity() async {
@@ -1487,7 +1485,6 @@ final class SendAmountViewModelTests: XCTestCase {
         XCTAssertEqual(vm.source, .core)
         XCTAssertEqual(vm.route, .coreToIdentity)
         XCTAssertEqual(vm.recipientName, "Your identity")
-        XCTAssertEqual(vm.recipientNotice, "This tops up your own Identity credits.")
         XCTAssertNil(vm.sourceChangedNotice)
     }
 
@@ -1496,13 +1493,11 @@ final class SendAmountViewModelTests: XCTestCase {
         let vm = await makeVM(destination(.identityID, text: sibling.id), recipient: sibling)
         XCTAssertEqual(vm.source, .shielded, "Core cannot pay it")
         XCTAssertEqual(vm.recipientName, "alice2")
-        XCTAssertNil(vm.recipientNotice)
     }
 
     func testOtherDestinationsHaveNoRecipientStates() async {
         let vm = await makeVM()
         XCTAssertNil(vm.recipientName)
-        XCTAssertNil(vm.recipientNotice)
     }
 
     func testAnIdentityIDIsNamedIdentity() async {
@@ -1544,7 +1539,6 @@ final class SendAmountViewModelTests: XCTestCase {
     func testTheSourceChangedNoticeShowsWithoutARecipientStatement() async {
         let vm = await makeVM(destination(.identityID, text: otherID), pinned: .core, recipient: recipient())
         XCTAssertNotNil(vm.sourceChangedNotice)
-        XCTAssertNil(vm.recipientNotice)
     }
 
     func testAReplacedPinIsNeverIdentityEvenWhenOnlyItIsFunded() async {

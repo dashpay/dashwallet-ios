@@ -344,6 +344,17 @@ final class PreparedExternalSend {
     fileprivate var sendTookPlan: Bool { planTakenBySend }
 
     fileprivate func opens(_ url: URL?) { callbackURL = url }
+
+    /// Called once when a Core asset-lock send is still running `ExternalSendExecutor.slowNetworkDelay` after it
+    /// started: the lock is waiting for the network's proof, which can take minutes. Confirm then lets the holder
+    /// leave while the send finishes.
+    var onSlowNetwork: (() -> Void)?
+
+    fileprivate func reportSlowNetwork() {
+        let report = onSlowNetwork
+        onSlowNetwork = nil
+        report?()
+    }
 }
 
 @MainActor
@@ -377,6 +388,7 @@ final class ExternalSendExecutor: ExternalSendExecuting {
     private let currentContext: @MainActor () -> ExternalSendContext
     private let currentIdentityId: @MainActor () -> Data?
     private let logOutcome: (SendOutcome) -> Void
+    private let slowNetworkDelay: Duration
 
     init(
         standardSend: CoreStandardSending = LiveCoreStandardSend(),
@@ -399,7 +411,8 @@ final class ExternalSendExecutor: ExternalSendExecuting {
         currentIdentityId: @escaping @MainActor () -> Data? = {
             DWCurrentUserIdentityInfo.shared.refreshedSnapshot().identityId
         },
-        logOutcome: @escaping (SendOutcome) -> Void = { $0.log() }
+        logOutcome: @escaping (SendOutcome) -> Void = { $0.log() },
+        slowNetworkDelay: Duration = .seconds(20)
     ) {
         self.standardSend = standardSend
         self.paymentRequestSend = paymentRequestSend
@@ -418,6 +431,7 @@ final class ExternalSendExecutor: ExternalSendExecuting {
         self.currentContext = currentContext
         self.currentIdentityId = currentIdentityId
         self.logOutcome = logOutcome
+        self.slowNetworkDelay = slowNetworkDelay
     }
 
     func prepare(
@@ -692,6 +706,15 @@ final class ExternalSendExecutor: ExternalSendExecuting {
     }
 
     private func runTwoStep(_ prepared: PreparedExternalSend, destination: Destination) async -> SendOutcome {
+        // The funding call waits for the lock's InstantSend proof, up to minutes when it is late; past the delay
+        // the holder may leave Confirm and the send goes on.
+        let delay = slowNetworkDelay
+        let slowNetwork = Task { @MainActor [weak prepared] in
+            try? await Task.sleep(for: delay)
+            guard !Task.isCancelled else { return }
+            prepared?.reportSlowNetwork()
+        }
+        defer { slowNetwork.cancel() }
         let result = await DWIdentityAuthorizer.preauthorized {
             await twoStep.run(
                 route: prepared.route, destination: destination, amount: prepared.amount,

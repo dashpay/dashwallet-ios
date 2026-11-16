@@ -119,6 +119,8 @@ final class ExternalSendExecutorTests: XCTestCase {
         }
 
         var result: CoreTwoStepResult = .completed
+        /// Awaited before the run returns, so a test can hold the send in flight.
+        var suspension: (() async -> Void)?
         private(set) var runs: [Run] = []
         private(set) var sawPreauthorized: [Bool] = []
 
@@ -127,6 +129,7 @@ final class ExternalSendExecutorTests: XCTestCase {
         ) async -> CoreTwoStepResult {
             runs.append(Run(route: route, destination: destination, amount: amount, fee: bindingFeeDuffs, isMax: isMax))
             sawPreauthorized.append(DWIdentityAuthorizer.isPreauthorized)
+            await suspension?()
             return result
         }
     }
@@ -379,7 +382,7 @@ final class ExternalSendExecutorTests: XCTestCase {
     private static let identityA = Data(repeating: 0xA1, count: 32)
     private var currentIdentityId: Data? = identityA
 
-    private func makeExecutor() -> ExternalSendExecutor {
+    private func makeExecutor(slowNetworkDelay: Duration = .seconds(20)) -> ExternalSendExecutor {
         ExternalSendExecutor(
             standardSend: standard,
             paymentRequestSend: paymentRequest,
@@ -397,7 +400,8 @@ final class ExternalSendExecutorTests: XCTestCase {
             isBlockedByInitialRestoreSync: { [unowned self] in restoreSyncBlocks },
             currentContext: { [unowned self] in context },
             currentIdentityId: { [unowned self] in currentIdentityId },
-            logOutcome: { [unowned self] in logged.append($0) })
+            logOutcome: { [unowned self] in logged.append($0) },
+            slowNetworkDelay: slowNetworkDelay)
     }
 
     private func destination(for route: SendRoute) -> Destination {
@@ -1130,6 +1134,42 @@ final class ExternalSendExecutorTests: XCTestCase {
         balances.spendable = Self.amount * 10
         platformFunding.withdrawal = .unknown
         await assertPrepareThrows(.platformToCore, .balanceUnavailable)
+    }
+
+    // MARK: Slow network on the Core asset-lock routes
+
+    /// A lock whose proof is late keeps the send running for minutes: past the delay the prepared send reports it
+    /// once, and the send still ends with the funding call's result.
+    func testACoreAssetLockSendStillRunningPastTheDelayReportsASlowNetworkOnce() async throws {
+        balances.spendable = Self.amount * 10
+        let executor = makeExecutor(slowNetworkDelay: .milliseconds(20))
+        let prepared = try await prepare(executor, .coreToShielded)
+        var reports = 0
+        prepared.onSlowNetwork = { reports += 1 }
+        let release = AsyncStream<Void>.makeStream()
+        twoStep.suspension = { for await _ in release.stream { return } }
+
+        let send = Task { await executor.send(prepared) }
+        while reports == 0 { try await Task.sleep(for: .milliseconds(5)) }
+        try await Task.sleep(for: .milliseconds(60))
+        release.continuation.yield()
+
+        let outcome = await send.value
+        guard case .sent = outcome else { return XCTFail("expected .sent, got \(outcome)") }
+        XCTAssertEqual(reports, 1)
+    }
+
+    func testACoreAssetLockSendThatFinishesBeforeTheDelayReportsNoSlowNetwork() async throws {
+        balances.spendable = Self.amount * 10
+        let executor = makeExecutor(slowNetworkDelay: .milliseconds(50))
+        let prepared = try await prepare(executor, .coreToPlatform)
+        var reports = 0
+        prepared.onSlowNetwork = { reports += 1 }
+
+        let outcome = await executor.send(prepared)
+        try await Task.sleep(for: .milliseconds(100))
+        guard case .sent = outcome else { return XCTFail("expected .sent, got \(outcome)") }
+        XCTAssertEqual(reports, 0)
     }
 
     func testPlatformToCoreTheRowCanWithdrawPrepares() async throws {

@@ -117,7 +117,6 @@ struct SendAmountScreen: View {
     @ViewBuilder private var notices: some View {
         if let text = viewModel.destinationNote { infoMessage(text) }
         if let text = viewModel.sourceChangedNotice { infoMessage(text) }
-        if let text = viewModel.recipientNotice { infoMessage(text) }
         if let text = viewModel.reserveNote { infoMessage(text) }
         if let text = viewModel.reserveWarning {
             DashUIKit.SystemMessageView(title: text, backgroundColor: Color.dash.orangeAlpha10)

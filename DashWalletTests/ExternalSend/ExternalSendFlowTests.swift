@@ -650,7 +650,6 @@ final class ExternalSendFlowTests: XCTestCase {
 
         XCTAssertEqual(harness.flow.step, .send)
         XCTAssertEqual(harness.flow.sendViewModel?.recipientName, alice)
-        XCTAssertNil(harness.flow.sendViewModel?.recipientNotice, "someone else's identity has no notice")
     }
 
     func testAnInvalidAddressNeverOpensSend() async {

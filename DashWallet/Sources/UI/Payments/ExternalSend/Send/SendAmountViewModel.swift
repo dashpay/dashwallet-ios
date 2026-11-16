@@ -357,7 +357,6 @@ final class SendAmountViewModel: ObservableObject {
     var recipientName: String? { recipient.flatMap(Self.recipientName(for:)) }
 
     /// The top-up note when the money goes to the Current identity (AC-12b).
-    var recipientNotice: String? { recipient.flatMap(Self.recipientNotice(for:)) }
 
     private var identityMaxResult: AmountRules.MaxResult? {
         guard source == .identity, !isAmountLocked, let nativeBalance, let fee else { return nil }
@@ -621,7 +620,8 @@ final class SendAmountViewModel: ObservableObject {
             ? NSLocalizedString("Your identity", comment: "External send") : recipient.username
     }
 
-    /// The top-up note when the money goes to the Current identity (AC-12b); nil for someone else's identity.
+    /// The top-up note Confirm shows when the money goes to the Current identity (AC-12b); nil for someone else's
+    /// identity. The Send screen does not repeat it.
     static func recipientNotice(for recipient: IdentityRecipient) -> String? {
         guard recipient.isOwnCurrentIdentity else { return nil }
         return NSLocalizedString("This tops up your own Identity credits.", comment: "External send")
