@@ -41,8 +41,10 @@ struct AppConnectApproveSheet: View {
 
     var body: some View {
         // No title in the bar: the intro block below names the request. The
-        // close button denies, as a swipe-down does through the presenter's
-        // binding; both are blocked while an approval is in flight.
+        // close button denies and, for a request that came by link, asks
+        // about returning to the app. A swipe-down denies too, through the
+        // presenter's binding, but the sheet is gone by then, so nothing is
+        // asked. Both are blocked while an approval is in flight.
         DashUIKit.BottomSheet(
             showBackButton: .constant(false),
             isDismissalEnabled: .constant(!viewModel.isApproving),
@@ -119,10 +121,14 @@ struct AppConnectApproveSheet: View {
             switch sheet {
             case .funding:
                 FundingLimitSheet(viewModel: viewModel, onClose: { termsSheet = nil })
-                    .animatedSelfSizingSheet(background: Color.dash.secondaryBackground)
+                    .selfSizingSheet(
+                        fallback: .greatestFiniteMagnitude, background: Color.dash.secondaryBackground,
+                        animatesHeightChanges: true)
             case .expiry:
                 ExpirySheet(viewModel: viewModel, onClose: { termsSheet = nil })
-                    .animatedSelfSizingSheet(background: Color.dash.secondaryBackground)
+                    .selfSizingSheet(
+                        fallback: .greatestFiniteMagnitude, background: Color.dash.secondaryBackground,
+                        animatesHeightChanges: true)
             case .fundingInfo:
                 FundingLimitsInfoSheet(onClose: { termsSheet = nil })
                     .selfSizingSheet(fallback: .greatestFiniteMagnitude, background: Color.dash.secondaryBackground)
@@ -483,7 +489,7 @@ struct ExpirySheet: View {
                 ForEach(viewModel.expiryPresets, id: \.days) { preset in
                     RadioButtonRow(
                         title: String(
-                            format: NSLocalizedString("%d days", comment: "DashConnect expiry presets: a number of days"),
+                            format: NSLocalizedString("%ld days", comment: "DashConnect expiry presets: a number of days"),
                             preset.days),
                         isSelected: preset.isSelected,
                         action: {

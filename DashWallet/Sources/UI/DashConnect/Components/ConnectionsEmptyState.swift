@@ -100,7 +100,7 @@ struct ConnectionsEmptyState: View {
         case let .noUsername(onCreateUsername):
             if let onCreateUsername {
                 DashUIKit.DashButton(
-                    text: NSLocalizedString("Create username", comment: ""),
+                    text: NSLocalizedString("Create username", comment: "Usernames"),
                     fillsWidth: true, size: .large, style: .filledBlue, action: onCreateUsername)
                     .frame(maxWidth: 200)
             }

@@ -87,54 +87,6 @@ struct DashConnectCollapsibleCard<Content: View>: View {
 }
 
 extension View {
-    /// A sheet as tall as its content, like DashUIKit's `selfSizingSheet`,
-    /// for content that switches between views of different heights (a list
-    /// of presets and a keypad or a calendar): the new height is applied in
-    /// an animation, so the sheet grows or shrinks with the switch instead
-    /// of jumping once the new content is measured. The first height is
-    /// applied as is; before it, the sheet opens at its tallest, as
-    /// `selfSizingSheet(fallback: .greatestFiniteMagnitude)` does.
-    /// DashUIKit's modifier applies a new height outside any animation and
-    /// has no option for one; this is the animated variant, kept here.
-    func animatedSelfSizingSheet(background: Color) -> some View {
-        modifier(AnimatedSelfSizingSheet(background: background))
-    }
-}
-
-private struct AnimatedSelfSizingSheet: ViewModifier {
-    let background: Color
-    @State private var height: CGFloat = 0
-
-    func body(content: Content) -> some View {
-        content
-            // `BottomSheet(fillsHeight: false)` reports its ideal height,
-            // without the home-indicator inset the height detent adds back.
-            .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { measured in
-                let resolved = min(measured, Self.maxHeight)
-                guard resolved > 0, abs(resolved - height) > 0.5 else { return }
-                if height == 0 {
-                    height = resolved
-                } else {
-                    withAnimation(.smooth(duration: 0.3)) { height = resolved }
-                }
-            }
-            .presentationDetents([.height(height > 0 ? height : Self.maxHeight)])
-            .presentationDragIndicator(.hidden)
-            .presentationBackground(background)
-    }
-
-    /// The tallest the sheet may be: 95% of the window, as DashUIKit's
-    /// `selfSizingSheet` allows.
-    private static var maxHeight: CGFloat {
-        let windowHeight = UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .first { $0.activationState == .foregroundActive }?
-            .keyWindow?.bounds.height
-        return (windowHeight ?? UIScreen.main.bounds.height) * 0.95
-    }
-}
-
-extension View {
     /// An error shown as a DashUIKit toast at the bottom of this view while
     /// `message` is set, and read out by VoiceOver when it appears or
     /// changes.

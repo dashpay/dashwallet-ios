@@ -140,7 +140,7 @@
 "%d could not be reached" = "%d could not be reached";
 
 /* DashConnect expiry presets: a number of days */
-"%d days" = "%d days";
+"%ld days" = "%ld days";
 
 /* SPV diagnostics */
 "%d finished" = "%d finished";

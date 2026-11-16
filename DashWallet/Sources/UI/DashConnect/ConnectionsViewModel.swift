@@ -843,6 +843,7 @@ final class ConnectionsViewModel: ObservableObject {
                 self.pendingLoginRequest = nil
                 self.approveError = nil
             } catch DashConnectPlatformError.approvalOutOfDate {
+                Self.logApprovalStopped(DashConnectPlatformError.approvalOutOfDate)
                 // Another identity, wallet or network became active, or the
                 // network now answers with the other login: what the sheet
                 // showed is not what would run. Nothing was signed. The sheet is rebuilt from
@@ -855,6 +856,7 @@ final class ConnectionsViewModel: ObservableObject {
                 self.approveError = self.usernameRefusal
                     ?? DashConnectPlatformError.approvalOutOfDate.localizedDescription
             } catch DashConnectPlatformError.approvalTermsExpired {
+                Self.logApprovalStopped(DashConnectPlatformError.approvalTermsExpired)
                 // The expiry went by while the PIN prompt was up, or while
                 // the earlier grant was fenced. No key was added and the
                 // request was not recorded: the sheet stays, and says why itself
@@ -869,6 +871,7 @@ final class ConnectionsViewModel: ObservableObject {
                     self.platformTimeIsAtLeast(Self.date(ms: expiresAt))
                 }
             } catch DashConnectPlatformError.loginUnresolved {
+                Self.logApprovalStopped(DashConnectPlatformError.loginUnresolved)
                 // The wallet could not check which login this network gets.
                 // Nothing was signed. The sheet is rebuilt: when it still
                 // cannot tell, it says so itself and offers "Try again"
@@ -880,6 +883,7 @@ final class ConnectionsViewModel: ObservableObject {
                 self.approveError = rebuilt.login == .unresolved
                     ? nil : DashConnectPlatformError.loginUnresolved.localizedDescription
             } catch DashConnectPlatformError.networkRefused(let code) where code != AppConnect.identityInsufficientBalanceCode {
+                Self.logApprovalStopped(DashConnectPlatformError.networkRefused(code: code))
                 // Platform refused the attempt for a reason a top-up does not
                 // fix. The attempt was recorded before it was sent, so the
                 // request is answered: the sheet shows the refusal as its
@@ -890,6 +894,7 @@ final class ConnectionsViewModel: ObservableObject {
                 self.pendingRequest?.login = .refused(refusal)
                 self.approveError = nil
             } catch let refusal as AppConnect.Refusal {
+                DWLogger.log("🔗 DASHCONNECT :: approval refused: \(refusal.status)")
                 // A refusal fails the same way on every try: the sheet shows
                 // it as the request's answer, and offers no Approve.
                 self.pendingFailureStatus = refusal.status
@@ -908,6 +913,7 @@ final class ConnectionsViewModel: ObservableObject {
                 // answered and is not approved again: the user tops up and
                 // asks the app for a new code.
                 let needsTopUp = AppConnect.isInsufficientBalance(error)
+                Self.logApprovalStopped(error, offersTopUp: needsTopUp)
                 self.approveError = needsTopUp
                     ? Self.topUpThenAskAgainText
                     : String(
@@ -917,6 +923,20 @@ final class ConnectionsViewModel: ObservableObject {
                 self.approveNeedsTopUp = needsTopUp
             }
         }
+    }
+
+    /// The exported log's line for an approval that did not go through:
+    /// the error's case or type and a consensus code, never its text.
+    private static func logApprovalStopped(_ error: Error, offersTopUp: Bool = false) {
+        let kind: String
+        if case .networkRefused(let code)? = error as? DashConnectPlatformError {
+            kind = "networkRefused \(code)"
+        } else if error is DashConnectPlatformError {
+            kind = String(String(describing: error).prefix { $0 != "(" })
+        } else {
+            kind = String(describing: type(of: error))
+        }
+        DWLogger.log("🔗 DASHCONNECT :: approval stopped: \(kind)\(offersTopUp ? ", top-up offered" : "")")
     }
 
     /// Builds the pending request again, for a sheet that could not tell

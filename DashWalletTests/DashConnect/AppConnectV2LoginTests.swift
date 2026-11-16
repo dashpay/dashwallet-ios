@@ -1043,6 +1043,116 @@ final class AppConnectConnectionTermsTests: XCTestCase {
         XCTAssertEqual(terms.fundingLimit, 3000)
     }
 
+    // MARK: The split Platform registers
+
+    private static let dash = PlatformCreditsFormatter.creditsPerDash
+    private static var now: Date { Date(timeIntervalSince1970: TimeInterval(platformTime) / 1000) }
+
+    private static func profileGrant(expiresAt: UInt64) -> AppConnect.AuthGrant {
+        let binding = AppConnectRequest.AuthBinding(
+            kind: .documentType, securityLevel: .high, id: Data.identifier(fromBase58: AppConnect.dashPayContractId)!,
+            totalBudget: nil, expiresAt: expiresAt, documentTypeName: "profile")
+        return AppConnect.AuthGrant(bindingIndex: 9, binding: binding, totalBudget: nil, expiresAt: expiresAt)
+    }
+
+    /// A DashPay profile key first, then app keys asking for `appBudgets`.
+    private static func profileAndAppPlan(appBudgets: [UInt64?]) -> AppConnect.GrantPlan {
+        let expiry = platformTime + hour
+        var plan = plan(budgets: appBudgets, expiresAt: expiry)
+        plan.auth.insert(profileGrant(expiresAt: expiry), at: 0)
+        return plan
+    }
+
+    func testTheLimitsAreTheOnesTheSheetShowsInDash() {
+        XCTAssertEqual(AppConnect.fundingPresets, [Self.dash / 10, Self.dash / 2, 2 * Self.dash, 5 * Self.dash])
+        XCTAssertEqual(AppConnect.defaultFundingLimit, Self.dash / 2)
+        XCTAssertEqual(AppConnect.profileKeyShare, Self.dash / 500, "0.002 DASH")
+        XCTAssertEqual(AppConnect.v2BudgetCapCredits, 5 * Self.dash)
+    }
+
+    func testAFundingLimitIsAboveZeroAndAtMostTheCap() {
+        XCTAssertFalse(AppConnect.isValidFundingLimit(0))
+        XCTAssertTrue(AppConnect.isValidFundingLimit(1))
+        XCTAssertTrue(AppConnect.isValidFundingLimit(AppConnect.v2BudgetCapCredits))
+        XCTAssertFalse(AppConnect.isValidFundingLimit(AppConnect.v2BudgetCapCredits + 1))
+    }
+
+    func testAProfileKeyBesideAnAppKeyTakesTheProfileShare() {
+        let plan = Self.profileAndAppPlan(appBudgets: [1000])
+
+        XCTAssertEqual(
+            AppConnect.keyBudgets(for: plan, limit: Self.dash),
+            [AppConnect.profileKeyShare, Self.dash - AppConnect.profileKeyShare])
+        XCTAssertEqual(
+            AppConnect.keyBudgets(for: plan, limit: 2 * AppConnect.profileKeyShare),
+            [AppConnect.profileKeyShare, AppConnect.profileKeyShare],
+            "at twice the share the profile still takes the whole share")
+    }
+
+    func testUnderTwiceTheProfileShareTheProfileKeyTakesHalf() {
+        let plan = Self.profileAndAppPlan(appBudgets: [1000])
+        let limit = 2 * AppConnect.profileKeyShare - 1
+
+        XCTAssertEqual(AppConnect.keyBudgets(for: plan, limit: limit), [limit / 2, limit - limit / 2])
+    }
+
+    func testAProfileOnlyPlanTakesTheProfileShareOrTheWholeSmallerLimit() {
+        var plan = Self.plan(budgets: [], expiresAt: Self.platformTime + Self.hour)
+        plan.auth = [Self.profileGrant(expiresAt: Self.platformTime + Self.hour)]
+
+        XCTAssertEqual(AppConnect.keyBudgets(for: plan, limit: Self.dash), [AppConnect.profileKeyShare])
+        XCTAssertEqual(AppConnect.keyBudgets(for: plan, limit: 1000), [1000])
+        XCTAssertEqual(AppConnect.defaultTerms(for: plan, now: Self.now).fundingLimit, AppConnect.profileKeyShare)
+    }
+
+    func testTheSheetOpensAtTheDefaultLimitWhenNoBudgetIsAsked() {
+        let plan = Self.plan(budgets: [nil], expiresAt: Self.platformTime + Self.hour)
+
+        XCTAssertEqual(AppConnect.defaultTerms(for: plan, now: Self.now).fundingLimit, AppConnect.defaultFundingLimit)
+    }
+
+    func testTheSheetOpensAtTheCapWhenTheAsksAddUpToMore() {
+        let cap = AppConnect.v2BudgetCapCredits
+        let plan = Self.plan(budgets: [cap, cap], expiresAt: Self.platformTime + Self.hour)
+
+        XCTAssertEqual(AppConnect.defaultTerms(for: plan, now: Self.now).fundingLimit, cap)
+    }
+
+    func testTheSheetOpensAtTheEarliestExpiryOfThePlan() {
+        var plan = Self.plan(budgets: [1000, 1000], expiresAt: Self.platformTime + 2 * Self.hour)
+        plan.auth[1].expiresAt = Self.platformTime + Self.hour
+
+        XCTAssertEqual(AppConnect.defaultTerms(for: plan, now: Self.now).expiresAt, Self.platformTime + Self.hour)
+    }
+
+    func testAppliedTermsGiveEveryKeyItsShareAndTheOneExpiry() throws {
+        let plan = Self.profileAndAppPlan(appBudgets: [2000, 1000])
+        let expiry = Self.platformTime + 3 * Self.hour
+        let limit = Self.dash
+
+        let applied = try XCTUnwrap(
+            AppConnect.applying(AppConnect.ConnectionTerms(fundingLimit: limit, expiresAt: expiry), to: plan, now: Self.now))
+
+        XCTAssertEqual(applied.auth.map(\.totalBudget), AppConnect.keyBudgets(for: plan, limit: limit))
+        XCTAssertEqual(applied.auth.map(\.totalBudget).compactMap { $0 }.reduce(0, +), limit)
+        XCTAssertEqual(applied.auth[0].totalBudget, AppConnect.profileKeyShare)
+        XCTAssertTrue(applied.auth.allSatisfy { $0.expiresAt == expiry })
+        XCTAssertEqual(applied.auth.map(\.bindingIndex), plan.auth.map(\.bindingIndex))
+    }
+
+    func testTermsOutOfBoundsAreNotApplied() {
+        let plan = Self.plan(budgets: [1000, 1000], expiresAt: Self.platformTime + Self.hour)
+        let expiry = Self.platformTime + Self.hour
+        let terms = { (limit: UInt64, expiresAt: UInt64) in AppConnect.ConnectionTerms(fundingLimit: limit, expiresAt: expiresAt) }
+
+        XCTAssertNil(AppConnect.applying(terms(0, expiry), to: plan, now: Self.now))
+        XCTAssertNil(AppConnect.applying(terms(AppConnect.v2BudgetCapCredits + 1, expiry), to: plan, now: Self.now))
+        XCTAssertNil(AppConnect.applying(terms(1, expiry), to: plan, now: Self.now), "one credit cannot fund two keys")
+        XCTAssertNil(AppConnect.applying(terms(1000, Self.platformTime), to: plan, now: Self.now), "an expiry already past")
+        XCTAssertNil(AppConnect.applying(
+            terms(1000, AppConnect.expiry(days: 366, from: Self.now)), to: plan, now: Self.now), "beyond a year")
+    }
+
     // MARK: Balance
 
     func testAConsensusRefusalForTheBalanceOffersATopUp() {
@@ -1055,7 +1165,8 @@ final class AppConnectConnectionTermsTests: XCTestCase {
 
     func testABalanceFailureAfterTheUpdateStaysABalanceFailure() {
         let failure = NSError(
-            domain: "test", code: 1, userInfo: [NSLocalizedDescriptionKey: "Insufficient identity balance"])
+            domain: "test", code: 1, userInfo: [NSLocalizedDescriptionKey:
+                "Failed to broadcast identity update: Insufficient identity 4EfA9Jrvv3nnCFdSf7fad59851iiTRZ6Wcu6YVJ4iSeF balance 1000 required 2000"])
 
         let returned = PlatformDashConnectDataSource.approvalFailure(after: failure)
 
