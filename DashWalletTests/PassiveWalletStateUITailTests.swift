@@ -24,6 +24,25 @@ final class PassiveWalletStateUITailTests: XCTestCase {
                 isChainSynced: true))
     }
 
+    /// Every sync state change delivers the gate as read then, even unchanged: a screen that set the gate from a
+    /// refused send in between still hears it lift.
+    func testTheRestoreSyncPublisherDeliversTheGateOnEverySyncStateChange() {
+        var delivered: [Bool] = []
+        let all = expectation(description: "the first reading and one per change")
+        all.expectedFulfillmentCount = 3
+        let subscription = WalletSendService.coreSpendBlockedByInitialRestoreSync.sink {
+            delivered.append($0)
+            all.fulfill()
+        }
+        for _ in 0 ..< 2 {
+            NotificationCenter.default.post(name: SyncingActivityMonitor.syncStateChangedNotificationName, object: nil)
+        }
+
+        wait(for: [all], timeout: 2)
+        subscription.cancel()
+        XCTAssertEqual(delivered.count, 3)
+    }
+
     func testNormalCatchUpDoesNotBlockCoreSpend() {
         XCTAssertFalse(
             WalletSendService.isBlockedByInitialRestoreSync(

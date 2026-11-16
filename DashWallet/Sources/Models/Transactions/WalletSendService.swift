@@ -5,6 +5,7 @@
 //  Shared send boundary for standard and selected-input SwiftDashSDK sends.
 //
 
+import Combine
 import Foundation
 import OSLog
 import SwiftDashSDK
@@ -304,13 +305,28 @@ final class WalletSendService: NSObject {
         isResyncingWallet && !isChainSynced
     }
 
+    /// `isBlockedByInitialRestoreSync` for the current network's wallet, read now.
+    static var isCoreSpendBlockedByInitialRestoreSync: Bool {
+        isBlockedByInitialRestoreSync(
+            isResyncingWallet: DWGlobalOptions.sharedInstance().isResyncingCurrentNetworkWallet,
+            isChainSynced: SyncingActivityMonitor.shared.state == .syncDone)
+    }
+
+    /// `isCoreSpendBlockedByInitialRestoreSync` now, then again on the main queue after every sync state change, also
+    /// when unchanged: a subscriber that set the gate from a refused send in between still hears it lift.
+    static var coreSpendBlockedByInitialRestoreSync: AnyPublisher<Bool, Never> {
+        NotificationCenter.default.publisher(for: SyncingActivityMonitor.syncStateChangedNotificationName)
+            .receive(on: DispatchQueue.main)
+            .map { _ in () }
+            .prepend(())
+            .map { _ in isCoreSpendBlockedByInitialRestoreSync }
+            .eraseToAnyPublisher()
+    }
+
     /// Boundary backstop for programmatic callers. This runs before
     /// authentication and before inputs are selected or reserved.
     private static func ensureInitialRestoreSyncCompleted() throws {
-        guard !isBlockedByInitialRestoreSync(
-            isResyncingWallet: DWGlobalOptions.sharedInstance().isResyncingCurrentNetworkWallet,
-            isChainSynced: SyncingActivityMonitor.shared.state == .syncDone
-        ) else {
+        guard !isCoreSpendBlockedByInitialRestoreSync else {
             throw Self.makeError(
                 code: .initialRestoreSync,
                 description: NSLocalizedString(
@@ -968,7 +984,7 @@ enum AuthenticationGate {
     }
 }
 
-private final class SendAuthorizer {
+final class SendAuthorizer {
     /// `spendAmount` enforces the biometric spending limit (Bug #3): a
     /// send over the remaining allowance skips biometrics and requires the
     /// PIN; a biometric-authorized send decrements the allowance. Nil for
@@ -1000,7 +1016,7 @@ private final class SendAuthorizer {
     }
 }
 
-private extension WalletSendService {
+extension WalletSendService {
     enum ErrorCode: Int {
         case authenticationCancelled = 1
         case authenticationFailed = 2
@@ -1016,7 +1032,9 @@ private extension WalletSendService {
     }
 
     static let errorDomain = "org.dashfoundation.dash.wallet-send-service"
+}
 
+private extension WalletSendService {
     /// Translate the SDK's contact-payment errors into ones the app acts on.
     ///
     /// A broadcast outcome the SDK could not confirm becomes this service's

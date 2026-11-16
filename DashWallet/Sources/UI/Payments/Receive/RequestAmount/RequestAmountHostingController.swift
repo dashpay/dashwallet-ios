@@ -45,6 +45,8 @@ final class RequestAmountHostingController: UIViewController {
 
     private let model: DWReceiveModelProtocol
     private let state: State
+    /// The caption over the address; nil keeps the screen's Core caption.
+    private let addressCaption: String?
 
     /// Bridges the ObjC delegate callback into `@Published` values.
     @MainActor
@@ -70,8 +72,9 @@ final class RequestAmountHostingController: UIViewController {
     /// Handle for the exchange-rate subscription, released in `deinit`.
     private var exchangerObserver: CurrencyExchangerObserver?
 
-    init(model: DWReceiveModelProtocol) {
+    init(model: DWReceiveModelProtocol, addressCaption: String? = nil) {
         self.model = model
+        self.addressCaption = addressCaption
         self.state = State()
         super.init(nibName: nil, bundle: nil)
     }
@@ -99,9 +102,10 @@ final class RequestAmountHostingController: UIViewController {
     static func present(
         from presenter: UIViewController,
         model: DWReceiveModelProtocol,
+        addressCaption: String? = nil,
         delegate: RequestAmountHostingControllerDelegate?
     ) -> RequestAmountHostingController {
-        let controller = RequestAmountHostingController(model: model)
+        let controller = RequestAmountHostingController(model: model, addressCaption: addressCaption)
         controller.delegate = delegate
         controller.modalPresentationStyle = .pageSheet
 
@@ -178,6 +182,7 @@ final class RequestAmountHostingController: UIViewController {
         let screen = RequestAmountScreenContainer(
             state: state,
             amountDuffs: model.amount,
+            addressCaption: addressCaption,
             onCopyAddress: { [weak self] in self?.copyAddress() },
             onCopyQRCode: { [weak self] in self?.copyQRCode() },
             onCopyUsername: { [weak self] in self?.copyUsername() },
@@ -312,6 +317,7 @@ private struct RequestAmountScreenContainer: View {
     @ObservedObject var state: RequestAmountHostingController.State
 
     let amountDuffs: UInt64
+    let addressCaption: String?
     let onCopyAddress: () -> Void
     let onCopyQRCode: () -> Void
     let onCopyUsername: () -> Void
@@ -323,6 +329,7 @@ private struct RequestAmountScreenContainer: View {
             fiatAmount: state.fiatAmount,
             qrCodeImage: state.qrCodeImage,
             paymentAddress: state.paymentAddress,
+            addressCaption: addressCaption ?? RequestAmountScreen.coreAddressCaption,
             username: state.username,
             isWatchingForReceipt: state.isWatchingForReceipt,
             onCopyAddress: onCopyAddress,

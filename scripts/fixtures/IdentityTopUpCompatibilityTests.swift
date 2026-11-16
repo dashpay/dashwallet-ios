@@ -11,7 +11,7 @@ import XCTest
     }
 
     func topUp() async throws -> UInt64 {
-        try await IdentityTopUpViewModel().topUpFromShielded(
+        try await IdentityCreditsTopUp().fromShielded(
             identityId: Data([2]), amountDuffs: 100,
             wallet: host.wallet!, modelContainer: ModelContainer())
     }
@@ -198,5 +198,21 @@ import XCTest
         XCTAssertEqual(balance, 97)
         XCTAssertEqual(host.manager!.unshieldCalls, 1)
         XCTAssertEqual(host.wallet!.topUpCalls, 1)
+    }
+
+    func testCompletedTopUpAnnouncesSuppliedCreditsAndLeavesNothingInFlight() async {
+        var events: [IdentityTopUpDidComplete] = []
+        let observer = NotificationCenter.default.addObserver(
+            forName: IdentityTopUpDidComplete.name, object: nil, queue: nil
+        ) { notification in
+            if let event = IdentityTopUpDidComplete(notification: notification) { events.append(event) }
+        }
+        defer { NotificationCenter.default.removeObserver(observer) }
+        let result = await IdentityTopUpViewModel().topUp(identityId: Data([2]), amountDuffs: 100, source: .shielded)
+        XCTAssertEqual(result, 97)
+        XCTAssertEqual(events.map(\.balanceAfter), [97])
+        XCTAssertEqual(events.map(\.suppliedCredits), [100 * 1_000 - 5])
+        XCTAssertFalse(IdentityTopUpsInFlight.shared.contains(
+            .init(walletId: host.wallet!.walletId, network: .testnet, identityId: Data([2]))))
     }
 }

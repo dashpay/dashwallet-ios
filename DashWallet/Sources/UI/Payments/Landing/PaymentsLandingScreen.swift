@@ -24,25 +24,14 @@ struct PaymentsLandingScreen: View {
     var onViewTransaction: (Data) -> Void
     var onScanQR: () -> Void
     /// The Internal tab's embedded transfer form. The full landing shows it
-    /// un-pinned (free From + To pickers); the balance-row receive/send
-    /// sheets pin one endpoint via `transferReceivePinned`/`transferSendFrom`.
+    /// un-pinned (free From + To pickers); the balance-row receive sheet pins
+    /// its destination via `transferReceivePinned`.
     var embeddedTransferViewModel: InternalTransferViewModel
     var onTransferCompleted: () -> Void = {}
-    /// Set by the balance-row send sheet: the embedded transfer form pins
-    /// this balance as its From card (destination picked on the To rows),
-    /// instead of the receive sheet's pinned-destination layout.
-    var transferSendFrom: ChainNetwork?
     /// True for the balance-row receive sheet: the transfer form pins the
     /// receive toggle's balance as its To card (source picked on the From
-    /// rows). False (with `transferSendFrom` nil) = the free-form landing.
+    /// rows). False = the free-form landing.
     var transferReceivePinned: Bool = false
-    /// The Send tab IS the external-send form — pinned to the tapped
-    /// balance as source on the balance-row send sheet, un-pinned (full
-    /// From picker) on the full landing.
-    var embeddedSendViewModel: SendViewModel
-    /// The Send tab's address is valid → advance to the amount step. The host
-    /// pushes `ExternalSendAmountScreen` onto the landing's navigation stack.
-    var onSendContinue: () -> Void = {}
     /// "Send to Dash address" on the Send tab's card — the host pushes the send
     /// form. (Its sibling row routes through `onScanQR`.)
     var onSendToAddress: () -> Void = {}
@@ -55,7 +44,7 @@ struct PaymentsLandingScreen: View {
     /// Leaves the payments tab entirely — the X above the Internal form. The
     /// host resolves where that goes; on the tab there is nothing to dismiss.
     var onCloseLanding: () -> Void = {}
-    /// False for the balance-row receive/send sheets: their grabber + hero
+    /// False for the balance-row receive sheet and Quick Receive: their grabber + hero
     /// selector are the top chrome — no X close button or title row.
     var showsHeader: Bool = true
 
@@ -95,15 +84,12 @@ struct PaymentsLandingScreen: View {
     private enum Mode {
         /// The payments tab: every tab opens on a destination card.
         case picker
-        /// Balance-row send sheet — the tapped balance is the source.
-        case sendingFrom(ChainNetwork)
         /// Balance-row receive sheet — the receive toggle's balance is the
         /// destination, kept in lockstep by the hosting controller.
         case receivingInto
     }
 
     private var mode: Mode {
-        if let transferSendFrom { return .sendingFrom(transferSendFrom) }
         if transferReceivePinned { return .receivingInto }
         return .picker
     }
@@ -194,8 +180,9 @@ struct PaymentsLandingScreen: View {
     ///
     /// Off in the balance-row sheets (`including: .subviews` above): there a
     /// tab is a whole form with a keypad, and paging away mid-entry would drop
-    /// what the user typed. The picker tabs have nothing to lose and no scroll
-    /// view of their own to fight over the gesture.
+    /// what the user typed. The picker tabs have nothing to lose. Receive's
+    /// vertical scroll view takes only vertical drags, so a sideways swipe over
+    /// it still changes tab.
     private var tabSwipe: some Gesture {
         DragGesture(minimumDistance: Layout.swipeMinimumDistance)
             .onEnded { value in
@@ -269,7 +256,10 @@ struct PaymentsLandingScreen: View {
     private var tabContent: some View {
         switch viewModel.activeTab {
         case .receive:
-            pickerLayout {
+            // Scrolls only when the card is taller than the page: the Identity
+            // card is, and squeezed into the page its warning collapsed to one
+            // truncated line per sentence and Close was pushed off the top.
+            ScrollView(.vertical) {
                 PaymentsReceiveContent(
                     viewModel: viewModel,
                     onCopyAddress: {
@@ -278,6 +268,10 @@ struct PaymentsLandingScreen: View {
                     },
                     onShareAddress: onShareAddress,
                     onSpecifyAmount: onSpecifyAmount,
+                    onCopyUsername: {
+                        viewModel.copyUsernameToPasteboard()
+                        showsCopiedToast = true
+                    },
                     onViewTransaction: onViewTransaction,
                     onDone: {
                         viewModel.finishReceiving()
@@ -286,6 +280,8 @@ struct PaymentsLandingScreen: View {
                 )
                 .padding(.horizontal, Layout.cardHorizontalPadding)
             }
+            .scrollBounceBehavior(.basedOnSize)
+            .scrollIndicators(.hidden)
 
         case .internalTransfer:
             switch mode {
@@ -300,49 +296,28 @@ struct PaymentsLandingScreen: View {
                 )
                 .padding(.top, Layout.embeddedFormTopPadding)
 
-            case let .sendingFrom(source):
-                InternalTransferScreen(
-                    viewModel: embeddedTransferViewModel,
-                    onCompleted: onTransferCompleted,
-                    showsHeader: false,
-                    sendFrom: source
-                )
-                .padding(.top, Layout.embeddedFormTopPadding)
-
             case .receivingInto:
                 InternalTransferScreen(
                     viewModel: embeddedTransferViewModel,
                     onCompleted: onTransferCompleted,
                     showsHeader: false,
-                    receiveInto: viewModel.network
+                    // Identity is not a chain: the form keeps the route's pinned target.
+                    receiveInto: viewModel.network.chainNetwork ?? embeddedTransferViewModel.receiveTarget
                 )
                 .padding(.top, Layout.embeddedFormTopPadding)
             }
 
         case .send:
-            switch mode {
-            case .picker, .receivingInto:
-                pickerLayout {
-                    PaymentsSendCard(
-                        showsSendToUsername: viewModel.canSendToUsername,
-                        onSendToUsername: onSendToUsername,
-                        onSendToAddress: onSendToAddress,
-                        onScanQR: onScanQR,
-                        showsSwapToCrypto: viewModel.canSwapToOtherCrypto,
-                        onSwapToCrypto: onSwapToCrypto
-                    )
-                    .padding(.horizontal, Layout.cardHorizontalPadding)
-                }
-
-            case .sendingFrom:
-                SendScreen(
-                    viewModel: embeddedSendViewModel,
-                    onClose: onClose,
+            pickerLayout {
+                PaymentsSendCard(
+                    showsSendToUsername: viewModel.canSendToUsername,
+                    onSendToUsername: onSendToUsername,
+                    onSendToAddress: onSendToAddress,
                     onScanQR: onScanQR,
-                    onContinue: onSendContinue,
-                    showsHeader: false
+                    showsSwapToCrypto: viewModel.canSwapToOtherCrypto,
+                    onSwapToCrypto: onSwapToCrypto
                 )
-                .padding(.top, Layout.embeddedFormTopPadding)
+                .padding(.horizontal, Layout.cardHorizontalPadding)
             }
         }
     }
@@ -386,12 +361,12 @@ struct PaymentsLandingScreen: View {
 @MainActor
 private func landingSample(
     activeTab: PaymentsLandingTab = .internalTransfer,
-    network: ChainNetwork = .core,
+    network: ReceiveOption = .core,
     visibleTabs: [PaymentsLandingTab] = PaymentsLandingTab.allCases,
     coreAddress: String? = "XyZ8kFqW3nR5tHmB2vJcL7pQaS4dEuG9wN",
     transferAmount: String = "0",
-    transferSendFrom: ChainNetwork? = nil,
     transferReceivePinned: Bool = false,
+    transferReceiveInto: ChainNetwork? = nil,
     showsHeader: Bool = true
 ) -> some View {
 
@@ -408,10 +383,8 @@ private func landingSample(
         onSpecifyAmount: {},
         onViewTransaction: { _ in },
         onScanQR: {},
-        embeddedTransferViewModel: .makeForPreview(amountText: transferAmount),
-        transferSendFrom: transferSendFrom,
+        embeddedTransferViewModel: .makeForPreview(receiveInto: transferReceiveInto, amountText: transferAmount),
         transferReceivePinned: transferReceivePinned,
-        embeddedSendViewModel: .makeForPreview(pinnedSource: transferSendFrom),
         showsHeader: showsHeader)
 }
 
@@ -449,16 +422,6 @@ private func landingSample(
 
 // MARK: Sheet embeddings
 
-/// Balance-row send sheet: no header (the sheet's grabber and hero selector are
-/// the top chrome) and the transfer form's From card pinned.
-@available(iOS 17, *)
-#Preview("Send sheet · pinned From") {
-    landingSample(
-        transferAmount: "0.5",
-        transferSendFrom: .core,
-        showsHeader: false)
-}
-
 /// Balance-row receive sheet: the transfer form's To card is pinned to the
 /// receive toggle's network.
 @available(iOS 17, *)
@@ -468,6 +431,19 @@ private func landingSample(
         visibleTabs: [.receive, .internalTransfer],
         transferAmount: "0.5",
         transferReceivePinned: true,
+        showsHeader: false)
+}
+
+/// Balance-row receive sheet with Identity picked on Receive: Identity is not
+/// a chain, so the transfer form keeps the To card the route is pinned to.
+@available(iOS 17, *)
+#Preview("Receive sheet · Identity picked, pinned To kept") {
+    landingSample(
+        network: .identity,
+        visibleTabs: [.receive, .internalTransfer],
+        transferAmount: "0.5",
+        transferReceivePinned: true,
+        transferReceiveInto: .platform,
         showsHeader: false)
 }
 
