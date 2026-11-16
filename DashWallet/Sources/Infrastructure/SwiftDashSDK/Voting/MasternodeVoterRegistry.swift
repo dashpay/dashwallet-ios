@@ -104,6 +104,17 @@ final class MasternodeVoterRegistry {
         static let empty = Resolution(nodes: [], mayBeIncomplete: false)
     }
 
+    /// The SDK is running and the wallet's sync is done, so an empty
+    /// ``votableNodes()`` is this wallet's answer rather than a list that is
+    /// not there yet. The wallet's own masternodes come from its provider
+    /// transactions, which the filter scan finds after the masternode list
+    /// has synced, so the gate is the whole sync (`.syncDone`), not the
+    /// masternode phase.
+    var isNodeListSynced: Bool {
+        SwiftDashSDKHost.shared.manager != nil && SwiftDashSDKHost.shared.wallet != nil
+            && SyncingActivityMonitor.shared.state == .syncDone
+    }
+
     /// The wallet's votable nodes, ordered by registration.
     ///
     /// A masternode is votable when all of the following hold:

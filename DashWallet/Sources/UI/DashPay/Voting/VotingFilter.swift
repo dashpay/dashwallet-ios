@@ -87,7 +87,8 @@ enum VotingTypeFilter: String, CaseIterable, Identifiable {
                 return false
             } ?? false
         case .notVoted:
-            return myChoices?.isEmpty ?? false
+            // No record, or abstain only: neither blocks nor approves.
+            return myChoices?.allSatisfy { $0 == .abstain } ?? false
         case .hasBlockedVotes:
             return contest.lockVotes > 0
         }

@@ -28,6 +28,9 @@ import SwiftUI
 struct CastVoteSheet: View {
     let contest: DPNSContest
     let choice: VoteChoice
+    /// Set when this abstain takes back a choice: only the nodes holding it
+    /// are offered (AC-17).
+    var cancelling: VoteChoice?
     @ObservedObject var viewModel: VotingViewModel
 
     @Environment(\.dismiss)
@@ -36,52 +39,34 @@ struct CastVoteSheet: View {
     /// What the sheet showed when Cast was tapped. A successful cast reloads
     /// the history while the sheet is still closing, and the live lists would
     /// then flash "already voted" with nothing left to cast.
-    @State private var castSnapshot: (candidates: [VoterNode], holding: Int)?
+    @State private var castSnapshot: VotingStore.CastCandidates?
+
+    /// The nodes this choice can be cast with, and why ticked nodes are not
+    /// among them. A node holding a different choice is offered: replacing its
+    /// vote is a single state transition.
+    private var candidates: VotingStore.CastCandidates {
+        castSnapshot ?? viewModel.castCandidates(for: choice, cancelling: cancelling, on: contest.normalizedLabel)
+    }
+
+    private var candidateNodes: [VoterNode] { candidates.nodes }
 
     private var selectedNodes: [VoterNode] {
         candidateNodes.filter { selectedNodeIDs.contains($0.proTxHash) }
     }
 
-    /// The nodes this choice can be cast with: everything except nodes that
-    /// already hold *this* choice — Platform rejects a repeat of the same vote
-    /// — and nodes that have spent the five casts it allows per contest.
-    ///
-    /// A node holding a different choice belongs here. Replacing its vote is a
-    /// single state transition, and excluding it was what made changing your
-    /// mind impossible from this sheet.
-    private var candidateNodes: [VoterNode] {
-        castSnapshot?.candidates ?? viewModel.nodesForVote(choice, on: contest.normalizedLabel)
-    }
-
-    /// The nodes this sheet is talking about at all: `candidateNodes` is
-    /// already filtered by the remembered selection, so the counts explaining
-    /// what was left out have to be filtered the same way — otherwise nodes
-    /// the user never selected are reported as having used up their votes.
-    private var selectedVotableNodes: [VoterNode] {
-        let selected = viewModel.effectiveSelectedNodeIDs
-        return viewModel.votableNodes.filter { selected.contains($0.proTxHash) }
-    }
-
     /// Nodes left out because they already hold this exact choice.
-    private var holdingThisChoice: Int {
-        if let castSnapshot { return castSnapshot.holding }
-        return selectedVotableNodes.filter {
-            viewModel.liveChoice(of: $0, on: contest.normalizedLabel) == choice
-        }.count
-    }
+    private var holdingThisChoice: Int { candidates.holdingThisChoice }
 
     /// Nodes left out because they have no casts left on this contest.
-    private var outOfCasts: Int {
-        max(0, selectedVotableNodes.count - candidateNodes.count - holdingThisChoice)
-    }
+    private var outOfCasts: Int { candidates.outOfCasts }
 
     var body: some View {
         DashUIKit.BottomSheet(
             title: NSLocalizedString("Cast vote", comment: "Voting"),
             showBackButton: .constant(false),
             // No swipe-down while a vote is being cast, same as the close button.
-            isDismissalEnabled: .constant(!viewModel.isCasting),
-            isCloseButtonEnabled: !viewModel.isCasting,
+            isDismissalEnabled: .constant(!viewModel.isSending(normalizedLabel: contest.normalizedLabel)),
+            isCloseButtonEnabled: !viewModel.isSending(normalizedLabel: contest.normalizedLabel),
             onClose: {
                 viewModel.dismissCastResult()
                 dismiss()
@@ -99,7 +84,7 @@ struct CastVoteSheet: View {
         }
         // Not swiped away mid-cast: the outcome belongs to this sheet, and the
         // next sheet would otherwise open into it.
-        .interactiveDismissDisabled(viewModel.isCasting)
+        .interactiveDismissDisabled(viewModel.isSending(normalizedLabel: contest.normalizedLabel))
         .onAppear {
             if selectedNodeIDs.isEmpty {
                 // Honour the privacy mode: one node preselected by default,
@@ -175,7 +160,7 @@ struct CastVoteSheet: View {
 
             Section {
                 Button {
-                    castSnapshot = (candidateNodes, holdingThisChoice)
+                    castSnapshot = candidates
                     Task {
                         // Every node's vote landed: the screen behind says so in
                         // a toast. A partial or failed cast stays here, where the
@@ -189,7 +174,7 @@ struct CastVoteSheet: View {
                 } label: {
                     HStack {
                         Spacer()
-                        if viewModel.isCasting {
+                        if viewModel.isSending(normalizedLabel: contest.normalizedLabel) {
                             SwiftUI.ProgressView()
                         } else {
                             Text(castButtonTitle).fontWeight(.semibold)
@@ -197,7 +182,7 @@ struct CastVoteSheet: View {
                         Spacer()
                     }
                 }
-                .disabled(selectedNodes.isEmpty || viewModel.isCasting)
+                .disabled(selectedNodes.isEmpty || viewModel.isSending(normalizedLabel: contest.normalizedLabel))
             }
         }
     }
@@ -366,3 +351,139 @@ private struct VoteResultView: View {
             report.succeeded.count, report.outcomes.count)
     }
 }
+
+// MARK: - Previews
+
+#if DEBUG
+/// Shows the sheet once the store has loaded the contest's history, as the
+/// vote flow does.
+private struct CastVoteSheetPreview: View {
+    let contest: DPNSContest
+    let choice: VoteChoice
+    var cancelling: VoteChoice?
+    let viewModel: VotingViewModel
+    @State private var loaded = false
+
+    var body: some View {
+        Group {
+            if loaded {
+                CastVoteSheet(contest: contest, choice: choice, cancelling: cancelling, viewModel: viewModel)
+            } else {
+                SwiftUI.ProgressView()
+            }
+        }
+        .task {
+            await viewModel.store.refresh()
+            loaded = true
+        }
+    }
+}
+
+private let castPreviewEnd = Date(timeIntervalSince1970: 1_800_000_000)
+private let castPreviewCastAt = Date(timeIntervalSince1970: 1_799_000_000)
+
+private func castPreviewNode(_ byte: UInt8, address: String) -> VoterNode {
+    VoterNode(proTxHash: Data([byte]), isEvonode: byte == 3, typeIndex: UInt32(byte),
+              serviceAddress: address, keySource: .walletIndex(UInt32(byte)))
+}
+
+private let castPreviewNodes = [
+    castPreviewNode(1, address: "203.0.113.10:9999"),
+    castPreviewNode(2, address: "203.0.113.11:9999"),
+    castPreviewNode(3, address: "203.0.113.12:9999"),
+]
+
+private func castPreviewContest(_ label: String) -> DPNSContest {
+    DPNSContest(
+        normalizedLabel: label, endTime: castPreviewEnd, hasWinner: false, abstainVotes: 0, lockVotes: 2,
+        contenders: [DPNSContender(identityId: "8Xq3Yz1mWd4k9PnVtR2sLbHc7JfEuAo5GiQwKx6TyMnZ", voteTally: 4,
+                                   displayLabel: label)])
+}
+
+private func castPreviewRecord(
+    _ node: VoterNode, _ label: String, _ choice: VoteChoice, casts: Int = 1
+) -> CastVoteRecord {
+    CastVoteRecord(proTxHash: node.proTxHash, normalizedLabel: label, choice: choice,
+                   castAt: castPreviewCastAt, castCount: casts)
+}
+
+/// Holds no keys and touches no keychain.
+private struct CastPreviewVault: TrackedMasternodeKeyVaulting {
+    func key(for proTxHash: Data, role: MasternodeKeyRole) -> String? { nil }
+    func store(_ keyText: String, for proTxHash: Data, role: MasternodeKeyRole) -> Bool { false }
+    func removeKey(for proTxHash: Data, role: MasternodeKeyRole) -> Bool { false }
+    func attachedRoles(for proTxHash: Data) -> Set<MasternodeKeyRole> { [] }
+    func keyPresence(for proTxHash: Data, role: MasternodeKeyRole) -> TrackedMasternodeKeyPresence { .absent }
+    func removeAllKeys(for proTxHash: Data) {}
+}
+
+@MainActor
+private func castPreview(
+    _ contest: DPNSContest,
+    choice: VoteChoice,
+    cancelling: VoteChoice? = nil,
+    records: [CastVoteRecord] = [],
+    castError: String? = nil,
+    report: VoteCastReport? = nil
+) -> some View {
+    let store = VotingStore(
+        contests: PreviewContests(contests: [contest]),
+        nodes: PreviewNodes(nodes: castPreviewNodes),
+        caster: PreviewCaster(),
+        history: PreviewHistory(records: records),
+        prefs: PreviewPrefs(selection: Set(castPreviewNodes.map(\.proTxHash))))
+    let viewModel = VotingViewModel(vault: CastPreviewVault(), tracker: { nil }, store: store)
+    viewModel.castError = castError
+    viewModel.lastCastReport = report
+    return CastVoteSheetPreview(contest: contest, choice: choice, cancelling: cancelling, viewModel: viewModel)
+}
+
+private let castPreviewApprove = VoteChoice.towards(identityId: "8Xq3Yz1mWd4k9PnVtR2sLbHc7JfEuAo5GiQwKx6TyMnZ")
+
+#Preview("Vote") {
+    castPreview(castPreviewContest("johndoe"), choice: castPreviewApprove)
+}
+
+#Preview("Block, one node already blocks") {
+    castPreview(castPreviewContest("johndoe"), choice: .lock,
+                records: [castPreviewRecord(castPreviewNodes[0], "johndoe", .lock)])
+}
+
+#Preview("Some nodes out of casts") {
+    castPreview(castPreviewContest("johndoe"), choice: castPreviewApprove, records: [
+        castPreviewRecord(castPreviewNodes[0], "johndoe", .lock, casts: VoteLimit.maxCastsPerNode),
+        castPreviewRecord(castPreviewNodes[1], "johndoe", castPreviewApprove),
+    ])
+}
+
+#Preview("Cancel approval") {
+    castPreview(castPreviewContest("johndoe"), choice: .abstain, cancelling: castPreviewApprove, records: [
+        castPreviewRecord(castPreviewNodes[0], "johndoe", castPreviewApprove),
+        castPreviewRecord(castPreviewNodes[1], "johndoe", .lock),
+        castPreviewRecord(castPreviewNodes[2], "johndoe", castPreviewApprove, casts: VoteLimit.maxCastsPerNode),
+    ])
+}
+
+#Preview("Error") {
+    castPreview(castPreviewContest("johndoe"), choice: castPreviewApprove,
+                castError: "Authentication cancelled. Your vote was not cast.")
+}
+
+#Preview("Result (mixed)") {
+    castPreview(castPreviewContest("johndoe"), choice: castPreviewApprove, report: VoteCastReport(
+        normalizedLabel: "johndoe", choice: castPreviewApprove, outcomes: [
+            VoteOutcome(node: castPreviewNodes[0], failure: nil),
+            VoteOutcome(node: castPreviewNodes[1], failure: nil),
+            VoteOutcome(node: castPreviewNodes[2], failure: "No votes left"),
+        ]))
+}
+
+#Preview("No node can cast this") {
+    castPreview(castPreviewContest("johndoe"), choice: .lock,
+                records: castPreviewNodes.map { castPreviewRecord($0, "johndoe", .lock) })
+}
+
+#Preview("Long name") {
+    castPreview(castPreviewContest("somelongusernamethatkeepsgoingandgoingandgoing"), choice: .lock)
+}
+#endif

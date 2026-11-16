@@ -46,7 +46,9 @@ struct CastVoteRecord: Hashable {
 protocol VoteHistoryDAO {
     /// Upsert — a node re-voting on the same contest replaces its own row,
     /// mirroring Platform, where a masternode has one live vote per poll.
-    func record(_ record: CastVoteRecord, network: String) async
+    /// - Throws: the store's error, so a caller whose vote already landed can
+    ///   still count it as a spent cast.
+    func record(_ record: CastVoteRecord, network: String) async throws
     /// Votes this device cast on one contest, newest first. `nil` when the
     /// store could not be read — unknown, not "no votes".
     func votes(forContest normalizedLabel: String, network: String) async -> [CastVoteRecord]?
@@ -71,7 +73,7 @@ actor VoteHistoryDAOImpl: VoteHistoryDAO {
         self.connection = connection
     }
 
-    func record(_ record: CastVoteRecord, network: String) async {
+    func record(_ record: CastVoteRecord, network: String) async throws {
         let query = """
             INSERT INTO masternode_vote_history
                 (proTxHash, normalizedLabel, network, choice, contenderIdentityId, castAt, castCount)
@@ -94,11 +96,7 @@ actor VoteHistoryDAOImpl: VoteHistoryDAO {
             Int64(record.castAt.timeIntervalSince1970 * 1000),
         ]
 
-        do {
-            try db.run(query, bindings)
-        } catch {
-            DWLogger.log("VoteHistoryDAO: record failed: \(error)")
-        }
+        try db.run(query, bindings)
     }
 
     func votes(forContest normalizedLabel: String, network: String) async -> [CastVoteRecord]? {

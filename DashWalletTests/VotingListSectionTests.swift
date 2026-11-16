@@ -54,6 +54,20 @@ final class VotingListSectionTests: XCTestCase {
         XCTAssertEqual(sections[1].contests.map(\.normalizedLabel), ["early-tomorrow"])
     }
 
+    /// AC-01: the day follows the device's time zone. 23:30 UTC on 2 Nov is
+    /// still 2 Nov in UTC but already 3 Nov in Kyiv.
+    func testATimeZoneChangeMovesAContestAcrossADay() throws {
+        var utc = Calendar(identifier: .gregorian)
+        utc.timeZone = try XCTUnwrap(TimeZone(identifier: "UTC"))
+        let morning = try XCTUnwrap(utc.date(from: DateComponents(year: 2026, month: 11, day: 2, hour: 8)))
+        let end = try XCTUnwrap(utc.date(from: DateComponents(year: 2026, month: 11, day: 2, hour: 23, minute: 30)))
+        let late = DPNSContest(normalizedLabel: "late", endTime: end, hasWinner: false,
+                               abstainVotes: 0, lockVotes: 0, contenders: [])
+
+        XCTAssertEqual(VotingListSection.group([late], now: morning, calendar: utc).map(\.daysLeft), [0])
+        XCTAssertEqual(VotingListSection.group([late], now: morning, calendar: calendar).map(\.daysLeft), [1])
+    }
+
     /// A contest whose end has already passed is closing, so it reads as
     /// "today", never as a negative number of days.
     func testPastEndCountsAsToday() {
@@ -89,17 +103,17 @@ final class VotingListSectionTests: XCTestCase {
     /// more of its casts.
     func testRecordedCastUpdatesTheLiveVoteAndTheCastCount() {
         let node = Data([1, 2, 3])
-        var history = VotingViewModel.NodeVoteHistory([
+        var history = VoteLimit([
             CastVoteRecord(proTxHash: node, normalizedLabel: "pizza", choice: .lock,
                            castAt: now, castCount: 4),
         ])
-        XCTAssertTrue(history.hasCastsLeft(node))
+        XCTAssertEqual(history.votesLeft(node), 1)
 
         history.recordCast(of: node, on: "pizza", choice: .abstain, at: now.addingTimeInterval(60))
 
         XCTAssertEqual(history.liveChoice(of: node), .abstain)
-        XCTAssertEqual(history.liveChoices(of: [node]), [.abstain])
-        XCTAssertFalse(history.hasCastsLeft(node), "the fifth cast spends the last one")
+        XCTAssertEqual(history.nodes(holding: .abstain, among: [node]), [node])
+        XCTAssertEqual(history.votesLeft(node), 0, "the fifth cast spends the last one")
     }
 
     func testVotedToastNamesTheUsername() {
