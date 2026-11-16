@@ -563,7 +563,7 @@ struct UsernameMarketplaceService {
                 return NSLocalizedString("This username is not for sale.", comment: "Username marketplace")
             case .priceChanged:
                 return NSLocalizedString("The seller changed the price before your purchase was accepted. Review the new price and try again.", comment: "Username marketplace")
-            case let .insufficientIdentityCredits(_, required, available):
+            case let .insufficientIdentityCredits(_, required, available, _):
                 return String.localizedStringWithFormat(
                     NSLocalizedString("Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again.", comment: "Username marketplace"),
                     (required / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol,

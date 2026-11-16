@@ -132,32 +132,25 @@ enum SendOutcome {
         }
     }
 
+    /// The wallet decides whether a failed payment may have left it (`PlatformWalletError.delivery`, owned by Rust);
+    /// the error's type only picks the words of a not-sent reason. An unclassified error stays in progress: it is not
+    /// proven safe to send again. A held lock reads as in progress here, because the coordinator reports the lock it
+    /// keeps, with its funding type, as `lockHeld` itself.
     private static func outcome(for error: PlatformWalletError) -> SendOutcome {
+        switch error.delivery {
+        case .notSent?:
+            return .notSent(notSentReason(for: error))
+        case .maybeSent?, .lockHeld?, nil:
+            return .inFlight
+        }
+    }
+
+    private static func notSentReason(for error: PlatformWalletError) -> NotSentReason {
         switch error {
-        case .transactionBroadcastRejected:
-            return .notSent(.rejected)
-        case .signingKeyUnavailable:
-            return .notSent(.signingKeyUnavailable)
-        case .staleReservationToken, .coreInsufficientFunds, .shieldedNoRecordedAnchor:
-            return .notSent(.failed)
-        // Refusals of an asset lock's coin selection: nothing was built or broadcast.
-        case .assetLockInsufficientFunds, .noSelectableInputs, .assetLockTooManyInputs:
-            return .notSent(.failed)
-        // The only producer of this code is the FFI's `identity_manager_remove_identity`, which no send calls.
-        case .identityNotFound:
-            return .notSent(.identityNotFound)
-        // The Platform withdrawal's address network check runs before signing; the Platform-to-shielded capacity
-        // checks run during input selection and the input fetch, before the proof is built.
-        case .invalidNetwork, .shieldedInsufficientBalance:
-            return .notSent(.failed)
-        // The SDK documents it as definitively not executed, with any note reservations released and retry safe.
-        case .shieldedBroadcastFailed:
-            return .notSent(.failed)
-        // Stays maybe-sent: the SDK's coming Rust-owned delivery class (dashpay/platform#5928) classes it so.
-        case .addressNonceMismatch:
-            return .inFlight
-        default:
-            return .inFlight
+        case .transactionBroadcastRejected: return .rejected
+        case .signingKeyUnavailable: return .signingKeyUnavailable
+        case .identityNotFound: return .identityNotFound
+        default: return .failed
         }
     }
 
