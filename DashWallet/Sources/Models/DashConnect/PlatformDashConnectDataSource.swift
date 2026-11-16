@@ -1175,7 +1175,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             let unread = hasUnreadableIntent ? Set(rows.filter { $0.status == .disconnected }.map(\.id)) : []
             return Self.rows(
                 rows, after: projection, of: snapshot.identityId, intents: elsewhere, at: updatedAt,
-                keeping: kept.union(unread))
+                keeping: kept.union(unread), unreadable: unread)
         }
     }
 
@@ -1202,7 +1202,9 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// A row whose app is in `keeping` keeps its status; its response mark
     /// (`responseMayRemain`) follows the read when the read has the app's
     /// connection, and stays as it was when it has none (its intents could
-    /// not be read). While the read has a
+    /// not be read). A mark of an app in `unreadable`, whose intents were
+    /// read only in part, is never cleared by the read: an intent it could not
+    /// read may hold a response not removed. While the read has a
     /// key whose bound is unknown, that key may be any app's: no row goes;
     /// one that would is Confirming, so it keeps its Disconnect until a
     /// read places every key.
@@ -1212,7 +1214,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         of identityId: Data,
         intents elsewhere: [AppConnect.ConnectionIntent],
         at updatedAt: Date,
-        keeping: Set<String> = []
+        keeping: Set<String> = [],
+        unreadable: Set<String> = []
     ) -> [DAppConnection] {
         let me = identityId.toBase58String()
         func shownStatus(_ connection: AppConnect.ProjectedConnection) -> ConnectionStatus? {
@@ -1240,7 +1243,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 // with no connection of the app in it, stays as it was.
                 var kept = row
                 if let read = projection.connections.first(where: { $0.appId.toBase58String() == row.id }) {
-                    kept.responseMayRemain = row.status == .disconnected && read.responseMayRemain
+                    kept.responseMayRemain = row.status == .disconnected
+                        && (read.responseMayRemain || unreadable.contains(row.id) && row.responseMayRemain)
                 }
                 return kept
             }
@@ -1303,7 +1307,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 status: status,
                 updatedAt: existing?.status == status ? existing?.updatedAt ?? updatedAt : updatedAt,
                 seenOn: seenOn)
-            row.responseMayRemain = status == .disconnected && connection.responseMayRemain
+            let markUnread = unreadable.contains(id) && existing?.responseMayRemain == true
+            row.responseMayRemain = status == .disconnected && (connection.responseMayRemain || markUnread)
             result.append(row)
         }
         return result
@@ -1493,10 +1498,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// Looks up, through `port` and without writing to Platform, the response
     /// of each open intent whose keys are live but whose response this wallet
     /// did not record publishing (a publish can land without confirming, and
-    /// its row would show "Not delivered"), and of each closed intent whose
-    /// response is not recorded removed (a publish can land after the
+    /// its row would show "Not delivered"), and of each closed intent with no
+    /// response recorded, published or removed (a publish can land after the
     /// disconnect). A response found is recorded; one absent of a closed
-    /// intent whose document is unknown is recorded removed once its publish
+    /// intent is recorded removed once its publish
     /// is resolved (`markResponseRemoved`). A lookup that fails decides
     /// nothing.
     private func recordPublishedResponses(
@@ -1568,9 +1573,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
     }
 
-    /// The intents of the identity whose response may be on Platform: closed
-    /// ones not recorded removed, and open active ones with no response
-    /// recorded: any whose publish is still unresolved at the read's block
+    /// The intents of the identity whose response may be on Platform and is
+    /// not recorded: closed ones not recorded removed, and open active ones: any whose publish is still unresolved at the read's block
     /// time, whatever its keys show, and an active one made in the last day.
     private func responseCandidates(
         in snapshot: AppConnect.IdentitySnapshot, intents: any AppConnectIntentStore
@@ -1581,8 +1585,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let since = now().addingTimeInterval(-24 * 60 * 60)
         return intents.load().filter { intent in
             guard intent.identityId == snapshot.identityId else { return false }
-            if intent.closedAt != nil { return !intent.responseRemoved }
+            // A known document has nothing more to find: the delete path of
+            // the next disconnect or approval looks it up and deletes it.
             guard intent.responseDocumentId == nil else { return false }
+            if intent.closedAt != nil { return !intent.responseRemoved }
             if AppConnect.isPublishUnresolved(intent, platformTime: snapshot.platformTime) { return true }
             guard intent.createdAt > since, case .active = AppConnect.status(of: intent, in: snapshot) else { return false }
             return true

@@ -1118,6 +1118,33 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertEqual(rows.first?.responseMayRemain, true)
     }
 
+    /// A row kept because some of the app's intents could not be read keeps
+    /// its mark, though a readable intent of the same app has its response
+    /// removed: the unread one may still hold one (PastaClaw round 8, #1414).
+    func testAMarkOfAnAppReadOnlyInPartIsNotClearedByAReadableSibling() {
+        let a = Self.authKey(10)
+        let keys = [Self.onPlatform(a, disabledAt: 1)]
+        let readable = Self.closed(Self.intent([a], published: false))
+        XCTAssertTrue(readable.responseRemoved)
+        let projection = AppConnect.project([Self.snapshot(keys)], intents: [readable])
+        XCTAssertFalse(try XCTUnwrap(Self.connection([readable], keys)).responseMayRemain)
+        var row = DAppConnection(
+            id: Self.app.toBase58String(), name: "App", url: "", status: .disconnected,
+            updatedAt: Date(timeIntervalSince1970: 1))
+        row.responseMayRemain = true
+        let app: Set<String> = [Self.app.toBase58String()]
+
+        let partial = PlatformDashConnectDataSource.rows(
+            [row], after: projection, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 2),
+            keeping: app, unreadable: app)
+        XCTAssertEqual(partial.map(\.status), [.disconnected])
+        XCTAssertEqual(partial.first?.responseMayRemain, true, "the unread intent may hold a response")
+
+        let whole = PlatformDashConnectDataSource.rows(
+            [row], after: projection, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 2))
+        XCTAssertEqual(whole.first?.responseMayRemain, false, "a whole read clears it")
+    }
+
     /// Edge: every closed intent of the Disconnected app has its response removed.
     func testADisconnectedRowWhoseClosedResponsesAreAllRemovedHasNoMark() {
         let a = Self.authKey(10)

@@ -4549,13 +4549,13 @@ final class DashConnectDisconnectThroughSeamsTests: XCTestCase {
         XCTAssertEqual(run.platform.lookupCount, lookups)
     }
 
-    /// A refresh does not retire a known document from a lookup that finds
-    /// none: a node behind the document's creation finds none either. The
-    /// delete path of the next disconnect or approval decides.
-    func testARefreshKeepsAKnownDocumentWhenNoneIsFound() async {
+    /// A refresh does not look up a closed intent whose document is known
+    /// (HashEngineering, #1414): it would learn nothing, and the delete path
+    /// of the next disconnect or approval looks it up and deletes it.
+    func testARefreshDoesNotLookUpAClosedIntentWhoseDocumentIsKnown() async {
         let run = await refreshed(Self.intent(closedAt: Self.at, responseDocumentId: Self.documentId), gone: true)
 
-        XCTAssertEqual(run.platform.lookupCount, 1, "the lookup was made")
+        XCTAssertEqual(run.platform.lookupCount, 0, "no lookup is made")
         XCTAssertEqual(run.stored?.responseRemoved, false, "the known document stays tracked")
         XCTAssertEqual(run.stored?.responseDocumentId, Self.documentId)
         XCTAssertEqual(run.chain.kinds, [])
