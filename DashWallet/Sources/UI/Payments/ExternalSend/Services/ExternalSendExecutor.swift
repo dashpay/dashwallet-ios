@@ -963,18 +963,18 @@ struct LiveCoreTwoStepSend: CoreTwoStepSending {
         return Self.result(of: coordinator, fundingTypeRaw: ShieldedTransferCoordinator.addressAssetLockFundingType)
     }
 
-    /// Whether an asset lock may have been built when a Core top-up threw `error`. Only refusals of the lock's coin
-    /// selection, and the SDK's parameter checks that run before it, prove it was not: any other failure counts as a
+    /// Whether an asset lock may have been built when a Core top-up threw `error`. Only a failure the wallet classes
+    /// not sent, or the app's input-limit refusal before the prompt, proves it was not: any other failure counts as a
     /// possibly built lock (ADR-0040: doubt is `inFlight`).
     static func lockMayExist(after error: Error) -> Bool {
         if error is AssetLockInputLimit.TooManyInputsError { return false }
-        switch error as? PlatformWalletError {
-        case .assetLockInsufficientFunds?, .coreInsufficientFunds?, .noSelectableInputs?, .assetLockTooManyInputs?,
-             .invalidParameter?:
-            return false
-        default:
+        // The wallet classes every failure it returns (`delivery`); only a not-sent one proves no lock left Core. An
+        // unclassified failure may have built one.
+        if let error = error as? PlatformWalletError {
+            if case .notSent? = error.delivery { return false }
             return true
         }
+        return true
     }
 
     /// `topUpIdentityWithFunding` reports no asset-lock outpoint, so a failure is classified by its type.

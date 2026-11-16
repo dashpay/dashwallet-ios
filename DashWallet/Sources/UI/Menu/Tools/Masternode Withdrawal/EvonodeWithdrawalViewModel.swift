@@ -370,7 +370,7 @@ final class EvonodeWithdrawalViewModel: ObservableObject {
                 ownerKeyIndexHint: ownerKeyIndexHint)
             Self.logger.info("🏛️ EVONODE :: withdrawal accepted, remaining \(remaining) credits")
             phase = .success(remainingCredits: remaining)
-        } catch PlatformWalletError.masternodeWithdrawalUnconfirmed(let detail) {
+        } catch PlatformWalletError.masternodeWithdrawalUnconfirmed(let detail, _) {
             Self.logger.error("🏛️ EVONODE :: withdrawal outcome unconfirmed: \(detail, privacy: .public)")
             phase = .submittedUnconfirmed(detail)
         } catch {

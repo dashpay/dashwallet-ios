@@ -1062,12 +1062,12 @@ private extension WalletSendService {
         // of the app — the amount step's terminal state included — recognises
         // it only in this service's domain, the same codes a standard send gets.
         switch error as? PlatformWalletError {
-        case .transactionBroadcastUnconfirmed(let reason):
+        case .transactionBroadcastUnconfirmed(let reason, _):
             return makeError(
                 code: .broadcastUnknown,
                 description: "We couldn't confirm whether the transaction was accepted. Don't send it again; wait for wallet synchronization. \(reason)"
             )
-        case .transactionBroadcastRejected(let reason):
+        case .transactionBroadcastRejected(let reason, _):
             return makeError(
                 code: .broadcastRejected,
                 description: "The transaction wasn't sent. You can try again. \(reason)"

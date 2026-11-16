@@ -640,7 +640,7 @@ final class ExternalSendExecutorTests: XCTestCase {
     /// A definite broadcast rejection removes the lock again (`keepsLockForRetry`), so the coordinator records no
     /// lock: the money is still in Core and Send fails with Retry instead of reporting a payment in progress.
     func testARejectedLockIsNotReportedAndTheSendIsNotSent() {
-        let rejected = PlatformWalletError.transactionBroadcastRejected("rejected")
+        let rejected = PlatformWalletError.transactionBroadcastRejected("rejected", payment: .notSentClass)
         XCTAssertFalse(ShieldedTransferCoordinator.keepsLockForRetry(after: rejected))
         let result = LiveCoreTwoStepSend.result(
             phase: .failed("x"), lastFailure: ShieldedTransferCoordinator.CoordinatorError.transferFailed(rejected),
@@ -1390,10 +1390,10 @@ final class ExternalSendExecutorTests: XCTestCase {
     func testTwoStepInsufficientFundsBeforeTheLockIsNotSent() async throws {
         let executor = makeExecutor()
         let errors: [Error] = [
-            PlatformWalletError.assetLockInsufficientFunds("available 1, required 2"),
-            PlatformWalletError.coreInsufficientFunds("short"),
-            PlatformWalletError.noSelectableInputs("none"),
-            PlatformWalletError.assetLockTooManyInputs("too many")
+            PlatformWalletError.assetLockInsufficientFunds("available 1, required 2", payment: .notSentClass),
+            PlatformWalletError.coreInsufficientFunds("short", payment: .notSentClass),
+            PlatformWalletError.noSelectableInputs("none", payment: .notSentClass),
+            PlatformWalletError.assetLockTooManyInputs("too many", payment: .notSentClass)
         ]
         for error in errors {
             twoStep.result = .failed(error, assetLockRecorded: false)
@@ -1405,8 +1405,8 @@ final class ExternalSendExecutorTests: XCTestCase {
     /// `topUpIdentityWithFunding` reports no outpoint; a refusal of coin selection still proves no lock was built.
     func testIdentityTopUpFromCoreClassifiesItsFailureByType() {
         let beforeLock: [Error] = [
-            PlatformWalletError.assetLockInsufficientFunds("x"), PlatformWalletError.coreInsufficientFunds("x"),
-            PlatformWalletError.noSelectableInputs("x"), PlatformWalletError.assetLockTooManyInputs("x"),
+            PlatformWalletError.assetLockInsufficientFunds("x", payment: .notSentClass), PlatformWalletError.coreInsufficientFunds("x", payment: .notSentClass),
+            PlatformWalletError.noSelectableInputs("x", payment: .notSentClass), PlatformWalletError.assetLockTooManyInputs("x", payment: .notSentClass),
             AssetLockInputLimit.TooManyInputsError(
                 check: AssetLockInputLimit.Check(amountDuffs: 1, inputBudget: AssetLockInputPolicy.platformInputBudget))
         ]
@@ -1414,7 +1414,7 @@ final class ExternalSendExecutorTests: XCTestCase {
             XCTAssertFalse(LiveCoreTwoStepSend.lockMayExist(after: error), "\(error)")
         }
         let unknown: [Error] = [
-            PlatformWalletError.transactionBroadcastRejected("x"), PlatformWalletError.walletOperation("x"),
+            PlatformWalletError.transactionBroadcastRejected("x", payment: .maybeSent), PlatformWalletError.walletOperation("x"),
             NSError(domain: "unmapped", code: 1)
         ]
         for error in unknown {
@@ -1435,7 +1435,7 @@ final class ExternalSendExecutorTests: XCTestCase {
 
     func testIdentityTopUpFromCoreInvalidParameterIsNotSentNotInFlight() async throws {
         let refusal = PlatformWalletError.invalidParameter(
-            "`amount_duffs` is below the minimum top-up asset-lock balance")
+            "`amount_duffs` is below the minimum top-up asset-lock balance", payment: .notSentClass)
         XCTAssertFalse(LiveCoreTwoStepSend.lockMayExist(after: refusal))
 
         let executor = makeExecutor()
@@ -1767,8 +1767,8 @@ final class ExternalSendExecutorTests: XCTestCase {
             (CoordinatorError.shieldedBalanceUnavailable, "failed"),
             (CoordinatorError.authCancelled, "failed"),
             (CoordinatorError.shieldedSweepWaiting(1_000), "earlierPaymentPending"),
-            (CoordinatorError.transferFailed(PlatformWalletError.transactionBroadcastRejected("r")), "rejected"),
-            (PlatformWalletError.signingKeyUnavailable("k"), "signingKeyUnavailable")
+            (CoordinatorError.transferFailed(PlatformWalletError.transactionBroadcastRejected("r", payment: .notSentClass)), "rejected"),
+            (PlatformWalletError.signingKeyUnavailable("k", payment: .notSentClass), "signingKeyUnavailable")
         ]
         for route in creditRoutes {
             let countBefore = logged.count
@@ -1830,7 +1830,7 @@ final class ExternalSendExecutorTests: XCTestCase {
     /// The top-up from Platform addresses refuses an identity the wallet does not manage before it builds the
     /// transition, so nothing moved: Send failed with the reason, never the "Send in progress" Toast.
     func testPlatformToIdentityRefusedWithIdentityNotFoundIsNotSent() async throws {
-        identityTopUp.result = .failed(PlatformWalletError.identityNotFound("raw"), handedOver: false)
+        identityTopUp.result = .failed(PlatformWalletError.identityNotFound("raw", payment: .notSentClass), handedOver: false)
         let executor = makeExecutor()
         let outcome = await executor.send(try await prepare(executor, .platformToIdentity))
         XCTAssertTrue(isNotSent(outcome, "identityNotFound"), "\(outcome)")
@@ -2239,8 +2239,8 @@ final class ExternalSendExecutorTests: XCTestCase {
         scriptIdentity()
         let executor = makeExecutor()
         let cases: [(Error, String)] = [
-            (PlatformWalletError.signingKeyUnavailable("k"), "signingKeyUnavailable"),
-            (PlatformWalletError.transactionBroadcastRejected("r"), "rejected"),
+            (PlatformWalletError.signingKeyUnavailable("k", payment: .notSentClass), "signingKeyUnavailable"),
+            (PlatformWalletError.transactionBroadcastRejected("r", payment: .notSentClass), "rejected"),
             (CoordinatorError.noWallet, "failed")
         ]
         for route in identityRoutes {
@@ -2257,7 +2257,7 @@ final class ExternalSendExecutorTests: XCTestCase {
 
     func testIdentityRejectionAfterHandoverIsInFlight() async throws {
         scriptIdentity()
-        identityCredits.result = .failed(PlatformWalletError.transactionBroadcastRejected("r"), handedOver: true)
+        identityCredits.result = .failed(PlatformWalletError.transactionBroadcastRejected("r", payment: .notSentClass), handedOver: true)
         let executor = makeExecutor()
         for route in identityRoutes {
             let outcome = await executor.send(try await prepare(executor, route, amount: Self.identityAmount))
@@ -2483,7 +2483,7 @@ final class ExternalSendExecutorTests: XCTestCase {
     func testExternalCoreToPlatformPaysTheRecipientAndARejectedLockIsNotSent() async throws {
         let funding = FakePlatformFunding()
         funding.built = try builtOutPoint()
-        funding.failure = PlatformWalletError.transactionBroadcastRejected("rejected")
+        funding.failure = PlatformWalletError.transactionBroadcastRejected("rejected", payment: .notSentClass)
         let executor = try executorOverTheCoordinator(funding, CountingAuthorizer())
 
         let prepared = try await prepare(executor, .coreToPlatform)
@@ -2502,7 +2502,7 @@ final class ExternalSendExecutorTests: XCTestCase {
         let funding = FakePlatformFunding()
         let built = try builtOutPoint()
         funding.built = built
-        funding.failure = PlatformWalletError.signingKeyUnavailable("funding transition")
+        funding.failure = PlatformWalletError.signingKeyUnavailable("funding transition", payment: .notSentClass)
         let executor = try executorOverTheCoordinator(funding, CountingAuthorizer())
 
         let outcome = await executor.send(try await prepare(executor, .coreToPlatform))
@@ -2766,4 +2766,9 @@ extension BIP70ConfirmationBox {
             merchantData: nil, memo: memo, callbackScheme: callbackScheme,
             request: PaymentRequest(serializedDetails: details.encoded())))
     }
+}
+
+extension PlatformPaymentClass {
+    /// The class Rust gives a payment that never left the wallet.
+    static let notSentClass = PlatformPaymentClass(delivery: .notSent, isRetryable: true)
 }

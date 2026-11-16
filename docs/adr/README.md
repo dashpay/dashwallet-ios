@@ -48,6 +48,7 @@ where they disagree, ADR-0001 wins.
 | [0044](0044-top-up-an-identity-from-shielded-in-one-step.md) | Top up an identity from Shielded in one step | payments | Proposed | |
 | [0045](0045-add-an-external-identity-top-up-and-a-non-blocking-identity-read-to-the-sdk.md) | Add an external-identity top-up and a non-blocking identity read to the SDK | platform | Proposed | |
 | [0053](0053-open-dashconnect-on-mainnet-and-gate-each-request-by-protocol-14.md) | Open DashConnect on mainnet and gate each request by protocol 14 | platform | Proposed | |
+| [0054](0054-decide-a-failed-platform-payment-by-the-wallets-payment-class.md) | Decide a failed Platform payment by the wallet's payment class | payments | Proposed | |
 
 Areas: `spv`, `platform`, `keys`, `storage`, `coinjoin`, `payments`, `swap`, `ui`, `build`, `process`. Each ADR takes one; a new
 Area is added to this list in the PR that first needs it.

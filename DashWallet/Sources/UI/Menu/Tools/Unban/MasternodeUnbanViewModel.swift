@@ -340,14 +340,14 @@ final class MasternodeUnbanViewModel: ObservableObject {
                 "The masternode list hasn't synced yet. Wait for sync to finish and try again.",
                 comment: "Masternode unban")
             phase = .ready
-        case .invalidParameter(let message) where message.contains("operator reward"):
+        case .invalidParameter(let message, _) where message.contains("operator reward"):
             // D2: the node pays an operator reward, so the payout address
             // must be confirmed explicitly. Reveal the field; the Rust
             // message carries the reward percentage.
             payoutAddressRequired = true
             errorText = message
             phase = .ready
-        case .invalidParameter(let message) where message.contains("extended network info"):
+        case .invalidParameter(let message, _) where message.contains("extended network info"):
             // v3 extended entries can't be re-asserted by a v2 payload —
             // fail closed rather than downgrade the node's endpoint map.
             errorText = NSLocalizedString(

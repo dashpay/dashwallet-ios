@@ -103,6 +103,30 @@ final class SendOutcomeMappingTests: XCTestCase {
 
     // MARK: - PlatformWalletError
 
+    /// The wallet's class decides, not the error's type: an "unconfirmed" type classed not-sent is not sent, a
+    /// "rejected" type classed maybe-sent stays in progress.
+    func testThePaymentClassDecidesOverTheErrorType() {
+        XCTAssertNotNil(assertNotSent(
+            PlatformWalletError.transactionBroadcastUnconfirmed(Self.rawSdkText, payment: .notSentClass)))
+        assertInFlight(PlatformWalletError.transactionBroadcastRejected(Self.rawSdkText, payment: .maybeSent))
+    }
+
+    func testAnUnclassifiedWalletErrorStaysInProgress() {
+        assertInFlight(PlatformWalletError.transactionBroadcastRejected(Self.rawSdkText))
+        assertInFlight(PlatformWalletError.walletOperation(Self.rawSdkText))
+    }
+
+    func testAHeldLockClassReadsAsInProgress() {
+        let held = PlatformPaymentClass(
+            delivery: .lockHeld(AssetLockBuiltOutPoint(rawBytes: Data(repeating: 1, count: 36))!), isRetryable: true)
+        assertInFlight(PlatformWalletError.walletOperation(Self.rawSdkText, payment: held))
+    }
+
+    /// dashwallet-ios#1427: Rust classes a nonce mismatch as maybe-sent, so it stays in progress.
+    func testAddressNonceMismatchClassedMaybeSentIsInFlight() {
+        assertInFlight(PlatformWalletError.addressNonceMismatch(Self.rawSdkText, payment: .maybeSent))
+    }
+
     func testUnconfirmedBroadcastsAreInFlight() {
         assertInFlight(PlatformWalletError.transactionBroadcastUnconfirmed(Self.rawSdkText))
         assertInFlight(PlatformWalletError.shieldedSpendUnconfirmed(Self.rawSdkText))
@@ -118,7 +142,7 @@ final class SendOutcomeMappingTests: XCTestCase {
     // Core network rejection: PlatformWalletResult.swift:633 "Core definitively rejected the transaction and its
     // input reservation was released".
     func testCoreBroadcastRejectionIsNotSentRejected() {
-        guard case .rejected? = assertNotSent(PlatformWalletError.transactionBroadcastRejected(Self.rawSdkText)) else {
+        guard case .rejected? = assertNotSent(PlatformWalletError.transactionBroadcastRejected(Self.rawSdkText, payment: .notSentClass)) else {
             return XCTFail("expected reason .rejected")
         }
     }
@@ -126,7 +150,7 @@ final class SendOutcomeMappingTests: XCTestCase {
     // The SDK documents a shielded broadcast failure as definitively not executed, notes released and retry safe
     // (platform rs-platform-wallet-ffi/src/error.rs:137), so the result offers Retry.
     func testShieldedBroadcastFailureIsNotSentFailed() {
-        guard case .failed? = assertNotSent(PlatformWalletError.shieldedBroadcastFailed(Self.rawSdkText)) else {
+        guard case .failed? = assertNotSent(PlatformWalletError.shieldedBroadcastFailed(Self.rawSdkText, payment: .notSentClass)) else {
             return XCTFail("expected reason .failed")
         }
     }
@@ -161,7 +185,7 @@ final class SendOutcomeMappingTests: XCTestCase {
     }
 
     func testTransferFailedMapsTheWrappedErrorRecursively() {
-        let inner = PlatformWalletError.transactionBroadcastRejected(Self.rawSdkText)
+        let inner = PlatformWalletError.transactionBroadcastRejected(Self.rawSdkText, payment: .notSentClass)
         let rejected = CoordinatorError.transferFailed(inner)
         guard case .rejected? = assertNotSent(rejected) else {
             return XCTFail("expected reason .rejected")
@@ -170,16 +194,16 @@ final class SendOutcomeMappingTests: XCTestCase {
     }
 
     func testSigningKeyUnavailableIsNotSentSigningKeyUnavailable() {
-        let error = PlatformWalletError.signingKeyUnavailable(Self.rawSdkText)
+        let error = PlatformWalletError.signingKeyUnavailable(Self.rawSdkText, payment: .notSentClass)
         guard case .signingKeyUnavailable? = assertNotSent(error) else {
             return XCTFail("expected reason .signingKeyUnavailable")
         }
     }
 
     func testRefusedBeforeNetworkIsNotSent() {
-        XCTAssertNotNil(assertNotSent(PlatformWalletError.staleReservationToken(Self.rawSdkText)))
-        XCTAssertNotNil(assertNotSent(PlatformWalletError.coreInsufficientFunds(Self.rawSdkText)))
-        XCTAssertNotNil(assertNotSent(PlatformWalletError.shieldedNoRecordedAnchor(Self.rawSdkText)))
+        XCTAssertNotNil(assertNotSent(PlatformWalletError.staleReservationToken(Self.rawSdkText, payment: .notSentClass)))
+        XCTAssertNotNil(assertNotSent(PlatformWalletError.coreInsufficientFunds(Self.rawSdkText, payment: .notSentClass)))
+        XCTAssertNotNil(assertNotSent(PlatformWalletError.shieldedNoRecordedAnchor(Self.rawSdkText, payment: .notSentClass)))
     }
 
     func testUnlistedPlatformWalletErrorIsInFlight() {
@@ -187,16 +211,16 @@ final class SendOutcomeMappingTests: XCTestCase {
     }
 
     func testIdentityNotFoundIsNotSentIdentityNotFound() {
-        guard case .identityNotFound? = assertNotSent(PlatformWalletError.identityNotFound(Self.rawSdkText)) else {
+        guard case .identityNotFound? = assertNotSent(PlatformWalletError.identityNotFound(Self.rawSdkText, payment: .notSentClass)) else {
             return XCTFail("expected .identityNotFound")
         }
     }
 
     func testOtherRefusalsProvenBeforeSubmissionAreNotSentFailed() {
-        guard case .failed? = assertNotSent(PlatformWalletError.invalidNetwork(Self.rawSdkText)) else {
+        guard case .failed? = assertNotSent(PlatformWalletError.invalidNetwork(Self.rawSdkText, payment: .notSentClass)) else {
             return XCTFail("expected .failed for invalidNetwork")
         }
-        guard case .failed? = assertNotSent(PlatformWalletError.shieldedInsufficientBalance(Self.rawSdkText)) else {
+        guard case .failed? = assertNotSent(PlatformWalletError.shieldedInsufficientBalance(Self.rawSdkText, payment: .notSentClass)) else {
             return XCTFail("expected .failed for shieldedInsufficientBalance")
         }
     }
@@ -315,11 +339,11 @@ final class SendOutcomeMappingTests: XCTestCase {
     func testEveryNotSentReasonHasLocalizedTextWithoutRawSdkText() {
         let errors: [Error] = [
             walletSend(.offline), walletSend(.broadcastRejected),
-            PlatformWalletError.transactionBroadcastRejected(Self.rawSdkText),
-            PlatformWalletError.signingKeyUnavailable(Self.rawSdkText),
+            PlatformWalletError.transactionBroadcastRejected(Self.rawSdkText, payment: .notSentClass),
+            PlatformWalletError.signingKeyUnavailable(Self.rawSdkText, payment: .notSentClass),
             CoordinatorError.shieldedSweepWaiting(1000),
-            PlatformWalletError.coreInsufficientFunds(Self.rawSdkText),
-            PlatformWalletError.identityNotFound(Self.rawSdkText),
+            PlatformWalletError.coreInsufficientFunds(Self.rawSdkText, payment: .notSentClass),
+            PlatformWalletError.identityNotFound(Self.rawSdkText, payment: .notSentClass),
         ]
         for error in errors {
             guard let reason = assertNotSent(error) else { continue }
