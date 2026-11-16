@@ -513,6 +513,31 @@ final class VotingStoreTests: XCTestCase {
         }
     }
 
+    /// A choice saved before it was kept per wallet still pre-ticks on
+    /// mainnet, until the wallet saves its own; testnet never reads it.
+    func testTheChoiceSavedBeforeTheSplitStaysMainnets() throws {
+        let suite = "VotingPrefsLegacyTests"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        defaults.set([Data([1]).base64EncodedString()], forKey: "votingNodeSelectionKey")
+        var owner = "mainnet.walletA"
+        let prefs = VotingPrefs(defaults: defaults, owner: { owner })
+
+        XCTAssertEqual(prefs.votingNodeSelection, [Data([1])])
+        XCTAssertFalse(prefs.isVotingSetUp)
+        prefs.votingNodeSelection = [Data([2])]
+        XCTAssertEqual(prefs.votingNodeSelection, [Data([2])])
+
+        owner = "mainnet.walletB"
+        XCTAssertEqual(prefs.votingNodeSelection, [Data([1])])
+        owner = "testnet.walletA"
+        XCTAssertEqual(prefs.votingNodeSelection, [])
+
+        prefs.forgetVotingSetup()
+        owner = "mainnet.walletB"
+        XCTAssertEqual(prefs.votingNodeSelection, [])
+    }
+
     /// AC-12, AC-14: the vote button of "Add your voting keys" keeps the ticks and sets voting up.
     func testConfirmingTheTicksSetsVotingUp() async {
         let a = node(1), b = node(2)
