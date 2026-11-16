@@ -219,6 +219,27 @@ final class PointOfUseListViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.mapItems.map(\.id), [2, 3])
     }
 
+    /// Without a location the merchant map pins the loaded rows, so a page
+    /// adds its physical merchants.
+    func testMerchantMapPinsAnAppendedPageWithoutALocation() async {
+        let provider = StubDataProvider(items: [merchant(1, type: .physical)],
+                                        nextPage: [merchant(2, type: .online), merchant(3, type: .physical)])
+        let viewModel = makeViewModel(kind: .merchants,
+                                      segments: [segment(tag: MerchantsListSegment.all.rawValue, provider: provider)])
+        await waitForReplacedList(of: viewModel)
+        let appended = expectation(description: "page appended")
+        viewModel.listUpdates
+            .filter { $0 == .appended }
+            .first()
+            .sink { _ in appended.fulfill() }
+            .store(in: &cancellables)
+
+        viewModel.fetchNextPage()
+        await fulfillment(of: [appended], timeout: 2)
+
+        XCTAssertEqual(viewModel.mapItems.map(\.id), [1, 3])
+    }
+
     func testNoPinsForASegmentWithoutAMap() async {
         let viewModel = makeViewModel(segments: [segment(tag: 0, showMap: false, items: [atm(1)])])
         await waitForReplacedList(of: viewModel)

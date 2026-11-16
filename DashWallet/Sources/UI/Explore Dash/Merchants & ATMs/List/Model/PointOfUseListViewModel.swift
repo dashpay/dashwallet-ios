@@ -87,6 +87,9 @@ final class PointOfUseListViewModel: ObservableObject {
     private let databaseURL: URL
     private let listUpdatesSubject = PassthroughSubject<ListUpdate, Never>()
     private var lastLocationDrivenFetch: CLLocation?
+    /// Whether the merchant pins came from the loaded rows (no location or
+    /// a failed location query) rather than the area-wide query.
+    private var merchantPinsFromRows = false
     private var cancellables = Set<AnyCancellable>()
 
     init(configuration: PointOfUseListConfiguration,
@@ -360,10 +363,17 @@ final class PointOfUseListViewModel: ObservableObject {
 
     private func modelDidAppendItems() {
         items = model.items
-        // Merchant pins cover the whole search area already; a page adds
-        // none of their locations.
-        if configuration.kind == .atms, model.showMap {
-            mapItems = model.items
+        if model.showMap {
+            switch configuration.kind {
+            case .atms:
+                mapItems = model.items
+            case .merchants:
+                // Pins from the area-wide location query already cover every
+                // page; pins built from the loaded rows gain the new page's.
+                if merchantPinsFromRows {
+                    mapItems = physicalRows
+                }
+            }
         }
         listUpdatesSubject.send(.appended)
     }
@@ -383,12 +393,9 @@ final class PointOfUseListViewModel: ObservableObject {
     /// closest to the search center), while the list keeps one row per
     /// merchant.
     private func updateMerchantLocations() {
-        // The All list also has online merchants from anywhere; only physical
-        // rows belong on the map.
-        let physicalItems = model.items.filter { $0.isPhysical }
-
         guard let bounds = model.currentMapBounds, let center = model.userCoordinates else {
-            mapItems = physicalItems
+            merchantPinsFromRows = true
+            mapItems = physicalRows
             return
         }
 
@@ -402,12 +409,21 @@ final class PointOfUseListViewModel: ObservableObject {
 
                 switch result {
                 case .success(let locations):
+                    self.merchantPinsFromRows = false
                     self.mapItems = locations
                 case .failure:
-                    self.mapItems = self.model.items.filter { $0.isPhysical }
+                    self.merchantPinsFromRows = true
+                    self.mapItems = self.physicalRows
                 }
             }
         }
+    }
+
+    /// The loaded rows a merchant map pins when the location query cannot
+    /// run. The All list also has online merchants from anywhere; only
+    /// physical rows belong on the map.
+    private var physicalRows: [ExplorePointOfUse] {
+        model.items.filter { $0.isPhysical }
     }
 
     // MARK: Helpers
