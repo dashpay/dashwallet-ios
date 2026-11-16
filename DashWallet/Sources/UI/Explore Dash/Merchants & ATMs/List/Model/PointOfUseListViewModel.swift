@@ -245,15 +245,17 @@ final class PointOfUseListViewModel: ObservableObject {
 
     /// A new GPS fix: the search follows the device again. Fixes can arrive
     /// every ~100 m, which is too chatty to requery for, so the list is
-    /// fetched again only after a significant move.
+    /// fetched again only after a significant move, or when the rows are for
+    /// a place the user panned to, which the map has now left.
     func locationDidChange(to newLocation: CLLocation, bounds: ExploreMapBounds) {
+        let leavesPannedCenter = model.searchCenterCoordinate != nil
         model.searchCenterCoordinate = nil
         guard model.showMap else { return }
 
         model.currentMapBounds = bounds
         let movedSignificantly = lastLocationDrivenFetch
             .map { newLocation.distance(from: $0) > kSignificantLocationChange } ?? true
-        if movedSignificantly {
+        if movedSignificantly || leavesPannedCenter {
             lastLocationDrivenFetch = newLocation
             model.fetch(query: nil)
         }
@@ -336,10 +338,10 @@ final class PointOfUseListViewModel: ObservableObject {
             guard let self else { return }
 
             self.model.items = []
-            if let provider = self.model.currentDataProvider {
-                provider.items = []
-                provider.currentPage = nil
-            }
+            // Every segment, not only the current one: a provider returns its
+            // cached rows for an unchanged query, which came from the old
+            // database.
+            self.model.dataProviders.values.forEach { $0.clearCache() }
             self.items = []
             // Fetching starts first, so the cleared list is not taken for an
             // empty result.

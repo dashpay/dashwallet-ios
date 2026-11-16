@@ -111,6 +111,34 @@ final class PointOfUseListViewModelTests: XCTestCase {
         XCTAssertEqual(target.requestedBounds.last, area)
     }
 
+    // MARK: - Location
+
+    func testAFixNearTheLastOneDoesNotRefetch() {
+        let provider = StubDataProvider(items: [])
+        let viewModel = makeViewModel(segments: [segment(tag: 0, provider: provider)])
+        let start = CLLocation(latitude: 40.758, longitude: -73.985)
+        viewModel.locationDidChange(to: start, bounds: bounds)
+        let requests = provider.requestedFilters.count
+
+        viewModel.locationDidChange(to: CLLocation(latitude: 40.7585, longitude: -73.985), bounds: bounds)
+
+        XCTAssertEqual(provider.requestedFilters.count, requests)
+    }
+
+    func testAFixAfterPanningRefetchesForTheDevice() {
+        let provider = StubDataProvider(items: [])
+        let viewModel = makeViewModel(segments: [segment(tag: 0, provider: provider)])
+        let start = CLLocation(latitude: 40.758, longitude: -73.985)
+        viewModel.locationDidChange(to: start, bounds: bounds)
+        viewModel.mapDidMove(center: CLLocationCoordinate2D(latitude: 41.5, longitude: -74.5), bounds: bounds)
+        let requests = provider.requestedFilters.count
+
+        viewModel.locationDidChange(to: CLLocation(latitude: 40.7585, longitude: -73.985), bounds: bounds)
+
+        XCTAssertEqual(provider.requestedFilters.count, requests + 1)
+        XCTAssertNil(viewModel.searchCenterCoordinate)
+    }
+
     // MARK: - Filter screen
 
     func testFilterScreenReplacesASortTheSegmentDoesNotOffer() {
@@ -266,6 +294,29 @@ final class PointOfUseListViewModelTests: XCTestCase {
         notificationCenter.post(name: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification, object: nil)
 
         wait(for: [hidden], timeout: 1)
+    }
+
+    func testADatabaseUpdateClearsEverySegment() async {
+        let notificationCenter = NotificationCenter()
+        let other = StubDataProvider(items: [atm(9)])
+        let viewModel = makeViewModel(segments: [segment(tag: 0), segment(tag: 2, provider: other)],
+                                      notificationCenter: notificationCenter)
+        _ = viewModel.selectSegment(at: 1, searchBounds: { _ in self.bounds })
+        _ = viewModel.selectSegment(at: 0, searchBounds: { _ in self.bounds })
+        XCTAssertFalse(other.items.isEmpty)
+
+        // Segment switches publish rows too; wait for the update that comes
+        // after the cache was cleared.
+        let cleared = expectation(description: "every segment cleared")
+        viewModel.listUpdates
+            .filter { _ in other.items.isEmpty }
+            .first()
+            .sink { _ in cleared.fulfill() }
+            .store(in: &cancellables)
+
+        notificationCenter.post(name: ExploreDatabaseSyncManager.databaseHasBeenUpdatedNotification, object: nil)
+
+        await fulfillment(of: [cleared], timeout: 3)
     }
 
     // MARK: - Helpers
