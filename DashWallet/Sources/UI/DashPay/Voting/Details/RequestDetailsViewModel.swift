@@ -153,9 +153,10 @@ final class RequestDetailsViewModel: ObservableObject {
 
     // MARK: Approve
 
-    /// Cancel approval when a ticked node's last choice approves this request.
+    /// Cancel approval when a ticked node's last choice approves this request,
+    /// once voting is set up.
     var approveAction: ApproveAction {
-        let ticked = store.tickedNodeIDs ?? []
+        let ticked = store.myNodeIDs ?? []
         let mine = store.votableNodes.contains { node in
             ticked.contains(node.proTxHash)
                 && store.liveChoice(of: node, on: normalizedLabel) == .towards(identityId: identityId)
@@ -163,21 +164,33 @@ final class RequestDetailsViewModel: ObservableObject {
         return mine ? .cancelApproval : .voteToApprove
     }
 
-    /// Whether the button can start anything: the contest is still on the
-    /// list and open, and a ticked node can cast it — or, without voting keys,
-    /// the tap opens the key flow.
+    /// Whether the button is enabled: the contest is still on the list,
+    /// voting is not paused, and no other name's vote is being sent (one at a
+    /// time). While this name's own vote is sent the button stays enabled and
+    /// shows the loading look; its spinner takes the taps. Every tap runs the
+    /// vote gates, which tell an ended contest, the key flow and "No votes
+    /// left" themselves.
     var canApprove: Bool {
-        guard liveContest != nil else { return false }
-        switch approveAction {
-        case .voteToApprove:
-            return store.canStartVote(.towards(identityId: identityId), on: normalizedLabel)
-        case .cancelApproval:
-            return !store.isClosed(normalizedLabel: normalizedLabel)
-                && !store.nodesToCancel(.towards(identityId: identityId), on: normalizedLabel).isEmpty
-        }
+        liveContest != nil && !store.historyUnavailable
+            && (!store.isVoteBusy || store.isSending(normalizedLabel: normalizedLabel))
     }
 
-    // TODO(voting-4): the button's gates (No votes left, One vote left) run in the vote-attempt coordinator.
+    /// A vote or cancel from here that landed everywhere returns to the list,
+    /// whose toast tells it; anything else stays on this screen (SCR-03).
+    func returnsToList(after outcome: VoteAttemptOutcome?) -> Bool {
+        guard isOwnAttempt, case .success = outcome else { return false }
+        return true
+    }
+
+    /// A failed vote from here, or one its masternodes already held, is told
+    /// on this screen; another name's toast, from a vote sent from the list,
+    /// stays on the list (SCR-03).
+    func showsToast(_ toast: VotingToast) -> Bool {
+        isOwnAttempt && (toast.style == .error || toast.isAlreadyVoted)
+    }
+
+    private var isOwnAttempt: Bool { store.attemptLabel == normalizedLabel }
+
     /// The vote the button asks for: this request's approve, or an abstain
     /// from the nodes holding it.
     func voteRequest() -> VoteFlowRequest? {

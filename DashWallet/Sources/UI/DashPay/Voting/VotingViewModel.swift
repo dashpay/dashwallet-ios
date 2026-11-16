@@ -36,13 +36,6 @@ final class VotingViewModel: ObservableObject {
     let list: VotingListViewModel
     private var changes = Set<AnyCancellable>()
 
-    // MARK: Casting state
-
-    /// Result banner for the most recent casting run.
-    @Published var lastCastReport: VoteCastReport?
-    /// Error from a casting run that never got as far as broadcasting.
-    @Published var castError: String?
-
     // MARK: Dependencies
 
     private let vault: TrackedMasternodeKeyVaulting
@@ -83,11 +76,6 @@ final class VotingViewModel: ObservableObject {
 
     var canVote: Bool { store.canVote }
     var votableNodes: [VoterNode] { store.votableNodes }
-    var effectiveSelectedNodeIDs: Set<Data> { store.effectiveSelectedNodeIDs }
-    var selectedNodeIDs: Set<Data> {
-        get { store.selectedNodeIDs }
-        set { store.selectedNodeIDs = newValue }
-    }
     var toast: VotingToast? { list.toast }
 
     func latest(_ contest: DPNSContest) -> DPNSContest { store.latest(contest) }
@@ -95,29 +83,17 @@ final class VotingViewModel: ObservableObject {
     func hasLoadedVoteHistory(for normalizedLabel: String) -> Bool {
         store.hasLoadedVoteHistory(for: normalizedLabel)
     }
-    func nodesYetToVote(on normalizedLabel: String) -> [VoterNode] { store.nodesYetToVote(on: normalizedLabel) }
-    func votedNodeCount(on normalizedLabel: String) -> Int { store.votedNodeCount(on: normalizedLabel) }
-    func nodesForVote(_ choice: VoteChoice, on normalizedLabel: String) -> [VoterNode] {
-        store.nodesForVote(choice, on: normalizedLabel)
-    }
-    func canStartVote(_ choice: VoteChoice, on normalizedLabel: String) -> Bool {
-        store.canStartVote(choice, on: normalizedLabel)
-    }
-    func castCandidates(
-        for choice: VoteChoice, cancelling: VoteChoice?, on normalizedLabel: String
-    ) -> VotingStore.CastCandidates {
-        store.castCandidates(for: choice, cancelling: cancelling, on: normalizedLabel)
-    }
     func loadVotedNodes(for normalizedLabel: String) async { await store.loadVotedNodes(for: normalizedLabel) }
-    func refreshContest(normalizedLabel: String) async { await store.refreshContest(normalizedLabel: normalizedLabel) }
     func refreshVotableNodes() { store.refreshVotableNodes() }
     func isSending(normalizedLabel: String) -> Bool { store.isSending(normalizedLabel: normalizedLabel) }
 
     /// Names the nodes a vote will use, so the privacy consequence of the
-    /// current selection is legible without opening the picker. Describes the
-    /// selection a vote will actually use, not the raw persisted one.
+    /// current selection is legible without opening the picker: the ticked
+    /// masternodes that can vote, or "Select nodes" when a tap would open
+    /// "Add your voting keys": voting not set up, or none ticked (AC-12, AC-14).
     var votingWithSummary: String {
-        let chosen = votableNodes.filter { effectiveSelectedNodeIDs.contains($0.proTxHash) }
+        let ticked = store.isVotingSetUp ? store.tickedNodeIDs ?? [] : []
+        let chosen = votableNodes.filter { ticked.contains($0.proTxHash) }
         guard !chosen.isEmpty else {
             return NSLocalizedString("Select nodes", comment: "Voting")
         }
@@ -156,6 +132,7 @@ final class VotingViewModel: ObservableObject {
         let othersConfirmedAbsent = TrackedMasternodeKeyVault.managedRoles
             .filter { $0 != .voting }
             .allSatisfy { vault.keyPresence(for: node.proTxHash, role: $0) == .absent }
+        store.forgetNode(node.proTxHash)
         if othersConfirmedAbsent, let manager = tracker() {
             // Best-effort: a registry row left behind holds no key and cannot
             // vote, so a failure here changes nothing the user can see.
@@ -167,35 +144,74 @@ final class VotingViewModel: ObservableObject {
 
     // MARK: Casting
 
-    /// Cast `choice` on `contest` with `nodes` through the store, which also
-    /// re-reads that contest. Returns `true` when every node's vote landed.
-    /// That outcome is told by a toast, so the caller can close its sheet
-    /// right away; anything less is left in ``lastCastReport`` /
-    /// ``castError`` for the sheet to show.
-    @discardableResult
-    func cast(choice: VoteChoice, on contest: DPNSContest, with nodes: [VoterNode]) async -> Bool {
-        castError = nil
+    /// Try again after a mixed vote: the store resends the failed masternodes,
+    /// and a run that now landed everywhere is told by the toast.
+    func retryFailed() async {
+        await store.retryFailed()
+        showToast(for: store.outcome)
+    }
+
+    /// A vote that landed everywhere is a toast, as is one that failed outright;
+    /// a mixed one stays in the store's outcome for the result sheet.
+    private func showToast(for outcome: VoteAttemptOutcome?) {
+        switch outcome {
+        case .success(let toast): list.showToast(toast)
+        case .failure(let reason): list.showToast(.failed(reason))
+        case .mixed, nil: break
+        }
+    }
+}
+
+// MARK: - VoteAttemptHosting
+
+extension VotingViewModel: VoteAttemptHosting {
+    var isVotingSetUp: Bool { store.isVotingSetUp }
+    /// The user's own ticks only; none ticked sends the attempt to the keys (AC-14).
+    var tickedNodeIDs: Set<Data> { store.tickedNodeIDs ?? [] }
+
+    /// The last vote's toast and outcome go at the tap that starts the next
+    /// attempt, so neither sits under a dialog of the new one (AC-06).
+    func attemptWillStart(on contest: DPNSContest) {
+        list.clearToast()
+        store.beginAttempt(on: contest.normalizedLabel)
+    }
+
+    /// A read that fails is an unknown history, never the last one cached:
+    /// the vote limit is decided on what Platform has now (AC-15).
+    func voteHistory(for normalizedLabel: String) async -> VoteLimit {
+        guard await store.loadVotedNodesForVote(for: normalizedLabel) else { return VoteLimit(nil) }
+        return store.voteHistoryByContest[normalizedLabel] ?? VoteLimit(nil)
+    }
+
+    /// Cast through the store, which also re-reads that contest; the outcome
+    /// is told as in ``showToast(for:)``.
+    func send(
+        _ choice: VoteChoice, on contest: DPNSContest, from nodeIDs: Set<Data>, skipped: Set<Data>, pill: VoteChoice
+    ) async {
         // A new vote clears the last outcome, so a toast from the previous
         // vote never sits next to this one.
         list.clearToast()
-        await store.send(choice: choice, on: contest, from: nodes)
-
-        switch store.outcome {
-        case .success(let toast):
-            list.showToast(toast)
-            return true
-        case .mixed(let report):
-            lastCastReport = report
-        case .failure(let message):
-            castError = message
-        case nil:
-            break
-        }
-        return false
+        let nodes = store.votableNodes.filter { nodeIDs.contains($0.proTxHash) }
+        let skippedNodes = store.votableNodes.filter { skipped.contains($0.proTxHash) }
+        await store.send(choice: choice, on: contest, from: nodes, skipped: skippedNodes, pill: pill)
+        showToast(for: store.outcome)
     }
 
-    func dismissCastResult() {
-        lastCastReport = nil
-        castError = nil
+    /// The name a result sheet shows for `report`.
+    func username(of report: VoteCastReport) -> String {
+        store.contests.first { $0.normalizedLabel == report.normalizedLabel }?.displayTitle
+            ?? report.normalizedLabel
+    }
+
+    func reportVotingEnded(on contest: DPNSContest) {
+        list.showToast(.votingEnded(username: contest.displayTitle))
+    }
+
+    func reportAlreadyVoted(on contest: DPNSContest) {
+        list.showToast(.alreadyVoted(username: contest.displayTitle))
+    }
+
+    func reportHistoryUnavailable() {
+        list.showToast(.failed(NSLocalizedString("Couldn't read your vote history.", comment: "Voting")))
     }
 }

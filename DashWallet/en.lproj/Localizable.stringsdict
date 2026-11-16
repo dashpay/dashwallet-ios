@@ -18,22 +18,6 @@
 			<string>%d words</string>
 		</dict>
 	</dict>
-	<key>%d evonodes</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>%d evonode</string>
-			<key>other</key>
-			<string>%d evonodes</string>
-		</dict>
-	</dict>
 	<key>%d ATM(s) in %@</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -64,22 +48,6 @@
 			<string>%d key</string>
 			<key>other</key>
 			<string>%d keys</string>
-		</dict>
-	</dict>
-	<key>%d masternodes</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>%d masternode</string>
-			<key>other</key>
-			<string>%d masternodes</string>
 		</dict>
 	</dict>
 	<key>%d merchant(s)</key>
@@ -224,86 +192,6 @@
 			<string>%ld used</string>
 			<key>other</key>
 			<string>%ld used</string>
-		</dict>
-	</dict>
-	<key>%u votes</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>u</string>
-			<key>one</key>
-			<string>%u vote</string>
-			<key>other</key>
-			<string>%u votes</string>
-		</dict>
-	</dict>
-	<key>%u votes counted for “%@”</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@votes@ counted for “%2$@”</string>
-		<key>votes</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>u</string>
-			<key>one</key>
-			<string>%1$u vote</string>
-			<key>other</key>
-			<string>%1$u votes</string>
-		</dict>
-	</dict>
-	<key>%u votes per contest — evonodes count as 4, masternodes as 1</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>u</string>
-			<key>one</key>
-			<string>%u vote per contest — evonodes count as 4, masternodes as 1</string>
-			<key>other</key>
-			<string>%u votes per contest — evonodes count as 4, masternodes as 1</string>
-		</dict>
-	</dict>
-	<key>Cast %u votes</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>u</string>
-			<key>one</key>
-			<string>Cast %u vote</string>
-			<key>other</key>
-			<string>Cast %u votes</string>
-		</dict>
-	</dict>
-	<key>Vote ×%d</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>Vote ×%d</string>
-			<key>other</key>
-			<string>Vote ×%d</string>
 		</dict>
 	</dict>
 	<key>%d syncs</key>

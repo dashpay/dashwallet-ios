@@ -39,7 +39,7 @@ enum VotingKeyImportOutcome: Equatable {
 
 // MARK: - VotingKeyInputViewModel
 
-/// Voting → "Enter your voting key": takes one masternode voting private key,
+/// Voting → "Enter voting key": takes one masternode voting private key,
 /// finds every active masternode that votes with it, and makes those nodes
 /// votable from this wallet.
 ///
@@ -93,11 +93,12 @@ final class VotingKeyInputViewModel: ObservableObject {
         error = nil
 
         let isMainnet = WalletEnvironment.network == .mainnet
-        // Read the key locally first. The SDK locator only reports "can't read
-        // that", and for a key typed by hand the useful answer is what is
-        // wrong with it — an address, hex, the other network's key.
+        // Read the key locally first, so a malformed key never reaches the
+        // SDK locator. Every shape gets the one refusal AC-13 names.
         if let problem = VotingKeyFormat.problem(with: key, isMainnet: isMainnet) {
-            error = problem.message(isMainnet: isMainnet)
+            // The case only, never the text entered.
+            DWLogger.log("Voting: voting key refused: \(problem)")
+            error = NSLocalizedString("You have entered an invalid key", comment: "Voting")
             return .failed
         }
 
@@ -288,8 +289,8 @@ extension PlatformWalletManager: VotingKeyMasternodeTracking {
 // MARK: - VotingKeyFormat
 
 /// What is wrong with a pasted voting key, when something is — the same
-/// distinctions the Android wallet draws, so both apps answer a mistake the
-/// same way.
+/// distinctions the Android wallet draws. The user is told only that the key
+/// is invalid (AC-13).
 enum VotingKeyProblem: Equatable {
     /// A valid WIF for the other network.
     case wrongNetwork
@@ -310,65 +311,11 @@ enum VotingKeyProblem: Equatable {
     /// A character Base58 does not use (`0`, `O`, `I`, `l`, punctuation…).
     case invalidCharacter
     case invalid
-
-    func message(isMainnet: Bool) -> String {
-        let example = isMainnet ? VotingKeyFormat.mainnetExample : VotingKeyFormat.testnetExample
-        switch self {
-        case .wrongNetwork:
-            return String(
-                format: isMainnet
-                    ? NSLocalizedString(
-                        "You have entered a key that is for testnet, but this is mainnet. It should look like this: %@",
-                        comment: "Voting")
-                    : NSLocalizedString(
-                        "You have entered a key that is for mainnet, but this is testnet. It should look like this: %@",
-                        comment: "Voting"),
-                example)
-        case .address:
-            return String(
-                format: NSLocalizedString(
-                    "You have entered an address instead of a masternode voting private key. It should be in WIF format (%@)",
-                    comment: "Voting"),
-                example)
-        case .hexPrivateKey, .hexPublicKey:
-            return String(
-                format: NSLocalizedString(
-                    "You have entered a key in hex format, but it should be in WIF format (%@)",
-                    comment: "Voting"),
-                example)
-        case .tooShort:
-            return String(
-                format: NSLocalizedString(
-                    "You have entered a private key that is too short. Here is an example (%@)",
-                    comment: "Voting"),
-                example)
-        case .checksum:
-            return String(
-                format: NSLocalizedString(
-                    "You have entered a private key with some incorrect characters. Here is an example (%@)",
-                    comment: "Voting"),
-                example)
-        case .uncompressed:
-            return String(
-                format: NSLocalizedString(
-                    "You have entered an uncompressed private key. This app can only vote with a compressed voting key. Here is an example (%@)",
-                    comment: "Voting"),
-                example)
-        case .invalidCharacter:
-            return String(
-                format: NSLocalizedString(
-                    "You have entered a private key that has an invalid character. Here is an example (%@)",
-                    comment: "Voting"),
-                example)
-        case .invalid:
-            return NSLocalizedString("You have entered an invalid key", comment: "Voting")
-        }
-    }
 }
 
 enum VotingKeyFormat {
-    /// Example keys shown in the error messages — Android's, so both apps show
-    /// the same ones. Illustrations of the format, not keys of any node.
+    /// Well-formed example keys, Android's. Illustrations of the format, not
+    /// keys of any node.
     static let mainnetExample = "XKm5koXHMm7UrVV3ki2pbGA8yZztiSR2F9x6ucEyCSuqTHBMjJix"
     static let testnetExample = "cUR2TrX4U6t6g9kRfDoBbwF2WRKBNjV3gK7HwTgQgmUUQCKXcT3N"
 

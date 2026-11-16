@@ -565,13 +565,7 @@ struct MainMenuScreen: View {
         let popRoot: () -> Void = { [weak navController] in
             _ = navController?.popViewController(animated: true)
         }
-        let hosting = UIHostingController(
-            rootView: AnyView(
-                NavigationStack {
-                    UsernameVotingScreen(onClose: popRoot)
-                }
-            )
-        )
+        let hosting = UsernameVotingHostingController(onClose: popRoot)
         vc?.pushViewController(hosting, animated: true)
     }
     #endif

@@ -241,3 +241,29 @@ private final class FakeVoteHistory: VoteHistoryDAO, @unchecked Sendable {
     func votes(forContests normalizedLabels: Set<String>, network: String) async -> [CastVoteRecord]? { records }
     func deleteAll() {}
 }
+
+// MARK: - MasternodeVoterRegistry.votingKeys
+
+/// An imported voting key the keychain could not read is not a key that is
+/// gone: the node is left out, and the resolution says it may be incomplete,
+/// so the remembered choice keeps it.
+@MainActor
+final class MasternodeVoterRegistryVotingKeysTests: XCTestCase {
+    func testAnUnreadableKeyLeavesTheNodeOutAndMarksTheListIncomplete() {
+        let a = Data([1]), b = Data([2]), c = Data([3])
+        let presence: [Data: TrackedMasternodeKeyPresence] = [a: .present, b: .unknown, c: .absent]
+
+        let keys = MasternodeVoterRegistry.votingKeys(of: [a, b, c]) { presence[$0]! }
+
+        XCTAssertEqual(keys.present, [a])
+        XCTAssertTrue(keys.unreadable)
+    }
+
+    func testReadableKeysLeaveTheListComplete() {
+        let a = Data([1]), c = Data([3])
+        let keys = MasternodeVoterRegistry.votingKeys(of: [a, c]) { $0 == a ? .present : .absent }
+
+        XCTAssertEqual(keys.present, [a])
+        XCTAssertFalse(keys.unreadable)
+    }
+}

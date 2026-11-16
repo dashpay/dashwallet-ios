@@ -23,21 +23,20 @@ import SwiftUI
 // MARK: - VoteFlowRequest
 
 /// A vote the user asked for from a screen: which contest and which choice.
-/// `choice` is `nil` when the user only asked to add a voting key.
 /// `cancelling` is the choice an abstain takes back: only the nodes holding it
 /// cast (AC-17).
 struct VoteFlowRequest: Identifiable {
     let id = UUID()
     let contest: DPNSContest
-    let choice: VoteChoice?
+    let choice: VoteChoice
     var cancelling: VoteChoice?
 }
 
 extension View {
-    /// Runs a vote the user asked for: the cast sheet when this wallet has a
-    /// node to vote with, otherwise the voting-key flow first, which comes back
-    /// to the cast sheet with the same choice. Shared by the voting list and the
-    /// contest screen so both take the same path to a cast.
+    /// Runs a vote the user asked for through a ``VoteAttemptCoordinator``:
+    /// the gates in their fixed order, one dialog at a time, the voting-key
+    /// flow when voting is not set up, then the send. Shared by the voting
+    /// list and Request details so both take the same path to a cast.
     func voteFlow(_ request: Binding<VoteFlowRequest?>, viewModel: VotingViewModel) -> some View {
         modifier(VoteFlowModifier(request: request, viewModel: viewModel))
     }
@@ -48,14 +47,29 @@ extension View {
 private struct VoteFlowModifier: ViewModifier {
     @Binding var request: VoteFlowRequest?
     @ObservedObject var viewModel: VotingViewModel
+    @StateObject private var attempt: VoteAttemptCoordinator
 
-    /// The vote waiting for confirmation in the cast sheet.
-    @State private var pendingCast: VoteFlowRequest?
-    /// The voting-key flow, open because this wallet had no node to vote with.
-    @State private var keyFlow: VoteFlowRequest?
-    /// Set when the key flow ended with "Continue": the vote to open the cast
-    /// sheet for once the flow's sheet is gone.
-    @State private var voteAfterKeyFlow: VoteFlowRequest?
+    /// The result sheet of a mixed vote, shown once no dialog is up (SCR-10).
+    @State private var showsResult = false
+    @State private var isRetrying = false
+
+    /// The dialog on screen. It stays set while the dialog fades out, so the
+    /// cover keeps its content until it is gone.
+    @State private var shownDialog: VoteAttemptCoordinator.Presentation?
+    /// The cover is presented without the system's slide; the dialog fades in
+    /// and out inside it, as the app's other dialogs do.
+    @State private var coverUp = false
+    @State private var dialogOpacity = 0.0
+    /// The keys sheet's choice, kept while the sheet animates away.
+    @State private var keysChoice: VoteChoice?
+
+    private static let fade = 0.2
+
+    init(request: Binding<VoteFlowRequest?>, viewModel: VotingViewModel) {
+        _request = request
+        self.viewModel = viewModel
+        _attempt = StateObject(wrappedValue: VoteAttemptCoordinator(host: viewModel))
+    }
 
     func body(content: Content) -> some View {
         content
@@ -64,67 +78,121 @@ private struct VoteFlowModifier: ViewModifier {
                 self.request = nil
                 route(request)
             }
-            // A sheet swiped away on a partial or failed result must not leave
-            // it for the next sheet, which any list pill can now open.
-            .sheet(item: $pendingCast, onDismiss: viewModel.dismissCastResult) { request in
-                if let choice = request.choice {
-                    CastVoteSheet(
-                        contest: viewModel.latest(request.contest),
-                        choice: choice,
-                        cancelling: request.cancelling,
-                        viewModel: viewModel)
+            .onChange(of: attempt.presentation, initial: true) { _, presentation in
+                presentationChanged(to: presentation)
+            }
+            .fullScreenCover(isPresented: $coverUp, onDismiss: showResultIfAny) {
+                ZStack {
+                    Color.dash.backgroundOverlay.ignoresSafeArea()
+                    if let shown = shownDialog, let kind = shown.dialog {
+                        VoteAttemptDialog(
+                            kind: kind,
+                            onConfirm: { Task { await attempt.confirm(shown); showResultIfAny() } },
+                            onDismiss: attempt.dismiss)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                }
+                .opacity(dialogOpacity)
+                .presentationBackground(.clear)
+                .onAppear { withAnimation(.easeOut(duration: Self.fade)) { dialogOpacity = 1 } }
+            }
+            .sheet(isPresented: keysShown, onDismiss: keysDismissed) {
+                if let choice = keysChoice {
+                    VotingKeysFlow(
+                        mode: .vote(choice),
+                        viewModel: viewModel,
+                        onFinish: { attempt.finishKeys(continueToVote: $0) })
                 }
             }
-            .sheet(item: $keyFlow, onDismiss: openVoteAfterKeyFlow) { request in
-                VotingKeysFlow(
-                    start: .addKey,
-                    continuesToVote: request.choice != nil,
-                    viewModel: viewModel,
-                    onFinish: { continueToVote in
-                        voteAfterKeyFlow = continueToVote ? request : nil
-                        keyFlow = nil
-                    })
+            .sheet(isPresented: $showsResult) {
+                if case .mixed(let report)? = viewModel.store.outcome {
+                    VoteResultSheet(
+                        report: report,
+                        username: viewModel.username(of: report),
+                        isRetrying: isRetrying,
+                        onTryAgain: tryAgain,
+                        onClose: { showsResult = false })
+                }
             }
     }
 
-    /// The cast sheet when a node can cast, else the key flow. A key-only
-    /// request (no choice) opens the key flow whatever the wallet holds.
-    private func route(_ request: VoteFlowRequest) {
-        if !viewModel.canVote || request.choice == nil {
-            keyFlow = request
+    /// A dialog fades in over a cover presented without animation, replaces
+    /// the one up in place, or fades out before the cover goes.
+    private func presentationChanged(to presentation: VoteAttemptCoordinator.Presentation?) {
+        if case .addKeys(let choice) = presentation { keysChoice = choice }
+        guard presentation?.dialog != nil else {
+            guard coverUp else { return }
+            withAnimation(.easeIn(duration: Self.fade)) {
+                dialogOpacity = 0
+            } completion: {
+                // Another dialog of a new attempt came up while this one faded.
+                guard attempt.presentation?.dialog == nil else {
+                    shownDialog = attempt.presentation
+                    withAnimation(.easeOut(duration: Self.fade)) { dialogOpacity = 1 }
+                    return
+                }
+                var noSlide = SwiftUI.Transaction()
+                noSlide.disablesAnimations = true
+                withTransaction(noSlide) { coverUp = false }
+                shownDialog = nil
+            }
+            return
+        }
+        if coverUp {
+            withAnimation(.easeInOut(duration: Self.fade)) { shownDialog = presentation }
         } else {
-            pendingCast = request
+            shownDialog = presentation
+            dialogOpacity = 0
+            var noSlide = SwiftUI.Transaction()
+            noSlide.disablesAnimations = true
+            withTransaction(noSlide) { coverUp = true }
         }
     }
 
-    /// Open the cast sheet for the vote that sent the user to the key flow.
-    /// Deferred to the flow's `onDismiss`: a second sheet cannot be presented
-    /// while the first is still on screen.
-    private func openVoteAfterKeyFlow() {
-        defer { voteAfterKeyFlow = nil }
-        // The cast sheet opens even when the added key's node cannot cast this
-        // choice (it already holds it, or has spent its casts): the sheet says
-        // why, rather than the vote the user asked for vanishing.
-        guard let request = voteAfterKeyFlow,
-              request.choice != nil,
-              viewModel.canVote,
-              !viewModel.isClosed(normalizedLabel: request.contest.normalizedLabel)
+    private var keysShown: Binding<Bool> {
+        Binding(
+            get: {
+                if case .addKeys = attempt.presentation { return true }
+                return false
+            },
+            set: { if !$0 { attempt.finishKeys(continueToVote: false) } })
+    }
+
+    /// A vote starts an attempt, unless one is already running.
+    private func route(_ request: VoteFlowRequest) {
+        guard !attempt.isRunning, !viewModel.store.isVoteBusy else { return }
+        let intent: VoteAttempt.Intent = request.cancelling.map { .cancel($0) } ?? .vote(request.choice)
+        Task {
+            await attempt.start(intent, on: viewModel.latest(request.contest))
+            showResultIfAny()
+        }
+    }
+
+    private func keysDismissed() {
+        Task {
+            await attempt.presentationDismissed()
+            showResultIfAny()
+        }
+    }
+
+    /// Opens the report of a mixed vote once the attempt is over and nothing
+    /// else is on screen; a second sheet cannot be presented over the dialog.
+    private func showResultIfAny() {
+        guard !attempt.isRunning, attempt.presentation == nil, !coverUp,
+              case .mixed? = viewModel.store.outcome
         else { return }
-        // The sheet reads which nodes already hold a vote here; with that
-        // unknown it would say every node is out of votes.
-        let label = request.contest.normalizedLabel
-        if viewModel.hasLoadedVoteHistory(for: label) {
-            pendingCast = request
-        } else {
-            Task {
-                await viewModel.loadVotedNodes(for: label)
-                // Still wanted: the contest may have closed, or another vote
-                // started, while the history loaded.
-                guard pendingCast == nil, keyFlow == nil,
-                      !viewModel.isClosed(normalizedLabel: label)
-                else { return }
-                pendingCast = request
-            }
+        showsResult = true
+    }
+
+    /// Resends the failed masternodes; the sheet closes once every vote landed.
+    private func tryAgain() {
+        guard !isRetrying else { return }
+        isRetrying = true
+        Task {
+            await viewModel.retryFailed()
+            isRetrying = false
+            if case .mixed? = viewModel.store.outcome { return }
+            showsResult = false
         }
     }
 }
