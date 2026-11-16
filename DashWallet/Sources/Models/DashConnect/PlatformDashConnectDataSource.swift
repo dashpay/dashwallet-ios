@@ -1340,7 +1340,6 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             throw DashConnectPlatformError.intentsUnreadable
         }
         let (snapshot, currentPublicKeys) = try await identitySnapshot(context: context)
-        let snapshotReadAt = now()
         // The app stops looking for an answer ten minutes after it asked.
         try Self.requireFreshRequest(age: uri.request.age(blockTimeMs: snapshot.platformTime))
         // The PIN prompt can outlast the expiry the user chose (a date ends
@@ -1363,12 +1362,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             currentPublicKeys: currentPublicKeys, context: context)
         // Making the keys can outlast the expiry too: checked again before
         // the intent is recorded, at the latest Platform time known — a
-        // proved read taken now, a fence's read, or the first read moved on
-        // by this phone's clock since.
+        // proved read taken now, a fence's read, or the first read. The
+        // phone's clock does not stand in for it.
         let latest = try await identitySnapshot(context: context).snapshot
-        let elapsedMs = UInt64(max(0, now().timeIntervalSince(snapshotReadAt)) * 1000)
-        let platformNow = [latest.platformTime, read.platformTime, snapshot.platformTime.map { $0 + elapsedMs }]
-            .compactMap { $0 }.max()
+        let platformNow = [latest.platformTime, read.platformTime, snapshot.platformTime].compactMap { $0 }.max()
         // The app's ten-minute window can pass during this work as well.
         try Self.requireFreshRequest(age: request.age(blockTimeMs: platformNow))
         if let failure = AppConnect.termsFailure(of: plan, platformTimeMs: platformNow) {
