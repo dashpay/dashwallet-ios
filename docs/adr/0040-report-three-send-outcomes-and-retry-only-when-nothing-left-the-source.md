@@ -1,4 +1,4 @@
-# 0040 — Report three send outcomes and retry only when nothing left the source
+# 0040 — Report send outcomes and retry only when nothing left the source
 
 - **Status:** Proposed
 - **Date:** 2026-11-09
@@ -14,6 +14,11 @@ a second step after the Core payment leaves; by default the existing asset-lock 
 it, and the app shows it as in progress. [ADR-0042](0042-report-moved-to-platform-when-a-shielded-to-identity-top-up-fails-after-the-unshield.md)
 later adds a fourth outcome for Shielded → Identity.
 
+A Core → Platform address, Shielded or Identity send whose asset lock is recorded and broadcast,
+while the Platform step failed or never ran, was also reported as in progress, but nothing resumes
+such a lock without the holder: only Rebroadcast in the transaction details does
+([dashwallet-ios#1422](https://github.com/dashpay/dashwallet-ios/issues/1422)).
+
 ## Decision drivers
 
 - Funds safety: no double payment.
@@ -27,7 +32,13 @@ later adds a fourth outcome for Shielded → Identity.
 
 ## Decision outcome
 
-**Chosen:** option 1, the executor reports one of three outcomes and only `notSent` offers Retry; any doubt is reported as `inFlight`. Balances update with a delay after SPV or Platform sync, so a balance check could miss a payment that already left; the three outcomes follow the SDK's own no-retry contract.
+**Chosen:** option 1, extended by the revision below to four outcomes: the executor reports `sent`, `notSent`, `inFlight` or `lockHeld`, and only `notSent` offers Retry. A doubt about a submitted payment is reported as `inFlight`; a recorded asset lock whose Platform step did not finish is `lockHeld`, which offers Finish instead. Balances update with a delay after SPV or Platform sync, so a balance check could miss a payment that already left; the three outcomes follow the SDK's own no-retry contract.
+
+**Revised 2026-11-15** ([dashwallet-ios#1422](https://github.com/dashpay/dashwallet-ios/issues/1422)):
+a fourth outcome, `lockHeld(lock)`, for a send whose asset lock is recorded while its Platform step
+did not finish. Its sheet says the Dash is held for this transfer and offers Finish, which resumes
+that same lock (the Rebroadcast resume, behind authentication) and never builds a second payment;
+Close leaves it for the transaction details. `inFlight` keeps only "submitted, outcome unknown".
 
 ## Consequences
 
@@ -37,6 +48,7 @@ later adds a fourth outcome for Shielded → Identity.
 
 **Negative**
 - Some real failures show as "in progress" without a button until recovery or sync settles them.
+- Core → an Identity ID still reports a held lock as in progress: the SDK call does not return the lock's outpoint yet (dashwallet-ios#1422).
 
 **Neutral**
 - The in-progress view is the existing one until a dedicated lock-progress design arrives.

@@ -99,6 +99,18 @@ final class SendOutcomeRouterTests: XCTestCase {
         }
     }
 
+    // MARK: - lockHeld
+
+    /// A held asset lock opens its own sheet with Finish, never the in-progress Toast or Send failed's Retry.
+    func testLockHeldOpensTheLockHeldSheetWithItsLockOnEveryRoute() {
+        let lock = HeldAssetLock(fundingTypeRaw: 5, txidWire: Data(repeating: 0x01, count: 32), vout: 2)
+        for route in allRoutes {
+            let destination = router.destination(for: .lockHeld(lock), request: request(route))
+            XCTAssertEqual(destination, .lockHeld(lock), "\(route)")
+            XCTAssertFalse(offersRetry(destination), "\(route)")
+        }
+    }
+
     // MARK: - The Toast text
 
     func testTheToastShowsTheTitleBeforeTheMessage() {
