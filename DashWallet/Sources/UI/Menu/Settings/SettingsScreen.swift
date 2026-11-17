@@ -132,27 +132,19 @@ struct SettingsScreen: View {
 
     /// One settings row, rendered by the design system's `MenuItem`.
     ///
-    /// `DashUIKit.MenuItem` draws the row and nothing else — it carries no tap
-    /// handler of its own — so what a tap means is decided here, per row:
+    /// What a tap means is decided here, per row:
     ///
-    /// - a toggle row that also has something to explain puts the explanation
-    ///   on the row body, leaving the switch to toggle and the rest to inform
-    ///   (the info glyph is drawn by `MenuItem` but is not itself a button);
+    /// - a toggle row that also has something to explain hands the explanation
+    ///   to `MenuItem` as its row action: the icon and text are one button that
+    ///   opens it, and the switch stays its own element that toggles (the info
+    ///   glyph is drawn by `MenuItem` but is not itself a button);
     /// - every other row with an action is a button that runs it — for a plain
     ///   toggle row that is the toggle, so the whole row flips the switch.
     @ViewBuilder
     private func row(for item: MenuItemModel) -> some View {
         // One binding for the switch on screen and the one VoiceOver reads.
         let isOn = Self.toggleBinding(item)
-        let content = DashUIKit.MenuItem(
-            leadingIcon: item.icon.map(Self.iconSource),
-            title: item.title,
-            helpText: item.subtitle,
-            info: item.showInfo ? .round(color: Color.dash.gray300Alpha70) : nil,
-            accessory: item.showToggle
-                ? .toggle(isOn: isOn)
-                : (item.details.map { .text($0) } ?? .none)
-        )
+        let content = Self.menuItem(for: item, isOn: isOn)
         // The row's full height is the tap target: `MenuItem` draws no
         // background of its own, so without the shape a plain-style button
         // would answer only on the icon and text, not on the gaps or the
@@ -160,13 +152,12 @@ struct SettingsScreen: View {
         .frame(minHeight: 60)
         .contentShape(Rectangle())
 
-        if item.showToggle, let infoAction = item.infoAction {
-            // The switch owns its own tap, so the rest of the row is free
-            // to answer the question the info glyph poses. Named so a UI
-            // test can find the row and tap the switch's place in it.
-            Button(action: infoAction) { content }
-                .buttonStyle(.plain)
-                .modifier(ToggleRowAccessibility(item: item, isOn: isOn))
+        if Self.explainsToggle(item) {
+            // `MenuItem` already splits this row into the body button and the
+            // switch. The group carries the row's name, so a UI test finds
+            // both inside it.
+            content
+                .accessibilityElement(children: .contain)
                 .accessibilityIdentifier(Self.accessibilityIdentifier(item))
         } else if let action = item.action {
             // For a plain toggle row the action is the toggle itself, so a tap
@@ -178,6 +169,26 @@ struct SettingsScreen: View {
         } else {
             content
         }
+    }
+
+    /// A toggle row whose body opens an explainer rather than flipping the switch.
+    private static func explainsToggle(_ item: MenuItemModel) -> Bool {
+        item.showToggle && item.infoAction != nil
+    }
+
+    private static func menuItem(for item: MenuItemModel, isOn: Binding<Bool>) -> DashUIKit.MenuItem {
+        let leadingIcon = item.icon.map(iconSource)
+        let info: MenuItemInfo? = item.showInfo ? .round(color: Color.dash.gray300Alpha70) : nil
+        let accessory: MenuItemAccessory = item.showToggle
+            ? .toggle(isOn: isOn)
+            : (item.details.map { .text($0) } ?? .none)
+
+        if item.showToggle, let infoAction = item.infoAction {
+            return DashUIKit.MenuItem(leadingIcon: leadingIcon, title: item.title, helpText: item.subtitle,
+                                      info: info, accessory: accessory, action: infoAction)
+        }
+        return DashUIKit.MenuItem(leadingIcon: leadingIcon, title: item.title, helpText: item.subtitle,
+                                  info: info, accessory: accessory)
     }
 
     /// Names a row for UI tests, e.g. `settings_row_enable_voting`.
@@ -333,13 +344,9 @@ extension AboutDashHostingViewController: MFMailComposeViewControllerDelegate {
     }
 }
 
-/// One element for VoiceOver on a toggle row: the row reads as the switch it
-/// flips, with its state and subtitle, rather than a stateless button next to
-/// a second switch element. Other rows are left as they are.
-///
-/// A row whose body opens an explainer would otherwise read as a switch that
-/// opens the explainer when activated; here activation flips the switch, and
-/// the explainer is a named action on the same element.
+/// One element for VoiceOver on a plain toggle row: the row reads as the
+/// switch it flips, with its state and subtitle, rather than a stateless
+/// button next to a second switch element. Other rows are left as they are.
 private struct ToggleRowAccessibility: ViewModifier {
     let item: MenuItemModel
     let isOn: Binding<Bool>
@@ -353,11 +360,6 @@ private struct ToggleRowAccessibility: ViewModifier {
                         if let subtitle = item.subtitle {
                             Text(subtitle)
                         }
-                    }
-                }
-                .accessibilityActions {
-                    if let infoAction = item.infoAction {
-                        Button(NSLocalizedString("Learn more", comment: "Settings"), action: infoAction)
                     }
                 }
         } else {
