@@ -94,6 +94,8 @@ final class PointOfUseListViewModel: ObservableObject {
     private var merchantPinsFromRows = false
     /// Numbers `refreshFilterTitle(mapCenter:)` requests; only the latest one sets the title.
     private var geocodeGeneration = 0
+    /// Numbers `updateMerchantLocations()` queries; only the latest one sets the pins.
+    private var merchantLocationsGeneration = 0
     private var cancellables = Set<AnyCancellable>()
 
     init(configuration: PointOfUseListConfiguration,
@@ -288,10 +290,12 @@ final class PointOfUseListViewModel: ObservableObject {
 
     func refreshFilterTitle(mapCenter: CLLocationCoordinate2D) {
         filterTitle = model.currentSegment.title
+        // Before the guard: a refresh that asks for no place still supersedes
+        // a lookup already in flight.
+        geocodeGeneration += 1
 
         guard location.isAuthorized, model.currentSegment.showReversedLocation else { return }
 
-        geocodeGeneration += 1
         let request = geocodeGeneration
         let segment = model.currentSegment
         let center = CLLocation(latitude: mapCenter.latitude, longitude: mapCenter.longitude)
@@ -404,6 +408,12 @@ final class PointOfUseListViewModel: ObservableObject {
     /// closest to the search center), while the list keeps one row per
     /// merchant.
     private func updateMerchantLocations() {
+        // Every call supersedes the query in flight, including one that asks
+        // for none: new filters or a database refresh can change the pins
+        // with the bounds unchanged.
+        merchantLocationsGeneration += 1
+        let request = merchantLocationsGeneration
+
         guard let bounds = model.currentMapBounds, let center = model.userCoordinates else {
             merchantPinsFromRows = true
             mapItems = physicalRows
@@ -414,9 +424,7 @@ final class PointOfUseListViewModel: ObservableObject {
                                                      paymentMethods: model.filters?.merchantPaymentTypes,
                                                      denominationType: model.filters?.denominationType) { [weak self] result in
             DispatchQueue.main.async {
-                // A pan or zoom may have started another fetch; only the
-                // response for the bounds on screen applies.
-                guard let self, self.model.showMap, self.model.currentMapBounds == bounds else { return }
+                guard let self, self.model.showMap, request == self.merchantLocationsGeneration else { return }
 
                 switch result {
                 case .success(let locations):
