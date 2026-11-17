@@ -232,7 +232,7 @@ struct NotificationsScreen: View {
     private var noSearchResults: some View {
         VStack(spacing: 12) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 34, weight: .light))
+                .scaledSystemFont(size: 34, weight: .light, relativeTo: .largeTitle)
                 .foregroundColor(.dash.tertiaryText)
             Text(NSLocalizedString("No notifications match your search", comment: "DashPay Notifications"))
                 .font(.system(size: 14))
@@ -337,7 +337,7 @@ struct NotificationsScreen: View {
                     event.item.displayTitle)
             ) {
                 Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 20))
+                    .scaledSystemFont(size: 20, relativeTo: .title3)
                     .foregroundColor(.dashGreen)
             }
         }
@@ -358,7 +358,7 @@ struct NotificationsScreen: View {
                 .padding(.leading, 15)
             VStack(alignment: .leading, spacing: 2) {
                 Text(text)
-                    .font(.system(size: 14))
+                    .scaledSystemFont(size: 14, relativeTo: .subheadline)
                     .foregroundColor(.dash.primaryText)
                     .lineLimit(2)
                 Text(Self.timestampFormatter.string(from: event.date))

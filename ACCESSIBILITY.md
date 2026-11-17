@@ -37,7 +37,7 @@ scripts/a11y_audit.py --path "DashWallet/Sources/UI/Payments"
 | A11Y004 | P1 | SwiftUI `Button` whose label is only an image/shape |
 | A11Y005 | P1 | `Toggle` with an empty label |
 | A11Y006 | P1 | Custom back button replacing UIKit's automatically labeled one |
-| A11Y007 | P2 | `.system(size:)` with no `relativeTo:` — ignores Dynamic Type |
+| A11Y007 | P2 | `.system(size:)` with a fixed size — ignores Dynamic Type. SwiftUI has no `.system(size:relativeTo:)`: use `.scaledSystemFont(size:relativeTo:)` (`Font+DWStyle.swift`) or an `@ScaledMetric` size |
 | A11Y008 | P0 | `extension Font` shadowing an Apple text style |
 | A11Y009 | P1 | `accessibilityLabel` with a bare, unlocalized string |
 | A11Y010 | P1 | `accessibilityLabel` key missing from `en.lproj` |
