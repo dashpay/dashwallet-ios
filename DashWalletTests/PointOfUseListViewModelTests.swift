@@ -97,6 +97,19 @@ final class PointOfUseListViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.filterTitle, "Newer")
     }
 
+    func testAPlaceNameDoesNotReturnAfterLocationIsTurnedOff() async {
+        location.isAuthorized = true
+        let viewModel = makeViewModel(segments: [segment(tag: 0, showReversedLocation: true)])
+
+        viewModel.refreshFilterTitle(mapCenter: CLLocationCoordinate2D(latitude: 1, longitude: 1))
+        location.isAuthorized = false
+        viewModel.refreshFilterTitle(mapCenter: CLLocationCoordinate2D(latitude: 1, longitude: 1))
+        location.geocodeCompletions[0]("Older", nil)
+        await drainMainQueue()
+
+        XCTAssertEqual(viewModel.filterTitle, "Segment 0")
+    }
+
     func testAPlaceNameDoesNotLandOnAnotherSegment() async {
         location.isAuthorized = true
         let viewModel = makeViewModel(segments: [segment(tag: 0, showReversedLocation: true),
