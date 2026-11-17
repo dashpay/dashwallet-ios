@@ -65,7 +65,9 @@ final class PointOfUseListViewModel: ObservableObject {
     struct SegmentSelection {
         /// The segment had no filters, so it got the defaults.
         let appliedDefaultFilters: Bool
-        /// The segment wants location, which has not been asked for yet.
+        /// The segment wants location, which has not been asked for yet, and
+        /// shows no map. A shown map asks on its own (`showMapIfNeeded()`), so
+        /// asking here too would stack a second prompt over the first.
         let needsLocationPrompt: Bool
     }
 
@@ -90,6 +92,8 @@ final class PointOfUseListViewModel: ObservableObject {
     /// Whether the merchant pins came from the loaded rows (no location or
     /// a failed location query) rather than the area-wide query.
     private var merchantPinsFromRows = false
+    /// Numbers `refreshFilterTitle(mapCenter:)` requests; only the latest one sets the title.
+    private var geocodeGeneration = 0
     private var cancellables = Set<AnyCancellable>()
 
     init(configuration: PointOfUseListConfiguration,
@@ -157,7 +161,9 @@ final class PointOfUseListViewModel: ObservableObject {
 
         // TODO(atm-segments): tag 1 is Nearby for merchants but Buy for ATMs,
         // so the ATM Buy tab asks for location too.
-        let needsLocationPrompt = segment.tag == MerchantsListSegment.nearby.rawValue && location.needsAuthorization
+        let needsLocationPrompt = segment.tag == MerchantsListSegment.nearby.rawValue
+            && location.needsAuthorization
+            && !model.showMap
 
         return SegmentSelection(appliedDefaultFilters: appliesDefaults, needsLocationPrompt: needsLocationPrompt)
     }
@@ -285,10 +291,15 @@ final class PointOfUseListViewModel: ObservableObject {
 
         guard location.isAuthorized, model.currentSegment.showReversedLocation else { return }
 
+        geocodeGeneration += 1
+        let request = geocodeGeneration
+        let segment = model.currentSegment
         let center = CLLocation(latitude: mapCenter.latitude, longitude: mapCenter.longitude)
         location.reverseGeocodeLocation(center) { [weak self] place, _ in
             DispatchQueue.main.async {
-                guard let self, self.model.showMap else { return }
+                // A newer title request, or another segment, supersedes this place.
+                guard let self, self.model.showMap, request == self.geocodeGeneration,
+                      self.model.currentSegment == segment else { return }
                 self.filterTitle = place
             }
         }
