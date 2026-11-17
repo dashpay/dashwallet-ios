@@ -1145,6 +1145,34 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertEqual(whole.first?.responseMayRemain, false, "a whole read clears it")
     }
 
+    /// A closed intent of another identity whose response is not removed
+    /// keeps the Disconnected row's mark, though this identity's own closed
+    /// intent has its response removed (CodeRabbit, #1414).
+    func testAMarkHeldByAnotherIdentitysResponseIsNotClearedByThisRead() {
+        let a = Self.authKey(10)
+        let keys = [Self.onPlatform(a, disabledAt: 1)]
+        let own = Self.closed(Self.intent([a], published: false))
+        XCTAssertTrue(own.responseRemoved)
+        let projection = AppConnect.project([Self.snapshot(keys)], intents: [own])
+        var row = DAppConnection(
+            id: Self.app.toBase58String(), name: "App", url: "", status: .disconnected,
+            updatedAt: Date(timeIntervalSince1970: 1))
+        row.responseMayRemain = true
+        let other = Self.closed(Self.intent([Self.authKey(20)], identity: Self.otherIdentity, published: true))
+        XCTAssertFalse(other.responseRemoved)
+
+        let held = PlatformDashConnectDataSource.rows(
+            [row], after: projection, of: Self.identity, intents: [other], at: Date(timeIntervalSince1970: 2))
+        XCTAssertEqual(held.map(\.status), [.disconnected])
+        XCTAssertEqual(held.first?.responseMayRemain, true, "the other identity's response may remain")
+
+        var removed = other
+        removed.responseRemoved = true
+        let cleared = PlatformDashConnectDataSource.rows(
+            [row], after: projection, of: Self.identity, intents: [removed], at: Date(timeIntervalSince1970: 2))
+        XCTAssertEqual(cleared.first?.responseMayRemain, false, "with every response removed the mark goes")
+    }
+
     /// Edge: every closed intent of the Disconnected app has its response removed.
     func testADisconnectedRowWhoseClosedResponsesAreAllRemovedHasNoMark() {
         let a = Self.authKey(10)

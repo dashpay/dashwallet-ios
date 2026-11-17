@@ -1201,7 +1201,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// connection, and stays as it was when it has none (its intents could
     /// not be read). A mark of an app in `unreadable`, whose intents were
     /// read only in part, is never cleared by the read: an intent it could not
-    /// read may hold a response not removed. While the read has a
+    /// read may hold a response not removed. Nor is the mark of an app with a
+    /// closed intent in `elsewhere` whose response is not removed. While the read has a
     /// key whose bound is unknown, that key may be any app's: no row goes;
     /// one that would is Confirming, so it keeps its Disconnect until a
     /// read places every key.
@@ -1233,6 +1234,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let heldElsewhere = Set(elsewhere.filter { $0.closedAt == nil }.map { $0.appId.toBase58String() })
         let disconnectedElsewhere = Set(
             elsewhere.filter { $0.closedAt != nil && $0.disconnectedAt != nil }.map { $0.appId.toBase58String() })
+        // A closed intent of another identity may still hold a response not
+        // removed: this read says nothing of it, so it keeps the row's mark.
+        let retainedElsewhere = Set(
+            elsewhere.filter { $0.closedAt != nil && !$0.responseRemoved }.map { $0.appId.toBase58String() })
         let hasUnplacedKey = projection.unplacedKeyIds[identityId]?.isEmpty == false
         var result: [DAppConnection] = rows.compactMap { row in
             if keeping.contains(row.id) {
@@ -1241,7 +1246,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 var kept = row
                 if let read = projection.connections.first(where: { $0.appId.toBase58String() == row.id }) {
                     kept.responseMayRemain = row.status == .disconnected
-                        && (read.responseMayRemain || unreadable.contains(row.id) && row.responseMayRemain)
+                        && (read.responseMayRemain || retainedElsewhere.contains(row.id)
+                            || unreadable.contains(row.id) && row.responseMayRemain)
                 }
                 return kept
             }
@@ -1305,7 +1311,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 updatedAt: existing?.status == status ? existing?.updatedAt ?? updatedAt : updatedAt,
                 seenOn: seenOn)
             let markUnread = unreadable.contains(id) && existing?.responseMayRemain == true
-            row.responseMayRemain = status == .disconnected && (connection.responseMayRemain || markUnread)
+            row.responseMayRemain = status == .disconnected
+                && (connection.responseMayRemain || retainedElsewhere.contains(id) || markUnread)
             result.append(row)
         }
         return result
