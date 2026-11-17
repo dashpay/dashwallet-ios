@@ -1,8 +1,8 @@
 # 0050 — Bound an unresolved publish by 48 hours of proved Platform block time
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-13 (bound raised from 24 h to 48 h in the architecture review of 2026-11-14)
-- **Deciders:** romchornyi, with Claude during the design pass
+- **Deciders:** romchornyi, with Claude during the design pass. Approved in #1414 by HashEngineering.
 
 ## Context
 

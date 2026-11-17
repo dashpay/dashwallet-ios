@@ -1,8 +1,8 @@
 # 0049 — Record the publish start on the connection intent
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-13
-- **Deciders:** romchornyi, with Claude during the design pass
+- **Deciders:** romchornyi, with Claude during the design pass. Approved in #1414 by HashEngineering.
 
 ## Context
 
