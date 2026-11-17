@@ -208,6 +208,14 @@ struct MainMenuScreen: View {
         self.viewModel = viewModel
     }
     #endif
+
+    private var toolsMenuScreen: ToolsMenuScreen {
+        #if DASHPAY
+        return ToolsMenuScreen(vc: vc, dashPayModel: viewModel.dashPayModel)
+        #else
+        return ToolsMenuScreen(vc: vc)
+        #endif
+    }
     
     
     var body: some View {
@@ -315,7 +323,7 @@ struct MainMenuScreen: View {
             }
             
             NavigationLink(
-                destination: ToolsMenuScreen(vc: vc),
+                destination: toolsMenuScreen,
                 isActive: $showTools
             ) {
                 EmptyView()
@@ -433,7 +441,6 @@ struct MainMenuScreen: View {
             onBack: { vc?.popViewController(animated: true) },
             onRetryCompanion: { name in openCreateUsernameForRecovery(username: name) })
         let controller = UIHostingController(rootView: screen)
-        controller.hidesBottomBarWhenPushed = true
         vc?.pushViewController(controller, animated: true)
     }
     
@@ -550,18 +557,23 @@ struct MainMenuScreen: View {
             onShowGiftCard: { txId in delegateInternal.showGiftCard(txId) }
         )
         let controller = UIHostingController(rootView: screen)
-        controller.hidesBottomBarWhenPushed = true
         vc?.pushViewController(controller, animated: true)
     }
 
     #if DASHPAY
     private func showVoting() {
+        // The voting list needs its own `NavigationStack`. A bare hosting
+        // controller inherits the menu's hidden navigation bar
+        // (`BaseNavigationController.willShow` only restores it for a
+        // `NavigationBarDisplayable`), which left the voting screens with no
+        // back button and no way out — and silently dropped the `.toolbar`
+        // and `.navigationTitle` as well, since neither renders outside a
+        // navigation container.
         let navController = vc
         let popRoot: () -> Void = { [weak navController] in
             _ = navController?.popViewController(animated: true)
         }
-        let hosting = UIHostingController(rootView: UsernameVotingScreen(vc: vc, onClose: popRoot))
-        hosting.hidesBottomBarWhenPushed = true
+        let hosting = UsernameVotingHostingController(viewModel: VotingViewModel(), onClose: popRoot)
         vc?.pushViewController(hosting, animated: true)
     }
     #endif
@@ -597,7 +609,6 @@ struct MainMenuScreen: View {
     /// Preselected, not pinned — the form still lets either endpoint change.
     private func shieldFunds() {
         let controller = InternalTransferHostingController(transferTo: .balance(.shielded))
-        controller.hidesBottomBarWhenPushed = true
         vc?.pushViewController(controller, animated: true)
     }
     #endif
@@ -638,7 +649,9 @@ struct MainMenuScreen: View {
         Self.pushCreateUsernameForm(on: vc, dashPayModel: dashPayModel)
     }
 
-    private static func pushCreateUsernameForm(
+    /// Pushes the username creation form, as More does for a returning
+    /// user; Connections reuses it for a wallet without a username.
+    static func pushCreateUsernameForm(
         on navigationController: UINavigationController,
         dashPayModel: DWDashPayProtocol,
         definedUsername: String? = nil
@@ -647,7 +660,6 @@ struct MainMenuScreen: View {
             dashPayModel: dashPayModel,
             definedUsername: definedUsername
         )
-        controller.hidesBottomBarWhenPushed = true
         controller.completionHandler = { [weak navigationController] result in
             let message = result 
                 ? NSLocalizedString("Username was successfully requested", comment: "Usernames")

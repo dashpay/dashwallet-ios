@@ -70,7 +70,6 @@ struct KeysOverviewContentView: View {
 
             DispatchQueue.main.async {
                 let vc = DerivationPathKeysViewController(with: item)
-                vc.hidesBottomBarWhenPushed = true
                 navigationController?.pushViewController(vc, animated: true)
             }
         }

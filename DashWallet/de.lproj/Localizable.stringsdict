@@ -98,22 +98,6 @@
 			<string>%d Schlüssel</string>
 		</dict>
 	</dict>
-	<key>%u votes counted for “%@”</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@votes@ gezählt für „%2$@“</string>
-		<key>votes</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>u</string>
-			<key>one</key>
-			<string>%1$u Stimme</string>
-			<key>other</key>
-			<string>%1$u Stimmen</string>
-		</dict>
-	</dict>
 	<key>%d of %d usernames voted on</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -128,22 +112,6 @@
 			<string>%2$d Benutzernamen</string>
 			<key>other</key>
 			<string>%2$d Benutzernamen</string>
-		</dict>
-	</dict>
-	<key>Cast %u votes</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>u</string>
-			<key>one</key>
-			<string>%u Stimme abgeben</string>
-			<key>other</key>
-			<string>%u Stimmen abgeben</string>
 		</dict>
 	</dict>
 	<key>%d of %d masternodes voted</key>
@@ -178,70 +146,6 @@
 			<string>%2$d Nodes</string>
 		</dict>
 	</dict>
-	<key>%d evonodes</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>%d Evonode</string>
-			<key>other</key>
-			<string>%d Evonodes</string>
-		</dict>
-	</dict>
-	<key>%u votes in total</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>u</string>
-			<key>one</key>
-			<string>%u Stimme insgesamt</string>
-			<key>other</key>
-			<string>%u Stimmen insgesamt</string>
-		</dict>
-	</dict>
-	<key>%d masternodes</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>%d Masternode</string>
-			<key>other</key>
-			<string>%d Masternodes</string>
-		</dict>
-	</dict>
-	<key>%d selected</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>%d ausgewählt</string>
-			<key>other</key>
-			<string>%d ausgewählt</string>
-		</dict>
-	</dict>
 	<key>%d of your nodes already voted here and are not listed.</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -256,70 +160,6 @@
 			<string>%d deiner Nodes hat hier bereits abgestimmt und wird nicht aufgeführt.</string>
 			<key>other</key>
 			<string>%d deiner Nodes haben hier bereits abgestimmt und werden nicht aufgeführt.</string>
-		</dict>
-	</dict>
-	<key>%u votes per contest — evonodes count as 4, masternodes as 1</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>u</string>
-			<key>one</key>
-			<string>%u Stimme pro Wettbewerb — Evonodes zählen als 4, Masternodes als 1</string>
-			<key>other</key>
-			<string>%u Stimmen pro Wettbewerb — Evonodes zählen als 4, Masternodes als 1</string>
-		</dict>
-	</dict>
-	<key>Vote on %d usernames</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>Über %d Benutzernamen abstimmen</string>
-			<key>other</key>
-			<string>Über %d Benutzernamen abstimmen</string>
-		</dict>
-	</dict>
-	<key>%u votes</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>u</string>
-			<key>one</key>
-			<string>%u Stimme</string>
-			<key>other</key>
-			<string>%u Stimmen</string>
-		</dict>
-	</dict>
-	<key>Vote ×%d</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>Abstimmen ×%d</string>
-			<key>other</key>
-			<string>Abstimmen ×%d</string>
 		</dict>
 	</dict>
 	<key>%d requests</key>
@@ -906,6 +746,114 @@ You should check and if necessary correct your date, time and timezone settings.
 			<string>d</string>
 			<key>other</key>
 			<string>%d UTXOs</string>
+		</dict>
+	</dict>
+	<key>%d usernames</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d username</string>
+			<key>other</key>
+			<string>%d usernames</string>
+		</dict>
+	</dict>
+	<key>Voting ends in %d days</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Voting ends in %d day</string>
+			<key>other</key>
+			<string>Voting ends in %d days</string>
+		</dict>
+	</dict>
+	<key>Vote for all approves %d usernames</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>By tapping Vote for all, you approve the request submitted first for %d username.</string>
+			<key>other</key>
+			<string>By tapping Vote for all, you approve the request submitted first for %d usernames.</string>
+		</dict>
+	</dict>
+	<key>Vote for all approves the linked request for %d usernames</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>By tapping Vote for all, you approve the linked request submitted first for %d username.</string>
+			<key>other</key>
+			<string>By tapping Vote for all, you approve the linked request submitted first for %d usernames.</string>
+		</dict>
+	</dict>
+	<key>%d usernames are skipped</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d username is skipped.</string>
+			<key>other</key>
+			<string>%d usernames are skipped.</string>
+		</dict>
+	</dict>
+	<key>%d votes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d Stimmen</string>
+		</dict>
+	</dict>
+	<key>All %d nodes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>All %d nodes</string>
 		</dict>
 	</dict>
 </dict>

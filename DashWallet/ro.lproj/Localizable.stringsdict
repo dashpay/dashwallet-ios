@@ -98,24 +98,6 @@
 			<string>%d keys</string>
 		</dict>
 	</dict>
-	<key>%u votes counted for “%@”</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@votes@ pentru „%2$@”</string>
-		<key>votes</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>u</string>
-			<key>one</key>
-			<string>%1$u vot numărat</string>
-			<key>few</key>
-			<string>%1$u voturi numărate</string>
-			<key>other</key>
-			<string>%1$u de voturi numărate</string>
-		</dict>
-	</dict>
 	<key>%d of %d usernames voted on</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -132,24 +114,6 @@
 			<string>%2$d nume de utilizator</string>
 			<key>other</key>
 			<string>%2$d de nume de utilizator</string>
-		</dict>
-	</dict>
-	<key>Cast %u votes</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>u</string>
-			<key>one</key>
-			<string>Exprimă %u vot</string>
-			<key>few</key>
-			<string>Exprimă %u voturi</string>
-			<key>other</key>
-			<string>Exprimă %u de voturi</string>
 		</dict>
 	</dict>
 	<key>%d of %d masternodes voted</key>
@@ -188,78 +152,6 @@
 			<string>%2$d de noduri</string>
 		</dict>
 	</dict>
-	<key>%d evonodes</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>%d evonode</string>
-			<key>few</key>
-			<string>%d evonode-uri</string>
-			<key>other</key>
-			<string>%d de evonode-uri</string>
-		</dict>
-	</dict>
-	<key>%u votes in total</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>u</string>
-			<key>one</key>
-			<string>%u vot în total</string>
-			<key>few</key>
-			<string>%u voturi în total</string>
-			<key>other</key>
-			<string>%u de voturi în total</string>
-		</dict>
-	</dict>
-	<key>%d masternodes</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>%d masternode</string>
-			<key>few</key>
-			<string>%d masternode-uri</string>
-			<key>other</key>
-			<string>%d de masternode-uri</string>
-		</dict>
-	</dict>
-	<key>%d selected</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>%d selectat</string>
-			<key>few</key>
-			<string>%d selectate</string>
-			<key>other</key>
-			<string>%d de selectate</string>
-		</dict>
-	</dict>
 	<key>%d of your nodes already voted here and are not listed.</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -276,78 +168,6 @@
 			<string>%d dintre nodurile tale au votat deja aici și nu sunt afișate.</string>
 			<key>other</key>
 			<string>%d dintre nodurile tale au votat deja aici și nu sunt afișate.</string>
-		</dict>
-	</dict>
-	<key>%u votes per contest — evonodes count as 4, masternodes as 1</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>u</string>
-			<key>one</key>
-			<string>%u vot per dispută — evonode-urile contează ca 4, masternode-urile ca 1</string>
-			<key>few</key>
-			<string>%u voturi per dispută — evonode-urile contează ca 4, masternode-urile ca 1</string>
-			<key>other</key>
-			<string>%u de voturi per dispută — evonode-urile contează ca 4, masternode-urile ca 1</string>
-		</dict>
-	</dict>
-	<key>Vote on %d usernames</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>Votează pentru %d nume de utilizator</string>
-			<key>few</key>
-			<string>Votează pentru %d nume de utilizator</string>
-			<key>other</key>
-			<string>Votează pentru %d de nume de utilizator</string>
-		</dict>
-	</dict>
-	<key>%u votes</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>u</string>
-			<key>one</key>
-			<string>%u vot</string>
-			<key>few</key>
-			<string>%u voturi</string>
-			<key>other</key>
-			<string>%u de voturi</string>
-		</dict>
-	</dict>
-	<key>Vote ×%d</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@count@</string>
-		<key>count</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>d</string>
-			<key>one</key>
-			<string>Votează ×%d</string>
-			<key>few</key>
-			<string>Votează ×%d</string>
-			<key>other</key>
-			<string>Votează ×%d</string>
 		</dict>
 	</dict>
 	<key>%d requests</key>
@@ -938,6 +758,114 @@ You should check and if necessary correct your date, time and timezone settings.
 			<string>d</string>
 			<key>other</key>
 			<string>%d UTXOs</string>
+		</dict>
+	</dict>
+	<key>%d usernames</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d username</string>
+			<key>other</key>
+			<string>%d usernames</string>
+		</dict>
+	</dict>
+	<key>Voting ends in %d days</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Voting ends in %d day</string>
+			<key>other</key>
+			<string>Voting ends in %d days</string>
+		</dict>
+	</dict>
+	<key>Vote for all approves %d usernames</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>By tapping Vote for all, you approve the request submitted first for %d username.</string>
+			<key>other</key>
+			<string>By tapping Vote for all, you approve the request submitted first for %d usernames.</string>
+		</dict>
+	</dict>
+	<key>Vote for all approves the linked request for %d usernames</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>By tapping Vote for all, you approve the linked request submitted first for %d username.</string>
+			<key>other</key>
+			<string>By tapping Vote for all, you approve the linked request submitted first for %d usernames.</string>
+		</dict>
+	</dict>
+	<key>%d usernames are skipped</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d username is skipped.</string>
+			<key>other</key>
+			<string>%d usernames are skipped.</string>
+		</dict>
+	</dict>
+	<key>%d votes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d voturi</string>
+		</dict>
+	</dict>
+	<key>All %d nodes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>All %d nodes</string>
 		</dict>
 	</dict>
 </dict>

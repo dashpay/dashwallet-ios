@@ -233,7 +233,7 @@ enum DashConnectUri {
         if query.first == "?" { query = query.dropFirst() }
         let parameters = try appConnectParameters(query, known: ["n", "v", "cb"])
 
-        return try finishAppConnectRequest(parameters) {
+        return try finishAppConnectRequest(parameters, refusesMainnet: true) {
             // Before the decode, as for the other two formats: its cost is
             // quadratic in the encoded length.
             guard body.utf8.count <= maxEncodedLength(forPayloadBytes: maxAppConnectPayloadLength) else {
@@ -334,7 +334,7 @@ enum DashConnectUri {
         }
         let parameters = try appConnectParameters(query.dropFirst(), known: ["n", "v", "r", "cb"])
 
-        return try finishAppConnectRequest(parameters) {
+        return try finishAppConnectRequest(parameters, refusesMainnet: false) {
             guard let encoded = parameters["r"], !encoded.isEmpty else {
                 throw AppConnectRequestError.invalid("request is missing")
             }
@@ -405,8 +405,10 @@ enum DashConnectUri {
     }
 
     /// The part both carriers share: `v`, then `n`, then the body bytes the
-    /// carrier produces, then `cb`, then the body decoder.
+    /// carrier produces, then `cb`, then the body decoder. `refusesMainnet`
+    /// refuses a request for mainnet before its body is read.
     private static func finishAppConnectRequest(_ parameters: [String: String],
+                                                refusesMainnet: Bool,
                                                 payload: () throws -> Data) throws -> AppConnectUri {
         guard parameters["v"] == appConnectVersion else {
             // The value is untrusted and unbounded: only a short number is echoed.
@@ -416,11 +418,10 @@ enum DashConnectUri {
         guard let network = parameters["n"].flatMap(DashConnectNetwork.init(rawValue:)) else {
             throw AppConnectRequestError.invalid("unknown network")
         }
-        // Not enabled on mainnet yet (ADR-0009), on either carrier; the DIP
-        // allows `dashpay://connect` there. Refused here, so it does not rest
-        // on DashConnect being off on mainnet.
-        guard network != .mainnet else {
-            throw AppConnectRequestError.invalid("request v2 is not enabled on mainnet")
+        // The DIP defines `dash-key:` version 2 for testnet and devnets
+        // only; on mainnet a request comes as `dashpay://connect`.
+        guard !(refusesMainnet && network == .mainnet) else {
+            throw AppConnectRequestError.invalid("dash-key request v2 is not accepted on mainnet")
         }
         let body = try payload()
         guard body.count <= maxAppConnectPayloadLength else {

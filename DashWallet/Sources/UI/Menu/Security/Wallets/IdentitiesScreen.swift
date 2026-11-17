@@ -108,7 +108,6 @@ struct IdentitiesScreen: View {
     private func showDetail(_ row: IdentityRowModel) {
         let controller = UIHostingController(
             rootView: IdentityDetailScreen(row: row, vc: vc, viewModel: viewModel))
-        controller.hidesBottomBarWhenPushed = true
         vc?.pushViewController(controller, animated: true)
     }
 
@@ -576,7 +575,6 @@ struct IdentityDetailScreen: View {
     private func showPublicKeys() {
         let controller = UIHostingController(
             rootView: IdentityPublicKeysScreen(row: row, vc: vc, viewModel: viewModel))
-        controller.hidesBottomBarWhenPushed = true
         vc?.pushViewController(controller, animated: true)
     }
 
@@ -655,7 +653,6 @@ struct IdentityDetailScreen: View {
     private func showUsernameMarketplace() {
         let controller = UIHostingController(
             rootView: UsernameMarketplaceScreen(vc: vc))
-        controller.hidesBottomBarWhenPushed = true
         vc?.pushViewController(controller, animated: true)
     }
 
