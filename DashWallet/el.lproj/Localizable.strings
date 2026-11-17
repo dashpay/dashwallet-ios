@@ -2495,6 +2495,9 @@
 /* No comment provided by engineer. */
 "Gift card" = "Δωροκάρτα";
 
+/* DashSpend */
+"Gift card amount is out of range" = "Gift card amount is out of range";
+
 /* No comment provided by engineer. */
 "Gift card details are unavailable. Please contact support." = "Gift card details are unavailable. Please contact support.";
 
@@ -2840,6 +2843,9 @@
 /* No comment provided by engineer. */
 "Invalid email or password." = "Μη έγκυρο email ή κωδικός πρόσβασης.";
 
+/* DashSpend */
+"Invalid gift card amount" = "Invalid gift card amount";
+
 /* Invalid Amount Input */
 "Invalid Input" = "Άκυρη καταχώρηση";
 
@@ -2851,6 +2857,9 @@
 
 /* No comment provided by engineer. */
 "Invalid Payment Request" = "Μη έγκυρο αίτημα πληρωμής";
+
+/* DashSpend */
+"Invalid payment request" = "Invalid payment request";
 
 /* BIP70 payment error */
 "Invalid payment request URL." = "Invalid payment request URL.";
@@ -3642,6 +3651,9 @@
 
 /* Coinbase/Buy Dash */
 "No payment methods found" = "Δεν βρέθηκαν τρόποι πληρωμής";
+
+/* DashSpend */
+"No payment URL received" = "No payment URL received";
 
 /* DashPay Contacts */
 "No payments with this contact yet" = "No payments with this contact yet";

@@ -2495,6 +2495,9 @@
 /* No comment provided by engineer. */
 "Gift card" = "บัตรของขวัญ";
 
+/* DashSpend */
+"Gift card amount is out of range" = "Gift card amount is out of range";
+
 /* No comment provided by engineer. */
 "Gift card details are unavailable. Please contact support." = "Gift card details are unavailable. Please contact support.";
 
@@ -2840,6 +2843,9 @@
 /* No comment provided by engineer. */
 "Invalid email or password." = "Invalid email or password.";
 
+/* DashSpend */
+"Invalid gift card amount" = "Invalid gift card amount";
+
 /* Invalid Amount Input */
 "Invalid Input" = "อินพุตที่ไม่ถูกต้อง";
 
@@ -2851,6 +2857,9 @@
 
 /* No comment provided by engineer. */
 "Invalid Payment Request" = "คำขอการชำระเงินไม่ถูกต้อง";
+
+/* DashSpend */
+"Invalid payment request" = "Invalid payment request";
 
 /* BIP70 payment error */
 "Invalid payment request URL." = "Invalid payment request URL.";
@@ -3642,6 +3651,9 @@
 
 /* Coinbase/Buy Dash */
 "No payment methods found" = "ไม่พบวิธีการชำระเงิน";
+
+/* DashSpend */
+"No payment URL received" = "No payment URL received";
 
 /* DashPay Contacts */
 "No payments with this contact yet" = "No payments with this contact yet";
