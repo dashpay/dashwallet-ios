@@ -145,14 +145,16 @@ struct SettingsScreen: View {
         // One binding for the switch on screen and the one VoiceOver reads.
         let isOn = Self.toggleBinding(item)
         let content = Self.menuItem(for: item, isOn: isOn)
-        // The row's full height is the tap target: `MenuItem` draws no
-        // background of its own, so without the shape a plain-style button
-        // would answer only on the icon and text, not on the gaps or the
-        // strip the minimum height adds.
+        // For a row wrapped in a button below, the row's full height is the
+        // tap target: `MenuItem` draws no background of its own, so without
+        // the shape a plain-style button would answer only on the icon and
+        // text, not on the gaps or the strip the minimum height adds. A row
+        // that explains its toggle is not wrapped: there only `MenuItem`'s own
+        // icon-and-text button opens the explainer.
         .frame(minHeight: 60)
         .contentShape(Rectangle())
 
-        if Self.explainsToggle(item) {
+        if Self.explainerAction(item) != nil {
             // `MenuItem` already splits this row into the body button and the
             // switch. The group carries the row's name, so a UI test finds
             // both inside it.
@@ -171,9 +173,11 @@ struct SettingsScreen: View {
         }
     }
 
-    /// A toggle row whose body opens an explainer rather than flipping the switch.
-    private static func explainsToggle(_ item: MenuItemModel) -> Bool {
-        item.showToggle && item.infoAction != nil
+    /// What the body of a toggle row opens instead of flipping the switch, or
+    /// `nil` for a row that does not explain its toggle. The one place both
+    /// `row(for:)` and `menuItem(for:isOn:)` decide the split.
+    private static func explainerAction(_ item: MenuItemModel) -> (() -> Void)? {
+        item.showToggle ? item.infoAction : nil
     }
 
     private static func menuItem(for item: MenuItemModel, isOn: Binding<Bool>) -> DashUIKit.MenuItem {
@@ -183,9 +187,9 @@ struct SettingsScreen: View {
             ? .toggle(isOn: isOn)
             : (item.details.map { .text($0) } ?? .none)
 
-        if item.showToggle, let infoAction = item.infoAction {
+        if let explainer = explainerAction(item) {
             return DashUIKit.MenuItem(leadingIcon: leadingIcon, title: item.title, helpText: item.subtitle,
-                                      info: info, accessory: accessory, action: infoAction)
+                                      info: info, accessory: accessory, action: explainer)
         }
         return DashUIKit.MenuItem(leadingIcon: leadingIcon, title: item.title, helpText: item.subtitle,
                                   info: info, accessory: accessory)
