@@ -193,6 +193,7 @@ struct DAppConnection: Identifiable, Equatable, Hashable {
             id: row.id, name: row.name, url: row.url, status: status ?? row.status,
             updatedAt: updatedAt ?? row.updatedAt, seenOn: seenOn)
         scope = row.scope
+        responseMayRemain = row.responseMayRemain
     }
 
     let id: String
@@ -209,6 +210,9 @@ struct DAppConnection: Identifiable, Equatable, Hashable {
     /// goes back with a disconnect or a remove, so a row picked from a list
     /// that has since changed wallets is not acted on in the new one.
     var scope: String? = nil
+    /// A Disconnected row whose app has a closed connection with a response
+    /// not removed: the response may still be on Platform.
+    var responseMayRemain = false
 }
 
 /// What a disconnect left on the active identity besides the app's keys it
@@ -248,6 +252,9 @@ struct DashConnectDisconnectResult: Equatable {
     /// approval names. They can be turned off only while that identity is
     /// the active one.
     var keysOnAnotherIdentity = false
+    /// A response of this app's was kept, not recorded removed, because its
+    /// publish is unresolved: it may still appear on Platform.
+    var responsesMayAppear = false
 }
 
 /// What a connection gives its app, from the intents of one identity that

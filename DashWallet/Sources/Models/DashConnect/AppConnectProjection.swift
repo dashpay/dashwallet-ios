@@ -91,6 +91,11 @@ extension AppConnect {
         /// held one of its ids. Absent on an intent written before the field
         /// existed.
         var disconnectedAt: Date?
+        /// The proved Platform block time, in milliseconds, of the identity
+        /// read the approval stood on, written just before the publish is
+        /// submitted. Absent when no start was recorded, when the publish
+        /// failed for good, and on an intent written before the field existed.
+        var publishStartBlockTimeMs: UInt64?
 
         var authKeys: [IntendedKey] { keys.filter(\.isAuthentication) }
 
@@ -247,6 +252,22 @@ extension AppConnect {
         case neverLanded
     }
 
+    /// How long, in milliseconds of proved Platform block time, a publish
+    /// stays unresolved after its start: twice the 24-hour mempool TTL that
+    /// dashmate sets for mainnet and testnet nodes, since the start is read
+    /// before the submit and a node's clock is not the block time (ADR-0050).
+    private static let publishUnresolvedWindowMs: UInt64 = 172_800_000
+
+    /// Whether the response's publish may still land: its start is recorded,
+    /// its document is unknown, and `platformTime` (the deciding operation's
+    /// proved block time) is unknown, before the start, or less than 48 hours
+    /// past it.
+    static func isPublishUnresolved(_ intent: ConnectionIntent, platformTime: UInt64?) -> Bool {
+        guard let start = intent.publishStartBlockTimeMs, intent.responseDocumentId == nil else { return false }
+        guard let platformTime else { return true }
+        return platformTime < start || platformTime - start < publishUnresolvedWindowMs
+    }
+
     static func status(of intent: ConnectionIntent, in snapshot: IdentitySnapshot) -> IntentStatus {
         // A live key of the intent is access the app has, whatever else of
         // the update shows.
@@ -297,6 +318,11 @@ extension AppConnect {
         var followedIntents: [ConnectionIntent] = []
 
         var id: Data { appId }
+
+        /// Some closed intent of the app, of an identity the projection read,
+        /// has a response that is not removed: it may still be on Platform.
+        /// Another identity's is reached only by that identity's operations.
+        var responseMayRemain = false
     }
 
     struct Projection: Equatable {
@@ -465,9 +491,13 @@ extension AppConnect {
                 return intent
             }
             let isUndelivered = others.isEmpty && !delivering.isEmpty && delivering.allSatisfy { $0.responseDocumentId == nil }
+            let responseMayRemain = own.contains {
+                byIdentity[$0.identityId] != nil && $0.closedAt != nil && !$0.responseRemoved
+            }
             return ProjectedConnection(
                 appId: app, status: latest, intents: own, unrecordedKeyIds: others,
-                liveUnrecordedIdentities: liveOthers, isUndelivered: isUndelivered, followedIntents: followed.map(\.0))
+                liveUnrecordedIdentities: liveOthers, isUndelivered: isUndelivered,
+                followedIntents: followed.map(\.0), responseMayRemain: responseMayRemain)
         }
         return Projection(
             connections: connections.sorted { $0.appId.lexicographicallyPrecedes($1.appId) },

@@ -36,8 +36,9 @@ enum PlatformWrite {
 /// The submit and the timer run as separate tasks and the first to finish
 /// decides; the loser is cancelled but not awaited. The real submits block
 /// inside Rust and ignore cancellation, so `run` returns `timedOut` on time
-/// while such a submit is still running; its late result is dropped and
-/// nothing more is logged for it.
+/// while such a submit is still running; when that submit ends it logs a late
+/// line, and its outcome is dropped: the caller's next read decides. A submit
+/// that ends after the caller cancelled logs nothing more.
 struct AppConnectWriteExecutor {
     /// How long a write may run before it is reported `timedOut` (Roman,
     /// 2026-11-06).
@@ -82,14 +83,23 @@ struct AppConnectWriteExecutor {
         let submit = submit
         let sleep = sleep
         let timeout = timeout
+        let log = log
         let outcome = await withTaskCancellationHandler {
             await withCheckedContinuation { (continuation: CheckedContinuation<Outcome, Never>) in
                 let submitTask = Task {
+                    let result: Outcome
                     do {
                         try await submit(write)
-                        race.finish(.submitted)
+                        result = .submitted
                     } catch {
-                        race.finish(.failed(error))
+                        result = .failed(error)
+                    }
+                    guard !race.finish(result), race.endedByTimeout else { return }
+                    switch result {
+                    case .failed(let error):
+                        log("platform write \(kind): late failed \(Self.logDescription(of: error))")
+                    default:
+                        log("platform write \(kind): late submitted")
                     }
                 }
                 let timer = Task {
@@ -214,15 +224,27 @@ private final class Race: @unchecked Sendable {
         decided.map { continuation.resume(returning: $0) }
     }
 
-    func finish(_ result: AppConnectWriteExecutor.Outcome) {
-        let (continuation, tasks) = lock.withLock { () -> (Waiter?, [Task<Void, Never>]) in
-            guard outcome == nil else { return (nil, []) }
+    /// True when the timer decided the race.
+    var endedByTimeout: Bool {
+        lock.withLock {
+            if case .timedOut? = outcome { return true }
+            return false
+        }
+    }
+
+    /// Returns whether this call decided the race.
+    @discardableResult
+    func finish(_ result: AppConnectWriteExecutor.Outcome) -> Bool {
+        // Nil tasks: an earlier finish already decided.
+        let (tasks, continuation) = lock.withLock { () -> ([Task<Void, Never>]?, Waiter?) in
+            guard outcome == nil else { return (nil, nil) }
             outcome = result
             defer { self.continuation = nil }
-            return (self.continuation, self.tasks)
+            return (self.tasks, self.continuation)
         }
-        tasks.forEach { $0.cancel() }
+        tasks?.forEach { $0.cancel() }
         continuation?.resume(returning: result)
+        return tasks != nil
     }
 
     func cancelTasks() {

@@ -73,6 +73,21 @@ one-scan login possible, and with it DashConnect on mainnet once mainnet runs pr
   are derived from the intents a disconnect marked
   ([ADR-0022](../../adr/0022-derive-disconnected-apps-from-the-intents-a-disconnect-marked.md)).
 
+- **A late response is not lost** ([#1374](https://github.com/dashpay/dashwallet-ios/issues/1374)).
+  An approval stops waiting for the publish of the app's response at its timeout, but the publish
+  keeps running. The intent records when the publish started
+  ([ADR-0049](../../adr/0049-record-the-publish-start-on-the-connection-intent.md)); until the
+  wallet knows its document, or it is 48 hours old in proved Platform block time
+  ([ADR-0050](../../adr/0050-bound-an-unresolved-publish-by-48-hours-of-proved-platform-block-time.md)),
+  no operation records the response removed
+  ([ADR-0052](../../adr/0052-refuse-response-removed-at-its-one-write-point-while-the-publish-is-unresolved.md)).
+  A publish Platform refused (a consensus rejection) leaves nothing to wait for; any other error
+  keeps it unresolved. A submit that ends late is only logged; the next read decides.
+  A disconnect in that window still turns the keys off at once and says the response may still
+  appear; the Disconnected row shows "Response may still be on Platform". Opening Connections
+  finds a late response without the PIN, and the next approval or disconnect on the identity
+  deletes it.
+
 ## What it guarantees
 
 - The app gets new keys that only it holds, each bound to the contract, group or document type the

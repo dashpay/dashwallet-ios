@@ -1063,12 +1063,18 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         Self.update(stores.intents, change)
     }
 
+    /// The read, the change and the save run while no wipe of the stores
+    /// runs (`DashConnectStores.excludingWipe`): a wipe does not take the
+    /// operation gate, and a save after it would bring the wiped intents
+    /// back.
     @discardableResult
     private static func update<T>(_ store: any AppConnectIntentStore, _ change: (inout [AppConnect.ConnectionIntent]) -> T) -> T {
-        var intents = store.load()
-        let result = change(&intents)
-        store.save(intents)
-        return result
+        DashConnectStores.excludingWipe {
+            var intents = store.load()
+            let result = change(&intents)
+            store.save(intents)
+            return result
+        }
     }
 
     /// Where the owners a projection needs come from: what `memory` knows on
@@ -1166,7 +1172,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             let unread = hasUnreadableIntent ? Set(rows.filter { $0.status == .disconnected }.map(\.id)) : []
             return Self.rows(
                 rows, after: projection, of: snapshot.identityId, intents: elsewhere, at: updatedAt,
-                keeping: kept.union(unread))
+                keeping: kept.union(unread), unreadable: unread)
         }
     }
 
@@ -1190,7 +1196,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// `elsewhere` are the other identities' intents: their open ones hold a
     /// row, and a Disconnected row whose disconnect closed one of them stays
     /// Disconnected, since this read says nothing of it.
-    /// A row whose app is in `keeping` stays as it is. While the read has a
+    /// A row whose app is in `keeping` keeps its status; its response mark
+    /// (`responseMayRemain`) follows the read when the read has the app's
+    /// connection, and stays as it was when it has none (its intents could
+    /// not be read). A mark of an app in `unreadable`, whose intents were
+    /// read only in part, is never cleared by the read: an intent it could not
+    /// read may hold a response not removed. Nor is the mark of an app with a
+    /// closed intent in `elsewhere` whose response is not removed. While the read has a
     /// key whose bound is unknown, that key may be any app's: no row goes;
     /// one that would is Confirming, so it keeps its Disconnect until a
     /// read places every key.
@@ -1200,7 +1212,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         of identityId: Data,
         intents elsewhere: [AppConnect.ConnectionIntent],
         at updatedAt: Date,
-        keeping: Set<String> = []
+        keeping: Set<String> = [],
+        unreadable: Set<String> = []
     ) -> [DAppConnection] {
         let me = identityId.toBase58String()
         func shownStatus(_ connection: AppConnect.ProjectedConnection) -> ConnectionStatus? {
@@ -1221,9 +1234,23 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let heldElsewhere = Set(elsewhere.filter { $0.closedAt == nil }.map { $0.appId.toBase58String() })
         let disconnectedElsewhere = Set(
             elsewhere.filter { $0.closedAt != nil && $0.disconnectedAt != nil }.map { $0.appId.toBase58String() })
+        // A closed intent of another identity may still hold a response not
+        // removed: this read says nothing of it, so it keeps the row's mark.
+        let retainedElsewhere = Set(
+            elsewhere.filter { $0.closedAt != nil && !$0.responseRemoved }.map { $0.appId.toBase58String() })
         let hasUnplacedKey = projection.unplacedKeyIds[identityId]?.isEmpty == false
         var result: [DAppConnection] = rows.compactMap { row in
-            if keeping.contains(row.id) { return row }
+            if keeping.contains(row.id) {
+                // Its status stays; its response mark follows this read, or,
+                // with no connection of the app in it, stays as it was.
+                var kept = row
+                if let read = projection.connections.first(where: { $0.appId.toBase58String() == row.id }) {
+                    kept.responseMayRemain = row.status == .disconnected
+                        && (read.responseMayRemain || retainedElsewhere.contains(row.id)
+                            || unreadable.contains(row.id) && row.responseMayRemain)
+                }
+                return kept
+            }
             guard !shownIds.contains(row.id) else { return nil }
             var seenOn = row.seenOn
             seenOn.remove(me)
@@ -1276,13 +1303,17 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 continue
             }
             result.removeAll { $0.id == id }
-            result.append(DAppConnection(
+            var row = DAppConnection(
                 id: id,
                 name: name.isEmpty ? NSLocalizedString("Unknown app", comment: "DashConnect") : name,
                 url: latest?.appUrl ?? existing?.url ?? "",
                 status: status,
                 updatedAt: existing?.status == status ? existing?.updatedAt ?? updatedAt : updatedAt,
-                seenOn: seenOn))
+                seenOn: seenOn)
+            let markUnread = unreadable.contains(id) && existing?.responseMayRemain == true
+            row.responseMayRemain = status == .disconnected
+                && (connection.responseMayRemain || retainedElsewhere.contains(id) || markUnread)
+            result.append(row)
         }
         return result
     }
@@ -1348,6 +1379,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         if let failure = AppConnect.termsFailure(of: plan, platformTimeMs: snapshot.platformTime) {
             throw failure
         }
+        // A read without a block time is refused just above; this is its time.
+        guard let approvalPlatformTime = snapshot.platformTime else {
+            throw DashConnectPlatformError.requestAgeUncheckable
+        }
         // A request is answered at most once, by any identity of the wallet:
         // approving it again is refused, whether the first attempt answered
         // it or stopped. A sealed response is never published by a later
@@ -1373,8 +1408,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
         do {
             try await submitAndPublish(
-                intent, request: request, plan: plan, snapshot: read, responseContractId: responseContractId,
-                context: context, signer: signer)
+                intent, request: request, plan: plan, snapshot: read, approvalPlatformTime: approvalPlatformTime,
+                responseContractId: responseContractId, context: context, signer: signer)
         } catch {
             // The request is spent from here on: the row shows where it
             // stopped, and the app asks again.
@@ -1419,18 +1454,21 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         if !toDelete.isEmpty {
             await deleteResponses(
                 of: Array(toDelete), responseContractId: responseContractId, stores: context.stores,
-                port: LiveDashConnectPlatform(source: self, context: context), context: context, signer: signer)
+                port: LiveDashConnectPlatform(source: self, context: context), context: context, signer: signer,
+                platformTime: read.platformTime)
         }
         await refreshRows(from: read, context: context)
     }
 
     /// Submits the new intent's update and publishes its sealed response,
     /// once a read shows the update and the keys it carries still hold.
+    /// `approvalPlatformTime` is the block time of the approval's first read.
     private func submitAndPublish(
         _ intent: AppConnect.ConnectionIntent,
         request: AppConnectRequest,
         plan: AppConnect.GrantPlan,
         snapshot: AppConnect.IdentitySnapshot,
+        approvalPlatformTime: UInt64,
         responseContractId: Data,
         context: Context,
         signer: KeychainSigner
@@ -1462,41 +1500,124 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
               try await encryptionKeysAreCurrent(of: intent, in: current, context: context) else {
             throw DashConnectPlatformError.appConnectEncryptionKeyChanged
         }
-        try await publishResponse(of: intent, responseContractId: responseContractId, context: context, signer: signer)
+        try await publishResponse(
+            of: intent, responseContractId: responseContractId, context: context, signer: signer,
+            platformTime: Self.publishStart(
+                afterLanding: current.platformTime, intentRead: snapshot.platformTime,
+                approvalRead: approvalPlatformTime))
     }
 
-    /// Records the response of each open intent whose keys are live but
-    /// whose response this wallet did not record publishing: a publish can
-    /// land without confirming, and its row would show "Not delivered".
-    private func recordPublishedResponses(in snapshot: AppConnect.IdentitySnapshot, context: Context) async {
-        guard let responseContractId = Self.decodeIdentifier(AppConnect.contractId) else { return }
+    /// The proved block time a publish's start is recorded at: that of the
+    /// read after the update landed, or, when it has none, of the earlier
+    /// read the intent was made from, or, when a fence read again and that
+    /// read has none either, of the approval's first read. An earlier read
+    /// only ends the unresolved window sooner.
+    static func publishStart(afterLanding: UInt64?, intentRead: UInt64?, approvalRead: UInt64) -> UInt64 {
+        afterLanding ?? intentRead ?? approvalRead
+    }
+
+    /// Looks up, through `port` and without writing to Platform, the response
+    /// of each open intent whose response this wallet did not record
+    /// publishing, while its keys are live or its publish started (a publish
+    /// can land without confirming, and its row would show "Not delivered"), and of each closed intent with no
+    /// response recorded, published or removed (a publish can land after the
+    /// disconnect). A response found is recorded; one absent of a closed
+    /// intent is recorded removed once its publish
+    /// is resolved (`markResponseRemoved`). A lookup that fails decides
+    /// nothing.
+    private func recordPublishedResponses(
+        in snapshot: AppConnect.IdentitySnapshot, stores: Stores, port: any DashConnectPlatformPort
+    ) async {
+        let candidates = responseCandidates(in: snapshot, intents: stores.intents)
+        guard !candidates.isEmpty else { return }
+        let closed = Set(candidates.filter { $0.closedAt != nil }.map(\.id))
+        let lookups = await withTaskGroup(of: ResponseLookup?.self) { group in
+            for intent in candidates {
+                group.addTask { await Self.lookUpResponse(of: intent, port: port) }
+            }
+            return await group.reduce(into: [ResponseLookup]()) { lookups, lookup in
+                if let lookup { lookups.append(lookup) }
+            }
+        }
+        var found: [UUID] = []
+        for lookup in lookups {
+            switch lookup {
+            case let .found(id, documentId):
+                recordResponse(documentId, of: id, in: stores)
+                found.append(id)
+            case .absent(let id):
+                // An open intent's response is still looked for by its
+                // disconnect; a read without a proved block time resolves no
+                // publish. A known document is retired only by the delete
+                // path: a node behind its creation finds none either.
+                guard closed.contains(id), snapshot.platformTime != nil else { continue }
+                Self.markResponseRemoved(
+                    id, in: stores.intents, platformTime: snapshot.platformTime, retiringAKnownDocument: false)
+            }
+        }
+        let counts = Self.newlyFound(found, among: candidates)
+        if counts.open > 0 {
+            DWLogger.log("DashConnect: \(counts.open) response(s) published without confirming were found")
+        }
+        if counts.closed > 0 {
+            DWLogger.log("DashConnect: \(counts.closed) late response(s) of disconnected apps were found")
+        }
+    }
+
+    /// How many of the intents `found` by a lookup had no document recorded
+    /// in `candidates`, as they were before it, open and closed apart.
+    static func newlyFound(
+        _ found: [UUID], among candidates: [AppConnect.ConnectionIntent]
+    ) -> (open: Int, closed: Int) {
+        let ids = Set(found)
+        let new = candidates.filter { ids.contains($0.id) && $0.responseDocumentId == nil }
+        let closed = new.filter { $0.closedAt != nil }.count
+        return (new.count - closed, closed)
+    }
+
+    private enum ResponseLookup {
+        case found(UUID, Data)
+        case absent(UUID)
+    }
+
+    /// The answer of Platform for `intent`'s response; `nil` when the lookup failed.
+    private static func lookUpResponse(
+        of intent: AppConnect.ConnectionIntent, port: any DashConnectPlatformPort
+    ) async -> ResponseLookup? {
+        do {
+            guard let response = try await port.findResponse(requestHash: intent.requestHash) else {
+                return .absent(intent.id)
+            }
+            return .found(intent.id, response.documentId)
+        } catch {
+            return nil
+        }
+    }
+
+    /// The intents of the identity whose response may be on Platform and is
+    /// not recorded: closed ones not recorded removed, and open ones: any
+    /// whose publish started and found no document yet, whatever its keys
+    /// show and however long ago, and an active one made in the last day.
+    private func responseCandidates(
+        in snapshot: AppConnect.IdentitySnapshot, intents: any AppConnectIntentStore
+    ) -> [AppConnect.ConnectionIntent] {
         // A publish lands within the approval that made it, minutes after
-        // the request; an intent a day old has nothing more to find.
+        // the request, or, after a timeout, while it is unresolved. One that
+        // landed then stays to be found after the window: a started publish
+        // with no document is looked up until one is found (one that failed
+        // for good has no start). An open intent a day old with no started
+        // publish has nothing more to find.
         let since = now().addingTimeInterval(-24 * 60 * 60)
-        let unrecorded = context.stores.intents.load().filter { intent in
-            guard intent.identityId == snapshot.identityId, intent.closedAt == nil, intent.responseDocumentId == nil,
-                  intent.createdAt > since, case .active = AppConnect.status(of: intent, in: snapshot) else { return false }
+        return intents.load().filter { intent in
+            guard intent.identityId == snapshot.identityId else { return false }
+            // A known document has nothing more to find: the delete path of
+            // the next disconnect or approval looks it up and deletes it.
+            guard intent.responseDocumentId == nil else { return false }
+            if intent.closedAt != nil { return !intent.responseRemoved }
+            if intent.publishStartBlockTimeMs != nil { return true }
+            guard intent.createdAt > since, case .active = AppConnect.status(of: intent, in: snapshot) else { return false }
             return true
         }
-        guard !unrecorded.isEmpty else { return }
-        let identityId = context.identityId
-        let sdk = context.sdk
-        let found = await withTaskGroup(of: (UUID, Data)?.self) { group in
-            for intent in unrecorded {
-                group.addTask {
-                    guard let published = try? await Self.findAppConnectResponse(
-                        ownerIdentityId: identityId, appEphemeralPubKeyHash: intent.requestHash,
-                        responseContractId: responseContractId, sdk: sdk) else { return nil }
-                    return (intent.id, published.documentId)
-                }
-            }
-            return await group.reduce(into: [UUID: Data]()) { found, pair in
-                if let pair { found[pair.0] = pair.1 }
-            }
-        }
-        guard !found.isEmpty else { return }
-        Self.logger.info("🔗 DASHCONNECT :: \(found.count, privacy: .public) response(s) published without confirming were found")
-        for (id, documentId) in found { recordResponse(documentId, of: id, in: context.stores) }
     }
 
     /// A read of the identity that shows `intent`'s update (`hasLanded`). A
@@ -1543,13 +1664,17 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// case of its own (an address-nonce race) carries no code and is one to
     /// retry. The refusal holds the code and the date, never Platform's text.
     static func consensusRefusal(from error: Error, at date: Date) -> AppConnect.ConsensusRefusal? {
-        let consensus: PlatformConsensusError?
+        consensusError(in: error).map { AppConnect.ConsensusRefusal(code: $0.code, at: date) }
+    }
+
+    /// The consensus rejection `error` carries, from the SDK or from the
+    /// wallet layer; `nil` for any other error.
+    private static func consensusError(in error: Error) -> PlatformConsensusError? {
         switch error {
-        case let error as SDKError: consensus = error.consensusError
-        case let error as PlatformWalletError: consensus = error.consensusError
-        default: consensus = nil
+        case let error as SDKError: error.consensusError
+        case let error as PlatformWalletError: error.consensusError
+        default: nil
         }
-        return consensus.map { AppConnect.ConsensusRefusal(code: $0.code, at: date) }
     }
 
     /// What an identity update that ended with `error` (a failure or a
@@ -2202,7 +2327,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         of intent: AppConnect.ConnectionIntent,
         responseContractId: Data,
         context: Context,
-        signer: KeychainSigner
+        signer: KeychainSigner,
+        platformTime: UInt64
     ) async throws {
         Self.logger.info("🔗 DASHCONNECT :: publishing loginKeyResponse")
         let propertiesJSON = try intent.response.propertiesJSON()
@@ -2218,6 +2344,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
         try await Self.publishAndRecord(
             intent, intents: context.stores.intents, executor: executor, now: now,
+            platformTime: platformTime,
             createdDocumentId: { created.value },
             lookUp: {
                 try await Self.findAppConnectResponse(
@@ -2232,16 +2359,34 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// Sends the publish and records the response's document. Published only
     /// if the publish was submitted and created a document, or `lookUp` shows
     /// the response on Platform; otherwise the publish's failure is thrown.
+    /// `platformTime`, when known, is stored on the intent as the publish start
+    /// before the submit, and cleared again when the publish failed for good
+    /// (`publishFailedForGood`).
     static func publishAndRecord(
         _ intent: AppConnect.ConnectionIntent,
         intents: any AppConnectIntentStore,
         executor: AppConnectWriteExecutor,
         now: () -> Date,
-        createdDocumentId: @Sendable () -> Data?,
+        platformTime: UInt64? = nil,
+        createdDocumentId: () -> Data?,
         lookUp: () async throws -> Data?
     ) async throws {
         let write = PlatformWrite.publish(requestHash: intent.requestHash)
+        if let platformTime {
+            update(intents) { intents in
+                guard let index = intents.firstIndex(where: { $0.id == intent.id }) else { return }
+                intents[index].publishStartBlockTimeMs = platformTime
+            }
+        }
         let outcome = await executor.run(write)
+        if publishFailedForGood(outcome), platformTime != nil {
+            // No response can land from it: a lookup that finds none decides.
+            update(intents) { intents in
+                guard let index = intents.firstIndex(where: { $0.id == intent.id }) else { return }
+                intents[index].publishStartBlockTimeMs = nil
+            }
+            DWLogger.log("DashConnect: publish failed for good, its start cleared")
+        }
         let documentId: Data
         switch AppConnect.nextStep(after: write, outcome: outcome, at: now()) {
         case .done where createdDocumentId() != nil:
@@ -2262,6 +2407,16 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
     }
 
+    /// Whether a publish that ended as `outcome` can no longer land: its submit
+    /// threw a consensus rejection, Platform's own verdict on the transition,
+    /// the one kind of refusal ADR-0021 counts as permanent (`consensusRefusal`).
+    /// Any other error, known or not, says nothing of what Platform did with
+    /// the transition, so the publish stays unresolved.
+    static func publishFailedForGood(_ outcome: AppConnectWriteExecutor.Outcome) -> Bool {
+        guard case .failed(let error) = outcome else { return false }
+        return consensusError(in: error) != nil
+    }
+
     /// Records that the response of the intent `id` is on Platform.
     private func recordResponse(_ documentId: Data, of id: UUID, in stores: Stores) {
         updateIntents(in: stores) { intents in
@@ -2274,33 +2429,60 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// Deletes, by its original values, the response of each intent in `ids`
     /// that may be on Platform. Best effort: one that cannot be deleted now
     /// stays marked and is tried again by the next disconnect or approval on
-    /// the identity (`AppConnect.responsesLeft`).
+    /// the identity (`AppConnect.responsesLeft`). Returns the intents whose
+    /// response was kept, not recorded removed, because its publish is
+    /// unresolved at `platformTime` (`markResponseRemoved`).
+    @discardableResult
     private func deleteResponses(
         of ids: [UUID],
         responseContractId: Data,
         stores: Stores,
         port: any DashConnectPlatformPort,
         context: Context?,
-        signer: KeychainSigner?
-    ) async {
+        signer: KeychainSigner?,
+        platformTime: UInt64?
+    ) async -> Set<UUID> {
         let intents = stores.intents
+        var kept = Set<UUID>()
         for intent in intents.load() where ids.contains(intent.id) && !intent.responseRemoved {
             func lookUp() async throws -> Data? {
                 try await port.findResponse(requestHash: intent.requestHash)?.documentId
             }
-            let found: (documentId: Data, values: AppConnect.ResponseValues)
-            let propertiesJSON: String
+            // Deleted by the values it has on Platform, which are this
+            // intent's unless another install answered the same request. A
+            // lookup that fails is tried once more.
+            let response: (documentId: Data, values: AppConnect.ResponseValues)?
             do {
-                // Deleted by the values it has on Platform, which are this
-                // intent's unless another install answered the same request.
-                guard let response = try await port.findResponse(requestHash: intent.requestHash) else {
-                    Self.markResponseRemoved(intent.id, in: intents)
+                response = try await port.findResponse(requestHash: intent.requestHash)
+            } catch {
+                do {
+                    response = try await port.findResponse(requestHash: intent.requestHash)
+                } catch {
+                    let reason = AppConnectWriteExecutor.logDescription(of: error)
+                    DWLogger.log("DashConnect: response lookup failed — \(reason)")
+                    // A lookup that fails says nothing: while the publish is
+                    // unresolved, its response may still appear.
+                    if AppConnect.isPublishUnresolved(intent, platformTime: platformTime) {
+                        kept.insert(intent.id)
+                    }
                     continue
                 }
-                found = (response.documentId, response.values)
+            }
+            guard let found = response else {
+                if Self.markResponseRemoved(intent.id, in: intents, platformTime: platformTime) == .kept {
+                    kept.insert(intent.id)
+                }
+                continue
+            }
+            // The found document ends an unresolved publish; it is recorded
+            // before the delete, so a failed delete keeps it.
+            recordResponse(found.documentId, of: intent.id, in: stores)
+            let propertiesJSON: String
+            do {
                 propertiesJSON = try found.values.propertiesJSON()
             } catch {
-                await Self.markRemovedIfGone(after: error, intent.id, in: intents, lookUp: lookUp)
+                let reason = AppConnectWriteExecutor.logDescription(of: error)
+                DWLogger.log("DashConnect: response not deleted, its values not encoded — \(reason)")
                 continue
             }
             let executor = makeExecutor { [self] _ in
@@ -2315,53 +2497,84 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                     signingKeyId: signingKeyId,
                     signer: signer)
             }
-            await Self.deleteResponse(
+            if await Self.deleteResponse(
                 documentId: found.documentId, of: intent.id, intents: intents, executor: executor, now: now,
-                lookUp: lookUp)
+                platformTime: platformTime, lookUp: lookUp) == .kept {
+                kept.insert(intent.id)
+            }
         }
+        return kept
     }
 
     /// Sends the delete of a response and marks it removed when it was
     /// submitted. Best effort: a delete can land without confirming, so a
     /// failed one is marked removed only if `lookUp` shows no response; an
-    /// id or a failed lookup leaves it marked as it was.
+    /// id or a failed lookup leaves it marked as it was. Returns the answer of
+    /// `markResponseRemoved`, or `nil` when it was not asked.
+    @discardableResult
     static func deleteResponse(
         documentId: Data,
         of intentId: UUID,
         intents: any AppConnectIntentStore,
         executor: AppConnectWriteExecutor,
         now: () -> Date,
+        platformTime: UInt64? = nil,
         lookUp: () async throws -> Data?
-    ) async {
+    ) async -> Removal? {
         let write = PlatformWrite.deleteResponse(documentId: documentId)
         let outcome = await executor.run(write)
         switch AppConnect.nextStep(after: write, outcome: outcome, at: now()) {
         case .done:
-            markResponseRemoved(intentId, in: intents)
+            return markResponseRemoved(intentId, in: intents, platformTime: platformTime)
         case .lookUpResponse, .recordRefusal, .readIdentity, .stop:
             // Handled as a failed delete: only a lookup says it is gone.
-            await markRemovedIfGone(after: outcome.failure ?? AppConnectWriteTimedOut(), intentId, in: intents, lookUp: lookUp)
+            return await markRemovedIfGone(
+                after: outcome.failure ?? AppConnectWriteTimedOut(), intentId, in: intents, platformTime: platformTime,
+                lookUp: lookUp)
         }
     }
 
     private static func markRemovedIfGone(
-        after error: Error, _ id: UUID, in intents: any AppConnectIntentStore, lookUp: () async throws -> Data?
-    ) async {
+        after error: Error, _ id: UUID, in intents: any AppConnectIntentStore, platformTime: UInt64?,
+        lookUp: () async throws -> Data?
+    ) async -> Removal? {
         logger.error("🔗 DASHCONNECT :: loginKeyResponse not deleted — \(AppConnectWriteExecutor.logDescription(of: error), privacy: .public)")
         // A delete can land without confirming; only Platform says.
         // A lookup that fails says nothing.
         do {
-            if try await lookUp() == nil { markResponseRemoved(id, in: intents) }
+            if try await lookUp() == nil { return markResponseRemoved(id, in: intents, platformTime: platformTime) }
         } catch {
-            return
+            return nil
         }
+        return nil
     }
 
-    private static func markResponseRemoved(_ id: UUID, in intents: any AppConnectIntentStore) {
-        update(intents) { intents in
-            guard let index = intents.firstIndex(where: { $0.id == id }) else { return }
+    /// Whether `markResponseRemoved` recorded the response removed.
+    enum Removal: Equatable {
+        case removed
+        case kept
+    }
+
+    /// The one write point of `responseRemoved`: it refuses while the
+    /// publish of the response is unresolved at `platformTime`, since the
+    /// response may still land, and, unless `retiringAKnownDocument`, while
+    /// the response's document is known.
+    @discardableResult
+    private static func markResponseRemoved(
+        _ id: UUID, in intents: any AppConnectIntentStore, platformTime: UInt64?, retiringAKnownDocument: Bool = true
+    ) -> Removal {
+        let removal = update(intents) { intents -> Removal? in
+            guard let index = intents.firstIndex(where: { $0.id == id }) else { return .removed }
+            if !retiringAKnownDocument, intents[index].responseDocumentId != nil { return nil }
+            if AppConnect.isPublishUnresolved(intents[index], platformTime: platformTime) { return .kept }
             intents[index].responseRemoved = true
+            return .removed
         }
+        guard let removal else { return .kept }
+        if removal == .kept {
+            DWLogger.log("DashConnect: response not recorded removed, its publish may still land")
+        }
+        return removal
     }
 
     /// This identity's response to one request, with the values it has on
@@ -2636,11 +2849,13 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     static func hideRefused(
         appId: Data, intents: any AppConnectIntentStore, snapshot: AppConnect.IdentitySnapshot, at removedAt: Date
     ) -> Bool {
-        let loaded = intents.load()
-        guard let hidden = AppConnect.removing(
-            appId: appId, intents: loaded, snapshots: [snapshot], at: removedAt) else { return false }
-        intents.save(hidden)
-        return true
+        DashConnectStores.excludingWipe {
+            let loaded = intents.load()
+            guard let hidden = AppConnect.removing(
+                appId: appId, intents: loaded, snapshots: [snapshot], at: removedAt) else { return false }
+            intents.save(hidden)
+            return true
+        }
     }
 
     /// Sets `removedAt` on the Refused intents of `appId` after a fresh read
@@ -2674,12 +2889,15 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 guard let stores = await showActiveWalletRows() else { return }
                 // The injected platform port reads the identity when one is set.
                 if let platform {
-                    await refreshRows(from: try await platform.readIdentity(), stores: stores, owners: platform.owners)
+                    let snapshot = try await platform.readIdentity()
+                    await recordPublishedResponses(in: snapshot, stores: stores, port: platform)
+                    await refreshRows(from: snapshot, stores: stores, owners: platform.owners)
                     return
                 }
                 let context = try await requireContext(pinnedTo: stores)
                 let snapshot = try await identitySnapshot(context: context).snapshot
-                await recordPublishedResponses(in: snapshot, context: context)
+                await recordPublishedResponses(
+                    in: snapshot, stores: stores, port: LiveDashConnectPlatform(source: self, context: context))
                 await refreshRows(from: snapshot, context: context)
             }
         } catch {
@@ -2912,12 +3130,20 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
         // With the PIN given, the responses an earlier disconnect could not
         // delete go too, whether or not this app has one of its own.
+        var responsesMayAppear = false
         if !stopped, !plan.isEmpty, let responseContractId = Self.decodeIdentifier(AppConnect.contractId) {
             let ids = Set(plan.deleteResponses).union(AppConnect.responsesLeft(identityId: identityId, intents: stores.intents.load()))
             if !ids.isEmpty {
-                await deleteResponses(
+                let kept = await deleteResponses(
                     of: Array(ids), responseContractId: responseContractId, stores: stores, port: port,
-                    context: context, signer: signer)
+                    context: context, signer: signer, platformTime: after.platformTime)
+                // Only this app's own intents count: a kept response of
+                // another app's is not this disconnect's to report.
+                let ownKept = kept.intersection(plan.deleteResponses)
+                responsesMayAppear = !ownKept.isEmpty
+                if responsesMayAppear {
+                    DWLogger.log("DashConnect: disconnect kept \(ownKept.count) response(s), publish unresolved")
+                }
             }
         }
         // The rows and what stays on are told from the read after the
@@ -2952,6 +3178,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             plan: plan, appKeysOff: planned.appKeysOff, leftoverFenceIds: planned.leftoverFenceIds,
             keysNotChecked: remaining?.notChecked.count ?? planned.notChecked, fenceKeyIds: fenceKeyIds,
             after: afterRead, submission: submission)
+        result.responsesMayAppear = responsesMayAppear
         if let remaining {
             result.keysStillLive += Self.keysFoundAfter(
                 plan: plan, remaining: remaining, fenceIds: fenceKeyIds.union(planned.leftoverFenceIds))
@@ -3357,7 +3584,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         AppConnectWriteExecutor(
             sleep: { try await Task.sleep(for: $0) },
             log: { line in
-                if line.hasSuffix(": start") || line.hasSuffix(": submitted") {
+                if line.hasSuffix(": start") || line.hasSuffix(": submitted") || line.hasSuffix(": late submitted") {
                     Self.logger.info("🔗 DASHCONNECT :: \(line, privacy: .public)")
                 } else {
                     Self.logger.error("🔗 DASHCONNECT :: \(line, privacy: .public)")
@@ -3461,7 +3688,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             identityId: ended.first?.identityId.toBase58String(), username: nil,
             disconnectedAt: disconnectedAt, access: ConnectionAccess(recorded: ended),
             // The latest approval, as the sheet of a live connection shows it.
-            connectedAt: ended.map(\.createdAt).max())
+            connectedAt: ended.map(\.createdAt).max(), responseMayRemain: row.responseMayRemain)
     }
 
     private func validateNetwork(_ network: DashConnectNetwork) throws {
