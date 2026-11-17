@@ -6797,12 +6797,6 @@
 /* Username marketplace: transfer sheet title */
 "Transfer “%@”" = "轉移「%@」";
 
-/* Reclassify transactions info: tax category tag label */
-"Transfer-in" = "Transfer-in";
-
-/* Reclassify transactions info: tax category tag label */
-"Transfer-out" = "Transfer-out";
-
 /* Username marketplace: history — transfer with both identities */
 "Transferred from %1$@ to %2$@" = "由 %1$@ 轉移至 %2$@";
 
@@ -6931,6 +6925,9 @@
 
 /* Masternode unban */
 "Unbanning broadcasts a provider update signed with the operator key, re-asserting the service address shown above. The masternode returns to the valid list within a few blocks." = "Unbanning broadcasts a provider update signed with the operator key, re-asserting the service address shown above. The masternode returns to the valid list within a few blocks.";
+
+/* SPV sync peer type */
+"Unclassified" = "Unclassified";
 
 /* SPV diagnostics */
 "Unconfirmed now" = "目前未確認";

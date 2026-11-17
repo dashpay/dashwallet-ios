@@ -110,14 +110,14 @@ class TxReclassifyTransactionsInfoViewController: BasePageSheetViewController {
         outgoingTransactionsSubtitle1TagLabel.text = NSLocalizedString("Expense", comment: "Reclassify transactions info: tax category tag label")
         outgoingTransactionsSubtitle2Label.text = NSLocalizedString("You can change it to",
                                                                     comment: "Reclassify info: sentence start; a tag with the category to pick follows it")
-        outgoingTransactionsSubtitle2TagLabel.text = NSLocalizedString("Transfer-out", comment: "Reclassify transactions info: tax category tag label")
+        outgoingTransactionsSubtitle2TagLabel.text = TxMetadataTaxCategory.transferOut.stringValue
         incomingTransactionsTitleLabel.text = NSLocalizedString("Incoming transactions", comment: "Reclassify transactions info screen")
         incomingTransactionsSubtitle1Label.text = NSLocalizedString("by default will be marked as",
                                                                     comment: "Reclassify info: sentence start; a tag with the default category follows it")
         incomingTransactionsSubtitle1TagLabel.text = NSLocalizedString("Expense", comment: "Reclassify transactions info: tax category tag label")
         incomingTransactionsSubtitle2Label.text = NSLocalizedString("You can change it to",
                                                                     comment: "Reclassify info: sentence start; a tag with the category to pick follows it")
-        incomingTransactionsSubtitle2TagLabel.text = NSLocalizedString("Transfer-in", comment: "Reclassify transactions info: tax category tag label")
+        incomingTransactionsSubtitle2TagLabel.text = TxMetadataTaxCategory.transferIn.stringValue
         linkedAccountsTitleLabel.text = NSLocalizedString("Linked accounts", comment: "Reclassify transactions info screen")
         linkedAccountsSubtitleLabel.text = NSLocalizedString("by default all transactions to or from your linked accounts (exchanges, staking, etc) will be marked as a transfer.",
                                                              comment: "Reclassify transactions info screen")

@@ -371,10 +371,10 @@ struct SwiftDashSDKSPVStatusScreen: View {
 
     private func peerBadgeLabel(_ nodeType: PlatformSpvPeerNodeType) -> String {
         switch nodeType {
-        case .evonode:    return "Evonode"
-        case .masternode: return "Masternode"
-        case .normal:     return "Node"
-        case .unknown:    return "Unclassified"
+        case .evonode:    return NSLocalizedString("Evonode", comment: "SPV sync peer type")
+        case .masternode: return NSLocalizedString("Masternode", comment: "SPV sync peer type")
+        case .normal:     return NSLocalizedString("Node", comment: "SPV sync peer type")
+        case .unknown:    return NSLocalizedString("Unclassified", comment: "SPV sync peer type")
         }
     }
 
