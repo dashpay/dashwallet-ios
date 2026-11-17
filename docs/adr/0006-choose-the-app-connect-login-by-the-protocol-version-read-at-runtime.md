@@ -1,6 +1,6 @@
 # 0006 — Choose the App Connect login by the protocol version read at runtime
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-06
 - **Deciders:** romchornyi (author)
 

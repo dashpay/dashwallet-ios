@@ -1,6 +1,6 @@
 # 0015 — Fence a pending sign-in on disconnect and recover forward only
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-09
 - **Deciders:** romchornyi (ADR author)
 

@@ -1,6 +1,6 @@
 # 0020 — Judge request age and expiry by proved Platform block time
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-09
 - **Deciders:** romchornyi (ADR author)
 

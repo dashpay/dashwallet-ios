@@ -1,6 +1,6 @@
 # 0030 — Show an App Connect connection whose response was not published as Not delivered
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-09
 - **Deciders:** romchornyi (ADR author)
 
