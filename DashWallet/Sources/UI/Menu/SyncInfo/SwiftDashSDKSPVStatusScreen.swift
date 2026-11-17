@@ -704,19 +704,21 @@ struct SwiftDashSDKSPVStatusScreen: View {
     private var stateLabel: String {
         switch coordinator.state {
         case .waitForEvents:
-            return "Waiting for events"
+            return NSLocalizedString("Waiting for events", comment: "SPV diagnostics")
         case .waitingForConnections:
-            return "Waiting for connections"
+            return NSLocalizedString("Waiting for connections", comment: "SPV diagnostics")
         case .syncing:
-            return "Syncing \(percentageText)"
+            return String(
+                format: NSLocalizedString("Syncing %@", comment: "SPV diagnostics: state with the percentage done"),
+                percentageText)
         case .synced:
-            return "Synced"
+            return NSLocalizedString("Synced", comment: "SPV diagnostics")
         case .error:
-            return "Error"
+            return NSLocalizedString("Error", comment: "SPV diagnostics")
         case .idle:
-            return "Idle"
+            return NSLocalizedString("Idle", comment: "SPV diagnostics")
         case .unknown:
-            return "Unknown"
+            return NSLocalizedString("Unknown", comment: "SPV diagnostics")
         }
     }
 

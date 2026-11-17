@@ -31,8 +31,12 @@ extension PaymentRequestVerifier {
         /// requests, the Dash extension reads `pki_data` as a UTF-8 name.
         let commonName: String?
         let pkiType: String
-        /// Human-readable reason when `isValid == false`.
-        let errorMessage: String?
+        /// Why a signed request's certificate or signature failed; `nil` when they passed or
+        /// the request is unsigned.
+        let certificateFailure: BIP70CertificateFailure?
+        /// True when the request's `expires` time has passed. Checked only when everything
+        /// else passed, so it is `false` whenever `certificateFailure` is set.
+        let isExpired: Bool
 
         /// Whether the request carries a real PKI signature (vs unsigned `pki_type == "none"`).
         var isSecure: Bool { isValid && pkiType != "none" }
@@ -44,7 +48,8 @@ struct PaymentRequestVerifier {
     func verify(_ request: PaymentRequest, now: Date = Date()) -> Verdict {
         let pkiType = request.pkiType
         var commonName: String?
-        var errorMessage: String?
+        var certificateFailure: BIP70CertificateFailure?
+        var isExpired = false
         var isValid = true
 
         if pkiType != "none" {
@@ -60,31 +65,29 @@ struct PaymentRequestVerifier {
             let policy = SecPolicyCreateBasicX509()
             let createStatus = SecTrustCreateWithCertificates(certs as CFArray, policy, &trust)
 
-            var trustError: CFError?
             let trusted = (createStatus == errSecSuccess && trust != nil)
-                ? SecTrustEvaluateWithError(trust!, &trustError)
+                ? SecTrustEvaluateWithError(trust!, nil)
                 : false
 
             if !trusted {
-                var message = certs.isEmpty ? "Missing certificate" : "Untrusted certificate"
-                if let detail = (trustError as Error?)?.localizedDescription {
-                    message += " - \(detail)"
-                }
-                errorMessage = message
+                certificateFailure = certs.isEmpty ? .missingCertificate : .untrustedChain
                 isValid = false
             }
 
             // Verify the signature with the leaf public key (works even if trust failed, matching
-            // the reference). A signature failure overrides the trust error message.
-            switch verifySignature(request: request, pkiType: pkiType, trust: trust) {
-            case .valid:
-                break
-            case .invalid:
-                errorMessage = "Invalid signature"
-                isValid = false
-            case .unsupported:
-                errorMessage = "Unsupported signature type"
-                isValid = false
+            // the reference). A signature failure overrides the trust failure. Without a
+            // certificate there is no key to verify with, so the missing certificate stands.
+            if !certs.isEmpty {
+                switch verifySignature(request: request, pkiType: pkiType, trust: trust) {
+                case .valid:
+                    break
+                case .invalid:
+                    certificateFailure = .invalidSignature
+                    isValid = false
+                case .unsupported:
+                    certificateFailure = .unsupportedSignatureType
+                    isValid = false
+                }
             }
         } else {
             // pki_type == "none": no verification. Dash extension — if pki_data carries a cert
@@ -99,12 +102,13 @@ struct PaymentRequestVerifier {
         if isValid {
             let expires = request.details.expires
             if expires >= 1, now.timeIntervalSince1970 > Double(expires) {
-                errorMessage = "Request expired"
+                isExpired = true
                 isValid = false
             }
         }
 
-        return Verdict(isValid: isValid, commonName: commonName, pkiType: pkiType, errorMessage: errorMessage)
+        return Verdict(isValid: isValid, commonName: commonName, pkiType: pkiType,
+                       certificateFailure: certificateFailure, isExpired: isExpired)
     }
 
     // MARK: - Signature

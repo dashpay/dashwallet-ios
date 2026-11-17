@@ -87,33 +87,45 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .noWallet:
-            return "DashConnect requires an active SwiftDashSDK wallet."
+            return NSLocalizedString("DashConnect requires an active SwiftDashSDK wallet.", comment: "DashConnect")
         case .noIdentity:
-            return "DashConnect requires a registered Platform identity."
+            return NSLocalizedString("DashConnect requires a registered Platform identity.", comment: "DashConnect")
         case .noModelContainer:
-            return "DashConnect requires the SwiftData model container."
+            return NSLocalizedString("DashConnect requires the SwiftData model container.", comment: "DashConnect")
         case .noSDK:
-            return "DashConnect requires the SwiftDashSDK runtime."
+            return NSLocalizedString("DashConnect requires the SwiftDashSDK runtime.", comment: "DashConnect")
         case .unsupportedRuntimeNetwork(let network):
-            return "DashConnect cannot publish from this wallet: the app runtime is on \(Self.displayName(for: network)), which does not match the network DashConnect is configured for."
+            return String(
+                format: NSLocalizedString(
+                    "DashConnect cannot publish from this wallet: the app runtime is on %@, which does not match the network DashConnect is configured for.",
+                    comment: "DashConnect: the placeholder is the network name"),
+                WalletEnvironment.displayName(of: network))
         case let .unsupportedRequestNetwork(expected, actual):
-            return "This DashConnect QR is for \(Self.displayName(for: actual)), but this wallet currently supports \(Self.displayName(for: expected)) only."
+            return String(
+                format: NSLocalizedString(
+                    "This DashConnect QR is for %1$@, but this wallet currently supports %2$@ only.",
+                    comment: "DashConnect: the placeholders are network names"),
+                actual.displayName, expected.displayName)
         case .authorizationCancelled:
             return NSLocalizedString("Authentication cancelled", comment: "DashConnect")
         case .authorizationFailed:
             return NSLocalizedString("Authentication failed", comment: "DashConnect")
         case .randomGenerationFailed(let status):
-            return "Failed to generate secure random bytes for DashConnect (\(status))."
+            return String(
+                format: NSLocalizedString(
+                    "Failed to generate secure random bytes for DashConnect (%d).",
+                    comment: "DashConnect: the placeholder is a system status code"),
+                status)
         case .noAuthenticationKey:
-            return "No enabled AUTHENTICATION ECDSA key is available for this identity."
+            return NSLocalizedString("No enabled AUTHENTICATION ECDSA key is available for this identity.", comment: "DashConnect")
         case .existingDocumentLookupFailed:
-            return "The loginKeyResponse document on Platform could not be read."
+            return NSLocalizedString("The loginKeyResponse document on Platform could not be read.", comment: "DashConnect")
         case .ephemeralKeyGenerationFailed:
-            return "Could not generate an ephemeral DashConnect key."
+            return NSLocalizedString("Could not generate an ephemeral DashConnect key.", comment: "DashConnect")
         case .tokenPurchaseWrongIdentity:
-            return "The scanned token purchase targets a different identity."
+            return NSLocalizedString("The scanned token purchase targets a different identity.", comment: "DashConnect")
         case .tokenPurchaseTokenIdMismatch:
-            return "The scanned token purchase names a token that does not belong to the contract and position it would buy from."
+            return NSLocalizedString("The scanned token purchase names a token that does not belong to the contract and position it would buy from.", comment: "DashConnect")
         case .identityKeysOutOfDate:
             return NSLocalizedString(
                 "This wallet's copy of your identity is out of date, so it cannot confirm the app's key was turned off. Try again later.",
@@ -181,7 +193,7 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
                     comment: "DashConnect: the placeholder is the kind of the scanned state transition"),
                 kindName)
         case .loginContractUnavailable:
-            return "The DashConnect login contract is not available on this network."
+            return NSLocalizedString("The DashConnect login contract is not available on this network.", comment: "DashConnect")
         case .identityReadBehind:
             return NSLocalizedString(
                 "The network answered with an older copy of your identity. Try again in a moment.",
@@ -210,30 +222,6 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
             return NSLocalizedString(
                 "This app's earlier sign-ins left more keys than one approval can replace. Disconnect the app, then sign in again.",
                 comment: "DashConnect App Connect v2")
-        }
-    }
-
-    private static func displayName(for network: DashConnectNetwork) -> String {
-        switch network {
-        case .mainnet:
-            return "Mainnet"
-        case .testnet:
-            return "Testnet"
-        case .devnet:
-            return "Devnet"
-        }
-    }
-
-    private static func displayName(for network: Network) -> String {
-        switch network {
-        case .mainnet:
-            return "Mainnet"
-        case .testnet:
-            return "Testnet"
-        case .devnet:
-            return "Devnet"
-        case .regtest:
-            return "Regtest"
         }
     }
 }

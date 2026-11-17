@@ -78,7 +78,7 @@ var e2: CFError?
 check("chain validates when anchored (→ valid in-app w/ cert installed)", SecTrustEvaluateWithError(t2!, &e2))
 let v = PaymentRequestVerifier().verify(req)
 check("verifier extracts commonName 'Dash Sticker Shop'", v.commonName == "Dash Sticker Shop")
-check("verifier rejects untrusted self-signed (CI)", v.isValid == false && (v.errorMessage?.contains("certificate") ?? false))
+check("verifier rejects untrusted self-signed (CI)", v.isValid == false && v.certificateFailure == .untrustedChain)
 
 print("\nL2 — verifier (expiry / unsigned)")
 let p2pkh = Data([0x76, 0xa9, 0x14] + Array(repeating: UInt8(0), count: 20) + [0x88, 0xac])
@@ -86,7 +86,7 @@ func unsigned(_ exp: UInt64) -> PaymentRequest {
     PaymentRequest(pkiType: "none", serializedDetails: PaymentDetails(network: "test", outputs: [PaymentOutput(amount: 100000, script: p2pkh)], expires: exp).encoded())
 }
 let vp = PaymentRequestVerifier().verify(unsigned(1))
-check("past-expiry rejected ('Request expired')", vp.isValid == false && vp.errorMessage == "Request expired")
+check("past-expiry rejected", vp.isValid == false && vp.isExpired)
 let vf = PaymentRequestVerifier().verify(unsigned(UInt64(Date().timeIntervalSince1970) + 3600))
 check("unsigned + future expiry is valid (not secure)", vf.isValid && !vf.isSecure)
 
@@ -383,7 +383,7 @@ do {
     let rb = runSync { try await blocked.prepareForConfirmation(from: anyURL, scheme: "dash", network: .testnet) }
     let allowed = makeService(FakeTransport(unsignedRequest()), FakeWallet(), allowUntrusted: true)
     let ra = runSync { try await allowed.prepareForConfirmation(from: anyURL, scheme: "dash", network: .testnet) }
-    check("allowUntrustedUnsigned=false blocks unsigned", threwBIP70(rb, .untrustedCertificate(detail: "Unsigned request")))
+    check("allowUntrustedUnsigned=false blocks unsigned", threwBIP70(rb, .unsignedRequest))
     check("allowUntrustedUnsigned=true permits unsigned", value(ra) != nil)
 }
 
