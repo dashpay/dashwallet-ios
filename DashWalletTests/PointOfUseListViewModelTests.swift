@@ -64,14 +64,50 @@ final class PointOfUseListViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.filters, narrowed)
     }
 
-    func testNearbyDefaultsToDistanceAndAsksForLocation() {
+    func testNearbyWithoutAMapDefaultsToDistanceAndAsksForLocation() {
         location.needsAuthorization = true
-        let viewModel = makeViewModel(segments: [segment(tag: 0), segment(tag: MerchantsListSegment.nearby.rawValue)])
+        let viewModel = makeViewModel(segments: [segment(tag: 0), segment(tag: MerchantsListSegment.nearby.rawValue, showMap: false)])
 
         let selection = viewModel.selectSegment(at: 1, searchBounds: { _ in self.bounds })
 
         XCTAssertTrue(selection.needsLocationPrompt)
         XCTAssertEqual(viewModel.filters?.sortBy, .distance)
+    }
+
+    func testNearbyWithAMapLeavesTheLocationPromptToTheMap() {
+        location.needsAuthorization = true
+        let viewModel = makeViewModel(segments: [segment(tag: 0), segment(tag: MerchantsListSegment.nearby.rawValue)])
+
+        let selection = viewModel.selectSegment(at: 1, searchBounds: { _ in self.bounds })
+
+        XCTAssertTrue(viewModel.showsMap)
+        XCTAssertFalse(selection.needsLocationPrompt)
+    }
+
+    func testAnOlderPlaceNameDoesNotReplaceTheLatestFilterTitle() async {
+        location.isAuthorized = true
+        let viewModel = makeViewModel(segments: [segment(tag: 0, showReversedLocation: true)])
+
+        viewModel.refreshFilterTitle(mapCenter: CLLocationCoordinate2D(latitude: 1, longitude: 1))
+        viewModel.refreshFilterTitle(mapCenter: CLLocationCoordinate2D(latitude: 2, longitude: 2))
+        location.geocodeCompletions[1]("Newer", nil)
+        location.geocodeCompletions[0]("Older", nil)
+        await drainMainQueue()
+
+        XCTAssertEqual(viewModel.filterTitle, "Newer")
+    }
+
+    func testAPlaceNameDoesNotLandOnAnotherSegment() async {
+        location.isAuthorized = true
+        let viewModel = makeViewModel(segments: [segment(tag: 0, showReversedLocation: true),
+                                                 segment(tag: 2, showReversedLocation: true)])
+
+        viewModel.refreshFilterTitle(mapCenter: CLLocationCoordinate2D(latitude: 1, longitude: 1))
+        _ = viewModel.selectSegment(at: 1, searchBounds: { _ in self.bounds })
+        location.geocodeCompletions[0]("Older", nil)
+        await drainMainQueue()
+
+        XCTAssertNotEqual(viewModel.filterTitle, "Older")
     }
 
     func testNearbyDoesNotAskOnceLocationIsAuthorized() {
@@ -375,6 +411,7 @@ final class PointOfUseListViewModelTests: XCTestCase {
 
     private func segment(tag: Int,
                          showMap: Bool = true,
+                         showReversedLocation: Bool = false,
                          sortOptions: [PointOfUseListFilters.SortBy] = [.name, .distance],
                          items: [ExplorePointOfUse] = [],
                          provider: StubDataProvider? = nil) -> PointOfUseListSegment {
@@ -382,11 +419,18 @@ final class PointOfUseListViewModelTests: XCTestCase {
                               title: "Segment \(tag)",
                               showMap: showMap,
                               showLocationServiceSettings: false,
-                              showReversedLocation: false,
+                              showReversedLocation: showReversedLocation,
                               dataProvider: provider ?? StubDataProvider(items: items),
                               filterGroups: [],
                               territoriesDataSource: nil,
                               sortOptions: sortOptions)
+    }
+
+    /// Runs what the main queue already holds, such as a geocoding completion's hop.
+    private func drainMainQueue() async {
+        await withCheckedContinuation { continuation in
+            DispatchQueue.main.async { continuation.resume() }
+        }
     }
 
     private func atm(_ id: Int64) -> ExplorePointOfUse {
@@ -441,5 +485,10 @@ private final class StubLocationService: PointOfUseLocationService {
     var isPermissionDenied = false
     var currentLocation: CLLocation?
 
-    func reverseGeocodeLocation(_ location: CLLocation, completion: @escaping ((String, CLPlacemark?) -> Void)) { }
+    /// Each request's completion, in request order; a test answers them.
+    var geocodeCompletions: [(String, CLPlacemark?) -> Void] = []
+
+    func reverseGeocodeLocation(_ location: CLLocation, completion: @escaping ((String, CLPlacemark?) -> Void)) {
+        geocodeCompletions.append(completion)
+    }
 }
