@@ -59,7 +59,6 @@ static const bool _SNAPSHOT = 0;
 #import "DWReceiveModelProtocol.h"
 #import "DWReceiveModel.h"
 #import "DWQRScanViewController.h"
-#import "DWRequestAmountViewController.h"
 #import "UIViewController+DWShareReceiveInfo.h"
 #import "DWPaymentProcessor.h"
 #import "DWPaymentOutput.h"
@@ -85,26 +84,17 @@ static const bool _SNAPSHOT = 0;
 //MARK: DashPay
 #import "DWDPAvatarView.h"
 #import "DWDPRegistrationStatus.h"
-#import "DWScrollingViewController.h"
 #import "UIView+DWEmbedding.h"
 #import "DWBasePressableControl.h"
 
 #if DASHPAY
 #import "DPAlertViewController.h"
 #import "DWDashPayConstants.h"
-#import "DWCreateUsernameViewController.h"
-#import "DWConfirmUsernameViewController.h"
-#import "DWUsernamePendingViewController.h"
-#import "DWRegistrationCompletedViewController.h"
-#import "DWUsernameHeaderView.h"
 #import "DWContainerViewController.h"
 #import "DWDashPaySetupModel.h"
 #import "UIViewController+DWDisplayError.h"
 #import "DWEditProfileViewController.h"
 #import "DWSaveAlertViewController.h"
-#import "DWDPWelcomeCollectionViewController.h"
-#import "DWGetStarted.h"
-#import "DWGetStartedContentViewController.h"
 #import "DWDPUpdateProfileModel.h"
 #endif
 
@@ -127,7 +117,6 @@ static const bool _SNAPSHOT = 0;
 
 //MARK: Settings menu
 #import "UIViewController+DWDisplayError.h"
-#import "DWFormTableViewController.h"
 #import "DWSharedUIConstants.h"
 #import "DWDashPayReadyProtocol.h"
 #import "DWSetPinViewController.h"
