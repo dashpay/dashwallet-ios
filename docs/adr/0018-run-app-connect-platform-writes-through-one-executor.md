@@ -23,8 +23,10 @@ timeout was treated differently by each.
 
 1. **One executor.** A write is a value (`PlatformWrite`: update keys, publish, fence, delete a
    response) run by `AppConnectWriteExecutor`, which logs it, applies the timeout and returns what it
-   saw: submitted, failed or timed out. It does not read Platform; after an error or a timeout the
-   caller's next read decides (`AppConnect.nextStep` routes it to the identity or the response). The disconnect path runs its writes and reads through an injected port, so the
+   saw: submitted, failed or timed out. It does not read Platform; after an error or a timeout
+   `AppConnect.nextStep` routes a key update to the identity read and a publish or delete to the
+   response read, and stops after a fence: nothing more is sent in that run, and the next run reads
+   and carries on. The disconnect path runs its writes and reads through an injected port, so the
    whole disconnect is tested against a fake Platform.
 2. **Keep the handling in each call.**
 

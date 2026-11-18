@@ -97,6 +97,8 @@ one-scan login possible, and with it DashConnect on mainnet once mainnet runs pr
 - The wallet records a key before it submits the key's registration, so a key that lands without
   a confirmation is still found and can be turned off.
 
+## Later changes
+
 - **The redesigned Connections page and approve sheet**
   ([#1277](https://github.com/dashpay/dashwallet-ios/pull/1277),
   [#1399](https://github.com/dashpay/dashwallet-ios/pull/1399),

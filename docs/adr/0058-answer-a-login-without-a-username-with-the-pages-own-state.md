@@ -34,7 +34,9 @@ the action that unblocks it. Reading the username first can start a background D
 ## Consequences
 
 **Positive**
-- No read of the request's app or contract, and no error, for a request that cannot succeed.
+- No read of the request's app or contract for a request that cannot succeed. The create-username
+  page says it by itself; a page that may show connections shows the note as an alert titled
+  "Error".
 - The app has to ask again after the username exists, so no stale request is kept.
 
 **Negative**

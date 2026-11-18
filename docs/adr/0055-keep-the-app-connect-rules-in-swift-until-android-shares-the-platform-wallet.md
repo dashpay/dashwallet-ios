@@ -6,7 +6,7 @@
 
 ## Context
 
-The functional core — `project()`, the approve, disconnect, supersession and fence plans, the funding-limit split and the state-to-actions table (ADR-0019) — is pure Swift in the iOS app. ADR-0027 notes it could move to rust-platform-wallet so both wallets share it. The Android wallet (dash-wallet #1604) talks to Platform through dashj (`org.dashj.platform`), not through rust-platform-wallet, and differs from iOS on purpose (ADR-0029, ADR-0016; no at-most-once, Not delivered or Refused model).
+The functional core — `project()`, the approve, disconnect, supersession and fence plans, the funding-limit split and the state-to-actions table (ADR-0019) — is pure Swift in the iOS app. ADR-0027 notes it could move to a shared implementation for both wallets later; rust-platform-wallet is the candidate home. The Android wallet (dash-wallet #1604) talks to Platform through dashj (`org.dashj.platform`), not through rust-platform-wallet, and differs from iOS on purpose (ADR-0029, ADR-0016; no at-most-once, Not delivered or Refused model).
 
 ## Decision drivers
 
