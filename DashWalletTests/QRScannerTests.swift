@@ -45,9 +45,11 @@ final class QRScannerTests: XCTestCase {
 
     private func makeScanner(_ mode: QRScannerMode,
                              locked: @escaping @MainActor () -> Bool = { false },
-                             hasIdentity: @escaping @MainActor () -> Bool = { true }) -> (QRScannerViewModel, Recorder) {
+                             hasIdentity: @escaping @MainActor () -> Bool = { true },
+                             malformedInvitation: @escaping @MainActor (URL) -> Bool = { _ in false }) -> (QRScannerViewModel, Recorder) {
         let recorder = Recorder()
-        let viewModel = QRScannerViewModel(mode: mode, isWalletLocked: locked, hasDashPayIdentity: hasIdentity)
+        let viewModel = QRScannerViewModel(mode: mode, isWalletLocked: locked, hasDashPayIdentity: hasIdentity,
+                                           isMalformedInvitation: malformedInvitation)
         viewModel.onResult = { recorder.results.append($0) }
         return (viewModel, recorder)
     }
@@ -169,6 +171,17 @@ final class QRScannerTests: XCTestCase {
         scanner.acceptOffer()
         guard case .invitation = recorder.results.first else {
             return XCTFail("an accepted offer hands the invitation over")
+        }
+    }
+
+    /// A malformed voucher is refused before it can take the wallet's one
+    /// pending-invitation slot, whichever scanner read it.
+    func testMalformedInvitationIsRefused() {
+        for mode in [QRScannerMode.payment, .invitation, .dashPayUser] {
+            let (scanner, recorder) = makeScanner(mode, malformedInvitation: { _ in true })
+            scanner.didDetectCodes([Self.invitationLink])
+            XCTAssertTrue(recorder.results.isEmpty)
+            XCTAssertTrue(isInvalid(scanner.status))
         }
     }
 

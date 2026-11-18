@@ -78,14 +78,19 @@ final class QRScannerViewModel: ObservableObject {
     private let isWalletLocked: @MainActor () -> Bool
     /// Whether the wallet has the DashPay identity Add Contact sends from.
     private let hasDashPayIdentity: @MainActor () -> Bool
+    /// Whether an invitation's voucher is structurally broken: storing it
+    /// would take the wallet's one pending-invitation slot.
+    private let isMalformedInvitation: @MainActor (URL) -> Bool
 
-    /// The closures are for tests; the app reads the real lock and identity.
+    /// The closures are for tests; the app reads the real wallet state.
     init(mode: QRScannerMode,
          isWalletLocked: (@MainActor () -> Bool)? = nil,
-         hasDashPayIdentity: (@MainActor () -> Bool)? = nil) {
+         hasDashPayIdentity: (@MainActor () -> Bool)? = nil,
+         isMalformedInvitation: (@MainActor (URL) -> Bool)? = nil) {
         self.mode = mode
         self.isWalletLocked = isWalletLocked ?? { QRScanResultRouter.isWalletLocked() }
         self.hasDashPayIdentity = hasDashPayIdentity ?? { QRScanResultRouter.hasDashPayIdentity() }
+        self.isMalformedInvitation = isMalformedInvitation ?? { QRScanResultRouter.isMalformedInvitation($0) }
     }
 
     func cancel() {
@@ -136,7 +141,11 @@ final class QRScannerViewModel: ObservableObject {
         case .invitation:
             let payload = QRPayload.classify(value)
             if case .invitation(let url) = payload {
-                finish(.invitation(url))
+                if isMalformedInvitation(url) {
+                    showInvalidInvitation()
+                } else {
+                    finish(.invitation(url))
+                }
             } else {
                 offerRedirect(for: payload, fallbackMessage: notAnInvitationQRMessage)
             }
@@ -303,6 +312,10 @@ final class QRScannerViewModel: ObservableObject {
     }
 
     private func offerInvitationRedirect(_ url: URL) {
+        guard !isMalformedInvitation(url) else {
+            showInvalidInvitation()
+            return
+        }
         offer(.invitation(url),
               message: NSLocalizedString("This QR code is a DashPay invitation.", comment: "QR scanner"),
               actionTitle: NSLocalizedString("Claim Invitation", comment: "QR scanner"))
@@ -402,6 +415,11 @@ final class QRScannerViewModel: ObservableObject {
 
     private var notAUserQRMessage: String {
         NSLocalizedString("This isn't a DashPay user QR code.", comment: "DashPay Contacts: scanned QR is a payment/invitation/foreign code")
+    }
+
+    private func showInvalidInvitation() {
+        showInvalid(title: NSLocalizedString("Invalid Invitation", comment: ""),
+                    message: NSLocalizedString("This invitation link is not valid.", comment: ""))
     }
 
     private var noIdentityMessage: String {

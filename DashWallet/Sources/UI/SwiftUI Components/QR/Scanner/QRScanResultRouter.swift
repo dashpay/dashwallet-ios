@@ -27,6 +27,19 @@ enum QRScanResultRouter {
         WalletLifecycleOverlayPresenter.shared.lockScreenVisible
     }
 
+    /// Whether the loaded wallet reads the invitation's voucher as
+    /// malformed. Unknown before the wallet is loaded, and then left to
+    /// Home's own check.
+    static func isMalformedInvitation(_ url: URL) -> Bool {
+        #if DASHPAY
+        guard let uri = DWInvitationLinkNormalizer.normalize(url.absoluteString),
+              let preview = DWInvitationService.shared.preview(for: uri) else { return false }
+        return !preview.structurallyValid
+        #else
+        return false
+        #endif
+    }
+
     /// Whether Add Contact can send from this wallet: it needs a DashPay
     /// identity.
     static func hasDashPayIdentity() -> Bool {
