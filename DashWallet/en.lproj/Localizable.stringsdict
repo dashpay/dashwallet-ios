@@ -529,9 +529,7 @@ The time settings on your device needs to be changed to “Set time automaticall
 You should check and if necessary correct your date, time and timezone settings.</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
-		<string>Your device time is off by %#@minutes@. You probably cannot send or receive Dash due to this problem.
-
-You should check and if necessary correct your date, time and timezone settings.</string>
+		<string>%#@minutes@</string>
 		<key>minutes</key>
 		<dict>
 			<key>NSStringFormatSpecTypeKey</key>
@@ -539,9 +537,13 @@ You should check and if necessary correct your date, time and timezone settings.
 			<key>NSStringFormatValueTypeKey</key>
 			<string>d</string>
 			<key>one</key>
-			<string>%d minute</string>
+			<string>Your device time is off by %d minute. You probably cannot send or receive Dash due to this problem.
+
+You should check and if necessary correct your date, time and timezone settings.</string>
 			<key>other</key>
-			<string>%d minutes</string>
+			<string>Your device time is off by %d minutes. You probably cannot send or receive Dash due to this problem.
+
+You should check and if necessary correct your date, time and timezone settings.</string>
 		</dict>
 	</dict>
 	<key>Could not refresh %d identities</key>
