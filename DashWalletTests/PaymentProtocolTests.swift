@@ -308,6 +308,16 @@ final class PaymentProtocolTests: XCTestCase {
         }
     }
 
+    /// A declared length over the cap is refused before the body is read.
+    func testTransportRejectsADeclaredOversizedPayload() async {
+        MockURLProtocol.responseHandler = { _ in
+            (200, ["Content-Type": "application/dash-paymentrequest", "Content-Length": "50001"], Data(count: 10))
+        }
+        await assertThrowsBIP70(try await makeTransport().fetchRequest(from: requestURL, scheme: "dash")) {
+            $0 == .payloadTooLarge
+        }
+    }
+
     func testTransportFollowsBIP73() async throws {
         let realURL = "https://merchant.example/real"
         let body = fixture

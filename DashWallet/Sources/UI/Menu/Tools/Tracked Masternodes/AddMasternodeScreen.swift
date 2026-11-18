@@ -63,7 +63,6 @@ struct AddMasternodeScreen: View {
                     }
                 },
                 onCancel: { showScanner = false })
-                .ignoresSafeArea()
         }
     }
 

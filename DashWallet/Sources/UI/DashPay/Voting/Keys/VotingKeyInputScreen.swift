@@ -70,7 +70,6 @@ struct VotingKeyInputScreen: View {
                         }
                     },
                     onCancel: { showScanner = false })
-                    .ignoresSafeArea()
             }
     }
 

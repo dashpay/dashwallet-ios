@@ -44,9 +44,10 @@ final class QRScannerTests: XCTestCase {
     }
 
     private func makeScanner(_ mode: QRScannerMode,
-                             locked: @escaping @MainActor () -> Bool = { false }) -> (QRScannerViewModel, Recorder) {
+                             locked: @escaping @MainActor () -> Bool = { false },
+                             hasIdentity: @escaping @MainActor () -> Bool = { true }) -> (QRScannerViewModel, Recorder) {
         let recorder = Recorder()
-        let viewModel = QRScannerViewModel(mode: mode, isWalletLocked: locked)
+        let viewModel = QRScannerViewModel(mode: mode, isWalletLocked: locked, hasDashPayIdentity: hasIdentity)
         viewModel.onResult = { recorder.results.append($0) }
         return (viewModel, recorder)
     }
@@ -143,6 +144,31 @@ final class QRScannerTests: XCTestCase {
         scanner.didDetectCodes([Self.userLink])
         guard case .dashPayUser = recorder.results.first else {
             return XCTFail("unlocked, a contact QR leaves for the contact flow")
+        }
+    }
+
+    /// Add Contact sends from the wallet's DashPay identity: without one, a
+    /// contact QR goes nowhere.
+    func testContactQRNeedsADashPayIdentity() {
+        for mode in [QRScannerMode.payment, .addressInput(expectsDashAddress: false), .invitation] {
+            let (scanner, recorder) = makeScanner(mode, hasIdentity: { false })
+            scanner.didDetectCodes([Self.userLink])
+            XCTAssertTrue(recorder.results.isEmpty)
+            XCTAssertTrue(isInvalid(scanner.status))
+        }
+    }
+
+    /// Claiming fills the wallet's one pending-invitation slot, so the
+    /// payment scanner asks first.
+    func testPaymentScannerOffersAnInvitation() {
+        let (scanner, recorder) = makeScanner(.payment)
+        scanner.didDetectCodes([Self.invitationLink])
+        XCTAssertTrue(isOffer(scanner.status))
+        XCTAssertTrue(recorder.results.isEmpty)
+
+        scanner.acceptOffer()
+        guard case .invitation = recorder.results.first else {
+            return XCTFail("an accepted offer hands the invitation over")
         }
     }
 
@@ -278,6 +304,16 @@ final class QRScannerTests: XCTestCase {
         scanner.didDetectCodes(["dash:\(Self.platformAddress)"])
         XCTAssertTrue(isOffer(scanner.status))
         XCTAssertTrue(recorder.results.isEmpty)
+    }
+
+    /// A form field gets a merchant request as an offer, not as text.
+    func testFormScannerOffersADashMerchantRequest() {
+        for expectsDashAddress in [false, true] {
+            let (scanner, recorder) = makeScanner(.addressInput(expectsDashAddress: expectsDashAddress))
+            scanner.didDetectCodes(["dash:?r=https%3A%2F%2Fmerchant.invalid%2Fpr"])
+            XCTAssertTrue(isOffer(scanner.status))
+            XCTAssertTrue(recorder.results.isEmpty)
+        }
     }
 
     /// An explicit Dash merchant request carries no address, but accepting

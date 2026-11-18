@@ -41,6 +41,7 @@ struct AddContactScreen: View {
     /// own scanner cover closes, and must not replay the routed link.
     @State private var scannedLink: DashPayUserLink?
     @State private var pendingRedirect: QRScanResult?
+    @State private var presenterAnchor = QRScanPresenterAnchor()
 
     private enum Layout {
         static let searchFieldHeight: CGFloat = 52
@@ -152,6 +153,7 @@ struct AddContactScreen: View {
                     }
                 }
             }
+            .qrScanPresenterAnchor(presenterAnchor)
             .fullScreenCover(isPresented: $showScanner, onDismiss: routePendingRedirect) {
                 QRScannerView(
                     mode: .dashPayUser,
@@ -479,7 +481,7 @@ struct AddContactScreen: View {
     private func routePendingRedirect() {
         guard let result = pendingRedirect else { return }
         pendingRedirect = nil
-        QRScanResultRouter.route(result)
+        QRScanResultRouter.route(result, from: presenterAnchor.controller)
     }
 
     private func verifyScannedLink(_ link: DashPayUserLink) {

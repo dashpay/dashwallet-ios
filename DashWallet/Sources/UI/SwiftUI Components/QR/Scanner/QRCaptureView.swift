@@ -200,6 +200,10 @@ struct QRCaptureView: UIViewRepresentable {
                     return
                 }
                 session.addOutput(output)
+                guard output.availableMetadataObjectTypes.contains(.qr) else {
+                    self.reportCameraUnavailable()
+                    return
+                }
                 output.setMetadataObjectsDelegate(self, queue: .main)
                 output.metadataObjectTypes = [.qr]
 

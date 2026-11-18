@@ -14,13 +14,6 @@ import UIKit
 @MainActor
 enum QRScanResultRouter {
 
-    /// Route from wherever the user currently is; used by SwiftUI call
-    /// sites that have no view controller at hand. Call it from the scanner
-    /// cover's `onDismiss`, once nothing is still being dismissed.
-    static func route(_ result: QRScanResult) {
-        route(result, from: appRootController?.topController())
-    }
-
     private static var appRootController: UIViewController? {
         UIApplication.shared.delegate?.window??.rootViewController
     }
@@ -34,6 +27,16 @@ enum QRScanResultRouter {
         WalletLifecycleOverlayPresenter.shared.lockScreenVisible
     }
 
+    /// Whether Add Contact can send from this wallet: it needs a DashPay
+    /// identity.
+    static func hasDashPayIdentity() -> Bool {
+        #if DASHPAY
+        DWCurrentUserIdentityInfo.shared.identityId != nil
+        #else
+        false
+        #endif
+    }
+
     static func route(_ result: QRScanResult, from presenter: UIViewController?) {
         guard !isWalletLocked() else { return }
         switch result {
@@ -42,7 +45,7 @@ enum QRScanResultRouter {
 
         #if DASHPAY
         case .dashPayUser(let link):
-            guard let presenter else { return }
+            guard let presenter, hasDashPayIdentity() else { return }
             let hosting = UIHostingController(rootView: AddContactScreen(scannedLink: link))
             presenter.topController().present(hosting, animated: true)
 
@@ -112,4 +115,30 @@ enum QRScanResultRouter {
         appRootController?.dw_firstTabBarController() as? MainTabbarController
     }
     #endif
+}
+
+/// The UIKit controller a SwiftUI screen lives in, so a flow the screen's
+/// scanner hands a result to is presented from that screen rather than
+/// from whatever the app root shows.
+final class QRScanPresenterAnchor {
+    fileprivate(set) weak var controller: UIViewController?
+}
+
+extension View {
+    func qrScanPresenterAnchor(_ anchor: QRScanPresenterAnchor) -> some View {
+        background(QRScanPresenterAnchorView(anchor: anchor).frame(width: 0, height: 0))
+    }
+}
+
+private struct QRScanPresenterAnchorView: UIViewControllerRepresentable {
+    let anchor: QRScanPresenterAnchor
+
+    func makeUIViewController(context: Context) -> UIViewController {
+        let controller = UIViewController()
+        controller.view.isUserInteractionEnabled = false
+        anchor.controller = controller
+        return controller
+    }
+
+    func updateUIViewController(_ controller: UIViewController, context: Context) {}
 }
