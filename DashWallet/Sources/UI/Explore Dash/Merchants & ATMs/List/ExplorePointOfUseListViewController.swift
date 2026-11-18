@@ -18,11 +18,13 @@
 import CoreLocation
 import UIKit
 import SwiftUI
+import DashUIKit
 
 private let kExploreWhereToSpendSectionCount = 5
 
 private let kHandlerHeight: CGFloat = 24.0
-internal let kDefaultOpenedMapPosition: CGFloat = 260.0
+/// Map visible above the opened sheet, below whatever bar covers the map's top.
+private let kDefaultOpenedMapPosition: CGFloat = 260.0
 private let kDefaultClosedMapPosition: CGFloat = -kHandlerHeight
 private let kSignificantLocationChange: CLLocationDistance = 500
 
@@ -53,7 +55,32 @@ public enum PointOfUseListFiltersGroup {
 // MARK: - ExplorePointOfUseListViewController
 
 @objc
-class ExplorePointOfUseListViewController: UIViewController {
+class ExplorePointOfUseListViewController: UIViewController, NavigationBarDisplayable {
+
+    /// DashUIKit's `NavigationBar`, drawn over the screen in place of the
+    /// system bar. Set before the view loads; `nil` keeps the system bar.
+    var customNavBar: CustomNavBarConfiguration?
+
+    struct CustomNavBarConfiguration {
+        let title: String
+        var leading: ExploreNavigationBarLeading = .back
+        let onBack: () -> Void
+        let onInfo: (() -> Void)?
+    }
+
+    private weak var customNavBarHost: UIHostingController<AnyView>?
+
+    /// Whether this screen draws the DashUIKit bar. The navigation controller
+    /// reads it before `viewDidLoad`, so a subclass that sets `customNavBar`
+    /// there overrides this to answer up front.
+    internal var usesCustomNavBar: Bool { customNavBar != nil }
+
+    var isBackButtonHidden: Bool { usesCustomNavBar }
+    var isNavigationBarHidden: Bool { usesCustomNavBar }
+
+    /// The bar's info action; subclasses supply a default for a configuration
+    /// without one.
+    internal var customNavBarInfoAction: (() -> Void)? { customNavBar?.onInfo }
 
     // Change to Notification instead of chaining the property
     @objc var payWithDashHandler: (() -> Void)?
@@ -71,6 +98,7 @@ class ExplorePointOfUseListViewController: UIViewController {
     internal var showMapButton: UIButton!
     internal var syncBannerView: ExploreSyncBannerView?
     internal var syncBannerHeightConstraint: NSLayoutConstraint?
+    private var syncBannerTopConstraint: NSLayoutConstraint?
 
     internal var contentViewTopLayoutConstraint: NSLayoutConstraint!
     internal var contentView: UIView!
@@ -79,7 +107,30 @@ class ExplorePointOfUseListViewController: UIViewController {
     internal var filterCell: PointOfUseListFiltersCell?
     internal var searchCell: PointOfUseListSearchCell?
     internal var appliedFiltersLabel: UILabel!
-    internal var expandedTableTopInset: CGFloat { 0 }
+    /// Keeps the expanded list clear of the custom bar and the sync banner,
+    /// which overlay it.
+    internal var expandedTableTopInset: CGFloat {
+        customNavBarHeight + (syncBannerHeightConstraint?.constant ?? 0)
+    }
+
+    private var customNavBarHeight: CGFloat {
+        guard customNavBar != nil else { return 0 }
+
+        let hostHeight = customNavBarHost?.view.bounds.height ?? 0
+        if hostHeight > 0 {
+            return hostHeight
+        }
+
+        let fittingHeight = customNavBarHost?.view.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height ?? 0
+        return fittingHeight > 0 ? fittingHeight : 74
+    }
+
+    /// The opened sheet's top. The custom bar is drawn over the map, so the
+    /// sheet sits that much lower to keep `kDefaultOpenedMapPosition` of map
+    /// in view.
+    private var openedMapPosition: CGFloat {
+        kDefaultOpenedMapPosition + customNavBarHeight
+    }
 
     internal var isFiltered: Bool { model.hasFilters }
     internal var emptyResultsView: PointOfUseListEmptyResultsView!
@@ -113,8 +164,9 @@ class ExplorePointOfUseListViewController: UIViewController {
         guard contentViewTopLayoutConstraint.constant == kDefaultClosedMapPosition else { return }
 
         UIView.animate(withDuration: 0.3, delay: 0, options: .curveLinear) {
-            self.contentViewTopLayoutConstraint.constant = kDefaultOpenedMapPosition
-            self.mapView.contentInset = self.mapContentInsets(sheetTop: kDefaultOpenedMapPosition)
+            let openedPosition = self.openedMapPosition
+            self.contentViewTopLayoutConstraint.constant = openedPosition
+            self.mapView.contentInset = self.mapContentInsets(sheetTop: openedPosition)
             self.view.layoutIfNeeded()
         } completion: { [weak self] _ in
             self?.updateTableViewInsetsForCurrentSheetPosition()
@@ -212,6 +264,9 @@ class ExplorePointOfUseListViewController: UIViewController {
         }
 
         configureHierarchy()
+        if let config = customNavBar {
+            installCustomNavBar(config: config)
+        }
         updateTableViewInsetsForCurrentSheetPosition()
         
         // Check database sync status
@@ -247,6 +302,7 @@ extension ExplorePointOfUseListViewController {
         syncBannerHeightConstraint?.constant = 30
         
         UIView.animate(withDuration: 0.3) {
+            self.updateTableViewInsetsForCurrentSheetPosition()
             self.view.layoutIfNeeded()
         }
     }
@@ -257,6 +313,7 @@ extension ExplorePointOfUseListViewController {
         syncBannerHeightConstraint?.constant = 0
         
         UIView.animate(withDuration: 0.3) {
+            self.updateTableViewInsetsForCurrentSheetPosition()
             self.view.layoutIfNeeded()
         } completion: { _ in
             self.syncBannerView?.isHidden = true
@@ -407,12 +464,19 @@ extension ExplorePointOfUseListViewController {
                                      target: self, action: #selector(showFiltersAction))
         filter.tintColor = .dw_dashBlue()
 
-        let fakeFilter = UIBarButtonItem(image: .init(systemName: "line.3.horizontal.decrease.circle.fill"), style: .plain,
-                                         target: self, action: nil)
-        fakeFilter.tintColor = .clear
+        // A clear copy of the filter button keeps the applied filters centred. The
+        // toolbar draws a glass circle around every button, visible or not, so the
+        // copy opts out of it.
+        let filterBalance = UIBarButtonItem(image: .init(systemName: "line.3.horizontal.decrease.circle.fill"), style: .plain,
+                                            target: nil, action: nil)
+        filterBalance.tintColor = .clear
+        filterBalance.isAccessibilityElement = false
+        if #available(iOS 26.0, *) {
+            filterBalance.hidesSharedBackground = true
+        }
 
         let spacer = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: self, action: nil)
-        toolbarItems = [filter, spacer, appliedFilters, spacer, fakeFilter]
+        toolbarItems = [filter, spacer, appliedFilters, spacer, filterBalance]
 
         let standardAppearance = UIToolbarAppearance()
         standardAppearance.configureWithDefaultBackground()
@@ -505,6 +569,7 @@ extension ExplorePointOfUseListViewController {
                                                                           constant: -handlerViewHeight)
         
         syncBannerHeightConstraint = syncBannerView!.heightAnchor.constraint(equalToConstant: 0)
+        syncBannerTopConstraint = syncBannerView!.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor)
         // Set high z-position to overlay content
         syncBannerView!.layer.zPosition = 100
 
@@ -516,7 +581,7 @@ extension ExplorePointOfUseListViewController {
             contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             
             // Sync banner constraints - attached to app bar, overlaying content
-            syncBannerView!.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            syncBannerTopConstraint!,
             syncBannerView!.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             syncBannerView!.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             syncBannerHeightConstraint!,
@@ -669,12 +734,12 @@ extension ExplorePointOfUseListViewController {
             let velocityY: CGFloat = 0.2*velocityInView.y
             var finalY: CGFloat = contentViewTopLayoutConstraint.constant + velocityY
 
-            if finalY < kDefaultOpenedMapPosition/2 {
+            if finalY < openedMapPosition/2 {
                 finalY = kDefaultClosedMapPosition
             } else if finalY > view.frame.size.height/2 {
                 finalY = mapView.frame.size.height - kHandlerHeight
             } else {
-                finalY = kDefaultOpenedMapPosition
+                finalY = openedMapPosition
             }
 
             let animationDuration: CGFloat = (abs(velocityY)*0.0002)+0.2;
@@ -957,5 +1022,43 @@ extension ExplorePointOfUseListViewController: PointOfUseListFiltersViewControll
         refreshFilterCell()
         updateMapVisibility()
         updateShowMapButtonVisibility()
+    }
+}
+
+// MARK: - Custom navigation bar
+
+extension ExplorePointOfUseListViewController {
+    /// Back for a pushed screen, close for one presented as the root of its
+    /// own navigation controller.
+    internal var defaultCustomNavBarLeading: ExploreNavigationBarLeading {
+        let isModalRoot = navigationController?.viewControllers.first === self
+            && navigationController?.presentingViewController != nil
+        return isModalRoot ? .close : .back
+    }
+
+    /// Pops a pushed screen, dismisses a modal root.
+    internal func closeOrPop() {
+        if let navigationController, navigationController.viewControllers.first !== self {
+            navigationController.popViewController(animated: true)
+        } else {
+            dismiss(animated: true)
+        }
+    }
+
+    private func installCustomNavBar(config: CustomNavBarConfiguration) {
+        customNavBarHost = installExploreNavigationBar(
+            title: config.title,
+            leading: config.leading,
+            onBack: config.onBack,
+            onInfo: customNavBarInfoAction)
+
+        // The custom bar takes the top of the safe area, where the sync banner
+        // sits under the system bar; move the banner below it.
+        if let syncBannerView, let host = customNavBarHost {
+            syncBannerTopConstraint?.isActive = false
+            syncBannerTopConstraint = syncBannerView.topAnchor.constraint(equalTo: host.view.bottomAnchor)
+            syncBannerTopConstraint?.isActive = true
+        }
+        view.layoutIfNeeded()
     }
 }

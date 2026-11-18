@@ -19,11 +19,12 @@
 
 import SwiftUI
 
-/// Applies the approve-connection sheet's presentation options, degrading on
-/// older systems. Keeping it in a modifier means the sheet content is written
-/// once rather than repeated per availability branch.
+/// Applies the approval sheets' presentation options — detent, corner radius
+/// and no system drag indicator (`DashUIKit.BottomSheet` draws its own
+/// grabber) — degrading on older systems. Keeping it in a modifier means the
+/// sheet content is written once rather than repeated per availability branch.
+/// Swipe-to-dismiss is gated by the sheet's `BottomSheet`, not here.
 struct ApproveSheetPresentation: ViewModifier {
-    let isLoading: Bool
     /// Full height, for content that does not fit the fixed one.
     var isTall = false
 
@@ -34,12 +35,12 @@ struct ApproveSheetPresentation: ViewModifier {
         if #available(iOS 16.4, *) {
             content
                 .presentationDetents([detent])
+                .presentationDragIndicator(.hidden)
                 .presentationCornerRadius(cornerRadius)
-                .interactiveDismissDisabled(isLoading)
         } else if #available(iOS 16.0, *) {
             content
                 .presentationDetents([detent])
-                .interactiveDismissDisabled(isLoading)
+                .presentationDragIndicator(.hidden)
         } else {
             content
         }
@@ -47,8 +48,8 @@ struct ApproveSheetPresentation: ViewModifier {
 }
 
 extension View {
-    /// Presents this view as the approve-connection sheet body.
-    func approveSheetPresentation(isLoading: Bool, isTall: Bool = false) -> some View {
-        modifier(ApproveSheetPresentation(isLoading: isLoading, isTall: isTall))
+    /// Presents this view as a DashConnect approval sheet body.
+    func approveSheetPresentation(isTall: Bool = false) -> some View {
+        modifier(ApproveSheetPresentation(isTall: isTall))
     }
 }

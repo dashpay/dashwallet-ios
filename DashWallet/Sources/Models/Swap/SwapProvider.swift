@@ -17,6 +17,7 @@
 //  limitations under the License.
 //
 
+import Combine
 import Foundation
 
 // MARK: - Result types
@@ -136,12 +137,24 @@ extension SwapProvider {
     /// Returns a map of asset identifier (uppercased) → routing network label
     /// for display in the coin picker ("Maya", "NEAR", "Multiple networks").
     /// Default: empty — non-SwapKit providers don't have multi-provider routing.
-    func networkLabels(for pools: [SwapPool]) async -> [String: String] { [:] }
+    func networkLabels(for pools: [SwapPool], direction: SwapDirection) async -> [String: String] { [:] }
 
     /// Returns the set of asset identifiers (uppercased) that are halted due to
-    /// provider-specific halt logic (e.g. Maya chain halt for mayaOnly assets).
+    /// provider-specific halt logic (SwapKit: no provider can carry the coin right now).
     /// Default: empty set (use chain-based halt from inbound addresses).
-    func haltedAssets(from inboundAddresses: [SwapInboundAddress], pools: [SwapPool]) async -> Set<String> { [] }
+    func haltedAssets(from inboundAddresses: [SwapInboundAddress], pools: [SwapPool], direction: SwapDirection) async -> Set<String> { [] }
+
+    /// Starts checking, in the background, whether the shown coins can be swapped right now.
+    /// Default: nothing to check — the provider's pools and inbound addresses are already live.
+    func refreshRouteAvailability(for pools: [SwapPool], direction: SwapDirection) {}
+
+    /// Stops the background check started by `refreshRouteAvailability`. Default: nothing runs.
+    func stopRouteAvailabilityRefresh(direction: SwapDirection) {}
+
+    /// Directions whose live route availability changed. Default: never.
+    var routeAvailabilityChanges: AnyPublisher<SwapDirection, Never> {
+        Empty().eraseToAnyPublisher()
+    }
 }
 
 // MARK: - Protocol
@@ -156,7 +169,9 @@ protocol SwapProvider {
     var displayName: String { get }
     var usesGenericFeeLabel: Bool { get }
     var buildsSwapKitDeposit: Bool { get }
-    var onBuyRoutabilityChanged: (() -> Void)? { get set }
+    /// Directions whose live route availability changed, so the picker can re-label. MUST be a
+    /// protocol requirement for dynamic dispatch.
+    var routeAvailabilityChanges: AnyPublisher<SwapDirection, Never> { get }
 
     func fetchPools() async throws -> [SwapPool]
     func fetchInboundAddresses() async throws -> [SwapInboundAddress]
@@ -167,10 +182,16 @@ protocol SwapProvider {
     func fetchPools(direction: SwapDirection) async throws -> [SwapPool]
 
     /// Routing network labels per asset. MUST be a protocol requirement for dynamic dispatch.
-    func networkLabels(for pools: [SwapPool]) async -> [String: String]
+    func networkLabels(for pools: [SwapPool], direction: SwapDirection) async -> [String: String]
 
     /// Provider-specific halted assets. MUST be a protocol requirement for dynamic dispatch.
-    func haltedAssets(from inboundAddresses: [SwapInboundAddress], pools: [SwapPool]) async -> Set<String>
+    func haltedAssets(from inboundAddresses: [SwapInboundAddress], pools: [SwapPool], direction: SwapDirection) async -> Set<String>
+
+    /// Live route checks for the shown coins. MUST be a protocol requirement for dynamic dispatch.
+    func refreshRouteAvailability(for pools: [SwapPool], direction: SwapDirection)
+
+    /// Stops the live route checks for `direction`. MUST be a protocol requirement for dynamic dispatch.
+    func stopRouteAvailabilityRefresh(direction: SwapDirection)
 
     /// Returns `nil` if the destination address is valid, otherwise an error string.
     func validateAddress(destination: String, toAsset: String) async -> String?

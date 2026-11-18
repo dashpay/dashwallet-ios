@@ -303,11 +303,17 @@ struct CreateUsernameView: View {
     /// Pops this screen. Wired to the `NavigationBar`'s back element, which
     /// replaced the UIKit bar's own button.
     var onBack: () -> Void = {}
+    /// The bar's leading element while the main form is showing: `.back` when
+    /// pushed, `.close` when the form is the root of a cover. The instant-name
+    /// pass always shows `.back`, since it returns to the form.
+    var leadingElement: DashUIKit.NavigationBarElement = .back
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             DashUIKit.NavigationBar(
-                leading: { DashUIKit.NavigationBarElement.back.button(action: goBack) })
+                leading: {
+                    (isNamingInstantUsername ? .back : leadingElement).button(action: goBack)
+                })
 
             // The companion pass replaces the form rather than sitting under it:
             // it asks for a different name, by different rules, and the requested
@@ -866,9 +872,7 @@ struct CreateUsernameView: View {
         } else {
             add(
                 id: "cost",
-                text: String.localizedStringWithFormat(
-                    NSLocalizedString("You need at least %@ Dash to create this username", comment: "Usernames"),
-                    viewModel.uiState.requiredDash.dashAmount.formattedDashAmountWithoutCurrencySymbol),
+                text: CreateUsernameViewModel.minimumCostMessage(requiredDuffs: viewModel.uiState.requiredDash),
                 rule: viewModel.uiState.costRule)
         }
 
@@ -1925,11 +1929,10 @@ extension CreateUsernameViewModel.ShieldedCostBlocker {
                 : NSLocalizedString("Your recently shielded Dash can be used for this username tomorrow at %@", comment: "Usernames")
             return (String.localizedStringWithFormat(format, time), .pending)
 
-        case .short(let shortfallDuffs, let dashBalanceCovers):
+        case .short(let shortfallDuffs):
             let amount = shortfallDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol
-            let format = dashBalanceCovers
-                ? NSLocalizedString("Add %@ Dash to your Shielded balance to create this username, or pay from your Dash balance", comment: "Usernames")
-                : NSLocalizedString("Add %@ Dash to your Shielded balance to create this username", comment: "Usernames")
+            let format = NSLocalizedString(
+                "Add %@ Dash to your Shielded balance to create this username", comment: "Usernames")
             return (String.localizedStringWithFormat(format, amount), .failed)
 
         case .poolTooSmall(let current):

@@ -201,12 +201,14 @@ final class BIP70InteractiveCoordinator: NSObject {
         if let bip = error as? BIP70Error {
             return NSError(domain: errorDomain,
                            code: bip == .insecureTransport ? refusalErrorCode : 1,
-                           userInfo: [NSLocalizedDescriptionKey: bip.errorDescription ?? "Payment failed"])
+                           userInfo: [NSLocalizedDescriptionKey: bip.errorDescription
+                               ?? NSLocalizedString("Payment failed", comment: "BIP70 payment error")])
         }
         if let violation = error as? BIP70InteractivePolicy.Violation {
             return NSError(domain: errorDomain,
                            code: refusalErrorCode,
-                           userInfo: [NSLocalizedDescriptionKey: violation.errorDescription ?? "Payment failed"])
+                           userInfo: [NSLocalizedDescriptionKey: violation.errorDescription
+                               ?? NSLocalizedString("Payment failed", comment: "BIP70 payment error")])
         }
         return error as NSError
     }

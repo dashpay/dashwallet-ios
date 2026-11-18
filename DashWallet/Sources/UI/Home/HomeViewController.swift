@@ -358,7 +358,7 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
                 DWLogger.log("HomeViewController: sweep invoked from Home popup (\(amount))")
                 self.viewModel.showCoinJoinSweepDialog = false
                 Task { @MainActor in
-                    // The post-sync popup (ModalDialog) is mid-dismissal here —
+                    // The post-sync popup (LegacyModalDialog) is mid-dismissal here —
                     // its wrapper calls dismiss(animated:) immediately before
                     // running this action. Presenting the PIN now races that
                     // dismissal: DSAuthenticationManager.presentController:
@@ -496,7 +496,6 @@ extension HomeViewController: HomeViewDelegate {
             onBack: { [weak self] in self?.navigationController?.popViewController(animated: true) },
             onRetryCompanion: { [weak self] name in self?.showCreateUsernameForRecovery(definedUsername: name) })
         let controller = UIHostingController(rootView: screen)
-        controller.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(controller, animated: true)
     }
 
@@ -504,7 +503,6 @@ extension HomeViewController: HomeViewDelegate {
         // Preselected, not pinned — the transfer form still lets the user
         // change their mind about either endpoint.
         let controller = InternalTransferHostingController(transferTo: .balance(.shielded))
-        controller.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(controller, animated: true)
     }
     #endif

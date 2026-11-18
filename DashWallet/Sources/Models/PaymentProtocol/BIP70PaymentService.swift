@@ -200,15 +200,13 @@ final class BIP70PaymentService {
         // 3. Untrusted-cert policy.
         if request.pkiType != "none" {
             // Signed: must be valid. Always blocked otherwise, regardless of the flag.
-            guard verdict.isValid else {
-                throw BIP70Error.untrustedCertificate(detail: verdict.errorMessage)
-            }
+            if let error = Self.verificationError(for: verdict) { throw error }
         } else {
             // Unsigned: allowed iff the flag permits. Expiry still applies.
             guard allowUntrustedUnsigned else {
-                throw BIP70Error.untrustedCertificate(detail: "Unsigned request")
+                throw BIP70Error.unsignedRequest
             }
-            if !verdict.isValid { throw BIP70Error.expired }
+            if let error = Self.verificationError(for: verdict) { throw error }
         }
 
         let details = request.details
@@ -383,6 +381,17 @@ final class BIP70PaymentService {
             return []
         }
         return [PaymentOutput(amount: amount, script: script)]
+    }
+
+    /// The error a failed verdict is refused with: its certificate failure, or `.expired` when
+    /// the request expired; `nil` when the verdict is valid. A failed verdict with neither
+    /// reason is a verifier bug, refused as an untrusted chain.
+    static func verificationError(for verdict: PaymentRequestVerifier.Verdict) -> BIP70Error? {
+        guard !verdict.isValid else { return nil }
+        if let failure = verdict.certificateFailure { return .untrustedCertificate(failure) }
+        if verdict.isExpired { return .expired }
+        assertionFailure("Failed BIP70 verdict without a reason")
+        return .untrustedCertificate(.untrustedChain)
     }
 
     private static func assertNotExpired(_ expires: UInt64, now: Date) throws {

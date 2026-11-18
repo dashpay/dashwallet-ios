@@ -179,8 +179,26 @@ final class ShieldedIdentityFundingReadiness: ObservableObject {
         let descriptor = FetchDescriptor<PersistentShieldedNote>(
             predicate: PersistentShieldedNote.unspentPredicate(walletId: walletId),
             sortBy: [SortDescriptor(\.createdAt, order: .forward)])
-        let notes = (try? modelContainer.mainContext.fetch(descriptor)) ?? []
+        let notes = ((try? modelContainer.mainContext.fetch(descriptor)) ?? [])
+            .map { Note(value: $0.value, createdAt: $0.createdAt) }
+        return Self.snapshot(
+            notes: notes, requiredCredits: requiredCredits, poolNoteCount: latchedPoolNoteCount, now: now)
+    }
 
+    /// An unspent shielded note, as readiness reads it.
+    struct Note: Equatable {
+        let value: UInt64
+        let createdAt: Date
+    }
+
+    /// Readiness of unspent `notes`, sorted oldest first, against
+    /// `requiredCredits`, with the last known pool count.
+    static func snapshot(
+        notes: [Note],
+        requiredCredits: UInt64,
+        poolNoteCount: UInt64?,
+        now: Date
+    ) -> Snapshot {
         let unspent = notes.reduce(UInt64(0)) { $0 + $1.value }
         let maturityCutoff = now.addingTimeInterval(-Self.maturityWindow)
         let mature = notes
@@ -203,8 +221,8 @@ final class ShieldedIdentityFundingReadiness: ObservableObject {
                 }
             }
             state = .maturing(readyAt: readyAt)
-        } else if let poolCount = latchedPoolNoteCount, poolCount < Self.minimumPoolNotes {
-            state = .poolTooSmall(current: poolCount)
+        } else if let poolNoteCount, poolNoteCount < Self.minimumPoolNotes {
+            state = .poolTooSmall(current: poolNoteCount)
         } else {
             state = .ready
         }
@@ -214,9 +232,17 @@ final class ShieldedIdentityFundingReadiness: ObservableObject {
             requiredCredits: requiredCredits,
             matureCredits: mature,
             unspentCredits: unspent,
-            poolNoteCount: latchedPoolNoteCount,
+            poolNoteCount: poolNoteCount,
             nextMaturityAt: notes.first { $0.createdAt > maturityCutoff }?
                 .createdAt.addingTimeInterval(Self.maturityWindow))
+    }
+
+    /// The pool count to latch from a sync report: a new positive total
+    /// only. A pass that reports nothing, zero or the same count keeps the
+    /// last one, so the pool never reads as empty between passes.
+    static func poolCountToLatch(reported: UInt64?, latched: UInt64?) -> UInt64? {
+        guard let reported, reported > 0, reported != latched else { return nil }
+        return reported
     }
 
     /// Recompute `standardSnapshot` and (re)arm the maturity alarm.
@@ -263,7 +289,7 @@ final class ShieldedIdentityFundingReadiness: ObservableObject {
             .receive(on: RunLoop.main)
             .sink { [weak self] total in
                 guard let self else { return }
-                if let total, total > 0, total != self.latchedPoolNoteCount {
+                if let total = Self.poolCountToLatch(reported: total, latched: self.latchedPoolNoteCount) {
                     self.latchedPoolNoteCount = total
                     self.refresh()
                 }
@@ -274,8 +300,9 @@ final class ShieldedIdentityFundingReadiness: ObservableObject {
     /// Pull the current tree-total directly (the publisher only fires
     /// on change, and a pass may already have reported before we wired).
     private func latchPoolCount() {
-        if let total = SwiftDashSDKHost.shared.manager?.currentShieldedTreeTotal,
-           total > 0, total != latchedPoolNoteCount {
+        if let total = Self.poolCountToLatch(
+            reported: SwiftDashSDKHost.shared.manager?.currentShieldedTreeTotal,
+            latched: latchedPoolNoteCount) {
             latchedPoolNoteCount = total
         }
     }

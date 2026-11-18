@@ -26,7 +26,7 @@ final class BIP70SendAuthorizer: SendAuthorizing {
         case .failed, .timedOut:
             throw NSError(domain: "org.dashfoundation.dash.bip70",
                           code: 2,
-                          userInfo: [NSLocalizedDescriptionKey: "Authentication failed"])
+                          userInfo: [NSLocalizedDescriptionKey: NSLocalizedString("Authentication failed", comment: "BIP70 payment error")])
         }
     }
 }

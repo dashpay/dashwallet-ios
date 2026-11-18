@@ -21,7 +21,7 @@ import SwiftUI
 import DashUIKit
 import SwiftDashSDK
 
-extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
+extension HomeViewController {
     func performAction(for action: ShortcutAction, sender: UIView?) {
         switch action.type {
         case .secureWallet:
@@ -109,7 +109,6 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
         } else {
             guard let navigationController else { return }
             let controller = UIHostingController(rootView: WalletsScreen(vc: navigationController))
-            controller.hidesBottomBarWhenPushed = true
             navigationController.pushViewController(controller, animated: true)
         }
     }
@@ -166,9 +165,8 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
     }
 
     private func showLocalCurrencyAction() {
-        let controller = DWLocalCurrencyViewController(navigationAppearance: .white, presentationMode: .dialog, currencyCode: nil)
-        controller.delegate = self
-        presentControllerModallyInNavigationController(controller)
+        let controller = LocalCurrencyModalController(currencyCode: nil, changesAppCurrency: true, onSelect: { _ in })
+        present(controller, animated: true)
     }
 
     #if DASHPAY
@@ -181,7 +179,6 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
         guard let uri = invitation.normalizedURI,
               navigationController?.topViewController === self else { return }
         let controller = CreateUsernameViewController(invitation: invitation, invitationURI: uri, invitationAmountDuffs: amountDuffs)
-        controller.hidesBottomBarWhenPushed = true
         controller.completionHandler = { [weak self] result in
             guard result else { return }
             self?.view.dw_showInfoHUD(withText: NSLocalizedString("Username was successfully requested", comment: "Usernames"), offsetForNavBar: true)
@@ -241,7 +238,6 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
     #if DASHPAY
     private func pushCreateUsernameForm(definedUsername: String? = nil) {
         let controller = CreateUsernameViewController(dashPayModel: model.dashPayModel, definedUsername: definedUsername)
-        controller.hidesBottomBarWhenPushed = true
         controller.completionHandler = { result in
             if (result) {
                 self.view.dw_showInfoHUD(withText: NSLocalizedString("Username was successfully requested", comment: "Usernames"), offsetForNavBar:true)
@@ -268,7 +264,6 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
             }
         )
         let hostingController = UIHostingController(rootView: screen)
-        hostingController.hidesBottomBarWhenPushed = true
         navController.pushViewController(hostingController, animated: true)
     }
 
@@ -277,6 +272,7 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
         controller.initialSegment = .all
         controller.customNavBar = MerchantListViewController.CustomNavBarConfiguration(
             title: NSLocalizedString("Where to Spend", comment: ""),
+            leading: .close,
             onBack: { [weak controller] in controller?.dismiss(animated: true) },
             onInfo: nil
         )
@@ -476,16 +472,6 @@ extension HomeViewController: DWLocalCurrencyViewControllerDelegate {
             self?.presentShortcutSelection(for: position)
         })
         present(alert, animated: true)
-    }
-
-    // MARK: - DWLocalCurrencyViewControllerDelegate
-
-    func localCurrencyViewController(_ controller: DWLocalCurrencyViewController, didSelectCurrency currencyCode: String) {
-        controller.navigationController?.dismiss(animated: true, completion: nil)
-    }
-
-    func localCurrencyViewControllerDidCancel(_ controller: DWLocalCurrencyViewController) {
-        controller.navigationController?.dismiss(animated: true, completion: nil)
     }
 
 }

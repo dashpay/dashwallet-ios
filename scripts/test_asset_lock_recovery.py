@@ -24,7 +24,7 @@ with tempfile.TemporaryDirectory(prefix="asset-lock-recovery-tests-") as directo
                    "    private func beginTransfer()", "    private func beginTransfer(\n",
                    "    private static func logGateRefusal(", "    private func releaseInFlightOutPoint()",
                    "    private func markInFlightLockConsumed(", "    func finishResumedAssetLock(",
-                   "    private static func releaseDrainClaim("):
+                   "    private static func releaseDrainClaim(", "    static func isRecipientMismatch("):
         start = production.index(marker)
         opening = production.index("{", start)
         depth, end = 1, opening + 1
@@ -38,7 +38,7 @@ with tempfile.TemporaryDirectory(prefix="asset-lock-recovery-tests-") as directo
         (source / name).symlink_to(repository / "DashWallet/Sources/UI/Payments/InternalTransfer/Shielded" / name)
     (source / "DurableFileStorage.swift").symlink_to(repository / "DashWallet/Sources/Infrastructure/SwiftDashSDK/DurableFileStorage.swift")
     service = (repository / "DashWallet/Sources/UI/Payments/InternalTransfer/Shielded/CoreShieldedDrainService.swift").read_text()
-    types = service[service.index("enum CoreShieldedDrainRowIdentity:"):service.index("@MainActor\nstruct CoreShieldedDrainService")]
+    types = service[service.index("enum CoreShieldedDrainVerdict:"):service.index("@MainActor\nstruct CoreShieldedDrainService")]
     (source / "DrainRecipient.swift").write_text("import Foundation\n" + types)
     harness = (repository / "scripts/fixtures/AssetLockRecoveryHarness.swift").read_text()
     def caller_method(path, marker):
@@ -71,6 +71,11 @@ with tempfile.TemporaryDirectory(prefix="asset-lock-recovery-tests-") as directo
     harness = harness.replace("// SEND_RETRY", "\n".join((
         caller_method(send, "    private func tryAgain()"),
         caller_method(send, "    private var canResumeUnconfirmedLock: Bool").replace("private var", "var", 1))))
+    runner = "DashWallet/Sources/UI/Payments/InternalTransfer/Confirm/InternalTransferRunner.swift"
+    harness = harness.replace("    // RUNNER_RESUME", "\n".join(
+        caller_method(runner, marker) for marker in (
+            "    enum Phase: Equatable {", "    enum Notice: Equatable {",
+            "    func resumeCoreDrain(", "    private func apply(")))
     (source / "Coordinator.swift").write_text(harness)
     (tests / "RecoveryTests.swift").symlink_to(repository / "scripts/fixtures/AssetLockRecoveryTests.swift")
     (package / "Package.swift").write_text('''// swift-tools-version: 5.9

@@ -31,6 +31,8 @@ class AllMerchantLocationsViewController: UIViewController {
     private var didPresentDetailsSheet = false
     private var didConfigureInitialMapCenter = false
     private let defaultBottomSheetHeight: CGFloat = 450
+    /// DashUIKit's bar, in place of the system one; the map sits below it.
+    private var navigationBarHost: UIViewController!
 
     @objc var payWithDashHandler: (() -> Void)?
     @objc var sellDashHandler: (() -> Void)?
@@ -52,6 +54,11 @@ class AllMerchantLocationsViewController: UIViewController {
         super.viewDidLoad()
 
         title = NSLocalizedString("Where to Spend", comment: "")
+        navigationBarHost = installExploreNavigationBar(
+            title: title ?? "",
+            leading: .back,
+            onBack: { [weak self] in self?.navigationController?.popViewController(animated: true) },
+            onInfo: nil)
         configureHierarchy()
     }
 
@@ -76,7 +83,7 @@ class AllMerchantLocationsViewController: UIViewController {
         }
 
         NSLayoutConstraint.activate([
-            mapView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            mapView.topAnchor.constraint(equalTo: navigationBarHost.view.bottomAnchor),
             mapView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             mapView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             mapView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -209,6 +216,11 @@ class AllMerchantLocationsViewController: UIViewController {
             navigationController?.pushViewController(vc, animated: true)
         }
     }
+}
+
+extension AllMerchantLocationsViewController: NavigationBarDisplayable {
+    var isBackButtonHidden: Bool { true }
+    var isNavigationBarHidden: Bool { true }
 }
 
 extension AllMerchantLocationsViewController: ExploreMapViewDelegate {

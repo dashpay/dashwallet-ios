@@ -388,8 +388,22 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
 
     @objc func canUseBiometricAuthentication(forAmount amount: UInt64) -> Bool {
         guard isBiometricAuthenticationAllowed else { return false }
-        guard let left = PinStore.int64(for: .biometricAmountLeft) else { return false }
-        return amount <= UInt64(bitPattern: left)
+        return Self.biometricAllowanceCovers(amount: amount,
+                                             allowanceLeft: PinStore.int64(for: .biometricAmountLeft),
+                                             limit: biometricSpendingLimit)
+    }
+
+    /// Whether the remaining biometric allowance covers `amount`. With no
+    /// stored limit there is no allowance, whatever `allowanceLeft` holds.
+    static func biometricAllowanceCovers(amount: UInt64, allowanceLeft: Int64?, limit: UInt64) -> Bool {
+        guard limit != spendingLimitNotSet, let allowanceLeft else { return false }
+        return amount <= UInt64(bitPattern: allowanceLeft)
+    }
+
+    /// The biometric allowance a PIN entry restores for `limit`: the limit
+    /// itself, or none when no limit is stored.
+    static func allowanceAfterPinEntry(limit: UInt64) -> UInt64 {
+        limit == spendingLimitNotSet ? 0 : limit
     }
 
     /// Pod's `updateBiometricsAmountLeftAfterSpendingAmount:` — subtract, or
@@ -432,10 +446,8 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
     @objc @discardableResult
     func resetSpendingLimitsIfAuthenticated() -> Bool {
         guard didAuthenticate else { return false }
-        let limit = biometricSpendingLimit
-        if limit > 0 {
-            PinStore.set(int64: Int64(bitPattern: limit), for: .biometricAmountLeft)
-        }
+        let allowance = Self.allowanceAfterPinEntry(limit: biometricSpendingLimit)
+        PinStore.set(int64: Int64(bitPattern: allowance), for: .biometricAmountLeft)
         return true
     }
 

@@ -66,6 +66,12 @@ enum SwapKitErrorCopy {
             )
         }
 
+        // A provider's trading halt (`swapHalted` today) is not something the user can fix with a
+        // different amount or address: the coin cannot be swapped until the provider resumes.
+        if isHaltedCode(code) {
+            return unavailableNowMessage(coin: coin)
+        }
+
         switch code {
         // `memoTooLongForSourceChain` is SwapKit's own name for what the wallet also detects
         // locally before broadcasting; both mean the OP_RETURN will not fit.
@@ -85,10 +91,7 @@ enum SwapKitErrorCopy {
                 comment: "Dash DEX / dex_error_no_route"
             )
         case "blacklistasset", "invalidasset":
-            return String(format: NSLocalizedString(
-                "%@ can't be swapped at the moment.",
-                comment: "Dash DEX / dex_error_blacklisted"
-            ), coin.code)
+            return unavailableNowMessage(coin: coin)
         case "invalidrequest", "validation_error":
             return NSLocalizedString(
                 "We couldn't set up your swap. Please check the amount and address, then try again.",
@@ -163,7 +166,9 @@ enum SwapKitErrorCopy {
     /// amount far below a route's floor as well as for a pair it cannot carry: measured
     /// 2026-08-28, DASH → BTC returned it at 0.01 DASH, `sellAssetAmountTooSmall` (min 0.175) at
     /// 0.05, and a route at 0.3. Callers must not read the top-level form as "this cannot be
-    /// swapped at all" — hence the neutral copy, and `routability(from:)` ignoring it.
+    /// swapped at all" — hence the neutral copy. The live-availability probes
+    /// (`LiveRouteState.classify`, `classifyPerProvider`) take it as conclusive because they are sized
+    /// well above every route floor; the address screen re-asks without the address before trusting it.
     static func isNoRoute(_ rawError: String?) -> Bool {
         code(of: rawError) == noRoutesFoundCode
     }
@@ -174,6 +179,25 @@ enum SwapKitErrorCopy {
     /// reply only says the probe amount was too small.
     static func isBelowMinimum(_ rawError: String?) -> Bool {
         isBelowMinimumCode(code(of: rawError))
+    }
+
+    /// "<coin> can't be swapped at the moment." — for a coin no provider can carry right now, where
+    /// neither the amount nor the address is the user's to change.
+    static func unavailableNowMessage(coin: SwapCryptoCurrency) -> String {
+        String(format: NSLocalizedString(
+            "%@ can't be swapped at the moment.",
+            comment: "Dash DEX / dex_error_blacklisted"
+        ), coin.code)
+    }
+
+    /// True when a provider reported a trading halt for the pair (`swapHalted`, as Maya does while a
+    /// chain's trading is paused). SwapKit does not enumerate the halt codes, so the family is matched.
+    static func isHalted(_ rawError: String?) -> Bool {
+        isHaltedCode(code(of: rawError))
+    }
+
+    private static func isHaltedCode(_ code: String) -> Bool {
+        code.contains("halted")
     }
 
     private static func isBelowMinimumCode(_ code: String) -> Bool {

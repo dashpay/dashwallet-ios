@@ -1,3 +1,4 @@
+import DashUIKit
 import MessageUI
 import SwiftUI
 
@@ -99,7 +100,14 @@ struct WalletPreparationSupportView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        VStack(spacing: 0) {
+            DashUIKit.NavigationBar(
+                central: {
+                    Text(NSLocalizedString("Help", comment: "Wallet preparation support"))
+                        .dashFont(.subheadMedium)
+                        .foregroundColor(.dash.primaryText)
+                },
+                trailing: { DashUIKit.NavigationBarElement.close.button { dismiss() } })
             Form {
                 Section {
                     Text(viewModel.guidance)
@@ -130,25 +138,19 @@ struct WalletPreparationSupportView: View {
                         comment: "Wallet preparation support"))
                 }
             }
-            .navigationTitle(Text(NSLocalizedString("Help", comment: "Wallet preparation support")))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(NSLocalizedString("Done", comment: "Wallet preparation support")) { dismiss() }
-                }
+        }
+        .background(Color(UIColor.systemGroupedBackground))
+        .sheet(item: $viewModel.draft) { draft in
+            if draft.useMail {
+                WalletPreparationMailView(draft: draft, onFinish: viewModel.finishMail)
+            } else {
+                ActivityView(activityItems: draft.activityItems)
             }
-            .sheet(item: $viewModel.draft) { draft in
-                if draft.useMail {
-                    WalletPreparationMailView(draft: draft, onFinish: viewModel.finishMail)
-                } else {
-                    ActivityView(activityItems: draft.activityItems)
-                }
-            }
-            .alert(NSLocalizedString("Couldn't prepare the support message", comment: "Wallet preparation support"), isPresented: $viewModel.showError) {
-                Button(NSLocalizedString("OK", comment: "Wallet preparation support"), role: .cancel) {}
-            } message: {
-                Text(NSLocalizedString("Try again or copy the support address and write to us from your mail app.", comment: "Wallet preparation support"))
-            }
+        }
+        .alert(NSLocalizedString("Couldn't prepare the support message", comment: "Wallet preparation support"), isPresented: $viewModel.showError) {
+            Button(NSLocalizedString("OK", comment: "Wallet preparation support"), role: .cancel) {}
+        } message: {
+            Text(NSLocalizedString("Try again or copy the support address and write to us from your mail app.", comment: "Wallet preparation support"))
         }
     }
 }

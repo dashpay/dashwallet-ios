@@ -129,13 +129,20 @@ class BaseAmountViewController: ActionButtonViewController, AmountProviding {
     }
 
     internal func showCurrencyList() {
-        let currencyController = DWLocalCurrencyViewController(navigationAppearance: .white,
-                                                               presentationMode: .dialog,
-                                                               currencyCode: model.localCurrencyCode)
-        currencyController.isGlobal = false
-        currencyController.delegate = self
-        let nvc = BaseNavigationController(rootViewController: currencyController)
-        present(nvc, animated: true)
+        let currencyController = LocalCurrencyModalController(
+            currencyCode: model.localCurrencyCode,
+            changesAppCurrency: false,
+            onSelect: { [weak self] currencyCode in
+                self?.didSelectLocalCurrency(currencyCode)
+            })
+        present(currencyController, animated: true)
+    }
+
+    /// The currency picked in the currency list, for this amount only.
+    /// Subclasses that show fiat values override it to refresh them
+    /// (`@objc dynamic` so an override can live in an extension).
+    @objc dynamic func didSelectLocalCurrency(_ currencyCode: String) {
+        model.setupCurrencyCode(currencyCode)
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -225,19 +232,6 @@ extension BaseAmountViewController {
     }
 }
 
-// MARK: DWLocalCurrencyViewControllerDelegate
-
-extension BaseAmountViewController: DWLocalCurrencyViewControllerDelegate {
-    func localCurrencyViewController(_ controller: DWLocalCurrencyViewController, didSelectCurrency currencyCode: String) {
-        model.setupCurrencyCode(currencyCode)
-
-        controller.dismiss(animated: true)
-    }
-
-    func localCurrencyViewControllerDidCancel(_ controller: DWLocalCurrencyViewController) {
-        controller.dismiss(animated: true)
-    }
-}
 
 // MARK: ErrorPresentable
 

@@ -15,6 +15,8 @@
 //  limitations under the License.
 //
 
+import DashUIKit
+import SwiftUI
 import UIKit
 
 #if DASHPAY
@@ -31,6 +33,7 @@ protocol RootEditProfileViewControllerDelegate: AnyObject {
 class RootEditProfileViewController: ActionButtonViewController, DWEditProfileViewControllerDelegate, DWSaveAlertViewControllerDelegate, NavigationBarDisplayable {
     
     var isBackButtonHidden: Bool = false
+    var isNavigationBarHidden: Bool { true }
     weak var delegate: RootEditProfileViewControllerDelegate?
     private var editController: DWEditProfileViewController!
     override func viewDidLoad() {
@@ -38,22 +41,16 @@ class RootEditProfileViewController: ActionButtonViewController, DWEditProfileVi
         
         self.title = NSLocalizedString("Edit Profile", comment: "")
         
-        let cancel = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(cancelButtonAction))
-        self.navigationItem.leftBarButtonItem = cancel
-        
         let contentView = UIView()
         contentView.translatesAutoresizingMaskIntoConstraints = false
         setupContentView(contentView)
+        installNavigationBar()
         
         self.editController = DWEditProfileViewController()
         self.editController.delegate = self
         self.dw_embedChild(self.editController, inContainer: contentView)
         
         self.editProfileViewControllerDidUpdate(self.editController)
-    }
-    
-    override var preferredStatusBarStyle: UIStatusBarStyle {
-        return .lightContent
     }
     
     override var actionButtonTitle: String {
@@ -103,6 +100,28 @@ class RootEditProfileViewController: ActionButtonViewController, DWEditProfileVi
         }
     }
     
+    /// The DashUIKit bar replaces the system one (`isNavigationBarHidden`):
+    /// a close circle that runs the cancel flow, and the screen title.
+    private func installNavigationBar() {
+        let bar = DashUIKit.NavigationBar(
+            leading: {
+                DashUIKit.NavigationBarElement.close.button { [weak self] in
+                    self?.cancelButtonAction()
+                }
+            },
+            central: {
+                Text(NSLocalizedString("Edit Profile", comment: ""))
+                    .dashFont(.subheadMedium)
+                    .foregroundColor(.dash.primaryText)
+            })
+        let host = UIHostingController(rootView: bar)
+        host.sizingOptions = .intrinsicContentSize
+        host.view.backgroundColor = .clear
+        addChild(host)
+        stackView.insertArrangedSubview(host.view, at: 0)
+        host.didMove(toParent: self)
+    }
+
     private func dw_embedChild(_ child: UIViewController, inContainer container: UIView) {
         addChild(child)
         container.addSubview(child.view)

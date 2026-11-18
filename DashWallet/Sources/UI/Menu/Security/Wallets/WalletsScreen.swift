@@ -28,7 +28,8 @@ import DashUIKit
 import UIKit
 
 struct WalletsScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
     private let resetDelegate: ResetDelegate
 
     @StateObject private var viewModel = WalletsViewModel()
@@ -42,7 +43,7 @@ struct WalletsScreen: View {
     /// True while the "Add Wallet" sheet (create / import) is presented.
     @State private var showAddWallet = false
 
-    init(vc: UINavigationController, wipeDelegate: DWWipeDelegate? = nil) {
+    init(vc: UINavigationController?, wipeDelegate: DWWipeDelegate? = nil) {
         self.vc = vc
         self.resetDelegate = ResetDelegate(onFinish: { [weak vc] in
             vc?.popViewController(animated: true)
@@ -180,6 +181,7 @@ struct WalletsScreen: View {
                     showAddWallet = false
                     viewModel.switchWallet(to: walletId)
                 })
+                .presentationDragIndicator(.hidden)
         }
         // Remove (recovery-phrase confirmation sheet)
         .sheet(item: $removeTarget) { target in
@@ -191,6 +193,7 @@ struct WalletsScreen: View {
                     Task { await viewModel.removeWallet(walletId: target.walletId) }
                 },
                 onCancel: { removeTarget = nil })
+                .presentationDragIndicator(.hidden)
         }
         // Errors
         .alert(
@@ -212,7 +215,7 @@ struct WalletsScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             DashUIKit.NavigationBar(
                 leading: {
-                    DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
+                    DashUIKit.NavigationBarElement.back.button { vc?.popViewController(animated: true) }
                 },
                 trailing: {
                     DashUIKit.NavigationBarElement.plus.button { showAddWallet = true }
@@ -238,8 +241,7 @@ struct WalletsScreen: View {
     private func showAccounts(_ row: WalletRow) {
         let controller = UIHostingController(
             rootView: WalletAccountsScreen(vc: vc, walletId: row.walletId, walletName: row.displayName))
-        controller.hidesBottomBarWhenPushed = true
-        vc.pushViewController(controller, animated: true)
+        vc?.pushViewController(controller, animated: true)
     }
 
     // MARK: - Recovery phrase
@@ -253,8 +255,9 @@ struct WalletsScreen: View {
                 onCancel: { [weak vc] in
                     vc?.popViewController(animated: true)
                 })
-            vc.pushViewController(controller, animated: true)
+            vc?.pushViewController(controller, animated: true)
         case .phrase(let presentation):
+            guard let vc else { break }
             RecoveryPhraseNavigation.showPhrase(
                 presentation,
                 in: vc,
@@ -280,7 +283,7 @@ struct WalletsScreen: View {
     private func beginRemove(_ row: WalletRow) {
         if viewModel.removalRoutesToFullReset(walletId: row.walletId) {
             let controller = ResetWalletInfoHostingController(wipeDelegate: resetDelegate)
-            vc.pushViewController(controller, animated: true)
+            vc?.pushViewController(controller, animated: true)
         } else if viewModel.rows.contains(where: { $0.walletId != row.walletId }) {
             removeTarget = row
         } else {
@@ -392,7 +395,11 @@ private struct RemoveWalletSheet: View {
     @State private var showMismatch = false
 
     var body: some View {
-        NavigationStack {
+        DashUIKit.BottomSheet(
+            title: NSLocalizedString("Remove Wallet", comment: "Wallets"),
+            showBackButton: .constant(false),
+            onClose: onCancel
+        ) {
             ZStack {
                 Color.dash.primaryBackground.ignoresSafeArea()
                 ScrollView {
@@ -445,13 +452,6 @@ private struct RemoveWalletSheet: View {
                     .padding(20)
                 }
             }
-            .navigationTitle(NSLocalizedString("Remove Wallet", comment: "Wallets"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(NSLocalizedString("Cancel", comment: "")) { onCancel() }
-                }
-            }
         }
     }
 
@@ -491,25 +491,33 @@ private struct AddWalletSheet: View {
 
     @State private var step: Step = .chooser
 
+    /// A wallet is being added or switched to: closing, swiping away and
+    /// stepping back are all held off until it settles.
+    private var isBusy: Bool {
+        viewModel.addInProgress || viewModel.switchInProgress
+    }
+
     var body: some View {
-        NavigationStack {
+        DashUIKit.BottomSheet(
+            title: title,
+            showBackButton: Binding(
+                get: { step != .chooser && !isBusy },
+                set: { _ in }),
+            onBackButtonPressed: { step = .chooser },
+            isDismissalEnabled: Binding(
+                get: { !isBusy },
+                set: { _ in }),
+            isCloseButtonEnabled: !isBusy,
+            onClose: onFinished
+        ) {
             ZStack {
                 Color.dash.primaryBackground.ignoresSafeArea()
                 content
             }
-            .navigationTitle(navigationTitle)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(NSLocalizedString("Cancel", comment: "")) { onFinished() }
-                        .disabled(viewModel.addInProgress || viewModel.switchInProgress)
-                }
-            }
         }
-        .interactiveDismissDisabled(viewModel.addInProgress || viewModel.switchInProgress)
     }
 
-    private var navigationTitle: String {
+    private var title: String {
         switch step {
         case .chooser: return NSLocalizedString("Add Wallet", comment: "Wallets")
         case .create: return NSLocalizedString("New Wallet", comment: "Wallets")
