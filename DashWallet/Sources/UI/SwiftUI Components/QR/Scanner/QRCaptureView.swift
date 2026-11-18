@@ -118,16 +118,15 @@ struct QRCaptureView: UIViewRepresentable {
         }
 
         func stopSession() {
-            // Nil out the delegate BEFORE stopping to prevent callbacks to a deallocated coordinator.
-            // AVCaptureMetadataOutput holds an unretained reference to its delegate — if the
-            // coordinator is deallocated while the session is still running, the delegate becomes
-            // a dangling pointer and the next metadata callback causes EXC_BAD_ACCESS.
+            // The output is installed on `sessionQueue`, so it is detached
+            // there too, after any setup already queued. The block retains
+            // the coordinator until the delegate is cleared, and `isDismissed`
+            // drops metadata already queued on main.
             isDismissed = true
-            metadataOutput?.setMetadataObjectsDelegate(nil, queue: nil)
-            metadataOutput = nil
-
             sessionQueue.async {
                 self.isStopped = true
+                self.metadataOutput?.setMetadataObjectsDelegate(nil, queue: nil)
+                self.metadataOutput = nil
                 self.captureSession?.stopRunning()
                 self.captureSession = nil
             }
@@ -151,6 +150,7 @@ struct QRCaptureView: UIViewRepresentable {
         func metadataOutput(_ output: AVCaptureMetadataOutput,
                             didOutput metadataObjects: [AVMetadataObject],
                             from connection: AVCaptureConnection) {
+            guard !isDismissed else { return }
             let values = metadataObjects.compactMap { object -> String? in
                 guard let code = object as? AVMetadataMachineReadableCodeObject,
                       code.type == .qr,

@@ -15,13 +15,10 @@ import UIKit
 enum QRScanResultRouter {
 
     /// Route from wherever the user currently is; used by SwiftUI call
-    /// sites that have no view controller at hand. SwiftUI sheet
-    /// dismissal has no completion callback, so the presentation is
-    /// deferred a beat to let the scanner sheet finish tearing down.
+    /// sites that have no view controller at hand. Call it from the scanner
+    /// cover's `onDismiss`, once nothing is still being dismissed.
     static func route(_ result: QRScanResult) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            route(result, from: appRootController?.topController())
-        }
+        route(result, from: appRootController?.topController())
     }
 
     private static var appRootController: UIViewController? {

@@ -40,6 +40,7 @@ struct AddContactScreen: View {
     /// Cleared once verified: `onAppear` runs again whenever this screen's
     /// own scanner cover closes, and must not replay the routed link.
     @State private var scannedLink: DashPayUserLink?
+    @State private var pendingRedirect: QRScanResult?
 
     private enum Layout {
         static let searchFieldHeight: CGFloat = 52
@@ -151,12 +152,11 @@ struct AddContactScreen: View {
                     }
                 }
             }
-            .fullScreenCover(isPresented: $showScanner) {
+            .fullScreenCover(isPresented: $showScanner, onDismiss: routePendingRedirect) {
                 QRScannerView(
                     mode: .dashPayUser,
                     onResult: { handleScanResult($0) },
                     onCancel: { showScanner = false })
-                    .ignoresSafeArea()
             }
             .sheet(isPresented: $showMyQR) {
                 if let link = myUserLink {
@@ -470,9 +470,16 @@ struct AddContactScreen: View {
             verifyScannedLink(link)
         default:
             // Accepted redirect offer (payment / invitation): the QR
-            // belongs to another flow — leave this sheet for it.
-            QRScanResultRouter.route(result)
+            // belongs to another flow — leave this sheet for it once the
+            // scanner is gone.
+            pendingRedirect = result
         }
+    }
+
+    private func routePendingRedirect() {
+        guard let result = pendingRedirect else { return }
+        pendingRedirect = nil
+        QRScanResultRouter.route(result)
     }
 
     private func verifyScannedLink(_ link: DashPayUserLink) {

@@ -144,13 +144,14 @@ final class QRScannerViewModel: ObservableObject {
                     // The field wants a bare Dash address; unwrap it from
                     // the payment URI instead of pasting the whole URI.
                     finish(.text(address))
-                } else if expectsDashAddress, parsed.rURL == nil, parsed.address != nil {
+                } else if expectsDashAddress, parsed.rURL == nil, parsed.address != nil,
+                          !parsed.isAddressPayableForCurrentNetwork {
                     showInvalid(message: invalidQRMessage(for: parsed))
                 } else if parsed.isAddressPayableForCurrentNetwork, parsed.address != nil {
                     offerPaymentRedirect(parsed, fallbackMessage: nil)
                 } else {
-                    // Not payable here (a plain https URL, a Platform
-                    // address): the field validates its own input.
+                    // Not payable here (a plain https URL): the field
+                    // validates its own input.
                     finish(.text(value.trimmingCharacters(in: .whitespacesAndNewlines)))
                 }
             #if DASHPAY
@@ -260,11 +261,13 @@ final class QRScannerViewModel: ObservableObject {
         }
     }
 
-    /// Payment redirects are only offered for address-carrying intents —
-    /// the router opens the Send screen prefilled, which a BIP70-only
-    /// payload can't do. Those fall through to the invalid state.
+    /// Payment redirects are offered for a payable address or an explicit
+    /// Dash merchant request; accepting one fetches the request before the
+    /// router opens Send. A bare request URL is not offered.
     private func offerPaymentRedirect(_ parsed: ParsedPaymentURI, fallbackMessage: String?) {
-        guard parsed.isAddressPayableForCurrentNetwork, parsed.address != nil else {
+        let carriesPayableAddress = parsed.isAddressPayableForCurrentNetwork && parsed.address != nil
+        let isDashMerchantRequest = parsed.isValidDashPaymentIntent && parsed.rURL != nil
+        guard carriesPayableAddress || isDashMerchantRequest else {
             showInvalid(message: fallbackMessage ?? invalidQRMessage(for: parsed))
             return
         }

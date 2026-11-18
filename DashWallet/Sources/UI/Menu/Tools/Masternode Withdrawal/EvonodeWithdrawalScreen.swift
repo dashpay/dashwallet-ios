@@ -46,6 +46,7 @@ struct EvonodeWithdrawalScreen: View {
     /// the sheet has finished dismissing, never while it is still on screen.
     @State private var popsAfterConfirmation = false
     @State private var showScanner = false
+    @State private var pendingRedirect: QRScanResult?
 
     init(
         vc: UINavigationController?,
@@ -121,7 +122,11 @@ struct EvonodeWithdrawalScreen: View {
                 .presentationDetents([.large])
                 .presentationDragIndicator(.hidden)
         }
-        .fullScreenCover(isPresented: $showScanner) {
+        .fullScreenCover(isPresented: $showScanner, onDismiss: {
+            guard let result = pendingRedirect else { return }
+            pendingRedirect = nil
+            QRScanResultRouter.route(result)
+        }) {
             QRScannerView(
                 mode: .addressInput(expectsDashAddress: true),
                 onResult: { result in
@@ -129,11 +134,10 @@ struct EvonodeWithdrawalScreen: View {
                     if case .text(let value) = result {
                         viewModel.setDestination(value)
                     } else {
-                        QRScanResultRouter.route(result)
+                        pendingRedirect = result
                     }
                 },
                 onCancel: { showScanner = false })
-                .ignoresSafeArea()
         }
     }
 

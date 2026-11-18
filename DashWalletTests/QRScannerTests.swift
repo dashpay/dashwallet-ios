@@ -271,6 +271,27 @@ final class QRScannerTests: XCTestCase {
         XCTAssertEqual(value, "https://example.com/connect?id=1")
     }
 
+    /// The payout field takes Core addresses only, but a Platform
+    /// destination is still payable from Send: offer it, don't reject it.
+    func testDashAddressFieldOffersSendForAPlatformAddress() {
+        let (scanner, recorder) = makeScanner(.addressInput(expectsDashAddress: true))
+        scanner.didDetectCodes(["dash:\(Self.platformAddress)"])
+        XCTAssertTrue(isOffer(scanner.status))
+        XCTAssertTrue(recorder.results.isEmpty)
+    }
+
+    /// An explicit Dash merchant request carries no address, but accepting
+    /// the offer fetches it like the payment scanner does.
+    func testContactScannerOffersADashMerchantRequest() {
+        let (scanner, _) = makeScanner(.dashPayUser)
+        scanner.didDetectCodes(["dash:?r=https%3A%2F%2Fmerchant.invalid%2Fpr"])
+        XCTAssertTrue(isOffer(scanner.status))
+
+        let (bare, _) = makeScanner(.dashPayUser)
+        bare.didDetectCodes(["https://merchant.invalid/pr"])
+        XCTAssertTrue(isInvalid(bare.status), "a bare request URL is not a Dash payment offer")
+    }
+
     /// The Payments screen and Enter Address hand scans to
     /// `dispatchPaymentInput`, which must send a Platform destination to the
     /// Send screen and keep a Core address on the classic processor.
