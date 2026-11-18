@@ -744,11 +744,25 @@ final class ContactWithdrawalTotalTests: XCTestCase {
             walletId: Data((0..<32).map { _ in UInt8.random(in: 0...255) }),
             ownerIdentityId: Data(repeating: 2, count: 32), network: .testnet)
         let service = WalletSendService.shared
-        try service.beginContactPayment(recipient)
+        let current: @MainActor (ContactPaymentRecipient) throws -> Void = { _ in }
+        try service.beginContactPayment(recipient, validate: current)
+        XCTAssertThrowsError(try service.beginContactPayment(recipient, validate: current))
+        service.endContactPayment(recipient)
+        try service.beginContactPayment(recipient, validate: current)
+        service.endContactPayment(recipient)
+        XCTAssertFalse(service.contactPaymentClaims.isClaimed(contactIdentityId: recipient.identityId))
+    }
+
+    /// A recipient captured for a wallet or identity that is no longer active
+    /// is refused before authorization, and the claim is let go.
+    @MainActor
+    func testContactPaymentRefusesAStaleRecipientBeforeAuthorization() {
+        let recipient = ContactPaymentRecipient(
+            identityId: Data((0..<32).map { _ in UInt8.random(in: 0...255) }), displayName: "c",
+            walletId: Data((0..<32).map { _ in UInt8.random(in: 0...255) }),
+            ownerIdentityId: Data(repeating: 2, count: 32), network: .testnet)
+        let service = WalletSendService.shared
         XCTAssertThrowsError(try service.beginContactPayment(recipient))
-        service.endContactPayment(recipient)
-        try service.beginContactPayment(recipient)
-        service.endContactPayment(recipient)
         XCTAssertFalse(service.contactPaymentClaims.isClaimed(contactIdentityId: recipient.identityId))
     }
 
