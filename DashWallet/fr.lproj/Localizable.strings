@@ -34,6 +34,15 @@
 /* DashConnect connection sheet: a key's name, then its budget */
 "%1$@: %2$@" = "%1$@: %2$@";
 
+/* Voting */
+"%1$d of %2$d masternodes cancelled their vote on %3$@." = "%1$d of %2$d masternodes cancelled their vote on %3$@.";
+
+/* Voting */
+"%1$d of %2$d masternodes voted to approve %3$@." = "%1$d of %2$d masternodes voted to approve %3$@.";
+
+/* Voting */
+"%1$d of %2$d masternodes voted to block %3$@." = "%1$d of %2$d masternodes voted to block %3$@.";
+
 /* No comment provided by engineer. */
 "%@ (payout address)" = "%@ (adresse de paiement)";
 
@@ -124,6 +133,9 @@
 /* No comment provided by engineer. */
 "%@ · Claimable %@ DASH" = "%@ · Réclamable %@ DASH";
 
+/* Voting: filter type, then the duplicates switch */
+"%@ · only duplicates" = "%@ · only duplicates";
+
 /* No comment provided by engineer. */
 "%@ · Platform balance" = "%@ · Solde Platform";
 
@@ -138,9 +150,6 @@
 
 /* SPV diagnostics */
 "%d could not be reached" = "%d could not be reached";
-
-/* DashConnect expiry presets: a number of days */
-"%ld days" = "%ld days";
 
 /* SPV diagnostics */
 "%d finished" = "%d finished";
@@ -166,11 +175,20 @@
 /* Wallet accounts — address pool */
 "%d used" = "%d used";
 
+/* Voting */
+"%d usernames" = "%d usernames";
+
+/* Voting: Quick voting sheet */
+"%d usernames are skipped" = "%d usernames are skipped";
+
 /* CoinJoin */
 "%d UTXOs" = "%d UTXOs";
 
 /* Username marketplace: masternode vote tally for one contest row */
 "%d votes" = "%d voix";
+
+/* Voting */
+"%d votes will be cast" = "%d votes will be cast";
 
 /* SPV diagnostics */
 "%d waiting for the network" = "%d waiting for the network";
@@ -183,6 +201,9 @@
 
 /* PIN attempts before temporary lockout */
 "%ld attempt(s) remaining" = "%ld attempt(s) remaining";
+
+/* DashConnect expiry presets: a number of days */
+"%ld days" = "%ld days";
 
 /* Dash DEX */
 "%ld sec" = "%ld sec";
@@ -228,6 +249,9 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "1 tDash" = "1 tDash";
+
+/* Voting */
+"1 vote will be cast" = "1 vote will be cast";
 
 /* Recovery phrase length */
 "12 words is the standard. 24 words is longer to write down and restore, but significantly harder for advanced computer systems in the distant future to break." = "12 mots, c'est la norme. 24 mots sont plus longs à noter et à restaurer, mais nettement plus difficiles à casser pour les systèmes informatiques avancés d'un futur lointain.";
@@ -277,6 +301,9 @@
 /* No comment provided by engineer. */
 "A key doesn't match this masternode — fix or clear it to continue." = "Une clé ne correspond pas à ce masternode — corrigez-la ou effacez-la pour continuer.";
 
+/* Voting */
+"A masternode of this wallet blocked this name." = "A masternode of this wallet blocked this name.";
+
 /* Usernames */
 "A masternode vote ended with this username locked, so nobody can register it. Choose a different one." = "A masternode vote ended with this username locked, so nobody can register it. Choose a different one.";
 
@@ -297,6 +324,9 @@
 
 /* Core drain recovery */
 "A previous Max transfer is still pending. Check its status or resume it before starting another. Resume pays the address it was started with." = "A previous Max transfer is still pending. Check its status or resume it before starting another. Resume pays the address it was started with.";
+
+/* Send to contact: an earlier payment's broadcast outcome is unknown */
+"A previous payment to this contact could not be confirmed. Don't send it again; wait for wallet synchronization." = "A previous payment to this contact could not be confirmed. Don't send it again; wait for wallet synchronization.";
 
 /* No comment provided by engineer. */
 "A single wallet's recovery phrase cannot authorize deleting multiple different wallets." = "La phrase de récupération d'un seul portefeuille ne peut pas autoriser la suppression de plusieurs portefeuilles différents.";
@@ -426,6 +456,9 @@
 "Add your friends & family" = "Ajoutez vos amis & famille";
 
 /* Voting */
+"Add your voting keys" = "Add your voting keys";
+
+/* Voting */
 "Added %1$d of %2$d masternodes that vote with this key. Enter the key again to add the rest." = "Added %1$d of %2$d masternodes that vote with this key. Enter the key again to add the rest.";
 
 /* Voting */
@@ -518,6 +551,9 @@
 
 /* No comment provided by engineer. */
 "Already tracked." = "Déjà suivi.";
+
+/* Voting */
+"Already voted this way on %@" = "Already voted this way on %@";
 
 /* No comment provided by engineer. */
 "Amount" = "Amount";
@@ -621,9 +657,15 @@
 /* No comment provided by engineer. */
 "Apply" = "Appliquer";
 
+/* DashConnect error */
+"Approval failed" = "Approval failed";
+
 /* DashConnect
    Voting */
 "Approve" = "Approuver";
+
+/* Voting */
+"Approve %@" = "Approve %@";
 
 /* DashConnect */
 "Approve connection to %@?" = "Approve connection to %@?";
@@ -642,6 +684,9 @@
 
 /* Coinbase/Buy Dash/Cancel Order */
 "Are you sure you want to cancel this transaction?" = "Êtes-vous sûr(e) de vouloir annuler cette transaction ?";
+
+/* Voting */
+"As a masternode owner you can vote to approve requested usernames before users will be able to create it." = "As a masternode owner you can vote to approve requested usernames before users will be able to create it.";
 
 /* DashSpend */
 "As soon as your code is generated, it will be displayed here" = "As soon as your code is generated, it will be displayed here";
@@ -689,6 +734,9 @@
 
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "L'authentification n'est pas disponible";
+
+/* BIP70 payment error */
+"Authentication was cancelled." = "Authentication was cancelled.";
 
 /* Location Service Status */
 "Authorized" = "Autorisé";
@@ -809,6 +857,9 @@
 /* SPV diagnostics */
 "Birth height saved — the raised scan floor applies from the next launch." = "Hauteur d'origine enregistrée — le plancher de scan relevé s'applique à partir du prochain démarrage.";
 
+/* Platform Sync Status error */
+"BLAST start failed: %@" = "BLAST start failed: %@";
+
 /* Voting */
 "Block" = "Bloc";
 
@@ -817,6 +868,12 @@
 
 /* No comment provided by engineer. */
 "Block #%d of %d" = "Bloc #%1$d de %2$d";
+
+/* Voting */
+"Block %@" = "Block %@";
+
+/* Voting */
+"Block %@?" = "Block %@?";
 
 /* SPV diagnostics */
 "Block height" = "Block height";
@@ -928,6 +985,12 @@
 /* Buy/Sell */
 "Buy/Sell" = "Acheter/Vendre";
 
+/* Reclassify transactions info screen */
+"by default all transactions to or from your linked accounts (exchanges, staking, etc) will be marked as a transfer." = "by default all transactions to or from your linked accounts (exchanges, staking, etc) will be marked as a transfer.";
+
+/* Reclassify info: sentence start; a tag with the default category follows it */
+"by default will be marked as" = "by default will be marked as";
+
 /* No comment provided by engineer. */
 "Camera is required to scan QR codes." = "Camera is required to scan QR codes.";
 
@@ -936,6 +999,12 @@
 
 /* Username marketplace: join deadline still open — value of the New contenders row */
 "can join until %@" = "peuvent se joindre jusqu'au %@";
+
+/* Voting */
+"Can't filter by links right now" = "Can't filter by links right now";
+
+/* Voting */
+"Can't filter by your votes right now" = "Can't filter by your votes right now";
 
 /* DashPay Contacts */
 "Can't receive contact requests" = "Can't receive contact requests";
@@ -946,6 +1015,9 @@
 /* No comment provided by engineer. */
 "Cancel" = "Annuler";
 
+/* Voting */
+"Cancel approval" = "Cancel approval";
+
 /* Coinbase/Buy Dash/Cancel Order */
 "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "Annuler cette transaction n'annule pas l'ordre de trading. Vous recevrez sous peu des dashs sur votre compte Coinbase.";
 
@@ -954,6 +1026,12 @@
 
 /* Wallets */
 "Cannot remove the last wallet here." = "Cannot remove the last wallet here.";
+
+/* Wallet runtime error */
+"Cannot switch wallet: no wallet with that id is stored on this network." = "Cannot switch wallet: no wallet with that id is stored on this network.";
+
+/* Wallet runtime error */
+"Cannot switch wallet: the current network is not supported." = "Cannot switch wallet: the current network is not supported.";
 
 /* DashSpend */
 "Card number" = "Numéro de carte";
@@ -993,6 +1071,9 @@
 
 /* Username marketplace */
 "Change Price" = "Modifier le prix";
+
+/* Voting */
+"Change the filter or reset it to see every open contest." = "Change the filter or reset it to see every open contest.";
 
 /* DashConnect approve sheet: accessibility */
 "Change the identity funding limit" = "Change the identity funding limit";
@@ -1039,6 +1120,9 @@
 /* Usernames
    Voting */
 "Checking…" = "Vérification…";
+
+/* Coinbase/Payment Methods */
+"Choose Payment Method" = "Choose Payment Method";
 
 /* Recovery phrase selection */
 "Choose Wallet" = "Choisir un portefeuille";
@@ -1103,6 +1187,12 @@
 
 /* CoinJoin */
 "CoinJoin is no longer supported — choose where to move your mixed coins." = "CoinJoin n'est plus pris en charge — choisissez où déplacer vos pièces mélangées.";
+
+/* Send error: CoinJoin move funds */
+"CoinJoin sweep incomplete" = "CoinJoin sweep incomplete";
+
+/* Send error: CoinJoin move funds */
+"CoinJoin sweep produced no transactions" = "CoinJoin sweep produced no transactions";
 
 /* CoinJoin */
 "CoinJoin Withdrawals" = "CoinJoin Withdrawals";
@@ -1274,8 +1364,6 @@
 /* No comment provided by engineer. */
 "Contacts" = "Contacts";
 
-/* Voting */
-
 /* No comment provided by engineer. */
 "Continue" = "Continuer";
 
@@ -1339,6 +1427,12 @@
 /* No comment provided by engineer. */
 "Core chain-locked height" = "Hauteur chain-locked de Core";
 
+/* Core sync (SPV) error */
+"Core SPV cannot restart because the wallet runtime is not running" = "Core SPV cannot restart because the wallet runtime is not running";
+
+/* Core sync (SPV) error */
+"Core SPV was not restarted because a network switch is in progress." = "Core SPV was not restarted because a network switch is in progress.";
+
 /* SPV diagnostics
    Sync Info */
 "Core Sync Status" = "Core Sync Status";
@@ -1348,6 +1442,9 @@
 
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "Les mots incorrects ou manquants n'ont pas pu être retrouvés automatiquement";
+
+/* Voting */
+"Could not check how many votes this node has left." = "Could not check how many votes this node has left.";
 
 /* Platform to Shielded preflight failed */
 "Could not check the available Platform balance. Sync and try again." = "Could not check the available Platform balance. Sync and try again.";
@@ -1379,6 +1476,9 @@
 /* Wallets */
 "Could not generate a recovery phrase." = "Could not generate a recovery phrase.";
 
+/* DashConnect */
+"Could not generate an ephemeral DashConnect key." = "Could not generate an ephemeral DashConnect key.";
+
 /* SwapKit */
 "Could not load Buy Dash options — please check your connection and try again" = "Could not load Buy Dash options — please check your connection and try again";
 
@@ -1387,6 +1487,9 @@
 
 /* DashSpend */
 "Could not load your gift card" = "Impossible de charger votre carte-cadeau";
+
+/* DashPay identity key error */
+"Could not persist new key to the iOS Keychain — aborted before broadcast." = "Could not persist new key to the iOS Keychain — aborted before broadcast.";
 
 /* Usernames */
 "Could not publish the link" = "Could not publish the link";
@@ -1403,6 +1506,9 @@
 /* Wallets */
 "Could not rename this wallet." = "Could not rename this wallet.";
 
+/* Send error: CoinJoin move funds */
+"Could not resolve a destination address for the CoinJoin sweep" = "Could not resolve a destination address for the CoinJoin sweep";
+
 /* InternalTransfer */
 "Could not resolve a destination Platform Payment address" = "Could not resolve a destination Platform Payment address";
 
@@ -1414,6 +1520,9 @@
 
 /* SPV diagnostics */
 "Couldn't authenticate: %@" = "Couldn't authenticate: %@";
+
+/* Voting */
+"Couldn't check for a link" = "Couldn't check for a link";
 
 /* No comment provided by engineer. */
 "Couldn't check which keys of this evonode are in the wallet." = "Impossible de vérifier quelles clés de cet evonode se trouvent dans le portefeuille.";
@@ -1432,6 +1541,9 @@
 
 /* Swap: Select coin, the coin list failed to load */
 "Couldn't load the coin list. Please try again, or try a different network." = "Couldn't load the coin list. Please try again, or try a different network.";
+
+/* Voting */
+"Couldn't load the contests" = "Couldn't load the contests";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "Impossible d'effectuer le paiement";
@@ -1454,11 +1566,20 @@
 /* No comment provided by engineer. */
 "Couldn't reach the evonode." = "Impossible de joindre l'evonode.";
 
+/* Voting */
+"Couldn't read your vote history." = "Couldn't read your vote history.";
+
 /* Wallet preparation failure */
 "Couldn't read your wallet keys" = "Couldn't read your wallet keys";
 
+/* Voting */
+"Couldn't refresh the list." = "Couldn't refresh the list.";
+
 /* Remove never-accepted transaction: failure title */
 "Couldn't remove the transaction" = "Impossible de supprimer la transaction";
+
+/* Voting */
+"Couldn't tell which request came first." = "Couldn't tell which request came first.";
 
 /* DashPay Invitations */
 "Couldn't verify the invitation. Check your connection and try again." = "Couldn't verify the invitation. Check your connection and try again.";
@@ -1487,23 +1608,11 @@
 /* DashPay Invitations */
 "Create a username and say goodbye to numerical addresses" = "Create a username and say goodbye to numerical addresses";
 
-/* DashConnect approve sheet */
-"The wallet could not read the network's time to check this connection's expiry. Try again." = "The wallet could not read the network's time to check this connection's expiry. Try again.";
-
-/* DashConnect: a token purchase arrived and the username lookup failed */
-"This wallet could not check your username. Ask the app again." = "This wallet could not check your username. Ask the app again.";
-
 /* DashConnect: a token purchase arrived while the wallet has no username */
 "Create a username to buy tokens in apps, then ask the app again." = "Create a username to buy tokens in apps, then ask the app again.";
 
 /* DashConnect: a request arrived while the wallet has no username */
 "Create a username to connect apps, then ask the app for a new code." = "Create a username to connect apps, then ask the app for a new code.";
-
-/* DashConnect: a request arrived before the wallet read the identity's usernames */
-"The wallet is still reading your username. Try again in a moment." = "The wallet is still reading your username. Try again in a moment.";
-
-/* DashConnect approve sheet: Platform refused the approval for the identity's balance */
-"Your identity's balance is too low for this connection. Top up, then ask the app for a new code." = "Your identity's balance is too low for this connection. Top up, then ask the app for a new code.";
 
 /* Create DashSpend account */
 "Create account" = "Créer le compte";
@@ -1552,6 +1661,9 @@
 
 /* Explore Dash: Filters */
 "CTX gift cards" = "Cartes-cadeau CTX";
+
+/* Evonode status: epoch blocks error */
+"Current epoch unavailable: %@" = "Current epoch unavailable: %@";
 
 /* Explore Dash: Filters */
 "Current location" = "Localisation actuelle";
@@ -1638,8 +1750,38 @@
 /* Identity top-up stopped after successful unshield */
 "Dash was moved to your Platform balance. Finish the top-up from Platform after reviewing the amount again." = "Dash was moved to your Platform balance. Finish the top-up from Platform after reviewing the amount again.";
 
+/* DashConnect: the placeholder is the network name */
+"DashConnect cannot publish from this wallet: the app runtime is on %@, which does not match the network DashConnect is configured for." = "DashConnect cannot publish from this wallet: the app runtime is on %@, which does not match the network DashConnect is configured for.";
+
 /* DashConnect */
 "DashConnect login is not yet available on mainnet" = "DashConnect login is not yet available on mainnet";
+
+/* DashConnect */
+"DashConnect requires a registered Platform identity." = "DashConnect requires a registered Platform identity.";
+
+/* DashConnect */
+"DashConnect requires an active SwiftDashSDK wallet." = "DashConnect requires an active SwiftDashSDK wallet.";
+
+/* DashConnect */
+"DashConnect requires the SwiftDashSDK runtime." = "DashConnect requires the SwiftDashSDK runtime.";
+
+/* DashConnect */
+"DashConnect requires the SwiftData model container." = "DashConnect requires the SwiftData model container.";
+
+/* DashConnect QR code error */
+"DashConnect URIs must include a non-empty Base58 body." = "DashConnect URIs must include a non-empty Base58 body.";
+
+/* DashConnect QR code error */
+"DashConnect URIs must include query parameters." = "DashConnect URIs must include query parameters.";
+
+/* DashConnect QR code error */
+"DashConnect URIs must include the network query item." = "DashConnect URIs must include the network query item.";
+
+/* DashConnect QR code error */
+"DashConnect URIs must include the version query item." = "DashConnect URIs must include the version query item.";
+
+/* DashConnect QR code error */
+"DashConnect URIs must not contain // authority separators." = "DashConnect URIs must not contain // authority separators.";
 
 /* DashPay */
 "DashPay" = "DashPay";
@@ -1665,11 +1807,20 @@
 /* No comment provided by engineer. */
 "DashPay Upgrade Fee" = "Frais de mise à jour DashPay";
 
+/* Explore: merchant list error */
+"Database connection is unavailable." = "Database connection is unavailable.";
+
 /* No comment provided by engineer. */
 "Date" = "Date";
 
 /* History group header for restored shielded operations whose original date is not recoverable */
 "Date unknown" = "Date inconnue";
+
+/* No comment provided by engineer. */
+"Date: New to old" = "Date : récente à ancienne";
+
+/* No comment provided by engineer. */
+"Date: Old to new" = "Date : ancienne à récente";
 
 /* Voting */
 "Deadline unknown" = "Échéance inconnue";
@@ -1707,6 +1858,9 @@
 /* Identities: BIP-32 style derivation path of this key */
 "Derivation path" = "Chemin de dérivation";
 
+/* DashPay identity key error */
+"Derived key didn't match its public key — refusing to broadcast." = "Derived key didn't match its public key — refusing to broadcast.";
+
 /* No comment provided by engineer. */
 "Destination address (optional)" = "Adresse de destination (facultative)";
 
@@ -1728,8 +1882,14 @@
 /* Wallet network */
 "Devnet" = "Devnet";
 
+/* Wallet setup error */
+"Devnet configuration changed while the runtime was starting" = "Devnet configuration changed while the runtime was starting";
+
 /* Devnet */
 "Devnet is not configured. Enter a Quorum URL and Devnet Name in Settings → Devnet Settings first." = "Devnet is not configured. Enter a Quorum URL and Devnet Name in Settings → Devnet Settings first.";
+
+/* Core sync (SPV) error */
+"Devnet is not configured. Set the Quorum URL and Devnet Name in Settings → Devnet Settings." = "Devnet is not configured. Set the Quorum URL and Devnet Name in Settings → Devnet Settings.";
 
 /* Devnet */
 "Devnet Name" = "Devnet Name";
@@ -1958,6 +2118,9 @@
 /* Enter verification code */
 "Enter verification code" = "Entrez le code de vérification";
 
+/* Voting */
+"Enter voting key" = "Saisissez votre clé de vote";
+
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "Tapez ci-dessous votre code 2FA";
 
@@ -2039,17 +2202,44 @@
 /* No comment provided by engineer. */
 "Failed" = "Échec";
 
+/* Sync diagnostics */
+"Failed to clear persisted platform-address state: %@" = "Failed to clear persisted platform-address state: %@";
+
+/* Core sync (SPV) error */
+"Failed to create SPV data directory: %@" = "Failed to create SPV data directory: %@";
+
+/* DashConnect: the placeholder is a system status code */
+"Failed to generate secure random bytes for DashConnect (%d)." = "Failed to generate secure random bytes for DashConnect (%d).";
+
+/* Device time check error */
+"Failed to get network time" = "Failed to get network time";
+
+/* Core sync (SPV) error */
+"Failed to import wallet: %@" = "Failed to import wallet: %@";
+
 /* No comment provided by engineer. */
 "Failed to load barcode" = "Échec de chargement du code-barres";
 
+/* Sync diagnostics */
+"Failed to reset platform-address sync state: %@" = "Failed to reset platform-address sync state: %@";
+
 /* Coinbase */
 "Failed to start auth session" = "Impossible de démarrer la session d'authentification";
+
+/* Core sync (SPV) error */
+"Failed to start SPV client: %@" = "Failed to start SPV client: %@";
+
+/* Core sync (SPV) error */
+"Failed to stop SPV client: %@" = "Failed to stop SPV client: %@";
 
 /* Buy Sell Portal */
 "Failed to sync" = "Impossible de synchroniser";
 
 /* Explore Dash */
 "Failed to sync on" = "Échec de la synchronisation";
+
+/* Explore: merchant database update error */
+"Failed to unzip archive" = "Failed to unzip archive";
 
 /* No comment provided by engineer. */
 "Fee" = "Frais";
@@ -2092,6 +2282,9 @@
 
 /* No comment provided by engineer. */
 "Filter transactions" = "Filtrer les transactions";
+
+/* No comment provided by engineer. */
+"Filtered by" = "Filtré par";
 
 /* Explore Dash/Merchants/Filters */
 "Filtered by:" = "Filtré par :";
@@ -2140,6 +2333,9 @@
 
 /* InternalTransfer recovery */
 "Finish shielded transfer" = "Finish shielded transfer";
+
+/* Voting */
+"Finish syncing." = "Finish syncing.";
 
 /* DashConnect: a second request arrived during key registration */
 "Finish the current DashConnect request first, then try again." = "Finish the current DashConnect request first, then try again.";
@@ -2299,6 +2495,9 @@
 /* No comment provided by engineer. */
 "Gift card" = "Carte-cadeau";
 
+/* DashSpend */
+"Gift card amount is out of range" = "Gift card amount is out of range";
+
 /* No comment provided by engineer. */
 "Gift card details are unavailable. Please contact support." = "Gift card details are unavailable. Please contact support.";
 
@@ -2333,6 +2532,9 @@
 "Grant GPS permissions so we can show you locations near you." = "Autorisez les permissions GPS pour que nous puissions vous afficher les endroits proches.";
 
 /* No comment provided by engineer. */
+"Has blocked votes" = "A des votes de blocage";
+
+/* No comment provided by engineer. */
 "Have complete control and customize your wallet based on your needs" = "Gardez un contrôle complet et personnalisez votre portefeuille selon vos besoins";
 
 /* No comment provided by engineer. */
@@ -2358,6 +2560,12 @@
 
 /* DashPay Contacts */
 "Hide Contact" = "Hide Contact";
+
+/* Voting */
+"Hide requests for %@" = "Hide requests for %@";
+
+/* Voting */
+"Hides the requests for this name" = "Hides the requests for this name";
 
 /* adjective, security level */
 "High" = "Élevé";
@@ -2413,8 +2621,17 @@
 /* No comment provided by engineer. */
 "I got it" = "I got it";
 
+/* No comment provided by engineer. */
+"I have approved" = "J'ai approuvé";
+
+/* No comment provided by engineer. */
+"I have not voted" = "Je n'ai pas voté";
+
 /* Wallets */
 "I have written down my recovery phrase." = "I have written down my recovery phrase.";
+
+/* Reclassify transactions info screen */
+"I Understand" = "I Understand";
 
 /* No comment provided by engineer. */
 "I wrote it down" = "Je l'ai écrite sur papier";
@@ -2470,6 +2687,12 @@
 /* Sync diagnostics */
 "Idle" = "Idle";
 
+/* Voting */
+"If block wins when voting ends, nobody can ever request this username again." = "If block wins when voting ends, nobody can ever request this username again.";
+
+/* Voting */
+"If block wins when voting ends, nobody can ever request this username again. You can cancel your vote until voting ends." = "If block wins when voting ends, nobody can ever request this username again. You can cancel your vote until voting ends.";
+
 /* Usernames */
 "If enough of the network determines that a username is inappropriate, they can block it" = "If enough of the network determines that a username is inappropriate, they can block it";
 
@@ -2515,6 +2738,9 @@
 /* Wallets */
 "Import Wallet" = "Import Wallet";
 
+/* Core sync (SPV) error */
+"Imported wallet ID mismatch" = "Imported wallet ID mismatch";
+
 /* Wallets */
 "Importing wallet…" = "Importing wallet…";
 
@@ -2550,6 +2776,9 @@
 
 /* No comment provided by engineer. */
 "Income" = "Revenu";
+
+/* Reclassify transactions info screen */
+"Incoming transactions" = "Incoming transactions";
 
 /* DashSpend */
 "Increase quantity" = "Increase quantity";
@@ -2614,17 +2843,44 @@
 /* No comment provided by engineer. */
 "Invalid email or password." = "Adresse e-mail ou mot de passe invalide.";
 
+/* DashSpend */
+"Invalid gift card amount" = "Invalid gift card amount";
+
 /* Invalid Amount Input */
 "Invalid Input" = "Entrée invalide";
 
 /* DashPay Invitations */
 "Invalid Invitation" = "Invalid Invitation";
 
+/* DashSpend */
+"Invalid payment amount" = "Invalid payment amount";
+
 /* No comment provided by engineer. */
 "Invalid Payment Request" = "Demande de paiement invalide";
 
+/* DashSpend */
+"Invalid payment request" = "Invalid payment request";
+
+/* BIP70 payment error */
+"Invalid payment request URL." = "Invalid payment request URL.";
+
+/* DashSpend */
+"Invalid payment URI format" = "Invalid payment URI format";
+
+/* DashSpend */
+"Invalid payment URI: missing address" = "Invalid payment URI: missing address";
+
 /* No comment provided by engineer. */
 "Invalid QR Code" = "QR-code non valide";
+
+/* DashConnect error */
+"Invalid QR payload" = "Invalid QR payload";
+
+/* BIP70 payment error: why the certificate is not trusted */
+"Invalid signature" = "Invalid signature";
+
+/* Send failed on malformed input; the argument is the reason */
+"Invalid transaction input: %@" = "Invalid transaction input: %@";
 
 /* CTXSpend error */
 "Invalid verification code. Please try again." = "Code de vérification non valide. Veuillez réessayer.";
@@ -2709,6 +2965,9 @@
 
 /* Identities: the public key bytes */
 "Key data" = "Données de la clé";
+
+/* Wallet runtime error */
+"Key migration has not completed." = "Key migration has not completed.";
 
 /* Masternodes */
 "Key ownership" = "Propriété de la clé";
@@ -2810,6 +3069,9 @@
 /* Dash Service Overview */
 "Link Coinbase Account" = "Lier au compte Coinbase";
 
+/* Voting */
+"Link included" = "Link included";
+
 /* No comment provided by engineer. */
 "Link Uphold Account" = "Lier un compte Uphold";
 
@@ -2824,6 +3086,9 @@
 
 /* Dash Service Overview */
 "Link your Uphold account" = "Liez votre compte Uphold";
+
+/* Reclassify transactions info screen */
+"Linked accounts" = "Linked accounts";
 
 /* Username marketplace: confirm listing button */
 "List For Sale" = "Mettre en vente";
@@ -2961,6 +3226,9 @@
 /* Usernames */
 "Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link below" = "Publiez le texte ci-dessus sur un réseau social connu ou une plateforme de messagerie pour vérifier que vous êtes le propriétaire véritable du nom d'utilisateur demandé, et collez le lien ci-dessous";
 
+/* Coinbase authorization limit info screen */
+"Make sure you set up the right authorization limit on Coinbase" = "Make sure you set up the right authorization limit on Coinbase";
+
 /* Usernames */
 "Make your username private" = "Make your username private";
 
@@ -3011,6 +3279,9 @@
 
 /* No comment provided by engineer. */
 "Masternode Update" = "Mettre à jour un masternode";
+
+/* Voting */
+"Masternode voting key" = "Masternode voting key";
 
 /* Tools menu */
 "Masternodes" = "Masternodes";
@@ -3097,6 +3368,9 @@
 /* Transaction type: coinbase/masternode mining reward */
 "Mining Reward" = "Mining Reward";
 
+/* BIP70 payment error: why the certificate is not trusted */
+"Missing certificate" = "Missing certificate";
+
 /* No comment provided by engineer. */
 "Missing prepared transaction" = "Missing prepared transaction";
 
@@ -3105,6 +3379,15 @@
 
 /* CoinJoin */
 "Mixing Transactions" = "Transactions de mélange";
+
+/* Wallet setup error */
+"Mnemonic persistence failed: %@" = "Mnemonic persistence failed: %@";
+
+/* Wallet setup error */
+"Mnemonic round-trip mismatch" = "Mnemonic round-trip mismatch";
+
+/* Wallet setup error */
+"ModelContainer setup failed: %@" = "ModelContainer setup failed: %@";
 
 /* No comment provided by engineer. */
 "More" = "Plus";
@@ -3270,6 +3553,9 @@
 /* Coinbase */
 "No cash account found" = "Aucun compte cash détecté";
 
+/* Send error: CoinJoin move funds */
+"No CoinJoin balance to move" = "No CoinJoin balance to move";
+
 /* Maya */
 "No coins found" = "No coins found";
 
@@ -3285,11 +3571,17 @@
 /* SwapKit */
 "No deposit address returned by SwapKit" = "No deposit address returned by SwapKit";
 
+/* Core sync (SPV) error: the devnet Quorum URL */
+"No devnet peers could be discovered from %@/masternodes. Check the Quorum URL and that the devnet is reachable." = "No devnet peers could be discovered from %@/masternodes. Check the Quorum URL and that the devnet is reachable.";
+
 /* Log export */
 "No diagnostic logs were found on this device. Logs are written from the next launch onward." = "Aucun journal de diagnostic n'a été trouvé sur cet appareil. Les journaux sont écrits à partir du prochain démarrage.";
 
 /* DashConnect: an empty tab */
 "No disconnected connections" = "No disconnected connections";
+
+/* DashConnect */
+"No enabled AUTHENTICATION ECDSA key is available for this identity." = "No enabled AUTHENTICATION ECDSA key is available for this identity.";
 
 /* DashConnect: an empty tab */
 "No expired connections" = "No expired connections";
@@ -3351,17 +3643,26 @@
 /* Voting */
 "No open contests" = "Aucun litige en cours";
 
+/* DashSpend */
+"No payment information received" = "No payment information received";
+
 /* Coinbase/Buy Dash */
 "No payment methods" = "Aucun mode de paiement";
 
 /* Coinbase/Buy Dash */
 "No payment methods found" = "Aucun mode de paiement trouvé";
 
+/* DashSpend */
+"No payment URL received" = "No payment URL received";
+
 /* DashPay Contacts */
 "No payments with this contact yet" = "No payments with this contact yet";
 
 /* SPV diagnostics */
 "No peers connected" = "No peers connected";
+
+/* Wallet setup error */
+"No persisted SwiftDashSDK wallet found for %@" = "No persisted SwiftDashSDK wallet found for %@";
 
 /* SPV diagnostics */
 "No persisted wallet row found for the bound wallet." = "Aucune entrée de portefeuille enregistrée n'a été trouvée pour le portefeuille lié.";
@@ -3402,6 +3703,9 @@
 /* DashPay Contacts */
 "No usernames found" = "No usernames found";
 
+/* Voting */
+"No usernames match this filter" = "No usernames match this filter";
+
 /* Username marketplace: empty owned list */
 "No usernames on this identity yet. Find one to buy or register on the Find Names tab." = "Aucun nom d'utilisateur sur cette identité pour l'instant. Trouvez-en un à acheter ou à enregistrer dans l'onglet « Trouver des noms ».";
 
@@ -3410,6 +3714,12 @@
 
 /* Username marketplace: contest with zero masternode votes so far */
 "No votes cast yet" = "Aucune voix exprimée pour l'instant";
+
+/* No comment provided by engineer. */
+"No votes left" = "Plus de vote possible";
+
+/* Voting */
+"No votes to filter by" = "No votes to filter by";
 
 /* Security — reset wallet */
 "No Wallet Found" = "No Wallet Found";
@@ -3450,6 +3760,9 @@
 /* Sync diagnostics */
 "None found" = "None found";
 
+/* Voting */
+"None of the filtered usernames can get a vote." = "None of the filtered usernames can get a vote.";
+
 /* Core Max has nothing confirmed to spend */
 "None of your %@ DASH is spendable yet — it is still confirming." = "None of your %@ DASH is spendable yet — it is still confirming.";
 
@@ -3485,6 +3798,9 @@
 
 /* Sync diagnostics */
 "Not bound" = "Not bound";
+
+/* Voting */
+"Not cast — %@" = "Not cast — %@";
 
 /* Masternodes */
 "Not checked yet" = "Pas encore vérifié";
@@ -3539,6 +3855,12 @@
 
 /* DashPay: dismiss button of the enable success sheet */
 "Not now" = "Pas maintenant";
+
+/* Voting */
+"Not provided" = "Not provided";
+
+/* Voting */
+"Not provided – %@" = "Not provided – %@";
 
 /* No comment provided by engineer. */
 "Not reported" = "Non communiqué";
@@ -3600,6 +3922,9 @@
 /* Voting */
 "One masternode that votes with this key is registered to a wallet in this app and was not added. Its voting key cannot be added separately." = "One masternode that votes with this key is registered to a wallet in this app and was not added. Its voting key cannot be added separately.";
 
+/* Voting */
+"One vote left" = "One vote left";
+
 /* Online */
 "Online" = "En ligne";
 
@@ -3608,6 +3933,15 @@
 
 /* Transaction filter */
 "Only" = "Only";
+
+/* DashConnect QR code error */
+"Only DashConnect URI version 1 is supported." = "Only DashConnect URI version 1 is supported.";
+
+/* No comment provided by engineer. */
+"Only duplicates" = "Doublons seulement";
+
+/* No comment provided by engineer. */
+"Only requests with links" = "Requêtes avec liens seulement";
 
 /* Wallet preparation support */
 "Only the app and system versions, time and error codes. No wallet data, keys or full logs. Nothing is sent automatically." = "Only the app and system versions, time and error codes. No wallet data, keys or full logs. Nothing is sent automatically.";
@@ -3623,6 +3957,12 @@
 
 /* Security — reset wallet */
 "Open Wallets" = "Open Wallets";
+
+/* Voting */
+"Opens the request details" = "Opens the request details";
+
+/* Voting */
+"Opens the requests for this name" = "Opens the requests for this name";
 
 /* Masternodes */
 "Operator" = "Opérateur";
@@ -3653,6 +3993,9 @@
 
 /* DashConnect App Connect v2 */
 "Other identities can add their own contracts to this group, and the key will act as you in those too." = "Other identities can add their own contracts to this group, and the key will act as you in those too.";
+
+/* Reclassify transactions info screen */
+"Outgoing transactions" = "Outgoing transactions";
 
 /* Masternodes */
 "Outpoint" = "Outpoint";
@@ -3768,11 +4111,17 @@
 /* Raw transaction */
 "Payload version" = "Payload version";
 
+/* BIP70 payment error */
+"Payment failed" = "Payment failed";
+
 /* Coinbase/Buy Dash */
 "Payment method" = "Méthode de paiement";
 
 /* CTXSpend error */
 "Payment processing error: %@" = "Erreur de traitement du paiement : %@";
+
+/* DashSpend */
+"Payment URI unavailable" = "Payment URI unavailable";
 
 /* DashPay Contacts */
 "Payments" = "Payments";
@@ -3834,6 +4183,12 @@
 /* No comment provided by engineer. */
 "Phone" = "Téléphone";
 
+/* Explore Dash */
+"Physical Merchant" = "Physical Merchant";
+
+/* Explore Dash */
+"Physical Merchant, Online" = "Physical Merchant, Online";
+
 /* Avatar upload has no configured credentials */
 "Picture upload is not available in this build." = "Picture upload is not available in this build.";
 
@@ -3854,6 +4209,9 @@
 
 /* Send screen destination type */
 "Platform address" = "Adresse Platform";
+
+/* Sync diagnostics */
+"Platform address sync failed" = "Platform address sync failed";
 
 /* Wallet accounts */
 "Platform Addresses" = "Platform Addresses";
@@ -3897,8 +4255,14 @@
 /* Masternodes */
 "Platform payments don't identify the sender. This payment was recorded when the wallet noticed the balance change — it may have arrived earlier." = "Les paiements Platform n'identifient pas l'expéditeur. Ce paiement a été enregistré lorsque le portefeuille a constaté le changement de solde — il a pu arriver plus tôt.";
 
+/* Wallet setup error */
+"Platform SDK does not support %@" = "Platform SDK does not support %@";
+
 /* Masternodes */
 "Platform SDK not ready" = "SDK Platform pas prêt";
+
+/* Sync diagnostics */
+"Platform sync could not be started" = "Platform sync could not be started";
 
 /* Sync diagnostics */
 "Platform sync is not running" = "Platform sync is not running";
@@ -3917,6 +4281,12 @@
 
 /* Coinbase/Buy Dash */
 "Platform → Shielded" = "Platform → Blindé";
+
+/* Platform Sync Status error: the SDK call that failed, then its error */
+"platformAddressWallet failed: %@" = "platformAddressWallet failed: %@";
+
+/* Wallet setup error */
+"PlatformWalletManager configure failed: %@" = "PlatformWalletManager configure failed: %@";
 
 /* Coinbase/Buy Dash */
 "Please add a payment method on Coinbase" = "Veuillez ajouter un mode de paiement sur Coinbase";
@@ -3989,6 +4359,9 @@
 
 /* No comment provided by engineer. */
 "Powered by" = "Fourni par";
+
+/* Integration Entry Point */
+"Powered by Topper" = "Powered by Topper";
 
 /* Buy Sell Dash */
 "Powered by Uphold" = "Fourni par Uphold";
@@ -4068,6 +4441,9 @@
 /* DashPay */
 "Profile, %@" = "Profile, %@";
 
+/* Evonode status: epoch blocks error */
+"Proposer list too long to scan" = "Proposer list too long to scan";
+
 /* Balance info sheet section */
 "Pros" = "Avantages";
 
@@ -4098,6 +4474,9 @@
 /* No comment provided by engineer. */
 "Public URL" = "URL publique";
 
+/* Voting */
+"Pull down to try again." = "Pull down to try again.";
+
 /* Coinbase/Buy Dash */
 "Purchase" = "Achat";
 
@@ -4121,6 +4500,24 @@
 
 /* No comment provided by engineer. */
 "Quick Receive" = "Réception rapide";
+
+/* Voting */
+"Quick voting" = "Quick voting";
+
+/* Voting */
+"Quick voting did not start: another vote is still being sent." = "Quick voting did not start: another vote is still being sent.";
+
+/* Voting */
+"Quick voting done" = "Quick voting done";
+
+/* Voting */
+"Quick voting partly done" = "Quick voting partly done";
+
+/* Voting */
+"Quick voting stopped before this vote was sent." = "Quick voting stopped before this vote was sent.";
+
+/* Voting */
+"Quick voting… %1$d of %2$d done" = "Quick voting… %1$d of %2$d done";
 
 /* Devnet */
 "Quorum URL" = "Quorum URL";
@@ -4208,6 +4605,9 @@
 
 /* Username marketplace: transfer recipient placeholder */
 "Recipient username or identity ID" = "Nom d'utilisateur ou ID d'identité du destinataire";
+
+/* Reclassify transactions info screen */
+"Reclassify Your Transactions" = "Reclassify Your Transactions";
 
 /* Identity top-up sheet — shielded source note */
 "Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins." = "Recommandé : un transfert en deux étapes via votre propre adresse Platform empêche que votre identité soit liée à vos pièces transparentes.";
@@ -4317,6 +4717,9 @@
 /* Usernames — the app closed before the registration finished */
 "Registration was interrupted" = "Registration was interrupted";
 
+/* Wallet network */
+"Regtest" = "Regtest";
+
 /* Usernames — Home row title after a username request was refused */
 "Rejected – %@" = "Rejected – %@";
 
@@ -4416,6 +4819,9 @@
 /* Username marketplace: search row for a contested label this identity already requested */
 "Requested by you — the network vote is in progress" = "Demandé par vous — le vote du réseau est en cours";
 
+/* BIP70 payment error: the network name the request asks for */
+"Requested network \"%@\" is not currently in use." = "Requested network \"%@\" is not currently in use.";
+
 /* Username marketplace: contested request not yet indexed by Platform */
 "Requested — waiting for the network vote" = "Demandé — en attente du vote du réseau";
 
@@ -4445,6 +4851,9 @@
 
 /* Explore Dash: Filters */
 "Reset Filters" = "Réinitialiser des filtres";
+
+/* Voting */
+"Reset filters" = "Reset filters";
 
 /* No comment provided by engineer. */
 "Reset PIN" = "Reset PIN";
@@ -4524,6 +4933,9 @@
 /* AboutDash */
 "Review app" = "Review app";
 
+/* Voting */
+"Review the posting below to verify the ownership of this username" = "Review the posting below to verify the ownership of this username";
+
 /* Masternode unban */
 "Review transaction first" = "Review transaction first";
 
@@ -4595,6 +5007,9 @@
 
 /* Raw transaction inspector */
 "Script type" = "Type de script";
+
+/* Wallet setup error */
+"SDK init failed: %@" = "SDK init failed: %@";
 
 /* DashPay */
 "SDK is not initialized" = "SDK is not initialized";
@@ -4790,6 +5205,9 @@
 /* 4 out of 4 in the Sending Animation */
 "Sending..." = "Envoi en cours...";
 
+/* Voting */
+"Sending…" = "Sending…";
+
 /* Send confirm sheet: Core drain */
 "Sends all eligible Transparent funds" = "Sends all eligible Transparent funds";
 
@@ -4839,6 +5257,9 @@
 /* No comment provided by engineer. */
 "Set PIN" = "Choisir un code PIN";
 
+/* Voting */
+"Set up voting to filter by your votes." = "Set up voting to filter by your votes.";
+
 /* No comment provided by engineer. */
 "Set Your PIN" = "Choisir votre code PIN";
 
@@ -4885,6 +5306,9 @@
 "Shielded Spend" = "Dépense blindée";
 
 /* Sync diagnostics */
+"Shielded sync failed" = "Shielded sync failed";
+
+/* Sync diagnostics */
 "Shielded Sync Info" = "Shielded Sync Info";
 
 /* Sync diagnostics */
@@ -4908,6 +5332,9 @@
 /* Explore Dash */
 "Show all locations" = "Voir tous les endroits";
 
+/* Voting */
+"Show all usernames" = "Show all usernames";
+
 /* Send screen: reveal the funding balance */
 "Show balance" = "Show balance";
 
@@ -4922,6 +5349,9 @@
 
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "Voir la phase de récupération";
+
+/* Voting */
+"Show requests for %@" = "Show requests for %@";
 
 /* Alert title */
 "Sign in required" = "Connexion requise";
@@ -4977,17 +5407,32 @@
 /* DashConnect: after a disconnect that left keys another app of the same developer may hold */
 "Some keys on your identity (%d) may belong to another app of the same developer, so this wallet left them on. Each one shows on its own row in Connections; disconnect it there if you no longer need it." = "Some keys on your identity (%d) may belong to another app of the same developer, so this wallet left them on. Each one shows on its own row in Connections; disconnect it there if you no longer need it.";
 
+/* Voting */
+"Some links couldn't be checked. Apply the filter again to retry, or reset it." = "Some links couldn't be checked. Apply the filter again to retry, or reset it.";
+
+/* Voting */
+"Some masternodes may be missing." = "Some masternodes may be missing.";
+
 /* CoinJoin */
 "Some of your CoinJoin funds were moved. Please try again to move the rest." = "Some of your CoinJoin funds were moved. Please try again to move the rest.";
 
 /* Voting */
 "Some of your masternodes may be missing from this list — the wallet could not read your full voting-key pool. Finish syncing and reopen this screen." = "Certains de vos masternodes sont peut-être absents de cette liste — le portefeuille n'a pas pu lire l'ensemble de vos clés de vote. Terminez la synchronisation et rouvrez cet écran.";
 
+/* Voting */
+"Some of your masternodes may be missing from this list." = "Some of your masternodes may be missing from this list.";
+
 /* CoinJoin */
 "Some of your mixed coins were prepared. Please try again to move them to your Shielded balance." = "Some of your mixed coins were prepared. Please try again to move them to your Shielded balance.";
 
 /* Usernames */
 "Some usernames can be blocked" = "Certains noms d'utilisateur peuvent être bloqués";
+
+/* Voting */
+"Some votes were not cast or their result is not confirmed:" = "Some votes were not cast or their result is not confirmed:";
+
+/* Voting */
+"Some votes were not cast. These usernames were not voted for:" = "Some votes were not cast. These usernames were not voted for:";
 
 /* No comment provided by engineer. */
 "Something went wrong" = "Il y a eu un problème";
@@ -5038,8 +5483,17 @@
    Sync diagnostics - why the Clear button is disabled */
 "Start Platform sync before clearing its local state" = "Start Platform sync before clearing its local state";
 
+/* Platform Sync Status error: the SDK call that failed, then its error */
+"startPlatformAddressSync failed after clear: %@" = "startPlatformAddressSync failed after clear: %@";
+
+/* Platform Sync Status error: the SDK call that failed, then its error */
+"startPlatformAddressSync failed: %@" = "startPlatformAddressSync failed: %@";
+
 /* No comment provided by engineer. */
 "State sync" = "Synchronisation d'état";
+
+/* DashConnect error */
+"State transitions are not supported by the mock." = "State transitions are not supported by the mock.";
 
 /* Transaction details */
 "Status" = "Statut";
@@ -5136,6 +5590,12 @@
 /* Dash DEX / dex_error_unavailable */
 "Swaps are temporarily unavailable. Please try again later." = "Swaps are temporarily unavailable. Please try again later.";
 
+/* Wallet runtime error */
+"SwiftDashSDK runtime does not support %@" = "SwiftDashSDK runtime does not support %@";
+
+/* Wallet setup error */
+"SwiftDashSDKHost received an invalid mnemonic" = "SwiftDashSDKHost received an invalid mnemonic";
+
 /* Wallets */
 "Switch" = "Switch";
 
@@ -5161,6 +5621,9 @@
    Wallets */
 "Switch Wallet" = "Switch Wallet";
 
+/* Wallet runtime error */
+"Switching networks failed: the runtime did not start." = "Switching networks failed: the runtime did not start.";
+
 /* Network switch overlay */
 "Switching to %@ failed" = "Switching to %@ failed";
 
@@ -5169,6 +5632,9 @@
 
 /* Wallets */
 "Switching wallet failed" = "Switching wallet failed";
+
+/* Wallet runtime error */
+"Switching wallet failed: the new wallet could not be loaded." = "Switching wallet failed: the new wallet could not be loaded.";
 
 /* Wallets */
 "Switching wallet…" = "Switching wallet…";
@@ -5206,6 +5672,9 @@
 /* About screen tech info: SPV state */
 "syncing" = "syncing";
 
+/* SPV diagnostics: state with the percentage done */
+"Syncing %@" = "Syncing %@";
+
 /* No comment provided by engineer. */
 "Syncing Balance" = "Synchronisation du solde";
 
@@ -5217,6 +5686,9 @@
 
 /* No comment provided by engineer. */
 "Take a Photo from Camera" = "Prendre une photo";
+
+/* Voting */
+"Takes your vote back" = "Takes your vote back";
 
 /* Enter Address Screen */
 "Tap the address from the clipboard to paste it" = "Touchez l'adresse du presse-papiers pour la coller";
@@ -5335,6 +5807,9 @@
 /* Coinbase Two Factor Auth */
 "The code is incorrect. Please check and try again!" = "Ce code est incorrect. Veuillez vérifier et réessayer !";
 
+/* DashConnect approve sheet: the chosen expiry passed before signing */
+"The connection's expiry passed before the approval was signed." = "The connection's expiry passed before the approval was signed.";
+
 /* Usernames */
 "The contest fee is spent when you submit and is not returned, even if you do not win the name." = "The contest fee is spent when you submit and is not returned, even if you do not win the name.";
 
@@ -5368,6 +5843,30 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "Les dashs ont été déposés avec succès sur votre compte Coinbase. Mais il y a eu un problème lors de leur transfert sur Dash Wallet sur cet appareil.";
 
+/* DashConnect QR code error */
+"The dash-key application label is not valid UTF-8." = "The dash-key application label is not valid UTF-8.";
+
+/* DashConnect QR code error */
+"The dash-key payload contains an invalid compressed secp256k1 point." = "The dash-key payload contains an invalid compressed secp256k1 point.";
+
+/* DashConnect QR code error */
+"The dash-key payload is shorter than the minimum 67-byte format." = "The dash-key payload is shorter than the minimum 67-byte format.";
+
+/* DashConnect QR code error */
+"The dash-key payload label is longer than 64 bytes." = "The dash-key payload label is longer than 64 bytes.";
+
+/* DashConnect QR code error */
+"The dash-key payload label length overruns the payload." = "The dash-key payload label length overruns the payload.";
+
+/* DashConnect QR code error */
+"The dash-key payload version byte is not supported." = "The dash-key payload version byte is not supported.";
+
+/* DashConnect QR code error */
+"The dash-st payload must be non-empty." = "The dash-st payload must be non-empty.";
+
+/* DashConnect */
+"The DashConnect login contract is not available on this network." = "The DashConnect login contract is not available on this network.";
+
 /* Swap */
 "The destination address isn’t valid for %@ (%@). Go back and enter a %@ address." = "The destination address isn’t valid for %1$@ (%2$@). Go back and enter a %3$@ address.";
 
@@ -5379,8 +5878,6 @@
 
 /* DashConnect */
 "The details of this sign-in changed while it was on screen. Check them and approve again." = "The details of this sign-in changed while it was on screen. Check them and approve again.";
-
-"The connection's expiry passed before the approval was signed." = "The connection's expiry passed before the approval was signed.";
 
 /* Devnet */
 "The devnet chain name. It is embedded in the sync user agent (devnet.devnet-<name>) — devnet nodes reject connections without it. Each devnet keeps its own chain state, so naming a different one does not reinterpret this one's history." = "The devnet chain name. It is embedded in the sync user agent (devnet.devnet-<name>) — devnet nodes reject connections without it. Each devnet keeps its own chain state, so naming a different one does not reinterpret this one's history.";
@@ -5424,8 +5921,14 @@
 /* DashPay Invitations */
 "The invitation is still confirming on the network. Try again in a few minutes." = "The invitation is still confirming on the network. Try again in a few minutes.";
 
+/* Voting */
+"The IP address(es) below are associated with this wallet. Tick the ones that should vote." = "The IP address(es) below are associated with this wallet. Tick the ones that should vote.";
+
 /* Usernames: proof-of-identity link visibility */
 "The link is published on Dash Platform with your identity and the name you requested. Anyone can read it, not only masternode owners." = "The link is published on Dash Platform with your identity and the name you requested. Anyone can read it, not only masternode owners.";
+
+/* DashConnect */
+"The loginKeyResponse document on Platform could not be read." = "The loginKeyResponse document on Platform could not be read.";
 
 /* Identities */
 "The main identity can only be chosen from the active wallet" = "L'identité principale ne peut être choisie que dans le portefeuille actif";
@@ -5444,6 +5947,12 @@
 
 /* Usernames */
 "The masternode vote for this name has ended and the result is being finalized. Check back soon." = "Le vote des masternodes pour ce nom est terminé et le résultat est en cours de finalisation. Revenez bientôt.";
+
+/* BIP70 payment error */
+"The merchant did not acknowledge the payment." = "The merchant did not acknowledge the payment.";
+
+/* BIP70 payment error */
+"The merchant did not confirm receiving the payment." = "The merchant did not confirm receiving the payment.";
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "Le montant minimal que vous pouvez envoyer est %@";
@@ -5465,6 +5974,9 @@
 
 /* DashConnect */
 "The network answered with an older copy of your identity. Try again in a moment." = "The network answered with an older copy of your identity. Try again in a moment.";
+
+/* Core sync (SPV) error */
+"The network changed while Core SPV was starting." = "The network changed while Core SPV was starting.";
 
 /* DashConnect App Connect v2 */
 "The network has not caught up with your identity's keys yet. Try again in a moment." = "The network has not caught up with your identity's keys yet. Try again in a moment.";
@@ -5490,6 +6002,12 @@
 /* Masternode unban */
 "The operator key is missing from the keychain — re-add it and try again." = "The operator key is missing from the keychain — re-add it and try again.";
 
+/* Voting */
+"The other %d votes were not cast." = "The other %d votes were not cast.";
+
+/* Voting */
+"The other vote was not cast." = "The other vote was not cast.";
+
 /* Usernames */
 "The owner of this username has listed it for %1$@ Dash. Purchases over %2$@ Dash must be made from the Username Marketplace — choose another username for now; you can decide on buying this one later." = "Le propriétaire de ce nom d'utilisateur l'a mis en vente pour %1$@ Dash. Les achats de plus de %2$@ Dash doivent se faire depuis la Place de marché des noms d'utilisateur — choisissez un autre nom d'utilisateur pour l'instant ; vous pourrez décider plus tard d'acheter celui-ci.";
 
@@ -5499,8 +6017,20 @@
 /* Usernames */
 "The owner of this username has listed it in the Username Marketplace for %@ Dash. You can buy it there instead." = "Le propriétaire de ce nom d'utilisateur l'a mis en vente sur la Place de marché des noms d'utilisateur pour %@ Dash. Vous pouvez l'y acheter à la place.";
 
+/* BIP70 payment error */
+"The payment acknowledgement could not be read." = "The payment acknowledgement could not be read.";
+
 /* Send to contact: the prepared payment went stale before broadcast */
 "The payment changed while you were confirming, so it wasn't sent. Nothing left your wallet. Please try again." = "The payment changed while you were confirming, so it wasn't sent. Nothing left your wallet. Please try again.";
+
+/* BIP70 payment error */
+"The payment request could not be read." = "The payment request could not be read.";
+
+/* BIP70 payment error */
+"The payment request is missing a payment URL." = "The payment request is missing a payment URL.";
+
+/* BIP70 payment error */
+"The payment request is too large." = "The payment request is too large.";
 
 /* Send: Core drain recovery success */
 "The pending Max transfer completed." = "The pending Max transfer completed.";
@@ -5535,6 +6065,12 @@
 /* DashConnect App Connect v2 */
 "The request names a Dash Platform system contract as the app." = "The request names a Dash Platform system contract as the app.";
 
+/* DashConnect */
+"The scanned token purchase names a token that does not belong to the contract and position it would buy from." = "The scanned token purchase names a token that does not belong to the contract and position it would buy from.";
+
+/* DashConnect */
+"The scanned token purchase targets a different identity." = "The scanned token purchase targets a different identity.";
+
 /* Username marketplace */
 "The seller changed the price before your purchase was accepted. Review the new price and try again." = "Le vendeur a modifié le prix avant que votre achat ne soit accepté. Vérifiez le nouveau prix et réessayez.";
 
@@ -5556,6 +6092,9 @@
 /* Dash DEX */
 "The status of your %@ swap could not be confirmed" = "The status of your %@ swap could not be confirmed";
 
+/* Wallet runtime error */
+"The stored wallet could not be read." = "The stored wallet could not be read.";
+
 /* SwapKit */
 "The swap service isn't responding. Please try again later." = "The swap service isn't responding. Please try again later.";
 
@@ -5567,6 +6106,9 @@
 
 /* Send failed before any bytes reached the network */
 "The transaction wasn't sent, so nothing left your wallet. You can try again." = "The transaction wasn't sent, so nothing left your wallet. You can try again.";
+
+/* Send: broadcast rejected; the argument is the SDK's reason */
+"The transaction wasn't sent. You can try again. %@" = "The transaction wasn't sent. You can try again. %@";
 
 /* No comment provided by engineer. */
 "The transfer could take up to 10 minutes" = "The transfer could take up to 10 minutes";
@@ -5583,6 +6125,39 @@
 /* Masternode unban */
 "The unban was sent but its result couldn't be confirmed. Don't retry — check the masternode's status again in a few minutes." = "The unban was sent but its result couldn't be confirmed. Don't retry — check the masternode's status again in a few minutes.";
 
+/* DashConnect QR code error */
+"The URI body is longer than the DashConnect payload format allows." = "The URI body is longer than the DashConnect payload format allows.";
+
+/* DashConnect QR code error */
+"The URI body is not valid Base58." = "The URI body is not valid Base58.";
+
+/* DashConnect QR code error */
+"The URI contains an unknown DashConnect network code." = "The URI contains an unknown DashConnect network code.";
+
+/* DashConnect QR code error */
+"The URI does not use the dash-key scheme." = "The URI does not use the dash-key scheme.";
+
+/* DashConnect QR code error */
+"The URI does not use the dash-st scheme." = "The URI does not use the dash-st scheme.";
+
+/* DashConnect QR code error */
+"The URI query is longer than DashConnect allows." = "The URI query is longer than DashConnect allows.";
+
+/* Voting */
+"The vote was not cast. Check your connection and try again." = "The vote was not cast. Check your connection and try again.";
+
+/* Voting */
+"The vote was not cast. Please try again." = "The vote was not cast. Please try again.";
+
+/* Voting */
+"The vote was not cast. This masternode already holds this vote." = "The vote was not cast. This masternode already holds this vote.";
+
+/* Voting */
+"The vote was not cast. This voting key does not belong to an active masternode." = "The vote was not cast. This voting key does not belong to an active masternode.";
+
+/* Voting */
+"The vote was not cast. Voting on this name has closed." = "The vote was not cast. Voting on this name has closed.";
+
 /* Usernames */
 "The voting gave this username to someone else. Please try again with a different username." = "The voting gave this username to someone else. Please try again with a different username.";
 
@@ -5595,14 +6170,17 @@
 /* DashConnect */
 "The wallet could not check whether this sign-in was already answered. Try again." = "The wallet could not check whether this sign-in was already answered. Try again.";
 
-/* DashConnect token purchase */
-"The wallet could not check your DashPay username. Open the link again." = "The wallet could not check your DashPay username. Open the link again.";
+/* DashConnect approve sheet */
+"The wallet could not read the network's time to check this connection's expiry. Try again." = "The wallet could not read the network's time to check this connection's expiry. Try again.";
 
 /* DashConnect App Connect v2 */
 "The wallet could not read your identity's encryption key for this app from the network. Try again." = "The wallet could not read your identity's encryption key for this app from the network. Try again.";
 
 /* Wallet preparation */
 "The wallet data on this device could not be reset. Try again or contact support for help." = "The wallet data on this device could not be reset. Try again or contact support for help.";
+
+/* Database error */
+"The wallet database could not be opened." = "The wallet database could not be opened.";
 
 /* Remove never-accepted transaction: confirmation body */
 "The wallet first checks a block explorer. A transaction known to the network — whether it is waiting in the mempool or already included in a block — is never removed. If the transaction isn't found, it is deleted from this wallet on this device, and the coins it was trying to spend become available again. The wallet then rescans recent blocks as a safety check. Nothing is sent to the network." = "Le portefeuille consulte d'abord un explorateur de blocs. Une transaction connue du réseau — qu'elle attende dans le mempool ou figure déjà dans un bloc — n'est jamais supprimée. Si la transaction est introuvable, elle est supprimée de ce portefeuille sur cet appareil, et les pièces qu'elle tentait de dépenser redeviennent disponibles. Le portefeuille rescanne ensuite les blocs récents par sécurité. Rien n'est envoyé au réseau.";
@@ -5616,8 +6194,14 @@
 /* Refused while the wallet reloads after a removed transaction */
 "The wallet is reloading after a transaction was removed. Try again in a moment, or restart the app if it never finishes." = "The wallet is reloading after a transaction was removed. Try again in a moment, or restart the app if it never finishes.";
 
+/* DashConnect: a request arrived before the wallet read the identity's usernames */
+"The wallet is still reading your username. Try again in a moment." = "The wallet is still reading your username. Try again in a moment.";
+
 /* Wallets */
 "The wallet is still stored on this device. Please try again." = "The wallet is still stored on this device. Please try again.";
+
+/* BIP70 payment error */
+"The wallet isn't ready yet. Please try again in a moment." = "The wallet isn't ready yet. Please try again in a moment.";
 
 /* Wallets */
 "The wallet manager is not available. Please try again." = "The wallet manager is not available. Please try again.";
@@ -5666,6 +6250,10 @@
 
 /* Coinbase */
 "There was an error, please try again later" = "Il y a eu une erreur, veuillez réessayer ultérieurement";
+
+/* Reclassify transactions info screen
+   Reclassify transactions: where to change the tax category screen */
+"These classifications will be reflected on the CSV export that can be used for import into tax reporting services." = "These classifications will be reflected on the CSV export that can be used for import into tax reporting services.";
 
 /* Identity → Platform credit transfer */
 "These credits move to your Platform balance and are ready to spend right away." = "These credits move to your Platform balance and are ready to spend right away.";
@@ -5745,6 +6333,10 @@
 /* DashPay Contacts */
 "This contact's payment details couldn't be set up. Ask them to send you a new contact request." = "This contact's payment details couldn't be set up. Ask them to send you a new contact request.";
 
+/* DashConnect error: the QR code's network name, then the wallet's
+   DashConnect: the placeholders are network names */
+"This DashConnect QR is for %1$@, but this wallet currently supports %2$@ only." = "This DashConnect QR is for %1$@, but this wallet currently supports %2$@ only.";
+
 /* DashConnect expiry date picker: the picked date was refused */
 "This date has passed or is too far away. Pick another one." = "This date has passed or is too far away. Pick another one.";
 
@@ -5789,6 +6381,9 @@
 
 /* DashPay Contacts */
 "This is you" = "This is you";
+
+/* Voting: Quick voting */
+"This is your last vote for some of these usernames. After it, you cannot vote on them again." = "This is your last vote for some of these usernames. After it, you cannot vote on them again.";
 
 /* Identities */
 "This is your main identity" = "Ceci est votre identité principale";
@@ -5850,6 +6445,15 @@
 /* Voting */
 "This node will no longer vote from this wallet. You can add its voting key again at any time." = "This node will no longer vote from this wallet. You can add its voting key again at any time.";
 
+/* BIP70 payment error */
+"This payment is already being processed." = "This payment is already being processed.";
+
+/* BIP70 payment error */
+"This payment request has expired." = "This payment request has expired.";
+
+/* BIP70 payment error */
+"This payment request uses an unsupported output type." = "This payment request uses an unsupported output type.";
+
 /* No comment provided by engineer. */
 "This permanently removes all wallets, private keys, and recovery phrases stored by this app on this device. They can only be restored from backups. This cannot be undone." = "Cette action supprime définitivement tous les portefeuilles, clés privées et phrases de récupération stockés par cette application sur cet appareil. Ils ne pourront être restaurés qu'à partir de sauvegardes. C'est irréversible.";
 
@@ -5858,6 +6462,9 @@
 
 /* Username marketplace: listing price exceeds the representable maximum */
 "This price is too high to list." = "Ce prix est trop élevé pour être mis en vente.";
+
+/* DashConnect error */
+"This QR code is not a DashConnect QR code." = "This QR code is not a DashConnect QR code.";
 
 /* Receive screen */
 "This QR contains the specified amount" = "This QR contains the specified amount";
@@ -5946,6 +6553,9 @@
 /* DashConnect */
 "This wallet could not check what this sign-in would give the app." = "This wallet could not check what this sign-in would give the app.";
 
+/* DashConnect: a token purchase arrived and the username lookup failed */
+"This wallet could not check your username. Ask the app again." = "This wallet could not check your username. Ask the app again.";
+
 /* Voting */
 "This wallet could not derive the voting key for this node." = "Ce portefeuille n'a pas pu dériver la clé de vote de ce nœud.";
 
@@ -5969,6 +6579,9 @@
 
 /* Asset-lock retry: identity top-up with no identity */
 "This wallet has no identity to top up." = "Ce portefeuille n'a aucune identité à recharger.";
+
+/* Voting */
+"This wallet has no masternode voting keys, so it has no votes to filter by." = "This wallet has no masternode voting keys, so it has no votes to filter by.";
 
 /* Usernames */
 "This wallet has no Platform identity yet." = "This wallet has no Platform identity yet.";
@@ -5999,6 +6612,9 @@
 
 /* DashConnect */
 "This wallet's copy of your identity is out of date, so it cannot confirm the app's key was turned off. Try again later." = "This wallet's copy of your identity is out of date, so it cannot confirm the app's key was turned off. Try again later.";
+
+/* Voting */
+"This wallet's masternode voting keys aren't available right now, so it has no votes to filter by." = "This wallet's masternode voting keys aren't available right now, so it has no votes to filter by.";
 
 /* No comment provided by engineer. */
 "This withdrawal is signed with the evonode's owner key. Dash Platform only lets the owner key withdraw to the registered payout address, so the destination can't be changed here. To withdraw to another address, use the wallet that holds the payout address key." = "Ce retrait est signé avec la clé de propriétaire de l'evonode. Dash Platform n'autorise la clé de propriétaire à retirer que vers l'adresse de paiement enregistrée : la destination ne peut donc pas être modifiée ici. Pour retirer vers une autre adresse, utilisez le portefeuille qui détient la clé de l'adresse de paiement.";
@@ -6140,6 +6756,9 @@
 
 /* No comment provided by engineer. */
 "Transaction status unknown" = "Transaction status unknown";
+
+/* Send refused because the transaction already went out */
+"Transaction was already broadcast or is being broadcast" = "Transaction was already broadcast or is being broadcast";
 
 /* No comment provided by engineer. */
 "Transactions" = "Transactions";
@@ -6293,6 +6912,9 @@
 /* Dash DEX */
 "Unable to load rate data" = "Unable to load rate data";
 
+/* Tax report export error */
+"Unable to locate document directory" = "Unable to locate document directory";
+
 /* Swap */
 "Unable to refresh quote. Please try again." = "Unable to refresh quote. Please try again.";
 
@@ -6323,11 +6945,23 @@
 /* Masternode unban */
 "Unbanning broadcasts a provider update signed with the operator key, re-asserting the service address shown above. The masternode returns to the valid list within a few blocks." = "Unbanning broadcasts a provider update signed with the operator key, re-asserting the service address shown above. The masternode returns to the valid list within a few blocks.";
 
+/* SPV sync peer type */
+"Unclassified" = "Unclassified";
+
 /* SPV diagnostics */
 "Unconfirmed now" = "Non confirmées actuellement";
 
 /* SPV diagnostics */
 "Unconfirmed Transactions" = "Transactions non confirmées";
+
+/* Evonode status: epoch blocks error */
+"Unexpected proposer tally format" = "Unexpected proposer tally format";
+
+/* BIP70 payment error: the payment server's host name */
+"Unexpected response from %@." = "Unexpected response from %@.";
+
+/* BIP70 payment error */
+"Unexpected response from the payment server." = "Unexpected response from the payment server.";
 
 /* SPV diagnostics */
 "Unfinished Transfers" = "Unfinished Transfers";
@@ -6359,8 +6993,20 @@
 /* No comment provided by engineer. */
 "Unshielded" = "Non blindé";
 
+/* BIP70 payment error: why the certificate is not trusted */
+"Unsigned request" = "Unsigned request";
+
+/* BIP70 payment error: why the certificate is not trusted */
+"Unsupported signature type" = "Unsupported signature type";
+
 /* No comment provided by engineer. */
 "Unsupported URL" = "URL non compatible";
+
+/* BIP70 payment error: why the certificate is not trusted */
+"Untrusted certificate - %@." = "Untrusted certificate - %@.";
+
+/* BIP70 payment error */
+"Untrusted certificate." = "Untrusted certificate.";
 
 /* No comment provided by engineer. */
 "Up to 10 minutes to spend" = "Up to 10 minutes to spend";
@@ -6453,6 +7099,9 @@
 /* No comment provided by engineer. */
 "Username taken" = "Nom d'utilisateur déjà pris";
 
+/* Voting */
+"Username Voting" = "Username Voting";
+
 /* Usernames */
 "Username was successfully requested" = "La demande de nom d'utilisateur a bien été envoyée";
 
@@ -6540,14 +7189,41 @@
 /* Voting */
 "Vote" = "Voter";
 
+/* Voting */
+"Vote cancelled on %@" = "Vote cancelled on %@";
+
 /* Usernames */
 "Vote ended" = "Vote terminé";
 
 /* Username marketplace: contest voting deadline row */
 "Vote ends" = "Fin du vote";
 
+/* Voting */
+"Vote for all" = "Vote for all";
+
+/* Voting: Quick voting sheet */
+"Vote for all approves %d usernames" = "Vote for all approves %d usernames";
+
+/* Voting: Quick voting sheet */
+"Vote for all approves the linked request for %d usernames" = "Vote for all approves the linked request for %d usernames";
+
 /* Usernames */
 "Vote in progress" = "Vote en cours";
+
+/* Voting */
+"Vote partly cast" = "Vote partly cast";
+
+/* Voting */
+"Vote to approve" = "Vote to approve";
+
+/* Voting */
+"Voted %@ username" = "Voted %@ username";
+
+/* No comment provided by engineer. */
+"Votes: High to low" = "Votes : de haut à bas";
+
+/* No comment provided by engineer. */
+"Votes: Low to high" = "Votes : de bas à haut";
 
 /* No comment provided by engineer. */
 "Voting" = "Vote";
@@ -6558,11 +7234,20 @@
 /* Masternodes */
 "Voting address" = "Adresse de vote";
 
+/* Voting */
+"Voting end unknown" = "Voting end unknown";
+
 /* Usernames */
 "Voting ended with no winner" = "Le vote s'est terminé sans gagnant";
 
 /* Usernames */
 "Voting ends around %@" = "Voting ends around %@";
+
+/* Voting */
+"Voting ends in %d days" = "Voting ends in %d days";
+
+/* Voting */
+"Voting ends today" = "Voting ends today";
 
 /* Usernames */
 "Voting has ended" = "Voting has ended";
@@ -6579,6 +7264,9 @@
 /* Usernames */
 "Voting is only required in some cases" = "Voter est requis seulement dans certains cas";
 
+/* Voting */
+"Voting is paused." = "Voting is paused.";
+
 /* Masternodes */
 "Voting key hash" = "Hachage de la clé de vote";
 
@@ -6586,10 +7274,22 @@
 "Voting keys" = "Clés de vote";
 
 /* Voting */
+"Voting on %@ has ended" = "Voting on %@ has ended";
+
+/* Voting */
 "Voting on “%@” has already closed. Refresh to see the result." = "Le vote sur « %@ » est déjà clos. Actualisez pour voir le résultat.";
 
 /* Voting */
+"Voting options" = "Voting options";
+
+/* Voting */
+"Voting period" = "Voting period";
+
+/* Voting */
 "Voting with" = "Voting with";
+
+/* Voting */
+"Voting with several masternodes at once publicly links them to each other." = "Voting with several masternodes at once publicly links them to each other.";
 
 /* Usernames — Home row title while the network votes on a username */
 "Voting – %@" = "Voting – %@";
@@ -6613,8 +7313,14 @@
 /* No comment provided by engineer. */
 "Waiting for authorization…" = "En attente de l'autorisation…";
 
+/* SPV diagnostics */
+"Waiting for connections" = "Waiting for connections";
+
 /* Usernames */
 "Waiting for Dash Platform" = "En attente de Dash Platform";
+
+/* SPV diagnostics */
+"Waiting for events" = "Waiting for events";
 
 /* Dash DEX */
 "Waiting for the provider" = "Waiting for the provider";
@@ -6630,6 +7336,12 @@
 
 /* SPV diagnostics */
 "Wallet birth height" = "Hauteur d'origine du portefeuille";
+
+/* Wallet setup error */
+"Wallet bootstrap failed: %@" = "Wallet bootstrap failed: %@";
+
+/* Wallet setup error */
+"Wallet creation failed: %@" = "Wallet creation failed: %@";
 
 /* No comment provided by engineer. */
 "Wallet data from a previous installation is still stored on this device. Keep using these wallets, or delete all wallet data and start fresh? Make sure every recovery phrase is backed up before deleting." = "Des données de portefeuille d'une installation précédente sont encore stockées sur cet appareil. Continuer à utiliser ces portefeuilles, ou supprimer toutes les données et repartir de zéro ? Assurez-vous que chaque phrase de récupération est sauvegardée avant de supprimer.";
@@ -6657,6 +7369,12 @@
 
 /* Wallets */
 "Wallet name" = "Wallet name";
+
+/* Send failed because the wallet is not ready; the argument is the reason */
+"Wallet not ready: %@" = "Wallet not ready: %@";
+
+/* Send to contact: wallet or identity not available */
+"Wallet or DashPay identity is not ready" = "Wallet or DashPay identity is not ready";
 
 /* Shielded manual sync requires Core runtime readiness */
 "Wallet sync is not ready. Start wallet sync and try again." = "Wallet sync is not ready. Start wallet sync and try again.";
@@ -6693,6 +7411,9 @@
 
 /* Send dispatched but no network acceptance signal arrived */
 "We couldn't confirm the transaction reached the network. Don't send it again — the wallet keeps trying while it's open, and your balance will update as soon as it goes through." = "We couldn't confirm the transaction reached the network. Don't send it again — the wallet keeps trying while it's open, and your balance will update as soon as it goes through.";
+
+/* Send: broadcast outcome unknown; the argument is the SDK's reason */
+"We couldn't confirm whether the transaction was accepted. Don't send it again; wait for wallet synchronization. %@" = "We couldn't confirm whether the transaction was accepted. Don't send it again; wait for wallet synchronization. %@";
 
 /* Send to contact: the broadcast outcome is unknown */
 "We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history." = "We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history.";
@@ -6754,13 +7475,17 @@
 /* Usernames */
 "What is username voting?" = "Qu'est-ce que le vote des noms d'utilisateur ?";
 
-/* Voting */
-
 /* DashPay FAQ */
 "What's coming next?" = "Quelle est la suite ?";
 
 /* DashPay FAQ */
 "When will contact requests become private?" = "Quand les demandes de contact deviendront-elles privées ?";
+
+/* Reclassify transactions: where to change the tax category screen */
+"Where can I change the tax category?" = "Where can I change the tax category?";
+
+/* Reclassify transactions info screen */
+"Where can I change the transaction type?" = "Where can I change the transaction type?";
 
 /* No comment provided by engineer. */
 "Where to Spend" = "Où dépenser";
@@ -6876,8 +7601,17 @@
 /* No comment provided by engineer. */
 "You can authenticate with Touch ID for payments below" = "Vous pouvez vous authentifier avec Touch ID pour les paiements ci-dessous";
 
+/* Voting */
+"You can block the creation of the usernames that you feel inappropriate." = "You can block the creation of the usernames that you feel inappropriate.";
+
 /* DashSpend */
 "You can buy up to %@ in gift cards per order" = "You can buy up to %@ in gift cards per order";
+
+/* Coinbase authorization limit info screen */
+"You can change it anytime by logging out of your Coinbase account in Dash Wallet and logging back in." = "You can change it anytime by logging out of your Coinbase account in Dash Wallet and logging back in.";
+
+/* Reclassify info: sentence start; a tag with the category to pick follows it */
+"You can change it to" = "You can change it to";
 
 /* No comment provided by engineer. */
 "You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance" = "Vous pouvez continuer à utiliser DashPay pour des paiements, mais vous ne pouvez pas mettre à jour votre profil ou ajouter des contacts sans recharger votre solde de crédits";
@@ -6929,6 +7663,12 @@
 
 /* Voting */
 "You have already entered this masternode key" = "You have already entered this masternode key";
+
+/* Voting */
+"You have already voted for this username 4 times. You can only cast one more vote for this username." = "You have already voted for this username 4 times. You can only cast one more vote for this username.";
+
+/* Voting */
+"You have already voted for this username 5 times. You cannot vote on it any more." = "You have already voted for this username 5 times. You cannot vote on it any more.";
 
 /* No comment provided by engineer. */
 "You have chose \"%@\" as your username. Username cannot be changed once it is registered." = "Vous avez choisi \"%@\" comme nom d'utilisateur. Un nom d'utilisateur ne peut pas être changé une fois enregistré.";
@@ -6983,6 +7723,9 @@
 
 /* Dash DEX */
 "You successfully converted DASH to %@" = "You successfully converted DASH to %@";
+
+/* Voting */
+"You voted" = "You voted";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "Vous devrez également vous déconnecter du site Uphold dans votre navigateur web.";
@@ -7134,6 +7877,9 @@
 /* DashPay FAQ */
 "Your identity needs an encryption and a decryption key so contact requests can be encrypted between you and other users. Enabling adds whichever of them are missing with a single network transaction. This is a one time event." = "Your identity needs an encryption and a decryption key so contact requests can be encrypted between you and other users. Enabling adds whichever of them are missing with a single network transaction. This is a one time event.";
 
+/* DashConnect approve sheet: Platform refused the approval for the identity's balance */
+"Your identity's balance is too low for this connection. Top up, then ask the app for a new code." = "Your identity's balance is too low for this connection. Top up, then ask the app for a new code.";
+
 /* No comment provided by engineer. */
 "Your invitation from %@ has been already claimed" = "Votre invitation par %@ a déjà été réclamée";
 
@@ -7166,6 +7912,9 @@
 
 /* CoinJoin */
 "Your mixed Dash was moved to your spendable balance using these transactions." = "Your mixed Dash was moved to your spendable balance using these transactions.";
+
+/* BIP70 payment error */
+"Your payment was sent, but the network has not confirmed it yet." = "Your payment was sent, but the network has not confirmed it yet.";
 
 /* DashSpend */
 "Your payment was sent, but the network has not confirmed it yet. Your gift card will appear as soon as it is confirmed." = "Votre paiement a été envoyé, mais le réseau ne l'a pas encore confirmé. Votre carte-cadeau apparaîtra dès qu'il sera confirmé.";
@@ -7341,242 +8090,5 @@
 /* DashPay purchase context changed */
 "“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again." = "“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again.";
 
-"%d usernames" = "%d usernames";
-
-"Approve %@" = "Approve %@";
-
-"As a masternode owner you can vote to approve requested usernames before users will be able to create it." = "As a masternode owner you can vote to approve requested usernames before users will be able to create it.";
-
-"Block %@" = "Block %@";
-
-"Opens the requests for this name" = "Opens the requests for this name";
-
-"Show requests for %@" = "Show requests for %@";
-
-"Username Voting" = "Username Voting";
-
-"Voted %@ username" = "Voted %@ username";
-
-"Voting end unknown" = "Voting end unknown";
-
-"Voting ends in %d days" = "Voting ends in %d days";
-
-"Voting ends today" = "Voting ends today";
-
-"Voting options" = "Voting options";
-
-"Couldn't load the contests" = "Couldn't load the contests";
-
-"Pull down to try again." = "Pull down to try again.";
-
-"You voted" = "You voted";
-
-"You can block the creation of the usernames that you feel inappropriate." = "You can block the creation of the usernames that you feel inappropriate.";
-
-/* No comment provided by engineer. */
-"Filtered by" = "Filtré par";
-
-"Reset filters" = "Reset filters";
-
-"No usernames match this filter" = "No usernames match this filter";
-
-"Change the filter or reset it to see every open contest." = "Change the filter or reset it to see every open contest.";
-
-"Can't filter by your votes right now" = "Can't filter by your votes right now";
-
-"This wallet's masternode voting keys aren't available right now, so it has no votes to filter by." = "This wallet's masternode voting keys aren't available right now, so it has no votes to filter by.";
-
-"%@ · only duplicates" = "%@ · only duplicates";
-
-/* No comment provided by engineer. */
-"Date: New to old" = "Date : récente à ancienne";
-
-/* No comment provided by engineer. */
-"Date: Old to new" = "Date : ancienne à récente";
-
-/* No comment provided by engineer. */
-"Has blocked votes" = "A des votes de blocage";
-
-/* No comment provided by engineer. */
-"I have approved" = "J'ai approuvé";
-
-/* No comment provided by engineer. */
-"I have not voted" = "Je n'ai pas voté";
-
-/* No comment provided by engineer. */
-"Only duplicates" = "Doublons seulement";
-
-/* No comment provided by engineer. */
-"Only requests with links" = "Requêtes avec liens seulement";
-
-/* No comment provided by engineer. */
-"Votes: High to low" = "Votes : de haut à bas";
-
-/* No comment provided by engineer. */
-"Votes: Low to high" = "Votes : de bas à haut";
-
-"Could not check how many votes this node has left." = "Could not check how many votes this node has left.";
-
-/* No comment provided by engineer. */
-"No votes left" = "Plus de vote possible";
-
-"The vote was not cast. Check your connection and try again." = "The vote was not cast. Check your connection and try again.";
-
-"The vote was not cast. Voting on this name has closed." = "The vote was not cast. Voting on this name has closed.";
-
-"The vote was not cast. This voting key does not belong to an active masternode." = "The vote was not cast. This voting key does not belong to an active masternode.";
-
-"The vote was not cast. Please try again." = "The vote was not cast. Please try again.";
-"Hide requests for %@" = "Hide requests for %@";
-"Not provided" = "Not provided";
-"Not provided – %@" = "Not provided – %@";
-"Couldn't check for a link" = "Couldn't check for a link";
-"Vote to approve" = "Vote to approve";
-"Cancel approval" = "Cancel approval";
-"Voting period" = "Voting period";
-"Opens the request details" = "Opens the request details";
-"Hides the requests for this name" = "Hides the requests for this name";
-"Takes your vote back" = "Takes your vote back";
-
-/* Voting */
-"Review the posting below to verify the ownership of this username" = "Review the posting below to verify the ownership of this username";
-
-/* Voting */
-"%1$d of %2$d masternodes cancelled their vote on %3$@." = "%1$d of %2$d masternodes cancelled their vote on %3$@.";
-
-/* Voting */
-"%1$d of %2$d masternodes voted to approve %3$@." = "%1$d of %2$d masternodes voted to approve %3$@.";
-
-/* Voting */
-"%1$d of %2$d masternodes voted to block %3$@." = "%1$d of %2$d masternodes voted to block %3$@.";
-
-/* Voting */
-"%d votes will be cast" = "%d votes will be cast";
-
-/* Voting */
-"1 vote will be cast" = "1 vote will be cast";
-
-/* Voting */
-"Add your voting keys" = "Add your voting keys";
-
-/* Voting */
-"Block %@?" = "Block %@?";
-
-/* Voting */
-"Enter voting key" = "Saisissez votre clé de vote";
-
-/* Voting */
-"If block wins when voting ends, nobody can ever request this username again. You can cancel your vote until voting ends." = "If block wins when voting ends, nobody can ever request this username again. You can cancel your vote until voting ends.";
-
-/* Voting */
-"Not cast — %@" = "Not cast — %@";
-
-/* Voting */
-"One vote left" = "One vote left";
-
-/* Voting */
-"Sending…" = "Sending…";
-
-/* Voting */
-"The IP address(es) below are associated with this wallet. Tick the ones that should vote." = "The IP address(es) below are associated with this wallet. Tick the ones that should vote.";
-
-/* Voting */
-"The other %d votes were not cast." = "The other %d votes were not cast.";
-
-/* Voting */
-"The other vote was not cast." = "The other vote was not cast.";
-
-/* Voting */
-"Vote cancelled on %@" = "Vote cancelled on %@";
-
-/* Voting */
-"Vote partly cast" = "Vote partly cast";
-
-/* Voting */
-"Voting on %@ has ended" = "Voting on %@ has ended";
-
-/* Voting */
-"Voting with several masternodes at once publicly links them to each other." = "Voting with several masternodes at once publicly links them to each other.";
-
-/* Voting */
-"You have already voted for this username 4 times. You can only cast one more vote for this username." = "You have already voted for this username 4 times. You can only cast one more vote for this username.";
-
-/* Voting */
-"You have already voted for this username 5 times. You cannot vote on it any more." = "You have already voted for this username 5 times. You cannot vote on it any more.";
-
-"Couldn't refresh the list." = "Couldn't refresh the list.";
-
-"Couldn't read your vote history." = "Couldn't read your vote history.";
-
-"Voting is paused." = "Voting is paused.";
-
-"Some masternodes may be missing." = "Some masternodes may be missing.";
-
-"Finish syncing." = "Finish syncing.";
-
 /* Voting */
 "✓ Voted" = "✓ Voted";
-
-"Set up voting to filter by your votes." = "Set up voting to filter by your votes.";
-
-/* Voting */
-"If block wins when voting ends, nobody can ever request this username again." = "If block wins when voting ends, nobody can ever request this username again.";
-
-/* Voting */
-"Masternode voting key" = "Masternode voting key";
-
-"Already voted this way on %@" = "Already voted this way on %@";
-
-"Link included" = "Link included";
-
-"Can't filter by links right now" = "Can't filter by links right now";
-
-"Some links couldn't be checked. Apply the filter again to retry, or reset it." = "Some links couldn't be checked. Apply the filter again to retry, or reset it.";
-
-"Quick voting stopped before this vote was sent." = "Quick voting stopped before this vote was sent.";
-
-"Quick voting done" = "Quick voting done";
-
-"A masternode of this wallet blocked this name." = "A masternode of this wallet blocked this name.";
-
-"Vote for all" = "Vote for all";
-
-"Quick voting" = "Quick voting";
-
-"None of the filtered usernames can get a vote." = "None of the filtered usernames can get a vote.";
-
-"Vote for all approves %d usernames" = "Vote for all approves %d usernames";
-
-"Vote for all approves the linked request for %d usernames" = "Vote for all approves the linked request for %d usernames";
-
-"%d usernames are skipped" = "%d usernames are skipped";
-
-"This is your last vote for some of these usernames. After it, you cannot vote on them again." = "This is your last vote for some of these usernames. After it, you cannot vote on them again.";
-
-"Show all usernames" = "Show all usernames";
-
-"Quick voting partly done" = "Quick voting partly done";
-
-"Some votes were not cast. These usernames were not voted for:" = "Some votes were not cast. These usernames were not voted for:";
-
-/* Voting */
-"Some votes were not cast or their result is not confirmed:" = "Some votes were not cast or their result is not confirmed:";
-
-"Quick voting… %1$d of %2$d done" = "Quick voting… %1$d of %2$d done";
-
-/* Voting */
-"Couldn't tell which request came first." = "Couldn't tell which request came first.";
-
-/* Voting */
-"Some of your masternodes may be missing from this list." = "Some of your masternodes may be missing from this list.";
-
-/* Voting */
-"Quick voting did not start: another vote is still being sent." = "Quick voting did not start: another vote is still being sent.";
-
-/* Voting */
-"No votes to filter by" = "No votes to filter by";
-
-"This wallet has no masternode voting keys, so it has no votes to filter by." = "This wallet has no masternode voting keys, so it has no votes to filter by.";
-
-/* Voting */
-"The vote was not cast. This masternode already holds this vote." = "The vote was not cast. This masternode already holds this vote.";

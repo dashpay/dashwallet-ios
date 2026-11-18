@@ -115,7 +115,7 @@ struct VoteResultSheet: View {
         guard notCastCount > 0 else { return landedSentence }
         let notCast = notCastCount == 1
             ? NSLocalizedString("The other vote was not cast.", comment: "Voting")
-            : String(format: NSLocalizedString("The other %d votes were not cast.", comment: "Voting"),
+            : String.localizedStringWithFormat(NSLocalizedString("The other %d votes were not cast.", comment: "Voting"),
                      notCastCount)
         return landedSentence + " " + notCast
     }

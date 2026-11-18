@@ -488,8 +488,8 @@ struct ExpirySheet: View {
             VStack(spacing: 2) {
                 ForEach(viewModel.expiryPresets, id: \.days) { preset in
                     RadioButtonRow(
-                        title: String(
-                            format: NSLocalizedString("%ld days", comment: "DashConnect expiry presets: a number of days"),
+                        title: String.localizedStringWithFormat(
+                            NSLocalizedString("%ld days", comment: "DashConnect expiry presets: a number of days"),
                             preset.days),
                         isSelected: preset.isSelected,
                         action: {
