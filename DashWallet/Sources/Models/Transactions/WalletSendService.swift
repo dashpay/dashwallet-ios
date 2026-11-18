@@ -897,12 +897,18 @@ final class WalletSendService: NSObject {
     }
 
     /// Starts a Platform- or Shielded-funded payment to the contact: claims it
-    /// for the whole payment, then checks its lock. Call before anything
-    /// awaits, and `endContactPayment` once the payment has finished.
+    /// for the whole payment, then checks that the recipient still describes
+    /// the active wallet and that the contact is not locked, all before the
+    /// user is asked to authorize. Call before anything awaits, and
+    /// `endContactPayment` once the payment has finished.
     @MainActor
-    func beginContactPayment(_ recipient: ContactPaymentRecipient) throws {
+    func beginContactPayment(
+        _ recipient: ContactPaymentRecipient,
+        validate: @MainActor (ContactPaymentRecipient) throws -> Void = { try WalletSendService.validateContactRecipient($0) }
+    ) throws {
         try claimContactPayment(recipient.identityId)
         do {
+            try validate(recipient)
             try rejectIfContactPaymentOutcomeUnknown(recipient.identityId, recipient: recipient)
         } catch {
             contactPaymentClaims.release(contactIdentityId: recipient.identityId)

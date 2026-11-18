@@ -1609,6 +1609,14 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
         if let contactWithdrawal {
+            // Submit through the runtime the reservation and fee check read,
+            // not one replaced while the PIN or the reservation was pending.
+            guard let current = try? resolveBasicEnvironment(),
+                  current.walletId == env.walletId, current.network == env.network,
+                  current.manager === env.manager else {
+                failUnsubmittedContactWithdrawal(contactWithdrawal, error: CoordinatorError.noWallet)
+                return
+            }
             // And again after the reservation's await, the last point before
             // the SDK spends them.
             // TODO(shielded-withdraw-fee-cap): `shieldedWithdraw` takes no
