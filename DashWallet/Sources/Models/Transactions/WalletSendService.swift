@@ -769,8 +769,7 @@ final class WalletSendService: NSObject {
         for txid in txids {
             CoinJoinWithdrawalStore.shared.record(txid: txid)
         }
-        let hexes = txids.map { Data($0.reversed()).map { String(format: "%02x", $0) }.joined() }
-        logger.info("💸 TXSEND :: recorded \(txids.count, privacy: .public) sweep txid(s) in CoinJoinWithdrawalStore: \(hexes.joined(separator: ","), privacy: .public)")
+        logger.info("💸 TXSEND :: recorded \(txids.count, privacy: .public) sweep txid(s) in CoinJoinWithdrawalStore")
     }
 
     /// An error's type and code for the exported log. Not its description:

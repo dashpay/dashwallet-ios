@@ -172,7 +172,9 @@ final class AssetLockDiagnosticsTests: XCTestCase {
         XCTAssertTrue(text.contains("type=5 (assetLockShieldedAddressTopUp)"))
         // RecoveredFromChain (a restore) is in the section, by number and name.
         XCTAssertTrue(text.contains("status=5 (recoveredFromChain)"))
-        XCTAssertTrue(text.contains("amount=250000000 duffs"))
+        // AC-05: the archive holds no Financial amount, the manifest included.
+        XCTAssertTrue(text.contains("amount=<private>"))
+        XCTAssertFalse(text.contains("250000000"))
         XCTAssertTrue(text.contains("created=2025-08-22T00:00:00Z"))
         XCTAssertTrue(text.contains("updated=2025-08-23T00:00:00Z"))
         XCTAssertTrue(text.contains("inputs=121 outputs=1 size=\(transaction.count) bytes"))

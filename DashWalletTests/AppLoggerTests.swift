@@ -365,6 +365,32 @@ final class AppLoggerTests: XCTestCase {
             line: "INVITE :: status amount=", values: ["status.amountDuffs"])
     }
 
+    /// Written before the coordinator runs, so also for a name that is never
+    /// registered (a cancelled PIN, an abandoned sheet): no username, requested
+    /// or companion, may reach the export from these lines.
+    func testRegistrationBridgeLinesWriteNoUsername() throws {
+        let text = try sourceText(
+            "DashWallet/Sources/Infrastructure/SwiftDashSDK/Identity/DWIdentityRegistrationBridge.swift")
+        let lines = text.split(separator: "\n").filter { $0.contains("IDENT-BRIDGE ::") }
+        XCTAssertGreaterThanOrEqual(lines.count, 5)
+        for line in lines {
+            for name in ["username", "temporary", "temporaryUsername"] {
+                XCTAssertFalse(line.contains("\\(\(name), privacy: .public)"), String(line))
+                XCTAssertFalse(line.contains("\\(\(name) ?? "), String(line))
+            }
+        }
+    }
+
+    /// `logSweepBroadcast` already writes each accepted chunk's txid; the
+    /// bookkeeping line only says how many were recorded.
+    func testSweepRecordLineWritesTheCountOnly() throws {
+        let line = try sourceLine(
+            "DashWallet/Sources/Models/Transactions/WalletSendService.swift",
+            containing: "sweep txid(s) in CoinJoinWithdrawalStore")
+        XCTAssertFalse(line.contains("hexes"), line)
+        XCTAssertFalse(line.contains("joined("), line)
+    }
+
     /// Written only while an SDK wallet is bound, so a source check rather
     /// than an export test.
     func testAssetLockInputLineWritesNoAmount() throws {
@@ -557,7 +583,7 @@ final class AppLoggerTests: XCTestCase {
         return contents.joined(separator: "\n").split(separator: "\n").filter { $0.contains(fragment) }
     }
 
-    /// `run` adds exactly one `expected` line to the exported file, and no
+    /// `run` writes exactly one `expected` line, and no
     /// exported line holds any of `amounts` (each is unique per run, so any
     /// line of the flow that wrote it shows up, not only `expected`).
     private func assertRedactedInExport(
@@ -565,9 +591,14 @@ final class AppLoggerTests: XCTestCase {
         file: StaticString = #filePath, line: UInt = #line,
         run: () async -> Void
     ) async throws {
-        let before = try exportedLines(matching: expected).count
+        // Counted as written, not in the rolling files, where rotation can
+        // drop an older matching line while `run` is going.
+        let capture = CapturingLogger(marker: expected)
+        DDLog.add(capture, with: .all)
         await run()
-        XCTAssertEqual(try exportedLines(matching: expected).count, before + 1, expected, file: file, line: line)
+        DDLog.flushLog()
+        DDLog.remove(capture)
+        XCTAssertEqual(capture.flags.count, 1, expected, file: file, line: line)
         for amount in amounts {
             let leaks = try exportedLines(matching: String(amount))
             XCTAssertTrue(leaks.isEmpty, "\(amount) written: \(leaks)", file: file, line: line)
