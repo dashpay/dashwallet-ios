@@ -6,12 +6,12 @@
 
 ## Context
 
-The functional core — `project()`, the approve, disconnect, supersession and fence plans, the funding-limit split and the state-to-actions table (ADR-0019) — is pure Swift in the iOS app. ADR-0027 notes it could move to a shared implementation for both wallets later; rust-platform-wallet is the candidate home. The Android wallet (dash-wallet #1604) talks to Platform through dashj (`org.dashj.platform`), not through rust-platform-wallet, and differs from iOS on purpose (ADR-0029, ADR-0016; no at-most-once, Not delivered or Refused model).
+The functional core — `project()`, the approve, disconnect, supersession and fence plans, the funding-limit split and the state-to-actions table (ADR-0019) — is pure Swift in the iOS app. ADR-0027 notes it could move to a shared implementation for both wallets later; rust-platform-wallet is the candidate home. The Android wallet (dashpay/dash-wallet#1604) talks to Platform through dashj (`org.dashj.platform`), not through rust-platform-wallet, and differs from iOS on purpose (ADR-0029, ADR-0016; no at-most-once, Not delivered or Refused model).
 
 ## Decision drivers
 
 - No new FFI for this feature; one iOS engineer; Platform PRs run their own multi-week review cycles.
-- Mainnet blockers are still open (the #5715 pin, the fence key on a network, the product owner's sign-off on ADR-0017).
+- Mainnet blockers are still open (the pin of dashpay/platform#5715, the fence key on a network, the product owner's sign-off on ADR-0017).
 - A shared core is worth it only if both wallets consume it and agree on one status semantics.
 
 ## Considered options

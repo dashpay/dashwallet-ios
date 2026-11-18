@@ -15,7 +15,7 @@ user to whatever host the request named.
 
 ## Decision drivers
 
-- The sheet must not claim more about an app than the wallet can check .
+- The sheet must not claim more about an app than the wallet can check.
 - A return must never take the user somewhere they did not choose.
 - No list for someone to keep up to date as apps appear.
 

@@ -27,7 +27,9 @@ timeout was treated differently by each.
    saw: submitted, failed or timed out. It does not read Platform; after an error or a timeout
    `AppConnect.nextStep` routes a key update to `recordRefusal` when Platform refused it by
    consensus (the approval records the refusal on its intent and fails without a read) and to the
-   identity read otherwise, a publish or delete to the response read, and a fence to `.stop`. The
+   identity read otherwise, a publish or delete to the response read, and a fence to `.stop`. In a disconnect `.stop` ends
+   only the fence batches: the disconnect still reads the identity and deletes responses, and the
+   next disconnect turns off the fences left on. The
    approval does the routed read in the same run. A disconnect does not: any key update that is
    not `.done` stops it, the keys of the unconfirmed updates count as still live, and the next
    disconnect reads the identity and carries on. The disconnect path runs its writes and reads
