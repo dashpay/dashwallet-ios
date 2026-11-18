@@ -13,7 +13,8 @@ timeout was treated differently by each.
 ## Decision drivers
 
 - Every write logs its start and its outcome the same way, without the SDK's error text.
-- After an error or a timeout the next read of Platform decides; nothing guesses landed or failed.
+- After an error or a timeout a read of Platform decides; nothing guesses landed or failed. The one
+  exception is a consensus refusal of a key update: it is for good, so it is recorded without a read.
   While the publish of a response is unresolved, a read that finds no response decides nothing
   ([ADR-0052](0052-refuse-response-removed-at-its-one-write-point-while-the-publish-is-unresolved.md));
   a submit that ends after its timeout is only logged, and the next read decides.
@@ -24,10 +25,13 @@ timeout was treated differently by each.
 1. **One executor.** A write is a value (`PlatformWrite`: update keys, publish, fence, delete a
    response) run by `AppConnectWriteExecutor`, which logs it, applies the timeout and returns what it
    saw: submitted, failed or timed out. It does not read Platform; after an error or a timeout
-   `AppConnect.nextStep` routes a key update to the identity read and a publish or delete to the
-   response read, and stops after a fence: nothing more is sent in that run, and the next run reads
-   and carries on. The disconnect path runs its writes and reads through an injected port, so the
-   whole disconnect is tested against a fake Platform.
+   `AppConnect.nextStep` routes a key update to `recordRefusal` when Platform refused it by
+   consensus (the approval records the refusal on its intent and fails without a read) and to the
+   identity read otherwise, a publish or delete to the response read, and a fence to `.stop`. The
+   approval does the routed read in the same run. A disconnect does not: any key update that is
+   not `.done` stops it, the keys of the unconfirmed updates count as still live, and the next
+   disconnect reads the identity and carries on. The disconnect path runs its writes and reads
+   through an injected port, so the whole disconnect is tested against a fake Platform.
 2. **Keep the handling in each call.**
 
 ## Decision outcome
