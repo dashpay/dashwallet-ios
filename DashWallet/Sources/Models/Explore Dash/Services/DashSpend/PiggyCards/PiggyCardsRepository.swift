@@ -345,7 +345,7 @@ class PiggyCardsRepository: DashSpendRepository {
         // Payment info might come from either initial response or status response
         let payTo = orderResponse.payTo ?? orderStatus.data.payTo
         guard let paymentUri = payTo else {
-            throw DashSpendError.customError("No payment information received")
+            throw DashSpendError.customError(NSLocalizedString("No payment information received", comment: "DashSpend"))
         }
         let paymentInfo = try Self.parsePaymentURI(paymentUri, message: orderResponse.payMessage)
 
@@ -456,21 +456,21 @@ class PiggyCardsRepository: DashSpendRepository {
     ) throws -> (address: String, amount: Decimal) {
         // Check for empty or invalid URI
         guard !payTo.isEmpty else {
-            let errorMessage = message ?? "Payment URI unavailable"
+            let errorMessage = message ?? NSLocalizedString("Payment URI unavailable", comment: "DashSpend")
             throw DashSpendError.customError(errorMessage)
         }
 
         // Parse dash: URI format
         // Example: "dash:XsomeAddress?amount=1.234"
         guard payTo.hasPrefix("dash:") else {
-            throw DashSpendError.customError("Invalid payment URI format")
+            throw DashSpendError.customError(NSLocalizedString("Invalid payment URI format", comment: "DashSpend"))
         }
 
         let uriWithoutScheme = String(payTo.dropFirst(5)) // Remove "dash:"
         let components = uriWithoutScheme.split(separator: "?", maxSplits: 1)
 
         guard components.count >= 1 else {
-            throw DashSpendError.customError("Invalid payment URI: missing address")
+            throw DashSpendError.customError(NSLocalizedString("Invalid payment URI: missing address", comment: "DashSpend"))
         }
 
         let address = String(components[0])
@@ -497,7 +497,7 @@ class PiggyCardsRepository: DashSpendRepository {
         }
 
         guard amount > 0 else {
-            throw DashSpendError.customError("Invalid payment amount")
+            throw DashSpendError.customError(NSLocalizedString("Invalid payment amount", comment: "DashSpend"))
         }
 
         return (address: address, amount: amount)

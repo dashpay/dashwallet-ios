@@ -6,18 +6,15 @@ final class DashConnectDataSourceTests: XCTestCase {
     private let contractId = Data(repeating: 0xcd, count: 32)
     private let label = "Login to Yappr"
 
-    func testParseQRRoutesValidDashKeyUriToLoginRequest() async throws {
+    func testParseQRRefusesAVersion1DashKeyUri() async throws {
         let dataSource = MockDashConnectDataSource()
+        let uri = try validKeyUri()
 
-        let result = try await dataSource.parseQR(try validKeyUri())
-
-        guard case let .login(request) = result else {
-            return XCTFail("Expected a login request")
+        await XCTAssertThrowsErrorAsync({
+            try await dataSource.parseQR(uri)
+        }) { error in
+            XCTAssertEqual(error as? AppConnect.Refusal, AppConnect.v1Refusal)
         }
-
-        XCTAssertEqual(request.contractId, contractId)
-        XCTAssertEqual(request.label, label)
-        XCTAssertEqual(request.network, .testnet)
     }
 
     func testParseQRRoutesValidDashStUriToStateTransition() async throws {
@@ -69,13 +66,11 @@ final class DashConnectDataSourceTests: XCTestCase {
     func testParseQRToleratesLeadingAndTrailingWhitespace() async throws {
         let dataSource = MockDashConnectDataSource()
 
-        let result = try await dataSource.parseQR("  \n\(try validKeyUri())\n\t ")
+        let result = try await dataSource.parseQR("  \n\(validStUri())\n\t ")
 
-        guard case let .login(request) = result else {
-            return XCTFail("Expected a login request")
+        guard case .stateTransition = result else {
+            return XCTFail("Expected a state transition request")
         }
-
-        XCTAssertEqual(request.contractId, contractId)
     }
 
     func testHandleStateTransitionThrowsOnMock() async throws {
@@ -85,7 +80,7 @@ final class DashConnectDataSourceTests: XCTestCase {
             try await dataSource.handleStateTransition(.init(
                 transitionBytes: Data([0x01, 0x02, 0x03, 0x04]),
                 network: .testnet
-            ))
+            ), refusesTokenPurchase: false)
         }) { error in
             XCTAssertEqual(error as? DashConnectMockError, .stateTransitionNotSupported)
         }
@@ -100,8 +95,8 @@ final class DashConnectDataSourceTests: XCTestCase {
         XCTAssertEqual(request.existingConnection, existing)
     }
 
-    func testMakeConnectionRequestCarriesApprovedConnection() async {
-        let existing = MockDashConnectDataSource.sample(.approved)
+    func testMakeConnectionRequestCarriesAConfirmingConnection() async {
+        let existing = MockDashConnectDataSource.sample(.confirming)
         let dataSource = MockDashConnectDataSource(initial: [existing])
 
         let request = await dataSource.makeConnectionRequest(from: MockDashConnectDataSource.sampleLoginRequest)
@@ -114,10 +109,10 @@ final class DashConnectDataSourceTests: XCTestCase {
         // makes the assertion fail on any machine whose clock is set earlier.
         let initialDate = Date().addingTimeInterval(-60)
         let existing = DAppConnection(
-            id: MockDashConnectDataSource.sample(.approved).id,
+            id: MockDashConnectDataSource.sample(.confirming).id,
             name: "Yappr",
             url: "yap.pr",
-            status: .approved,
+            status: .confirming,
             updatedAt: initialDate
         )
         let dataSource = MockDashConnectDataSource(initial: [existing])
@@ -205,7 +200,7 @@ final class DashConnectDataSourceTests: XCTestCase {
     }
 }
 
-// MARK: - Branding is keyed on the contract id, not the spoofable label
+// MARK: - The name shown is the label the request gives, with no website
 
 extension DashConnectDataSourceTests {
     /// Yappr's data contract on testnet, taken from a real login QR.
@@ -225,35 +220,18 @@ extension DashConnectDataSourceTests {
         )
     }
 
-    /// A QR may claim any label it likes. Branding must follow the contract id, otherwise
-    /// an attacker's contract renders with Yappr's name and website.
-    func testBrandingIgnoresSpoofedLabelOnUnknownContract() throws {
-        let request = try makeLoginRequest(
-            contractId: Data(repeating: 0x11, count: 32),
-            label: "Login to Yappr"
-        )
-
-        let connectionRequest = ConnectionRequest(loginRequest: request)
-
-        XCTAssertEqual(connectionRequest.appLabel, "Login to Yappr")
-        XCTAssertEqual(
-            connectionRequest.appUrl,
-            "",
-            "An unknown contract must not borrow a known app's website."
-        )
-    }
-
-    /// The real Yappr contract resolves to its branding whatever the label says.
-    func testBrandingResolvesKnownContractRegardlessOfLabel() throws {
+    /// The wallet knows no app of its own: even Yappr's contract shows the
+    /// label its request gives, with no website.
+    func testEveryContractShowsTheLabelItsRequestGives() throws {
         let request = try makeLoginRequest(
             contractId: Self.yapprContractId,
-            label: "anything at all"
+            label: " anything at all "
         )
 
         let connectionRequest = ConnectionRequest(loginRequest: request)
 
         XCTAssertEqual(connectionRequest.appContractId, "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F")
-        XCTAssertEqual(connectionRequest.appLabel, "Yappr")
-        XCTAssertEqual(connectionRequest.appUrl, "yap.pr")
+        XCTAssertEqual(connectionRequest.appLabel, "anything at all")
+        XCTAssertEqual(connectionRequest.appUrl, "")
     }
 }

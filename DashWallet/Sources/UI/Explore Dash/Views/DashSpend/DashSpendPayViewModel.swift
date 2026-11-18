@@ -351,7 +351,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
             // Process the payment using the payment URL
             guard let url = response.paymentUrls?.first?.value else {
-                throw DashSpendError.paymentProcessingError("No payment URL received")
+                throw DashSpendError.paymentProcessingError(NSLocalizedString("No payment URL received", comment: "DashSpend"))
             }
 
             giftCardNote = response.id
@@ -403,7 +403,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             // PiggyCards returns a simple address and amount, not a BIP70 URL
             // Convert DASH amount to satoshis (1 DASH = 100,000,000 satoshis)
             guard let dashAmountInSatoshis = GiftCardPaymentGuard.duffs(fromDashAmount: giftCardInfo.amount) else {
-                throw DashSpendError.paymentProcessingError("Invalid gift card amount")
+                throw DashSpendError.paymentProcessingError(NSLocalizedString("Invalid gift card amount", comment: "DashSpend"))
             }
 
             // Checked here, before sendCoins prompts for the PIN: a refused quote shows no

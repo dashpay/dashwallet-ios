@@ -92,7 +92,7 @@ public final class SendCoinsService: NSObject {
     func payWithDashUrl(url paymentUrlString: String, awaitAcceptance: Bool = true,
                         validate: @escaping (Confirmation) throws -> Void) async throws -> Data {
         guard let uri = BIP70URI(paymentUrlString), let requestURL = uri.r else {
-            throw DashSpendError.paymentProcessingError("Invalid payment request")
+            throw DashSpendError.paymentProcessingError(NSLocalizedString("Invalid payment request", comment: "DashSpend"))
         }
 
         let network = try PaymentNetworkResolver.current()

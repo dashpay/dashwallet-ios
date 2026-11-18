@@ -26,7 +26,8 @@ import UIKit
 import SwiftDashSDK
 
 struct SwiftDashSDKSPVStatusScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
 
     @ObservedObject private var coordinator = SwiftDashSDKSPVCoordinator.shared
 
@@ -91,7 +92,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
     @State private var recoveryResultMessage: String?
     @State private var recoveryResultIsError = false
 
-    init(vc: UINavigationController) {
+    init(vc: UINavigationController?) {
         self.vc = vc
     }
 
@@ -99,7 +100,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             // Back button
             DashUIKit.NavigationBar(leading: {
-                DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
+                DashUIKit.NavigationBarElement.back.button { vc?.popViewController(animated: true) }
             })
 
             // Header
@@ -370,10 +371,10 @@ struct SwiftDashSDKSPVStatusScreen: View {
 
     private func peerBadgeLabel(_ nodeType: PlatformSpvPeerNodeType) -> String {
         switch nodeType {
-        case .evonode:    return "Evonode"
-        case .masternode: return "Masternode"
-        case .normal:     return "Node"
-        case .unknown:    return "Unclassified"
+        case .evonode:    return NSLocalizedString("Evonode", comment: "SPV sync peer type")
+        case .masternode: return NSLocalizedString("Masternode", comment: "SPV sync peer type")
+        case .normal:     return NSLocalizedString("Node", comment: "SPV sync peer type")
+        case .unknown:    return NSLocalizedString("Unclassified", comment: "SPV sync peer type")
         }
     }
 
@@ -703,19 +704,21 @@ struct SwiftDashSDKSPVStatusScreen: View {
     private var stateLabel: String {
         switch coordinator.state {
         case .waitForEvents:
-            return "Waiting for events"
+            return NSLocalizedString("Waiting for events", comment: "SPV diagnostics")
         case .waitingForConnections:
-            return "Waiting for connections"
+            return NSLocalizedString("Waiting for connections", comment: "SPV diagnostics")
         case .syncing:
-            return "Syncing \(percentageText)"
+            return String(
+                format: NSLocalizedString("Syncing %@", comment: "SPV diagnostics: state with the percentage done"),
+                percentageText)
         case .synced:
-            return "Synced"
+            return NSLocalizedString("Synced", comment: "SPV diagnostics")
         case .error:
-            return "Error"
+            return NSLocalizedString("Error", comment: "SPV diagnostics")
         case .idle:
-            return "Idle"
+            return NSLocalizedString("Idle", comment: "SPV diagnostics")
         case .unknown:
-            return "Unknown"
+            return NSLocalizedString("Unknown", comment: "SPV diagnostics")
         }
     }
 

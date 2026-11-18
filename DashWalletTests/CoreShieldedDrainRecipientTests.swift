@@ -2,11 +2,12 @@
 //  CoreShieldedDrainRecipientTests.swift
 //  DashWalletTests
 //
-//  A Core → Shielded Max drain's recipient lives only in the app's durable
-//  marker: the SDK pays whatever address a resume passes. These cover the
-//  decisions that keep an external-recipient drain from ever being resumed to
-//  the wallet's own address, the verdict every drain surface switches on, and
-//  the Send screen's estimate wiring.
+//  A Core → Shielded Max drain's recipient is in the app's durable marker,
+//  and the resume reads it there for a drain row the SDK tracked before it
+//  recorded recipients (`ShieldedResumeRecipientTests` covers the order). These
+//  cover the decisions that keep such an external-recipient drain from ever
+//  being resumed to the wallet's own address, the verdict every drain surface
+//  switches on, and the Send screen's estimate wiring.
 //
 
 import Foundation

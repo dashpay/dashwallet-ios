@@ -278,6 +278,27 @@ jobs:
             -onlyUsePackageVersionsFromResolvedFile \
             ARCHS=arm64 ONLY_ACTIVE_ARCH=YES
 
+      # The app links one SQLite, the one DashSDKFFI builds in. With the
+      # system library on the link line too, the SDK's `sqlite3_*` calls bind
+      # to it, and dyld aborts at launch where it lacks API the SDK calls.
+      - name: The app does not link the system SQLite
+        run: |
+          set -euo pipefail
+          app="$RUNNER_TEMP/DerivedData/Build/Products/Debug-iphonesimulator/dashpay.app"
+          checked=0
+          for binary in "$app/dashpay" "$app"/*.debug.dylib; do
+            [ -f "$binary" ] || continue
+            checked=$((checked + 1))
+            if otool -L "$binary" | grep -q 'libsqlite3'; then
+              echo "::error::$(basename "$binary") links the system libsqlite3; only DashSDKFFI's bundled SQLite may be linked"
+              exit 1
+            fi
+          done
+          if [ "$checked" -eq 0 ]; then
+            echo "::error::no app binary found in $app"
+            exit 1
+          fi
+
       - name: Run DashWalletTests
         run: |
           set -euo pipefail

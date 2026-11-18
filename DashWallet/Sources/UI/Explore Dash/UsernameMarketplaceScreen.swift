@@ -457,7 +457,7 @@ struct UsernameMarketplaceScreen: View {
     @State private var selectedLabel: SelectedMarketplaceLabel?
     @State private var registerCandidate: RegisterCandidate?
 
-    init(vc: UINavigationController) {
+    init(vc: UINavigationController?) {
         onBack = { [weak vc] in
             vc?.popViewController(animated: true)
         }

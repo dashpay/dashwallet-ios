@@ -32,8 +32,77 @@ protocol DashConnectStore {
     func pinned(toWalletIdHex walletIdHex: String) -> any DashConnectStore
 }
 
+/// Deletes what the DashConnect stores keep for one wallet.
+enum DashConnectStores {
+    /// Ends the keys of the grant records that internal TestFlight builds
+    /// wrote; nothing reads or writes them now.
+    private static let legacyGrantsSuffix = ".app-connect-responses.v1"
+
+    /// Held by `removeAll` and `removeAllWallets`, and by `excludingWipe`.
+    private static let wipeLock = NSLock()
+
+    /// Runs `body` while no wipe of the stores runs. A wipe does not take the
+    /// wallet's operation gate, so a read-change-save of the intents runs
+    /// inside this: a wipe then either comes first and the write finds
+    /// nothing, or comes after and removes what it saved. Not reentrant.
+    static func excludingWipe<T>(_ body: () -> T) -> T {
+        wipeLock.lock()
+        defer { wipeLock.unlock() }
+        return body()
+    }
+
+    /// The suffixes a key under `UserDefaultsDashConnectStore.keyPrefix` can
+    /// carry after the wallet segment: none (the row cache), the intents, the
+    /// legacy grants.
+    private static let scopedSuffixes = [
+        "",
+        UserDefaultsAppConnectIntentStore.keySuffix,
+        legacyGrantsSuffix,
+    ]
+
+    /// Removes every key of the wallet, on every network scope. The wallet is
+    /// the segment after the last dot of what follows the prefix: the wallet
+    /// id hex holds no dot, while a devnet name may.
+    static func removeAll(walletIdHex: String, in defaults: UserDefaults) {
+        wipeLock.lock()
+        defer { wipeLock.unlock() }
+        let prefix = UserDefaultsDashConnectStore.keyPrefix
+        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(prefix) {
+            let scoped = key.dropFirst(prefix.count)
+            for suffix in scopedSuffixes {
+                let body = scoped.dropLast(suffix.count)
+                guard scoped.hasSuffix(suffix),
+                      let dot = body.lastIndex(of: "."),
+                      dot > body.startIndex,
+                      body[body.index(after: dot)...] == walletIdHex
+                else { continue }
+                defaults.removeObject(forKey: key)
+                break
+            }
+        }
+    }
+
+    /// Removes every DashConnect key, whatever wallet id or suffix it carries,
+    /// orphans included: the full wipe leaves nothing of the feature behind.
+    static func removeAllWallets(in defaults: UserDefaults) {
+        wipeLock.lock()
+        defer { wipeLock.unlock() }
+        let prefix = UserDefaultsDashConnectStore.keyPrefix
+        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(prefix) {
+            defaults.removeObject(forKey: key)
+        }
+    }
+}
+
 final class UserDefaultsDashConnectStore: DashConnectStore {
+    /// Posted after a save, with the `scopeKey` written under
+    /// (`scopeKeyUserInfoKey`). `PlatformDashConnectDataSource` republishes
+    /// its rows on it, whichever store instance wrote them.
+    static let didSaveNotification = Notification.Name("UserDefaultsDashConnectStore.didSave")
+    static let scopeKeyUserInfoKey = "scopeKey"
+
     private let defaults: UserDefaults
+    private let notificationCenter: NotificationCenter
     private let network: DashConnectNetwork
     private let walletIdHexProvider: () -> String?
     private let devnetNameProvider: () -> String?
@@ -46,9 +115,11 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
         walletIdHexProvider: @escaping () -> String? = {
             WalletEnvironment.activeWalletIdHex as String?
         },
-        devnetNameProvider: @escaping () -> String? = { DevnetConfiguration.devnetName }
+        devnetNameProvider: @escaping () -> String? = { DevnetConfiguration.devnetName },
+        notificationCenter: NotificationCenter = .default
     ) {
         self.defaults = defaults
+        self.notificationCenter = notificationCenter
         self.network = network
         self.walletIdHexProvider = walletIdHexProvider
         self.devnetNameProvider = devnetNameProvider
@@ -80,8 +151,11 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
             .trimmingCharacters(in: .whitespacesAndNewlines),
             !walletScope.isEmpty else { return nil }
         guard let networkScope else { return nil }
-        return "dashconnect.connections.v1.\(networkScope).\(walletScope)"
+        return "\(Self.keyPrefix)\(networkScope).\(walletScope)"
     }
+
+    /// Starts every key this store and the stores scoped from it write.
+    static let keyPrefix = "dashconnect.connections.v1."
 
     var scopeKey: String? { storageKey }
 
@@ -95,7 +169,8 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
             defaults: defaults,
             network: network,
             walletIdHexProvider: { walletIdHex },
-            devnetNameProvider: { devnetName }
+            devnetNameProvider: { devnetName },
+            notificationCenter: notificationCenter
         )
     }
 
@@ -132,16 +207,16 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
                 continue
             }
 
-            restored.append(
-                DAppConnection(
-                    id: row.contractId,
-                    name: row.label,
-                    url: row.url,
-                    status: row.status,
-                    updatedAt: row.updatedAt,
-                    loginKind: row.loginKind ?? .twoQR
-                )
+            var connection = DAppConnection(
+                id: row.contractId,
+                name: row.label,
+                url: row.url,
+                status: row.status,
+                updatedAt: row.updatedAt,
+                seenOn: Set(row.seenOn ?? [])
             )
+            connection.responseMayRemain = row.responseMayRemain ?? false
+            restored.append(connection)
         }
 
         return restored
@@ -155,6 +230,7 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
 
         guard !connections.isEmpty else {
             defaults.removeObject(forKey: storageKey)
+            didSave(under: storageKey)
             return
         }
 
@@ -165,16 +241,23 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
                 url: $0.url,
                 status: $0.status,
                 updatedAt: $0.updatedAt,
-                loginKind: $0.loginKind == .twoQR ? nil : $0.loginKind
+                seenOn: $0.seenOn.isEmpty ? nil : $0.seenOn.sorted(),
+                responseMayRemain: $0.responseMayRemain ? true : nil
             )
         }
 
         do {
             defaults.set(try encoder.encode(rows), forKey: storageKey)
+            didSave(under: storageKey)
         } catch {
             Self.logger.error(
-                "DashConnectStore: failed to encode connections on \(self.network.rawValue, privacy: .public): \(error.localizedDescription, privacy: .public)")
+                "DashConnectStore: failed to encode connections on \(self.network.rawValue, privacy: .public): \(AppConnectWriteExecutor.logDescription(of: error), privacy: .public)")
         }
+    }
+
+    private func didSave(under storageKey: String) {
+        notificationCenter.post(
+            name: Self.didSaveNotification, object: nil, userInfo: [Self.scopeKeyUserInfoKey: storageKey])
     }
 
     /// The storage key embeds the wallet id, a persistent user identifier, so
@@ -191,9 +274,10 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
         let url: String
         let status: ConnectionStatus
         let updatedAt: Date
-        /// Absent for a two-QR connection, which is every row written before
-        /// the one-QR login existed.
-        let loginKind: DashConnectLoginKind?
+        /// Absent in rows written before it was kept.
+        let seenOn: [String]?
+        /// Absent when false, and in rows written before it was kept.
+        let responseMayRemain: Bool?
     }
 
     private static func base58Decode(_ string: String) -> Data? {

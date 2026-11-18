@@ -64,13 +64,13 @@ struct LocalCurrencyCellView: View {
     private var infoSection: some View {
         VStack(alignment: .leading, spacing: Layout.infoSpacing) {
             highlightedText(item.name, query: searchQuery)
-                .font(.subhead.weight(.medium))
+                .font(.system(.subheadline, weight: .medium))
                 .foregroundColor(.dash.primaryText)
                 .lineLimit(1)
 
             if let priceString = item.priceString {
                 Text(priceString)
-                    .font(.footnote)
+                    .font(.system(.footnote))
                     .foregroundColor(.dash.tertiaryText)
                     .lineLimit(1)
             }
@@ -88,7 +88,7 @@ struct LocalCurrencyCellView: View {
 
     private var currencyCodeView: some View {
         highlightedText(item.code, query: searchQuery)
-            .font(.caption1)
+            .font(.system(.caption))
             .foregroundColor(.dash.tertiaryText)
             .lineLimit(1)
     }
@@ -102,18 +102,19 @@ struct LocalCurrencyCellView: View {
             .frame(width: Layout.checkboxSize, height: Layout.checkboxSize)
     }
 
-    /// Builds a SwiftUI Text with the first occurrence of `query` highlighted in dashBlue.
+    /// Builds a SwiftUI Text with every match of each word of `query` highlighted in dashBlue.
     private func highlightedText(_ text: String, query: String) -> Text {
-        let trimmed = query.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty,
-              let range = text.range(of: trimmed, options: .caseInsensitive) else {
-            return Text(text)
-        }
-        let before = String(text[..<range.lowerBound])
-        let match  = String(text[range])
-        let after  = String(text[range.upperBound...])
+        let ranges = LocalCurrencyViewModel.matchRanges(of: query, in: text)
+        guard !ranges.isEmpty else { return Text(text) }
 
-        return Text("\(before)\(Text(match).foregroundColor(.dash.blue))\(after)")
+        var result = Text("")
+        var cursor = text.startIndex
+        for range in ranges {
+            result = result + Text(text[cursor..<range.lowerBound])
+                + Text(text[range]).foregroundColor(.dash.blue)
+            cursor = range.upperBound
+        }
+        return result + Text(text[cursor...])
     }
 }
 

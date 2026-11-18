@@ -43,10 +43,15 @@ struct AssetLockFailureRecord: Codable, Equatable, Sendable {
         "case=\(errorCase) detail=\(detail)"
     }
 
+    /// The detail recorded for `PlatformWalletError.assetLockRecipientMismatch`
+    /// in place of the SDK's text.
+    static let recipientMismatchDetail = "recorded and requested shielded recipients differ"
+
     /// Name the error by its typed case and keep its detail string, unwrapping
     /// the coordinator's `transferFailed` envelope so a Platform rejection
     /// reaches the log as `assetLockTooManyInputs` / `consensusRejection`
-    /// rather than as the envelope's name.
+    /// rather than as the envelope's name. A recipient mismatch keeps its case
+    /// name but records `recipientMismatchDetail` instead of the SDK's text.
     ///
     /// Pure: callable from tests with any `Error`.
     static func describe(_ error: Error, at date: Date = Date()) -> AssetLockFailureRecord {
@@ -62,6 +67,11 @@ struct AssetLockFailureRecord: Codable, Equatable, Sendable {
             var detail = platformError.errorDescription ?? String(describing: platformError)
             if case .consensusRejection(let consensus, _) = platformError {
                 detail = "consensus code=\(consensus.code) kind=\(consensus.kind) \(detail)"
+            }
+            // The SDK's text names both Orchard addresses; the case name says
+            // all a shared log needs.
+            if case .assetLockRecipientMismatch = platformError {
+                detail = Self.recipientMismatchDetail
             }
             if let reason = platformError.failureReason {
                 detail += " reason=\(reason)"
@@ -82,7 +92,7 @@ struct AssetLockFailureRecord: Codable, Equatable, Sendable {
     /// an error that is not an enum: a struct's first child is a stored
     /// property (`URLError._nsError`), and an `NSError`'s description is its
     /// whole `Error Domain=… UserInfo={…}` dump, neither of which names a case.
-    private static func caseName(of error: Error) -> String? {
+    static func caseName(of error: Error) -> String? {
         let mirror = Mirror(reflecting: error)
         guard mirror.displayStyle == .enum else { return nil }
         if let label = mirror.children.first?.label {

@@ -161,7 +161,7 @@ struct DashSpendPayScreen: View {
         }
 
         if showErrorDialog {
-            ModalDialog(
+            LegacyModalDialog(
                 style: .error,
                 icon: .system("exclamationmark.triangle.fill"),
                 heading: errorTitle,
@@ -175,7 +175,7 @@ struct DashSpendPayScreen: View {
         }
 
         if showCustomErrorDialog {
-            ModalDialog(
+            LegacyModalDialog(
                 style: .error,
                 icon: .system("exclamationmark.triangle.fill"),
                 heading: errorTitle,

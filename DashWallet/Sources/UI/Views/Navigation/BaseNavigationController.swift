@@ -115,7 +115,21 @@ class BaseNavigationController: UINavigationController {
     override func pushViewController(_ viewController: UIViewController, animated: Bool) {
         isPushAnimationInProgress = true
 
+        if !viewControllers.isEmpty {
+            hideTabBar(on: viewController)
+        }
         super.pushViewController(viewController, animated: animated)
+    }
+
+    override func setViewControllers(_ viewControllers: [UIViewController], animated: Bool) {
+        viewControllers.dropFirst().forEach(hideTabBar(on:))
+        super.setViewControllers(viewControllers, animated: animated)
+    }
+
+    /// Only a tab's root screen shows the tab bar: every screen stacked on it
+    /// hides the bar, whether or not it sets `hidesBottomBarWhenPushed` itself.
+    private func hideTabBar(on viewController: UIViewController) {
+        viewController.hidesBottomBarWhenPushed = true
     }
 
     override func viewDidLoad() {
@@ -246,6 +260,25 @@ extension UINavigationController {
     func popToViewController<T>(ofType type: T.Type, animated: Bool) {
         if let controller = controller(by: type) {
             popToViewController(controller, animated: animated)
+        }
+    }
+
+    /// Pops the top page once anything presented over the stack (an alert,
+    /// a confirmation dialog) has gone, so the pop never starts while that
+    /// presentation is still being dismissed.
+    func popAfterPresentationEnds(animated: Bool = true) {
+        guard let presented = presentedViewController else {
+            popViewController(animated: animated)
+            return
+        }
+        if presented.isBeingDismissed, let coordinator = presented.transitionCoordinator {
+            coordinator.animate(alongsideTransition: nil) { [weak self] _ in
+                self?.popViewController(animated: animated)
+            }
+        } else {
+            dismiss(animated: animated) { [weak self] in
+                self?.popViewController(animated: animated)
+            }
         }
     }
 }

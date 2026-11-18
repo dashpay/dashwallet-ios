@@ -149,7 +149,9 @@ class TimeUtils {
             }
             
             guard networkTime != nil else {
-                throw NSError(domain: "TimeUtils", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to get network time"])
+                throw NSError(domain: "TimeUtils", code: 1, userInfo: [
+                    NSLocalizedDescriptionKey: NSLocalizedString("Failed to get network time", comment: "Device time check error"),
+                ])
             }
         }
         

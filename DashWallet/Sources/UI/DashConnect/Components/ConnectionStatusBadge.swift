@@ -37,10 +37,10 @@ struct ConnectionStatusBadge: View {
         VStack(alignment: .trailing, spacing: 2) {
             HStack(spacing: 6) {
                 Circle()
-                    .fill(dotColor)
+                    .fill(Self.dotColor(for: status))
                     .frame(width: 8, height: 8)
 
-                Text(title)
+                Text(Self.label(for: status))
                     .dashFont(.footnote)
                     .foregroundColor(Color.dash.primaryText)
                     .lineLimit(1)
@@ -53,23 +53,38 @@ struct ConnectionStatusBadge: View {
         }
     }
 
-    /// Green only once the connection is live; the only other state is
-    /// `approved`, which reads as neutral blue while it waits for the next scan.
-    private var dotColor: Color {
-        status == .active ? Color.dash.green : Color.dash.blue
+    /// The dot colour of a status, from the state-to-actions table (ADR-0019):
+    /// green once live, orange while waiting or when the app never got its
+    /// keys, red when refused, grey for a connection that is over or lapsed.
+    static func dotColor(for status: ConnectionStatus) -> Color {
+        switch AppConnect.StateActions.row(for: status).badge {
+        case .green: return Color.dash.green
+        case .orange: return Color.dash.orange
+        case .red: return Color.dash.red
+        case .grey: return Color.dash.gray500
+        }
     }
 
-    private var title: String {
+    /// The localized status name: the table's text key, never the raw value.
+    static func label(for status: ConnectionStatus) -> String {
         switch status {
-        case .approved:
-            return NSLocalizedString("Approved", comment: "DashConnect")
+        case .confirming:
+            return NSLocalizedString("Confirming", comment: "DashConnect: an approval whose identity update may still land")
         case .active:
             return NSLocalizedString("Active", comment: "DashConnect")
+        case .undelivered:
+            return NSLocalizedString("Not delivered", comment: "DashConnect: keys are on the identity, but the app never got its response")
+        case .refused:
+            return NSLocalizedString("Refused", comment: "DashConnect: status of a request the wallet turned down")
+        case .expired:
+            return NSLocalizedString("Expired", comment: "DashConnect: status of a connection whose access time ended")
+        case .disconnected:
+            return NSLocalizedString("Disconnected (connection status)", comment: "DashConnect: the status badge of a connection whose keys are all turned off")
         }
     }
 }
 
-#Preview {
+#Preview("All statuses") {
     VStack(alignment: .trailing, spacing: 16) {
         ForEach(ConnectionStatus.allCases, id: \.self) { status in
             ConnectionStatusBadge(
@@ -80,4 +95,16 @@ struct ConnectionStatusBadge: View {
     }
     .padding()
     .background(Color.primaryBackground)
+}
+
+#Preview("Refused") {
+    ConnectionStatusBadge(status: .refused, updatedAt: Date(timeIntervalSince1970: 1_754_232_520))
+        .padding()
+        .background(Color.primaryBackground)
+}
+
+#Preview("Expired") {
+    ConnectionStatusBadge(status: .expired, updatedAt: Date(timeIntervalSince1970: 1_754_232_520))
+        .padding()
+        .background(Color.primaryBackground)
 }

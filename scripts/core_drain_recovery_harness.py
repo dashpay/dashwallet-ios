@@ -416,6 +416,7 @@ typealias CoinJoinWithdrawalStore = UnrelatedPerWalletState
 typealias ShieldedWithdrawalStore = UnrelatedPerWalletState
 typealias AssetLockProbeStore = UnrelatedPerWalletState
 enum GeneratedWalletIdentityMarker { static func clear(walletId: Data) {} }
+enum DashConnectStores { static func removeAll(walletIdHex: String, in defaults: UserDefaults) {} }
 enum SPVChainStoreRebuild { static func finish(walletIds: [Data], scope: String) {} }
 @MainActor enum SwiftDashSDKWalletWiper {
     static let logger = Logger(subsystem: "core-drain-tests", category: "deletion")
