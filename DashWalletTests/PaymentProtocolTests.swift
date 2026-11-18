@@ -858,6 +858,30 @@ final class BIP70PaymentServiceTests: XCTestCase {
                                 .malformedRequest)
     }
 
+    /// A request that expires while it is being fetched gets no PIN prompt: the expiry is
+    /// checked against the time after the fetch, before the caller's check and the prompt.
+    func testHeadlessRequestExpiringDuringFetchIsNotAuthorized() async {
+        let expiry = UInt64(Date().timeIntervalSince1970) + 60
+        let beforeFetch = Date(timeIntervalSince1970: TimeInterval(expiry) - 30)
+        let afterFetch = Date(timeIntervalSince1970: TimeInterval(expiry) + 30)
+        var fetched = false
+        let t = FakeTransport(unsigned(expires: expiry)); t.onFetch = { fetched = true }
+        let auth = FakeAuth(); let w = FakeWallet()
+        let svc = service(t, w, auth: auth)
+        var validateCalled = false
+
+        await assertThrowsBIP70(
+            try await svc.confirmAndSendHeadless(from: url, scheme: "dash", network: .testnet,
+                                                 now: { fetched ? afterFetch : beforeFetch },
+                                                 validate: { _ in validateCalled = true }),
+            .expired)
+
+        XCTAssertTrue(fetched)
+        XCTAssertFalse(validateCalled)
+        XCTAssertEqual(auth.authorizeCount, 0)
+        XCTAssertTrue(w.calls.isEmpty)
+    }
+
     /// A request that is still valid when it is fetched but expires while the PIN prompt is
     /// open is not sent: the expiry is checked again against the time after the prompt.
     func testHeadlessRequestExpiringDuringAuthorizationIsNotSent() async {

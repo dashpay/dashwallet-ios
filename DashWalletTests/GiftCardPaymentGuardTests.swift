@@ -278,12 +278,23 @@ final class GiftCardPaymentGuardTests: XCTestCase {
         XCTAssertNoThrow(try approval.check(requested: 105_000_000))
         XCTAssertNoThrow(try approval.check(requested: 1))
 
-        for requested in [UInt64(105_000_001), 0, UInt64.max] {
+        for requested in [UInt64(105_000_001), UInt64.max] {
             XCTAssertThrowsError(try approval.check(requested: requested)) { error in
                 XCTAssertEqual((error as? DashSpendError)?.errorDescription,
                                GiftCardPaymentGuard.amountAboveApprovedError.errorDescription)
             }
         }
+    }
+
+    /// A request for no Dash is refused as an invalid amount: it is not more than the buyer approved.
+    func testApprovalRefusesAZeroQuoteAsAnInvalidAmount() {
+        let approval = GiftCardPaymentGuard.Approval(amount: 100_000_000)
+        XCTAssertThrowsError(try approval.check(requested: 0)) { error in
+            XCTAssertEqual((error as? DashSpendError)?.errorDescription,
+                           GiftCardPaymentGuard.invalidAmountError.errorDescription)
+        }
+        XCTAssertNotEqual(GiftCardPaymentGuard.invalidAmountError.errorDescription,
+                          GiftCardPaymentGuard.amountAboveApprovedError.errorDescription)
     }
 }
 

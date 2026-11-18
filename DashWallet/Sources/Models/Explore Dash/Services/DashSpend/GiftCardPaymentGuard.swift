@@ -32,7 +32,12 @@ enum GiftCardPaymentGuard {
         let amount: UInt64
 
         /// Throws unless `requested` duffs is positive and within the margin above `amount`.
+        /// A request for no Dash is refused as an invalid amount, not as an overcharge.
         func check(requested: UInt64) throws {
+            guard requested > 0 else {
+                DWLogger.log("Gift card payment refused: the provider requested no Dash")
+                throw GiftCardPaymentGuard.invalidAmountError
+            }
             guard GiftCardPaymentGuard.isWithinApprovedAmount(requested: requested, expected: amount) else {
                 DWLogger.log("Gift card payment refused: requested \(requested) duffs, approved \(amount)")
                 throw GiftCardPaymentGuard.amountAboveApprovedError
@@ -131,6 +136,11 @@ enum GiftCardPaymentGuard {
         .customError(NSLocalizedString(
             "The gift card provider requested more Dash than the price you approved. Nothing was sent. Please try again or contact support.",
             comment: "DashSpend"))
+    }
+
+    /// A provider amount that is zero or cannot be read as a duff count.
+    static var invalidAmountError: DashSpendError {
+        .paymentProcessingError(NSLocalizedString("Invalid gift card amount", comment: "DashSpend"))
     }
 
     static var invalidPaymentAddressError: DashSpendError {

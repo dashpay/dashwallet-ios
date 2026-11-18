@@ -373,8 +373,9 @@ final class BIP70PaymentService {
     /// - Parameter validate: the caller's own acceptance check on the prepared request (for
     ///   example, that `Confirmation.amount` matches what the user approved). This layer holds
     ///   no such policy; it only runs the hook.
-    /// - Parameter now: the clock. It is read once when the request is prepared and again after
-    ///   the prompt, so a request that expires while the prompt is open is not sent.
+    /// - Parameter now: the clock. It is read before the fetch, again once the request is
+    ///   prepared, and again after the prompt: a request that expires while it is fetched gets
+    ///   no prompt, and one that expires while the prompt is open is not sent.
     func confirmAndSendHeadless(from requestURL: URL,
                                 scheme: String,
                                 network: PaymentNetwork,
@@ -384,6 +385,7 @@ final class BIP70PaymentService {
                                 validate: ((Confirmation) throws -> Void)? = nil) async throws -> SendResult {
         let confirmation = try await prepareForConfirmation(from: requestURL, scheme: scheme,
                                                             network: network, callbackScheme: callbackScheme, now: now())
+        try Self.assertNotExpired(confirmation.request.details.expires, now: now())
         try validate?(confirmation)
         try await auth.authorize()
         return try await confirmAndSend(confirmation, now: now(), awaitAcceptance: awaitAcceptance)
