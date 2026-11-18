@@ -65,13 +65,17 @@ struct PaymentRequestVerifier {
             let policy = SecPolicyCreateBasicX509()
             let createStatus = SecTrustCreateWithCertificates(certs as CFArray, policy, &trust)
 
+            var trustError: CFError?
             let trusted = (createStatus == errSecSuccess && trust != nil)
-                ? SecTrustEvaluateWithError(trust!, nil)
+                ? SecTrustEvaluateWithError(trust!, &trustError)
                 : false
 
             if !trusted {
                 certificateFailure = certs.isEmpty ? .missingCertificate : .untrustedChain
                 isValid = false
+                // The screen names only the failure kind; the log keeps the system's reason
+                // (expired certificate, unknown root, ...) for a support case.
+                DWLogger.log("BIP70: certificate trust failed, certificates=\(certs.count) create_status=\(createStatus) reason=\(trustError.map { String(describing: $0) } ?? "none")")
             }
 
             // Verify the signature with the leaf public key (works even if trust failed, matching
