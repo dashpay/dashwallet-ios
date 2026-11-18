@@ -1249,9 +1249,17 @@ final class SendViewModel: ObservableObject {
         let scannedAmount = paymentInput.parsedURI?.amount ?? 0
         if scannedAmount > 0, dashDuffsUnsigned == 0 {
             unit = .dash
-            amountText = scannedAmount.formattedDashAmountWithoutCurrencySymbol
+            amountText = Self.editorText(duffs: scannedAmount)
         }
         return true
+    }
+
+    /// A scanned amount as editor text that `rawTypedDecimal` reads back
+    /// exactly: Latin digits, no grouping, and the decimal separator it
+    /// accepts. Locale formatting can add grouping or other digits.
+    static func editorText(duffs: UInt64) -> String {
+        let text = NSDecimalNumber(decimal: Decimal(duffs) / Decimal(100_000_000)).stringValue
+        return Locale.current.decimalSeparator == "," ? text.replacingOccurrences(of: ".", with: ",") : text
     }
 
     // MARK: - Amount
