@@ -266,6 +266,18 @@ final class QRScannerTests: XCTestCase {
         XCTAssertEqual(SendViewModel.scannedAddress(in: input), Self.address)
     }
 
+    /// The Send form a redirect fills reads back exactly the scanned duffs,
+    /// including amounts locale formatting would group.
+    func testSendFormKeepsTheScannedDuffs() {
+        for (amount, duffs) in [("1.5", Int64(150_000_000)), ("1234.56789012", Int64(123_456_789_012))] {
+            let parsed = ParsedPaymentURI.parse(paymentString: "dash:\(Self.address)?amount=\(amount)")
+            let input = DWPaymentInputBuilder().paymentInput(withParsedURI: parsed, source: .scanQR)
+            let send = SendViewModel(contactLookup: { _ in nil })
+            XCTAssertTrue(send.ingestScannedInput(input))
+            XCTAssertEqual(send.dashDuffs, duffs, amount)
+        }
+    }
+
     /// A scanned link's `sender` calls no app back (ADR-0007), so an "Open
     /// Send" redirect that fills the form with the address and amount drops
     /// no callback.
