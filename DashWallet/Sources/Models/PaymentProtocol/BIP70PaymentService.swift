@@ -234,11 +234,11 @@ final class BIP70PaymentService {
         let recipients = try ScriptAddressCodec.resolveOutputs(details.outputs, network: network)
         guard !recipients.isEmpty else { throw BIP70Error.malformedRequest }
 
-        // A request whose outputs do not sum within UInt64 is malformed, not a crash.
+        // A merchant-controlled total: checked, and within the coin supply.
         var amount: UInt64 = 0
         for recipient in recipients {
-            let (sum, overflowed) = amount.addingReportingOverflow(recipient.amount)
-            guard !overflowed else { throw BIP70Error.malformedRequest }
+            let (sum, overflow) = amount.addingReportingOverflow(recipient.amount)
+            guard !overflow, sum <= kMaxDashSupplyDuffs else { throw BIP70Error.malformedRequest }
             amount = sum
         }
         return Confirmation(

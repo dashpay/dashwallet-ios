@@ -815,6 +815,19 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertEqual(w.lastRecipients.map { $0.amountDuffs }, [100_000, 200_000])
     }
 
+    /// A total that overflows or exceeds the coin supply is refused before
+    /// anything is shown.
+    func testOutOfRangeTotalIsRefused() async {
+        for outs in [[PaymentOutput(amount: UInt64.max, script: p2pkh), PaymentOutput(amount: 1, script: p2pkh)],
+                     [PaymentOutput(amount: kMaxDashSupplyDuffs + 1, script: p2pkh)]] {
+            let w = FakeWallet()
+            let svc = service(FakeTransport(unsigned(outputs: outs)), w)
+            await assertThrowsBIP70(try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet),
+                                    .malformedRequest)
+            XCTAssertTrue(w.calls.isEmpty)
+        }
+    }
+
     func testNetworkMismatchThrowsBeforeBuild() async {
         let w = FakeWallet()
         let svc = service(FakeTransport(unsigned(network: "test")), w)

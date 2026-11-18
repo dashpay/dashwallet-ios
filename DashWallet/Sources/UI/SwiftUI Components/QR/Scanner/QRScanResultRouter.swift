@@ -86,12 +86,10 @@ enum QRScanResultRouter {
 
     /// Present the Send screen for a payment scanned in another flow — the
     /// same chrome and layout as `DWBasePayViewController
-    /// routeScannedBech32Address:`. A verified merchant request goes to the
-    /// classic processor whole (its outputs and acknowledgment metadata are
-    /// the merchant's); anything else fills the form like a scan made on the
-    /// Send screen, amount included, and opens on the From picker. The amount
-    /// rides the shared view model to the amount step, which hands it to the
-    /// classic processor for a Core → Core send.
+    /// routeScannedBech32Address:`. Like `dispatchPaymentInput`, a verified
+    /// merchant request and a Core destination go to the classic processor
+    /// whole, amount in duffs; only a Platform or Shielded destination fills
+    /// the form and opens on the From picker.
     static func routePayment(_ input: DWPaymentInput, from presenter: UIViewController?) {
         guard let presenter else { return }
 
@@ -100,7 +98,7 @@ enum QRScanResultRouter {
         navigationController.isNavigationBarHidden = true
         navigationController.modalPresentationStyle = .fullScreen
 
-        if input.bip70Confirmation != nil {
+        if input.bip70Confirmation != nil || !requiresSendScreen(input) {
             // Wait for a visible anchor before presenting the confirmation.
             presenter.topController().present(navigationController, animated: true) {
                 controller.processPaymentInput(input)
