@@ -12,7 +12,7 @@ where they disagree, ADR-0001 wins.
 | [0003](0003-take-rust-toolchain-from-platform-pin.md) | Take the Rust toolchain version from platform's pin | build | Accepted | |
 | [0004](0004-read-xcode-version-file-via-composite-action.md) | Read the Xcode version from a file through a composite action | build | Accepted | |
 | [0005](0005-enforce-workflow-policy-with-in-repo-script.md) | Enforce workflow policy with an in-repo script beside actionlint | build | Accepted | |
-| [0006](0006-choose-the-app-connect-login-by-the-protocol-version-read-at-runtime.md) | Choose the App Connect login by the protocol version read at runtime | platform | Accepted | |
+| [0006](0006-choose-the-app-connect-login-by-the-protocol-version-read-at-runtime.md) | Choose the App Connect login by the protocol version read at runtime | platform | Superseded | [0053](0053-open-dashconnect-on-mainnet-and-gate-each-request-by-protocol-14.md) |
 | [0007](0007-call-a-payment-links-sender-back-only-when-another-app-opened-the-link.md) | Call a payment link's sender back only when another app opened the link | payments | Proposed | |
 | [0009](0009-answer-app-connect-request-v2-with-wallet-derived-keys-under-wallet-limits.md) | Answer App Connect request v2 with wallet-derived keys under wallet limits | platform | Proposed | |
 | [0010](0010-probe-live-swap-routes-with-address-free-forced-quotes.md) | Probe live routes with address-free quotes forced to one provider | swap | Proposed | |
@@ -23,7 +23,7 @@ where they disagree, ADR-0001 wins.
 | [0015](0015-fence-a-pending-sign-in-on-disconnect.md) | Fence a pending sign-in on disconnect and recover forward only | platform | Accepted | |
 | [0016](0016-turn-off-unrecorded-keys-on-disconnect-without-asking.md) | Turn off unrecorded keys on disconnect without asking | platform | Accepted | |
 | [0017](0017-answer-an-app-connect-request-at-most-once.md) | Answer an App Connect request at most once | platform | Accepted | |
-| [0018](0018-run-app-connect-platform-writes-through-one-executor.md) | Run App Connect Platform writes through one executor | platform | Accepted | |
+| [0018](0018-run-app-connect-platform-writes-through-one-executor.md) | Run App Connect Platform writes through one executor | platform | Proposed | |
 | [0019](0019-let-one-state-table-decide-what-a-connection-shows-and-offers.md) | Let one state table decide what a connection shows and offers | platform | Accepted | |
 | [0020](0020-judge-request-age-and-expiry-by-proved-platform-block-time.md) | Judge request age and expiry by proved Platform block time | platform | Accepted | |
 | [0021](0021-record-a-consensus-refusal-on-the-intent.md) | Record a consensus refusal on the intent and show it as Refused | platform | Accepted | |
@@ -36,8 +36,8 @@ where they disagree, ADR-0001 wins.
 | [0028](0028-answer-app-connect-v2-only-and-remove-the-two-scan-login.md) | Answer App Connect v2 only and remove the two-scan login | platform | Accepted | |
 | [0029](0029-allow-a-new-app-connect-approval-while-another-is-confirming.md) | Allow a new App Connect approval while another one is still confirming | platform | Accepted | |
 | [0030](0030-show-an-app-connect-connection-whose-response-was-not-published-as-not-delivered.md) | Show an App Connect connection whose response was not published as Not delivered | platform | Accepted | |
-| [0031](0031-turn-off-unattributed-dashpay-profile-keys-with-any-disconnect.md) | Turn off unattributed DashPay profile keys with any disconnect | keys | Accepted | |
-| [0032](0032-pass-owners-read-from-platform-into-the-pure-projection.md) | Pass the owners read from Platform into the pure App Connect projection | platform | Accepted | |
+| [0031](0031-turn-off-unattributed-dashpay-profile-keys-with-any-disconnect.md) | Turn off unattributed DashPay profile keys with any disconnect | keys | Proposed | |
+| [0032](0032-pass-owners-read-from-platform-into-the-pure-projection.md) | Pass the owners read from Platform into the pure App Connect projection | platform | Proposed | |
 | [0033](0033-turn-off-only-the-unrecorded-keys-the-question-listed.md) | Turn off only the unrecorded keys the question listed | keys | Superseded | [0016](0016-turn-off-unrecorded-keys-on-disconnect-without-asking.md) |
 | [0035](0035-run-every-vote-through-a-pure-vote-attempt-state-machine.md) | Run every vote through a pure vote-attempt state machine | ui | Proposed | |
 | [0037](0037-cast-quick-voting-sequentially-under-one-authentication.md) | Cast Quick voting sequentially under one authentication | ui | Proposed | |

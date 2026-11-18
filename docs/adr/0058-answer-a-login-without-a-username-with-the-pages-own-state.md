@@ -23,17 +23,18 @@ contract read, and then refused with an error, or reached a sheet that could not
    without one, anything but a `dash-st:` request goes to `answerWithoutUsername`, which says
    nothing on a page that already shows the no-username state ("Sign in to apps without passwords",
    Create username), and shows "Create a username to connect apps, then ask the app for a new
-   code." only where the page may show connections. No sheet, no return, nothing read.
+   code." only where the page may show connections. No sheet, no return, and nothing is read for the request itself.
 
 ## Decision outcome
 
-**Chosen:** the page's own state. The request is dropped before any read, and the user sees the
-action that unblocks it.
+**Chosen:** the page's own state. The request is dropped before it is parsed, and the user sees
+the action that unblocks it. Reading the username first can start a background DPNS name sync
+(`refreshUsername`), which is about the identity, not the request.
 
 ## Consequences
 
 **Positive**
-- No network read and no error for a request that cannot succeed.
+- No read of the request's app or contract, and no error, for a request that cannot succeed.
 - The app has to ask again after the username exists, so no stale request is kept.
 
 **Negative**

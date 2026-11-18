@@ -1,6 +1,6 @@
 # 0018 — Run App Connect Platform writes through one executor
 
-- **Status:** Accepted
+- **Status:** Proposed
 - **Date:** 2026-11-09
 - **Deciders:** romchornyi (ADR author)
 
@@ -22,8 +22,9 @@ timeout was treated differently by each.
 ## Considered options
 
 1. **One executor.** A write is a value (`PlatformWrite`: update keys, publish, fence, delete a
-   response) run by `AppConnectWriteExecutor`, which logs it and re-reads Platform after an error
-   or a timeout. The disconnect path runs its writes and reads through an injected port, so the
+   response) run by `AppConnectWriteExecutor`, which logs it, applies the timeout and returns what it
+   saw: submitted, failed or timed out. It does not read Platform; after an error or a timeout the
+   caller's next read decides (`AppConnect.nextStep` routes it to the identity or the response). The disconnect path runs its writes and reads through an injected port, so the
    whole disconnect is tested against a fake Platform.
 2. **Keep the handling in each call.**
 

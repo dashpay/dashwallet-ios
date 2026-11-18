@@ -45,7 +45,7 @@ a request cannot send the user to a host they did not see.
 - One more tap to get back to the app after a link request.
 
 **Neutral**
-- A scanned code and a `dash-key:` code carry no callback, so they ask nothing.
+- Only a request that arrived as a link can return (`pendingRequestArrivedByLink`): a scanned code asks nothing, even when it carries a `cb`.
 - A request answered without its sheet being seen (no username, ADR-0058) asks nothing either.
 
 ## Links

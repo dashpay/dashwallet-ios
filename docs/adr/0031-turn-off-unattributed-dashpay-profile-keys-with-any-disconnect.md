@@ -1,6 +1,6 @@
 # 0031 — Turn off unattributed DashPay profile keys with any disconnect
 
-- **Status:** Accepted
+- **Status:** Proposed
 - **Date:** 2026-11-09
 - **Deciders:** romchornyi (ADR author), the product owner (no profile key left on that no connection accounts for)
 
@@ -44,8 +44,10 @@ accounts for is access nobody can see or end otherwise.
 - When that set cannot be told from the store (a record it cannot read, a stored key no record
   names whose bound it cannot read, a stored profile key the fetched view lacks), none of them is
   touched, the app's own keys still go, and the alert says the profile keys could not be checked.
-- A live key in the fetched view whose bound the store cannot read stops the whole disconnect,
-  as before this decision: it may be the app's own.
+- A live key in the fetched view whose bound the store cannot read does not stop the disconnect:
+  it is left on, and the result counts it as a key that could not be checked
+  ([ADR-0032](0032-pass-owners-read-from-platform-into-the-pure-projection.md)). (Until
+  2026-11-18 this line said such a key stopped the whole disconnect, which the code no longer does.)
 - The profile keys are disabled before the app's own keys, so a disconnect that fails part way
   leaves an app key live and its retry reaches the profile keys left.
 - Keep, its stored exemptions and the separate row are removed; the data source deletes the

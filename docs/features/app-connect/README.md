@@ -117,8 +117,10 @@ one-scan login possible, and with it DashConnect on mainnet once mainnet runs pr
 - **Encryption keys and the `dashpay://connect` carrier**
   ([#1258](https://github.com/dashpay/dashwallet-ios/pull/1258),
   [#1257](https://github.com/dashpay/dashwallet-ios/pull/1257)). Encryption keys are chosen by the
-  DIP's rotation rules, and a request may arrive as a `dashpay://connect` link; both follow the
-  protocol and ADR-0006, with no decision of their own.
+  DIP's rotation rules
+  ([ADR-0009](../../adr/0009-answer-app-connect-request-v2-with-wallet-derived-keys-under-wallet-limits.md)),
+  and on mainnet a request arrives as a `dashpay://connect` link
+  ([ADR-0053](../../adr/0053-open-dashconnect-on-mainnet-and-gate-each-request-by-protocol-14.md)).
 
 ## Not in scope
 
