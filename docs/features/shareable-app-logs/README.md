@@ -34,7 +34,9 @@ registration with a local helper; this change fixes it for the whole app.
 - **Stated exceptions.** Transaction ids stay in full, and a refused broadcast keeps the network's
   rejection reason as returned, so support can follow a payment and see why it was refused.
 - **Marker lines kept.** The lines support searches by tag (`IDENT-COORD`, `TXSEND`, `KEYMIG`,
-  chain sync) keep their tags and wording; `CoordinatorLog` from #1155 is replaced by `AppLogger`.
+  chain sync) keep their tags and wording; `CoordinatorLog` from #1155 is replaced by `AppLogger`. Lines written
+  before the PIN prompt of a username registration or purchase do not write the name, so a name that is never
+  registered stays out of the export.
 - **A check for new lines.** The SwiftLint rule `no_os_logger` rejects new `os.Logger`, `os_log`
   and `NSLog` calls, and `unit-tests.yml` runs it on every pull request with a pinned SwiftLint
   (0.63.2, checked by sha256).

@@ -51,7 +51,9 @@ invitation scope key are `<private>`.
 
 **Positive**
 - A new free-text value is redacted unless someone decides to make it public.
-- Marker lines keep the values they showed under #1155 through explicit `.public`, except amounts.
+- Marker lines keep the values they showed under #1155 through explicit `.public`, except amounts and the
+  requested username on lines written before authorization (the registration bridge and the coordinator's start,
+  retry, purchase and rejected-pairing lines), so a name that is never registered stays out of the export.
 - The rule is local and testable: one unit test per value form.
 
 **Negative**

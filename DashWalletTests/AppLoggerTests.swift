@@ -381,6 +381,23 @@ final class AppLoggerTests: XCTestCase {
         }
     }
 
+    /// The coordinator's entry lines also run before authorization (start,
+    /// retry, purchase, a rejected pairing), so they write no name either
+    /// (AC-10); its lines after authorization keep the label.
+    func testRegistrationCoordinatorLinesBeforeAuthorizationWriteNoUsername() throws {
+        let coordinator = "DashWallet/Sources/Infrastructure/SwiftDashSDK/Identity/DWIdentityRegistrationCoordinator.swift"
+        for fragment in [
+            "IDENT-COORD :: startCreateUsername", "IDENT-COORD :: invalid temporary username pairing",
+            "IDENT-COORD :: retry", "IDENT-COORD :: startPurchaseUsername",
+        ] {
+            let line = try sourceLine(coordinator, containing: fragment)
+            for name in ["username", "name", "temporaryUsername"] {
+                XCTAssertFalse(line.contains("\\(\(name), privacy: .public)"), line)
+                XCTAssertFalse(line.contains("\\(\(name) ?? "), line)
+            }
+        }
+    }
+
     /// `logSweepBroadcast` already writes each accepted chunk's txid; the
     /// bookkeeping line only says how many were recorded.
     func testSweepRecordLineWritesTheCountOnly() throws {

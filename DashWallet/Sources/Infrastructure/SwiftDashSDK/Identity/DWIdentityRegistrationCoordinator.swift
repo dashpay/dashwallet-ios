@@ -729,7 +729,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         /// confirmation: what the confirmation sheet showed. nil = none shown.
         authorizedTopUpDuffs: UInt64? = nil
     ) async throws -> Identifier {
-        Self.logger.info("🪪 IDENT-COORD :: startCreateUsername username=\(username, privacy: .public) funding=\(fundingSource.logLabel, privacy: .public) temporary=\(temporaryUsername ?? "none", privacy: .public)")
+        Self.logger.info("🪪 IDENT-COORD :: startCreateUsername contested=\(DWContestedNameStatusService.isContestedLabel(username)) funding=\(fundingSource.logLabel, privacy: .public) temporary=\(temporaryUsername == nil ? "none" : "set", privacy: .public)")
         // An overlapping start is rejected before it touches the attempt's
         // state: the proof link belongs to the request already running, and
         // overwriting it would publish another URL under that request's
@@ -747,7 +747,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             guard DWContestedNameStatusService.isContestedLabel(username),
                   !DWContestedNameStatusService.isContestedLabel(temporaryUsername)
             else {
-                Self.logger.error("🪪 IDENT-COORD :: invalid temporary username pairing main=\(username, privacy: .public) temporary=\(temporaryUsername ?? "none", privacy: .public)")
+                Self.logger.error("🪪 IDENT-COORD :: invalid temporary username pairing mainContested=\(DWContestedNameStatusService.isContestedLabel(username)) temporaryContested=\(DWContestedNameStatusService.isContestedLabel(temporaryUsername))")
                 throw CoordinatorError.invalidTemporaryUsername
             }
         }
@@ -1898,7 +1898,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     /// deferral branch in `handlePhaseChange` cannot trigger).
     @discardableResult
     func startPurchaseUsername(name: String, priceCredits: UInt64) async throws -> Identifier {
-        Self.logger.info("🪪 IDENT-COORD :: startPurchaseUsername name=\(name, privacy: .public) priceCredits=\(priceCredits, privacy: .private)")
+        Self.logger.info("🪪 IDENT-COORD :: startPurchaseUsername priceCredits=\(priceCredits, privacy: .private)")
 
         guard let wallet = SwiftDashSDKHost.shared.wallet else {
             throw CoordinatorError.noWallet
@@ -2134,7 +2134,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         temporaryUsername: String? = nil,
         authorizedTopUpDuffs: UInt64? = nil
     ) async throws -> Identifier {
-        Self.logger.info("🪪 IDENT-COORD :: retry username=\(username, privacy: .public) funding=\(fundingSource.logLabel, privacy: .public)")
+        Self.logger.info("🪪 IDENT-COORD :: retry contested=\(DWContestedNameStatusService.isContestedLabel(username)) funding=\(fundingSource.logLabel, privacy: .public)")
         return try await startCreateUsername(
             username,
             fundingSource: fundingSource,
