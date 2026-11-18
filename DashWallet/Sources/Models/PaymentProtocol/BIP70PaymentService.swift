@@ -233,7 +233,13 @@ final class BIP70PaymentService {
         let recipients = try ScriptAddressCodec.resolveOutputs(details.outputs, network: network)
         guard !recipients.isEmpty else { throw BIP70Error.malformedRequest }
 
-        let amount = recipients.reduce(UInt64(0)) { $0 + $1.amount }
+        // A merchant-controlled total: checked, and within the coin supply.
+        var amount: UInt64 = 0
+        for recipient in recipients {
+            let (sum, overflow) = amount.addingReportingOverflow(recipient.amount)
+            guard !overflow, sum <= kMaxDashSupplyDuffs else { throw BIP70Error.malformedRequest }
+            amount = sum
+        }
         return Confirmation(
             merchantName: verdict.commonName,
             isSecure: verdict.isSecure,
