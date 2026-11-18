@@ -83,10 +83,10 @@ final class NotificationLifecycleTests: XCTestCase {
         client.deliveredSummaries = [
             DeliveredNotificationSummary(identifier: "tx.1", threadIdentifier: NotificationTopic.transactions.rawValue),
             DeliveredNotificationSummary(identifier: "Now", threadIdentifier: ""),
-            DeliveredNotificationSummary(identifier: "CrowdNode", threadIdentifier: NotificationTopic.crowdnode.rawValue),
+            DeliveredNotificationSummary(identifier: "swap.1", threadIdentifier: NotificationTopic.swap.rawValue),
         ]
         store.seed(id: "tx.1", topic: .transactions)
-        store.seed(id: "CrowdNode", topic: .crowdnode)
+        store.seed(id: "swap.1", topic: .swap)
 
         await lifecycle.reconcileAfterBecomingActive()
 
@@ -98,14 +98,37 @@ final class NotificationLifecycleTests: XCTestCase {
         // badge covered them too, so their store records are seen as well —
         // the next posted badge must not count them again.
         XCTAssertEqual(store.markAllSeenCalls, 1)
-        XCTAssertEqual(store.events["CrowdNode"]?.seen, true)
+        XCTAssertEqual(store.events["swap.1"]?.seen, true)
         let unseen = await store.unseenCount()
         XCTAssertEqual(unseen, 0)
     }
 
+    /// Notifications of kinds the app no longer posts are removed whether
+    /// they sit on a retired thread or carry a retired identifier.
+    func testReconcileRemovesRetiredThreadsAndIdentifiers() async {
+        client.deliveredSummaries = [
+            DeliveredNotificationSummary(identifier: "tx.ab", threadIdentifier: "crowdnode"),
+            DeliveredNotificationSummary(identifier: "crowdnode.result", threadIdentifier: "crowdnode"),
+            DeliveredNotificationSummary(identifier: "CrowdNode", threadIdentifier: ""),
+            DeliveredNotificationSummary(identifier: "swap.1", threadIdentifier: NotificationTopic.swap.rawValue),
+        ]
+
+        await lifecycle.reconcileAfterBecomingActive()
+
+        XCTAssertEqual(client.removedDeliveredIdentifiers, [["tx.ab", "crowdnode.result", "CrowdNode"]])
+    }
+
+    /// Older builds scheduled the legacy identifiers with a one-second
+    /// trigger; one still pending at activation is cancelled before it lands.
+    func testReconcileCancelsPendingLegacyRequests() async {
+        await lifecycle.reconcileAfterBecomingActive()
+
+        XCTAssertEqual(client.removedPendingIdentifiers, [["CrowdNode", "Now"]])
+    }
+
     func testReconcileRemovesNothingWhenNoTransactionNotificationsDelivered() async {
         client.deliveredSummaries = [
-            DeliveredNotificationSummary(identifier: "CrowdNode", threadIdentifier: NotificationTopic.crowdnode.rawValue),
+            DeliveredNotificationSummary(identifier: "swap.1", threadIdentifier: NotificationTopic.swap.rawValue),
         ]
 
         await lifecycle.reconcileAfterBecomingActive()
@@ -181,12 +204,16 @@ final class NotificationLifecycleTests: XCTestCase {
         XCTAssertEqual(router.openedRoutes, [.url(URL(string: "https://www.dash.org")!)])
     }
 
-    func testTapOnLegacyCrowdNodeIdentifierFoldsToStaking() {
-        // Delivered by an older build: the CrowdNode identifier without an
-        // encoded route must keep opening the CrowdNode screen.
-        lifecycle.handleNotificationTap(identifier: CrowdNode.notificationID, userInfo: [:])
+    func testTapOnRouteThisBuildNoLongerKnowsDoesNothing() {
+        // Delivered by an older build, whose route enum had a case this one
+        // dropped: the route fails to decode and the tap just opens the app.
+        var userInfo = userInfo(behavior: .banner)
+        userInfo[NotificationUserInfoKey.route] = Data(#"{"staking":{}}"#.utf8)
 
-        XCTAssertEqual(router.openedRoutes, [.staking])
+        lifecycle.handleNotificationTap(identifier: "tx.ab", userInfo: userInfo)
+        lifecycle.handleNotificationTap(identifier: "CrowdNode", userInfo: [:])
+
+        XCTAssertTrue(router.openedRoutes.isEmpty)
     }
 
     func testTapWithoutRouteDoesNothing() {

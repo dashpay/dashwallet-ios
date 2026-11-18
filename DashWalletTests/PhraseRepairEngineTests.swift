@@ -59,7 +59,7 @@ final class PhraseRepairCandidateScanTests: XCTestCase {
         // reports 136 checksum-valid words: the 128 English ones plus 8 that pass another
         // wordlist's checksum. The engine needs a language-scoped validate before this
         // invariant can be asserted again.
-        throw XCTSkip("FFI mnemonic_validate is not language-scoped; scan yields 136, not 128")
+        throw XCTSkip("`Mnemonic.validate` is not language-scoped, so the scan yields 136, not 128")
         let scan = await PhraseRepairEngine.scanCandidates(
             remaining: abandon11,
             insertIndex: 11,
@@ -85,7 +85,7 @@ final class PhraseRepairCandidateScanTests: XCTestCase {
         let phrase = (abandon11 + ["about"]).joined(separator: " ")
         let first = PhraseRepairEngine.defaultDeriveFirstAddress(phrase: phrase)
         let second = PhraseRepairEngine.defaultDeriveFirstAddress(phrase: phrase)
-        XCTAssertNotNil(first)
+        XCTAssertEqual(first, "XoJA8qE3N2Y3jMLEtZ3vcN42qseZ8LvFf5")
         XCTAssertEqual(first, second)
     }
 
@@ -252,8 +252,7 @@ final class PhraseRepairEngineTests: XCTestCase {
         XCTAssertEqual(result, ["about": 0])
     }
 
-    /// Non-derivable candidates (today: non-English phrases through the
-    /// English-hardcoded FFI) still reach the distance backup (deviation 5).
+    /// Non-derivable candidates still reach the distance backup (deviation 5).
     func testDerivationFailureStillAllowsDistanceBackup() async {
         let phrase = (abandon11 + ["abouz"]).joined(separator: " ")
         let result = await PhraseRepairEngine.findPotentialWords(

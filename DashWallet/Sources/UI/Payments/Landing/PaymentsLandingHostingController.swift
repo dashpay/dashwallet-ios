@@ -399,7 +399,6 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     /// An address that did not decode keeps the address step: it is the screen
     /// that says so.
     private func pushScannedSend(_ controller: SendScreenViewController) {
-        controller.hidesBottomBarWhenPushed = true
         guard let navigationController else { return }
         guard controller.hasResolvedDestination else {
             navigationController.pushViewController(controller, animated: true)
@@ -552,10 +551,10 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         pushWithoutTabBar(SendScreenViewController())
     }
 
-    /// The landing keeps the tab bar; everything it pushes is a step in a
-    /// flow and takes the whole screen.
+    /// Everything the landing pushes is a step in a flow and takes the whole
+    /// screen. Every landing sits in a `BaseNavigationController`, which hides
+    /// the tab bar on each push above the root.
     private func pushWithoutTabBar(_ controller: UIViewController) {
-        controller.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(controller, animated: true)
     }
 

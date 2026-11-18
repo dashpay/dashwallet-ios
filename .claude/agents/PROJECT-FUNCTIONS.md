@@ -119,16 +119,6 @@ This document provides comprehensive information about the key functions, APIs, 
 - Topper payment method integration
 - Asset conversion and payment processing
 
-### CrowdNode Staking
-**File**: `DashWallet/Sources/Models/CrowdNode/CrowdNode.swift`
-- `CrowdNode` - Staking service integration
-- Account creation and management
-- Staking rewards tracking
-
-**File**: `DashWallet/Sources/Models/CrowdNode/Services/CrowdNodeWebService.swift`
-- HTTP client for CrowdNode API
-- Transaction monitoring and status updates
-
 ## Navigation and UI Patterns
 
 ### Main Navigation Flow

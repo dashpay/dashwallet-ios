@@ -19,7 +19,6 @@
 import Foundation
 
 enum ServiceName: String, CaseIterable {
-    case crowdNode = "crowdnode"
     case uphold = "uphold"
     case coinbase = "coinbase"
     case ctxSpend = "ctxspend"

@@ -90,15 +90,26 @@ final class MasternodeVoterRegistry {
     /// Outcome of a votable-node resolution.
     ///
     /// `mayBeIncomplete` says the answer cannot be trusted as exhaustive: the
-    /// voting address pool was read from the degraded fallback (gap-limit
-    /// deep) *and* at least one active registration went unmatched, so a node
-    /// this wallet really can vote with may be missing from `nodes`. The UI
-    /// says so rather than presenting a short list as the full picture.
+    /// running wallet has no provider voting account *and* at least one active
+    /// registration went unmatched, so a node this wallet really can vote with
+    /// may be missing from `nodes`. The UI says so rather than presenting a
+    /// short list as the full picture.
     struct Resolution {
         let nodes: [VoterNode]
         let mayBeIncomplete: Bool
 
         static let empty = Resolution(nodes: [], mayBeIncomplete: false)
+    }
+
+    /// The SDK is running and the wallet's sync is done, so an empty
+    /// ``votableNodes()`` is this wallet's answer rather than a list that is
+    /// not there yet. The wallet's own masternodes come from its provider
+    /// transactions, which the filter scan finds after the masternode list
+    /// has synced, so the gate is the whole sync (`.syncDone`), not the
+    /// masternode phase.
+    var isNodeListSynced: Bool {
+        SwiftDashSDKHost.shared.manager != nil && SwiftDashSDKHost.shared.wallet != nil
+            && SyncingActivityMonitor.shared.state == .syncDone
     }
 
     /// The wallet's votable nodes, ordered by registration.
@@ -110,8 +121,8 @@ final class MasternodeVoterRegistry {
     ///  - that address matches a key this wallet derives, so we can sign.
     ///
     /// Returns empty (not an error) when the wallet has no masternodes, when
-    /// the SDK is not running, or when the masternode phase has not synced —
-    /// the caller renders the browse-only state.
+    /// the SDK is not running, or when the sync has not found them yet — the
+    /// caller checks ``isNodeListSynced`` to tell these apart.
     func votableNodes() -> Resolution {
         guard let manager = SwiftDashSDKHost.shared.manager,
               let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {
@@ -123,10 +134,10 @@ final class MasternodeVoterRegistry {
         // Tracked (wallet-independent) nodes vote too — resolve them
         // BEFORE any early return, or a wallet with no masternodes of its
         // own (the common case for tracking) could never vote.
-        let trackedNodes = trackedVotableNodes(
+        let (trackedNodes, trackedKeyUnreadable) = trackedVotableNodes(
             excluding: Set(eligible.map(\.proTxHash)))
         guard !eligible.isEmpty else {
-            return Resolution(nodes: trackedNodes, mayBeIncomplete: false)
+            return Resolution(nodes: trackedNodes, mayBeIncomplete: trackedKeyUnreadable)
         }
 
         let resolution = MasternodeKeyUsage.resolveAddressIndexes(
@@ -160,30 +171,34 @@ final class MasternodeVoterRegistry {
                     keySource: .walletIndex(index))
             }
 
-        // Only a degraded pool read can hide a node we own; if every active
-        // registration matched, depth did not matter.
-        let mayBeIncomplete = !resolution.poolIsLive && nodes.count < eligible.count
+        // Only a missing provider voting account can hide a node we own. If
+        // every active registration matched, the account did not matter.
+        let mayBeIncomplete = !resolution.hasProviderPool && nodes.count < eligible.count
         Self.logger.info(
-            "🗳️ VOTING :: votable nodes=\(nodes.count, privacy: .public) of \(eligible.count, privacy: .public) active registrations livePool=\(resolution.poolIsLive, privacy: .public)")
+            "🗳️ VOTING :: votable nodes=\(nodes.count, privacy: .public) of \(eligible.count, privacy: .public) active registrations providerPool=\(resolution.hasProviderPool, privacy: .public)")
         // Exclusion is by the wallet's ELIGIBLE set (not just the votable
         // subset): a wallet-registered node stays out of the tracked list
         // even when its derived key didn't resolve.
-        return Resolution(nodes: nodes + trackedNodes, mayBeIncomplete: mayBeIncomplete)
+        return Resolution(nodes: nodes + trackedNodes, mayBeIncomplete: mayBeIncomplete || trackedKeyUnreadable)
     }
 
     /// Tracked (wallet-independent) masternodes whose voting key the user
     /// attached on this device — votable with that key. A node already
     /// votable through the wallet is skipped (the derived key wins).
-    private func trackedVotableNodes(excluding walletHashes: Set<Data>) -> [VoterNode] {
-        guard let manager = SwiftDashSDKHost.shared.manager else { return [] }
+    /// `keyUnreadable` when the keychain could not say whether some node's
+    /// voting key is there: that node is left out, and the resolution must
+    /// not read as complete.
+    private func trackedVotableNodes(excluding walletHashes: Set<Data>) -> (nodes: [VoterNode], keyUnreadable: Bool) {
+        guard let manager = SwiftDashSDKHost.shared.manager else { return ([], false) }
         let vault = TrackedMasternodeKeyVault()
-        return manager.trackedMasternodes()
-            .filter { node in
-                !walletHashes.contains(node.proTxHash)
-                    && !node.revoked
-                    && MasternodeStatus(rawValue: node.status) == .active
-                    && vault.attachedRoles(for: node.proTxHash).contains(.voting)
-            }
+        let candidates = manager.trackedMasternodes().filter { node in
+            !walletHashes.contains(node.proTxHash)
+                && !node.revoked
+                && MasternodeStatus(rawValue: node.status) == .active
+        }
+        let keys = Self.votingKeys(of: candidates.map(\.proTxHash)) { vault.keyPresence(for: $0, role: .voting) }
+        let nodes = candidates
+            .filter { keys.present.contains($0.proTxHash) }
             .map { node in
                 VoterNode(
                     proTxHash: node.proTxHash,
@@ -192,6 +207,25 @@ final class MasternodeVoterRegistry {
                     serviceAddress: node.serviceAddress,
                     keySource: .trackedVault)
             }
+        return (nodes, keys.unreadable)
+    }
+
+    /// Which of `nodes` have a voting key stored, and whether the keychain
+    /// could not tell for some of them. A failed read is not proof the key is
+    /// gone, so it never counts as absent.
+    static func votingKeys(
+        of nodes: [Data], presence: (Data) -> TrackedMasternodeKeyPresence
+    ) -> (present: Set<Data>, unreadable: Bool) {
+        var present: Set<Data> = []
+        var unreadable = false
+        for node in nodes {
+            switch presence(node) {
+            case .present: present.insert(node)
+            case .absent: break
+            case .unknown: unreadable = true
+            }
+        }
+        return (present, unreadable)
     }
 
     /// The 32-byte voting private key for `node`.

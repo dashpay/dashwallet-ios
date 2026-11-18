@@ -185,8 +185,7 @@ final class SwiftDashSDKKeyMigrator: NSObject {
             accounts = try strictlyEnumerateDashSyncAccounts()
         } catch {
             defaults.set(true, forKey: deferredFailureKey)
-            logger.error(
-                "🔑 KEYMIG :: DashSync mnemonic enumeration failed: \(error)")
+            logger.error(enumerationFailedLine(error))
             DWLogger.log("🔑 KEYMIG :: legacy keychain unreadable (enumeration failed); migration deferred")
             return
         }
@@ -268,13 +267,6 @@ final class SwiftDashSDKKeyMigrator: NSObject {
             }
 
             do {
-                let seed = try Mnemonic.toSeed(mnemonic: mnemonic)
-                guard seed.count == 64, try Mnemonic.toSeed(mnemonic: mnemonic) == seed else {
-                    logger.error("🔑 KEYMIG :: \(walletID.prefix(8), privacy: .public) seed sanity check failed")
-                    failed += 1
-                    hadFailure = true
-                    continue
-                }
                 let sdkWalletId = try createWalletOnHost(
                     mnemonic: mnemonic,
                     network: network,
@@ -342,8 +334,7 @@ final class SwiftDashSDKKeyMigrator: NSObject {
                 mnemonicWalletIDs: walletIDs,
                 inventory: readDashSyncChainWalletLists(from: accounts))
         } catch {
-            logger.error(
-                "🔑 KEYMIG :: DashSync mnemonic enumeration failed during launch probe: \(error)")
+            logger.error(enumerationFailedLine(error, during: "launch probe"))
             return .unreadable
         }
     }
@@ -397,7 +388,23 @@ final class SwiftDashSDKKeyMigrator: NSObject {
         let mnemonic: String
     }
 
-    private enum LegacyMnemonicCleanupError: LocalizedError {
+    /// The KEYMIG line for a failed enumeration of the DashSync keychain
+    /// items: the Error summary and the keychain status.
+    static func enumerationFailedLine(_ error: Error, during phase: String? = nil) -> AppLogMessage {
+        let context = phase.map { " during \($0)" } ?? ""
+        return "🔑 KEYMIG :: DashSync mnemonic enumeration failed\(context, privacy: .public): \(error) status=\(keychainStatus(of: error), privacy: .public)"
+    }
+
+    /// The Security framework status of a failed keychain read, for the log;
+    /// `errorSummary` keeps only the case name.
+    static func keychainStatus(of error: Error) -> String {
+        guard case LegacyMnemonicCleanupError.keychainRead(let status)? = error as? LegacyMnemonicCleanupError else {
+            return "-"
+        }
+        return String(status)
+    }
+
+    enum LegacyMnemonicCleanupError: LocalizedError {
         case keychainRead(OSStatus)
         case mnemonicRead
         case deletionFailed

@@ -20,7 +20,6 @@ target 'dashwallet' do
   pod 'KVO-MVVM', '0.5.6'
   pod 'UIViewController-KeyboardAdditions', '1.2.1'
   pod 'MBProgressHUD', '1.1.0'
-  pod 'MMSegmentSlider', :git => 'https://github.com/podkovyrin/MMSegmentSlider', :commit => '2d91366'
   pod 'SDWebImage', '5.21.0', :modular_headers => true
   pod 'SDWebImageSwiftUI', '3.1.3', :modular_headers => true
   pod 'Moya', '~> 15.0'
@@ -51,7 +50,6 @@ target 'dashpay' do
   pod 'KVO-MVVM', '0.5.6'
   pod 'UIViewController-KeyboardAdditions', '1.2.1'
   pod 'MBProgressHUD', '1.1.0'
-  pod 'MMSegmentSlider', :git => 'https://github.com/podkovyrin/MMSegmentSlider', :commit => '2d91366'
   pod 'SDWebImage', '5.21.0', :modular_headers => true
   pod 'SDWebImageSwiftUI', '3.1.3', :modular_headers => true
   pod 'Moya', '~> 15.0'
@@ -102,6 +100,23 @@ post_install do |installer|
 
     end
 
+  end
+
+  # The app must link exactly one SQLite: the one SwiftDashSDK's
+  # DashSDKFFI.xcframework builds in. SQLite.swift declares the system
+  # `sqlite3` library, and with it on the link line every `sqlite3_*`
+  # reference, the SDK's included, binds to /usr/lib/libsqlite3.dylib,
+  # which on iOS 18 lacks API the SDK calls (`sqlite3_set_clientdata`).
+  # Core Data and SwiftData keep the system SQLite, so the process holds two
+  # copies: never open one database file from both sides, since the two do
+  # not share POSIX lock state.
+  installer.aggregate_targets.each do |aggregate_target|
+    next unless ['Pods-dashwallet', 'Pods-dashpay'].include?(aggregate_target.name)
+
+    aggregate_target.xcconfigs.each do |config_name, xcconfig|
+      xcconfig.libraries.delete('sqlite3')
+      xcconfig.save_as(aggregate_target.xcconfig_path(config_name))
+    end
   end
 
 end

@@ -119,6 +119,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     @Published public private(set) var isClearing: Bool = false
     @Published public private(set) var lastSyncTime: Date? = nil
     @Published public private(set) var lastError: String? = nil
+    /// English reason for `lastError`, for the exported log: `lastError` is shown on screen, so it is localized.
+    public private(set) var lastErrorLogReason: String?
 
     /// Startup failure of `platformAddressWallet()`, held apart from
     /// `lastError` because it outlives the events that clear it.
@@ -133,6 +135,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     /// and network-switch preparation — every path that invalidates the wallet
     /// this error was recorded against — and overwritten by the next start.
     private var addressWalletStartupError: String?
+    /// English reason for `addressWalletStartupError`, see `lastErrorLogReason`.
+    private var addressWalletStartupLogReason: String?
     @Published private(set) var platformAccountAvailability: PlatformAccountAvailability = .unknown
 
     @Published public private(set) var platformBalance: UInt64 = 0
@@ -615,7 +619,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         var errorDescription: String? {
             switch self {
             case .failed(let message):
-                return "BLAST start failed: \(message)"
+                return String(format: NSLocalizedString("BLAST start failed: %@", comment: "Platform Sync Status error"), message)
             }
         }
     }
@@ -627,7 +631,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             isRunning: isRunning,
             hasWalletManager: walletManager != nil
         ) {
-            lastError = nil
+            setLastError(nil, log: nil)
             await SwiftDashSDKWalletRuntime.shared.rearmPlatformSync()
         }
 
@@ -639,9 +643,10 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             // account is handled by `platformAccountAvailability`.
             if !WalletEnvironment.hasSDKWallet {
                 platformAccountAvailability = .unavailable
-                lastError = nil
+                setLastError(nil, log: nil)
             } else if platformAccountAvailability != .unavailable && lastError == nil {
-                lastError = "Platform sync could not be started"
+                setLastError(NSLocalizedString("Platform sync could not be started", comment: "Sync diagnostics"),
+                             log: "Platform sync could not be started")
             }
             return
         }
@@ -656,11 +661,11 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
                 try manager.startPlatformAddressSync()
             }
             isSyncing = true
-            lastError = addressWalletStartupError
+            setLastError(addressWalletStartupError, log: addressWalletStartupLogReason)
             try await manager.syncPlatformAddressNow()
         } catch {
             isSyncing = false
-            lastError = error.localizedDescription
+            setLastError(error.localizedDescription, log: "syncPlatformAddressNow threw: \(AppLogMessage.errorSummary(error))")
             Self.logger.error("🛰️ PLATFORM-ADDR :: syncPlatformAddressNow threw: \(error)")
         }
     }
@@ -706,7 +711,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             network: network)
 
         Self.logger.info(
-            "🛰️ PLATFORM-SEND :: → \(destination) :: amount=\(amount) account=\(senderAccountIndex)")
+            "🛰️ PLATFORM-SEND :: → \(destination) :: amount=\(amount, privacy: .private) account=\(senderAccountIndex)")
 
         // No change routing since the SDK's credit-balance transfer model:
         // the Rust auto-selector partially consumes the last input and the
@@ -865,7 +870,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             credits: amountCredits)
 
         Self.logger.info(
-            "🛰️ PLATFORM-WITHDRAW :: partial amount=\(amountCredits) account=\(senderRow.accountIndex)")
+            "🛰️ PLATFORM-WITHDRAW :: partial amount=\(amountCredits, privacy: .private) account=\(senderRow.accountIndex)")
 
         let updated = try await addressWallet.withdraw(
             accountIndex: senderRow.accountIndex,
@@ -884,20 +889,22 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     /// is returned to a second own Platform address.
     public func fundFromCore(
         recipientAmountDuffs: UInt64,
-        lockValueDuffs: UInt64
+        lockValueDuffs: UInt64,
+        onAssetLockBuilt: AssetLockBuiltHandler? = nil
     ) async throws {
         let env = try resolveFundEnvironment(recipientAmountDuffs: recipientAmountDuffs)
         let signer = KeychainSigner(modelContainer: env.container, network: env.network)
 
         Self.logger.info(
-            "🛰️ PLATFORM-FUND :: core → platform recipient=\(recipientAmountDuffs) lock=\(lockValueDuffs) account=\(env.accountIndex)")
+            "🛰️ PLATFORM-FUND :: core → platform recipient=\(recipientAmountDuffs, privacy: .private) lock=\(lockValueDuffs, privacy: .private) account=\(env.accountIndex)")
 
         let updated = try await env.addressWallet.fundFromAssetLock(
             amountDuffs: lockValueDuffs,
             fundingAccountIndex: 0,
             platformAccountIndex: env.accountIndex,
             recipients: env.recipients,
-            signer: signer)
+            signer: signer,
+            onAssetLockBuilt: onAssetLockBuilt)
 
         applyUpdatedBalances(updated, context: env.container.mainContext)
         await ShieldedTxLookup.shared.refresh(reason: "platform-fund-completed")
@@ -1005,7 +1012,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
               isSelectedWalletScope(walletId: session.scope.walletId, network: network) else {
             // Local restoration can precede BLAST. A display-only clear here
             // would resurrect the untouched cache as soon as BLAST starts.
-            lastError = NSLocalizedString("Start Platform sync before clearing its local state", comment: "Platform Clear requires a bound wallet")
+            setLastError(NSLocalizedString("Start Platform sync before clearing its local state", comment: "Platform Clear requires a bound wallet"),
+                         log: "clear requested before Platform sync bound a wallet")
             return
         }
         isClearing = true
@@ -1014,7 +1022,11 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         do {
             try await manager.resetPlatformAddressSyncState()
         } catch {
-            lastError = "Failed to reset platform-address sync state: \(error.localizedDescription)"
+            setLastError(
+                String(
+                    format: NSLocalizedString("Failed to reset platform-address sync state: %@", comment: "Sync diagnostics"),
+                    error.localizedDescription),
+                log: "resetPlatformAddressSyncState failed: \(AppLogMessage.errorSummary(error))")
             Self.logger.error("🛰️ PLATFORM-ADDR :: clear reset failed: \(error)")
             return
         }
@@ -1050,7 +1062,11 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             }
             try context.save()
         } catch {
-            lastError = "Failed to clear persisted platform-address state: \(error.localizedDescription)"
+            setLastError(
+                String(
+                    format: NSLocalizedString("Failed to clear persisted platform-address state: %@", comment: "Sync diagnostics"),
+                    error.localizedDescription),
+                log: "clear persisted platform-address state failed: \(AppLogMessage.errorSummary(error))")
             Self.logger.error("🛰️ PLATFORM-ADDR :: clear persist failed: \(error)")
             return
         }
@@ -1071,7 +1087,11 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             isRunning = true
         } catch {
             isRunning = false
-            lastError = "startPlatformAddressSync failed after clear: \(error.localizedDescription)"
+            setLastError(
+                String(
+                    format: NSLocalizedString("startPlatformAddressSync failed after clear: %@", comment: "Platform Sync Status error: the SDK call that failed, then its error"),
+                    error.localizedDescription),
+                log: "startPlatformAddressSync failed after clear: \(AppLogMessage.errorSummary(error))")
             Self.logger.error("🛰️ PLATFORM-ADDR :: post-clear restart failed: \(error)")
         }
     }
@@ -1140,8 +1160,9 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         lastKnownRecentBlock = 0
         lastSyncBlockTime = nil
         lastSyncTime = nil
-        lastError = nil
+        setLastError(nil, log: nil)
         addressWalletStartupError = nil
+        addressWalletStartupLogReason = nil
         syncCountSinceLaunch = 0
         totalTrunkQueries = 0
         totalBranchQueries = 0
@@ -1170,10 +1191,14 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             do {
                 if try !manager.isPlatformAddressSyncRunning() { try manager.startPlatformAddressSync() }
                 isRunning = true
-                lastError = addressWalletStartupError
+                setLastError(addressWalletStartupError, log: addressWalletStartupLogReason)
             } catch {
                 isRunning = false
-                lastError = "startPlatformAddressSync failed: \(error.localizedDescription)"
+                setLastError(
+                    String(
+                        format: NSLocalizedString("startPlatformAddressSync failed: %@", comment: "Platform Sync Status error: the SDK call that failed, then its error"),
+                        error.localizedDescription),
+                    log: "startPlatformAddressSync failed: \(AppLogMessage.errorSummary(error))")
             }
             shieldedRecovery.request(forceSync: false)
             return
@@ -1208,7 +1233,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         } catch {
             guard lifecycleGeneration == generation else { return }
             Self.logger.error("🛰️ PLATFORM-ADDR :: host.start failed: \(error)")
-            lastError = error.localizedDescription
+            setLastError(error.localizedDescription, log: "host.start failed: \(AppLogMessage.errorSummary(error))")
             return
         }
 
@@ -1220,6 +1245,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         let addressWallet: ManagedPlatformAddressWallet?
         // Carried to the end rather than returned on: see below.
         var addressWalletError: String?
+        var addressWalletLogReason: String?
         do {
             addressWallet = try resolvedWallet.platformAddressWallet()
         } catch {
@@ -1242,7 +1268,10 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
                 // nil and continues), so the only difference here is that
                 // `lastError` explains why the address surfaces are empty.
                 Self.logger.error("🛰️ PLATFORM-ADDR :: platformAddressWallet() failed: \(error)")
-                addressWalletError = "platformAddressWallet failed: \(error.localizedDescription)"
+                addressWalletLogReason = "platformAddressWallet failed: \(AppLogMessage.errorSummary(error))"
+                addressWalletError = String(
+                    format: NSLocalizedString("platformAddressWallet failed: %@", comment: "Platform Sync Status error: the SDK call that failed, then its error"),
+                    error.localizedDescription)
             }
         }
 
@@ -1256,13 +1285,17 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
               isSelectedWalletScope(walletId: resolvedWallet.walletId, network: network) else { return }
 
         var platformLoopError: String?
+        var platformLoopLogReason: String?
         do {
             if try !manager.isPlatformAddressSyncRunning() {
                 try manager.startPlatformAddressSync()
             }
         } catch {
             Self.logger.error("🛰️ PLATFORM-ADDR :: startPlatformAddressSync failed: \(error)")
-            platformLoopError = "startPlatformAddressSync failed: \(error.localizedDescription)"
+            platformLoopLogReason = "startPlatformAddressSync failed: \(AppLogMessage.errorSummary(error))"
+            platformLoopError = String(
+                format: NSLocalizedString("startPlatformAddressSync failed: %@", comment: "Platform Sync Status error: the SDK call that failed, then its error"),
+                error.localizedDescription)
         }
 
         // Shielded ownership only gates its own loop. A missing selection or
@@ -1326,7 +1359,9 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         // started Shielded/DashPay services retain their manager.
         self.isRunning = platformLoopError == nil
         self.addressWalletStartupError = addressWalletError
-        self.lastError = platformLoopError ?? addressWalletError
+        self.addressWalletStartupLogReason = addressWalletLogReason
+        setLastError(platformLoopError ?? addressWalletError,
+                     log: platformLoopError != nil ? platformLoopLogReason : addressWalletLogReason)
 
         startShieldedRecoveryMonitoring()
         await subscribeToManager(manager: manager, walletId: resolvedWallet.walletId)
@@ -1737,7 +1772,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         if result.success {
             // A healthy address-sync pass says nothing about the address
             // wallet, which failed to resolve at start and stays broken.
-            lastError = addressWalletStartupError
+            setLastError(addressWalletStartupError, log: addressWalletStartupLogReason)
             if result.checkpointHeight > 0 {
                 checkpointHeight = result.checkpointHeight
             }
@@ -1763,8 +1798,14 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             // Already on MainActor; avoid a queued read outliving this session.
             refreshDerivedAddresses()
         } else {
-            lastError = result.errorMessage ?? "Platform address sync failed"
+            setLastError(result.errorMessage ?? NSLocalizedString("Platform address sync failed", comment: "Sync diagnostics"),
+                         log: "Platform address sync failed")
         }
+    }
+
+    private func setLastError(_ shown: String?, log: String?) {
+        lastError = shown
+        lastErrorLogReason = log
     }
 
     private func refreshDerivedAddresses() {
@@ -2062,7 +2103,7 @@ final class ShieldedTxLookup {
     /// reconstructed during restore or reconciled from an unauthenticated
     /// already-consumed report; neither pending nor done); `vout` + the txid
     /// form the outpoint a recovery resume needs.
-    struct ShieldedLockInfo: Sendable {
+    struct ShieldedLockInfo: Sendable, Equatable {
         let amountDuffs: UInt64
         let statusRaw: Int
         let vout: UInt32
@@ -2073,12 +2114,17 @@ final class ShieldedTxLookup {
         /// ENUMERATES locks must filter, or it hands another wallet's outpoints
         /// to the SDK, which rightly answers "not tracked by this wallet".
         let walletId: Data
+        /// The Max drain that built this lock, by the operation id on its
+        /// row; nil for a lock no drain built (or a malformed id). Lets
+        /// `ShieldedAssetLocksInFlight` treat the lock of a drain that holds its claim as in
+        /// flight before the drain's SDK call reports its outpoint.
+        let drainOperation: UUID?
     }
 
     /// Value-only result crossing from the detached SwiftData reader back to
     /// the main actor. Persistent models and `ModelContext` never cross that
     /// boundary.
-    private struct SnapshotBuildResult: Sendable {
+    struct SnapshotBuildResult: Sendable {
         let map: [String: ShieldedLockInfo]?
         let assetLockCount: Int
         let typesSeen: [Int]
@@ -2090,12 +2136,38 @@ final class ShieldedTxLookup {
     private let lock = NSLock()
     /// txid (display-order hex, lowercased) → locked amount + status + vout.
     private var infoByTxid: [String: ShieldedLockInfo] = [:]
+    /// Locks a transfer reported consumed that the published snapshot does
+    /// not show as consumed (4) yet. Reads report them as consumed until a
+    /// snapshot does.
+    private var consumedOverlay: Set<String> = []
 
     /// Main-actor generation prevents a slow read from an old container (or
     /// an earlier refresh of the same container) from replacing newer state.
     @MainActor private var refreshGeneration: UInt64 = 0
 
-    private init() {}
+    /// Where `refresh` reads from: the active model container, and the
+    /// snapshot built from it off the main actor.
+    struct RefreshSource: Sendable {
+        let activeContainer: @MainActor @Sendable () -> ModelContainer?
+        let buildSnapshot: @Sendable (ModelContainer) async -> SnapshotBuildResult
+
+        /// The running wallet's container, read through SwiftData in a
+        /// detached task.
+        static let live = RefreshSource(
+            activeContainer: { SwiftDashSDKHost.shared.modelContainer },
+            buildSnapshot: { container in
+                await Task.detached(priority: .utility) {
+                    ShieldedTxLookup.buildSnapshot(in: container)
+                }.value
+            })
+    }
+
+    private let source: RefreshSource
+
+    /// Production code uses `shared`; tests build their own lookups.
+    init(source: RefreshSource = .live) {
+        self.source = source
+    }
 
     /// Locked shielded amount (duffs) for an L1 funding txid, or `nil` if the
     /// txid is not a tracked shielded asset lock. `txidHex` must be
@@ -2130,7 +2202,7 @@ final class ShieldedTxLookup {
         defer { lock.unlock() }
         guard let entry = infoByTxid[key],
               Self.identityFundingTypes.contains(entry.fundingTypeRaw) else { return nil }
-        return entry
+        return overlaid(entry, key: key)
     }
 
     /// The whole snapshot as (display-order hex txid, info) pairs. The caller
@@ -2139,7 +2211,7 @@ final class ShieldedTxLookup {
     func allEntries() -> [(txidHex: String, info: ShieldedLockInfo)] {
         lock.lock()
         defer { lock.unlock() }
-        return infoByTxid.map { (txidHex: $0.key, info: $0.value) }
+        return infoByTxid.map { (txidHex: $0.key, info: overlaid($0.value, key: $0.key)) }
     }
 
     private func entry(forTxidHex txidHex: String, fundingType: Int) -> ShieldedLockInfo? {
@@ -2147,7 +2219,35 @@ final class ShieldedTxLookup {
         lock.lock()
         defer { lock.unlock() }
         guard let entry = infoByTxid[key], entry.fundingTypeRaw == fundingType else { return nil }
-        return entry
+        return overlaid(entry, key: key)
+    }
+
+    /// Caller holds `lock`.
+    private func overlaid(_ entry: ShieldedLockInfo, key: String) -> ShieldedLockInfo {
+        guard consumedOverlay.contains(key) else { return entry }
+        return ShieldedLockInfo(
+            amountDuffs: entry.amountDuffs,
+            statusRaw: AssetLockRecoveryService.consumedStatus,
+            vout: entry.vout,
+            fundingTypeRaw: entry.fundingTypeRaw,
+            walletId: entry.walletId,
+            drainOperation: entry.drainOperation)
+    }
+
+    /// Records that a transfer consumed the asset lock funded by `txidWire`,
+    /// before the store and the next snapshot show it: the SDK can flush the
+    /// lock's final status after its call returns, and a refresh can be
+    /// superseded or fail. Reads report the lock as consumed until a
+    /// published snapshot does.
+    @MainActor
+    func markConsumed(txidWire: Data) {
+        let key = Transaction.displayHex(txidWire).lowercased()
+        lock.lock()
+        let inserted = consumedOverlay.insert(key).inserted
+        lock.unlock()
+        if inserted {
+            NotificationCenter.default.post(name: .shieldedTxLookupDidChange, object: self)
+        }
     }
 
     /// Rebuild the snapshot from the active container's shielded asset-lock
@@ -2161,7 +2261,7 @@ final class ShieldedTxLookup {
         let generation = refreshGeneration
         let refreshID = String(UUID().uuidString.prefix(8))
 
-        guard let container = SwiftDashSDKHost.shared.modelContainer else {
+        guard let container = source.activeContainer() else {
             store([:])
             DWLogger.log(
                 "🛡️ SHIELD-TX-REFRESH [\(refreshID)] skipped reason=\(reason) — no model container")
@@ -2172,13 +2272,11 @@ final class ShieldedTxLookup {
         DWLogger.log(
             "🛡️ SHIELD-TX-REFRESH [\(refreshID)] start reason=\(reason) generation=\(generation)")
 
-        let result = await Task.detached(priority: .utility) {
-            Self.buildSnapshot(in: container)
-        }.value
+        let result = await source.buildSnapshot(container)
         let elapsedMS = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
 
         guard generation == refreshGeneration,
-              SwiftDashSDKHost.shared.modelContainer === container else {
+              source.activeContainer() === container else {
             DWLogger.log(
                 "🛡️ SHIELD-TX-REFRESH [\(refreshID)] stale after \(elapsedMS)ms reason=\(reason) offMain=\(result.workerRanOffMain)")
             return
@@ -2233,8 +2331,11 @@ final class ShieldedTxLookup {
                     statusRaw: row.statusRaw,
                     vout: vout,
                     fundingTypeRaw: row.fundingTypeRaw,
-                    walletId: row.walletId)
-                func rank(_ statusRaw: Int) -> Int { statusRaw == 4 ? .max : statusRaw }
+                    walletId: row.walletId,
+                    drainOperation: CoreShieldedDrainRowIdentity(operationIdBytes: row.operationId).operation)
+                func rank(_ statusRaw: Int) -> Int {
+                    statusRaw == AssetLockRecoveryService.consumedStatus ? .max : statusRaw
+                }
                 if let existing = map[txid], rank(existing.statusRaw) >= rank(info.statusRaw) { continue }
                 map[txid] = info
             }
@@ -2268,11 +2369,32 @@ final class ShieldedTxLookup {
         }
     }
 
-    private func store(_ map: [String: ShieldedLockInfo]) {
+    /// Publishes `map` as the snapshot. `refresh` is its only production
+    /// caller; tests publish snapshots through it directly.
+    @MainActor
+    func store(_ map: [String: ShieldedLockInfo]) {
         lock.lock()
+        let changed = infoByTxid != map
         infoByTxid = map
+        // A snapshot that shows a lock consumed speaks for it itself. A lock
+        // missing from the snapshot keeps its mark: an empty snapshot is also
+        // what a refresh without a model container stores.
+        consumedOverlay = consumedOverlay.filter {
+            map[$0]?.statusRaw != AssetLockRecoveryService.consumedStatus
+        }
         lock.unlock()
+        if changed {
+            NotificationCenter.default.post(name: .shieldedTxLookupDidChange, object: self)
+        }
     }
+}
+
+extension Notification.Name {
+    /// Posted on the main actor when what `ShieldedTxLookup` reports changes:
+    /// a published snapshot that differs from the previous one, or a lock a
+    /// transfer marked consumed. A superseded refresh posts nothing. The
+    /// notification's object is the posting lookup.
+    static let shieldedTxLookupDidChange = Notification.Name("ShieldedTxLookupDidChange")
 }
 
 // MARK: - DerivedPlatformAddress selection

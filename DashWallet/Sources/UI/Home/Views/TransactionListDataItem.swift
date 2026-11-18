@@ -31,7 +31,6 @@ enum TransactionListDataItem {
     case tx(Transaction, TxRowMetadata?)
     case shieldedActivity(ShieldedActivityItem)
     case platformActivity(PlatformAddressActivityItem)
-    case crowdnode(FullCrowdNodeSignUpTxSet)
     case coinjoin(CoinJoinMixingTxSet)
     case coinjoinWithdrawal(CoinJoinWithdrawalTxSet)
     /// A Buy swap order whose deposit is on record and whose Dash transaction is not in the
@@ -42,8 +41,6 @@ enum TransactionListDataItem {
 extension TransactionListDataItem: Identifiable {
     var id: String {
         switch self {
-        case .crowdnode(_):
-            return FullCrowdNodeSignUpTxSet.id
         case .coinjoin(let set):
             return set.id
         case .coinjoinWithdrawal(let set):
@@ -61,8 +58,6 @@ extension TransactionListDataItem: Identifiable {
 
     var date: Date {
         switch self {
-        case .crowdnode(let set):
-            return set.transactionMap.values.first!.date
         case .coinjoin(let set):
             return set.groupDay
         case .coinjoinWithdrawal(let set):

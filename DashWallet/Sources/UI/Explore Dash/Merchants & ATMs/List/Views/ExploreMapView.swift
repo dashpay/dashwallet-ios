@@ -126,7 +126,7 @@ struct ExploreMapBounds {
 
 // MARK: - ExploreMapViewDelegate
 
-protocol ExploreMapViewDelegate {
+protocol ExploreMapViewDelegate: AnyObject {
     func exploreMapView(_ mapView: ExploreMapView, didChangeVisibleBounds bounds: ExploreMapBounds)
     func exploreMapView(_ mapView: ExploreMapView, didSelectMerchant merchant: ExplorePointOfUse)
 }
@@ -135,7 +135,8 @@ protocol ExploreMapViewDelegate {
 
 class ExploreMapView: UIView {
 
-    var delegate: ExploreMapViewDelegate?
+    /// Weak: the delegate is the controller that owns this map view.
+    weak var delegate: ExploreMapViewDelegate?
 
     var userLocation: CLLocation? {
         mapView.userLocation.location

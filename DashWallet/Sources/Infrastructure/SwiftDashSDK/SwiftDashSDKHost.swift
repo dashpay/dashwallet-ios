@@ -587,31 +587,6 @@ final class SwiftDashSDKHost {
         return persistedMnemonics().contains { Mnemonic.normalizePhrase($0.mnemonic) == typed }
     }
 
-    /// Throwaway key-wallet stack (manager + wallet) for path-based key
-    /// derivation, built from the persisted mnemonic of the host's active
-    /// wallet. Separate from the running `PlatformWalletManager` — key
-    /// derivation lives in the `WalletManager`/`Wallet` FFI surface, which
-    /// the runtime handles don't expose. The instances derive keys locally
-    /// (no networking, no persistence); drop them when done.
-    ///
-    /// Consumers: the masternode Owner/Voting key deriver and CrowdNode
-    /// message signing. Returns nil when no wallet is bound/running or the
-    /// mnemonic can't be read (logged).
-    func derivationWallet() -> (manager: WalletManager, wallet: Wallet, walletId: Data)? {
-        guard let hostWalletId = wallet?.walletId, let network = runningNetwork else {
-            Self.logger.warning("🪺 HOST :: derivationWallet — no bound wallet/network")
-            return nil
-        }
-        guard let mnemonic = try? WalletStorage().retrieveMnemonic(for: hostWalletId),
-              let manager = try? WalletManager(network: network),
-              let walletId = try? manager.addWallet(mnemonic: mnemonic),
-              let derivationWallet = (try? manager.getWallet(id: walletId)) ?? nil else {
-            Self.logger.error("🪺 HOST :: derivationWallet — key-wallet bootstrap failed")
-            return nil
-        }
-        return (manager: manager, wallet: derivationWallet, walletId: walletId)
-    }
-
     // MARK: - Lifecycle
 
     enum HostError: LocalizedError {
@@ -633,27 +608,27 @@ final class SwiftDashSDKHost {
         var errorDescription: String? {
             switch self {
             case .unsupportedNetwork(let network):
-                return "Platform SDK does not support \(network.rawValue)"
+                return String(format: NSLocalizedString("Platform SDK does not support %@", comment: "Wallet setup error"), WalletEnvironment.displayName(of: network))
             case .sdkInitFailed(let error):
-                return "SDK init failed: \(error.localizedDescription)"
+                return String(format: NSLocalizedString("SDK init failed: %@", comment: "Wallet setup error"), error.localizedDescription)
             case .modelContainerFailed(let error):
-                return "ModelContainer setup failed: \(error.localizedDescription)"
+                return String(format: NSLocalizedString("ModelContainer setup failed: %@", comment: "Wallet setup error"), error.localizedDescription)
             case .configureFailed(let error):
-                return "PlatformWalletManager configure failed: \(error.localizedDescription)"
+                return String(format: NSLocalizedString("PlatformWalletManager configure failed: %@", comment: "Wallet setup error"), error.localizedDescription)
             case .walletBootstrapFailed(let error):
-                return "Wallet bootstrap failed: \(error.localizedDescription)"
+                return String(format: NSLocalizedString("Wallet bootstrap failed: %@", comment: "Wallet setup error"), error.localizedDescription)
             case .walletCreationFailed(let error):
-                return "Wallet creation failed: \(error.localizedDescription)"
+                return String(format: NSLocalizedString("Wallet creation failed: %@", comment: "Wallet setup error"), error.localizedDescription)
             case .walletNotFound(let network):
-                return "No persisted SwiftDashSDK wallet found for \(network.rawValue)"
+                return String(format: NSLocalizedString("No persisted SwiftDashSDK wallet found for %@", comment: "Wallet setup error"), WalletEnvironment.displayName(of: network))
             case .invalidMnemonic:
-                return "SwiftDashSDKHost received an invalid mnemonic"
+                return NSLocalizedString("SwiftDashSDKHost received an invalid mnemonic", comment: "Wallet setup error")
             case .mnemonicPersistenceFailed(let error):
-                return "Mnemonic persistence failed: \(error.localizedDescription)"
+                return String(format: NSLocalizedString("Mnemonic persistence failed: %@", comment: "Wallet setup error"), error.localizedDescription)
             case .mnemonicRoundTripMismatch:
-                return "Mnemonic round-trip mismatch"
+                return NSLocalizedString("Mnemonic round-trip mismatch", comment: "Wallet setup error")
             case .devnetConfigurationChanged:
-                return "Devnet configuration changed while the runtime was starting"
+                return NSLocalizedString("Devnet configuration changed while the runtime was starting", comment: "Wallet setup error")
             }
         }
     }
@@ -703,14 +678,7 @@ final class SwiftDashSDKHost {
         case WalletStorageError.mnemonicNotFound:
             return (.notFound, nil)
         case SwiftDashSDKWalletDeletionError.invalidMnemonic,
-             SwiftDashSDKWalletDeletionError.unrecognizedWalletNetwork,
-             KeyWalletError.invalidMnemonic,
-             KeyWalletError.invalidInput:
-            // The resolver derives ids by constructing a wallet from the
-            // stored phrase; these two `KeyWalletError` cases are that
-            // construction refusing material that passed word validation.
-            // Its other cases (allocation, network, state) say nothing about
-            // the keys and stay a store failure.
+             SwiftDashSDKWalletDeletionError.unrecognizedWalletNetwork:
             return (.unclassifiable, nil)
         case HostError.mnemonicRoundTripMismatch:
             return (.idMismatch, nil)
@@ -1106,7 +1074,7 @@ final class SwiftDashSDKHost {
         do {
             // This is the same deterministic id contract used by addWallet's
             // duplicate guard and PlatformWalletManager.createWallet.
-            walletId = try Wallet(mnemonic: mnemonic, network: network).id
+            walletId = try Mnemonic.walletId(for: mnemonic, network: network)
         } catch {
             Self.logger.error("🪺 HOST :: walletId derivation failed: \(error)")
             throw HostError.walletCreationFailed(error)

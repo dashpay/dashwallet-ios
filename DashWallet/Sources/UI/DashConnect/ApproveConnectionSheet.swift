@@ -30,6 +30,53 @@ enum DashConnectIdentifierFormatting {
     }
 }
 
+/// How the DashConnect approval sheets name a request and say that it signs
+/// in again to an app that is connected.
+extension ConnectionRequest {
+    /// The app's name, trimmed, or "Unknown app" when the request names none.
+    var resolvedAppLabel: String {
+        let trimmed = appLabel.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? NSLocalizedString("Unknown app", comment: "DashConnect") : trimmed
+    }
+
+    /// Whether the app is connected already: approving replaces that
+    /// connection.
+    var isRelogin: Bool {
+        existingConnection != nil
+    }
+
+    /// The sheet's title: a sign-in again for an app that is connected.
+    var approvalTitle: String {
+        String(
+            format: isRelogin
+                ? NSLocalizedString("Sign in to %@ again?", comment: "DashConnect re-login")
+                : NSLocalizedString("Approve connection to %@?", comment: "DashConnect"),
+            resolvedAppLabel)
+    }
+
+    /// What the sheets say over `connectedSinceText`.
+    static var alreadyConnectedText: String {
+        NSLocalizedString("This connection already exists.", comment: "DashConnect re-login")
+    }
+
+    /// Since when the connection this request replaces has been on, e.g.
+    /// "Connected since 29 Oct 2026"; `nil` for a first connection.
+    var connectedSinceText: String? {
+        existingConnection.map {
+            String(
+                format: NSLocalizedString("Connected since %@", comment: "DashConnect re-login"),
+                Self.connectedSinceFormatter.string(from: $0.updatedAt))
+        }
+    }
+
+    private static let connectedSinceFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter
+    }()
+}
+
 struct ApproveConnectionSheet: View {
     let request: ConnectionRequest
     var isLoading: Bool = false
@@ -38,124 +85,160 @@ struct ApproveConnectionSheet: View {
     /// would otherwise see nothing at all.
     var errorText: String?
     var onApprove: () -> Void
+    /// Asks again which login this would be. The sheet offers it in place of
+    /// Approve while that is unresolved.
+    var onRetry: () -> Void = {}
     var onDeny: () -> Void
 
     var body: some View {
-        VStack(spacing: 0) {
-            Capsule()
-                .fill(Color.gray300Alpha50)
-                .frame(width: 36, height: 5)
-                .padding(.top, 6)
-                .padding(.bottom, 20)
+        // No title in the bar: the intro block below names the request. The
+        // close button denies, as a swipe-down does through the presenter's
+        // binding; both are blocked while an approval is in flight.
+        DashUIKit.BottomSheet(
+            showBackButton: .constant(false),
+            isDismissalEnabled: .constant(!isLoading),
+            isCloseButtonEnabled: !isLoading,
+            onClose: onDeny,
+            background: Color.primaryBackground
+        ) {
+            VStack(spacing: 0) {
+                // The permission list and the app label both grow with Dynamic
+                // Type; without a scroll container the actions can be pushed below
+                // the bottom of the sheet, leaving the user unable to approve or
+                // deny. The actions stay pinned under the scroll area.
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(request.approvalTitle)
+                            .font(.title2)
+                            .foregroundColor(.primaryText)
 
-            // The permission list and the app label both grow with Dynamic
-            // Type; without a scroll container the actions can be pushed below
-            // the bottom of the sheet, leaving the user unable to approve or
-            // deny. The actions stay pinned under the scroll area.
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(
-                            String(format: titleFormat, resolvedAppLabel)
-                        )
-                        .font(.title2)
-                        .foregroundColor(.primaryText)
+                            Text(resolvedSubtitle)
+                                .font(.subhead)
+                                .foregroundColor(.secondaryText)
 
-                        Text(resolvedSubtitle)
-                            .font(.subhead)
-                            .foregroundColor(.secondaryText)
-                    }
-
-                    if let existingConnection = request.existingConnection {
-                        reloginNotice(existingConnection)
-                    }
-
-                    if isRelogin {
-                        reloginPermissionsSummary
-                    } else {
-                        fullPermissions
-                    }
-
-                    if request.walletUsername != nil || request.walletIdentityId != nil {
-                        VStack(spacing: 4) {
-                            if let walletUsername = request.walletUsername {
-                                DashConnectDetailRow(
-                                    label: NSLocalizedString("Username", comment: "DashConnect"),
-                                    value: walletUsername
-                                )
+                            // The name above can be one the code or the
+                            // contract's owner chose. This id is what the
+                            // approval is for: the app's keys are bound to it. Shown
+                            // in full and selectable, so it can be compared with
+                            // the one the app publishes.
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(NSLocalizedString("App contract", comment: "DashConnect"))
+                                    .font(.footnote)
+                                    .foregroundColor(.secondaryText)
+                                Text(request.appContractId)
+                                    .font(.footnote.monospaced())
+                                    .foregroundColor(.primaryText)
+                                    .textSelection(.enabled)
+                                    .fixedSize(horizontal: false, vertical: true)
                             }
-                            if let walletIdentityId = request.walletIdentityId {
-                                DashConnectDetailRow(
-                                    label: NSLocalizedString("Identity", comment: "DashConnect"),
-                                    value: DashConnectIdentifierFormatting.truncateMiddle(walletIdentityId)
-                                )
-                            }
+                            .padding(.top, 6)
+                            .accessibilityElement(children: .combine)
                         }
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 10)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .stroke(Color.gray300, lineWidth: 1.5)
+
+                        if let connectedSince = request.connectedSinceText {
+                            reloginNotice(connectedSince)
+                        }
+
+                        // An App Connect plan gives the app keys with limits of
+                        // their own, so its terms are spelled out on a repeat
+                        // sign-in too.
+                        if request.login == .unresolved {
+                            Text(NSLocalizedString(
+                                "This wallet could not check what this sign-in would give the app.",
+                                comment: "DashConnect"))
+                                .font(.subhead)
+                                .foregroundColor(.primaryText)
+                            if let reason = request.unresolvedLoginReason {
+                                Text(reason)
+                                    .font(.footnote)
+                                    .foregroundColor(.secondaryText)
+                            }
+                        } else if case .refused(let refusal) = request.login {
+                            Text(NSLocalizedString(
+                                "This wallet will not answer this sign-in request.",
+                                comment: "DashConnect App Connect v2"))
+                                .font(.subhead)
+                                .foregroundColor(.primaryText)
+                            Text(refusal.reason)
+                                .font(.footnote)
+                                .foregroundColor(.secondaryText)
+                        }
+
+                        if request.walletUsername != nil || request.walletIdentityId != nil {
+                            VStack(spacing: 4) {
+                                if let walletUsername = request.walletUsername {
+                                    DashConnectDetailRow(
+                                        label: NSLocalizedString("Username", comment: "DashConnect"),
+                                        value: walletUsername
+                                    )
+                                }
+                                if let walletIdentityId = request.walletIdentityId {
+                                    DashConnectDetailRow(
+                                        label: NSLocalizedString("Identity", comment: "DashConnect"),
+                                        value: DashConnectIdentifierFormatting.truncateMiddle(walletIdentityId)
+                                    )
+                                }
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                    .stroke(Color.gray300, lineWidth: 1.5)
+                            )
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    // Figma uses a much wider horizontal inset here; 20pt matches the
+                    // phone sheets already used in this iOS app and avoids over-compressing the content.
+                    .padding(.horizontal, 20)
+                }
+
+                VStack(spacing: 8) {
+                    if let errorText {
+                        Text(errorText)
+                            .font(.footnote)
+                            .foregroundColor(Color.dash.errorText)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.bottom, 4)
+                    }
+
+                    // A refused request has nothing to approve or try again.
+                    if !isRefused {
+                        DashButton(
+                            // With the login unresolved there is nothing to approve.
+                            text: request.login == .unresolved
+                                ? NSLocalizedString("Try again", comment: "")
+                                : NSLocalizedString("Approve", comment: "DashConnect"),
+                            style: .filledBlue,
+                            size: .large,
+                            stretch: true,
+                            isEnabled: !isLoading,
+                            isLoading: isLoading,
+                            action: request.login == .unresolved ? onRetry : onApprove
                         )
                     }
+
+                    DashButton(
+                        text: NSLocalizedString("Deny", comment: "DashConnect"),
+                        style: .tintedBlue,
+                        size: .large,
+                        stretch: true,
+                        isEnabled: !isLoading,
+                        action: onDeny
+                    )
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                // Figma uses a much wider horizontal inset here; 20pt matches the
-                // phone sheets already used in this iOS app and avoids over-compressing the content.
                 .padding(.horizontal, 20)
+                .padding(.top, 12)
+                .padding(.bottom, 20)
             }
-
-            VStack(spacing: 8) {
-                if let errorText {
-                    Text(errorText)
-                        .font(.footnote)
-                        .foregroundColor(Color.dash.errorText)
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.bottom, 4)
-                }
-
-                DashButton(
-                    text: NSLocalizedString("Approve", comment: "DashConnect"),
-                    style: .filledBlue,
-                    size: .large,
-                    stretch: true,
-                    isEnabled: !isLoading,
-                    isLoading: isLoading,
-                    action: onApprove
-                )
-
-                DashButton(
-                    text: NSLocalizedString("Deny", comment: "DashConnect"),
-                    style: .tintedBlue,
-                    size: .large,
-                    stretch: true,
-                    isEnabled: !isLoading,
-                    action: onDeny
-                )
-            }
-            .padding(.horizontal, 20)
-            .padding(.top, 12)
-            .padding(.bottom, 20)
         }
-        .background(Color.primaryBackground)
     }
 
-    private var resolvedAppLabel: String {
-        let trimmed = request.appLabel.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? NSLocalizedString("Unknown app", comment: "DashConnect") : trimmed
-    }
-
-    private var isRelogin: Bool {
-        request.existingConnection != nil
-    }
-
-    private var titleFormat: String {
-        if isRelogin {
-            return NSLocalizedString("Sign in to %@ again?", comment: "DashConnect re-login")
-        } else {
-            return NSLocalizedString("Approve connection to %@?", comment: "DashConnect")
-        }
+    private var isRefused: Bool {
+        if case .refused = request.login { return true }
+        return false
     }
 
     private var resolvedSubtitle: String {
@@ -167,21 +250,17 @@ struct ApproveConnectionSheet: View {
         return candidates.first(where: { !$0.isEmpty }) ?? NSLocalizedString("Unknown app", comment: "DashConnect")
     }
 
-    private var fullPermissions: some View {
+    private func permissions(granted: [String], withheld: [String]) -> some View {
         VStack(alignment: .leading, spacing: 20) {
             VStack(alignment: .leading, spacing: 12) {
                 Text(NSLocalizedString("This app will be able to:", comment: "DashConnect"))
                     .font(.subhead)
                     .foregroundColor(.primaryText)
 
-                PermissionRow(
-                    icon: .custom("dashconnect.check.circle", maxHeight: 18),
-                    text: NSLocalizedString("See your username", comment: "DashConnect")
-                )
-                PermissionRow(
-                    icon: .custom("dashconnect.check.circle", maxHeight: 18),
-                    text: NSLocalizedString("Verify your identity", comment: "DashConnect")
-                )
+                // By position: two rows can read the same (two encryption keys).
+                ForEach(Array(granted.enumerated()), id: \.offset) { _, text in
+                    PermissionRow(icon: .custom("dashconnect.check.circle", maxHeight: 18), text: text)
+                }
             }
 
             VStack(alignment: .leading, spacing: 12) {
@@ -189,43 +268,23 @@ struct ApproveConnectionSheet: View {
                     .font(.subhead)
                     .foregroundColor(.primaryText)
 
-                PermissionRow(
-                    icon: .custom("dashconnect.xmark.circle", maxHeight: 18),
-                    text: NSLocalizedString("Your private keys", comment: "DashConnect")
-                )
-                PermissionRow(
-                    icon: .custom("dashconnect.xmark.circle", maxHeight: 18),
-                    text: NSLocalizedString("Withdraw funds", comment: "DashConnect")
-                )
+                // By position: two rows can read the same (two encryption keys).
+                ForEach(Array(withheld.enumerated()), id: \.offset) { _, text in
+                    PermissionRow(icon: .custom("dashconnect.xmark.circle", maxHeight: 18), text: text)
+                }
             }
         }
     }
 
-    private var reloginPermissionsSummary: some View {
-        HStack(spacing: 8) {
-            Icon(name: .custom("dashconnect.check.circle", maxHeight: 18))
-                .frame(width: 18, height: 18)
-
-            Text(NSLocalizedString("Same permissions as before", comment: "DashConnect re-login"))
-                .font(.subhead)
-                .foregroundColor(.primaryText)
-        }
-    }
-
-    private func reloginNotice(_ existingConnection: DAppConnection) -> some View {
+    private func reloginNotice(_ connectedSince: String) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(NSLocalizedString("This connection already exists.", comment: "DashConnect re-login"))
+            Text(ConnectionRequest.alreadyConnectedText)
                 .font(.subhead)
                 .foregroundColor(.primaryText)
 
-            Text(
-                String(
-                    format: NSLocalizedString("Connected since %@", comment: "DashConnect re-login"),
-                    Self.connectedSinceFormatter.string(from: existingConnection.updatedAt)
-                )
-            )
-            .font(.footnote)
-            .foregroundColor(.secondaryText)
+            Text(connectedSince)
+                .font(.footnote)
+                .foregroundColor(.secondaryText)
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 10)
@@ -234,27 +293,22 @@ struct ApproveConnectionSheet: View {
                 .stroke(Color.gray300, lineWidth: 1.5)
         )
     }
-
-    private static let connectedSinceFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .none
-        return formatter
-    }()
 }
 
-private struct PermissionRow: View {
+/// One thing an app can or cannot do, with its mark.
+struct PermissionRow: View {
     let icon: IconName
     let text: String
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(alignment: .top, spacing: 6) {
             Icon(name: icon)
                 .frame(width: 18, height: 18)
 
             Text(text)
                 .font(.subhead)
                 .foregroundColor(.primaryText)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 }
@@ -309,7 +363,7 @@ private let dashConnectTruncateMiddleCheck: Bool = {
     )
 }
 
-#Preview("Approve Re-Login") {
+#Preview("Older Sign-In Refused") {
     ApproveConnectionSheet(
         request: ConnectionRequest(
             loginRequest: MockDashConnectDataSource.sampleLoginRequest,
@@ -317,7 +371,8 @@ private let dashConnectTruncateMiddleCheck: Bool = {
             appUrl: "yap.pr",
             walletUsername: "dashuser",
             walletIdentityId: "5DbLwAxEWR695MsqP4KybNQD5n7CUDWydJYNg63FzUo8",
-            existingConnection: MockDashConnectDataSource.sample(.active)
+            existingConnection: MockDashConnectDataSource.sample(.active),
+            login: .refused(AppConnect.v1Refusal)
         ),
         onApprove: {},
         onDeny: {}

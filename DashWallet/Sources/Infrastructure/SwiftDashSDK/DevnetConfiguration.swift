@@ -22,8 +22,8 @@ import SwiftDashSDK
 
 /// The user-editable devnet coordinates, over UserDefaults.
 ///
-/// Two of the keys are READ DIRECTLY BY SwiftDashSDK and must keep their
-/// exact names:
+/// Both keys are READ DIRECTLY BY SwiftDashSDK and must keep their exact
+/// names:
 ///   - `platformQuorumURL` — `SDK.init(network: .devnet, …)` reads it and
 ///     auto-discovers DAPI addresses from `{quorumURL}/masternodes`. Without
 ///     it, devnet SDK creation fails.
@@ -31,17 +31,12 @@ import SwiftDashSDK
 ///     passes it into `PlatformSpvStartConfig.devnetName` so the SPV user
 ///     agent embeds `devnet.devnet-<name>` (Core devnet peers drop the
 ///     handshake without it).
-/// The third key is app-owned: the DashConnect `loginKeyResponse` contract
-/// id on devnet (the contract is registered separately per devnet, so its id
-/// differs from the pinned testnet one).
 ///
 /// Values are trimmed on read; empty-after-trim counts as unset. The quorum
 /// URL and devnet name are seeded with the current team devnet
 /// (`devnet-moutai`) through the registration domain, so a fresh install can
 /// select Devnet without typing anything — a user-saved value (including an
-/// explicitly emptied one, stored as `""`) always wins over the seed. The
-/// DashConnect contract id deliberately has NO default: it is unknown for
-/// moutai, and an absent value must surface as a normal error, never a guess.
+/// explicitly emptied one, stored as `""`) always wins over the seed.
 ///
 /// NOTE: the SDK's own built-in devnet quorum template
 /// (`https://quorums.devnet.<name>.networks.dash.org`) does not match real
@@ -53,8 +48,6 @@ enum DevnetConfiguration {
     static let quorumURLKey = "platformQuorumURL"
     /// Same key the SwiftDashSDK sample app uses — do not rename.
     static let devnetNameKey = "platformDevnetName"
-    /// App-owned: base58 id of the devnet `loginKeyResponse` contract.
-    static let dashConnectContractIdKey = "devnetDashConnectLoginContractId"
 
     /// devnet-moutai, verified reachable 2026-09-01 (13 enabled masternodes,
     /// Core P2P on :20001, DAPI on :1443).
@@ -121,14 +114,6 @@ enum DevnetConfiguration {
         return nil
     }
 
-    /// The devnet DashConnect `loginKeyResponse` contract id (base58), or nil
-    /// when unset/blank. Stored as entered; validity (32-byte identifier) is
-    /// the consumer's check so a typo surfaces as an error there, not a crash.
-    static var dashConnectContractId: String? {
-        ensureDefaultsRegistered()
-        return normalized(UserDefaults.standard.string(forKey: dashConnectContractIdKey))
-    }
-
     /// Writers store the raw (trimmed) text — including the empty string, so
     /// clearing a field genuinely unsets it instead of resurfacing the
     /// registered default.
@@ -142,14 +127,7 @@ enum DevnetConfiguration {
         UserDefaults.standard.set(value.trimmingCharacters(in: .whitespacesAndNewlines), forKey: devnetNameKey)
     }
 
-    static func setDashConnectContractId(_ value: String) {
-        ensureDefaultsRegistered()
-        UserDefaults.standard.set(value.trimmingCharacters(in: .whitespacesAndNewlines), forKey: dashConnectContractIdKey)
-    }
-
     /// Whether devnet can start: quorum URL AND devnet name are both present.
-    /// The DashConnect contract id is deliberately not part of this — it only
-    /// gates DashConnect approvals, not the network itself.
     static var isConfigured: Bool {
         quorumURL != nil && devnetName != nil
     }

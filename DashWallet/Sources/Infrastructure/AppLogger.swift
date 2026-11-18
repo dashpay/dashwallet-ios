@@ -30,10 +30,6 @@ import SwiftDashSDK
 struct AppLogger: Sendable {
     let category: String
 
-    init(category: String) {
-        self.category = category
-    }
-
     /// Written only in DEBUG builds, like os.Logger debug lines, which the
     /// system never persists.
     func debug(_ message: AppLogMessage) {

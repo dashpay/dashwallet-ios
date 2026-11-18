@@ -244,7 +244,7 @@ class SettingsMenuViewModel: ObservableObject {
         #if DASHPAY
         items.append(contentsOf: [
             MenuItemModel(
-                title: "Enable Voting",
+                title: NSLocalizedString("Enable Voting", comment: "Voting"),
                 showToggle: true,
                 isToggled: VotingPrefs.shared.votingEnabled,
                 action: { [weak self] in

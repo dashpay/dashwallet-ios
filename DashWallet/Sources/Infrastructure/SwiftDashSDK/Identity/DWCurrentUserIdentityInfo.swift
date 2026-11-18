@@ -319,7 +319,7 @@ public final class DWCurrentUserIdentityInfo: NSObject {
             refresh: { try await wallet.refreshIdentityBalance(identityId: identityId) },
             publish: { balance in
                 self.invalidate()
-                Self.logger.info("🪪 IDENT-INFO :: refreshed identity balance: \(balance, privacy: .public) credits")
+                Self.logger.info("🪪 IDENT-INFO :: refreshed identity balance: \(balance, privacy: .private) credits")
                 NotificationCenter.default.post(
                     name: Notification.Name("DWDashPayRegistrationStatusUpdatedNotification"),
                     object: nil)

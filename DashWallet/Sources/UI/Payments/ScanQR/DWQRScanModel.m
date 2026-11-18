@@ -205,9 +205,10 @@ NS_ASSUME_NONNULL_END
 
             __weak typeof(self) weakSelf = self;
             DWBIP70InteractiveCoordinator *coordinator = [[DWBIP70InteractiveCoordinator alloc] init];
+            // No callback scheme: a scan is not an app asking, so none is called back.
             [coordinator fetchAndVerifyWithRequestURL:parsed.rURL
                                                scheme:parsed.scheme
-                                       callbackScheme:parsed.callbackScheme
+                                       callbackScheme:nil
                                            completion:^(DWBIP70ConfirmationBox *_Nullable box, NSError *_Nullable error) {
                                                // The coordinator delivers on the main thread.
                                                (void)coordinator; // retain until completion
@@ -265,9 +266,10 @@ NS_ASSUME_NONNULL_END
 
         __weak __typeof__(self) weakSelf = self;
         DWBIP70InteractiveCoordinator *coordinator = [[DWBIP70InteractiveCoordinator alloc] init];
+        // No callback scheme: a scan is not an app asking, so none is called back.
         [coordinator fetchAndVerifyWithRequestURL:parsed.rURL
                                            scheme:parsed.scheme
-                                   callbackScheme:parsed.callbackScheme
+                                   callbackScheme:nil
                                        completion:^(DWBIP70ConfirmationBox *_Nullable box, NSError *_Nullable error) {
                                            (void)coordinator; // retain until completion
                                            __strong __typeof__(weakSelf) strongSelf = weakSelf;

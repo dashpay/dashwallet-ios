@@ -65,9 +65,10 @@ NS_ASSUME_NONNULL_BEGIN
         }
         else if (parsed.rURL != nil) { // may be BIP73 url: https://github.com/bitcoin/bips/blob/master/bip-0073.mediawiki
             DWBIP70InteractiveCoordinator *coordinator = [[DWBIP70InteractiveCoordinator alloc] init];
+            // No callback scheme: a paste or an NFC tag is not an app asking, so none is called back.
             [coordinator fetchAndVerifyWithRequestURL:parsed.rURL
                                                scheme:parsed.scheme
-                                       callbackScheme:parsed.callbackScheme
+                                       callbackScheme:nil
                                            completion:^(DWBIP70ConfirmationBox *_Nullable box, NSError *_Nullable error) {
                                                (void)coordinator;         // retain until completion
                                                if (error || box == nil) { // don't try any more BIP73 urls

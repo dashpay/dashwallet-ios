@@ -190,7 +190,7 @@ struct GiftCardDetailsView: View {
         UIPasteboard.general.string = value
         UINotificationFeedbackGenerator().notificationOccurred(.success)
 
-        // Show the same "Copied" HUD used elsewhere (Receive, CrowdNode) over the topmost
+        // Show the same "Copied" HUD used elsewhere (Receive) over the topmost
         // controller so it appears above this gift card sheet.
         let windowScene = UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }
@@ -219,7 +219,8 @@ struct GiftCardDetailsView: View {
     
     private var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM dd, yyyy 'at' h:mm a"
+        // en_US stays "MMMM dd, yyyy 'at' h:mm a"; other locales get their own order, words and clock (`j`).
+        formatter.setLocalizedDateFormatFromTemplate("MMMMddyyyyjmm")
         return formatter
     }
 }

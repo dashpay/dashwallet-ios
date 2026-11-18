@@ -185,7 +185,7 @@ final class InternalTransferConfirmViewModel: ObservableObject {
     func confirm() async -> Bool {
         guard case .transfer(let request) = mode else { return false }
         switch await runner.start(request) {
-        case .started, .busy:
+        case .started, .busy, .walletReloading:
             return true
         case .notAuthorized:
             return false

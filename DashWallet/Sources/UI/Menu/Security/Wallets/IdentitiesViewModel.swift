@@ -291,8 +291,8 @@ final class IdentitiesViewModel: ObservableObject {
         try? container.mainContext.save()
 
         if failures > 0 {
-            errorMessage = String(
-                format: NSLocalizedString("Could not refresh %d identities", comment: "Identities"),
+            errorMessage = String.localizedStringWithFormat(
+                NSLocalizedString("Could not refresh %d identities", comment: "Identities"),
                 failures)
         }
     }
@@ -328,8 +328,8 @@ final class IdentitiesViewModel: ObservableObject {
             } else {
                 infoMessage = found.count == 1
                     ? NSLocalizedString("Found 1 new identity", comment: "Identities")
-                    : String(
-                        format: NSLocalizedString("Found %d new identities", comment: "Identities"),
+                    : String.localizedStringWithFormat(
+                        NSLocalizedString("Found %d new identities", comment: "Identities"),
                         found.count)
             }
             // Backfill balances / usernames, THEN adopt. Run this even when

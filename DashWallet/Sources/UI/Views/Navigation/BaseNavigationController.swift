@@ -115,7 +115,21 @@ class BaseNavigationController: UINavigationController {
     override func pushViewController(_ viewController: UIViewController, animated: Bool) {
         isPushAnimationInProgress = true
 
+        if !viewControllers.isEmpty {
+            hideTabBar(on: viewController)
+        }
         super.pushViewController(viewController, animated: animated)
+    }
+
+    override func setViewControllers(_ viewControllers: [UIViewController], animated: Bool) {
+        viewControllers.dropFirst().forEach(hideTabBar(on:))
+        super.setViewControllers(viewControllers, animated: animated)
+    }
+
+    /// Only a tab's root screen shows the tab bar: every screen stacked on it
+    /// hides the bar, whether or not it sets `hidesBottomBarWhenPushed` itself.
+    private func hideTabBar(on viewController: UIViewController) {
+        viewController.hidesBottomBarWhenPushed = true
     }
 
     override func viewDidLoad() {
@@ -234,9 +248,7 @@ extension UINavigationController {
     
     /// Replaces the last `n` controllers with `controller`, dropping the whole
     /// stack when `n` exceeds it. Callers count the screens their own flow
-    /// pushed, but the same screen can be reached with a shallower stack —
-    /// CrowdNode opens on whichever controller matches the account state, so
-    /// its flows can start one or two levels below what the caller assumed —
+    /// pushed, but the same screen can be reached with a shallower stack,
     /// and `removeLast` traps rather than throwing when `n` is too large.
     func replaceLast(_ n: Int = 1, with controller: UIViewController, animated: Bool = true) {
         var viewControllers = viewControllers
@@ -248,6 +260,25 @@ extension UINavigationController {
     func popToViewController<T>(ofType type: T.Type, animated: Bool) {
         if let controller = controller(by: type) {
             popToViewController(controller, animated: animated)
+        }
+    }
+
+    /// Pops the top page once anything presented over the stack (an alert,
+    /// a confirmation dialog) has gone, so the pop never starts while that
+    /// presentation is still being dismissed.
+    func popAfterPresentationEnds(animated: Bool = true) {
+        guard let presented = presentedViewController else {
+            popViewController(animated: animated)
+            return
+        }
+        if presented.isBeingDismissed, let coordinator = presented.transitionCoordinator {
+            coordinator.animate(alongsideTransition: nil) { [weak self] _ in
+                self?.popViewController(animated: animated)
+            }
+        } else {
+            dismiss(animated: animated) { [weak self] in
+                self?.popViewController(animated: animated)
+            }
         }
     }
 }

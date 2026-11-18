@@ -28,6 +28,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (nullable DWURLAction *)actionForURL:(NSURL *)url;
 
+/// The `dash:` URI for a `dashwallet://pay=` link the wallet read itself (a scan, a paste, an NFC
+/// tag) and no app opened: the link's address, parameters and own label, without `sender`. No app
+/// asked for that payment, so none is named on the confirmation or called back after it.
+/// nil for anything `actionForURL:` does not turn into a payment.
++ (nullable NSURL *)paymentURLForScannedLink:(NSURL *)url;
+
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
 

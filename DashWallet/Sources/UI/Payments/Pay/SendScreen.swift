@@ -1227,7 +1227,8 @@ struct SendConfirmSheet: View {
             case .submittedUnconfirmed:
                 ShieldedSubmittedUnconfirmedView(
                     onDone: onCompleted,
-                    detail: isCoreDrain ? Self.drainPendingDetail : nil)
+                    detail: unconfirmedDetail,
+                    onResume: canResumeUnconfirmedLock ? resumeUnconfirmedLock : nil)
             default:
                 detailsBody
             }
@@ -1240,6 +1241,23 @@ struct SendConfirmSheet: View {
     private static let drainPendingDetail = NSLocalizedString(
         "Check the Max transfer's status from the pending transaction in History, or by tapping Max again.",
         comment: "Send confirm sheet: drain outcome pending")
+
+    private static let resumeDetail = NSLocalizedString(
+        "If it does not arrive, Resume continues this same transfer to the same recipient. It cannot pay twice.",
+        comment: "Send confirm sheet: an unconfirmed Core to Shielded send can be resumed")
+
+    private var unconfirmedDetail: String? {
+        if isCoreDrain { return Self.drainPendingDetail }
+        return canResumeUnconfirmedLock ? Self.resumeDetail : nil
+    }
+
+    /// The unknown result left this send's asset lock recorded. Only this
+    /// sheet still holds the recipient: every later recovery surface resumes
+    /// the lock to the wallet's own shielded address.
+    private var canResumeUnconfirmedLock: Bool {
+        route == .coreToShielded && !isCoreDrain && destinationRaw43 != nil
+            && coordinator.canResumeUnconfirmedAssetLock
+    }
 
     /// The close button has to do what the visible button of the current phase
     /// does. In the terminal phases that is `onCompleted`, which also unwinds
@@ -1688,19 +1706,24 @@ struct SendConfirmSheet: View {
         // ends in `.submittedUnconfirmed`, never here; a failed one left no
         // marker, so it confirms afresh under a new operation.
         if route == .coreToShielded, !isCoreDrain,
-           let op = coordinator.lastAssetLockOutPoint,
+           coordinator.lastAssetLockOutPoint != nil,
            let destinationRaw43 {
-            coordinator.reset()
             Task {
-                await coordinator.resumeAssetLock(
-                    outPointTxidWire: op.txidWire,
-                    outPointVout: op.vout,
-                    recipientRaw43: destinationRaw43)
+                await coordinator.retryLastAssetLock(recipientRaw43: destinationRaw43)
             }
             return
         }
         coordinator.reset()
         confirm()
+    }
+
+    /// Continues the recorded lock to the same recipient. Never starts a
+    /// fresh payment: without a recorded lock it does nothing.
+    private func resumeUnconfirmedLock() {
+        guard canResumeUnconfirmedLock, let destinationRaw43 else { return }
+        Task {
+            await coordinator.retryLastAssetLock(recipientRaw43: destinationRaw43)
+        }
     }
 }
 

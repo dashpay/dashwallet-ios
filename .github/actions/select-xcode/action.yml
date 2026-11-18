@@ -1,0 +1,71 @@
+name: Select Xcode
+description: >-
+  Select the Xcode version named in .xcode-version: from the checkout being
+  built, else from the fallback checkout. Fails before the build when the file
+  is missing or that Xcode is not installed on the runner image.
+
+inputs:
+  app-path:
+    description: The checkout being built; its .xcode-version is read first.
+    required: true
+  fallback-path:
+    description: >-
+      A checkout whose .xcode-version is read when app-path has none (the
+      release tooling checkout, for app branches older than the file).
+    required: false
+    default: ""
+
+outputs:
+  version:
+    description: The selected Xcode version, as in /Applications/Xcode_<version>.app.
+    value: ${{ steps.select.outputs.version }}
+
+runs:
+  using: composite
+  steps:
+    - name: Select Xcode
+      id: select
+      shell: bash
+      env:
+        APP_PATH: ${{ inputs.app-path }}
+        FALLBACK_PATH: ${{ inputs.fallback-path }}
+      run: |
+        set -euo pipefail
+        version=""
+        source=""
+        candidates=("$APP_PATH/.xcode-version")
+        if [ -n "$FALLBACK_PATH" ]; then
+          candidates+=("$FALLBACK_PATH/.xcode-version")
+        fi
+        for candidate in "${candidates[@]}"; do
+          if [ -f "$candidate" ]; then
+            version="$(tr -d '[:space:]' < "$candidate")"
+            if [ -n "$version" ]; then
+              source="$candidate"
+              break
+            fi
+          fi
+        done
+        if [ -z "$version" ]; then
+          echo "::error::select_xcode.version_file_missing: .xcode-version is missing or empty in ${candidates[*]}. Rule: CI builds with the Xcode version named in .xcode-version at the repository root."
+          exit 1
+        fi
+        if [ "$source" != "${candidates[0]}" ]; then
+          echo "Read Xcode $version from $source (fallback: $APP_PATH has no .xcode-version)"
+        else
+          echo "Read Xcode $version from $source"
+        fi
+
+        developer_dir="/Applications/Xcode_${version}.app/Contents/Developer"
+        if [ ! -d "$developer_dir" ]; then
+          available=""
+          for app in /Applications/Xcode_*.app; do
+            [ -d "$app" ] || continue
+            name="${app##*/Xcode_}"
+            available="${available:+$available, }${name%.app}"
+          done
+          echo "::error::select_xcode.not_installed: Xcode $version from $source is not installed. Available: ${available:-none}"
+          exit 1
+        fi
+        sudo xcode-select -s "$developer_dir"
+        echo "version=$version" >> "$GITHUB_OUTPUT"

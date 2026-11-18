@@ -375,7 +375,7 @@ enum InvitationValidator {
                 do {
                     let status = try await wallet.invitationClaimStatus(uri: uri)
                     logger.info(
-                        "🎟️ INVITE :: status amount=\(status.amountDuffs, privacy: .public) claimed=\(status.alreadyClaimed, privacy: .public)")
+                        "🎟️ INVITE :: status amount=\(status.amountDuffs, privacy: .private) claimed=\(status.alreadyClaimed, privacy: .public)")
                     return status
                 } catch {
                     logger.info("🎟️ INVITE :: status failed: \(error)")

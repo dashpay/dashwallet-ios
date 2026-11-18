@@ -282,9 +282,6 @@ final class TransactionNotificationProducer {
             DWLogger.log("TransactionNotificationProducer: window not exhausted; the catch-up boundary must stay put")
         }
 
-        // After the rows above, not before: a CrowdNode deposit posts in every
-        // app state, and consuming its id first left the dispatcher nothing
-        // to post. `consume` leaves an id that was already posted untouched.
         if appState.isApplicationActive {
             await consumeShownRows()
         }
@@ -327,7 +324,7 @@ final class TransactionNotificationProducer {
                   !isShieldedWithdrawalPayout(row),
                   row.wrapped.dashAmount > 0 else { continue }
             await store.consume(id: Self.notificationId(for: row),
-                                topic: Self.topic(forAmount: row.wrapped.dashAmount))
+                                topic: .transactions)
         }
     }
 
@@ -436,8 +433,8 @@ final class TransactionNotificationProducer {
         // or inactive — the foreground feed is already showing it. The id
         // is still consumed in the store, so a later scan (relaunch,
         // background refresh) cannot post a payment the user watched
-        // arrive. CrowdNode deposits post in every app state.
-        if notification.topic != .crowdnode, appState.isApplicationActive {
+        // arrive.
+        if appState.isApplicationActive {
             await store.consume(id: notification.id, topic: notification.topic)
             return .appActive
         }
@@ -482,23 +479,10 @@ final class TransactionNotificationProducer {
         return tx.timestamp
     }
 
-    /// Classification picks copy, topic, sound, and route only — the
-    /// identity stays the txid, so a CrowdNode deposit still dedups per
-    /// transaction like every other received payment.
+    /// The identity is the txid, so a received payment dedups per
+    /// transaction.
     private func notification(for tx: ObservedTransaction, amount: UInt64) async -> AppNotification {
         let id = Self.notificationId(for: tx)
-
-        if Self.topic(forAmount: amount) == .crowdnode {
-            return AppNotification(
-                id: id,
-                topic: .crowdnode,
-                title: nil,
-                body: NSLocalizedString("Your deposit to CrowdNode is received.", comment: "CrowdNode"),
-                sound: .default,
-                route: .staking,
-                foregroundBehavior: .banner)
-        }
-
         let amountText = amount.formattedDashAmount
         let fiatText = await fiatFormatter(amount.dashAmount)
         return AppNotification(
@@ -517,12 +501,6 @@ final class TransactionNotificationProducer {
     /// The dedup identity of a received row's notification.
     private static func notificationId(for tx: ObservedTransaction) -> String {
         "tx.\(tx.txidHexDisplay)"
-    }
-
-    /// The CrowdNode API encodes "deposit received" as an exact amount
-    /// (apiOffset + code) paid back to the account.
-    private static func topic(forAmount amount: UInt64) -> NotificationTopic {
-        amount == ApiCode.depositReceived.rawValue + CrowdNode.apiOffset ? .crowdnode : .transactions
     }
 
     // MARK: Production defaults

@@ -1,0 +1,134 @@
+name: "Workflow lint"
+
+# Checks every workflow and composite action on every pull request, including
+# the release workflows no pull request runs:
+#
+# - actionlint, with shellcheck (warning and above) on inline run: scripts;
+# - scripts/ci/check_workflow_policy.py: every step from another repository is
+#   pinned to a full commit, every checkout drops the credential, composite
+#   action scripts pass shellcheck, and (on a pull request) a warning for each
+#   changed step of a release-only workflow and for a changed .xcode-version;
+# - the self-tests of the policy script and of the empty-test-run guard;
+# - scripts/ci/test_ci_structure.py: the order and conditions of the CI steps
+#   the test plan relies on, select-xcode and the Rust read and install scripts
+#   over throwaway folders, this job's own check steps over broken fixtures, and
+#   the policy script end to end in throwaway git repositories.
+#
+# Secret-free on an ubuntu runner, so a fork pull request gets the same result.
+# No `paths` filter: a path-filtered check is absent on a PR it does not match.
+on:
+  pull_request:
+  push:
+    branches:
+      - develop
+
+permissions:
+  contents: read
+
+concurrency:
+  group: workflow-lint-${{ github.ref }}${{ github.event_name != 'pull_request' && format('-{0}', github.sha) || '' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  workflow-lint:
+    name: Workflow lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    env:
+      ACTIONLINT_VERSION: "1.7.12"
+      # actionlint_<version>_checksums.txt of the release.
+      ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+      SHELLCHECK_VERSION: "0.11.0"
+      # sha256 of shellcheck-v<version>.linux.x86_64.tar.xz (the release publishes no checksum file).
+      SHELLCHECK_SHA256: 8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+          # On pull_request HEAD is the merge commit; depth 2 also brings its first
+          # parent, the base the policy step compares with.
+          fetch-depth: 2
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python packages
+        run: |
+          set -euo pipefail
+          python3 -m pip install --require-hashes -r scripts/ci/requirements-workflow-lint.txt
+
+      - name: Install actionlint and shellcheck
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP"
+          curl -fsSLo actionlint.tar.gz \
+            "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLo shellcheck.tar.xz \
+            "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz"
+          printf '%s  actionlint.tar.gz\n%s  shellcheck.tar.xz\n' "$ACTIONLINT_SHA256" "$SHELLCHECK_SHA256" | sha256sum -c -
+          mkdir -p bin
+          tar -xzf actionlint.tar.gz -C bin actionlint
+          tar -xJf shellcheck.tar.xz -C bin --strip-components=1 "shellcheck-v${SHELLCHECK_VERSION}/shellcheck"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+          bin/actionlint -version
+          bin/shellcheck --version
+
+      # Each check runs even when an earlier one failed, so one red tool does not
+      # hide another's findings; the job still fails if any of them failed.
+      - name: Self-test of the empty-test-run guard
+        if: ${{ !cancelled() }}
+        run: |
+          set -euo pipefail
+          result=passed
+          python3 scripts/ci/check_test_count.py --self-test || result=failed
+          printf '### check_test_count.py --self-test\n\n%s\n\n' "$result" >> "$GITHUB_STEP_SUMMARY"
+          [ "$result" = passed ]
+
+      - name: Self-test of the workflow policy script
+        if: ${{ !cancelled() }}
+        run: |
+          set -euo pipefail
+          result=passed
+          python3 scripts/ci/check_workflow_policy.py --self-test || result=failed
+          printf '### check_workflow_policy.py --self-test\n\n%s\n\n' "$result" >> "$GITHUB_STEP_SUMMARY"
+          [ "$result" = passed ]
+
+      - name: CI structure tests
+        if: ${{ !cancelled() }}
+        run: |
+          set -euo pipefail
+          result=passed
+          python3 scripts/ci/test_ci_structure.py || result=failed
+          printf '### test_ci_structure.py\n\n%s\n\n' "$result" >> "$GITHUB_STEP_SUMMARY"
+          [ "$result" = passed ]
+
+      - name: actionlint
+        if: ${{ !cancelled() }}
+        env:
+          SHELLCHECK_OPTS: --severity=warning
+          ACTIONLINT_FORMAT: '{{range $err := .}}::error file={{$err.Filepath}},line={{$err.Line}},col={{$err.Column}}::{{if eq $err.Kind "shellcheck"}}workflow_lint.shellcheck{{else}}workflow_lint.actionlint{{end}}: {{$err.Message}}\n{{end}}'
+        run: |
+          set -euo pipefail
+          status=0
+          actionlint -format "$ACTIONLINT_FORMAT" > "$RUNNER_TEMP/actionlint.txt" || status=$?
+          cat "$RUNNER_TEMP/actionlint.txt"
+          count=$(grep -c '^::error' "$RUNNER_TEMP/actionlint.txt" || true)
+          printf '### actionlint\n\n%s finding(s); shellcheck at warning and above on inline run: scripts.\n\n' "$count" >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+
+      - name: Workflow policy
+        if: ${{ !cancelled() }}
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_EVENT_NAME" = pull_request ]; then
+            # The merge commit's first parent is the base branch GitHub merged into,
+            # so the diff holds exactly what the pull request changes.
+            python3 scripts/ci/check_workflow_policy.py --base HEAD^1
+          else
+            # No base on push, so no release-only warnings.
+            python3 scripts/ci/check_workflow_policy.py
+          fi

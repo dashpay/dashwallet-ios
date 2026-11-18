@@ -113,7 +113,9 @@ final class PreparedStandardSend: NSObject {
             claimLock.unlock()
             throw WalletSendService.makeError(
                 code: .alreadyBroadcast,
-                description: "Transaction was already broadcast or is being broadcast"
+                description: NSLocalizedString(
+                    "Transaction was already broadcast or is being broadcast",
+                    comment: "Send refused because the transaction already went out")
             )
         }
 
@@ -347,50 +349,10 @@ final class WalletSendService: NSObject {
     func send(
         address: String,
         amount: UInt64,
-        inputSelector: SingleInputAddressSelector? = nil,
-        adjustAmountDownwards: Bool = false,
         sessionAuthSufficient: Bool = false
     ) async throws -> Data {
         try Self.ensureInitialRestoreSyncCompleted()
-        // Also covers the selected-input path below, whose `buildAndSignFromAddress`
-        // broadcasts internally and never reaches `PreparedStandardSend.broadcast()`.
         try Self.ensureOnline()
-        if let inputSelector {
-            Self.logger.info("💸 TXSEND :: routing to selected-input (SwiftDashSDK) path")
-            try await sendAuthorizer.authorizeSend(spendAmount: amount, sessionAuthSufficient: sessionAuthSufficient)
-            do {
-                let (_, fee, txHash) = try await SwiftDashSDKTransactionSender.buildAndSignFromAddress(
-                    fromAddress: inputSelector.address,
-                    to: address,
-                    amount: amount,
-                    adjustAmountDownwards: adjustAmountDownwards
-                )
-                // buildAndSignFromAddress broadcasts internally; txHash is
-                // display order — reverse to the wire-order registry key.
-                let txidWire = Data(txHash.reversed())
-                recentSends.record(
-                    txidWire: txidWire, address: address, amount: amount, fee: fee)
-                return txidWire
-            } catch SwiftDashSDKTransactionSender.SendError.insufficientSelectedFunds(let selected, let amount, let fee) {
-                throw Self.makeError(
-                    code: .insufficientSelectedFunds,
-                    description: "Not enough funds. Selected: \(selected), Amount: \(amount), Fee: \(fee)"
-                )
-            } catch SwiftDashSDKTransactionSender.SendError.transactionRejected(_, let reason) {
-                throw Self.makeError(
-                    code: .broadcastRejected,
-                    description: BroadcastOutcomeCopy.rejected,
-                    diagnostic: reason
-                )
-            } catch SwiftDashSDKTransactionSender.SendError.transactionStatusUnknown(_, let reason) {
-                throw Self.makeError(
-                    code: .broadcastUnknown,
-                    description: BroadcastOutcomeCopy.unknown,
-                    diagnostic: reason
-                )
-            }
-        }
-
         let preparedSend = try await prepareStandardSendForConfirmation(
             address: address, amount: amount, sessionAuthSufficient: sessionAuthSufficient)
         try preparedSend.broadcast()
@@ -456,17 +418,17 @@ final class WalletSendService: NSObject {
         guard amount > 0 else {
             throw Self.makeError(
                 code: .coinJoinSweepUnavailable,
-                description: "No CoinJoin balance to move"
+                description: NSLocalizedString("No CoinJoin balance to move", comment: "Send error: CoinJoin move funds")
             )
         }
 
-        Self.logger.info("💸 TXSEND :: preparing CoinJoin sweep — balance \(amount, privacy: .public) duffs (\(Double(amount) / 1e8, privacy: .public) DASH)")
+        Self.logger.info("💸 TXSEND :: preparing CoinJoin sweep — balance \(amount, privacy: .private) duffs (\(Double(amount) / 1e8, privacy: .private) DASH)")
         try await sendAuthorizer.authorizeSend(spendAmount: amount)
 
         guard let resolved = SwiftDashSDKReceiveAddressReader.receiveDestination() else {
             throw Self.makeError(
                 code: .coinJoinSweepUnavailable,
-                description: "Could not resolve a destination address for the CoinJoin sweep"
+                description: NSLocalizedString("Could not resolve a destination address for the CoinJoin sweep", comment: "Send error: CoinJoin move funds")
             )
         }
         // The address must be the pinned wallet's own; the sweep itself
@@ -497,10 +459,10 @@ final class WalletSendService: NSObject {
             // A reported-success sweep that produced no transaction is treated
             // as a failure, so the caller surfaces an error (the sweep alert)
             // rather than silently "succeeding" with the balance unchanged.
-            Self.logger.error("💸 TXSEND :: CoinJoin sweep returned no transactions for \(amount, privacy: .public) duffs — treating as failure")
+            Self.logger.error("💸 TXSEND :: CoinJoin sweep returned no transactions for \(amount, privacy: .private) duffs — treating as failure")
             throw Self.makeError(
                 code: .coinJoinSweepUnavailable,
-                description: "CoinJoin sweep produced no transactions"
+                description: NSLocalizedString("CoinJoin sweep produced no transactions", comment: "Send error: CoinJoin move funds")
             )
         }
         // Tag every sweep tx's txid so the home screen groups them into the
@@ -514,7 +476,7 @@ final class WalletSendService: NSObject {
         await MainActor.run {
             SwiftDashSDKWalletState.shared.refreshCoinJoinBalance()
             let post = SwiftDashSDKWalletState.shared.coinJoinBalanceDuffs
-        Self.logger.info("💸 TXSEND :: post-sweep CoinJoin balance \(post, privacy: .public) duffs (was \(amount, privacy: .public))")
+        Self.logger.info("💸 TXSEND :: post-sweep CoinJoin balance \(post, privacy: .private) duffs (was \(amount, privacy: .private))")
             // The per-network recovery flag is owned solely by the recovery scan-
             // completion path (SwiftDashSDKSPVCoordinator.maybeCompleteCoinJoinRecovery,
             // which marks recovered once the one-time wide scan reaches .synced). A
@@ -586,7 +548,7 @@ final class WalletSendService: NSObject {
         amount: UInt64,
         memo: String? = nil
     ) async throws -> PreparedContactPayment {
-        Self.logger.info("💸 TXSEND :: pay-to-contact preparing — \(amount, privacy: .public) duffs")
+        Self.logger.info("💸 TXSEND :: pay-to-contact preparing — \(amount, privacy: .private) duffs")
         // Refused before the PIN prompt: see `UnknownContactPaymentOutcomes`.
         try refuseContactWithUnknownOutcome(contactIdentityId)
         try Self.ensureInitialRestoreSyncCompleted()
@@ -611,7 +573,9 @@ final class WalletSendService: NSObject {
         guard let context else {
             throw Self.makeError(
                 code: .dashPayPaymentUnavailable,
-                description: "Wallet or DashPay identity is not ready"
+                description: NSLocalizedString(
+                    "Wallet or DashPay identity is not ready",
+                    comment: "Send to contact: wallet or identity not available")
             )
         }
 
@@ -740,7 +704,9 @@ final class WalletSendService: NSObject {
         if unknownContactPaymentOutcomes.contains(contactIdentityId: contactIdentityId) {
             throw Self.makeError(
                 code: .broadcastUnknown,
-                description: "A previous payment to this contact could not be confirmed. Don't send it again; wait for wallet synchronization."
+                description: NSLocalizedString(
+                    "A previous payment to this contact could not be confirmed. Don't send it again; wait for wallet synchronization.",
+                    comment: "Send to contact: an earlier payment's broadcast outcome is unknown")
             )
         }
     }
@@ -876,7 +842,9 @@ final class WalletSendService: NSObject {
                 diagnostic: diagnostic)
         }
         guard acceptedCount > 0 || unknownChunkCount > 0 else { return nil }
-        return makeError(code: .coinJoinSweepPartial, description: "CoinJoin sweep incomplete", diagnostic: diagnostic)
+        return makeError(code: .coinJoinSweepPartial,
+                         description: NSLocalizedString("CoinJoin sweep incomplete", comment: "Send error: CoinJoin move funds"),
+                         diagnostic: diagnostic)
     }
 
     /// Whether a failed CoinJoin sweep may be offered again right away: not
@@ -1023,13 +991,13 @@ private final class SendAuthorizer {
             WalletSendService.logger.info("💸 TXSEND :: user cancelled authentication")
             throw WalletSendService.makeError(
                 code: .authenticationCancelled,
-                description: "Authentication cancelled"
+                description: NSLocalizedString("Authentication cancelled", comment: "Send error")
             )
         case .failed, .timedOut:
             WalletSendService.logger.error("💸 TXSEND :: authentication failed (\(outcome == .timedOut ? "timed out" : "failed", privacy: .public))")
             throw WalletSendService.makeError(
                 code: .authenticationFailed,
-                description: "Authentication failed"
+                description: NSLocalizedString("Authentication failed", comment: "")
             )
         }
     }
@@ -1039,7 +1007,6 @@ private extension WalletSendService {
     enum ErrorCode: Int {
         case authenticationCancelled = 1
         case authenticationFailed = 2
-        case insufficientSelectedFunds = 3
         case coinJoinSweepUnavailable = 4
         case alreadyBroadcast = 5
         case dashPayPaymentUnavailable = 6
@@ -1083,12 +1050,20 @@ private extension WalletSendService {
         case .transactionBroadcastUnconfirmed(let reason):
             return makeError(
                 code: .broadcastUnknown,
-                description: "We couldn't confirm whether the transaction was accepted. Don't send it again; wait for wallet synchronization. \(reason)"
+                description: String(
+                    format: NSLocalizedString(
+                        "We couldn't confirm whether the transaction was accepted. Don't send it again; wait for wallet synchronization. %@",
+                        comment: "Send: broadcast outcome unknown; the argument is the SDK's reason"),
+                    reason)
             )
         case .transactionBroadcastRejected(let reason):
             return makeError(
                 code: .broadcastRejected,
-                description: "The transaction wasn't sent. You can try again. \(reason)"
+                description: String(
+                    format: NSLocalizedString(
+                        "The transaction wasn't sent. You can try again. %@",
+                        comment: "Send: broadcast rejected; the argument is the SDK's reason"),
+                    reason)
             )
         case .staleReservationToken:
             // Either the reserved inputs aged out while the user confirmed (a
@@ -1115,12 +1090,10 @@ private extension WalletSendService {
 
     /// The two broadcast outcomes a user can be shown, in one place.
     ///
-    /// Every send route ends in one of these, and there is more than one route
-    /// — the prepared standard send and the selected-input / sweep path, which
-    /// broadcasts inside `buildAndSignFromAddress` and never reaches
-    /// `PreparedStandardSend.broadcast()`. They used to build the strings
-    /// independently and drifted apart, so one route kept showing unlocalized
-    /// English with the SDK's internal reason appended.
+    /// Every send route ends in one of these, and there is more than one
+    /// route, so the strings live here rather than in each route: built
+    /// independently, they drift apart, and one route ends up showing
+    /// unlocalized English with the SDK's internal reason appended.
     enum BroadcastOutcomeCopy {
         /// Nothing reached the network, so the money is provably still here —
         /// say that, because "wasn't sent" alone reads as a loss.

@@ -81,10 +81,11 @@ final class EvonodeEpochBlocksService: EvonodeEpochBlocksProviding {
 
         var errorDescription: String? {
             switch self {
-            case .sdkUnavailable: return "Platform SDK not ready"
-            case .malformedEntry: return "Unexpected proposer tally format"
-            case .pageLimitReached: return "Proposer list too long to scan"
-            case let .currentEpochUnavailable(reason): return "Current epoch unavailable: \(reason)"
+            case .sdkUnavailable: return NSLocalizedString("Platform SDK not ready", comment: "Evonode status: epoch blocks error")
+            case .malformedEntry: return NSLocalizedString("Unexpected proposer tally format", comment: "Evonode status: epoch blocks error")
+            case .pageLimitReached: return NSLocalizedString("Proposer list too long to scan", comment: "Evonode status: epoch blocks error")
+            case let .currentEpochUnavailable(reason):
+                return String(format: NSLocalizedString("Current epoch unavailable: %@", comment: "Evonode status: epoch blocks error"), reason)
             }
         }
     }

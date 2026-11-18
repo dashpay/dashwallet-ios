@@ -23,14 +23,11 @@ public final class SendCoinsService: NSObject {
     /// - Returns: the wire-order txid of the broadcast transaction
     ///   (`Transaction.txHashData` convention).
     func sendCoins(address: String, amount: UInt64,
-                   inputSelector: SingleInputAddressSelector? = nil, adjustAmountDownwards: Bool = false,
                    sessionAuthSufficient: Bool = false) async throws
         -> Data {
         return try await walletSendService.send(
             address: address,
             amount: amount,
-            inputSelector: inputSelector,
-            adjustAmountDownwards: adjustAmountDownwards,
             sessionAuthSufficient: sessionAuthSufficient
         )
     }
@@ -83,7 +80,7 @@ public final class SendCoinsService: NSObject {
     ///   acknowledged, so the verdict decides nothing the buyer is standing by for.
     func payWithDashUrl(url paymentUrlString: String, awaitAcceptance: Bool = true) async throws -> Data {
         guard let uri = BIP70URI(paymentUrlString), let requestURL = uri.r else {
-            throw DashSpendError.paymentProcessingError("Invalid payment request")
+            throw DashSpendError.paymentProcessingError(NSLocalizedString("Invalid payment request", comment: "DashSpend"))
         }
 
         let network = try PaymentNetworkResolver.current()

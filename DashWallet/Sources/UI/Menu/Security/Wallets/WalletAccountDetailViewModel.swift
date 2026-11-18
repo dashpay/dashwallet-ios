@@ -201,7 +201,7 @@ final class WalletAccountDetailViewModel: ObservableObject {
         return WalletAccountDetail(
             typeName: account.accountTypeName,
             accountIndex: account.accountIndex,
-            networkName: account.wallet.network?.displayName
+            networkName: account.wallet.network.map { WalletEnvironment.displayName(of: $0) }
                 ?? NSLocalizedString("Unknown", comment: ""),
             showsBalance: showsBalance,
             isPlatformPayment: isPlatformPayment,

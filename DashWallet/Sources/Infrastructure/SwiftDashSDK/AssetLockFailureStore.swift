@@ -33,19 +33,29 @@ struct AssetLockFailureRecord: Codable, Equatable, Sendable {
     /// `transferFailed`…) — the searchable part.
     let errorCase: String
     /// The error's own text: the SDK detail string, with the consensus code
-    /// in front when the rejection carried one.
+    /// in front when the rejection carried one. Stored only: it is Raw error
+    /// text, so neither the log line nor `summary.txt` writes it.
     let detail: String
     let recordedAt: Date
+    /// The error's `AppLogMessage.errorSummary`: type, case, code and a
+    /// consensus rejection's code and kind. Nil for a failure stored before
+    /// it existed.
+    var summary: String?
 
-    /// One log-line form: `case=<errorCase> detail=<detail>`.
+    /// One log-line form: `case=<errorCase> error=<summary>`.
     var logDescription: String {
-        "case=\(errorCase) detail=\(detail)"
+        "case=\(errorCase)" + (summary.map { " error=\($0)" } ?? "")
     }
 
-    /// Name the error by its typed case and keep its detail string, unwrapping
-    /// the coordinator's `transferFailed` envelope so a Platform rejection
-    /// reaches the log as `assetLockTooManyInputs` / `consensusRejection`
-    /// rather than as the envelope's name.
+    /// The detail recorded for `PlatformWalletError.assetLockRecipientMismatch`
+    /// in place of the SDK's text.
+    static let recipientMismatchDetail = "recorded and requested shielded recipients differ"
+
+    /// Name the error by its typed case and Error summary and keep its detail
+    /// string, unwrapping the coordinator's `transferFailed` envelope so a Platform
+    /// rejection reaches the log as `assetLockTooManyInputs` / `consensusRejection`
+    /// rather than as the envelope's name. A recipient mismatch keeps its case
+    /// name but records `recipientMismatchDetail` instead of the SDK's text.
     ///
     /// Pure: callable from tests with any `Error`.
     static func describe(_ error: Error, at date: Date = Date()) -> AssetLockFailureRecord {
@@ -62,18 +72,25 @@ struct AssetLockFailureRecord: Codable, Equatable, Sendable {
             if case .consensusRejection(let consensus, _) = platformError {
                 detail = "consensus code=\(consensus.code) kind=\(consensus.kind) \(detail)"
             }
+            // The SDK's text names both Orchard addresses; the case name says
+            // all a shared log needs.
+            if case .assetLockRecipientMismatch = platformError {
+                detail = Self.recipientMismatchDetail
+            }
             if let reason = platformError.failureReason {
                 detail += " reason=\(reason)"
             }
             return AssetLockFailureRecord(
                 errorCase: AppLogMessage.caseName(of: platformError) ?? String(describing: type(of: platformError)),
                 detail: detail,
-                recordedAt: date)
+                recordedAt: date,
+                summary: AppLogMessage.errorSummary(platformError))
         }
         let typeName = String(describing: type(of: error))
         let errorCase = AppLogMessage.caseName(of: error).map { "\(typeName).\($0)" } ?? typeName
         let detail = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
-        return AssetLockFailureRecord(errorCase: errorCase, detail: detail, recordedAt: date)
+        return AssetLockFailureRecord(
+            errorCase: errorCase, detail: detail, recordedAt: date, summary: AppLogMessage.errorSummary(error))
     }
 }
 

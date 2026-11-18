@@ -82,22 +82,6 @@ final class TransactionDirectionTests: XCTestCase {
         XCTAssertEqual(makeTransaction(directionRaw: 0, netAmount: 100).defaultTaxCategory, .transferIn)
     }
 
-    func testCrowdNodeTopUpStillRequiresMovedDirection() {
-        let address = "Xcrowdnode"
-        let output = ObservedTransaction.Output(
-            address: address,
-            amount: CrowdNode.requiredForSignup)
-        let moved = makeObservedTransaction(
-            wrapped: makeTransaction(directionRaw: 1, netAmount: -10, fee: 10),
-            output: output)
-        let sent = makeObservedTransaction(
-            wrapped: makeTransaction(directionRaw: 1, netAmount: -110, fee: 10),
-            output: output)
-
-        XCTAssertTrue(CrowdNodeTopUpTx(address: address).matches(moved))
-        XCTAssertFalse(CrowdNodeTopUpTx(address: address).matches(sent))
-    }
-
     private func makeTransaction(
         directionRaw: UInt32,
         netAmount: Int64,
@@ -110,25 +94,6 @@ final class TransactionDirectionTests: XCTestCase {
             fee: fee,
             contextRaw: 0,
             date: Date(timeIntervalSince1970: 1))
-    }
-
-    private func makeObservedTransaction(
-        wrapped: Transaction,
-        output: ObservedTransaction.Output
-    ) -> ObservedTransaction {
-        ObservedTransaction(
-            txid: wrapped.txHashData,
-            txidHexDisplay: wrapped.txHashHexString,
-            outputs: [output],
-            inputAddresses: [],
-            timestamp: wrapped.date,
-            blockHeight: 1,
-            minedAt: wrapped.date,
-            ownOutputsAmount: 0,
-            ownOutputAddresses: [],
-            isChainAccepted: true,
-            context: 2,
-            wrapped: wrapped)
     }
 
     private func assertPresentation(

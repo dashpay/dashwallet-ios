@@ -87,13 +87,28 @@ public final class WalletEnvironment: NSObject {
     /// service endpoints, testnet-pinned contract ids).
     @objc public static var isTestNetwork: Bool { isTestnet || isDevnet }
 
-    /// Display name of the current network ("Mainnet"/"Testnet"/"Devnet") —
-    /// same strings DashSync's `DSChain.name` produced for the supported nets.
-    @objc public static var networkDisplayName: String {
-        switch networkKind {
-        case .mainnet: return "Mainnet"
-        case .testnet: return "Testnet"
-        case .devnet: return "Devnet"
+    /// Name of the current network from the source text list
+    /// (English: Mainnet / Testnet / Devnet).
+    @objc public static var networkDisplayName: String { displayName(of: networkKind) }
+
+    /// Name of a network from the source text list (English: Mainnet / Testnet / Devnet).
+    /// Every screen that names a network uses this, so the names stay one set of keys.
+    public static func displayName(of kind: NetworkKind) -> String {
+        switch kind {
+        case .mainnet: return NSLocalizedString("Mainnet", comment: "Wallet network")
+        case .testnet: return NSLocalizedString("Testnet", comment: "Wallet network")
+        case .devnet: return NSLocalizedString("Devnet", comment: "Wallet network")
+        }
+    }
+
+    /// Name of an SDK network from the source text list (English: Mainnet / Testnet /
+    /// Devnet / Regtest). `.regtest` has no `NetworkKind`, so it keeps its own key.
+    public static func displayName(of network: SwiftDashSDK.Network) -> String {
+        switch network {
+        case .mainnet: return displayName(of: NetworkKind.mainnet)
+        case .testnet: return displayName(of: NetworkKind.testnet)
+        case .devnet: return displayName(of: NetworkKind.devnet)
+        case .regtest: return NSLocalizedString("Regtest", comment: "Wallet network")
         }
     }
 
@@ -115,8 +130,8 @@ public final class WalletEnvironment: NSObject {
     /// managed switch (the runtime's `switchNetwork(to:)` owns the mirror
     /// zeroing and the lifecycle refresh itself) from an external write
     /// (recovery, sole-network selection), which still gets the full
-    /// observer behavior. Other listeners (DWRootModel, HomeViewModel,
-    /// CrowdNode, …) ignore `userInfo` and are unaffected.
+    /// observer behavior. Other listeners (DWRootModel, HomeViewModel, …)
+    /// ignore `userInfo` and are unaffected.
     public enum NetworkSwitchSource {
         case external
         case managedSwitch(transitionID: String)

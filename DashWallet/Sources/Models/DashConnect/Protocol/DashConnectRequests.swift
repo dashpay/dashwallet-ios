@@ -4,6 +4,15 @@ enum DashConnectNetwork: String {
     case mainnet = "m"
     case testnet = "t"
     case devnet = "d"
+
+    /// Name of the network from the source text list, the same key every screen uses.
+    var displayName: String {
+        switch self {
+        case .mainnet: return WalletEnvironment.displayName(of: WalletEnvironment.NetworkKind.mainnet)
+        case .testnet: return WalletEnvironment.displayName(of: WalletEnvironment.NetworkKind.testnet)
+        case .devnet: return WalletEnvironment.displayName(of: WalletEnvironment.NetworkKind.devnet)
+        }
+    }
 }
 
 struct DashKeyRequest: Equatable {
@@ -13,6 +22,18 @@ struct DashKeyRequest: Equatable {
     /// not be treated as a verified app identity.
     let label: String
     let network: DashConnectNetwork
+    /// Set for an App Connect request v2; the fields above are taken from it
+    /// (`contractId` is its `appId`).
+    var appConnect: AppConnectUri? = nil
+}
+
+/// A `dash-key:` URI carrying an App Connect request v2.
+struct AppConnectUri: Equatable {
+    let request: AppConnectRequest
+    let network: DashConnectNetwork
+    /// The `cb` return URL: absolute `https`, no credentials. Checked for
+    /// form only; whether its host belongs to the app is not decided here.
+    let callback: URL?
 }
 
 struct DashStRequest: Equatable {

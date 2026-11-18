@@ -24,8 +24,13 @@ import Foundation
 enum NotificationTopic: String, CaseIterable {
     case transactions
     case dashpay
-    case crowdnode
     case swap
     case announcements
     case system
+}
+
+extension NotificationTopic {
+    /// Raw values of topics the app no longer posts. Older builds may have
+    /// left their notifications in the tray and their events in the store.
+    static let retiredRawValues: Set<String> = ["crowdnode"]
 }

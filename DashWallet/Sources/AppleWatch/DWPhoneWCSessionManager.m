@@ -163,7 +163,7 @@ static CGSize const LOGO_SIZE = {54.0, 54.0};
                 NSString *receiveAddress = [DWSwiftDashSDKReceiveAddressReader receiveAddress];
                 DWPaymentURIBuilder *req = [[DWPaymentURIBuilder alloc] initWithAddress:receiveAddress
                                                                                  amount:[message[AW_SESSION_QR_CODE_BITS_KEY] integerValue]];
-                DWLog(@"watch requested a qr code amount %lld", req.amount);
+                DWLog(@"watch requested a qr code");
 
                 NSUserDefaults *defs = [[NSUserDefaults alloc] initWithSuiteName:APP_GROUP_ID];
                 UIImage *image = nil;

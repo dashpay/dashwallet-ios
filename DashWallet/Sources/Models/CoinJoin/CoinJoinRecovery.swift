@@ -151,7 +151,7 @@ final class CoinJoinRecovery: NSObject {
         lock.lock(); defer { lock.unlock() }
         defaults.set(balanceDuffs, forKey: sweepPromptDismissedBalanceKey(network))
         Self.logger.info(
-            "🪙 CJRECOV :: sweep prompt deferred at \(balanceDuffs, privacy: .public) duffs on \(self.networkTag(network), privacy: .public)")
+            "🪙 CJRECOV :: sweep prompt deferred at \(balanceDuffs, privacy: .private) duffs on \(self.networkTag(network), privacy: .public)")
     }
 
     /// Whether an earlier "Later" suppresses the sweep prompt at the current

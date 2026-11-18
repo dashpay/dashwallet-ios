@@ -36,7 +36,7 @@ final class NotificationDispatcherTests: XCTestCase {
 
     private func makeNotification(id: String = "tx.test-id",
                                   topic: NotificationTopic = .transactions,
-                                  route: DeepLinkRoute? = .staking,
+                                  route: DeepLinkRoute? = .home,
                                   behavior: NotificationForegroundBehavior = .banner) -> AppNotification {
         AppNotification(id: id,
                         topic: topic,
@@ -121,7 +121,7 @@ final class NotificationDispatcherTests: XCTestCase {
 
     func testBadgeIsStoreUnseenCount() async {
         store.seed(id: "earlier.1", topic: .transactions)
-        store.seed(id: "earlier.2", topic: .crowdnode)
+        store.seed(id: "earlier.2", topic: .swap)
         store.seed(id: "already.seen", topic: .transactions, seen: true)
 
         await dispatcher.post(makeNotification(id: "tx.third"))
@@ -135,17 +135,17 @@ final class NotificationDispatcherTests: XCTestCase {
     /// carries the default level.
     func testInterruptionLevelIsDefaultForEveryTopic() async {
         await dispatcher.post(makeNotification(id: "tx.a", topic: .transactions))
-        await dispatcher.post(makeNotification(id: "cn.a", topic: .crowdnode))
+        await dispatcher.post(makeNotification(id: "swap.a", topic: .swap))
 
         XCTAssertEqual(client.addedRequests[0].content.interruptionLevel, .active)
         XCTAssertEqual(client.addedRequests[1].content.interruptionLevel, .active)
     }
 
     func testRouteAndForegroundBehaviorRoundTripThroughUserInfo() async {
-        await dispatcher.post(makeNotification(route: .staking, behavior: .suppress))
+        await dispatcher.post(makeNotification(route: .swapOrder(id: "order.1"), behavior: .suppress))
 
         let userInfo = client.addedRequests[0].content.userInfo
-        XCTAssertEqual(DeepLinkRoute.decode(fromUserInfo: userInfo), .staking)
+        XCTAssertEqual(DeepLinkRoute.decode(fromUserInfo: userInfo), .swapOrder(id: "order.1"))
         XCTAssertEqual(userInfo[NotificationUserInfoKey.foregroundBehavior] as? String,
                        NotificationForegroundBehavior.suppress.rawValue)
     }

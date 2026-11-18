@@ -27,14 +27,19 @@ class LocalCurrencyViewModel: ObservableObject {
     @Published private(set) var filteredItems: [CurrencyItem] = []
     @Published var selectedCurrencyCode: String
 
-    init(allItems: [CurrencyItem], selectedCurrencyCode: String) {
+    /// Whether picking a currency also sets the app-wide fiat currency. The
+    /// amount screens pick a currency for the amount being entered only.
+    private let changesAppCurrency: Bool
+
+    init(allItems: [CurrencyItem], selectedCurrencyCode: String, changesAppCurrency: Bool = true) {
         self.allItems = allItems
         self.selectedCurrencyCode = selectedCurrencyCode
+        self.changesAppCurrency = changesAppCurrency
         self.filteredItems = allItems
         setupSearch()
     }
 
-    convenience init(currencyCode: String? = nil) {
+    convenience init(currencyCode: String? = nil, changesAppCurrency: Bool = true) {
         let formatter = NumberFormatter()
         formatter.maximumFractionDigits = 2
         formatter.minimumFractionDigits = 2
@@ -47,12 +52,17 @@ class LocalCurrencyViewModel: ObservableObject {
                 priceString: formatter.string(from: price.price)
             )
         }
-        self.init(allItems: items, selectedCurrencyCode: currencyCode ?? App.fiatCurrency)
+        self.init(
+            allItems: items,
+            selectedCurrencyCode: currencyCode ?? App.fiatCurrency,
+            changesAppCurrency: changesAppCurrency)
     }
 
     func select(currencyCode: String) {
         selectedCurrencyCode = currencyCode
-        App.shared.fiatCurrency = currencyCode
+        if changesAppCurrency {
+            App.shared.fiatCurrency = currencyCode
+        }
     }
 
     private func setupSearch() {
@@ -64,16 +74,60 @@ class LocalCurrencyViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
-    private func applyFilter(_ query: String) {
-        let trimmed = query.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty else {
+    /// Every word of the query must appear in the code or the name, ignoring
+    /// case and diacritics, so "states united" finds United States and "real"
+    /// finds Brazilian Real whatever the accents.
+    func applyFilter(_ query: String) {
+        let tokens = Self.searchKey(query)
+            .split(whereSeparator: { $0.isWhitespace })
+            .map(String.init)
+        guard !tokens.isEmpty else {
             filteredItems = allItems
             return
         }
-        let lowercased = trimmed.lowercased()
-        filteredItems = allItems.filter {
-            $0.code.lowercased().contains(lowercased) || $0.name.lowercased().contains(lowercased)
+        filteredItems = allItems.filter { item in
+            let code = Self.searchKey(item.code)
+            let name = Self.searchKey(item.name)
+            return tokens.allSatisfy { code.contains($0) || name.contains($0) }
         }
+    }
+
+    /// Fixed locale: the codes and names come from the rates data, and a
+    /// device locale must not change how they match (Turkish folds "I" to
+    /// a dotless "ı", so "inr" would miss INR).
+    nonisolated private static let searchLocale = Locale(identifier: "en_US_POSIX")
+
+    private static func searchKey(_ text: String) -> String {
+        text.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: searchLocale)
+    }
+
+    /// Where each word of `query` occurs in `text`, matched the way the
+    /// filter matches (case and diacritics ignored), sorted and merged so
+    /// the cell can highlight every matching word.
+    nonisolated static func matchRanges(of query: String, in text: String) -> [Range<String.Index>] {
+        let tokens = query.split(whereSeparator: { $0.isWhitespace }).map(String.init)
+        var ranges: [Range<String.Index>] = []
+        for token in tokens {
+            var searchStart = text.startIndex
+            while searchStart < text.endIndex,
+                  let range = text.range(of: token,
+                                         options: [.caseInsensitive, .diacriticInsensitive],
+                                         range: searchStart..<text.endIndex,
+                                         locale: searchLocale) {
+                ranges.append(range)
+                searchStart = range.upperBound
+            }
+        }
+        // Merge overlaps ("dol" and "dollar" in the same name).
+        var merged: [Range<String.Index>] = []
+        for range in ranges.sorted(by: { $0.lowerBound < $1.lowerBound }) {
+            if let last = merged.last, range.lowerBound <= last.upperBound {
+                merged[merged.count - 1] = last.lowerBound..<max(last.upperBound, range.upperBound)
+            } else {
+                merged.append(range)
+            }
+        }
+        return merged
     }
 }
 

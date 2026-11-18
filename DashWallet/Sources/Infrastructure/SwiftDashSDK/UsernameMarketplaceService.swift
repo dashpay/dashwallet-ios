@@ -361,7 +361,7 @@ struct UsernameMarketplaceService {
             name: name,
             expectedPriceCredits: expectedPriceCredits,
             signer: KeychainSigner(modelContainer: container))
-        Self.logger.info("🏷️ MARKET :: purchased \(name, privacy: .public) for \(expectedPriceCredits, privacy: .public) credits")
+        Self.logger.info("🏷️ MARKET :: purchased \(name, privacy: .public) for \(expectedPriceCredits, privacy: .private) credits")
         // Bought now: an earlier lost contest for it no longer hides it.
         DWContestedNameStatusService.shared.clearRejected(
             label: name, for: network, identityId: buyerId, walletId: wallet.walletId)

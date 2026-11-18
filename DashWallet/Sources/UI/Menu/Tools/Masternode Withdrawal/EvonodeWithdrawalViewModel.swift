@@ -356,7 +356,7 @@ final class EvonodeWithdrawalViewModel: ObservableObject {
         }
 
         phase = .submitting
-        Self.logger.info("🏛️ EVONODE :: withdrawing \(credits) credits with \(String(describing: signingKey), privacy: .public) key to \(destination ?? "payout address", privacy: .private)")
+        Self.logger.info("🏛️ EVONODE :: withdrawing \(credits, privacy: .private) credits with \(String(describing: signingKey), privacy: .public) key to \(destination ?? "payout address", privacy: .private)")
         do {
             let remaining = try await manager.masternodeWithdraw(
                 walletId: walletId,

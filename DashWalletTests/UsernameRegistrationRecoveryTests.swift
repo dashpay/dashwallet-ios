@@ -1,10 +1,57 @@
 import XCTest
 @testable import dashpay
 import SwiftUI
+import SwiftDashSDK
 
 @MainActor
 final class UsernameRegistrationRecoveryTests: XCTestCase {
     private enum Failure: Error { case cancelled, contextChanged, unavailable, insufficientCredits }
+
+    func testUncertainTopUpRetainsFundingStageInsteadOfDPNSSubmission() {
+        typealias Coordinator = DWIdentityRegistrationCoordinator
+        let errors: [Error] = [
+            SDKError.stateTransitionResultUnconfirmed("unknown"),
+            PlatformWalletError.transactionBroadcastUnconfirmed("unknown"),
+            PlatformWalletError.shieldedSpendUnconfirmed("unknown"),
+        ]
+        for error in errors {
+            let failure = Coordinator.identityTopUpFailure(error)
+            XCTAssertTrue(failure.isIdentityTopUp,
+                          "Funding did not reach DPNS; its provisional bookmark must be withdrawn")
+            guard case .identityTopUp(let underlying) = failure,
+                  case Coordinator.CoordinatorError.platformWriteUnconfirmed = underlying else {
+                return XCTFail("The funding-stage wrapper must retain the unconfirmed warning")
+            }
+            XCTAssertTrue(failure.localizedDescription.contains("could not be confirmed"))
+        }
+    }
+
+    func testUnconfirmedPurchaseKeepsFormBlockedAfterItsWarning() async {
+        typealias Error = DWIdentityRegistrationCoordinator.CoordinatorError
+        let model = CreateUsernameViewModel.makeForPreview()
+        let outcome = model.purchaseFailureOutcome(Error.purchase(Error.platformWriteUnconfirmed))
+        guard case .submittedUnconfirmed = outcome else { return XCTFail("Expected purchase warning") }
+        XCTAssertTrue(model.purchaseSubmissionUnconfirmed)
+        XCTAssertFalse(model.canPurchaseListedNameDirectly)
+        // A second action stays unknown even without a sale price; it must not reach funding.
+        let retry = await model.purchaseListedUsername(name: "alpha")
+        guard case .submittedUnconfirmed = retry else { return XCTFail("Purchase was reopened") }
+    }
+
+    func testDefinitePurchaseFailureDoesNotLockTheForm() {
+        let model = CreateUsernameViewModel.makeForPreview()
+        let outcome = model.purchaseFailureOutcome(Failure.insufficientCredits)
+        guard case .failure = outcome else { return XCTFail("Expected a definite failure") }
+        XCTAssertFalse(model.purchaseSubmissionUnconfirmed)
+    }
+
+    func testDefiniteTopUpFailureKeepsItsOriginalCause() {
+        let failure = DWIdentityRegistrationCoordinator.identityTopUpFailure(Failure.insufficientCredits)
+        guard case .identityTopUp(let underlying) = failure,
+              case Failure.insufficientCredits = underlying else {
+            return XCTFail("A definite refusal must not become an unconfirmed submission")
+        }
+    }
 
     func testNameReadinessRequiresSuccessfulReadAndExplicitRetryAfterFailure() throws {
         let readiness = IdentityNameReadiness()

@@ -315,6 +315,12 @@ final class PendingInvitationViewModel: ObservableObject {
         if let validationTask, validationFor == invitation {
             return await validationTask.value
         }
+        // Another caller that waited for the same stale check may have
+        // checked this invitation already and finished: its verdict stands.
+        if let lastVerdict, lastVerdict.invitation == invitation,
+           Date().timeIntervalSince(lastVerdict.at) < Self.validationLifetime {
+            return lastVerdict.validation
+        }
         cardState = .verifying
         let token = UUID()
         let validate = self.validate

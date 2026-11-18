@@ -191,6 +191,9 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     @Published public private(set) var tipHeight: UInt32 = 0
     @Published public private(set) var bestPeerHeight: UInt32 = 0
     @Published public private(set) var lastError: String? = nil
+    /// English reason for `lastError`, for the exported log: `lastError` is shown on screen, so it is localized.
+    /// When a stop records the caller's error, this is `String(describing:)` of that error.
+    public private(set) var lastErrorLogReason: String?
     @Published public private(set) var syncProgress: SPVSyncProgress = .default()
     @Published public private(set) var isRestarting = false
     @Published public private(set) var isApplyingChainResync = false
@@ -307,7 +310,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     }
 
     @MainActor
-    func stopAsync(lastError: String?) async {
+    func stopAsync(lastError: Error?) async {
         do {
             try await performStop(lastError: lastError, clearBalance: true)
         } catch {
@@ -335,7 +338,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
               host.wallet != nil,
               let network = host.runningNetwork else {
             let error = StartError.runtimeNotRunning
-            lastError = error.localizedDescription
+            setLastError(error.localizedDescription, log: AppLogMessage.errorSummary(error))
             throw error
         }
 
@@ -357,7 +360,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                     }
                 })
         } catch {
-            lastError = error.localizedDescription
+            setLastError(error.localizedDescription, log: "restart failed: \(AppLogMessage.errorSummary(error))")
             Self.logger.error("🛰️ SPVCOORD :: restart failed: \(error)")
             throw error
         }
@@ -726,7 +729,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             return .failure(StartError.superseded)
         }
 
-        lastError = nil
+        setLastError(nil, log: nil)
         subscribeToManagerProgress(manager: manager)
         refreshBalanceBridge()
 
@@ -788,7 +791,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     /// that wait, and the runtime's lifecycle queue keeps any start behind
     /// this stop.
     @MainActor
-    private func performStop(lastError: String?, clearBalance: Bool) async throws {
+    private func performStop(lastError: Error?, clearBalance: Bool) async throws {
         detachManagerSubscriptions()
 
         if let manager = SwiftDashSDKHost.shared.manager {
@@ -810,7 +813,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                 if switchPreparation.allowsReattachingAfterFailedStop {
                     subscribeToManagerProgress(manager: manager)
                 }
-                self.lastError = error.localizedDescription
+                setLastError(error.localizedDescription, log: "stopSpv threw: \(AppLogMessage.errorSummary(error))")
                 state = .error
                 // A failed `isSpvRunning()` query leaves no client behind.
                 // Any throw from `stopSpv()` counts, including one the SDK
@@ -836,7 +839,12 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         coinJoinRecoveryWalletIds = []
         coinJoinRecoveryScanTip = nil
         resetPublishedState()
-        self.lastError = lastError
+        setLastError(lastError?.localizedDescription, log: lastError.map { AppLogMessage.errorSummary($0) })
+    }
+
+    private func setLastError(_ shown: String?, log: String?) {
+        lastError = shown
+        lastErrorLogReason = log
     }
 
     // MARK: - CoinJoin recovery (one-time wide gap)
@@ -1239,7 +1247,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         tipHeight = headersCurrent
         bestPeerHeight = max(headersTarget, headersCurrent)
         if mappedState != .error {
-            lastError = nil
+            setLastError(nil, log: nil)
         }
 
         // Piggyback on the deduped 1Hz progress tick to refresh the live
@@ -1366,32 +1374,35 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         var errorDescription: String? {
             switch self {
             case .dataDirectory(let error):
-                return "Failed to create SPV data directory: \(error.localizedDescription)"
+                return String(format: NSLocalizedString("Failed to create SPV data directory: %@", comment: "Core sync (SPV) error"), error.localizedDescription)
             case .spvClient(let error):
-                return "Failed to start SPV client: \(error.localizedDescription)"
+                return String(format: NSLocalizedString("Failed to start SPV client: %@", comment: "Core sync (SPV) error"), error.localizedDescription)
             case .stopSpv(let error):
-                return "Failed to stop SPV client: \(error.localizedDescription)"
+                return String(format: NSLocalizedString("Failed to stop SPV client: %@", comment: "Core sync (SPV) error"), error.localizedDescription)
             case .walletImport(let error):
-                return "Failed to import wallet: \(error.localizedDescription)"
+                return String(format: NSLocalizedString("Failed to import wallet: %@", comment: "Core sync (SPV) error"), error.localizedDescription)
             case .walletIdMismatch:
-                return "Imported wallet ID mismatch"
+                return NSLocalizedString("Imported wallet ID mismatch", comment: "Core sync (SPV) error")
             case .runtimeNotRunning:
-                return "Core SPV cannot restart because the wallet runtime is not running"
+                return NSLocalizedString("Core SPV cannot restart because the wallet runtime is not running", comment: "Core sync (SPV) error")
             case .devnetNotConfigured:
-                return "Devnet is not configured. Set the Quorum URL and Devnet Name in Settings → Devnet Settings."
+                return NSLocalizedString("Devnet is not configured. Set the Quorum URL and Devnet Name in Settings → Devnet Settings.", comment: "Core sync (SPV) error")
             case .devnetPeerDiscoveryFailed(let quorumURL):
-                return "No devnet peers could be discovered from \(quorumURL)/masternodes. Check the Quorum URL and that the devnet is reachable."
+                return String(format: NSLocalizedString("No devnet peers could be discovered from %@/masternodes. Check the Quorum URL and that the devnet is reachable.",
+                                                        comment: "Core sync (SPV) error: the devnet Quorum URL"), quorumURL)
             case .superseded:
-                return "The network changed while Core SPV was starting."
+                return NSLocalizedString("The network changed while Core SPV was starting.", comment: "Core sync (SPV) error")
             case .networkSwitchPending:
-                return "Core SPV was not restarted because a network switch is in progress."
+                return NSLocalizedString("Core SPV was not restarted because a network switch is in progress.", comment: "Core sync (SPV) error")
             }
         }
     }
 
     private struct HostUnsupportedNetwork: LocalizedError {
         let network: Network
-        var errorDescription: String? { "Platform SDK does not support \(network.rawValue)" }
+        var errorDescription: String? {
+            String(format: NSLocalizedString("Platform SDK does not support %@", comment: "Wallet setup error"), WalletEnvironment.displayName(of: network))
+        }
     }
 }
 

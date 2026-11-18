@@ -42,10 +42,17 @@ NS_ASSUME_NONNULL_BEGIN
                                                            amount:parsedURI.amount
                                                             label:parsedURI.label
                                                           message:parsedURI.message
-                                                   callbackScheme:parsedURI.callbackScheme
+                                                   callbackScheme:self.callbackScheme
                                                  fiatCurrencyCode:parsedURI.fiatCurrencyCode
                                                        fiatAmount:parsedURI.fiatAmount
                                                   dashpayUsername:parsedURI.dashpayUsername];
+}
+
+- (nullable NSString *)callbackScheme {
+    if (self.source == DWPaymentInputSource_DeepLink || self.source == DWPaymentInputSource_URL) {
+        return self.parsedURI.callbackScheme;
+    }
+    return nil;
 }
 
 - (nullable NSString *)userDetails {

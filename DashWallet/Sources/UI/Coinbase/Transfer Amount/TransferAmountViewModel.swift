@@ -54,6 +54,8 @@ protocol TransferAmountViewModelProtocol: ObservableObject {
     /// Fiat value of `receiveAmount`, shown after it as `… ≈ <fiat>`.
     var receiveFiat: String? { get }
     var currencyOptions: [DashUIKit.CurrencyOption] { get }
+    /// The fiat currency of this transfer's amount (not necessarily the app's).
+    var fiatCurrencyCode: String { get }
 
     func setInput(_ raw: String)
     func setMax()
@@ -90,10 +92,6 @@ final class TransferAmountViewModel: ObservableObject, TransferAmountViewModelPr
     /// Message is the failed-status screen text.
     var onTransferFailed: ((String) -> Void)?
     var onLimitExceeded: ((Error) -> Void)?
-    /// Called when the toCoinbase direction would drain the wallet below the CrowdNode minimum.
-    /// The closure receives a completion block; the host must call it with `true` (proceed) or
-    /// `false` (cancel).  If nil the check is skipped and transfer proceeds.
-    var onNeedsLeftoverWarning: ((@escaping (Bool) -> Void) -> Void)?
 
     // MARK: NetworkReachabilityHandling
 
@@ -181,17 +179,7 @@ final class TransferAmountViewModel: ObservableObject, TransferAmountViewModelPr
 
     func transfer() {
         isProcessing = true
-        if model.direction == .toCoinbase {
-            performLeftoverCheck { [weak self] canProceed in
-                guard canProceed, let self else {
-                    self?.isProcessing = false
-                    return
-                }
-                self.model.initializeTransfer()
-            }
-        } else {
-            model.initializeTransfer()
-        }
+        model.initializeTransfer()
     }
 
     func continue2FA(code: String, idem: UUID) {
@@ -203,6 +191,7 @@ final class TransferAmountViewModel: ObservableObject, TransferAmountViewModelPr
     }
 
     var currencyOptions: [DashUIKit.CurrencyOption] { [.dash, .fiat(model.localCurrencyCode)] }
+    var fiatCurrencyCode: String { model.localCurrencyCode }
 
     // MARK: Private
 
@@ -272,11 +261,12 @@ final class TransferAmountViewModel: ObservableObject, TransferAmountViewModelPr
         receiveFiat = fiatString(forDuffs: duffs)
     }
 
-    /// Fiat value of a Dash amount (duffs), mirroring `BaseAmountModel.fiatWalletBalanceFormatted`.
+    /// Fiat value of a Dash amount (duffs) in the transfer's currency.
     private func fiatString(forDuffs duffs: UInt64) -> String? {
-        guard let fiatAmount = try? Coinbase.shared.currencyExchanger
-            .convertDash(amount: duffs.dashAmount, to: model.localCurrencyCode) else { return nil }
-        return model.supplementaryNumberFormatter.string(from: fiatAmount as NSNumber)
+        BaseAmountModel.fiatFormatted(duffs: duffs,
+                                      currencyCode: model.localCurrencyCode,
+                                      exchanger: Coinbase.shared.currencyExchanger,
+                                      formatter: model.supplementaryNumberFormatter)
     }
 
     /// Surfaces the model's validation error (e.g. insufficient balance) for inline display.
@@ -301,34 +291,6 @@ final class TransferAmountViewModel: ObservableObject, TransferAmountViewModelPr
         let to = model.direction == .toCoinbase ? coinbase : wallet
         return (makeSourceItem(from: model.fromItem, dashBalance: from.duffs, fiat: from.fiat),
                 makeSourceItem(from: model.toItem, dashBalance: to.duffs, fiat: to.fiat))
-    }
-
-    private func performLeftoverCheck(completion: @escaping (Bool) -> Void) {
-        let requiresWarning = Self.requiresLeftoverWarning(
-            crowdNodeBalance: CrowdNodeDefaults.shared.lastKnownBalance,
-            transferAmount: model.amount?.plainAmount ?? 0,
-            minimumLeftover: CrowdNode.minimumLeftoverBalance,
-            maxSendable: SwiftDashSDKWalletState.shared.feeAwareMaxSendable())
-        if requiresWarning {
-            if let handler = onNeedsLeftoverWarning {
-                handler(completion)
-            } else {
-                completion(true)
-            }
-        } else {
-            completion(true)
-        }
-    }
-
-    static func requiresLeftoverWarning(
-        crowdNodeBalance: UInt64,
-        transferAmount: UInt64,
-        minimumLeftover: UInt64,
-        maxSendable: UInt64
-    ) -> Bool {
-        guard crowdNodeBalance > 0 else { return false }
-        guard maxSendable >= minimumLeftover else { return true }
-        return transferAmount > maxSendable - minimumLeftover
     }
 
     private static func makeSourceItem(from provider: SourceViewDataProvider?, dashBalance: Int64, fiat: String) -> TransferSourceItem {

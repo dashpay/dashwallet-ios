@@ -226,7 +226,7 @@ final class ShieldedSyncMonitor: ObservableObject {
                 refreshNotesSynced()
             }
         } else {
-            lastError = result.errorMessage ?? "Shielded sync failed"
+            lastError = result.errorMessage ?? NSLocalizedString("Shielded sync failed", comment: "Sync diagnostics")
         }
     }
 
