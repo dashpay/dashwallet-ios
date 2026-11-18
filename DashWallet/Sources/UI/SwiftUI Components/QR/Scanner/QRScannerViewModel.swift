@@ -76,11 +76,16 @@ final class QRScannerViewModel: ObservableObject {
     /// screen reachable before unlock (lock screen → Scan to Pay → Send →
     /// Scan QR) is as locked as the lock screen's own.
     private let isWalletLocked: @MainActor () -> Bool
+    /// Whether the wallet has the DashPay identity Add Contact sends from.
+    private let hasDashPayIdentity: @MainActor () -> Bool
 
-    /// `isWalletLocked` is for tests; the app reads the real lock state.
-    init(mode: QRScannerMode, isWalletLocked: (@MainActor () -> Bool)? = nil) {
+    /// The closures are for tests; the app reads the real lock and identity.
+    init(mode: QRScannerMode,
+         isWalletLocked: (@MainActor () -> Bool)? = nil,
+         hasDashPayIdentity: (@MainActor () -> Bool)? = nil) {
         self.mode = mode
         self.isWalletLocked = isWalletLocked ?? { QRScanResultRouter.isWalletLocked() }
+        self.hasDashPayIdentity = hasDashPayIdentity ?? { QRScanResultRouter.hasDashPayIdentity() }
     }
 
     func cancel() {
@@ -147,7 +152,7 @@ final class QRScannerViewModel: ObservableObject {
                 } else if expectsDashAddress, parsed.rURL == nil, parsed.address != nil,
                           !parsed.isAddressPayableForCurrentNetwork {
                     showInvalid(message: invalidQRMessage(for: parsed))
-                } else if parsed.isAddressPayableForCurrentNetwork, parsed.address != nil {
+                } else if Self.isOfferablePayment(parsed) {
                     offerPaymentRedirect(parsed, fallbackMessage: nil)
                 } else {
                     // Not payable here (a plain https URL): the field
@@ -188,9 +193,15 @@ final class QRScannerViewModel: ObservableObject {
 
         #if DASHPAY
         case .dashPayUser(let link):
-            finishLeavingFlow(.dashPayUser(link))
+            if hasDashPayIdentity() {
+                finishLeavingFlow(.dashPayUser(link))
+            } else {
+                showInvalid(message: noIdentityMessage)
+            }
         case .invitation(let url):
-            finishLeavingFlow(.invitation(url))
+            // Claiming fills the wallet's one pending-invitation slot: only
+            // on the user's say-so.
+            offerInvitationRedirect(url)
         #endif
 
         case .text(let value):
@@ -261,13 +272,17 @@ final class QRScannerViewModel: ObservableObject {
         }
     }
 
-    /// Payment redirects are offered for a payable address or an explicit
-    /// Dash merchant request; accepting one fetches the request before the
-    /// router opens Send. A bare request URL is not offered.
-    private func offerPaymentRedirect(_ parsed: ParsedPaymentURI, fallbackMessage: String?) {
+    /// A payable address or an explicit Dash merchant request; accepting the
+    /// offer fetches a request before the router opens Send. A bare request
+    /// URL is not offered.
+    nonisolated static func isOfferablePayment(_ parsed: ParsedPaymentURI) -> Bool {
         let carriesPayableAddress = parsed.isAddressPayableForCurrentNetwork && parsed.address != nil
         let isDashMerchantRequest = parsed.isValidDashPaymentIntent && parsed.rURL != nil
-        guard carriesPayableAddress || isDashMerchantRequest else {
+        return carriesPayableAddress || isDashMerchantRequest
+    }
+
+    private func offerPaymentRedirect(_ parsed: ParsedPaymentURI, fallbackMessage: String?) {
+        guard Self.isOfferablePayment(parsed) else {
             showInvalid(message: fallbackMessage ?? invalidQRMessage(for: parsed))
             return
         }
@@ -278,6 +293,10 @@ final class QRScannerViewModel: ObservableObject {
 
     #if DASHPAY
     private func offerDashPayUserRedirect(_ link: DashPayUserLink) {
+        guard hasDashPayIdentity() else {
+            showInvalid(message: noIdentityMessage)
+            return
+        }
         offer(.dashPayUser(link),
               message: NSLocalizedString("This QR code is a DashPay user.", comment: "QR scanner"),
               actionTitle: NSLocalizedString("View User", comment: "QR scanner"))
@@ -383,6 +402,10 @@ final class QRScannerViewModel: ObservableObject {
 
     private var notAUserQRMessage: String {
         NSLocalizedString("This isn't a DashPay user QR code.", comment: "DashPay Contacts: scanned QR is a payment/invitation/foreign code")
+    }
+
+    private var noIdentityMessage: String {
+        NSLocalizedString("No DashPay identity is registered", comment: "DashPay")
     }
 
     private var notAnInvitationQRMessage: String {

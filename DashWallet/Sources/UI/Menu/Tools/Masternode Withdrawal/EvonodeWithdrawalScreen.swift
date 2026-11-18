@@ -47,6 +47,7 @@ struct EvonodeWithdrawalScreen: View {
     @State private var popsAfterConfirmation = false
     @State private var showScanner = false
     @State private var pendingRedirect: QRScanResult?
+    @State private var presenterAnchor = QRScanPresenterAnchor()
 
     init(
         vc: UINavigationController?,
@@ -122,10 +123,11 @@ struct EvonodeWithdrawalScreen: View {
                 .presentationDetents([.large])
                 .presentationDragIndicator(.hidden)
         }
+        .qrScanPresenterAnchor(presenterAnchor)
         .fullScreenCover(isPresented: $showScanner, onDismiss: {
             guard let result = pendingRedirect else { return }
             pendingRedirect = nil
-            QRScanResultRouter.route(result)
+            QRScanResultRouter.route(result, from: presenterAnchor.controller)
         }) {
             QRScannerView(
                 mode: .addressInput(expectsDashAddress: true),
