@@ -50,6 +50,7 @@ jobs:
       # NSLocalizedString stays only in Objective-C.
       - run: python3 scripts/ci/test_check_no_old_swift_lookup.py
       - run: python3 scripts/ci/check_no_old_swift_lookup.py
+      - run: python3 scripts/test_convert_strings_to_utf8.py
 
   test:
     name: DashWalletTests on simulator
