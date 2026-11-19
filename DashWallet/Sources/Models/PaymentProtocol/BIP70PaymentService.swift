@@ -245,7 +245,10 @@ final class BIP70PaymentService {
         // send would skip the merchant's acknowledgement.
         var paymentURL: URL?
         if let raw = details.paymentURL {
-            guard let url = URL(string: raw), url.host?.isEmpty == false else { throw BIP70Error.malformedRequest }
+            // Taken as written: a URL Foundation had to repair is not the merchant's endpoint.
+            guard let url = URL(string: raw), url.absoluteString == raw, url.host?.isEmpty == false else {
+                throw BIP70Error.malformedRequest
+            }
             paymentURL = url
         }
         return Confirmation(

@@ -52,9 +52,31 @@ RPC_PORT=19998
 
 ```bash
 node server.js
-# HTTP  :3000  ← wallet hits this (the r= URL)
-# HTTPS :3001  ← browser storefront (self-signed)
+# HTTP  :3000  ← storefront; as shipped, also the r= and payment_url origin
+# HTTPS :3001  ← the same app over TLS (certs/server.crt)
 ```
+
+### Point the wallet at the TLS listener
+
+The wallet's payment transport only talks https, so as shipped the server's `r=` and
+`payment_url` (both built from `httpBaseURL`) are refused. Two changes make it reachable:
+
+```bash
+# 1. build both endpoints from the https origin (:3001)
+sed -i '' 's#${httpBaseURL}/payment#${httpsBaseURL}/payment#g' server.js
+
+# 2. a TLS cert valid for the host the wallet dials. generate-certs makes a CN-only cert,
+#    which iOS refuses for TLS; issue one with a subjectAltName for the LAN IP
+IP=$(ipconfig getifaddr en0)
+openssl req -x509 -newkey rsa:2048 -nodes -days 30 -subj "/CN=Dash Sticker Shop" \
+  -addext "subjectAltName=IP:$IP,DNS:localhost" -addext "extendedKeyUsage=serverAuth" \
+  -keyout certs/server.key -out certs/server.crt
+xcrun simctl keychain booted add-root-cert certs/server.crt   # device: install + trust the profile
+```
+
+Restart the server; the storefront at `https://$IP:3001/` then shows a `dash:` URI whose `r=`
+and the request's `payment_url` are both `https://$IP:3001/…`, so the wallet can fetch the
+request and POST the Payment through to the PaymentACK.
 
 ### Endpoints / behaviour
 
@@ -68,7 +90,8 @@ node server.js
 - **Dash Core is NOT required to serve a request.** RPC errors are caught silently. Core
   (testnet, `server=1`, creds matching `.env`) is only needed to actually **broadcast** the tx
   and flip `/status` to `confirmed`.
-- `dash:` URI format (BIP72): `dash:<addr>?amount=0.001&r=<urlencoded http://IP:3000/payment-request?id=N>`.
+- `dash:` URI format (BIP72): `dash:<addr>?amount=0.001&r=<urlencoded https://IP:3001/payment-request?id=N>`
+  (after the change above; as shipped it is `http://IP:3000/…`, which the wallet refuses).
 
 ### Local patch we applied (not in upstream)
 
@@ -113,9 +136,9 @@ the reconstruction digest in Node — the signature passes the wallet's verify s
 > Build/run note (this branch): scheme **`dashpay`**, **testnet**, force **`ARCHS=arm64`**
 > (FFI libs are arm64-sim only; `dashwallet` scheme is broken on this branch). The payment
 > transport only talks https, whatever ATS allows: the request URL, any BIP73 hop or redirect,
-> and the `payment_url` must all be `https://` with a host the device trusts. Serve the test
-> server over TLS with `certs/server.crt` (installed as below) and use `https://` URLs for both
-> the request and its `payment_url`; a `http://` endpoint is refused before it is fetched.
+> and the `payment_url` must all be `https://` with a host the device trusts. Use the TLS
+> listener set up in [Point the wallet at the TLS listener](#point-the-wallet-at-the-tls-listener);
+> a `http://` endpoint is refused before it is fetched.
 
 ### The fallback-address gotcha (important)
 
@@ -129,9 +152,8 @@ There are two `dash:` URI shapes and they take **different paths**:
 ### Fire a request
 
 ```bash
-# mint a fresh request, strip to the address-less form, point r= at localhost (sim → Mac);
-# the server must be serving https, and its r= and payment_url must be https:// too
-RAW=$(curl -sk https://localhost:3000/ | grep -oE 'dash:[^<"]+' | head -1)
+# mint a fresh request on the TLS listener and strip it to the address-less form
+RAW=$(curl -s --cacert certs/server.crt "https://$IP:3001/" | grep -oE 'dash:[^<"]+' | head -1)
 R=$(echo "$RAW" | grep -oE 'r=[^&"]+' | sed 's/^r=//' | sed 's/192\.168\.0\.[0-9]*/localhost/')
 URI="dash:?r=$R"
 
@@ -139,7 +161,7 @@ URI="dash:?r=$R"
 xcrun simctl openurl booted "$URI"
 ```
 
-- **Simulator** reaches the Mac via `localhost:3000` or the LAN IP. **Physical device** must use
+- **Simulator** reaches the Mac via `localhost:3001` or the LAN IP. **Physical device** must use
   the LAN IP and be on the same Wi-Fi.
 - Confirm the wallet fetched: `cat bip70-dash/access.log` → `GET /payment-request id=N … wallet FETCHED`.
 
