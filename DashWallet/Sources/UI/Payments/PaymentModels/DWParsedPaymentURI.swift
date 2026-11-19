@@ -110,10 +110,11 @@ final class ParsedPaymentURI: NSObject {
         scheme == "dash" && ((isAddressPayableForCurrentNetwork && !hasInvalidAmount) || rURL != nil)
     }
 
-    /// A plain http(s) payment-request URL read whole (BIP73), the one form without a `dash:`
-    /// scheme whose request the wallet fetches.
+    /// A plain https payment-request URL read whole (BIP73), the one form without a `dash:`
+    /// scheme whose request the wallet fetches. Cleartext is not: nothing would vouch for the
+    /// request it returns.
     @objc var isWholeRequestURL: Bool {
-        scheme == "http" || scheme == "https"
+        scheme == "https"
     }
 
     private init(rawString: String,

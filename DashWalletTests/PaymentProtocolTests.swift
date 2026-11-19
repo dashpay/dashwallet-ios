@@ -239,6 +239,39 @@ final class PaymentProtocolTests: XCTestCase {
         }
     }
 
+    /// A BIP73 list fetched over https may not send the wallet on to a cleartext request.
+    func testTransportRefusesACleartextURIListHop() async {
+        final class Box { var cleartextRequested = false }
+        let box = Box()
+        let body = fixture
+        MockURLProtocol.responseHandler = { req in
+            if req.url?.scheme == "http" {
+                box.cleartextRequested = true
+                return (200, ["Content-Type": "application/dash-paymentrequest"], body)
+            }
+            return (200, ["Content-Type": "text/uri-list"], Data("http://merchant.example/real\n".utf8))
+        }
+        await assertThrowsBIP70(try await makeTransport().fetchRequest(from: requestURL, scheme: "dash")) {
+            if case .unexpectedResponse = $0 { return true }
+            return false
+        }
+        XCTAssertFalse(box.cleartextRequested)
+    }
+
+    /// A redirect from https to http is not read: the request it would return is unauthenticated.
+    func testTransportRefusesARedirectToCleartext() async {
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [DowngradingURLProtocol.self]
+        DowngradingURLProtocol.body = fixture
+        DowngradingURLProtocol.servedCleartext = false
+        let transport = PaymentProtocolTransport(session: URLSession(configuration: config))
+        await assertThrowsBIP70(try await transport.fetchRequest(from: requestURL, scheme: "dash")) {
+            if case .unexpectedResponse = $0 { return true }
+            return false
+        }
+        XCTAssertTrue(DowngradingURLProtocol.servedCleartext, "the redirect was followed and its response refused")
+    }
+
     func testTransportFollowsBIP73() async throws {
         let realURL = "https://merchant.example/real"
         let body = fixture
@@ -1153,6 +1186,19 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertEqual(request?.absoluteString, "ctx://callback=address&address=Xabc&source=dashwallet")
     }
 
+    /// The wrapper's parameter map keeps one value per key, so an amount given twice or
+    /// malformed would vanish into an open amount: the link is refused instead.
+    func testDeepLinkPayActionRefusesAnAmbiguousAmount() throws {
+        for link in ["dashwallet://pay=Xabc&amount=99999999999&amount=&sender=ctx",
+                     "dashwallet://pay=Xabc&amount=1&req-amount=2&sender=ctx",
+                     "dashwallet://pay=Xabc&amount=1=2&sender=ctx"] {
+            let url = try XCTUnwrap(URL(string: link))
+            XCTAssertNil(DWURLParser.action(for: url), link)
+            XCTAssertNil(DWURLParser.paymentURL(forScannedLink: url), link)
+        }
+        XCTAssertNotNil(DWURLParser.action(for: try XCTUnwrap(URL(string: "dashwallet://pay=Xabc&req-amount=1&sender=ctx"))))
+    }
+
     /// A deep link names the app that asked, as the link wrote it, and keeps it as the callback.
     func testDeepLinkPayActionNamesAValidSender() throws {
         let url = try XCTUnwrap(URL(string: "dashwallet://pay=Xabc&amount=1&sender=v4v.app&label=Shop"))
@@ -1327,4 +1373,32 @@ final class BIP70PaymentServiceTests: XCTestCase {
         intent.amount = 42_000_000
         XCTAssertEqual(intent.amount, 42_000_000)
     }
+}
+
+/// Redirects every https request to the same path over http, and serves a payment request there.
+private final class DowngradingURLProtocol: URLProtocol {
+    static var body = Data()
+    static var servedCleartext = false
+
+    override class func canInit(with request: URLRequest) -> Bool { true }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+
+    override func startLoading() {
+        guard let url = request.url else { return }
+        if url.scheme == "https", var components = URLComponents(url: url, resolvingAgainstBaseURL: false) {
+            components.scheme = "http"
+            let redirect = HTTPURLResponse(url: url, statusCode: 302, httpVersion: "HTTP/1.1",
+                                           headerFields: ["Location": components.url!.absoluteString])!
+            client?.urlProtocol(self, wasRedirectedTo: URLRequest(url: components.url!), redirectResponse: redirect)
+            return
+        }
+        Self.servedCleartext = true
+        let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: "HTTP/1.1",
+                                       headerFields: ["Content-Type": "application/dash-paymentrequest"])!
+        client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+        client?.urlProtocol(self, didLoad: Self.body)
+        client?.urlProtocolDidFinishLoading(self)
+    }
+
+    override func stopLoading() {}
 }

@@ -106,11 +106,12 @@ final class BIP70InteractiveCoordinator: NSObject {
 
     // MARK: - Helpers
 
-    /// The payment protocol a request is fetched for. A whole http(s) URL (BIP73) names where the
-    /// request is, not its currency: the wallet asks it for a Dash request.
+    /// The payment protocol a request is fetched for. A whole https URL (BIP73) names where the
+    /// request is, not its currency: the wallet asks it for a Dash request. A cleartext one is
+    /// not taken for Dash: anyone on the path could rewrite what it returns.
     static func paymentProtocolScheme(_ scheme: String) -> String {
         switch scheme.lowercased() {
-        case "pay", "dashwallet", "http", "https": return "dash"
+        case "pay", "dashwallet", "https": return "dash"
         default: return scheme.lowercased()
         }
     }
