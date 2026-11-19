@@ -75,7 +75,7 @@ def main():
 
     phrases, requests, defects = [], [], []
     for b in sorted(english):
-        args = [zl.counted_args(specs[b], n) for n in zl.COUNTS]
+        args = zl.counted_samples(specs[b])
         have = base_strings[b]["localizations"]
         broken = {l for l in locales if l in have and zl.defective_translation(have[l], args[0]) is not None}
         defects += [{"baseline_key": b, "locale": l} for l in sorted(broken)]
