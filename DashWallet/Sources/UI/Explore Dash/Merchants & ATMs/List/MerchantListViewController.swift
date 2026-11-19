@@ -73,11 +73,11 @@ extension MerchantsListSegment {
     var title: String {
         switch self {
         case .online:
-            return NSLocalizedString("Online", comment: "Online")
+            return String(localized: "Online", comment: "Online")
         case .nearby:
-            return NSLocalizedString("Nearby", comment: "Nearby")
+            return String(localized: "Nearby", comment: "Nearby")
         case .all:
-            return NSLocalizedString("All", comment: "All")
+            return String(localized: "All", comment: "All")
         }
     }
 
@@ -111,11 +111,11 @@ class MerchantListViewController: ExplorePointOfUseListViewController {
     }
 
     override var locationServicePopupTitle: String {
-        NSLocalizedString("Merchant search works better with Location Services turned on.", comment: "")
+        String(localized: "Merchant search works better with Location Services turned on.", comment: "")
     }
 
     override var locationServicePopupDetails: String {
-        NSLocalizedString("Your location is used to show your position on the map, merchants in the selected redius and improve search results.",
+        String(localized: "Your location is used to show your position on the map, merchants in the selected redius and improve search results.",
                           comment: "")
     }
 

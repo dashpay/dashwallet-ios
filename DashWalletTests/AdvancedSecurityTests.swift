@@ -111,8 +111,8 @@ final class AdvancedSecurityTests: XCTestCase {
 
         XCTAssertFalse(viewModel.descriptionShowsAmount)
         XCTAssertEqual(viewModel.spendingLimitDescription,
-                       NSLocalizedString("No biometric spending limit is set", comment: ""))
-        XCTAssertEqual(viewModel.spendingLimitValueText, NSLocalizedString("None", comment: ""))
+                       String(localized: "No biometric spending limit is set", comment: ""))
+        XCTAssertEqual(viewModel.spendingLimitValueText, String(localized: "None", comment: ""))
     }
 
     func testZeroLimitReadsAsAlwaysRequiringPIN() {
@@ -123,7 +123,7 @@ final class AdvancedSecurityTests: XCTestCase {
 
         XCTAssertFalse(viewModel.descriptionShowsAmount)
         XCTAssertEqual(viewModel.spendingLimitDescription,
-                       NSLocalizedString("PIN is always required to make a payment", comment: ""))
+                       String(localized: "PIN is always required to make a payment", comment: ""))
     }
 
     func testOffStopLockTimerKeepsItsValueText() {

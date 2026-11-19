@@ -48,14 +48,14 @@ final class ReceiveContentView: UIStackView {
     func addressButtonAction() {
         feedbackGenerator.notificationOccurred(.success)
         model.copyAddressToPasteboard()
-        dw_showInfoHUD(withText: NSLocalizedString("Copied", comment: ""))
+        dw_showInfoHUD(withText: String(localized: "Copied", comment: ""))
     }
 
     @IBAction
     func qrButtonAction() {
         feedbackGenerator.notificationOccurred(.success)
         model.copyQRImageToPasteboard()
-        dw_showInfoHUD(withText: NSLocalizedString("Copied", comment: ""))
+        dw_showInfoHUD(withText: String(localized: "Copied", comment: ""))
     }
     
 #if DASHPAY
@@ -63,7 +63,7 @@ final class ReceiveContentView: UIStackView {
     private func copyUsernameAction() {
         feedbackGenerator.notificationOccurred(.success)
         model.copyUsernameToPasteboard()
-        dw_showInfoHUD(withText: NSLocalizedString("Copied", comment: ""))
+        dw_showInfoHUD(withText: String(localized: "Copied", comment: ""))
     }
 #endif
 
@@ -104,12 +104,12 @@ final class ReceiveContentView: UIStackView {
 
 extension ReceiveContentView {
     private func configureHierarchy() {
-        specifyAmountButton.setTitle(NSLocalizedString("Specify Amount", comment: "Receive screen"), for: .normal)
-        secondButton.setTitle(NSLocalizedString("Share address", comment: "Receive screen"), for: .normal)
+        specifyAmountButton.setTitle(String(localized: "Specify Amount", comment: "Receive screen"), for: .normal)
+        secondButton.setTitle(String(localized: "Share address", comment: "Receive screen"), for: .normal)
         
     #if DASHPAY
-        addressTitleLabel.text = NSLocalizedString("Dash address", comment: "Receive screen")
-        usernameTitleLabel.text = NSLocalizedString("Username", comment: "Receive screen")
+        addressTitleLabel.text = String(localized: "Dash address", comment: "Receive screen")
+        usernameTitleLabel.text = String(localized: "Username", comment: "Receive screen")
         addressContainer.isHidden = false
         usernameContainer.isHidden = false
         addressButton.isHidden = true

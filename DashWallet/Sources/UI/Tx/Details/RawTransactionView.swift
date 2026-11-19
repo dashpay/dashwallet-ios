@@ -72,7 +72,7 @@ struct RawTransactionView: View {
         .onAppear { viewModel.load() }
         .overlay(alignment: .bottom) {
             if copiedFeedback {
-                Text(NSLocalizedString("Copied", comment: ""))
+                Text(String(localized: "Copied", comment: ""))
                     .font(.footnote.weight(.semibold))
                     .foregroundColor(Color.dash.whiteText)
                     .padding(.horizontal, 16)
@@ -89,10 +89,10 @@ struct RawTransactionView: View {
             Image(systemName: "doc.questionmark")
                 .font(.system(size: 34))
                 .foregroundColor(Color.dash.secondaryText)
-            Text(NSLocalizedString("Raw transaction unavailable", comment: "Raw transaction inspector"))
+            Text(String(localized: "Raw transaction unavailable", comment: "Raw transaction inspector"))
                 .font(.subheadline)
                 .foregroundColor(.dash.secondaryText)
-            Text(NSLocalizedString("This transaction's raw bytes are not stored on this device.", comment: "Raw transaction inspector"))
+            Text(String(localized: "This transaction's raw bytes are not stored on this device.", comment: "Raw transaction inspector"))
                 .font(.caption)
                 .foregroundColor(.dash.tertiaryText)
                 .multilineTextAlignment(.center)
@@ -106,22 +106,22 @@ struct RawTransactionView: View {
             VStack(alignment: .leading, spacing: 16) {
                 overviewCard(details)
 
-                sectionHeader(String(format: NSLocalizedString("Inputs (%d)", comment: "Raw transaction inspector"), details.inputs.count))
+                sectionHeader(String(localized: "Inputs (\(details.inputs.count))", comment: "Raw transaction inspector"))
                 ForEach(details.inputs, id: \.index) { input in
                     inputCard(input)
                 }
 
-                sectionHeader(String(format: NSLocalizedString("Outputs (%d)", comment: "Raw transaction inspector"), details.outputs.count))
+                sectionHeader(String(localized: "Outputs (\(details.outputs.count))", comment: "Raw transaction inspector"))
                 ForEach(details.outputs, id: \.index) { output in
                     outputCard(output)
                 }
 
                 if let payload = details.extraPayload {
-                    sectionHeader(NSLocalizedString("Special payload", comment: "Raw transaction inspector"))
+                    sectionHeader(String(localized: "Special payload", comment: "Raw transaction inspector"))
                     payloadCard(details: details, payload: payload)
                 }
 
-                sectionHeader(NSLocalizedString("Raw transaction", comment: "Raw transaction inspector"))
+                sectionHeader(String(localized: "Raw transaction", comment: "Raw transaction inspector"))
                 hexCard(details.rawHex)
             }
             .padding(.horizontal, 16)
@@ -134,25 +134,25 @@ struct RawTransactionView: View {
 
     private func overviewCard(_ details: RawTransactionDetails) -> some View {
         card {
-            copyableRow(label: NSLocalizedString("Transaction ID", comment: "Raw transaction inspector"), value: details.txidDisplayHex, monospaced: true)
+            copyableRow(label: String(localized: "Transaction ID", comment: "Raw transaction inspector"), value: details.txidDisplayHex, monospaced: true)
             divider
-            plainRow(label: NSLocalizedString("Version", comment: "Raw transaction inspector"), value: "\(details.version)")
+            plainRow(label: String(localized: "Version", comment: "Raw transaction inspector"), value: "\(details.version)")
             if let typeName = details.typeName {
                 divider
-                plainRow(label: NSLocalizedString("Type", comment: "Raw transaction inspector"), value: "\(typeName) (\(details.typeRaw))")
+                plainRow(label: String(localized: "Type", comment: "Raw transaction inspector"), value: "\(typeName) (\(details.typeRaw))")
             }
             divider
-            plainRow(label: NSLocalizedString("Size", comment: "Raw transaction inspector"),
-                     value: String.localizedStringWithFormat(NSLocalizedString("%d bytes", comment: "Raw transaction inspector"), details.sizeBytes))
+            plainRow(label: String(localized: "Size", comment: "Raw transaction inspector"),
+                     value: String(localized: "\(details.sizeBytes) bytes", comment: "Raw transaction inspector"))
             divider
-            plainRow(label: NSLocalizedString("Locktime", comment: "Raw transaction inspector"), value: "\(details.lockTime)")
+            plainRow(label: String(localized: "Locktime", comment: "Raw transaction inspector"), value: "\(details.lockTime)")
             if let height = details.blockHeight {
                 divider
-                plainRow(label: NSLocalizedString("Block height", comment: "Raw transaction inspector"), value: "\(height)")
+                plainRow(label: String(localized: "Block height", comment: "Raw transaction inspector"), value: "\(height)")
             }
             if let fee = details.feeDuffs {
                 divider
-                plainRow(label: NSLocalizedString("Network fee", comment: ""), value: fee.formattedDashAmountWithoutCurrencySymbol)
+                plainRow(label: String(localized: "Network fee", comment: ""), value: fee.formattedDashAmountWithoutCurrencySymbol)
             }
         }
     }
@@ -160,28 +160,28 @@ struct RawTransactionView: View {
     private func inputCard(_ input: RawTransactionDetails.Input) -> some View {
         card {
             if input.isCoinbase {
-                plainRow(label: String(format: NSLocalizedString("Input %d", comment: "Raw transaction inspector"), input.index),
-                         value: NSLocalizedString("Coinbase (new coins)", comment: "Raw transaction inspector"))
+                plainRow(label: String(localized: "Input \(input.index)", comment: "Raw transaction inspector"),
+                         value: String(localized: "Coinbase (new coins)", comment: "Raw transaction inspector"))
             } else {
                 copyableRow(
-                    label: String(format: NSLocalizedString("Input %d — outpoint", comment: "Raw transaction inspector"), input.index),
+                    label: String(localized: "Input \(input.index) — outpoint", comment: "Raw transaction inspector"),
                     value: "\(input.prevTxidDisplayHex):\(input.prevVout)",
                     monospaced: true)
             }
             if let address = input.address {
                 divider
-                copyableRow(label: NSLocalizedString("Address", comment: ""), value: address, monospaced: true)
+                copyableRow(label: String(localized: "Address", comment: ""), value: address, monospaced: true)
             }
             if let amount = input.amountDuffs {
                 divider
-                plainRow(label: NSLocalizedString("Amount", comment: ""), value: amount.formattedDashAmountWithoutCurrencySymbol)
+                plainRow(label: String(localized: "Amount", comment: ""), value: amount.formattedDashAmountWithoutCurrencySymbol)
             }
             divider
-            plainRow(label: NSLocalizedString("Sequence", comment: "Raw transaction inspector"),
+            plainRow(label: String(localized: "Sequence", comment: "Raw transaction inspector"),
                      value: String(format: "0x%08x", input.sequence))
             if !input.scriptSig.isEmpty {
                 divider
-                copyableRow(label: NSLocalizedString("Script signature", comment: "Raw transaction inspector"),
+                copyableRow(label: String(localized: "Script signature", comment: "Raw transaction inspector"),
                             value: input.scriptSig.map { String(format: "%02x", $0) }.joined(),
                             monospaced: true)
             }
@@ -190,12 +190,12 @@ struct RawTransactionView: View {
 
     private func outputCard(_ output: RawTransactionDetails.Output) -> some View {
         card {
-            plainRow(label: String(format: NSLocalizedString("Output %d", comment: "Raw transaction inspector"), output.index),
+            plainRow(label: String(localized: "Output \(output.index)", comment: "Raw transaction inspector"),
                      value: output.valueDuffs.formattedDashAmountWithoutCurrencySymbol)
             switch output.kind {
             case .standard(let address):
                 divider
-                copyableRow(label: NSLocalizedString("Address", comment: ""), value: address, monospaced: true)
+                copyableRow(label: String(localized: "Address", comment: ""), value: address, monospaced: true)
             case .opReturn(let data):
                 divider
                 copyableRow(label: "OP_RETURN",
@@ -203,15 +203,15 @@ struct RawTransactionView: View {
                             monospaced: true)
                 if let text = Self.printableASCII(data) {
                     divider
-                    plainRow(label: NSLocalizedString("As text", comment: "Raw transaction inspector"), value: text)
+                    plainRow(label: String(localized: "As text", comment: "Raw transaction inspector"), value: text)
                 }
             case .nonStandard:
                 divider
-                plainRow(label: NSLocalizedString("Script type", comment: "Raw transaction inspector"),
-                         value: NSLocalizedString("Non-standard", comment: "Raw transaction inspector"))
+                plainRow(label: String(localized: "Script type", comment: "Raw transaction inspector"),
+                         value: String(localized: "Non-standard", comment: "Raw transaction inspector"))
             }
             divider
-            copyableRow(label: NSLocalizedString("Script", comment: "Raw transaction inspector"),
+            copyableRow(label: String(localized: "Script", comment: "Raw transaction inspector"),
                         value: output.scriptPubKey.map { String(format: "%02x", $0) }.joined(),
                         monospaced: true)
         }
@@ -220,17 +220,17 @@ struct RawTransactionView: View {
     private func payloadCard(details: RawTransactionDetails, payload: Data) -> some View {
         card {
             if let typeName = details.typeName {
-                plainRow(label: NSLocalizedString("Type", comment: "Raw transaction inspector"), value: typeName)
+                plainRow(label: String(localized: "Type", comment: "Raw transaction inspector"), value: typeName)
                 divider
             }
-            plainRow(label: NSLocalizedString("Size", comment: "Raw transaction inspector"),
-                     value: String.localizedStringWithFormat(NSLocalizedString("%d bytes", comment: "Raw transaction inspector"), payload.count))
+            plainRow(label: String(localized: "Size", comment: "Raw transaction inspector"),
+                     value: String(localized: "\(payload.count) bytes", comment: "Raw transaction inspector"))
             ForEach(Array(details.payloadFields.enumerated()), id: \.offset) { _, field in
                 divider
                 plainRow(label: field.label, value: field.value)
             }
             divider
-            copyableRow(label: NSLocalizedString("Payload hex", comment: "Raw transaction inspector"),
+            copyableRow(label: String(localized: "Payload hex", comment: "Raw transaction inspector"),
                         value: payload.map { String(format: "%02x", $0) }.joined(),
                         monospaced: true)
         }
@@ -241,7 +241,7 @@ struct RawTransactionView: View {
             Button(action: { copy(hex) }) {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
-                        Text(NSLocalizedString("Tap to copy", comment: ""))
+                        Text(String(localized: "Tap to copy", comment: ""))
                             .font(.caption)
                             .foregroundColor(.dash.secondaryText)
                         Spacer()

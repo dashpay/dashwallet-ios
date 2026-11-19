@@ -623,7 +623,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         var errorDescription: String? {
             switch self {
             case .failed(let message):
-                return String(format: NSLocalizedString("BLAST start failed: %@", comment: "Platform Sync Status error"), message)
+                return String(localized: "BLAST start failed: \(message)", comment: "Platform Sync Status error")
             }
         }
     }
@@ -649,7 +649,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
                 platformAccountAvailability = .unavailable
                 setLastError(nil, log: nil)
             } else if platformAccountAvailability != .unavailable && lastError == nil {
-                setLastError(NSLocalizedString("Platform sync could not be started", comment: "Sync diagnostics"),
+                setLastError(String(localized: "Platform sync could not be started", comment: "Sync diagnostics"),
                              log: "Platform sync could not be started")
             }
             return
@@ -1016,7 +1016,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
               isSelectedWalletScope(walletId: session.scope.walletId, network: network) else {
             // Local restoration can precede BLAST. A display-only clear here
             // would resurrect the untouched cache as soon as BLAST starts.
-            setLastError(NSLocalizedString("Start Platform sync before clearing its local state", comment: "Platform Clear requires a bound wallet"),
+            setLastError(String(localized: "Start Platform sync before clearing its local state", comment: "Platform Clear requires a bound wallet"),
                          log: "clear requested before Platform sync bound a wallet")
             return
         }
@@ -1027,9 +1027,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             try await manager.resetPlatformAddressSyncState()
         } catch {
             setLastError(
-                String(
-                    format: NSLocalizedString("Failed to reset platform-address sync state: %@", comment: "Sync diagnostics"),
-                    error.localizedDescription),
+                String(localized: "Failed to reset platform-address sync state: \(error.localizedDescription)", comment: "Sync diagnostics"),
                 log: "resetPlatformAddressSyncState failed: \(String(describing: error))")
             Self.logger.error("🛰️ PLATFORM-ADDR :: clear reset failed: \(String(describing: error), privacy: .public)")
             return
@@ -1067,9 +1065,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             try context.save()
         } catch {
             setLastError(
-                String(
-                    format: NSLocalizedString("Failed to clear persisted platform-address state: %@", comment: "Sync diagnostics"),
-                    error.localizedDescription),
+                String(localized: "Failed to clear persisted platform-address state: \(error.localizedDescription)", comment: "Sync diagnostics"),
                 log: "clear persisted platform-address state failed: \(String(describing: error))")
             Self.logger.error("🛰️ PLATFORM-ADDR :: clear persist failed: \(String(describing: error), privacy: .public)")
             return
@@ -1092,9 +1088,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         } catch {
             isRunning = false
             setLastError(
-                String(
-                    format: NSLocalizedString("startPlatformAddressSync failed after clear: %@", comment: "Platform Sync Status error: the SDK call that failed, then its error"),
-                    error.localizedDescription),
+                String(localized: "startPlatformAddressSync failed after clear: \(error.localizedDescription)", comment: "Platform Sync Status error: the SDK call that failed, then its error"),
                 log: "startPlatformAddressSync failed after clear: \(String(describing: error))")
             Self.logger.error("🛰️ PLATFORM-ADDR :: post-clear restart failed: \(String(describing: error), privacy: .public)")
         }
@@ -1199,9 +1193,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             } catch {
                 isRunning = false
                 setLastError(
-                    String(
-                        format: NSLocalizedString("startPlatformAddressSync failed: %@", comment: "Platform Sync Status error: the SDK call that failed, then its error"),
-                        error.localizedDescription),
+                    String(localized: "startPlatformAddressSync failed: \(error.localizedDescription)", comment: "Platform Sync Status error: the SDK call that failed, then its error"),
                     log: "startPlatformAddressSync failed: \(String(describing: error))")
             }
             shieldedRecovery.request(forceSync: false)
@@ -1273,9 +1265,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
                 // `lastError` explains why the address surfaces are empty.
                 Self.logger.error("🛰️ PLATFORM-ADDR :: platformAddressWallet() failed: \(String(describing: error), privacy: .public)")
                 addressWalletLogReason = "platformAddressWallet failed: \(String(describing: error))"
-                addressWalletError = String(
-                    format: NSLocalizedString("platformAddressWallet failed: %@", comment: "Platform Sync Status error: the SDK call that failed, then its error"),
-                    error.localizedDescription)
+                addressWalletError = String(localized: "platformAddressWallet failed: \(error.localizedDescription)", comment: "Platform Sync Status error: the SDK call that failed, then its error")
             }
         }
 
@@ -1297,9 +1287,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         } catch {
             Self.logger.error("🛰️ PLATFORM-ADDR :: startPlatformAddressSync failed: \(String(describing: error), privacy: .public)")
             platformLoopLogReason = "startPlatformAddressSync failed: \(String(describing: error))"
-            platformLoopError = String(
-                format: NSLocalizedString("startPlatformAddressSync failed: %@", comment: "Platform Sync Status error: the SDK call that failed, then its error"),
-                error.localizedDescription)
+            platformLoopError = String(localized: "startPlatformAddressSync failed: \(error.localizedDescription)", comment: "Platform Sync Status error: the SDK call that failed, then its error")
         }
 
         // Shielded ownership only gates its own loop. A missing selection or
@@ -1802,7 +1790,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
             // Already on MainActor; avoid a queued read outliving this session.
             refreshDerivedAddresses()
         } else {
-            setLastError(result.errorMessage ?? NSLocalizedString("Platform address sync failed", comment: "Sync diagnostics"),
+            setLastError(result.errorMessage ?? String(localized: "Platform address sync failed", comment: "Sync diagnostics"),
                          log: result.errorMessage ?? "Platform address sync failed")
         }
     }
@@ -2023,37 +2011,35 @@ extension PlatformAddressSyncCoordinator {
         public var errorDescription: String? {
             switch self {
             case .coordinatorNotReady:
-                return NSLocalizedString(
-                    "Platform sync is not running. Open Sync Info → Platform Sync Status to start it.",
+                return String(
+                    localized: "Platform sync is not running. Open Sync Info → Platform Sync Status to start it.",
                     comment: "")
             case .noFundedAddress:
-                return NSLocalizedString(
-                    "No funded Platform address has enough balance to cover this amount plus fees.",
+                return String(
+                    localized: "No funded Platform address has enough balance to cover this amount plus fees.",
                     comment: "")
             case .invalidDestination:
-                return NSLocalizedString(
-                    "Destination address is not a valid Platform bech32m address.",
+                return String(
+                    localized: "Destination address is not a valid Platform bech32m address.",
                     comment: "")
             case .p2shNotSupported:
-                return NSLocalizedString(
-                    "P2SH platform addresses aren't supported yet. Use a P2PKH recipient.",
+                return String(
+                    localized: "P2SH platform addresses aren't supported yet. Use a P2PKH recipient.",
                     comment: "")
             case .noPlatformReceiveAddress:
-                return NSLocalizedString(
-                    "Could not resolve a destination Platform Payment address",
+                return String(
+                    localized: "Could not resolve a destination Platform Payment address",
                     comment: "InternalTransfer")
             case .invalidAmount:
-                return NSLocalizedString(
-                    "The amount is too large to transfer.",
+                return String(
+                    localized: "The amount is too large to transfer.",
                     comment: "InternalTransfer")
             case .mnemonicUnavailable:
-                return NSLocalizedString(
-                    "Wallet mnemonic is unavailable. Unlock the wallet and try again.",
+                return String(
+                    localized: "Wallet mnemonic is unavailable. Unlock the wallet and try again.",
                     comment: "")
             case .keyDecodeFailed(let reason):
-                return String(
-                    format: NSLocalizedString("Private key could not be decoded: %@", comment: ""),
-                    reason)
+                return String(localized: "Private key could not be decoded: \(reason)", comment: "")
             }
         }
     }

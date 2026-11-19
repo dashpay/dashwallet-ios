@@ -687,31 +687,31 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
     }
 
     private static var partialPreparationMessage: String {
-        NSLocalizedString(
-            "Some of your mixed coins were prepared. Please try again to move them to your Shielded balance.",
+        String(
+            localized: "Some of your mixed coins were prepared. Please try again to move them to your Shielded balance.",
             comment: "CoinJoin")
     }
 
     private static var preparingMessage: String {
-        NSLocalizedString(
-            "Your mixed coins are being prepared for the Shielded balance. Please try again in a few minutes.",
+        String(
+            localized: "Your mixed coins are being prepared for the Shielded balance. Please try again in a few minutes.",
             comment: "CoinJoin")
     }
 
     nonisolated private static var unresumedLockMessage: String {
-        NSLocalizedString(
-            "Your mixed coins are locked for the Shielded balance. Please try again to finish moving them.",
+        String(
+            localized: "Your mixed coins are locked for the Shielded balance. Please try again to finish moving them.",
             comment: "CoinJoin")
     }
 
     private static var unconfirmedMessage: String {
-        NSLocalizedString(
-            "Not all of your mixed coins are confirmed yet. Please try again in a few minutes.",
+        String(
+            localized: "Not all of your mixed coins are confirmed yet. Please try again in a few minutes.",
             comment: "CoinJoin")
     }
 
     private static var genericFailureMessage: String {
-        NSLocalizedString("Couldn't move your CoinJoin funds. Please try again.", comment: "CoinJoin")
+        String(localized: "Couldn't move your CoinJoin funds. Please try again.", comment: "CoinJoin")
     }
 
     /// Exported-log line (DWLogger reaches "Share logs"; os.Logger does not).

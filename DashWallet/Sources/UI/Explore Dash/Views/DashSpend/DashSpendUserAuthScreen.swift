@@ -27,31 +27,31 @@ enum DashSpendUserAuthType {
     var screenTitle: String {
         switch self {
         case .createAccount:
-            return NSLocalizedString("Create account", comment: "DashSpend")
+            return String(localized: "Create account", comment: "DashSpend")
         case .signIn:
-            return NSLocalizedString("Log in to your account", comment: "DashSpend")
+            return String(localized: "Log in to your account", comment: "DashSpend")
         case .otp:
-            return NSLocalizedString("Enter verification code", comment: "DashSpend")
+            return String(localized: "Enter verification code", comment: "DashSpend")
         }
     }
     
     var screenSubtitle: String {
         switch self {
         case .createAccount:
-            return NSLocalizedString("Your email is only used to send a one-time password.", comment: "DashSpend")
+            return String(localized: "Your email is only used to send a one-time password.", comment: "DashSpend")
         case .signIn:
-            return NSLocalizedString("Your email is only used to send a one-time password.", comment: "DashSpend")
+            return String(localized: "Your email is only used to send a one-time password.", comment: "DashSpend")
         case .otp:
-            return NSLocalizedString("Check your email and enter the verification code.", comment: "DashSpend")
+            return String(localized: "Check your email and enter the verification code.", comment: "DashSpend")
         }
     }
     
     var textInputHint: String {
         switch self {
         case .createAccount, .signIn:
-            return NSLocalizedString("Email", comment: "DashSpend")
+            return String(localized: "Email", comment: "DashSpend")
         case .otp:
-            return NSLocalizedString("Password", comment: "DashSpend")
+            return String(localized: "Password", comment: "DashSpend")
         }
     }
 }
@@ -135,7 +135,7 @@ struct DashSpendUserAuthScreen: View {
                     value: $viewModel.input,
                     showDecimalSeparator: false,
                     locale: .autoupdatingCurrent,
-                    actionButtonText: NSLocalizedString("Continue", comment: ""),
+                    actionButtonText: String(localized: "Continue", comment: ""),
                     actionEnabled: true,
                     inProgress: viewModel.isLoading,
                     actionHandler: {
@@ -145,7 +145,7 @@ struct DashSpendUserAuthScreen: View {
             } else {
                 ZStack(alignment: .center) {
                     DashButton(
-                        text: viewModel.isLoading ? "" : NSLocalizedString("Continue", comment: "Continue"),
+                        text: viewModel.isLoading ? "" : String(localized: "Continue", comment: "Continue"),
                         isEnabled: viewModel.isInputValid(authType: authType)
                     ) {
                         if !viewModel.isLoading {

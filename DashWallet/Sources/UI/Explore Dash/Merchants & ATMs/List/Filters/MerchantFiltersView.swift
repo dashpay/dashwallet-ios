@@ -69,13 +69,13 @@ struct MerchantFiltersView: View {
                     }
                 },
                 central: {
-                    Text(NSLocalizedString("Filters", comment: "Explore Dash"))
+                    Text(String(localized: "Filters", comment: "Explore Dash"))
                         .dashFont(.subheadMedium)
                         .foregroundColor(.dash.primaryText)
                 },
                 trailing: {
                     DashUIKit.DashButton(
-                        text: NSLocalizedString("Apply", comment: ""),
+                        text: String(localized: "Apply", comment: ""),
                         isEnabled: viewModel.canApply,
                         size: .small,
                         style: .plainBlue
@@ -90,9 +90,9 @@ struct MerchantFiltersView: View {
                 VStack(spacing: 0) {
                     // Sort By Section - Only show if there are multipele options
                     if shouldShowSortOptions {
-                        FilterSection(title: NSLocalizedString("Sort by", comment: "Explore Dash/Merchants/Filters")) {
+                        FilterSection(title: String(localized: "Sort by", comment: "Explore Dash/Merchants/Filters")) {
                             RadioButtonRow(
-                                title: NSLocalizedString("Name", comment: "Explore Dash: Filters"),
+                                title: String(localized: "Name", comment: "Explore Dash: Filters"),
                                 isSelected: viewModel.sortByName
                             ) {
                                 viewModel.toggleSortBy(.name)
@@ -100,7 +100,7 @@ struct MerchantFiltersView: View {
                             
                             if viewModel.sortOptions.contains(.distance) {
                                 RadioButtonRow(
-                                    title: NSLocalizedString("Distance", comment: "Explore Dash: Filters"),
+                                    title: String(localized: "Distance", comment: "Explore Dash: Filters"),
                                     isSelected: viewModel.sortByDistance
                                 ) {
                                     viewModel.toggleSortBy(.distance)
@@ -109,7 +109,7 @@ struct MerchantFiltersView: View {
                                 
                             if viewModel.sortOptions.contains(.discount) {
                                 RadioButtonRow(
-                                    title: NSLocalizedString("Discount", comment: "Explore Dash: Filters"),
+                                    title: String(localized: "Discount", comment: "Explore Dash: Filters"),
                                     isSelected: viewModel.sortByDiscount
                                 ) {
                                     viewModel.toggleSortBy(.discount)
@@ -120,9 +120,9 @@ struct MerchantFiltersView: View {
                     
                     if viewModel.showPaymentTypes {
                         // Payment Type Section
-                        FilterSection(title: NSLocalizedString("Spending options", comment: "Explore Dash/Merchants/Filters")) {
+                        FilterSection(title: String(localized: "Spending options", comment: "Explore Dash/Merchants/Filters")) {
                             RadioButtonRow(
-                                title: NSLocalizedString("Dash", comment: "Explore Dash: Filters"),
+                                title: String(localized: "Dash", comment: "Explore Dash: Filters"),
                                 icon: .custom("dashCurrency"),
                                 isSelected: viewModel.payWithDash,
                                 style: .checkbox
@@ -131,7 +131,7 @@ struct MerchantFiltersView: View {
                             }
                             
                             RadioButtonRow(
-                                title: NSLocalizedString("CTX gift cards", comment: "Explore Dash: Filters"),
+                                title: String(localized: "CTX gift cards", comment: "Explore Dash: Filters"),
                                 icon: .custom("ctx.logo"),
                                 isSelected: viewModel.ctxGiftCards,
                                 style: .checkbox
@@ -144,7 +144,7 @@ struct MerchantFiltersView: View {
                             // Only show PiggyCards option if not in a geo-restricted region (Russia or Cuba)
                             if viewModel.isPiggyCardsAvailable {
                                 RadioButtonRow(
-                                    title: NSLocalizedString("Piggy Cards gift cards", comment: "Explore Dash: Filters"),
+                                    title: String(localized: "Piggy Cards gift cards", comment: "Explore Dash: Filters"),
                                     icon: .custom("piggycards.logo.small"),
                                     isSelected: viewModel.piggyGiftCards,
                                     style: .checkbox
@@ -158,9 +158,9 @@ struct MerchantFiltersView: View {
                         
                     // Gift Card Types Section - Only show if Gift Card is selected
                     if shouldShowGiftCardTypes {
-                        FilterSection(title: NSLocalizedString("Gift card types", comment: "Explore Dash/Merchants/Filters")) {
+                        FilterSection(title: String(localized: "Gift card types", comment: "Explore Dash/Merchants/Filters")) {
                             RadioButtonRow(
-                                title: NSLocalizedString("Flexible amounts", comment: "Explore Dash: Filters"),
+                                title: String(localized: "Flexible amounts", comment: "Explore Dash: Filters"),
                                 isSelected: viewModel.denominationFlexible,
                                 style: .checkbox
                             ) {
@@ -168,7 +168,7 @@ struct MerchantFiltersView: View {
                             }
                                 
                             RadioButtonRow(
-                                title: NSLocalizedString("Fixed denominated amounts", comment: "Explore Dash: Filters"),
+                                title: String(localized: "Fixed denominated amounts", comment: "Explore Dash: Filters"),
                                 isSelected: viewModel.denominationFixed,
                                 style: .checkbox
                             ) {
@@ -179,9 +179,9 @@ struct MerchantFiltersView: View {
                         
                     // Location Section
                     if viewModel.showTerritory {
-                        FilterSection(title: NSLocalizedString("Location", comment: "")) {
+                        FilterSection(title: String(localized: "Location", comment: "")) {
                             FilterDisclosureItem(
-                                title: viewModel.selectedTerritory ?? NSLocalizedString("Current location", comment: "Explore Dash: Filters"),
+                                title: viewModel.selectedTerritory ?? String(localized: "Current location", comment: "Explore Dash: Filters"),
                                 action: {
                                     showTerritories = true
                                 }
@@ -191,7 +191,7 @@ struct MerchantFiltersView: View {
                     
                     // Radius Section
                     if viewModel.showRadius {
-                        FilterSection(title: NSLocalizedString("Radius", comment: "Explore Dash/Merchants/Filters")) {
+                        FilterSection(title: String(localized: "Radius", comment: "Explore Dash/Merchants/Filters")) {
                             ForEach(viewModel.availableRadiusOptions) { option in
                                 RadioButtonRow(
                                     title: option.displayText,
@@ -205,7 +205,7 @@ struct MerchantFiltersView: View {
                     
                     // Location Service Settings
                     if viewModel.showLocationSettings && !DWLocationManager.shared.isAuthorized {
-                        FilterSection(title: NSLocalizedString("Current Location Settings", comment: "Explore Dash/Merchants/Filters")) {
+                        FilterSection(title: String(localized: "Current Location Settings", comment: "Explore Dash/Merchants/Filters")) {
                             FilterDisclosureItem(
                                 title: DWLocationManager.shared.localizedStatus
                             ) {
@@ -221,7 +221,7 @@ struct MerchantFiltersView: View {
                         Button(action: {
                             viewModel.resetFilters()
                         }) {
-                            Text(NSLocalizedString("Reset Filters", comment: "Explore Dash"))
+                            Text(String(localized: "Reset Filters", comment: "Explore Dash"))
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                                 .foregroundColor(viewModel.canReset ? .red : Color.dash.tertiaryText)

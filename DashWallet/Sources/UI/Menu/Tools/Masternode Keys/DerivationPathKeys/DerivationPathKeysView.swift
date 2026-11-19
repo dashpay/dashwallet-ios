@@ -86,7 +86,7 @@ struct DerivationPathKeysContentView: View {
                             VStack(alignment: .leading, spacing: 16) {
                                 // Section header: "Keypair N" + usage line
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text(NSLocalizedString("Keypair", comment: "") + " \(sectionIndex)")
+                                    Text(String(localized: "Keypair", comment: "") + " \(sectionIndex)")
                                         .font(.callout.weight(.semibold))
                                         .foregroundColor(Color(uiColor: .dw_label()))
 
@@ -190,7 +190,7 @@ struct KeyInfoRow: View {
         .overlay(
             Group {
                 if isCopied {
-                    Text(NSLocalizedString("Copied", comment: ""))
+                    Text(String(localized: "Copied", comment: ""))
                         .font(.caption)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)

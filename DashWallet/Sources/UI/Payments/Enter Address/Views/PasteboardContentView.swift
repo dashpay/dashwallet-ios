@@ -89,7 +89,7 @@ final class PasteboardContentView: UIView {
         let pasteboardContentTitleLabel = UILabel()
         pasteboardContentTitleLabel.textColor = .dw_secondaryText()
         pasteboardContentTitleLabel.font = .dw_font(forTextStyle: .caption1)
-        pasteboardContentTitleLabel.text = NSLocalizedString("Tap the address from the clipboard to paste it", comment: "Enter Address Screen")
+        pasteboardContentTitleLabel.text = String(localized: "Tap the address from the clipboard to paste it", comment: "Enter Address Screen")
         stackView.addArrangedSubview(pasteboardContentTitleLabel)
 
         textView = TappableTextView()

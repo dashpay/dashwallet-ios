@@ -69,7 +69,7 @@ struct ConnectionsScreen: View {
                             // creating one.
                             DashUIKit.NavigationBarElement.plus.button(
                                 action: viewModel.needsUsername ? startCreatingUsername : showScanner)
-                                .accessibilityLabel(Text(NSLocalizedString("Connect an app", comment: "DashConnect")))
+                                .accessibilityLabel(Text(String(localized: "Connect an app", comment: "DashConnect")))
                         }
                     }
                 )
@@ -83,7 +83,7 @@ struct ConnectionsScreen: View {
 
                 // The app declares its own `ProgressView: UIView`, which shadows
                 // SwiftUI's in any file importing both.
-                SwiftUI.ProgressView(NSLocalizedString("Completing DashConnect request…", comment: "DashConnect"))
+                SwiftUI.ProgressView(String(localized: "Completing DashConnect request…", comment: "DashConnect"))
                     .padding(.horizontal, 20)
                     .padding(.vertical, 16)
                     .background(Color.primaryBackground)
@@ -99,7 +99,7 @@ struct ConnectionsScreen: View {
             return Alert(
                 title: Text(message.title),
                 message: Text(message.text),
-                dismissButton: .default(Text(NSLocalizedString("OK", comment: ""))) {
+                dismissButton: .default(Text(String(localized: "OK", comment: ""))) {
                     viewModel.message = nil
                 }
             )
@@ -199,7 +199,7 @@ struct ConnectionsScreen: View {
     }
 
     private var title: some View {
-        TopIntro(title: NSLocalizedString("Connections", comment: "DashConnect"))
+        TopIntro(title: String(localized: "Connections", comment: "DashConnect"))
             .padding(.horizontal, viewModel.hasConnectionsOrHistory && !viewModel.featureUnavailable ? 0 : 20)
             .padding(.top, 10)
     }
@@ -232,17 +232,17 @@ struct ConnectionsScreen: View {
 
     private static func emptyTabText(_ tab: ConnectionsTab) -> String {
         switch tab {
-        case .active: return NSLocalizedString("No active connections", comment: "DashConnect: an empty tab")
-        case .disconnected: return NSLocalizedString("No disconnected connections", comment: "DashConnect: an empty tab")
-        case .expired: return NSLocalizedString("No expired connections", comment: "DashConnect: an empty tab")
+        case .active: return String(localized: "No active connections", comment: "DashConnect: an empty tab")
+        case .disconnected: return String(localized: "No disconnected connections", comment: "DashConnect: an empty tab")
+        case .expired: return String(localized: "No expired connections", comment: "DashConnect: an empty tab")
         }
     }
 
     private static func tabName(_ tab: ConnectionsTab) -> String {
         switch tab {
-        case .active: return NSLocalizedString("Active", comment: "DashConnect connection status")
-        case .disconnected: return NSLocalizedString("Disconnected", comment: "DashConnect connection status")
-        case .expired: return NSLocalizedString("Expired", comment: "DashConnect connection status")
+        case .active: return String(localized: "Active", comment: "DashConnect connection status")
+        case .disconnected: return String(localized: "Disconnected", comment: "DashConnect connection status")
+        case .expired: return String(localized: "Expired", comment: "DashConnect connection status")
         }
     }
 

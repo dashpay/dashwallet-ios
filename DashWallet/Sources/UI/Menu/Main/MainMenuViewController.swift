@@ -228,7 +228,7 @@ struct MainMenuScreen: View {
                 if let username = viewModel.profileUsername {
                     DashUIKit.MenuItem(
                         leadingIcon: .custom("dp_user_generic", bundle: .main),
-                        title: NSLocalizedString("Profile", comment: "DashPay"),
+                        title: String(localized: "Profile", comment: "DashPay"),
                         helpText: username,
                         accessory: .none
                     )
@@ -237,8 +237,7 @@ struct MainMenuScreen: View {
                     // leads to, with the trait VoiceOver reads as tappable.
                     .accessibilityElement(children: .combine)
                     .accessibilityAddTraits(.isButton)
-                    .accessibilityLabel(String.localizedStringWithFormat(
-                        NSLocalizedString("Profile, %@", comment: "DashPay"), username))
+                    .accessibilityLabel(String(localized: "Profile, \(username)", comment: "DashPay"))
                     .modifier(MenuViewModifier())
                     .padding(.vertical, 20)
                     .padding(.horizontal, 20)
@@ -662,8 +661,8 @@ struct MainMenuScreen: View {
         )
         controller.completionHandler = { [weak navigationController] result in
             let message = result 
-                ? NSLocalizedString("Username was successfully requested", comment: "Usernames")
-                : NSLocalizedString("Your request was cancelled", comment: "Usernames")
+                ? String(localized: "Username was successfully requested", comment: "Usernames")
+                : String(localized: "Your request was cancelled", comment: "Usernames")
             
             // Find the root view controller to show HUD
             if let rootVC = navigationController?.viewControllers.first {

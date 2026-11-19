@@ -32,7 +32,7 @@ struct DashStepper: View {
             stepperButton(
                 systemImage: "minus",
                 enabled: count > 0,
-                accessibilityLabel: NSLocalizedString("Decrease quantity", comment: "DashSpend")
+                accessibilityLabel: String(localized: "Decrease quantity", comment: "DashSpend")
             ) {
                 if count > 0 { count -= 1 }
             }
@@ -46,7 +46,7 @@ struct DashStepper: View {
             stepperButton(
                 systemImage: "plus",
                 enabled: plusEnabled,
-                accessibilityLabel: NSLocalizedString("Increase quantity", comment: "DashSpend")
+                accessibilityLabel: String(localized: "Increase quantity", comment: "DashSpend")
             ) {
                 count += 1
             }
@@ -85,8 +85,8 @@ struct DashStepper: View {
             .accessibilityHint(
                 Text(
                     enabled
-                        ? NSLocalizedString("Double tap to change quantity", comment: "DashSpend")
-                        : NSLocalizedString("Unavailable at this limit", comment: "DashSpend")
+                        ? String(localized: "Double tap to change quantity", comment: "DashSpend")
+                        : String(localized: "Unavailable at this limit", comment: "DashSpend")
                 )
             )
             .accessibilityAddTraits(.isButton)

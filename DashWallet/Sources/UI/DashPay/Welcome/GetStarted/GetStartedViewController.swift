@@ -39,7 +39,7 @@ class GetStartedViewController: ActionButtonViewController, NavigationFullscreen
     }
 
     override var actionButtonTitle: String {
-        return NSLocalizedString("Continue", comment: "")
+        return String(localized: "Continue", comment: "")
     }
 
     var requiresNoNavigationBar: Bool {

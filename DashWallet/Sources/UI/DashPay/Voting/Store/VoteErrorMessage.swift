@@ -84,16 +84,16 @@ enum VoteErrorMessage {
     private static func message(forConsensusCode code: UInt32) -> String {
         switch code {
         case votedTooManyTimes:
-            return NSLocalizedString("No votes left", comment: "Voting")
+            return String(localized: "No votes left", comment: "Voting")
         case votePollNotAvailable, votePollNotFound:
             return closed
         case voteAlreadyPresent:
             // A vote this device has no record of (another device, a reinstall):
             // the same refusal comes back on every try.
-            return NSLocalizedString("The vote was not cast. This masternode already holds this vote.", comment: "Voting")
+            return String(localized: "The vote was not cast. This masternode already holds this vote.", comment: "Voting")
         case voterNotFound, incorrectVotingAddress, incorrectVoterIdentityId:
-            return NSLocalizedString(
-                "The vote was not cast. This voting key does not belong to an active masternode.",
+            return String(
+                localized: "The vote was not cast. This voting key does not belong to an active masternode.",
                 comment: "Voting")
         default:
             return generic
@@ -101,14 +101,14 @@ enum VoteErrorMessage {
     }
 
     private static var connection: String {
-        NSLocalizedString("The vote was not cast. Check your connection and try again.", comment: "Voting")
+        String(localized: "The vote was not cast. Check your connection and try again.", comment: "Voting")
     }
 
     private static var closed: String {
-        NSLocalizedString("The vote was not cast. Voting on this name has closed.", comment: "Voting")
+        String(localized: "The vote was not cast. Voting on this name has closed.", comment: "Voting")
     }
 
     private static var generic: String {
-        NSLocalizedString("The vote was not cast. Please try again.", comment: "Voting")
+        String(localized: "The vote was not cast. Please try again.", comment: "Voting")
     }
 }

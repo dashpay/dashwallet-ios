@@ -51,10 +51,10 @@ struct WalletAccountsScreen: View {
 
                 if viewModel.rows.isEmpty {
                     ContentUnavailableView(
-                        NSLocalizedString("No Accounts", comment: "Wallet accounts"),
+                        String(localized: "No Accounts", comment: "Wallet accounts"),
                         systemImage: "folder",
-                        description: Text(NSLocalizedString(
-                            "Accounts are created automatically when the wallet syncs.",
+                        description: Text(String(
+                            localized: "Accounts are created automatically when the wallet syncs.",
                             comment: "Wallet accounts")))
                 } else {
                     ScrollView {
@@ -104,7 +104,7 @@ struct WalletAccountsScreen: View {
             )
 
             HStack {
-                Text(NSLocalizedString("Accounts", comment: "Wallet accounts"))
+                Text(String(localized: "Accounts", comment: "Wallet accounts"))
                     .font(.title)
                     .fontWeight(.bold)
                     .foregroundColor(.dash.primaryText)
@@ -189,7 +189,7 @@ private struct AccountRowView: View {
             } else if row.showsBalance {
                 coreBalanceRow
             } else {
-                Text(NSLocalizedString("Special Purpose Account", comment: "Wallet accounts"))
+                Text(String(localized: "Special Purpose Account", comment: "Wallet accounts"))
                     .font(.caption)
                     .foregroundColor(.dash.secondaryText)
                     .italic()
@@ -204,7 +204,7 @@ private struct AccountRowView: View {
     private var coreBalanceRow: some View {
         HStack(spacing: 16) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(NSLocalizedString("Confirmed", comment: "Wallet accounts"))
+                Text(String(localized: "Confirmed", comment: "Wallet accounts"))
                     .font(.caption)
                     .foregroundColor(.dash.secondaryText)
                 Text(row.confirmed.formattedDashAmount)
@@ -215,7 +215,7 @@ private struct AccountRowView: View {
 
             if row.unconfirmed > 0 {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(NSLocalizedString("Pending", comment: "Wallet accounts"))
+                    Text(String(localized: "Pending", comment: "Wallet accounts"))
                         .font(.caption)
                         .foregroundColor(.dash.secondaryText)
                     Text(row.unconfirmed.formattedDashAmount)
@@ -228,7 +228,7 @@ private struct AccountRowView: View {
             Spacer()
 
             VStack(alignment: .trailing, spacing: 2) {
-                Text(NSLocalizedString("Total", comment: "Wallet accounts"))
+                Text(String(localized: "Total", comment: "Wallet accounts"))
                     .font(.caption)
                     .foregroundColor(.dash.secondaryText)
                 Text((row.confirmed + row.unconfirmed).formattedDashAmount)
@@ -244,7 +244,7 @@ private struct AccountRowView: View {
     private var platformBalanceRow: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
-                Text(NSLocalizedString("Balance", comment: "Wallet accounts"))
+                Text(String(localized: "Balance", comment: "Wallet accounts"))
                     .font(.caption)
                     .foregroundColor(.dash.secondaryText)
                 Text(Self.formatCredits(row.platformCredits))
@@ -262,10 +262,10 @@ private struct AccountRowView: View {
             // DIP-17 pools are flat — no external/internal split.
             HStack(spacing: 16) {
                 Label(
-                    String.localizedStringWithFormat(NSLocalizedString("%d used", comment: "Wallet accounts — address pool"), row.platformAddressesUsed),
+                    String.localizedStringWithFormat(String(localized: "%d used", comment: "Wallet accounts — address pool"), row.platformAddressesUsed),
                     systemImage: "checkmark.circle")
                 Label(
-                    String.localizedStringWithFormat(NSLocalizedString("%d total", comment: "Wallet accounts — address pool"), row.platformAddressesTotal),
+                    String(localized: "\(row.platformAddressesTotal) total", comment: "Wallet accounts — address pool"),
                     systemImage: "tray.full")
                 Spacer()
             }
@@ -275,12 +275,12 @@ private struct AccountRowView: View {
             HStack(spacing: 16) {
                 if row.receiveAddressCount > 0 {
                     Label(
-                        String.localizedStringWithFormat(NSLocalizedString("%d receive", comment: "Wallet accounts — address pool"), row.receiveAddressCount),
+                        String(localized: "\(row.receiveAddressCount) receive", comment: "Wallet accounts — address pool"),
                         systemImage: "arrow.down.circle")
                 }
                 if row.changeAddressCount > 0 {
                     Label(
-                        String.localizedStringWithFormat(NSLocalizedString("%d change", comment: "Wallet accounts — address pool"), row.changeAddressCount),
+                        String(localized: "\(row.changeAddressCount) change", comment: "Wallet accounts — address pool"),
                         systemImage: "arrow.up.arrow.down.circle")
                 }
                 Spacer()

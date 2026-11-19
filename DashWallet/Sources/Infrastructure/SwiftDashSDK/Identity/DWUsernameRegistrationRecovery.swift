@@ -118,11 +118,7 @@ enum UsernameRegistrationFailureWording {
         // The vote poll ended in a LOCK: masternodes decided nobody gets the
         // name. Re-submitting can only fail the same way.
         if raw.contains("vote_poll_status: Locked") || raw.contains("is currently already locked") {
-            return String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "“%@” was locked by a masternode vote, so it cannot be registered by anyone. Please choose a different username.",
-                    comment: "Usernames"),
-                username)
+            return String(localized: "“\(username)” was locked by a masternode vote, so it cannot be registered by anyone. Please choose a different username.", comment: "Usernames")
         }
         // The identity's own balance, and only that: "Insufficient identity …
         // balance … required …" (consensus), "identity insufficient balance"
@@ -133,8 +129,8 @@ enum UsernameRegistrationFailureWording {
         if raw.localizedCaseInsensitiveContains("insufficient identity")
             || raw.localizedCaseInsensitiveContains("identity insufficient balance")
             || raw.range(of: #"Identity \S+ has \d+ credits but \d+ are required"#, options: .regularExpression) != nil {
-            return NSLocalizedString(
-                "Not enough identity credits to register this name. Use Top Up in My Profile, then try again. Your existing identity will be reused.",
+            return String(
+                localized: "Not enough identity credits to register this name. Use Top Up in My Profile, then try again. Your existing identity will be reused.",
                 comment: "Identity recovery insufficient credits")
         }
         return raw

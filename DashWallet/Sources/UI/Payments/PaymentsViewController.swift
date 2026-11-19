@@ -141,8 +141,8 @@ extension PaymentsViewController {
     func configureHierarchy() {
         view.backgroundColor = .dw_secondaryBackground()
 
-        segmentedControl.setTitle(NSLocalizedString("Receive", comment: "Receive/Send"), forSegmentAt: 0)
-        segmentedControl.setTitle(NSLocalizedString("Send", comment: "Receive/Send"), forSegmentAt: 1)
+        segmentedControl.setTitle(String(localized: "Receive", comment: "Receive/Send"), forSegmentAt: 0)
+        segmentedControl.setTitle(String(localized: "Send", comment: "Receive/Send"), forSegmentAt: 1)
         segmentedControl.selectedSegmentIndex = currentState.rawValue
 
         payViewController = PayViewController.controller(with: payModel)

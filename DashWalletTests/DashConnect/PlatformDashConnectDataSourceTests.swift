@@ -6928,8 +6928,8 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
         XCTAssertNil(viewModel.termsAppliedPlan)
         XCTAssertEqual(
             viewModel.approveDisabledReason,
-            NSLocalizedString(
-                "This expiry has passed. Pick another one, then approve.",
+            String(
+                localized: "This expiry has passed. Pick another one, then approve.",
                 comment: "DashConnect approve sheet: the chosen expiry is in the past"))
     }
 
@@ -7026,8 +7026,8 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
         XCTAssertNil(viewModel.termsAppliedPlan)
         XCTAssertEqual(
             viewModel.approveDisabledReason,
-            NSLocalizedString(
-                "This expiry has passed. Pick another one, then approve.",
+            String(
+                localized: "This expiry has passed. Pick another one, then approve.",
                 comment: "DashConnect approve sheet: the chosen expiry is in the past"))
         XCTAssertNotNil(viewModel.pendingRequest)
     }

@@ -30,7 +30,7 @@ class WelcomeViewController: ActionButtonViewController, NavigationFullscreenabl
     }
     
     override var actionButtonTitle: String {
-        return NSLocalizedString("Continue", comment: "")
+        return String(localized: "Continue", comment: "")
     }
     
     override func viewDidLoad() {

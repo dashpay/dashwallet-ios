@@ -104,12 +104,12 @@ enum DevnetConfiguration {
     static func devnetNameValidationError(_ name: String) -> String? {
         guard !name.isEmpty else { return nil }
         if name.rangeOfCharacter(from: .whitespacesAndNewlines) != nil {
-            return NSLocalizedString(
-                "The devnet name cannot contain spaces.", comment: "Devnet")
+            return String(
+                localized: "The devnet name cannot contain spaces.", comment: "Devnet")
         }
         if name.contains("/") {
-            return NSLocalizedString(
-                "The devnet name cannot contain a slash.", comment: "Devnet")
+            return String(
+                localized: "The devnet name cannot contain a slash.", comment: "Devnet")
         }
         return nil
     }

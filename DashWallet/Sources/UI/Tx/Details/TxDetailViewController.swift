@@ -268,7 +268,7 @@ class TXDetailViewController: BaseTxDetailsViewController {
 extension TXDetailViewController {
     private func viewInBlockExplorer() {
         let swiftUIView = DashUIKit.BottomSheet(
-            title: NSLocalizedString("Select block explorer", comment: "Block explorer picker"),
+            title: String(localized: "Select block explorer", comment: "Block explorer picker"),
             showBackButton: Binding<Bool>.constant(false)
         ) {
             BlockExplorerSelectionView { [weak self] explorer in
@@ -304,7 +304,7 @@ extension TXDetailViewController {
     /// Full consensus-field inspector for this transaction's stored raw bytes.
     private func viewRawTransaction() {
         let sheet = DashUIKit.BottomSheet(
-            title: NSLocalizedString("Transaction", comment: "Raw transaction inspector"),
+            title: String(localized: "Transaction", comment: "Raw transaction inspector"),
             showBackButton: Binding<Bool>.constant(false)
         ) {
             RawTransactionView(txidWire: self.model.transaction.txHashData)
@@ -338,7 +338,7 @@ extension TXDetailViewController {
         }
         isRetryingAssetLock = true
         let txidWire = model.transaction.txHashData
-        view.dw_showProgressHUD(withMessage: NSLocalizedString("Retrying transfer…", comment: "Asset-lock retry in progress"))
+        view.dw_showProgressHUD(withMessage: String(localized: "Retrying transfer…", comment: "Asset-lock retry in progress"))
         Task { [weak self] in
             // The outcome is decided here and rendered only after the
             // spinner is down. Ordering, not a workaround: the retry can run
@@ -362,13 +362,13 @@ extension TXDetailViewController {
                 self?.model.recordRecoveryOutcome(outcome)
                 switch outcome {
                 case .completed:
-                    toast = (NSLocalizedString("Transfer completed", comment: "Asset-lock retry finished"), .success)
+                    toast = (String(localized: "Transfer completed", comment: "Asset-lock retry finished"), .success)
                 case .addedToOwnShielded:
                     // Finished, but to the wallet's own Shielded address: the
                     // lock had no recorded recipient, so this screen cannot
                     // say the transfer it was built for completed.
-                    toast = (NSLocalizedString(
-                        "Funds added to your Shielded balance",
+                    toast = (String(
+                        localized: "Funds added to your Shielded balance",
                         comment: "A transfer whose recipient was not on record was finished to the wallet's own Shielded balance"), .info)
                 case .completionUnconfirmed:
                     // Platform said the outpoint is already spent, but that
@@ -377,12 +377,12 @@ extension TXDetailViewController {
                     // did not witness. The row keeps its retry on purpose:
                     // each tap is an explicit, authorized recheck of this
                     // same outpoint.
-                    toast = (NSLocalizedString("Already spent — nothing to transfer", comment: "Asset-lock retry found the lock already consumed"), .info)
+                    toast = (String(localized: "Already spent — nothing to transfer", comment: "Asset-lock retry found the lock already consumed"), .info)
                 case .submittedAwaitingSync:
                     // Accepted, result not readable yet. Re-submitting risks a
                     // double-spend, so say what is true and point at the sync
                     // rather than inviting another tap.
-                    toast = (NSLocalizedString("Submitted — waiting for the network to confirm", comment: "Asset-lock retry submitted but its result could not be read back"), .info)
+                    toast = (String(localized: "Submitted — waiting for the network to confirm", comment: "Asset-lock retry submitted but its result could not be read back"), .info)
                 }
             } catch DWIdentityAuthorizer.AuthError.cancelled {
                 // Backing out of the PIN prompt is not an error state.
@@ -430,10 +430,10 @@ extension TXDetailViewController {
 
     private func presentRetryFailure(_ error: Error) {
         let alert = UIAlertController(
-            title: NSLocalizedString("Couldn't complete the transfer", comment: "Asset-lock retry failed"),
+            title: String(localized: "Couldn't complete the transfer", comment: "Asset-lock retry failed"),
             message: error.localizedDescription,
             preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
+        alert.addAction(UIAlertAction(title: String(localized: "OK", comment: ""), style: .cancel))
         present(alert, animated: true)
     }
 
@@ -443,15 +443,15 @@ extension TXDetailViewController {
     /// was wrong.
     private func confirmRemoveUnconfirmed() {
         let alert = UIAlertController(
-            title: NSLocalizedString("Remove this transaction?", comment: "Remove never-accepted transaction: confirmation title"),
-            message: NSLocalizedString("The wallet first checks a block explorer. A transaction known to the network — whether it is waiting in the mempool or already included in a block — is never removed. If the transaction isn't found, it is deleted from this wallet on this device, and the coins it was trying to spend become available again. The wallet then rescans recent blocks as a safety check. Nothing is sent to the network.", comment: "Remove never-accepted transaction: confirmation body"),
+            title: String(localized: "Remove this transaction?", comment: "Remove never-accepted transaction: confirmation title"),
+            message: String(localized: "The wallet first checks a block explorer. A transaction known to the network — whether it is waiting in the mempool or already included in a block — is never removed. If the transaction isn't found, it is deleted from this wallet on this device, and the coins it was trying to spend become available again. The wallet then rescans recent blocks as a safety check. Nothing is sent to the network.", comment: "Remove never-accepted transaction: confirmation body"),
             preferredStyle: .alert)
         alert.addAction(UIAlertAction(
-            title: NSLocalizedString("Remove Transaction", comment: "Remove never-accepted transaction: destructive confirm button"),
+            title: String(localized: "Remove Transaction", comment: "Remove never-accepted transaction: destructive confirm button"),
             style: .destructive) { [weak self] _ in
                 self?.performRemoveUnconfirmed()
             })
-        alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel))
+        alert.addAction(UIAlertAction(title: String(localized: "Cancel", comment: ""), style: .cancel))
         present(alert, animated: true)
     }
 
@@ -459,7 +459,7 @@ extension TXDetailViewController {
         guard !isRetryingAssetLock else { return }
         isRetryingAssetLock = true
         let txidWire = model.transaction.txHashData
-        view.dw_showProgressHUD(withMessage: NSLocalizedString("Removing transaction…", comment: "Remove never-accepted transaction: progress"))
+        view.dw_showProgressHUD(withMessage: String(localized: "Removing transaction…", comment: "Remove never-accepted transaction: progress"))
         Task { [weak self] in
             defer {
                 self?.isRetryingAssetLock = false
@@ -469,12 +469,12 @@ extension TXDetailViewController {
                 let outcome = try await UnconfirmedTransactionRemover().remove(txidWire: txidWire)
                 switch outcome {
                 case .rescanArmed:
-                    self?.view.dw_showInfoHUD(withText: NSLocalizedString("Transaction removed", comment: "Remove never-accepted transaction: success"))
+                    self?.view.dw_showInfoHUD(withText: String(localized: "Transaction removed", comment: "Remove never-accepted transaction: success"))
                     // The row this sheet describes no longer exists.
                     self?.closeAction()
                 case .rescanUnavailable:
                     // Never claim the rescan safety net ran when it didn't.
-                    self?.view.dw_showInfoHUD(withText: NSLocalizedString("Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status", comment: "Remove never-accepted transaction: removed but the recovery rescan did not arm"))
+                    self?.view.dw_showInfoHUD(withText: String(localized: "Transaction removed — rescan couldn't start, run Rescan Filters in Core Sync Status", comment: "Remove never-accepted transaction: removed but the recovery rescan did not arm"))
                     self?.closeAction()
                 case .runtimeStopped:
                     // A HUD would not survive this: it is added to this
@@ -493,10 +493,10 @@ extension TXDetailViewController {
                 self?.reloadDataSource()
             } catch {
                 let alert = UIAlertController(
-                    title: NSLocalizedString("Couldn't remove the transaction", comment: "Remove never-accepted transaction: failure title"),
+                    title: String(localized: "Couldn't remove the transaction", comment: "Remove never-accepted transaction: failure title"),
                     message: error.localizedDescription,
                     preferredStyle: .alert)
-                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
+                alert.addAction(UIAlertAction(title: String(localized: "OK", comment: ""), style: .cancel))
                 self?.present(alert, animated: true)
             }
         }
@@ -510,10 +510,10 @@ extension TXDetailViewController {
     /// sheet is dismissed only after the user acknowledges.
     private func presentRemovalLeftWalletStopped() {
         let alert = UIAlertController(
-            title: NSLocalizedString("Transaction removed, but the wallet stopped", comment: "Remove never-accepted transaction: removed but the runtime reload left the wallet stopped"),
-            message: NSLocalizedString("The transaction was deleted from this device. Reloading the wallet didn't finish, so the wallet is stopped and the rescan that double-checks the blockchain never ran.\n\nRestart the wallet — reopen the app, or tap Sync Now in Sync Info — and then run Rescan Filters in Core Sync Status. Restarting alone does not repeat the rescan.", comment: "Remove never-accepted transaction: both recovery steps after a failed runtime reload"),
+            title: String(localized: "Transaction removed, but the wallet stopped", comment: "Remove never-accepted transaction: removed but the runtime reload left the wallet stopped"),
+            message: String(localized: "The transaction was deleted from this device. Reloading the wallet didn't finish, so the wallet is stopped and the rescan that double-checks the blockchain never ran.\n\nRestart the wallet — reopen the app, or tap Sync Now in Sync Info — and then run Rescan Filters in Core Sync Status. Restarting alone does not repeat the rescan.", comment: "Remove never-accepted transaction: both recovery steps after a failed runtime reload"),
             preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel) { [weak self] _ in
+        alert.addAction(UIAlertAction(title: String(localized: "OK", comment: ""), style: .cancel) { [weak self] _ in
             // The row this sheet describes no longer exists.
             self?.closeAction()
         })
@@ -524,10 +524,10 @@ extension TXDetailViewController {
     /// block. Removal is refused until the local wallet catches up.
     private func presentRemovalRefused() {
         let alert = UIAlertController(
-            title: NSLocalizedString("Transaction is known to the network", comment: "Remove never-accepted transaction: refused because the explorer found it"),
-            message: NSLocalizedString("A block explorer reports that this transaction is known to the Dash network. It may still be waiting in the mempool or may already be included in a block, so it wasn't removed. The wallet will update its confirmation automatically once it is included in a synchronized block.", comment: "Remove never-accepted transaction: refusal body"),
+            title: String(localized: "Transaction is known to the network", comment: "Remove never-accepted transaction: refused because the explorer found it"),
+            message: String(localized: "A block explorer reports that this transaction is known to the Dash network. It may still be waiting in the mempool or may already be included in a block, so it wasn't removed. The wallet will update its confirmation automatically once it is included in a synchronized block.", comment: "Remove never-accepted transaction: refusal body"),
             preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
+        alert.addAction(UIAlertAction(title: String(localized: "OK", comment: ""), style: .cancel))
         present(alert, animated: true)
         reloadDataSource()
     }
@@ -539,7 +539,7 @@ extension TXDetailViewController {
         Task { @MainActor [weak self] in
             guard let self else { return }
             guard let contact = SwiftDashSDKContactsService.shared.contactItem(for: party.identityId) else {
-                self.view.dw_showInfoHUD(withText: NSLocalizedString("Contact is no longer available",
+                self.view.dw_showInfoHUD(withText: String(localized: "Contact is no longer available",
                                                                      comment: "DashPay Contacts"))
                 return
             }
@@ -552,9 +552,9 @@ extension TXDetailViewController {
     private func copyRawTransaction() {
         if let hex = RawTransactionInspector.rawHex(txidWire: model.transaction.txHashData) {
             UIPasteboard.general.string = hex
-            view.dw_showInfoHUD(withText: NSLocalizedString("Copied", comment: ""))
+            view.dw_showInfoHUD(withText: String(localized: "Copied", comment: ""))
         } else {
-            view.dw_showInfoHUD(withText: NSLocalizedString("Raw transaction unavailable", comment: "Raw transaction inspector"))
+            view.dw_showInfoHUD(withText: String(localized: "Raw transaction unavailable", comment: "Raw transaction inspector"))
         }
     }
 }
@@ -606,7 +606,7 @@ extension TXDetailViewController {
                         cell.titleLabel.text = title
                         cell.titleLabel.textColor = .dw_label()
                     } else if item == .removeUnconfirmed {
-                        cell.titleLabel.text = NSLocalizedString("Remove if Not on Network", comment: "Delete a never-accepted transaction from local wallet state")
+                        cell.titleLabel.text = String(localized: "Remove if Not on Network", comment: "Delete a never-accepted transaction from local wallet state")
                         cell.titleLabel.textColor = .systemRed
                     }
                     return cell
@@ -615,14 +615,14 @@ extension TXDetailViewController {
                     let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailActionCell.reuseIdentifier,
                                                              for: indexPath) as! TxDetailActionCell
                     cell.titleLabel.text = item == .copyRawTransaction
-                        ? NSLocalizedString("Copy Raw Transaction", comment: "Raw transaction inspector")
-                        : NSLocalizedString("View Transaction", comment: "Raw transaction inspector")
+                        ? String(localized: "Copy Raw Transaction", comment: "Raw transaction inspector")
+                        : String(localized: "View Transaction", comment: "Raw transaction inspector")
                     return cell
 
                 case .explorer:
                     let cell = tableView.dequeueReusableCell(withIdentifier: TxDetailActionCell.reuseIdentifier,
                                                              for: indexPath) as! TxDetailActionCell
-                    cell.titleLabel.text = NSLocalizedString("View in Block Explorer", comment: "")
+                    cell.titleLabel.text = String(localized: "View in Block Explorer", comment: "")
                     return cell
 
                 case .swapExplorer:
@@ -820,7 +820,7 @@ class SuccessTxDetailViewController: TXDetailViewController, NavigationBarDispla
 
         closeButton = ActionButton()
         closeButton.translatesAutoresizingMaskIntoConstraints = false
-        closeButton.setTitle(NSLocalizedString("Close", comment: ""), for: .normal)
+        closeButton.setTitle(String(localized: "Close", comment: ""), for: .normal)
         closeButton.addTarget(self, action: #selector(closeAction), for: .touchUpInside)
         view.addSubview(closeButton)
     }

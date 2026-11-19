@@ -33,8 +33,8 @@ struct DashSpendLoginInfoView: View {
                     inProgress: $inProgress
                 ) {
                     FeatureTopText(
-                        title: NSLocalizedString("Create an account or log into an existing one", comment: "DashSpend account title"),
-                        label: NSLocalizedString("Terms & conditions", comment: "Terms & conditions"),
+                        title: String(localized: "Create an account or log into an existing one", comment: "DashSpend account title"),
+                        label: String(localized: "Terms & conditions", comment: "Terms & conditions"),
                         labelIcon: .custom("external.link"),
                         linkAction: onTermsAndConditions
                     )
@@ -44,11 +44,11 @@ struct DashSpendLoginInfoView: View {
                     orientation: .vertical,
                     size: .large,
                     positiveActionEnabled: true,
-                    positiveButtonText: NSLocalizedString("Create new account", comment: ""),
+                    positiveButtonText: String(localized: "Create new account", comment: ""),
                     positiveButtonAction: {
                         onCreateNewAccount()
                     },
-                    negativeButtonText: NSLocalizedString("Log in", comment: ""),
+                    negativeButtonText: String(localized: "Log in", comment: ""),
                     negativeButtonAction: {
                         onLogIn()
                     }

@@ -169,7 +169,7 @@ struct SyncingAlertView: View {
             }
 
             DashButton(
-                text: NSLocalizedString("OK", comment: ""),
+                text: String(localized: "OK", comment: ""),
                 size: .small,
                 stretch: false
             ) {
@@ -187,12 +187,12 @@ struct SyncingAlertView: View {
     private var title: String {
         switch viewModel.state {
         case .syncFailed:
-            return NSLocalizedString("Sync Failed", comment: "")
+            return String(localized: "Sync Failed", comment: "")
         case .noConnection:
-            return NSLocalizedString("Unable to connect", comment: "")
+            return String(localized: "Unable to connect", comment: "")
         default:
             return String(format: "%@ %.1f%%",
-                          NSLocalizedString("Syncing", comment: ""),
+                          String(localized: "Syncing", comment: ""),
                           min(max(viewModel.progress, 0), 1) * 100.0)
         }
     }
@@ -204,9 +204,7 @@ struct SyncingAlertView: View {
             if viewModel.snapshot.phases.isEmpty {
                 // No per-phase detail from the SDK yet — single-line
                 // fallback from the snapshot's headline numbers.
-                Text(String(format: NSLocalizedString("block #%d of %d", comment: ""),
-                            viewModel.snapshot.lastSyncBlockHeight,
-                            viewModel.snapshot.estimatedBlockHeight))
+                Text(String(localized: "block #\(viewModel.snapshot.lastSyncBlockHeight) of \(viewModel.snapshot.estimatedBlockHeight)", comment: ""))
                     .font(.footnote)
                     .foregroundColor(.dash.secondaryText)
             } else {
@@ -250,7 +248,7 @@ struct SyncingAlertView: View {
     private var peersSection: some View {
         VStack(spacing: 6) {
             HStack {
-                Text(NSLocalizedString("Connected peers", comment: "SPV sync"))
+                Text(String(localized: "Connected peers", comment: "SPV sync"))
                     .font(.footnote.weight(.semibold))
                     .foregroundColor(.dash.primaryText)
                 Spacer()
@@ -278,7 +276,7 @@ struct SyncingAlertView: View {
 
     private var stallSection: some View {
         HStack(spacing: 8) {
-            Text(NSLocalizedString("Sync too slow?", comment: "SPV sync"))
+            Text(String(localized: "Sync too slow?", comment: "SPV sync"))
                 .font(.footnote)
                 .foregroundColor(.dash.secondaryText)
             Button {
@@ -288,7 +286,7 @@ struct SyncingAlertView: View {
                     SwiftUI.ProgressView()
                         .controlSize(.small)
                 } else {
-                    Text(NSLocalizedString("Change peers", comment: "SPV sync"))
+                    Text(String(localized: "Change peers", comment: "SPV sync"))
                         .font(.footnote.weight(.semibold))
                         .foregroundColor(.dash.blue)
                 }
@@ -308,9 +306,9 @@ struct SyncingAlertView: View {
 
     private func label(for nodeType: PlatformSpvPeerNodeType) -> String {
         switch nodeType {
-        case .evonode: return NSLocalizedString("Evonode", comment: "SPV sync peer type")
-        case .masternode: return NSLocalizedString("Masternode", comment: "SPV sync peer type")
-        case .normal: return NSLocalizedString("Node", comment: "SPV sync peer type")
+        case .evonode: return String(localized: "Evonode", comment: "SPV sync peer type")
+        case .masternode: return String(localized: "Masternode", comment: "SPV sync peer type")
+        case .normal: return String(localized: "Node", comment: "SPV sync peer type")
         case .unknown: return ""
         }
     }
@@ -318,13 +316,13 @@ struct SyncingAlertView: View {
     private func label(for kind: SyncStateSnapshot.Phase.Kind) -> String {
         switch kind {
         case .headers:
-            return NSLocalizedString("Headers", comment: "SPV sync phase")
+            return String(localized: "Headers", comment: "SPV sync phase")
         case .filterHeaders:
-            return NSLocalizedString("Filter headers", comment: "SPV sync phase")
+            return String(localized: "Filter headers", comment: "SPV sync phase")
         case .filters:
-            return NSLocalizedString("Filters", comment: "SPV diagnostics")
+            return String(localized: "Filters", comment: "SPV diagnostics")
         case .masternodes:
-            return NSLocalizedString("Masternode list", comment: "SPV sync phase")
+            return String(localized: "Masternode list", comment: "SPV sync phase")
         }
     }
 

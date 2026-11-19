@@ -56,7 +56,7 @@ final class BuyCreditsViewController: SendAmountViewController, ObservableObject
     }()
     
     override var actionButtonTitle: String {
-        NSLocalizedString("Buy", comment: "Buy")
+        String(localized: "Buy", comment: "Buy")
     }
     
     override func configureModel() {
@@ -85,9 +85,9 @@ final class BuyCreditsViewController: SendAmountViewController, ObservableObject
         rootView.addSubview(stackView)
         
         let intro = SendIntro(
-            title: NSLocalizedString("Buy credits", comment: "Credits"),
+            title: String(localized: "Buy credits", comment: "Credits"),
             dashBalance: model.walletBalance,
-            balanceLabel: NSLocalizedString("Dash balance", comment: "") + ":",
+            balanceLabel: String(localized: "Dash balance", comment: "") + ":",
             avatarView: { }
         )
         let swiftUIController = UIHostingController(rootView: intro)
@@ -158,6 +158,6 @@ final class BuyCreditsViewController: SendAmountViewController, ObservableObject
         
         let dashAmount = max(BuyCreditsModel.opCost, amount.dashAmount.plainAmount)
         let opAmount = dashAmount / BuyCreditsModel.opCost
-        self.rateLabel.text = String.localizedStringWithFormat(NSLocalizedString("%@ ~ %lu contacts / %lu profile updates", comment: "Credits"), dashAmount.formattedDashAmount, opAmount, opAmount)
+        self.rateLabel.text = String(localized: "\(dashAmount.formattedDashAmount) ~ \(opAmount) contacts / \(opAmount) profile updates", comment: "Credits")
     }
 }

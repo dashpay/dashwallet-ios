@@ -33,15 +33,15 @@ extension MainTabbarTabs {
     var accessibilityLabel: String {
         switch self {
         case .home:
-            return NSLocalizedString("Dash Wallet", comment: "Main tab bar: Home")
+            return String(localized: "Dash Wallet", comment: "Main tab bar: Home")
         case .contacts:
-            return NSLocalizedString("Contacts", comment: "Main tab bar")
+            return String(localized: "Contacts", comment: "Main tab bar")
         case .payment:
-            return NSLocalizedString("Payments", comment: "Main tab bar")
+            return String(localized: "Payments", comment: "Main tab bar")
         case .explore:
-            return NSLocalizedString("Explore", comment: "Main tab bar")
+            return String(localized: "Explore", comment: "Main tab bar")
         case .more:
-            return NSLocalizedString("More", comment: "Main tab bar")
+            return String(localized: "More", comment: "Main tab bar")
         }
     }
 
@@ -823,15 +823,15 @@ extension MainTabbarController {
         let text: String
         
         if lastUpdated != 0 && Double(lastUpdated) + kStaleRatesDuration < now {
-            text = NSLocalizedString("Prices are at least 30 minutes old. Fiat values may be incorrect.", comment: "Stale rates")
+            text = String(localized: "Prices are at least 30 minutes old. Fiat values may be incorrect.", comment: "Stale rates")
         } else {
-            text = NSLocalizedString("Prices weren't retrieved. Fiat values may be incorrect.", comment: "Stale rates")
+            text = String(localized: "Prices weren't retrieved. Fiat values may be incorrect.", comment: "Stale rates")
         }
         
         self.showToast(
             text: text,
             icon: .system("exclamationmark.triangle.fill"),
-            actionText: NSLocalizedString("OK", comment: "Stale rates"),
+            actionText: String(localized: "OK", comment: "Stale rates"),
             action: { toastView in
                 self.hideToast(toastView: toastView)
             }
@@ -842,7 +842,7 @@ extension MainTabbarController {
         self.showToast(
             text: NSLocalizedString("Prices have fluctuated more than 50% since the last update.", comment: "Stale rates"),
             icon: .system("exclamationmark.triangle.fill"),
-            actionText: NSLocalizedString("OK", comment: "Stale rates"),
+            actionText: String(localized: "OK", comment: "Stale rates"),
             action: { toastView in
                 self.hideToast(toastView: toastView)
             }

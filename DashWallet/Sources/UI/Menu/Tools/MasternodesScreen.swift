@@ -154,8 +154,8 @@ final class MasternodesViewModel: ObservableObject {
 extension PlatformMasternode {
     var typeName: String {
         isEvonode
-            ? NSLocalizedString("Evonode", comment: "")
-            : NSLocalizedString("Masternode", comment: "")
+            ? String(localized: "Evonode", comment: "")
+            : String(localized: "Masternode", comment: "")
     }
 
     /// "Evonode 2" / "Masternode 5" — evonodes and masternodes number
@@ -170,10 +170,10 @@ extension PlatformMasternode {
 
     var statusName: String {
         switch masternodeStatus {
-        case .active: return NSLocalizedString("Active", comment: "Masternode status")
-        case .inactive: return NSLocalizedString("PoSe banned", comment: "Masternode status")
-        case .retired: return NSLocalizedString("Retired", comment: "Masternode status")
-        case .unknown: return NSLocalizedString("Unknown", comment: "Masternode status")
+        case .active: return String(localized: "Active", comment: "Masternode status")
+        case .inactive: return String(localized: "PoSe banned", comment: "Masternode status")
+        case .retired: return String(localized: "Retired", comment: "Masternode status")
+        case .unknown: return String(localized: "Unknown", comment: "Masternode status")
         }
     }
 
@@ -240,7 +240,7 @@ struct MasternodesScreen: View {
                     }
                 },
                 central: {
-                    Text(NSLocalizedString("Masternodes", comment: "Masternodes"))
+                    Text(String(localized: "Masternodes", comment: "Masternodes"))
                         .dashFont(.subheadMedium)
                         .foregroundColor(.dash.primaryText)
                         .lineLimit(1)
@@ -252,7 +252,7 @@ struct MasternodesScreen: View {
                             UIHostingController(rootView: AddMasternodeScreen(vc: vc, onTracked: { viewModel.load() })),
                             animated: true)
                     }
-                    .accessibilityLabel(NSLocalizedString("Add masternode", comment: "Add masternode"))
+                    .accessibilityLabel(String(localized: "Add masternode", comment: "Add masternode"))
                 })
 
             list
@@ -273,15 +273,15 @@ struct MasternodesScreen: View {
                             .font(.system(size: 40))
                             .foregroundColor(Color.dash.tertiaryText)
 
-                        Text(NSLocalizedString("No masternodes yet", comment: "Masternodes"))
+                        Text(String(localized: "No masternodes yet", comment: "Masternodes"))
                             .font(.headline)
 
-                        Text(NSLocalizedString("Masternodes and evonodes registered with this wallet's keys will appear here after the wallet syncs.", comment: "Masternodes"))
+                        Text(String(localized: "Masternodes and evonodes registered with this wallet's keys will appear here after the wallet syncs.", comment: "Masternodes"))
                             .font(.caption)
                             .foregroundColor(Color.dash.secondaryText)
                             .multilineTextAlignment(.center)
 
-                        Text(NSLocalizedString("You can also track any masternode on the network — by IP, proTxHash, or one of its keys — with the + button.", comment: "Add masternode"))
+                        Text(String(localized: "You can also track any masternode on the network — by IP, proTxHash, or one of its keys — with the + button.", comment: "Add masternode"))
                             .font(.caption)
                             .foregroundColor(Color.dash.secondaryText)
                             .multilineTextAlignment(.center)
@@ -299,7 +299,7 @@ struct MasternodesScreen: View {
                 }
 
                 if !viewModel.trackedMasternodes.isEmpty {
-                    Section(NSLocalizedString("Tracked", comment: "Tracked masternodes")) {
+                    Section(String(localized: "Tracked", comment: "Tracked masternodes")) {
                         ForEach(viewModel.trackedMasternodes, id: \.proTxHash) { masternode in
                             trackedRow(for: masternode)
                         }
@@ -314,7 +314,7 @@ struct MasternodesScreen: View {
                             }
                         } label: {
                             HStack {
-                                Text(NSLocalizedString("Retired", comment: "Masternodes"))
+                                Text(String(localized: "Retired", comment: "Masternodes"))
                                     .font(.subheadline)
                                     .fontWeight(.medium)
 
@@ -398,10 +398,8 @@ private struct MasternodeListRow: View {
 
                 if let epochBlocks {
                     Text(epochBlocks == 1
-                        ? NSLocalizedString("1 block proposed this epoch", comment: "Evonode epoch blocks card")
-                        : String(
-                            format: NSLocalizedString("%@ blocks proposed this epoch", comment: "Evonode epoch blocks card"),
-                            Self.countFormatter.string(from: NSNumber(value: epochBlocks)) ?? "\(epochBlocks)"))
+                        ? String(localized: "1 block proposed this epoch", comment: "Evonode epoch blocks card")
+                        : String(localized: "\(Self.countFormatter.string(from: NSNumber(value: epochBlocks)) ?? "\(epochBlocks)") blocks proposed this epoch", comment: "Evonode epoch blocks card"))
                         .font(.caption)
                         .foregroundColor(Color.dash.secondaryText)
                 }
@@ -478,7 +476,7 @@ final class MasternodeDetailViewModel: ObservableObject {
     private func loadWithdrawalKeys() {
         guard let manager = SwiftDashSDKHost.shared.manager,
               let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {
-            withdrawalKeysError = NSLocalizedString("Wallet is not ready. Try again in a moment.", comment: "Evonode withdrawal")
+            withdrawalKeysError = String(localized: "Wallet is not ready. Try again in a moment.", comment: "Evonode withdrawal")
             return
         }
         do {
@@ -489,8 +487,8 @@ final class MasternodeDetailViewModel: ObservableObject {
             withdrawalKeysError = nil
         } catch {
             withdrawalKeys = nil
-            withdrawalKeysError = NSLocalizedString(
-                "Couldn't check which keys of this evonode are in the wallet.",
+            withdrawalKeysError = String(
+                localized: "Couldn't check which keys of this evonode are in the wallet.",
                 comment: "Evonode withdrawal")
         }
     }
@@ -501,7 +499,7 @@ final class MasternodeDetailViewModel: ObservableObject {
     /// blocking — run it off the main actor.
     func fetchClaimableBalance() async {
         guard let sdk = SwiftDashSDKHost.shared.sdk else {
-            balanceError = NSLocalizedString("Platform SDK not ready", comment: "Masternodes")
+            balanceError = String(localized: "Platform SDK not ready", comment: "Masternodes")
             return
         }
         let identityId = Data(masternode.proTxHash.reversed())
@@ -519,9 +517,9 @@ final class MasternodeDetailViewModel: ObservableObject {
             let message = error.localizedDescription.lowercased()
             if message.contains("not found") || message.contains("no identity")
                 || message.contains("does not exist") {
-                balanceError = NSLocalizedString("This masternode has no Platform identity yet.", comment: "Masternodes")
+                balanceError = String(localized: "This masternode has no Platform identity yet.", comment: "Masternodes")
             } else {
-                balanceError = NSLocalizedString("Couldn't fetch the balance (network error). Try Refresh.", comment: "Masternodes")
+                balanceError = String(localized: "Couldn't fetch the balance (network error). Try Refresh.", comment: "Masternodes")
             }
         }
         balanceLoading = false
@@ -610,7 +608,7 @@ struct MasternodeDetailScreen: View {
                         .foregroundColor(masternode.statusColor)
                 }
                 if let service = masternode.serviceAddress {
-                    MasternodeDetailRow(label: NSLocalizedString("Service", comment: "Masternodes"), value: service)
+                    MasternodeDetailRow(label: String(localized: "Service", comment: "Masternodes"), value: service)
                 }
                 if masternode.isEvonode {
                     requestStatusRow
@@ -618,48 +616,48 @@ struct MasternodeDetailScreen: View {
                 unbanRows
             }
 
-            Section(NSLocalizedString("Registration", comment: "Masternodes")) {
+            Section(String(localized: "Registration", comment: "Masternodes")) {
                 MasternodeCopyRow(label: "proTxHash", value: masternode.proTxHashHex)
                 MasternodeDetailRow(
-                    label: NSLocalizedString("Registered at", comment: "Masternodes"),
+                    label: String(localized: "Registered at", comment: "Masternodes"),
                     value: masternode.hasRegistration
-                        ? String(format: NSLocalizedString("Height %u", comment: "Masternodes"), masternode.registrationHeight)
-                        : NSLocalizedString("Not in wallet history", comment: "Masternodes"))
+                        ? String(localized: "Height \(masternode.registrationHeight)", comment: "Masternodes")
+                        : String(localized: "Not in wallet history", comment: "Masternodes"))
                 MasternodeDetailRow(
-                    label: NSLocalizedString("Provider transactions", comment: "Masternodes"),
+                    label: String(localized: "Provider transactions", comment: "Masternodes"),
                     value: "\(masternode.txCount)")
             }
 
-            Section(NSLocalizedString("Keys", comment: "Masternodes")) {
+            Section(String(localized: "Keys", comment: "Masternodes")) {
                 if let owner = masternode.ownerAddress {
-                    MasternodeCopyRow(label: NSLocalizedString("Owner address", comment: "Masternodes"), value: owner)
+                    MasternodeCopyRow(label: String(localized: "Owner address", comment: "Masternodes"), value: owner)
                 }
                 if let ownerHash = masternode.ownerKeyHashHex {
-                    MasternodeCopyRow(label: NSLocalizedString("Owner key hash", comment: "Masternodes"), value: ownerHash)
+                    MasternodeCopyRow(label: String(localized: "Owner key hash", comment: "Masternodes"), value: ownerHash)
                 }
                 if let voting = masternode.votingAddress {
-                    MasternodeCopyRow(label: NSLocalizedString("Voting address", comment: "Masternodes"), value: voting)
+                    MasternodeCopyRow(label: String(localized: "Voting address", comment: "Masternodes"), value: voting)
                 }
                 if let votingHash = masternode.votingKeyHashHex {
-                    MasternodeCopyRow(label: NSLocalizedString("Voting key hash", comment: "Masternodes"), value: votingHash)
+                    MasternodeCopyRow(label: String(localized: "Voting key hash", comment: "Masternodes"), value: votingHash)
                 }
                 if let operatorKey = masternode.operatorPublicKeyHex {
-                    MasternodeCopyRow(label: NSLocalizedString("Operator public key (BLS)", comment: "Masternodes"), value: operatorKey)
+                    MasternodeCopyRow(label: String(localized: "Operator public key (BLS)", comment: "Masternodes"), value: operatorKey)
                 }
                 if let nodeId = masternode.platformNodeIdHex {
-                    MasternodeCopyRow(label: NSLocalizedString("Platform Node ID", comment: ""), value: nodeId)
+                    MasternodeCopyRow(label: String(localized: "Platform Node ID", comment: ""), value: nodeId)
                 }
                 if let payout = masternode.payoutAddress {
-                    MasternodeCopyRow(label: NSLocalizedString("Payout address", comment: "Masternodes"), value: payout)
+                    MasternodeCopyRow(label: String(localized: "Payout address", comment: "Masternodes"), value: payout)
                 }
             }
 
-            Section(NSLocalizedString("Key ownership", comment: "Masternodes")) {
-                MasternodeDetailRow(label: NSLocalizedString("Owner", comment: "Masternodes"), value: ownerOwnership)
-                MasternodeDetailRow(label: NSLocalizedString("Voting", comment: "Masternodes"), value: votingOwnership)
+            Section(String(localized: "Key ownership", comment: "Masternodes")) {
+                MasternodeDetailRow(label: String(localized: "Owner", comment: "Masternodes"), value: ownerOwnership)
+                MasternodeDetailRow(label: String(localized: "Voting", comment: "Masternodes"), value: votingOwnership)
                 if masternode.operatorPublicKey != nil {
                     MasternodeDetailRow(
-                        label: NSLocalizedString("Operator", comment: "Masternodes"),
+                        label: String(localized: "Operator", comment: "Masternodes"),
                         value: PersistentMasternode.keyOwnershipLabel(
                             inWallet: masternode.operatorInWallet,
                             accountType: masternode.operatorAccountType,
@@ -670,26 +668,26 @@ struct MasternodeDetailScreen: View {
                     // rehydrated yet), say so instead of claiming "not in
                     // this wallet".
                     MasternodeDetailRow(
-                        label: NSLocalizedString("Platform node", comment: "Masternodes"),
+                        label: String(localized: "Platform node", comment: "Masternodes"),
                         value: masternode.platformOwnershipChecked
                             ? PersistentMasternode.keyOwnershipLabel(
                                 inWallet: masternode.platformInWallet,
                                 accountType: masternode.platformAccountType,
                                 index: masternode.platformKeyIndex)
-                            : NSLocalizedString("Not checked yet", comment: "Masternodes"))
+                            : String(localized: "Not checked yet", comment: "Masternodes"))
                 }
             }
 
             if let collateral = masternode.collateralDisplay {
-                Section(NSLocalizedString("Collateral", comment: "Masternodes")) {
-                    MasternodeCopyRow(label: NSLocalizedString("Outpoint", comment: "Masternodes"), value: collateral)
+                Section(String(localized: "Collateral", comment: "Masternodes")) {
+                    MasternodeCopyRow(label: String(localized: "Outpoint", comment: "Masternodes"), value: collateral)
                 }
             }
 
             if masternode.revoked {
-                Section(NSLocalizedString("Revocation", comment: "Masternodes")) {
+                Section(String(localized: "Revocation", comment: "Masternodes")) {
                     MasternodeDetailRow(
-                        label: NSLocalizedString("Reason", comment: "Masternodes"),
+                        label: String(localized: "Reason", comment: "Masternodes"),
                         value: "\(masternode.revocationReason)")
                 }
             }
@@ -699,18 +697,18 @@ struct MasternodeDetailScreen: View {
             // owner key or the payout (transfer) key — see
             // `EvonodeWithdrawalScreen` for the key rules.
             if masternode.isEvonode {
-                Section(NSLocalizedString("Claimable balance", comment: "Masternodes")) {
+                Section(String(localized: "Claimable balance", comment: "Masternodes")) {
                     if viewModel.balanceLoading {
                         HStack(spacing: 8) {
                             // Explicitly SwiftUI's — the app declares its own
                             // `ProgressView` UIKit class that shadows it here.
                             SwiftUI.ProgressView().scaleEffect(0.8)
-                            Text(NSLocalizedString("Fetching…", comment: "Masternodes"))
+                            Text(String(localized: "Fetching…", comment: "Masternodes"))
                                 .foregroundColor(Color.dash.secondaryText)
                         }
                     } else if let credits = viewModel.claimableCredits {
                         MasternodeDetailRow(
-                            label: NSLocalizedString("Balance", comment: "Masternodes"),
+                            label: String(localized: "Balance", comment: "Masternodes"),
                             value: Self.creditsAsDash(credits))
                     } else if let error = viewModel.balanceError {
                         Text(error)
@@ -721,7 +719,7 @@ struct MasternodeDetailScreen: View {
                     Button {
                         Task { await viewModel.fetchClaimableBalance() }
                     } label: {
-                        Label(NSLocalizedString("Refresh", comment: ""), systemImage: "arrow.clockwise")
+                        Label(String(localized: "Refresh", comment: ""), systemImage: "arrow.clockwise")
                     }
                     .disabled(viewModel.balanceLoading)
 
@@ -738,8 +736,8 @@ struct MasternodeDetailScreen: View {
     private var unbanRows: some View {
         let pending = PendingMasternodeUnbanStore.shared.pending(forProTxHash: masternode.proTxHash) != nil
         if unbanSubmitted {
-            Text(NSLocalizedString(
-                "Unban submitted — the masternode list updates within a few blocks.",
+            Text(String(
+                localized: "Unban submitted — the masternode list updates within a few blocks.",
                 comment: "Masternode unban"))
                 .font(.caption)
                 .foregroundColor(Color.dash.secondaryText)
@@ -750,14 +748,14 @@ struct MasternodeDetailScreen: View {
                 } label: {
                     Label(
                         pending
-                            ? NSLocalizedString("Complete unban", comment: "Masternode unban")
-                            : NSLocalizedString("Unban masternode", comment: "Masternode unban"),
+                            ? String(localized: "Complete unban", comment: "Masternode unban")
+                            : String(localized: "Unban masternode", comment: "Masternode unban"),
                         systemImage: "arrow.up.heart")
                         .foregroundColor(Color.dash.blue)
                 }
             } else if masternode.masternodeStatus == .inactive {
-                Text(NSLocalizedString(
-                    "This wallet doesn't hold this masternode's operator key, so it can't be unbanned from here.",
+                Text(String(
+                    localized: "This wallet doesn't hold this masternode's operator key, so it can't be unbanned from here.",
                     comment: "Masternode unban"))
                     .font(.caption)
                     .foregroundColor(Color.dash.secondaryText)
@@ -778,14 +776,14 @@ struct MasternodeDetailScreen: View {
                     animated: true)
             } label: {
                 ListDisclosureRow {
-                    Label(NSLocalizedString("Request status", comment: "Evonode status"), systemImage: "antenna.radiowaves.left.and.right")
+                    Label(String(localized: "Request status", comment: "Evonode status"), systemImage: "antenna.radiowaves.left.and.right")
                         .foregroundColor(Color.dash.blue)
                 }
             }
         } else {
-            Label(NSLocalizedString("Request status", comment: "Evonode status"), systemImage: "antenna.radiowaves.left.and.right")
+            Label(String(localized: "Request status", comment: "Evonode status"), systemImage: "antenna.radiowaves.left.and.right")
                 .foregroundColor(Color.dash.tertiaryText)
-            Text(NSLocalizedString("This evonode's DAPI address isn't known, so it can't be asked for its status.", comment: "Evonode status"))
+            Text(String(localized: "This evonode's DAPI address isn't known, so it can't be asked for its status.", comment: "Evonode status"))
                 .font(.caption)
                 .foregroundColor(Color.dash.secondaryText)
         }
@@ -814,23 +812,23 @@ struct MasternodeDetailScreen: View {
                         animated: true)
                 } label: {
                     ListDisclosureRow {
-                        Label(NSLocalizedString("Withdraw", comment: "Evonode withdrawal"), systemImage: "arrow.down.circle")
+                        Label(String(localized: "Withdraw", comment: "Evonode withdrawal"), systemImage: "arrow.down.circle")
                             .foregroundColor(Color.dash.blue)
                     }
                 }
 
                 Text(keys.canChooseDestination
-                    ? NSLocalizedString(
-                        "This wallet holds the payout address key, so you can withdraw to any address.",
+                    ? String(
+                        localized: "This wallet holds the payout address key, so you can withdraw to any address.",
                         comment: "Evonode withdrawal")
-                    : NSLocalizedString(
-                        "This wallet holds the owner key, so withdrawals go to the registered payout address.",
+                    : String(
+                        localized: "This wallet holds the owner key, so withdrawals go to the registered payout address.",
                         comment: "Evonode withdrawal"))
                     .font(.caption)
                     .foregroundColor(Color.dash.secondaryText)
             } else if viewModel.withdrawalKeys != nil {
-                Text(NSLocalizedString(
-                    "This wallet holds neither the owner key nor the payout address key of this evonode, so its balance can't be withdrawn from here.",
+                Text(String(
+                    localized: "This wallet holds neither the owner key nor the payout address key of this evonode, so its balance can't be withdrawn from here.",
                     comment: "Evonode withdrawal"))
                     .font(.caption)
                     .foregroundColor(Color.dash.secondaryText)

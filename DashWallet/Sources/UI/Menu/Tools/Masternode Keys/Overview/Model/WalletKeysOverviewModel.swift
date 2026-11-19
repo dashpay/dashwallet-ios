@@ -34,13 +34,13 @@ extension MNKey {
     var title: String {
         switch self {
         case .owner:
-            return NSLocalizedString("Owner keys", comment: "")
+            return String(localized: "Owner keys", comment: "")
         case .voting:
-            return NSLocalizedString("Voting keys", comment: "")
+            return String(localized: "Voting keys", comment: "")
         case .operator:
-            return NSLocalizedString("Operator keys", comment: "")
+            return String(localized: "Operator keys", comment: "")
         case .evonodeOperator:
-            return NSLocalizedString("Evonode Operator keys", comment: "")
+            return String(localized: "Evonode Operator keys", comment: "")
         }
     }
 }

@@ -27,14 +27,12 @@ extension DWAboutModel {
     @objc(masternodeListSyncLine)
     func masternodeListSyncLine() -> String {
         guard let masternodes = SwiftDashSDKSPVCoordinator.shared.syncProgress.masternodes else {
-            return NSLocalizedString("Masternode list: not synced", comment: "About screen tech info")
+            return String(localized: "Masternode list: not synced", comment: "About screen tech info")
         }
         if masternodes.targetHeight > masternodes.currentHeight {
-            return String(format: NSLocalizedString("Masternode list: %u of %u", comment: "About screen tech info"),
-                          masternodes.currentHeight, masternodes.targetHeight)
+            return String(localized: "Masternode list: \(masternodes.currentHeight) of \(masternodes.targetHeight)", comment: "About screen tech info")
         }
-        return String(format: NSLocalizedString("Masternode list: synced at %u", comment: "About screen tech info"),
-                      masternodes.currentHeight)
+        return String(localized: "Masternode list: synced at \(masternodes.currentHeight)", comment: "About screen tech info")
     }
 
     /// The block line of the About tech-info status, sourced from SwiftDashSDK
@@ -43,8 +41,7 @@ extension DWAboutModel {
     @objc(blockSyncLine)
     func blockSyncLine() -> String {
         let spv = SwiftDashSDKSPVCoordinator.shared
-        return String(format: NSLocalizedString("Block #%d of %d", comment: ""),
-                      spv.tipHeight, spv.bestPeerHeight)
+        return String(localized: "Block #\(spv.tipHeight) of \(spv.bestPeerHeight)", comment: "")
     }
 
     /// The SPV connection line of the About tech-info status. Replaces the
@@ -56,16 +53,15 @@ extension DWAboutModel {
         let spv = SwiftDashSDKSPVCoordinator.shared
         let stateName: String
         switch spv.state {
-        case .idle: stateName = NSLocalizedString("idle", comment: "About screen tech info: SPV state")
-        case .waitingForConnections: stateName = NSLocalizedString("connecting", comment: "About screen tech info: SPV state")
-        case .syncing: stateName = NSLocalizedString("syncing", comment: "About screen tech info: SPV state")
+        case .idle: stateName = String(localized: "idle", comment: "About screen tech info: SPV state")
+        case .waitingForConnections: stateName = String(localized: "connecting", comment: "About screen tech info: SPV state")
+        case .syncing: stateName = String(localized: "syncing", comment: "About screen tech info: SPV state")
         // dash-spv's steady state when fully synced is waitForEvents
         // (`.synced` is a transient window) — render both as synced.
-        case .synced, .waitForEvents: stateName = NSLocalizedString("synced", comment: "About screen tech info: SPV state")
-        case .error: stateName = NSLocalizedString("error", comment: "About screen tech info: SPV state")
-        case .unknown: stateName = NSLocalizedString("unknown", comment: "About screen tech info: SPV state")
+        case .synced, .waitForEvents: stateName = String(localized: "synced", comment: "About screen tech info: SPV state")
+        case .error: stateName = String(localized: "error", comment: "About screen tech info: SPV state")
+        case .unknown: stateName = String(localized: "unknown", comment: "About screen tech info: SPV state")
         }
-        return String(format: NSLocalizedString("SPV: %@ (%d%%)", comment: "ex., SPV: syncing (87%)"),
-                      stateName, Int((spv.progress * 100).rounded()))
+        return String(localized: "SPV: \(stateName) (\(Int((spv.progress * 100).rounded()))%)", comment: "ex., SPV: syncing (87%)")
     }
 }

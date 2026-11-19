@@ -44,7 +44,7 @@ final class EnterAddressViewController: BaseViewController {
             guard let self else { return }
 
             guard success, let paymentInput = payModel?.pasteboardPaymentInput else {
-                self.addressField.errorMessage = NSLocalizedString("Invalid Dash address", comment: "")
+                self.addressField.errorMessage = String(localized: "Invalid Dash address", comment: "")
                 return
             }
 
@@ -71,7 +71,7 @@ extension EnterAddressViewController {
     private func configureHierarchy() {
         view.backgroundColor = .dw_secondaryBackground()
 
-        title = NSLocalizedString("Send", comment: "Send Screen")
+        title = String(localized: "Send", comment: "Send Screen")
 
         scrollView = UIScrollView()
         scrollView.translatesAutoresizingMaskIntoConstraints = false
@@ -106,13 +106,13 @@ extension EnterAddressViewController {
             self?.updateView()
         }
         addressField.isEnabled = true
-        addressField.placeholder = NSLocalizedString("Wallet Address", comment: "Enter Address Screen")
+        addressField.placeholder = String(localized: "Wallet Address", comment: "Enter Address Screen")
         addressField.translatesAutoresizingMaskIntoConstraints = false
         stackView.addArrangedSubview(addressField)
 
         showPasteboardContentButton = TintedButton()
         showPasteboardContentButton.titleLabelFont = UIFont.dw_font(forTextStyle: .footnote)
-        showPasteboardContentButton.setTitle(NSLocalizedString("Show content in the clipboard", comment: "Enter Address Screen"), for: .normal)
+        showPasteboardContentButton.setTitle(String(localized: "Show content in the clipboard", comment: "Enter Address Screen"), for: .normal)
         showPasteboardContentButton.translatesAutoresizingMaskIntoConstraints = false
         showPasteboardContentButton.addAction(.touchUpInside) { [weak self] _ in
             self?.showPasteboardContentIfNeeded()
@@ -129,7 +129,7 @@ extension EnterAddressViewController {
         stackView.addArrangedSubview(pasteboardContentView)
 
         continueButton = ActionButton()
-        continueButton.setTitle(NSLocalizedString("Continue", comment: "Continue"), for: .normal)
+        continueButton.setTitle(String(localized: "Continue", comment: "Continue"), for: .normal)
         continueButton.translatesAutoresizingMaskIntoConstraints = false
         continueButton.addAction(.touchUpInside) { [weak self] _ in
             self?.continueButtonAction()

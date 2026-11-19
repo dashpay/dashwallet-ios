@@ -25,11 +25,7 @@ struct LastSyncLabel: View {
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: Self.refreshInterval)) { _ in
-            Text(String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "Last sync: %@",
-                    comment: "Sync diagnostics - %@ is a relative time such as 2 hours ago"),
-                date.formatted(.relative(presentation: .numeric))))
+            Text(String(localized: "Last sync: \(date.formatted(.relative(presentation: .numeric)))", comment: "Sync diagnostics - %@ is a relative time such as 2 hours ago"))
         }
         .font(.system(size: 14, weight: .semibold))
         .foregroundColor(.dash.primaryText)

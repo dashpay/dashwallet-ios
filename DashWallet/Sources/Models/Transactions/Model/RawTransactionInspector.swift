@@ -300,7 +300,7 @@ enum RawTransactionInspector {
         case 7: return "Masternode Hard Fork Signal (MnHfTx)"
         case 8: return "Asset Lock"
         case 9: return "Asset Unlock"
-        default: return String(format: NSLocalizedString("Unknown special type %d", comment: "Raw transaction inspector"), type)
+        default: return String(localized: "Unknown special type \(type)", comment: "Raw transaction inspector")
         }
     }
 
@@ -320,17 +320,17 @@ enum RawTransactionInspector {
                 // byte-swapped on the wire, the platform ports are not.
             var reader = ByteReader(payload)
             guard let version = try? reader.readUInt16() else { break }
-            fields.append(.init(label: NSLocalizedString("Payload version", comment: "Raw transaction"), value: "\(version)"))
+            fields.append(.init(label: String(localized: "Payload version", comment: "Raw transaction"), value: "\(version)"))
 
             var masternodeType: UInt16?
             if version >= 2 {
                 masternodeType = try? reader.readUInt16()
                 if let masternodeType {
                     fields.append(.init(
-                        label: NSLocalizedString("Masternode type", comment: "Raw transaction"),
+                        label: String(localized: "Masternode type", comment: "Raw transaction"),
                         value: masternodeType == 1
-                            ? NSLocalizedString("Evonode", comment: "")
-                            : NSLocalizedString("Masternode", comment: "")))
+                            ? String(localized: "Evonode", comment: "")
+                            : String(localized: "Masternode", comment: "")))
                 }
             }
 
@@ -343,20 +343,20 @@ enum RawTransactionInspector {
             let port = UInt16(portBytes[portBytes.startIndex]) << 8
                 | UInt16(portBytes[portBytes.startIndex + 1])
             fields.append(.init(
-                label: NSLocalizedString("Service", comment: "Masternodes"),
+                label: String(localized: "Service", comment: "Masternodes"),
                 value: "\(Self.ipText(ipBytes)):\(port)"))
 
             guard let scriptLength = try? reader.readVarInt(),
                   let script = try? reader.readBytes(Int(scriptLength)),
                   let inputsHash = try? reader.readBytes(32) else { break }
             fields.append(.init(
-                label: NSLocalizedString("Operator payout", comment: "Masternode unban"),
+                label: String(localized: "Operator payout", comment: "Masternode unban"),
                 value: script.isEmpty
-                    ? NSLocalizedString("None", comment: "Masternode unban")
+                    ? String(localized: "None", comment: "Masternode unban")
                     : (ScriptAddressCodec.address(forScript: script, network: network)
                         ?? script.map { String(format: "%02x", $0) }.joined())))
             fields.append(.init(
-                label: NSLocalizedString("Inputs hash", comment: "Raw transaction"),
+                label: String(localized: "Inputs hash", comment: "Raw transaction"),
                 value: inputsHash.reversed().map { String(format: "%02x", $0) }.joined()))
 
             if version >= 2, masternodeType == 1 {
@@ -364,16 +364,16 @@ enum RawTransactionInspector {
                    let p2pPort = try? reader.readUInt16(),
                    let httpPort = try? reader.readUInt16() {
                     fields.append(.init(
-                        label: NSLocalizedString("Platform Node ID", comment: ""),
+                        label: String(localized: "Platform Node ID", comment: ""),
                         value: nodeId.map { String(format: "%02x", $0) }.joined()))
-                    fields.append(.init(label: NSLocalizedString("Platform P2P port", comment: "Raw transaction"), value: "\(p2pPort)"))
-                    fields.append(.init(label: NSLocalizedString("Platform HTTP port", comment: "Raw transaction"), value: "\(httpPort)"))
+                    fields.append(.init(label: String(localized: "Platform P2P port", comment: "Raw transaction"), value: "\(p2pPort)"))
+                    fields.append(.init(label: String(localized: "Platform HTTP port", comment: "Raw transaction"), value: "\(httpPort)"))
                 }
             }
 
             if let signature = try? reader.readBytes(96) {
                 fields.append(.init(
-                    label: NSLocalizedString("Operator signature (BLS)", comment: "Masternode unban"),
+                    label: String(localized: "Operator signature (BLS)", comment: "Masternode unban"),
                     value: signature.map { String(format: "%02x", $0) }.joined()))
             }
         case 5: // CbTx: u16 version, u32 height, 32B merkle root MN list, …
@@ -381,22 +381,22 @@ enum RawTransactionInspector {
             if let version = try? reader.readUInt16(),
                let height = try? reader.readUInt32(),
                let mnRoot = try? reader.readBytes(32) {
-                fields.append(.init(label: NSLocalizedString("Payload version", comment: "Raw transaction"), value: "\(version)"))
-                fields.append(.init(label: NSLocalizedString("Block height", comment: "Raw transaction"), value: "\(height)"))
-                fields.append(.init(label: NSLocalizedString("Masternode list merkle root", comment: "Raw transaction"), value: mnRoot.reversed().map { String(format: "%02x", $0) }.joined()))
+                fields.append(.init(label: String(localized: "Payload version", comment: "Raw transaction"), value: "\(version)"))
+                fields.append(.init(label: String(localized: "Block height", comment: "Raw transaction"), value: "\(height)"))
+                fields.append(.init(label: String(localized: "Masternode list merkle root", comment: "Raw transaction"), value: mnRoot.reversed().map { String(format: "%02x", $0) }.joined()))
                 if version >= 2, let quorumRoot = try? reader.readBytes(32) {
-                    fields.append(.init(label: NSLocalizedString("Quorums merkle root", comment: "Raw transaction"), value: quorumRoot.reversed().map { String(format: "%02x", $0) }.joined()))
+                    fields.append(.init(label: String(localized: "Quorums merkle root", comment: "Raw transaction"), value: quorumRoot.reversed().map { String(format: "%02x", $0) }.joined()))
                 }
             }
         case 8: // Asset lock: u8 version, varint count, credit outputs (TxOuts).
             if let creditOutputs = assetLockCreditOutputs(payload: payload) {
-                fields.append(.init(label: NSLocalizedString("Payload version", comment: "Raw transaction"), value: "\(payload[payload.startIndex])"))
-                fields.append(.init(label: NSLocalizedString("Credit outputs", comment: "Raw transaction"), value: "\(creditOutputs.count)"))
+                fields.append(.init(label: String(localized: "Payload version", comment: "Raw transaction"), value: "\(payload[payload.startIndex])"))
+                fields.append(.init(label: String(localized: "Credit outputs", comment: "Raw transaction"), value: "\(creditOutputs.count)"))
                 for (i, output) in creditOutputs.enumerated() {
                     let destination = ScriptAddressCodec.address(forScript: output.script, network: network)
                         ?? output.script.map { String(format: "%02x", $0) }.joined()
                     fields.append(.init(
-                        label: String(format: NSLocalizedString("Credit output %d", comment: "Raw transaction"), i),
+                        label: String(localized: "Credit output \(i)", comment: "Raw transaction"),
                         value: "\(output.valueDuffs.formattedDashAmountWithoutCurrencySymbol) → \(destination)"))
                 }
             }

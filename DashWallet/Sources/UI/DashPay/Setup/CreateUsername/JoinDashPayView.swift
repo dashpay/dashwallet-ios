@@ -129,66 +129,54 @@ struct JoinDashPayCopy {
     var title: String {
         switch state {
         case .retryLoading:
-            return NSLocalizedString("Retry loading identity", comment: "Identity recovery")
+            return String(localized: "Retry loading identity", comment: "Identity recovery")
         case .loading:
-            return NSLocalizedString("Loading identity…", comment: "DashPay registration recovery")
+            return String(localized: "Loading identity…", comment: "DashPay registration recovery")
         case .none:
-            return NSLocalizedString("Join DashPay", comment: "")
+            return String(localized: "Join DashPay", comment: "")
         case .callToAction:
-            return NSLocalizedString("Upgrade to DashPay", comment: "")
+            return String(localized: "Upgrade to DashPay", comment: "")
         case .creating:
             return isContested
-                ? String.localizedStringWithFormat(
-                    NSLocalizedString("Requesting – %@", comment: "Usernames — Home row title while a contested username is being submitted"),
-                    username)
-                : String.localizedStringWithFormat(
-                    NSLocalizedString("Creating – %@", comment: "Usernames — Home row title while a username is being registered"),
-                    username)
+                ? String(localized: "Requesting – \(username)", comment: "Usernames — Home row title while a contested username is being submitted")
+                : String(localized: "Creating – \(username)", comment: "Usernames — Home row title while a username is being registered")
         case .voting:
-            return String.localizedStringWithFormat(
-                NSLocalizedString("Voting – %@", comment: "Usernames — Home row title while the network votes on a username"),
-                username)
+            return String(localized: "Voting – \(username)", comment: "Usernames — Home row title while the network votes on a username")
         case .usernameRequired:
-            return NSLocalizedString("Finish username registration", comment: "DashPay registration recovery")
+            return String(localized: "Finish username registration", comment: "DashPay registration recovery")
         case .registered, .creationFailed, .interrupted:
             return username
         case .approved:
-            return NSLocalizedString("Your username has been successfully created", comment: "Usernames")
+            return String(localized: "Your username has been successfully created", comment: "Usernames")
         // A request that never completed and a name given to someone else
         // are both "rejected"; a locked name is its own ending, and saying
         // so is the difference between "pick another name" and "this name
         // now exists for nobody".
         case .failed, .contested:
-            return String.localizedStringWithFormat(
-                NSLocalizedString("Rejected – %@", comment: "Usernames — Home row title after a username request was refused"),
-                username)
+            return String(localized: "Rejected – \(username)", comment: "Usernames — Home row title after a username request was refused")
         case .blocked:
-            return String.localizedStringWithFormat(
-                NSLocalizedString("Blocked – %@", comment: "Usernames — Home row title after the network locked a requested username"),
-                username)
+            return String(localized: "Blocked – \(username)", comment: "Usernames — Home row title after the network locked a requested username")
         }
     }
     
     var subtitle: String {
         switch state {
         case .none:
-            return NSLocalizedString("Request your username", comment: "")
+            return String(localized: "Request your username", comment: "")
         case .usernameRequired:
-            return NSLocalizedString("Your identity is ready. Use its existing credits to register a username.", comment: "DashPay registration recovery")
+            return String(localized: "Your identity is ready. Use its existing credits to register a username.", comment: "DashPay registration recovery")
         case .callToAction:
             switch shieldedSnapshot?.state {
             case .maturing(let readyAt):
                 let time = DateFormatter.localizedString(from: readyAt, dateStyle: .none, timeStyle: .short)
-                return String.localizedStringWithFormat(
-                    NSLocalizedString("Your Shielded balance is resting — you can register privately around %@", comment: "Usernames"),
-                    time)
+                return String(localized: "Your Shielded balance is resting — you can register privately around \(time)", comment: "Usernames")
             case .ready:
-                return NSLocalizedString("Your Shielded balance is ready — register your username privately now", comment: "Usernames")
+                return String(localized: "Your Shielded balance is ready — register your username privately now", comment: "Usernames")
             case .needsFunding, .poolTooSmall, nil:
-                return NSLocalizedString("Add to your Shielded balance now and register your username privately a few hours later", comment: "Usernames")
+                return String(localized: "Add to your Shielded balance now and register your username privately a few hours later", comment: "Usernames")
             }
         case .creating where surface == .more:
-            return NSLocalizedString("Submitting username to the Dash network. It might take a few minutes.", comment: "Usernames")
+            return String(localized: "Submitting username to the Dash network. It might take a few minutes.", comment: "Usernames")
         case .creationFailed:
             // The step, then the reason on its own line — the same shape as the
             // voting subtitle's deadline.
@@ -199,32 +187,30 @@ struct JoinDashPayCopy {
         case .creating:
             return registrationStatus.stateDescription()
         case .interrupted:
-            return NSLocalizedString(
-                "Registration was interrupted",
+            return String(
+                localized: "Registration was interrupted",
                 comment: "Usernames — the app closed before the registration finished")
         case .voting:
-            let deciding = NSLocalizedString(
-                "Masternode owners are deciding whether you get this username.",
+            let deciding = String(
+                localized: "Masternode owners are deciding whether you get this username.",
                 comment: "Usernames")
             if let endTime = DWContestedNameStatusService.shared.pendingVotingEndTime {
-                return deciding + "\n" + String.localizedStringWithFormat(
-                    NSLocalizedString("Results on %@", comment: "Usernames — when a username vote closes"),
-                    DWDateFormatter.sharedInstance.dateOnly(from: endTime))
+                return deciding + "\n" + String(localized: "Results on \(DWDateFormatter.sharedInstance.dateOnly(from: endTime))", comment: "Usernames — when a username vote closes")
             }
-            return deciding + " " + NSLocalizedString(
-                "We will notify you when voting ends.",
+            return deciding + " " + String(
+                localized: "We will notify you when voting ends.",
                 comment: "Usernames")
         case .approved:
-            return NSLocalizedString("Get started by setting up your profile picture and other information.", comment: "Usernames")
+            return String(localized: "Get started by setting up your profile picture and other information.", comment: "Usernames")
         // One title, three reasons: the request never completed, the network
         // refused the name, or the vote went to someone else. Only the last
         // two are verdicts on the name itself.
         case .failed:
-            return NSLocalizedString("Your username request did not go through. Try again.", comment: "Usernames")
+            return String(localized: "Your username request did not go through. Try again.", comment: "Usernames")
         case .blocked:
-            return NSLocalizedString("The Dash network blocked this username. Nobody can register it — please try a different one.", comment: "Usernames")
+            return String(localized: "The Dash network blocked this username. Nobody can register it — please try a different one.", comment: "Usernames")
         case .contested:
-            return NSLocalizedString("The voting gave this username to someone else. Please try again with a different username.", comment: "Usernames")
+            return String(localized: "The voting gave this username to someone else. Please try again with a different username.", comment: "Usernames")
         case .loading, .retryLoading, .registered:
             return ""
         }
@@ -233,15 +219,15 @@ struct JoinDashPayCopy {
     var actionText: String {
         switch state {
         case .usernameRequired:
-            return NSLocalizedString("Continue", comment: "DashPay registration recovery")
+            return String(localized: "Continue", comment: "DashPay registration recovery")
         case .callToAction:
-            return NSLocalizedString("Upgrade", comment: "")
+            return String(localized: "Upgrade", comment: "")
         case .approved:
-            return NSLocalizedString("Edit profile", comment: "")
+            return String(localized: "Edit profile", comment: "")
         case .failed, .blocked, .contested, .creationFailed:
-            return NSLocalizedString("Try again", comment: "Usernames")
+            return String(localized: "Try again", comment: "Usernames")
         default:
-            return NSLocalizedString("Retry", comment: "")
+            return String(localized: "Retry", comment: "")
         }
     }
 
@@ -346,7 +332,7 @@ struct JoinDashPayMenuItem: View {
                 HStack(spacing: 0) {
                     Spacer()
 
-                    Text(NSLocalizedString("Available after sync finishes", comment: "DashPay"))
+                    Text(String(localized: "Available after sync finishes", comment: "DashPay"))
                         .dashFont(.footnote)
                         .foregroundStyle(Color.dash.blue)
                         .padding(.horizontal, 16)
@@ -461,7 +447,7 @@ struct JoinDashPayMenuItem: View {
                 // A glyph with no text child says nothing to VoiceOver — the
                 // same control on the request-details screen is named, and this
                 // one has to be too.
-                .accessibilityLabel(NSLocalizedString("What is username voting?", comment: "Usernames"))
+                .accessibilityLabel(String(localized: "What is username voting?", comment: "Usernames"))
             }
         }
         .padding(10)

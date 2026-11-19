@@ -87,140 +87,124 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .noWallet:
-            return NSLocalizedString("DashConnect requires an active SwiftDashSDK wallet.", comment: "DashConnect")
+            return String(localized: "DashConnect requires an active SwiftDashSDK wallet.", comment: "DashConnect")
         case .noIdentity:
-            return NSLocalizedString("DashConnect requires a registered Platform identity.", comment: "DashConnect")
+            return String(localized: "DashConnect requires a registered Platform identity.", comment: "DashConnect")
         case .noModelContainer:
-            return NSLocalizedString("DashConnect requires the SwiftData model container.", comment: "DashConnect")
+            return String(localized: "DashConnect requires the SwiftData model container.", comment: "DashConnect")
         case .noSDK:
-            return NSLocalizedString("DashConnect requires the SwiftDashSDK runtime.", comment: "DashConnect")
+            return String(localized: "DashConnect requires the SwiftDashSDK runtime.", comment: "DashConnect")
         case .unsupportedRuntimeNetwork(let network):
-            return String(
-                format: NSLocalizedString(
-                    "DashConnect cannot publish from this wallet: the app runtime is on %@, which does not match the network DashConnect is configured for.",
-                    comment: "DashConnect: the placeholder is the network name"),
-                WalletEnvironment.displayName(of: network))
+            return String(localized: "DashConnect cannot publish from this wallet: the app runtime is on \(WalletEnvironment.displayName(of: network)), which does not match the network DashConnect is configured for.", comment: "DashConnect: the placeholder is the network name")
         case let .unsupportedRequestNetwork(expected, actual):
-            return String(
-                format: NSLocalizedString(
-                    "This DashConnect QR is for %1$@, but this wallet currently supports %2$@ only.",
-                    comment: "DashConnect: the placeholders are network names"),
-                actual.displayName, expected.displayName)
+            return String(localized: "This DashConnect QR is for \(actual.displayName), but this wallet currently supports \(expected.displayName) only.", comment: "DashConnect: the placeholders are network names")
         case .authorizationCancelled:
-            return NSLocalizedString("Authentication cancelled", comment: "DashConnect")
+            return String(localized: "Authentication cancelled", comment: "DashConnect")
         case .authorizationFailed:
-            return NSLocalizedString("Authentication failed", comment: "DashConnect")
+            return String(localized: "Authentication failed", comment: "DashConnect")
         case .randomGenerationFailed(let status):
-            return String(
-                format: NSLocalizedString(
-                    "Failed to generate secure random bytes for DashConnect (%d).",
-                    comment: "DashConnect: the placeholder is a system status code"),
-                status)
+            return String(localized: "Failed to generate secure random bytes for DashConnect (\(status)).", comment: "DashConnect: the placeholder is a system status code")
         case .noAuthenticationKey:
-            return NSLocalizedString("No enabled AUTHENTICATION ECDSA key is available for this identity.", comment: "DashConnect")
+            return String(localized: "No enabled AUTHENTICATION ECDSA key is available for this identity.", comment: "DashConnect")
         case .existingDocumentLookupFailed:
-            return NSLocalizedString("The loginKeyResponse document on Platform could not be read.", comment: "DashConnect")
+            return String(localized: "The loginKeyResponse document on Platform could not be read.", comment: "DashConnect")
         case .ephemeralKeyGenerationFailed:
-            return NSLocalizedString("Could not generate an ephemeral DashConnect key.", comment: "DashConnect")
+            return String(localized: "Could not generate an ephemeral DashConnect key.", comment: "DashConnect")
         case .tokenPurchaseWrongIdentity:
-            return NSLocalizedString("The scanned token purchase targets a different identity.", comment: "DashConnect")
+            return String(localized: "The scanned token purchase targets a different identity.", comment: "DashConnect")
         case .tokenPurchaseTokenIdMismatch:
-            return NSLocalizedString("The scanned token purchase names a token that does not belong to the contract and position it would buy from.", comment: "DashConnect")
+            return String(localized: "The scanned token purchase names a token that does not belong to the contract and position it would buy from.", comment: "DashConnect")
         case .identityKeysOutOfDate:
-            return NSLocalizedString(
-                "This wallet's copy of your identity is out of date, so it cannot confirm the app's key was turned off. Try again later.",
+            return String(
+                localized: "This wallet's copy of your identity is out of date, so it cannot confirm the app's key was turned off. Try again later.",
                 comment: "DashConnect")
         case .grantOnAnotherIdentity:
-            return NSLocalizedString(
-                "This app has a key on another identity of this wallet. Switch to that identity to turn it off.",
+            return String(
+                localized: "This app has a key on another identity of this wallet. Switch to that identity to turn it off.",
                 comment: "DashConnect")
         case .grantStoreUnavailable:
-            return NSLocalizedString(
-                "This wallet cannot record the key it would give the app, so the sign-in was not started.",
+            return String(
+                localized: "This wallet cannot record the key it would give the app, so the sign-in was not started.",
                 comment: "DashConnect")
         case .grantNotRecorded:
-            return NSLocalizedString(
-                "This wallet could not save the approval, so nothing was sent. Try again.",
+            return String(
+                localized: "This wallet could not save the approval, so nothing was sent. Try again.",
                 comment: "DashConnect")
         case .appConnectKeysOutOfDate:
-            return NSLocalizedString(
-                "The network has not caught up with your identity's keys yet. Try again in a moment.",
+            return String(
+                localized: "The network has not caught up with your identity's keys yet. Try again in a moment.",
                 comment: "DashConnect App Connect v2")
         case .appConnectKeysUnreadable:
-            return NSLocalizedString(
-                "The wallet could not read your identity's encryption key for this app from the network. Try again.",
+            return String(
+                localized: "The wallet could not read your identity's encryption key for this app from the network. Try again.",
                 comment: "DashConnect App Connect v2")
         case .appConnectEncryptionKeyChanged:
-            return NSLocalizedString(
-                "The app's encryption key on this identity changed after this sign-in was first approved. Ask the app to sign in again.",
+            return String(
+                localized: "The app's encryption key on this identity changed after this sign-in was first approved. Ask the app to sign in again.",
                 comment: "DashConnect App Connect v2")
         case .walletChanged:
-            return NSLocalizedString("The active wallet or identity changed. Try again.", comment: "DashConnect")
+            return String(localized: "The active wallet or identity changed. Try again.", comment: "DashConnect")
         case .noFreeKeyId:
-            return NSLocalizedString("This identity cannot take another key.", comment: "DashConnect")
+            return String(localized: "This identity cannot take another key.", comment: "DashConnect")
         case .approvalOutOfDate:
-            return NSLocalizedString(
-                "The details of this sign-in changed while it was on screen. Check them and approve again.",
+            return String(
+                localized: "The details of this sign-in changed while it was on screen. Check them and approve again.",
                 comment: "DashConnect")
         case .approvalTermsExpired:
-            return NSLocalizedString(
-                "The connection's expiry passed before the approval was signed.",
+            return String(
+                localized: "The connection's expiry passed before the approval was signed.",
                 comment: "DashConnect approve sheet: the chosen expiry passed before signing")
         case .approvalTermsUncheckable:
-            return NSLocalizedString(
-                "The wallet could not read the network's time to check this connection's expiry. Try again.",
+            return String(
+                localized: "The wallet could not read the network's time to check this connection's expiry. Try again.",
                 comment: "DashConnect approve sheet")
         case .tokenPurchaseNeedsUsername:
-            return NSLocalizedString(
-                "Create a username to buy tokens in apps, then ask the app again.",
+            return String(
+                localized: "Create a username to buy tokens in apps, then ask the app again.",
                 comment: "DashConnect: a token purchase arrived while the wallet has no username")
         case .tokenPurchaseUsernameUncheckable:
-            return NSLocalizedString(
-                "This wallet could not check your username. Ask the app again.",
+            return String(
+                localized: "This wallet could not check your username. Ask the app again.",
                 comment: "DashConnect: a token purchase arrived and the username lookup failed")
         case .loginUnresolved:
-            return NSLocalizedString(
-                "This wallet could not check what this sign-in would give the app.",
+            return String(
+                localized: "This wallet could not check what this sign-in would give the app.",
                 comment: "DashConnect")
         case .sessionKeyUnusable:
-            return NSLocalizedString(
-                "This sign-in request can no longer be approved. Ask the app for a new code.",
+            return String(
+                localized: "This sign-in request can no longer be approved. Ask the app for a new code.",
                 comment: "DashConnect")
         case .unsupportedStateTransition(let kindName):
-            return String(
-                format: NSLocalizedString(
-                    "This wallet cannot approve the scanned request (%@).",
-                    comment: "DashConnect: the placeholder is the kind of the scanned state transition"),
-                kindName)
+            return String(localized: "This wallet cannot approve the scanned request (\(kindName)).", comment: "DashConnect: the placeholder is the kind of the scanned state transition")
         case .loginContractUnavailable:
-            return NSLocalizedString("The DashConnect login contract is not available on this network.", comment: "DashConnect")
+            return String(localized: "The DashConnect login contract is not available on this network.", comment: "DashConnect")
         case .identityReadBehind:
-            return NSLocalizedString(
-                "The network answered with an older copy of your identity. Try again in a moment.",
+            return String(
+                localized: "The network answered with an older copy of your identity. Try again in a moment.",
                 comment: "DashConnect")
         case .requestAgeUncheckable:
-            return NSLocalizedString(
-                "The wallet could not check how old this sign-in request is. Try again.",
+            return String(
+                localized: "The wallet could not check how old this sign-in request is. Try again.",
                 comment: "DashConnect App Connect v2")
         case .answeredUncheckable:
-            return NSLocalizedString(
-                "The wallet could not check whether this sign-in was already answered. Try again.",
+            return String(
+                localized: "The wallet could not check whether this sign-in was already answered. Try again.",
                 comment: "DashConnect App Connect v2")
         case .networkRefused:
-            return NSLocalizedString(
-                "The network refused this sign-in for good. Ask the app for a new code.",
+            return String(
+                localized: "The network refused this sign-in for good. Ask the app for a new code.",
                 comment: "DashConnect App Connect v2")
         case .intentsUnreadable:
-            return NSLocalizedString(
-                "This wallet holds DashConnect records a newer version wrote. Update the wallet, then try again.",
+            return String(
+                localized: "This wallet holds DashConnect records a newer version wrote. Update the wallet, then try again.",
                 comment: "DashConnect")
         case .tooManyKeysToAdd:
-            return NSLocalizedString(
-                "This app asks for more keys than one approval can add. Ask the app to ask for fewer.",
+            return String(
+                localized: "This app asks for more keys than one approval can add. Ask the app to ask for fewer.",
                 comment: "DashConnect App Connect v2")
         case .tooManyKeysToReplace:
-            return NSLocalizedString(
-                "This app's earlier sign-ins left more keys than one approval can replace. Disconnect the app, then sign in again.",
+            return String(
+                localized: "This app's earlier sign-ins left more keys than one approval can replace. Disconnect the app, then sign in again.",
                 comment: "DashConnect App Connect v2")
         }
     }
@@ -657,8 +641,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         context: Context
     ) async -> (AppConnect.Login, String?) {
         guard AppConnect.isAvailable(protocolVersion: protocolVersion) else {
-            return (.refused(AppConnect.Refusal(.unsupported, NSLocalizedString(
-                "This network does not support this kind of sign-in yet.",
+            return (.refused(AppConnect.Refusal(.unsupported, String(
+                localized: "This network does not support this kind of sign-in yet.",
                 comment: "DashConnect App Connect v2"))), nil)
         }
         do {
@@ -666,8 +650,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             let (snapshot, _) = try await identitySnapshot(context: context)
             var plan = try AppConnect.grantPlan(for: uri, blockTimeMs: snapshot.platformTime)
             if let hint = plan.identityHint, hint != context.identityId {
-                return (.refused(AppConnect.Refusal(.invalid, NSLocalizedString(
-                    "This sign-in is for another identity. Switch to it in this wallet and ask the app again.",
+                return (.refused(AppConnect.Refusal(.invalid, String(
+                    localized: "This sign-in is for another identity. Switch to it in this wallet and ask the app again.",
                     comment: "DashConnect App Connect v2"))), nil)
             }
             // A request answered before is spent (it is answered at most
@@ -787,12 +771,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         do {
             app = try await readContract(plan.appId)
         } catch SDKError.notFound {
-            return (AppConnect.Refusal(.invalid, NSLocalizedString(
-                "The app's contract does not exist on this network.", comment: "DashConnect App Connect v2")), [], [:])
+            return (AppConnect.Refusal(.invalid, String(
+                localized: "The app's contract does not exist on this network.", comment: "DashConnect App Connect v2")), [], [:])
         }
         guard let appOwnerId = contractOwnerId(app) else {
-            return (AppConnect.Refusal(.invalid, NSLocalizedString(
-                "The app's contract has no readable owner.", comment: "DashConnect App Connect v2")), [], [:])
+            return (AppConnect.Refusal(.invalid, String(
+                localized: "The app's contract has no readable owner.", comment: "DashConnect App Connect v2")), [], [:])
         }
         var groupOwners: [Data: Data] = [:]
         var administeredGroupIds: Set<Data> = []
@@ -1293,7 +1277,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             result.removeAll { $0.id == id }
             var row = DAppConnection(
                 id: id,
-                name: name.isEmpty ? NSLocalizedString("Unknown app", comment: "DashConnect") : name,
+                name: name.isEmpty ? String(localized: "Unknown app", comment: "DashConnect") : name,
                 url: latest?.appUrl ?? existing?.url ?? "",
                 status: status,
                 updatedAt: existing?.status == status ? existing?.updatedAt ?? updatedAt : updatedAt,
@@ -1312,8 +1296,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         case .fresh: return
         case .uncheckable: throw DashConnectPlatformError.requestAgeUncheckable
         case .stale:
-            throw AppConnect.Refusal(.stale, NSLocalizedString(
-                "This sign-in request has expired. Ask the app for a new one.",
+            throw AppConnect.Refusal(.stale, String(
+                localized: "This sign-in request has expired. Ask the app for a new one.",
                 comment: "DashConnect App Connect v2"))
         case .future:
             throw AppConnect.Refusal(.stale, AppConnect.futureRequestMessage)
@@ -1734,7 +1718,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private static func connection(consent: ConnectionRequest, at updatedAt: Date) -> DAppConnection {
         DAppConnection(
             id: consent.appContractId,
-            name: consent.appLabel.isEmpty ? NSLocalizedString("Unknown app", comment: "DashConnect") : consent.appLabel,
+            name: consent.appLabel.isEmpty ? String(localized: "Unknown app", comment: "DashConnect") : consent.appLabel,
             url: consent.appUrl,
             status: .active,
             updatedAt: updatedAt)
@@ -2108,8 +2092,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     private static func failedCurrentKeyRead(_ error: Error) -> Error {
         logger.error("🔗 DASHCONNECT :: the app's current encryption keys could not be read — \(AppConnectWriteExecutor.logDescription(of: error), privacy: .public)")
         guard isUnreadableAnswer(error) else { return DashConnectPlatformError.appConnectKeysUnreadable }
-        return AppConnect.Refusal(.unsupported, NSLocalizedString(
-            "This version of the wallet cannot read the network's answer about your identity's encryption key for this app. Update the wallet.",
+        return AppConnect.Refusal(.unsupported, String(
+            localized: "This version of the wallet cannot read the network's answer about your identity's encryption key for this app. Update the wallet.",
             comment: "DashConnect App Connect v2"))
     }
 
@@ -4154,8 +4138,8 @@ enum DashConnectPlatformQueries {
 extension AppConnect {
     /// The answer to a `dash-key:` v2 request on mainnet: a connection
     /// request reaches mainnet through a DashPay connect link or code only.
-    static var dashKeyOnMainnetRefusal: Refusal { Refusal(.unsupported, NSLocalizedString(
-        "This kind of code is not accepted on mainnet. Ask the app for a DashPay connect link or code.",
+    static var dashKeyOnMainnetRefusal: Refusal { Refusal(.unsupported, String(
+        localized: "This kind of code is not accepted on mainnet. Ask the app for a DashPay connect link or code.",
         comment: "DashConnect App Connect: a dash-key code scanned on mainnet")) }
 
     /// Which codes the wallet refuses on `network`, from the code's scheme

@@ -88,7 +88,7 @@ struct HomeBalanceView: View {
 
             ZStack {
                 if !viewModel.isBalanceHidden && viewModel.state == .syncing {
-                    Text(NSLocalizedString("Syncing Balance", comment: ""))
+                    Text(String(localized: "Syncing Balance", comment: ""))
                         .font(.caption)
                         .foregroundColor(Color.dash.whiteText)
                         .opacity(opacity)
@@ -123,7 +123,7 @@ struct HomeBalanceView: View {
                                 .font(.subhead)
                                 .foregroundColor(Color.dash.whiteText)
                             if balance.isPartial {
-                                Text(NSLocalizedString("Known balance", comment: "Total excludes unavailable balances"))
+                                Text(String(localized: "Known balance", comment: "Total excludes unavailable balances"))
                                     .font(.caption)
                                     .foregroundColor(.white.opacity(0.7))
                             }
@@ -131,14 +131,14 @@ struct HomeBalanceView: View {
                             Text(verbatim: "—")
                                 .font(.largeTitle)
                                 .foregroundColor(Color.dash.whiteText)
-                            Text(NSLocalizedString("Balance unavailable", comment: "Balance not restored"))
+                            Text(String(localized: "Balance unavailable", comment: "Balance not restored"))
                                 .font(.subhead)
                                 .foregroundColor(Color.dash.whiteText)
                         }
 
                         ZStack {
                             if viewModel.shouldShowTapToHideBalance {
-                                Text(NSLocalizedString("Tap to hide balance", comment: ""))
+                                Text(String(localized: "Tap to hide balance", comment: ""))
                                     .font(.caption)
                                     .foregroundColor(.white.opacity(0.5))
                             }
@@ -216,7 +216,7 @@ struct HomeBalanceView: View {
                 .contentShape(Circle())
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(Text(NSLocalizedString("Notifications", comment: "Home nav bar")))
+        .accessibilityLabel(Text(String(localized: "Notifications", comment: "Home nav bar")))
     }
     #endif
 
@@ -297,9 +297,9 @@ struct HomeBalanceView: View {
                     }
                     Text(
                         isSyncing
-                            ? NSLocalizedString("Syncing", comment: "Shielded balance")
+                            ? String(localized: "Syncing", comment: "Shielded balance")
                             : duffs.map { viewModel.fiatString(forDuffs: $0) }
-                                ?? NSLocalizedString("Balance unavailable", comment: "Balance not restored")
+                                ?? String(localized: "Balance unavailable", comment: "Balance not restored")
                     )
                         .font(.caption2)
                         .foregroundColor(.white.opacity(0.7))

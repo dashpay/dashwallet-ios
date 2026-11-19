@@ -63,10 +63,10 @@ class OrderPreviewViewController: BaseViewController, NetworkReachabilityHandlin
 
     @objc
     func cancelAction() {
-        let alert = UIAlertController(title: nil, message: NSLocalizedString("Are you sure you want to cancel this order?", comment: "Coinbase/Buy Dash/Cancel Order"), preferredStyle: .alert)
-        let noAction = UIAlertAction(title: NSLocalizedString("No", comment: ""), style: .cancel)
+        let alert = UIAlertController(title: nil, message: String(localized: "Are you sure you want to cancel this order?", comment: "Coinbase/Buy Dash/Cancel Order"), preferredStyle: .alert)
+        let noAction = UIAlertAction(title: String(localized: "No", comment: ""), style: .cancel)
         alert.addAction(noAction)
-        let yesAction = UIAlertAction(title: NSLocalizedString("Yes", comment: ""), style: .default) { [weak self] _ in
+        let yesAction = UIAlertAction(title: String(localized: "Yes", comment: ""), style: .default) { [weak self] _ in
             self?.cancelTransaction()
         }
         alert.addAction(yesAction)
@@ -78,12 +78,12 @@ class OrderPreviewViewController: BaseViewController, NetworkReachabilityHandlin
         let vc = BasicInfoController()
         vc.mainAction = { UIApplication.shared.open(kCoinbaseFeeInfoURL) }
         vc.icon = "coinbase.fee.info"
-        vc.headerText = NSLocalizedString("Fees in crypto purchases", comment: "Coinbase/Buy Dash/Fee Info")
-        vc.descriptionText = NSLocalizedString("""
+        vc.headerText = String(localized: "Fees in crypto purchases", comment: "Coinbase/Buy Dash/Fee Info")
+        vc.descriptionText = String(localized: """
             In addition to the displayed Coinbase fee, we include a spread in the price. When using Advanced Trade, no spread is included because you are interacting directly with the order book.\n
             Cryptocurrency markets are volatile, and this allows us to temporarily lock in a price for trade execution.
             """, comment: "Coinbase/Buy Dash/Fee Info")
-        vc.actionButtonText = NSLocalizedString("Learn More...", comment: "Coinbase")
+        vc.actionButtonText = String(localized: "Learn More...", comment: "Coinbase")
 
         let nvc = BaseNavigationController(rootViewController: vc)
         present(nvc, animated: true)
@@ -156,8 +156,7 @@ extension OrderPreviewViewController {
         retryButton.isHidden = timeRemaining != 0
         actionButton.isHidden = timeRemaining == 0
 
-        let title = String(format: NSLocalizedString("Confirm (%d%@)", comment: "Coinbase/Buy Dash/Confirm Order"), timeRemaining,
-                           measurementFormatter.string(from: UnitDuration.seconds))
+        let title = String(localized: "Confirm (\(timeRemaining)\(measurementFormatter.string(from: UnitDuration.seconds)))", comment: "Coinbase/Buy Dash/Confirm Order")
         actionButton.setTitle(title, for: .normal)
     }
 }
@@ -180,14 +179,14 @@ extension OrderPreviewViewController {
 
         model.failureHandle = { [weak self] _ in
             self?
-                .showFailedTransactionStatus(text: NSLocalizedString("The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device.",
+                .showFailedTransactionStatus(text: String(localized: "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device.",
                                                                      comment: "Coinbase/Buy Dash/Confirm Order"))
         }
     }
 
     @objc
     internal func configureHierarchy() {
-        title = NSLocalizedString("Order Preview", comment: "Coinbase/Buy Dash/Confirm Order")
+        title = String(localized: "Order Preview", comment: "Coinbase/Buy Dash/Confirm Order")
         view.backgroundColor = .dw_secondaryBackground()
 
         tableView = UITableView(frame: .zero, style: .insetGrouped)
@@ -212,14 +211,14 @@ extension OrderPreviewViewController {
         cancelButton.translatesAutoresizingMaskIntoConstraints = false
         cancelButton.backgroundColor = .clear
         cancelButton.layer.cornerRadius = 6
-        cancelButton.setTitle(NSLocalizedString("Cancel", comment: "Coinbase"), for: .normal)
+        cancelButton.setTitle(String(localized: "Cancel", comment: "Coinbase"), for: .normal)
         cancelButton.setTitleColor(.dw_label(), for: .normal)
         cancelButton.addTarget(self, action: #selector(cancelAction), for: .touchUpInside)
         buttonsStackView.addArrangedSubview(cancelButton)
 
         actionButton = ActionButton()
         actionButton.translatesAutoresizingMaskIntoConstraints = false
-        actionButton.setTitle(NSLocalizedString("Confirm", comment: "Coinbase/Buy Dash/Confirm Order"), for: .normal)
+        actionButton.setTitle(String(localized: "Confirm", comment: "Coinbase/Buy Dash/Confirm Order"), for: .normal)
         actionButton.addTarget(self, action: #selector(confirmAction), for: .touchUpInside)
         actionButton.isHidden = model.showCountdown
         buttonsStackView.addArrangedSubview(actionButton)
@@ -228,7 +227,7 @@ extension OrderPreviewViewController {
         retryButton.translatesAutoresizingMaskIntoConstraints = false
         retryButton.addTarget(self, action: #selector(retryAction), for: .touchUpInside)
         retryButton.setImage(UIImage(systemName: "arrow.clockwise"), for: .normal)
-        retryButton.setTitle(NSLocalizedString("Retry", comment: "Coinbase"), for: .normal)
+        retryButton.setTitle(String(localized: "Retry", comment: "Coinbase"), for: .normal)
         retryButton.isHidden = !model.showCountdown
         buttonsStackView.addArrangedSubview(retryButton)
 
@@ -312,7 +311,7 @@ extension OrderPreviewViewController: CoinbaseCodeConfirmationPreviewing, Coinba
 
     func codeConfirmationControllerDidCancel() {
         hideActivityIndicator()
-        showFailedTransactionStatus(text: NSLocalizedString("The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device.",
+        showFailedTransactionStatus(text: String(localized: "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device.",
                                                             comment: "Coinbase/Buy Dash/Confirm Order"))
     }
 }

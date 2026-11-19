@@ -39,7 +39,7 @@ public struct VerifyIdentityScreen: View {
     /// the link field.
     private var instructions: some View {
         VStack(alignment: .leading) {
-            Text(NSLocalizedString("Verify your identity", comment: "Usernames"))
+            Text(String(localized: "Verify your identity", comment: "Usernames"))
                 .font(.title1)
                 .multilineTextAlignment(.leading)
                 .lineSpacing(3)
@@ -47,8 +47,8 @@ public struct VerifyIdentityScreen: View {
 
             // What publishing actually does: the link goes into a public
             // Platform document tied to this identity and name.
-            Text(NSLocalizedString(
-                "The link is published on Dash Platform with your identity and the name you requested. Anyone can read it, not only masternode owners.",
+            Text(String(
+                localized: "The link is published on Dash Platform with your identity and the name you requested. Anyone can read it, not only masternode owners.",
                 comment: "Usernames: proof-of-identity link visibility"))
                 .font(.subhead)
                 .multilineTextAlignment(.leading)
@@ -56,10 +56,10 @@ public struct VerifyIdentityScreen: View {
                 .foregroundColor(.dash.secondaryText)
 
             HStack(spacing: 0) {
-                let text = String.localizedStringWithFormat(NSLocalizedString("Please vote to approve my requested Dash username - %@", comment: "Usernames"), username)
+                let text = String(localized: "Please vote to approve my requested Dash username - \(username)", comment: "Usernames")
 
                 VStack(alignment: .leading, spacing: 0) {
-                    Text(NSLocalizedString("Copy text", comment: ""))
+                    Text(String(localized: "Copy text", comment: ""))
                         .font(.footnote)
                         .foregroundStyle(Color.dash.secondaryText)
 
@@ -90,15 +90,15 @@ public struct VerifyIdentityScreen: View {
             .cornerRadius(10)
             .padding(.vertical, 20)
 
-            Text(NSLocalizedString("Prove your identity", comment: "Usernames"))
+            Text(String(localized: "Prove your identity", comment: "Usernames"))
                 .font(.calloutMedium)
                 .multilineTextAlignment(.leading)
                 .lineSpacing(3)
                 .foregroundColor(.dash.primaryText)
                 .padding(.top, 8)
 
-            Text(NSLocalizedString(
-                "Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link below",
+            Text(String(
+                localized: "Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link below",
                 comment: "Usernames"))
                 .font(.subhead)
                 .multilineTextAlignment(.leading)
@@ -107,7 +107,7 @@ public struct VerifyIdentityScreen: View {
                 .padding(.top, 1)
 
             TextInput(
-                label: NSLocalizedString("Paste link here", comment: "Usernames"),
+                label: String(localized: "Paste link here", comment: "Usernames"),
                 text: $link,
                 isError: isInputError
             ).padding(.top, 7)
@@ -135,7 +135,7 @@ public struct VerifyIdentityScreen: View {
                 .scrollDismissesKeyboard(.interactively)
 
                 DashButton(
-                    text: NSLocalizedString("Verify", comment: ""),
+                    text: String(localized: "Verify", comment: ""),
                     isEnabled: canContinue
                 ) {
                     let trimmed = link.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -149,14 +149,14 @@ public struct VerifyIdentityScreen: View {
                         onConfirmed(url)
                     } else {
                         isInputError = true
-                        errorText = NSLocalizedString("Enter a link starting with http:// or https://", comment: "Usernames")
+                        errorText = String(localized: "Enter a link starting with http:// or https://", comment: "Usernames")
                     }
                 }
                 .padding(.top, 12)
             }
             
             if showCopiedToast {
-                ToastView(text: NSLocalizedString("Copied", comment: ""))
+                ToastView(text: String(localized: "Copied", comment: ""))
                     .padding(.bottom, 50)
             }
         }
@@ -169,9 +169,7 @@ public struct VerifyIdentityScreen: View {
             // longer is refused by Platform rather than by us.
             if trimmed.count > Self.maxURLLength {
                 isInputError = true
-                errorText = String.localizedStringWithFormat(
-                    NSLocalizedString("Maximum %ld characters", comment: "Usernames"),
-                    Self.maxURLLength)
+                errorText = String(localized: "Maximum \(Self.maxURLLength) characters", comment: "Usernames")
                 canContinue = false
                 return
             }

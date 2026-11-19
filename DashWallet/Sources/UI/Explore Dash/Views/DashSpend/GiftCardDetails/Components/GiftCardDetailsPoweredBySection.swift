@@ -23,7 +23,7 @@ struct GiftCardDetailsPoweredBySection: View {
 
     var body: some View {
         VStack(spacing: 5) {
-            Text(NSLocalizedString("Powered by", comment: "DashSpend"))
+            Text(String(localized: "Powered by", comment: "DashSpend"))
                 .font(.caption)
                 .foregroundColor(.dash.tertiaryText)
 

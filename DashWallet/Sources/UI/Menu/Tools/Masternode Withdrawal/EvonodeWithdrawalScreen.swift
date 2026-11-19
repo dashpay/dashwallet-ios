@@ -75,7 +75,7 @@ struct EvonodeWithdrawalScreen: View {
                     }
                 },
                 central: {
-                    Text(NSLocalizedString("Withdraw", comment: "Evonode withdrawal"))
+                    Text(String(localized: "Withdraw", comment: "Evonode withdrawal"))
                         .dashFont(.subheadMedium)
                         .foregroundColor(.dash.primaryText)
                         .lineLimit(1)
@@ -159,10 +159,7 @@ struct EvonodeWithdrawalScreen: View {
             Image(systemName: "server.rack")
                 .font(.system(size: 13))
                 .foregroundColor(Color.dash.secondaryText)
-            Text(String(
-                format: NSLocalizedString("%@ · Claimable %@ DASH", comment: "Evonode withdrawal: node title, balance"),
-                viewModel.masternode.displayTitle,
-                viewModel.claimableDashFormatted))
+            Text(String(localized: "\(viewModel.masternode.displayTitle) · Claimable \(viewModel.claimableDashFormatted) DASH", comment: "Evonode withdrawal: node title, balance"))
                 .font(.system(size: 13))
                 .foregroundColor(Color.dash.secondaryText)
             Spacer()
@@ -210,15 +207,15 @@ struct EvonodeWithdrawalScreen: View {
     @ViewBuilder
     private var destinationCard: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(NSLocalizedString("Withdraw to", comment: "Evonode withdrawal"))
+            Text(String(localized: "Withdraw to", comment: "Evonode withdrawal"))
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(Color.dash.primaryText)
 
             if viewModel.canChooseDestination {
                 AddressFieldView(
                     text: $viewModel.destinationText,
-                    label: NSLocalizedString("Dash address", comment: "Evonode withdrawal"),
-                    placeholder: NSLocalizedString("Enter a Dash address", comment: "Evonode withdrawal"),
+                    label: String(localized: "Dash address", comment: "Evonode withdrawal"),
+                    placeholder: String(localized: "Enter a Dash address", comment: "Evonode withdrawal"),
                     hasError: viewModel.destinationErrorMessage != nil,
                     errorText: viewModel.destinationErrorMessage,
                     onScanQR: { showScanner = true },
@@ -229,7 +226,7 @@ struct EvonodeWithdrawalScreen: View {
                         viewModel.resetDestinationToPayoutAddress()
                     } label: {
                         Label(
-                            NSLocalizedString("Use the payout address", comment: "Evonode withdrawal"),
+                            String(localized: "Use the payout address", comment: "Evonode withdrawal"),
                             systemImage: "arrow.uturn.backward")
                             .font(.system(size: 13, weight: .medium))
                     }
@@ -237,14 +234,14 @@ struct EvonodeWithdrawalScreen: View {
                     .foregroundColor(Color.dash.blue)
                 } else if viewModel.payoutAddress != nil {
                     Label(
-                        NSLocalizedString("This is the evonode's registered payout address.", comment: "Evonode withdrawal"),
+                        String(localized: "This is the evonode's registered payout address.", comment: "Evonode withdrawal"),
                         systemImage: "checkmark.circle")
                         .font(.system(size: 13))
                         .foregroundColor(Color.dash.secondaryText)
                 }
 
-                Text(NSLocalizedString(
-                    "This wallet holds the evonode's payout address key, so the balance can be withdrawn to any Dash address.",
+                Text(String(
+                    localized: "This wallet holds the evonode's payout address key, so the balance can be withdrawn to any Dash address.",
                     comment: "Evonode withdrawal"))
                     .font(.system(size: 13))
                     .foregroundColor(Color.dash.secondaryText)
@@ -256,10 +253,10 @@ struct EvonodeWithdrawalScreen: View {
                         .foregroundColor(Color.dash.secondaryText)
                         .padding(.top, 2)
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(NSLocalizedString("Registered payout address", comment: "Evonode withdrawal"))
+                        Text(String(localized: "Registered payout address", comment: "Evonode withdrawal"))
                             .font(.system(size: 12))
                             .foregroundColor(Color.dash.secondaryText)
-                        Text(viewModel.payoutAddress ?? NSLocalizedString("Not available", comment: ""))
+                        Text(viewModel.payoutAddress ?? String(localized: "Not available", comment: ""))
                             .font(.system(.footnote, design: .monospaced))
                             .foregroundColor(Color.dash.primaryText)
                             .fixedSize(horizontal: false, vertical: true)
@@ -270,8 +267,8 @@ struct EvonodeWithdrawalScreen: View {
                 .background(Color.dash.secondaryBackground)
                 .cornerRadius(10)
 
-                Text(NSLocalizedString(
-                    "This withdrawal is signed with the evonode's owner key. Dash Platform only lets the owner key withdraw to the registered payout address, so the destination can't be changed here. To withdraw to another address, use the wallet that holds the payout address key.",
+                Text(String(
+                    localized: "This withdrawal is signed with the evonode's owner key. Dash Platform only lets the owner key withdraw to the registered payout address, so the destination can't be changed here. To withdraw to another address, use the wallet that holds the payout address key.",
                     comment: "Evonode withdrawal"))
                     .font(.system(size: 13))
                     .foregroundColor(Color.dash.secondaryText)
@@ -297,14 +294,10 @@ struct EvonodeWithdrawalScreen: View {
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(NSLocalizedString("How it works", comment: "Evonode withdrawal"))
+                Text(String(localized: "How it works", comment: "Evonode withdrawal"))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(Color.dash.primaryText)
-                Text(String(
-                    format: NSLocalizedString(
-                        "Dash Platform pays the withdrawal out on the Dash chain — usually within a few minutes. A Platform fee of about %@ DASH is taken from the evonode's balance on top of the amount, so Max leaves a little behind to cover it.",
-                        comment: "Evonode withdrawal"),
-                    viewModel.estimatedFeeDashFormatted))
+                Text(String(localized: "Dash Platform pays the withdrawal out on the Dash chain — usually within a few minutes. A Platform fee of about \(viewModel.estimatedFeeDashFormatted) DASH is taken from the evonode's balance on top of the amount, so Max leaves a little behind to cover it.", comment: "Evonode withdrawal"))
                     .font(.system(size: 13))
                     .foregroundColor(Color.dash.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
@@ -323,7 +316,7 @@ struct EvonodeWithdrawalScreen: View {
         HardwareNumericKeyboardView(
             value: keypadBinding,
             showDecimalSeparator: true,
-            actionButtonText: NSLocalizedString("Continue", comment: ""),
+            actionButtonText: String(localized: "Continue", comment: ""),
             actionEnabled: viewModel.canContinue,
             inProgress: false,
             actionHandler: { showConfirmation = true }
@@ -372,7 +365,7 @@ struct EvonodeWithdrawalConfirmSheet: View {
 
     var body: some View {
         DashUIKit.BottomSheet(
-            title: NSLocalizedString("Confirm withdrawal", comment: "Evonode withdrawal"),
+            title: String(localized: "Confirm withdrawal", comment: "Evonode withdrawal"),
             showBackButton: .constant(false),
             isDismissalEnabled: .constant(!(isInFlight || isUnconfirmed)),
             // Supplying `onClose` makes the close button live regardless of
@@ -444,8 +437,8 @@ struct EvonodeWithdrawalConfirmSheet: View {
                     .padding(.horizontal, 24)
                     .padding(.top, 12)
             } else if !viewModel.canChooseDestination {
-                Text(NSLocalizedString(
-                    "Owner-key withdrawals are always paid to the registered payout address.",
+                Text(String(
+                    localized: "Owner-key withdrawals are always paid to the registered payout address.",
                     comment: "Evonode withdrawal"))
                     .font(.system(size: 13))
                     .foregroundColor(.dash.secondaryText)
@@ -461,9 +454,9 @@ struct EvonodeWithdrawalConfirmSheet: View {
                 ButtonsGroup(
                     orientation: .horizontal,
                     size: .large,
-                    positiveButtonText: NSLocalizedString("Confirm", comment: ""),
+                    positiveButtonText: String(localized: "Confirm", comment: ""),
                     positiveButtonAction: { Task { await viewModel.submit() } },
-                    negativeButtonText: NSLocalizedString("Cancel", comment: ""),
+                    negativeButtonText: String(localized: "Cancel", comment: ""),
                     negativeButtonAction: onCancel)
                     .padding(.horizontal, 16)
                     .padding(.bottom, 16)
@@ -472,9 +465,9 @@ struct EvonodeWithdrawalConfirmSheet: View {
                 ButtonsGroup(
                     orientation: .horizontal,
                     size: .large,
-                    positiveButtonText: NSLocalizedString("Try again", comment: ""),
+                    positiveButtonText: String(localized: "Try again", comment: ""),
                     positiveButtonAction: { viewModel.resetAfterFailure() },
-                    negativeButtonText: NSLocalizedString("Close", comment: ""),
+                    negativeButtonText: String(localized: "Close", comment: ""),
                     negativeButtonAction: onCancel)
                     .padding(.horizontal, 16)
                     .padding(.bottom, 16)
@@ -483,8 +476,8 @@ struct EvonodeWithdrawalConfirmSheet: View {
                 HStack(spacing: 10) {
                     SwiftUI.ProgressView()
                     Text(viewModel.phase == .authorizing
-                        ? NSLocalizedString("Waiting for authorization…", comment: "Evonode withdrawal")
-                        : NSLocalizedString("Submitting to Dash Platform…", comment: "Evonode withdrawal"))
+                        ? String(localized: "Waiting for authorization…", comment: "Evonode withdrawal")
+                        : String(localized: "Submitting to Dash Platform…", comment: "Evonode withdrawal"))
                         .font(.system(size: 14))
                         .foregroundColor(.dash.secondaryText)
                 }
@@ -509,13 +502,13 @@ struct EvonodeWithdrawalConfirmSheet: View {
                 .foregroundColor(.orange)
                 .padding(.top, 24)
 
-            Text(NSLocalizedString("Result not confirmed", comment: "Evonode withdrawal"))
+            Text(String(localized: "Result not confirmed", comment: "Evonode withdrawal"))
                 .font(.title3)
                 .fontWeight(.semibold)
                 .foregroundColor(.dash.primaryText)
 
-            Text(NSLocalizedString(
-                "The withdrawal was sent to Dash Platform, but its result couldn't be confirmed. It may have gone through. Don't submit it again — check the claimable balance and the payout address first.",
+            Text(String(
+                localized: "The withdrawal was sent to Dash Platform, but its result couldn't be confirmed. It may have gone through. Don't submit it again — check the claimable balance and the payout address first.",
                 comment: "Evonode withdrawal"))
                 .font(.system(size: 13))
                 .foregroundColor(.dash.secondaryText)
@@ -532,7 +525,7 @@ struct EvonodeWithdrawalConfirmSheet: View {
             Spacer(minLength: 12)
 
             DashButton(
-                text: NSLocalizedString("Close", comment: ""),
+                text: String(localized: "Close", comment: ""),
                 style: .filled,
                 stretch: true,
                 action: onUnconfirmedAcknowledged)
@@ -550,7 +543,7 @@ struct EvonodeWithdrawalConfirmSheet: View {
                 .foregroundColor(.green)
                 .padding(.top, 24)
 
-            Text(NSLocalizedString("Withdrawal submitted", comment: "Evonode withdrawal"))
+            Text(String(localized: "Withdrawal submitted", comment: "Evonode withdrawal"))
                 .font(.title3)
                 .fontWeight(.semibold)
                 .foregroundColor(.dash.primaryText)
@@ -561,24 +554,22 @@ struct EvonodeWithdrawalConfirmSheet: View {
                 dashSymbolFactor: 0.7,
                 showDirection: false)
 
-            Text(NSLocalizedString(
-                "Dash Platform will pay it out on the Dash chain shortly — it usually arrives within a few minutes.",
+            Text(String(
+                localized: "Dash Platform will pay it out on the Dash chain shortly — it usually arrives within a few minutes.",
                 comment: "Evonode withdrawal"))
                 .font(.system(size: 13))
                 .foregroundColor(.dash.secondaryText)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
 
-            Text(String(
-                format: NSLocalizedString("Remaining claimable balance: %@ DASH", comment: "Evonode withdrawal"),
-                (remainingCredits / EvonodeWithdrawalViewModel.creditsPerDuff).formattedDashAmountWithoutCurrencySymbol))
+            Text(String(localized: "Remaining claimable balance: \((remainingCredits / EvonodeWithdrawalViewModel.creditsPerDuff).formattedDashAmountWithoutCurrencySymbol) DASH", comment: "Evonode withdrawal"))
                 .font(.system(size: 13, weight: .medium))
                 .foregroundColor(.dash.primaryText)
 
             Spacer(minLength: 12)
 
             DashButton(
-                text: NSLocalizedString("Done", comment: ""),
+                text: String(localized: "Done", comment: ""),
                 style: .filled,
                 stretch: true,
                 action: { onCompleted(remainingCredits) })
@@ -592,22 +583,20 @@ struct EvonodeWithdrawalConfirmSheet: View {
     private var summaryCard: some View {
         VStack(spacing: 0) {
             summaryRow(
-                label: NSLocalizedString("From", comment: ""),
-                value: String(
-                    format: NSLocalizedString("%@ · Platform balance", comment: "Evonode withdrawal"),
-                    viewModel.masternode.displayTitle))
+                label: String(localized: "From", comment: ""),
+                value: String(localized: "\(viewModel.masternode.displayTitle) · Platform balance", comment: "Evonode withdrawal"))
             divider
             summaryRow(
-                label: NSLocalizedString("To", comment: ""),
+                label: String(localized: "To", comment: ""),
                 value: destinationValue,
                 monospaced: true)
             divider
             summaryRow(
-                label: NSLocalizedString("Signed with", comment: "Evonode withdrawal"),
+                label: String(localized: "Signed with", comment: "Evonode withdrawal"),
                 value: viewModel.signingKeyLabel)
             divider
             summaryRow(
-                label: NSLocalizedString("Platform fee", comment: "Evonode withdrawal"),
+                label: String(localized: "Platform fee", comment: "Evonode withdrawal"),
                 value: "≈ " + viewModel.estimatedFeeDashFormatted + " DASH")
         }
         .background(Color.dash.secondaryBackground)
@@ -618,11 +607,11 @@ struct EvonodeWithdrawalConfirmSheet: View {
         if viewModel.canChooseDestination {
             let address = viewModel.destinationText.trimmingCharacters(in: .whitespacesAndNewlines)
             return viewModel.destinationIsPayoutAddress
-                ? String(format: NSLocalizedString("%@ (payout address)", comment: "Evonode withdrawal"), address)
+                ? String(localized: "\(address) (payout address)", comment: "Evonode withdrawal")
                 : address
         }
         return viewModel.payoutAddress
-            ?? NSLocalizedString("Registered payout address", comment: "Evonode withdrawal")
+            ?? String(localized: "Registered payout address", comment: "Evonode withdrawal")
     }
 
     private func summaryRow(label: String, value: String, monospaced: Bool = false) -> some View {
