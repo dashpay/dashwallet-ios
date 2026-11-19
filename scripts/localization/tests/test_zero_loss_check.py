@@ -48,6 +48,8 @@ CATALOG = "DashWallet/Localizable.xcstrings"
 KEY_MAP = "scripts/localization/zero_loss_key_map.json"
 ITEMS_OLD, ITEMS_NEW = "Sample %d items", "Sample %lld items"
 COINS_OLD, COINS_NEW = "%d coins", "%lld coins"
+BASELINE_COMMIT_FILE = "baseline-commit"  # written by build_baseline.sh: the full 40-hex commit it built
+BASELINE_ROOT_FILE = "baseline-root"  # written by build_baseline.sh: the worktree root the build ran in
 UNUSED_KEYS = ("Unused thing", "English only")
 
 
@@ -110,6 +112,12 @@ class ZeroLossCase(unittest.TestCase):
         # the compiler data of a build of the Baseline commit, rooted at some other checkout
         self.baseline_derived = os.path.join(self.tmp, "baseline-derived")
         shutil.copytree(os.path.join(FIXTURES, "baseline_stringsdata"), self.baseline_derived)
+        # build_baseline.sh records the commit it built here (T24, F10)
+        self.write_baseline_record(self.baseline)
+
+    def write_baseline_record(self, sha, folder=None):
+        with open(os.path.join(folder or self.baseline_derived, BASELINE_COMMIT_FILE), "w") as f:
+            f.write(sha + "\n")
 
     # -- repository helpers -------------------------------------------------------------
 
@@ -521,6 +529,7 @@ class Ac18Tests(ZeroLossCase):
         git(self.repo, "update-ref", "refs/remotes/origin/develop", late)
         git(self.repo, "checkout", "-q", "-B", "work", "develop")
         self.move_the_code()
+        self.write_baseline_record(late)  # the Baseline build is redone for the new merge-base (T24)
         return late
 
     def test_default_baseline_is_the_merge_base_with_origin_develop(self):
@@ -642,9 +651,104 @@ class BaselineDerivedDataFlagTests(ZeroLossCase):
         with open(os.path.join(only, "Greeting.stringsdata"), "w", encoding="utf-8") as f:
             json.dump({"source": "/Users/ci/baseline-checkout/" + GREETING, "version": 1,
                        "tables": {"Localizable": []}}, f)
+        self.write_baseline_record(self.baseline, only)
         res = self.run_cli("--baseline-derived-data", only)
         self.assertEqual(res.returncode, 1, res.stdout + res.stderr)
         self.assertIn("FAIL file-places %s baseline=2 current=3" % SEND, res.stdout)
+
+
+class BaselineInputsTests(ZeroLossCase):
+    """T24 (review F6, F10, F13, F14): the Baseline and derived-data inputs are validated; exit 2 = cannot run."""
+
+    # F6
+    def test_missing_baseline_derived_data_folder_cannot_run(self):
+        res = self.run_cli("--baseline-derived-data", os.path.join(self.tmp, "nope"))
+        self.assert_cannot_run(res, "baseline")
+        self.assertNotIn("Traceback", res.stderr)
+
+    def test_baseline_derived_data_without_stringsdata_cannot_run(self):
+        empty = os.path.join(self.tmp, "baseline-empty")
+        os.makedirs(empty)
+        self.write_baseline_record(self.baseline, empty)
+        res = self.run_cli("--baseline-derived-data", empty)
+        self.assert_cannot_run(res, "stringsdata")
+        self.assertNotIn("Traceback", res.stderr)
+
+    # F10: a record that is missing counts as a mismatch (the build cannot be shown to be the Baseline's)
+    def test_baseline_build_of_another_commit_cannot_run(self):
+        self.write_baseline_record("0" * 40)
+        res = self.run_cli()
+        self.assert_cannot_run(res, "build_baseline.sh")
+
+    def test_baseline_build_without_a_commit_record_cannot_run_and_hints_to_rebuild(self):
+        os.remove(os.path.join(self.baseline_derived, BASELINE_COMMIT_FILE))
+        res = self.run_cli()
+        self.assert_cannot_run(res, "build_baseline.sh")
+
+    def test_baseline_build_of_the_used_commit_runs(self):
+        res = self.run_cli()
+        self.assertEqual(res.returncode, 0, res.stdout + res.stderr)
+
+    def test_the_record_is_compared_with_an_explicit_baseline_too(self):
+        self.write_baseline_record(self.baseline)
+        other = self.commit("later")
+        res = self.run_cli("--baseline", other)
+        self.assert_cannot_run(res, "build_baseline.sh")
+
+    def test_build_baseline_script_records_the_built_commit(self):
+        with open(os.path.join(LOCALIZATION_DIR, "build_baseline.sh"), encoding="utf-8") as f:
+            script = f.read()
+        build_at = script.index("xcodebuild")
+        tail = script[build_at:]
+        self.assertRegex(tail, r'\$BASE"?\s*>\s*"?\$DERIVED/' + BASELINE_COMMIT_FILE,
+                         "the commit is recorded after the build succeeded")
+
+    # F14
+    def test_baseline_sources_map_through_the_recorded_worktree_root(self):
+        root = "/work/DashWallet/baseline-checkout"  # contains /DashWallet/ above the repo root
+        path = os.path.join(self.baseline_derived, "Send.stringsdata")
+        with open(path, encoding="utf-8") as f:
+            text = f.read().replace("/Users/ci/baseline-checkout", root)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(text)
+        with open(os.path.join(self.baseline_derived, BASELINE_ROOT_FILE), "w") as f:
+            f.write(root + "\n")
+        res = self.run_cli()
+        self.assertEqual(res.returncode, 0, res.stdout + res.stderr)
+
+    # F13
+    def make_build(self, name, source_root, mtime):
+        """A fake Xcode DerivedData build under the temp HOME whose sources lie under source_root."""
+        build = os.path.join(self.home, "Library", "Developer", "Xcode", "DerivedData", name, "Build",
+                             "Intermediates.noindex", "DashWallet.build", "Debug-iphonesimulator", "dashpay.build")
+        os.makedirs(build)
+        for fn in ("Send.stringsdata", "Greeting.stringsdata"):
+            path = os.path.join(build, fn)
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(fixture("stringsdata", "ok", fn).replace("__REPO__", source_root))
+            os.utime(path, (mtime, mtime))
+        os.utime(build, (mtime, mtime))
+
+    def run_default_derived(self):
+        return self.run_cli("--baseline-derived-data", self.baseline_derived, derived=False,
+                            extra_env={"HOME": self.home})
+
+    def setUp(self):
+        super().setUp()
+        self.home = os.path.join(self.tmp, "home")
+        os.makedirs(self.home)
+
+    def test_default_derived_data_skips_a_newer_build_of_another_checkout(self):
+        future = time.time() + 600
+        self.make_build("mine-aaa", self.repo, future)
+        self.make_build("other-bbb", "/Users/ci/other-checkout", future + 100)
+        res = self.run_default_derived()
+        self.assertEqual(res.returncode, 0, res.stdout + res.stderr)
+
+    def test_default_derived_data_with_only_another_checkouts_build_cannot_run(self):
+        self.make_build("other-bbb", "/Users/ci/other-checkout", time.time() + 600)
+        res = self.run_default_derived()
+        self.assert_cannot_run(res, "dashpay build")
 
 
 class OfflineTests(unittest.TestCase):

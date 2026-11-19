@@ -39,4 +39,7 @@ echo "== build dashpay at $BASE (log: $LOG)" >&2
     -destination 'generic/platform=iOS Simulator' ARCHS=arm64 SWIFT_EMIT_LOC_STRINGS=YES \
     -derivedDataPath "$DERIVED" build) > "$LOG" 2>&1 \
     || { echo "error: the Baseline build failed; see $LOG" >&2; exit 1; }
+# Record what was built so the check can tell this build is the Baseline's and map its sources.
+echo "$BASE" > "$DERIVED/baseline-commit"
+echo "$WT" > "$DERIVED/baseline-root"
 echo "$DERIVED"

@@ -33,6 +33,8 @@ COUNTS = (0, 1, 2, 5, 21, 101)
 DEFECT = object()
 WATCH_DIR = "WatchApp"
 WATCH_FILE = re.compile(r"^WatchApp/[^/]+\.lproj/Interface\.strings$")
+BASELINE_COMMIT_FILE = "baseline-commit"  # written by build_baseline.sh
+BASELINE_ROOT_FILE = "baseline-root"  # written by build_baseline.sh
 DERIVED_DATA_HOME = os.path.join("~", "Library", "Developer", "Xcode", "DerivedData")
 DERIVED_GLOB = os.path.join("*", "Build", "Intermediates.noindex", "*", "*", "dashpay.build")
 
@@ -81,12 +83,57 @@ def resolve_baseline(repo, given):
     return res.stdout.decode().strip(), "merge-base of HEAD and origin/develop"
 
 
-def default_derived_data():
+def _build_is_of(build, repo):
+    """True when some .stringsdata of the build has a source under this checkout."""
+    roots = {os.path.realpath(repo) + os.sep, os.path.abspath(repo) + os.sep}
+    for dirpath, _, names in os.walk(build):
+        for n in names:
+            if not n.endswith(".stringsdata"):
+                continue
+            try:
+                with open(os.path.join(dirpath, n), encoding="utf-8") as f:
+                    source = json.load(f).get("source", "")
+            except (OSError, ValueError):
+                continue
+            if isinstance(source, str) and source.startswith(tuple(roots)):
+                return True
+    return False
+
+
+def default_derived_data(repo):
+    """The newest DerivedData dashpay build whose sources lie under this checkout."""
     builds = glob.glob(os.path.join(os.path.expanduser(DERIVED_DATA_HOME), DERIVED_GLOB))
-    if not builds:
-        raise CannotRun("no dashpay build found in %s; build the dashpay target or pass --derived-data"
-                        % DERIVED_DATA_HOME)
-    return max(builds, key=os.path.getmtime)
+    for build in sorted(builds, key=os.path.getmtime, reverse=True):
+        if _build_is_of(build, repo):
+            return build
+    raise CannotRun("no dashpay build of this checkout found in %s; build the dashpay target or pass --derived-data"
+                    % DERIVED_DATA_HOME)
+
+
+def read_record(folder, name):
+    try:
+        with open(os.path.join(folder, name), encoding="utf-8") as f:
+            return f.read().strip()
+    except OSError:
+        return None
+
+
+def check_baseline_build(folder, baseline):
+    """Validate the Baseline build folder; returns the recorded worktree root (or None)."""
+    if not os.path.isdir(folder):
+        raise CannotRun("the baseline derived data %s does not exist; build it with "
+                        "scripts/localization/build_baseline.sh" % folder)
+    try:
+        places._stringsdata_files(folder)
+    except places.NoStringsdataError:
+        raise CannotRun("no .stringsdata files under the baseline derived data %s; build it with "
+                        "scripts/localization/build_baseline.sh" % folder)
+    built = read_record(folder, BASELINE_COMMIT_FILE)
+    if built != baseline:
+        raise CannotRun("the baseline derived data %s was not built from baseline commit %s (record: %s); "
+                        "rebuild it with scripts/localization/build_baseline.sh %s"
+                        % (folder, baseline, built or "missing", baseline))
+    return read_record(folder, BASELINE_ROOT_FILE) or None
 
 
 def check_build(repo, derived):
@@ -474,7 +521,8 @@ def check(args):
     repo = repo_root()
     check_tools()
     baseline, how = resolve_baseline(repo, args.baseline)
-    derived = args.derived_data or default_derived_data()
+    baseline_root = check_baseline_build(args.baseline_derived_data, baseline)
+    derived = args.derived_data or default_derived_data(repo)
     check_build(repo, derived)
     check_formatter()
     catalog_path = os.path.join(repo, CATALOG)
@@ -485,7 +533,7 @@ def check(args):
     locales = sorted(baseline_lists.locale_files(repo, baseline))
 
     current = places.current_places(repo, derived)
-    pairs, mismatched = places.pair(places.baseline_places(repo, baseline, args.baseline_derived_data), current)
+    pairs, mismatched = places.pair(places.baseline_places(repo, baseline, args.baseline_derived_data, baseline_root), current)
     findings = [("file-places", (f,), "FAIL file-places %s baseline=%d current=%d" % (f, b, c))
                 for f, b, c in mismatched]
     rows, wording, defects = wording_check(repo, baseline, pairs, base_catalog, locales)
