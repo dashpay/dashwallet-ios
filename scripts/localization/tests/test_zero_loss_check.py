@@ -717,10 +717,10 @@ class BaselineInputsTests(ZeroLossCase):
         self.assertEqual(res.returncode, 0, res.stdout + res.stderr)
 
     # F13
-    def make_build(self, name, source_root, mtime):
+    def make_build(self, name, source_root, mtime, platform="Debug-iphonesimulator"):
         """A fake Xcode DerivedData build under the temp HOME whose sources lie under source_root."""
         build = os.path.join(self.home, "Library", "Developer", "Xcode", "DerivedData", name, "Build",
-                             "Intermediates.noindex", "DashWallet.build", "Debug-iphonesimulator", "dashpay.build")
+                             "Intermediates.noindex", "DashWallet.build", platform, "dashpay.build")
         os.makedirs(build)
         for fn in ("Send.stringsdata", "Greeting.stringsdata"):
             path = os.path.join(build, fn)
@@ -742,6 +742,25 @@ class BaselineInputsTests(ZeroLossCase):
         future = time.time() + 600
         self.make_build("mine-aaa", self.repo, future)
         self.make_build("other-bbb", "/Users/ci/other-checkout", future + 100)
+        res = self.run_default_derived()
+        self.assertEqual(res.returncode, 0, res.stdout + res.stderr)
+
+    def test_default_derived_data_skips_a_newer_device_build_of_this_checkout(self):
+        # The Baseline is a simulator Debug build; a device build compiles other files
+        # (simulator-only fixtures), so its places cannot pair with the Baseline's.
+        future = time.time() + 600
+        self.make_build("mine-aaa", self.repo, future)
+        build = os.path.join(self.home, "Library", "Developer", "Xcode", "DerivedData", "mine-aaa", "Build",
+                             "Intermediates.noindex", "DashWallet.build", "Debug-iphoneos", "dashpay.build")
+        os.makedirs(build)
+        # the device build lacks one of Send.swift's places (as a simulator-only file would)
+        device = json.loads(fixture("stringsdata", "ok", "Send.stringsdata").replace("__REPO__", self.repo))
+        device["tables"]["Localizable"].pop()
+        path = os.path.join(build, "Send.stringsdata")
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(device, f)
+        os.utime(path, (future + 100, future + 100))
+        os.utime(build, (future + 100, future + 100))
         res = self.run_default_derived()
         self.assertEqual(res.returncode, 0, res.stdout + res.stderr)
 

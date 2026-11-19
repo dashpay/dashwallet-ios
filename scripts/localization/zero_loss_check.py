@@ -39,7 +39,9 @@ WATCH_FILE = re.compile(r"^WatchApp/[^/]+\.lproj/Interface\.strings$")
 BASELINE_COMMIT_FILE = "baseline-commit"  # written by build_baseline.sh
 BASELINE_ROOT_FILE = "baseline-root"  # written by build_baseline.sh
 DERIVED_DATA_HOME = os.path.join("~", "Library", "Developer", "Xcode", "DerivedData")
-DERIVED_GLOB = os.path.join("*", "Build", "Intermediates.noindex", "*", "*", "dashpay.build")
+# A simulator Debug build, as build_baseline.sh makes the Baseline: a device or Release build compiles
+# other files (simulator-only fixtures, debug code), so its places would not pair with the Baseline's.
+DERIVED_GLOB = os.path.join("*", "Build", "Intermediates.noindex", "*", "Debug-iphonesimulator", "dashpay.build")
 
 
 class CannotRun(Exception):
@@ -104,7 +106,7 @@ def _build_is_of(build, repo):
 
 
 def default_derived_data(repo):
-    """The newest DerivedData dashpay build whose sources lie under this checkout."""
+    """The newest simulator Debug dashpay build in DerivedData whose sources lie under this checkout."""
     builds = glob.glob(os.path.join(os.path.expanduser(DERIVED_DATA_HOME), DERIVED_GLOB))
     for build in sorted(builds, key=os.path.getmtime, reverse=True):
         if _build_is_of(build, repo):
