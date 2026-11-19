@@ -37,7 +37,7 @@ The main app's texts live in 43 `DashWallet/<lang>.lproj/Localizable.strings` + 
 
 **Neutral**
 - The committed Catalog is the script's output after one Xcode build has normalized it, so the second build leaves it unchanged (spec §6 Catalog stability; CI's `git diff --exit-code` step).
-- Whether the script stays in the repository after merge is decided in `tasks`; nothing after merge depends on it.
+- The script and the other one-off migration tools leave the repository in the pull request's last commit (owner decision 2026-11-19); nothing after merge depends on them.
 
 ## Links
 

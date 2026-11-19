@@ -25,11 +25,11 @@
 
 **Chosen:** option 1, the SwiftSyntax codemod. A real Swift parser handles multi-line calls, escaped quotes, raw and multi-line strings and nested calls that a hand-written parser gets wrong (option 2), and a deterministic tool makes every rebase a re-run instead of a hand merge across the files develop touched (option 3).
 
-How the pull request is built (each rebase repeats steps 2–4):
+How the pull request is built (each rebase repeats steps 2–5 as described in step 4):
 1. Tool commits: the Catalog generator (ADR-0065), the codemod, the entry mover, the zero-loss check (ADR-0067), with their fixture tests; plus the build-setting, `.tx/config`, script and documentation changes.
 2. On the merge-base: generate the Catalog, run the codemod, build the `dashpay` target.
 3. The entry mover pairs places as the zero-loss check does and moves each entry whose key changed to its derived key, rewriting format codes in all 43 locales (ADR-0066).
-4. Build again, so the sync normalizes the Catalog (spec §6 Catalog stability); one generated commit holds this state of steps 2–3's output; hand fixes for what the codemod listed live in their own commits after it, so a rebase drops and regenerates only the generated commit.
+4. Build again, so the sync normalizes the Catalog (spec §6 Catalog stability); one generated commit holds this state of steps 2–3's output; hand fixes for what the codemod listed live in their own commits after it. A rebase moves only the commits before the generated one onto develop, regenerates, then re-applies every later commit in its old order and the tool-removal commit last.
 5. The zero-loss check must pass before the pull request leaves draft.
 
 What the codemod leaves alone and lists for a hand fix: a key that is not a string literal (a variable or an expression), a fixed-precision float whose interpolation would format differently, and any call shape it does not recognize.
@@ -37,15 +37,15 @@ What the codemod leaves alone and lists for a hand fix: a key that is not a stri
 ## Consequences
 
 **Positive**
-- Rebases cost one re-run plus re-applying the hand-fix commits; the 3681 rewritten places never conflict.
+- Rebases cost one re-run plus re-applying the later commits in order; the 3681 rewritten places never conflict.
 - The codemod's rules are tested on fixtures (a positional `%1$d`, a `%%`, a multi-line call, a counted phrase), so a reviewer reviews rules, not 3681 edits.
 
 **Negative**
 - An own Swift tool with a swift-syntax package dependency under `scripts/` (not linked into the app); its swift-syntax version must build with Xcode 26.6 and 27.2.
-- Hand-fix commits can conflict on rebase in the few files they touch.
+- A re-applied later commit can conflict where the new Baseline changed the few files it touches.
 
 **Neutral**
-- Whether the codemod stays in the repository after merge is decided in `tasks`; the zero-loss check stays (spec §7).
+- The codemod, the Catalog generator and the entry mover leave the repository in the pull request's last commit (owner decision 2026-11-19); a rebase sets that commit aside, so the tools are present while it regenerates. The zero-loss check stays (spec §7).
 - Argument-order errors are caught by the zero-loss check, which uses a distinct sample value per argument position (ADR-0067).
 
 ## Links
