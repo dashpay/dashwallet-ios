@@ -112,35 +112,17 @@ struct DashSpendPriceUpdatedDialog: View {
         }
     }
 
+    /// The app's standard caution box, on the same yellow as its other cautions.
     private var warning: some View {
-        HStack(alignment: .top, spacing: 10) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.subheadline)
-                .foregroundColor(.dash.orange)
-                .accessibilityHidden(true)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(String(format: NSLocalizedString("The price is %@ higher than expected", comment: "DashSpend: %@ is a percentage"),
-                            increasePercent))
-                    .font(.footnote)
-                    .fontWeight(.medium)
-                    .foregroundColor(.dash.primaryText)
-                Text(NSLocalizedString(
-                    "This can mean the market moved fast or the provider's price is wrong. If you're not sure, cancel and try again in a few minutes.",
-                    comment: "DashSpend"))
-                    .font(.footnote)
-                    .foregroundColor(.dash.secondaryText)
-            }
-            .fixedSize(horizontal: false, vertical: true)
-
-            Spacer(minLength: 0)
-        }
-        .padding(12)
-        .background(Color.dash.orangeAlpha10)
-        .cornerRadius(14)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 8)
-        .accessibilityElement(children: .combine)
+        DashUIKit.SystemMessageView(
+            title: String(format: NSLocalizedString("The price is %@ higher than expected", comment: "DashSpend: %@ is a percentage"),
+                          increasePercent),
+            subtitle: NSLocalizedString(
+                "This can mean the market moved fast or the provider's price is wrong. If you're not sure, cancel and try again in a few minutes.",
+                comment: "DashSpend"),
+            backgroundColor: Color.dash.yellowAlpha10)
+            .padding(8)
+            .accessibilityElement(children: .combine)
     }
 
     /// Paying is the main action for a small increase; from the warning level on, cancelling is.
