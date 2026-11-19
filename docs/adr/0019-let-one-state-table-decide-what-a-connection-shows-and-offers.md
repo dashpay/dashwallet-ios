@@ -1,6 +1,6 @@
 # 0019 — Let one state table decide what a connection shows and offers
 
-- **Status:** Accepted
+- **Status:** Proposed
 - **Date:** 2026-11-09
 - **Deciders:** romchornyi (ADR author)
 
@@ -22,8 +22,11 @@ publish failed" came from screens deciding on their own.
 ## Considered options
 
 1. **One pure table.** `AppConnect.StateActions.row(for:)` maps each status to its tab, badge
-   colour, text and allowed actions. The row, the connection sheet and the page's tabs only read
-   it. Its switch has no `default`, so a new status does not compile until it has a row.
+   colour, text and allowed actions. The row and the connection sheet read the badge colour and the
+   actions from it, and the Active and Expired tabs read the tab. The badge's text is a switch of its
+   own in `ConnectionStatusBadge`, and the Disconnected tab lists the wallet's disconnect history
+   rather than the table's tab. The table's switch has no `default`, so a new status does not
+   compile until it has a row.
 2. **Rules in each view model**, as before.
 
 ## Decision outcome

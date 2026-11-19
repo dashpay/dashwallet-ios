@@ -16,7 +16,7 @@ one-scan login possible, and with it DashConnect on mainnet once mainnet runs pr
   approval sheet. From 14 it derives a session key for the request, registers it on the identity
   bound to the app's contract with a budget and an expiry, and publishes the encrypted key to the
   App Connect system contract. Below 14 App Connect is not offered.
-  [ADR-0006](../../adr/0006-choose-the-app-connect-login-by-the-protocol-version-read-at-runtime.md).
+  [ADR-0053](../../adr/0053-open-dashconnect-on-mainnet-and-gate-each-request-by-protocol-14.md).
 - **App Connect v2 only** ([#1301](https://github.com/dashpay/dashwallet-ios/pull/1301)). The
   two-scan (v1) login is removed: a v1 `dash-key` QR is refused with a message asking the app for
   a new code. [ADR-0028](../../adr/0028-answer-app-connect-v2-only-and-remove-the-two-scan-login.md).

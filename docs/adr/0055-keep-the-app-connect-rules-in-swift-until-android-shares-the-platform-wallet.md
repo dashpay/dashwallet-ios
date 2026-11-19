@@ -11,7 +11,7 @@ The functional core — `project()`, the approve, disconnect, supersession and f
 ## Decision drivers
 
 - No new FFI for this feature; one iOS engineer; Platform PRs run their own multi-week review cycles.
-- Mainnet blockers are still open (the pin of dashpay/platform#5715, the fence key on a network, the product owner's sign-off on ADR-0017).
+- On 2026-11-04, when this was decided, mainnet blockers were still open (the pin of dashpay/platform#5715, the fence key on a network, the product owner's sign-off on ADR-0017). Develop's pin has since moved past #5715; ADR-0017 stays Proposed.
 - A shared core is worth it only if both wallets consume it and agree on one status semantics.
 
 ## Considered options

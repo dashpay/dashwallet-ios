@@ -30,9 +30,10 @@ user to whatever host the request named.
 
 ## Decision outcome
 
-**Chosen:** know no app, ask before returning. The wallet shows only what it can check (the
-contract's owner and its username, the App ID), and a return happens only when the user taps it, so
-a request cannot send the user to a host they did not see.
+**Chosen:** know no app, ask before returning. The wallet shows the App ID, and as the app's name
+the contract owner's username when it can be read, else the label the request carries (which the
+wallet cannot check). A return happens only when the user taps it, so a request cannot send the
+user to a host they did not see.
 
 ## Consequences
 

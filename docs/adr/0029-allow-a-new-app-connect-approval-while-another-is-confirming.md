@@ -1,6 +1,6 @@
 # 0029 — Allow a new App Connect approval while another one is still confirming
 
-- **Status:** Accepted
+- **Status:** Proposed
 - **Date:** 2026-11-09
 - **Deciders:** romchornyi (ADR author)
 
@@ -33,7 +33,8 @@ time.
 
 **Negative**
 - It differs from Android on purpose.
-- Making sure a superseded update can never land later may cost one more identity update.
+- Making sure a superseded update can never land later costs two more identity updates: one adds
+  the fence, the next turns it off (as in ADR-0015).
 
 **Neutral**
 - The pending intent stays recorded until it is closed.

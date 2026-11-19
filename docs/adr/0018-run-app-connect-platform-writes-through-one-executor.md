@@ -47,7 +47,8 @@ timeout was treated differently by each.
 ## Consequences
 
 **Positive**
-- One retry and re-read policy for every write.
+- One log, timeout and outcome for every write, and one place (`AppConnect.nextStep`) that decides
+  what follows an error or a timeout. The executor does not retry a write.
 - A disconnect that stops part-way reports what is still live and keeps the row, and its outcome
   is settled from the read after its writes; this is covered by seam tests.
 

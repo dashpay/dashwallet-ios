@@ -23,7 +23,10 @@ contract read, and then refused with an error, or reached a sheet that could not
    without one, anything but a `dash-st:` request goes to `answerWithoutUsername`, which says
    nothing on a page that already shows the no-username state ("Sign in to apps without passwords",
    Create username), and shows "Create a username to connect apps, then ask the app for a new
-   code." only where the page may show connections. No sheet, no return, and nothing is read for the request itself.
+   code." only where the page may show connections. A wallet whose username is not read yet
+   (`usernameUnknown`) takes the same branch and always shows a different note: "The wallet is
+   still reading your username. Try again in a moment." No approve sheet, no return, and nothing
+   is read for the request itself.
 
 ## Decision outcome
 

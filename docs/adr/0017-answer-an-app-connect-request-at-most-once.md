@@ -1,6 +1,6 @@
 # 0017 — Answer an App Connect request at most once
 
-- **Status:** Accepted
+- **Status:** Proposed
 - **Date:** 2026-11-09
 - **Deciders:** romchornyi (ADR author)
 
@@ -46,8 +46,10 @@ observation lost between attempts. Each fix opened another case.
 - When the answered check cannot read Platform, the sheet says so and offers to try again.
 
 **Neutral**
-- A spent request that never landed stays Confirming until Disconnect fences it (ADR-0015) or a
-  newer sign-in supersedes it.
+- A spent request that never landed stays Confirming until Disconnect fences it (ADR-0015), a
+  newer sign-in supersedes it, a recorded consensus refusal shows it Refused (ADR-0021), or a key
+  of another update holding one of its key ids shows it Never landed (Expired, if one of its auth
+  keys is on the identity but expired).
 
 ## Links
 
