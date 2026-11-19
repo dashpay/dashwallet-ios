@@ -569,6 +569,49 @@ final class DashSpendPayApprovalTests: XCTestCase {
         XCTAssertNil(viewModel.purchaseSheet)
     }
 
+    // MARK: The screen going away
+
+    /// The screen is closed (a sign-out does this) while a price change waits for an answer.
+    func testClosingTheScreenDeclinesAPendingPriceChange() async throws {
+        let (viewModel, snapshot) = try viewModelWithConfirmSheet()
+        let (task, shown) = await quote(snapshot.approval.amount * 2, on: viewModel, snapshot: snapshot)
+        XCTAssertNotNil(shown)
+
+        viewModel.unsubscribeFromAll()
+        await assertCancelled(task)
+        XCTAssertNil(viewModel.purchaseSheet)
+    }
+
+    /// A higher quote that arrives after the screen closed has no sheet to be shown on. It
+    /// ends the purchase instead of waiting for an answer nobody can give.
+    func testHigherQuoteAfterTheScreenClosedEndsThePurchaseWithoutWaiting() async throws {
+        let (viewModel, snapshot) = try viewModelWithConfirmSheet()
+        viewModel.unsubscribeFromAll()
+
+        do {
+            try await viewModel.confirmQuote(requested: snapshot.approval.amount * 2, approval: snapshot.approval)
+            XCTFail("the purchase went on")
+        } catch DashSpendError.purchaseCancelled {
+        } catch {
+            XCTFail("unexpected error: \(error)")
+        }
+        if case .priceUpdated? = viewModel.purchaseSheet { XCTFail("a price change was shown with no screen") }
+    }
+
+    /// The screen also disappears and comes back around a full-screen prompt. A price change
+    /// is shown again once it is back.
+    func testPriceChangeIsShownAgainOnceTheScreenIsBack() async throws {
+        let (viewModel, snapshot) = try viewModelWithConfirmSheet()
+        viewModel.unsubscribeFromAll()
+        viewModel.subscribeToUpdates()
+        defer { viewModel.unsubscribeFromAll() }
+
+        let (task, shown) = await quote(snapshot.approval.amount * 2, on: viewModel, snapshot: snapshot)
+        XCTAssertNotNil(shown)
+        viewModel.resolvePriceChange(pay: true)
+        try await task.value
+    }
+
     func testZeroQuoteIsRefusedWithoutAsking() async throws {
         let (viewModel, snapshot) = try viewModelWithConfirmSheet()
         do {

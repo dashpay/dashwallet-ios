@@ -93,6 +93,9 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     private var sheetDismissal: CheckedContinuation<Void, Never>?
     /// The longest the purchase waits for the sheet to report that it left the screen.
     var sheetDismissalWait: TimeInterval = 1
+    /// `true` from the screen's `unsubscribeFromAll()` until its next `subscribeToUpdates()`:
+    /// no purchase sheet can be shown then, so nobody could answer a price change.
+    private var isScreenGone = false
     @Published private(set) var isUserSignedIn = false
     
     let currencySymbol: String = {
@@ -298,6 +301,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     }
     
     func subscribeToUpdates() {
+        isScreenGone = false
+
         // Start network monitoring
         startNetworkMonitoring()
         
@@ -399,9 +404,9 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     /// A quote at or below the confirmed amount, or above it by a margin too small to ask
     /// about, closes the sheet and returns. A higher quote is shown on the "Price updated"
     /// sheet; this returns when the buyer chooses to pay it and throws
-    /// `DashSpendError.purchaseCancelled` when they decline. Either way it returns only after
-    /// the sheet has left the screen, so the PIN prompt that follows is not presented over a
-    /// sheet that is still closing.
+    /// `DashSpendError.purchaseCancelled` when they decline, and when the screen has gone away
+    /// so the sheet cannot be shown. When it returns, the sheet has left the screen, so the
+    /// PIN prompt that follows is not presented over a sheet that is still closing.
     func confirmQuote(requested: UInt64, approval: GiftCardPaymentGuard.Approval) async throws {
         switch try approval.assess(requested: requested) {
         case .asConfirmed:
@@ -409,6 +414,10 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             purchaseSheet = nil
         case .higher(let change):
             DWLogger.log("Gift card price changed: requested \(requested) duffs, confirmed \(approval.amount)")
+            guard !isScreenGone else {
+                DWLogger.log("Gift card price change not shown: the purchase screen is gone. Nothing was sent")
+                throw DashSpendError.purchaseCancelled
+            }
             purchaseSheet = .priceUpdated(change)
             let pay = await withCheckedContinuation { priceDecision = $0 }
             guard pay else { throw DashSpendError.purchaseCancelled }
@@ -594,6 +603,11 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     func unsubscribeFromAll() {
         cancellableBag.removeAll()
         stopNetworkMonitoring()
+
+        // A price change waiting for the buyer's answer has nobody left to answer it, and one
+        // that arrives from here on has no sheet to be shown on: both end as declined.
+        isScreenGone = true
+        resolvePriceChange(pay: false)
     }
     
     private func refreshBalance() {

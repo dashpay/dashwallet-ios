@@ -218,9 +218,10 @@ struct DashSpendPayScreen: View {
                 presentationMode.wrappedValue.dismiss()
                 onPurchaseSuccess?(txId)
             } catch DashSpendError.purchaseCancelled {
-                // The buyer declined a higher price on the "Price updated" sheet. Nothing was
-                // sent and there is nothing to report.
-                DWLogger.log("Gift card purchase cancelled by the buyer after a price change")
+                // A higher price was declined on the "Price updated" sheet, or this screen
+                // went away before it could be shown. Nothing was sent and there is nothing
+                // to report.
+                DWLogger.log("Gift card purchase cancelled: a higher price was not accepted")
             } catch DashSpendError.paymentStatusUnknown(let txId, let reason) {
                 // Paid, order placed, acceptance verdict missing. The purchase is already
                 // recorded, so route to the card details exactly like a confirmed purchase —
