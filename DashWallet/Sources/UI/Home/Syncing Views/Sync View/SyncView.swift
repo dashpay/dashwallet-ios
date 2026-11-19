@@ -94,11 +94,11 @@ final class SyncView: UIView {
                 let snapshot = SyncingActivityMonitor.shared.snapshot
                 switch snapshot.kind {
                 case .headers, .filterHeaders, .filters:
-                    descriptionLabel.text = String(localized: "header #\(snapshot.lastTerminalBlockHeight) of \(snapshot.estimatedBlockHeight)", comment: "")
+                    descriptionLabel.text = String(format: String(localized: "header #%d of %d", comment: ""), snapshot.lastTerminalBlockHeight, snapshot.estimatedBlockHeight)
                 case .masternodes:
-                    descriptionLabel.text = String(localized: "masternode list #\(snapshot.masternodeListsReceived) of \(snapshot.masternodeListsTotal)", comment: "")
+                    descriptionLabel.text = String(format: String(localized: "masternode list #%d of %d", comment: ""), snapshot.masternodeListsReceived, snapshot.masternodeListsTotal)
                 default:
-                    descriptionLabel.text = String(localized: "block #\(snapshot.lastSyncBlockHeight) of \(snapshot.estimatedBlockHeight)", comment: "")
+                    descriptionLabel.text = String(format: String(localized: "block #%d of %d", comment: ""), snapshot.lastSyncBlockHeight, snapshot.estimatedBlockHeight)
                 }
             }
             else {

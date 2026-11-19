@@ -56,7 +56,7 @@
       "%@ (payout address)"
     ],
     "%@ Addresses (%d)": [
-      "%@ Addresses (%lld)"
+      "%@ Addresses (%d)"
     ],
     "%@ DASH": [
       "%@ DASH"
@@ -854,7 +854,7 @@
       "Block"
     ],
     "Block #%d of %d": [
-      "Block #%u of %u"
+      "Block #%d of %d"
     ],
     "Block %@": [
       "Block %@"
@@ -1307,7 +1307,7 @@
       "Contact Request Pending"
     ],
     "Contact Requests (%d)": [
-      "Contact Requests (%lld)"
+      "Contact Requests (%d)"
     ],
     "Contact Support": [
       "Contact Support"
@@ -1616,7 +1616,7 @@
       "Credit Card"
     ],
     "Credit output %d": [
-      "Credit output %lld"
+      "Credit output %d"
     ],
     "Credit outputs": [
       "Credit outputs"
@@ -2708,16 +2708,16 @@
       "Initializing"
     ],
     "Input %d": [
-      "Input %lld"
+      "Input %d"
     ],
     "Input %d — outpoint": [
-      "Input %lld — outpoint"
+      "Input %d — outpoint"
     ],
     "Inputs": [
       "Inputs"
     ],
     "Inputs (%d)": [
-      "Inputs (%lld)"
+      "Inputs (%d)"
     ],
     "Inputs hash": [
       "Inputs hash"
@@ -3638,7 +3638,7 @@
       "Nodes"
     ],
     "Nodes, epoch day %d, %@ blocks proposed this epoch": [
-      "Nodes, epoch day %lld, %@ blocks proposed this epoch"
+      "Nodes, epoch day %d, %@ blocks proposed this epoch"
     ],
     "Non-standard": [
       "Non-standard"
@@ -3890,10 +3890,10 @@
       "Outpoint"
     ],
     "Output %d": [
-      "Output %lld"
+      "Output %d"
     ],
     "Outputs (%d)": [
-      "Outputs (%lld)"
+      "Outputs (%d)"
     ],
     "Owned by you": [
       "Owned by you"
@@ -7838,7 +7838,7 @@
       "behind"
     ],
     "block #%d of %d": [
-      "block #%u of %u"
+      "block #%d of %d"
     ],
     "by default all transactions to or from your linked accounts (exchanges, staking, etc) will be marked as a transfer.": [
       "by default all transactions to or from your linked accounts (exchanges, staking, etc) will be marked as a transfer."
@@ -7862,7 +7862,7 @@
       "from your Coinbase account"
     ],
     "header #%d of %d": [
-      "header #%u of %u"
+      "header #%d of %d"
     ],
     "iOS Dash Wallet: %@ Reported issue": [
       "iOS Dash Wallet: %@ Reported issue"
@@ -7874,7 +7874,7 @@
       "joining closed"
     ],
     "masternode list #%d of %d": [
-      "masternode list #%u of %u"
+      "masternode list #%d of %d"
     ],
     "oAuth failed": [
       "oAuth failed"

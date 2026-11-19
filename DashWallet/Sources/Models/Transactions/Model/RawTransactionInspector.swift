@@ -396,7 +396,7 @@ enum RawTransactionInspector {
                     let destination = ScriptAddressCodec.address(forScript: output.script, network: network)
                         ?? output.script.map { String(format: "%02x", $0) }.joined()
                     fields.append(.init(
-                        label: String(localized: "Credit output \(i)", comment: "Raw transaction"),
+                        label: String(format: String(localized: "Credit output %d", comment: "Raw transaction"), i),
                         value: "\(output.valueDuffs.formattedDashAmountWithoutCurrencySymbol) → \(destination)"))
                 }
             }

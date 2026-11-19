@@ -192,7 +192,7 @@ struct WalletAccountDetailScreen: View {
 
     private func addressListCard(_ section: AccountAddressSection, isPlatform: Bool) -> some View {
         card(
-            title: String(localized: "\(section.name) Addresses (\(section.items.count))", comment: "Wallet accounts — pool name + count"),
+            title: String(format: String(localized: "%@ Addresses (%d)", comment: "Wallet accounts — pool name + count"), section.name, section.items.count),
             systemImage: Self.poolIcon(for: section.name)
         ) {
             ForEach(Array(section.items.enumerated()), id: \.element.id) { idx, item in

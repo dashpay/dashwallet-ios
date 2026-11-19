@@ -204,7 +204,7 @@ struct SyncingAlertView: View {
             if viewModel.snapshot.phases.isEmpty {
                 // No per-phase detail from the SDK yet — single-line
                 // fallback from the snapshot's headline numbers.
-                Text(String(localized: "block #\(viewModel.snapshot.lastSyncBlockHeight) of \(viewModel.snapshot.estimatedBlockHeight)", comment: ""))
+                Text(String(format: String(localized: "block #%d of %d", comment: ""), viewModel.snapshot.lastSyncBlockHeight, viewModel.snapshot.estimatedBlockHeight))
                     .font(.footnote)
                     .foregroundColor(.dash.secondaryText)
             } else {

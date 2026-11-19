@@ -389,7 +389,7 @@ struct TrackedMasternodeDetailScreen: View {
             if viewModel.record.hasRegistration {
                 MasternodeDetailRow(
                     label: String(localized: "Registered at", comment: "Masternodes"),
-                    value: String(localized: "Height \(viewModel.record.registrationHeight)", comment: "Masternodes"))
+                    value: String(format: String(localized: "Height %u", comment: "Masternodes"), viewModel.record.registrationHeight))
             }
             if let collateral = viewModel.record.collateralDisplay {
                 MasternodeCopyRow(label: String(localized: "Outpoint", comment: "Masternodes"), value: collateral)

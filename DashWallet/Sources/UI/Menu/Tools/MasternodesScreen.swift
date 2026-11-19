@@ -621,7 +621,8 @@ struct MasternodeDetailScreen: View {
                 MasternodeDetailRow(
                     label: String(localized: "Registered at", comment: "Masternodes"),
                     value: masternode.hasRegistration
-                        ? String(localized: "Height \(masternode.registrationHeight)", comment: "Masternodes")
+                        ? String(format: String(localized: "Height %u", comment: "Masternodes"),
+                                 masternode.registrationHeight)
                         : String(localized: "Not in wallet history", comment: "Masternodes"))
                 MasternodeDetailRow(
                     label: String(localized: "Provider transactions", comment: "Masternodes"),
