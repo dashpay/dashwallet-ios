@@ -108,6 +108,26 @@ final class PluralFidelityTests: XCTestCase {
         }
     }
 
+    /// The two Baseline defects: `ja` and `tr` took `%d merchant(s) in %@` with unnumbered codes in
+    /// swapped order, so the Baseline formatted undefined text. The Catalog numbers the codes, so the
+    /// count and the place both show (spec AC-01, the Baseline-defect exception).
+    func testTheFixedJapaneseAndTurkishMerchantCountShowTheCountAndThePlace() throws {
+        let key = "%d merchant(s) in %@"
+        // locale → [count: expected text]
+        let cases: [String: [Int: String]] = [
+            "ja": [5: "2 km で 5 の加盟店"],
+            "tr": [1: "2 km içinde 1 tüccarlar", 5: "2 km içinde 5 satıcılar"],
+        ]
+        for (locale, expected) in cases {
+            let bundle = try localization(locale)
+            let template = bundle.localizedString(forKey: key, value: nil, table: "Localizable")
+            for (count, text) in expected {
+                let actual = String(format: template, locale: Locale(identifier: locale), arguments: [count, "2 km"])
+                XCTAssertEqual(actual, text, "\(locale), count \(count)")
+            }
+        }
+    }
+
     // MARK: Helpers
 
     private func format(_ phrase: Phrase, arguments: [Argument], in bundle: Bundle, locale: String) throws -> String {
