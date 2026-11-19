@@ -67,7 +67,7 @@ final class PaymentProtocolTransport: PaymentProtocolTransporting {
             return paymentRequest
         case "text/uri-list" where followURIList:
             // BIP73: the body is a list of URLs; fetch the first non-comment one once.
-            guard let next = Self.firstURL(inURIList: data), !Self.isDowngrade(from: url, to: next) else {
+            guard let next = Self.firstURL(inURIList: data) else {
                 throw BIP70Error.unexpectedResponse(host: url.host)
             }
             return try await fetchRequest(from: next, scheme: scheme, followURIList: false)
@@ -108,8 +108,8 @@ final class PaymentProtocolTransport: PaymentProtocolTransporting {
                 throw BIP70Error.unexpectedResponse(host: host)
             }
             // A redirect may not leave https: the body is never read from a cleartext hop.
-            if let requested = request.url, let served = http.url, Self.isDowngrade(from: requested, to: served) {
-                throw BIP70Error.unexpectedResponse(host: host)
+            if requiresHTTPS, !Self.isHTTPS(http.url) {
+                throw BIP70Error.insecureTransport
             }
             guard http.expectedContentLength <= Int64(Self.maxPayloadBytes) else {
                 throw BIP70Error.payloadTooLarge
@@ -128,10 +128,6 @@ final class PaymentProtocolTransport: PaymentProtocolTransporting {
 
     static func isHTTPS(_ url: URL?) -> Bool {
         url?.scheme?.lowercased() == "https"
-    }
-
-    private static func isDowngrade(from url: URL, to next: URL) -> Bool {
-        url.scheme?.lowercased() == "https" && next.scheme?.lowercased() != "https"
     }
 
     private static func firstURL(inURIList data: Data) -> URL? {
