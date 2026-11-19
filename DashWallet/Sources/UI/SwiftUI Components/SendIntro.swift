@@ -59,10 +59,10 @@ struct SendIntro<Content: View>: View {
                     }
 
                     if balanceHidden {
-                        Text("***********").font(.subheadline)
+                        Text(verbatim: "***********").font(.subheadline)
                     } else {
                         DashAmount(amount: Int64(dashBalance), font: .subheadline, showDirection: false)
-                        Text("~").font(.subheadline)
+                        Text(verbatim: "~").font(.subheadline)
                         FormattedFiatText(from: dashBalance)
                     }
                     

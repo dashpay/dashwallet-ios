@@ -320,7 +320,7 @@ struct MasternodesScreen: View {
 
                                 Spacer()
 
-                                Text("\(viewModel.retiredMasternodes.count)")
+                                Text(verbatim: "\(viewModel.retiredMasternodes.count.formatted())")
                                     .font(.caption)
                                     .foregroundColor(Color.dash.secondaryText)
                             }

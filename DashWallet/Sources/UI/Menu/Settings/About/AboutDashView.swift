@@ -96,7 +96,7 @@ struct AboutDashView: View {
         }
         .background(Color.dash.primaryBackground)
         .alert(
-            "",
+            "" as String,
             isPresented: Binding(
                 get: { viewModel.techInfo != nil },
                 set: { if !$0 { viewModel.techInfo = nil } }

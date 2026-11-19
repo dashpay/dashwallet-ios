@@ -105,7 +105,7 @@ struct WalletsScreen: View {
                                     Button {
                                         recoveryPhraseFlow.copyWalletMnemonic(walletId: row.walletId)
                                     } label: {
-                                        Label("Copy Seed (Debug)", systemImage: "doc.on.doc")
+                                        Label("Copy Seed (Debug)" as String, systemImage: "doc.on.doc")
                                     }
                                     #endif
                                     Button(role: .destructive) {
@@ -312,7 +312,7 @@ private struct WalletRowView: View {
                     .foregroundColor(.dash.primaryText)
                     .lineLimit(1)
                 if let username = row.username {
-                    Text("@\(username)")
+                    Text(verbatim: "@\(username)")
                         .font(.system(size: 13))
                         .foregroundColor(.dash.blue)
                         .lineLimit(1)
@@ -354,7 +354,7 @@ private struct WalletRowView: View {
                 Button {
                     onCopySeed()
                 } label: {
-                    Label("Copy Seed (Debug)", systemImage: "doc.on.doc")
+                    Label("Copy Seed (Debug)" as String, systemImage: "doc.on.doc")
                 }
                 #endif
                 Button(role: .destructive) {
@@ -675,7 +675,7 @@ private struct CreateWalletView: View {
         ) {
             ForEach(Array(words.enumerated()), id: \.offset) { index, word in
                 HStack(spacing: 8) {
-                    Text("\(index + 1)")
+                    Text(verbatim: "\((index + 1).formatted())")
                         .font(.system(size: 13, design: .monospaced))
                         .foregroundColor(.dash.secondaryText)
                         .frame(width: 22, alignment: .trailing)

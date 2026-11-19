@@ -175,7 +175,7 @@ struct PlatformSyncStatusScreen: View {
                     .truncationMode(.middle)
                     .foregroundColor(.dash.primaryText)
                 HStack(spacing: 6) {
-                    Text("#\(addr.accountIndex)/\(addr.addressIndex)")
+                    Text(verbatim: "#\(addr.accountIndex.formatted())/\(addr.addressIndex.formatted())")
                     if addr.isUsed {
                         // Bullet stays outside the translatable unit, matching the
                         // sibling "• \(balance)" row — translators drop stray glyphs.
@@ -184,7 +184,7 @@ struct PlatformSyncStatusScreen: View {
                             comment: "Sync diagnostics - marks a derived address that has already been used"))
                     }
                     if addr.balance > 0 {
-                        Text("• \(PlatformCreditsFormatter.dashString(addr.balance))")
+                        Text(verbatim: "• \(PlatformCreditsFormatter.dashString(addr.balance))")
                     }
                 }
                 .font(.caption2)
@@ -366,7 +366,7 @@ struct PlatformSyncStatusScreen: View {
 
     private func queryBadge(label: String, count: UInt32, detail: UInt32?, color: Color) -> some View {
         VStack(spacing: 2) {
-            Text("\(count)")
+            Text(verbatim: "\(count.formatted())")
                 .font(.system(size: 16, weight: .bold))
                 .foregroundColor(color)
                 .monospacedDigit()
@@ -374,7 +374,7 @@ struct PlatformSyncStatusScreen: View {
                 .font(.system(size: 11, weight: .medium))
                 .foregroundColor(Color.dash.secondaryText)
             if let detail {
-                Text("\(detail)")
+                Text(verbatim: "\(detail.formatted())")
                     .font(.system(size: 10))
                     .foregroundColor(.secondary.opacity(0.7))
                     .monospacedDigit()

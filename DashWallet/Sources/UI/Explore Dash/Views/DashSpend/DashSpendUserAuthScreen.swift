@@ -83,7 +83,7 @@ struct DashSpendUserAuthScreen: View {
                     }
                 },
                 central: {
-                    Text("DashSpend")
+                    Text(verbatim: "DashSpend")
                         .dashFont(.subheadMedium)
                         .foregroundColor(.dash.primaryText)
                 })

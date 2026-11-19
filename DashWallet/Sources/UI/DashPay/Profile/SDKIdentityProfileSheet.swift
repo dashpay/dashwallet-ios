@@ -847,7 +847,7 @@ struct IdentityTopUpSheet: View {
                             customFieldFocused = false
                         } content: {
                             VStack(spacing: 2) {
-                                Text("\(duffs.dashAmount.formattedDashAmountWithoutCurrencySymbol)")
+                                Text(verbatim: "\(duffs.dashAmount.formattedDashAmountWithoutCurrencySymbol)")
                                     .font(.system(size: 15, weight: .semibold))
                                 Text(CurrencyExchanger.shared.fiatAmountString(for: duffs.dashAmount))
                                     .font(.system(size: 11))
@@ -1066,9 +1066,9 @@ final class DWUsernameRecoveryUITestFixture: NSObject {
             })
             .overlay(alignment: .bottom) {
                 HStack {
-                    Button("Load identity fixture") { loading = false }
+                    Button("Load identity fixture" as String) { loading = false }
                         .accessibilityIdentifier("loadIdentityFixture")
-                    Button("Switch identity fixture") {
+                    Button("Switch identity fixture" as String) {
                         loading = true
                         NotificationCenter.default.post(name: .DWCurrentNetworkDidChange, object: nil)
                     }

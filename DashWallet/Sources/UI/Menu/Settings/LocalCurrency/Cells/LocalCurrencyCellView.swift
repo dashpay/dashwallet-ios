@@ -107,7 +107,7 @@ struct LocalCurrencyCellView: View {
         let ranges = LocalCurrencyViewModel.matchRanges(of: query, in: text)
         guard !ranges.isEmpty else { return Text(text) }
 
-        var result = Text("")
+        var result = Text(verbatim: "")
         var cursor = text.startIndex
         for range in ranges {
             result = result + Text(text[cursor..<range.lowerBound])

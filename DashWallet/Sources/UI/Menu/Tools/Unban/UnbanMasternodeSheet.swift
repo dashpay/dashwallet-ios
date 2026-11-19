@@ -74,7 +74,7 @@ struct UnbanMasternodeSheet: View {
 
     private var p2pPortSection: some View {
         Section {
-            TextField("26656", text: $viewModel.p2pPortText)
+            TextField("26656" as String, text: $viewModel.p2pPortText)
                 .keyboardType(.numberPad)
         } header: {
             Text(NSLocalizedString("Platform P2P port", comment: "Masternode unban"))

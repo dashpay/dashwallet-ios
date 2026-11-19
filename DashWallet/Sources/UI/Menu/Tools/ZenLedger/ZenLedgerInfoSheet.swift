@@ -59,7 +59,7 @@ struct ZenLedgerInfoSheet: View {
                         safariLink = "https://app.zenledger.io/new_sign_up/"
                         presentationMode.wrappedValue.dismiss()
                     }) {
-                        Text("zenledger.io")
+                        Text(verbatim: "zenledger.io")
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundColor(.blue)
                     }

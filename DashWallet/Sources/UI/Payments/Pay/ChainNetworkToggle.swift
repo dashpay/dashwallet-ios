@@ -56,7 +56,7 @@ struct ChainNetworkToggle: View {
     var options: [ChainNetwork] = [.core, .platform]
 
     var body: some View {
-        Picker("", selection: $selection) {
+        Picker("" as String, selection: $selection) {
             ForEach(options) { network in
                 Text(network.title).tag(network)
             }

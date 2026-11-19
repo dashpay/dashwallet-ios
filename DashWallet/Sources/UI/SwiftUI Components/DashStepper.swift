@@ -37,7 +37,7 @@ struct DashStepper: View {
                 if count > 0 { count -= 1 }
             }
 
-            Text("\(count)")
+            Text(verbatim: "\(count.formatted())")
                 .font(.headline.weight(.semibold))
                 .foregroundColor(.dash.primaryText)
                 .frame(width: 30)
@@ -81,7 +81,7 @@ struct DashStepper: View {
             .padding(4)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(accessibilityLabel)
-            .accessibilityValue(Text("\(count)"))
+            .accessibilityValue(Text(verbatim: "\(count.formatted())"))
             .accessibilityHint(
                 Text(
                     enabled

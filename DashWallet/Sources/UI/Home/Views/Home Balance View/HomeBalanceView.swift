@@ -128,7 +128,7 @@ struct HomeBalanceView: View {
                                     .foregroundColor(.white.opacity(0.7))
                             }
                         } else {
-                            Text("—")
+                            Text(verbatim: "—")
                                 .font(.largeTitle)
                                 .foregroundColor(Color.dash.whiteText)
                             Text(NSLocalizedString("Balance unavailable", comment: "Balance not restored"))
@@ -309,7 +309,7 @@ struct HomeBalanceView: View {
                     DashAmount(amount: Int64(duffs), font: .footnote, dashSymbolFactor: 0.8, showDirection: false)
                         .foregroundColor(Color.dash.whiteText)
                 } else {
-                    Text("—").foregroundColor(Color.dash.whiteText)
+                    Text(verbatim: "—").foregroundColor(Color.dash.whiteText)
                 }
             }
             .contentShape(Rectangle())

@@ -484,7 +484,7 @@ struct UsernameMarketplaceScreen: View {
             .padding(.top, 10)
             .padding(.bottom, 12)
 
-            Picker("", selection: $viewModel.segment) {
+            Picker("" as String, selection: $viewModel.segment) {
                 ForEach(UsernameMarketplaceViewModel.Segment.allCases, id: \.self) { segment in
                     Text(segment.title).tag(segment)
                 }
@@ -611,7 +611,7 @@ struct UsernameMarketplaceScreen: View {
     /// the name's LIVE state, so a stale listing can't read as an offer.
     private var browseSection: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Picker("", selection: $viewModel.browseFeed) {
+            Picker("" as String, selection: $viewModel.browseFeed) {
                 ForEach(UsernameMarketplaceViewModel.BrowseFeed.allCases, id: \.self) { feed in
                     Text(feed.title).tag(feed)
                 }

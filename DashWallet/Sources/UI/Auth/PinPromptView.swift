@@ -266,7 +266,7 @@ struct PinPromptView: View {
             // pod's pinField.becomeFirstResponder did. `.id(fieldGeneration)`
             // recreates it empty after each rejected entry — see
             // `fieldGeneration` for why a programmatic clear isn't enough.
-            TextField("", text: Binding(
+            TextField("" as String, text: Binding(
                 get: { viewModel.enteredPin },
                 set: { viewModel.inputChanged($0) }))
                 .keyboardType(.numberPad)

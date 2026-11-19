@@ -31,7 +31,7 @@ struct TransferPreview: View {
                 .font(.system(size: 12))
                 .foregroundColor(Color.dash.secondaryText)
             HStack(spacing: 4) {
-                Text("~ \(amountFormatted)")
+                Text(verbatim: "~ \(amountFormatted)")
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
                 Image("icon_dash_currency")

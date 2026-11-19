@@ -302,7 +302,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
                     .font(.system(size: 13))
                     .foregroundColor(.dash.primaryText)
                 Spacer()
-                Text(walletBirthHeight.map { "\($0)" } ?? "—")
+                Text(verbatim: walletBirthHeight.map { $0.formatted() } ?? "—")
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
                     .monospacedDigit()
@@ -329,7 +329,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
                 Spacer()
-                Text("\(coordinator.connectedPeers.count)")
+                Text(verbatim: "\(coordinator.connectedPeers.count.formatted())")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
                     .monospacedDigit()
@@ -646,7 +646,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
                         SwiftUI.ProgressView()
                             .controlSize(.small)
                     }
-                    Text(coordinator.isRestarting ? "Restarting…" : "Restart")
+                    Text(verbatim: coordinator.isRestarting ? "Restarting…" : "Restart")
                         .font(.system(size: 14, weight: .semibold))
                 }
                 .frame(maxWidth: .infinity)

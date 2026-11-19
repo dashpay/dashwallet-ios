@@ -102,7 +102,7 @@ struct WalletAccountDetailScreen: View {
                     .fontWeight(.bold)
                     .foregroundColor(.dash.primaryText)
                 if let detail = viewModel.detail, detail.showsBalance {
-                    Text("#\(detail.accountIndex)")
+                    Text(verbatim: "#\(detail.accountIndex.formatted())")
                         .font(.subheadline)
                         .foregroundColor(.dash.secondaryText)
                 }
@@ -215,13 +215,13 @@ struct WalletAccountDetailScreen: View {
                     .truncationMode(.middle)
                     .foregroundColor(.dash.primaryText)
                 HStack(spacing: 6) {
-                    Text("#\(item.index)")
+                    Text(verbatim: "#\(item.index.formatted())")
                     if item.isUsed {
                         Text("• " + NSLocalizedString("used", comment: "Wallet accounts — address flag"))
                     }
                     if item.balance > 0 {
-                        Text(isPlatform
-                            ? "• \(item.balance) credits"
+                        Text(verbatim: isPlatform
+                            ? "• \(item.balance.formatted()) credits"
                             : "• \(item.balance.formattedDashAmount)")
                     }
                 }

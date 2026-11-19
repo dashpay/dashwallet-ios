@@ -194,7 +194,7 @@ private struct DashSpendConfirmationDialogPreview: View {
 
     var body: some View {
         VStack {
-            Text("Tap to open")
+            Text(verbatim: "Tap to open")
                 .onTapGesture { isPresented = true }
         }
         .sheet(isPresented: $isPresented) {

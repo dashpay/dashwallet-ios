@@ -849,10 +849,10 @@ private struct SendContactIntro: View {
                     Text(NSLocalizedString("Balance:", comment: "Send screen: the funding balance"))
 
                     if balanceHidden {
-                        Text("***********")
+                        Text(verbatim: "***********")
                     } else {
                         DashAmount(amount: Int64(balanceDuffs), font: .subheadline, showDirection: false)
-                        Text("~").font(.subheadline)
+                        Text(verbatim: "~").font(.subheadline)
                         fiatText
                     }
 
@@ -1288,7 +1288,7 @@ struct SendConfirmSheet: View {
         VStack(spacing: 0) {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 if isCoreDrain {
-                    Text("≈")
+                    Text(verbatim: "≈")
                         .font(.largeTitle)
                         .foregroundColor(.dash.primaryText)
                 }
