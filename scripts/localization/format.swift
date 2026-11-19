@@ -31,7 +31,8 @@ func lookup(_ locale: String, _ key: String) -> String {
 // Sample arguments from the format codes of `format`: one distinct value per position.
 func inferArgs(_ format: String) -> [Any] {
     // %[n$][flags][width][.precision][length]conversion; %% and %#@var@ are not arguments.
-    let pattern = "%(?:(\\d+)\\$)?[-+ 0#']*(?:\\d+|\\*)?(?:\\.\\d+)?(hh|h|ll|l|q|z|t|j|L)?([@dDiuUfFeEgGxXoOcCsSp])"
+    // No space flag: "100% sure" is prose.
+    let pattern = "%(?:(\\d+)\\$)?[-+0#']*(?:\\d+|\\*)?(?:\\.\\d+)?(hh|h|ll|l|q|z|t|j|L)?([@dDiuUfFeEgGxXoOcCsSp])"
     guard let regex = try? NSRegularExpression(pattern: pattern) else { return [] }
     let ns = format as NSString
     var sequential = 0
@@ -85,6 +86,7 @@ while let line = readLine(strippingNewline: true) {
     let args = (request["args"] as? [Any]) ?? inferArgs(lookup("en", key))
     let format = lookup(locale, key)
     let formatLocale = wrongRoute ? Locale.current : Locale(identifier: locale)
-    let text = String(format: format, locale: formatLocale, arguments: cVarArgs(args))
+    // No arguments: the table text goes out raw, so a bare % is not read as a format code.
+    let text = args.isEmpty ? format : String(format: format, locale: formatLocale, arguments: cVarArgs(args))
     emit(["locale": locale, "key": key, "args": jsonValue(args), "text": text])
 }

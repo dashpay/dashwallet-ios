@@ -18,6 +18,9 @@ format_texts(lproj_root, requests) -> list[FormatResult]
   returns     one FormatResult per request, in order: a dict
               {"locale", "key", "args", "text"}; `args` are the samples used.
               A key absent in the locale's table gives text == key.
+              A request with no arguments (none given, none inferred) returns the
+              table text raw. A request that crashes the formatter yields CRASH_SENTINEL;
+              the rest of the batch is formatted normally.
 
 Every request is formatted with String(format:locale:arguments:) under its own
 locale in one process; the process locale never decides plural rules.
@@ -41,6 +44,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 FORMAT_SOURCE = os.path.join(HERE, "format.swift")
 FORCE_ROUTE_ENV = "FORMATTER_FORCE_ROUTE"
 WRONG_ROUTE = "localizedStringWithFormat"
+
+
+# Text of a request whose formatting crashes the formatter process.
+CRASH_SENTINEL = "\u27c2format-crash"
 
 
 class FormatError(Exception):
@@ -68,15 +75,25 @@ def _binary():
 def format_texts(lproj_root, requests):
     lines = [json.dumps({"locale": loc, "key": key, "args": args}, ensure_ascii=False)
              for loc, key, args in requests]
-    if not lines:
-        return []
-    res = subprocess.run([_binary(), lproj_root], input="\n".join(lines) + "\n",
-                         capture_output=True, text=True, encoding="utf-8")
-    if res.returncode != 0:
-        raise FormatError("format failed (%d): %s" % (res.returncode, res.stderr.strip()))
-    results = [json.loads(line) for line in res.stdout.splitlines() if line]
-    if len(results) != len(lines):
-        raise FormatError("format returned %d results for %d requests" % (len(results), len(lines)))
+    results = []
+    binary = None
+    while len(results) < len(lines):
+        binary = binary or _binary()
+        rest = lines[len(results):]
+        res = subprocess.run([binary, lproj_root], input="\n".join(rest) + "\n",
+                             capture_output=True, text=True, encoding="utf-8")
+        done = [json.loads(line) for line in res.stdout.splitlines() if line]
+        results += done
+        if res.returncode == 0:
+            if len(done) != len(rest):
+                raise FormatError("format returned %d results for %d requests" % (len(done), len(rest)))
+        elif res.returncode < 0 and len(done) < len(rest):
+            # Killed by a signal: the request after the last printed result crashed it.
+            req = json.loads(rest[len(done)])
+            results.append({"locale": req["locale"], "key": req["key"], "args": req["args"],
+                            "text": CRASH_SENTINEL})
+        else:
+            raise FormatError("format failed (%d): %s" % (res.returncode, res.stderr.strip()))
     return results
 
 
