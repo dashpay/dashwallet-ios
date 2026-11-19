@@ -107,6 +107,9 @@ class ZeroLossCase(unittest.TestCase):
         self.install_catalog()
         self.derived = os.path.join(self.tmp, "derived")
         self.install_stringsdata()
+        # the compiler data of a build of the Baseline commit, rooted at some other checkout
+        self.baseline_derived = os.path.join(self.tmp, "baseline-derived")
+        shutil.copytree(os.path.join(FIXTURES, "baseline_stringsdata"), self.baseline_derived)
 
     # -- repository helpers -------------------------------------------------------------
 
@@ -167,6 +170,9 @@ class ZeroLossCase(unittest.TestCase):
         cmd = [sys.executable, CLI] + list(args)
         if derived and "--derived-data" not in args and "--release" not in args:
             cmd += ["--derived-data", self.derived]
+        # pre-merge needs the Baseline build's compiler data too (owner decision 2026-11-19)
+        if derived and "--baseline-derived-data" not in args and "--release" not in args:
+            cmd += ["--baseline-derived-data", self.baseline_derived]
         full_env = dict(os.environ if env is None else env)
         full_env.update(extra_env or {})
         return subprocess.run(cmd, cwd=cwd or self.repo, capture_output=True, text=True,
@@ -549,6 +555,30 @@ class CannotRunTests(ZeroLossCase):
                 res = self.run_cli("--release", *flags)
                 self.assertEqual(res.returncode, 2, res.stdout + res.stderr)
                 self.assertEqual(res.stdout, "")
+
+
+class BaselineDerivedDataFlagTests(ZeroLossCase):
+    def test_pre_merge_without_the_flag_cannot_run_and_names_flag_and_script(self):
+        res = self.run_cli("--write-key-map", "--derived-data", self.derived, derived=False)
+        self.assert_cannot_run(res, "--baseline-derived-data")
+        self.assertIn("build_baseline.sh", res.stderr)
+        self.assertFalse(os.path.exists(os.path.join(self.repo, KEY_MAP)))
+
+    def test_release_refuses_the_flag(self):
+        res = self.run_cli("--release", "--baseline-derived-data", self.baseline_derived)
+        self.assert_cannot_run(res, "--baseline-derived-data", "release")
+
+    def test_baseline_swiftui_places_come_from_the_given_dir_not_from_lightweight_extraction(self):
+        # a dir with compiler data of Greeting.swift only: Baseline Send.swift keeps its two
+        # NSLocalizedString places but has no SwiftUI place, against three current places
+        only = os.path.join(self.tmp, "baseline-no-send")
+        os.makedirs(only)
+        with open(os.path.join(only, "Greeting.stringsdata"), "w", encoding="utf-8") as f:
+            json.dump({"source": "/Users/ci/baseline-checkout/" + GREETING, "version": 1,
+                       "tables": {"Localizable": []}}, f)
+        res = self.run_cli("--baseline-derived-data", only)
+        self.assertEqual(res.returncode, 1, res.stdout + res.stderr)
+        self.assertIn("FAIL file-places %s baseline=2 current=3" % SEND, res.stdout)
 
 
 class OfflineTests(unittest.TestCase):
