@@ -67214,6 +67214,7 @@
       }
     },
     "Amount too low" : {
+      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
