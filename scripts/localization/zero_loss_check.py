@@ -23,7 +23,7 @@ sys.path.insert(0, HERE)
 
 import catalog_io  # noqa: E402
 import foundation_format  # noqa: E402
-import generate_catalog  # noqa: E402
+import baseline_lists  # noqa: E402
 import places  # noqa: E402
 
 CATALOG = "DashWallet/Localizable.xcstrings"
@@ -114,7 +114,7 @@ def counted_specs(repo, rev, locales):
     """{key: .stringsdict spec} of the counted phrases at the Baseline (English spec preferred)."""
     specs = {}
     for locale in sorted(locales, key=lambda l: (l != "en", l)):
-        path = "%s/%s.lproj/Localizable.stringsdict" % (generate_catalog.LISTS_DIR, locale)
+        path = "%s/%s.lproj/Localizable.stringsdict" % (baseline_lists.LISTS_DIR, locale)
         res = git(repo, "show", "%s:%s" % (rev, path))
         if res.returncode != 0:
             continue
@@ -245,7 +245,7 @@ def compare_wording(repo, rev, pairs, base_catalog, locales):
     with tempfile.TemporaryDirectory(prefix="zero-loss-") as tmp:
         base_root = os.path.join(tmp, "baseline")
         os.makedirs(base_root)
-        tar = git(repo, "archive", rev, generate_catalog.LISTS_DIR).stdout
+        tar = git(repo, "archive", rev, baseline_lists.LISTS_DIR).stdout
         subprocess.run(["tar", "-x", "-C", base_root], input=tar, check=True)
         cur_root = os.path.join(tmp, "current")
         os.makedirs(cur_root)
@@ -256,7 +256,7 @@ def compare_wording(repo, rev, pairs, base_catalog, locales):
             for n in (COUNTS if spec is not None else (None,)):
                 base_reqs.append((locale, b, None if n is None else counted_args(spec, n)))
                 cur_keys.append(c)
-        base_out = foundation_format.format_texts(os.path.join(base_root, generate_catalog.LISTS_DIR), base_reqs)
+        base_out = foundation_format.format_texts(os.path.join(base_root, baseline_lists.LISTS_DIR), base_reqs)
         # the current side is formatted with the very arguments the Baseline side used
         cur_out = foundation_format.format_texts(
             cur_root, [(r[0], key, o["args"]) for r, key, o in zip(base_reqs, cur_keys, base_out)])
@@ -429,8 +429,8 @@ def check_release(args):
     if not os.path.isfile(catalog_path):
         raise CannotRun("no Catalog at %s" % CATALOG)
     cur_strings = catalog_io.read_catalog(catalog_path)["strings"]
-    base_catalog = generate_catalog.build_catalog(repo, baseline)
-    locales = sorted(generate_catalog.locale_files(repo, baseline))
+    base_catalog = baseline_lists.build_catalog(repo, baseline)
+    locales = sorted(baseline_lists.locale_files(repo, baseline))
 
     rows, wording, defects = release_wording_check(repo, baseline, key_map, base_catalog, locales)
     missing, _ = key_set_check(base_catalog["strings"], cur_strings, {k: set(v) for k, v in key_map.items()})
@@ -455,8 +455,8 @@ def check(args):
     if not os.path.isfile(catalog_path):
         raise CannotRun("no Catalog at %s" % CATALOG)
     cur_strings = catalog_io.read_catalog(catalog_path)["strings"]
-    base_catalog = generate_catalog.build_catalog(repo, baseline)
-    locales = sorted(generate_catalog.locale_files(repo, baseline))
+    base_catalog = baseline_lists.build_catalog(repo, baseline)
+    locales = sorted(baseline_lists.locale_files(repo, baseline))
 
     pairs, mismatched = places.pair(places.baseline_places(repo, baseline, args.baseline_derived_data), places.current_places(repo, derived))
     findings = [("file-places", (f,), "FAIL file-places %s baseline=%d current=%d" % (f, b, c))
@@ -508,7 +508,7 @@ def main(argv):
         return check(parse_args(argv))
     except CannotRun as e:
         message = str(e)
-    except (generate_catalog.GenerateError, catalog_io.CatalogIOError, foundation_format.FormatError,
+    except (baseline_lists.GenerateError, catalog_io.CatalogIOError, foundation_format.FormatError,
             subprocess.CalledProcessError, OSError, ValueError, KeyError) as e:
         message = "%s: %s" % (type(e).__name__, e)
     sys.stderr.write("error: %s\n" % " ".join(message.split()))

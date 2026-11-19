@@ -11,7 +11,7 @@ subprocess with its working directory at the root of a temporary git repository 
     for en/de/uk, Swift/Objective-C sources and two Watch files, from fixtures/zero_loss/repo/.
   * Move commit on branch `work`: Swift rewritten to String(localized:) (fixtures/zero_loss/current/),
     the per-locale lists removed. The Catalog is written into the working tree
-    (DashWallet/Localizable.xcstrings) from generate_catalog + the Moved keys `%lld coins` and
+    (DashWallet/Localizable.xcstrings) from baseline_lists + the Moved keys `%lld coins` and
     `Sample %lld items`; `Unused thing` and `English only` are Unused entries (extractionState stale).
   * Hand-made .stringsdata in the compiler's shape (fixtures/zero_loss/stringsdata/ok/).
 
@@ -40,7 +40,7 @@ sys.path.insert(0, LOCALIZATION_DIR)
 
 import catalog_io  # noqa: E402
 import foundation_format  # noqa: E402
-import generate_catalog  # noqa: E402
+import baseline_lists  # noqa: E402
 
 SEND = "DashWallet/Sources/Send.swift"
 GREETING = "DashWallet/Sources/Greeting.swift"
@@ -135,7 +135,7 @@ class ZeroLossCase(unittest.TestCase):
 
     def moved_catalog(self, rev):
         """Catalog generated from the lists at `rev`, with the Moved keys and the Unused entries."""
-        cat = generate_catalog.build_catalog(self.repo, rev)
+        cat = baseline_lists.build_catalog(self.repo, rev)
         strings = cat["strings"]
         for old, new in ((COINS_OLD, COINS_NEW), (ITEMS_OLD, ITEMS_NEW)):
             strings[new] = move_values(strings.pop(old))
@@ -348,7 +348,7 @@ class KeyMapTests(ZeroLossCase):
 class FindingTests(ZeroLossCase):
     def test_ac09_derived_key_changed_but_entry_did_not_move(self):
         # The code asks for "Sample %lld items"; the Catalog still holds "Sample %d items" only.
-        base = generate_catalog.build_catalog(self.repo, self.baseline)
+        base = baseline_lists.build_catalog(self.repo, self.baseline)
         del self.cat["strings"][ITEMS_NEW]
         self.cat["strings"][ITEMS_OLD] = base["strings"][ITEMS_OLD]
         self.install_catalog()

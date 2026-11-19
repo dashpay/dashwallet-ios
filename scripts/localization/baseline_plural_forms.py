@@ -26,7 +26,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
 import foundation_format  # noqa: E402
-import generate_catalog  # noqa: E402
+import baseline_lists  # noqa: E402
 import zero_loss_check as zl  # noqa: E402
 
 OUT = "DashWalletTests/Localization/BaselinePluralForms.json"
@@ -47,7 +47,7 @@ def compiled_locales(repo):
 
 
 def stringsdict(repo, rev, locale):
-    res = zl.git(repo, "show", "%s:%s/%s.lproj/Localizable.stringsdict" % (rev, generate_catalog.LISTS_DIR, locale))
+    res = zl.git(repo, "show", "%s:%s/%s.lproj/Localizable.stringsdict" % (rev, baseline_lists.LISTS_DIR, locale))
     return plistlib.loads(res.stdout) if res.returncode == 0 else {}
 
 
@@ -71,7 +71,7 @@ def main():
     locales = compiled_locales(repo)
     english = stringsdict(repo, rev, "en")
     specs = zl.counted_specs(repo, rev, locales)
-    base_strings = generate_catalog.build_catalog(repo, rev)["strings"]
+    base_strings = baseline_lists.build_catalog(repo, rev)["strings"]
 
     phrases, requests, defects = [], [], []
     for b in sorted(english):
@@ -85,9 +85,9 @@ def main():
             requests += [(locale, b, a) for locale in locales if locale not in broken for a in args]
 
     with tempfile.TemporaryDirectory(prefix="plural-forms-") as tmp:
-        tar = zl.git(repo, "archive", rev, generate_catalog.LISTS_DIR).stdout
+        tar = zl.git(repo, "archive", rev, baseline_lists.LISTS_DIR).stdout
         subprocess.run(["tar", "-x", "-C", tmp], input=tar, check=True)
-        out = foundation_format.format_texts(os.path.join(tmp, generate_catalog.LISTS_DIR), requests)
+        out = foundation_format.format_texts(os.path.join(tmp, baseline_lists.LISTS_DIR), requests)
 
     texts = iter(out)
     for phrase in phrases:
