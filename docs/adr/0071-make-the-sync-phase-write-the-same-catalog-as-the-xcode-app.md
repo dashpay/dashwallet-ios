@@ -2,7 +2,7 @@
 
 - **Status:** Proposed
 - **Date:** 2026-11-19
-- **Deciders:** Roman Chornyi (owner), with Claude during the T1 pilot
+- **Deciders:** Roman Chornyi (owner), with Claude during the toolchain pilot
 - **Refines:** [ADR-0068](0068-keep-the-catalog-in-step-with-xcodes-own-string-sync-in-every-build.md) (what the "Sync String Catalog" phase does); ADR-0068's choice of option 1 stands.
 
 ## Context

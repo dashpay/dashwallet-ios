@@ -2,7 +2,7 @@
 
 - **Status:** Proposed
 - **Date:** 2026-11-19
-- **Deciders:** Roman Chornyi (owner; chose the key map during `api`, 2026-11-19), recorded with Claude during `implement` (T8)
+- **Deciders:** Roman Chornyi (owner; chose the key map during `api`, 2026-11-19), recorded with Claude during `implement`
 - **Amends:** [ADR-0067](0067-prove-zero-loss-by-pairing-each-code-place-with-its-baseline-key.md) — for release runs only; the pre-merge check keeps pairing code places.
 
 ## Context

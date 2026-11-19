@@ -23,7 +23,7 @@ The main app's texts live in 43 `DashWallet/<lang>.lproj/Localizable.strings` + 
 
 ## Decision outcome
 
-**Chosen:** option 1, a repository script. It is the only option where a rebase costs one re-run, with no hand-carried changes (AC-18), and where the locale names and plural variants are under the script's control instead of depending on how Xcode's converter treats `zh_TW`, `sl_SI` and the 20 locales missing from `knownRegions` (untested, brief §6 ledger).
+**Chosen:** option 1, a repository script. It is the only option where a rebase costs one re-run, with no hand-carried changes (AC-18), and where the locale names and plural variants are under the script's control instead of depending on how Xcode's converter treats `zh_TW`, `sl_SI` and the 20 locales missing from `knownRegions` (untested).
 
 ## Consequences
 
