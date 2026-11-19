@@ -117,5 +117,5 @@ are legacy — qualify `DashUIKit.` where names clash.
 - **Validation:** inline on the field (`AddressFieldView` error state) or a `Criteria` checklist;
   the primary `DashButton` stays disabled until the input is valid.
 - **Sheets:** DashUIKit `BottomSheet` with grabber; actions sit in the bottom content area.
-- **Microcopy tone:** short, plain, sentence case; every string through `NSLocalizedString`;
+- **Microcopy tone:** short, plain, sentence case; every string through `String(localized:)` (Objective-C: `NSLocalizedString`), kept in `DashWallet/Localizable.xcstrings` (app text sync to the translation service is paused until the owner decides how the Catalog travels);
   icon-only controls carry an `accessibilityLabel` (`ACCESSIBILITY.md`).

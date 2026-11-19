@@ -170,7 +170,7 @@ value, a hint, and custom actions. Copy its shape.
 Button(action: onClose) {
     Icon(name: .custom("icon_close"))
 }
-.accessibilityLabel(Text(NSLocalizedString("Close", comment: "Accessibility")))
+.accessibilityLabel(Text(String(localized: "Close", comment: "Accessibility")))
 ```
 
 - A control with visible text needs nothing — VoiceOver reads the title.
@@ -180,5 +180,8 @@ Button(action: onClose) {
 - A composite row (icon + title + value + chevron) should be one element:
   `.accessibilityElement(children: .combine)`, or `.ignore` plus an explicit
   label.
-- Every label is a user-visible string: wrap it in `NSLocalizedString` and let it
-  reach Transifex, or it ships English-only across 43 locales.
+- Every label is a user-visible string: use `String(localized:)` (Objective-C:
+  `NSLocalizedString`) so it lands in `DashWallet/Localizable.xcstrings`, or it ships
+  English-only. The build's "Sync String Catalog" phase adds the entry; commit the
+  Catalog with the code. Translation sync pause: app texts are not pushed to or
+  pulled from the translation service until the owner decides how the Catalog travels.
