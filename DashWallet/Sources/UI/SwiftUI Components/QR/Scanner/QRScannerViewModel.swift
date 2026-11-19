@@ -56,6 +56,8 @@ final class QRScannerViewModel: ObservableObject {
 
     /// Mirrors the legacy scanner's resume delay after showing an error.
     private static let resumeDelay: Duration = .seconds(2.5)
+    /// How long a declined code is passed over while it is likely still in frame.
+    private static let declineCooldown: Duration = .seconds(2.5)
 
     let mode: QRScannerMode
     @Published private(set) var status: Status = .searching
@@ -68,6 +70,8 @@ final class QRScannerViewModel: ObservableObject {
     private var paused = false
     private var finished = false
     private var resumeTask: Task<Void, Never>?
+    private var currentValue: String?
+    private var declined: (value: String, until: ContinuousClock.Instant)?
     /// Keeps the in-flight coordinator alive until its completion fires.
     private var bip70Coordinator: BIP70InteractiveCoordinator?
 
@@ -96,6 +100,7 @@ final class QRScannerViewModel: ObservableObject {
     func cancel() {
         // A BIP70 fetch still in flight must not deliver after Cancel.
         finished = true
+        bip70Coordinator?.cancelFetch()
         bip70Coordinator = nil
         resumeTask?.cancel()
         onCancel?()
@@ -104,8 +109,12 @@ final class QRScannerViewModel: ObservableObject {
     // MARK: Detection
 
     func didDetectCodes(_ values: [String]) {
-        guard !paused, !finished, let value = preferredValue(in: values) else { return }
+        guard !paused, !finished else { return }
+        if let declined, ContinuousClock.now >= declined.until { self.declined = nil }
+        let candidates = values.filter { $0 != declined?.value }
+        guard let value = preferredValue(in: candidates) else { return }
         paused = true
+        currentValue = value
         process(value)
     }
 
@@ -359,6 +368,9 @@ final class QRScannerViewModel: ObservableObject {
 
     func declineOffer() {
         guard case .offer = status else { return }
+        if let currentValue {
+            declined = (currentValue, ContinuousClock.now + Self.declineCooldown)
+        }
         resumeSearch()
     }
 

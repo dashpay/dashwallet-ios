@@ -77,7 +77,7 @@ static NSString *DWReversedHexString(NSData *data) {
     // case shows the amount screen (prefilled); everything else routes through the parsed URI
     // (BIP70 rURL / plain send → confirmPaymentIntent:). C8 step 4.
     if (paymentInput.paymentIntent) {
-        if ((paymentInput.source == DWPaymentInputSource_ScanQR || paymentInput.source == DWPaymentInputSource_DeepLink) && paymentInput.parsedURI.isValidDashPaymentIntent) {
+        if ((paymentInput.source == DWPaymentInputSource_ScanQR || paymentInput.source == DWPaymentInputSource_DeepLink) && paymentInput.parsedURI.isValidDashPaymentIntent && !paymentInput.parsedURI.hasInvalidAmount) {
             [self requestAmountForPaymentIntent:paymentInput.paymentIntent];
         }
         else {
@@ -185,12 +185,18 @@ static NSString *DWReversedHexString(NSData *data) {
         return;
     }
 
-    if (!parsed.isValidDashPaymentIntent) {
+    if (!parsed.isValidDashPaymentIntent && parsed.hasInvalidAmount) {
+        // The payer asked for an amount the wallet can't pay: say so, rather than send nothing silently.
+        NSString *title = NSLocalizedString(@"Invalid payment amount", nil);
+        NSError *error = [NSError errorWithDomain:@"DashWallet.PaymentProcessor"
+                                             code:-2
+                                         userInfo:@{NSLocalizedDescriptionKey : title}];
+        [self failedWithError:error title:title message:nil];
+    }
+    else if (!parsed.isValidDashPaymentIntent) {
         // Not a payable dash: intent and no BIP70 request URL → reject. (Paper-wallet sweep — the old
         // WIF/BIP38 arm here — was dropped in C8 step 5; it needs an arbitrary-address UTXO FFI to return.)
-        NSString *title = parsed.hasInvalidAmount ? NSLocalizedString(@"Invalid payment amount", nil)
-                                                  : NSLocalizedString(@"Not a valid Dash address", nil);
-        [self failedWithError:nil title:title message:nil];
+        [self failedWithError:nil title:NSLocalizedString(@"Not a valid Dash address", nil) message:nil];
     }
     else if (parsed.rURL != nil) { // payment protocol over HTTP (app-side BIP70)
         __weak typeof(self) weakSelf = self;
@@ -209,7 +215,7 @@ static NSString *DWReversedHexString(NSData *data) {
                                            if (box) {
                                                [strongSelf confirmBIP70Output:box];
                                            }
-                                           else if (parsed.isAddressValidForCurrentNetwork) {
+                                           else if (parsed.isAddressValidForCurrentNetwork && !parsed.hasInvalidAmount) {
                                                // fetch failed but there's a valid fallback address → plain send (app-side, C8 step 4)
                                                [strongSelf confirmPaymentIntent:strongSelf.paymentInput.paymentIntent];
                                            }
