@@ -96,7 +96,10 @@ final class SyncView: UIView {
                 case .headers, .filterHeaders, .filters:
                     descriptionLabel.text = String(format: String(localized: "header #%d of %d", comment: ""), snapshot.lastTerminalBlockHeight, snapshot.estimatedBlockHeight)
                 case .masternodes:
-                    descriptionLabel.text = String(format: String(localized: "masternode list #%d of %d", comment: ""), snapshot.masternodeListsReceived, snapshot.masternodeListsTotal)
+                    descriptionLabel.text = String(
+                        format: String(localized: "masternode list #%d of %d", comment: ""),
+                        snapshot.masternodeListsReceived,
+                        snapshot.masternodeListsTotal)
                 default:
                     descriptionLabel.text = String(format: String(localized: "block #%d of %d", comment: ""), snapshot.lastSyncBlockHeight, snapshot.estimatedBlockHeight)
                 }

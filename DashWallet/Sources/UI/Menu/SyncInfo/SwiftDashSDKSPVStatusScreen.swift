@@ -1071,6 +1071,10 @@ extension SwiftDashSDKSPVStatusScreen {
         SPVChainResyncMarker.arm(walletId: walletId, fromHeight: height, network: network)
         Self.logger.info("🛰️ SPV-STATUS :: birth height \(previousBirth, privacy: .public) → \(height, privacy: .public), chain resync armed")
         rescanResultIsError = false
-        rescanResultMessage = String(format: String(localized: "Resync armed from height %u. Fully close the app, then launch it again to start. The in-app Restart button does not apply this reset.", comment: "SPV diagnostics"), height)
+        rescanResultMessage = String(
+            format: String(
+                localized: "Resync armed from height %u. Fully close the app, then launch it again to start. The in-app Restart button does not apply this reset.",
+                comment: "SPV diagnostics"),
+            height)
     }
 }
