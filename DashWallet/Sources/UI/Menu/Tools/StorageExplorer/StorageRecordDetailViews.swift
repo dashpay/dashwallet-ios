@@ -72,7 +72,7 @@ struct IdentityStorageDetailView: View {
                 FieldRow(label: "Is Local", value: record.isLocal ? "Yes" : "No")
                 FieldRow(label: "Network", value: record.network.networkName)
             }
-            Section("Names") {
+            Section("Names" as String) {
                 FieldRow(label: "Alias", value: record.alias ?? "None")
                 FieldRow(label: "DPNS Name", value: record.dpnsName ?? "None")
                 FieldRow(label: "Main DPNS Name", value: record.mainDpnsName ?? "None")
@@ -82,12 +82,12 @@ struct IdentityStorageDetailView: View {
                 FieldRow(label: "Voting Key", value: record.votingPrivateKeyIdentifier != nil ? "Present" : "Not set")
                 FieldRow(label: "Payout Key", value: record.payoutPrivateKeyIdentifier != nil ? "Present" : "Not set")
             }
-            Section("Relationships") {
+            Section("Relationships" as String) {
                 FieldRow(label: "Public Keys", value: "\(record.publicKeys.count)")
                 FieldRow(label: "Documents", value: "\(record.documents.count)")
                 FieldRow(label: "Token Balances", value: "\(record.tokenBalances.count)")
             }
-            Section("Timestamps") {
+            Section("Timestamps" as String) {
                 FieldRow(label: "Created", value: dateString(record.createdAt))
                 FieldRow(label: "Updated", value: dateString(record.lastUpdated))
                 FieldRow(label: "Synced", value: dateString(record.lastSyncedAt))
@@ -128,12 +128,12 @@ struct DocumentStorageDetailView: View {
                 FieldRow(label: "Network", value: record.network.networkName)
                 FieldRow(label: "Deleted", value: record.isDeleted ? "Yes" : "No")
             }
-            Section("Timestamps") {
+            Section("Timestamps" as String) {
                 FieldRow(label: "Created", value: dateString(record.localCreatedAt))
                 FieldRow(label: "Updated", value: dateString(record.localUpdatedAt))
             }
             if let json = jsonString(record.data) {
-                Section("Data") {
+                Section("Data" as String) {
                     Text(json).font(.system(.caption, design: .monospaced)).textSelection(.enabled)
                 }
             }
@@ -157,23 +157,23 @@ struct DataContractStorageDetailView: View {
                 FieldRow(label: "Network", value: record.network.networkName)
                 FieldRow(label: "Has Tokens", value: record.hasTokens ? "Yes" : "No")
             }
-            Section("Flags") {
+            Section("Flags" as String) {
                 FieldRow(label: "Can Be Deleted", value: record.canBeDeleted ? "Yes" : "No")
                 FieldRow(label: "Read Only", value: record.readonly ? "Yes" : "No")
                 FieldRow(label: "Keeps History", value: record.keepsHistory ? "Yes" : "No")
             }
-            Section("Relationships") {
+            Section("Relationships" as String) {
                 FieldRow(label: "Document Types", value: "\(record.documentTypes?.count ?? 0)")
                 FieldRow(label: "Tokens", value: "\(record.tokens?.count ?? 0)")
                 FieldRow(label: "Documents", value: "\(record.documents.count)")
             }
-            Section("Timestamps") {
+            Section("Timestamps" as String) {
                 FieldRow(label: "Created", value: dateString(record.createdAt))
                 FieldRow(label: "Updated", value: dateString(record.lastUpdated))
                 FieldRow(label: "Accessed", value: dateString(record.lastAccessedAt))
                 FieldRow(label: "Synced", value: dateString(record.lastSyncedAt))
             }
-            Section("Serialized") {
+            Section("Serialized" as String) {
                 FieldRow(label: "Contract Size", value: "\(record.serializedContract.count) bytes")
             }
         }
@@ -196,11 +196,11 @@ struct PublicKeyStorageDetailView: View {
                 FieldRow(label: "Read Only", value: record.readOnly ? "Yes" : "No")
                 FieldRow(label: "Disabled At", value: record.disabledAt.map { "\($0)" } ?? "No")
             }
-            Section("Data") {
+            Section("Data" as String) {
                 FieldRow(label: "Public Key", value: hexString(record.publicKeyData))
                 FieldRow(label: "Private Key", value: record.hasPrivateKeyIdentifier ? "Present" : "Not set")
             }
-            Section("Timestamps") {
+            Section("Timestamps" as String) {
                 FieldRow(label: "Created", value: dateString(record.createdAt))
                 FieldRow(label: "Accessed", value: dateString(record.lastAccessed))
             }
@@ -225,11 +225,11 @@ struct TokenStorageDetailView: View {
                 FieldRow(label: "Base Supply", value: record.formattedBaseSupply)
                 FieldRow(label: "Paused", value: record.isPaused ? "Yes" : "No")
             }
-            Section("Relationships") {
+            Section("Relationships" as String) {
                 FieldRow(label: "Balances", value: "\(record.balances?.count ?? 0)")
                 FieldRow(label: "History Events", value: "\(record.historyEvents?.count ?? 0)")
             }
-            Section("Timestamps") {
+            Section("Timestamps" as String) {
                 FieldRow(label: "Created", value: dateString(record.createdAt))
                 FieldRow(label: "Updated", value: dateString(record.lastUpdatedAt))
             }
@@ -252,12 +252,12 @@ struct TokenBalanceStorageDetailView: View {
                 FieldRow(label: "Frozen", value: record.frozen ? "Yes" : "No")
                 FieldRow(label: "Network", value: record.network.networkName)
             }
-            Section("Token Info") {
+            Section("Token Info" as String) {
                 FieldRow(label: "Name", value: record.tokenName ?? "None")
                 FieldRow(label: "Symbol", value: record.tokenSymbol ?? "None")
                 FieldRow(label: "Decimals", value: record.tokenDecimals.map { "\($0)" } ?? "None")
             }
-            Section("Timestamps") {
+            Section("Timestamps" as String) {
                 FieldRow(label: "Created", value: dateString(record.createdAt))
                 FieldRow(label: "Updated", value: dateString(record.lastUpdated))
                 FieldRow(label: "Synced", value: dateString(record.lastSyncedAt))
@@ -280,7 +280,7 @@ struct TokenHistoryStorageDetailView: View {
                 FieldRow(label: "Block Height", value: record.blockHeight.map { "\($0)" } ?? "None")
                 FieldRow(label: "Amount", value: record.amount.map { "\($0)" } ?? "None")
             }
-            Section("Parties") {
+            Section("Parties" as String) {
                 FieldRow(label: "From", value: record.fromIdentity.map { hexString($0) } ?? "None")
                 FieldRow(label: "To", value: record.toIdentity.map { hexString($0) } ?? "None")
                 FieldRow(label: "Performed By", value: hexString(record.performedByIdentity))
@@ -289,7 +289,7 @@ struct TokenHistoryStorageDetailView: View {
                 FieldRow(label: "Before", value: record.balanceBefore.map { "\($0)" } ?? "None")
                 FieldRow(label: "After", value: record.balanceAfter.map { "\($0)" } ?? "None")
             }
-            Section("Timestamps") {
+            Section("Timestamps" as String) {
                 FieldRow(label: "Event", value: dateString(record.eventTimestamp))
                 FieldRow(label: "Created", value: dateString(record.createdAt))
             }
@@ -309,16 +309,16 @@ struct DocumentTypeStorageDetailView: View {
                 FieldRow(label: "Name", value: record.name)
                 FieldRow(label: "Contract (Base58)", value: record.contractIdBase58)
             }
-            Section("Flags") {
+            Section("Flags" as String) {
                 FieldRow(label: "Keeps History", value: record.documentsKeepHistory ? "Yes" : "No")
                 FieldRow(label: "Mutable", value: record.documentsMutable ? "Yes" : "No")
                 FieldRow(label: "Can Be Deleted", value: record.documentsCanBeDeleted ? "Yes" : "No")
             }
-            Section("Relationships") {
+            Section("Relationships" as String) {
                 FieldRow(label: "Properties", value: "\(record.propertiesList?.count ?? 0)")
                 FieldRow(label: "Indices", value: "\(record.indices?.count ?? 0)")
             }
-            Section("Timestamps") {
+            Section("Timestamps" as String) {
                 FieldRow(label: "Created", value: dateString(record.createdAt))
                 FieldRow(label: "Accessed", value: dateString(record.lastAccessedAt))
             }
@@ -342,13 +342,13 @@ struct IndexStorageDetailView: View {
                 FieldRow(label: "Contested", value: record.contested ? "Yes" : "No")
             }
             if let props = record.properties, !props.isEmpty {
-                Section("Properties") {
+                Section("Properties" as String) {
                     ForEach(props, id: \.self) { prop in
                         Text(prop).font(.system(.caption, design: .monospaced))
                     }
                 }
             }
-            Section("Timestamps") {
+            Section("Timestamps" as String) {
                 FieldRow(label: "Created", value: dateString(record.createdAt))
             }
         }
@@ -369,13 +369,13 @@ struct PropertyStorageDetailView: View {
                 FieldRow(label: "Document Type", value: record.documentTypeName)
                 FieldRow(label: "Required", value: record.isRequired ? "Yes" : "No")
             }
-            Section("Constraints") {
+            Section("Constraints" as String) {
                 if let v = record.minLength { FieldRow(label: "Min Length", value: "\(v)") }
                 if let v = record.maxLength { FieldRow(label: "Max Length", value: "\(v)") }
                 if let v = record.pattern { FieldRow(label: "Pattern", value: v) }
                 if let v = record.format { FieldRow(label: "Format", value: v) }
             }
-            Section("Timestamps") {
+            Section("Timestamps" as String) {
                 FieldRow(label: "Created", value: dateString(record.createdAt))
             }
         }
@@ -414,7 +414,7 @@ struct SyncStateStorageDetailView: View {
 
     var body: some View {
         Form {
-            Section("Sync Watermark") {
+            Section("Sync Watermark" as String) {
                 FieldRow(label: "Network", value: record.network.networkName)
                 FieldRow(label: "Sync Height", value: "\(record.syncHeight)")
                 FieldRow(label: "Sync Timestamp", value: "\(record.syncTimestamp)")
@@ -431,7 +431,7 @@ struct SyncStateStorageDetailView: View {
                     ? "\(record.lastKnownRecentBlock)"
                     : "0 (no recent address activity)")
             }
-            Section("Timestamps") {
+            Section("Timestamps" as String) {
                 FieldRow(label: "Record Updated", value: dateString(record.lastUpdated))
             }
         }
@@ -476,7 +476,7 @@ struct PlatformAddressDetailView: View {
                 FieldRow(label: "Derivation Path", value: record.derivationPath)
                 FieldRow(label: "Used", value: record.isUsed ? "Yes" : "No")
             }
-            Section("Public Key") {
+            Section("Public Key" as String) {
                 FieldRow(
                     label: "Bytes (hex)",
                     value: record.publicKey.isEmpty
@@ -484,7 +484,7 @@ struct PlatformAddressDetailView: View {
                         : record.publicKey.map { String(format: "%02x", $0) }.joined()
                 )
             }
-            Section("Balance / Activity") {
+            Section("Balance / Activity" as String) {
                 FieldRow(label: "Balance", value: "\(record.balance) credits")
                 FieldRow(label: "Nonce", value: "\(record.nonce)")
                 FieldRow(
@@ -496,10 +496,10 @@ struct PlatformAddressDetailView: View {
                     value: record.lastSeenHeight == 0 ? "—" : "\(record.lastSeenHeight)"
                 )
             }
-            Section("Ownership") {
+            Section("Ownership" as String) {
                 FieldRow(label: "Wallet ID", value: hexString(record.walletId))
             }
-            Section("Timestamps") {
+            Section("Timestamps" as String) {
                 FieldRow(label: "Created", value: dateString(record.createdAt))
                 FieldRow(label: "Updated", value: dateString(record.lastUpdated))
             }
@@ -527,14 +527,14 @@ struct WalletStorageDetailView: View {
             // to live on `PersistentAccount`"). Sum the per-account fields
             // for display in the storage explorer; the canonical live total
             // lives in `PlatformWalletManager.accountBalances(for:)`.
-            Section("Balance (summed across accounts)") {
+            Section("Balance (summed across accounts)" as String) {
                 FieldRow(label: "Confirmed", value: "\(record.accounts.reduce(UInt64(0)) { $0 + $1.balanceConfirmed })")
                 FieldRow(label: "Unconfirmed", value: "\(record.accounts.reduce(UInt64(0)) { $0 + $1.balanceUnconfirmed })")
             }
-            Section("Relationships") {
+            Section("Relationships" as String) {
                 FieldRow(label: "Accounts", value: "\(record.accounts.count)")
             }
-            Section("Timestamps") {
+            Section("Timestamps" as String) {
                 FieldRow(label: "Created", value: dateString(record.createdAt))
                 FieldRow(label: "Updated", value: dateString(record.lastUpdated))
             }
@@ -574,16 +574,16 @@ struct AccountStorageDetailView: View {
                 FieldRow(label: "Confirmed", value: "\(record.balanceConfirmed)")
                 FieldRow(label: "Unconfirmed", value: "\(record.balanceUnconfirmed)")
             }
-            Section("Address Pools") {
+            Section("Address Pools" as String) {
                 FieldRow(label: "External Highest Used", value: "\(record.externalHighestUsed)")
                 FieldRow(label: "Internal Highest Used", value: "\(record.internalHighestUsed)")
             }
-            Section("Relationships") {
+            Section("Relationships" as String) {
                 FieldRow(label: "Addresses", value: "\(record.coreAddresses.count)")
                 FieldRow(label: "Wallet", value: record.wallet.name ?? hexString(record.wallet.walletId))
             }
             ForEach(addressSections(), id: \.0) { poolName, addresses in
-                Section("\(poolName) Addresses (\(addresses.count))") {
+                Section("\(poolName) Addresses (\(addresses.count.formatted()))" as String) {
                     ForEach(addresses) { addr in
                         StorageExplorerLink(destination: CoreAddressDetailView(record: addr)) {
                             VStack(alignment: .leading, spacing: 2) {
@@ -592,12 +592,12 @@ struct AccountStorageDetailView: View {
                                     .lineLimit(1)
                                     .truncationMode(.middle)
                                 HStack(spacing: 8) {
-                                    Text("Index \(addr.addressIndex)")
+                                    Text(verbatim: "Index \(addr.addressIndex.formatted())")
                                     if addr.isUsed {
-                                        Text("• used")
+                                        Text(verbatim: "• used")
                                     }
                                     if addr.balance > 0 {
-                                        Text("• \(addr.balance)")
+                                        Text(verbatim: "• \(addr.balance.formatted())")
                                     }
                                 }
                                 .font(.caption2)
@@ -607,7 +607,7 @@ struct AccountStorageDetailView: View {
                     }
                 }
             }
-            Section("Timestamps") {
+            Section("Timestamps" as String) {
                 FieldRow(label: "Created", value: dateString(record.createdAt))
                 FieldRow(label: "Updated", value: dateString(record.lastUpdated))
             }
@@ -662,7 +662,7 @@ struct CoreAddressDetailView: View {
                     FieldRow(label: "Derivation Path", value: record.derivationPath)
                     FieldRow(label: "Used", value: record.isUsed ? "Yes" : "No")
                 }
-                Section("Public Key") {
+                Section("Public Key" as String) {
                     FieldRow(
                         label: "Bytes (hex)",
                         value: record.publicKey.isEmpty
@@ -670,7 +670,7 @@ struct CoreAddressDetailView: View {
                             : record.publicKey.map { String(format: "%02x", $0) }.joined()
                     )
                 }
-                Section("Balance / Activity") {
+                Section("Balance / Activity" as String) {
                     FieldRow(label: "Balance", value: "\(record.balance)")
                     FieldRow(
                         label: "First Seen Height",
@@ -681,7 +681,7 @@ struct CoreAddressDetailView: View {
                         value: record.lastSeenHeight == 0 ? "—" : "\(record.lastSeenHeight)"
                     )
                 }
-                Section("Timestamps") {
+                Section("Timestamps" as String) {
                     FieldRow(label: "Created", value: dateString(record.createdAt))
                     FieldRow(label: "Updated", value: dateString(record.lastUpdated))
                 }
@@ -720,12 +720,12 @@ struct TransactionStorageDetailView: View {
                     FieldRow(label: "Block Hash", value: hexString(hash))
                 }
             }
-            Section("Metadata") {
+            Section("Metadata" as String) {
                 FieldRow(label: "Label", value: record.label.isEmpty ? "None" : record.label)
                 FieldRow(label: "First Seen", value: "\(record.firstSeen)")
                 FieldRow(label: "TX Size", value: "\(record.transactionData.count) bytes")
             }
-            Section("Timestamps") {
+            Section("Timestamps" as String) {
                 FieldRow(label: "Created", value: dateString(record.createdAt))
                 FieldRow(label: "Updated", value: dateString(record.lastUpdated))
             }
@@ -756,10 +756,10 @@ struct UtxoStorageDetailView: View {
                 FieldRow(label: "Locked", value: record.isLocked ? "Yes" : "No")
                 FieldRow(label: "Spent", value: record.isSpent ? "Yes" : "No")
             }
-            Section("Relationships") {
+            Section("Relationships" as String) {
                 FieldRow(label: "Account", value: record.account?.accountTypeName ?? "None")
             }
-            Section("Timestamps") {
+            Section("Timestamps" as String) {
                 FieldRow(label: "Created", value: dateString(record.createdAt))
                 FieldRow(label: "Updated", value: dateString(record.lastUpdated))
             }
@@ -783,7 +783,7 @@ struct WalletManagerMetadataStorageDetailView: View {
                     FieldRow(label: "Block Hash", value: hexString(hash))
                 }
             }
-            Section("Timestamps") {
+            Section("Timestamps" as String) {
                 FieldRow(label: "Created", value: dateString(record.createdAt))
                 FieldRow(label: "Updated", value: dateString(record.lastUpdated))
             }
@@ -816,13 +816,13 @@ struct DPNSNameStorageDetailView: View {
                     FieldRow(label: "Acquired", value: dateString(date))
                 }
             }
-            Section("Relationships") {
+            Section("Relationships" as String) {
                 StorageExplorerLink(destination: IdentityStorageDetailView(record: record.identity)) {
                     FieldRow(label: "Owner Identity", value: record.identity.identityIdBase58)
                 }
                 FieldRow(label: "Owner ID (Hex)", value: record.identity.identityIdString)
             }
-            Section("Timestamps") {
+            Section("Timestamps" as String) {
                 FieldRow(label: "Created", value: dateString(record.createdAt))
                 FieldRow(label: "Updated", value: dateString(record.lastUpdated))
             }
@@ -847,18 +847,18 @@ struct DashpayProfileStorageDetailView: View {
                 // populate it — surfaced so it isn't invisible if lit up later.
                 FieldRow(label: "Bio", value: record.bio ?? "—")
             }
-            Section("Avatar") {
+            Section("Avatar" as String) {
                 FieldRow(label: "URL", value: record.avatarUrl ?? "—")
                 FieldRow(label: "Hash (32 B)", value: record.avatarHash.map { hexString($0) } ?? "—")
                 FieldRow(label: "Fingerprint (8 B)", value: record.avatarFingerprint.map { hexString($0) } ?? "—")
             }
-            Section("Relationships") {
+            Section("Relationships" as String) {
                 StorageExplorerLink(destination: IdentityStorageDetailView(record: record.identity)) {
                     FieldRow(label: "Owner Identity", value: record.identity.identityIdBase58)
                 }
                 FieldRow(label: "Owner ID (Hex)", value: record.identity.identityIdString)
             }
-            Section("Timestamps") {
+            Section("Timestamps" as String) {
                 FieldRow(label: "Created", value: dateString(record.createdAt))
                 FieldRow(label: "Updated", value: dateString(record.lastUpdated))
             }
@@ -881,19 +881,19 @@ struct DashpayContactProfileStorageDetailView: View {
                 FieldRow(label: "Public Message", value: record.publicMessage ?? "—")
                 FieldRow(label: "Bio", value: record.bio ?? "—")
             }
-            Section("Avatar") {
+            Section("Avatar" as String) {
                 FieldRow(label: "URL", value: record.avatarUrl ?? "—")
                 FieldRow(label: "Hash (32 B)", value: record.avatarHash.map { hexString($0) } ?? "—")
                 FieldRow(label: "Fingerprint (8 B)", value: record.avatarFingerprint.map { hexString($0) } ?? "—")
             }
-            Section("Relationships") {
+            Section("Relationships" as String) {
                 StorageExplorerLink(destination: IdentityStorageDetailView(record: record.owner)) {
                     FieldRow(label: "Owner Identity", value: record.owner.identityIdBase58)
                 }
                 FieldRow(label: "Owner ID (Hex)", value: hexString(record.ownerIdentityId))
                 FieldRow(label: "Contact ID (Hex)", value: hexString(record.contactIdentityId))
             }
-            Section("Timestamps") {
+            Section("Timestamps" as String) {
                 FieldRow(label: "Checked At (ms)", value: String(record.checkedAtMs))
                 FieldRow(label: "Created", value: dateString(record.createdAt))
                 FieldRow(label: "Updated", value: dateString(record.lastUpdated))
@@ -922,7 +922,7 @@ struct DashpayContactRequestStorageDetailView: View {
                 FieldRow(label: "Core Height Created At", value: "\(record.coreHeightCreatedAt)")
                 FieldRow(label: "Created At (ms)", value: record.createdAtMillis == 0 ? "—" : "\(record.createdAtMillis)")
             }
-            Section("Payload") {
+            Section("Payload" as String) {
                 FieldRow(label: "Encrypted Public Key", value: "\(record.encryptedPublicKey.count) bytes")
                 FieldRow(label: "Encrypted Account Label", value: record.encryptedAccountLabel.map { "\($0.count) bytes" } ?? "—")
                 FieldRow(label: "Account Label (decrypted)", value: record.contactAccountLabel ?? "—")
@@ -930,14 +930,14 @@ struct DashpayContactRequestStorageDetailView: View {
                 FieldRow(label: "Alias (owner-private)", value: record.contactAlias ?? "—")
                 FieldRow(label: "Note (owner-private)", value: record.contactNote ?? "—")
             }
-            Section("Relationships") {
+            Section("Relationships" as String) {
                 StorageExplorerLink(destination: IdentityStorageDetailView(record: record.owner)) {
                     FieldRow(label: "Owner Identity", value: record.owner.identityIdBase58)
                 }
                 FieldRow(label: "Owner ID (Hex, denorm)", value: hexString(record.ownerIdentityId))
                 FieldRow(label: "Contact ID (Hex)", value: hexString(record.contactIdentityId))
             }
-            Section("Timestamps") {
+            Section("Timestamps" as String) {
                 if record.createdAtMillis > 0 {
                     let date = Date(timeIntervalSince1970: TimeInterval(record.createdAtMillis) / 1000.0)
                     FieldRow(label: "Document Created", value: dateString(date))
@@ -971,7 +971,7 @@ struct DashpayPaymentStorageDetailView: View {
                 FieldRow(label: "Owner", value: hexString(record.ownerIdentityId))
                 FieldRow(label: "Counterparty", value: hexString(record.counterpartyIdentityId))
             }
-            Section("Timestamps") {
+            Section("Timestamps" as String) {
                 FieldRow(label: "Created", value: dateString(record.createdAt))
                 FieldRow(label: "Updated", value: dateString(record.lastUpdated))
             }
@@ -1023,7 +1023,7 @@ struct InvitationStorageDetailView: View {
             Section("Wallet") {
                 FieldRow(label: "Wallet id", value: hexString(record.walletId))
             }
-            Section("Timestamps") {
+            Section("Timestamps" as String) {
                 FieldRow(label: "Expiry (unix)", value: "\(record.expiryUnix)")
                 FieldRow(label: "Created (unix)", value: "\(record.createdAtSecs)")
                 FieldRow(label: "Created", value: dateString(record.createdAt))
@@ -1042,11 +1042,11 @@ struct DashpayIgnoredSenderStorageDetailView: View {
 
     var body: some View {
         Form {
-            Section("Suppression key") {
+            Section("Suppression key" as String) {
                 FieldRow(label: "Owner", value: hexString(record.ownerIdentityId))
                 FieldRow(label: "Ignored sender", value: hexString(record.ignoredSenderId))
             }
-            Section("Audit") {
+            Section("Audit" as String) {
                 FieldRow(label: "Ignored", value: dateString(record.ignoredAt))
             }
         }

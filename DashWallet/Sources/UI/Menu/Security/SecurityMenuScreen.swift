@@ -137,13 +137,13 @@ struct SecurityMenuScreen: View {
                 "The wallets stored on this device could not be verified. Nothing was deleted. Please try again.",
                 comment: "Security — reset wallet"))
         }
-        .alert("Reset All Wallets (Debug)", isPresented: $showResetWalletDebugAlert) {
+        .alert("Reset All Wallets (Debug)" as String, isPresented: $showResetWalletDebugAlert) {
             Button("Cancel", role: .cancel) { }
             Button("Delete All", role: .destructive) {
                 delegateInternal.beginDebugWipeWallet()
             }
         } message: {
-            Text("Deletes all SDK wallets without asking for their recovery phrases. Legacy DashSync seed fixtures are preserved.")
+            Text(verbatim: "Deletes all SDK wallets without asking for their recovery phrases. Legacy DashSync seed fixtures are preserved.")
         }
         .recoveryPhraseFlowAlert(recoveryPhraseFlow)
     }

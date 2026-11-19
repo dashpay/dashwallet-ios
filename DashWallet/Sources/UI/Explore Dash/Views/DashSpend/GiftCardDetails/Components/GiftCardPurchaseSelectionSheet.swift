@@ -98,7 +98,7 @@ struct GiftCardPurchaseSelectionSheet: View {
                     HStack(spacing: 20) {
                         HStack(spacing: 12) {
                             if cards.count > 2 {
-                                Text("\(index + 1)")
+                                Text(verbatim: "\((index + 1).formatted())")
                                     .font(.caption1.weight(.medium))
                                     .padding(.horizontal, 4)
                                     .background(Color.dash.gray50)

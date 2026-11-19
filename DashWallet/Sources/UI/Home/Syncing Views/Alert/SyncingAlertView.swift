@@ -234,7 +234,7 @@ struct SyncingAlertView: View {
                         .font(.footnote)
                         .foregroundColor(.green)
                 } else {
-                    Text("\(formattedHeight(phase.current)) / \(formattedHeight(phase.target))")
+                    Text(verbatim: "\(formattedHeight(phase.current)) / \(formattedHeight(phase.target))")
                         .font(.footnote.monospacedDigit())
                         .foregroundColor(.dash.secondaryText)
                 }
@@ -254,7 +254,7 @@ struct SyncingAlertView: View {
                     .font(.footnote.weight(.semibold))
                     .foregroundColor(.dash.primaryText)
                 Spacer()
-                Text("\(viewModel.peers.count)")
+                Text(verbatim: "\(viewModel.peers.count.formatted())")
                     .font(.footnote.monospacedDigit().weight(.semibold))
                     .foregroundColor(.dash.secondaryText)
             }

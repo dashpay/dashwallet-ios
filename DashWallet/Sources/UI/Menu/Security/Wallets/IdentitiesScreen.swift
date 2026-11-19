@@ -552,7 +552,7 @@ struct IdentityDetailScreen: View {
                         .font(.system(size: 14))
                         .foregroundColor(.dash.secondaryText)
                     Spacer()
-                    Text("\(currentRow.publicKeys.count)")
+                    Text(verbatim: "\(currentRow.publicKeys.count.formatted())")
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.dash.primaryText)
                     Image(systemName: "chevron.right")

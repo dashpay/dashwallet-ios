@@ -303,7 +303,7 @@ struct ShieldedSyncInfoScreen: View {
             if let value, let total, total > 0 {
                 SwiftUI.ProgressView(value: Double(min(value, total)), total: Double(total))
                     .tint(.purple)
-                Text("\(formattedCount(min(value, total))) / \(formattedCount(total))")
+                Text(verbatim: "\(formattedCount(min(value, total))) / \(formattedCount(total))")
                     .font(.system(size: 11))
                     .foregroundColor(Color.dash.secondaryText)
                     .monospacedDigit()

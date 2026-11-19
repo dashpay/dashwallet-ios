@@ -139,7 +139,7 @@ struct SwapConvertView: View {
                         .dashFont(.caption1)
                         .foregroundStyle(Color.dash.tertiaryText)
 
-                    Text("~ \(amount)")
+                    Text(verbatim: "~ \(amount)")
                         .dashFont(.subhead)
                         .foregroundStyle(Color.dash.primaryText)
                 }

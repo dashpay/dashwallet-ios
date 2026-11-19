@@ -578,7 +578,7 @@ struct JoinDashPayMenuItem: View {
 #Preview("Menu row — contested reporting") {
     ScrollView {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Contested — “jordan”")
+            Text(verbatim: "Contested — “jordan”")
                 .dashFont(.footnote)
                 .foregroundStyle(Color.dash.secondaryText)
 
@@ -603,7 +603,7 @@ struct JoinDashPayMenuItem: View {
                     .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
             }
 
-            Text("Auto-approved — “jordan2”")
+            Text(verbatim: "Auto-approved — “jordan2”")
                 .dashFont(.footnote)
                 .foregroundStyle(Color.dash.secondaryText)
                 .padding(.top, 8)

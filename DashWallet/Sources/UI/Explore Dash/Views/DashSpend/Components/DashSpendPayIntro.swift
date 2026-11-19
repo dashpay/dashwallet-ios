@@ -91,10 +91,10 @@ struct DashSpendPayIntro: View {
                 Text(balanceLabel)
 
                 if balanceHidden {
-                    Text("***********")
+                    Text(verbatim: "***********")
                 } else {
                     DashAmount(amount: Int64(dashBalance), font: .subheadline, showDirection: false)
-                    Text("~").font(.subheadline)
+                    Text(verbatim: "~").font(.subheadline)
                     formattedFiatText(from: dashBalance)
                 }
 
@@ -120,7 +120,7 @@ struct DashSpendPayIntro: View {
 
 #Preview("DashSpendPayIntro") {
     VStack(spacing: 20) {
-        Text("DashSpendPayIntro").font(.caption).foregroundColor(Color.dash.secondaryText)
+        Text(verbatim: "DashSpendPayIntro").font(.caption).foregroundColor(Color.dash.secondaryText)
         DashSpendPayIntro(
             merchantIconUrl: "",
             merchantTitle: "Amazon",
@@ -128,7 +128,7 @@ struct DashSpendPayIntro: View {
             dashBalance: 555566
         )
         Divider()
-        Text("SendIntro (reference)").font(.caption).foregroundColor(Color.dash.secondaryText)
+        Text(verbatim: "SendIntro (reference)").font(.caption).foregroundColor(Color.dash.secondaryText)
         SendIntro(
             title: "Buy gift card",
             preposition: "at",
