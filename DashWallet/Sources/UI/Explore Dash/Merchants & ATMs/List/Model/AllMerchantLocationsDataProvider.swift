@@ -44,6 +44,7 @@ class AllMerchantLocationsDataProvider: PointOfUseDataProvider {
     override func items(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
                         with filters: PointOfUseListFilters?,
                         completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
+        let request = beginRequest()
         var bounds = bounds
         var userPoint = userPoint
 
@@ -84,17 +85,19 @@ class AllMerchantLocationsDataProvider: PointOfUseDataProvider {
             return
         }
 
-        refreshTotalCount(in: bounds, userPoint: userPoint) { [weak self] in
+        fetchTotalCount(in: bounds, userPoint: userPoint) { [weak self] count in
             self?.fetch(by: query, in: bounds, userPoint: userPoint, with: filters, offset: 0) { result in
-                self?.handleFirstPage(result: result, query: query, bounds: bounds, userPoint: userPoint, filters: filters,
+                self?.handleFirstPage(request: request, result: result, query: query, bounds: bounds, userPoint: userPoint, filters: filters,
+                                      alsoCommit: { self?.totalCount = count },
                                       completion: completion)
             }
         }
     }
 
     override func nextPage(completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
+        let request = beginRequest()
         fetch(by: lastQuery, in: lastBounds, userPoint: lastUserPoint, with: lastFilters, offset: nextOffset) { [weak self] result in
-            self?.handle(result: result, appending: true, completion: completion)
+            self?.handle(request: request, result: result, appending: true, completion: completion)
         }
     }
 
@@ -105,15 +108,16 @@ class AllMerchantLocationsDataProvider: PointOfUseDataProvider {
         }
     }
 
-    private func refreshTotalCount(in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?, completion: @escaping () -> Void) {
-        dataSource.allLocationsCount(for: pointOfUse.pointOfUseId, in: bounds, userPoint: userPoint) { [weak self] result in
+    /// The count for the request in flight; `nil` when it could not be read.
+    /// The provider takes it only with that request's rows.
+    private func fetchTotalCount(in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
+                                 completion: @escaping (Int?) -> Void) {
+        dataSource.allLocationsCount(for: pointOfUse.pointOfUseId, in: bounds, userPoint: userPoint) { result in
             if case .success(let count) = result {
-                self?.totalCount = count
+                completion(count)
             } else {
-                self?.totalCount = nil
+                completion(nil)
             }
-
-            completion()
         }
     }
 }

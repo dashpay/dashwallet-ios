@@ -435,19 +435,75 @@ final class PointOfUseListViewModelTests: XCTestCase {
     /// A provider records the parameters of a request only with its rows, so
     /// an identical request made while the first is in flight is not answered
     /// from the previous request's rows.
-    func testAProviderRecordsParametersOnlyWithItsRows() {
+    func testAProviderRecordsParametersOnlyWithItsRows() async {
         let provider = PointOfUseDataProvider()
         let page = PaginationResult<ExplorePointOfUse>(items: [atm(1)], offset: 0)
 
-        provider.handleFirstPage(result: .failure(StubError()), query: "q", bounds: bounds, userPoint: nil,
-                                 filters: nil) { _ in }
+        provider.handleFirstPage(request: provider.beginRequest(), result: .failure(StubError()), query: "q",
+                                 bounds: bounds, userPoint: nil, filters: nil) { _ in }
+        await drainMainQueue()
         XCTAssertNil(provider.lastQuery)
 
-        provider.handleFirstPage(result: .success(page), query: "q", bounds: bounds, userPoint: nil,
-                                 filters: nil) { _ in }
+        provider.handleFirstPage(request: provider.beginRequest(), result: .success(page), query: "q",
+                                 bounds: bounds, userPoint: nil, filters: nil) { _ in }
+        await drainMainQueue()
         XCTAssertEqual(provider.lastQuery, "q")
         XCTAssertEqual(provider.lastBounds, bounds)
         XCTAssertEqual(provider.items.map(\.id), [1])
+    }
+
+    /// A first page that lands after a newer request leaves the provider as
+    /// the newer request set it, so the next page continues that request.
+    func testAProviderIgnoresASupersededFirstPage() async {
+        let provider = PointOfUseDataProvider()
+        let older = provider.beginRequest()
+        let newer = provider.beginRequest()
+        var calls: [String] = []
+
+        provider.handleFirstPage(request: newer, result: .success(PaginationResult(items: [atm(2)], offset: 0)),
+                                 query: "newer", bounds: bounds, userPoint: nil, filters: nil) { _ in calls.append("newer") }
+        provider.handleFirstPage(request: older, result: .success(PaginationResult(items: [atm(1)], offset: 40)),
+                                 query: "older", bounds: nil, userPoint: nil, filters: nil) { _ in calls.append("older") }
+        await drainMainQueue()
+
+        XCTAssertEqual(provider.items.map(\.id), [2])
+        XCTAssertEqual(provider.lastQuery, "newer")
+        XCTAssertEqual(provider.lastBounds, bounds)
+        XCTAssertEqual(provider.currentPage?.offset, 0)
+        XCTAssertEqual(calls, ["newer"], "A superseded response must not reach its caller")
+    }
+
+    /// A page that lands after a new first page was requested does not append
+    /// to the new rows or move the paging offset.
+    func testAProviderIgnoresAPageAfterANewRequest() async {
+        let provider = PointOfUseDataProvider()
+        provider.handleFirstPage(request: provider.beginRequest(), result: .success(PaginationResult(items: [atm(1)], offset: 0)),
+                                 query: "q", bounds: bounds, userPoint: nil, filters: nil) { _ in }
+        await drainMainQueue()
+
+        let page = provider.beginRequest()
+        let refresh = provider.beginRequest()
+        provider.handle(request: page, result: .success(PaginationResult(items: [atm(9)], offset: 1)), appending: true) { _ in }
+        provider.handleFirstPage(request: refresh, result: .success(PaginationResult(items: [atm(3)], offset: 0)),
+                                 query: "q", bounds: bounds, userPoint: nil, filters: nil) { _ in }
+        await drainMainQueue()
+
+        XCTAssertEqual(provider.items.map(\.id), [3])
+        XCTAssertEqual(provider.currentPage?.offset, 0)
+    }
+
+    /// Clearing the cache supersedes a request in flight.
+    func testClearingACacheDropsTheResponseInFlight() async {
+        let provider = PointOfUseDataProvider()
+        let request = provider.beginRequest()
+        provider.clearCache()
+
+        provider.handleFirstPage(request: request, result: .success(PaginationResult(items: [atm(1)], offset: 0)),
+                                 query: "q", bounds: bounds, userPoint: nil, filters: nil) { _ in }
+        await drainMainQueue()
+
+        XCTAssertTrue(provider.items.isEmpty)
+        XCTAssertNil(provider.lastQuery)
     }
 
     // MARK: - Helpers

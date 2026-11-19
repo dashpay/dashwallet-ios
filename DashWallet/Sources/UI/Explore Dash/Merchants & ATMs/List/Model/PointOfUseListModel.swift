@@ -50,7 +50,21 @@ class PointOfUseDataProvider {
     internal var lastBounds: ExploreMapBounds?
     internal var lastFilters: PointOfUseListFilters?
 
+    /// Numbers the requests this provider starts; see `beginRequest()`.
+    private var requestGeneration = 0
+
+    /// Starts a request and supersedes every request in flight: only the
+    /// latest one's response is written to `items`, `currentPage` and the
+    /// recorded parameters, so a page fetched next is never built on a
+    /// superseded request. Call it first in every `items(...)` and
+    /// `nextPage(...)`, before any early return.
+    internal func beginRequest() -> Int {
+        requestGeneration += 1
+        return requestGeneration
+    }
+
     func clearCache() {
+        requestGeneration += 1
         items = []
         currentPage = nil
         lastQuery = nil
@@ -77,21 +91,46 @@ class PointOfUseDataProvider {
     /// with its rows. Recording them only when the rows land keeps the cache
     /// check and paging from pairing one request's parameters with an earlier
     /// request's rows while it is still in flight.
-    internal func handleFirstPage(result: Swift.Result<PaginationResult<ExplorePointOfUse>, Error>,
+    ///
+    /// `alsoCommit` runs with the commit, for state a provider keeps beside its
+    /// rows (a total count).
+    internal func handleFirstPage(request: Int, result: Swift.Result<PaginationResult<ExplorePointOfUse>, Error>,
                                   query: String?, bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
-                                  filters: PointOfUseListFilters?,
-                                  completion: (Result<[ExplorePointOfUse], Error>) -> Void) {
-        if case .success = result {
-            lastQuery = query
-            lastUserPoint = userPoint
-            lastBounds = bounds
-            lastFilters = filters
+                                  filters: PointOfUseListFilters?, alsoCommit: (() -> Void)? = nil,
+                                  completion: @escaping (Result<[ExplorePointOfUse], Error>) -> Void) {
+        commit(request) { [weak self] in
+            guard let self else { return }
+            if case .success = result {
+                self.lastQuery = query
+                self.lastUserPoint = userPoint
+                self.lastBounds = bounds
+                self.lastFilters = filters
+                alsoCommit?()
+            }
+            self.apply(result: result, appending: false, completion: completion)
         }
-        handle(result: result, completion: completion)
     }
 
-    internal func handle(result: Swift.Result<PaginationResult<ExplorePointOfUse>, Error>, appending: Bool = false,
-                         completion: (Result<[ExplorePointOfUse], Error>) -> Void) {
+    internal func handle(request: Int, result: Swift.Result<PaginationResult<ExplorePointOfUse>, Error>,
+                         appending: Bool = false,
+                         completion: @escaping (Result<[ExplorePointOfUse], Error>) -> Void) {
+        commit(request) { [weak self] in
+            self?.apply(result: result, appending: appending, completion: completion)
+        }
+    }
+
+    /// Runs `work` on the main queue if `request` is still the latest, so the
+    /// provider's state is written on one queue (the DAOs answer on their
+    /// own) and a superseded response writes nothing and calls no completion.
+    private func commit(_ request: Int, _ work: @escaping () -> Void) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self, request == self.requestGeneration else { return }
+            work()
+        }
+    }
+
+    private func apply(result: Swift.Result<PaginationResult<ExplorePointOfUse>, Error>, appending: Bool,
+                       completion: (Result<[ExplorePointOfUse], Error>) -> Void) {
         switch result {
         case .success(let page):
             currentPage = page
