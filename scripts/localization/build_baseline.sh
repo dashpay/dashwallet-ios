@@ -1,8 +1,7 @@
 #!/bin/bash
 # Build the dashpay target at the Baseline commit so the compiler lists the lookup keys
 # the Baseline code used, SwiftUI interpolations included (a lightweight extraction cannot
-# derive their keys). The zero-loss check and the entry mover read the result through
-# --baseline-derived-data.
+# derive their keys). The zero-loss check reads the result through --baseline-derived-data.
 #
 # The Baseline is checked out as a temporary git worktree next to this checkout, so the
 # project's ../platform package path resolves the same way; Pods and the gitignored

@@ -146,7 +146,7 @@ class SyncCatalogTest(unittest.TestCase):
         self.assertFalse(os.path.exists(self.catalog))
         self.assertTrue(res.stdout.strip(), "expected a note on stdout")
 
-    # --- T27 / review F15: the sync phase's edge cases ---
+    # --- The sync phase's edge cases: missing and leftover inputs ---
 
     def test_swift_files_without_any_stringsdata_fail_the_build(self):
         # Zero compiler .stringsdata with Swift files in the target means the compile output is

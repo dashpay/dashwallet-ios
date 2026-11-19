@@ -1,4 +1,4 @@
-"""T22 (review F3): every plural position of a counted phrase gets its own count in the check's samples.
+"""Every plural position of a counted phrase gets its own count in the check's samples.
 
 A phrase with two plural variables (%#@files@ in %#@folders@) that the move leaves with its arguments
 swapped formats differently only when the two positions carry different counts. The zero-loss check and

@@ -1,4 +1,4 @@
-"""Tests for the Foundation formatter wrapper (T6: AC-02, AC-10).
+"""Tests for the Foundation formatter wrapper (AC-02, AC-10).
 
 Run from the repository root:
 

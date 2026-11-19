@@ -110,7 +110,7 @@ final class PluralFidelityTests: XCTestCase {
 
     /// The two Baseline defects: `ja` and `tr` took `%d merchant(s) in %@` with unnumbered codes in
     /// swapped order, so the Baseline formatted undefined text. The Catalog numbers the codes, so the
-    /// count and the place both show (spec AC-01, the Baseline-defect exception).
+    /// count and the place both show: the one intended wording change of the move.
     func testTheFixedJapaneseAndTurkishMerchantCountShowTheCountAndThePlace() throws {
         let key = "%d merchant(s) in %@"
         // locale → [count: expected text]

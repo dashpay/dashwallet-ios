@@ -1,4 +1,4 @@
-"""Tests for the zero-loss check, pre-merge mode (T7: AC-04, AC-06, AC-09, AC-10, AC-14, AC-15, AC-18).
+"""Tests for the zero-loss check, pre-merge mode (AC-04, AC-06, AC-09, AC-10, AC-14, AC-15, AC-18).
 
 Run from the repository root:
 
@@ -490,7 +490,7 @@ class FindingTests(ZeroLossCase):
 
 
 class KeySetTwoWayTests(ZeroLossCase):
-    """T23 (review F12): in pre-merge mode the Catalog's keys are exactly
+    """In pre-merge mode the Catalog's keys are exactly
     (Baseline keys - moved-from keys) | moved-to keys, in both directions (ZERO_LOSS_CHECK.md check 4)."""
 
     def key_findings(self, res, key):
@@ -658,9 +658,9 @@ class BaselineDerivedDataFlagTests(ZeroLossCase):
 
 
 class BaselineInputsTests(ZeroLossCase):
-    """T24 (review F6, F10, F13, F14): the Baseline and derived-data inputs are validated; exit 2 = cannot run."""
+    """The Baseline and derived-data inputs are validated; exit 2 = cannot run."""
 
-    # F6
+    # A missing or empty Baseline build folder
     def test_missing_baseline_derived_data_folder_cannot_run(self):
         res = self.run_cli("--baseline-derived-data", os.path.join(self.tmp, "nope"))
         self.assert_cannot_run(res, "baseline")
@@ -674,7 +674,7 @@ class BaselineInputsTests(ZeroLossCase):
         self.assert_cannot_run(res, "stringsdata")
         self.assertNotIn("Traceback", res.stderr)
 
-    # F10: a record that is missing counts as a mismatch (the build cannot be shown to be the Baseline's)
+    # The build must be of the Baseline commit; a record that is missing counts as a mismatch (the build cannot be shown to be the Baseline's)
     def test_baseline_build_of_another_commit_cannot_run(self):
         self.write_baseline_record("0" * 40)
         res = self.run_cli()
@@ -703,7 +703,7 @@ class BaselineInputsTests(ZeroLossCase):
         self.assertRegex(tail, r'\$BASE"?\s*>\s*"?\$DERIVED/' + BASELINE_COMMIT_FILE,
                          "the commit is recorded after the build succeeded")
 
-    # F14
+    # Baseline sources map to repository files through the recorded worktree root
     def test_baseline_sources_map_through_the_recorded_worktree_root(self):
         root = "/work/DashWallet/baseline-checkout"  # contains /DashWallet/ above the repo root
         path = os.path.join(self.baseline_derived, "Send.stringsdata")
@@ -716,7 +716,7 @@ class BaselineInputsTests(ZeroLossCase):
         res = self.run_cli()
         self.assertEqual(res.returncode, 0, res.stdout + res.stderr)
 
-    # F13
+    # The default derived data is this checkout's newest simulator Debug build
     def make_build(self, name, source_root, mtime, platform="Debug-iphonesimulator"):
         """A fake Xcode DerivedData build under the temp HOME whose sources lie under source_root."""
         build = os.path.join(self.home, "Library", "Developer", "Xcode", "DerivedData", name, "Build",

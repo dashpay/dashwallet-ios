@@ -1,4 +1,4 @@
-"""Tests for lookup places and pairing (T5: AC-09, AC-18).
+"""Tests for lookup places and pairing (AC-09, AC-18).
 
 Run from the repository root:
 
