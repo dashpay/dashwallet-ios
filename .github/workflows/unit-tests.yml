@@ -153,7 +153,6 @@ jobs:
           CATALOG_WRITER_CACHE: ${{ runner.temp }}/l10n-catalog-writer
         run: |
           python3 -m unittest discover -s scripts/localization/tests
-          swift test --package-path scripts/localization/codemod
 
       # Same key as release-dashpay-testflight.yml so the two workflows share
       # one cached artifact per platform commit.

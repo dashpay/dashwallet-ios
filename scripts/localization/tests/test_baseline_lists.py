@@ -1,15 +1,14 @@
-"""T21: the Baseline reader lives in a kept module, not in the generator T20 deletes.
+"""The Baseline reader lives in baseline_lists, and no kept file depends on the removed migration tools.
 
 Run from the repository root:
 
     python3 -m unittest discover -s scripts/localization/tests -p 'test_baseline_lists.py'
 
-The rule: after T20 deletes the generator, the codemod, the entry mover, the Catalog project
-helper and regenerate.sh, every file that stays must still import. So no kept file imports
-(or runs) generate_catalog, and the Baseline reader is importable from baseline_lists.
+The Catalog generator, the codemod, the entry mover, the Catalog project helper and
+regenerate.sh were removed once the migration was done. No file that stays imports or runs
+them, and the Baseline reader is importable from baseline_lists.
 """
 import ast
-import importlib
 import os
 import re
 import shutil
@@ -22,11 +21,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 LOCALIZATION_DIR = os.path.dirname(HERE)
 REPO_ROOT = os.path.dirname(os.path.dirname(LOCALIZATION_DIR))
 FIXTURE_REPO = os.path.join(LOCALIZATION_DIR, "fixtures", "zero_loss", "repo")
-T20 = os.path.join(REPO_ROOT, "docs", "features", "string-catalogs-migration", "tasks",
-                   "T20-remove-migration-tools.md")
 sys.path.insert(0, LOCALIZATION_DIR)
 
-# What T20 deletes (relative to scripts/localization); catalog_project.py is used only by regenerate.sh.
+# The removed migration tools (relative to scripts/localization).
 REMOVED_FILES = {
     "generate_catalog.py", "move_entries.py", "catalog_project.py", "regenerate.sh",
     "tests/test_generate_catalog.py", "tests/test_move_entries.py", "tests/test_catalog_project.py",
@@ -87,13 +84,6 @@ class KeptFilesDoNotNeedRemovedToolsTests(unittest.TestCase):
                         offenders.append(os.path.relpath(os.path.join(root, name), REPO_ROOT))
         self.assertEqual(offenders, [])
 
-    @unittest.skipUnless(os.path.exists(T20), "the feature's planning drafts are not in this checkout")
-    def test_t20_lists_catalog_project(self):
-        with open(T20, encoding="utf-8") as f:
-            text = f.read()
-        self.assertIn("scripts/localization/catalog_project.py", text)
-        self.assertIn("scripts/localization/tests/test_catalog_project.py", text)
-
 
 class BaselineListsModuleTests(unittest.TestCase):
     def setUp(self):
@@ -124,15 +114,6 @@ class BaselineListsModuleTests(unittest.TestCase):
         self.assertTrue(cat["strings"])
         for entry in cat["strings"].values():
             self.assertTrue({"en", "de", "uk"} >= set(entry["localizations"]))
-
-    def test_same_result_as_the_generator_while_it_exists(self):
-        import baseline_lists
-        try:
-            generate_catalog = importlib.import_module("generate_catalog")  # not a static import
-        except ImportError:
-            self.skipTest("generator already removed by T20")
-        self.assertEqual(baseline_lists.build_catalog(self.repo, self.rev),
-                         generate_catalog.build_catalog(self.repo, self.rev))
 
     def test_does_not_depend_on_the_generator(self):
         path = os.path.join(LOCALIZATION_DIR, "baseline_lists.py")
