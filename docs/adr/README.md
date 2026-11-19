@@ -46,8 +46,16 @@ where they disagree, ADR-0001 wins.
 | [0050](0050-bound-an-unresolved-publish-by-48-hours-of-proved-platform-block-time.md) | Bound an unresolved publish by 48 hours of proved Platform block time | platform | Accepted | |
 | [0052](0052-refuse-response-removed-at-its-one-write-point-while-the-publish-is-unresolved.md) | Refuse "response removed" at its one write point while the publish is unresolved | platform | Accepted | |
 | [0053](0053-open-dashconnect-on-mainnet-and-gate-each-request-by-protocol-14.md) | Open DashConnect on mainnet and gate each request by protocol 14 | platform | Proposed | |
+| [0064](0064-declare-the-app-and-the-zero-loss-check-as-the-feature-surfaces.md) | Declare the app and the zero-loss check as the feature's surfaces | l10n | Proposed | |
+| [0065](0065-generate-the-catalog-from-the-baseline-lists-with-a-repository-script.md) | Generate the Catalog from the Baseline lists with a repository script | l10n | Proposed | |
+| [0066](0066-rewrite-formatted-lookups-as-interpolations-and-move-their-entries.md) | Rewrite formatted lookups as interpolations and move their Catalog entries | l10n | Proposed | |
+| [0067](0067-prove-zero-loss-by-pairing-each-code-place-with-its-baseline-key.md) | Prove zero loss by pairing each code place with its Baseline key | l10n | Proposed | |
+| [0068](0068-keep-the-catalog-in-step-with-xcodes-own-string-sync-in-every-build.md) | Keep the Catalog in step with Xcode's own string sync in every build | l10n | Proposed | |
+| [0069](0069-rewrite-swift-lookups-with-a-swiftsyntax-codemod-rerun-on-every-baseline.md) | Rewrite Swift lookups with a SwiftSyntax codemod re-run on every Baseline | l10n | Proposed | |
+| [0070](0070-check-releases-through-the-key-map.md) | Check releases through the key map instead of pairing code places | l10n | Proposed | |
+| [0071](0071-make-the-sync-phase-write-the-same-catalog-as-the-xcode-app.md) | Make the sync phase write the same Catalog as the Xcode app, and compile only the shipped locales | l10n | Proposed | |
 
-Areas: `spv`, `platform`, `keys`, `storage`, `coinjoin`, `payments`, `swap`, `ui`, `build`, `process`. Each ADR takes one; a new
+Areas: `spv`, `platform`, `keys`, `storage`, `coinjoin`, `payments`, `swap`, `ui`, `l10n`, `build`, `process`. Each ADR takes one; a new
 Area is added to this list in the PR that first needs it.
 
 ## Adding an ADR
