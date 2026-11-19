@@ -240,6 +240,8 @@ final class BIP70PaymentService {
             guard !overflow, sum <= kMaxDashSupplyDuffs else { throw BIP70Error.malformedRequest }
             amount = sum
         }
+        let paymentURL = details.paymentURL.flatMap { URL(string: $0) }
+        if let paymentURL, !PaymentProtocolTransport.isSecure(paymentURL) { throw BIP70Error.badURL }
         return Confirmation(
             merchantName: verdict.commonName,
             isSecure: verdict.isSecure,
@@ -247,7 +249,7 @@ final class BIP70PaymentService {
             amount: amount,
             estimatedFee: Self.estimatedFee(recipientCount: recipients.count),
             network: network,
-            paymentURL: details.paymentURL.flatMap { URL(string: $0) },
+            paymentURL: paymentURL,
             scheme: scheme,
             merchantData: details.merchantData,
             memo: details.memo,

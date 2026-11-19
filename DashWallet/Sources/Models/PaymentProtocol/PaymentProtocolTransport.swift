@@ -49,6 +49,7 @@ final class PaymentProtocolTransport: PaymentProtocolTransporting {
     /// `followURIList` guards BIP73 to a single hop (the uri-list may point at the real
     /// request; we never recurse beyond that).
     private func fetchRequest(from url: URL, scheme: String, followURIList: Bool) async throws -> PaymentRequest {
+        guard Self.isSecure(url) else { throw BIP70Error.badURL }
         var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: Self.timeout)
         request.setValue("application/\(scheme)-paymentrequest", forHTTPHeaderField: "Accept")
 
@@ -60,7 +61,7 @@ final class PaymentProtocolTransport: PaymentProtocolTransporting {
             return paymentRequest
         case "text/uri-list" where followURIList:
             // BIP73: the body is a list of URLs; fetch the first non-comment one once.
-            guard let next = Self.firstURL(inURIList: data), !Self.isDowngrade(from: url, to: next) else {
+            guard let next = Self.firstURL(inURIList: data) else {
                 throw BIP70Error.unexpectedResponse(host: url.host)
             }
             return try await fetchRequest(from: next, scheme: scheme, followURIList: false)
@@ -72,6 +73,7 @@ final class PaymentProtocolTransport: PaymentProtocolTransporting {
     // MARK: - Post
 
     func postPayment(_ payment: Payment, to url: URL, scheme: String) async throws -> PaymentACK {
+        guard Self.isSecure(url) else { throw BIP70Error.badURL }
         var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: Self.timeout)
         request.httpMethod = "POST"
         request.setValue("application/\(scheme)-payment", forHTTPHeaderField: "Content-Type")
@@ -97,7 +99,7 @@ final class PaymentProtocolTransport: PaymentProtocolTransporting {
                 throw BIP70Error.unexpectedResponse(host: host)
             }
             // A redirect may not leave https: the body is never read from a cleartext hop.
-            if let requested = request.url, let served = http.url, Self.isDowngrade(from: requested, to: served) {
+            if let served = http.url, !Self.isSecure(served) {
                 throw BIP70Error.unexpectedResponse(host: host)
             }
             guard http.expectedContentLength <= Int64(Self.maxPayloadBytes) else {
@@ -115,8 +117,9 @@ final class PaymentProtocolTransport: PaymentProtocolTransporting {
         }
     }
 
-    private static func isDowngrade(from url: URL, to next: URL) -> Bool {
-        url.scheme?.lowercased() == "https" && next.scheme?.lowercased() != "https"
+    /// Unsigned requests are allowed, so the channel is the only thing authenticating the merchant.
+    static func isSecure(_ url: URL) -> Bool {
+        url.scheme?.lowercased() == "https"
     }
 
     private static func firstURL(inURIList data: Data) -> URL? {

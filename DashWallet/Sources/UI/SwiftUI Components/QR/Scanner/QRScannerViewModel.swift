@@ -119,13 +119,13 @@ final class QRScannerViewModel: ObservableObject {
     }
 
     /// With several codes in frame, the payment scanner prefers a valid
-    /// Dash intent over whatever happens to be first (legacy
-    /// `preferredMetadataObjectInObjects:` behavior).
+    /// Dash intent or a whole request URL over whatever happens to be first
+    /// (legacy `preferredMetadataObjectInObjects:` behavior).
     private func preferredValue(in values: [String]) -> String? {
         guard case .payment = mode else { return values.first }
         let preferred = values.first {
-            ParsedPaymentURI.parse(paymentString: $0.trimmingCharacters(in: .whitespacesAndNewlines))
-                .isValidDashPaymentIntent
+            let parsed = ParsedPaymentURI.parse(paymentString: $0.trimmingCharacters(in: .whitespacesAndNewlines))
+            return parsed.isValidDashPaymentIntent || parsed.isWholeRequestURL
         }
         return preferred ?? values.first
     }

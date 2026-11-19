@@ -314,9 +314,9 @@ final class QRScannerTests: XCTestCase {
         let atSupply = ParsedPaymentURI.parse(paymentString: "dash:\(Self.address)?amount=21000000")
         XCTAssertEqual(atSupply.amount, kMaxDashSupplyDuffs)
         XCTAssertFalse(atSupply.hasInvalidAmount)
-        XCTAssertFalse(ParsedPaymentURI.parse(paymentString: "dash:\(Self.address)?amount=").hasInvalidAmount)
+        XCTAssertFalse(ParsedPaymentURI.parse(paymentString: "dash:\(Self.address)").hasInvalidAmount)
 
-        for amount in ["21000000.00000001", "184467440737", "-1", "abc"] {
+        for amount in ["21000000.00000001", "184467440737", "-1", "abc", ""] {
             for key in ["amount", "req-amount"] {
                 let code = "dash:\(Self.address)?\(key)=\(amount)"
                 let parsed = ParsedPaymentURI.parse(paymentString: code)
@@ -405,7 +405,19 @@ final class QRScannerTests: XCTestCase {
         XCTAssertEqual(BIP70InteractiveCoordinator.paymentProtocolScheme("bitcoin"), "bitcoin")
     }
 
-    /// Only a whole http(s) request URL is fetched without a `dash:` scheme;
+    /// A whole request URL in frame is preferred over unrelated text, as a
+    /// `dash:` intent is.
+    func testPaymentScannerPrefersAWholeRequestURLOverText() {
+        let (scanner, recorder) = makeScanner(.payment)
+        scanner.didDetectCodes(["hello", "https://merchant.invalid/pr"])
+        guard case .connecting = scanner.status else {
+            return XCTFail("the request URL is fetched, not the text: \(scanner.status)")
+        }
+        scanner.cancel()
+        XCTAssertTrue(recorder.results.isEmpty)
+    }
+
+    /// Only a whole https request URL is fetched without a `dash:` scheme;
     /// another currency's `r=` request is not Dash's to fetch.
     func testPaymentScannerFetchesNoForeignSchemeRequest() {
         let (scanner, recorder) = makeScanner(.payment)

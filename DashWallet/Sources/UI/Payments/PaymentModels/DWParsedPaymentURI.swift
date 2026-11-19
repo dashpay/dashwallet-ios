@@ -73,7 +73,7 @@ final class ParsedPaymentURI: NSObject {
     @objc let address: String?
     /// Amount in duffs; 0 when absent or invalid.
     @objc let amount: UInt64
-    /// An amount was given but is not payable (unreadable, negative, above the supply). The
+    /// An amount was given but is not payable (empty, unreadable, negative, above the supply). The
     /// address alone is then not a payment: paying it would drop the amount the payer asked for.
     @objc let hasInvalidAmount: Bool
     @objc let label: String?
