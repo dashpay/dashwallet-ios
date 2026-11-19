@@ -13,7 +13,7 @@
 The main app's texts live in `DashWallet/Localizable.xcstrings` (a String Catalog with 43 locales; the app ships 22, set by `XCSTRINGS_LANGUAGES_TO_COMPILE`).
 
 - Swift code uses `String(localized:)`; Objective-C keeps `NSLocalizedString`. CI fails if Swift uses `NSLocalizedString`.
-- The regular build (Xcode or `xcodebuild`) keeps the Catalog in step with the code through the dashpay "Sync String Catalog" phase. Commit the Catalog with the code; CI fails if a build changes the checkout.
+- The regular Debug build (Xcode or `xcodebuild`) keeps the Catalog in step with the code through the dashpay "Sync String Catalog" phase; other configurations compile the Catalog as committed. Commit the Catalog with the code; CI fails if a build changes the checkout.
 
 ### Translation sync pause
 

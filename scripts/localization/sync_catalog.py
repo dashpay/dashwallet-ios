@@ -11,6 +11,11 @@ Objective-C .m/.mm files under SRCROOT named in the <arch>/*.d dependency files,
 `xcstringstool sync` on a copy of the Catalog, re-serializes it with catalog_io (the
 format the Xcode app writes) and replaces the Catalog only when the bytes changed.
 
+Only a Debug build syncs: another configuration (Release, TestFlight, TestNet) does not compile
+`#if DEBUG` code, so its sync would mark the texts only that code looks up as stale, and the
+Catalog would depend on the configuration. Those builds compile the Catalog as committed.
+Without CONFIGURATION (the script run by hand or by its tests) it syncs.
+
 SYNC_CATALOG_PATH (optional) overrides the Catalog path; used to try the script on a copy.
 Errors go to stderr as `error: ...` with a non-zero exit, so Xcode shows them.
 """
@@ -153,6 +158,9 @@ def main(argv=None):
     started = time.time()
     try:
         env = os.environ
+        if env.get("CONFIGURATION", "Debug") != "Debug":
+            print("note: Catalog sync skipped in the %s configuration; only Debug builds sync" % env["CONFIGURATION"])
+            return 0
         for name in ("SRCROOT", "OBJECT_FILE_DIR_normal", "TARGET_NAME"):
             if not env.get(name):
                 raise SyncError("environment variable %s is not set" % name)

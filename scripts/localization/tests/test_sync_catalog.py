@@ -118,6 +118,20 @@ class SyncCatalogTest(unittest.TestCase):
         self.assertNotIn("skipped", again.stdout)
         self.assertEqual(self.read_bytes(), normalized)
 
+    def test_debug_configuration_syncs(self):
+        res = self.run_sync(dict(self.env, CONFIGURATION="Debug"))
+        self.assertEqual(res.returncode, 0, res.stderr)
+        self.assertEqual(entry(catalog_io.read_catalog(self.catalog), "Used nowhere").get("extractionState"), "stale")
+
+    def test_other_configurations_leave_the_catalog_alone(self):
+        # A Release build does not compile #if DEBUG code; syncing it would mark that code's texts stale.
+        before = self.read_bytes()
+        for configuration in ("Release", "TestFlight", "TestNet"):
+            res = self.run_sync(dict(self.env, CONFIGURATION=configuration))
+            self.assertEqual(res.returncode, 0, res.stderr)
+            self.assertIn("Catalog sync skipped", res.stdout)
+            self.assertEqual(self.read_bytes(), before, configuration)
+
     def test_missing_catalog_is_a_noop(self):
         os.remove(self.catalog)
         res = self.run_sync()
