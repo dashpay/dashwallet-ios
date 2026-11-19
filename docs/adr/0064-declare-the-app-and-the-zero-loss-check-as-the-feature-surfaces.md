@@ -21,7 +21,7 @@ The move changes no screen: every flow in ux-flows.md is a verification path thr
 
 ## Decision outcome
 
-**Chosen:** option 1, `mobile-app` + `cli`. The check is used after merge by someone other than its author (the release preparer), so its report format and exit codes are recorded as a contract (`contracts/cli.md`) that AC-09/AC-10 tests can assert against; option 2 leaves that format unwritten.
+**Chosen:** option 1, `mobile-app` + `cli`. The check is used after merge by someone other than its author (the release preparer), so its report format and exit codes are recorded as a contract (`scripts/localization/ZERO_LOSS_CHECK.md`) that AC-09/AC-10 tests can assert against; option 2 leaves that format unwritten.
 
 The UI architecture of the `mobile-app` surface does not change: native UIKit + SwiftUI as today, no new screen; the `screens` stage has nothing to draw.
 
@@ -32,7 +32,7 @@ The UI architecture of the `mobile-app` surface does not change: native UIKit + 
 - `plan-tests` adds the e2e-through-UI tier that the Maestro flows fill.
 
 **Negative**
-- One more artifact (`contracts/cli.md`) for a small tool.
+- One more artifact (`scripts/localization/ZERO_LOSS_CHECK.md`) for a small tool.
 
 **Neutral**
 - `target_surfaces: [mobile-app, cli]` in the SAD frontmatter; downstream stages read it and do not re-derive it.

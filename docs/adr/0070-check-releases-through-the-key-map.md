@@ -23,7 +23,7 @@ ADR-0067 proves zero loss by pairing each code place with the key that place use
 
 ## Decision outcome
 
-**Chosen:** option 1 (owner decision 2026-11-19). Release mode reads the key map, refuses `--baseline`, `--derived-data` and `--write-key-map`, needs no build, runs checks 1, 4, 5 and 6 of `contracts/cli.md`, and in place of checks 2–3 runs the key check: a difference is a `key` finding. A deliberate wording change since the Baseline also fails as a `key` finding and is judged by hand; there is no list of accepted changes.
+**Chosen:** option 1 (owner decision 2026-11-19). Release mode reads the key map, refuses `--baseline`, `--derived-data` and `--write-key-map`, needs no build, runs checks 1, 4, 5 and 6 of `scripts/localization/ZERO_LOSS_CHECK.md`, and in place of checks 2–3 runs the key check: a difference is a `key` finding. A deliberate wording change since the Baseline also fails as a `key` finding and is judged by hand; there is no list of accepted changes.
 
 ## Consequences
 

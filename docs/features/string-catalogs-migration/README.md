@@ -21,7 +21,8 @@ keeps in step with the code.
   [ADR-0068](../../adr/0068-keep-the-catalog-in-step-with-xcodes-own-string-sync-in-every-build.md),
   [ADR-0071](../../adr/0071-make-the-sync-phase-write-the-same-catalog-as-the-xcode-app.md).
 - **A zero-loss check** (`scripts/localization/zero_loss_check.py`) proves that every text reads as
-  before in every locale; it stays in the repository for the release re-checks.
+  before in every locale; it stays in the repository for the release re-checks. How to run it:
+  [`scripts/localization/ZERO_LOSS_CHECK.md`](../../../scripts/localization/ZERO_LOSS_CHECK.md).
   [ADR-0064](../../adr/0064-declare-the-app-and-the-zero-loss-check-as-the-feature-surfaces.md),
   [ADR-0067](../../adr/0067-prove-zero-loss-by-pairing-each-code-place-with-its-baseline-key.md),
   [ADR-0070](../../adr/0070-check-releases-through-the-key-map.md).

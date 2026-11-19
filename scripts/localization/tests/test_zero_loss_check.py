@@ -4,7 +4,7 @@ Run from the repository root:
 
     python3 -m unittest discover -s scripts/localization/tests -p 'test_*.py'
 
-The CLI (scripts/localization/zero_loss_check.py, contract: contracts/cli.md) is always run as a
+The CLI (scripts/localization/zero_loss_check.py, contract: scripts/localization/ZERO_LOSS_CHECK.md) is always run as a
 subprocess with its working directory at the root of a temporary git repository built in setUp:
 
   * Baseline commit on branch `develop` (also `refs/remotes/origin/develop`): per-locale lists
@@ -15,7 +15,7 @@ subprocess with its working directory at the root of a temporary git repository 
     `Sample %lld items`; `Unused thing` and `English only` are Unused entries (extractionState stale).
   * Hand-made .stringsdata in the compiler's shape (fixtures/zero_loss/stringsdata/ok/).
 
-Choices where cli.md is silent (the implementation must follow them or the contract gets amended):
+Choices where ZERO_LOSS_CHECK.md is silent (the implementation must follow them or the contract gets amended):
   * the 43-locale rows are the locales of the Baseline lists (3 here), sorted by locale code;
   * the Catalog is read from DashWallet/Localizable.xcstrings of the working tree;
   * the key map goes to <repo root>/scripts/localization/zero_loss_key_map.json (indent not fixed);
@@ -491,7 +491,7 @@ class FindingTests(ZeroLossCase):
 
 class KeySetTwoWayTests(ZeroLossCase):
     """T23 (review F12): in pre-merge mode the Catalog's keys are exactly
-    (Baseline keys - moved-from keys) | moved-to keys, in both directions (cli.md check 4, AC-06)."""
+    (Baseline keys - moved-from keys) | moved-to keys, in both directions (ZERO_LOSS_CHECK.md check 4)."""
 
     def key_findings(self, res, key):
         return [l for l in self.findings(res) if json.dumps(key) in l]

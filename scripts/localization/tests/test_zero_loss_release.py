@@ -1,4 +1,4 @@
-"""Tests for the zero-loss check, release mode (T8: AC-10, edge cases of the task; contract: contracts/cli.md).
+"""Tests for the zero-loss check, release mode (contract: scripts/localization/ZERO_LOSS_CHECK.md).
 
 Same temporary repository as test_zero_loss_check.py. setUp additionally runs a passing pre-merge run
 with --write-key-map, so the key map the release run reads is the one the pre-merge mode wrote.
