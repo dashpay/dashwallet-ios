@@ -1,13 +1,32 @@
 import Foundation
 import LocalizationCodemod
 
-var roots = Array(CommandLine.arguments.dropFirst())
-let dryRun = roots.contains("--dry-run")
+var arguments = Array(CommandLine.arguments.dropFirst())
 
-roots.removeAll { $0 == "--dry-run" }
+let dryRun = arguments.contains("--dry-run")
+
+arguments.removeAll { $0 == "--dry-run" }
+
+var keepLiteralKeys: Set<String> = []
+
+if let flag = arguments.firstIndex(of: "--keep-literal-keys") {
+    guard flag + 1 < arguments.count else {
+        print("codemod: --keep-literal-keys needs a file")
+        exit(2)
+    }
+    do {
+        let text = try String(contentsOfFile: arguments[flag + 1], encoding: .utf8)
+        let lines = text.split(separator: "\n").map { String($0).trimmingCharacters(in: .whitespaces) }
+        keepLiteralKeys = Set(lines.filter { !$0.isEmpty })
+    } catch {
+        print("codemod: \(error)")
+        exit(2)
+    }
+    arguments.removeSubrange(flag ... flag + 1)
+}
 
 do {
-    for line in try runCodemod(roots: roots, dryRun: dryRun) {
+    for line in try runCodemod(roots: arguments, dryRun: dryRun, keepLiteralKeys: keepLiteralKeys) {
         print(line)
     }
 } catch {
