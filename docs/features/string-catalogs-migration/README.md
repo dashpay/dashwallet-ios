@@ -14,7 +14,9 @@ keeps in step with the code.
   locales; the app ships 22 of them. The Catalog was generated from the old lists.
   [ADR-0065](../../adr/0065-generate-the-catalog-from-the-baseline-lists-with-a-repository-script.md).
 - **Swift looks texts up with `String(localized:)`**; a text with arguments became an interpolation and
-  its entry moved to the new key in every locale. Objective-C keeps `NSLocalizedString`.
+  its entry moved to the new key in every locale, except where an interpolation would change the
+  wording: fixed-precision floats, and integers such as block heights and counts, which stay ungrouped
+  through `String(format:)` with their old key (`UngroupedCountTests`). Objective-C keeps `NSLocalizedString`.
   [ADR-0066](../../adr/0066-rewrite-formatted-lookups-as-interpolations-and-move-their-entries.md),
   [ADR-0069](../../adr/0069-rewrite-swift-lookups-with-a-swiftsyntax-codemod-rerun-on-every-baseline.md).
 - **Debug builds keep the Catalog in step with the code** through a "Sync String Catalog" build phase.

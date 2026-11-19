@@ -28,6 +28,7 @@ Rules that follow from it:
 - A plain text (no arguments) keeps its key: `String(localized: "k", comment: "c")`.
 - A formatted text becomes an interpolation. When the derived key differs from the Baseline key, the entry moves to the derived key in all 43 locales with all its translations and plural variants, and each translation's format codes are rewritten to the derived ones, keeping their positions (`%1$d` → `%1$lld`). No Unused copy of the old key remains (AC-06).
 - Where an interpolation cannot reproduce the Baseline wording for the same sample arguments (for example a fixed-precision float `%.0f`, whose interpolation formats through a format style), the place keeps its literal key and its formatting call; the zero-loss check (ADR-0067) is the judge, not the rewrite.
+- An integer that the Baseline formatted with the locale-less `String(format:)` and that can reach 1000 (block heights, list counts, indexes, status codes) keeps its literal key and `String(format: String(localized: "<Baseline key>"), …)`: an interpolation groups it by locale (`2,123,456` for the Baseline's `2123456`). The zero-loss check formats both sides with `String(format:locale:)` and cannot see this, so `DashWalletTests/Localization/UngroupedCountTests.swift` lists these places and checks them (owner decision 2026-11-19).
 
 ## Consequences
 
