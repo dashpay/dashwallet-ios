@@ -43,9 +43,10 @@ protocol ReceiveAddressProviding {
     func receiveAddress() -> String?
 }
 
-/// PIN / biometric gate. Returns on success; throws `BIP70Error.authCancelled` on user cancel.
+/// PIN / biometric gate for a send of `spendAmount` duffs. Returns on success; throws
+/// `BIP70Error.authCancelled` on user cancel.
 protocol SendAuthorizing {
-    func authorize() async throws
+    func authorize(spendAmount: UInt64) async throws
 }
 
 // MARK: - Single-use guard
@@ -391,7 +392,7 @@ final class BIP70PaymentService {
             try await validate(confirmation)
             try Self.assertNotExpired(confirmation.request.details.expires, now: now())
         }
-        try await auth.authorize()
+        try await auth.authorize(spendAmount: confirmation.amount)
         return try await confirmAndSend(confirmation, now: now(), awaitAcceptance: awaitAcceptance)
     }
 

@@ -36,8 +36,9 @@ enum DashSpendError: Error, LocalizedError {
     case swapAwaitingInstantLock
     case authenticationCancelled
     /// A gift card purchase that ended with nothing sent and nothing to tell the buyer: a
-    /// higher price was declined or could not be shown because the screen went away, or the
-    /// start was a repeat of a purchase already running or of a sheet already cancelled.
+    /// higher price was declined, the purchase screen went away before the payment was
+    /// authorized, or the start was a repeat of a purchase already running or of a sheet
+    /// already cancelled.
     case purchaseCancelled
     /// The Dash payment was broadcast but the network returned no acceptance verdict in time.
     /// The order is NOT lost: the merchant holds the signed transaction and the gift card is

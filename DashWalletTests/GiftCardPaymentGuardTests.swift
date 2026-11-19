@@ -668,6 +668,44 @@ final class DashSpendPayApprovalTests: XCTestCase {
         if case .priceUpdated? = viewModel.purchaseSheet { XCTFail("a price change was shown with no screen") }
     }
 
+    /// A quote as confirmed needs no answer, but with the screen closed nothing follows it:
+    /// no PIN prompt is raised over whatever the buyer went on to.
+    func testQuoteAsConfirmedAfterTheScreenClosedEndsThePurchase() async throws {
+        let (viewModel, snapshot) = try viewModelWithConfirmSheet()
+        viewModel.unsubscribeFromAll()
+
+        let task = Task { try await viewModel.confirmQuote(requested: snapshot.approval.amount, approval: snapshot.approval) }
+        await assertCancelled(task)
+    }
+
+    /// The screen closes in the moment the sheet is leaving after the quote was accepted.
+    func testScreenClosingWhileTheSheetLeavesEndsThePurchase() async throws {
+        let (viewModel, snapshot) = try viewModelWithConfirmSheet()
+        viewModel.sheetDismissalWait = 5
+
+        let task = Task { try await viewModel.confirmQuote(requested: snapshot.approval.amount, approval: snapshot.approval) }
+        for _ in 0..<1_000 where viewModel.purchaseSheet != nil { await Task.yield() }
+        XCTAssertNil(viewModel.purchaseSheet, "the quote was not accepted")
+
+        viewModel.unsubscribeFromAll()
+        viewModel.purchaseSheetDidDismiss()
+        await assertCancelled(task)
+    }
+
+    /// Tapping Pay shows the screen is there, so a purchase begun after the screen was last
+    /// reported gone goes on.
+    func testAPurchaseBegunAfterTheScreenWasReportedGoneGoesOn() async throws {
+        let viewModel = makeViewModel()
+        viewModel.unsubscribeFromAll()
+        try viewModel.beginPurchase(price: 25)
+        guard case .confirm(let snapshot)? = viewModel.purchaseSheet else {
+            return XCTFail("the Confirm sheet did not open")
+        }
+
+        try await viewModel.confirmQuote(requested: snapshot.approval.amount, approval: snapshot.approval)
+        XCTAssertNil(viewModel.purchaseSheet)
+    }
+
     /// The screen also disappears and comes back around a full-screen prompt. A price change
     /// is shown again once it is back.
     func testPriceChangeIsShownAgainOnceTheScreenIsBack() async throws {

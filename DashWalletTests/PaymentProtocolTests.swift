@@ -591,8 +591,10 @@ private final class FakeAuth: SendAuthorizing {
     var error: Error?
     var onAuthorize: (() -> Void)?
     private(set) var authorizeCount = 0
-    func authorize() async throws {
+    private(set) var authorizedAmounts: [UInt64] = []
+    func authorize(spendAmount: UInt64) async throws {
         authorizeCount += 1
+        authorizedAmounts.append(spendAmount)
         onAuthorize?()
         if let e = error { throw e }
     }
@@ -788,6 +790,7 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertEqual(seenAmount, 100_000)
         XCTAssertEqual(result.amount, 100_000)
         XCTAssertEqual(auth.authorizeCount, 1)
+        XCTAssertEqual(auth.authorizedAmounts, [100_000], "the prompt is for the request's amount")
     }
 
     /// A request the caller refuses ends the flow there: no PIN prompt, nothing built or
