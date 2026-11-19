@@ -45,9 +45,9 @@ What the build does, in addition to ADR-0068's settings:
 
 **Negative**
 - Own code in the build: the legacy extraction call and a re-serializer that must keep matching the Xcode app's format; a future Xcode that writes differently shows up as a CI diff.
-- A text looked up only in `#if !DEBUG` code would be marked stale by every Debug build; none exists today. The Xcode app's own sync after a Release build is not covered by the phase's skip; T19 checks it once.
-- The Xcode app's order follows the Mac's locale; a Developer on a Mac in another language could get another order than the pinned one. T19 checks it once.
-- The phase costs about 5.7 s per build in the pilot (0.6 s extraction, 1.8–4.3 s sync, 0.8 s re-serialization), against a removed BartyCrouch phase; T19 measures it against spec §6, and the phase may skip itself when no `.stringsdata` changed.
+- A text looked up only in `#if !DEBUG` code would be marked stale by every Debug build; none exists today. The Xcode app's own sync after a Release build is not covered by the phase's skip; one Release build in the Xcode app left the Catalog unchanged (2026-11-19).
+- The Xcode app's order follows the Mac's locale; a Developer on a Mac in another language could get another order than the pinned one. Not checked; the owner accepted the risk on 2026-11-19.
+- The phase costs about 5.7 s per build in the pilot (0.6 s extraction, 1.8–4.3 s sync, 0.8 s re-serialization), against a removed BartyCrouch phase; a full sync measured 5.2 s against the Baseline's 21.2 s BartyCrouch build, and the phase skips itself when no `.stringsdata` changed.
 
 **Neutral**
 - The 21 unshipped locales keep their translations in the Catalog and in the zero-loss check, as they kept them on disk.
