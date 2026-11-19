@@ -1825,8 +1825,8 @@ final class InternalTransferViewModel: ObservableObject {
     /// The consensus floor, not a product choice: below it the withdrawal's
     /// Core output would be dust and the network rejects the transition.
     private static let identityWithdrawalMinimumMessage = String.localizedStringWithFormat(
-        NSLocalizedString(
-            "Enter at least %@ DASH",
+        String(
+            localized: "Enter at least %@ DASH",
             comment: "Identity top-up sheet — custom amount below the floor"),
         (IdentityWithdrawViewModel.minimumWithdrawalCredits / 1000).dashAmount
             .formattedDashAmountWithoutCurrencySymbol)
@@ -1838,8 +1838,8 @@ final class InternalTransferViewModel: ObservableObject {
     /// Same floor (and nearly the same wording) as the top-up sheet's custom
     /// amount field — both feed `IdentityTopUpViewModel.topUp`.
     private static let identityMinimumMessage = String.localizedStringWithFormat(
-        NSLocalizedString(
-            "Enter at least %@ DASH",
+        String(
+            localized: "Enter at least %@ DASH",
             comment: "Identity top-up sheet — custom amount below the floor"),
         IdentityTopUpViewModel.customMinimumDuffs.dashAmount
             .formattedDashAmountWithoutCurrencySymbol)

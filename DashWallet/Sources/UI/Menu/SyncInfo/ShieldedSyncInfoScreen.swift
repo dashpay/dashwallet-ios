@@ -150,7 +150,7 @@ struct ShieldedSyncInfoScreen: View {
                     .foregroundColor(.dash.primaryText)
                 Spacer()
                 if let elapsed = monitor.currentSyncElapsed {
-                    Text(String.localizedStringWithFormat(NSLocalizedString("%.1f s", comment: "Seconds, abbreviated"), elapsed))
+                    Text(String.localizedStringWithFormat(String(localized: "%.1f s", comment: "Seconds, abbreviated"), elapsed))
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(Color.dash.secondaryText)
                         .monospacedDigit()
@@ -180,11 +180,11 @@ struct ShieldedSyncInfoScreen: View {
         VStack(alignment: .leading, spacing: 8) {
             if let last = monitor.lastSyncDuration {
                 row(title: String(localized: "Last Sync Duration", comment: "Sync diagnostics"),
-                    value: String.localizedStringWithFormat(NSLocalizedString("%.2f s", comment: "Seconds, abbreviated"), last))
+                    value: String.localizedStringWithFormat(String(localized: "%.2f s", comment: "Seconds, abbreviated"), last))
                 // Only worth a row when it meaningfully exceeds the last pass.
                 if let longest = monitor.longestSyncDuration, longest > last + 0.05 {
                     row(title: String(localized: "Longest Pass", comment: "Sync diagnostics"),
-                        value: String.localizedStringWithFormat(NSLocalizedString("%.2f s", comment: "Seconds, abbreviated"), longest))
+                        value: String.localizedStringWithFormat(String(localized: "%.2f s", comment: "Seconds, abbreviated"), longest))
                 }
             }
         }
@@ -305,7 +305,7 @@ struct ShieldedSyncInfoScreen: View {
                     .monospacedDigit()
             } else if let value {
                 SwiftUI.ProgressView().scaleEffect(0.6)
-                Text(String.localizedStringWithFormat(NSLocalizedString("%@ notes", comment: "Sync diagnostics - shielded note count"),
+                Text(String.localizedStringWithFormat(String(localized: "%@ notes", comment: "Sync diagnostics - shielded note count"),
                             formattedCount(value), value))
                     .font(.system(size: 11))
                     .foregroundColor(Color.dash.secondaryText)

@@ -58,8 +58,8 @@ enum ConfirmOrderItem: PreviewOrderItem {
             return nil
         }
 
-        return NSLocalizedString("You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer.",
-                                 comment: "Coinbase/Buy Dash/Confirm Order")
+        return String(localized: "You will receive %@ Dash on your Dash Wallet on this device. Please note that it can take up to 2-3 minutes to complete a transfer.",
+                      comment: "Coinbase/Buy Dash/Confirm Order")
     }
 
     var cellIdentifier: String {

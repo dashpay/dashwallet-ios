@@ -217,13 +217,13 @@ final class PointOfUseListViewModel: ObservableObject {
         switch configuration.kind {
         case .atms:
             guard model.currentSegment.showMap else { return nil }
-            format = NSLocalizedString("%d ATM(s) in %@", comment: "#bc-ignore!")
+            format = String(localized: "%d ATM(s) in %@", comment: "#bc-ignore!")
         case .merchants:
             guard model.showMap,
                   model.currentSegment != MerchantsListSegment.all,
                   items.contains(where: { $0.isPhysical })
             else { return nil }
-            format = NSLocalizedString("%d merchant(s) in %@", comment: "#bc-ignore!")
+            format = String(localized: "%d merchant(s) in %@", comment: "#bc-ignore!")
         }
 
         return String.localizedStringWithFormat(format, items.count, formattedSearchRadius)

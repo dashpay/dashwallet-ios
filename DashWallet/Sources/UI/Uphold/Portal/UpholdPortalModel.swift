@@ -175,8 +175,8 @@ final class UpholdPortalModel: BaseIntegrationModel {
     }
 
     func successMessageText(for transaction: DWUpholdTransactionObject) -> String {
-        String(format: NSLocalizedString("Your transaction was sent and the amount should appear in your wallet in a few minutes.", comment: ""),
-               NSLocalizedString("Transaction id", comment: ""), transaction.identifier)
+        String(format: String(localized: "Your transaction was sent and the amount should appear in your wallet in a few minutes.", comment: ""),
+               String(localized: "Transaction id", comment: ""), transaction.identifier)
     }
     
     private func checkCapabilities() {

@@ -133,7 +133,7 @@ final class DashPayContactsNotificationProducer {
                 item,
                 eventDate: item.createdAt,
                 id: "contact.request.\(owner).\(item.contactIdentityId.hexEncodedString()).\(Self.stamp(item.createdAt))",
-                bodyFormat: NSLocalizedString("%@ has sent you a contact request", comment: "DashPay Notifications"),
+                bodyFormat: String(localized: "%@ has sent you a contact request", comment: "DashPay Notifications"),
                 cutoff: cutoff)
         }
 
@@ -145,7 +145,7 @@ final class DashPayContactsNotificationProducer {
                 item,
                 eventDate: item.createdAt,
                 id: "contact.accepted.\(owner).\(item.contactIdentityId.hexEncodedString()).\(Self.stamp(item.createdAt))",
-                bodyFormat: NSLocalizedString("%@ accepted your contact request", comment: "DashPay Notifications"),
+                bodyFormat: String(localized: "%@ accepted your contact request", comment: "DashPay Notifications"),
                 cutoff: cutoff)
         }
     }

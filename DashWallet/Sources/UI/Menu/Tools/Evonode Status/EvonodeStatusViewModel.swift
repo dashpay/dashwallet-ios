@@ -344,8 +344,8 @@ final class EvonodeStatusViewModel: ObservableObject {
         guard value > 0 else { return number(0) }
         let seconds = TimeInterval(value) / 1_000_000_000
         if seconds < 1 {
-            return String(format: NSLocalizedString("%.3f s", comment: "Evonode status: sub-second duration"), seconds)
+            return String(format: String(localized: "%.3f s", comment: "Evonode status: sub-second duration"), seconds)
         }
-        return durationFormatter.string(from: seconds) ?? String(format: NSLocalizedString("%.0f s", comment: "Evonode status: duration"), seconds)
+        return durationFormatter.string(from: seconds) ?? String(format: String(localized: "%.0f s", comment: "Evonode status: duration"), seconds)
     }
 }

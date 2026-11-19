@@ -81,8 +81,8 @@ struct QuickVotingSheet: View {
             return String(localized: "None of the filtered usernames can get a vote.", comment: "Voting")
         }
         let format = approvesLinkedRequests
-            ? NSLocalizedString("Vote for all approves the linked request for %d usernames", comment: "Voting: Quick voting sheet")
-            : NSLocalizedString("Vote for all approves %d usernames", comment: "Voting: Quick voting sheet")
+            ? String(localized: "Vote for all approves the linked request for %d usernames", comment: "Voting: Quick voting sheet")
+            : String(localized: "Vote for all approves %d usernames", comment: "Voting: Quick voting sheet")
         let voted = String.localizedStringWithFormat(format, votedCount)
         guard skippedCount > 0 else { return voted }
         let skipped = String(localized: "\(skippedCount) usernames are skipped", comment: "Voting: Quick voting sheet")

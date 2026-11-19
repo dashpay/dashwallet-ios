@@ -828,7 +828,7 @@ extension MainTabbarController {
     
     private func showVolatileWarning() {
         self.showToast(
-            text: NSLocalizedString("Prices have fluctuated more than 50% since the last update.", comment: "Stale rates"),
+            text: String(localized: "Prices have fluctuated more than 50% since the last update.", comment: "Stale rates"),
             icon: .system("exclamationmark.triangle.fill"),
             actionText: String(localized: "OK", comment: "Stale rates"),
             action: { toastView in

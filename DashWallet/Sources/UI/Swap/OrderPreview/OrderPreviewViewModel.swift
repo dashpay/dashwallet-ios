@@ -478,7 +478,7 @@ final class OrderPreviewViewModel: ObservableObject {
         // `prettifyProviders` — matching text in it would tie a money rule to UI copy.
         if resolvedMemo != nil, dashSatoshis < MayaDepositRules.minimumDepositDuffs {
             let minimum = Decimal(MayaDepositRules.minimumDepositDuffs) / Decimal(kOneDash)
-            let format = NSLocalizedString("The minimum DASH deposit for this swap is %@.", comment: "Dash DEX")
+            let format = String(localized: "The minimum DASH deposit for this swap is %@.", comment: "Dash DEX")
             throw swapFieldError(String(format: format, minimum.formattedDashAmount))
         }
 
