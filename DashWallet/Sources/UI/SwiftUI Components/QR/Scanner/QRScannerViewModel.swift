@@ -162,7 +162,7 @@ final class QRScannerViewModel: ObservableObject {
                     // the payment URI instead of pasting the whole URI.
                     finish(.text(address))
                 } else if expectsDashAddress, parsed.rURL == nil, parsed.address != nil,
-                          !parsed.isAddressPayableForCurrentNetwork {
+                          !parsed.isValidDashPaymentIntent {
                     showInvalid(message: invalidQRMessage(for: parsed))
                 } else if Self.isOfferablePayment(parsed) {
                     offerPaymentRedirect(parsed, fallbackMessage: nil)
@@ -195,9 +195,9 @@ final class QRScannerViewModel: ObservableObject {
                 } else {
                     finish(.payment(inputBuilder.paymentInput(withParsedURI: parsed, source: .scanQR)))
                 }
-            } else if parsed.rURL != nil {
-                // Not a valid Dash intent, but a BIP73 http(s) request URL
-                // scanned whole → fetch it.
+            } else if parsed.isWholeRequestURL {
+                // A BIP73 http(s) request URL scanned whole → fetch it. A
+                // foreign scheme's `r=` is that currency's request, not Dash's.
                 fetchBIP70(parsed: parsed, fallBackToEmbeddedAddress: false)
             } else {
                 showInvalid(message: invalidQRMessage(for: parsed))
@@ -205,8 +205,9 @@ final class QRScannerViewModel: ObservableObject {
 
         #if DASHPAY
         case .dashPayUser(let link):
+            guard !refusesWhileLocked() else { return }
             if hasDashPayIdentity() {
-                finishLeavingFlow(.dashPayUser(link))
+                finish(.dashPayUser(link))
             } else {
                 showInvalid(message: noIdentityMessage)
             }
@@ -222,11 +223,11 @@ final class QRScannerViewModel: ObservableObject {
     }
 
     /// A merchant request whose fetch failed, with its request URL dropped,
-    /// when the embedded address is one the wallet can pay. Any payable
-    /// form: a Platform or Shielded address goes on to the Send screen.
+    /// when the embedded address and amount are ones the wallet can pay. Any
+    /// payable form: a Platform or Shielded address goes on to the Send screen.
     nonisolated static func fallback(afterFailedRequest parsed: ParsedPaymentURI) -> ParsedPaymentURI? {
         let cleared = parsed.byClearingRequestURL()
-        guard cleared.isAddressPayableForCurrentNetwork, cleared.address != nil else { return nil }
+        guard cleared.isValidDashPaymentIntent, cleared.address != nil else { return nil }
         return cleared
     }
 
@@ -303,6 +304,7 @@ final class QRScannerViewModel: ObservableObject {
 
     #if DASHPAY
     private func offerDashPayUserRedirect(_ link: DashPayUserLink) {
+        guard !refusesWhileLocked() else { return }
         guard hasDashPayIdentity() else {
             showInvalid(message: noIdentityMessage)
             return
@@ -313,7 +315,7 @@ final class QRScannerViewModel: ObservableObject {
     }
 
     private func offerInvitationRedirect(_ url: URL) {
-        guard !refusesInvitation(url) else { return }
+        guard !refusesWhileLocked(), !refusesInvitation(url) else { return }
         offer(.invitation(url),
               message: NSLocalizedString("This QR code is a DashPay invitation.", comment: "QR scanner"),
               actionTitle: NSLocalizedString("Claim Invitation", comment: "QR scanner"))
@@ -323,20 +325,22 @@ final class QRScannerViewModel: ObservableObject {
     /// Nothing is offered while the wallet is locked: accepting would take
     /// the user out of this flow into one the lock is meant to hide.
     private func offer(_ payload: QRPayload, message: String, actionTitle: String) {
-        guard !isWalletLocked() else {
-            showInvalid(message: nil)
-            return
-        }
+        guard !refusesWhileLocked() else { return }
         status = .offer(payload: payload, message: message, actionTitle: actionTitle)
+    }
+
+    /// Checked before any other flow's eligibility is read, so a locked
+    /// scanner gives the same answer whatever the wallet holds.
+    private func refusesWhileLocked() -> Bool {
+        guard isWalletLocked() else { return false }
+        showInvalid(message: nil)
+        return true
     }
 
     func acceptOffer() {
         guard case .offer(let payload, _, _) = status else { return }
         // The lock may have engaged while the offer was on screen.
-        guard !isWalletLocked() else {
-            showInvalid(message: nil)
-            return
-        }
+        guard !refusesWhileLocked() else { return }
         switch payload {
         case .payment:
             // Use the same BIP70 fetch/verification and address fallback as
@@ -359,18 +363,6 @@ final class QRScannerViewModel: ObservableObject {
     }
 
     // MARK: State transitions
-
-    #if DASHPAY
-    /// A payload that belongs to another flow, accepted straight from the
-    /// payment scanner: only while the wallet is unlocked.
-    private func finishLeavingFlow(_ result: QRScanResult) {
-        if isWalletLocked() {
-            showInvalid(message: nil)
-        } else {
-            finish(result)
-        }
-    }
-    #endif
 
     private func finish(_ result: QRScanResult) {
         finished = true
@@ -405,6 +397,9 @@ final class QRScannerViewModel: ObservableObject {
     /// address; anything else (bare, garbage, foreign scheme) is
     /// "not a Dash QR code".
     private func invalidQRMessage(for parsed: ParsedPaymentURI) -> String {
+        if parsed.scheme == "dash", parsed.hasInvalidAmount {
+            return NSLocalizedString("Invalid payment amount", comment: "")
+        }
         if parsed.hasExplicitScheme, parsed.scheme == "dash", let address = parsed.address, address.count > 1 {
             return "\(NSLocalizedString("Not a valid Dash address", comment: "")):\n\(address)"
         }

@@ -36,6 +36,9 @@ struct BIP70URI {
     /// `?amount=` parsed from decimal DASH to duffs. Authoritative amount for a BIP70 send still
     /// comes from the signed `PaymentDetails`; this is for the plain-send fallback / UI hints.
     let amount: UInt64?
+    /// An `amount` was given that is not one the wallet can pay: unreadable, negative, or above
+    /// the coin supply. Not the same as no amount: the payer did not ask for an open amount.
+    let hasInvalidAmount: Bool
     let label: String?
     let message: String?
     /// `?r=` BIP72 payment-request URL — the BIP70 trigger. For `.bip73URL` it's the input itself.
@@ -92,6 +95,7 @@ struct BIP70URI {
 
         // Parse the query string.
         var amount: UInt64?
+        var hasInvalidAmount = false
         var label: String?
         var message: String?
         var r: URL?
@@ -110,7 +114,9 @@ struct BIP70URI {
             if key.hasPrefix("req-") { requiredFields.insert(String(key.dropFirst(4))) }
 
             switch key {
-            case "amount", "req-amount": amount = Self.duffs(fromDecimalDash: value)
+            case "amount", "req-amount":
+                amount = Self.duffs(fromDecimalDash: value)
+                hasInvalidAmount = !value.isEmpty && amount == nil
             case "label", "req-label": label = value
             case "message", "req-message": message = value
             case "r", "req-r": r = URL(string: value)
@@ -124,6 +130,7 @@ struct BIP70URI {
         }
 
         self.amount = amount
+        self.hasInvalidAmount = hasInvalidAmount
         self.label = label
         self.message = message
         self.r = r
@@ -164,6 +171,7 @@ struct BIP70URI {
         scheme = "dash"
         address = bareAddressCandidate
         amount = nil
+        hasInvalidAmount = false
         label = nil
         message = nil
         r = nil
@@ -179,6 +187,7 @@ struct BIP70URI {
         self.scheme = scheme
         address = nil
         amount = nil
+        hasInvalidAmount = false
         label = nil
         message = nil
         r = url

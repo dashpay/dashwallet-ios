@@ -1245,13 +1245,18 @@ final class SendViewModel: ObservableObject {
     @discardableResult
     func ingestScannedInput(_ paymentInput: DWPaymentInput) -> Bool {
         guard let address = Self.scannedAddress(in: paymentInput) else { return false }
-        addressText = address
-        let scannedAmount = paymentInput.parsedURI?.amount ?? 0
-        if scannedAmount > 0, dashDuffsUnsigned == 0 {
-            unit = .dash
-            amountText = Self.editorText(duffs: scannedAmount)
-        }
+        prefill(address: address, amountDuffs: paymentInput.parsedURI?.amount ?? 0)
         return true
+    }
+
+    /// Every scan entry point fills the form here, so each reads back
+    /// exactly the scanned duffs.
+    func prefill(address: String, amountDuffs: UInt64) {
+        addressText = address
+        if amountDuffs > 0, dashDuffsUnsigned == 0 {
+            unit = .dash
+            amountText = Self.editorText(duffs: amountDuffs)
+        }
     }
 
     /// A scanned amount as editor text that `rawTypedDecimal` reads back

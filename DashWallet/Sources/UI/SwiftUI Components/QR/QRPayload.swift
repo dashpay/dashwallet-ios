@@ -44,7 +44,9 @@ enum QRPayload {
         #endif
 
         let parsed = ParsedPaymentURI.parse(paymentString: trimmed)
-        if parsed.isValidDashPaymentIntent || parsed.rURL != nil {
+        // An unpayable amount still makes it a payment request, one that is
+        // refused rather than passed on as text.
+        if parsed.isValidDashPaymentIntent || parsed.rURL != nil || parsed.hasInvalidAmount {
             return .payment(parsed)
         }
         return .text(trimmed)
