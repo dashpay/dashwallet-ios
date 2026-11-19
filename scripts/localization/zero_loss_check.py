@@ -29,6 +29,8 @@ import places  # noqa: E402
 CATALOG = "DashWallet/Localizable.xcstrings"
 KEY_MAP = "scripts/localization/zero_loss_key_map.json"
 COUNTS = (0, 1, 2, 5, 21, 101)
+# compare_wording marks a Baseline translation that takes an argument as the wrong type with this.
+DEFECT = object()
 WATCH_DIR = "WatchApp"
 WATCH_FILE = re.compile(r"^WatchApp/[^/]+\.lproj/Interface\.strings$")
 DERIVED_DATA_HOME = os.path.join("~", "Library", "Developer", "Xcode", "DerivedData")
@@ -163,6 +165,51 @@ def counted_args(spec, count):
     return args
 
 
+def _kind(value):
+    return "float" if isinstance(value, float) else "int" if isinstance(value, int) else "object"
+
+
+def takes_wrong_type(text, args):
+    """True when a format code of `text` takes its sample argument as another type (an object code
+    for a number, an integer code for an object, ...): Foundation then formats undefined text.
+    A text with a plural variable (%#@name@) is not judged."""
+    sequential = 0
+    for m in _CODE.finditer(text.replace("%%", "")):
+        if m.group(2):
+            return False
+        sequential += 1
+        position = int(m.group(1)) if m.group(1) else sequential
+        if position > len(args):
+            continue
+        code = m.group(3)
+        want = "object" if code in "@sS" else "float" if code in "fFeEgG" else "int"
+        if want != _kind(args[position - 1]):
+            return True
+    return False
+
+
+def sample_args(text):
+    """The sample arguments format.swift infers from an English text: one distinct value per position."""
+    by_position, sequential = {}, 0
+    for m in _CODE.finditer(text.replace("%%", "")):
+        if m.group(2):
+            continue
+        sequential += 1
+        position = int(m.group(1)) if m.group(1) else sequential
+        code = m.group(3)
+        by_position[position] = ("‹a%d›" % position if code in "@sS"
+                                 else 1000 + position + 0.5 if code in "fFeEgG" else 1000 + position)
+    return [by_position.get(p, "‹a%d›" % p) for p in range(1, max(by_position, default=0) + 1)]
+
+
+def defective_translation(localization, args):
+    """The first Baseline text of one locale that takes an argument as the wrong type, else None.
+    Texts under substitutions are not judged: their codes count from the plural variable's position."""
+    if "substitutions" in localization:
+        return None
+    return next((t for t in leaf_values(localization) if takes_wrong_type(t, args)), None)
+
+
 def leaf_values(node):
     if isinstance(node, dict):
         out = []
@@ -182,7 +229,8 @@ def compile_catalog(catalog_path, out_dir):
 
 def compare_wording(repo, rev, pairs, base_catalog, locales):
     """Format both sides of each (baseline key, current key, tag) pair in each locale the Baseline key
-    translated: [(tag, baseline key, current key, locale, None if equal else (expected, actual))]."""
+    translated: [(tag, baseline key, current key, locale, None if equal else (expected, actual))].
+    A Baseline translation that takes an argument as the wrong type gives (DEFECT, its text) instead."""
     specs = counted_specs(repo, rev, locales)
     base_strings = base_catalog["strings"]
     # one entry per (pair, locale): what to format and with which counts
@@ -215,19 +263,31 @@ def compare_wording(repo, rev, pairs, base_catalog, locales):
     at = 0
     for b, c, tag, locale, spec in jobs:
         n = len(COUNTS) if spec is not None else 1
+        args = base_reqs[at][2]
+        if args is None:  # inferred by the formatter, which reports none when it crashed
+            english = leaf_values(base_strings[b]["localizations"].get("en", {}))
+            args = sample_args(english[0] if english else b)
+        defect = defective_translation(base_strings[b]["localizations"][locale], args)
         diff = next((i for i in range(n) if base_out[at + i]["text"] != cur_out[at + i]["text"]), None)
-        results.append((tag, b, c, locale,
-                        None if diff is None else (base_out[at + diff]["text"], cur_out[at + diff]["text"])))
+        if defect is not None:
+            results.append((tag, b, c, locale, (DEFECT, defect)))
+        else:
+            results.append((tag, b, c, locale,
+                            None if diff is None else (base_out[at + diff]["text"], cur_out[at + diff]["text"])))
         at += n
     return results
 
 
 def wording_check(repo, rev, pairs, base_catalog, locales):
-    """Check 3: (rows {locale: [places, same]}, place findings)."""
+    """Check 3: (rows {locale: [places, same]}, place findings, sorted baseline-defect lines)."""
     rows = {locale: [0, 0] for locale in locales}
-    findings = []
+    findings, defects = [], []
     for (b, c), _, _, locale, diff in compare_wording(repo, rev, [(b.key, c.key, (b, c)) for b, c in pairs],
                                                      base_catalog, locales):
+        if diff is not None and diff[0] is DEFECT:
+            defects.append(((c.file, c.line, locale, b.key), "DEFECT %s:%d locale=%s baseline_key=%s translation=%s" % (
+                c.file, c.line, locale, dump(b.key), dump(diff[1]))))
+            continue
         rows[locale][0] += 1
         if diff is None:
             rows[locale][1] += 1
@@ -235,26 +295,31 @@ def wording_check(repo, rev, pairs, base_catalog, locales):
             findings.append(("place", (c.file, c.line, locale, c.key),
                              "FAIL place %s:%d locale=%s current_key=%s baseline_key=%s expected=%s actual=%s" % (
                                  c.file, c.line, locale, dump(c.key), dump(b.key), dump(diff[0]), dump(diff[1]))))
-    return rows, findings
+    return rows, findings, [text for _, text in sorted(defects)]
 
 
 def release_wording_check(repo, rev, key_map, base_catalog, locales):
-    """Release key check: (rows {locale: [keys, same]}, key findings); a Baseline key counts once per locale."""
+    """Release key check: (rows {locale: [keys, same]}, key findings, sorted baseline-defect lines);
+    a Baseline key counts once per locale."""
     rows = {locale: [0, 0] for locale in locales}
-    findings = []
+    findings, defects = [], set()
     differs = set()
     results = compare_wording(repo, rev, [(b, c, None) for b, cs in sorted(key_map.items()) for c in cs],
                               base_catalog, locales)
     for _, b, c, locale, diff in results:
-        if diff is not None:
+        if diff is not None and diff[0] is DEFECT:
+            defects.add((b, locale, diff[1]))
+        elif diff is not None:
             differs.add((b, locale))
             findings.append(("key", (b, c, locale),
                              "FAIL key baseline_key=%s current_key=%s locale=%s expected=%s actual=%s" % (
                                  dump(b), dump(c), locale, dump(diff[0]), dump(diff[1]))))
-    for b, locale in {(b, locale) for _, b, _, locale, _ in results}:
+    left_out = {(b, locale) for b, locale, _ in defects}
+    for b, locale in {(b, locale) for _, b, _, locale, _ in results} - left_out:
         rows[locale][0] += 1
         rows[locale][1] += (b, locale) not in differs
-    return rows, findings
+    return rows, findings, ["DEFECT baseline_key=%s locale=%s translation=%s" % (dump(b), locale, dump(t))
+                            for b, locale, t in sorted(defects)]
 
 
 def dump(value):
@@ -309,11 +374,14 @@ def watch_check(repo, rev):
 
 # --- report -------------------------------------------------------------------------------------
 
-def render(baseline, how, rows, unused, watch, findings, mode="pre-merge"):
+def render(baseline, how, rows, unused, watch, findings, mode="pre-merge", defects=()):
     lines = ["zero-loss check — mode: %s" % mode,
              "baseline: %s (%s)" % (baseline[:12], how),
              "%-13s%-9s%s" % ("locale", "keys" if mode == "release" else "places", "same")]
     lines += ["%-13s%-9s%s" % (loc, rows[loc][0], rows[loc][1]) for loc in sorted(rows)]
+    if defects:
+        lines.append("baseline defects: %d left out" % len(defects))
+        lines += list(defects)
     lines.append("unused entries: %d checked, %d with lost translations" % unused)
     lines.append("watch files: %d identical, %d differ" % watch)
     lines += [text for _, _, text in findings]
@@ -362,13 +430,13 @@ def check_release(args):
     base_catalog = generate_catalog.build_catalog(repo, baseline)
     locales = sorted(generate_catalog.locale_files(repo, baseline))
 
-    rows, wording = release_wording_check(repo, baseline, key_map, base_catalog, locales)
+    rows, wording, defects = release_wording_check(repo, baseline, key_map, base_catalog, locales)
     missing, _ = key_set_check(base_catalog["strings"], cur_strings, {k: set(v) for k, v in key_map.items()})
     checked, lost, unused = unused_check(base_catalog["strings"], cur_strings)
     identical, differ, watch = watch_check(repo, baseline)
     findings = wording + missing + unused + watch
     findings.sort(key=lambda f: (f[0],) + tuple((0, x) if isinstance(x, int) else (1, x) for x in f[1]))
-    sys.stdout.write(render(baseline, "key map", rows, (checked, lost), (identical, differ), findings, "release"))
+    sys.stdout.write(render(baseline, "key map", rows, (checked, lost), (identical, differ), findings, "release", defects))
     return 1 if findings else 0
 
 
@@ -391,7 +459,7 @@ def check(args):
     pairs, mismatched = places.pair(places.baseline_places(repo, baseline, args.baseline_derived_data), places.current_places(repo, derived))
     findings = [("file-places", (f,), "FAIL file-places %s baseline=%d current=%d" % (f, b, c))
                 for f, b, c in mismatched]
-    rows, wording = wording_check(repo, baseline, pairs, base_catalog, locales)
+    rows, wording, defects = wording_check(repo, baseline, pairs, base_catalog, locales)
     used = {}
     for b, c in pairs:
         used.setdefault(b.key, set()).add(c.key)
@@ -401,7 +469,7 @@ def check(args):
     findings += wording + missing + unused + watch
     findings.sort(key=lambda f: (f[0],) + tuple((0, x) if isinstance(x, int) else (1, x) for x in f[1]))
 
-    sys.stdout.write(render(baseline, how, rows, (checked, lost), (identical, differ), findings))
+    sys.stdout.write(render(baseline, how, rows, (checked, lost), (identical, differ), findings, defects=defects))
     if findings:
         return 1
     if args.write_key_map:

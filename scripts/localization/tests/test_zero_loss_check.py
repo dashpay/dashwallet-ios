@@ -247,15 +247,47 @@ class PassTests(ZeroLossCase):
         self.assertIn("--write-key-map", res.stdout)
 
 
-class CrashingTranslationTests(ZeroLossCase):
+class BaselineDefectTests(ZeroLossCase):
+    """A Baseline translation whose format codes take an argument as the wrong type (de: "%@ in %d Läden"
+    for "%d shops in %@") formats undefined text on a phone. It cannot be compared, so it is a
+    baseline defect: printed, left out of both columns, not a finding (owner decision 2026-11-19)."""
     OVERLAY = "overlay_crash"
 
-    def test_translation_crashing_on_both_sides_is_same_not_a_finding(self):
+    def defects(self, res):
+        return [l for l in res.stdout.splitlines() if l.startswith("DEFECT ")]
+
+    def test_wrong_type_baseline_translation_is_a_defect_not_a_finding(self):
         res = self.run_cli()
         self.assertEqual(res.returncode, 0, res.stdout + res.stderr)
         self.assertEqual(self.findings(res), [])
         self.assertIn("RESULT: PASS (0 findings)", res.stdout)
-        self.assertEqual(self.row(res, "de"), (5, 5))
+        self.assertEqual(self.row(res, "de"), (4, 4))
+        self.assertEqual(self.row(res, "en"), (5, 5))
+        self.assertEqual(self.defects(res), [
+            'DEFECT DashWallet/Sources/Send.swift:5 locale=de baseline_key="Sample %d items" '
+            'translation="%@ in %d Läden"'])
+        self.assertIn("baseline defects: 1 left out", res.stdout.splitlines())
+
+    def test_translation_fixed_to_numbered_codes_after_the_move_still_passes(self):
+        self.cat["strings"][ITEMS_NEW]["localizations"]["de"]["stringUnit"]["value"] = "%2$@ in %1$lld Läden"
+        self.install_catalog()
+        res = self.run_cli()
+        self.assertEqual(res.returncode, 0, res.stdout + res.stderr)
+        self.assertEqual(len(self.defects(res)), 1)
+
+    def test_wrong_type_rule(self):
+        import zero_loss_check as z
+        args = [1001, "‹a2›"]
+        self.assertTrue(z.takes_wrong_type("%@ in %d Läden", args))
+        self.assertTrue(z.takes_wrong_type("%@ içinde %d satıcılar", args))
+        self.assertFalse(z.takes_wrong_type("%d shops in %@", args))
+        self.assertFalse(z.takes_wrong_type("%2$@ in %1$d Läden", args))
+        self.assertFalse(z.takes_wrong_type("%d Läden", args))
+        self.assertFalse(z.takes_wrong_type("100%% sicher", []))
+        self.assertTrue(z.takes_wrong_type("%d", ["‹a1›"]))
+        self.assertTrue(z.takes_wrong_type("%f", [1001]))
+        self.assertFalse(z.takes_wrong_type("%.1f km", [1001.5]))
+        self.assertFalse(z.takes_wrong_type("%#@items@", [5]))
 
 
 class KeyMapTests(ZeroLossCase):

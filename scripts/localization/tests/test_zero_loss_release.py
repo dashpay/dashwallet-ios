@@ -126,6 +126,19 @@ class ReleaseFindingTests(ReleaseCase):
         self.assertIn('FAIL missing-key baseline_key="Send"', res.stdout)
 
 
+class ReleaseBaselineDefectTests(ReleaseCase):
+    OVERLAY = "overlay_crash"
+
+    def test_wrong_type_baseline_translation_is_left_out_not_a_key_finding(self):
+        res = self.release()
+        self.assertEqual(res.returncode, 0, res.stdout + res.stderr)
+        self.assertEqual(self.findings(res), [])
+        self.assertEqual(self.row(res, "de"), (4, 4))
+        self.assertIn("baseline defects: 1 left out", res.stdout.splitlines())
+        self.assertIn('DEFECT baseline_key="Sample %d items" locale=de translation="%@ in %d Läden"',
+                      res.stdout.splitlines())
+
+
 class ReleaseCannotRunTests(ReleaseCase):
     def test_missing_key_map(self):
         os.remove(self.map_path)
