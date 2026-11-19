@@ -143,6 +143,10 @@ final class PointOfUseListModel {
     /// Stores filters for a segment without fetching. Lets callers configure a segment's
     /// filters before making it current, so the fetch triggered by the segment switch
     /// already runs with them.
+    func filters(for segment: PointOfUseListSegment) -> PointOfUseListFilters? {
+        segmentFilters[segment]
+    }
+
     func setFilters(_ newFilters: PointOfUseListFilters?, for segment: PointOfUseListSegment) {
         if let newFilters {
             segmentFilters[segment] = newFilters
