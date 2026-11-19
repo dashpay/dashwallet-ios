@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sync DashWallet/Localizable.xcstrings with the build's strings (T10, ADR-0008).
+"""Sync DashWallet/Localizable.xcstrings with the build's strings (ADR-0071).
 
 Run by the "Sync String Catalog" build phase after compilation, with the Xcode build
 environment: SRCROOT, OBJECT_FILE_DIR_normal, TARGET_NAME. ARCHS / CURRENT_ARCH are not
@@ -71,7 +71,17 @@ def collect(srcroot, object_dir, target):
         raise SyncError("cannot read OBJECT_FILE_DIR_normal %s: %s" % (object_dir, e))
     src_prefix = os.path.join(os.path.realpath(srcroot), "")
     for arch in arch_dirs:
+        # Xcode leaves the .stringsdata/.d of a deleted source behind; only a file whose object
+        # is still in the link list belongs to the target. Xcode writes the list before compiling.
+        link_list = os.path.join(arch, target + ".LinkFileList")
+        if not os.path.isfile(link_list):
+            raise SyncError("%s not found; cannot tell current compiler outputs from leftovers "
+                            "of deleted sources" % link_list)
+        objects = set(read_file_list(link_list))
         for e in sorted(os.scandir(arch), key=lambda x: x.name):
+            if e.name.endswith((".stringsdata", ".d")) and \
+                    os.path.join(arch, os.path.splitext(e.name)[0] + ".o") not in objects:
+                continue
             if e.name.endswith(".stringsdata"):
                 stringsdata.append(e.path)
             elif e.name == target + ".SwiftFileList":
@@ -83,6 +93,9 @@ def collect(srcroot, object_dir, target):
                         objc_files.append(dep)
     dedupe = lambda items: list(dict.fromkeys(items))
     stringsdata, swift_files, objc_files = dedupe(stringsdata), dedupe(swift_files), dedupe(objc_files)
+    if swift_files and not stringsdata:
+        raise SyncError("the target has %d Swift file(s) but no compiler .stringsdata survives in "
+                        "%s; syncing would mark every Swift key stale" % (len(swift_files), object_dir))
     missing = [p for p in stringsdata + swift_files + objc_files if not os.path.exists(p)]
     if missing:
         raise SyncError("%d collected file(s) do not exist (a missing input would silently "
