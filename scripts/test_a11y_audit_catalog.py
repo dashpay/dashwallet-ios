@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for a11y_audit.py on the String Catalog (string-catalogs-migration T15, AC-16).
+"""Tests for a11y_audit.py on the String Catalog.
 
 The audit resolves accessibility-label keys from DashWallet/Localizable.xcstrings and
 treats String(localized:) as a localized label, the same way it treats NSLocalizedString.

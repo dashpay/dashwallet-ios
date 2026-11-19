@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Write the Baseline forms fixture of the plural-fidelity test (string-catalogs-migration T16, AC-02, AC-07).
+"""Write the Baseline forms fixture of the plural-fidelity test (DashWalletTests/Localization/PluralFidelityTests.swift).
 
 For every counted phrase of the Baseline (the keys of en.lproj/Localizable.stringsdict), every locale
 the app compiles (XCSTRINGS_LANGUAGES_TO_COMPILE) and the counts 0, 1, 2, 5, 21, 101, it formats the

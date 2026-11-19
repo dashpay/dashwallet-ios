@@ -21,7 +21,7 @@ import XCTest
 
 /// Every counted phrase of the Baseline, formatted from the app's compiled String Catalog in each
 /// locale the app ships, for the counts 0, 1, 2, 5, 21 and 101, gives the Baseline form; and no
-/// locale has plural variants its Baseline lacked (string-catalogs-migration AC-02, AC-07).
+/// locale has plural variants its Baseline lacked.
 ///
 /// A phrase the code looks up with an interpolation (`String(localized: "\(count) words")`) is
 /// formatted through that same call; any other phrase with `String(format:locale:arguments:)` over

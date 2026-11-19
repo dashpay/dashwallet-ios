@@ -112,7 +112,7 @@ class ZeroLossCase(unittest.TestCase):
         # the compiler data of a build of the Baseline commit, rooted at some other checkout
         self.baseline_derived = os.path.join(self.tmp, "baseline-derived")
         shutil.copytree(os.path.join(FIXTURES, "baseline_stringsdata"), self.baseline_derived)
-        # build_baseline.sh records the commit it built here (T24, F10)
+        # build_baseline.sh records the commit it built here
         self.write_baseline_record(self.baseline)
 
     def write_baseline_record(self, sha, folder=None):
@@ -529,7 +529,7 @@ class Ac18Tests(ZeroLossCase):
         git(self.repo, "update-ref", "refs/remotes/origin/develop", late)
         git(self.repo, "checkout", "-q", "-B", "work", "develop")
         self.move_the_code()
-        self.write_baseline_record(late)  # the Baseline build is redone for the new merge-base (T24)
+        self.write_baseline_record(late)  # the Baseline build is redone for the new merge-base
         return late
 
     def test_default_baseline_is_the_merge_base_with_origin_develop(self):

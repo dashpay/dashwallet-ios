@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
-"""Zero-loss check, pre-merge mode (contract: docs/features/string-catalogs-migration/contracts/cli.md).
+"""Zero-loss check: proves the String Catalog keeps every Baseline translation.
 
-    python3 scripts/localization/zero_loss_check.py [--baseline <rev>] [--derived-data <path>] [--write-key-map]
+    python3 scripts/localization/zero_loss_check.py [--baseline <rev>] --baseline-derived-data <path>
+                                                    [--derived-data <path>] [--write-key-map]
+    python3 scripts/localization/zero_loss_check.py --release
 
-Pairs each lookup place in the code with the key the same place used at the Baseline commit
-(ADR-0004) and proves the Catalog resolves it to the Baseline wording in every locale.
+Pre-merge mode pairs each lookup place in the code with the key the same place used at the
+Baseline commit (ADR-0067) and proves the Catalog resolves it to the Baseline wording in every
+locale. Release mode re-checks the keys recorded in zero_loss_key_map.json (ADR-0070).
 Exit 0 pass, 1 findings, 2 cannot run. It reads the Baseline from git alone and uses no network.
 """
 import argparse
@@ -316,7 +319,8 @@ def compare_wording(repo, rev, pairs, base_catalog, locales):
                 base_reqs.append((locale, b, a))
                 cur_keys.append(c)
         base_out = foundation_format.format_texts(os.path.join(base_root, baseline_lists.LISTS_DIR), base_reqs)
-        # the current side is formatted with the very arguments the Baseline side used
+        # the current side is formatted with the arguments the Baseline side used; after a Baseline
+        # crash those are unknown (None) and the formatter infers them from the current key's English
         cur_out = foundation_format.format_texts(
             cur_root, [(r[0], key, o["args"]) for r, key, o in zip(base_reqs, cur_keys, base_out)])
 

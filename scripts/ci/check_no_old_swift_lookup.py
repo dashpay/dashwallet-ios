@@ -2,7 +2,7 @@
 """Fail when Swift code in the app or its unit tests still calls NSLocalizedString.
 
 Swift looks texts up with String(localized:) since the String Catalog move
-(docs/features/string-catalogs-migration, AC-08, AC-17). Objective-C keeps
+(docs/features/string-catalogs-migration/README.md). Objective-C keeps
 NSLocalizedString and is not scanned; neither is the Watch app.
 
 Prints `<file>:<line>: NSLocalizedString in Swift` per call and exits 1 on any.

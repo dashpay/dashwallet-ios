@@ -2,8 +2,7 @@
 
 The byte layout (key order by localizedStandardCompare, spacing, escaping, no trailing
 newline) is produced by catalog_writer.swift, compiled once into a cache directory
-outside the repository (override with CATALOG_WRITER_CACHE). Shared by the Catalog
-generator and the entry mover.
+outside the repository (override with CATALOG_WRITER_CACHE).
 """
 import hashlib
 import json
