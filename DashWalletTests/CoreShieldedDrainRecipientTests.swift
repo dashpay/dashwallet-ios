@@ -94,18 +94,46 @@ final class CoreShieldedDrainRecipientTests: XCTestCase {
         XCTAssertEqual(ShieldedTransferCoordinator.drainRecipientRaw43(.ownWallet, ownAddress: own), own)
     }
 
-    func testExternalDrainFailsClosedWhenTheBalanceGrewAfterReview() {
+    func testExternalDrainFailsClosedWhenTheBalanceOrPayoutChangedAfterReview() {
         let confirmed = CoreShieldedDrainConfirmation(
             context: context, candidateBalanceDuffs: 1_000_000, estimatedRecipientCredits: 990_000_000,
             estimatedL1FeeDuffs: 500, poolFeeCredits: 9_000_000)
-        func preview(_ balance: UInt64, _ status: WalletDrainPreview.Status = .ready) -> WalletDrainPreview {
+        func preview(
+            _ balance: UInt64, recipientCredits: UInt64? = 990_000_000, _ status: WalletDrainPreview.Status = .ready
+        ) -> WalletDrainPreview {
             WalletDrainPreview(candidateInputCount: 2, candidateBalanceDuffs: balance, poolFeeCredits: 9_000_000,
-                               estimatedL1FeeDuffs: 500, estimatedRecipientCredits: nil, status: status)
+                               estimatedL1FeeDuffs: 500, estimatedRecipientCredits: recipientCredits, status: status)
         }
         XCTAssertTrue(ShieldedTransferCoordinator.drainStillMatches(preview(1_000_000), confirmed))
-        XCTAssertTrue(ShieldedTransferCoordinator.drainStillMatches(preview(900_000), confirmed))
+        XCTAssertFalse(ShieldedTransferCoordinator.drainStillMatches(preview(900_000), confirmed))
         XCTAssertFalse(ShieldedTransferCoordinator.drainStillMatches(preview(1_000_001), confirmed))
+        XCTAssertFalse(ShieldedTransferCoordinator.drainStillMatches(
+            preview(1_000_000, recipientCredits: 980_000_000), confirmed))
+        XCTAssertFalse(ShieldedTransferCoordinator.drainStillMatches(
+            preview(1_000_000, recipientCredits: nil), confirmed))
         XCTAssertFalse(ShieldedTransferCoordinator.drainStillMatches(preview(0, .insufficientFunds), confirmed))
+    }
+
+    func testExternalMaxSendRequiresTheConfirmedPayoutAndFeeExactly() {
+        // Confirm showed Max 990_000 duffs and a fee of 10_000 duffs, out of a 1_000_000-duff candidate balance.
+        func quote(
+            _ balance: UInt64, recipientCredits: UInt64?, _ status: WalletDrainPreview.Status = .ready
+        ) -> WalletDrainPreview {
+            WalletDrainPreview(candidateInputCount: 2, candidateBalanceDuffs: balance, poolFeeCredits: 9_000_000,
+                               estimatedL1FeeDuffs: 500, estimatedRecipientCredits: recipientCredits, status: status)
+        }
+        func matches(_ preview: WalletDrainPreview) -> Bool {
+            LiveCoreTwoStepSend.drainQuoteMatches(preview, confirmedDuffs: 990_000, confirmedFeeDuffs: 10_000)
+        }
+        XCTAssertTrue(matches(quote(1_000_000, recipientCredits: 990_000_000)))
+        XCTAssertFalse(matches(quote(1_000_000, recipientCredits: 989_000_000)), "smaller payout")
+        XCTAssertFalse(matches(quote(1_000_000, recipientCredits: 991_000_000)), "larger payout")
+        XCTAssertFalse(matches(quote(1_001_000, recipientCredits: 990_000_000)), "same payout, higher fee")
+        XCTAssertFalse(matches(quote(999_000, recipientCredits: 990_000_000)), "same payout, lower fee")
+        XCTAssertFalse(matches(quote(1_000_000, recipientCredits: nil)))
+        XCTAssertFalse(matches(quote(1_000_000, recipientCredits: 990_000_000, .insufficientFunds)))
+        XCTAssertFalse(LiveCoreTwoStepSend.drainQuoteMatches(
+            quote(1_000_000, recipientCredits: 990_000_000), confirmedDuffs: .max, confirmedFeeDuffs: 1))
     }
 
     // MARK: - Recipient payload
