@@ -44,7 +44,9 @@ final class UngroupedCountTests: XCTestCase {
         ("UI/Menu/Tools/MasternodesScreen.swift", "Height %u"),
         ("UI/Menu/Tools/Tracked Masternodes/TrackedMasternodeDetailScreen.swift", "Height %u"),
         ("UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
-         "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. Fully close and relaunch the app to start; the in-app Restart button does not apply this reset."),
+         "Confirming saves birth height %u and clears this network's chain data at the next app launch, "
+             + "re-downloading it and rescanning filters from that height. Fully close and relaunch the app to start; "
+             + "the in-app Restart button does not apply this reset."),
         ("UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift", "Rescan started from height %u \u{2014} watch the Filters row."),
         ("UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift",
          "Resync armed from height %u. Fully close the app, then launch it again to start. The in-app Restart button does not apply this reset."),

@@ -234,7 +234,11 @@ struct SwiftDashSDKSPVStatusScreen: View {
                 pendingResyncConfirmHeight = nil
             }
         } message: { height in
-            Text(String(format: String(localized: "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. Fully close and relaunch the app to start; the in-app Restart button does not apply this reset.", comment: "SPV diagnostics"), height))
+            Text(String(
+                format: String(
+                    localized: "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. Fully close and relaunch the app to start; the in-app Restart button does not apply this reset.",
+                    comment: "SPV diagnostics"),
+                height))
         }
     }
 
