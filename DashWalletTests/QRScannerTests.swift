@@ -419,6 +419,46 @@ final class QRScannerTests: XCTestCase {
         XCTAssertTrue(recorder.results.isEmpty)
     }
 
+    /// A `dash:` payment anywhere in frame wins over a whole request URL
+    /// read before it: the URL would be fetched without a tap.
+    func testPaymentScannerPrefersADashPaymentOverAWholeRequestURL() {
+        let (scanner, recorder) = makeScanner(.payment)
+        scanner.didDetectCodes(["https://merchant.invalid/pr", "dash:\(Self.address)?amount=1.5"])
+        if case .connecting = scanner.status { XCTFail("the request URL is not fetched") }
+        guard case .payment(let input) = recorder.results.first else {
+            return XCTFail("the Dash payment is handed over")
+        }
+        XCTAssertEqual(input.parsedURI?.amount, 150_000_000)
+    }
+
+    /// An amount given twice, under either spelling, is a conflict: neither
+    /// value is the one asked for.
+    func testRepeatedURIAmountIsRefused() {
+        for query in ["req-amount=1&amount=2", "amount=1&amount=1", "amount=1&req-amount=1"] {
+            let code = "dash:\(Self.address)?\(query)"
+            let parsed = ParsedPaymentURI.parse(paymentString: code)
+            XCTAssertTrue(parsed.hasInvalidAmount, code)
+            XCTAssertFalse(parsed.isValidDashPaymentIntent, code)
+            let (scanner, recorder) = makeScanner(.payment)
+            scanner.didDetectCodes([code])
+            XCTAssertTrue(recorder.results.isEmpty, code)
+        }
+    }
+
+    /// A required merchant request is the only thing that may be paid: its
+    /// embedded address is no fallback when the request fails.
+    func testRequiredRequestHasNoAddressFallback() {
+        let request = "r=https%3A%2F%2Fmerchant.invalid%2Fpr"
+        let optional = ParsedPaymentURI.parse(paymentString: "dash:\(Self.address)?\(request)")
+        XCTAssertFalse(optional.requiresRequest)
+        XCTAssertNotNil(QRScannerViewModel.fallback(afterFailedRequest: optional))
+
+        let required = ParsedPaymentURI.parse(paymentString: "dash:\(Self.address)?req-\(request)")
+        XCTAssertTrue(required.requiresRequest)
+        XCTAssertTrue(required.isValidDashPaymentIntent)
+        XCTAssertNil(QRScannerViewModel.fallback(afterFailedRequest: required))
+    }
+
     /// Only a whole https request URL is fetched without a `dash:` scheme;
     /// another currency's `r=` request is not Dash's to fetch.
     func testPaymentScannerFetchesNoForeignSchemeRequest() {

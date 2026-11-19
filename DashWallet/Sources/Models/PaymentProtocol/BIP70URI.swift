@@ -36,7 +36,7 @@ struct BIP70URI {
     /// `?amount=` parsed from decimal DASH to duffs. Authoritative amount for a BIP70 send still
     /// comes from the signed `PaymentDetails`; this is for the plain-send fallback / UI hints.
     let amount: UInt64?
-    /// An `amount` was given that is not one the wallet can pay: empty, unreadable, negative, or above
+    /// An `amount` was given that is not one the wallet can pay: repeated, empty, unreadable, negative, or above
     /// the coin supply. Not the same as no amount: the payer did not ask for an open amount.
     let hasInvalidAmount: Bool
     let label: String?
@@ -96,6 +96,7 @@ struct BIP70URI {
         // Parse the query string.
         var amount: UInt64?
         var hasInvalidAmount = false
+        var amountSeen = false
         var label: String?
         var message: String?
         var r: URL?
@@ -115,8 +116,10 @@ struct BIP70URI {
 
             switch key {
             case "amount", "req-amount":
+                // One amount, under either spelling: a second one is a conflict, not an override.
+                hasInvalidAmount = hasInvalidAmount || amountSeen
+                amountSeen = true
                 amount = Self.duffs(fromDecimalDash: value)
-                // Sticky: a later alias does not make an unpayable amount payable.
                 hasInvalidAmount = hasInvalidAmount || amount == nil
             case "label", "req-label": label = value
             case "message", "req-message": message = value

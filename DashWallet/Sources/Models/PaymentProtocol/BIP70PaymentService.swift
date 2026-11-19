@@ -241,6 +241,13 @@ final class BIP70PaymentService {
             guard !overflow, sum <= kMaxDashSupplyDuffs else { throw BIP70Error.malformedRequest }
             amount = sum
         }
+        // A payment_url the wallet can't post to is refused, not taken for none: without it the
+        // send would skip the merchant's acknowledgement.
+        var paymentURL: URL?
+        if let raw = details.paymentURL {
+            guard let url = URL(string: raw), url.host?.isEmpty == false else { throw BIP70Error.malformedRequest }
+            paymentURL = url
+        }
         return Confirmation(
             merchantName: verdict.commonName,
             isSecure: verdict.isSecure,
@@ -248,7 +255,7 @@ final class BIP70PaymentService {
             amount: amount,
             estimatedFee: Self.estimatedFee(recipientCount: recipients.count),
             network: network,
-            paymentURL: details.paymentURL.flatMap { URL(string: $0) },
+            paymentURL: paymentURL,
             scheme: scheme,
             merchantData: details.merchantData,
             memo: details.memo,

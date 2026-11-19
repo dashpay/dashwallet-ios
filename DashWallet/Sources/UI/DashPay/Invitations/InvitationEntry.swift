@@ -47,6 +47,8 @@ final class InvitationEntry: NSObject {
                     QRScanResultRouter.route(result, from: presenter)
                     return
                 }
+                // The lock may have engaged while the scanner was dismissing.
+                guard !QRScanResultRouter.isWalletLocked() else { return }
                 let outcome = PendingInvitationStore.shared.receive(url)
                 if handle(outcome, presenter: presenter) {
                     onStored()

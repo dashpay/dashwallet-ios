@@ -81,6 +81,9 @@ final class ParsedPaymentURI: NSObject {
     /// The BIP72 `r=` URL, or the whole BIP73 URL. nil when absent/unparseable — call sites fetch
     /// only when this is non-nil (the coordinator takes a non-optional `URL`).
     @objc let rURL: URL?
+    /// The request was given as `req-r`: only the merchant's request may be paid, never the
+    /// embedded address in its place.
+    @objc let requiresRequest: Bool
     /// `sender=` x-callback-url scheme.
     @objc let callbackScheme: String?
     /// `user=` DashPay username (value carry only; DashPay deferred to C10).
@@ -125,6 +128,7 @@ final class ParsedPaymentURI: NSObject {
                  label: String?,
                  message: String?,
                  rURL: URL?,
+                 requiresRequest: Bool,
                  callbackScheme: String?,
                  dashpayUsername: String?,
                  fiatCurrencyCode: String?,
@@ -141,6 +145,7 @@ final class ParsedPaymentURI: NSObject {
         self.label = label
         self.message = message
         self.rURL = rURL
+        self.requiresRequest = requiresRequest
         self.callbackScheme = callbackScheme
         self.dashpayUsername = dashpayUsername
         self.fiatCurrencyCode = fiatCurrencyCode
@@ -160,7 +165,8 @@ final class ParsedPaymentURI: NSObject {
         let paymentString = deepLinkPaymentString(for: raw) ?? raw
         guard let uri = BIP70URI(paymentString: paymentString) else {
             return ParsedPaymentURI(rawString: raw, scheme: nil, address: nil, amount: 0,
-                                    hasInvalidAmount: false, label: nil, message: nil, rURL: nil, callbackScheme: nil,
+                                    hasInvalidAmount: false, label: nil, message: nil, rURL: nil, requiresRequest: false,
+                                    callbackScheme: nil,
                                     dashpayUsername: nil, fiatCurrencyCode: nil, fiatAmount: 0,
                                     hasExplicitScheme: false, isAddressValidForCurrentNetwork: false,
                                     isAddressPayableForCurrentNetwork: false,
@@ -179,6 +185,7 @@ final class ParsedPaymentURI: NSObject {
                                 label: uri.label,
                                 message: uri.message,
                                 rURL: uri.r,
+                                requiresRequest: uri.requiredFields.contains("r"),
                                 callbackScheme: uri.callbackScheme,
                                 dashpayUsername: uri.dashpayUsername,
                                 fiatCurrencyCode: uri.fiatCurrencyCode,
@@ -217,6 +224,7 @@ final class ParsedPaymentURI: NSObject {
                          label: label,
                          message: message,
                          rURL: nil,
+                         requiresRequest: requiresRequest,
                          callbackScheme: callbackScheme,
                          dashpayUsername: dashpayUsername,
                          fiatCurrencyCode: fiatCurrencyCode,
