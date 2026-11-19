@@ -6,7 +6,8 @@
 //  navigation controller asks whether to hide its bar before the list's view
 //  loads, and the bar's leading control follows how the list was shown:
 //  back and pop when pushed, close and dismiss when it is a modal root.
-//  None of these tests load a list's view.
+//  None of these tests load a list's view. A details screen's "Show all
+//  locations" hands its opener's handlers on.
 //
 
 import UIKit
@@ -96,6 +97,35 @@ final class ExploreListNavigationTests: XCTestCase {
         atmList.closeOrPop()
 
         XCTAssertEqual(atmList.dismissCount, 1)
+    }
+
+    // MARK: - Show all locations
+
+    /// A location opened from "Show all locations" completes a payment or a
+    /// gift card purchase through the handlers the merchant's details got.
+    func testShowAllLocationsCarriesTheDetailsHandlers() {
+        let merchant = ExplorePointOfUse.Merchant(merchantId: "1", paymentMethod: .giftCard, type: .physical, deeplink: nil,
+                                                  savingsBasisPoints: 0, denominationsType: nil, redeemType: nil)
+        let place = ExplorePointOfUse(id: 1, name: "Place", category: .merchant(merchant), active: true, city: nil,
+                                      territory: nil, address1: nil, address2: nil, address3: nil, address4: nil,
+                                      latitude: nil, longitude: nil, website: nil, phone: nil, logoLocation: nil,
+                                      coverImage: nil, source: nil)
+        let details = POIDetailsViewController(pointOfUse: place)
+        var paid = false
+        var sold = false
+        var purchasedGiftCard: Data?
+        details.payWithDashHandler = { paid = true }
+        details.sellDashHandler = { sold = true }
+        details.onGiftCardPurchased = { purchasedGiftCard = $0 }
+
+        let allLocations = details.makeAllLocationsController(searchRadius: kDefaultRadius)
+        allLocations.payWithDashHandler?()
+        allLocations.sellDashHandler?()
+        allLocations.onGiftCardPurchased?(Data([1, 2]))
+
+        XCTAssertTrue(paid)
+        XCTAssertTrue(sold)
+        XCTAssertEqual(purchasedGiftCard, Data([1, 2]))
     }
 }
 

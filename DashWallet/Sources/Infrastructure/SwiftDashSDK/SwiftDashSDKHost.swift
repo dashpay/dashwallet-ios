@@ -614,27 +614,27 @@ final class SwiftDashSDKHost {
         var errorDescription: String? {
             switch self {
             case .unsupportedNetwork(let network):
-                return "Platform SDK does not support \(network.rawValue)"
+                return String(format: NSLocalizedString("Platform SDK does not support %@", comment: "Wallet setup error"), WalletEnvironment.displayName(of: network))
             case .sdkInitFailed(let error):
-                return "SDK init failed: \(error.localizedDescription)"
+                return String(format: NSLocalizedString("SDK init failed: %@", comment: "Wallet setup error"), error.localizedDescription)
             case .modelContainerFailed(let error):
-                return "ModelContainer setup failed: \(error.localizedDescription)"
+                return String(format: NSLocalizedString("ModelContainer setup failed: %@", comment: "Wallet setup error"), error.localizedDescription)
             case .configureFailed(let error):
-                return "PlatformWalletManager configure failed: \(error.localizedDescription)"
+                return String(format: NSLocalizedString("PlatformWalletManager configure failed: %@", comment: "Wallet setup error"), error.localizedDescription)
             case .walletBootstrapFailed(let error):
-                return "Wallet bootstrap failed: \(error.localizedDescription)"
+                return String(format: NSLocalizedString("Wallet bootstrap failed: %@", comment: "Wallet setup error"), error.localizedDescription)
             case .walletCreationFailed(let error):
-                return "Wallet creation failed: \(error.localizedDescription)"
+                return String(format: NSLocalizedString("Wallet creation failed: %@", comment: "Wallet setup error"), error.localizedDescription)
             case .walletNotFound(let network):
-                return "No persisted SwiftDashSDK wallet found for \(network.rawValue)"
+                return String(format: NSLocalizedString("No persisted SwiftDashSDK wallet found for %@", comment: "Wallet setup error"), WalletEnvironment.displayName(of: network))
             case .invalidMnemonic:
-                return "SwiftDashSDKHost received an invalid mnemonic"
+                return NSLocalizedString("SwiftDashSDKHost received an invalid mnemonic", comment: "Wallet setup error")
             case .mnemonicPersistenceFailed(let error):
-                return "Mnemonic persistence failed: \(error.localizedDescription)"
+                return String(format: NSLocalizedString("Mnemonic persistence failed: %@", comment: "Wallet setup error"), error.localizedDescription)
             case .mnemonicRoundTripMismatch:
-                return "Mnemonic round-trip mismatch"
+                return NSLocalizedString("Mnemonic round-trip mismatch", comment: "Wallet setup error")
             case .devnetConfigurationChanged:
-                return "Devnet configuration changed while the runtime was starting"
+                return NSLocalizedString("Devnet configuration changed while the runtime was starting", comment: "Wallet setup error")
             }
         }
     }

@@ -34,6 +34,15 @@
 /* DashConnect connection sheet: a key's name, then its budget */
 "%1$@: %2$@" = "%1$@: %2$@";
 
+/* Voting */
+"%1$d of %2$d masternodes cancelled their vote on %3$@." = "%1$d of %2$d masternodes cancelled their vote on %3$@.";
+
+/* Voting */
+"%1$d of %2$d masternodes voted to approve %3$@." = "%1$d of %2$d masternodes voted to approve %3$@.";
+
+/* Voting */
+"%1$d of %2$d masternodes voted to block %3$@." = "%1$d of %2$d masternodes voted to block %3$@.";
+
 /* No comment provided by engineer. */
 "%@ (payout address)" = "%@ (지급 주소)";
 
@@ -124,6 +133,9 @@
 /* No comment provided by engineer. */
 "%@ · Claimable %@ DASH" = "%@ · 청구 가능 %@ DASH";
 
+/* Voting: filter type, then the duplicates switch */
+"%@ · only duplicates" = "%@ · only duplicates";
+
 /* No comment provided by engineer. */
 "%@ · Platform balance" = "%@ · Platform 잔액";
 
@@ -138,9 +150,6 @@
 
 /* SPV diagnostics */
 "%d could not be reached" = "%d could not be reached";
-
-/* DashConnect expiry presets: a number of days */
-"%ld days" = "%ld days";
 
 /* SPV diagnostics */
 "%d finished" = "%d finished";
@@ -163,14 +172,26 @@
 /* Wallet accounts — address pool */
 "%d total" = "%d total";
 
+/* SPV diagnostics: transfers finished to the wallet's own Shielded balance because their recipient was not on record */
+"%d transfers added to your Shielded balance" = "%d transfers added to your Shielded balance";
+
 /* Wallet accounts — address pool */
 "%d used" = "%d used";
+
+/* Voting */
+"%d usernames" = "%d usernames";
+
+/* Voting: Quick voting sheet */
+"%d usernames are skipped" = "%d usernames are skipped";
 
 /* CoinJoin */
 "%d UTXOs" = "%d UTXOs";
 
 /* Username marketplace: masternode vote tally for one contest row */
 "%d votes" = "%d표";
+
+/* Voting */
+"%d votes will be cast" = "%d votes will be cast";
 
 /* SPV diagnostics */
 "%d waiting for the network" = "%d waiting for the network";
@@ -183,6 +204,9 @@
 
 /* PIN attempts before temporary lockout */
 "%ld attempt(s) remaining" = "%ld attempt(s) remaining";
+
+/* DashConnect expiry presets: a number of days */
+"%ld days" = "%ld days";
 
 /* Dash DEX */
 "%ld sec" = "%ld sec";
@@ -228,6 +252,9 @@
 
 /* Translate it as short as possible! (24 symbols max) */
 "1 tDash" = "1 tDash";
+
+/* Voting */
+"1 vote will be cast" = "1 vote will be cast";
 
 /* Recovery phrase length */
 "12 words is the standard. 24 words is longer to write down and restore, but significantly harder for advanced computer systems in the distant future to break." = "12단어가 표준입니다. 24단어는 적어 두고 복원하는 데 시간이 더 걸리지만, 먼 미래의 고성능 컴퓨터 시스템이 뚫기에는 훨씬 어렵습니다.";
@@ -277,6 +304,9 @@
 /* No comment provided by engineer. */
 "A key doesn't match this masternode — fix or clear it to continue." = "이 마스터노드와 일치하지 않는 키가 있습니다 — 수정하거나 지우고 계속하세요.";
 
+/* Voting */
+"A masternode of this wallet blocked this name." = "A masternode of this wallet blocked this name.";
+
 /* Usernames */
 "A masternode vote ended with this username locked, so nobody can register it. Choose a different one." = "A masternode vote ended with this username locked, so nobody can register it. Choose a different one.";
 
@@ -297,6 +327,9 @@
 
 /* Core drain recovery */
 "A previous Max transfer is still pending. Check its status or resume it before starting another. Resume pays the address it was started with." = "A previous Max transfer is still pending. Check its status or resume it before starting another. Resume pays the address it was started with.";
+
+/* Send to contact: an earlier payment's broadcast outcome is unknown */
+"A previous payment to this contact could not be confirmed. Don't send it again; wait for wallet synchronization." = "A previous payment to this contact could not be confirmed. Don't send it again; wait for wallet synchronization.";
 
 /* No comment provided by engineer. */
 "A single wallet's recovery phrase cannot authorize deleting multiple different wallets." = "지갑 하나의 복원 문구로는 여러 다른 지갑의 삭제를 승인할 수 없습니다.";
@@ -426,6 +459,9 @@
 "Add your friends & family" = "당신의 친구 & 가족을 추가하세요";
 
 /* Voting */
+"Add your voting keys" = "Add your voting keys";
+
+/* Voting */
 "Added %1$d of %2$d masternodes that vote with this key. Enter the key again to add the rest." = "Added %1$d of %2$d masternodes that vote with this key. Enter the key again to add the rest.";
 
 /* Voting */
@@ -518,6 +554,9 @@
 
 /* No comment provided by engineer. */
 "Already tracked." = "이미 추적 중입니다.";
+
+/* Voting */
+"Already voted this way on %@" = "Already voted this way on %@";
 
 /* No comment provided by engineer. */
 "Amount" = "Amount";
@@ -621,9 +660,15 @@
 /* No comment provided by engineer. */
 "Apply" = "적용";
 
+/* DashConnect error */
+"Approval failed" = "Approval failed";
+
 /* DashConnect
    Voting */
 "Approve" = "승인";
+
+/* Voting */
+"Approve %@" = "Approve %@";
 
 /* DashConnect */
 "Approve connection to %@?" = "Approve connection to %@?";
@@ -642,6 +687,9 @@
 
 /* Coinbase/Buy Dash/Cancel Order */
 "Are you sure you want to cancel this transaction?" = "이 거래를 정말 취소하시겠습니까?";
+
+/* Voting */
+"As a masternode owner you can vote to approve requested usernames before users will be able to create it." = "As a masternode owner you can vote to approve requested usernames before users will be able to create it.";
 
 /* DashSpend */
 "As soon as your code is generated, it will be displayed here" = "As soon as your code is generated, it will be displayed here";
@@ -689,6 +737,9 @@
 
 /* No comment provided by engineer. */
 "Authentication is unvailable" = "인증할 수 없습니다";
+
+/* BIP70 payment error */
+"Authentication was cancelled." = "Authentication was cancelled.";
 
 /* Location Service Status */
 "Authorized" = "공인됨";
@@ -809,6 +860,9 @@
 /* SPV diagnostics */
 "Birth height saved — the raised scan floor applies from the next launch." = "시작 블록 높이를 저장했습니다. 상향된 스캔 하한은 다음 실행부터 적용됩니다.";
 
+/* Platform Sync Status error */
+"BLAST start failed: %@" = "BLAST start failed: %@";
+
 /* Voting */
 "Block" = "블록";
 
@@ -817,6 +871,12 @@
 
 /* No comment provided by engineer. */
 "Block #%d of %d" = "%2$d개중 %1$d번째 블록";
+
+/* Voting */
+"Block %@" = "Block %@";
+
+/* Voting */
+"Block %@?" = "Block %@?";
 
 /* SPV diagnostics */
 "Block height" = "Block height";
@@ -928,6 +988,12 @@
 /* Buy/Sell */
 "Buy/Sell" = "매수/매도";
 
+/* Reclassify transactions info screen */
+"by default all transactions to or from your linked accounts (exchanges, staking, etc) will be marked as a transfer." = "by default all transactions to or from your linked accounts (exchanges, staking, etc) will be marked as a transfer.";
+
+/* Reclassify info: sentence start; a tag with the default category follows it */
+"by default will be marked as" = "by default will be marked as";
+
 /* No comment provided by engineer. */
 "Camera is required to scan QR codes." = "Camera is required to scan QR codes.";
 
@@ -936,6 +1002,12 @@
 
 /* Username marketplace: join deadline still open — value of the New contenders row */
 "can join until %@" = "%@ 까지 참여 가능";
+
+/* Voting */
+"Can't filter by links right now" = "Can't filter by links right now";
+
+/* Voting */
+"Can't filter by your votes right now" = "Can't filter by your votes right now";
 
 /* DashPay Contacts */
 "Can't receive contact requests" = "Can't receive contact requests";
@@ -946,6 +1018,9 @@
 /* No comment provided by engineer. */
 "Cancel" = "취소";
 
+/* Voting */
+"Cancel approval" = "Cancel approval";
+
 /* Coinbase/Buy Dash/Cancel Order */
 "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "이 거래를 취소하더라도 거래 주문은 취소되지 않습니다. 곧 귀하의 코인베이스 계좌로 DASH를 받게 됩니다.";
 
@@ -954,6 +1029,12 @@
 
 /* Wallets */
 "Cannot remove the last wallet here." = "Cannot remove the last wallet here.";
+
+/* Wallet runtime error */
+"Cannot switch wallet: no wallet with that id is stored on this network." = "Cannot switch wallet: no wallet with that id is stored on this network.";
+
+/* Wallet runtime error */
+"Cannot switch wallet: the current network is not supported." = "Cannot switch wallet: the current network is not supported.";
 
 /* DashSpend */
 "Card number" = "카드 번호";
@@ -993,6 +1074,9 @@
 
 /* Username marketplace */
 "Change Price" = "가격 변경";
+
+/* Voting */
+"Change the filter or reset it to see every open contest." = "Change the filter or reset it to see every open contest.";
 
 /* DashConnect approve sheet: accessibility */
 "Change the identity funding limit" = "Change the identity funding limit";
@@ -1039,6 +1123,9 @@
 /* Usernames
    Voting */
 "Checking…" = "확인 중…";
+
+/* Coinbase/Payment Methods */
+"Choose Payment Method" = "Choose Payment Method";
 
 /* Recovery phrase selection */
 "Choose Wallet" = "지갑 선택";
@@ -1103,6 +1190,12 @@
 
 /* CoinJoin */
 "CoinJoin is no longer supported — choose where to move your mixed coins." = "CoinJoin은 더 이상 지원되지 않습니다. 믹싱한 코인을 어디로 옮길지 선택하세요.";
+
+/* Send error: CoinJoin move funds */
+"CoinJoin sweep incomplete" = "CoinJoin sweep incomplete";
+
+/* Send error: CoinJoin move funds */
+"CoinJoin sweep produced no transactions" = "CoinJoin sweep produced no transactions";
 
 /* CoinJoin */
 "CoinJoin Withdrawals" = "CoinJoin Withdrawals";
@@ -1274,8 +1367,6 @@
 /* No comment provided by engineer. */
 "Contacts" = "연락처";
 
-/* Voting */
-
 /* No comment provided by engineer. */
 "Continue" = "계속";
 
@@ -1339,6 +1430,12 @@
 /* No comment provided by engineer. */
 "Core chain-locked height" = "Core 체인 잠금 높이";
 
+/* Core sync (SPV) error */
+"Core SPV cannot restart because the wallet runtime is not running" = "Core SPV cannot restart because the wallet runtime is not running";
+
+/* Core sync (SPV) error */
+"Core SPV was not restarted because a network switch is in progress." = "Core SPV was not restarted because a network switch is in progress.";
+
 /* SPV diagnostics
    Sync Info */
 "Core Sync Status" = "Core Sync Status";
@@ -1348,6 +1445,9 @@
 
 /* No comment provided by engineer. */
 "Could not automatically recover missing or incorrect words" = "입력되지 않거나 잘못 입력된 단어를 자동을 복구할 수 없었습니다.";
+
+/* Voting */
+"Could not check how many votes this node has left." = "Could not check how many votes this node has left.";
 
 /* Platform to Shielded preflight failed */
 "Could not check the available Platform balance. Sync and try again." = "Could not check the available Platform balance. Sync and try again.";
@@ -1379,6 +1479,9 @@
 /* Wallets */
 "Could not generate a recovery phrase." = "Could not generate a recovery phrase.";
 
+/* DashConnect */
+"Could not generate an ephemeral DashConnect key." = "Could not generate an ephemeral DashConnect key.";
+
 /* SwapKit */
 "Could not load Buy Dash options — please check your connection and try again" = "Could not load Buy Dash options — please check your connection and try again";
 
@@ -1387,6 +1490,9 @@
 
 /* DashSpend */
 "Could not load your gift card" = "기프트 카드를 불러올 수 없습니다";
+
+/* DashPay identity key error */
+"Could not persist new key to the iOS Keychain — aborted before broadcast." = "Could not persist new key to the iOS Keychain — aborted before broadcast.";
 
 /* Usernames */
 "Could not publish the link" = "Could not publish the link";
@@ -1403,6 +1509,9 @@
 /* Wallets */
 "Could not rename this wallet." = "Could not rename this wallet.";
 
+/* Send error: CoinJoin move funds */
+"Could not resolve a destination address for the CoinJoin sweep" = "Could not resolve a destination address for the CoinJoin sweep";
+
 /* InternalTransfer */
 "Could not resolve a destination Platform Payment address" = "Could not resolve a destination Platform Payment address";
 
@@ -1414,6 +1523,9 @@
 
 /* SPV diagnostics */
 "Couldn't authenticate: %@" = "Couldn't authenticate: %@";
+
+/* Voting */
+"Couldn't check for a link" = "Couldn't check for a link";
 
 /* No comment provided by engineer. */
 "Couldn't check which keys of this evonode are in the wallet." = "이 evonode의 어떤 키가 지갑에 있는지 확인하지 못했습니다.";
@@ -1432,6 +1544,9 @@
 
 /* Swap: Select coin, the coin list failed to load */
 "Couldn't load the coin list. Please try again, or try a different network." = "Couldn't load the coin list. Please try again, or try a different network.";
+
+/* Voting */
+"Couldn't load the contests" = "Couldn't load the contests";
 
 /* No comment provided by engineer. */
 "Couldn't make payment" = "지불에 실패하였습니다";
@@ -1454,11 +1569,20 @@
 /* No comment provided by engineer. */
 "Couldn't reach the evonode." = "evonode에 연결하지 못했습니다.";
 
+/* Voting */
+"Couldn't read your vote history." = "Couldn't read your vote history.";
+
 /* Wallet preparation failure */
 "Couldn't read your wallet keys" = "Couldn't read your wallet keys";
 
+/* Voting */
+"Couldn't refresh the list." = "Couldn't refresh the list.";
+
 /* Remove never-accepted transaction: failure title */
 "Couldn't remove the transaction" = "트랜잭션을 삭제하지 못했습니다";
+
+/* Voting */
+"Couldn't tell which request came first." = "Couldn't tell which request came first.";
 
 /* DashPay Invitations */
 "Couldn't verify the invitation. Check your connection and try again." = "Couldn't verify the invitation. Check your connection and try again.";
@@ -1487,23 +1611,11 @@
 /* DashPay Invitations */
 "Create a username and say goodbye to numerical addresses" = "Create a username and say goodbye to numerical addresses";
 
-/* DashConnect approve sheet */
-"The wallet could not read the network's time to check this connection's expiry. Try again." = "The wallet could not read the network's time to check this connection's expiry. Try again.";
-
-/* DashConnect: a token purchase arrived and the username lookup failed */
-"This wallet could not check your username. Ask the app again." = "This wallet could not check your username. Ask the app again.";
-
 /* DashConnect: a token purchase arrived while the wallet has no username */
 "Create a username to buy tokens in apps, then ask the app again." = "Create a username to buy tokens in apps, then ask the app again.";
 
 /* DashConnect: a request arrived while the wallet has no username */
 "Create a username to connect apps, then ask the app for a new code." = "Create a username to connect apps, then ask the app for a new code.";
-
-/* DashConnect: a request arrived before the wallet read the identity's usernames */
-"The wallet is still reading your username. Try again in a moment." = "The wallet is still reading your username. Try again in a moment.";
-
-/* DashConnect approve sheet: Platform refused the approval for the identity's balance */
-"Your identity's balance is too low for this connection. Top up, then ask the app for a new code." = "Your identity's balance is too low for this connection. Top up, then ask the app for a new code.";
 
 /* Create DashSpend account */
 "Create account" = "계정 생성하기";
@@ -1552,6 +1664,9 @@
 
 /* Explore Dash: Filters */
 "CTX gift cards" = "CTX 기프트 카드";
+
+/* Evonode status: epoch blocks error */
+"Current epoch unavailable: %@" = "Current epoch unavailable: %@";
 
 /* Explore Dash: Filters */
 "Current location" = "현재 위치";
@@ -1638,8 +1753,38 @@
 /* Identity top-up stopped after successful unshield */
 "Dash was moved to your Platform balance. Finish the top-up from Platform after reviewing the amount again." = "Dash was moved to your Platform balance. Finish the top-up from Platform after reviewing the amount again.";
 
+/* DashConnect: the placeholder is the network name */
+"DashConnect cannot publish from this wallet: the app runtime is on %@, which does not match the network DashConnect is configured for." = "DashConnect cannot publish from this wallet: the app runtime is on %@, which does not match the network DashConnect is configured for.";
+
 /* DashConnect */
 "DashConnect login is not yet available on mainnet" = "DashConnect login is not yet available on mainnet";
+
+/* DashConnect */
+"DashConnect requires a registered Platform identity." = "DashConnect requires a registered Platform identity.";
+
+/* DashConnect */
+"DashConnect requires an active SwiftDashSDK wallet." = "DashConnect requires an active SwiftDashSDK wallet.";
+
+/* DashConnect */
+"DashConnect requires the SwiftDashSDK runtime." = "DashConnect requires the SwiftDashSDK runtime.";
+
+/* DashConnect */
+"DashConnect requires the SwiftData model container." = "DashConnect requires the SwiftData model container.";
+
+/* DashConnect QR code error */
+"DashConnect URIs must include a non-empty Base58 body." = "DashConnect URIs must include a non-empty Base58 body.";
+
+/* DashConnect QR code error */
+"DashConnect URIs must include query parameters." = "DashConnect URIs must include query parameters.";
+
+/* DashConnect QR code error */
+"DashConnect URIs must include the network query item." = "DashConnect URIs must include the network query item.";
+
+/* DashConnect QR code error */
+"DashConnect URIs must include the version query item." = "DashConnect URIs must include the version query item.";
+
+/* DashConnect QR code error */
+"DashConnect URIs must not contain // authority separators." = "DashConnect URIs must not contain // authority separators.";
 
 /* DashPay */
 "DashPay" = "DashPay";
@@ -1665,11 +1810,20 @@
 /* No comment provided by engineer. */
 "DashPay Upgrade Fee" = "대시페이 업그레이드 수수료";
 
+/* Explore: merchant list error */
+"Database connection is unavailable." = "Database connection is unavailable.";
+
 /* No comment provided by engineer. */
 "Date" = "날짜";
 
 /* History group header for restored shielded operations whose original date is not recoverable */
 "Date unknown" = "날짜 불명";
+
+/* No comment provided by engineer. */
+"Date: New to old" = "날짜: 현재부터 과거";
+
+/* No comment provided by engineer. */
+"Date: Old to new" = "날짜: 과거부터 현재";
 
 /* Voting */
 "Deadline unknown" = "마감 기한 알 수 없음";
@@ -1707,6 +1861,9 @@
 /* Identities: BIP-32 style derivation path of this key */
 "Derivation path" = "파생 경로";
 
+/* DashPay identity key error */
+"Derived key didn't match its public key — refusing to broadcast." = "Derived key didn't match its public key — refusing to broadcast.";
+
 /* No comment provided by engineer. */
 "Destination address (optional)" = "대상 주소(선택 사항)";
 
@@ -1728,8 +1885,14 @@
 /* Wallet network */
 "Devnet" = "Devnet";
 
+/* Wallet setup error */
+"Devnet configuration changed while the runtime was starting" = "Devnet configuration changed while the runtime was starting";
+
 /* Devnet */
 "Devnet is not configured. Enter a Quorum URL and Devnet Name in Settings → Devnet Settings first." = "Devnet is not configured. Enter a Quorum URL and Devnet Name in Settings → Devnet Settings first.";
+
+/* Core sync (SPV) error */
+"Devnet is not configured. Set the Quorum URL and Devnet Name in Settings → Devnet Settings." = "Devnet is not configured. Set the Quorum URL and Devnet Name in Settings → Devnet Settings.";
 
 /* Devnet */
 "Devnet Name" = "Devnet Name";
@@ -1958,6 +2121,9 @@
 /* Enter verification code */
 "Enter verification code" = "인증 코드 입력";
 
+/* Voting */
+"Enter voting key" = "투표 키를 입력하세요";
+
 /* No comment provided by engineer. */
 "Enter your 2FA code below" = "아래에 귀하의 2FA 코드를 입력하세요";
 
@@ -2039,17 +2205,44 @@
 /* No comment provided by engineer. */
 "Failed" = "실패";
 
+/* Sync diagnostics */
+"Failed to clear persisted platform-address state: %@" = "Failed to clear persisted platform-address state: %@";
+
+/* Core sync (SPV) error */
+"Failed to create SPV data directory: %@" = "Failed to create SPV data directory: %@";
+
+/* DashConnect: the placeholder is a system status code */
+"Failed to generate secure random bytes for DashConnect (%d)." = "Failed to generate secure random bytes for DashConnect (%d).";
+
+/* Device time check error */
+"Failed to get network time" = "Failed to get network time";
+
+/* Core sync (SPV) error */
+"Failed to import wallet: %@" = "Failed to import wallet: %@";
+
 /* No comment provided by engineer. */
 "Failed to load barcode" = "바코드 로딩 실패";
 
+/* Sync diagnostics */
+"Failed to reset platform-address sync state: %@" = "Failed to reset platform-address sync state: %@";
+
 /* Coinbase */
 "Failed to start auth session" = "승인 세션을 시작하는 데 실패하였습니다";
+
+/* Core sync (SPV) error */
+"Failed to start SPV client: %@" = "Failed to start SPV client: %@";
+
+/* Core sync (SPV) error */
+"Failed to stop SPV client: %@" = "Failed to stop SPV client: %@";
 
 /* Buy Sell Portal */
 "Failed to sync" = "동기화에 실패하였습니다";
 
 /* Explore Dash */
 "Failed to sync on" = "동기화에 실패함";
+
+/* Explore: merchant database update error */
+"Failed to unzip archive" = "Failed to unzip archive";
 
 /* No comment provided by engineer. */
 "Fee" = "수수료";
@@ -2092,6 +2285,9 @@
 
 /* No comment provided by engineer. */
 "Filter transactions" = "거래 필터링하기";
+
+/* No comment provided by engineer. */
+"Filtered by" = "다음으로 필터";
 
 /* Explore Dash/Merchants/Filters */
 "Filtered by:" = "다음으로 필터:";
@@ -2140,6 +2336,9 @@
 
 /* InternalTransfer recovery */
 "Finish shielded transfer" = "Finish shielded transfer";
+
+/* Voting */
+"Finish syncing." = "Finish syncing.";
 
 /* DashConnect: a second request arrived during key registration */
 "Finish the current DashConnect request first, then try again." = "Finish the current DashConnect request first, then try again.";
@@ -2249,6 +2448,9 @@
 /* DashConnect funding limit keypad */
 "Funding limit" = "Funding limit";
 
+/* A transfer whose recipient was not on record was finished to the wallet's own Shielded balance */
+"Funds added to your Shielded balance" = "Funds added to your Shielded balance";
+
 /* Masternode unban */
 "Funds are on the way…" = "Funds are on the way…";
 
@@ -2299,6 +2501,9 @@
 /* No comment provided by engineer. */
 "Gift card" = "기프트 카드";
 
+/* DashSpend */
+"Gift card amount is out of range" = "Gift card amount is out of range";
+
 /* No comment provided by engineer. */
 "Gift card details are unavailable. Please contact support." = "Gift card details are unavailable. Please contact support.";
 
@@ -2333,6 +2538,9 @@
 "Grant GPS permissions so we can show you locations near you." = "GPS를 허락하여 당신 근처의 장소를 확인하세요.";
 
 /* No comment provided by engineer. */
+"Has blocked votes" = "차단 투표 있음";
+
+/* No comment provided by engineer. */
 "Have complete control and customize your wallet based on your needs" = "당신의 필요에 따라 지갑에 대한 완전한 통제를 행사하고 자신의 지갑을 커스터마이징 하세요";
 
 /* No comment provided by engineer. */
@@ -2358,6 +2566,12 @@
 
 /* DashPay Contacts */
 "Hide Contact" = "Hide Contact";
+
+/* Voting */
+"Hide requests for %@" = "Hide requests for %@";
+
+/* Voting */
+"Hides the requests for this name" = "Hides the requests for this name";
 
 /* adjective, security level */
 "High" = "높음";
@@ -2413,8 +2627,17 @@
 /* No comment provided by engineer. */
 "I got it" = "I got it";
 
+/* No comment provided by engineer. */
+"I have approved" = "승인하였습니다";
+
+/* No comment provided by engineer. */
+"I have not voted" = "투표하지 않았습니다";
+
 /* Wallets */
 "I have written down my recovery phrase." = "I have written down my recovery phrase.";
+
+/* Reclassify transactions info screen */
+"I Understand" = "I Understand";
 
 /* No comment provided by engineer. */
 "I wrote it down" = "옮겨 적었습니다";
@@ -2470,6 +2693,12 @@
 /* Sync diagnostics */
 "Idle" = "Idle";
 
+/* Voting */
+"If block wins when voting ends, nobody can ever request this username again." = "If block wins when voting ends, nobody can ever request this username again.";
+
+/* Voting */
+"If block wins when voting ends, nobody can ever request this username again. You can cancel your vote until voting ends." = "If block wins when voting ends, nobody can ever request this username again. You can cancel your vote until voting ends.";
+
 /* Usernames */
 "If enough of the network determines that a username is inappropriate, they can block it" = "If enough of the network determines that a username is inappropriate, they can block it";
 
@@ -2515,6 +2744,9 @@
 /* Wallets */
 "Import Wallet" = "Import Wallet";
 
+/* Core sync (SPV) error */
+"Imported wallet ID mismatch" = "Imported wallet ID mismatch";
+
 /* Wallets */
 "Importing wallet…" = "Importing wallet…";
 
@@ -2550,6 +2782,9 @@
 
 /* No comment provided by engineer. */
 "Income" = "수입";
+
+/* Reclassify transactions info screen */
+"Incoming transactions" = "Incoming transactions";
 
 /* DashSpend */
 "Increase quantity" = "Increase quantity";
@@ -2614,17 +2849,44 @@
 /* No comment provided by engineer. */
 "Invalid email or password." = "이메일 혹은 비밀번호가 유효하지 않습니다.";
 
+/* DashSpend */
+"Invalid gift card amount" = "Invalid gift card amount";
+
 /* Invalid Amount Input */
 "Invalid Input" = "유효하지 않은 입력값";
 
 /* DashPay Invitations */
 "Invalid Invitation" = "Invalid Invitation";
 
+/* DashSpend */
+"Invalid payment amount" = "Invalid payment amount";
+
 /* No comment provided by engineer. */
 "Invalid Payment Request" = "유효하지 않은 결제 요청";
 
+/* DashSpend */
+"Invalid payment request" = "Invalid payment request";
+
+/* BIP70 payment error */
+"Invalid payment request URL." = "Invalid payment request URL.";
+
+/* DashSpend */
+"Invalid payment URI format" = "Invalid payment URI format";
+
+/* DashSpend */
+"Invalid payment URI: missing address" = "Invalid payment URI: missing address";
+
 /* No comment provided by engineer. */
 "Invalid QR Code" = "유효하지 않은 QR 코드";
+
+/* DashConnect error */
+"Invalid QR payload" = "Invalid QR payload";
+
+/* BIP70 payment error: why the certificate is not trusted */
+"Invalid signature" = "Invalid signature";
+
+/* Send failed on malformed input; the argument is the reason */
+"Invalid transaction input: %@" = "Invalid transaction input: %@";
 
 /* CTXSpend error */
 "Invalid verification code. Please try again." = "유효하지 않은 승인 코드. 다시 시도하세요.";
@@ -2709,6 +2971,9 @@
 
 /* Identities: the public key bytes */
 "Key data" = "키 데이터";
+
+/* Wallet runtime error */
+"Key migration has not completed." = "Key migration has not completed.";
 
 /* Masternodes */
 "Key ownership" = "키 소유";
@@ -2810,6 +3075,9 @@
 /* Dash Service Overview */
 "Link Coinbase Account" = "코인베이스 계정 연결하기";
 
+/* Voting */
+"Link included" = "Link included";
+
 /* No comment provided by engineer. */
 "Link Uphold Account" = "업홀드 계정 연결";
 
@@ -2824,6 +3092,9 @@
 
 /* Dash Service Overview */
 "Link your Uphold account" = "업홀드 계정 연결 연결하기";
+
+/* Reclassify transactions info screen */
+"Linked accounts" = "Linked accounts";
 
 /* Username marketplace: confirm listing button */
 "List For Sale" = "판매 등록";
@@ -2961,6 +3232,9 @@
 /* Usernames */
 "Make a post with the text above on a well known social media or messaging platform to verify that you are the original owner of the requested username and paste the link below" = "위의 텍스트를 잘 알려진 소셜 미디어나 메시지 플랫폼상에 포스팅하고, 아래의 링크를 붙여 넣음으로써 당신이 요청된 사용자 이름의 진정한 소유주임을 증명하세요";
 
+/* Coinbase authorization limit info screen */
+"Make sure you set up the right authorization limit on Coinbase" = "Make sure you set up the right authorization limit on Coinbase";
+
 /* Usernames */
 "Make your username private" = "Make your username private";
 
@@ -3011,6 +3285,9 @@
 
 /* No comment provided by engineer. */
 "Masternode Update" = "마스터노드 업데이트";
+
+/* Voting */
+"Masternode voting key" = "Masternode voting key";
 
 /* Tools menu */
 "Masternodes" = "마스터노드";
@@ -3097,6 +3374,9 @@
 /* Transaction type: coinbase/masternode mining reward */
 "Mining Reward" = "Mining Reward";
 
+/* BIP70 payment error: why the certificate is not trusted */
+"Missing certificate" = "Missing certificate";
+
 /* No comment provided by engineer. */
 "Missing prepared transaction" = "Missing prepared transaction";
 
@@ -3105,6 +3385,15 @@
 
 /* CoinJoin */
 "Mixing Transactions" = "거래 믹싱";
+
+/* Wallet setup error */
+"Mnemonic persistence failed: %@" = "Mnemonic persistence failed: %@";
+
+/* Wallet setup error */
+"Mnemonic round-trip mismatch" = "Mnemonic round-trip mismatch";
+
+/* Wallet setup error */
+"ModelContainer setup failed: %@" = "ModelContainer setup failed: %@";
 
 /* No comment provided by engineer. */
 "More" = "더 알아보기";
@@ -3270,6 +3559,9 @@
 /* Coinbase */
 "No cash account found" = "현금 잔고가 발견되지 않음";
 
+/* Send error: CoinJoin move funds */
+"No CoinJoin balance to move" = "No CoinJoin balance to move";
+
 /* Maya */
 "No coins found" = "No coins found";
 
@@ -3285,11 +3577,17 @@
 /* SwapKit */
 "No deposit address returned by SwapKit" = "No deposit address returned by SwapKit";
 
+/* Core sync (SPV) error: the devnet Quorum URL */
+"No devnet peers could be discovered from %@/masternodes. Check the Quorum URL and that the devnet is reachable." = "No devnet peers could be discovered from %@/masternodes. Check the Quorum URL and that the devnet is reachable.";
+
 /* Log export */
 "No diagnostic logs were found on this device. Logs are written from the next launch onward." = "이 기기에서 진단 로그를 찾지 못했습니다. 로그는 다음 실행부터 기록됩니다.";
 
 /* DashConnect: an empty tab */
 "No disconnected connections" = "No disconnected connections";
+
+/* DashConnect */
+"No enabled AUTHENTICATION ECDSA key is available for this identity." = "No enabled AUTHENTICATION ECDSA key is available for this identity.";
 
 /* DashConnect: an empty tab */
 "No expired connections" = "No expired connections";
@@ -3351,17 +3649,26 @@
 /* Voting */
 "No open contests" = "진행 중인 경합 없음";
 
+/* DashSpend */
+"No payment information received" = "No payment information received";
+
 /* Coinbase/Buy Dash */
 "No payment methods" = "지불 방법 없음";
 
 /* Coinbase/Buy Dash */
 "No payment methods found" = "지불 방법을 찾을 수 없음";
 
+/* DashSpend */
+"No payment URL received" = "No payment URL received";
+
 /* DashPay Contacts */
 "No payments with this contact yet" = "No payments with this contact yet";
 
 /* SPV diagnostics */
 "No peers connected" = "No peers connected";
+
+/* Wallet setup error */
+"No persisted SwiftDashSDK wallet found for %@" = "No persisted SwiftDashSDK wallet found for %@";
 
 /* SPV diagnostics */
 "No persisted wallet row found for the bound wallet." = "연결된 지갑의 저장된 기록을 찾을 수 없습니다.";
@@ -3402,6 +3709,9 @@
 /* DashPay Contacts */
 "No usernames found" = "No usernames found";
 
+/* Voting */
+"No usernames match this filter" = "No usernames match this filter";
+
 /* Username marketplace: empty owned list */
 "No usernames on this identity yet. Find one to buy or register on the Find Names tab." = "이 아이덴티티에는 아직 사용자 이름이 없습니다. ‘이름 찾기’ 탭에서 구매하거나 등록할 이름을 찾아보세요.";
 
@@ -3410,6 +3720,12 @@
 
 /* Username marketplace: contest with zero masternode votes so far */
 "No votes cast yet" = "아직 투표가 없습니다";
+
+/* No comment provided by engineer. */
+"No votes left" = "남은 투표 없음";
+
+/* Voting */
+"No votes to filter by" = "No votes to filter by";
 
 /* Security — reset wallet */
 "No Wallet Found" = "No Wallet Found";
@@ -3450,6 +3766,9 @@
 /* Sync diagnostics */
 "None found" = "None found";
 
+/* Voting */
+"None of the filtered usernames can get a vote." = "None of the filtered usernames can get a vote.";
+
 /* Core Max has nothing confirmed to spend */
 "None of your %@ DASH is spendable yet — it is still confirming." = "None of your %@ DASH is spendable yet — it is still confirming.";
 
@@ -3485,6 +3804,9 @@
 
 /* Sync diagnostics */
 "Not bound" = "Not bound";
+
+/* Voting */
+"Not cast — %@" = "Not cast — %@";
 
 /* Masternodes */
 "Not checked yet" = "아직 확인되지 않음";
@@ -3539,6 +3861,12 @@
 
 /* DashPay: dismiss button of the enable success sheet */
 "Not now" = "나중에";
+
+/* Voting */
+"Not provided" = "Not provided";
+
+/* Voting */
+"Not provided – %@" = "Not provided – %@";
 
 /* No comment provided by engineer. */
 "Not reported" = "보고되지 않음";
@@ -3600,6 +3928,9 @@
 /* Voting */
 "One masternode that votes with this key is registered to a wallet in this app and was not added. Its voting key cannot be added separately." = "One masternode that votes with this key is registered to a wallet in this app and was not added. Its voting key cannot be added separately.";
 
+/* Voting */
+"One vote left" = "One vote left";
+
 /* Online */
 "Online" = "온라인";
 
@@ -3608,6 +3939,15 @@
 
 /* Transaction filter */
 "Only" = "Only";
+
+/* DashConnect QR code error */
+"Only DashConnect URI version 1 is supported." = "Only DashConnect URI version 1 is supported.";
+
+/* No comment provided by engineer. */
+"Only duplicates" = "중복 요청만";
+
+/* No comment provided by engineer. */
+"Only requests with links" = "링크를 가진 요청만";
 
 /* Wallet preparation support */
 "Only the app and system versions, time and error codes. No wallet data, keys or full logs. Nothing is sent automatically." = "Only the app and system versions, time and error codes. No wallet data, keys or full logs. Nothing is sent automatically.";
@@ -3623,6 +3963,12 @@
 
 /* Security — reset wallet */
 "Open Wallets" = "Open Wallets";
+
+/* Voting */
+"Opens the request details" = "Opens the request details";
+
+/* Voting */
+"Opens the requests for this name" = "Opens the requests for this name";
 
 /* Masternodes */
 "Operator" = "운영자";
@@ -3653,6 +3999,9 @@
 
 /* DashConnect App Connect v2 */
 "Other identities can add their own contracts to this group, and the key will act as you in those too." = "Other identities can add their own contracts to this group, and the key will act as you in those too.";
+
+/* Reclassify transactions info screen */
+"Outgoing transactions" = "Outgoing transactions";
 
 /* Masternodes */
 "Outpoint" = "아웃포인트";
@@ -3768,11 +4117,17 @@
 /* Raw transaction */
 "Payload version" = "Payload version";
 
+/* BIP70 payment error */
+"Payment failed" = "Payment failed";
+
 /* Coinbase/Buy Dash */
 "Payment method" = "지불 방법";
 
 /* CTXSpend error */
 "Payment processing error: %@" = "지불 처리 오류: %@";
+
+/* DashSpend */
+"Payment URI unavailable" = "Payment URI unavailable";
 
 /* DashPay Contacts */
 "Payments" = "Payments";
@@ -3834,6 +4189,12 @@
 /* No comment provided by engineer. */
 "Phone" = "전화";
 
+/* Explore Dash */
+"Physical Merchant" = "Physical Merchant";
+
+/* Explore Dash */
+"Physical Merchant, Online" = "Physical Merchant, Online";
+
 /* Avatar upload has no configured credentials */
 "Picture upload is not available in this build." = "Picture upload is not available in this build.";
 
@@ -3854,6 +4215,9 @@
 
 /* Send screen destination type */
 "Platform address" = "Platform 주소";
+
+/* Sync diagnostics */
+"Platform address sync failed" = "Platform address sync failed";
 
 /* Wallet accounts */
 "Platform Addresses" = "Platform Addresses";
@@ -3897,8 +4261,14 @@
 /* Masternodes */
 "Platform payments don't identify the sender. This payment was recorded when the wallet noticed the balance change — it may have arrived earlier." = "Platform 결제는 발신자를 식별하지 않습니다. 이 결제는 지갑이 잔액 변동을 감지한 시점에 기록되었으며, 실제로는 더 일찍 도착했을 수 있습니다.";
 
+/* Wallet setup error */
+"Platform SDK does not support %@" = "Platform SDK does not support %@";
+
 /* Masternodes */
 "Platform SDK not ready" = "Platform SDK가 준비되지 않았습니다";
+
+/* Sync diagnostics */
+"Platform sync could not be started" = "Platform sync could not be started";
 
 /* Sync diagnostics */
 "Platform sync is not running" = "Platform sync is not running";
@@ -3917,6 +4287,12 @@
 
 /* Coinbase/Buy Dash */
 "Platform → Shielded" = "Platform → 보호";
+
+/* Platform Sync Status error: the SDK call that failed, then its error */
+"platformAddressWallet failed: %@" = "platformAddressWallet failed: %@";
+
+/* Wallet setup error */
+"PlatformWalletManager configure failed: %@" = "PlatformWalletManager configure failed: %@";
 
 /* Coinbase/Buy Dash */
 "Please add a payment method on Coinbase" = "코인베이스에 지불 방법을 추가해주세요";
@@ -3989,6 +4365,9 @@
 
 /* No comment provided by engineer. */
 "Powered by" = "제작";
+
+/* Integration Entry Point */
+"Powered by Topper" = "Powered by Topper";
 
 /* Buy Sell Dash */
 "Powered by Uphold" = "업홀드 제작";
@@ -4068,6 +4447,9 @@
 /* DashPay */
 "Profile, %@" = "Profile, %@";
 
+/* Evonode status: epoch blocks error */
+"Proposer list too long to scan" = "Proposer list too long to scan";
+
 /* Balance info sheet section */
 "Pros" = "장점";
 
@@ -4098,6 +4480,9 @@
 /* No comment provided by engineer. */
 "Public URL" = "공개 URL";
 
+/* Voting */
+"Pull down to try again." = "Pull down to try again.";
+
 /* Coinbase/Buy Dash */
 "Purchase" = "매수하기";
 
@@ -4121,6 +4506,24 @@
 
 /* No comment provided by engineer. */
 "Quick Receive" = "빠른 송금 수령";
+
+/* Voting */
+"Quick voting" = "Quick voting";
+
+/* Voting */
+"Quick voting did not start: another vote is still being sent." = "Quick voting did not start: another vote is still being sent.";
+
+/* Voting */
+"Quick voting done" = "Quick voting done";
+
+/* Voting */
+"Quick voting partly done" = "Quick voting partly done";
+
+/* Voting */
+"Quick voting stopped before this vote was sent." = "Quick voting stopped before this vote was sent.";
+
+/* Voting */
+"Quick voting… %1$d of %2$d done" = "Quick voting… %1$d of %2$d done";
 
 /* Devnet */
 "Quorum URL" = "Quorum URL";
@@ -4208,6 +4611,9 @@
 
 /* Username marketplace: transfer recipient placeholder */
 "Recipient username or identity ID" = "수신자 사용자 이름 또는 아이덴티티 ID";
+
+/* Reclassify transactions info screen */
+"Reclassify Your Transactions" = "Reclassify Your Transactions";
 
 /* Identity top-up sheet — shielded source note */
 "Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins." = "권장: 본인의 Platform 주소를 거치는 2단계 이전을 사용하면 아이덴티티가 투명 코인과 연결되지 않습니다.";
@@ -4317,6 +4723,9 @@
 /* Usernames — the app closed before the registration finished */
 "Registration was interrupted" = "Registration was interrupted";
 
+/* Wallet network */
+"Regtest" = "Regtest";
+
 /* Usernames — Home row title after a username request was refused */
 "Rejected – %@" = "Rejected – %@";
 
@@ -4416,6 +4825,9 @@
 /* Username marketplace: search row for a contested label this identity already requested */
 "Requested by you — the network vote is in progress" = "회원님이 신청함 — 네트워크 투표가 진행 중입니다";
 
+/* BIP70 payment error: the network name the request asks for */
+"Requested network \"%@\" is not currently in use." = "Requested network \"%@\" is not currently in use.";
+
 /* Username marketplace: contested request not yet indexed by Platform */
 "Requested — waiting for the network vote" = "신청됨 — 네트워크 투표 대기 중";
 
@@ -4445,6 +4857,9 @@
 
 /* Explore Dash: Filters */
 "Reset Filters" = "필터 초기화";
+
+/* Voting */
+"Reset filters" = "Reset filters";
 
 /* No comment provided by engineer. */
 "Reset PIN" = "Reset PIN";
@@ -4524,6 +4939,9 @@
 /* AboutDash */
 "Review app" = "Review app";
 
+/* Voting */
+"Review the posting below to verify the ownership of this username" = "Review the posting below to verify the ownership of this username";
+
 /* Masternode unban */
 "Review transaction first" = "Review transaction first";
 
@@ -4595,6 +5013,9 @@
 
 /* Raw transaction inspector */
 "Script type" = "스크립트 유형";
+
+/* Wallet setup error */
+"SDK init failed: %@" = "SDK init failed: %@";
 
 /* DashPay */
 "SDK is not initialized" = "SDK is not initialized";
@@ -4790,6 +5211,9 @@
 /* 4 out of 4 in the Sending Animation */
 "Sending..." = "보내는 중...";
 
+/* Voting */
+"Sending…" = "Sending…";
+
 /* Send confirm sheet: Core drain */
 "Sends all eligible Transparent funds" = "Sends all eligible Transparent funds";
 
@@ -4839,6 +5263,9 @@
 /* No comment provided by engineer. */
 "Set PIN" = "PIN 설정";
 
+/* Voting */
+"Set up voting to filter by your votes." = "Set up voting to filter by your votes.";
+
 /* No comment provided by engineer. */
 "Set Your PIN" = "당신의 PIN을 설정하세요";
 
@@ -4885,6 +5312,9 @@
 "Shielded Spend" = "보호 지출";
 
 /* Sync diagnostics */
+"Shielded sync failed" = "Shielded sync failed";
+
+/* Sync diagnostics */
 "Shielded Sync Info" = "Shielded Sync Info";
 
 /* Sync diagnostics */
@@ -4908,6 +5338,9 @@
 /* Explore Dash */
 "Show all locations" = "모든 장소 보기";
 
+/* Voting */
+"Show all usernames" = "Show all usernames";
+
 /* Send screen: reveal the funding balance */
 "Show balance" = "Show balance";
 
@@ -4922,6 +5355,9 @@
 
 /* No comment provided by engineer. */
 "Show Recovery Phrase" = "복원 문구 확인하기";
+
+/* Voting */
+"Show requests for %@" = "Show requests for %@";
 
 /* Alert title */
 "Sign in required" = "가입이 필요합니다";
@@ -4977,17 +5413,32 @@
 /* DashConnect: after a disconnect that left keys another app of the same developer may hold */
 "Some keys on your identity (%d) may belong to another app of the same developer, so this wallet left them on. Each one shows on its own row in Connections; disconnect it there if you no longer need it." = "Some keys on your identity (%d) may belong to another app of the same developer, so this wallet left them on. Each one shows on its own row in Connections; disconnect it there if you no longer need it.";
 
+/* Voting */
+"Some links couldn't be checked. Apply the filter again to retry, or reset it." = "Some links couldn't be checked. Apply the filter again to retry, or reset it.";
+
+/* Voting */
+"Some masternodes may be missing." = "Some masternodes may be missing.";
+
 /* CoinJoin */
 "Some of your CoinJoin funds were moved. Please try again to move the rest." = "Some of your CoinJoin funds were moved. Please try again to move the rest.";
 
 /* Voting */
 "Some of your masternodes may be missing from this list — the wallet could not read your full voting-key pool. Finish syncing and reopen this screen." = "일부 마스터노드가 이 목록에서 빠져 있을 수 있습니다. 지갑이 투표 키 전체를 읽지 못했습니다. 동기화를 마친 뒤 이 화면을 다시 열어 주세요.";
 
+/* Voting */
+"Some of your masternodes may be missing from this list." = "Some of your masternodes may be missing from this list.";
+
 /* CoinJoin */
 "Some of your mixed coins were prepared. Please try again to move them to your Shielded balance." = "Some of your mixed coins were prepared. Please try again to move them to your Shielded balance.";
 
 /* Usernames */
 "Some usernames can be blocked" = "어떤 사용자 이름은 블록될 수 있습니다";
+
+/* Voting */
+"Some votes were not cast or their result is not confirmed:" = "Some votes were not cast or their result is not confirmed:";
+
+/* Voting */
+"Some votes were not cast. These usernames were not voted for:" = "Some votes were not cast. These usernames were not voted for:";
 
 /* No comment provided by engineer. */
 "Something went wrong" = "뭔가 잘못되었습니다";
@@ -5038,8 +5489,17 @@
    Sync diagnostics - why the Clear button is disabled */
 "Start Platform sync before clearing its local state" = "Start Platform sync before clearing its local state";
 
+/* Platform Sync Status error: the SDK call that failed, then its error */
+"startPlatformAddressSync failed after clear: %@" = "startPlatformAddressSync failed after clear: %@";
+
+/* Platform Sync Status error: the SDK call that failed, then its error */
+"startPlatformAddressSync failed: %@" = "startPlatformAddressSync failed: %@";
+
 /* No comment provided by engineer. */
 "State sync" = "상태 동기화";
+
+/* DashConnect error */
+"State transitions are not supported by the mock." = "State transitions are not supported by the mock.";
 
 /* Transaction details */
 "Status" = "상태";
@@ -5136,6 +5596,12 @@
 /* Dash DEX / dex_error_unavailable */
 "Swaps are temporarily unavailable. Please try again later." = "Swaps are temporarily unavailable. Please try again later.";
 
+/* Wallet runtime error */
+"SwiftDashSDK runtime does not support %@" = "SwiftDashSDK runtime does not support %@";
+
+/* Wallet setup error */
+"SwiftDashSDKHost received an invalid mnemonic" = "SwiftDashSDKHost received an invalid mnemonic";
+
 /* Wallets */
 "Switch" = "Switch";
 
@@ -5161,6 +5627,9 @@
    Wallets */
 "Switch Wallet" = "Switch Wallet";
 
+/* Wallet runtime error */
+"Switching networks failed: the runtime did not start." = "Switching networks failed: the runtime did not start.";
+
 /* Network switch overlay */
 "Switching to %@ failed" = "Switching to %@ failed";
 
@@ -5169,6 +5638,9 @@
 
 /* Wallets */
 "Switching wallet failed" = "Switching wallet failed";
+
+/* Wallet runtime error */
+"Switching wallet failed: the new wallet could not be loaded." = "Switching wallet failed: the new wallet could not be loaded.";
 
 /* Wallets */
 "Switching wallet…" = "Switching wallet…";
@@ -5206,6 +5678,9 @@
 /* About screen tech info: SPV state */
 "syncing" = "syncing";
 
+/* SPV diagnostics: state with the percentage done */
+"Syncing %@" = "Syncing %@";
+
 /* No comment provided by engineer. */
 "Syncing Balance" = "잔고 동기화 중";
 
@@ -5217,6 +5692,9 @@
 
 /* No comment provided by engineer. */
 "Take a Photo from Camera" = "카메라로 사진찍기";
+
+/* Voting */
+"Takes your vote back" = "Takes your vote back";
 
 /* Enter Address Screen */
 "Tap the address from the clipboard to paste it" = "클립보드의 주소를 탭하여 붙여넣기";
@@ -5335,6 +5813,9 @@
 /* Coinbase Two Factor Auth */
 "The code is incorrect. Please check and try again!" = "잘못된 코드입니다. 확인 후 다시 시도해주십시오!";
 
+/* DashConnect approve sheet: the chosen expiry passed before signing */
+"The connection's expiry passed before the approval was signed." = "The connection's expiry passed before the approval was signed.";
+
 /* Usernames */
 "The contest fee is spent when you submit and is not returned, even if you do not win the name." = "The contest fee is spent when you submit and is not returned, even if you do not win the name.";
 
@@ -5368,6 +5849,30 @@
 /* Coinbase/Buy Dash/Confirm Order */
 "The Dash was successfully deposited to your Coinbase account. But there was a problem transfering it to Dash Wallet on this device." = "대시가 당신의 코인베이스 계정에 성공적으로 입금되었습니다. 그러나 이 기기의 대시 지갑으로 옮기는 데에 문제가 발생했습니다.";
 
+/* DashConnect QR code error */
+"The dash-key application label is not valid UTF-8." = "The dash-key application label is not valid UTF-8.";
+
+/* DashConnect QR code error */
+"The dash-key payload contains an invalid compressed secp256k1 point." = "The dash-key payload contains an invalid compressed secp256k1 point.";
+
+/* DashConnect QR code error */
+"The dash-key payload is shorter than the minimum 67-byte format." = "The dash-key payload is shorter than the minimum 67-byte format.";
+
+/* DashConnect QR code error */
+"The dash-key payload label is longer than 64 bytes." = "The dash-key payload label is longer than 64 bytes.";
+
+/* DashConnect QR code error */
+"The dash-key payload label length overruns the payload." = "The dash-key payload label length overruns the payload.";
+
+/* DashConnect QR code error */
+"The dash-key payload version byte is not supported." = "The dash-key payload version byte is not supported.";
+
+/* DashConnect QR code error */
+"The dash-st payload must be non-empty." = "The dash-st payload must be non-empty.";
+
+/* DashConnect */
+"The DashConnect login contract is not available on this network." = "The DashConnect login contract is not available on this network.";
+
 /* Swap */
 "The destination address isn’t valid for %@ (%@). Go back and enter a %@ address." = "The destination address isn’t valid for %1$@ (%2$@). Go back and enter a %3$@ address.";
 
@@ -5379,8 +5884,6 @@
 
 /* DashConnect */
 "The details of this sign-in changed while it was on screen. Check them and approve again." = "The details of this sign-in changed while it was on screen. Check them and approve again.";
-
-"The connection's expiry passed before the approval was signed." = "The connection's expiry passed before the approval was signed.";
 
 /* Devnet */
 "The devnet chain name. It is embedded in the sync user agent (devnet.devnet-<name>) — devnet nodes reject connections without it. Each devnet keeps its own chain state, so naming a different one does not reinterpret this one's history." = "The devnet chain name. It is embedded in the sync user agent (devnet.devnet-<name>) — devnet nodes reject connections without it. Each devnet keeps its own chain state, so naming a different one does not reinterpret this one's history.";
@@ -5424,8 +5927,14 @@
 /* DashPay Invitations */
 "The invitation is still confirming on the network. Try again in a few minutes." = "The invitation is still confirming on the network. Try again in a few minutes.";
 
+/* Voting */
+"The IP address(es) below are associated with this wallet. Tick the ones that should vote." = "The IP address(es) below are associated with this wallet. Tick the ones that should vote.";
+
 /* Usernames: proof-of-identity link visibility */
 "The link is published on Dash Platform with your identity and the name you requested. Anyone can read it, not only masternode owners." = "The link is published on Dash Platform with your identity and the name you requested. Anyone can read it, not only masternode owners.";
+
+/* DashConnect */
+"The loginKeyResponse document on Platform could not be read." = "The loginKeyResponse document on Platform could not be read.";
 
 /* Identities */
 "The main identity can only be chosen from the active wallet" = "기본 아이덴티티는 활성 지갑에서만 선택할 수 있습니다";
@@ -5444,6 +5953,12 @@
 
 /* Usernames */
 "The masternode vote for this name has ended and the result is being finalized. Check back soon." = "이 이름에 대한 마스터노드 투표가 끝났고 결과를 확정하는 중입니다. 잠시 후 다시 확인해 주세요.";
+
+/* BIP70 payment error */
+"The merchant did not acknowledge the payment." = "The merchant did not acknowledge the payment.";
+
+/* BIP70 payment error */
+"The merchant did not confirm receiving the payment." = "The merchant did not confirm receiving the payment.";
 
 /* Coinbase */
 "The minimum amount you can send is %@" = "송금 가능한 최소 금액은 %@ 입니다";
@@ -5465,6 +5980,9 @@
 
 /* DashConnect */
 "The network answered with an older copy of your identity. Try again in a moment." = "The network answered with an older copy of your identity. Try again in a moment.";
+
+/* Core sync (SPV) error */
+"The network changed while Core SPV was starting." = "The network changed while Core SPV was starting.";
 
 /* DashConnect App Connect v2 */
 "The network has not caught up with your identity's keys yet. Try again in a moment." = "The network has not caught up with your identity's keys yet. Try again in a moment.";
@@ -5490,6 +6008,12 @@
 /* Masternode unban */
 "The operator key is missing from the keychain — re-add it and try again." = "The operator key is missing from the keychain — re-add it and try again.";
 
+/* Voting */
+"The other %d votes were not cast." = "The other %d votes were not cast.";
+
+/* Voting */
+"The other vote was not cast." = "The other vote was not cast.";
+
 /* Usernames */
 "The owner of this username has listed it for %1$@ Dash. Purchases over %2$@ Dash must be made from the Username Marketplace — choose another username for now; you can decide on buying this one later." = "이 사용자 이름의 소유자가 %1$@ Dash로 등록했습니다. %2$@ Dash를 넘는 구매는 사용자 이름 마켓플레이스에서 해야 합니다 — 지금은 다른 사용자 이름을 선택하세요. 이 이름의 구매는 나중에 결정할 수 있습니다.";
 
@@ -5499,8 +6023,20 @@
 /* Usernames */
 "The owner of this username has listed it in the Username Marketplace for %@ Dash. You can buy it there instead." = "이 사용자 이름의 소유자가 사용자 이름 마켓플레이스에 %@ Dash로 등록했습니다. 그곳에서 구매할 수 있습니다.";
 
+/* BIP70 payment error */
+"The payment acknowledgement could not be read." = "The payment acknowledgement could not be read.";
+
 /* Send to contact: the prepared payment went stale before broadcast */
 "The payment changed while you were confirming, so it wasn't sent. Nothing left your wallet. Please try again." = "The payment changed while you were confirming, so it wasn't sent. Nothing left your wallet. Please try again.";
+
+/* BIP70 payment error */
+"The payment request could not be read." = "The payment request could not be read.";
+
+/* BIP70 payment error */
+"The payment request is missing a payment URL." = "The payment request is missing a payment URL.";
+
+/* BIP70 payment error */
+"The payment request is too large." = "The payment request is too large.";
 
 /* Send: Core drain recovery success */
 "The pending Max transfer completed." = "The pending Max transfer completed.";
@@ -5535,6 +6071,12 @@
 /* DashConnect App Connect v2 */
 "The request names a Dash Platform system contract as the app." = "The request names a Dash Platform system contract as the app.";
 
+/* DashConnect */
+"The scanned token purchase names a token that does not belong to the contract and position it would buy from." = "The scanned token purchase names a token that does not belong to the contract and position it would buy from.";
+
+/* DashConnect */
+"The scanned token purchase targets a different identity." = "The scanned token purchase targets a different identity.";
+
 /* Username marketplace */
 "The seller changed the price before your purchase was accepted. Review the new price and try again." = "구매가 수락되기 전에 판매자가 가격을 변경했습니다. 새 가격을 확인하고 다시 시도하세요.";
 
@@ -5556,6 +6098,9 @@
 /* Dash DEX */
 "The status of your %@ swap could not be confirmed" = "The status of your %@ swap could not be confirmed";
 
+/* Wallet runtime error */
+"The stored wallet could not be read." = "The stored wallet could not be read.";
+
 /* SwapKit */
 "The swap service isn't responding. Please try again later." = "The swap service isn't responding. Please try again later.";
 
@@ -5567,6 +6112,9 @@
 
 /* Send failed before any bytes reached the network */
 "The transaction wasn't sent, so nothing left your wallet. You can try again." = "The transaction wasn't sent, so nothing left your wallet. You can try again.";
+
+/* Send: broadcast rejected; the argument is the SDK's reason */
+"The transaction wasn't sent. You can try again. %@" = "The transaction wasn't sent. You can try again. %@";
 
 /* No comment provided by engineer. */
 "The transfer could take up to 10 minutes" = "The transfer could take up to 10 minutes";
@@ -5583,6 +6131,39 @@
 /* Masternode unban */
 "The unban was sent but its result couldn't be confirmed. Don't retry — check the masternode's status again in a few minutes." = "The unban was sent but its result couldn't be confirmed. Don't retry — check the masternode's status again in a few minutes.";
 
+/* DashConnect QR code error */
+"The URI body is longer than the DashConnect payload format allows." = "The URI body is longer than the DashConnect payload format allows.";
+
+/* DashConnect QR code error */
+"The URI body is not valid Base58." = "The URI body is not valid Base58.";
+
+/* DashConnect QR code error */
+"The URI contains an unknown DashConnect network code." = "The URI contains an unknown DashConnect network code.";
+
+/* DashConnect QR code error */
+"The URI does not use the dash-key scheme." = "The URI does not use the dash-key scheme.";
+
+/* DashConnect QR code error */
+"The URI does not use the dash-st scheme." = "The URI does not use the dash-st scheme.";
+
+/* DashConnect QR code error */
+"The URI query is longer than DashConnect allows." = "The URI query is longer than DashConnect allows.";
+
+/* Voting */
+"The vote was not cast. Check your connection and try again." = "The vote was not cast. Check your connection and try again.";
+
+/* Voting */
+"The vote was not cast. Please try again." = "The vote was not cast. Please try again.";
+
+/* Voting */
+"The vote was not cast. This masternode already holds this vote." = "The vote was not cast. This masternode already holds this vote.";
+
+/* Voting */
+"The vote was not cast. This voting key does not belong to an active masternode." = "The vote was not cast. This voting key does not belong to an active masternode.";
+
+/* Voting */
+"The vote was not cast. Voting on this name has closed." = "The vote was not cast. Voting on this name has closed.";
+
 /* Usernames */
 "The voting gave this username to someone else. Please try again with a different username." = "The voting gave this username to someone else. Please try again with a different username.";
 
@@ -5595,14 +6176,17 @@
 /* DashConnect */
 "The wallet could not check whether this sign-in was already answered. Try again." = "The wallet could not check whether this sign-in was already answered. Try again.";
 
-/* DashConnect token purchase */
-"The wallet could not check your DashPay username. Open the link again." = "The wallet could not check your DashPay username. Open the link again.";
+/* DashConnect approve sheet */
+"The wallet could not read the network's time to check this connection's expiry. Try again." = "The wallet could not read the network's time to check this connection's expiry. Try again.";
 
 /* DashConnect App Connect v2 */
 "The wallet could not read your identity's encryption key for this app from the network. Try again." = "The wallet could not read your identity's encryption key for this app from the network. Try again.";
 
 /* Wallet preparation */
 "The wallet data on this device could not be reset. Try again or contact support for help." = "The wallet data on this device could not be reset. Try again or contact support for help.";
+
+/* Database error */
+"The wallet database could not be opened." = "The wallet database could not be opened.";
 
 /* Remove never-accepted transaction: confirmation body */
 "The wallet first checks a block explorer. A transaction known to the network — whether it is waiting in the mempool or already included in a block — is never removed. If the transaction isn't found, it is deleted from this wallet on this device, and the coins it was trying to spend become available again. The wallet then rescans recent blocks as a safety check. Nothing is sent to the network." = "지갑은 먼저 블록 탐색기를 확인합니다. 네트워크에 알려진 트랜잭션은 멤풀에서 대기 중이든 이미 블록에 포함되었든 절대 삭제되지 않습니다. 트랜잭션을 찾지 못하면 이 기기의 이 지갑에서 삭제되고, 사용하려던 코인이 다시 사용 가능해집니다. 그런 다음 지갑이 안전 확인 차원에서 최근 블록을 재검색합니다. 네트워크로는 아무것도 전송되지 않습니다.";
@@ -5616,8 +6200,14 @@
 /* Refused while the wallet reloads after a removed transaction */
 "The wallet is reloading after a transaction was removed. Try again in a moment, or restart the app if it never finishes." = "The wallet is reloading after a transaction was removed. Try again in a moment, or restart the app if it never finishes.";
 
+/* DashConnect: a request arrived before the wallet read the identity's usernames */
+"The wallet is still reading your username. Try again in a moment." = "The wallet is still reading your username. Try again in a moment.";
+
 /* Wallets */
 "The wallet is still stored on this device. Please try again." = "The wallet is still stored on this device. Please try again.";
+
+/* BIP70 payment error */
+"The wallet isn't ready yet. Please try again in a moment." = "The wallet isn't ready yet. Please try again in a moment.";
 
 /* Wallets */
 "The wallet manager is not available. Please try again." = "The wallet manager is not available. Please try again.";
@@ -5666,6 +6256,10 @@
 
 /* Coinbase */
 "There was an error, please try again later" = "오류가 발생했습니다, 다시 시도해주십시오";
+
+/* Reclassify transactions info screen
+   Reclassify transactions: where to change the tax category screen */
+"These classifications will be reflected on the CSV export that can be used for import into tax reporting services." = "These classifications will be reflected on the CSV export that can be used for import into tax reporting services.";
 
 /* Identity → Platform credit transfer */
 "These credits move to your Platform balance and are ready to spend right away." = "These credits move to your Platform balance and are ready to spend right away.";
@@ -5745,6 +6339,10 @@
 /* DashPay Contacts */
 "This contact's payment details couldn't be set up. Ask them to send you a new contact request." = "This contact's payment details couldn't be set up. Ask them to send you a new contact request.";
 
+/* DashConnect error: the QR code's network name, then the wallet's
+   DashConnect: the placeholders are network names */
+"This DashConnect QR is for %1$@, but this wallet currently supports %2$@ only." = "This DashConnect QR is for %1$@, but this wallet currently supports %2$@ only.";
+
 /* DashConnect expiry date picker: the picked date was refused */
 "This date has passed or is too far away. Pick another one." = "This date has passed or is too far away. Pick another one.";
 
@@ -5789,6 +6387,9 @@
 
 /* DashPay Contacts */
 "This is you" = "This is you";
+
+/* Voting: Quick voting */
+"This is your last vote for some of these usernames. After it, you cannot vote on them again." = "This is your last vote for some of these usernames. After it, you cannot vote on them again.";
 
 /* Identities */
 "This is your main identity" = "회원님의 기본 아이덴티티입니다";
@@ -5850,6 +6451,15 @@
 /* Voting */
 "This node will no longer vote from this wallet. You can add its voting key again at any time." = "This node will no longer vote from this wallet. You can add its voting key again at any time.";
 
+/* BIP70 payment error */
+"This payment is already being processed." = "This payment is already being processed.";
+
+/* BIP70 payment error */
+"This payment request has expired." = "This payment request has expired.";
+
+/* BIP70 payment error */
+"This payment request uses an unsupported output type." = "This payment request uses an unsupported output type.";
+
 /* No comment provided by engineer. */
 "This permanently removes all wallets, private keys, and recovery phrases stored by this app on this device. They can only be restored from backups. This cannot be undone." = "이 작업은 이 앱이 이 기기에 저장한 모든 지갑, 개인 키, 복원 문구를 영구적으로 제거합니다. 백업에서만 복원할 수 있습니다. 되돌릴 수 없습니다.";
 
@@ -5858,6 +6468,9 @@
 
 /* Username marketplace: listing price exceeds the representable maximum */
 "This price is too high to list." = "이 가격은 너무 높아 등록할 수 없습니다.";
+
+/* DashConnect error */
+"This QR code is not a DashConnect QR code." = "This QR code is not a DashConnect QR code.";
 
 /* Receive screen */
 "This QR contains the specified amount" = "This QR contains the specified amount";
@@ -5946,6 +6559,9 @@
 /* DashConnect */
 "This wallet could not check what this sign-in would give the app." = "This wallet could not check what this sign-in would give the app.";
 
+/* DashConnect: a token purchase arrived and the username lookup failed */
+"This wallet could not check your username. Ask the app again." = "This wallet could not check your username. Ask the app again.";
+
 /* Voting */
 "This wallet could not derive the voting key for this node." = "이 지갑은 이 노드의 투표 키를 파생할 수 없습니다.";
 
@@ -5970,8 +6586,14 @@
 /* Asset-lock retry: identity top-up with no identity */
 "This wallet has no identity to top up." = "이 지갑에는 충전할 아이덴티티가 없습니다.";
 
+/* Voting */
+"This wallet has no masternode voting keys, so it has no votes to filter by." = "This wallet has no masternode voting keys, so it has no votes to filter by.";
+
 /* Usernames */
 "This wallet has no Platform identity yet." = "This wallet has no Platform identity yet.";
+
+/* InternalTransfer recovery */
+"This wallet has no record of the address this transfer was going to, so it was finished to your own Shielded balance." = "This wallet has no record of the address this transfer was going to, so it was finished to your own Shielded balance.";
 
 /* DashConnect */
 "This wallet holds DashConnect records a newer version wrote. Update the wallet, then try again." = "This wallet holds DashConnect records a newer version wrote. Update the wallet, then try again.";
@@ -5999,6 +6621,9 @@
 
 /* DashConnect */
 "This wallet's copy of your identity is out of date, so it cannot confirm the app's key was turned off. Try again later." = "This wallet's copy of your identity is out of date, so it cannot confirm the app's key was turned off. Try again later.";
+
+/* Voting */
+"This wallet's masternode voting keys aren't available right now, so it has no votes to filter by." = "This wallet's masternode voting keys aren't available right now, so it has no votes to filter by.";
 
 /* No comment provided by engineer. */
 "This withdrawal is signed with the evonode's owner key. Dash Platform only lets the owner key withdraw to the registered payout address, so the destination can't be changed here. To withdraw to another address, use the wallet that holds the payout address key." = "이 출금은 evonode의 소유자 키로 서명됩니다. Dash Platform은 소유자 키의 출금을 등록된 지급 주소로만 허용하므로 여기서는 대상을 변경할 수 없습니다. 다른 주소로 출금하려면 지급 주소 키를 보유한 지갑을 사용하세요.";
@@ -6140,6 +6765,9 @@
 
 /* No comment provided by engineer. */
 "Transaction status unknown" = "Transaction status unknown";
+
+/* Send refused because the transaction already went out */
+"Transaction was already broadcast or is being broadcast" = "Transaction was already broadcast or is being broadcast";
 
 /* No comment provided by engineer. */
 "Transactions" = "Transactions";
@@ -6293,6 +6921,9 @@
 /* Dash DEX */
 "Unable to load rate data" = "Unable to load rate data";
 
+/* Tax report export error */
+"Unable to locate document directory" = "Unable to locate document directory";
+
 /* Swap */
 "Unable to refresh quote. Please try again." = "Unable to refresh quote. Please try again.";
 
@@ -6323,11 +6954,23 @@
 /* Masternode unban */
 "Unbanning broadcasts a provider update signed with the operator key, re-asserting the service address shown above. The masternode returns to the valid list within a few blocks." = "Unbanning broadcasts a provider update signed with the operator key, re-asserting the service address shown above. The masternode returns to the valid list within a few blocks.";
 
+/* SPV sync peer type */
+"Unclassified" = "Unclassified";
+
 /* SPV diagnostics */
 "Unconfirmed now" = "현재 미확인";
 
 /* SPV diagnostics */
 "Unconfirmed Transactions" = "미확인 트랜잭션";
+
+/* Evonode status: epoch blocks error */
+"Unexpected proposer tally format" = "Unexpected proposer tally format";
+
+/* BIP70 payment error: the payment server's host name */
+"Unexpected response from %@." = "Unexpected response from %@.";
+
+/* BIP70 payment error */
+"Unexpected response from the payment server." = "Unexpected response from the payment server.";
 
 /* SPV diagnostics */
 "Unfinished Transfers" = "Unfinished Transfers";
@@ -6359,8 +7002,20 @@
 /* No comment provided by engineer. */
 "Unshielded" = "보호되지 않음";
 
+/* BIP70 payment error: why the certificate is not trusted */
+"Unsigned request" = "Unsigned request";
+
+/* BIP70 payment error: why the certificate is not trusted */
+"Unsupported signature type" = "Unsupported signature type";
+
 /* No comment provided by engineer. */
 "Unsupported URL" = "지원되지 않는 URL";
+
+/* BIP70 payment error: why the certificate is not trusted */
+"Untrusted certificate - %@." = "Untrusted certificate - %@.";
+
+/* BIP70 payment error */
+"Untrusted certificate." = "Untrusted certificate.";
 
 /* No comment provided by engineer. */
 "Up to 10 minutes to spend" = "Up to 10 minutes to spend";
@@ -6453,6 +7108,9 @@
 /* No comment provided by engineer. */
 "Username taken" = "이미 사용 중인 사용자 이름";
 
+/* Voting */
+"Username Voting" = "Username Voting";
+
 /* Usernames */
 "Username was successfully requested" = "사용자 이름이 성공적으로 요청되었습니다";
 
@@ -6540,14 +7198,41 @@
 /* Voting */
 "Vote" = "투표";
 
+/* Voting */
+"Vote cancelled on %@" = "Vote cancelled on %@";
+
 /* Usernames */
 "Vote ended" = "투표 종료됨";
 
 /* Username marketplace: contest voting deadline row */
 "Vote ends" = "투표 종료";
 
+/* Voting */
+"Vote for all" = "Vote for all";
+
+/* Voting: Quick voting sheet */
+"Vote for all approves %d usernames" = "Vote for all approves %d usernames";
+
+/* Voting: Quick voting sheet */
+"Vote for all approves the linked request for %d usernames" = "Vote for all approves the linked request for %d usernames";
+
 /* Usernames */
 "Vote in progress" = "투표 진행 중";
+
+/* Voting */
+"Vote partly cast" = "Vote partly cast";
+
+/* Voting */
+"Vote to approve" = "Vote to approve";
+
+/* Voting */
+"Voted %@ username" = "Voted %@ username";
+
+/* No comment provided by engineer. */
+"Votes: High to low" = "투표: 높음부터 낮음";
+
+/* No comment provided by engineer. */
+"Votes: Low to high" = "투표: 낮음부터 높음";
 
 /* No comment provided by engineer. */
 "Voting" = "투표";
@@ -6558,11 +7243,20 @@
 /* Masternodes */
 "Voting address" = "투표 주소";
 
+/* Voting */
+"Voting end unknown" = "Voting end unknown";
+
 /* Usernames */
 "Voting ended with no winner" = "투표가 승자 없이 종료되었습니다";
 
 /* Usernames */
 "Voting ends around %@" = "Voting ends around %@";
+
+/* Voting */
+"Voting ends in %d days" = "Voting ends in %d days";
+
+/* Voting */
+"Voting ends today" = "Voting ends today";
 
 /* Usernames */
 "Voting has ended" = "Voting has ended";
@@ -6579,6 +7273,9 @@
 /* Usernames */
 "Voting is only required in some cases" = "투표는 일부 경우에만 필요합니다";
 
+/* Voting */
+"Voting is paused." = "Voting is paused.";
+
 /* Masternodes */
 "Voting key hash" = "투표 키 해시";
 
@@ -6586,10 +7283,22 @@
 "Voting keys" = "투표 키";
 
 /* Voting */
+"Voting on %@ has ended" = "Voting on %@ has ended";
+
+/* Voting */
 "Voting on “%@” has already closed. Refresh to see the result." = "“%@”에 대한 투표가 이미 마감되었습니다. 새로 고쳐 결과를 확인하세요.";
 
 /* Voting */
+"Voting options" = "Voting options";
+
+/* Voting */
+"Voting period" = "Voting period";
+
+/* Voting */
 "Voting with" = "Voting with";
+
+/* Voting */
+"Voting with several masternodes at once publicly links them to each other." = "Voting with several masternodes at once publicly links them to each other.";
 
 /* Usernames — Home row title while the network votes on a username */
 "Voting – %@" = "Voting – %@";
@@ -6613,8 +7322,14 @@
 /* No comment provided by engineer. */
 "Waiting for authorization…" = "승인을 기다리는 중…";
 
+/* SPV diagnostics */
+"Waiting for connections" = "Waiting for connections";
+
 /* Usernames */
 "Waiting for Dash Platform" = "Dash Platform 대기 중";
+
+/* SPV diagnostics */
+"Waiting for events" = "Waiting for events";
 
 /* Dash DEX */
 "Waiting for the provider" = "Waiting for the provider";
@@ -6630,6 +7345,12 @@
 
 /* SPV diagnostics */
 "Wallet birth height" = "지갑 시작 블록 높이";
+
+/* Wallet setup error */
+"Wallet bootstrap failed: %@" = "Wallet bootstrap failed: %@";
+
+/* Wallet setup error */
+"Wallet creation failed: %@" = "Wallet creation failed: %@";
 
 /* No comment provided by engineer. */
 "Wallet data from a previous installation is still stored on this device. Keep using these wallets, or delete all wallet data and start fresh? Make sure every recovery phrase is backed up before deleting." = "이전 설치의 지갑 데이터가 아직 이 기기에 저장되어 있습니다. 이 지갑들을 계속 사용할까요, 아니면 모든 지갑 데이터를 삭제하고 새로 시작할까요? 삭제하기 전에 모든 복원 문구가 백업되었는지 확인하세요.";
@@ -6657,6 +7378,12 @@
 
 /* Wallets */
 "Wallet name" = "Wallet name";
+
+/* Send failed because the wallet is not ready; the argument is the reason */
+"Wallet not ready: %@" = "Wallet not ready: %@";
+
+/* Send to contact: wallet or identity not available */
+"Wallet or DashPay identity is not ready" = "Wallet or DashPay identity is not ready";
 
 /* Shielded manual sync requires Core runtime readiness */
 "Wallet sync is not ready. Start wallet sync and try again." = "Wallet sync is not ready. Start wallet sync and try again.";
@@ -6693,6 +7420,9 @@
 
 /* Send dispatched but no network acceptance signal arrived */
 "We couldn't confirm the transaction reached the network. Don't send it again — the wallet keeps trying while it's open, and your balance will update as soon as it goes through." = "We couldn't confirm the transaction reached the network. Don't send it again — the wallet keeps trying while it's open, and your balance will update as soon as it goes through.";
+
+/* Send: broadcast outcome unknown; the argument is the SDK's reason */
+"We couldn't confirm whether the transaction was accepted. Don't send it again; wait for wallet synchronization. %@" = "We couldn't confirm whether the transaction was accepted. Don't send it again; wait for wallet synchronization. %@";
 
 /* Send to contact: the broadcast outcome is unknown */
 "We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history." = "We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history.";
@@ -6754,13 +7484,17 @@
 /* Usernames */
 "What is username voting?" = "사용자이름 투표란 무엇인가요?";
 
-/* Voting */
-
 /* DashPay FAQ */
 "What's coming next?" = "다음에는 무엇이 오나요?";
 
 /* DashPay FAQ */
 "When will contact requests become private?" = "연락처 요청은 언제 비공개가 되나요?";
+
+/* Reclassify transactions: where to change the tax category screen */
+"Where can I change the tax category?" = "Where can I change the tax category?";
+
+/* Reclassify transactions info screen */
+"Where can I change the transaction type?" = "Where can I change the transaction type?";
 
 /* No comment provided by engineer. */
 "Where to Spend" = "사용 장소";
@@ -6876,8 +7610,17 @@
 /* No comment provided by engineer. */
 "You can authenticate with Touch ID for payments below" = "지불을 위해서는 터치 ID를 통해 아래에서 인증할 수 있습니다";
 
+/* Voting */
+"You can block the creation of the usernames that you feel inappropriate." = "You can block the creation of the usernames that you feel inappropriate.";
+
 /* DashSpend */
 "You can buy up to %@ in gift cards per order" = "You can buy up to %@ in gift cards per order";
+
+/* Coinbase authorization limit info screen */
+"You can change it anytime by logging out of your Coinbase account in Dash Wallet and logging back in." = "You can change it anytime by logging out of your Coinbase account in Dash Wallet and logging back in.";
+
+/* Reclassify info: sentence start; a tag with the category to pick follows it */
+"You can change it to" = "You can change it to";
 
 /* No comment provided by engineer. */
 "You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance" = "계속해서 지불을 위해 대시페이를 사용할 수 있지만, 크레딧 잔고를 충전하기 전까지는 프로필을 업데이트하거나 더 많은 연락처를 추가할 수 없습니다";
@@ -6929,6 +7672,12 @@
 
 /* Voting */
 "You have already entered this masternode key" = "You have already entered this masternode key";
+
+/* Voting */
+"You have already voted for this username 4 times. You can only cast one more vote for this username." = "You have already voted for this username 4 times. You can only cast one more vote for this username.";
+
+/* Voting */
+"You have already voted for this username 5 times. You cannot vote on it any more." = "You have already voted for this username 5 times. You cannot vote on it any more.";
 
 /* No comment provided by engineer. */
 "You have chose \"%@\" as your username. Username cannot be changed once it is registered." = "당신은 \"%@\"을 사용자 이름으로 선택하였습니다. 등록이 완료되면 사용자 이름은 변경할 수 없습니다.";
@@ -6983,6 +7732,9 @@
 
 /* Dash DEX */
 "You successfully converted DASH to %@" = "You successfully converted DASH to %@";
+
+/* Voting */
+"You voted" = "You voted";
 
 /* No comment provided by engineer. */
 "You will also need to log out from the Uphold website using your browser" = "또한 당신의 브라우저를 이용하여 업홀드 웹사이트에서 로그아웃 하십시오.";
@@ -7134,6 +7886,9 @@
 /* DashPay FAQ */
 "Your identity needs an encryption and a decryption key so contact requests can be encrypted between you and other users. Enabling adds whichever of them are missing with a single network transaction. This is a one time event." = "Your identity needs an encryption and a decryption key so contact requests can be encrypted between you and other users. Enabling adds whichever of them are missing with a single network transaction. This is a one time event.";
 
+/* DashConnect approve sheet: Platform refused the approval for the identity's balance */
+"Your identity's balance is too low for this connection. Top up, then ask the app for a new code." = "Your identity's balance is too low for this connection. Top up, then ask the app for a new code.";
+
 /* No comment provided by engineer. */
 "Your invitation from %@ has been already claimed" = "%@으로부터의 초대장이 이미 사용되었습니다";
 
@@ -7166,6 +7921,9 @@
 
 /* CoinJoin */
 "Your mixed Dash was moved to your spendable balance using these transactions." = "Your mixed Dash was moved to your spendable balance using these transactions.";
+
+/* BIP70 payment error */
+"Your payment was sent, but the network has not confirmed it yet." = "Your payment was sent, but the network has not confirmed it yet.";
 
 /* DashSpend */
 "Your payment was sent, but the network has not confirmed it yet. Your gift card will appear as soon as it is confirmed." = "결제가 전송되었지만 네트워크가 아직 확인하지 않았습니다. 확인되는 즉시 기프트 카드가 표시됩니다.";
@@ -7341,242 +8099,5 @@
 /* DashPay purchase context changed */
 "“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again." = "“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again.";
 
-"%d usernames" = "%d usernames";
-
-"Approve %@" = "Approve %@";
-
-"As a masternode owner you can vote to approve requested usernames before users will be able to create it." = "As a masternode owner you can vote to approve requested usernames before users will be able to create it.";
-
-"Block %@" = "Block %@";
-
-"Opens the requests for this name" = "Opens the requests for this name";
-
-"Show requests for %@" = "Show requests for %@";
-
-"Username Voting" = "Username Voting";
-
-"Voted %@ username" = "Voted %@ username";
-
-"Voting end unknown" = "Voting end unknown";
-
-"Voting ends in %d days" = "Voting ends in %d days";
-
-"Voting ends today" = "Voting ends today";
-
-"Voting options" = "Voting options";
-
-"Couldn't load the contests" = "Couldn't load the contests";
-
-"Pull down to try again." = "Pull down to try again.";
-
-"You voted" = "You voted";
-
-"You can block the creation of the usernames that you feel inappropriate." = "You can block the creation of the usernames that you feel inappropriate.";
-
-/* No comment provided by engineer. */
-"Filtered by" = "다음으로 필터";
-
-"Reset filters" = "Reset filters";
-
-"No usernames match this filter" = "No usernames match this filter";
-
-"Change the filter or reset it to see every open contest." = "Change the filter or reset it to see every open contest.";
-
-"Can't filter by your votes right now" = "Can't filter by your votes right now";
-
-"This wallet's masternode voting keys aren't available right now, so it has no votes to filter by." = "This wallet's masternode voting keys aren't available right now, so it has no votes to filter by.";
-
-"%@ · only duplicates" = "%@ · only duplicates";
-
-/* No comment provided by engineer. */
-"Date: New to old" = "날짜: 현재부터 과거";
-
-/* No comment provided by engineer. */
-"Date: Old to new" = "날짜: 과거부터 현재";
-
-/* No comment provided by engineer. */
-"Has blocked votes" = "차단 투표 있음";
-
-/* No comment provided by engineer. */
-"I have approved" = "승인하였습니다";
-
-/* No comment provided by engineer. */
-"I have not voted" = "투표하지 않았습니다";
-
-/* No comment provided by engineer. */
-"Only duplicates" = "중복 요청만";
-
-/* No comment provided by engineer. */
-"Only requests with links" = "링크를 가진 요청만";
-
-/* No comment provided by engineer. */
-"Votes: High to low" = "투표: 높음부터 낮음";
-
-/* No comment provided by engineer. */
-"Votes: Low to high" = "투표: 낮음부터 높음";
-
-"Could not check how many votes this node has left." = "Could not check how many votes this node has left.";
-
-/* No comment provided by engineer. */
-"No votes left" = "남은 투표 없음";
-
-"The vote was not cast. Check your connection and try again." = "The vote was not cast. Check your connection and try again.";
-
-"The vote was not cast. Voting on this name has closed." = "The vote was not cast. Voting on this name has closed.";
-
-"The vote was not cast. This voting key does not belong to an active masternode." = "The vote was not cast. This voting key does not belong to an active masternode.";
-
-"The vote was not cast. Please try again." = "The vote was not cast. Please try again.";
-"Hide requests for %@" = "Hide requests for %@";
-"Not provided" = "Not provided";
-"Not provided – %@" = "Not provided – %@";
-"Couldn't check for a link" = "Couldn't check for a link";
-"Vote to approve" = "Vote to approve";
-"Cancel approval" = "Cancel approval";
-"Voting period" = "Voting period";
-"Opens the request details" = "Opens the request details";
-"Hides the requests for this name" = "Hides the requests for this name";
-"Takes your vote back" = "Takes your vote back";
-
-/* Voting */
-"Review the posting below to verify the ownership of this username" = "Review the posting below to verify the ownership of this username";
-
-/* Voting */
-"%1$d of %2$d masternodes cancelled their vote on %3$@." = "%1$d of %2$d masternodes cancelled their vote on %3$@.";
-
-/* Voting */
-"%1$d of %2$d masternodes voted to approve %3$@." = "%1$d of %2$d masternodes voted to approve %3$@.";
-
-/* Voting */
-"%1$d of %2$d masternodes voted to block %3$@." = "%1$d of %2$d masternodes voted to block %3$@.";
-
-/* Voting */
-"%d votes will be cast" = "%d votes will be cast";
-
-/* Voting */
-"1 vote will be cast" = "1 vote will be cast";
-
-/* Voting */
-"Add your voting keys" = "Add your voting keys";
-
-/* Voting */
-"Block %@?" = "Block %@?";
-
-/* Voting */
-"Enter voting key" = "투표 키를 입력하세요";
-
-/* Voting */
-"If block wins when voting ends, nobody can ever request this username again. You can cancel your vote until voting ends." = "If block wins when voting ends, nobody can ever request this username again. You can cancel your vote until voting ends.";
-
-/* Voting */
-"Not cast — %@" = "Not cast — %@";
-
-/* Voting */
-"One vote left" = "One vote left";
-
-/* Voting */
-"Sending…" = "Sending…";
-
-/* Voting */
-"The IP address(es) below are associated with this wallet. Tick the ones that should vote." = "The IP address(es) below are associated with this wallet. Tick the ones that should vote.";
-
-/* Voting */
-"The other %d votes were not cast." = "The other %d votes were not cast.";
-
-/* Voting */
-"The other vote was not cast." = "The other vote was not cast.";
-
-/* Voting */
-"Vote cancelled on %@" = "Vote cancelled on %@";
-
-/* Voting */
-"Vote partly cast" = "Vote partly cast";
-
-/* Voting */
-"Voting on %@ has ended" = "Voting on %@ has ended";
-
-/* Voting */
-"Voting with several masternodes at once publicly links them to each other." = "Voting with several masternodes at once publicly links them to each other.";
-
-/* Voting */
-"You have already voted for this username 4 times. You can only cast one more vote for this username." = "You have already voted for this username 4 times. You can only cast one more vote for this username.";
-
-/* Voting */
-"You have already voted for this username 5 times. You cannot vote on it any more." = "You have already voted for this username 5 times. You cannot vote on it any more.";
-
-"Couldn't refresh the list." = "Couldn't refresh the list.";
-
-"Couldn't read your vote history." = "Couldn't read your vote history.";
-
-"Voting is paused." = "Voting is paused.";
-
-"Some masternodes may be missing." = "Some masternodes may be missing.";
-
-"Finish syncing." = "Finish syncing.";
-
 /* Voting */
 "✓ Voted" = "✓ Voted";
-
-"Set up voting to filter by your votes." = "Set up voting to filter by your votes.";
-
-/* Voting */
-"If block wins when voting ends, nobody can ever request this username again." = "If block wins when voting ends, nobody can ever request this username again.";
-
-/* Voting */
-"Masternode voting key" = "Masternode voting key";
-
-"Already voted this way on %@" = "Already voted this way on %@";
-
-"Link included" = "Link included";
-
-"Can't filter by links right now" = "Can't filter by links right now";
-
-"Some links couldn't be checked. Apply the filter again to retry, or reset it." = "Some links couldn't be checked. Apply the filter again to retry, or reset it.";
-
-"Quick voting stopped before this vote was sent." = "Quick voting stopped before this vote was sent.";
-
-"Quick voting done" = "Quick voting done";
-
-"A masternode of this wallet blocked this name." = "A masternode of this wallet blocked this name.";
-
-"Vote for all" = "Vote for all";
-
-"Quick voting" = "Quick voting";
-
-"None of the filtered usernames can get a vote." = "None of the filtered usernames can get a vote.";
-
-"Vote for all approves %d usernames" = "Vote for all approves %d usernames";
-
-"Vote for all approves the linked request for %d usernames" = "Vote for all approves the linked request for %d usernames";
-
-"%d usernames are skipped" = "%d usernames are skipped";
-
-"This is your last vote for some of these usernames. After it, you cannot vote on them again." = "This is your last vote for some of these usernames. After it, you cannot vote on them again.";
-
-"Show all usernames" = "Show all usernames";
-
-"Quick voting partly done" = "Quick voting partly done";
-
-"Some votes were not cast. These usernames were not voted for:" = "Some votes were not cast. These usernames were not voted for:";
-
-/* Voting */
-"Some votes were not cast or their result is not confirmed:" = "Some votes were not cast or their result is not confirmed:";
-
-"Quick voting… %1$d of %2$d done" = "Quick voting… %1$d of %2$d done";
-
-/* Voting */
-"Couldn't tell which request came first." = "Couldn't tell which request came first.";
-
-/* Voting */
-"Some of your masternodes may be missing from this list." = "Some of your masternodes may be missing from this list.";
-
-/* Voting */
-"Quick voting did not start: another vote is still being sent." = "Quick voting did not start: another vote is still being sent.";
-
-/* Voting */
-"No votes to filter by" = "No votes to filter by";
-
-"This wallet has no masternode voting keys, so it has no votes to filter by." = "This wallet has no masternode voting keys, so it has no votes to filter by.";
-
-/* Voting */
-"The vote was not cast. This masternode already holds this vote." = "The vote was not cast. This masternode already holds this vote.";

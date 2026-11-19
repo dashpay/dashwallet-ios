@@ -564,6 +564,20 @@ Você deve verificar e, se necessário, corrigir as configurações de data, hor
 			<string>%d finished</string>
 		</dict>
 	</dict>
+	<key>%d transfers added to your Shielded balance</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d transfers added to your Shielded balance</string>
+		</dict>
+	</dict>
 	<key>%d already spent</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -866,6 +880,48 @@ Você deve verificar e, se necessário, corrigir as configurações de data, hor
 			<string>d</string>
 			<key>other</key>
 			<string>All %d nodes</string>
+		</dict>
+	</dict>
+	<key>%d votes will be cast</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>%d votes will be cast</string>
+		</dict>
+	</dict>
+	<key>The other %d votes were not cast.</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>other</key>
+			<string>The other %d votes were not cast.</string>
+		</dict>
+	</dict>
+	<key>%ld days</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>ld</string>
+			<key>other</key>
+			<string>%ld days</string>
 		</dict>
 	</dict>
 </dict>

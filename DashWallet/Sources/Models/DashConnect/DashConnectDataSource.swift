@@ -168,28 +168,19 @@ enum DashConnectMockError: LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .parseFailed:
-            return "Invalid QR payload"
+            return NSLocalizedString("Invalid QR payload", comment: "DashConnect error")
         case .approveFailed:
-            return "Approval failed"
+            return NSLocalizedString("Approval failed", comment: "DashConnect error")
         case .notDashConnectQrCode:
-            return "This QR code is not a DashConnect QR code."
+            return NSLocalizedString("This QR code is not a DashConnect QR code.", comment: "DashConnect error")
         case .needsNewerWallet:
             return NSLocalizedString("This link needs a newer version of the wallet.", comment: "DashConnect")
         case let .unsupportedNetwork(expected, actual):
-            return "This DashConnect QR is for \(Self.displayName(for: actual)), but this wallet currently supports \(Self.displayName(for: expected)) only."
+            return String(format: NSLocalizedString("This DashConnect QR is for %1$@, but this wallet currently supports %2$@ only.",
+                                                    comment: "DashConnect error: the QR code's network name, then the wallet's"),
+                          actual.displayName, expected.displayName)
         case .stateTransitionNotSupported:
-            return "State transitions are not supported by the mock."
-        }
-    }
-
-    private static func displayName(for network: DashConnectNetwork) -> String {
-        switch network {
-        case .mainnet:
-            return "Mainnet"
-        case .testnet:
-            return "Testnet"
-        case .devnet:
-            return "Devnet"
+            return NSLocalizedString("State transitions are not supported by the mock.", comment: "DashConnect error")
         }
     }
 }
