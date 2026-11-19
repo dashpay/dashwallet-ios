@@ -1,4 +1,4 @@
-"""Tests for the build's Catalog sync phase (T10, ADR-0008).
+"""Tests for the build's Catalog sync phase (ADR-0071).
 
 Run from the repository root:
 
@@ -58,6 +58,13 @@ class SyncCatalogTest(unittest.TestCase):
                         TARGET_NAME="Target")
         for k in ("ARCHS", "CURRENT_ARCH"):
             self.env.pop(k, None)
+        self.arch_dir = os.path.join(self.root, "obj", "arm64")
+        # What Xcode writes: <arch>/<TARGET_NAME>.LinkFileList names the target's object files.
+        self.write_link_list(["My View.o", "Legacy Objc.o", "Legacy.o"])
+
+    def write_link_list(self, object_names):
+        with open(os.path.join(self.arch_dir, "Target.LinkFileList"), "w", encoding="utf-8") as f:
+            f.write("".join(os.path.join(self.arch_dir, n).replace(" ", "\\ ") + "\n" for n in object_names))
 
     def run_sync(self, env=None):
         return subprocess.run([sys.executable, SCRIPT], env=env or self.env,
@@ -138,6 +145,77 @@ class SyncCatalogTest(unittest.TestCase):
         self.assertEqual(res.returncode, 0, res.stderr)
         self.assertFalse(os.path.exists(self.catalog))
         self.assertTrue(res.stdout.strip(), "expected a note on stdout")
+
+    # --- T27 / review F15: the sync phase's edge cases ---
+
+    def test_swift_files_without_any_stringsdata_fail_the_build(self):
+        # Zero compiler .stringsdata with Swift files in the target means the compile output is
+        # missing; syncing would mark every key stale.
+        os.remove(os.path.join(self.arch_dir, "My View.stringsdata"))
+        before = self.read_bytes()
+        res = self.run_sync()
+        self.assertNotEqual(res.returncode, 0, res.stdout)
+        self.assertIn("error:", res.stderr)
+        self.assertIn("stringsdata", res.stderr)
+        self.assertEqual(self.read_bytes(), before)
+
+    def test_leftover_inputs_of_a_deleted_source_do_not_count(self):
+        # Deleted.m was removed; its .o is gone from the LinkFileList but its .stringsdata and
+        # .d are still in the object directory.
+        cat = catalog_io.read_catalog(self.catalog)
+        # An entry the compiler extracted earlier, with a translation: the sync marks it stale once no
+        # current input asks for it (a "manual" entry is never marked stale, so it would prove nothing).
+        cat["strings"]["Leftover key"] = {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "x"}}}}
+        catalog_io.write_catalog(self.catalog, cat)
+        gone = os.path.join(self.srcroot, "DashWallet", "Sources", "Deleted.m")
+        with open(os.path.join(self.arch_dir, "Deleted.stringsdata"), "w", encoding="utf-8") as f:
+            json.dump({"source": gone, "version": 2, "tables": {"Localizable": [
+                {"key": "Leftover key", "comment": "", "location": {"startingLine": 1, "startingColumn": 1}}]}}, f)
+        with open(os.path.join(self.arch_dir, "Deleted.d"), "w", encoding="utf-8") as f:
+            f.write("dependencies: \\\n  %s\n" % gone)
+        res = self.run_sync()
+        self.assertEqual(res.returncode, 0, res.stderr)
+        cat = catalog_io.read_catalog(self.catalog)
+        self.assertEqual(entry(cat, "Leftover key").get("extractionState"), "stale")
+        self.assertNotEqual(entry(cat, "Hello from Swift").get("extractionState"), "stale")
+        self.assertNotEqual(entry(cat, "Objc only").get("extractionState"), "stale")
+
+    def test_inputs_whose_object_is_listed_in_the_link_file_list_still_count(self):
+        self.write_link_list(["My View.o"])  # Legacy Objc.o dropped: its .d must be ignored
+        res = self.run_sync()
+        self.assertEqual(res.returncode, 0, res.stderr)
+        cat = catalog_io.read_catalog(self.catalog)
+        self.assertNotEqual(entry(cat, "Hello from Swift").get("extractionState"), "stale")
+        self.assertEqual(entry(cat, "Objc only").get("extractionState"), "stale")
+
+    def assert_sync_error(self, env, fragment):
+        res = self.run_sync(env)
+        self.assertEqual(res.returncode, 1, res.stdout)
+        self.assertIn("error: Catalog sync failed", res.stderr)
+        self.assertIn(fragment, res.stderr)
+
+    def test_each_missing_environment_variable_is_an_error(self):
+        for name in ("SRCROOT", "OBJECT_FILE_DIR_normal", "TARGET_NAME"):
+            env = dict(self.env)
+            del env[name]
+            self.assert_sync_error(env, name)
+
+    def test_unreadable_object_directory_is_an_error(self):
+        self.assert_sync_error(dict(self.env, OBJECT_FILE_DIR_normal=os.path.join(self.tmp, "nope")),
+                               "OBJECT_FILE_DIR_normal")
+
+    def test_a_listed_source_that_does_not_exist_is_an_error(self):
+        os.remove(os.path.join(self.srcroot, "DashWallet", "Sources", "Legacy.swift"))
+        self.assert_sync_error(self.env, "do not exist")
+
+    def test_a_failing_xcstringstool_is_an_error(self):
+        bin_dir = os.path.join(self.tmp, "bin")
+        os.makedirs(bin_dir)
+        fake = os.path.join(bin_dir, "xcrun")
+        with open(fake, "w", encoding="utf-8") as f:
+            f.write("#!/bin/sh\necho boom >&2\nexit 3\n")
+        os.chmod(fake, 0o755)
+        self.assert_sync_error(dict(self.env, PATH=bin_dir + os.pathsep + self.env["PATH"]), "boom")
 
 
 if __name__ == "__main__":
