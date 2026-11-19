@@ -566,7 +566,8 @@ def parse_args(argv):
     parser.add_argument("--baseline", metavar="<rev>",
                         help="Baseline commit (default: merge-base of HEAD and origin/develop)")
     parser.add_argument("--derived-data", metavar="<path>",
-                        help="where the dashpay build's .stringsdata files are read from (default: the latest build)")
+                        help="where the dashpay build's .stringsdata files are read from "
+                             "(default: the newest simulator Debug dashpay build of this checkout)")
     parser.add_argument("--baseline-derived-data", metavar="<path>",
                         help="DerivedData of a build of the Baseline commit (scripts/localization/build_baseline.sh); required unless --release")
     parser.add_argument("--write-key-map", action="store_true",
