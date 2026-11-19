@@ -370,13 +370,38 @@ final class QRScannerTests: XCTestCase {
         XCTAssertEqual(delegate.failure?.title, NSLocalizedString("Invalid payment amount", comment: ""))
     }
 
-    /// A whole request URL is fetched as a Dash request: its http(s) scheme
+    /// A cleartext whole URL is not fetched as a Dash request: nothing
+    /// vouches for what it returns.
+    func testPaymentScannerFetchesNoCleartextRequestURL() {
+        let (scanner, recorder) = makeScanner(.payment)
+        scanner.didDetectCodes(["http://merchant.invalid/pr"])
+        if case .connecting = scanner.status { XCTFail("a cleartext request is not fetched") }
+        XCTAssertTrue(isInvalid(scanner.status))
+        XCTAssertTrue(recorder.results.isEmpty)
+        XCTAssertFalse(ParsedPaymentURI.parse(paymentString: "http://merchant.invalid/pr").isWholeRequestURL)
+    }
+
+    /// A wrapper link that gives its amount twice is not read as an open
+    /// amount, however the repeats are ordered.
+    func testScannedWrapperLinkWithARepeatedAmountIsRefused() {
+        for link in ["dashwallet://pay=\(Self.address)&amount=99999999999&amount=&sender=ctx",
+                     "dashwallet://pay=\(Self.address)&amount=1&req-amount=2&sender=ctx"] {
+            XCTAssertFalse(ParsedPaymentURI.parse(paymentString: link).isValidDashPaymentIntent, link)
+            let (scanner, recorder) = makeScanner(.payment)
+            scanner.didDetectCodes([link])
+            XCTAssertTrue(recorder.results.isEmpty, link)
+        }
+        XCTAssertTrue(ParsedPaymentURI.parse(
+            paymentString: "dashwallet://pay=\(Self.address)&amount=1&sender=ctx").isValidDashPaymentIntent)
+    }
+
+    /// A whole request URL is fetched as a Dash request: its https scheme
     /// says where the request is, not which currency's MIME types to use.
     func testWholeRequestURLIsFetchedAsDash() {
         let parsed = ParsedPaymentURI.parse(paymentString: "https://merchant.invalid/pr")
         XCTAssertTrue(parsed.isWholeRequestURL)
         XCTAssertEqual(BIP70InteractiveCoordinator.paymentProtocolScheme(parsed.scheme!), "dash")
-        XCTAssertEqual(BIP70InteractiveCoordinator.paymentProtocolScheme("http"), "dash")
+        XCTAssertEqual(BIP70InteractiveCoordinator.paymentProtocolScheme("http"), "http")
         XCTAssertEqual(BIP70InteractiveCoordinator.paymentProtocolScheme("bitcoin"), "bitcoin")
     }
 
