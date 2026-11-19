@@ -671,6 +671,17 @@ final class SwiftDashSDKHost {
     /// by NSError domain: app enums bridge to domains carrying the module
     /// name, and `WalletStorageError.keychainError` loses its status when
     /// bridged.
+    /// A recovery-phrase keychain failure line: the Error summary keeps only
+    /// the case, so the keychain status is added, `-` when there is none.
+    nonisolated static func mnemonicFailureLine(_ event: String, _ error: Error) -> AppLogMessage {
+        "🪺 HOST :: \(event, privacy: .public): \(error) status=\(keychainStatus(of: error), privacy: .public)"
+    }
+
+    /// The keychain status of a recovery-phrase failure, `-` when there is none.
+    nonisolated static func keychainStatus(of error: Error) -> String {
+        keysFailure(in: error)?.status.map { String($0) } ?? "-"
+    }
+
     nonisolated static func keysFailure(in error: Error) -> (reason: WalletPreparationFailure.KeysReason, status: OSStatus?)? {
         switch error {
         case WalletStorageError.keychainError(let status):
@@ -1118,7 +1129,7 @@ final class SwiftDashSDKHost {
         } catch WalletStorageError.mnemonicNotFound {
             previousMnemonic = nil
         } catch {
-            Self.logger.error("🪺 HOST :: existing mnemonic lookup failed: \(error)")
+            Self.logger.error(Self.mnemonicFailureLine("existing mnemonic lookup failed", error))
             throw HostError.mnemonicPersistenceFailed(error)
         }
 
@@ -1176,7 +1187,7 @@ final class SwiftDashSDKHost {
             Self.logger.error("🪺 HOST :: mnemonic persistence round-trip mismatch")
             throw HostError.mnemonicRoundTripMismatch
         } catch MnemonicFirstWalletCreationError.mnemonicPersistence(let error) {
-            Self.logger.error("🪺 HOST :: mnemonic persistence failed: \(error)")
+            Self.logger.error(Self.mnemonicFailureLine("mnemonic persistence failed", error))
             throw HostError.mnemonicPersistenceFailed(error)
         } catch MnemonicFirstWalletCreationError.walletCreation(let error) {
             Self.logger.error("🪺 HOST :: createWallet failed: \(error)")

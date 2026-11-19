@@ -372,8 +372,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
                 } else {
                     firstOther = firstOther ?? error
                 }
-                Self.logger.error(
-                    "💸 TXSEND :: \(label, privacy: .public) chunk \(index + 1, privacy: .public) failed to broadcast, continuing: \(error)")
+                Self.logger.error(Self.sweepChunkFailureLine(label: label, index: index, error: error))
             }
         }
         if txids.isEmpty, let firstUnknown {
@@ -990,6 +989,20 @@ final class SwiftDashSDKTransactionSender: NSObject {
     /// deliberately different errors: rejected may be retried (by rebuilding —
     /// the finalized handle is consumed), while unknown must not be
     /// automatically broadcast again.
+    /// The sweep loop's line for one failed part.
+    /// A refused or unconfirmed part keeps its txid and the network's reason
+    /// (ADR-0061, like `broadcastLine`); any other failure is its Error summary.
+    static func sweepChunkFailureLine(label: String, index: Int, error: Error) -> AppLogMessage {
+        switch error {
+        case let SendError.transactionRejected(txid, reason):
+            "💸 TXSEND :: \(label, privacy: .public) chunk \(index + 1, privacy: .public) rejected — txid=\(txid, privacy: .public) reason=\(reason, privacy: .public)"
+        case let SendError.transactionStatusUnknown(txid, reason):
+            "💸 TXSEND :: \(label, privacy: .public) chunk \(index + 1, privacy: .public) unknown — txid=\(txid, privacy: .public) reason=\(reason, privacy: .public)"
+        default:
+            "💸 TXSEND :: \(label, privacy: .public) chunk \(index + 1, privacy: .public) failed to broadcast, continuing: \(error)"
+        }
+    }
+
     static func requireAccepted(_ outcome: CoreTransactionBroadcastOutcome) throws -> String {
         switch outcome {
         case .accepted(let txid):

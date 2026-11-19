@@ -79,7 +79,7 @@ custom_rules:
     severity: error
   no_os_logger:
     name: "os.Logger"
-    regex: "(?<![A-Za-z0-9_])(Logger|os_log|NSLog)(\\(|\\.init\\b)|:\\s*(os\\.)?Logger\\b"
+    regex: "(?<![A-Za-z0-9_])(Logger\\b|(os_log|NSLog)\\()"
     match_kinds:
       - identifier
       - typeidentifier

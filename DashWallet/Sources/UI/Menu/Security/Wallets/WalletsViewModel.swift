@@ -434,7 +434,7 @@ final class WalletsViewModel: ObservableObject {
         do {
             mnemonic = try SwiftDashSDKHost.strictlyPersistedMnemonic(for: walletId)
         } catch {
-            Self.logger.error("removeWallet mnemonic read failed: \(error)")
+            Self.logger.error("removeWallet mnemonic read failed: \(error) status=\(SwiftDashSDKHost.keychainStatus(of: error), privacy: .public)")
             errorMessage = error.localizedDescription
             return
         }

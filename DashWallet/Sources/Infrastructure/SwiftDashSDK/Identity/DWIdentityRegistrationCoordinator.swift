@@ -2594,7 +2594,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         } catch CoordinatorError.usernameUnavailable {
             state = nil
         } catch {
-            Self.logger.warning("🪪 IDENT-COORD :: provisional \(label, privacy: .public) lookup failed (retry on next trigger): \(error)")
+            Self.logger.warning("🪪 IDENT-COORD :: provisional label lookup failed (retry on next trigger): \(error)")
             return
         }
         if state == .owned {
@@ -2626,10 +2626,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             guard !service.isAwaitingUnconfirmedSubmission(
                 label: label, network: expectedNetwork, walletId: wallet.walletId)
             else {
-                Self.logger.info("🪪 IDENT-COORD :: provisional \(label, privacy: .public) not visible yet after an unknown result — marker kept")
+                Self.logger.info("🪪 IDENT-COORD :: provisional label not visible yet after an unknown result — marker kept")
                 return
             }
-            Self.logger.info("🪪 IDENT-COORD :: provisional \(label, privacy: .public) was never submitted — marker dropped")
+            Self.logger.info("🪪 IDENT-COORD :: provisional label was never submitted — marker dropped")
             service.clearPending(label: label, for: expectedNetwork, walletId: wallet.walletId)
         }
         NotificationCenter.default.post(name: .DWDashPayRegistrationStatusUpdated, object: nil)

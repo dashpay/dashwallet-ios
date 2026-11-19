@@ -510,7 +510,7 @@ struct UsernameMarketplaceService {
             if text.contains("not found") || text.contains("no contest") {
                 return .fresh
             }
-            Self.logger.info("🏷️ MARKET :: contest precheck unavailable for \(label, privacy: .public): \(error)")
+            Self.logger.info("🏷️ MARKET :: contest precheck unavailable: \(error)")
             return .unknown
         }
     }

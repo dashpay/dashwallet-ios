@@ -223,7 +223,11 @@ public final class DWContestedNameStatusService: NSObject {
         }
         UserDefaults.standard.set(entries, forKey: key)
         Self.logger.info(
-            "🪪 CONTEST-SVC :: recordSubmission label=\(canonical, privacy: .public) network=\(network.rawValue, privacy: .public) promoteOnWin=\(promoteOnWin, privacy: .public) provisional=\(provisional, privacy: .public) inFlight=\(entries.count, privacy: .public)")
+            """
+            🪪 CONTEST-SVC :: recordSubmission network=\(network.rawValue, privacy: .public) \
+            promoteOnWin=\(promoteOnWin, privacy: .public) provisional=\(provisional, privacy: .public) \
+            inFlight=\(entries.count, privacy: .public)
+            """)
         return created
     }
 
@@ -309,7 +313,7 @@ public final class DWContestedNameStatusService: NSObject {
         } else {
             UserDefaults.standard.set(entries, forKey: key)
         }
-        Self.logger.info("🪪 CONTEST-SVC :: clearPending label=\(Self.canonicalLabel(label), privacy: .public) network=\(network.rawValue, privacy: .public) remaining=\(entries.count, privacy: .public)")
+        Self.logger.info("🪪 CONTEST-SVC :: clearPending network=\(network.rawValue, privacy: .public) remaining=\(entries.count, privacy: .public)")
     }
 
     /// Drop EVERY bookmark for the network (all in-flight labels, plus any

@@ -195,7 +195,7 @@ final class ShieldedRecoveryViewModel: ObservableObject {
                 Self.logger.info("🛡️ SHIELD-TX :: recovery retry after failure")
                 coordinator.reset()
             case .ignore:
-                Self.logger.info("🛡️ SHIELD-TX :: recovery tap ignored phase=\(String(describing: self.coordinator.phase), privacy: .public)")
+                Self.logger.info("🛡️ SHIELD-TX :: recovery tap ignored phase=\(AppLogMessage.caseName(of: self.coordinator.phase) ?? "-", privacy: .public)")
                 return
             }
 

@@ -622,6 +622,88 @@ final class AppLoggerTests: XCTestCase {
         }
     }
 
+    // AC-10 (PR review r10): a name that may never have been submitted
+    // stays out of the Log export — the form and marketplace checks, the
+    // contest bookmark made before the write, and its reconciliation.
+    func testLinesAboutANameNotSubmittedYetWriteNoName() throws {
+        let sdk = "DashWallet/Sources/Infrastructure/SwiftDashSDK/"
+        let precheck = try sourceLine(
+            sdk + "UsernameMarketplaceService.swift", containing: "MARKET :: contest precheck unavailable")
+        XCTAssertFalse(precheck.contains("\\(label"), precheck)
+
+        let bookmarks = try sourceText(sdk + "Identity/DWContestedNameStatusService.swift")
+            .split(separator: "\n").map(String.init)
+            .filter { $0.contains("CONTEST-SVC :: recordSubmission") || $0.contains("CONTEST-SVC :: clearPending") }
+        XCTAssertEqual(bookmarks.count, 3)
+        for line in bookmarks {
+            XCTAssertFalse(line.contains("\\(canonical"), line)
+            XCTAssertFalse(line.contains("canonicalLabel(label)"), line)
+        }
+
+        let coordinator = try sourceText(sdk + "Identity/DWIdentityRegistrationCoordinator.swift")
+            .split(separator: "\n").map(String.init)
+        let provisional = ["lookup failed (retry on next trigger)", "not visible yet after an unknown result", "was never submitted"]
+        for fragment in provisional {
+            let lines = coordinator.filter { $0.contains("IDENT-COORD :: provisional") && $0.contains(fragment) }
+            XCTAssertEqual(lines.count, 1, fragment)
+            for line in lines { XCTAssertFalse(line.contains("\\(label"), line) }
+        }
+    }
+
+    // AC-10, AC-05, AC-03: the username form's legacy lines write no draft
+    // name, no required cost, no spendable balance and no error text.
+    func testUsernameFormLinesWriteNoNameCostOrBalance() throws {
+        let text = try sourceText("DashWallet/Sources/UI/DashPay/Setup/CreateUsername/CreateUsernameViewModel.swift")
+        let start = try XCTUnwrap(text.range(of: "\"CreateUsername: checking"))
+        let end = try XCTUnwrap(text.range(of: "judging", range: start.upperBound..<text.endIndex))
+        let check = String(text[start.lowerBound..<end.upperBound])
+        for value in ["\\(username)", "\\(requiredCost)", "\\(coreSpendableDuffs)"] {
+            XCTAssertFalse(check.contains(value), check)
+        }
+        let path = "DashWallet/Sources/UI/DashPay/Setup/CreateUsername/CreateUsernameViewModel.swift"
+        let refused = try sourceLine(path, containing: "refused over the asset-lock input limit")
+        XCTAssertFalse(refused.contains("\\(submittedUsername)"), refused)
+        let failed = try sourceLine(path, containing: "\"CreateUsername: registration failed")
+        XCTAssertFalse(failed.contains("\\(username)"), failed)
+        XCTAssertFalse(failed.contains("\\(raw)"), failed)
+        XCTAssertTrue(failed.contains("AppLogMessage.errorSummary(error)"), failed)
+    }
+
+    // AC-11 (PR review r10): a failed part of a sweep keeps its txid and the
+    // network's reason; any other failure is its Error summary only.
+    func testSweepPartFailureKeepsTheTxidAndTheReason() {
+        typealias SendError = SwiftDashSDKTransactionSender.SendError
+        let txid = String(repeating: "ab", count: 32)
+        let rejected = SwiftDashSDKTransactionSender.sweepChunkFailureLine(
+            label: "coinjoin sweep", index: 1,
+            error: SendError.transactionRejected(txid: txid, reason: "insufficient fee")).text
+        XCTAssertEqual(
+            rejected, "💸 TXSEND :: coinjoin sweep chunk 2 rejected — txid=\(txid) reason=insufficient fee")
+        let unknown = SwiftDashSDKTransactionSender.sweepChunkFailureLine(
+            label: "coinjoin sweep", index: 0,
+            error: SendError.transactionStatusUnknown(txid: txid, reason: "timeout")).text
+        XCTAssertEqual(unknown, "💸 TXSEND :: coinjoin sweep chunk 1 unknown — txid=\(txid) reason=timeout")
+    }
+
+    func testOtherSweepPartFailureWritesOnlyItsErrorSummary() {
+        let error = SampleError.failed(path: "/var/mobile/secret")
+        let line = SwiftDashSDKTransactionSender.sweepChunkFailureLine(
+            label: "coinjoin sweep", index: 0, error: error).text
+        XCTAssertEqual(
+            line,
+            "💸 TXSEND :: coinjoin sweep chunk 1 failed to broadcast, continuing: \(AppLogMessage.errorSummary(error))")
+        XCTAssertFalse(line.contains("txid="), line)
+    }
+
+    // The recovery tap line writes the phase by case name only.
+    func testShieldedRecoveryTapLineWritesThePhaseCaseName() throws {
+        let line = try sourceLine(
+            "DashWallet/Sources/UI/Payments/InternalTransfer/Shielded/ShieldedRecoverySheet.swift",
+            containing: "recovery tap ignored phase")
+        XCTAssertFalse(line.contains("String(describing:"), line)
+        XCTAssertTrue(line.contains("AppLogMessage.caseName(of:"), line)
+    }
+
     private var repositoryRoot: URL {
         URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
     }
