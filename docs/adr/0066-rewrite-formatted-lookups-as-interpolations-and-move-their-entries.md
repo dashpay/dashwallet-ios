@@ -11,7 +11,7 @@
 ## Decision drivers
 
 - US-05: one current Swift call, used the way current Swift code uses it.
-- Brief problem 2: a counted phrase formatted with `String(format:)` silently loses its plural rules; an interpolated `String(localized:)` applies them by itself.
+- Plural rules: a counted phrase formatted with `String(format:)` silently loses its plural rules; an interpolated `String(localized:)` applies them by itself.
 - Wording preservation (spec §6): every place still resolves to its Baseline wording after formatting with the same sample arguments — a changed key is allowed only as a Moved key (spec §8 Q1 default, glossary "Moved key").
 
 ## Considered options
