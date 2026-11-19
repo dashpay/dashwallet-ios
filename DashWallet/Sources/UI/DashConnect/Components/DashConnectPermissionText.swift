@@ -53,11 +53,11 @@ enum DashConnectPermissionText {
             isGroup = true
             action = String(
                 format: isCritical
-                    ? NSLocalizedString(
-                        "Act as you in all of %@'s contracts, including claiming and spending its tokens",
+                    ? String(
+                        localized: "Act as you in all of %@'s contracts, including claiming and spending its tokens",
                         comment: "DashConnect App Connect v2: the placeholder is the app's name")
-                    : NSLocalizedString(
-                        "Act as you in all of %@'s contracts",
+                    : String(
+                        localized: "Act as you in all of %@'s contracts",
                         comment: "DashConnect App Connect v2: the placeholder is the app's name"),
                 appLabel)
         case .singleContract:
@@ -108,14 +108,14 @@ enum DashConnectPermissionText {
         switch tense {
         case .present:
             text = String(
-                format: NSLocalizedString(
-                    "Act as you in %1$@ until %2$@, including buying and sending its tokens. It can spend up to %3$@ of your identity balance on fees and token purchases, but can send any amount of your %1$@ tokens.",
+                format: String(
+                    localized: "Act as you in %1$@ until %2$@, including buying and sending its tokens. It can spend up to %3$@ of your identity balance on fees and token purchases, but can send any amount of your %1$@ tokens.",
                     comment: "DashConnect App Connect v2: the app's name, a date (29 Oct 2027), an amount with its unit (0.5 DASH); the app's name again"),
                 appLabel, expiry, budget)
         case .past:
             text = String(
-                format: NSLocalizedString(
-                    "Could act as you in %1$@ until %2$@, including buying and sending its tokens. It could spend up to %3$@ of your identity balance on fees and token purchases, but could send any amount of your %1$@ tokens.",
+                format: String(
+                    localized: "Could act as you in %1$@ until %2$@, including buying and sending its tokens. It could spend up to %3$@ of your identity balance on fees and token purchases, but could send any amount of your %1$@ tokens.",
                     comment: "DashConnect connection sheet, a connection that ended: the app's name, a date, an amount with its unit; the app's name again"),
                 appLabel, expiry, budget)
         }

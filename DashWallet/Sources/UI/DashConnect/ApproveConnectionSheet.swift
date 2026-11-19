@@ -49,8 +49,8 @@ extension ConnectionRequest {
     var approvalTitle: String {
         String(
             format: isRelogin
-                ? NSLocalizedString("Sign in to %@ again?", comment: "DashConnect re-login")
-                : NSLocalizedString("Approve connection to %@?", comment: "DashConnect"),
+                ? String(localized: "Sign in to %@ again?", comment: "DashConnect re-login")
+                : String(localized: "Approve connection to %@?", comment: "DashConnect"),
             resolvedAppLabel)
     }
 

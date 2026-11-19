@@ -1859,14 +1859,14 @@ extension CreateUsernameViewModel.ShieldedCostBlocker {
         case .resting(let readyAt):
             let time = DWDateFormatter.sharedInstance.timeOnly(from: readyAt)
             let format = calendar.isDate(readyAt, inSameDayAs: now) || readyAt < now
-                ? NSLocalizedString("Your recently shielded Dash can be used for this username at %@", comment: "Usernames")
-                : NSLocalizedString("Your recently shielded Dash can be used for this username tomorrow at %@", comment: "Usernames")
+                ? String(localized: "Your recently shielded Dash can be used for this username at %@", comment: "Usernames")
+                : String(localized: "Your recently shielded Dash can be used for this username tomorrow at %@", comment: "Usernames")
             return (String.localizedStringWithFormat(format, time), .pending)
 
         case .short(let shortfallDuffs):
             let amount = shortfallDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol
-            let format = NSLocalizedString(
-                "Add %@ Dash to your Shielded balance to create this username", comment: "Usernames")
+            let format = String(
+                localized: "Add %@ Dash to your Shielded balance to create this username", comment: "Usernames")
             return (String.localizedStringWithFormat(format, amount), .failed)
 
         case .poolTooSmall(let current):

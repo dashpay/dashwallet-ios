@@ -372,18 +372,20 @@ struct ConnectionSheet: View {
     private var grantedTitle: String {
         String(
             format: isPast
-                ? NSLocalizedString("See what you allowed %@ to do", comment: "DashConnect connection sheet: the app's name")
-                : NSLocalizedString("See what %@ will be able to do", comment: "DashConnect connection sheet: the app's name"),
+                ? String(localized: "See what you allowed %@ to do", comment: "DashConnect connection sheet: the app's name")
+                : String(localized: "See what %@ will be able to do", comment: "DashConnect connection sheet: the app's name"),
             item.name)
     }
 
     private var withheldTitle: String {
         String(
             format: isPast
-                ? NSLocalizedString(
-                    "See what %@ did NOT have access to", comment: "DashConnect connection sheet: the app's name")
-                : NSLocalizedString(
-                    "See what %@ will NOT have access to", comment: "DashConnect connection sheet: the app's name"),
+                ? String(
+                    localized: "See what %@ did NOT have access to",
+                    comment: "DashConnect connection sheet: the app's name")
+                : String(
+                    localized: "See what %@ will NOT have access to",
+                    comment: "DashConnect connection sheet: the app's name"),
             item.name)
     }
 

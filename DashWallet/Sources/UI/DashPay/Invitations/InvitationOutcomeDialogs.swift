@@ -112,7 +112,7 @@ struct InvitationAlreadyClaimedDialog: View {
 
     private var message: AttributedString {
         let name = InvitationOutcomeDialogs.senderName(inviter)
-        let format = NSLocalizedString("Your invitation from %@ has been already claimed", comment: "")
+        let format = String(localized: "Your invitation from %@ has been already claimed", comment: "")
         let parts = format.components(separatedBy: "%@")
         guard parts.count == 2 else {
             return AttributedString(String(format: format, name))

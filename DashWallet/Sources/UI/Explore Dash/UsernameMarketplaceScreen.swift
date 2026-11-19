@@ -1793,8 +1793,8 @@ private struct RegisterNameSheet: View {
 
                 Text(String.localizedStringWithFormat(
                     isContested
-                        ? NSLocalizedString("Request “%@”", comment: "Username marketplace: contested register sheet title")
-                        : NSLocalizedString("Register “%@”", comment: "Username marketplace: register sheet title"),
+                        ? String(localized: "Request “%@”", comment: "Username marketplace: contested register sheet title")
+                        : String(localized: "Register “%@”", comment: "Username marketplace: register sheet title"),
                     label))
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.dash.primaryText)

@@ -418,8 +418,8 @@ final class VotingListViewModel: ObservableObject {
 
     func expandAccessibilityLabel(for contest: DPNSContest, isExpanded: Bool) -> String {
         let format = isExpanded
-            ? NSLocalizedString("Hide requests for %@", comment: "Voting")
-            : NSLocalizedString("Show requests for %@", comment: "Voting")
+            ? String(localized: "Hide requests for %@", comment: "Voting")
+            : String(localized: "Show requests for %@", comment: "Voting")
         return String(format: format, contest.displayTitle)
     }
 
@@ -653,7 +653,7 @@ struct VotingToast: Identifiable, Equatable {
 
     /// A vote every ticked masternode already holds: nothing was sent (AC-12).
     static func alreadyVoted(username: String) -> VotingToast {
-        let format = NSLocalizedString("Already voted this way on %@", comment: "Voting")
+        let format = String(localized: "Already voted this way on %@", comment: "Voting")
         return VotingToast(message: String(format: format, username), style: .success, isAlreadyVoted: true)
     }
 

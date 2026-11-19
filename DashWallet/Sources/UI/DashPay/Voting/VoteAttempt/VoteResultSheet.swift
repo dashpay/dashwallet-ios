@@ -104,11 +104,11 @@ struct VoteResultSheet: View {
         let format: String
         switch report.choice {
         case .towards:
-            format = NSLocalizedString("%1$d of %2$d masternodes voted to approve %3$@.", comment: "Voting")
+            format = String(localized: "%1$d of %2$d masternodes voted to approve %3$@.", comment: "Voting")
         case .lock:
-            format = NSLocalizedString("%1$d of %2$d masternodes voted to block %3$@.", comment: "Voting")
+            format = String(localized: "%1$d of %2$d masternodes voted to block %3$@.", comment: "Voting")
         case .abstain:
-            format = NSLocalizedString("%1$d of %2$d masternodes cancelled their vote on %3$@.", comment: "Voting")
+            format = String(localized: "%1$d of %2$d masternodes cancelled their vote on %3$@.", comment: "Voting")
         }
         let landedSentence = String(format: format, landed, total, username)
         let notCastCount = report.failed.filter { !$0.mayHaveLanded }.count
