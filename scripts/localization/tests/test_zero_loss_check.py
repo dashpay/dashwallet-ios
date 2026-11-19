@@ -275,6 +275,13 @@ class BaselineDefectTests(ZeroLossCase):
         self.assertEqual(res.returncode, 0, res.stdout + res.stderr)
         self.assertEqual(len(self.defects(res)), 1)
 
+    def test_sample_args_read_codes_as_format_swift_does(self):
+        import zero_loss_check as z
+        # no space flag: "50% since" is prose, as in format.swift's inferArgs
+        self.assertEqual(z.sample_args("Prices moved more than 50% since the update."), [])
+        self.assertEqual(z.sample_args("%d shops in %@"), [1001, "‹a2›"])
+        self.assertEqual(z.sample_args("%2$@ at %1$.1f"), [1001.5, "‹a2›"])
+
     def test_wrong_type_rule(self):
         import zero_loss_check as z
         args = [1001, "‹a2›"]
