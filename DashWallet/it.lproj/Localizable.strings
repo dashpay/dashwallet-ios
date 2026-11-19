@@ -1018,6 +1018,9 @@
 /* Voting */
 "Cancel approval" = "Cancel approval";
 
+/* DashSpend */
+"Cancel purchase" = "Cancel purchase";
+
 /* Coinbase/Buy Dash/Cancel Order */
 "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "L'annullamento di questa transazione non annulla l'ordine commerciale. A breve riceverai DASH sul tuo account Coinbase.";
 
@@ -1897,6 +1900,9 @@
 /* Devnet */
 "Devnet Settings" = "Devnet Settings";
 
+/* DashSpend */
+"Difference" = "Difference";
+
 /* No comment provided by engineer. */
 "Differs from this evonode" = "Differisce da questo evonode";
 
@@ -2292,6 +2298,9 @@
 /* Explore Dash */
 "Filters" = "Filtri";
 
+/* DashSpend */
+"Final price" = "Final price";
+
 /* No comment provided by engineer. */
 "Find" = "Trova";
 
@@ -2509,6 +2518,9 @@
 
 /* No comment provided by engineer. */
 "Gift card purchase was rejected" = "L'acquisto della carta regalo è stato rifiutato";
+
+/* DashSpend */
+"Gift card total" = "Gift card total";
 
 /* Explore Dash/Merchants/Filters */
 "Gift card types" = "Tipologie di gift card";
@@ -4057,6 +4069,9 @@
 /* No comment provided by engineer. */
 "Pay" = "Paga";
 
+/* DashSpend: pay the Dash amount that follows */
+"Pay %@" = "Pay %@";
+
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Paga e ricevi pagamenti istantaneamente in modo semplice e facile da usare";
 
@@ -4393,6 +4408,9 @@
 /* Username marketplace: price placeholder */
 "Price in DASH" = "Prezzo in DASH";
 
+/* DashSpend */
+"Price updated" = "Price updated";
+
 /* Stale rates */
 "Prices are at least 30 minutes old. Fiat values may be incorrect." = "I prezzi risalgono ad almeno 30 minuti. I valori Fiat potrebbero essere errati.";
 
@@ -4455,6 +4473,9 @@
 
 /* No comment provided by engineer. */
 "Provider Address" = "Indirizzo del Provider";
+
+/* DashSpend */
+"Provider asks" = "Provider asks";
 
 /* Masternodes */
 "Provider transactions" = "Transazioni del provider";
@@ -5910,9 +5931,6 @@
 "The full transaction history will be exported as a CSV file" = "The full transaction history will be exported as a CSV file";
 
 /* DashSpend */
-"The gift card provider requested more Dash than the price you approved. Nothing was sent. Please try again or contact support." = "The gift card provider requested more Dash than the price you approved. Nothing was sent. Please try again or contact support.";
-
-/* DashSpend */
 "The gift card provider returned an invalid payment address. Nothing was sent. Please try again or contact support." = "The gift card provider returned an invalid payment address. Nothing was sent. Please try again or contact support.";
 
 /* Identity top-up second leg cancelled */
@@ -6049,6 +6067,9 @@
 
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "La riga di portafoglio salvata non ha una rete: impossibile programmare una risincronizzazione.";
+
+/* DashSpend: %@ is a percentage */
+"The price is %@ higher than expected" = "The price is %@ higher than expected";
 
 /* Dash DEX / dex_error_price_moved */
 "The price moved too much. Please go back and try again." = "The price moved too much. Please go back and try again.";
@@ -6323,6 +6344,9 @@
 
 /* SDK identity profile sheet — explains the identity credit balance */
 "This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits." = "Questo saldo paga le commissioni di rete di Dash Platform — nomi utente, richieste di contatto, aggiornamenti del profilo. Appartiene alla tua identità, non al tuo portafoglio: a differenza dei saldi Trasparente, Platform e Shielded non può essere speso come Dash normale. La ricarica converte Dash da un saldo che scegli — Shielded per impostazione predefinita — in crediti identità.";
+
+/* DashSpend */
+"This can mean the market moved fast or the provider's price is wrong. If you're not sure, cancel and try again in a few minutes." = "This can mean the market moved fast or the provider's price is wrong. If you're not sure, cancel and try again in a few minutes.";
 
 /* DashSpend */
 "This card works only in the United States." = "This card works only in the United States.";
@@ -7651,6 +7675,9 @@
 
 /* Usernames */
 "You chose “%@” as your username." = "Hai scelto “%@” come tuo nome utente.";
+
+/* DashSpend */
+"You confirmed" = "You confirmed";
 
 /* DashSpend */
 "You do not have sufficient funds to complete this transaction" = "Non hai fondi sufficienti per completare questa transazione";

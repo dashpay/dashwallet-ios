@@ -371,22 +371,26 @@ final class BIP70PaymentService {
     /// authorizes a request the caller has already accepted. A throw from `validate` ends the
     /// flow with no prompt shown and nothing built.
     /// - Parameter validate: the caller's own acceptance check on the prepared request (for
-    ///   example, that `Confirmation.amount` matches what the user approved). This layer holds
-    ///   no such policy; it only runs the hook.
-    /// - Parameter now: the clock. It is read before the fetch, again once the request is
-    ///   prepared, and again after the prompt: a request that expires while it is fetched gets
-    ///   no prompt, and one that expires while the prompt is open is not sent.
+    ///   example, that `Confirmation.amount` matches what the user approved). It may suspend
+    ///   to ask the user. This layer holds no such policy; it only runs the hook.
+    /// - Parameter now: the clock. It is read before the fetch, once the request is prepared,
+    ///   once `validate` returns, and after the prompt: a request that expires while it is
+    ///   fetched or while `validate` waits gets no prompt, and one that expires while the
+    ///   prompt is open is not sent.
     func confirmAndSendHeadless(from requestURL: URL,
                                 scheme: String,
                                 network: PaymentNetwork,
                                 callbackScheme: String? = nil,
                                 now: () -> Date = { Date() },
                                 awaitAcceptance: Bool = true,
-                                validate: ((Confirmation) throws -> Void)? = nil) async throws -> SendResult {
+                                validate: ((Confirmation) async throws -> Void)? = nil) async throws -> SendResult {
         let confirmation = try await prepareForConfirmation(from: requestURL, scheme: scheme,
                                                             network: network, callbackScheme: callbackScheme, now: now())
         try Self.assertNotExpired(confirmation.request.details.expires, now: now())
-        try validate?(confirmation)
+        if let validate {
+            try await validate(confirmation)
+            try Self.assertNotExpired(confirmation.request.details.expires, now: now())
+        }
         try await auth.authorize()
         return try await confirmAndSend(confirmation, now: now(), awaitAcceptance: awaitAcceptance)
     }

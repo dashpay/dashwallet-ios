@@ -28,6 +28,30 @@ private struct GiftCardOrderMetadata: Codable {
     let cardAmounts: [String]?
 }
 
+/// What the Confirm sheet showed, captured when Pay is tapped. The purchase uses these
+/// values, not the view model's current state, which a merchant refresh can change while the
+/// sheet is open.
+struct GiftCardPurchaseSnapshot: Equatable {
+    /// The card value.
+    let price: Decimal
+    /// The discount fraction.
+    let discount: Decimal
+    /// Cards per denomination for a multi-card order; empty for a single card.
+    let quantities: [Decimal: Int]
+    /// The price the buyer pays, in fiat and in Dash at the wallet's rate.
+    let approval: GiftCardPaymentGuard.Approval
+}
+
+/// The purchase sheet's content.
+enum GiftCardPurchaseSheet: Equatable {
+    /// The buyer is reading the price.
+    case confirm(GiftCardPurchaseSnapshot)
+    /// The buyer confirmed; the provider has not answered yet.
+    case waitingForProvider(GiftCardPurchaseSnapshot)
+    /// The provider asks for more Dash than the buyer confirmed.
+    case priceUpdated(GiftCardPaymentGuard.PriceChange)
+}
+
 @MainActor
 class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHandling {
     private var cancellableBag = Set<AnyCancellable>()
@@ -61,6 +85,14 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     private(set) var savingsFraction: Decimal = 0.0
     @Published private(set) var isLoading = false
     @Published private(set) var isProcessingPayment = false
+    /// The purchase sheet to show; nil when there is none.
+    @Published private(set) var purchaseSheet: GiftCardPurchaseSheet?
+    /// Resumed with the buyer's answer to a price change.
+    private var priceDecision: CheckedContinuation<Bool, Never>?
+    /// Resumed once the purchase sheet has left the screen.
+    private var sheetDismissal: CheckedContinuation<Void, Never>?
+    /// The longest the purchase waits for the sheet to report that it left the screen.
+    var sheetDismissalWait: TimeInterval = 1
     @Published private(set) var isUserSignedIn = false
     
     let currencySymbol: String = {
@@ -193,8 +225,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     }
 
 
-    /// - Parameter exchangeRate: reads the wallet's USD rate and when it was retrieved; a
-    ///   purchase is approved against the value read when the buyer confirms.
+    /// - Parameter exchangeRate: reads the wallet's USD rate and when it was retrieved. It is
+    ///   read when the Confirm sheet opens; the purchase uses that value.
     init(merchant: ExplorePointOfUse, provider: GiftCardProvider = .ctx,
          exchangeRate: @escaping () -> GiftCardPaymentGuard.ExchangeRate = DashSpendPayViewModel.walletExchangeRate) {
         self.provider = provider
@@ -323,22 +355,101 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         }
     }
     
-    /// - Parameters:
-    ///   - confirmedPrice: the card value the confirmation sheet showed.
-    ///   - confirmedDiscount: the discount fraction the confirmation sheet showed. Both are
-    ///     the sheet's own values, not this view model's current state, which a merchant
-    ///     refresh can change after the buyer confirmed.
-    func purchaseGiftCardAndPay(selectedQuantities: [Decimal: Int] = [:],
-                                confirmedPrice: Decimal,
-                                confirmedDiscount: Decimal) async throws -> Data {
-        isProcessingPayment = true
-        defer { isProcessingPayment = false }
+    /// Opens the Confirm sheet for `price`, with the discount on screen and the Dash amount
+    /// the price comes to at the wallet's rate.
+    ///
+    /// Throws `GiftCardPaymentGuard.rateUnavailableError` when the wallet has no usable rate:
+    /// the sheet could not show a Dash amount, and a provider's quote could not be compared.
+    func beginPurchase(price: Decimal, quantities: [Decimal: Int] = [:]) throws {
+        let discount = displaySavingsFraction
+        let approval = try GiftCardPaymentGuard.approve(price: price, discount: discount, rate: exchangeRate())
+        purchaseSheet = .confirm(GiftCardPurchaseSnapshot(
+            price: price, discount: discount, quantities: quantities, approval: approval))
+    }
 
-        // What the buyer approved, as a Dash ceiling. Resolved before the provider is asked
-        // for an order, so a missing, stale or unusable exchange rate stops the purchase
-        // before anything is created. Each provider's quote is checked through it below.
-        let approval = try GiftCardPaymentGuard.approve(
-            price: confirmedPrice, discount: confirmedDiscount, rate: exchangeRate())
+    /// Closes the purchase sheet on the buyer's Cancel or swipe. A price change is declined.
+    /// The sheet is not closed while the provider's answer is awaited.
+    func dismissPurchaseSheet() {
+        switch purchaseSheet {
+        case .confirm:
+            purchaseSheet = nil
+        case .priceUpdated:
+            resolvePriceChange(pay: false)
+        case .waitingForProvider, nil:
+            break
+        }
+    }
+
+    /// The buyer's answer on the "Price updated" sheet.
+    func resolvePriceChange(pay: Bool) {
+        guard case .priceUpdated = purchaseSheet else { return }
+        purchaseSheet = nil
+        priceDecision?.resume(returning: pay)
+        priceDecision = nil
+    }
+
+    /// Called by the screen when the purchase sheet has left the screen.
+    func purchaseSheetDidDismiss() {
+        sheetDismissal?.resume()
+        sheetDismissal = nil
+    }
+
+    /// Compares a provider's quote with what the buyer confirmed, before anything is signed.
+    ///
+    /// A quote at or below the confirmed amount, or above it by a margin too small to ask
+    /// about, closes the sheet and returns. A higher quote is shown on the "Price updated"
+    /// sheet; this returns when the buyer chooses to pay it and throws
+    /// `DashSpendError.purchaseCancelled` when they decline. Either way it returns only after
+    /// the sheet has left the screen, so the PIN prompt that follows is not presented over a
+    /// sheet that is still closing.
+    func confirmQuote(requested: UInt64, approval: GiftCardPaymentGuard.Approval) async throws {
+        switch try approval.assess(requested: requested) {
+        case .asConfirmed:
+            guard purchaseSheet != nil else { return }
+            purchaseSheet = nil
+        case .higher(let change):
+            DWLogger.log("Gift card price changed: requested \(requested) duffs, confirmed \(approval.amount)")
+            purchaseSheet = .priceUpdated(change)
+            let pay = await withCheckedContinuation { priceDecision = $0 }
+            guard pay else { throw DashSpendError.purchaseCancelled }
+        }
+
+        await waitForSheetDismissal()
+    }
+
+    /// Suspends until the screen reports the sheet gone, or `sheetDismissalWait` has passed.
+    private func waitForSheetDismissal() async {
+        let wait = sheetDismissalWait
+        let fallback = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: UInt64(wait * 1_000_000_000))
+            guard !Task.isCancelled else { return }
+            self?.purchaseSheetDidDismiss()
+        }
+        await withCheckedContinuation { sheetDismissal = $0 }
+        fallback.cancel()
+    }
+
+    /// Orders the gift card the buyer confirmed and pays for it.
+    ///
+    /// - Parameter snapshot: what the Confirm sheet showed. A provider's quote is compared
+    ///   with its `approval` through `confirmQuote` before the payment is authorized.
+    func purchaseGiftCardAndPay(_ snapshot: GiftCardPurchaseSnapshot) async throws -> Data {
+        let approval = snapshot.approval
+        let confirmedPrice = snapshot.price
+
+        // Read again here: the sheet can stay open past the stale-rate limit, and a quote
+        // cannot be compared with a Dash amount computed from a rate that old.
+        guard approval.isRateFresh() else {
+            purchaseSheet = nil
+            throw GiftCardPaymentGuard.rateUnavailableError
+        }
+
+        isProcessingPayment = true
+        purchaseSheet = .waitingForProvider(snapshot)
+        defer {
+            isProcessingPayment = false
+            purchaseSheet = nil
+        }
 
         // Wire-order txid (`Transaction.txHashData` convention) — the gift-card
         // metadata key.
@@ -363,7 +474,9 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             do {
                 txidWire = try await sendCoinsService.payWithDashUrl(
                     url: url, awaitAcceptance: false,
-                    validate: { try approval.check(requested: $0.amount) })
+                    validate: { confirmation in
+                        try await self.confirmQuote(requested: confirmation.amount, approval: approval)
+                    })
             } catch DashSpendError.paymentNotAcknowledged(let unacknowledgedTxIdWire, let reason) {
                 // Same loss, one step earlier: the network dropped between posting the payment
                 // and reading the acknowledgement. Record the order — CTX may be fulfilling it
@@ -391,7 +504,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             }
 
             let lineItems = buildPiggyOrderLineItems(
-                selectedQuantities: selectedQuantities, cardValue: confirmedPrice)
+                selectedQuantities: snapshot.quantities, cardValue: confirmedPrice)
             let giftCardInfo = try await piggyCardsRepo.orderGiftCards(
                 merchantId: merchantId,
                 lineItems: lineItems,
@@ -406,9 +519,9 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 throw GiftCardPaymentGuard.invalidAmountError
             }
 
-            // Checked here, before sendCoins prompts for the PIN: a refused quote shows no
+            // Compared here, before sendCoins prompts for the PIN: a declined quote shows no
             // prompt. The payment address was validated when the order response was parsed.
-            try approval.check(requested: dashAmountInSatoshis)
+            try await confirmQuote(requested: dashAmountInSatoshis, approval: approval)
 
             // Use sendCoins directly with address and amount
             // This will properly trigger PIN authorization
@@ -420,7 +533,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
 
             giftCardNote = buildPiggyOrderNote(
-                orderId: giftCardInfo.orderId, selectedQuantities: selectedQuantities, cardValue: confirmedPrice)
+                orderId: giftCardInfo.orderId, selectedQuantities: snapshot.quantities, cardValue: confirmedPrice)
         #endif
         }
 

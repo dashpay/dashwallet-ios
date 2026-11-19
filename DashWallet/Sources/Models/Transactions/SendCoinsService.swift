@@ -81,8 +81,8 @@ public final class SendCoinsService: NSObject {
     /// no `DWPaymentProcessor`.
     ///
     /// - Parameter validate: the caller's acceptance check on the fetched request, run before
-    ///   the PIN prompt. A throw ends the payment with no prompt and nothing built. This
-    ///   method holds no acceptance policy of its own.
+    ///   the PIN prompt. It may suspend to ask the user. A throw ends the payment with no
+    ///   prompt and nothing built. This method holds no acceptance policy of its own.
     /// - Returns: the wire-order txid of the broadcast transaction
     ///   (`Transaction.txHashData` convention — the caller's metadata key).
     /// - Parameter awaitAcceptance: `false` returns once the merchant has acknowledged the
@@ -90,7 +90,7 @@ public final class SendCoinsService: NSObject {
     ///   window (30 s). The gift-card flow uses it: CTX fulfils the order from the bytes it just
     ///   acknowledged, so the verdict decides nothing the buyer is standing by for.
     func payWithDashUrl(url paymentUrlString: String, awaitAcceptance: Bool = true,
-                        validate: @escaping (Confirmation) throws -> Void) async throws -> Data {
+                        validate: @escaping (Confirmation) async throws -> Void) async throws -> Data {
         guard let uri = BIP70URI(paymentUrlString), let requestURL = uri.r else {
             throw DashSpendError.paymentProcessingError(NSLocalizedString("Invalid payment request", comment: "DashSpend"))
         }

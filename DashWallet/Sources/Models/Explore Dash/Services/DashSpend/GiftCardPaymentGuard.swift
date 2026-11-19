@@ -7,16 +7,22 @@
 
 import Foundation
 
-/// Checks a provider-quoted gift-card payment against the price the buyer approved.
+/// Compares a provider-quoted gift-card payment with the price the buyer confirmed.
 ///
-/// The buyer approves a fiat price. The provider then quotes the Dash amount with its own
-/// exchange rate, so the quote never equals the approved price converted at the wallet's rate.
+/// The buyer confirms a fiat price and the Dash amount it comes to at the wallet's rate. The
+/// provider then quotes the Dash amount with its own exchange rate, so the quote rarely equals
+/// the confirmed amount. A quote that is higher by more than a small margin is put to the
+/// buyer again before anything is signed.
 enum GiftCardPaymentGuard {
-    /// The most a quote may exceed the approved price converted at the wallet's rate, in
-    /// basis points (500 = 5%). It covers the gap between the provider's rate source and the
-    /// wallet's, and the time between the two readings. The value is a judgment call: it has
-    /// not been calibrated against live provider quotes.
-    static let maxOverchargeBasisPoints: UInt64 = 500
+    /// The largest increase over the confirmed amount that is paid without asking the buyer
+    /// again, in basis points (50 = 0.5%). It covers the gap between the provider's rate
+    /// source and the wallet's, and the time between the two readings. The value is a
+    /// judgment call: it has not been calibrated against live provider quotes.
+    static let silentIncreaseBasisPoints: UInt64 = 50
+
+    /// The increase from which the price change is shown with a warning, in basis points
+    /// (500 = 5%).
+    static let warningBasisPoints: UInt64 = 500
 
     /// The wallet's exchange rate as read when a purchase is approved.
     struct ExchangeRate {
@@ -26,31 +32,83 @@ enum GiftCardPaymentGuard {
         let retrievedAt: Int
     }
 
-    /// The price a buyer approved, as the most Dash a provider may ask for it.
-    struct Approval {
-        /// The approved price in duffs at the wallet's rate, before the margin.
+    /// The price a buyer confirmed: the fiat amount, and the Dash amount it comes to at the
+    /// wallet's rate.
+    struct Approval: Equatable {
+        /// The confirmed price in duffs at `rate`.
         let amount: UInt64
+        /// The confirmed price in fiat (card value less the discount).
+        let fiatAmount: Decimal
+        /// Fiat price of one Dash that `amount` was computed with.
+        let rate: Decimal
+        /// Unix time `rate` was retrieved.
+        let rateRetrievedAt: Int
 
-        /// Throws unless `requested` duffs is positive and within the margin above `amount`.
-        /// A request for no Dash is refused as an invalid amount, not as an overcharge.
-        func check(requested: UInt64) throws {
+        /// `false` once `rate` is older than the app's stale-rate limit.
+        func isRateFresh(now: Date = Date()) -> Bool {
+            GiftCardPaymentGuard.isRateFresh(lastRetrieval: rateRetrievedAt, now: now)
+        }
+
+        /// Compares the duffs a provider requested with the confirmed amount.
+        ///
+        /// A request at or below the confirmed amount, or above it by no more than
+        /// `silentIncreaseBasisPoints`, is `.asConfirmed`. Anything higher is `.higher`, for
+        /// the buyer to accept or decline. A request for no Dash throws `invalidAmountError`.
+        func assess(requested: UInt64) throws -> Assessment {
             guard requested > 0 else {
                 DWLogger.log("Gift card payment refused: the provider requested no Dash")
                 throw GiftCardPaymentGuard.invalidAmountError
             }
-            guard GiftCardPaymentGuard.isWithinApprovedAmount(requested: requested, expected: amount) else {
-                DWLogger.log("Gift card payment refused: requested \(requested) duffs, approved \(amount)")
-                throw GiftCardPaymentGuard.amountAboveApprovedError
+            guard requested > amount,
+                  requested - amount > GiftCardPaymentGuard.share(
+                      of: amount, basisPoints: GiftCardPaymentGuard.silentIncreaseBasisPoints, roundingUp: false) else {
+                return .asConfirmed
             }
+
+            let warningFrom = GiftCardPaymentGuard.share(
+                of: amount, basisPoints: GiftCardPaymentGuard.warningBasisPoints, roundingUp: true)
+            return .higher(PriceChange(confirmedAmount: amount,
+                                       confirmedFiat: fiatAmount,
+                                       requestedAmount: requested,
+                                       requestedFiat: Decimal(requested) / Decimal(100_000_000) * rate,
+                                       needsWarning: requested - amount >= warningFrom))
         }
     }
 
+    /// What a provider's quote is against the confirmed price.
+    enum Assessment: Equatable {
+        /// The buyer pays what they confirmed, less, or more by a margin too small to ask about.
+        case asConfirmed
+        /// The provider asks for more than the buyer confirmed.
+        case higher(PriceChange)
+    }
+
+    /// A provider's quote that is higher than the confirmed price, as the figures the buyer
+    /// is shown before deciding.
+    struct PriceChange: Equatable {
+        /// The confirmed price in duffs.
+        let confirmedAmount: UInt64
+        /// The confirmed price in fiat.
+        let confirmedFiat: Decimal
+        /// The duffs the provider requested.
+        let requestedAmount: UInt64
+        /// `requestedAmount` in fiat at the rate the buyer confirmed with.
+        let requestedFiat: Decimal
+        /// `true` when the increase is `warningBasisPoints` or more.
+        let needsWarning: Bool
+
+        var differenceAmount: UInt64 { requestedAmount - confirmedAmount }
+        var differenceFiat: Decimal { requestedFiat - confirmedFiat }
+        /// The increase as a fraction of the confirmed amount (0.04 = 4%).
+        var increaseFraction: Decimal { Decimal(differenceAmount) / Decimal(confirmedAmount) }
+    }
+
     /// Turns the confirmed card value and discount into an `Approval`. Every provider's quote
-    /// is checked through the `Approval` this returns.
+    /// is compared through the `Approval` this returns.
     ///
     /// Throws `rateUnavailableError` when the rate is missing, not a positive number, or not
     /// fresh, and when the converted amount is not a positive duff count: a quote cannot be
-    /// checked against such a rate. The amount is rounded down to a whole duff.
+    /// compared against such a rate. The amount is rounded down to a whole duff.
     static func approve(price: Decimal, discount: Decimal, rate: ExchangeRate,
                         now: Date = Date()) throws -> Approval {
         let fiatAmount = price * (1 - discount)
@@ -72,19 +130,15 @@ enum GiftCardPaymentGuard {
             throw rateUnavailableError
         }
 
-        return Approval(amount: duffs)
+        return Approval(amount: duffs, fiatAmount: fiatAmount, rate: ratePrice,
+                        rateRetrievedAt: rate.retrievedAt)
     }
 
-    /// `true` when `requested` is positive and at most `expected` plus the allowed margin.
-    /// A quote below `expected` passes: the buyer pays less than they approved.
-    static func isWithinApprovedAmount(requested: UInt64, expected: UInt64) -> Bool {
-        guard requested > 0, expected > 0 else { return false }
-        guard requested > expected else { return true }
-
-        // floor(expected * basisPoints / 10_000), split so the product cannot overflow.
-        let allowance = (expected / 10_000) * maxOverchargeBasisPoints
-            + (expected % 10_000) * maxOverchargeBasisPoints / 10_000
-        return requested - expected <= allowance
+    /// `amount * basisPoints / 10_000`, rounded down or up to a whole duff. Split so the
+    /// product cannot overflow.
+    static func share(of amount: UInt64, basisPoints: UInt64, roundingUp: Bool) -> UInt64 {
+        let remainder = (amount % 10_000) * basisPoints
+        return (amount / 10_000) * basisPoints + (remainder + (roundingUp ? 9_999 : 0)) / 10_000
     }
 
     /// The Dash amount a provider wrote into its payment request, or nil unless the whole
@@ -130,12 +184,6 @@ enum GiftCardPaymentGuard {
         guard whole == scaled, whole <= Decimal(UInt64.max) else { return nil }
 
         return UInt64(NSDecimalNumber(decimal: whole).stringValue)
-    }
-
-    static var amountAboveApprovedError: DashSpendError {
-        .customError(NSLocalizedString(
-            "The gift card provider requested more Dash than the price you approved. Nothing was sent. Please try again or contact support.",
-            comment: "DashSpend"))
     }
 
     /// A provider amount that is zero or cannot be read as a duff count.

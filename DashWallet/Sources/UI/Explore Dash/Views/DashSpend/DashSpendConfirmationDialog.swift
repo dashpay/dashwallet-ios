@@ -24,13 +24,17 @@ struct DashSpendConfirmationDialog: View {
     /// present short and then jump. Covers this dialog's own natural height plus
     /// `DashUIKit.BottomSheet`'s chrome — an 18pt grabber and a 64pt navigation bar.
     /// Both presenters share this value; keep it here so they can't drift apart.
-    static let sheetFallbackHeight: CGFloat = 582
+    static let sheetFallbackHeight: CGFloat = 690
 
     let merchantName: String
     let merchantIconUrl: String
     let originalPrice: Decimal
     let discount: Decimal
+    /// What the buyer pays, in duffs at the wallet's rate.
+    let dashAmount: UInt64
     let quantities: [Decimal: Int]?
+    /// `true` once the buyer confirmed and the provider's answer is awaited.
+    let isWaiting: Bool
     let onConfirm: () -> Void
     let onCancel: () -> Void
 
@@ -61,11 +65,15 @@ struct DashSpendConfirmationDialog: View {
     var body: some View {
         VStack(spacing: 0) {
             VStack(spacing: 20) {
-                DashSpendAmountView(
-                    currencySymbol: fiatFormatter.currencySymbol,
-                    amount: formattedPayAmount
-                )
-                .frame(height: 85)
+                VStack(spacing: 0) {
+                    DashSpendAmountView(
+                        currencySymbol: fiatFormatter.currencySymbol,
+                        amount: formattedPayAmount
+                    )
+                    .frame(height: 70)
+
+                    DashSpendDashFigure(text: GiftCardAmountText.approximateDash(dashAmount))
+                }
 
                 VStack(alignment: .leading, spacing: 2) {
                     detailsRow(title: NSLocalizedString("From", comment: "DashSpend")) {
@@ -105,7 +113,7 @@ struct DashSpendConfirmationDialog: View {
                         }
                     }
 
-                    detailsRow(title: NSLocalizedString("Gift card", comment: "DashSpend")) {
+                    detailsRow(title: NSLocalizedString("Gift card total", comment: "DashSpend")) {
                         Text(fiatFormatter.string(from: NSDecimalNumber(decimal: originalPrice)) ?? "")
                             .font(.subhead)
                             .foregroundColor(.dash.primaryText)
@@ -130,9 +138,13 @@ struct DashSpendConfirmationDialog: View {
                     }
 
                     detailsRow(title: NSLocalizedString("You pay", comment: "DashSpend")) {
-                        Text(fiatFormatter.string(from: NSDecimalNumber(decimal: youPayAmount)) ?? "")
-                            .font(.subhead)
-                            .foregroundColor(.dash.primaryText)
+                        VStack(alignment: .trailing, spacing: 2) {
+                            Text(fiatFormatter.string(from: NSDecimalNumber(decimal: youPayAmount)) ?? "")
+                                .font(.subhead)
+                                .foregroundColor(.dash.primaryText)
+                            DashSpendDashFigure(text: GiftCardAmountText.approximateDash(dashAmount),
+                                                font: .footnote, symbolSize: 10, color: .dash.secondaryText)
+                        }
                     }
                 }
                 .padding(6)
@@ -140,18 +152,20 @@ struct DashSpendConfirmationDialog: View {
                 .cornerRadius(20)
                 .shadow(color: Color.dash.shadow, radius: 20, x: 0, y: 5)
 
-                HStack(spacing: 20) {
+                VStack(spacing: 10) {
+                    DashButton(
+                        text: NSLocalizedString("Confirm", comment: "DashSpend"),
+                        isLoading: isWaiting,
+                        action: onConfirm
+                    )
+
                     DashButton(
                         text: NSLocalizedString("Cancel", comment: "DashSpend"),
+                        isEnabled: !isWaiting,
                         action: onCancel
                     )
                     .overrideForegroundColor(.dash.primaryText)
                     .overrideBackgroundColor(.dash.gray300Alpha10)
-
-                    DashButton(
-                        text: NSLocalizedString("Confirm", comment: "DashSpend"),
-                        action: onConfirm
-                    )
                 }
                 .padding(.horizontal, 10)
             }
@@ -164,6 +178,21 @@ struct DashSpendConfirmationDialog: View {
     }
 
     private func detailsRow(title: String, @ViewBuilder value: () -> some View) -> some View {
+        DashSpendDetailsRow(title: title, value: value)
+    }
+}
+
+/// One titled row of a DashSpend purchase sheet's details card.
+struct DashSpendDetailsRow<Value: View>: View {
+    let title: String
+    let value: Value
+
+    init(title: String, @ViewBuilder value: () -> Value) {
+        self.title = title
+        self.value = value()
+    }
+
+    var body: some View {
         HStack(alignment: .top) {
             Text(title)
                 .font(.subhead)
@@ -172,10 +201,61 @@ struct DashSpendConfirmationDialog: View {
 
             Spacer()
 
-            value()
+            value
         }
         .padding(.horizontal, 14)
+        .padding(.vertical, 13)
         .frame(minHeight: 46)
+    }
+}
+
+/// A Dash amount followed by the Dash symbol, read by VoiceOver as one amount.
+struct DashSpendDashFigure: View {
+    /// The amount as shown, with any "≈" or "+" in front.
+    let text: String
+    var font: Font = .subhead
+    var symbolSize: CGFloat = 12
+    var color: Color = .dash.primaryText
+
+    var body: some View {
+        HStack(spacing: 3) {
+            Text(text)
+                .font(font)
+            Image("icon_dash_currency")
+                .resizable()
+                .scaledToFit()
+                .frame(width: symbolSize, height: symbolSize)
+        }
+        .foregroundColor(color)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(String(format: NSLocalizedString("%@ DASH", comment: "DashSpend: a Dash amount read by VoiceOver"), text))
+    }
+}
+
+/// Dash amounts as the purchase sheets write them.
+enum GiftCardAmountText {
+    /// A Dash amount rounded to four decimals with "≈" in front: the price at the wallet's
+    /// rate, which the provider's own quote will differ from.
+    static func approximateDash(_ duffs: UInt64, locale: Locale = .current) -> String {
+        "≈ " + dash(duffs, minimumFractionDigits: 4, maximumFractionDigits: 4, locale: locale)
+    }
+
+    /// A Dash amount in full: every decimal it has, and at least four.
+    static func exactDash(_ duffs: UInt64, locale: Locale = .current) -> String {
+        dash(duffs, minimumFractionDigits: 4, maximumFractionDigits: 8, locale: locale)
+    }
+
+    private static func dash(_ duffs: UInt64, minimumFractionDigits: Int, maximumFractionDigits: Int,
+                             locale: Locale) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = locale
+        formatter.usesGroupingSeparator = false
+        formatter.minimumFractionDigits = minimumFractionDigits
+        formatter.maximumFractionDigits = maximumFractionDigits
+        formatter.roundingMode = .halfEven
+        let amount = Decimal(duffs) / Decimal(100_000_000)
+        return formatter.string(from: NSDecimalNumber(decimal: amount)) ?? "\(amount)"
     }
 }
 
@@ -209,7 +289,9 @@ private struct DashSpendConfirmationDialogPreview: View {
                     merchantIconUrl: "",
                     originalPrice: 75.70,
                     discount: 0.10,
+                    dashAmount: 174_690_000,
                     quantities: [50: 1, 25: 2],
+                    isWaiting: false,
                     onConfirm: {},
                     onCancel: {}
                 )

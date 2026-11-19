@@ -2,9 +2,9 @@
 //  GiftCardPaymentGuardTests.swift
 //  DashWalletTests
 //
-//  A gift-card provider quotes the Dash amount for a price the buyer approved in fiat.
-//  These tests pin where a quote stops being acceptable, and the exact conversion of a
-//  quoted Dash amount to duffs.
+//  A gift-card provider quotes the Dash amount for a price the buyer confirmed. These tests
+//  pin when a quote is paid as confirmed, when the buyer is asked again and when that
+//  question carries a warning, and the exact conversion of a quoted Dash amount to duffs.
 //
 
 import XCTest
@@ -12,72 +12,118 @@ import XCTest
 
 final class GiftCardPaymentGuardTests: XCTestCase {
 
-    // MARK: - isWithinApprovedAmount
+    // MARK: - Approval.assess(requested:)
 
-    /// 1 DASH approved: the margin is 5%, so 1.05 DASH is the last accepted quote.
-    private let approved: UInt64 = 100_000_000
-    private let cap: UInt64 = 105_000_000
+    /// 1 Dash confirmed at $40. Up to 0.5% more is paid without asking again; from 5% more
+    /// the price change carries a warning.
+    private let confirmed: UInt64 = 100_000_000
+    private let silentLimit: UInt64 = 100_500_000
+    private let warningFrom: UInt64 = 105_000_000
 
-    func testMarginIsFivePercent() {
-        XCTAssertEqual(GiftCardPaymentGuard.maxOverchargeBasisPoints, 500)
+    private func approval(_ amount: UInt64 = 100_000_000) -> GiftCardPaymentGuard.Approval {
+        GiftCardPaymentGuard.Approval(amount: amount, fiatAmount: 40, rate: 40, rateRetrievedAt: 1_800_000_000)
     }
 
-    func testQuoteEqualToApprovedPasses() {
-        XCTAssertTrue(GiftCardPaymentGuard.isWithinApprovedAmount(requested: approved, expected: approved))
+    /// The price change a quote produces, or nil when it is paid as confirmed.
+    private func change(_ requested: UInt64, confirmed amount: UInt64 = 100_000_000) throws
+        -> GiftCardPaymentGuard.PriceChange? {
+        switch try approval(amount).assess(requested: requested) {
+        case .asConfirmed: return nil
+        case .higher(let change): return change
+        }
     }
 
-    func testQuoteJustUnderTheMarginPasses() {
-        XCTAssertTrue(GiftCardPaymentGuard.isWithinApprovedAmount(requested: cap - 1, expected: approved))
+    func testThresholdsAreHalfAPercentAndFivePercent() {
+        XCTAssertEqual(GiftCardPaymentGuard.silentIncreaseBasisPoints, 50)
+        XCTAssertEqual(GiftCardPaymentGuard.warningBasisPoints, 500)
     }
 
-    func testQuoteAtTheMarginPasses() {
-        XCTAssertTrue(GiftCardPaymentGuard.isWithinApprovedAmount(requested: cap, expected: approved))
+    func testQuoteEqualToConfirmedIsPaidAsConfirmed() throws {
+        XCTAssertNil(try change(confirmed))
     }
 
-    func testQuoteOneDuffOverTheMarginIsRefused() {
-        XCTAssertFalse(GiftCardPaymentGuard.isWithinApprovedAmount(requested: cap + 1, expected: approved))
+    /// Paying less than confirmed cannot cost the buyer anything, so there is no lower bound.
+    func testQuoteBelowConfirmedIsPaidAsConfirmed() throws {
+        XCTAssertNil(try change(1))
+        XCTAssertNil(try change(confirmed / 2))
+        XCTAssertNil(try change(confirmed - 1))
     }
 
-    func testQuoteFarAboveApprovedIsRefused() {
-        XCTAssertFalse(GiftCardPaymentGuard.isWithinApprovedAmount(requested: approved * 10, expected: approved))
+    func testIncreaseUpToTheSilentLimitIsPaidAsConfirmed() throws {
+        XCTAssertNil(try change(confirmed + 1))
+        XCTAssertNil(try change(silentLimit - 1))
+        XCTAssertNil(try change(silentLimit))
     }
 
-    /// Paying less than approved cannot cost the buyer anything, so there is no lower bound.
-    func testQuoteBelowApprovedPasses() {
-        XCTAssertTrue(GiftCardPaymentGuard.isWithinApprovedAmount(requested: 1, expected: approved))
-        XCTAssertTrue(GiftCardPaymentGuard.isWithinApprovedAmount(requested: approved / 2, expected: approved))
+    func testIncreaseOneDuffOverTheSilentLimitIsPutToTheBuyer() throws {
+        let priceChange = try XCTUnwrap(try change(silentLimit + 1))
+        XCTAssertFalse(priceChange.needsWarning)
+        XCTAssertEqual(priceChange.confirmedAmount, confirmed)
+        XCTAssertEqual(priceChange.requestedAmount, silentLimit + 1)
     }
 
-    func testZeroQuoteIsRefused() {
-        XCTAssertFalse(GiftCardPaymentGuard.isWithinApprovedAmount(requested: 0, expected: approved))
+    func testIncreaseJustUnderFivePercentHasNoWarning() throws {
+        XCTAssertEqual(try change(warningFrom - 1)?.needsWarning, false)
     }
 
-    /// Without an approved amount there is nothing to compare against.
-    func testZeroApprovedAmountIsRefused() {
-        XCTAssertFalse(GiftCardPaymentGuard.isWithinApprovedAmount(requested: approved, expected: 0))
-        XCTAssertFalse(GiftCardPaymentGuard.isWithinApprovedAmount(requested: 0, expected: 0))
+    func testIncreaseOfFivePercentCarriesAWarning() throws {
+        XCTAssertEqual(try change(warningFrom)?.needsWarning, true)
+        XCTAssertEqual(try change(warningFrom + 1)?.needsWarning, true)
     }
 
-    /// The allowance rounds down: 5% of 19 duffs is 0.95, so nothing above 19 is accepted.
-    func testAllowanceRoundsDownForSmallAmounts() {
-        XCTAssertTrue(GiftCardPaymentGuard.isWithinApprovedAmount(requested: 19, expected: 19))
-        XCTAssertFalse(GiftCardPaymentGuard.isWithinApprovedAmount(requested: 20, expected: 19))
-        XCTAssertTrue(GiftCardPaymentGuard.isWithinApprovedAmount(requested: 21, expected: 20))
-        XCTAssertFalse(GiftCardPaymentGuard.isWithinApprovedAmount(requested: 22, expected: 20))
+    /// There is no upper limit: any higher quote is put to the buyer with the warning.
+    func testIncreaseFarAboveConfirmedCarriesAWarning() throws {
+        XCTAssertEqual(try change(confirmed * 10)?.needsWarning, true)
+        XCTAssertEqual(try change(UInt64.max)?.needsWarning, true)
     }
 
-    func testValuesNearUInt64MaxDoNotOverflow() {
+    /// A request for no Dash is refused as an invalid amount; it is not a price change.
+    func testZeroQuoteIsRefusedAsAnInvalidAmount() {
+        XCTAssertThrowsError(try approval().assess(requested: 0)) { error in
+            XCTAssertEqual((error as? DashSpendError)?.errorDescription,
+                           GiftCardPaymentGuard.invalidAmountError.errorDescription)
+        }
+    }
+
+    /// The silent margin rounds down and the warning level rounds up. 0.5% of 199 duffs is
+    /// under one duff, so nothing above 199 is paid without asking; 5% of 199 is 9.95, so
+    /// the warning starts at 10 duffs more.
+    func testThresholdsRoundForSmallAmounts() throws {
+        XCTAssertNil(try change(199, confirmed: 199))
+        XCTAssertEqual(try change(200, confirmed: 199)?.needsWarning, false)
+        XCTAssertEqual(try change(208, confirmed: 199)?.needsWarning, false)
+        XCTAssertEqual(try change(209, confirmed: 199)?.needsWarning, true)
+
+        XCTAssertNil(try change(201, confirmed: 200))
+        XCTAssertEqual(try change(202, confirmed: 200)?.needsWarning, false)
+        XCTAssertEqual(try change(209, confirmed: 200)?.needsWarning, false)
+        XCTAssertEqual(try change(210, confirmed: 200)?.needsWarning, true)
+    }
+
+    func testValuesNearUInt64MaxDoNotOverflow() throws {
         let max = UInt64.max
-        XCTAssertTrue(GiftCardPaymentGuard.isWithinApprovedAmount(requested: max, expected: max))
-        XCTAssertTrue(GiftCardPaymentGuard.isWithinApprovedAmount(requested: max - 1, expected: max))
-        XCTAssertFalse(GiftCardPaymentGuard.isWithinApprovedAmount(requested: max, expected: 1))
-        XCTAssertFalse(GiftCardPaymentGuard.isWithinApprovedAmount(requested: max, expected: max / 2))
+        XCTAssertNil(try change(max, confirmed: max))
+        XCTAssertNil(try change(max - 1, confirmed: max))
+        XCTAssertEqual(try change(max, confirmed: 1)?.needsWarning, true)
+        XCTAssertEqual(try change(max, confirmed: max / 2)?.needsWarning, true)
 
-        // The largest approved amount whose 5% margin still fits below UInt64.max.
-        let expected = max / 21 * 20
-        let allowance = expected / 20
-        XCTAssertTrue(GiftCardPaymentGuard.isWithinApprovedAmount(requested: expected + allowance, expected: expected))
-        XCTAssertFalse(GiftCardPaymentGuard.isWithinApprovedAmount(requested: expected + allowance + 1, expected: expected))
+        // The largest confirmed amount whose 5% still fits below UInt64.max.
+        let amount = max / 21 * 20
+        let fivePercent = amount / 20
+        XCTAssertEqual(try change(amount + fivePercent - 1, confirmed: amount)?.needsWarning, false)
+        XCTAssertEqual(try change(amount + fivePercent, confirmed: amount)?.needsWarning, true)
+        XCTAssertNil(try change(amount + amount / 200, confirmed: amount))
+        XCTAssertNotNil(try change(amount + amount / 200 + 1, confirmed: amount))
+    }
+
+    /// 1 Dash confirmed for $40; the provider asks 1.04 Dash, which is $41.60 at the same rate.
+    func testPriceChangeCarriesTheFiguresTheBuyerIsShown() throws {
+        let priceChange = try XCTUnwrap(try change(104_000_000))
+        XCTAssertEqual(priceChange.confirmedFiat, 40)
+        XCTAssertEqual(priceChange.requestedFiat, dash("41.6"))
+        XCTAssertEqual(priceChange.differenceAmount, 4_000_000)
+        XCTAssertEqual(priceChange.differenceFiat, dash("1.6"))
+        XCTAssertEqual(priceChange.increaseFraction, dash("0.04"))
     }
 
     // MARK: - duffs(fromDashAmount:)
@@ -229,6 +275,22 @@ final class GiftCardPaymentGuardTests: XCTestCase {
         XCTAssertEqual(try approve(price: "25", discount: "0", rate: rate("25")).amount, 100_000_000)
     }
 
+    /// The approval keeps what the sheets show and what a later freshness check needs.
+    func testApprovalKeepsTheFiatPriceAndTheRate() throws {
+        let approval = try approve(price: "50", discount: "0.05", rate: rate("40", age: 120))
+        XCTAssertEqual(approval.fiatAmount, dash("47.5"))
+        XCTAssertEqual(approval.rate, 40)
+        XCTAssertEqual(approval.rateRetrievedAt, 1_800_000_000 - 120)
+    }
+
+    /// An approval made with a fresh rate stops being usable once that rate is past the limit.
+    func testApprovalRateGoesStale() throws {
+        let approval = try approve(price: "50", discount: "0", rate: rate("40", age: 60))
+        XCTAssertTrue(approval.isRateFresh(now: approvalTime))
+        XCTAssertTrue(approval.isRateFresh(now: approvalTime.addingTimeInterval(kStaleRatesDuration - 60)))
+        XCTAssertFalse(approval.isRateFresh(now: approvalTime.addingTimeInterval(kStaleRatesDuration)))
+    }
+
     /// $10 at $30 per Dash is 0.3333… Dash: the ceiling rounds down to a whole duff.
     func testApprovedAmountRoundsDownToAWholeDuff() throws {
         XCTAssertEqual(try approve(price: "10", discount: "0", rate: rate("30")).amount, 33_333_333)
@@ -272,34 +334,42 @@ final class GiftCardPaymentGuardTests: XCTestCase {
         }
     }
 
-    func testApprovalAcceptsAQuoteUpToTheMarginAndRefusesOneAbove() throws {
-        let approval = GiftCardPaymentGuard.Approval(amount: 100_000_000)
-        XCTAssertNoThrow(try approval.check(requested: 100_000_000))
-        XCTAssertNoThrow(try approval.check(requested: 105_000_000))
-        XCTAssertNoThrow(try approval.check(requested: 1))
+    // MARK: - GiftCardAmountText
 
-        for requested in [UInt64(105_000_001), UInt64.max] {
-            XCTAssertThrowsError(try approval.check(requested: requested)) { error in
-                XCTAssertEqual((error as? DashSpendError)?.errorDescription,
-                               GiftCardPaymentGuard.amountAboveApprovedError.errorDescription)
-            }
-        }
+    private let posix = Locale(identifier: "en_US_POSIX")
+
+    func testApproximateDashAmountHasFourDecimals() {
+        XCTAssertEqual(GiftCardAmountText.approximateDash(493_700_000, locale: posix), "≈ 4.9370")
+        XCTAssertEqual(GiftCardAmountText.approximateDash(123_456_789, locale: posix), "≈ 1.2346")
+        XCTAssertEqual(GiftCardAmountText.approximateDash(100_000_000, locale: posix), "≈ 1.0000")
     }
 
-    /// A request for no Dash is refused as an invalid amount: it is not more than the buyer approved.
-    func testApprovalRefusesAZeroQuoteAsAnInvalidAmount() {
-        let approval = GiftCardPaymentGuard.Approval(amount: 100_000_000)
-        XCTAssertThrowsError(try approval.check(requested: 0)) { error in
-            XCTAssertEqual((error as? DashSpendError)?.errorDescription,
-                           GiftCardPaymentGuard.invalidAmountError.errorDescription)
-        }
-        XCTAssertNotEqual(GiftCardPaymentGuard.invalidAmountError.errorDescription,
-                          GiftCardPaymentGuard.amountAboveApprovedError.errorDescription)
+    /// The amount the buyer is asked to pay is written in full, never rounded.
+    func testExactDashAmountKeepsEveryDecimal() {
+        XCTAssertEqual(GiftCardAmountText.exactDash(513_440_000, locale: posix), "5.1344")
+        XCTAssertEqual(GiftCardAmountText.exactDash(513_441_234, locale: posix), "5.13441234")
+        XCTAssertEqual(GiftCardAmountText.exactDash(1, locale: posix), "0.00000001")
+        XCTAssertEqual(GiftCardAmountText.exactDash(100_000_000, locale: posix), "1.0000")
+    }
+
+    func testDashAmountsFollowTheLocale() {
+        let polish = Locale(identifier: "pl_PL")
+        XCTAssertEqual(GiftCardAmountText.exactDash(513_440_000, locale: polish), "5,1344")
+        XCTAssertEqual(GiftCardAmountText.exactDash(123_456_700_000_000, locale: polish), "1234567,0000")
+    }
+
+    /// One decimal below 10%, whole percent from there.
+    func testIncreasePercentRounding() {
+        XCTAssertEqual(DashSpendPriceUpdatedDialog.percent(of: dash("0.0399")), 4.0)
+        XCTAssertEqual(DashSpendPriceUpdatedDialog.percent(of: dash("0.00637")), 0.6)
+        XCTAssertEqual(DashSpendPriceUpdatedDialog.percent(of: dash("0.1249")), 12)
+        XCTAssertEqual(DashSpendPriceUpdatedDialog.percent(of: dash("9")), 900)
+        XCTAssertEqual(DashSpendPriceUpdatedDialog.percent(of: Decimal.nan), 0)
     }
 }
 
-/// The purchase reads the exchange rate and builds its approval before it asks a provider
-/// for an order. These tests pin that order for every provider.
+/// The purchase sheet's states in the view model: the rate is read when the Confirm sheet
+/// opens, and a provider's quote is compared with it before anything is authorized.
 @MainActor
 final class DashSpendPayApprovalTests: XCTestCase {
 
@@ -310,18 +380,55 @@ final class DashSpendPayApprovalTests: XCTestCase {
             website: nil, phone: nil, logoLocation: nil, coverImage: nil, source: nil)
     }
 
-    private func purchase(provider: GiftCardProvider,
-                          rate: GiftCardPaymentGuard.ExchangeRate) async -> Error? {
+    private var usableRate: GiftCardPaymentGuard.ExchangeRate {
+        GiftCardPaymentGuard.ExchangeRate(price: 40, retrievedAt: Int(Date().timeIntervalSince1970))
+    }
+
+    private func makeViewModel(provider: GiftCardProvider = .ctx,
+                               rate: GiftCardPaymentGuard.ExchangeRate? = nil) -> DashSpendPayViewModel {
+        let rate = rate ?? usableRate
         let viewModel = DashSpendPayViewModel(merchant: merchant, provider: provider, exchangeRate: { rate })
+        // No sheet is on screen in these tests, so nothing reports its dismissal.
+        viewModel.sheetDismissalWait = 0.01
+        return viewModel
+    }
+
+    /// A view model with the Confirm sheet open for a $25 card: 0.625 Dash at $40.
+    private func viewModelWithConfirmSheet() throws -> (DashSpendPayViewModel, GiftCardPurchaseSnapshot) {
+        let viewModel = makeViewModel()
+        try viewModel.beginPurchase(price: 25)
+        guard case .confirm(let snapshot)? = viewModel.purchaseSheet else {
+            XCTFail("the Confirm sheet did not open")
+            throw CancellationError()
+        }
+        return (viewModel, snapshot)
+    }
+
+    /// Runs `confirmQuote` and returns once the "Price updated" sheet is up.
+    private func quote(_ requested: UInt64, on viewModel: DashSpendPayViewModel,
+                       snapshot: GiftCardPurchaseSnapshot) async
+        -> (task: Task<Void, Error>, change: GiftCardPaymentGuard.PriceChange?) {
+        let task = Task { try await viewModel.confirmQuote(requested: requested, approval: snapshot.approval) }
+        for _ in 0..<1_000 {
+            if case .priceUpdated(let change)? = viewModel.purchaseSheet { return (task, change) }
+            await Task.yield()
+        }
+        return (task, nil)
+    }
+
+    private func assertCancelled(_ task: Task<Void, Error>, file: StaticString = #filePath, line: UInt = #line) async {
         do {
-            _ = try await viewModel.purchaseGiftCardAndPay(confirmedPrice: 25, confirmedDiscount: 0)
-            return nil
+            try await task.value
+            XCTFail("the purchase went on", file: file, line: line)
+        } catch DashSpendError.purchaseCancelled {
         } catch {
-            return error
+            XCTFail("unexpected error: \(error)", file: file, line: line)
         }
     }
 
-    func testPurchaseStopsBeforeTheProviderIsAskedWithoutAUsableRate() async {
+    // MARK: Opening the Confirm sheet
+
+    func testConfirmSheetDoesNotOpenWithoutAUsableRate() {
         let now = Int(Date().timeIntervalSince1970)
         let unusable: [(name: String, rate: GiftCardPaymentGuard.ExchangeRate)] = [
             ("missing", .init(price: nil, retrievedAt: now)),
@@ -333,22 +440,145 @@ final class DashSpendPayApprovalTests: XCTestCase {
 
         for provider in GiftCardProvider.allCases {
             for (name, rate) in unusable {
-                let error = await purchase(provider: provider, rate: rate)
-                XCTAssertEqual((error as? DashSpendError)?.errorDescription,
-                               GiftCardPaymentGuard.rateUnavailableError.errorDescription,
-                               "\(provider.displayName), \(name) rate: \(String(describing: error))")
+                let viewModel = makeViewModel(provider: provider, rate: rate)
+                XCTAssertThrowsError(try viewModel.beginPurchase(price: 25)) { error in
+                    XCTAssertEqual((error as? DashSpendError)?.errorDescription,
+                                   GiftCardPaymentGuard.rateUnavailableError.errorDescription,
+                                   "\(provider.displayName), \(name) rate: \(error)")
+                }
+                XCTAssertNil(viewModel.purchaseSheet, "\(provider.displayName), \(name) rate")
             }
         }
     }
 
-    /// With a usable rate the purchase moves on to the provider step. This merchant has no
-    /// provider id, so that step refuses it without a network call.
-    func testPurchaseWithAUsableRateReachesTheProviderStep() async {
-        let usable = GiftCardPaymentGuard.ExchangeRate(price: 40, retrievedAt: Int(Date().timeIntervalSince1970))
-        let error = await purchase(provider: .ctx, rate: usable)
-        guard case DashSpendError.unauthorized? = error else {
-            return XCTFail("unexpected result: \(String(describing: error))")
+    func testConfirmSheetOpensWithTheDashAmountAtTheWalletsRate() throws {
+        let (viewModel, snapshot) = try viewModelWithConfirmSheet()
+        XCTAssertEqual(snapshot.price, 25)
+        XCTAssertEqual(snapshot.discount, viewModel.displaySavingsFraction)
+        XCTAssertEqual(snapshot.approval.fiatAmount, 25 * (1 - snapshot.discount))
+        XCTAssertEqual(snapshot.approval.rate, 40)
+        XCTAssertEqual(snapshot.approval.amount, try GiftCardPaymentGuard.approve(
+            price: 25, discount: snapshot.discount, rate: usableRate).amount)
+    }
+
+    func testCancelOnTheConfirmSheetClosesIt() throws {
+        let (viewModel, _) = try viewModelWithConfirmSheet()
+        viewModel.dismissPurchaseSheet()
+        XCTAssertNil(viewModel.purchaseSheet)
+    }
+
+    // MARK: The purchase
+
+    /// The sheet can stay open past the stale-rate limit. Confirm then stops the purchase
+    /// before the provider is asked for an order.
+    func testPurchaseStopsBeforeTheProviderWhenTheConfirmedRateWentStale() async throws {
+        let (viewModel, fresh) = try viewModelWithConfirmSheet()
+        let stale = GiftCardPurchaseSnapshot(
+            price: fresh.price, discount: fresh.discount, quantities: fresh.quantities,
+            approval: .init(amount: fresh.approval.amount, fiatAmount: fresh.approval.fiatAmount,
+                            rate: fresh.approval.rate,
+                            rateRetrievedAt: fresh.approval.rateRetrievedAt - Int(kStaleRatesDuration) - 60))
+
+        do {
+            _ = try await viewModel.purchaseGiftCardAndPay(stale)
+            XCTFail("the purchase went on")
+        } catch {
+            XCTAssertEqual((error as? DashSpendError)?.errorDescription,
+                           GiftCardPaymentGuard.rateUnavailableError.errorDescription, "\(error)")
         }
+        XCTAssertNil(viewModel.purchaseSheet)
+    }
+
+    /// With a fresh rate the purchase moves on to the provider step. This merchant has no
+    /// provider id, so that step refuses it without a network call, and the sheet closes.
+    func testPurchaseWithAFreshRateReachesTheProviderStep() async throws {
+        let (viewModel, snapshot) = try viewModelWithConfirmSheet()
+
+        do {
+            _ = try await viewModel.purchaseGiftCardAndPay(snapshot)
+            XCTFail("the purchase went on")
+        } catch DashSpendError.unauthorized {
+        } catch {
+            XCTFail("unexpected error: \(error)")
+        }
+        XCTAssertNil(viewModel.purchaseSheet)
+        XCTAssertFalse(viewModel.isProcessingPayment)
+    }
+
+    // MARK: The provider's quote
+
+    func testQuoteAsConfirmedClosesTheSheetWithoutAsking() async throws {
+        let (viewModel, snapshot) = try viewModelWithConfirmSheet()
+        try await viewModel.confirmQuote(requested: snapshot.approval.amount, approval: snapshot.approval)
+        XCTAssertNil(viewModel.purchaseSheet)
+    }
+
+    /// 0.3% more than confirmed is inside the margin that is paid without asking again.
+    func testSmallIncreaseClosesTheSheetWithoutAsking() async throws {
+        let (viewModel, snapshot) = try viewModelWithConfirmSheet()
+        let requested = snapshot.approval.amount + snapshot.approval.amount * 3 / 1_000
+        try await viewModel.confirmQuote(requested: requested, approval: snapshot.approval)
+        XCTAssertNil(viewModel.purchaseSheet)
+    }
+
+    func testHigherQuoteWaitsForTheBuyerAndGoesOnWhenTheyPay() async throws {
+        let (viewModel, snapshot) = try viewModelWithConfirmSheet()
+        let requested = snapshot.approval.amount + snapshot.approval.amount * 2 / 100
+
+        let (task, shown) = await quote(requested, on: viewModel, snapshot: snapshot)
+        let priceChange = try XCTUnwrap(shown)
+        XCTAssertEqual(priceChange.requestedAmount, requested)
+        XCTAssertEqual(priceChange.confirmedAmount, snapshot.approval.amount)
+        XCTAssertFalse(priceChange.needsWarning)
+
+        viewModel.resolvePriceChange(pay: true)
+        XCTAssertNil(viewModel.purchaseSheet)
+        viewModel.purchaseSheetDidDismiss()
+        try await task.value
+    }
+
+    func testQuoteFivePercentHigherIsShownWithAWarning() async throws {
+        let (viewModel, snapshot) = try viewModelWithConfirmSheet()
+        let requested = snapshot.approval.amount + snapshot.approval.amount * 5 / 100
+
+        let (task, shown) = await quote(requested, on: viewModel, snapshot: snapshot)
+        XCTAssertEqual(try XCTUnwrap(shown).needsWarning, true)
+
+        viewModel.resolvePriceChange(pay: true)
+        try await task.value
+    }
+
+    func testDecliningAHigherQuoteCancelsThePurchase() async throws {
+        let (viewModel, snapshot) = try viewModelWithConfirmSheet()
+        let (task, shown) = await quote(snapshot.approval.amount * 2, on: viewModel, snapshot: snapshot)
+        XCTAssertNotNil(shown)
+
+        viewModel.resolvePriceChange(pay: false)
+        await assertCancelled(task)
+        XCTAssertNil(viewModel.purchaseSheet)
+    }
+
+    /// Swiping the "Price updated" sheet away reaches the view model as a dismissal.
+    func testDismissingThePriceSheetDeclinesTheQuote() async throws {
+        let (viewModel, snapshot) = try viewModelWithConfirmSheet()
+        let (task, shown) = await quote(snapshot.approval.amount * 2, on: viewModel, snapshot: snapshot)
+        XCTAssertNotNil(shown)
+
+        viewModel.dismissPurchaseSheet()
+        await assertCancelled(task)
+        XCTAssertNil(viewModel.purchaseSheet)
+    }
+
+    func testZeroQuoteIsRefusedWithoutAsking() async throws {
+        let (viewModel, snapshot) = try viewModelWithConfirmSheet()
+        do {
+            try await viewModel.confirmQuote(requested: 0, approval: snapshot.approval)
+            XCTFail("a quote for no Dash went on")
+        } catch {
+            XCTAssertEqual((error as? DashSpendError)?.errorDescription,
+                           GiftCardPaymentGuard.invalidAmountError.errorDescription, "\(error)")
+        }
+        if case .priceUpdated? = viewModel.purchaseSheet { XCTFail("a quote for no Dash was put to the buyer") }
     }
 }
 

@@ -1018,6 +1018,9 @@
 /* Voting */
 "Cancel approval" = "Cancel approval";
 
+/* DashSpend */
+"Cancel purchase" = "Cancel purchase";
+
 /* Coinbase/Buy Dash/Cancel Order */
 "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "이 거래를 취소하더라도 거래 주문은 취소되지 않습니다. 곧 귀하의 코인베이스 계좌로 DASH를 받게 됩니다.";
 
@@ -1897,6 +1900,9 @@
 /* Devnet */
 "Devnet Settings" = "Devnet Settings";
 
+/* DashSpend */
+"Difference" = "Difference";
+
 /* No comment provided by engineer. */
 "Differs from this evonode" = "이 evonode와 다름";
 
@@ -2292,6 +2298,9 @@
 /* Explore Dash */
 "Filters" = "필터";
 
+/* DashSpend */
+"Final price" = "Final price";
+
 /* No comment provided by engineer. */
 "Find" = "찾기";
 
@@ -2509,6 +2518,9 @@
 
 /* No comment provided by engineer. */
 "Gift card purchase was rejected" = "기프트 카드 구매 거절됨";
+
+/* DashSpend */
+"Gift card total" = "Gift card total";
 
 /* Explore Dash/Merchants/Filters */
 "Gift card types" = "기프트 카드 유형";
@@ -4057,6 +4069,9 @@
 /* No comment provided by engineer. */
 "Pay" = "지불";
 
+/* DashSpend: pay the Dash amount that follows */
+"Pay %@" = "Pay %@";
+
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "사용하기 쉬운 지불 플로우로 즉시 송금하고 송금 받으세요";
 
@@ -4393,6 +4408,9 @@
 /* Username marketplace: price placeholder */
 "Price in DASH" = "DASH 가격";
 
+/* DashSpend */
+"Price updated" = "Price updated";
+
 /* Stale rates */
 "Prices are at least 30 minutes old. Fiat values may be incorrect." = "마지막 가격 업데이트가 최소 30분을 경과했습니다. 금액이 정확하지 않을 수 있습니다.";
 
@@ -4455,6 +4473,9 @@
 
 /* No comment provided by engineer. */
 "Provider Address" = "공급자 주소";
+
+/* DashSpend */
+"Provider asks" = "Provider asks";
 
 /* Masternodes */
 "Provider transactions" = "제공자 거래";
@@ -5910,9 +5931,6 @@
 "The full transaction history will be exported as a CSV file" = "The full transaction history will be exported as a CSV file";
 
 /* DashSpend */
-"The gift card provider requested more Dash than the price you approved. Nothing was sent. Please try again or contact support." = "The gift card provider requested more Dash than the price you approved. Nothing was sent. Please try again or contact support.";
-
-/* DashSpend */
 "The gift card provider returned an invalid payment address. Nothing was sent. Please try again or contact support." = "The gift card provider returned an invalid payment address. Nothing was sent. Please try again or contact support.";
 
 /* Identity top-up second leg cancelled */
@@ -6049,6 +6067,9 @@
 
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "저장된 지갑 기록에 네트워크가 없어 재동기화를 예약할 수 없습니다.";
+
+/* DashSpend: %@ is a percentage */
+"The price is %@ higher than expected" = "The price is %@ higher than expected";
 
 /* Dash DEX / dex_error_price_moved */
 "The price moved too much. Please go back and try again." = "The price moved too much. Please go back and try again.";
@@ -6323,6 +6344,9 @@
 
 /* SDK identity profile sheet — explains the identity credit balance */
 "This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits." = "이 잔액은 Dash Platform 네트워크 수수료(사용자 이름, 연락처 요청, 프로필 업데이트)를 지불합니다. 지갑이 아니라 아이덴티티에 속하며, 투명·Platform·Shielded 잔액과 달리 일반 Dash처럼 사용할 수 없습니다. 충전하면 선택한 잔액(기본값 Shielded)의 Dash가 아이덴티티 크레딧으로 전환됩니다.";
+
+/* DashSpend */
+"This can mean the market moved fast or the provider's price is wrong. If you're not sure, cancel and try again in a few minutes." = "This can mean the market moved fast or the provider's price is wrong. If you're not sure, cancel and try again in a few minutes.";
 
 /* DashSpend */
 "This card works only in the United States." = "This card works only in the United States.";
@@ -7651,6 +7675,9 @@
 
 /* Usernames */
 "You chose “%@” as your username." = "당신은 \"%@\"를 사용자 이름으로 선택했습니다.";
+
+/* DashSpend */
+"You confirmed" = "You confirmed";
 
 /* DashSpend */
 "You do not have sufficient funds to complete this transaction" = "이 거래를 완료하기 위해 필요한 자금이 충분하지 않습니다";
