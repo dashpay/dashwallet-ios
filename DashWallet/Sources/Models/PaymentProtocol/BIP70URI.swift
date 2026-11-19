@@ -116,7 +116,8 @@ struct BIP70URI {
             switch key {
             case "amount", "req-amount":
                 amount = Self.duffs(fromDecimalDash: value)
-                hasInvalidAmount = !value.isEmpty && amount == nil
+                // Sticky: a later alias does not make an unpayable amount payable.
+                hasInvalidAmount = hasInvalidAmount || (!value.isEmpty && amount == nil)
             case "label", "req-label": label = value
             case "message", "req-message": message = value
             case "r", "req-r": r = URL(string: value)

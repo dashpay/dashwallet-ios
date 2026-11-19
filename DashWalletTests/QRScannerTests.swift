@@ -272,6 +272,23 @@ final class QRScannerTests: XCTestCase {
         }
     }
 
+    /// A declined code still in frame is not offered again straight away,
+    /// and another code beside it is still read.
+    func testDeclinedCodeIsPassedOverForAMoment() {
+        let (scanner, recorder) = makeScanner(.addressInput(expectsDashAddress: false))
+        scanner.didDetectCodes([Self.userLink])
+        scanner.declineOffer()
+
+        scanner.didDetectCodes([Self.userLink])
+        XCTAssertFalse(isOffer(scanner.status))
+        XCTAssertTrue(recorder.results.isEmpty)
+
+        scanner.didDetectCodes([Self.userLink, "some text"])
+        guard case .text("some text") = recorder.results.first else {
+            return XCTFail("the other code in frame is read")
+        }
+    }
+
     /// An "Open Send" redirect keeps the scanned amount on the input the
     /// router fills the Send form with.
     func testPaymentRedirectKeepsTheScannedAmount() {
@@ -319,6 +336,48 @@ final class QRScannerTests: XCTestCase {
                 XCTAssertNil(QRScannerViewModel.fallback(afterFailedRequest: request), code)
             }
         }
+
+        for code in ["dash:\(Self.address)?amount=abc&req-amount=1", "dash:\(Self.address)?amount=1&amount=-1"] {
+            XCTAssertTrue(ParsedPaymentURI.parse(paymentString: code).hasInvalidAmount, "a later alias keeps it: \(code)")
+        }
+    }
+
+    private final class ProcessorDelegate: NSObject, DWPaymentProcessorDelegate {
+        var amountRequested = false
+        var failure: (error: Error?, title: String?)?
+        func paymentProcessor(_ processor: DWPaymentProcessor, requestAmountWithDestination sendingDestination: String,
+                              amount: UInt64) { amountRequested = true }
+        func paymentProcessor(_ processor: DWPaymentProcessor, confirmPaymentOutput paymentOutput: DWPaymentOutput) {}
+        func paymentProcessorDidCancelTransactionSigning(_ processor: DWPaymentProcessor) {}
+        func paymentProcessor(_ processor: DWPaymentProcessor, didFailWithError error: Error?, title: String?,
+                              message: String?) { failure = (error, title) }
+        func paymentProcessor(_ processor: DWPaymentProcessor, didSendWithTxidWire txidWire: Data) {}
+        func paymentProcessor(_ processor: DWPaymentProcessor, showProgressHUDWithMessage message: String?) {}
+        func paymentInputProcessorHideProgressHUD(_ processor: DWPaymentProcessor) {}
+    }
+
+    /// An opened or scanned link with an unpayable amount gets an error the
+    /// payment controller shows (it stays silent on a nil error), and no
+    /// amount prompt.
+    func testProcessorReportsAnUnpayableAmount() {
+        let delegate = ProcessorDelegate()
+        let processor = DWPaymentProcessor()
+        processor.delegate = delegate
+        let parsed = ParsedPaymentURI.parse(paymentString: "dash:\(Self.address)?amount=abc")
+        processor.processPaymentInput(DWPaymentInputBuilder().paymentInput(withParsedURI: parsed, source: .scanQR))
+        XCTAssertFalse(delegate.amountRequested)
+        XCTAssertNotNil(delegate.failure?.error)
+        XCTAssertEqual(delegate.failure?.title, NSLocalizedString("Invalid payment amount", comment: ""))
+    }
+
+    /// A whole request URL is fetched as a Dash request: its http(s) scheme
+    /// says where the request is, not which currency's MIME types to use.
+    func testWholeRequestURLIsFetchedAsDash() {
+        let parsed = ParsedPaymentURI.parse(paymentString: "https://merchant.invalid/pr")
+        XCTAssertTrue(parsed.isWholeRequestURL)
+        XCTAssertEqual(BIP70InteractiveCoordinator.paymentProtocolScheme(parsed.scheme!), "dash")
+        XCTAssertEqual(BIP70InteractiveCoordinator.paymentProtocolScheme("http"), "dash")
+        XCTAssertEqual(BIP70InteractiveCoordinator.paymentProtocolScheme("bitcoin"), "bitcoin")
     }
 
     /// Only a whole http(s) request URL is fetched without a `dash:` scheme;
