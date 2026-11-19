@@ -458,7 +458,9 @@ extension ExplorePointOfUse {
             if m.type == .online {
                 return NSLocalizedString("Online Merchant", comment: "Online Merchant")
             } else {
-                return m.type == .onlineAndPhysical ? "Physical Merchant, Online" : "Physical Merchant"
+                return m.type == .onlineAndPhysical
+                    ? NSLocalizedString("Physical Merchant, Online", comment: "Explore Dash")
+                    : NSLocalizedString("Physical Merchant", comment: "Explore Dash")
             }
         case .atm:
             return nil
