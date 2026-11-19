@@ -40,12 +40,22 @@ where they disagree, ADR-0001 wins.
 | [0032](0032-pass-owners-read-from-platform-into-the-pure-projection.md) | Pass the owners read from Platform into the pure App Connect projection | platform | Proposed | |
 | [0033](0033-turn-off-only-the-unrecorded-keys-the-question-listed.md) | Turn off only the unrecorded keys the question listed | keys | Superseded | [0016](0016-turn-off-unrecorded-keys-on-disconnect-without-asking.md) |
 | [0035](0035-run-every-vote-through-a-pure-vote-attempt-state-machine.md) | Run every vote through a pure vote-attempt state machine | ui | Proposed | |
+| [0036](0036-ship-the-ios-screens-and-the-sdk-binding-as-two-surfaces.md) | Ship the iOS screens and the SDK binding as two surfaces | platform | Proposed | |
 | [0037](0037-cast-quick-voting-sequentially-under-one-authentication.md) | Cast Quick voting sequentially under one authentication | ui | Proposed | |
 | [0038](0038-let-only-the-voting-store-write-the-remembered-node-choice.md) | Let only the voting store write the remembered node choice | ui | Proposed | |
+| [0039](0039-estimate-the-fee-on-send-and-recompute-it-on-confirm.md) | Estimate the fee on Send and recompute it on Confirm | payments | Superseded | [0043](0043-bind-the-fee-where-the-sdk-can-and-mark-the-rest-as-an-estimate.md) |
+| [0040](0040-report-three-send-outcomes-and-retry-only-when-nothing-left-the-source.md) | Report three send outcomes and retry only when nothing left the source | payments | Proposed | |
+| [0041](0041-keep-identity-to-shielded-off-in-this-release.md) | Keep Identity to Shielded off in this release | payments | Proposed | |
+| [0042](0042-report-moved-to-platform-when-a-shielded-to-identity-top-up-fails-after-the-unshield.md) | Report movedToPlatform when a Shielded to Identity top-up fails after the unshield | payments | Superseded | [0044](0044-top-up-an-identity-from-shielded-in-one-step.md) |
+| [0043](0043-bind-the-fee-where-the-sdk-can-and-mark-the-rest-as-an-estimate.md) | Bind the fee where the SDK can and mark the rest as an estimate | payments | Proposed | |
+| [0044](0044-top-up-an-identity-from-shielded-in-one-step.md) | Top up an identity from Shielded in one step | payments | Proposed | |
+| [0045](0045-add-an-external-identity-top-up-and-a-non-blocking-identity-read-to-the-sdk.md) | Add an external-identity top-up and a non-blocking identity read to the SDK | platform | Proposed | |
 | [0049](0049-record-the-publish-start-on-the-connection-intent.md) | Record the publish start on the connection intent | platform | Accepted | |
 | [0050](0050-bound-an-unresolved-publish-by-48-hours-of-proved-platform-block-time.md) | Bound an unresolved publish by 48 hours of proved Platform block time | platform | Accepted | |
 | [0052](0052-refuse-response-removed-at-its-one-write-point-while-the-publish-is-unresolved.md) | Refuse "response removed" at its one write point while the publish is unresolved | platform | Accepted | |
 | [0053](0053-open-dashconnect-on-mainnet-and-gate-each-request-by-protocol-14.md) | Open DashConnect on mainnet and gate each request by protocol 14 | platform | Proposed | |
+| [0054](0054-build-external-send-as-a-new-module-over-the-existing-spend-seams.md) | Build external send as a new module over the existing spend seams | payments | Proposed | |
+| [0062](0062-decide-every-source-and-destination-pair-in-one-policy.md) | Decide every source and destination pair in one policy | payments | Proposed | |
 
 Areas: `spv`, `platform`, `keys`, `storage`, `coinjoin`, `payments`, `swap`, `ui`, `build`, `process`. Each ADR takes one; a new
 Area is added to this list in the PR that first needs it.
