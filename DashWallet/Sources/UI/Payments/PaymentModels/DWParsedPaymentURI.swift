@@ -71,8 +71,11 @@ final class ParsedPaymentURI: NSObject {
     /// Percent-decoded address (or a bare key string) — UNVALIDATED; consult
     /// `isAddressValidForCurrentNetwork`. nil for `dash:?r=…` and unparseable inputs.
     @objc let address: String?
-    /// Amount in duffs; 0 when absent.
+    /// Amount in duffs; 0 when absent or invalid.
     @objc let amount: UInt64
+    /// An amount was given but is not payable (unreadable, negative, above the supply). The
+    /// address alone is then not a payment: paying it would drop the amount the payer asked for.
+    @objc let hasInvalidAmount: Bool
     @objc let label: String?
     @objc let message: String?
     /// The BIP72 `r=` URL, or the whole BIP73 URL. nil when absent/unparseable — call sites fetch
@@ -104,13 +107,20 @@ final class ParsedPaymentURI: NSObject {
     /// arms are compiled out under `SHAPESHIFT_ENABLED`, undefined in this app), widened to accept
     /// every payable address form (bech32m Platform/Shielded included).
     @objc var isValidDashPaymentIntent: Bool {
-        scheme == "dash" && (isAddressPayableForCurrentNetwork || rURL != nil)
+        scheme == "dash" && ((isAddressPayableForCurrentNetwork && !hasInvalidAmount) || rURL != nil)
+    }
+
+    /// A plain http(s) payment-request URL read whole (BIP73), the one form without a `dash:`
+    /// scheme whose request the wallet fetches.
+    @objc var isWholeRequestURL: Bool {
+        scheme == "http" || scheme == "https"
     }
 
     private init(rawString: String,
                  scheme: String?,
                  address: String?,
                  amount: UInt64,
+                 hasInvalidAmount: Bool,
                  label: String?,
                  message: String?,
                  rURL: URL?,
@@ -126,6 +136,7 @@ final class ParsedPaymentURI: NSObject {
         self.scheme = scheme
         self.address = address
         self.amount = amount
+        self.hasInvalidAmount = hasInvalidAmount
         self.label = label
         self.message = message
         self.rURL = rURL
@@ -148,7 +159,7 @@ final class ParsedPaymentURI: NSObject {
         let paymentString = deepLinkPaymentString(for: raw) ?? raw
         guard let uri = BIP70URI(paymentString: paymentString) else {
             return ParsedPaymentURI(rawString: raw, scheme: nil, address: nil, amount: 0,
-                                    label: nil, message: nil, rURL: nil, callbackScheme: nil,
+                                    hasInvalidAmount: false, label: nil, message: nil, rURL: nil, callbackScheme: nil,
                                     dashpayUsername: nil, fiatCurrencyCode: nil, fiatAmount: 0,
                                     hasExplicitScheme: false, isAddressValidForCurrentNetwork: false,
                                     isAddressPayableForCurrentNetwork: false,
@@ -163,6 +174,7 @@ final class ParsedPaymentURI: NSObject {
                                 scheme: uri.scheme,
                                 address: uri.address,
                                 amount: uri.amount ?? 0,
+                                hasInvalidAmount: uri.hasInvalidAmount,
                                 label: uri.label,
                                 message: uri.message,
                                 rURL: uri.r,
@@ -200,6 +212,7 @@ final class ParsedPaymentURI: NSObject {
                          scheme: scheme,
                          address: address,
                          amount: amount,
+                         hasInvalidAmount: hasInvalidAmount,
                          label: label,
                          message: message,
                          rURL: nil,

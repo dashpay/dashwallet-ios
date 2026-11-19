@@ -208,6 +208,24 @@ final class QRScannerTests: XCTestCase {
         XCTAssertEqual(input.parsedURI?.amount, 150_000_000)
     }
 
+    /// Locked, another flow's code is refused before its eligibility is
+    /// read, so the answer says nothing about the wallet.
+    func testLockedScannerReadsNoOtherFlowsEligibility() {
+        for mode in [QRScannerMode.payment, .addressInput(expectsDashAddress: false)] {
+            for code in [Self.userLink, Self.invitationLink] {
+                var probed = false
+                let (scanner, recorder) = makeScanner(
+                    mode, locked: { true },
+                    hasIdentity: { probed = true; return true },
+                    invitation: { _ in probed = true; return .valid })
+                scanner.didDetectCodes([code])
+                XCTAssertFalse(probed, code)
+                XCTAssertTrue(isInvalid(scanner.status), code)
+                XCTAssertTrue(recorder.results.isEmpty, code)
+            }
+        }
+    }
+
     func testNoRedirectOfferWhileLocked() {
         let (scanner, recorder) = makeScanner(.addressInput(expectsDashAddress: false), locked: { true })
         scanner.didDetectCodes([Self.userLink])
@@ -272,11 +290,46 @@ final class QRScannerTests: XCTestCase {
 
     /// A URI amount above the coin supply is dropped before it is narrowed,
     /// so no later credit conversion can wrap it.
-    func testURIAmountAboveTheSupplyIsDropped() {
-        XCTAssertEqual(ParsedPaymentURI.parse(paymentString: "dash:\(Self.address)?amount=21000000").amount,
-                       kMaxDashSupplyDuffs)
-        XCTAssertEqual(ParsedPaymentURI.parse(paymentString: "dash:\(Self.address)?amount=21000000.00000001").amount, 0)
-        XCTAssertEqual(ParsedPaymentURI.parse(paymentString: "dash:\(Self.address)?amount=184467440737").amount, 0)
+    /// An amount the wallet can't pay is not an open amount: the address
+    /// alone is refused, by the scanner and by a failed request's fallback.
+    /// The merchant's own request still decides its amount.
+    func testOutOfRangeURIAmountIsRefused() {
+        let atSupply = ParsedPaymentURI.parse(paymentString: "dash:\(Self.address)?amount=21000000")
+        XCTAssertEqual(atSupply.amount, kMaxDashSupplyDuffs)
+        XCTAssertFalse(atSupply.hasInvalidAmount)
+        XCTAssertFalse(ParsedPaymentURI.parse(paymentString: "dash:\(Self.address)?amount=").hasInvalidAmount)
+
+        for amount in ["21000000.00000001", "184467440737", "-1", "abc"] {
+            for key in ["amount", "req-amount"] {
+                let code = "dash:\(Self.address)?\(key)=\(amount)"
+                let parsed = ParsedPaymentURI.parse(paymentString: code)
+                XCTAssertTrue(parsed.hasInvalidAmount, code)
+                XCTAssertFalse(parsed.isValidDashPaymentIntent, code)
+
+                for mode in [QRScannerMode.payment, .addressInput(expectsDashAddress: true)] {
+                    let (scanner, recorder) = makeScanner(mode)
+                    scanner.didDetectCodes([code])
+                    XCTAssertTrue(recorder.results.isEmpty, code)
+                    XCTAssertTrue(isInvalid(scanner.status), code)
+                }
+
+                let request = ParsedPaymentURI.parse(
+                    paymentString: "\(code)&r=https%3A%2F%2Fmerchant.invalid%2Fpr")
+                XCTAssertTrue(request.isValidDashPaymentIntent, code)
+                XCTAssertNil(QRScannerViewModel.fallback(afterFailedRequest: request), code)
+            }
+        }
+    }
+
+    /// Only a whole http(s) request URL is fetched without a `dash:` scheme;
+    /// another currency's `r=` request is not Dash's to fetch.
+    func testPaymentScannerFetchesNoForeignSchemeRequest() {
+        let (scanner, recorder) = makeScanner(.payment)
+        scanner.didDetectCodes(["bitcoin:\(Self.address)?amount=1&r=https%3A%2F%2Fmerchant.invalid%2Fpr"])
+        if case .connecting = scanner.status { XCTFail("a foreign request is not fetched") }
+        XCTAssertTrue(isInvalid(scanner.status))
+        XCTAssertTrue(recorder.results.isEmpty)
+        XCTAssertTrue(ParsedPaymentURI.parse(paymentString: "https://merchant.invalid/pr").isWholeRequestURL)
     }
 
     /// The Send form a redirect fills reads back exactly the scanned duffs,
@@ -288,6 +341,12 @@ final class QRScannerTests: XCTestCase {
             let send = SendViewModel(contactLookup: { _ in nil })
             XCTAssertTrue(send.ingestScannedInput(input))
             XCTAssertEqual(send.dashDuffs, duffs, amount)
+
+            // Home and the lock screen open a bech32 destination's Send form
+            // through the controller's `prefill(address:amountDuffs:)`.
+            let routed = SendViewModel(contactLookup: { _ in nil })
+            routed.prefill(address: Self.platformAddress, amountDuffs: parsed.amount)
+            XCTAssertEqual(routed.dashDuffs, duffs, amount)
         }
     }
 

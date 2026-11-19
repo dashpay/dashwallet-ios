@@ -20,11 +20,7 @@ final class SendScreenViewController: DWBasePayViewController {
     /// a scanned bech32m Platform/Shielded destination opens this screen
     /// with the address (and BIP21 amount, when present) applied.
     @objc func prefill(address: String, amountDuffs: UInt64) {
-        sendViewModel.addressText = address
-        if amountDuffs > 0 {
-            sendViewModel.unit = .dash
-            sendViewModel.amountText = amountDuffs.formattedDashAmountWithoutCurrencySymbol
-        }
+        sendViewModel.prefill(address: address, amountDuffs: amountDuffs)
     }
 
     /// Scan-routing prefill from the payments landing, whose Send tab is a

@@ -188,7 +188,9 @@ static NSString *DWReversedHexString(NSData *data) {
     if (!parsed.isValidDashPaymentIntent) {
         // Not a payable dash: intent and no BIP70 request URL → reject. (Paper-wallet sweep — the old
         // WIF/BIP38 arm here — was dropped in C8 step 5; it needs an arbitrary-address UTXO FFI to return.)
-        [self failedWithError:nil title:NSLocalizedString(@"Not a valid Dash address", nil) message:nil];
+        NSString *title = parsed.hasInvalidAmount ? NSLocalizedString(@"Invalid payment amount", nil)
+                                                  : NSLocalizedString(@"Not a valid Dash address", nil);
+        [self failedWithError:nil title:title message:nil];
     }
     else if (parsed.rURL != nil) { // payment protocol over HTTP (app-side BIP70)
         __weak typeof(self) weakSelf = self;
