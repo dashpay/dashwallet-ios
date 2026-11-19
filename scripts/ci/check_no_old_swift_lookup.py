@@ -9,61 +9,68 @@ Prints `<file>:<line>: NSLocalizedString in Swift` per call and exits 1 on any.
 """
 import argparse
 import os
+import re
 import sys
 
 SCANNED_DIRS = ("DashWallet", "DashWalletTests")
-CALL = "NSLocalizedString("
+CALL = re.compile(r"NSLocalizedString\s*\(")
+OPENING = re.compile(r'(#*)("""|")')
 
 
 def code_lines(text):
-    """Yield (line number, code) with comments and string literals blanked out."""
+    """Yield (line number, code) with comments and string literals blanked out.
+
+    Handles nested comments, plain, raw (#"..."#) and multi-line literals, and
+    `\\(...)` interpolations, whose content is code again (nesting included).
+    """
     out, i, n, line = [], 0, len(text), 1
-    depth = 0          # nesting depth of /* */ comments
-    in_string = None   # '"' or '"""' while inside a string literal
+    depth = 0   # nesting depth of /* */ comments
+    stack = []  # open literals ("str", closer, escape) and interpolations ["code", open parens]
     while i < n:
         c = text[i]
+        top = stack[-1] if stack else None
         if c == "\n":
             yield line, "".join(out)
             out, line = [], line + 1
             i += 1
-            continue
-        if depth:
-            if text.startswith("/*", i):
-                depth += 1
-                i += 2
-            elif text.startswith("*/", i):
-                depth -= 1
-                i += 2
+        elif depth:
+            step = 2 if text.startswith(("/*", "*/"), i) else 1
+            depth += {"/*": 1, "*/": -1}.get(text[i:i + 2], 0)
+            i += step
+        elif top and top[0] == "str":
+            _, closer, esc = top
+            if text.startswith(esc + "(", i):
+                stack.append(["code", 0])
+                i += len(esc) + 1
+            elif text.startswith(esc, i):
+                i += len(esc) + (text[i + len(esc):i + len(esc) + 1] not in ("\n", ""))
+            elif text.startswith(closer, i):
+                stack.pop()
+                i += len(closer)
             else:
                 i += 1
-            continue
-        if in_string:
-            if c == "\\":
-                i += 2
-            elif text.startswith(in_string, i):
-                i += len(in_string)
-                in_string = None
-            else:
-                i += 1
-            continue
-        if text.startswith("//", i):
+        elif text.startswith("//", i):
             while i < n and text[i] != "\n":
                 i += 1
-            continue
-        if text.startswith("/*", i):
+        elif text.startswith("/*", i):
             depth = 1
             i += 2
-            continue
-        if text.startswith('"""', i):
-            in_string = '"""'
-            i += 3
-            continue
-        if c == '"':
-            in_string = '"'
+        elif opening := OPENING.match(text, i):
+            hashes, quotes = opening.groups()
+            stack.append(("str", quotes + hashes, "\\" + hashes))
+            i = opening.end()
+        else:
+            if top and c in "()":
+                if c == "(":
+                    top[1] += 1
+                elif top[1]:
+                    top[1] -= 1
+                else:
+                    stack.pop()
+                    i += 1
+                    continue
+            out.append(c)
             i += 1
-            continue
-        out.append(c)
-        i += 1
     yield line, "".join(out)
 
 
@@ -84,10 +91,10 @@ def main(argv=None):
     for path in swift_files(args.root):
         with open(path, encoding="utf-8", errors="replace") as f:
             text = f.read()
-        if CALL not in text:
+        if "NSLocalizedString" not in text:
             continue
         rel = os.path.relpath(path, args.root)
-        hits += ["%s:%d: NSLocalizedString in Swift" % (rel, ln) for ln, code in code_lines(text) if CALL in code]
+        hits += ["%s:%d: NSLocalizedString in Swift" % (rel, ln) for ln, code in code_lines(text) if CALL.search(code)]
     for hit in hits:
         print(hit)
     return 1 if hits else 0

@@ -59,6 +59,40 @@ class OldSwiftLookupGuardTest(unittest.TestCase):
         self.write("DashWallet/Sources/S.swift", 'let s = "NSLocalizedString("\n')
         self.assertEqual(self.run_guard().returncode, 0)
 
+    def test_a_call_inside_a_string_interpolation_counts(self):
+        self.write("DashWallet/Sources/I.swift",
+                   'let a = "x \\(NSLocalizedString("k", comment: ""))"\n'
+                   'let b = "y \\(foo(bar(NSLocalizedString("k", comment: ""))))"\n')
+        res = self.run_guard()
+        self.assertEqual(res.returncode, 1)
+        self.assertIn("I.swift:1:", res.stdout)
+        self.assertIn("I.swift:2:", res.stdout)
+
+    def test_a_call_after_a_raw_string_literal_counts(self):
+        self.write("DashWallet/Sources/R.swift",
+                   'let a = #"say "hi""#; let b = NSLocalizedString("k", comment: "")\n'
+                   'let c = ##"x "# y"##; let d = NSLocalizedString("k", comment: "")\n')
+        res = self.run_guard()
+        self.assertEqual(res.returncode, 1)
+        self.assertIn("R.swift:1:", res.stdout)
+        self.assertIn("R.swift:2:", res.stdout)
+
+    def test_the_name_inside_a_raw_string_literal_does_not_count(self):
+        self.write("DashWallet/Sources/RS.swift",
+                   'let a = #"NSLocalizedString("k", comment: "")"#\n'
+                   'let b = ##"NSLocalizedString("#"##\n')
+        res = self.run_guard()
+        self.assertEqual(res.returncode, 0, res.stdout)
+
+    def test_a_call_with_whitespace_before_the_paren_counts(self):
+        self.write("DashWallet/Sources/W.swift",
+                   'let a = NSLocalizedString ("k", comment: "")\n'
+                   'let b = NSLocalizedString\t("k", comment: "")\n')
+        res = self.run_guard()
+        self.assertEqual(res.returncode, 1)
+        self.assertIn("W.swift:1:", res.stdout)
+        self.assertIn("W.swift:2:", res.stdout)
+
     def test_objective_c_and_watch_swift_pass(self):
         self.write("DashWallet/Sources/L.m", 'NSString *s = NSLocalizedString(@"k", nil);\n')
         self.write("WatchApp Extension/W.swift", 'let w = NSLocalizedString("k", comment: "")\n')
