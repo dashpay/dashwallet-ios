@@ -87,6 +87,7 @@ class KeptFilesDoNotNeedRemovedToolsTests(unittest.TestCase):
                         offenders.append(os.path.relpath(os.path.join(root, name), REPO_ROOT))
         self.assertEqual(offenders, [])
 
+    @unittest.skipUnless(os.path.exists(T20), "the feature's planning drafts are not in this checkout")
     def test_t20_lists_catalog_project(self):
         with open(T20, encoding="utf-8") as f:
             text = f.read()

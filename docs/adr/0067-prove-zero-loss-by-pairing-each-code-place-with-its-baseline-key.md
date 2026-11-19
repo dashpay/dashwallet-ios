@@ -35,7 +35,7 @@ How it works:
 - **Plural rules per locale:** Foundation picks plural rules by the formatting locale, and `String.localizedStringWithFormat` uses `Locale.current` (probe 2026-11-18), so the formatter passes each locale explicitly (`String(format:locale:arguments:)`) or runs once per locale with that locale as the process locale; the pilot proves which works. A self-test guards it: for `uk`, a counted phrase must format differently for 2 and for 5, else the check fails as misconfigured.
 - **Key set (AC-06):** the Catalog's keys equal the Baseline's keys, except that each Moved key replaces its Baseline key; Not-for-translation text is never a key. A missing Baseline key fails the check whether or not it had translations.
 - **Watch files (AC-15):** every `WatchApp/<lang>.lproj/Interface.strings` is byte-identical to the Baseline commit.
-- **Output:** per-locale counts (places with a Baseline translation, places whose current key resolves to the same wording) and, on failure, file, line, current key, Baseline key and locale. Exact report format and exit codes: `contracts/cli.md` (ADR-0064).
+- **Output:** per-locale counts (places with a Baseline translation, places whose current key resolves to the same wording) and, on failure, file, line, current key, Baseline key and locale. Exact report format and exit codes: `scripts/localization/ZERO_LOSS_CHECK.md` (ADR-0064).
 
 ## Consequences
 
