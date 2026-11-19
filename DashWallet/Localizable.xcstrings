@@ -19869,7 +19869,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ で %d の加盟店"
+            "value" : "%2$@ で %1$d の加盟店"
           }
         },
         "ko" : {
@@ -20184,13 +20184,13 @@
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%@ içinde %d tüccarlar"
+                  "value" : "%2$@ içinde %1$d tüccarlar"
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%@ içinde %d satıcılar"
+                  "value" : "%2$@ içinde %1$d satıcılar"
                 }
               }
             }
