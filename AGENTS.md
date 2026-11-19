@@ -188,4 +188,4 @@ Check first rather than trusting this list — and note `file` reports pure-ASCI
 head -c 4 WatchApp/de.lproj/Interface.strings | xxd   # fffe ... = UTF-16LE BOM
 ```
 
-Watch and App Store texts still sync through Transifex (`tx push -s` / `tx pull`, scoped to those resources). Keep each file in whatever encoding it already has. `./scripts/convert_strings_to_utf8.sh` is a leftover of the `.lproj` routine; check its current scope before running it, and never run a bare `find . -name '*.strings'` rewrite — it would also touch the UTF-16LE WatchApp catalogs and anything under `Pods/`.
+Watch and App Store texts still sync through Transifex (`tx push -s` / `tx pull`, scoped to those resources). Keep each file in whatever encoding it already has. `./scripts/convert_strings_to_utf8.sh` checks only `DashWallet/Localizable.xcstrings`: it strips a UTF-8 BOM and refuses UTF-16. Never run a bare `find . -name '*.strings'` rewrite — it would also touch the UTF-16LE WatchApp catalogs and anything under `Pods/`.

@@ -58,6 +58,7 @@ OBJC_EXTS = (".m", ".mm")
 IB_EXTS = (".xib", ".storyboard")
 
 BASELINE_PATH = os.path.join("scripts", "a11y_baseline.json")
+CATALOG_PATH = "DashWallet/Localizable.xcstrings"
 
 # Apple's own SwiftUI Font text styles. Redeclaring any of these in an
 # app-module `extension Font` silently shadows the scaling system font.
@@ -69,7 +70,7 @@ SYSTEM_FONT_STYLES = {
 # Things that make a SwiftUI view announce itself without an explicit label.
 SPEAKS_FOR_ITSELF = (
     "Text(", "Label(", "TextField(", "SecureField(", "Link(",
-    "LocalizedStringKey", "NSLocalizedString", "verbatim:",
+    "LocalizedStringKey", "NSLocalizedString", "String(localized:", "verbatim:",
 )
 
 ACCESSIBILITY_ESCAPES = (
@@ -163,7 +164,7 @@ RULES: Dict[str, Rule] = {
         Rule("A11Y003", "P1", "Icon-only UIButton with no label",
              "Set .accessibilityLabel, or give the button a title."),
         Rule("A11Y004", "P1", "Icon-only SwiftUI Button with no label",
-             "Add .accessibilityLabel(Text(NSLocalizedString(...)))."),
+             "Add .accessibilityLabel(Text(String(localized: ...)))."),
         Rule("A11Y005", "P1", "Toggle with an empty label",
              "Give the Toggle a label, or set .accessibilityLabel on it."),
         Rule("A11Y006", "P1", "Custom back button replaces the labeled system one",
@@ -173,9 +174,10 @@ RULES: Dict[str, Rule] = {
         Rule("A11Y008", "P0", "extension Font shadows an Apple text style",
              "Rename the token; a shadowed style silently stops scaling."),
         Rule("A11Y009", "P1", "accessibilityLabel is not localized",
-             "Wrap the string in NSLocalizedString."),
-        Rule("A11Y010", "P1", "accessibilityLabel key missing from en.lproj",
-             "Add the key to DashWallet/en.lproj/Localizable.strings."),
+             "Wrap the string in String(localized:) (NSLocalizedString in Objective-C)."),
+        Rule("A11Y010", "P1", "accessibilityLabel key missing from the String Catalog",
+             "Build the app (its Sync String Catalog phase adds the key) and commit "
+             "DashWallet/Localizable.xcstrings."),
         Rule("A11Y011", "P1", "Image-only control in a xib/storyboard with no label",
              "Add an <accessibility> node with a label in Interface Builder."),
         Rule("A11Y012", "P1", "Tap gesture on a view with no accessibility",
@@ -731,15 +733,82 @@ def rule_fixed_font_size(code: str, original: str, path: str,
 # Rules — localization of the labels that do exist
 # --------------------------------------------------------------------------
 
-def load_en_strings(repo_root: str) -> Set[str]:
-    keys: Set[str] = set()
-    for rel in ("DashWallet/en.lproj/Localizable.strings",
-                "DashWallet/Base.lproj/Localizable.strings"):
-        content = read(repo_root, rel)
-        for match in re.finditer(r'^\s*"((?:[^"\\]|\\.)*)"\s*=', content,
-                                 re.MULTILINE):
-            keys.add(match.group(1))
-    return keys
+def load_en_strings(repo_root: str) -> Optional[Set[str]]:
+    """The String Catalog's keys (its source language is English); None without a Catalog."""
+    path = os.path.join(repo_root, CATALOG_PATH)
+    if not os.path.isfile(path):
+        return None
+    with open(path, "r", encoding="utf-8") as handle:
+        return set(json.load(handle).get("strings", {}))
+
+
+SWIFT_ESCAPES = {"n": "\n", "t": "\t", "r": "\r", "0": "\0",
+                 '"': '"', "'": "'", "\\": "\\"}
+
+# A format code the compiler writes for an interpolation (%@, %lld, %1$@, %.2f …).
+FORMAT_CODE = r"%(?:\d+\$)?[-+ #0]*\d*(?:\.\d+)?(?:hh|h|ll|l|q|z|t|j|L)?[@dDiuUxXoOfFeEgGaAcCsSp]"
+
+LOCALIZED_CALL = re.compile(
+    r'(?:\bNSLocalizedString\s*\(|\bString\s*\(\s*localized\s*:)\s*(?=")')
+
+
+def _swift_literal(text: str, quote: int) -> Optional[Tuple[List[Optional[str]], int]]:
+    """Read the Swift string literal opening at text[quote].
+
+    Returns its parts — unescaped text, or None for each \\( … ) interpolation —
+    and the offset after the closing quote. None for a multi-line literal or one
+    that does not close.
+    """
+    if text.startswith('"""', quote):
+        return None
+    parts: List[Optional[str]] = []
+    chunk: List[str] = []
+    i, n = quote + 1, len(text)
+    while i < n:
+        ch = text[i]
+        if ch == '"':
+            parts.append("".join(chunk))
+            return parts, i + 1
+        if ch == "\n":
+            return None
+        if ch != "\\" or i + 1 >= n:
+            chunk.append(ch)
+            i += 1
+            continue
+        esc = text[i + 1]
+        if esc == "(":
+            parts.append("".join(chunk))
+            chunk = []
+            parts.append(None)
+            depth, i = 1, i + 2
+            while i < n and depth:
+                if text[i] == '"':
+                    inner = _swift_literal(text, i)
+                    if inner is None:
+                        return None
+                    i = inner[1]
+                    continue
+                depth += {"(": 1, ")": -1}.get(text[i], 0)
+                i += 1
+            continue
+        if esc == "u":
+            match = re.match(r"u\{([0-9A-Fa-f]{1,8})\}", text[i + 1:])
+            if match:
+                chunk.append(chr(int(match.group(1), 16)))
+                i += 1 + match.end()
+                continue
+        chunk.append(SWIFT_ESCAPES.get(esc, esc))
+        i += 2
+    return None
+
+
+def _key_in_catalog(parts: List[Optional[str]], keys: Set[str]) -> bool:
+    """An interpolated key is in the Catalog under its format codes ("Reconnect %@")."""
+    if None not in parts:
+        return "".join(p for p in parts if p is not None) in keys
+    pattern = re.compile("".join(
+        FORMAT_CODE if p is None else re.escape(p.replace("%", "%%")) for p in parts))
+    return any(pattern.fullmatch(key) for key in keys)
 
 
 def rule_label_localization(original: str, path: str, en_keys: Set[str],
@@ -752,13 +821,16 @@ def rule_label_localization(original: str, path: str, en_keys: Set[str],
             continue
         args = original[open_paren:close]
         line_no = line_of(original, match.start())
-        if "NSLocalizedString" in args or "LocalizedStringKey" in args:
-            key = re.search(r'NSLocalizedString\s*\(\s*"((?:[^"\\]|\\.)*)"', args)
-            if key and en_keys and key.group(1) not in en_keys:
+        calls = list(LOCALIZED_CALL.finditer(args))
+        if calls or "LocalizedStringKey" in args:
+            for call in calls:
+                literal = _swift_literal(args, call.end())
+                if literal is None or not en_keys or _key_in_catalog(literal[0], en_keys):
+                    continue
+                key = args[call.end() + 1:literal[1] - 1]
                 add(findings, original, "A11Y010", path, line_no,
                     line_text(original, line_no),
-                    'key "{}" is not in en.lproj/Localizable.strings — ships '
-                    "untranslated".format(key.group(1)))
+                    'key "{}" is not in {} — ships untranslated'.format(key, CATALOG_PATH))
             continue
         if "verbatim:" in args:
             continue  # deliberate, e.g. a currency ticker
@@ -815,12 +887,17 @@ def rule_interface_builder(content: str, path: str,
 def analyze(repo_root: str, roots: Sequence[str],
             enabled: Optional[Set[str]]) -> List[Finding]:
     findings: List[Finding] = []
-    en_keys = load_en_strings(repo_root)
 
     def on(rule_id: str) -> bool:
         if rule_id in CONFIG.disabled_rules:
             return False
         return enabled is None or rule_id in enabled
+
+    en_keys = load_en_strings(repo_root)
+    if en_keys is None and on("A11Y010"):
+        sys.stderr.write("error: {} not found under {}; A11Y010 resolves label keys "
+                         "from it\n".format(CATALOG_PATH, repo_root))
+        sys.exit(2)
 
     for rel in iter_files(repo_root, roots, (SWIFT_EXT,) + OBJC_EXTS):
         if CONFIG.excluded(rel):
@@ -847,7 +924,7 @@ def analyze(repo_root: str, roots: Sequence[str],
             if on("A11Y007"):
                 rule_fixed_font_size(code, original, rel, findings)
         if on("A11Y009") or on("A11Y010"):
-            rule_label_localization(original, rel, en_keys, findings)
+            rule_label_localization(original, rel, en_keys or set(), findings)
 
     if on("A11Y011"):
         for rel in iter_files(repo_root, roots, IB_EXTS):

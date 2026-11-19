@@ -40,7 +40,7 @@ scripts/a11y_audit.py --path "DashWallet/Sources/UI/Payments"
 | A11Y007 | P2 | `.system(size:)` with no `relativeTo:` — ignores Dynamic Type |
 | A11Y008 | P0 | `extension Font` shadowing an Apple text style |
 | A11Y009 | P1 | `accessibilityLabel` with a bare, unlocalized string |
-| A11Y010 | P1 | `accessibilityLabel` key missing from `en.lproj` |
+| A11Y010 | P1 | `accessibilityLabel` key missing from `DashWallet/Localizable.xcstrings` |
 | A11Y011 | P1 | Image-only control in a xib/storyboard with no label |
 | A11Y012 | P1 | `.onTapGesture` on a view with no accessibility treatment |
 
