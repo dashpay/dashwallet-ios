@@ -33,7 +33,7 @@ ADR-0068 adds a phase that calls `xcstringstool sync <Catalog> --stringsdata <th
 What the build does, in addition to ADR-0068's settings:
 - The "Sync String Catalog" run-script phase on `dashpay` runs after compilation: it passes the target's compiler `.stringsdata` and the `.stringsdata` of `xcstringstool extract --legacy-localizable-strings` over the target's Swift sources (`<target>.SwiftFileList`, whose paths escape spaces as `\ `) and Objective-C sources to `xcstringstool sync`, then re-writes the Catalog with every object's keys in `localizedStandardCompare` order under one pinned locale, two-space indent, `" : "`, empty object as `{\n\n<indent>}`, no trailing newline.
 - `XCSTRINGS_LANGUAGES_TO_COMPILE` lists the 22 shipped locales (`bg cs de el en es fr id it ja ko nl pl pt ru sk th tr uk vi zh-Hans zh-Hant-TW`), so the bundle holds the same `Localizable` locales as today; the Catalog keeps all 43.
-- No translatable literal stays only in `#if DEBUG` / `#Preview` code (T11 makes them verbatim).
+- No new translatable literal stays only in `#if DEBUG` / `#Preview` code; such texts are written verbatim. A Baseline lookup there keeps its lookup: its key is not new and has translations, so the Xcode app keeps it too (one today: `"Amount too low"` in the `TransferAmountView` preview).
 - Only a Debug build syncs; the phase skips itself in every other configuration (Release, TestFlight, TestNet), which compiles the Catalog as committed. Added after T19: a Release build does not compile `#if DEBUG` code, so its sync marked `"Amount too low"` (looked up only in a `#Preview`) stale and the Catalog depended on the configuration (owner decision 2026-11-19).
 
 ## Consequences
