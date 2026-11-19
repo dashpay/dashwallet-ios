@@ -188,15 +188,17 @@ def takes_wrong_type(text, args):
     return False
 
 
+# format.swift's inferArgs pattern: no space flag ("100% sure" is prose), no %#@name@.
+_SWIFT_CODE = re.compile(r"%(?:(\d+)\$)?[-+0#']*(?:\d+|\*)?(?:\.\d+)?(?:hh|h|ll|l|q|z|t|j|L)?([@dDiuUfFeEgGxXoOcCsSp])")
+
+
 def sample_args(text):
     """The sample arguments format.swift infers from an English text: one distinct value per position."""
     by_position, sequential = {}, 0
-    for m in _CODE.finditer(text.replace("%%", "")):
-        if m.group(2):
-            continue
+    for m in _SWIFT_CODE.finditer(text):
         sequential += 1
         position = int(m.group(1)) if m.group(1) else sequential
-        code = m.group(3)
+        code = m.group(2)
         by_position[position] = ("‹a%d›" % position if code in "@sS"
                                  else 1000 + position + 0.5 if code in "fFeEgG" else 1000 + position)
     return [by_position.get(p, "‹a%d›" % p) for p in range(1, max(by_position, default=0) + 1)]
@@ -263,8 +265,8 @@ def compare_wording(repo, rev, pairs, base_catalog, locales):
     at = 0
     for b, c, tag, locale, spec in jobs:
         n = len(COUNTS) if spec is not None else 1
-        args = base_reqs[at][2]
-        if args is None:  # inferred by the formatter, which reports none when it crashed
+        args = base_out[at]["args"]
+        if args is None:  # the formatter crashed before it could report the arguments it inferred
             english = leaf_values(base_strings[b]["localizations"].get("en", {}))
             args = sample_args(english[0] if english else b)
         defect = defective_translation(base_strings[b]["localizations"][locale], args)
