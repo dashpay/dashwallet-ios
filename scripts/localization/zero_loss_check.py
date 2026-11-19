@@ -126,8 +126,12 @@ def counted_specs(repo, rev, locales):
 _CODE = re.compile(r"%(?:(\d+)\$)?(?:#@(\w+)@|[-+ 0#']*(?:\d+|\*)?(?:\.\d+)?(?:hh|h|ll|l|q|z|t|j|L)?([@dDiuUfFeEgGxXoOcCsSp]))")
 
 
-def counted_args(spec, count):
-    """Sample arguments of a counted phrase: the count at every plural position, a distinct value elsewhere."""
+def counted_samples(spec):
+    """One argument list per count of COUNTS, in order, for a counted phrase.
+
+    Plural position j (0-based, in argument order) of sample i carries COUNTS[(i + j) % len(COUNTS)], so
+    every position meets every count and the positions of one sample differ; the other positions keep a
+    distinct value."""
     fmt_key = "NSStringLocalizedFormatKey"
     plural_at, types = {}, {}
     sequential = 0
@@ -151,11 +155,19 @@ def counted_args(spec, count):
                 if not m.group(2):
                     types.setdefault(position, m.group(3))
     last = max(list(plural_at.values()) + list(types), default=1)
+    plural_positions = sorted(plural_at.values())
+    samples = []
+    for i in range(len(COUNTS)):
+        samples.append(_sample(last, types, plural_positions, i))
+    return samples
+
+
+def _sample(last, types, plural_positions, i):
     args = []
     for position in range(1, last + 1):
         code = types.get(position)
-        if position in plural_at.values():
-            args.append(count)
+        if position in plural_positions:
+            args.append(COUNTS[(i + plural_positions.index(position)) % len(COUNTS)])
         elif code in ("@", "s", "S", None):
             args.append("‹a%d›" % position)
         elif code in "fFeEgG":
@@ -253,8 +265,8 @@ def compare_wording(repo, rev, pairs, base_catalog, locales):
 
         base_reqs, cur_keys = [], []
         for b, c, tag, locale, spec in jobs:
-            for n in (COUNTS if spec is not None else (None,)):
-                base_reqs.append((locale, b, None if n is None else counted_args(spec, n)))
+            for a in (counted_samples(spec) if spec is not None else (None,)):
+                base_reqs.append((locale, b, a))
                 cur_keys.append(c)
         base_out = foundation_format.format_texts(os.path.join(base_root, baseline_lists.LISTS_DIR), base_reqs)
         # the current side is formatted with the very arguments the Baseline side used
