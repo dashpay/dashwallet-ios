@@ -8635,7 +8635,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			buildPhases = (
 				28DD713340F825108DBF3E6C /* [CP] Check Pods Manifest.lock */,
 				2A4431D722D6391F009BAF7F /* Run Script - clang-format */,
-				FB0ACB9A1F9A99E400F4AB52 /* Run Script - bartycrouch */,
 				75D5F3BA191EC270004AB296 /* Sources */,
 				75D5F3BB191EC270004AB296 /* Frameworks */,
 				75D5F3BC191EC270004AB296 /* Resources */,
@@ -8749,8 +8748,8 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			buildPhases = (
 				1F064526D281DEF5E5CC2729 /* [CP] Check Pods Manifest.lock */,
 				C9D2C6912A320AA000D15901 /* Run Script - clang-format */,
-				C9D2C6922A320AA000D15901 /* Run Script - bartycrouch */,
 				C9D2C6932A320AA000D15901 /* Sources */,
+				5C0A1A7E2F00000000000001 /* Sync String Catalog */,
 				C9D2C8F52A320AA000D15901 /* Frameworks */,
 				C9D2C90A2A320AA000D15901 /* Resources */,
 				525BB766C4C0A1764D4BD70A /* [CP] Copy Pods Resources */,
@@ -9268,6 +9267,25 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-dashpay/Pods-dashpay-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+		5C0A1A7E2F00000000000001 /* Sync String Catalog */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Sync String Catalog";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Keeps DashWallet/Localizable.xcstrings in step with the code the way the Xcode app does\n# (ADR-0005, ADR-0008). A no-op while the Catalog does not exist.\n/usr/bin/python3 \"$SRCROOT/scripts/localization/sync_catalog.py\"\n";
+		};
 		622C18F9EEFCADF772D1DBB5 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -9362,34 +9380,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "#!/bin/bash\n\necho \"Reformatting code with clang-format\"\n\nfunction formatObjCFiles() {\n    find \"$1\" -name '*.h' -print0 | xargs -0 clang-format -i -style=file\n    find \"$1\" -name '*.m' -print0 | xargs -0 clang-format -i -style=file\n    find \"$1\" -name '*.mm' -print0 | xargs -0 clang-format -i -style=file\n}\n\nif which clang-format >/dev/null; then\n    for SUBDIR in DashWallet/Sources\n    do\n        formatObjCFiles $SUBDIR\n    done\n    \n    formatObjCFiles TodayExtension\n    formatObjCFiles Shared/Sources\nelse\n    echo \"warning: clang-format not installed, install it by running `brew install clang-format`\"\nfi\n";
-		};
-		C9D2C6922A320AA000D15901 /* Run Script - bartycrouch */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Run Script - bartycrouch";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "if which bartycrouch > /dev/null; then\n    BTCRCH=`which bartycrouch`\n    env -i $BTCRCH update -x\n    env -i $BTCRCH lint -x\nelse\n    echo \"warning: BartyCrouch not installed, download it from https://github.com/Flinesoft/BartyCrouch\"\nfi\n";
-		};
-		FB0ACB9A1F9A99E400F4AB52 /* Run Script - bartycrouch */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Run Script - bartycrouch";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin\"\n\nif which bartycrouch > /dev/null; then\n    bartycrouch update -x\n    bartycrouch lint -x\nelse\n    echo \"warning: BartyCrouch not installed, download it from https://github.com/FlineDev/BartyCrouch\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -11647,6 +11637,32 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		75D5F3F4191EC270004AB296 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				XCSTRINGS_LANGUAGES_TO_COMPILE = (
+					bg,
+					cs,
+					de,
+					el,
+					en,
+					es,
+					fr,
+					id,
+					it,
+					ja,
+					ko,
+					nl,
+					pl,
+					pt,
+					ru,
+					sk,
+					th,
+					tr,
+					uk,
+					vi,
+					"zh-Hans",
+					"zh-Hant-TW",
+				);
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
@@ -11715,6 +11731,32 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		75D5F3F5191EC270004AB296 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				XCSTRINGS_LANGUAGES_TO_COMPILE = (
+					bg,
+					cs,
+					de,
+					el,
+					en,
+					es,
+					fr,
+					id,
+					it,
+					ja,
+					ko,
+					nl,
+					pl,
+					pt,
+					ru,
+					sk,
+					th,
+					tr,
+					uk,
+					vi,
+					"zh-Hans",
+					"zh-Hant-TW",
+				);
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
@@ -12727,6 +12769,32 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		CEE253D21E26A9BC00A25B15 /* Testflight */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				XCSTRINGS_LANGUAGES_TO_COMPILE = (
+					bg,
+					cs,
+					de,
+					el,
+					en,
+					es,
+					fr,
+					id,
+					it,
+					ja,
+					ko,
+					nl,
+					pl,
+					pt,
+					ru,
+					sk,
+					th,
+					tr,
+					uk,
+					vi,
+					"zh-Hans",
+					"zh-Hant-TW",
+				);
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
@@ -13028,6 +13096,32 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		FB9CC19A1F8511620079309F /* Testnet */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				XCSTRINGS_LANGUAGES_TO_COMPILE = (
+					bg,
+					cs,
+					de,
+					el,
+					en,
+					es,
+					fr,
+					id,
+					it,
+					ja,
+					ko,
+					nl,
+					pl,
+					pt,
+					ru,
+					sk,
+					th,
+					tr,
+					uk,
+					vi,
+					"zh-Hans",
+					"zh-Hant-TW",
+				);
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
