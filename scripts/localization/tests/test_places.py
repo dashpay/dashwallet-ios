@@ -167,6 +167,12 @@ class CurrentPlacesTests(PlacesCase):
         got = places.current_places(self.repo, derived)
         self.assertNotIn("DashWalletTests/T.swift", [p.file for p in got])
 
+    def test_leftover_data_of_a_deleted_swift_file_is_not_a_place(self):
+        derived = self.stringsdata("same")
+        self.write_stringsdata(derived, "Gone.stringsdata", "DashWallet/Sources/Gone.swift", [("Gone", 2, 5)])
+        got = places.current_places(self.repo, derived)
+        self.assertNotIn("DashWallet/Sources/Gone.swift", [p.file for p in got])
+
 
 FAKE_ROOT = "/Users/ci/baseline-checkout"
 INTERP = "DashWallet/Sources/Interp.swift"
@@ -235,6 +241,16 @@ class BaselineStringsdataCase(PlacesCase):
             json.dump(doc, f)
         got = places.baseline_places(self.repo, self.rev, baseline_stringsdata=out, baseline_root=root)
         self.assertEqual([p.key for p in got if p.file == INTERP], ["%@ DASH"])
+
+    def test_data_of_a_swift_file_missing_from_the_baseline_commit_is_not_a_place(self):
+        data = self.baseline_data()
+        gone = "DashWallet/Sources/Gone.swift"
+        doc = {"source": FAKE_ROOT + "/" + gone, "version": 1, "tables": {"Localizable": [
+            {"key": "%@ DASH", "location": {"startingColumn": 5, "startingLine": 2}}]}}
+        with open(os.path.join(data, "Gone.stringsdata"), "w") as f:
+            json.dump(doc, f)
+        got = places.baseline_places(self.repo, self.rev, baseline_stringsdata=data)
+        self.assertNotIn(gone, [p.file for p in got])
 
     def test_pairs_with_the_current_side_for_a_file_with_an_interpolation_on_both(self):
         derived = self.stringsdata("same")
@@ -311,6 +327,7 @@ class PairTests(PlacesCase):
         self.assertEqual(mismatched, [("DashWallet/Sources/Gone.swift", 1, 0)])
 
     def test_file_only_now_is_named_with_zero_at_baseline(self):
+        self.write("DashWallet/Sources/New.swift", "import SwiftUI\n")
         derived = self.stringsdata("same")
         self.write_stringsdata(derived, "New.stringsdata", "DashWallet/Sources/New.swift",
                                [("Send", 1, 1), ("Cancel", 2, 1)])

@@ -117,7 +117,9 @@ def baseline_places(repo, rev, baseline_stringsdata=None, baseline_root=None):
         keys = _baseline_keys(tmp)
         swift_files = _app_files(tmp, (".swift",))
         if baseline_stringsdata:
-            swift = _baseline_compiler_places(baseline_stringsdata, baseline_root)
+            present = set(swift_files)
+            swift = [p for p in _baseline_compiler_places(baseline_stringsdata, baseline_root)
+                     if p.file in present]
             swift += _extract(tmp, swift_files, ["--legacy-localizable-strings"])
             swift = _dedupe(swift)
         else:
@@ -139,11 +141,13 @@ def _stringsdata_files(stringsdata_dir):
 def current_places(repo, stringsdata_dir):
     files = _stringsdata_files(stringsdata_dir)
     roots = sorted({os.path.realpath(repo), os.path.abspath(repo)})
-    app_prefix = APP_DIR + os.sep
-    # Swift: compiler places (deduped on file/line/column/key across targets;
-    # a #Preview reports all its places at one position, so the key is part of
-    # the identity), then NSLocalizedString calls the compiler does not report:
+    swift_files = _app_files(repo, (".swift",))
+    # Swift: compiler places of the working tree's Swift files only, since an incremental
+    # build keeps the data of a deleted or renamed file (deduped on file/line/column/key
+    # across targets; a #Preview reports all its places at one position, so the key is
+    # part of the identity), then NSLocalizedString calls the compiler does not report:
     # a legacy place is dropped when the compiler has a place at its position.
+    present = set(swift_files)
     compiled = {}
     sourced = set()
     for path in files:
@@ -153,16 +157,16 @@ def current_places(repo, stringsdata_dir):
             if src.startswith(root.rstrip(os.sep) + os.sep):
                 sourced.add(src[len(root.rstrip(os.sep)) + 1:])
         for p in _read_stringsdata(path, roots):
-            if p.file.startswith(app_prefix) and p.file.endswith(".swift"):
+            if p.file in present:
                 compiled.setdefault(p, p)
     compiled_at = {(p.file, p.line, p.column) for p in compiled}
     legacy = {}
-    for p in _extract(repo, _app_files(repo, (".swift",)), ["--legacy-localizable-strings"]):
+    for p in _extract(repo, swift_files, ["--legacy-localizable-strings"]):
         if (p.file, p.line, p.column) not in compiled_at:
             legacy.setdefault(p, p)
     # Swift files the compiler data has no source entry for (e.g. not built by the
     # dashpay scheme): modern extraction.
-    uncovered = [f for f in _app_files(repo, (".swift",)) if f not in sourced]
+    uncovered = [f for f in swift_files if f not in sourced]
     modern = _extract(repo, uncovered, ["--modern-localizable-strings"])
     swift = _dedupe(list(compiled) + list(legacy) + modern)
     objc = _extract(repo, _app_files(repo, (".m", ".mm", ".h")), ["--legacy-localizable-strings"])
