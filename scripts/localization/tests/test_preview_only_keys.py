@@ -13,7 +13,12 @@ import unittest
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 SOURCES = os.path.join(REPO, "DashWallet", "Sources")
 CATALOG = os.path.join(REPO, "DashWallet", "Localizable.xcstrings")
-LOOKUP = re.compile(r'String\(\s*localized:\s*"((?:[^"\\]|\\.)*)"')
+# `String(localized:)` and the SwiftUI initializers and modifiers whose first literal is a
+# `LocalizedStringKey`; `Text(verbatim:)` and non-literal arguments are not lookups.
+LOOKUP = re.compile(r'(?:String\(\s*localized:\s*'
+                    r'|\b(?:Text|Button|Label|Toggle|Section|TextField|SecureField|Link|Picker|Menu'
+                    r'|LocalizedStringKey|navigationTitle)\(\s*)'
+                    r'"((?:[^"\\]|\\.)*)"')
 
 
 def lookups_by_region(text):
@@ -67,6 +72,15 @@ class PreviewOnlyKeysTests(unittest.TestCase):
         debug, other = lookups_by_region(source)
         self.assertEqual(debug, {"Debug only", "Preview only"})
         self.assertEqual(other, {"Shown", "After"})
+
+    def test_the_scanner_sees_swiftui_literal_keys(self):
+        source = ('Text("Shown text")\n'
+                  '#Preview("x") {\n    Text("Preview text")\n    Button("Preview button") {}\n'
+                  '    Label("Preview label", systemImage: "x")\n        .navigationTitle("Preview title")\n}\n'
+                  'Text(verbatim: "Not a key")\n')
+        debug, other = lookups_by_region(source)
+        self.assertEqual(debug, {"Preview text", "Preview button", "Preview label", "Preview title"})
+        self.assertEqual(other, {"Shown text"})
 
 
 if __name__ == "__main__":
