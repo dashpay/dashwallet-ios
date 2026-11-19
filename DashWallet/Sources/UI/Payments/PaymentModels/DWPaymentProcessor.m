@@ -77,7 +77,7 @@ static NSString *DWReversedHexString(NSData *data) {
     // case shows the amount screen (prefilled); everything else routes through the parsed URI
     // (BIP70 rURL / plain send → confirmPaymentIntent:). C8 step 4.
     if (paymentInput.paymentIntent) {
-        if ((paymentInput.source == DWPaymentInputSource_ScanQR || paymentInput.source == DWPaymentInputSource_DeepLink) && paymentInput.parsedURI.isValidDashPaymentIntent && !paymentInput.parsedURI.hasInvalidAmount) {
+        if ((paymentInput.source == DWPaymentInputSource_ScanQR || paymentInput.source == DWPaymentInputSource_DeepLink) && paymentInput.parsedURI.isValidDashPaymentIntent && !paymentInput.parsedURI.hasInvalidAmount && !paymentInput.parsedURI.requiresRequest) {
             [self requestAmountForPaymentIntent:paymentInput.paymentIntent];
         }
         else {

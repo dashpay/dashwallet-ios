@@ -318,7 +318,7 @@ final class QRScannerTests: XCTestCase {
         XCTAssertFalse(atSupply.hasInvalidAmount)
         XCTAssertFalse(ParsedPaymentURI.parse(paymentString: "dash:\(Self.address)").hasInvalidAmount)
 
-        for amount in ["21000000.00000001", "184467440737", "-1", "abc", ""] {
+        for amount in ["21000000.00000001", "184467440737", "-1", "abc", "", "1abc", "1,000", "1.2.3", "+1", " 1", "1e"] {
             for key in ["amount", "req-amount"] {
                 let code = "dash:\(Self.address)?\(key)=\(amount)"
                 let parsed = ParsedPaymentURI.parse(paymentString: code)
@@ -370,6 +370,39 @@ final class QRScannerTests: XCTestCase {
         XCTAssertFalse(delegate.amountRequested)
         XCTAssertNotNil(delegate.failure?.error)
         XCTAssertEqual(delegate.failure?.title, NSLocalizedString("Invalid payment amount", comment: ""))
+    }
+
+    /// An opened or scanned link that requires its merchant request goes to
+    /// that request first: no amount prompt, so no plain send to the
+    /// embedded address.
+    func testProcessorFetchesARequiredRequestBeforeAnyAmountPrompt() {
+        for source in [DWPaymentInputSource.deepLink, .scanQR] {
+            let delegate = ProcessorDelegate()
+            let processor = DWPaymentProcessor()
+            processor.delegate = delegate
+            let parsed = ParsedPaymentURI.parse(
+                paymentString: "dash:\(Self.address)?amount=1&req-r=https%3A%2F%2Fmerchant.invalid%2Fpr")
+            processor.processPaymentInput(DWPaymentInputBuilder().paymentInput(withParsedURI: parsed, source: source))
+            XCTAssertFalse(delegate.amountRequested)
+        }
+        let delegate = ProcessorDelegate()
+        let processor = DWPaymentProcessor()
+        processor.delegate = delegate
+        let optional = ParsedPaymentURI.parse(
+            paymentString: "dash:\(Self.address)?amount=1&r=https%3A%2F%2Fmerchant.invalid%2Fpr")
+        processor.processPaymentInput(DWPaymentInputBuilder().paymentInput(withParsedURI: optional, source: .scanQR))
+        XCTAssertTrue(delegate.amountRequested, "an optional request keeps the amount screen")
+    }
+
+    /// A Dash request the wallet would refuse to fetch does not outrank a
+    /// payable code later in the frame.
+    func testUnfetchableDashRequestDoesNotCrowdOutAPayableCode() {
+        let (scanner, recorder) = makeScanner(.payment)
+        scanner.didDetectCodes(["dash:?r=http%3A%2F%2Fmerchant.example%2Frequest", "dash:\(Self.address)?amount=1.5"])
+        guard case .payment(let input) = recorder.results.first else {
+            return XCTFail("the payable code is handed over: \(scanner.status)")
+        }
+        XCTAssertEqual(input.parsedURI?.address, Self.address)
     }
 
     /// A cleartext whole URL is not fetched as a Dash request: nothing

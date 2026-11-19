@@ -207,7 +207,9 @@ struct BIP70URI {
     /// (`DSPaymentRequest.m:146` `NSRoundUp` parity). nil for an unparseable or negative amount,
     /// and for one above the coin supply, before it is narrowed.
     private static func duffs(fromDecimalDash value: String) -> UInt64? {
-        guard !value.isEmpty, let dash = Decimal(string: value), dash >= 0 else { return nil }
+        // The whole token, not a numeric prefix: "1abc" or "1,000" is no amount.
+        guard value.range(of: #"^([0-9]+\.?[0-9]*|\.[0-9]+)([eE][+-]?[0-9]+)?$"#, options: .regularExpression) != nil,
+              let dash = Decimal(string: value, locale: Locale(identifier: "en_US_POSIX")) else { return nil }
         let duffs = NSDecimalNumber(decimal: dash * Decimal(100_000_000))
             .rounding(accordingToBehavior: roundUpToDuff)
         guard duffs.compare(NSDecimalNumber(value: kMaxDashSupplyDuffs)) != .orderedDescending else { return nil }
