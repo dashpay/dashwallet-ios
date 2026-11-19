@@ -30,6 +30,8 @@ final class ExternalSendFlow: ObservableObject {
         case selectSource
         case confirm
         case sendFailed(SendFailedContent)
+        /// The money is held in an asset lock; `lockHeldViewModel` draws it.
+        case lockHeld
         case sent(SendSuccessView)
     }
 
@@ -56,6 +58,7 @@ final class ExternalSendFlow: ObservableObject {
     @Published private(set) var sendViewModel: SendAmountViewModel?
     @Published private(set) var confirmViewModel: ConfirmViewModel?
     @Published private(set) var selectSourceViewModel: SelectSourceViewModel?
+    @Published private(set) var lockHeldViewModel: SendLockHeldViewModel?
 
     var onFinish: ((Finish) -> Void)?
     var onRequestFailed: ((RequestFailure) -> Void)?
@@ -72,6 +75,7 @@ final class ExternalSendFlow: ObservableObject {
     private let clipboard: ClipboardReading
     private let initialRestoreSync: AnyPublisher<Bool, Never>
     private let initialRestoreSyncNow: () -> Bool
+    private let lockResumer: HeldAssetLockResuming
     private let router = SendOutcomeRouter()
     private var pinned: SendSource?
     /// A scan or link is being opened, from `open(_:)` until it reached a screen the holder can act on or the flow
@@ -106,7 +110,8 @@ final class ExternalSendFlow: ObservableObject {
         paymentRequests: PaymentRequestFetching? = nil,
         clipboard: ClipboardReading = LiveClipboard(),
         initialRestoreSync: AnyPublisher<Bool, Never> = WalletSendService.coreSpendBlockedByInitialRestoreSync,
-        initialRestoreSyncNow: @escaping () -> Bool = { WalletSendService.isCoreSpendBlockedByInitialRestoreSync }
+        initialRestoreSyncNow: @escaping () -> Bool = { WalletSendService.isCoreSpendBlockedByInitialRestoreSync },
+        lockResumer: HeldAssetLockResuming? = nil
     ) {
         self.network = network
         self.identityLookup = identityLookup
@@ -120,6 +125,7 @@ final class ExternalSendFlow: ObservableObject {
         self.clipboard = clipboard
         self.initialRestoreSync = initialRestoreSync
         self.initialRestoreSyncNow = initialRestoreSyncNow
+        self.lockResumer = lockResumer ?? LiveHeldAssetLockResumer()
     }
 
     // MARK: - Entry points
@@ -218,6 +224,16 @@ final class ExternalSendFlow: ObservableObject {
         guard !isRefetchingRequest else { return }
         isRefetchingRequest = true
         refetchTask = Task { await refetchRequest(url: url, callbackScheme: destination.callbackScheme) }
+    }
+
+    /// Leaves the held lock for the transaction details' Rebroadcast. Allowed while Finish runs, because the resume can
+    /// wait for the lock's proof without a deadline: the resume is not cancelled and goes on, and the result it
+    /// reports after the flow ended is dropped (`finish` runs once).
+    func closeFromLockHeld() {
+        if lockHeldViewModel?.isFinishing == true {
+            DWLogger.log("External send: left the held-lock sheet while Finish runs")
+        }
+        finish(.closed)
     }
 
     func closeFromSendFailed() {
@@ -397,6 +413,21 @@ final class ExternalSendFlow: ObservableObject {
             finish(.toast(title: title, message: message))
         case .sendFailed(let content):
             step = .sendFailed(content)
+        case .lockHeld(let lock):
+            let viewModel = SendLockHeldViewModel(lock: lock, resumer: lockResumer)
+            viewModel.onFinished = { [weak self] result in self?.finishedLockHeld(result) }
+            lockHeldViewModel = viewModel
+            step = .lockHeld
+        }
+    }
+
+    private func finishedLockHeld(_ result: SendLockHeldViewModel.Result) {
+        switch result {
+        case .completed:
+            step = .sent(.sentToast)
+            finish(.success(.sentToast, txidWire: nil, callbackURL: nil))
+        case .info(let message):
+            finish(.toast(title: "", message: message))
         }
     }
 
