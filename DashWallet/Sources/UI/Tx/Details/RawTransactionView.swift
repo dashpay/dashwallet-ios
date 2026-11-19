@@ -106,12 +106,12 @@ struct RawTransactionView: View {
             VStack(alignment: .leading, spacing: 16) {
                 overviewCard(details)
 
-                sectionHeader(String(localized: "Inputs (\(details.inputs.count))", comment: "Raw transaction inspector"))
+                sectionHeader(String(format: String(localized: "Inputs (%d)", comment: "Raw transaction inspector"), details.inputs.count))
                 ForEach(details.inputs, id: \.index) { input in
                     inputCard(input)
                 }
 
-                sectionHeader(String(localized: "Outputs (\(details.outputs.count))", comment: "Raw transaction inspector"))
+                sectionHeader(String(format: String(localized: "Outputs (%d)", comment: "Raw transaction inspector"), details.outputs.count))
                 ForEach(details.outputs, id: \.index) { output in
                     outputCard(output)
                 }
@@ -160,11 +160,11 @@ struct RawTransactionView: View {
     private func inputCard(_ input: RawTransactionDetails.Input) -> some View {
         card {
             if input.isCoinbase {
-                plainRow(label: String(localized: "Input \(input.index)", comment: "Raw transaction inspector"),
+                plainRow(label: String(format: String(localized: "Input %d", comment: "Raw transaction inspector"), input.index),
                          value: String(localized: "Coinbase (new coins)", comment: "Raw transaction inspector"))
             } else {
                 copyableRow(
-                    label: String(localized: "Input \(input.index) — outpoint", comment: "Raw transaction inspector"),
+                    label: String(format: String(localized: "Input %d — outpoint", comment: "Raw transaction inspector"), input.index),
                     value: "\(input.prevTxidDisplayHex):\(input.prevVout)",
                     monospaced: true)
             }
@@ -190,7 +190,7 @@ struct RawTransactionView: View {
 
     private func outputCard(_ output: RawTransactionDetails.Output) -> some View {
         card {
-            plainRow(label: String(localized: "Output \(output.index)", comment: "Raw transaction inspector"),
+            plainRow(label: String(format: String(localized: "Output %d", comment: "Raw transaction inspector"), output.index),
                      value: output.valueDuffs.formattedDashAmountWithoutCurrencySymbol)
             switch output.kind {
             case .standard(let address):

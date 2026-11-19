@@ -30,9 +30,9 @@ extension DWAboutModel {
             return String(localized: "Masternode list: not synced", comment: "About screen tech info")
         }
         if masternodes.targetHeight > masternodes.currentHeight {
-            return String(localized: "Masternode list: \(masternodes.currentHeight) of \(masternodes.targetHeight)", comment: "About screen tech info")
+            return String(format: String(localized: "Masternode list: %u of %u", comment: "About screen tech info"), masternodes.currentHeight, masternodes.targetHeight)
         }
-        return String(localized: "Masternode list: synced at \(masternodes.currentHeight)", comment: "About screen tech info")
+        return String(format: String(localized: "Masternode list: synced at %u", comment: "About screen tech info"), masternodes.currentHeight)
     }
 
     /// The block line of the About tech-info status, sourced from SwiftDashSDK
@@ -41,7 +41,7 @@ extension DWAboutModel {
     @objc(blockSyncLine)
     func blockSyncLine() -> String {
         let spv = SwiftDashSDKSPVCoordinator.shared
-        return String(localized: "Block #\(spv.tipHeight) of \(spv.bestPeerHeight)", comment: "")
+        return String(format: String(localized: "Block #%d of %d", comment: ""), spv.tipHeight, spv.bestPeerHeight)
     }
 
     /// The SPV connection line of the About tech-info status. Replaces the

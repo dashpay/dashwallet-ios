@@ -234,7 +234,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
                 pendingResyncConfirmHeight = nil
             }
         } message: { height in
-            Text(String(localized: "Confirming saves birth height \(height) and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. Fully close and relaunch the app to start; the in-app Restart button does not apply this reset.", comment: "SPV diagnostics"))
+            Text(String(format: String(localized: "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. Fully close and relaunch the app to start; the in-app Restart button does not apply this reset.", comment: "SPV diagnostics"), height))
         }
     }
 
@@ -893,7 +893,7 @@ extension SwiftDashSDKSPVStatusScreen {
         do {
             try manager.spvRescanFilters(walletId: wallet.walletId, fromHeight: fromHeight)
             rescanResultIsError = false
-            rescanResultMessage = String(localized: "Rescan started from height \(fromHeight) — watch the Filters row.", comment: "SPV diagnostics")
+            rescanResultMessage = String(format: String(localized: "Rescan started from height %u — watch the Filters row.", comment: "SPV diagnostics"), fromHeight)
             Self.logger.info("🛰️ SPV-STATUS :: rescan filters armed from height \(fromHeight, privacy: .public)")
         } catch {
             rescanResultIsError = true
@@ -1071,6 +1071,6 @@ extension SwiftDashSDKSPVStatusScreen {
         SPVChainResyncMarker.arm(walletId: walletId, fromHeight: height, network: network)
         Self.logger.info("🛰️ SPV-STATUS :: birth height \(previousBirth, privacy: .public) → \(height, privacy: .public), chain resync armed")
         rescanResultIsError = false
-        rescanResultMessage = String(localized: "Resync armed from height \(height). Fully close the app, then launch it again to start. The in-app Restart button does not apply this reset.", comment: "SPV diagnostics")
+        rescanResultMessage = String(format: String(localized: "Resync armed from height %u. Fully close the app, then launch it again to start. The in-app Restart button does not apply this reset.", comment: "SPV diagnostics"), height)
     }
 }

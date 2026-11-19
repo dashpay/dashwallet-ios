@@ -454,7 +454,7 @@ struct ContactsScreen: View {
 
                 if !filteredIncoming.isEmpty {
                     sectionHeader(
-                        String(localized: "Contact Requests (\(filteredIncoming.count))", comment: "DashPay Contacts"),
+                        String(format: String(localized: "Contact Requests (%d)", comment: "DashPay Contacts"), filteredIncoming.count),
                         size: 15)
                     ForEach(entries(filteredIncoming, section: .incoming)) { entry in
                         let item = entry.item

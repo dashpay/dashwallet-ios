@@ -1984,6 +1984,7 @@ DAE095D479EF3385C63F64D3 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		C0F7A1D2E3B4C5D6E7F80901 /* CountedPhrasePluralTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F7A1D2E3B4C5D6E7F80902 /* CountedPhrasePluralTests.swift */; };
 		C0F7A1D2E3B4C5D6E7F80903 /* WalletSetupErrorTextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F7A1D2E3B4C5D6E7F80904 /* WalletSetupErrorTextTests.swift */; };
 		5CA716000000000000000A01 /* PluralFidelityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CA716000000000000000A02 /* PluralFidelityTests.swift */; };
+		5CA716000000000000000A05 /* UngroupedCountTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CA716000000000000000A06 /* UngroupedCountTests.swift */; };
 		5CA716000000000000000A03 /* BaselinePluralForms.json in Resources */ = {isa = PBXBuildFile; fileRef = 5CA716000000000000000A04 /* BaselinePluralForms.json */; };
 		C406D69E0253120CCB522801 /* XCTestCase+YieldUntil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23024DB0717753438C96FF01 /* XCTestCase+YieldUntil.swift */; };
 		9D097D529CF2AF9A63A649DE /* VotingFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2ED90B9CB9B2FB3E1259FEA6 /* VotingFilterTests.swift */; };
@@ -3739,6 +3740,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		C0F7A1D2E3B4C5D6E7F80902 /* CountedPhrasePluralTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountedPhrasePluralTests.swift; sourceTree = "<group>"; };
 		C0F7A1D2E3B4C5D6E7F80904 /* WalletSetupErrorTextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletSetupErrorTextTests.swift; sourceTree = "<group>"; };
 		5CA716000000000000000A02 /* PluralFidelityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PluralFidelityTests.swift; path = Localization/PluralFidelityTests.swift; sourceTree = "<group>"; };
+		5CA716000000000000000A06 /* UngroupedCountTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = UngroupedCountTests.swift; path = Localization/UngroupedCountTests.swift; sourceTree = "<group>"; };
 		5CA716000000000000000A04 /* BaselinePluralForms.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = BaselinePluralForms.json; path = Localization/BaselinePluralForms.json; sourceTree = "<group>"; };
 		23024DB0717753438C96FF01 /* XCTestCase+YieldUntil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCTestCase+YieldUntil.swift"; sourceTree = "<group>"; };
 		2ED90B9CB9B2FB3E1259FEA6 /* VotingFilterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VotingFilterTests.swift; sourceTree = "<group>"; };
@@ -7075,6 +7077,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C0F7A1D2E3B4C5D6E7F80902 /* CountedPhrasePluralTests.swift */,
 				C0F7A1D2E3B4C5D6E7F80904 /* WalletSetupErrorTextTests.swift */,
 				5CA716000000000000000A02 /* PluralFidelityTests.swift */,
+				5CA716000000000000000A06 /* UngroupedCountTests.swift */,
 				5CA716000000000000000A04 /* BaselinePluralForms.json */,
 				23024DB0717753438C96FF01 /* XCTestCase+YieldUntil.swift */,
 				2ED90B9CB9B2FB3E1259FEA6 /* VotingFilterTests.swift */,
@@ -10206,6 +10209,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C0F7A1D2E3B4C5D6E7F80901 /* CountedPhrasePluralTests.swift in Sources */,
 				C0F7A1D2E3B4C5D6E7F80903 /* WalletSetupErrorTextTests.swift in Sources */,
 				5CA716000000000000000A01 /* PluralFidelityTests.swift in Sources */,
+				5CA716000000000000000A05 /* UngroupedCountTests.swift in Sources */,
 				C406D69E0253120CCB522801 /* XCTestCase+YieldUntil.swift in Sources */,
 				9D097D529CF2AF9A63A649DE /* VotingFilterTests.swift in Sources */,
 				F0250BFF15DAFCF2E68BDFC3 /* VoteAttemptCoordinatorTests.swift in Sources */,

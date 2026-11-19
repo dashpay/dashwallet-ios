@@ -132,7 +132,7 @@ struct NodesShortcutIcon: View {
         guard let day, let blocks else {
             return String(localized: "Nodes", comment: "Shortcut")
         }
-        var label = String(localized: "Nodes, epoch day \(day), \(blocksText(blocks)) blocks proposed this epoch", comment: "Nodes shortcut accessibility")
+        var label = String(format: String(localized: "Nodes, epoch day %d, %@ blocks proposed this epoch", comment: "Nodes shortcut accessibility"), day, blocksText(blocks))
         switch health {
         case .healthy:
             break

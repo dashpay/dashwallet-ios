@@ -7924,265 +7924,265 @@
         }
       }
     },
-    "%@ Addresses (%lld)" : {
+    "%@ Addresses (%d)" : {
       "comment" : "Wallet accounts — pool name + count",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "bg" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "et" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "fil" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "hr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "mk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "ro" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "sk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "sl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "sl_SI" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "sq" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "zh" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "zh_TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ Addresses (%2$lld)"
+            "value" : "%1$@ Addresses (%2$d)"
           }
         }
       }
@@ -92182,526 +92182,526 @@
         }
       }
     },
-    "block #%u of %u" : {
+    "block #%d of %d" : {
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "كتلة # %1$u من %2$u"
+            "value" : "كتلة # %1$d من %2$d"
           }
         },
         "bg" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "блок #%1$u от %2$u"
+            "value" : "блок #%1$d от %2$d"
           }
         },
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "block #%1$u of %2$u"
+            "value" : "block #%1$d of %2$d"
           }
         },
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "blok #%1$u z %2$u"
+            "value" : "blok #%1$d z %2$d"
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "bloknr. %1$u af %2$u"
+            "value" : "bloknr. %1$d af %2$d"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Block #%1$u von %2$u"
+            "value" : "Block #%1$d von %2$d"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "μπλόκ #%1$u από %2$u"
+            "value" : "μπλόκ #%1$d από %2$d"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "block #%1$u of %2$u"
+            "value" : "block #%1$d of %2$d"
           }
         },
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "block #%1$u of %2$u"
+            "value" : "block #%1$d of %2$d"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "bloque #%1$u de %2$u"
+            "value" : "bloque #%1$d de %2$d"
           }
         },
         "et" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "blokeeri #%1$u %2$u"
+            "value" : "blokeeri #%1$d %2$d"
           }
         },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "block #%1$u of %2$u"
+            "value" : "block #%1$d of %2$d"
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "block #%1$u of %2$u"
+            "value" : "block #%1$d of %2$d"
           }
         },
         "fil" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "block #%1$u ng %2$u"
+            "value" : "block #%1$d ng %2$d"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "bloc #%1$u de %2$u"
+            "value" : "bloc #%1$d de %2$d"
           }
         },
         "hr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "block #%1$u of %2$u"
+            "value" : "block #%1$d of %2$d"
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$u. blokk a %2$u-ból/-ből"
+            "value" : "%1$d. blokk a %2$d-ból/-ből"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "blok #%1$u dari %2$u"
+            "value" : "blok #%1$d dari %2$d"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "blocco #%1$u di %2$u"
+            "value" : "blocco #%1$d di %2$d"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ブロック #%1$u / %2$u"
+            "value" : "ブロック #%1$d / %2$d"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%2$u개중 %1$u번째 블록"
+            "value" : "%2$d개중 %1$d번째 블록"
           }
         },
         "mk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "block #%1$u of %2$u"
+            "value" : "block #%1$d of %2$d"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "blok #%1$u of %2$u"
+            "value" : "blok #%1$d of %2$d"
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "blokk #%1$u of %2$u"
+            "value" : "blokk #%1$d of %2$d"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "blok #%1$u van %2$u"
+            "value" : "blok #%1$d van %2$d"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "blok #%1$u z %2$u"
+            "value" : "blok #%1$d z %2$d"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "bloco #%1$u de %2$u"
+            "value" : "bloco #%1$d de %2$d"
           }
         },
         "ro" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "block #%1$u din %2$u"
+            "value" : "block #%1$d din %2$d"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "блок №%1$u из %2$u"
+            "value" : "блок №%1$d из %2$d"
           }
         },
         "sk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "blok #%1$u z %2$u"
+            "value" : "blok #%1$d z %2$d"
           }
         },
         "sl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "block #%1$u of %2$u"
+            "value" : "block #%1$d of %2$d"
           }
         },
         "sl_SI" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "block #%1$u of %2$u"
+            "value" : "block #%1$d of %2$d"
           }
         },
         "sq" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "blloku #%1$u i %2$u"
+            "value" : "blloku #%1$d i %2$d"
           }
         },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "blok #%1$u od %2$u"
+            "value" : "blok #%1$d od %2$d"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "block #%1$u av %2$u"
+            "value" : "block #%1$d av %2$d"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "กลุ่ม # %1$u of %2$u"
+            "value" : "กลุ่ม # %1$d of %2$d"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%2$u'in %1$u'ini engelle"
+            "value" : "%2$d'in %1$d'ini engelle"
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "блок #%1$u з %2$u"
+            "value" : "блок #%1$d з %2$d"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "khối #%1$u của %2$u"
+            "value" : "khối #%1$d của %2$d"
           }
         },
         "zh" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%2$u中#%1$u的区块"
+            "value" : "%2$d中#%1$d的区块"
           }
         },
         "zh_TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%2$u 中 #%1$u 的區塊"
+            "value" : "%2$d 中 #%1$d 的區塊"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%2$u中#%1$u的区块"
+            "value" : "%2$d中#%1$d的区块"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%2$u 中 #%1$u 的區塊"
+            "value" : "%2$d 中 #%1$d 的區塊"
           }
         }
       }
     },
-    "Block #%u of %u" : {
+    "Block #%d of %d" : {
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Block #%1$u of %2$u"
+            "value" : "Block #%1$d of %2$d"
           }
         },
         "bg" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Блок #%1$u от %2$u"
+            "value" : "Блок #%1$d от %2$d"
           }
         },
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Block #%1$u of %2$u"
+            "value" : "Block #%1$d of %2$d"
           }
         },
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Blok #%1$u z %2$u"
+            "value" : "Blok #%1$d z %2$d"
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Block #%1$u of %2$u"
+            "value" : "Block #%1$d of %2$d"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Block #%1$u von %2$u"
+            "value" : "Block #%1$d von %2$d"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Μπλόκ #%1$u από %2$u"
+            "value" : "Μπλόκ #%1$d από %2$d"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Block #%1$u of %2$u"
+            "value" : "Block #%1$d of %2$d"
           }
         },
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Block #%1$u of %2$u"
+            "value" : "Block #%1$d of %2$d"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bloque #%1$u de %2$u"
+            "value" : "Bloque #%1$d de %2$d"
           }
         },
         "et" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Block #%1$u of %2$u"
+            "value" : "Block #%1$d of %2$d"
           }
         },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Block #%1$u of %2$u"
+            "value" : "Block #%1$d of %2$d"
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Block #%1$u of %2$u"
+            "value" : "Block #%1$d of %2$d"
           }
         },
         "fil" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Block #%1$u ng %2$u"
+            "value" : "Block #%1$d ng %2$d"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bloc #%1$u de %2$u"
+            "value" : "Bloc #%1$d de %2$d"
           }
         },
         "hr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Block #%1$u of %2$u"
+            "value" : "Block #%1$d of %2$d"
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Block #%1$u of %2$u"
+            "value" : "Block #%1$d of %2$d"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Blok #%1$u dari %2$u"
+            "value" : "Blok #%1$d dari %2$d"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Blocco #%1$u di %2$u"
+            "value" : "Blocco #%1$d di %2$d"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ブロック #%1$u / %2$u"
+            "value" : "ブロック #%1$d / %2$d"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%2$u개중 %1$u번째 블록"
+            "value" : "%2$d개중 %1$d번째 블록"
           }
         },
         "mk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Block #%1$u of %2$u"
+            "value" : "Block #%1$d of %2$d"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Block #%1$u of %2$u"
+            "value" : "Block #%1$d of %2$d"
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Block #%1$u of %2$u"
+            "value" : "Block #%1$d of %2$d"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Blok #%1$u van %2$u"
+            "value" : "Blok #%1$d van %2$d"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Blok #%1$u z %2$u"
+            "value" : "Blok #%1$d z %2$d"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bloco #%1$u de %2$u"
+            "value" : "Bloco #%1$d de %2$d"
           }
         },
         "ro" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Block #%1$u din %2$u"
+            "value" : "Block #%1$d din %2$d"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Блок №%1$u из %2$u"
+            "value" : "Блок №%1$d из %2$d"
           }
         },
         "sk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Blok #%1$u z %2$u"
+            "value" : "Blok #%1$d z %2$d"
           }
         },
         "sl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Block #%1$u of %2$u"
+            "value" : "Block #%1$d of %2$d"
           }
         },
         "sl_SI" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Block #%1$u of %2$u"
+            "value" : "Block #%1$d of %2$d"
           }
         },
         "sq" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Block #%1$u of %2$u"
+            "value" : "Block #%1$d of %2$d"
           }
         },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Block #%1$u of %2$u"
+            "value" : "Block #%1$d of %2$d"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Block #%1$u of %2$u"
+            "value" : "Block #%1$d of %2$d"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "กลุ่ม # %1$u of %2$u"
+            "value" : "กลุ่ม # %1$d of %2$d"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%2$u'in %1$u'ini engelle"
+            "value" : "%2$d'in %1$d'ini engelle"
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Блок #%1$u з %2$u"
+            "value" : "Блок #%1$d з %2$d"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Khối #%1$u của %2$u"
+            "value" : "Khối #%1$d của %2$d"
           }
         },
         "zh" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%2$u中#%1$u的区块"
+            "value" : "%2$d中#%1$d的区块"
           }
         },
         "zh_TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%2$u 中 #%1$u 的區塊"
+            "value" : "%2$d 中 #%1$d 的區塊"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Block #%1$u of %2$u"
+            "value" : "Block #%1$d of %2$d"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Block #%1$u of %2$u"
+            "value" : "Block #%1$d of %2$d"
           }
         }
       }
@@ -134250,265 +134250,265 @@
         }
       }
     },
-    "Contact Requests (%lld)" : {
+    "Contact Requests (%d)" : {
       "comment" : "DashPay Contacts",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "bg" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "et" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "fil" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "hr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "mk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "ro" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "sk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "sl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "sl_SI" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "sq" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "zh" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "zh_TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Contact Requests (%lld)"
+            "value" : "Contact Requests (%d)"
           }
         }
       }
@@ -160595,265 +160595,265 @@
         }
       }
     },
-    "Credit output %lld" : {
+    "Credit output %d" : {
       "comment" : "Raw transaction",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "bg" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "et" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "fil" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "hr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "mk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "ro" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "sk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "sl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "sl_SI" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "sq" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "zh" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "zh_TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Credit output %lld"
+            "value" : "Credit output %d"
           }
         }
       }
@@ -238444,264 +238444,264 @@
         }
       }
     },
-    "header #%u of %u" : {
+    "header #%d of %d" : {
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "header #%1$u of %2$u"
+            "value" : "header #%1$d of %2$d"
           }
         },
         "bg" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "header #%1$u of %2$u"
+            "value" : "header #%1$d of %2$d"
           }
         },
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "header #%1$u of %2$u"
+            "value" : "header #%1$d of %2$d"
           }
         },
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "header #%1$u z %2$u"
+            "value" : "header #%1$d z %2$d"
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "header #%1$u of %2$u"
+            "value" : "header #%1$d of %2$d"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Header #%1$u von %2$u"
+            "value" : "Header #%1$d von %2$d"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "header #%1$u of %2$u"
+            "value" : "header #%1$d of %2$d"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "header #%1$u of %2$u"
+            "value" : "header #%1$d of %2$d"
           }
         },
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "header #%1$u of %2$u"
+            "value" : "header #%1$d of %2$d"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "encabezado #%1$u of %2$u"
+            "value" : "encabezado #%1$d of %2$d"
           }
         },
         "et" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "header #%1$u of %2$u"
+            "value" : "header #%1$d of %2$d"
           }
         },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "header #%1$u of %2$u"
+            "value" : "header #%1$d of %2$d"
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "header #%1$u of %2$u"
+            "value" : "header #%1$d of %2$d"
           }
         },
         "fil" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "header #%1$u ng %2$u"
+            "value" : "header #%1$d ng %2$d"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "en-tête #%1$u sur %2$u"
+            "value" : "en-tête #%1$d sur %2$d"
           }
         },
         "hr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "header #%1$u of %2$u"
+            "value" : "header #%1$d of %2$d"
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "header #%1$u of %2$u"
+            "value" : "header #%1$d of %2$d"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "header #%1$u dari %2$u"
+            "value" : "header #%1$d dari %2$d"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "intestazione #%1$u di %2$u"
+            "value" : "intestazione #%1$d di %2$d"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%2$uのヘッダー#%1$u"
+            "value" : "%2$dのヘッダー#%1$d"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "헤더 %2$u 중 #%1$u"
+            "value" : "헤더 %2$d 중 #%1$d"
           }
         },
         "mk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "header #%1$u of %2$u"
+            "value" : "header #%1$d of %2$d"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "header #%1$u of %2$u"
+            "value" : "header #%1$d of %2$d"
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "header #%1$u of %2$u"
+            "value" : "header #%1$d of %2$d"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "koptekst #%1$u van %2$u"
+            "value" : "koptekst #%1$d van %2$d"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "nagłówek #%1$u z %2$u"
+            "value" : "nagłówek #%1$d z %2$d"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "cabeçalho #%1$u de %2$u"
+            "value" : "cabeçalho #%1$d de %2$d"
           }
         },
         "ro" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "header #%1$u of %2$u"
+            "value" : "header #%1$d of %2$d"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "заголовок блока #%1$u из %2$u"
+            "value" : "заголовок блока #%1$d из %2$d"
           }
         },
         "sk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "hlavička číslo %1$u z %2$u"
+            "value" : "hlavička číslo %1$d z %2$d"
           }
         },
         "sl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "header #%1$u of %2$u"
+            "value" : "header #%1$d of %2$d"
           }
         },
         "sl_SI" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "header #%1$u of %2$u"
+            "value" : "header #%1$d of %2$d"
           }
         },
         "sq" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "header #%1$u of %2$u"
+            "value" : "header #%1$d of %2$d"
           }
         },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "header #%1$u of %2$u"
+            "value" : "header #%1$d of %2$d"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "header #%1$u of %2$u"
+            "value" : "header #%1$d of %2$d"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "หัวข้อ #%1$u of %2$u"
+            "value" : "หัวข้อ #%1$d of %2$d"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "başlık #%1$u / %2$u"
+            "value" : "başlık #%1$d / %2$d"
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "заголовок #%1$u з %2$u"
+            "value" : "заголовок #%1$d з %2$d"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "phần đầu # %1$u của %2$u"
+            "value" : "phần đầu # %1$d của %2$d"
           }
         },
         "zh" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "头部 %2$u分之#%1$u"
+            "value" : "头部 %2$d分之#%1$d"
           }
         },
         "zh_TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "標頭 #%1$u of %2$u"
+            "value" : "標頭 #%1$d of %2$d"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "header #%1$u of %2$u"
+            "value" : "header #%1$d of %2$d"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "header #%1$u of %2$u"
+            "value" : "header #%1$d of %2$d"
           }
         }
       }
@@ -260526,528 +260526,528 @@
         }
       }
     },
-    "Input %lld" : {
+    "Input %d" : {
       "comment" : "Raw transaction inspector",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "المدخل %lld"
+            "value" : "المدخل %d"
           }
         },
         "bg" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Вход %lld"
+            "value" : "Вход %d"
           }
         },
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Entrada %lld"
+            "value" : "Entrada %d"
           }
         },
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vstup %lld"
+            "value" : "Vstup %d"
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Input %lld"
+            "value" : "Input %d"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eingang %lld"
+            "value" : "Eingang %d"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Είσοδος %lld"
+            "value" : "Είσοδος %d"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Input %lld"
+            "value" : "Input %d"
           }
         },
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enigo %lld"
+            "value" : "Enigo %d"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Entrada %lld"
+            "value" : "Entrada %d"
           }
         },
         "et" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sisend %lld"
+            "value" : "Sisend %d"
           }
         },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ورودی %lld"
+            "value" : "ورودی %d"
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Syöte %lld"
+            "value" : "Syöte %d"
           }
         },
         "fil" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Input %lld"
+            "value" : "Input %d"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Entrée %lld"
+            "value" : "Entrée %d"
           }
         },
         "hr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ulaz %lld"
+            "value" : "Ulaz %d"
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bemenet %lld"
+            "value" : "Bemenet %d"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Input %lld"
+            "value" : "Input %d"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Input %lld"
+            "value" : "Input %d"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "入力 %lld"
+            "value" : "入力 %d"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "입력 %lld"
+            "value" : "입력 %d"
           }
         },
         "mk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Влез %lld"
+            "value" : "Влез %d"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Input %lld"
+            "value" : "Input %d"
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Inndata %lld"
+            "value" : "Inndata %d"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Invoer %lld"
+            "value" : "Invoer %d"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wejście %lld"
+            "value" : "Wejście %d"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Entrada %lld"
+            "value" : "Entrada %d"
           }
         },
         "ro" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Intrare %lld"
+            "value" : "Intrare %d"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Вход %lld"
+            "value" : "Вход %d"
           }
         },
         "sk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vstup %lld"
+            "value" : "Vstup %d"
           }
         },
         "sl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vhod %lld"
+            "value" : "Vhod %d"
           }
         },
         "sl_SI" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vhod %lld"
+            "value" : "Vhod %d"
           }
         },
         "sq" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hyrja %lld"
+            "value" : "Hyrja %d"
           }
         },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ulaz %lld"
+            "value" : "Ulaz %d"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Indata %lld"
+            "value" : "Indata %d"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "อินพุต %lld"
+            "value" : "อินพุต %d"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Girdi %lld"
+            "value" : "Girdi %d"
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Вхід %lld"
+            "value" : "Вхід %d"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Đầu vào %lld"
+            "value" : "Đầu vào %d"
           }
         },
         "zh" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "输入 %lld"
+            "value" : "输入 %d"
           }
         },
         "zh_TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "輸入 %lld"
+            "value" : "輸入 %d"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "输入 %lld"
+            "value" : "输入 %d"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "輸入 %lld"
+            "value" : "輸入 %d"
           }
         }
       }
     },
-    "Input %lld — outpoint" : {
+    "Input %d — outpoint" : {
       "comment" : "Raw transaction inspector",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "المدخل %lld — outpoint"
+            "value" : "المدخل %d — outpoint"
           }
         },
         "bg" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Вход %lld — outpoint"
+            "value" : "Вход %d — outpoint"
           }
         },
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Entrada %lld — outpoint"
+            "value" : "Entrada %d — outpoint"
           }
         },
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vstup %lld — outpoint"
+            "value" : "Vstup %d — outpoint"
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Input %lld — outpoint"
+            "value" : "Input %d — outpoint"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eingang %lld — Outpoint"
+            "value" : "Eingang %d — Outpoint"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Είσοδος %lld — outpoint"
+            "value" : "Είσοδος %d — outpoint"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Input %lld — outpoint"
+            "value" : "Input %d — outpoint"
           }
         },
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enigo %lld — outpoint"
+            "value" : "Enigo %d — outpoint"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Entrada %lld — outpoint"
+            "value" : "Entrada %d — outpoint"
           }
         },
         "et" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sisend %lld — outpoint"
+            "value" : "Sisend %d — outpoint"
           }
         },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ورودی %lld — outpoint"
+            "value" : "ورودی %d — outpoint"
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Syöte %lld — outpoint"
+            "value" : "Syöte %d — outpoint"
           }
         },
         "fil" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Input %lld — outpoint"
+            "value" : "Input %d — outpoint"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Entrée %lld — outpoint"
+            "value" : "Entrée %d — outpoint"
           }
         },
         "hr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ulaz %lld — outpoint"
+            "value" : "Ulaz %d — outpoint"
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bemenet %lld — outpoint"
+            "value" : "Bemenet %d — outpoint"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Input %lld — outpoint"
+            "value" : "Input %d — outpoint"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Input %lld — outpoint"
+            "value" : "Input %d — outpoint"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "入力 %lld — アウトポイント"
+            "value" : "入力 %d — アウトポイント"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "입력 %lld — 아웃포인트"
+            "value" : "입력 %d — 아웃포인트"
           }
         },
         "mk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Влез %lld — outpoint"
+            "value" : "Влез %d — outpoint"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Input %lld — outpoint"
+            "value" : "Input %d — outpoint"
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Inndata %lld — outpoint"
+            "value" : "Inndata %d — outpoint"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Invoer %lld — outpoint"
+            "value" : "Invoer %d — outpoint"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wejście %lld — outpoint"
+            "value" : "Wejście %d — outpoint"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Entrada %lld — outpoint"
+            "value" : "Entrada %d — outpoint"
           }
         },
         "ro" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Intrare %lld — outpoint"
+            "value" : "Intrare %d — outpoint"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Вход %lld — outpoint"
+            "value" : "Вход %d — outpoint"
           }
         },
         "sk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vstup %lld — outpoint"
+            "value" : "Vstup %d — outpoint"
           }
         },
         "sl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vhod %lld — outpoint"
+            "value" : "Vhod %d — outpoint"
           }
         },
         "sl_SI" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vhod %lld — outpoint"
+            "value" : "Vhod %d — outpoint"
           }
         },
         "sq" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hyrja %lld — outpoint"
+            "value" : "Hyrja %d — outpoint"
           }
         },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ulaz %lld — outpoint"
+            "value" : "Ulaz %d — outpoint"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Indata %lld — outpoint"
+            "value" : "Indata %d — outpoint"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "อินพุต %lld — outpoint"
+            "value" : "อินพุต %d — outpoint"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Girdi %lld — outpoint"
+            "value" : "Girdi %d — outpoint"
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Вхід %lld — outpoint"
+            "value" : "Вхід %d — outpoint"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Đầu vào %lld — outpoint"
+            "value" : "Đầu vào %d — outpoint"
           }
         },
         "zh" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "输入 %lld — 输出点"
+            "value" : "输入 %d — 输出点"
           }
         },
         "zh_TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "輸入 %lld — 輸出點"
+            "value" : "輸入 %d — 輸出點"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "输入 %lld — 输出点"
+            "value" : "输入 %d — 输出点"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "輸入 %lld — 輸出點"
+            "value" : "輸入 %d — 輸出點"
           }
         }
       }
@@ -261315,265 +261315,265 @@
         }
       }
     },
-    "Inputs (%lld)" : {
+    "Inputs (%d)" : {
       "comment" : "Raw transaction inspector",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "المدخلات (%lld)"
+            "value" : "المدخلات (%d)"
           }
         },
         "bg" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Входове (%lld)"
+            "value" : "Входове (%d)"
           }
         },
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Entrades (%lld)"
+            "value" : "Entrades (%d)"
           }
         },
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vstupy (%lld)"
+            "value" : "Vstupy (%d)"
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Input (%lld)"
+            "value" : "Input (%d)"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eingänge (%lld)"
+            "value" : "Eingänge (%d)"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Είσοδοι (%lld)"
+            "value" : "Είσοδοι (%d)"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Inputs (%lld)"
+            "value" : "Inputs (%d)"
           }
         },
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Enigoj (%lld)"
+            "value" : "Enigoj (%d)"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Entradas (%lld)"
+            "value" : "Entradas (%d)"
           }
         },
         "et" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sisendid (%lld)"
+            "value" : "Sisendid (%d)"
           }
         },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ورودی‌ها (%lld)"
+            "value" : "ورودی‌ها (%d)"
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Syötteet (%lld)"
+            "value" : "Syötteet (%d)"
           }
         },
         "fil" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mga input (%lld)"
+            "value" : "Mga input (%d)"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Entrées (%lld)"
+            "value" : "Entrées (%d)"
           }
         },
         "hr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ulazi (%lld)"
+            "value" : "Ulazi (%d)"
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bemenetek (%lld)"
+            "value" : "Bemenetek (%d)"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Input (%lld)"
+            "value" : "Input (%d)"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Input (%lld)"
+            "value" : "Input (%d)"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "入力 (%lld)"
+            "value" : "入力 (%d)"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "입력 (%lld)"
+            "value" : "입력 (%d)"
           }
         },
         "mk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Влезови (%lld)"
+            "value" : "Влезови (%d)"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Input (%lld)"
+            "value" : "Input (%d)"
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Inndata (%lld)"
+            "value" : "Inndata (%d)"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Invoer (%lld)"
+            "value" : "Invoer (%d)"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wejścia (%lld)"
+            "value" : "Wejścia (%d)"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Entradas (%lld)"
+            "value" : "Entradas (%d)"
           }
         },
         "ro" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Intrări (%lld)"
+            "value" : "Intrări (%d)"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Входы (%lld)"
+            "value" : "Входы (%d)"
           }
         },
         "sk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vstupy (%lld)"
+            "value" : "Vstupy (%d)"
           }
         },
         "sl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vhodi (%lld)"
+            "value" : "Vhodi (%d)"
           }
         },
         "sl_SI" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vhodi (%lld)"
+            "value" : "Vhodi (%d)"
           }
         },
         "sq" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hyrjet (%lld)"
+            "value" : "Hyrjet (%d)"
           }
         },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ulazi (%lld)"
+            "value" : "Ulazi (%d)"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Indata (%lld)"
+            "value" : "Indata (%d)"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "อินพุต (%lld)"
+            "value" : "อินพุต (%d)"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Girdiler (%lld)"
+            "value" : "Girdiler (%d)"
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Входи (%lld)"
+            "value" : "Входи (%d)"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Đầu vào (%lld)"
+            "value" : "Đầu vào (%d)"
           }
         },
         "zh" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "输入 (%lld)"
+            "value" : "输入 (%d)"
           }
         },
         "zh_TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "輸入 (%lld)"
+            "value" : "輸入 (%d)"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "输入 (%lld)"
+            "value" : "输入 (%d)"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "輸入 (%lld)"
+            "value" : "輸入 (%d)"
           }
         }
       }
@@ -300737,264 +300737,264 @@
         }
       }
     },
-    "masternode list #%u of %u" : {
+    "masternode list #%d of %d" : {
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "masternode list #%1$u of %2$u"
+            "value" : "masternode list #%1$d of %2$d"
           }
         },
         "bg" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "masternode list #%1$u of %2$u"
+            "value" : "masternode list #%1$d of %2$d"
           }
         },
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "masternode list #%1$u of %2$u"
+            "value" : "masternode list #%1$d of %2$d"
           }
         },
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "seznam masternodů #%1$u z %2$u"
+            "value" : "seznam masternodů #%1$d z %2$d"
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "masternode list #%1$u of %2$u"
+            "value" : "masternode list #%1$d of %2$d"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Masternode-Liste #%1$u von %2$u"
+            "value" : "Masternode-Liste #%1$d von %2$d"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Λίστα masternode #%1$u of %2$u"
+            "value" : "Λίστα masternode #%1$d of %2$d"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "masternode list #%1$u of %2$u"
+            "value" : "masternode list #%1$d of %2$d"
           }
         },
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "masternode list #%1$u of %2$u"
+            "value" : "masternode list #%1$d of %2$d"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lista de masternode #%1$u de %2$u"
+            "value" : "Lista de masternode #%1$d de %2$d"
           }
         },
         "et" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "masternode list #%1$u of %2$u"
+            "value" : "masternode list #%1$d of %2$d"
           }
         },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "masternode list #%1$u of %2$u"
+            "value" : "masternode list #%1$d of %2$d"
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "masternode list #%1$u of %2$u"
+            "value" : "masternode list #%1$d of %2$d"
           }
         },
         "fil" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "listahan ng masternode #%1$u ng %2$u"
+            "value" : "listahan ng masternode #%1$d ng %2$d"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "liste de masternodes #%1$u sur %2$u"
+            "value" : "liste de masternodes #%1$d sur %2$d"
           }
         },
         "hr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "masternode list #%1$u of %2$u"
+            "value" : "masternode list #%1$d of %2$d"
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "masternode list #%1$u of %2$u"
+            "value" : "masternode list #%1$d of %2$d"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "daftar masternode #%1$u of %2$u"
+            "value" : "daftar masternode #%1$d of %2$d"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "lista masternode #%1$u di %2$u"
+            "value" : "lista masternode #%1$d di %2$d"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%2$uのマスターノードリスト#%1$u"
+            "value" : "%2$dのマスターノードリスト#%1$d"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "마스터노드 리스트%2$u 중 #%1$u"
+            "value" : "마스터노드 리스트%2$d 중 #%1$d"
           }
         },
         "mk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "masternode list #%1$u of %2$u"
+            "value" : "masternode list #%1$d of %2$d"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "masternode list #%1$u of %2$u"
+            "value" : "masternode list #%1$d of %2$d"
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "masternode list #%1$u of %2$u"
+            "value" : "masternode list #%1$d of %2$d"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "lijst masternodes #%1$u of %2$u"
+            "value" : "lijst masternodes #%1$d of %2$d"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "lista masternodów #%1$u z %2$u"
+            "value" : "lista masternodów #%1$d z %2$d"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "lista de masternode #%1$u de %2$u"
+            "value" : "lista de masternode #%1$d de %2$d"
           }
         },
         "ro" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "masternode list #%1$u of %2$u"
+            "value" : "masternode list #%1$d of %2$d"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "список мастернод #%1$u из %2$u"
+            "value" : "список мастернод #%1$d из %2$d"
           }
         },
         "sk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "zoznam mastenódov: %1$u z %2$u"
+            "value" : "zoznam mastenódov: %1$d z %2$d"
           }
         },
         "sl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "masternode list #%1$u of %2$u"
+            "value" : "masternode list #%1$d of %2$d"
           }
         },
         "sl_SI" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "masternode list #%1$u of %2$u"
+            "value" : "masternode list #%1$d of %2$d"
           }
         },
         "sq" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "masternode list #%1$u of %2$u"
+            "value" : "masternode list #%1$d of %2$d"
           }
         },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "masternode list #%1$u of %2$u"
+            "value" : "masternode list #%1$d of %2$d"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "masternode list #%1$u of %2$u"
+            "value" : "masternode list #%1$d of %2$d"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "รายการมาสเตอร์โหนด #%1$u of %2$u"
+            "value" : "รายการมาสเตอร์โหนด #%1$d of %2$d"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Anadüğüm listesi #%1$u / %2$u"
+            "value" : "Anadüğüm listesi #%1$d / %2$d"
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "список Мастернод #%1$u з %2$u"
+            "value" : "список Мастернод #%1$d з %2$d"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "masternode list #%1$u of %2$u"
+            "value" : "masternode list #%1$d of %2$d"
           }
         },
         "zh" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "主节点列表 #%2$u 分之  %1$u"
+            "value" : "主节点列表 #%2$d 分之  %1$d"
           }
         },
         "zh_TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%2$u 中 #%1$u 的主節點列表 "
+            "value" : "%2$d 中 #%1$d 的主節點列表 "
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "masternode list #%1$u of %2$u"
+            "value" : "masternode list #%1$d of %2$d"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "masternode list #%1$u of %2$u"
+            "value" : "masternode list #%1$d of %2$d"
           }
         }
       }
@@ -343875,265 +343875,265 @@
         }
       }
     },
-    "Nodes, epoch day %lld, %@ blocks proposed this epoch" : {
+    "Nodes, epoch day %d, %@ blocks proposed this epoch" : {
       "comment" : "Nodes shortcut accessibility",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "العُقد، اليوم %lld من الحقبة، اقتُرحت %@ كتلة في هذه الحقبة"
+            "value" : "العُقد، اليوم %d من الحقبة، اقتُرحت %@ كتلة في هذه الحقبة"
           }
         },
         "bg" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Възли, ден %lld от епохата, предложени са %@ блока в тази епоха"
+            "value" : "Възли, ден %d от епохата, предложени са %@ блока в тази епоха"
           }
         },
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nodes, dia %lld de l'època, %@ blocs proposats en aquesta època"
+            "value" : "Nodes, dia %d de l'època, %@ blocs proposats en aquesta època"
           }
         },
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Uzly, den epochy %lld, v této epoše navrženo bloků: %@"
+            "value" : "Uzly, den epochy %d, v této epoše navrženo bloků: %@"
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Noder, epokedag %lld, %@ blokke foreslået i denne epoke"
+            "value" : "Noder, epokedag %d, %@ blokke foreslået i denne epoke"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nodes, Epochentag %lld, %@ Blöcke in dieser Epoche vorgeschlagen"
+            "value" : "Nodes, Epochentag %d, %@ Blöcke in dieser Epoche vorgeschlagen"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Κόμβοι, ημέρα εποχής %lld, %@ μπλοκ προτάθηκαν αυτή την εποχή"
+            "value" : "Κόμβοι, ημέρα εποχής %d, %@ μπλοκ προτάθηκαν αυτή την εποχή"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nodes, epoch day %1$lld, %2$@ blocks proposed this epoch"
+            "value" : "Nodes, epoch day %d, %@ blocks proposed this epoch"
           }
         },
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nodoj, tago %lld de la epoko, %@ blokoj proponitaj en ĉi tiu epoko"
+            "value" : "Nodoj, tago %d de la epoko, %@ blokoj proponitaj en ĉi tiu epoko"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nodos, día %lld de la época, %@ bloques propuestos en esta época"
+            "value" : "Nodos, día %d de la época, %@ bloques propuestos en esta época"
           }
         },
         "et" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sõlmed, ajastu %lld. päev, sellel ajastul pakuti välja %@ plokki"
+            "value" : "Sõlmed, ajastu %d. päev, sellel ajastul pakuti välja %@ plokki"
           }
         },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "گره‌ها، روز %lld دوره، %@ بلاک در این دوره پیشنهاد شد"
+            "value" : "گره‌ها، روز %d دوره، %@ بلاک در این دوره پیشنهاد شد"
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Solmut, aikakauden päivä %lld, %@ lohkoa ehdotettu tällä aikakaudella"
+            "value" : "Solmut, aikakauden päivä %d, %@ lohkoa ehdotettu tällä aikakaudella"
           }
         },
         "fil" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mga Node, araw %lld ng epoch, %@ block ang iminungkahi sa epoch na ito"
+            "value" : "Mga Node, araw %d ng epoch, %@ block ang iminungkahi sa epoch na ito"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nœuds, jour %lld de l'époque, %@ blocs proposés cette époque"
+            "value" : "Nœuds, jour %d de l'époque, %@ blocs proposés cette époque"
           }
         },
         "hr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Čvorovi, dan epohe %lld, predloženo blokova u ovoj epohi: %@"
+            "value" : "Čvorovi, dan epohe %d, predloženo blokova u ovoj epohi: %@"
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Csomópontok, epocha %lld. napja, %@ blokk javasolva ebben az epochában"
+            "value" : "Csomópontok, epocha %d. napja, %@ blokk javasolva ebben az epochában"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Node, hari epoch ke-%lld, %@ blok diusulkan pada epoch ini"
+            "value" : "Node, hari epoch ke-%d, %@ blok diusulkan pada epoch ini"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nodi, giorno %lld dell'epoca, %@ blocchi proposti in questa epoca"
+            "value" : "Nodi, giorno %d dell'epoca, %@ blocchi proposti in questa epoca"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ノード、エポック %lld 日目、このエポックで %@ ブロックを提案"
+            "value" : "ノード、エポック %d 日目、このエポックで %@ ブロックを提案"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "노드, 에포크 %lld일차, 이번 에포크에 %@개 블록 제안"
+            "value" : "노드, 에포크 %d일차, 이번 에포크에 %@개 블록 제안"
           }
         },
         "mk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Јазли, ден %lld од епохата, предложени се %@ блокови во оваа епоха"
+            "value" : "Јазли, ден %d од епохата, предложени се %@ блокови во оваа епоха"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nod, hari epoch %lld, %@ blok dicadangkan pada epoch ini"
+            "value" : "Nod, hari epoch %d, %@ blok dicadangkan pada epoch ini"
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Noder, epokedag %lld, %@ blokker foreslått denne epoken"
+            "value" : "Noder, epokedag %d, %@ blokker foreslått denne epoken"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nodes, tijdvakdag %lld, %@ blokken voorgesteld dit tijdvak"
+            "value" : "Nodes, tijdvakdag %d, %@ blokken voorgesteld dit tijdvak"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Węzły, dzień epoki %lld, zaproponowane bloki w tej epoce: %@"
+            "value" : "Węzły, dzień epoki %d, zaproponowane bloki w tej epoce: %@"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nós, dia %lld da época, %@ blocos propostos nesta época"
+            "value" : "Nós, dia %d da época, %@ blocos propostos nesta época"
           }
         },
         "ro" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Noduri, ziua %lld a epocii, %@ blocuri propuse în această epocă"
+            "value" : "Noduri, ziua %d a epocii, %@ blocuri propuse în această epocă"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ноды, день эпохи %lld, предложено блоков в этой эпохе: %@"
+            "value" : "Ноды, день эпохи %d, предложено блоков в этой эпохе: %@"
           }
         },
         "sk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Uzly, deň epochy %lld, v tejto epoche navrhnutých blokov: %@"
+            "value" : "Uzly, deň epochy %d, v tejto epoche navrhnutých blokov: %@"
           }
         },
         "sl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vozlišča, dan epohe %lld, v tej epohi predlaganih blokov: %@"
+            "value" : "Vozlišča, dan epohe %d, v tej epohi predlaganih blokov: %@"
           }
         },
         "sl_SI" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vozlišča, dan epohe %lld, v tej epohi predlaganih blokov: %@"
+            "value" : "Vozlišča, dan epohe %d, v tej epohi predlaganih blokov: %@"
           }
         },
         "sq" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nyjet, dita %lld e epokës, %@ blloqe të propozuara në këtë epokë"
+            "value" : "Nyjet, dita %d e epokës, %@ blloqe të propozuara në këtë epokë"
           }
         },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Čvorovi, dan epohe %lld, predloženo blokova u ovoj epohi: %@"
+            "value" : "Čvorovi, dan epohe %d, predloženo blokova u ovoj epohi: %@"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Noder, epokdag %lld, %@ block föreslagna den här epoken"
+            "value" : "Noder, epokdag %d, %@ block föreslagna den här epoken"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "โหนด, วันที่ %lld ของยุค, เสนอบล็อก %@ บล็อกในยุคนี้"
+            "value" : "โหนด, วันที่ %d ของยุค, เสนอบล็อก %@ บล็อกในยุคนี้"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Düğümler, dönem günü %lld, bu dönemde %@ blok önerildi"
+            "value" : "Düğümler, dönem günü %d, bu dönemde %@ blok önerildi"
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ноди, день епохи %lld, запропоновано блоків у цій епосі: %@"
+            "value" : "Ноди, день епохи %d, запропоновано блоків у цій епосі: %@"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nút, ngày %lld của kỷ nguyên, đã đề xuất %@ khối trong kỷ nguyên này"
+            "value" : "Nút, ngày %d của kỷ nguyên, đã đề xuất %@ khối trong kỷ nguyên này"
           }
         },
         "zh" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "节点，纪元第 %lld 天，本纪元提议了 %@ 个区块"
+            "value" : "节点，纪元第 %d 天，本纪元提议了 %@ 个区块"
           }
         },
         "zh_TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "節點，紀元第 %lld 天，本紀元提議了 %@ 個區塊"
+            "value" : "節點，紀元第 %d 天，本紀元提議了 %@ 個區塊"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "节点，纪元第 %lld 天，本纪元提议了 %@ 个区块"
+            "value" : "节点，纪元第 %d 天，本纪元提议了 %@ 个区块"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "節點，紀元第 %lld 天，本紀元提議了 %@ 個區塊"
+            "value" : "節點，紀元第 %d 天，本紀元提議了 %@ 個區塊"
           }
         }
       }
@@ -366223,528 +366223,528 @@
         }
       }
     },
-    "Output %lld" : {
+    "Output %d" : {
       "comment" : "Raw transaction inspector",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "المخرج %lld"
+            "value" : "المخرج %d"
           }
         },
         "bg" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Изход %lld"
+            "value" : "Изход %d"
           }
         },
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sortida %lld"
+            "value" : "Sortida %d"
           }
         },
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Výstup %lld"
+            "value" : "Výstup %d"
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Output %lld"
+            "value" : "Output %d"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ausgang %lld"
+            "value" : "Ausgang %d"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Έξοδος %lld"
+            "value" : "Έξοδος %d"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Output %lld"
+            "value" : "Output %d"
           }
         },
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eligo %lld"
+            "value" : "Eligo %d"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Salida %lld"
+            "value" : "Salida %d"
           }
         },
         "et" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Väljund %lld"
+            "value" : "Väljund %d"
           }
         },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "خروجی %lld"
+            "value" : "خروجی %d"
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tuloste %lld"
+            "value" : "Tuloste %d"
           }
         },
         "fil" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Output %lld"
+            "value" : "Output %d"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sortie %lld"
+            "value" : "Sortie %d"
           }
         },
         "hr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Izlaz %lld"
+            "value" : "Izlaz %d"
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Kimenet %lld"
+            "value" : "Kimenet %d"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Output %lld"
+            "value" : "Output %d"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Output %lld"
+            "value" : "Output %d"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "出力 %lld"
+            "value" : "出力 %d"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "출력 %lld"
+            "value" : "출력 %d"
           }
         },
         "mk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Излез %lld"
+            "value" : "Излез %d"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Output %lld"
+            "value" : "Output %d"
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Utdata %lld"
+            "value" : "Utdata %d"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Uitvoer %lld"
+            "value" : "Uitvoer %d"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wyjście %lld"
+            "value" : "Wyjście %d"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Saída %lld"
+            "value" : "Saída %d"
           }
         },
         "ro" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ieșire %lld"
+            "value" : "Ieșire %d"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Выход %lld"
+            "value" : "Выход %d"
           }
         },
         "sk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Výstup %lld"
+            "value" : "Výstup %d"
           }
         },
         "sl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Izhod %lld"
+            "value" : "Izhod %d"
           }
         },
         "sl_SI" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Izhod %lld"
+            "value" : "Izhod %d"
           }
         },
         "sq" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dalja %lld"
+            "value" : "Dalja %d"
           }
         },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Izlaz %lld"
+            "value" : "Izlaz %d"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Utdata %lld"
+            "value" : "Utdata %d"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "เอาต์พุต %lld"
+            "value" : "เอาต์พุต %d"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Çıktı %lld"
+            "value" : "Çıktı %d"
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Вихід %lld"
+            "value" : "Вихід %d"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Đầu ra %lld"
+            "value" : "Đầu ra %d"
           }
         },
         "zh" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "输出 %lld"
+            "value" : "输出 %d"
           }
         },
         "zh_TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "輸出 %lld"
+            "value" : "輸出 %d"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "输出 %lld"
+            "value" : "输出 %d"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "輸出 %lld"
+            "value" : "輸出 %d"
           }
         }
       }
     },
-    "Outputs (%lld)" : {
+    "Outputs (%d)" : {
       "comment" : "Raw transaction inspector",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "المخرجات (%lld)"
+            "value" : "المخرجات (%d)"
           }
         },
         "bg" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Изходи (%lld)"
+            "value" : "Изходи (%d)"
           }
         },
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sortides (%lld)"
+            "value" : "Sortides (%d)"
           }
         },
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Výstupy (%lld)"
+            "value" : "Výstupy (%d)"
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Output (%lld)"
+            "value" : "Output (%d)"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ausgänge (%lld)"
+            "value" : "Ausgänge (%d)"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Έξοδοι (%lld)"
+            "value" : "Έξοδοι (%d)"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Outputs (%lld)"
+            "value" : "Outputs (%d)"
           }
         },
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eligoj (%lld)"
+            "value" : "Eligoj (%d)"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Salidas (%lld)"
+            "value" : "Salidas (%d)"
           }
         },
         "et" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Väljundid (%lld)"
+            "value" : "Väljundid (%d)"
           }
         },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "خروجی‌ها (%lld)"
+            "value" : "خروجی‌ها (%d)"
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tulosteet (%lld)"
+            "value" : "Tulosteet (%d)"
           }
         },
         "fil" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mga output (%lld)"
+            "value" : "Mga output (%d)"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sorties (%lld)"
+            "value" : "Sorties (%d)"
           }
         },
         "hr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Izlazi (%lld)"
+            "value" : "Izlazi (%d)"
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Kimenetek (%lld)"
+            "value" : "Kimenetek (%d)"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Output (%lld)"
+            "value" : "Output (%d)"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Output (%lld)"
+            "value" : "Output (%d)"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "出力 (%lld)"
+            "value" : "出力 (%d)"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "출력 (%lld)"
+            "value" : "출력 (%d)"
           }
         },
         "mk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Излези (%lld)"
+            "value" : "Излези (%d)"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Output (%lld)"
+            "value" : "Output (%d)"
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Utdata (%lld)"
+            "value" : "Utdata (%d)"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Uitvoer (%lld)"
+            "value" : "Uitvoer (%d)"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wyjścia (%lld)"
+            "value" : "Wyjścia (%d)"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Saídas (%lld)"
+            "value" : "Saídas (%d)"
           }
         },
         "ro" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ieșiri (%lld)"
+            "value" : "Ieșiri (%d)"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Выходы (%lld)"
+            "value" : "Выходы (%d)"
           }
         },
         "sk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Výstupy (%lld)"
+            "value" : "Výstupy (%d)"
           }
         },
         "sl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Izhodi (%lld)"
+            "value" : "Izhodi (%d)"
           }
         },
         "sl_SI" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Izhodi (%lld)"
+            "value" : "Izhodi (%d)"
           }
         },
         "sq" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Daljet (%lld)"
+            "value" : "Daljet (%d)"
           }
         },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Izlazi (%lld)"
+            "value" : "Izlazi (%d)"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Utdata (%lld)"
+            "value" : "Utdata (%d)"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "เอาต์พุต (%lld)"
+            "value" : "เอาต์พุต (%d)"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Çıktılar (%lld)"
+            "value" : "Çıktılar (%d)"
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Виходи (%lld)"
+            "value" : "Виходи (%d)"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Đầu ra (%lld)"
+            "value" : "Đầu ra (%d)"
           }
         },
         "zh" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "输出 (%lld)"
+            "value" : "输出 (%d)"
           }
         },
         "zh_TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "輸出 (%lld)"
+            "value" : "輸出 (%d)"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "输出 (%lld)"
+            "value" : "输出 (%d)"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "輸出 (%lld)"
+            "value" : "輸出 (%d)"
           }
         }
       }
