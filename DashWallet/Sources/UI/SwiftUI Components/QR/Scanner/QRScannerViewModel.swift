@@ -130,9 +130,17 @@ final class QRScannerViewModel: ObservableObject {
                 return false
             }?.0
         }
-        return firstPayment { $0.isValidDashPaymentIntent }
+        return firstPayment(where: Self.isUsableDashIntent)
             ?? firstPayment { $0.isWholeRequestURL }
             ?? values.first
+    }
+
+    /// A Dash intent the scanner can act on: a request the transport would fetch, or an
+    /// address payable on its own.
+    private static func isUsableDashIntent(_ parsed: ParsedPaymentURI) -> Bool {
+        guard parsed.isValidDashPaymentIntent else { return false }
+        if let request = parsed.rURL, PaymentProtocolTransport.isSecure(request) { return true }
+        return parsed.isAddressPayableForCurrentNetwork && !parsed.hasInvalidAmount && !parsed.requiresRequest
     }
 
     private func process(_ value: String) {
