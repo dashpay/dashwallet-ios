@@ -27,7 +27,7 @@ Platform protocol version 14 adds the App Connect system contract (dashpay/platf
 
 **Chosen:** option 1. The wallet reads the protocol version from the current epoch before it shows the approval sheet. From protocol 14 it runs the one-QR login, below 14 the two-scan login. When the version cannot be read, the sheet offers a retry and nothing to approve. The approval is refused, and the sheet rebuilt, when the network's login is no longer the one the sheet showed.
 
-DashConnect stays off on mainnet in this change: the Connections page uses its mock data source there. Turning it on for mainnet is a separate decision.
+DashConnect stays off on mainnet in this change: the Connections page uses its mock data source there. Turning it on for mainnet is a separate decision. [ADR-0053](0053-open-dashconnect-on-mainnet-and-gate-each-request-by-protocol-14.md) turns it on.
 
 ## Consequences
 

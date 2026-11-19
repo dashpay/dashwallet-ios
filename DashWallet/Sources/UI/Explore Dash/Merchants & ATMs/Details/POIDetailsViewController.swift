@@ -148,6 +148,22 @@ extension POIDetailsViewController {
         ])
     }
 
+    /// "Show all locations" for this merchant. It carries every handler this
+    /// screen got from its opener, so a payment or a gift card bought from a
+    /// location it opens completes the same way as one bought here.
+    func makeAllLocationsController(searchRadius: Double) -> AllMerchantLocationsViewController {
+        let vc = AllMerchantLocationsViewController(
+            pointOfUse: pointOfUse,
+            searchRadius: searchRadius,
+            searchCenterCoordinate: searchCenterCoordinate,
+            currentFilters: currentFilters
+        )
+        vc.payWithDashHandler = payWithDashHandler
+        vc.sellDashHandler = sellDashHandler
+        vc.onGiftCardPurchased = onGiftCardPurchased
+        return vc
+    }
+
     private func makeDetailsView() -> POIDetailsView? {
         if case .unknown = pointOfUse.category { return nil }
 
@@ -172,14 +188,7 @@ extension POIDetailsViewController {
             // From the All tab `effectiveRadius` is infinite, so every location
             // of the merchant is shown; from Nearby it keeps the list's radius.
             wSelf.performAfterDismissingDetailsSheetIfNeeded {
-                let vc = AllMerchantLocationsViewController(
-                    pointOfUse: wSelf.pointOfUse,
-                    searchRadius: effectiveRadius,
-                    searchCenterCoordinate: wSelf.searchCenterCoordinate,
-                    currentFilters: wSelf.currentFilters
-                )
-                vc.payWithDashHandler = wSelf.payWithDashHandler
-                vc.sellDashHandler = wSelf.sellDashHandler
+                let vc = wSelf.makeAllLocationsController(searchRadius: effectiveRadius)
                 wSelf.navigationController?.pushViewController(vc, animated: true)
             }
         }
@@ -449,7 +458,9 @@ extension ExplorePointOfUse {
             if m.type == .online {
                 return NSLocalizedString("Online Merchant", comment: "Online Merchant")
             } else {
-                return m.type == .onlineAndPhysical ? "Physical Merchant, Online" : "Physical Merchant"
+                return m.type == .onlineAndPhysical
+                    ? NSLocalizedString("Physical Merchant, Online", comment: "Explore Dash")
+                    : NSLocalizedString("Physical Merchant", comment: "Explore Dash")
             }
         case .atm:
             return nil

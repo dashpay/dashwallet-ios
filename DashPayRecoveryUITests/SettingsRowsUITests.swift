@@ -78,47 +78,73 @@ final class SettingsRowsUITests: XCTestCase {
 
 // MARK: - Advanced mode row
 
-/// The Advanced mode row is a `Button` that opens the explainer, wrapped around
-/// a `MenuItem` whose accessory is an interactive switch. Nesting a control
-/// inside a button is where a tap can end up answered twice, so this pins the
-/// split: the switch flips the setting and the sheet stays shut.
-///
-/// To accessibility the row is the switch itself: one `.switch` element that
-/// carries the row's identifier and the setting's value, with the explainer
-/// as a named action. A plain tap on that element lands on the row's centre,
-/// which is the body that opens the explainer, so the taps go to the switch's
-/// place at the row's trailing end, as a finger would.
+/// The Advanced mode row hands its explainer to `MenuItem` as the row action:
+/// the icon and text are one button that opens the explainer, and the switch
+/// is its own element beside it, named after the row. Neither sits inside the
+/// other, so a tap on the switch must flip the setting and leave the sheet
+/// shut, and a tap on the body must open the sheet and leave the setting.
 extension SettingsRowsUITests {
 
-    /// The switch's centre, from the row's trailing edge: `MenuItem` pads the
-    /// row by 10 pt and the switch is 64 pt wide.
-    private static let switchCenterFromTrailingEdge: CGFloat = 42
-
     func testAdvancedModeSwitchDoesNotOpenTheExplainer() throws {
-        let row = app.switches["settings_row_advanced_mode"]
-        XCTAssert(row.waitForExistence(timeout: 15),
-                  "Advanced mode row not found as a switch — the Settings screen is not on display, or VoiceOver reads it as something else")
-        XCTAssertFalse(row.label.isEmpty, "The Advanced mode switch has no label")
-        // One element: without the row's own representation the button still
-        // reads as a switch, with an unlabelled switch nested inside it.
-        XCTAssertEqual(row.descendants(matching: .switch).count, 0,
-                       "The Advanced mode row exposes a nested switch")
-
-        let before = try XCTUnwrap(row.value as? String, "The Advanced mode switch has no value")
+        let row = advancedModeRow()
+        let toggle = row.children(matching: .switch).firstMatch
+        let before = try XCTUnwrap(toggle.value as? String, "The Advanced mode switch has no value")
         let flipped = before == "1" ? "0" : "1"
-
-        // The switch writes through to UserDefaults, which this target does not
-        // reset between runs — put it back, even after a failure, so the next
-        // test does not start in whichever mode this one left behind. Only the
-        // mode comes back: a flip by hand also records Advanced mode as the
-        // user's own choice, so it no longer turns on by itself afterwards.
         let sheet = app.descendants(matching: .any)["advanced_mode_info_sheet"]
+        restoreAdvancedMode(to: before, toggle: toggle, sheet: sheet)
+
+        toggle.tap()
+
+        XCTAssertFalse(sheet.waitForExistence(timeout: 2), "Tapping the switch opened the explainer")
+        XCTAssertTrue(waitForValue(of: toggle, toBe: flipped), "The switch did not change state")
+    }
+
+    func testAdvancedModeBodyOpensTheExplainerWithoutFlipping() throws {
+        let row = advancedModeRow()
+        let toggle = row.children(matching: .switch).firstMatch
+        let before = try XCTUnwrap(toggle.value as? String, "The Advanced mode switch has no value")
+        let sheet = app.descendants(matching: .any)["advanced_mode_info_sheet"]
+        restoreAdvancedMode(to: before, toggle: toggle, sheet: sheet)
+
+        row.children(matching: .button).firstMatch.tap()
+
+        XCTAssertTrue(sheet.waitForExistence(timeout: 3), "Tapping the row body did not open the explainer")
+        XCTAssertEqual(toggle.value as? String, before, "Tapping the row body flipped the switch")
+    }
+
+    /// The row's group, after checking it holds exactly one button and one
+    /// switch, both named after the row. Only direct children count:
+    /// `SwitchView` keeps a zero-size switch inside its own element, which
+    /// VoiceOver does not enter.
+    private func advancedModeRow(file: StaticString = #filePath, line: UInt = #line) -> XCUIElement {
+        let row = app.descendants(matching: .any)["settings_row_advanced_mode"]
+        XCTAssert(row.waitForExistence(timeout: 15),
+                  "Advanced mode row not found — the Settings screen is not on display", file: file, line: line)
+        let switches = row.children(matching: .switch)
+        let buttons = row.children(matching: .button)
+        XCTAssertEqual(switches.count, 1, "The Advanced mode row should expose one switch", file: file, line: line)
+        XCTAssertEqual(buttons.count, 1, "The Advanced mode row should expose one button", file: file, line: line)
+        XCTAssertEqual(switches.firstMatch.label, "Advanced mode", "The switch is not named after the row",
+                       file: file, line: line)
+        XCTAssertEqual(buttons.firstMatch.label, "Advanced mode", "The row body is not named after the row",
+                       file: file, line: line)
+        return row
+    }
+
+    /// The switch writes through to UserDefaults, which this target does not
+    /// reset between runs — put it back, even after a failure, so the next
+    /// test does not start in whichever mode this one left behind. Only the
+    /// mode comes back: a flip by hand also records Advanced mode as the
+    /// user's own choice, so it no longer turns on by itself afterwards.
+    private func restoreAdvancedMode(to value: String, toggle: XCUIElement, sheet: XCUIElement) {
         addTeardownBlock { [self] in
             // A failed check here must not stop the block before the restore.
             continueAfterFailure = true
             // The row sits behind the explainer when it is open, so close it first.
             if sheet.exists {
-                let close = app.buttons["navigationbar-close"].firstMatch
+                // By label: the sheet's own identifier covers its children's,
+                // the close button's `navigationbar-close` included.
+                let close = app.buttons["Close"].firstMatch
                 guard close.waitForExistence(timeout: 3) else {
                     XCTFail("The explainer has no Close button, so the mode could not be restored")
                     return
@@ -129,42 +155,21 @@ extension SettingsRowsUITests {
                     return
                 }
             }
-            guard row.waitForExistence(timeout: 3) else {
-                XCTFail("The Advanced mode row is gone, so its original state could not be restored")
+            guard toggle.waitForExistence(timeout: 3) else {
+                XCTFail("The Advanced mode switch is gone, so its original state could not be restored")
                 return
             }
-            guard (row.value as? String) != before else { return }
-            guard row.isHittable else {
-                XCTFail("The Advanced mode row is covered, so its original state could not be restored")
-                return
-            }
-            tapSwitch(in: row)
-            XCTAssertTrue(waitForValue(of: row, toBe: before),
+            guard (toggle.value as? String) != value else { return }
+            toggle.tap()
+            XCTAssertTrue(waitForValue(of: toggle, toBe: value),
                           "Could not restore the Advanced mode switch to its original state")
         }
-
-        tapSwitch(in: row)
-
-        XCTAssertFalse(sheet.waitForExistence(timeout: 2),
-                       "Tapping the switch opened the explainer — the row's button swallowed it")
-
-        XCTAssertTrue(waitForValue(of: row, toBe: flipped),
-                      "The switch did not change state, so the tap never reached it")
     }
 
-    /// A coordinate tap lands wherever the point is, so the row must be on
-    /// screen and uncovered first.
-    private func tapSwitch(in row: XCUIElement) {
-        XCTAssert(row.isHittable, "The Advanced mode row is off screen or covered")
-        row.coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 0.5))
-            .withOffset(CGVector(dx: -Self.switchCenterFromTrailingEdge, dy: 0))
-            .tap()
-    }
-
-    /// Waits for the row to re-render after a tap, until its value is `value`.
-    private func waitForValue(of row: XCUIElement, toBe value: String) -> Bool {
+    /// Waits for the switch to re-render after a tap, until its value is `value`.
+    private func waitForValue(of toggle: XCUIElement, toBe value: String) -> Bool {
         let predicate = NSPredicate(format: "value == %@", value)
-        let expectation = XCTNSPredicateExpectation(predicate: predicate, object: row)
+        let expectation = XCTNSPredicateExpectation(predicate: predicate, object: toggle)
         return XCTWaiter.wait(for: [expectation], timeout: 3) == .completed
     }
 }

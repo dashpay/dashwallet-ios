@@ -347,12 +347,12 @@ final class DashConnectUriTests: XCTestCase {
         XCTAssertEqual(parsed.request.encryptionBindings, [])
     }
 
-    func testRefusesAMainnetAppConnectUri() throws {
+    func testRefusesAMainnetDashKeyAppConnectUri() throws {
         let mainnetUri = AppConnectVector.renewUri.replacingOccurrences(of: "?n=t&", with: "?n=m&")
         XCTAssertNotEqual(mainnetUri, AppConnectVector.renewUri)
 
         XCTAssertThrowsError(try DashConnectUri.parseAppConnectRequest(mainnetUri)) { error in
-            XCTAssertEqual(error as? AppConnectRequestError, .invalid("request v2 is not enabled on mainnet"))
+            XCTAssertEqual(error as? AppConnectRequestError, .invalid("dash-key request v2 is not accepted on mainnet"))
         }
     }
 
@@ -877,13 +877,10 @@ extension DashConnectUriTests {
                 XCTAssertEqual(error as? AppConnectRequestError, .invalid("unknown network"), query)
             }
         }
-        let networks: [(String, DashConnectNetwork)] = [("t", .testnet), ("d", .devnet)]
+        // Unlike `dash-key:`, the connect URI carries a request for mainnet.
+        let networks: [(String, DashConnectNetwork)] = [("m", .mainnet), ("t", .testnet), ("d", .devnet)]
         for (code, network) in networks {
             XCTAssertEqual(try DashConnectUri.parseConnectRequest(Self.connectUri(r: r, query: "v=2&n=\(code)")).network, network)
-        }
-        // As on `dash-key:`: request v2 is not enabled on mainnet yet (ADR-0009).
-        XCTAssertThrowsError(try DashConnectUri.parseConnectRequest(Self.connectUri(r: r, query: "v=2&n=m"))) { error in
-            XCTAssertEqual(error as? AppConnectRequestError, .invalid("request v2 is not enabled on mainnet"))
         }
     }
 

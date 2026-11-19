@@ -38,6 +38,19 @@ enum DashConnectStores {
     /// wrote; nothing reads or writes them now.
     private static let legacyGrantsSuffix = ".app-connect-responses.v1"
 
+    /// Held by `removeAll` and `removeAllWallets`, and by `excludingWipe`.
+    private static let wipeLock = NSLock()
+
+    /// Runs `body` while no wipe of the stores runs. A wipe does not take the
+    /// wallet's operation gate, so a read-change-save of the intents runs
+    /// inside this: a wipe then either comes first and the write finds
+    /// nothing, or comes after and removes what it saved. Not reentrant.
+    static func excludingWipe<T>(_ body: () -> T) -> T {
+        wipeLock.lock()
+        defer { wipeLock.unlock() }
+        return body()
+    }
+
     /// The suffixes a key under `UserDefaultsDashConnectStore.keyPrefix` can
     /// carry after the wallet segment: none (the row cache), the intents, the
     /// legacy grants.
@@ -51,6 +64,8 @@ enum DashConnectStores {
     /// the segment after the last dot of what follows the prefix: the wallet
     /// id hex holds no dot, while a devnet name may.
     static func removeAll(walletIdHex: String, in defaults: UserDefaults) {
+        wipeLock.lock()
+        defer { wipeLock.unlock() }
         let prefix = UserDefaultsDashConnectStore.keyPrefix
         for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(prefix) {
             let scoped = key.dropFirst(prefix.count)
@@ -70,6 +85,8 @@ enum DashConnectStores {
     /// Removes every DashConnect key, whatever wallet id or suffix it carries,
     /// orphans included: the full wipe leaves nothing of the feature behind.
     static func removeAllWallets(in defaults: UserDefaults) {
+        wipeLock.lock()
+        defer { wipeLock.unlock() }
         let prefix = UserDefaultsDashConnectStore.keyPrefix
         for key in defaults.dictionaryRepresentation().keys where key.hasPrefix(prefix) {
             defaults.removeObject(forKey: key)
@@ -190,16 +207,16 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
                 continue
             }
 
-            restored.append(
-                DAppConnection(
-                    id: row.contractId,
-                    name: row.label,
-                    url: row.url,
-                    status: row.status,
-                    updatedAt: row.updatedAt,
-                    seenOn: Set(row.seenOn ?? [])
-                )
+            var connection = DAppConnection(
+                id: row.contractId,
+                name: row.label,
+                url: row.url,
+                status: row.status,
+                updatedAt: row.updatedAt,
+                seenOn: Set(row.seenOn ?? [])
             )
+            connection.responseMayRemain = row.responseMayRemain ?? false
+            restored.append(connection)
         }
 
         return restored
@@ -224,7 +241,8 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
                 url: $0.url,
                 status: $0.status,
                 updatedAt: $0.updatedAt,
-                seenOn: $0.seenOn.isEmpty ? nil : $0.seenOn.sorted()
+                seenOn: $0.seenOn.isEmpty ? nil : $0.seenOn.sorted(),
+                responseMayRemain: $0.responseMayRemain ? true : nil
             )
         }
 
@@ -258,6 +276,8 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
         let updatedAt: Date
         /// Absent in rows written before it was kept.
         let seenOn: [String]?
+        /// Absent when false, and in rows written before it was kept.
+        let responseMayRemain: Bool?
     }
 
     private static func base58Decode(_ string: String) -> Data? {
