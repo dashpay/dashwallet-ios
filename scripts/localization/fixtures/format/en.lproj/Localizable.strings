@@ -1,0 +1,6 @@
+"Progress %d%%" = "Progress %d%%";
+"%1$d items for %2$@" = "%1$d items for %2$@";
+"Sum %d and %d" = "Sum %d and %d";
+"Mix %@ %d %ld %lld %u %f" = "Mix %@ %d %ld %lld %u %f";
+"Only in English" = "Only in English";
+"Hello %@" = "Hello %@";
