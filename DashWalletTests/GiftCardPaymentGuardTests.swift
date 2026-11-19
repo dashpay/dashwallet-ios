@@ -414,21 +414,52 @@ final class DashSpendPayApprovalTests: XCTestCase {
         return (viewModel, snapshot)
     }
 
-    /// Runs `confirmQuote` and returns once the "Price updated" sheet is up.
+    /// How long a test waits for the view model before it fails.
+    private static let patience: TimeInterval = 2
+
+    /// Starts `confirmQuote` for `requested` Dash.
+    private func startQuote(_ requested: UInt64, on viewModel: DashSpendPayViewModel,
+                            snapshot: GiftCardPurchaseSnapshot) -> Task<Void, Error> {
+        Task { try await viewModel.confirmQuote(requested: requested, approval: snapshot.approval) }
+    }
+
+    /// Runs `confirmQuote` and returns once the "Price updated" sheet is up. Fails the test
+    /// and returns no change when the sheet has not come up in time; callers unwrap the
+    /// change before they answer it.
     private func quote(_ requested: UInt64, on viewModel: DashSpendPayViewModel,
-                       snapshot: GiftCardPurchaseSnapshot) async
+                       snapshot: GiftCardPurchaseSnapshot,
+                       file: StaticString = #filePath, line: UInt = #line) async
         -> (task: Task<Void, Error>, change: GiftCardPaymentGuard.PriceChange?) {
-        let task = Task { try await viewModel.confirmQuote(requested: requested, approval: snapshot.approval) }
-        for _ in 0..<1_000 {
+        let task = startQuote(requested, on: viewModel, snapshot: snapshot)
+        let deadline = Date().addingTimeInterval(Self.patience)
+        while Date() < deadline {
             if case .priceUpdated(let change)? = viewModel.purchaseSheet { return (task, change) }
             await Task.yield()
         }
+        XCTFail("the \"Price updated\" sheet did not come up", file: file, line: line)
         return (task, nil)
     }
 
-    private func assertCancelled(_ task: Task<Void, Error>, file: StaticString = #filePath, line: UInt = #line) async {
+    /// Waits for `task` to end. A task still waiting after `patience` fails the test and is
+    /// let go by declining whatever it waits for, so a regression fails here instead of
+    /// hanging the suite.
+    private func finish(_ task: Task<Void, Error>, on viewModel: DashSpendPayViewModel,
+                        file: StaticString = #filePath, line: UInt = #line) async throws {
+        let watchdog = Task {
+            try? await Task.sleep(nanoseconds: UInt64(Self.patience * 1_000_000_000))
+            guard !Task.isCancelled else { return }
+            XCTFail("the quote is still waiting for an answer", file: file, line: line)
+            viewModel.resolvePriceChange(pay: false)
+            viewModel.purchaseSheetDidDismiss()
+        }
+        defer { watchdog.cancel() }
+        try await task.value
+    }
+
+    private func assertCancelled(_ task: Task<Void, Error>, on viewModel: DashSpendPayViewModel,
+                                 file: StaticString = #filePath, line: UInt = #line) async {
         do {
-            try await task.value
+            try await finish(task, on: viewModel, file: file, line: line)
             XCTFail("the purchase went on", file: file, line: line)
         } catch DashSpendError.purchaseCancelled {
         } catch {
@@ -579,7 +610,7 @@ final class DashSpendPayApprovalTests: XCTestCase {
 
     func testQuoteAsConfirmedClosesTheSheetWithoutAsking() async throws {
         let (viewModel, snapshot) = try viewModelWithConfirmSheet()
-        try await viewModel.confirmQuote(requested: snapshot.approval.amount, approval: snapshot.approval)
+        try await finish(startQuote(snapshot.approval.amount, on: viewModel, snapshot: snapshot), on: viewModel)
         XCTAssertNil(viewModel.purchaseSheet)
     }
 
@@ -587,7 +618,7 @@ final class DashSpendPayApprovalTests: XCTestCase {
     func testSmallIncreaseClosesTheSheetWithoutAsking() async throws {
         let (viewModel, snapshot) = try viewModelWithConfirmSheet()
         let requested = snapshot.approval.amount + snapshot.approval.amount * 3 / 1_000
-        try await viewModel.confirmQuote(requested: requested, approval: snapshot.approval)
+        try await finish(startQuote(requested, on: viewModel, snapshot: snapshot), on: viewModel)
         XCTAssertNil(viewModel.purchaseSheet)
     }
 
@@ -604,7 +635,7 @@ final class DashSpendPayApprovalTests: XCTestCase {
         viewModel.resolvePriceChange(pay: true)
         XCTAssertNil(viewModel.purchaseSheet)
         viewModel.purchaseSheetDidDismiss()
-        try await task.value
+        try await finish(task, on: viewModel)
     }
 
     func testQuoteFivePercentHigherIsShownWithAWarning() async throws {
@@ -615,16 +646,16 @@ final class DashSpendPayApprovalTests: XCTestCase {
         XCTAssertEqual(try XCTUnwrap(shown).needsWarning, true)
 
         viewModel.resolvePriceChange(pay: true)
-        try await task.value
+        try await finish(task, on: viewModel)
     }
 
     func testDecliningAHigherQuoteCancelsThePurchase() async throws {
         let (viewModel, snapshot) = try viewModelWithConfirmSheet()
         let (task, shown) = await quote(snapshot.approval.amount * 2, on: viewModel, snapshot: snapshot)
-        XCTAssertNotNil(shown)
+        _ = try XCTUnwrap(shown)
 
         viewModel.resolvePriceChange(pay: false)
-        await assertCancelled(task)
+        await assertCancelled(task, on: viewModel)
         XCTAssertNil(viewModel.purchaseSheet)
     }
 
@@ -632,10 +663,10 @@ final class DashSpendPayApprovalTests: XCTestCase {
     func testDismissingThePriceSheetDeclinesTheQuote() async throws {
         let (viewModel, snapshot) = try viewModelWithConfirmSheet()
         let (task, shown) = await quote(snapshot.approval.amount * 2, on: viewModel, snapshot: snapshot)
-        XCTAssertNotNil(shown)
+        _ = try XCTUnwrap(shown)
 
         viewModel.dismissPurchaseSheet()
-        await assertCancelled(task)
+        await assertCancelled(task, on: viewModel)
         XCTAssertNil(viewModel.purchaseSheet)
     }
 
@@ -645,10 +676,10 @@ final class DashSpendPayApprovalTests: XCTestCase {
     func testClosingTheScreenDeclinesAPendingPriceChange() async throws {
         let (viewModel, snapshot) = try viewModelWithConfirmSheet()
         let (task, shown) = await quote(snapshot.approval.amount * 2, on: viewModel, snapshot: snapshot)
-        XCTAssertNotNil(shown)
+        _ = try XCTUnwrap(shown)
 
         viewModel.unsubscribeFromAll()
-        await assertCancelled(task)
+        await assertCancelled(task, on: viewModel)
         XCTAssertNil(viewModel.purchaseSheet)
     }
 
@@ -658,13 +689,7 @@ final class DashSpendPayApprovalTests: XCTestCase {
         let (viewModel, snapshot) = try viewModelWithConfirmSheet()
         viewModel.unsubscribeFromAll()
 
-        do {
-            try await viewModel.confirmQuote(requested: snapshot.approval.amount * 2, approval: snapshot.approval)
-            XCTFail("the purchase went on")
-        } catch DashSpendError.purchaseCancelled {
-        } catch {
-            XCTFail("unexpected error: \(error)")
-        }
+        await assertCancelled(startQuote(snapshot.approval.amount * 2, on: viewModel, snapshot: snapshot), on: viewModel)
         if case .priceUpdated? = viewModel.purchaseSheet { XCTFail("a price change was shown with no screen") }
     }
 
@@ -674,8 +699,7 @@ final class DashSpendPayApprovalTests: XCTestCase {
         let (viewModel, snapshot) = try viewModelWithConfirmSheet()
         viewModel.unsubscribeFromAll()
 
-        let task = Task { try await viewModel.confirmQuote(requested: snapshot.approval.amount, approval: snapshot.approval) }
-        await assertCancelled(task)
+        await assertCancelled(startQuote(snapshot.approval.amount, on: viewModel, snapshot: snapshot), on: viewModel)
     }
 
     /// The screen closes in the moment the sheet is leaving after the quote was accepted.
@@ -683,13 +707,14 @@ final class DashSpendPayApprovalTests: XCTestCase {
         let (viewModel, snapshot) = try viewModelWithConfirmSheet()
         viewModel.sheetDismissalWait = 5
 
-        let task = Task { try await viewModel.confirmQuote(requested: snapshot.approval.amount, approval: snapshot.approval) }
-        for _ in 0..<1_000 where viewModel.purchaseSheet != nil { await Task.yield() }
+        let task = startQuote(snapshot.approval.amount, on: viewModel, snapshot: snapshot)
+        let deadline = Date().addingTimeInterval(Self.patience)
+        while viewModel.purchaseSheet != nil, Date() < deadline { await Task.yield() }
         XCTAssertNil(viewModel.purchaseSheet, "the quote was not accepted")
 
         viewModel.unsubscribeFromAll()
         viewModel.purchaseSheetDidDismiss()
-        await assertCancelled(task)
+        await assertCancelled(task, on: viewModel)
     }
 
     /// Tapping Pay shows the screen is there, so a purchase begun after the screen was last
@@ -702,7 +727,7 @@ final class DashSpendPayApprovalTests: XCTestCase {
             return XCTFail("the Confirm sheet did not open")
         }
 
-        try await viewModel.confirmQuote(requested: snapshot.approval.amount, approval: snapshot.approval)
+        try await finish(startQuote(snapshot.approval.amount, on: viewModel, snapshot: snapshot), on: viewModel)
         XCTAssertNil(viewModel.purchaseSheet)
     }
 
@@ -715,15 +740,15 @@ final class DashSpendPayApprovalTests: XCTestCase {
         defer { viewModel.unsubscribeFromAll() }
 
         let (task, shown) = await quote(snapshot.approval.amount * 2, on: viewModel, snapshot: snapshot)
-        XCTAssertNotNil(shown)
+        _ = try XCTUnwrap(shown)
         viewModel.resolvePriceChange(pay: true)
-        try await task.value
+        try await finish(task, on: viewModel)
     }
 
     func testZeroQuoteIsRefusedWithoutAsking() async throws {
         let (viewModel, snapshot) = try viewModelWithConfirmSheet()
         do {
-            try await viewModel.confirmQuote(requested: 0, approval: snapshot.approval)
+            try await finish(startQuote(0, on: viewModel, snapshot: snapshot), on: viewModel)
             XCTFail("a quote for no Dash went on")
         } catch {
             XCTAssertEqual((error as? DashSpendError)?.errorDescription,
