@@ -154,7 +154,7 @@ struct ConnectionSheet: View {
             if !item.url.isEmpty {
                 HStack(spacing: 10) {
                     Image(systemName: "globe")
-                        .font(.system(size: 16))
+                        .scaledSystemFont(size: 16, relativeTo: .callout)
                         .foregroundColor(Color.dash.blue)
                         .accessibilityHidden(true)
                     Text(item.url)

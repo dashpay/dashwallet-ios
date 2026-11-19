@@ -291,7 +291,7 @@ struct ShieldedRecoverySheet: View {
 
             if case let .failed(message) = viewModel.phase {
                 Text(message)
-                    .font(.system(size: 13))
+                    .scaledSystemFont(size: 13, relativeTo: .footnote)
                     .foregroundColor(.red)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 24)
@@ -397,18 +397,19 @@ struct ShieldedRecoverySheet: View {
                     .fill(Color.dash.blue)
                     .frame(width: 30, height: 30)
                 Image(systemName: "shield.fill")
-                    .font(.system(size: 14, weight: .semibold))
+                    .scaledSystemFont(size: 14, weight: .semibold, relativeTo: .subheadline)
+                    .dynamicTypeSize(...DynamicTypeSize.xxxLarge) // drawn inside a fixed-size badge
                     .foregroundColor(Color.dash.whiteText)
             }
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(NSLocalizedString("Your Dash is safe", comment: "InternalTransfer recovery"))
-                    .font(.system(size: 14, weight: .semibold))
+                    .scaledSystemFont(size: 14, weight: .semibold, relativeTo: .subheadline)
                     .foregroundColor(.dash.primaryText)
                 Text(NSLocalizedString(
                     "This transfer's funds were locked on-chain but the private transfer didn't finish. Tap Finish now to complete it.",
                     comment: "InternalTransfer recovery"))
-                    .font(.system(size: 13))
+                    .scaledSystemFont(size: 13, relativeTo: .footnote)
                     .foregroundColor(.dash.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
             }

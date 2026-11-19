@@ -72,7 +72,7 @@ struct CoinJoinMoveFundsSheet: View {
                     Text(NSLocalizedString(
                         "CoinJoin is no longer supported — choose where to move your mixed coins.",
                         comment: "CoinJoin"))
-                        .font(.system(size: 14))
+                        .scaledSystemFont(size: 14, relativeTo: .subheadline)
                         .foregroundColor(.dash.secondaryText)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 24)
@@ -120,16 +120,17 @@ struct CoinJoinMoveFundsSheet: View {
                         .fill(Color.dash.blue)
                         .frame(width: 34, height: 34)
                     Image(systemName: icon)
-                        .font(.system(size: 15, weight: .semibold))
+                        .scaledSystemFont(size: 15, weight: .semibold, relativeTo: .subheadline)
+                        .dynamicTypeSize(...DynamicTypeSize.xxxLarge) // drawn inside a fixed-size badge
                         .foregroundColor(Color.dash.whiteText)
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.system(size: 15, weight: .semibold))
+                        .scaledSystemFont(size: 15, weight: .semibold, relativeTo: .subheadline)
                         .foregroundColor(.dash.primaryText)
                     Text(subtitle)
-                        .font(.system(size: 13))
+                        .scaledSystemFont(size: 13, relativeTo: .footnote)
                         .foregroundColor(.dash.secondaryText)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
@@ -138,7 +139,7 @@ struct CoinJoinMoveFundsSheet: View {
                 Spacer()
 
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .semibold))
+                    .scaledSystemFont(size: 13, weight: .semibold, relativeTo: .footnote)
                     .foregroundColor(.dash.secondaryText)
             }
             .padding(14)
@@ -226,7 +227,7 @@ struct CoinJoinMoveFundsSheet: View {
                 : NSLocalizedString(
                     "Your mixed coins were moved to your Dash Wallet balance.",
                     comment: "CoinJoin"))
-                .font(.system(size: 14))
+                .scaledSystemFont(size: 14, relativeTo: .subheadline)
                 .foregroundColor(.dash.secondaryText)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
@@ -265,7 +266,7 @@ struct CoinJoinMoveFundsSheet: View {
                 .padding(.top, 24)
 
             Text(message)
-                .font(.system(size: 14))
+                .scaledSystemFont(size: 14, relativeTo: .subheadline)
                 .foregroundColor(.dash.primaryText)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
