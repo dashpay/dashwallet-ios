@@ -419,6 +419,24 @@ final class QRScannerTests: XCTestCase {
         XCTAssertTrue(recorder.results.isEmpty)
     }
 
+    /// A hostless https code is no request, so it neither ranks as one nor
+    /// keeps a usable request later in the frame from being fetched.
+    func testUnusableHTTPSCodeDoesNotCrowdOutARequest() {
+        XCTAssertFalse(ParsedPaymentURI.parse(paymentString: "https:///pr").isWholeRequestURL)
+
+        let (alone, _) = makeScanner(.payment)
+        alone.didDetectCodes(["https:///pr"])
+        if case .connecting = alone.status { XCTFail("a hostless URL is not fetched") }
+
+        let (scanner, recorder) = makeScanner(.payment)
+        scanner.didDetectCodes(["https:///pr", "https://merchant.invalid/pr"])
+        guard case .connecting = scanner.status else {
+            return XCTFail("the usable request is fetched: \(scanner.status)")
+        }
+        scanner.cancel()
+        XCTAssertTrue(recorder.results.isEmpty)
+    }
+
     /// A `dash:` payment anywhere in frame wins over a whole request URL
     /// read before it: the URL would be fetched without a tap.
     func testPaymentScannerPrefersADashPaymentOverAWholeRequestURL() {

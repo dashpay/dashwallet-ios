@@ -700,12 +700,14 @@ final class BIP70PaymentServiceTests: XCTestCase {
     /// A payment_url that is present but unusable is refused, not taken for an absent one:
     /// an absent one would skip the merchant's acknowledgement.
     func testPrepareRefusesAnUnusablePaymentURL() async {
-        XCTAssertNotNil(PaymentDetails(Data([0x32, 0x01, 0xff])).paymentURL, "an undecodable field stays present")
-
-        var requests = ["https:///pay", "not a url", ""].map { unsigned(paymentURL: $0) }
+        var requests = ["https:///pay", "not a url", "", "https://h/pay me"].map { unsigned(paymentURL: $0) }
         let noURL = unsigned(paymentURL: nil)
-        requests.append(PaymentRequest(pkiType: "none",
-                                       serializedDetails: noURL.serializedDetails + Data([0x32, 0x01, 0xff])))
+        let malformedPath = Data("https://h/pay".utf8) + Data([0xff, 0xfe])
+        for bytes in [Data([0xff]), malformedPath] {
+            let field = Data([0x32, UInt8(bytes.count)]) + bytes
+            XCTAssertEqual(PaymentDetails(field).paymentURL, "", "undecodable bytes are neither absent nor repaired")
+            requests.append(PaymentRequest(pkiType: "none", serializedDetails: noURL.serializedDetails + field))
+        }
         for request in requests {
             let w = FakeWallet()
             await assertThrowsBIP70(

@@ -117,7 +117,7 @@ final class ParsedPaymentURI: NSObject {
     /// scheme whose request the wallet fetches. Cleartext is not: nothing would vouch for the
     /// request it returns.
     @objc var isWholeRequestURL: Bool {
-        scheme == "https"
+        scheme == "https" && rURL.map(PaymentProtocolTransport.isSecure) == true
     }
 
     private init(rawString: String,
