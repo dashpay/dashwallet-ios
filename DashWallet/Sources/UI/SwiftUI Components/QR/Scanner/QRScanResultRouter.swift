@@ -27,16 +27,22 @@ enum QRScanResultRouter {
         WalletLifecycleOverlayPresenter.shared.lockScreenVisible
     }
 
-    /// Whether the loaded wallet reads the invitation's voucher as
-    /// malformed. Unknown before the wallet is loaded, and then left to
-    /// Home's own check.
-    static func isMalformedInvitation(_ url: URL) -> Bool {
+    enum InvitationCheck {
+        case valid
+        case malformed
+        /// The wallet is not loaded, so the voucher can't be read yet.
+        case unavailable
+    }
+
+    /// The voucher's structure as the loaded wallet reads it.
+    static func checkInvitation(_ url: URL) -> InvitationCheck {
         #if DASHPAY
+        guard SwiftDashSDKHost.shared.wallet != nil else { return .unavailable }
         guard let uri = DWInvitationLinkNormalizer.normalize(url.absoluteString),
-              let preview = DWInvitationService.shared.preview(for: uri) else { return false }
-        return !preview.structurallyValid
+              let preview = DWInvitationService.shared.preview(for: uri) else { return .malformed }
+        return preview.structurallyValid ? .valid : .malformed
         #else
-        return false
+        return .unavailable
         #endif
     }
 

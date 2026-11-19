@@ -46,10 +46,11 @@ final class QRScannerTests: XCTestCase {
     private func makeScanner(_ mode: QRScannerMode,
                              locked: @escaping @MainActor () -> Bool = { false },
                              hasIdentity: @escaping @MainActor () -> Bool = { true },
-                             malformedInvitation: @escaping @MainActor (URL) -> Bool = { _ in false }) -> (QRScannerViewModel, Recorder) {
+                             invitation: @escaping @MainActor (URL) -> QRScanResultRouter.InvitationCheck = { _ in .valid })
+        -> (QRScannerViewModel, Recorder) {
         let recorder = Recorder()
         let viewModel = QRScannerViewModel(mode: mode, isWalletLocked: locked, hasDashPayIdentity: hasIdentity,
-                                           isMalformedInvitation: malformedInvitation)
+                                           checkInvitation: invitation)
         viewModel.onResult = { recorder.results.append($0) }
         return (viewModel, recorder)
     }
@@ -174,14 +175,17 @@ final class QRScannerTests: XCTestCase {
         }
     }
 
-    /// A malformed voucher is refused before it can take the wallet's one
-    /// pending-invitation slot, whichever scanner read it.
-    func testMalformedInvitationIsRefused() {
-        for mode in [QRScannerMode.payment, .invitation, .dashPayUser] {
-            let (scanner, recorder) = makeScanner(mode, malformedInvitation: { _ in true })
-            scanner.didDetectCodes([Self.invitationLink])
-            XCTAssertTrue(recorder.results.isEmpty)
-            XCTAssertTrue(isInvalid(scanner.status))
+    /// Only a voucher the wallet read as well formed can take the wallet's
+    /// one pending-invitation slot, whichever scanner read it: a malformed
+    /// one, or one the wallet can't read yet, is refused.
+    func testOnlyAWellFormedInvitationIsHandedOver() {
+        for check in [QRScanResultRouter.InvitationCheck.malformed, .unavailable] {
+            for mode in [QRScannerMode.payment, .invitation, .dashPayUser] {
+                let (scanner, recorder) = makeScanner(mode, invitation: { _ in check })
+                scanner.didDetectCodes([Self.invitationLink])
+                XCTAssertTrue(recorder.results.isEmpty)
+                XCTAssertTrue(isInvalid(scanner.status))
+            }
         }
     }
 
@@ -266,6 +270,15 @@ final class QRScannerTests: XCTestCase {
         XCTAssertEqual(SendViewModel.scannedAddress(in: input), Self.address)
     }
 
+    /// A URI amount above the coin supply is dropped before it is narrowed,
+    /// so no later credit conversion can wrap it.
+    func testURIAmountAboveTheSupplyIsDropped() {
+        XCTAssertEqual(ParsedPaymentURI.parse(paymentString: "dash:\(Self.address)?amount=21000000").amount,
+                       kMaxDashSupplyDuffs)
+        XCTAssertEqual(ParsedPaymentURI.parse(paymentString: "dash:\(Self.address)?amount=21000000.00000001").amount, 0)
+        XCTAssertEqual(ParsedPaymentURI.parse(paymentString: "dash:\(Self.address)?amount=184467440737").amount, 0)
+    }
+
     /// The Send form a redirect fills reads back exactly the scanned duffs,
     /// including amounts locale formatting would group.
     func testSendFormKeepsTheScannedDuffs() {
@@ -327,6 +340,29 @@ final class QRScannerTests: XCTestCase {
     func testDashAddressFieldOffersSendForAPlatformAddress() {
         let (scanner, recorder) = makeScanner(.addressInput(expectsDashAddress: true))
         scanner.didDetectCodes(["dash:\(Self.platformAddress)"])
+        XCTAssertTrue(isOffer(scanner.status))
+        XCTAssertTrue(recorder.results.isEmpty)
+    }
+
+    /// A foreign-scheme request is neither unwrapped into a Dash field nor
+    /// offered as a Dash payment.
+    func testForeignSchemeRequestIsNotTakenForDash() {
+        let foreign = "bitcoin:\(Self.address)?r=https%3A%2F%2Fmerchant.invalid%2Fpr"
+        for expectsDashAddress in [true, false] {
+            let (scanner, recorder) = makeScanner(.addressInput(expectsDashAddress: expectsDashAddress))
+            scanner.didDetectCodes([foreign])
+            XCTAssertFalse(isOffer(scanner.status))
+            if case .text(let value) = recorder.results.first {
+                XCTAssertNotEqual(value, Self.address)
+            }
+        }
+    }
+
+    /// A Dash merchant request with an embedded address is offered to the
+    /// merchant flow, not unwrapped into a Dash address field.
+    func testDashAddressFieldOffersAMerchantRequestCarryingAnAddress() {
+        let (scanner, recorder) = makeScanner(.addressInput(expectsDashAddress: true))
+        scanner.didDetectCodes(["dash:\(Self.address)?r=https%3A%2F%2Fmerchant.invalid%2Fpr"])
         XCTAssertTrue(isOffer(scanner.status))
         XCTAssertTrue(recorder.results.isEmpty)
     }

@@ -1315,7 +1315,10 @@ final class SendViewModel: ObservableObject {
         if isFullShieldedSweep, let shieldedSweepAmountCredits {
             return shieldedSweepAmountCredits
         }
-        return NSDecimalNumber(decimal: Decimal(dashDuffsUnsigned) * 1000).uint64Value
+        // Saturates rather than wraps: an amount past the credit range then
+        // fails every affordability check instead of reading as a small one.
+        let (credits, overflow) = dashDuffsUnsigned.multipliedReportingOverflow(by: 1000)
+        return overflow ? .max : credits
     }
 
     var fiatAmountString: String {

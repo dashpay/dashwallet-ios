@@ -191,11 +191,14 @@ struct BIP70URI {
 
     /// Decimal DASH string → duffs (1 DASH = 100_000_000 duffs), via `Decimal` to avoid binary
     /// floating-point error, rounding **up** to the next duff for sub-duff remainders
-    /// (`DSPaymentRequest.m:146` `NSRoundUp` parity). nil for an unparseable or negative amount.
+    /// (`DSPaymentRequest.m:146` `NSRoundUp` parity). nil for an unparseable or negative amount,
+    /// and for one above the coin supply, before it is narrowed.
     private static func duffs(fromDecimalDash value: String) -> UInt64? {
         guard !value.isEmpty, let dash = Decimal(string: value), dash >= 0 else { return nil }
-        return NSDecimalNumber(decimal: dash * Decimal(100_000_000))
-            .rounding(accordingToBehavior: roundUpToDuff).uint64Value
+        let duffs = NSDecimalNumber(decimal: dash * Decimal(100_000_000))
+            .rounding(accordingToBehavior: roundUpToDuff)
+        guard duffs.compare(NSDecimalNumber(value: kMaxDashSupplyDuffs)) != .orderedDescending else { return nil }
+        return duffs.uint64Value
     }
 
     private static let roundUpToDuff = NSDecimalNumberHandler(roundingMode: .up,
