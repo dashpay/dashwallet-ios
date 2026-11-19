@@ -35,9 +35,9 @@ enum DashSpendError: Error, LocalizedError {
     case previousSwapPending
     case swapAwaitingInstantLock
     case authenticationCancelled
-    /// A gift card price came back higher than the one the buyer confirmed and was not
-    /// accepted: the buyer declined it, or the screen went away before it could be shown.
-    /// Nothing was sent; the screen shows no error for it.
+    /// A gift card purchase that ended with nothing sent and nothing to tell the buyer: a
+    /// higher price was declined or could not be shown because the screen went away, or the
+    /// start was a repeat of a purchase already running or of a sheet already cancelled.
     case purchaseCancelled
     /// The Dash payment was broadcast but the network returned no acceptance verdict in time.
     /// The order is NOT lost: the merchant holds the signed transaction and the gift card is
@@ -105,7 +105,7 @@ enum DashSpendError: Error, LocalizedError {
         case .authenticationCancelled:
             return NSLocalizedString("Authentication cancelled", comment: "DashSpend/Maya")
         case .purchaseCancelled:
-            // Never shown: the buyer declined on the "Price updated" sheet or left the screen.
+            // Never shown: the buyer declined, left the screen, or tapped Confirm twice.
             return nil
         }
     }

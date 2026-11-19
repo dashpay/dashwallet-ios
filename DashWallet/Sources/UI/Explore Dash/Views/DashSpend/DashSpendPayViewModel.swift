@@ -62,6 +62,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     private lazy var txMetadataDao = TransactionMetadataDAOImpl.shared
     private lazy var sendCoinsService = SendCoinsService()
     private let exchangeRate: () -> GiftCardPaymentGuard.ExchangeRate
+    private let now: () -> Date
     
     private let repository: [GiftCardProvider: any DashSpendRepository] = {
         var dict: [GiftCardProvider: any DashSpendRepository] = [
@@ -228,12 +229,16 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     }
 
 
-    /// - Parameter exchangeRate: reads the wallet's USD rate and when it was retrieved. It is
-    ///   read when the Confirm sheet opens; the purchase uses that value.
+    /// - Parameters:
+    ///   - exchangeRate: reads the wallet's USD rate and when it was retrieved. It is read
+    ///     when the Confirm sheet opens; the purchase uses that value.
+    ///   - now: the clock the rate's age is judged by, when the sheet opens and again on Confirm.
     init(merchant: ExplorePointOfUse, provider: GiftCardProvider = .ctx,
-         exchangeRate: @escaping () -> GiftCardPaymentGuard.ExchangeRate = DashSpendPayViewModel.walletExchangeRate) {
+         exchangeRate: @escaping () -> GiftCardPaymentGuard.ExchangeRate = DashSpendPayViewModel.walletExchangeRate,
+         now: @escaping () -> Date = { Date() }) {
         self.provider = provider
         self.exchangeRate = exchangeRate
+        self.now = now
 
         merchantTitle = merchant.name
         merchantIconUrl = merchant.logoLocation ?? ""
@@ -367,7 +372,13 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     /// the sheet could not show a Dash amount, and a provider's quote could not be compared.
     func beginPurchase(price: Decimal, quantities: [Decimal: Int] = [:]) throws {
         let discount = displaySavingsFraction
-        let approval = try GiftCardPaymentGuard.approve(price: price, discount: discount, rate: exchangeRate())
+        let approval: GiftCardPaymentGuard.Approval
+        do {
+            approval = try GiftCardPaymentGuard.approve(price: price, discount: discount, rate: exchangeRate(), now: now())
+        } catch {
+            DWLogger.log("Gift card purchase not opened: \(error)")
+            throw error
+        }
         purchaseSheet = .confirm(GiftCardPurchaseSnapshot(
             price: price, discount: discount, quantities: quantities, approval: approval))
     }
@@ -387,7 +398,10 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
     /// The buyer's answer on the "Price updated" sheet.
     func resolvePriceChange(pay: Bool) {
-        guard case .priceUpdated = purchaseSheet else { return }
+        guard case .priceUpdated(let change) = purchaseSheet else { return }
+        if pay {
+            DWLogger.log("Gift card price change accepted: paying \(change.requestedAmount) duffs, confirmed \(change.confirmedAmount)")
+        }
         purchaseSheet = nil
         priceDecision?.resume(returning: pay)
         priceDecision = nil
@@ -440,15 +454,26 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
     /// Orders the gift card the buyer confirmed and pays for it.
     ///
+    /// Starts only for the snapshot the Confirm sheet is showing, and only once: a call for
+    /// any other snapshot, after the sheet was cancelled, or while a purchase is already
+    /// running throws `DashSpendError.purchaseCancelled` with nothing ordered. The sheet's
+    /// Confirm button can be tapped again before the sheet has redrawn or left the screen.
+    ///
     /// - Parameter snapshot: what the Confirm sheet showed. A provider's quote is compared
     ///   with its `approval` through `confirmQuote` before the payment is authorized.
     func purchaseGiftCardAndPay(_ snapshot: GiftCardPurchaseSnapshot) async throws -> Data {
+        guard !isProcessingPayment, case .confirm(let shown) = purchaseSheet, shown == snapshot else {
+            DWLogger.log("Gift card purchase not started: not the confirmation on screen, or one is already running")
+            throw DashSpendError.purchaseCancelled
+        }
+
         let approval = snapshot.approval
         let confirmedPrice = snapshot.price
 
         // Read again here: the sheet can stay open past the stale-rate limit, and a quote
         // cannot be compared with a Dash amount computed from a rate that old.
-        guard approval.isRateFresh() else {
+        guard approval.isRateFresh(now: now()) else {
+            DWLogger.log("Gift card purchase stopped: the confirmed rate went stale while the sheet was open")
             purchaseSheet = nil
             throw GiftCardPaymentGuard.rateUnavailableError
         }

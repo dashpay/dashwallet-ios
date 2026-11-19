@@ -475,6 +475,7 @@ class PiggyCardsRepository: DashSpendRepository {
 
         let address = String(components[0])
         guard isValidAddress(address) else {
+            DWLogger.log("PiggyCards payment refused: the payment address is not valid on this network")
             throw GiftCardPaymentGuard.invalidPaymentAddressError
         }
 

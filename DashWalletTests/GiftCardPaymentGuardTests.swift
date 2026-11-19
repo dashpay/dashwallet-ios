@@ -358,11 +358,21 @@ final class GiftCardPaymentGuardTests: XCTestCase {
         XCTAssertEqual(GiftCardAmountText.exactDash(123_456_700_000_000, locale: polish), "1234567,0000")
     }
 
+    /// An increase just under 5% has no warning, so it must not read as 5%.
+    func testIncreasePercentRoundsDown() {
+        XCTAssertEqual(DashSpendPriceUpdatedDialog.percent(of: dash("0.0499")), 4.9)
+        XCTAssertEqual(DashSpendPriceUpdatedDialog.percent(of: dash("0.04999999")), 4.9)
+        XCTAssertEqual(DashSpendPriceUpdatedDialog.percent(of: dash("0.05")), 5.0)
+        XCTAssertEqual(DashSpendPriceUpdatedDialog.percent(of: dash("0.0999")), 9.9)
+    }
+
     /// One decimal below 10%, whole percent from there.
     func testIncreasePercentRounding() {
-        XCTAssertEqual(DashSpendPriceUpdatedDialog.percent(of: dash("0.0399")), 4.0)
+        XCTAssertEqual(DashSpendPriceUpdatedDialog.percent(of: dash("0.03")), 3.0)
+        XCTAssertEqual(DashSpendPriceUpdatedDialog.percent(of: dash("0.041")), 4.1)
         XCTAssertEqual(DashSpendPriceUpdatedDialog.percent(of: dash("0.00637")), 0.6)
         XCTAssertEqual(DashSpendPriceUpdatedDialog.percent(of: dash("0.1249")), 12)
+        XCTAssertEqual(DashSpendPriceUpdatedDialog.percent(of: dash("0.1299")), 12)
         XCTAssertEqual(DashSpendPriceUpdatedDialog.percent(of: dash("9")), 900)
         XCTAssertEqual(DashSpendPriceUpdatedDialog.percent(of: Decimal.nan), 0)
     }
@@ -472,21 +482,25 @@ final class DashSpendPayApprovalTests: XCTestCase {
     /// The sheet can stay open past the stale-rate limit. Confirm then stops the purchase
     /// before the provider is asked for an order.
     func testPurchaseStopsBeforeTheProviderWhenTheConfirmedRateWentStale() async throws {
-        let (viewModel, fresh) = try viewModelWithConfirmSheet()
-        let stale = GiftCardPurchaseSnapshot(
-            price: fresh.price, discount: fresh.discount, quantities: fresh.quantities,
-            approval: .init(amount: fresh.approval.amount, fiatAmount: fresh.approval.fiatAmount,
-                            rate: fresh.approval.rate,
-                            rateRetrievedAt: fresh.approval.rateRetrievedAt - Int(kStaleRatesDuration) - 60))
+        var clock = Date()
+        let rate = GiftCardPaymentGuard.ExchangeRate(price: 40, retrievedAt: Int(clock.timeIntervalSince1970))
+        let viewModel = DashSpendPayViewModel(merchant: merchant, provider: .ctx,
+                                              exchangeRate: { rate }, now: { clock })
+        try viewModel.beginPurchase(price: 25)
+        guard case .confirm(let snapshot)? = viewModel.purchaseSheet else {
+            return XCTFail("the Confirm sheet did not open")
+        }
 
+        clock = clock.addingTimeInterval(kStaleRatesDuration + 60)
         do {
-            _ = try await viewModel.purchaseGiftCardAndPay(stale)
+            _ = try await viewModel.purchaseGiftCardAndPay(snapshot)
             XCTFail("the purchase went on")
         } catch {
             XCTAssertEqual((error as? DashSpendError)?.errorDescription,
                            GiftCardPaymentGuard.rateUnavailableError.errorDescription, "\(error)")
         }
         XCTAssertNil(viewModel.purchaseSheet)
+        XCTAssertFalse(viewModel.isProcessingPayment)
     }
 
     /// With a fresh rate the purchase moves on to the provider step. This merchant has no
@@ -503,6 +517,62 @@ final class DashSpendPayApprovalTests: XCTestCase {
         }
         XCTAssertNil(viewModel.purchaseSheet)
         XCTAssertFalse(viewModel.isProcessingPayment)
+    }
+
+    // MARK: Starting once
+
+    private func outcome(of purchase: Task<Data, Error>) async -> String {
+        do {
+            _ = try await purchase.value
+            return "paid"
+        } catch DashSpendError.purchaseCancelled {
+            return "not started"
+        } catch DashSpendError.unauthorized {
+            return "provider step"
+        } catch {
+            return "\(error)"
+        }
+    }
+
+    /// Confirm can be tapped again before the sheet has redrawn. Only one of the two starts
+    /// reaches the provider step; the other ends with nothing ordered.
+    func testSecondStartForTheSameConfirmationIsRefused() async throws {
+        let (viewModel, snapshot) = try viewModelWithConfirmSheet()
+
+        let first = Task { try await viewModel.purchaseGiftCardAndPay(snapshot) }
+        let second = Task { try await viewModel.purchaseGiftCardAndPay(snapshot) }
+        let outcomes = [await outcome(of: first), await outcome(of: second)].sorted()
+
+        XCTAssertEqual(outcomes, ["not started", "provider step"])
+        XCTAssertNil(viewModel.purchaseSheet)
+        XCTAssertFalse(viewModel.isProcessingPayment)
+    }
+
+    /// The sheet stays drawn while it animates away after Cancel. A Confirm tap in that time
+    /// starts nothing.
+    func testConfirmAfterCancelStartsNothing() async throws {
+        let (viewModel, snapshot) = try viewModelWithConfirmSheet()
+        viewModel.dismissPurchaseSheet()
+
+        let result = await outcome(of: Task { try await viewModel.purchaseGiftCardAndPay(snapshot) })
+
+        XCTAssertEqual(result, "not started")
+        XCTAssertNil(viewModel.purchaseSheet)
+        XCTAssertFalse(viewModel.isProcessingPayment)
+    }
+
+    /// Only the confirmation on screen can be started: an earlier one is refused and the
+    /// sheet that is open stays as it is.
+    func testConfirmationThatIsNotOnScreenStartsNothing() async throws {
+        let (viewModel, earlier) = try viewModelWithConfirmSheet()
+        try viewModel.beginPurchase(price: 50)
+        let shown = viewModel.purchaseSheet
+
+        let result = await outcome(of: Task { try await viewModel.purchaseGiftCardAndPay(earlier) })
+
+        XCTAssertEqual(result, "not started")
+        XCTAssertEqual(viewModel.purchaseSheet, shown)
+        XCTAssertNotEqual(shown, GiftCardPurchaseSheet.confirm(earlier))
     }
 
     // MARK: The provider's quote

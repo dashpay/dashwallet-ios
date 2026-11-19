@@ -218,10 +218,9 @@ struct DashSpendPayScreen: View {
                 presentationMode.wrappedValue.dismiss()
                 onPurchaseSuccess?(txId)
             } catch DashSpendError.purchaseCancelled {
-                // A higher price was declined on the "Price updated" sheet, or this screen
-                // went away before it could be shown. Nothing was sent and there is nothing
-                // to report.
-                DWLogger.log("Gift card purchase cancelled: a higher price was not accepted")
+                // A higher price was declined or could not be shown, or this was a second
+                // tap on Confirm. Nothing was sent and there is nothing to report; the view
+                // model logged which.
             } catch DashSpendError.paymentStatusUnknown(let txId, let reason) {
                 // Paid, order placed, acceptance verdict missing. The purchase is already
                 // recorded, so route to the card details exactly like a confirmed purchase —
@@ -305,7 +304,9 @@ private struct DashSpendPurchaseSheet: View {
             cornerRadius: 32,
             animatesHeightChanges: true
         ) {
+            // The content stays drawn while the sheet animates away; it takes no taps then.
             content
+                .allowsHitTesting(viewModel.purchaseSheet != nil)
         }
         .onChange(of: viewModel.purchaseSheet) { newSheet in
             if let newSheet { sheet = newSheet }

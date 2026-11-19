@@ -38,10 +38,13 @@ struct DashSpendPriceUpdatedDialog: View {
     }
 
     /// The increase in percent, to one decimal below 10% and to a whole percent from there.
+    /// Rounded down, so an increase just under the warning level is not shown as that level.
     static func percent(of fraction: Decimal) -> Double {
-        let percent = NSDecimalNumber(decimal: fraction * 100).doubleValue
+        var percent = fraction * 100
         guard percent.isFinite else { return 0 }
-        return percent < 10 ? (percent * 10).rounded() / 10 : percent.rounded()
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &percent, percent < 10 ? 1 : 0, .down)
+        return NSDecimalNumber(decimal: rounded).doubleValue
     }
 
     private var payButtonText: String {
