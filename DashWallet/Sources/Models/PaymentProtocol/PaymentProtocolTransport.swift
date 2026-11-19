@@ -92,13 +92,13 @@ final class PaymentProtocolTransport: PaymentProtocolTransporting {
     /// The body is read against the 50 KB cap as it arrives, so a merchant
     /// that sends more is cut off instead of buffered whole.
     private func receive(_ request: URLRequest, host: String?) async throws -> (Data, HTTPURLResponse) {
-        let (bytes, response) = try await session.bytes(for: request)
+        let (bytes, response) = try await session.bytes(for: request, delegate: HTTPSOnlyRedirects())
         do {
             guard let http = response as? HTTPURLResponse,
                   (200..<300).contains(http.statusCode) else {
                 throw BIP70Error.unexpectedResponse(host: host)
             }
-            // A redirect may not leave https: the body is never read from a cleartext hop.
+            // Redirects off https are refused before they are made; this backs that up.
             if let served = http.url, !Self.isSecure(served) {
                 throw BIP70Error.unexpectedResponse(host: host)
             }
@@ -130,5 +130,13 @@ final class PaymentProtocolTransport: PaymentProtocolTransporting {
             return URL(string: trimmed)
         }
         return nil
+    }
+}
+
+/// Refuses a redirect off https before it is followed, so nothing is sent in the clear.
+private final class HTTPSOnlyRedirects: NSObject, URLSessionTaskDelegate {
+    func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,
+                    newRequest request: URLRequest) async -> URLRequest? {
+        request.url.map(PaymentProtocolTransport.isSecure) == true ? request : nil
     }
 }

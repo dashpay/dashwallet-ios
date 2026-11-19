@@ -142,7 +142,7 @@ final class QRScannerViewModel: ObservableObject {
         case .dashPayUser:
             let payload = QRPayload.classify(value)
             if case .dashPayUser(let link) = payload {
-                finish(.dashPayUser(link))
+                finishDashPayUser(link)
             } else {
                 offerRedirect(for: payload, fallbackMessage: notAUserQRMessage)
             }
@@ -150,7 +150,7 @@ final class QRScannerViewModel: ObservableObject {
         case .invitation:
             let payload = QRPayload.classify(value)
             if case .invitation(let url) = payload {
-                if !refusesInvitation(url) {
+                if !refusesWhileLocked(), !refusesInvitation(url) {
                     finish(.invitation(url))
                 }
             } else {
@@ -214,12 +214,7 @@ final class QRScannerViewModel: ObservableObject {
 
         #if DASHPAY
         case .dashPayUser(let link):
-            guard !refusesWhileLocked() else { return }
-            if hasDashPayIdentity() {
-                finish(.dashPayUser(link))
-            } else {
-                showInvalid(message: noIdentityMessage)
-            }
+            finishDashPayUser(link)
         case .invitation(let url):
             // Claiming fills the wallet's one pending-invitation slot: only
             // on the user's say-so.
@@ -312,6 +307,17 @@ final class QRScannerViewModel: ObservableObject {
     }
 
     #if DASHPAY
+    /// A contact flow is only reachable unlocked and with an identity to
+    /// send the contact request from.
+    private func finishDashPayUser(_ link: DashPayUserLink) {
+        guard !refusesWhileLocked() else { return }
+        guard hasDashPayIdentity() else {
+            showInvalid(message: noIdentityMessage)
+            return
+        }
+        finish(.dashPayUser(link))
+    }
+
     private func offerDashPayUserRedirect(_ link: DashPayUserLink) {
         guard !refusesWhileLocked() else { return }
         guard hasDashPayIdentity() else {
