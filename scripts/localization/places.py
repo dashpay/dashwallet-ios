@@ -82,13 +82,46 @@ def _baseline_keys(root):
     return keys
 
 
-def baseline_places(repo, rev):
+def _baseline_compiler_places(stringsdata_dir, baseline_root):
+    """Places of the Baseline build's .stringsdata, sources mapped to repo-relative files."""
+    out = []
+    for path in _stringsdata_files(stringsdata_dir):
+        with open(path) as f:
+            doc = json.load(f)
+        source = doc.get("source", "")
+        if baseline_root:
+            prefix = baseline_root.rstrip(os.sep) + os.sep
+            if not source.startswith(prefix):
+                continue
+            rel = source[len(prefix):]
+        else:
+            i = source.find("/" + APP_DIR + "/")
+            if i < 0:
+                continue
+            rel = source[i + 1:]
+        for entries in doc.get("tables", {}).values():
+            for e in entries:
+                loc = e["location"]
+                out.append(Place(rel, loc["startingLine"], loc["startingColumn"], e["key"]))
+    return out
+
+
+def _dedupe(found):
+    return list(dict.fromkeys(found))
+
+
+def baseline_places(repo, rev, baseline_stringsdata=None, baseline_root=None):
     with tempfile.TemporaryDirectory(prefix="places-baseline-") as tmp:
         tar = _run(["git", "-C", repo, "archive", rev, APP_DIR])
         subprocess.run(["tar", "-x", "-C", tmp], input=tar, check=True)
         keys = _baseline_keys(tmp)
-        swift = _extract(tmp, _app_files(tmp, (".swift",)),
-                         ["--legacy-localizable-strings", "--SwiftUI"])
+        swift_files = _app_files(tmp, (".swift",))
+        if baseline_stringsdata:
+            swift = _baseline_compiler_places(baseline_stringsdata, baseline_root)
+            swift += _extract(tmp, swift_files, ["--legacy-localizable-strings"])
+            swift = _dedupe(swift)
+        else:
+            swift = _extract(tmp, swift_files, ["--legacy-localizable-strings", "--SwiftUI"])
         objc = _extract(tmp, _app_files(tmp, (".m", ".mm", ".h")),
                         ["--legacy-localizable-strings"])
     return [p for p in swift if p.key in keys] + objc
@@ -112,7 +145,13 @@ def current_places(repo, stringsdata_dir):
     # the identity), then NSLocalizedString calls the compiler does not report:
     # a legacy place is dropped when the compiler has a place at its position.
     compiled = {}
+    sourced = set()
     for path in files:
+        with open(path) as f:
+            src = json.load(f).get("source", "")
+        for root in roots:
+            if src.startswith(root.rstrip(os.sep) + os.sep):
+                sourced.add(src[len(root.rstrip(os.sep)) + 1:])
         for p in _read_stringsdata(path, roots):
             if p.file.startswith(app_prefix) and p.file.endswith(".swift"):
                 compiled.setdefault(p, p)
@@ -121,7 +160,11 @@ def current_places(repo, stringsdata_dir):
     for p in _extract(repo, _app_files(repo, (".swift",)), ["--legacy-localizable-strings"]):
         if (p.file, p.line, p.column) not in compiled_at:
             legacy.setdefault(p, p)
-    swift = list(compiled) + list(legacy)
+    # Swift files the compiler data has no source entry for (e.g. not built by the
+    # dashpay scheme): modern extraction.
+    uncovered = [f for f in _app_files(repo, (".swift",)) if f not in sourced]
+    modern = _extract(repo, uncovered, ["--modern-localizable-strings"])
+    swift = _dedupe(list(compiled) + list(legacy) + modern)
     objc = _extract(repo, _app_files(repo, (".m", ".mm", ".h")), ["--legacy-localizable-strings"])
     return swift + objc
 

@@ -168,6 +168,116 @@ class CurrentPlacesTests(PlacesCase):
         self.assertNotIn("DashWalletTests/T.swift", [p.file for p in got])
 
 
+FAKE_ROOT = "/Users/ci/baseline-checkout"
+INTERP = "DashWallet/Sources/Interp.swift"
+EN_LIST = "DashWallet/en.lproj/Localizable.strings"
+
+
+class BaselineStringsdataCase(PlacesCase):
+    """Baseline Swift places from the compiler data of a build of the Baseline commit,
+    whose `source` paths point into another checkout (FAKE_ROOT).
+
+    API: baseline_places(repo, rev, baseline_stringsdata=None, baseline_root=None);
+    with a directory, Swift places = its places (sources mapped to repo-relative paths) union
+    the --legacy-localizable-strings places of the Baseline Swift files, both kept only if the
+    key is in the Baseline en lists. `baseline_root` is the checkout root to strip; when None it
+    is inferred: everything before the first "/DashWallet/" in the source is dropped.
+    Without the directory the behaviour is the old one (--legacy --SwiftUI).
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.write(INTERP, 'import SwiftUI\nstruct I: View {\n    var body: some View { Text("\\(x) DASH") }\n}\n')
+        with open(os.path.join(self.repo, EN_LIST), "a") as f:
+            f.write('"%@ DASH" = "%@ DASH";\n')
+        self.rev = self.commit("interp")
+
+    def baseline_data(self, interp=(("%@ DASH", 3, 28),)):
+        out = os.path.join(self.tmp, "baseline-derived")
+        os.makedirs(out, exist_ok=True)
+        with open(os.path.join(FIXTURES, "stringsdata", "same", "Send.stringsdata")) as f:
+            text = f.read().replace("__REPO__", FAKE_ROOT)
+        with open(os.path.join(out, "Send.stringsdata"), "w") as f:
+            f.write(text)
+        doc = {"source": FAKE_ROOT + "/" + INTERP, "version": 1, "tables": {"Localizable": [
+            {"key": k, "location": {"startingColumn": c, "startingLine": l}} for k, l, c in interp]}}
+        with open(os.path.join(out, "Interp.stringsdata"), "w") as f:
+            json.dump(doc, f)
+        return out
+
+    def test_interpolation_place_with_a_baseline_key_is_included(self):
+        got = places.baseline_places(self.repo, self.rev, baseline_stringsdata=self.baseline_data())
+        self.assertEqual([(p.key, p.line, p.column) for p in got if p.file == INTERP], [("%@ DASH", 3, 28)])
+
+    def test_place_whose_key_is_not_in_the_baseline_lists_is_excluded(self):
+        data = self.baseline_data(interp=(("%@ DASH", 3, 28), ("%@ not listed", 3, 60)))
+        got = places.baseline_places(self.repo, self.rev, baseline_stringsdata=data)
+        self.assertNotIn("%@ not listed", [p.key for p in got])
+
+    def test_sources_are_mapped_to_repo_relative_files_and_nslocalizedstring_is_kept_once(self):
+        got = places.baseline_places(self.repo, self.rev, baseline_stringsdata=self.baseline_data())
+        self.assertEqual(self.keys(got, SEND), ["Send", "Cancel", "Hello", "%d coins"])
+        self.assertTrue(all(not p.file.startswith("/") for p in got))
+
+    def test_nslocalizedstring_comes_from_legacy_extraction_when_compiler_data_lacks_it(self):
+        data = self.baseline_data()
+        os.remove(os.path.join(data, "Send.stringsdata"))
+        got = places.baseline_places(self.repo, self.rev, baseline_stringsdata=data)
+        self.assertEqual(self.keys(got, SEND), ["Hello", "%d coins"])
+
+    def test_explicit_checkout_root_is_stripped(self):
+        out = os.path.join(self.tmp, "baseline-derived")
+        os.makedirs(out)
+        root = "/work/DashWallet/checkout"  # contains the marker itself, so it must be given
+        doc = {"source": root + "/" + INTERP, "version": 1, "tables": {"Localizable": [
+            {"key": "%@ DASH", "location": {"startingColumn": 28, "startingLine": 3}}]}}
+        with open(os.path.join(out, "Interp.stringsdata"), "w") as f:
+            json.dump(doc, f)
+        got = places.baseline_places(self.repo, self.rev, baseline_stringsdata=out, baseline_root=root)
+        self.assertEqual([p.key for p in got if p.file == INTERP], ["%@ DASH"])
+
+    def test_pairs_with_the_current_side_for_a_file_with_an_interpolation_on_both(self):
+        derived = self.stringsdata("same")
+        self.write_stringsdata(derived, "Interp.stringsdata", INTERP, [("%@ DASH", 3, 28)])
+        base = places.baseline_places(self.repo, self.rev, baseline_stringsdata=self.baseline_data())
+        cur = places.current_places(self.repo, derived)
+        pairs, mismatched = places.pair(base, cur)
+        self.assertEqual(mismatched, [])
+        self.assertIn(("%@ DASH", "%@ DASH"), [(b.key, c.key) for b, c in pairs if b.file == INTERP])
+
+    def test_without_the_directory_the_old_behaviour_stays(self):
+        got = places.baseline_places(self.repo, self.rev)
+        self.assertEqual(self.keys(got, SEND), ["Send", "Cancel", "Hello", "%d coins"])
+
+
+class CurrentModernExtractionTests(PlacesCase):
+    """Swift files under DashWallet/ with no compiler .stringsdata source entry are extracted
+    with --modern-localizable-strings."""
+
+    def test_string_localized_in_a_file_without_compiler_data_is_a_place(self):
+        derived = self.stringsdata("same")
+        self.write("DashWallet/Sources/Only.swift", 'import Foundation\nlet a = String(localized: "Literal")\n')
+        got = [p for p in places.current_places(self.repo, derived) if p.file == "DashWallet/Sources/Only.swift"]
+        self.assertEqual([(p.key, p.line) for p in got], [("Literal", 2)])
+
+    def test_interpolation_is_a_place_at_its_position(self):
+        # the lightweight tool cannot derive the interpolation key (it reports "%arg coins"),
+        # so only the position is asserted: the place must exist for pairing by ordinal
+        derived = self.stringsdata("same")
+        self.write("DashWallet/Sources/Only.swift",
+                   'import Foundation\nfunc f(_ n: Int) -> String { String(localized: "\\(n) coins") }\n')
+        got = [(p.line, p.column) for p in places.current_places(self.repo, derived)
+               if p.file == "DashWallet/Sources/Only.swift"]
+        self.assertEqual([l for l, _ in got], [2])
+
+    def test_file_with_a_compiler_source_entry_is_not_extracted_again(self):
+        derived = self.stringsdata("same")
+        self.write(SEND, 'import Foundation\nlet a = String(localized: "Extra")\n')
+        got = places.current_places(self.repo, derived)
+        self.assertNotIn("Extra", [p.key for p in got])
+        self.assertEqual(len([p for p in got if p.file == SEND]), 4)
+
+
 class PairTests(PlacesCase):
     def pairs_at_baseline(self, set_name):
         base = places.baseline_places(self.repo, self.rev)

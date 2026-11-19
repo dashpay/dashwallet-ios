@@ -100,6 +100,14 @@ def plan_moves(pairs, objc_keys):
     return sorted(moves)
 
 
+def _is_sync_placeholder(entry, source):
+    locs = entry.get("localizations", {})
+    if set(locs) - {source}:
+        return False
+    unit = locs.get(source, {}).get("stringUnit")
+    return not locs or (unit is not None and unit.get("state") == "new" and len(locs[source]) == 1)
+
+
 def apply_moves(catalog, moves, current_keys):
     result = copy.deepcopy(catalog)
     strings = result["strings"]
@@ -110,6 +118,12 @@ def apply_moves(catalog, moves, current_keys):
                 continue  # already moved
             raise MoveError("key %r to move to %r is not in the Catalog" % (old, new))
         entry = _moved_entry(catalog["strings"][old], new, source)
+        if new in strings and _is_sync_placeholder(strings[new], source):
+            # The build's sync added the derived key as an English-only `new` entry before
+            # this move; the moved entry replaces it and takes the comment the code gives.
+            if "comment" in strings[new]:
+                entry["comment"] = strings[new]["comment"]
+            strings[new] = entry
         if new in strings and strings[new] != entry:
             raise MoveError("cannot move %r to %r: %r already exists with different wording" % (old, new, new))
         strings[new] = entry
@@ -153,11 +167,12 @@ def main(argv=None):
     ap.add_argument("--repo", required=True)
     ap.add_argument("--baseline", required=True)
     ap.add_argument("--derived-data", required=True)
+    ap.add_argument("--baseline-derived-data", required=True)
     ap.add_argument("--catalog", required=True)
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args(argv)
     try:
-        baseline = places.baseline_places(args.repo, args.baseline)
+        baseline = places.baseline_places(args.repo, args.baseline, args.baseline_derived_data)
         current = places.current_places(args.repo, args.derived_data)
         pairs, mismatched = places.pair(baseline, current)
         blocking = _changed_files(baseline, current, mismatched)

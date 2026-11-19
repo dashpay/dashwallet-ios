@@ -19,6 +19,7 @@ import copy
 import json
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -167,6 +168,19 @@ class ClashCase(unittest.TestCase):
         self.assertIn("%d items", str(cm.exception))
         self.assertIn("%lld items", str(cm.exception))
 
+    def test_an_english_only_new_entry_made_by_the_sync_is_replaced(self):
+        # The first build after the codemod syncs the derived key in as an English-only
+        # `new` entry; the move fills it with the Baseline entry (comment from the code kept).
+        c = load()
+        c["strings"]["%lld items"] = {"comment": "from code", "localizations": {
+            "en": {"stringUnit": {"state": "new", "value": "%lld items"}}}}
+        out = move_entries.apply_moves(c, [("%d items", "%lld items")], set())
+        self.assertNotIn("%d items", out["strings"])
+        self.assertEqual(out["strings"]["%lld items"]["comment"], "from code")
+        locales = set(out["strings"]["%lld items"]["localizations"])
+        self.assertEqual(locales, set(load()["strings"]["%d items"]["localizations"]))
+        self.assertEqual(out["strings"]["%lld items"]["localizations"]["en"]["stringUnit"]["state"], "translated")
+
     def test_run_writes_nothing_on_a_clash(self):
         tmp = tempfile.mkdtemp(prefix="move-")
         self.addCleanup(shutil.rmtree, tmp, ignore_errors=True)
@@ -194,6 +208,18 @@ class RunCase(unittest.TestCase):
         move_entries.run_moves(path, pairs, set())
         with open(path, "rb") as f:
             self.assertEqual(first, f.read())
+
+
+class CliBaselineDerivedDataCase(unittest.TestCase):
+    def test_baseline_derived_data_is_required(self):
+        tmp = tempfile.mkdtemp(prefix="move-")
+        self.addCleanup(shutil.rmtree, tmp, ignore_errors=True)
+        res = subprocess.run([sys.executable, os.path.join(LOCALIZATION_DIR, "move_entries.py"),
+                              "--repo", tmp, "--baseline", "HEAD", "--derived-data", tmp,
+                              "--catalog", os.path.join(tmp, "c.xcstrings")],
+                             capture_output=True, text=True)
+        self.assertEqual(res.returncode, 2, res.stdout + res.stderr)
+        self.assertIn("baseline-derived-data", res.stderr)
 
 
 if __name__ == "__main__":

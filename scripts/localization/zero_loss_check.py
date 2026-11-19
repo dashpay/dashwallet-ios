@@ -388,7 +388,7 @@ def check(args):
     base_catalog = generate_catalog.build_catalog(repo, baseline)
     locales = sorted(generate_catalog.locale_files(repo, baseline))
 
-    pairs, mismatched = places.pair(places.baseline_places(repo, baseline), places.current_places(repo, derived))
+    pairs, mismatched = places.pair(places.baseline_places(repo, baseline, args.baseline_derived_data), places.current_places(repo, derived))
     findings = [("file-places", (f,), "FAIL file-places %s baseline=%d current=%d" % (f, b, c))
                 for f, b, c in mismatched]
     rows, wording = wording_check(repo, baseline, pairs, base_catalog, locales)
@@ -416,15 +416,20 @@ def parse_args(argv):
                         help="Baseline commit (default: merge-base of HEAD and origin/develop)")
     parser.add_argument("--derived-data", metavar="<path>",
                         help="where the dashpay build's .stringsdata files are read from (default: the latest build)")
+    parser.add_argument("--baseline-derived-data", metavar="<path>",
+                        help="DerivedData of a build of the Baseline commit (scripts/localization/build_baseline.sh); required unless --release")
     parser.add_argument("--write-key-map", action="store_true",
                         help="on a pass, write %s" % KEY_MAP)
     parser.add_argument("--release", action="store_true", help="release mode: check the Catalog through the committed key map")
     args = parser.parse_args(argv)
     if args.release:
-        refused = [f for f, on in (("--baseline", args.baseline), ("--derived-data", args.derived_data),
+        refused = [f for f, on in (("--baseline", args.baseline), ("--derived-data", args.derived_data), ("--baseline-derived-data", args.baseline_derived_data),
                                    ("--write-key-map", args.write_key_map)) if on]
         if refused:
             raise CannotRun("--release refuses %s" % ", ".join(refused))
+    elif not args.baseline_derived_data:
+        raise CannotRun("pre-merge needs --baseline-derived-data <dir>, the DerivedData of a Baseline build "
+                        "(make one with scripts/localization/build_baseline.sh)")
     return args
 
 
