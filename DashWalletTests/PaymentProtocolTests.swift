@@ -353,7 +353,8 @@ final class PaymentProtocolTests: XCTestCase {
         XCTAssertFalse(box.cleartextRequested)
     }
 
-    /// A redirect from https to http is not read: the request it would return is unauthenticated.
+    /// A redirect from https to http is not followed, so neither the request nor a signed
+    /// payment is ever sent in the clear.
     func testTransportRefusesARedirectToCleartext() async {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [DowngradingURLProtocol.self]
@@ -364,7 +365,12 @@ final class PaymentProtocolTests: XCTestCase {
             if case .unexpectedResponse = $0 { return true }
             return false
         }
-        XCTAssertTrue(DowngradingURLProtocol.servedCleartext, "the redirect was followed and its response refused")
+        let payment = Payment(transactions: [Data([0x01])], memo: nil)
+        await assertThrowsBIP70(try await transport.postPayment(payment, to: requestURL, scheme: "dash")) {
+            if case .unexpectedResponse = $0 { return true }
+            return false
+        }
+        XCTAssertFalse(DowngradingURLProtocol.servedCleartext, "the cleartext redirect was not followed")
     }
 
     func testTransportFollowsBIP73() async throws {
@@ -1869,6 +1875,7 @@ final class BIP70PaymentServiceTests: XCTestCase {
 }
 
 /// Redirects every https request to the same path over http, and serves a payment request there.
+/// A refused redirect ends with the redirect response itself.
 private final class DowngradingURLProtocol: URLProtocol {
     static var body = Data()
     static var servedCleartext = false
@@ -1883,6 +1890,8 @@ private final class DowngradingURLProtocol: URLProtocol {
             let redirect = HTTPURLResponse(url: url, statusCode: 302, httpVersion: "HTTP/1.1",
                                            headerFields: ["Location": components.url!.absoluteString])!
             client?.urlProtocol(self, wasRedirectedTo: URLRequest(url: components.url!), redirectResponse: redirect)
+            client?.urlProtocol(self, didReceive: redirect, cacheStoragePolicy: .notAllowed)
+            client?.urlProtocolDidFinishLoading(self)
             return
         }
         Self.servedCleartext = true

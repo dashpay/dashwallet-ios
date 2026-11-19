@@ -107,7 +107,7 @@ final class PaymentProtocolTransport: PaymentProtocolTransporting {
                   (200..<300).contains(http.statusCode) else {
                 throw BIP70Error.unexpectedResponse(host: host)
             }
-            // A redirect may not leave https: the body is never read from a cleartext hop.
+            // Redirects off https are refused before they are made; this backs that up.
             if requiresHTTPS, !Self.isHTTPS(http.url) {
                 throw BIP70Error.insecureTransport
             }

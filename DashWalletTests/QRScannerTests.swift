@@ -153,7 +153,7 @@ final class QRScannerTests: XCTestCase {
     /// Add Contact sends from the wallet's DashPay identity: without one, a
     /// contact QR goes nowhere.
     func testContactQRNeedsADashPayIdentity() {
-        for mode in [QRScannerMode.payment, .addressInput(expectsDashAddress: false), .invitation] {
+        for mode in [QRScannerMode.payment, .addressInput(expectsDashAddress: false), .invitation, .dashPayUser] {
             let (scanner, recorder) = makeScanner(mode, hasIdentity: { false })
             scanner.didDetectCodes([Self.userLink])
             XCTAssertTrue(recorder.results.isEmpty)
@@ -210,8 +210,10 @@ final class QRScannerTests: XCTestCase {
 
     /// Locked, another flow's code is refused before its eligibility is
     /// read, so the answer says nothing about the wallet.
+    /// Including a scanner's own flow: a contact or invitation scanner left
+    /// open under the lock hands nothing over.
     func testLockedScannerReadsNoOtherFlowsEligibility() {
-        for mode in [QRScannerMode.payment, .addressInput(expectsDashAddress: false)] {
+        for mode in [QRScannerMode.payment, .addressInput(expectsDashAddress: false), .dashPayUser, .invitation] {
             for code in [Self.userLink, Self.invitationLink] {
                 var probed = false
                 let (scanner, recorder) = makeScanner(
