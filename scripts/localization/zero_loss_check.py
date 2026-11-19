@@ -180,17 +180,18 @@ def compile_catalog(catalog_path, out_dir):
         raise CannotRun("xcstringstool compile failed: %s" % res.stderr.strip())
 
 
-def wording_check(repo, rev, pairs, base_catalog, locales):
-    """Check 3: (rows {locale: [places, same]}, place findings)."""
+def compare_wording(repo, rev, pairs, base_catalog, locales):
+    """Format both sides of each (baseline key, current key, tag) pair in each locale the Baseline key
+    translated: [(tag, baseline key, current key, locale, None if equal else (expected, actual))]."""
     specs = counted_specs(repo, rev, locales)
     base_strings = base_catalog["strings"]
     # one entry per (pair, locale): what to format and with which counts
     jobs = []
-    for b, c in pairs:
-        have = base_strings.get(b.key, {}).get("localizations", {})
+    for b, c, tag in pairs:
+        have = base_strings.get(b, {}).get("localizations", {})
         for locale in sorted(locales):
             if locale in have:
-                jobs.append((b, c, locale, specs.get(b.key)))
+                jobs.append((b, c, tag, locale, specs.get(b)))
     with tempfile.TemporaryDirectory(prefix="zero-loss-") as tmp:
         base_root = os.path.join(tmp, "baseline")
         os.makedirs(base_root)
@@ -201,30 +202,58 @@ def wording_check(repo, rev, pairs, base_catalog, locales):
         compile_catalog(os.path.join(repo, CATALOG), cur_root)
 
         base_reqs, cur_keys = [], []
-        for b, c, locale, spec in jobs:
+        for b, c, tag, locale, spec in jobs:
             for n in (COUNTS if spec is not None else (None,)):
-                base_reqs.append((locale, b.key, None if n is None else counted_args(spec, n)))
-                cur_keys.append(c.key)
+                base_reqs.append((locale, b, None if n is None else counted_args(spec, n)))
+                cur_keys.append(c)
         base_out = foundation_format.format_texts(os.path.join(base_root, generate_catalog.LISTS_DIR), base_reqs)
         # the current side is formatted with the very arguments the Baseline side used
         cur_out = foundation_format.format_texts(
             cur_root, [(r[0], key, o["args"]) for r, key, o in zip(base_reqs, cur_keys, base_out)])
 
+    results = []
+    at = 0
+    for b, c, tag, locale, spec in jobs:
+        n = len(COUNTS) if spec is not None else 1
+        diff = next((i for i in range(n) if base_out[at + i]["text"] != cur_out[at + i]["text"]), None)
+        results.append((tag, b, c, locale,
+                        None if diff is None else (base_out[at + diff]["text"], cur_out[at + diff]["text"])))
+        at += n
+    return results
+
+
+def wording_check(repo, rev, pairs, base_catalog, locales):
+    """Check 3: (rows {locale: [places, same]}, place findings)."""
     rows = {locale: [0, 0] for locale in locales}
     findings = []
-    at = 0
-    for b, c, locale, spec in jobs:
-        n = len(COUNTS) if spec is not None else 1
+    for (b, c), _, _, locale, diff in compare_wording(repo, rev, [(b.key, c.key, (b, c)) for b, c in pairs],
+                                                     base_catalog, locales):
         rows[locale][0] += 1
-        diff = next((i for i in range(n) if base_out[at + i]["text"] != cur_out[at + i]["text"]), None)
         if diff is None:
             rows[locale][1] += 1
         else:
             findings.append(("place", (c.file, c.line, locale, c.key),
                              "FAIL place %s:%d locale=%s current_key=%s baseline_key=%s expected=%s actual=%s" % (
-                                 c.file, c.line, locale, dump(c.key), dump(b.key),
-                                 dump(base_out[at + diff]["text"]), dump(cur_out[at + diff]["text"]))))
-        at += n
+                                 c.file, c.line, locale, dump(c.key), dump(b.key), dump(diff[0]), dump(diff[1]))))
+    return rows, findings
+
+
+def release_wording_check(repo, rev, key_map, base_catalog, locales):
+    """Release key check: (rows {locale: [keys, same]}, key findings); a Baseline key counts once per locale."""
+    rows = {locale: [0, 0] for locale in locales}
+    findings = []
+    differs = set()
+    results = compare_wording(repo, rev, [(b, c, None) for b, cs in sorted(key_map.items()) for c in cs],
+                              base_catalog, locales)
+    for _, b, c, locale, diff in results:
+        if diff is not None:
+            differs.add((b, locale))
+            findings.append(("key", (b, c, locale),
+                             "FAIL key baseline_key=%s current_key=%s locale=%s expected=%s actual=%s" % (
+                                 dump(b), dump(c), locale, dump(diff[0]), dump(diff[1]))))
+    for b, locale in {(b, locale) for _, b, _, locale, _ in results}:
+        rows[locale][0] += 1
+        rows[locale][1] += (b, locale) not in differs
     return rows, findings
 
 
@@ -232,11 +261,9 @@ def dump(value):
     return json.dumps(value, ensure_ascii=False)
 
 
-def key_set_check(base_strings, cur_strings, pairs):
-    """Check 4 and the key map: (missing-key findings, {baseline key: sorted current keys})."""
-    used = {}
-    for b, c in pairs:
-        used.setdefault(b.key, set()).add(c.key)
+def key_set_check(base_strings, cur_strings, used):
+    """Check 4 and the key map: (missing-key findings, {baseline key: sorted current keys}).
+    `used` maps each Baseline key to the current keys that replaced it."""
     findings = []
     for key in sorted(base_strings):
         if key in cur_strings or any(k in cur_strings for k in used.get(key, ())):
@@ -282,10 +309,10 @@ def watch_check(repo, rev):
 
 # --- report -------------------------------------------------------------------------------------
 
-def render(baseline, how, rows, unused, watch, findings):
-    lines = ["zero-loss check — mode: pre-merge",
+def render(baseline, how, rows, unused, watch, findings, mode="pre-merge"):
+    lines = ["zero-loss check — mode: %s" % mode,
              "baseline: %s (%s)" % (baseline[:12], how),
-             "%-13s%-9s%s" % ("locale", "places", "same")]
+             "%-13s%-9s%s" % ("locale", "keys" if mode == "release" else "places", "same")]
     lines += ["%-13s%-9s%s" % (loc, rows[loc][0], rows[loc][1]) for loc in sorted(rows)]
     lines.append("unused entries: %d checked, %d with lost translations" % unused)
     lines.append("watch files: %d identical, %d differ" % watch)
@@ -304,7 +331,50 @@ def write_key_map(repo, baseline, keys):
     os.replace(f.name, path)
 
 
+def read_key_map(repo):
+    """The committed key map's (Baseline commit, {Baseline key: [current keys]}); CannotRun when unusable."""
+    path = os.path.join(repo, KEY_MAP)
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, ValueError) as e:
+        raise CannotRun("key map %s is missing or unreadable (%s); run the pre-merge check with --write-key-map"
+                        % (KEY_MAP, e))
+    keys = data.get("keys") if isinstance(data, dict) else None
+    if (not isinstance(data.get("baseline"), str) or not re.fullmatch(r"[0-9a-f]{40}", data["baseline"])
+            or not isinstance(keys, dict)
+            or not all(isinstance(cs, list) and cs and all(isinstance(c, str) for c in cs) for cs in keys.values())):
+        raise CannotRun("key map %s has the wrong schema" % KEY_MAP)
+    return data["baseline"], keys
+
+
+def check_release(args):
+    repo = repo_root()
+    check_tools()
+    baseline, key_map = read_key_map(repo)
+    if git(repo, "rev-parse", "--verify", "--quiet", baseline + "^{commit}").returncode != 0:
+        raise CannotRun("the key map's baseline commit %s is not in this repository" % baseline)
+    check_formatter()
+    catalog_path = os.path.join(repo, CATALOG)
+    if not os.path.isfile(catalog_path):
+        raise CannotRun("no Catalog at %s" % CATALOG)
+    cur_strings = catalog_io.read_catalog(catalog_path)["strings"]
+    base_catalog = generate_catalog.build_catalog(repo, baseline)
+    locales = sorted(generate_catalog.locale_files(repo, baseline))
+
+    rows, wording = release_wording_check(repo, baseline, key_map, base_catalog, locales)
+    missing, _ = key_set_check(base_catalog["strings"], cur_strings, {k: set(v) for k, v in key_map.items()})
+    checked, lost, unused = unused_check(base_catalog["strings"], cur_strings)
+    identical, differ, watch = watch_check(repo, baseline)
+    findings = wording + missing + unused + watch
+    findings.sort(key=lambda f: (f[0],) + tuple((0, x) if isinstance(x, int) else (1, x) for x in f[1]))
+    sys.stdout.write(render(baseline, "key map", rows, (checked, lost), (identical, differ), findings, "release"))
+    return 1 if findings else 0
+
+
 def check(args):
+    if args.release:
+        return check_release(args)
     repo = repo_root()
     check_tools()
     baseline, how = resolve_baseline(repo, args.baseline)
@@ -322,7 +392,10 @@ def check(args):
     findings = [("file-places", (f,), "FAIL file-places %s baseline=%d current=%d" % (f, b, c))
                 for f, b, c in mismatched]
     rows, wording = wording_check(repo, baseline, pairs, base_catalog, locales)
-    missing, key_map = key_set_check(base_catalog["strings"], cur_strings, pairs)
+    used = {}
+    for b, c in pairs:
+        used.setdefault(b.key, set()).add(c.key)
+    missing, key_map = key_set_check(base_catalog["strings"], cur_strings, used)
     checked, lost, unused = unused_check(base_catalog["strings"], cur_strings)
     identical, differ, watch = watch_check(repo, baseline)
     findings += wording + missing + unused + watch
@@ -345,14 +418,13 @@ def parse_args(argv):
                         help="where the dashpay build's .stringsdata files are read from (default: the latest build)")
     parser.add_argument("--write-key-map", action="store_true",
                         help="on a pass, write %s" % KEY_MAP)
-    parser.add_argument("--release", action="store_true", help="release mode (not available yet)")
+    parser.add_argument("--release", action="store_true", help="release mode: check the Catalog through the committed key map")
     args = parser.parse_args(argv)
     if args.release:
         refused = [f for f, on in (("--baseline", args.baseline), ("--derived-data", args.derived_data),
                                    ("--write-key-map", args.write_key_map)) if on]
         if refused:
             raise CannotRun("--release refuses %s" % ", ".join(refused))
-        raise CannotRun("--release is not available yet")
     return args
 
 
