@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for check_no_old_swift_lookup.py (string-catalogs-migration T14, AC-08, AC-17)."""
+"""Tests for check_no_old_swift_lookup.py."""
 import os
 import shutil
 import subprocess

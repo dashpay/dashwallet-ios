@@ -355,8 +355,8 @@ jobs:
             } >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      # The dashpay target runs clang-format and bartycrouch as build phases
-      # when they are on PATH; a build must never change the checkout.
+      # The dashpay target runs clang-format and, in Debug, the String Catalog sync as build
+      # phases; a build must never change the checkout.
       - name: Build must not modify the checkout
         if: always()
         run: |

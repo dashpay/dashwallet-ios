@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for convert_strings_to_utf8.sh on the String Catalog (string-catalogs-migration T15, AC-16).
+"""Tests for convert_strings_to_utf8.sh on the String Catalog.
 
 Run: python3 scripts/test_convert_strings_to_utf8.py
 """
