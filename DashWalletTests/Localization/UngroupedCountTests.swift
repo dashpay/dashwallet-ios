@@ -17,6 +17,7 @@
 //  limitations under the License.
 //
 
+@testable import dashpay
 import XCTest
 
 /// Block heights and list counts that the Baseline built with the locale-less
@@ -31,7 +32,7 @@ final class UngroupedCountTests: XCTestCase {
     /// (file under DashWallet/Sources, the Baseline key at that site, read from `git show 088eead15:<file>`)
     /// of each `String(format:)` + integer site whose value can reach 1000: block and list heights,
     /// list counts, transaction input/output counts and indexes, address-pool counts, epoch day,
-    /// contact requests.
+    /// contact requests, system status codes.
     private let sites: [(file: String, key: String)] = [
         ("UI/Home/Syncing Views/Sync View/SyncView.swift", "header #%d of %d"),
         ("UI/Home/Syncing Views/Sync View/SyncView.swift", "masternode list #%d of %d"),
@@ -56,6 +57,7 @@ final class UngroupedCountTests: XCTestCase {
         ("UI/Menu/Security/Wallets/WalletAccountDetailScreen.swift", "%@ Addresses (%d)"),
         ("UI/Home/Views/Shortcuts/NodesShortcutIcon.swift", "Nodes, epoch day %d, %@ blocks proposed this epoch"),
         ("UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift", "Contact Requests (%d)"),
+        ("Models/DashConnect/PlatformDashConnectDataSource.swift", "Failed to generate secure random bytes for DashConnect (%d)."),
     ]
 
     /// Every site looks its Baseline key up as `String(format: String(localized: "<key>"`: the literal
@@ -73,11 +75,13 @@ final class UngroupedCountTests: XCTestCase {
         }
     }
 
-    /// The route renders a height ungrouped in the host's locale.
-    func testBaselineKeyRouteRendersHeightWithoutSeparators() {
-        let key = "block #%d of %d"
-        let text = String(format: String(localized: String.LocalizationValue(key)), Int32(2123456), Int32(2200000))
-        XCTAssertTrue(text.contains("2123456"), text)
-        XCTAssertTrue(text.contains("2200000"), text)
+    /// App code renders its integers ungrouped: an interpolated `\(day)` or `\(status)` would read
+    /// "1,234" or "-25,300" in a grouping locale such as the host's en_US.
+    func testAppSitesRenderIntegersWithoutSeparators() {
+        let label = NodesShortcutIcon.accessibilityLabel(day: 1234, blocks: 5, health: .healthy)
+        XCTAssertTrue(label.contains("1234"), label)
+
+        let message = DashConnectPlatformError.randomGenerationFailed(-25300).errorDescription ?? ""
+        XCTAssertTrue(message.contains("(-25300)"), message)
     }
 }

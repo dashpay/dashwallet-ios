@@ -103,7 +103,11 @@ enum DashConnectPlatformError: LocalizedError, Equatable {
         case .authorizationFailed:
             return String(localized: "Authentication failed", comment: "DashConnect")
         case .randomGenerationFailed(let status):
-            return String(localized: "Failed to generate secure random bytes for DashConnect (\(status)).", comment: "DashConnect: the placeholder is a system status code")
+            return String(
+                format: String(
+                    localized: "Failed to generate secure random bytes for DashConnect (%d).",
+                    comment: "DashConnect: the placeholder is a system status code"),
+                status)
         case .noAuthenticationKey:
             return String(localized: "No enabled AUTHENTICATION ECDSA key is available for this identity.", comment: "DashConnect")
         case .existingDocumentLookupFailed:
