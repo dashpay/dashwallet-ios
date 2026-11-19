@@ -17,7 +17,9 @@ CATALOG = os.path.join(REPO, "DashWallet", "Localizable.xcstrings")
 # `LocalizedStringKey`; `Text(verbatim:)` and non-literal arguments are not lookups.
 LOOKUP = re.compile(r'(?:String\(\s*localized:\s*'
                     r'|\b(?:Text|Button|Label|Toggle|Section|TextField|SecureField|Link|Picker|Menu'
-                    r'|LocalizedStringKey|navigationTitle)\(\s*)'
+                    r'|ContentUnavailableView|NavigationLink|ProgressView|Stepper|DatePicker'
+                    r'|DisclosureGroup|LabeledContent|GroupBox|ColorPicker|LocalizedStringKey'
+                    r'|navigationTitle|navigationSubtitle|alert|confirmationDialog|help)\(\s*)'
                     r'"((?:[^"\\]|\\.)*)"')
 
 
@@ -81,6 +83,16 @@ class PreviewOnlyKeysTests(unittest.TestCase):
         debug, other = lookups_by_region(source)
         self.assertEqual(debug, {"Preview text", "Preview button", "Preview label", "Preview title"})
         self.assertEqual(other, {"Shown text"})
+
+    def test_the_scanner_sees_the_other_swiftui_literal_keys(self):
+        names = ["ContentUnavailableView", "NavigationLink", "ProgressView", "Stepper", "DatePicker",
+                 "DisclosureGroup", "LabeledContent", "GroupBox", "ColorPicker"]
+        modifiers = ["alert", "confirmationDialog", "help", "navigationSubtitle"]
+        body = "".join(f'    {n}("{n} key")\n' for n in names)
+        body += "".join(f'        .{m}("{m} key")\n' for m in modifiers)
+        debug, other = lookups_by_region('#Preview("x") {\n' + body + "}\n")
+        self.assertEqual(debug, {f"{n} key" for n in names + modifiers})
+        self.assertEqual(other, set())
 
 
 if __name__ == "__main__":
