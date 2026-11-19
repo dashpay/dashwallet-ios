@@ -119,15 +119,20 @@ final class QRScannerViewModel: ObservableObject {
     }
 
     /// With several codes in frame, the payment scanner prefers a valid
-    /// Dash intent or a whole request URL over whatever happens to be first
-    /// (legacy `preferredMetadataObjectInObjects:` behavior).
+    /// Dash intent anywhere in it (legacy `preferredMetadataObjectInObjects:`
+    /// behavior), then a whole request URL, then whatever is first.
     private func preferredValue(in values: [String]) -> String? {
         guard case .payment = mode else { return values.first }
-        let preferred = values.first {
-            let parsed = ParsedPaymentURI.parse(paymentString: $0.trimmingCharacters(in: .whitespacesAndNewlines))
-            return parsed.isValidDashPaymentIntent || parsed.isWholeRequestURL
+        let payloads = values.map { QRPayload.classify($0) }
+        func firstPayment(where matches: (ParsedPaymentURI) -> Bool) -> String? {
+            zip(values, payloads).first {
+                if case .payment(let parsed) = $0.1 { return matches(parsed) }
+                return false
+            }?.0
         }
-        return preferred ?? values.first
+        return firstPayment { $0.isValidDashPaymentIntent }
+            ?? firstPayment { $0.isWholeRequestURL }
+            ?? values.first
     }
 
     private func process(_ value: String) {
@@ -230,6 +235,7 @@ final class QRScannerViewModel: ObservableObject {
     /// when the embedded address and amount are ones the wallet can pay. Any
     /// payable form: a Platform or Shielded address goes on to the Send screen.
     nonisolated static func fallback(afterFailedRequest parsed: ParsedPaymentURI) -> ParsedPaymentURI? {
+        guard !parsed.requiresRequest else { return nil }
         let cleared = parsed.byClearingRequestURL()
         guard cleared.isValidDashPaymentIntent, cleared.address != nil else { return nil }
         return cleared

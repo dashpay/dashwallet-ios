@@ -215,7 +215,7 @@ static NSString *DWReversedHexString(NSData *data) {
                                            if (box) {
                                                [strongSelf confirmBIP70Output:box];
                                            }
-                                           else if (parsed.isAddressValidForCurrentNetwork && !parsed.hasInvalidAmount) {
+                                           else if (parsed.isAddressValidForCurrentNetwork && !parsed.hasInvalidAmount && !parsed.requiresRequest) {
                                                // fetch failed but there's a valid fallback address → plain send (app-side, C8 step 4)
                                                [strongSelf confirmPaymentIntent:strongSelf.paymentInput.paymentIntent];
                                            }

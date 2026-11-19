@@ -119,7 +119,7 @@ final class PaymentProtocolTransport: PaymentProtocolTransporting {
 
     /// Unsigned requests are allowed, so the channel is the only thing authenticating the merchant.
     static func isSecure(_ url: URL) -> Bool {
-        url.scheme?.lowercased() == "https"
+        url.scheme?.lowercased() == "https" && url.host?.isEmpty == false
     }
 
     private static func firstURL(inURIList data: Data) -> URL? {

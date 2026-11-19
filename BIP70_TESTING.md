@@ -111,9 +111,11 @@ the reconstruction digest in Node — the signature passes the wallet's verify s
 ## Triggering from the wallet (simulator)
 
 > Build/run note (this branch): scheme **`dashpay`**, **testnet**, force **`ARCHS=arm64`**
-> (FFI libs are arm64-sim only; `dashwallet` scheme is broken on this branch). ATS is already
-> off (`NSAllowsArbitraryLoads = true` in [`Info.plist`](DashWallet/Info.plist)), so plain
-> `http://` works.
+> (FFI libs are arm64-sim only; `dashwallet` scheme is broken on this branch). The payment
+> transport only talks https, whatever ATS allows: the request URL, any BIP73 hop or redirect,
+> and the `payment_url` must all be `https://` with a host the device trusts. Serve the test
+> server over TLS with `certs/server.crt` (installed as below) and use `https://` URLs for both
+> the request and its `payment_url`; a `http://` endpoint is refused before it is fetched.
 
 ### The fallback-address gotcha (important)
 
@@ -127,8 +129,9 @@ There are two `dash:` URI shapes and they take **different paths**:
 ### Fire a request
 
 ```bash
-# mint a fresh request, strip to the address-less form, point r= at localhost (sim → Mac)
-RAW=$(curl -s http://localhost:3000/ | grep -oE 'dash:[^<"]+' | head -1)
+# mint a fresh request, strip to the address-less form, point r= at localhost (sim → Mac);
+# the server must be serving https, and its r= and payment_url must be https:// too
+RAW=$(curl -sk https://localhost:3000/ | grep -oE 'dash:[^<"]+' | head -1)
 R=$(echo "$RAW" | grep -oE 'r=[^&"]+' | sed 's/^r=//' | sed 's/192\.168\.0\.[0-9]*/localhost/')
 URI="dash:?r=$R"
 
