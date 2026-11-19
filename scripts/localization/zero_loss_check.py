@@ -340,14 +340,28 @@ def dump(value):
     return json.dumps(value, ensure_ascii=False)
 
 
-def key_set_check(base_strings, cur_strings, used):
-    """Check 4 and the key map: (missing-key findings, {baseline key: sorted current keys}).
-    `used` maps each Baseline key to the current keys that replaced it."""
+def key_set_check(base_strings, cur_strings, used, asked=None):
+    """Check 4 and the key map: (key-set findings, {baseline key: sorted current keys}).
+    `used` maps each Baseline key to the current keys that replaced it; `asked` holds the keys the
+    current lookup places ask for; None in release mode, which has no places and so cannot tell a new
+    text from a stray key (no extra-key there). The Catalog's keys must be (Baseline keys - moved-from
+    keys) | moved-to keys, plus any key a current place asks for. A moved-from key is an old-copy only
+    while a key that replaced it is in the Catalog too."""
     findings = []
     for key in sorted(base_strings):
         if key in cur_strings or any(k in cur_strings for k in used.get(key, ())):
             continue
         findings.append(("missing-key", (key,), "FAIL missing-key baseline_key=%s" % dump(key)))
+    moved_from = {b for b, cs in used.items() if b not in cs}
+    moved_to = {c for cs in used.values() for c in cs}
+    allowed = (set(base_strings) - moved_from) | moved_to | set(asked or ())
+    for key in sorted(set(cur_strings) - allowed):
+        if key in moved_from:
+            kind = "old-copy" if any(c in cur_strings for c in used[key]) else None
+        else:
+            kind = "extra-key" if asked is not None else None
+        if kind:
+            findings.append((kind, (key,), "FAIL %s key=%s" % (kind, dump(key))))
     return findings, {k: sorted(v) for k, v in sorted(used.items())}
 
 
@@ -470,14 +484,15 @@ def check(args):
     base_catalog = baseline_lists.build_catalog(repo, baseline)
     locales = sorted(baseline_lists.locale_files(repo, baseline))
 
-    pairs, mismatched = places.pair(places.baseline_places(repo, baseline, args.baseline_derived_data), places.current_places(repo, derived))
+    current = places.current_places(repo, derived)
+    pairs, mismatched = places.pair(places.baseline_places(repo, baseline, args.baseline_derived_data), current)
     findings = [("file-places", (f,), "FAIL file-places %s baseline=%d current=%d" % (f, b, c))
                 for f, b, c in mismatched]
     rows, wording, defects = wording_check(repo, baseline, pairs, base_catalog, locales)
     used = {}
     for b, c in pairs:
         used.setdefault(b.key, set()).add(c.key)
-    missing, key_map = key_set_check(base_catalog["strings"], cur_strings, used)
+    missing, key_map = key_set_check(base_catalog["strings"], cur_strings, used, {c.key for c in current})
     checked, lost, unused = unused_check(base_catalog["strings"], cur_strings)
     identical, differ, watch = watch_check(repo, baseline)
     findings += wording + missing + unused + watch

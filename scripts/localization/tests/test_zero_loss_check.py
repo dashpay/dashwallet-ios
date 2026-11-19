@@ -481,6 +481,33 @@ class FindingTests(ZeroLossCase):
         self.assert_fails_with(res, 3)
 
 
+class KeySetTwoWayTests(ZeroLossCase):
+    """T23 (review F12): in pre-merge mode the Catalog's keys are exactly
+    (Baseline keys - moved-from keys) | moved-to keys, in both directions (cli.md check 4, AC-06)."""
+
+    def key_findings(self, res, key):
+        return [l for l in self.findings(res) if json.dumps(key) in l]
+
+    def test_catalog_key_outside_baseline_and_moved_keys_is_a_finding(self):
+        self.cat["strings"]["Brand new text"] = {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "Brand new text"}}}}
+        self.install_catalog()
+        res = self.run_cli()
+        self.assertEqual(res.returncode, 1, res.stdout)
+        self.assertEqual(len(self.key_findings(res, "Brand new text")), 1, res.stdout)
+
+    def test_leftover_old_copy_of_a_moved_key_is_a_finding(self):
+        self.cat["strings"][COINS_OLD] = json.loads(json.dumps(self.cat["strings"][COINS_NEW]))
+        self.install_catalog()
+        res = self.run_cli()
+        self.assertEqual(res.returncode, 1, res.stdout)
+        self.assertEqual(len(self.key_findings(res, COINS_OLD)), 1, res.stdout)
+
+    def test_exactly_matching_key_set_has_no_key_set_finding(self):
+        res = self.run_cli()
+        self.assertEqual(res.returncode, 0, res.stdout)
+        self.assertEqual(self.findings(res), [])
+
+
 class Ac18Tests(ZeroLossCase):
     def advance_develop(self):
         """develop gains a text in the old lists after the move started; the move is rebased onto it."""
