@@ -291,8 +291,6 @@ struct TrackedMasternodeDetailScreen: View {
                     Text(viewModel.record.label ?? viewModel.record.displayTitle)
                         .dashFont(.subheadMedium)
                         .foregroundColor(.dash.primaryText)
-                        .lineLimit(1)
-                        .padding(.horizontal, 60)
                 })
 
             list

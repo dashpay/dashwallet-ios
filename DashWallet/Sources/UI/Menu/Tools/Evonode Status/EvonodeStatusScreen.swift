@@ -50,8 +50,6 @@ struct EvonodeStatusScreen: View {
                     Text(NSLocalizedString("Node status", comment: "Evonode status"))
                         .dashFont(.subheadMedium)
                         .foregroundColor(.dash.primaryText)
-                        .lineLimit(1)
-                        .padding(.horizontal, 60)
                 },
                 trailing: {
                     DashUIKit.NavigationBarCircleButton(
