@@ -25,6 +25,7 @@ import foundation_format as formatter  # noqa: E402
 COUNTS = (0, 1, 2, 5, 21, 101)
 PARCELS = "%d parcels"
 VISITED = "Visited %1$d of %2$#@places@ today"
+SENTINEL = "\u27c2format-crash"
 EN_ENV = {"LANG": "en_US.UTF-8", "LC_ALL": "en_US.UTF-8"}
 
 
@@ -94,6 +95,35 @@ class PlainFormatTests(unittest.TestCase):
     def test_string_sample_per_locale_table(self):
         self.assertEqual(fmt("zh-Hant-TW", "Hello %@"), "你好，‹a1›")
         self.assertEqual(fmt("uk", "Hello %@"), "Привіт, ‹a1›")
+
+
+class RawAndCrashTests(unittest.TestCase):
+    RAW = ["Price rose more than 50% since the last update.", "Spaced 100% sure", "Literal %% only"]
+
+    def test_no_args_and_no_codes_returns_table_text_raw(self):
+        for key in self.RAW:
+            for loc in ("en", "de", "uk"):  # de/uk lack the key: the key itself, raw
+                self.assertEqual(fmt(loc, key), key, (loc, key))
+
+    def test_raw_return_is_deterministic(self):
+        reqs = [("en", k, None) for k in self.RAW]
+        first = formatter.format_texts(ROOT, reqs)
+        second = formatter.format_texts(ROOT, reqs)
+        self.assertEqual([r["text"] for r in first], self.RAW)
+        self.assertEqual(first, second)
+
+    def test_crashing_request_yields_the_sentinel(self):
+        self.assertEqual(fmt("ja", "%d shops in %@", [3, "x"]), SENTINEL)
+        self.assertEqual(fmt("ja", "%d shops in %@"), SENTINEL)
+
+    def test_crash_does_not_kill_the_rest_of_the_batch(self):
+        reqs = [("en", "Hello %@", ["A"]), ("ja", "%d shops in %@", [3, "x"]),
+                ("de", "Hello %@", ["B"]), ("en", "%d shops in %@", [3, "x"]),
+                ("ja", "%d shops in %@", [3, "x"]), ("en", "Hello %@", ["C"])]
+        out = formatter.format_texts(ROOT, reqs)
+        self.assertEqual([r["text"] for r in out],
+                         ["Hello A", SENTINEL, "Hallo B", "3 shops in x", SENTINEL, "Hello C"])
+        self.assertEqual(out, formatter.format_texts(ROOT, reqs))
 
 
 class SelfTestTests(unittest.TestCase):

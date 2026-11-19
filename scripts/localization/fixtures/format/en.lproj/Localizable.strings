@@ -4,3 +4,7 @@
 "Mix %@ %d %ld %lld %u %f" = "Mix %@ %d %ld %lld %u %f";
 "Only in English" = "Only in English";
 "Hello %@" = "Hello %@";
+"Price rose more than 50% since the last update." = "Price rose more than 50% since the last update.";
+"Spaced 100% sure" = "Spaced 100% sure";
+"Literal %% only" = "Literal %% only";
+"%d shops in %@" = "%d shops in %@";
