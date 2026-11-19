@@ -40,6 +40,9 @@ typedef NS_ENUM(NSUInteger, DWPaymentInputSource) {
 /// Opaque `DWBIP70ConfirmationBox` (Swift) for an app-side BIP70 request fetched + verified at
 /// scan/clipboard time. Present ⇒ route through the BIP70 confirm/send path.
 @property (nullable, readonly, nonatomic, strong) id bip70Confirmation;
+/// The scanner's fetch of the code's payment request failed and `parsedURI` is the code with its request URL
+/// cleared, though the scanned text still carries `r=`.
+@property (readonly, nonatomic, assign) BOOL requestCleared;
 /// The parsed link's `sender=` scheme, for a link another app opened (`DeepLink` / `URL`). nil for
 /// a scan, a paste or an NFC tag: no app asked for that payment, so none is called back after it.
 @property (nullable, readonly, nonatomic) NSString *callbackScheme;

@@ -60,9 +60,9 @@ struct TransferEndpointPicker: View {
     enum Options {
         /// The standalone screen: every endpoint the side accepts.
         case standalone
-        /// A pinned sheet (`sendFrom` / `receiveInto`): the balances that
-        /// remain once the fixed endpoint is out. No identity — neither pinned
-        /// variant can reach one.
+        /// The pinned receive sheet (`receiveInto`): the balances that remain
+        /// once the fixed endpoint is out. No identity — the pinned variant
+        /// cannot reach one.
         case balances([ChainNetwork], selected: ChainNetwork, select: (ChainNetwork) -> Void)
     }
 
@@ -260,14 +260,14 @@ private func endpointPickerSample(
             shieldedCredits: 0))
 }
 
-/// The pinned send sheet's To list: two balances, no identity row, and the
-/// pinned From balance left out entirely.
+/// The pinned receive sheet's From list: two balances, no identity row, and
+/// the pinned To balance left out entirely.
 @available(iOS 17, *)
-#Preview("To · pinned send sheet") {
+#Preview("From · pinned receive sheet") {
     endpointPickerSample(
-        .destination,
-        viewModel: .makeForPreview(source: .core, target: .shielded, sendFrom: .core),
-        options: .balances([.platform, .shielded], selected: .shielded, select: { _ in }))
+        .source,
+        viewModel: .makeForPreview(source: .core, target: .shielded, receiveInto: .shielded),
+        options: .balances([.core, .platform], selected: .core, select: { _ in }))
 }
 
 @available(iOS 17, *)

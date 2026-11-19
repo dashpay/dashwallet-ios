@@ -56,6 +56,7 @@ where they disagree, ADR-0001 wins.
 | [0053](0053-open-dashconnect-on-mainnet-and-gate-each-request-by-protocol-14.md) | Open DashConnect on mainnet and gate each request by protocol 14 | platform | Proposed | |
 | [0054](0054-build-external-send-as-a-new-module-over-the-existing-spend-seams.md) | Build external send as a new module over the existing spend seams | payments | Proposed | |
 | [0062](0062-decide-every-source-and-destination-pair-in-one-policy.md) | Decide every source and destination pair in one policy | payments | Proposed | |
+| [0063](0063-give-the-send-flow-one-typed-scan-input-one-lifecycle-owner-and-one-source-snapshot.md) | Give the send flow one typed scan input, one lifecycle owner and one source snapshot | payments | Proposed | |
 
 Areas: `spv`, `platform`, `keys`, `storage`, `coinjoin`, `payments`, `swap`, `ui`, `build`, `process`. Each ADR takes one; a new
 Area is added to this list in the PR that first needs it.

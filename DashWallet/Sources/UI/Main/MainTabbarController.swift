@@ -687,16 +687,10 @@ extension MainTabbarController: HomeViewControllerDelegate {
         presentPaymentsLandingScreen(activeTab: activeTab, showsHeader: false, asSheet: true)
     }
 
-    /// The "Send to Address" shortcut skips the payments landing: straight
-    /// to the send screen, with the address field prefilled when the
-    /// clipboard holds a valid Core/Platform address.
+    /// The "Send to Address" shortcut skips the payments landing: straight to the Address screen of the
+    /// external send flow.
     private func presentSendToAddressScreen() {
-        let controller = SendScreenViewController()
-        controller.prefillsFromClipboard = true
-        let navigationController = BaseNavigationController(rootViewController: controller)
-        navigationController.isNavigationBarHidden = true
-        navigationController.modalPresentationStyle = .fullScreen
-        presentModal(navigationController)
+        presentModal(ExternalSendHostController.addressHost(pinned: nil))
     }
 
     /// The balance-row receive arrows open a focused two-tab sheet
@@ -712,31 +706,21 @@ extension MainTabbarController: HomeViewControllerDelegate {
             asSheet: true)
     }
 
-    /// The balance-row send (out) arrows: the mirror of the receive sheet.
-    /// A two-tab sheet (Send ↔ Internal transfer) pinned to the tapped
-    /// balance as the SOURCE — the Send tab is the external-send form, the
-    /// Internal tab is the transfer form with the From card fixed and the
-    /// destination picked on the To rows.
+    /// The balance-row send (out) arrows open the external send flow on its Address screen with the tapped
+    /// balance pinned as the source.
     func showSendLanding(network: ChainNetwork) {
-        presentPaymentsLandingScreen(
-            activeTab: .send,
-            visibleTabs: [.send, .internalTransfer],
-            sendNetwork: network,
-            showsHeader: false,
-            asSheet: true)
+        presentModal(ExternalSendHostController.addressHost(pinned: SendSource(network)))
     }
 
     private func presentPaymentsLandingScreen(activeTab: PaymentsLandingTab,
                                               receiveNetwork: ChainNetwork = .core,
                                               visibleTabs: [PaymentsLandingTab] = PaymentsLandingTab.allCases,
                                               embedInternalTransfer: Bool = false,
-                                              sendNetwork: ChainNetwork? = nil,
                                               showsHeader: Bool = true,
                                               asSheet: Bool = false) {
         let controller = PaymentsLandingHostingController(
             activeTab: activeTab, receiveNetwork: receiveNetwork,
             visibleTabs: visibleTabs, embedInternalTransfer: embedInternalTransfer,
-            sendNetwork: sendNetwork,
             showsHeader: showsHeader)
         let navigationController = BaseNavigationController(rootViewController: controller)
         navigationController.isNavigationBarHidden = true
