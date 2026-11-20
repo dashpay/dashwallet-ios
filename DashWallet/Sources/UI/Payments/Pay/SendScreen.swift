@@ -1867,7 +1867,6 @@ struct SendConfirmSheet: View {
             }
             return
         }
-        guard contactCanBePaid() else { return }
         coordinator.reset()
         confirm()
     }
