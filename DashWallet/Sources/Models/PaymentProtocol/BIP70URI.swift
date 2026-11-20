@@ -55,6 +55,12 @@ struct BIP70URI {
     /// Keys carrying the `req-` prefix (params the request demands; amount immutability etc.).
     let requiredFields: Set<String>
 
+    /// The parameters this parser reads. BIP21: a `req-` parameter outside them makes the URI
+    /// unpayable.
+    static let understoodFields: Set<String> = ["amount", "label", "message", "r", "sender", "user", "currency", "local"]
+
+    var hasUnsupportedRequirement: Bool { !requiredFields.isSubset(of: Self.understoodFields) }
+
     /// true ⇒ BIP70 protocol flow (fetch `r`); false ⇒ plain BIP21 address send.
     var isBIP70: Bool { r != nil }
 
@@ -144,7 +150,8 @@ struct BIP70URI {
         }
 
         self.amount = amount
-        self.hasInvalidAmount = hasInvalidAmount
+        // A required amount of nothing is no invoice the wallet can pay.
+        self.hasInvalidAmount = hasInvalidAmount || (requiredFields.contains("amount") && amount == 0)
         self.label = label
         self.message = message
         self.r = r

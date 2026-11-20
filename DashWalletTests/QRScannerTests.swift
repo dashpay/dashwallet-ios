@@ -442,6 +442,74 @@ final class QRScannerTests: XCTestCase {
         }
     }
 
+    /// BIP21: a required parameter the wallet doesn't understand leaves
+    /// nothing payable — not the request, not the address alone, not an
+    /// address field. An unknown optional parameter is ignored.
+    func testUnsupportedRequiredParameterIsRefused() {
+        let request = "r=https%3A%2F%2Fmerchant.invalid%2Fpr"
+        for code in ["dash:\(Self.address)?req-memo=hi", "dash:\(Self.address)?amount=1&req-expires=1",
+                     "dash:\(Self.address)?amount=1&\(request)&req-memo=hi", "dash:?\(request)&req-memo=hi",
+                     "dash:\(Self.platformAddress)?req-memo=hi"] {
+            let parsed = ParsedPaymentURI.parse(paymentString: code)
+            XCTAssertTrue(parsed.hasUnsupportedRequirement, code)
+            XCTAssertFalse(parsed.isValidDashPaymentIntent, code)
+            XCTAssertFalse(QRScannerViewModel.isOfferablePayment(parsed), code)
+            XCTAssertNil(QRScannerViewModel.fallback(afterFailedRequest: parsed), code)
+
+            for mode in [QRScannerMode.payment, .addressInput(expectsDashAddress: true), .addressInput(expectsDashAddress: false)] {
+                let (scanner, recorder) = makeScanner(mode)
+                scanner.didDetectCodes([code])
+                if case .connecting = scanner.status { XCTFail("nothing is fetched: \(code)") }
+                XCTAssertFalse(isOffer(scanner.status), code)
+                XCTAssertTrue(recorder.results.isEmpty, code)
+            }
+
+            for source in [DWPaymentInputSource.deepLink, .scanQR] {
+                let delegate = ProcessorDelegate()
+                let processor = DWPaymentProcessor()
+                processor.delegate = delegate
+                processor.processPaymentInput(DWPaymentInputBuilder().paymentInput(withParsedURI: parsed, source: source))
+                XCTAssertFalse(delegate.amountRequested, code)
+                XCTAssertFalse(delegate.confirmed, code)
+                XCTAssertEqual(delegate.failure?.title, NSLocalizedString("Invalid Payment Request", comment: ""), code)
+            }
+        }
+
+        for code in ["dash:\(Self.address)?memo=hi", "dash:\(Self.address)?req-label=Shop&req-message=Thanks&amount=1"] {
+            let parsed = ParsedPaymentURI.parse(paymentString: code)
+            XCTAssertFalse(parsed.hasUnsupportedRequirement, code)
+            XCTAssertTrue(parsed.isValidDashPaymentIntent, code)
+            let (field, recorder) = makeScanner(.addressInput(expectsDashAddress: true))
+            field.didDetectCodes([code])
+            guard case .text(let address) = recorder.results.first else {
+                return XCTFail("an understood or optional parameter still unwraps: \(code)")
+            }
+            XCTAssertEqual(address, Self.address, code)
+        }
+    }
+
+    /// An invoice that requires an amount of nothing is refused, so a rescan
+    /// can't keep the earlier invoice's amount for its recipient. A required
+    /// amount always replaces the form's, even an empty one.
+    func testRequiredZeroAmountIsRefused() {
+        for code in ["dash:\(Self.address)?req-amount=0", "dash:\(Self.address)?req-amount=0.0"] {
+            let parsed = ParsedPaymentURI.parse(paymentString: code)
+            XCTAssertTrue(parsed.hasInvalidAmount, code)
+            XCTAssertFalse(parsed.isValidDashPaymentIntent, code)
+            let (scanner, recorder) = makeScanner(.payment)
+            scanner.didDetectCodes([code])
+            XCTAssertTrue(recorder.results.isEmpty, code)
+            XCTAssertTrue(isInvalid(scanner.status), code)
+        }
+        XCTAssertFalse(ParsedPaymentURI.parse(paymentString: "dash:\(Self.address)?amount=0").hasInvalidAmount)
+
+        let send = SendViewModel(contactLookup: { _ in nil })
+        send.prefill(address: Self.address, amountDuffs: 100_000_000, requiresAmount: true)
+        send.prefill(address: Self.platformAddress, amountDuffs: 0, requiresAmount: true)
+        XCTAssertEqual(send.addressText, Self.platformAddress)
+        XCTAssertEqual(send.dashDuffs, 0)
+    }
+
     /// A pay link with payment fields in its query, which the rewrite never
     /// reads, is refused by both entry points rather than paid without them.
     func testPayLinkWithPaymentFieldsInItsQueryIsRefused() throws {

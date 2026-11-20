@@ -196,9 +196,9 @@ static NSString *DWReversedHexString(NSData *data) {
                                          userInfo:@{NSLocalizedDescriptionKey : title}];
         [self failedWithError:error title:title message:nil];
     }
-    else if (!parsed.isValidDashPaymentIntent && parsed.requiresRequest) {
-        // A required merchant request that can't be read (or was given twice): nothing to verify, and
-        // the address alone may not be paid.
+    else if (!parsed.isValidDashPaymentIntent && (parsed.requiresRequest || parsed.hasUnsupportedRequirement)) {
+        // A required merchant request that can't be read (or was given twice), or a required parameter
+        // the wallet doesn't understand: nothing to verify, and the address alone may not be paid.
         NSString *title = NSLocalizedString(@"Invalid Payment Request", nil);
         NSError *error = [NSError errorWithDomain:@"DashWallet.PaymentProcessor"
                                              code:-3
@@ -230,7 +230,7 @@ static NSString *DWReversedHexString(NSData *data) {
                                            if (box) {
                                                [strongSelf confirmBIP70Output:box];
                                            }
-                                           else if (parsed.isAddressValidForCurrentNetwork && !parsed.hasInvalidAmount && !parsed.requiresRequest) {
+                                           else if (parsed.isAddressValidForCurrentNetwork && !parsed.hasInvalidAmount && !parsed.requiresRequest && !parsed.hasUnsupportedRequirement) {
                                                // fetch failed but there's a valid fallback address → plain send (app-side, C8 step 4)
                                                [strongSelf confirmPaymentIntent:intent];
                                            }
