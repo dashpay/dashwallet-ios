@@ -32,9 +32,7 @@ class BaseAtmsDataProvider: PointOfUseDataProvider {
 
         if DWLocationManager.shared
             .needsAuthorization || (DWLocationManager.shared.isAuthorized && (bounds == nil || userPoint == nil)) {
-            items = []
-            currentPage = nil
-            completion(.success(items))
+            answerEmpty(request: request, completion: completion)
             return
         } else if DWLocationManager.shared.isPermissionDenied {
             bounds = nil
@@ -42,7 +40,7 @@ class BaseAtmsDataProvider: PointOfUseDataProvider {
         }
 
         if lastQuery == query && !items.isEmpty && lastBounds == bounds && lastFilters == filters {
-            completion(.success(items))
+            answerFromCache(request: request, completion: completion)
             return
         }
 

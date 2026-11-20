@@ -372,6 +372,7 @@ final class PointOfUseListViewModelTests: XCTestCase {
         let viewModel = makeViewModel(segments: [segment(tag: 0), segment(tag: 2, provider: other)],
                                       notificationCenter: notificationCenter)
         _ = viewModel.selectSegment(at: 1, searchBounds: { _ in self.bounds })
+        await drainMainQueue()
         _ = viewModel.selectSegment(at: 0, searchBounds: { _ in self.bounds })
         XCTAssertFalse(other.items.isEmpty)
 
@@ -430,6 +431,30 @@ final class PointOfUseListViewModelTests: XCTestCase {
         await drainMainQueue()
 
         XCTAssertEqual(viewModel.items.map(\.id), [5])
+    }
+
+    /// The provider and the list take a page in the same main-queue turn, so
+    /// a search that starts right after cannot leave the provider holding a
+    /// page the list dropped. If that search then fails, both still show the
+    /// same rows, and the next page continues from them.
+    func testAProviderAndTheListAgreeAfterASearchThatFails() async {
+        let provider = PagingProvider()
+        let viewModel = makeViewModel(segments: [segment(tag: 0, provider: provider)])
+        provider.answerFirstPage(0, with: .success([atm(1)]))
+        await drainMainQueue()
+
+        viewModel.fetchNextPage()
+        // The provider takes the page in the next main-queue turn; the search
+        // is queued right behind it, so it starts in the turn after that.
+        provider.answerNextPage(0, with: [atm(2)])
+        DispatchQueue.main.async { viewModel.search(query: "fails") }
+        await drainMainQueue()
+        provider.answerFirstPage(1, with: .failure(StubError()))
+        await drainMainQueue()
+
+        XCTAssertEqual(viewModel.items.map(\.id), provider.items.map(\.id))
+        XCTAssertEqual(viewModel.items.map(\.id), [1, 2])
+        XCTAssertEqual(provider.currentPage?.offset, 1, "The next page must continue after the rows on screen")
     }
 
     /// A provider records the parameters of a request only with its rows, so
@@ -529,8 +554,8 @@ final class PointOfUseListViewModelTests: XCTestCase {
                                        notificationCenter: notificationCenter)
     }
 
-    /// Responses reach the list through `DispatchQueue.main.async`; this
-    /// returns once everything queued before it has run.
+    /// Providers answer on the main queue; this returns once everything
+    /// queued before it has run.
     private func drainMainQueue() async {
         let drained = expectation(description: "main queue drained")
         DispatchQueue.main.async { drained.fulfill() }
@@ -600,13 +625,18 @@ private final class StubDataProvider: PointOfUseDataProvider {
                         completion: @escaping (Result<[ExplorePointOfUse], Error>) -> Void) {
         requestedFilters.append(filters)
         requestedBounds.append(bounds)
-        items = stubItems
-        completion(.success(stubItems))
+        // Like every provider, answers on the main queue in a later turn.
+        DispatchQueue.main.async { [self] in
+            items = stubItems
+            completion(.success(stubItems))
+        }
     }
 
     override func nextPage(completion: @escaping (Result<[ExplorePointOfUse], Error>) -> Void) {
-        items += stubNextPage
-        completion(.success(stubNextPage))
+        DispatchQueue.main.async { [self] in
+            items += stubNextPage
+            completion(.success(stubNextPage))
+        }
     }
 }
 
@@ -631,6 +661,35 @@ private final class DeferredDataProvider: PointOfUseDataProvider {
 
     func completeNextPage(_ index: Int, with items: [ExplorePointOfUse]) {
         nextPages[index](.success(items))
+    }
+}
+
+/// A provider that answers through the real `PointOfUseDataProvider` commit
+/// path, held until the test answers it.
+private final class PagingProvider: PointOfUseDataProvider {
+    private var firstPages: [(Int, (Result<[ExplorePointOfUse], Error>) -> Void)] = []
+    private var nextPages: [(Int, (Result<[ExplorePointOfUse], Error>) -> Void)] = []
+
+    override func items(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
+                        with filters: PointOfUseListFilters?,
+                        completion: @escaping (Result<[ExplorePointOfUse], Error>) -> Void) {
+        firstPages.append((beginRequest(), completion))
+    }
+
+    override func nextPage(completion: @escaping (Result<[ExplorePointOfUse], Error>) -> Void) {
+        nextPages.append((beginRequest(), completion))
+    }
+
+    func answerFirstPage(_ index: Int, with result: Result<[ExplorePointOfUse], Error>) {
+        let (request, completion) = firstPages[index]
+        handleFirstPage(request: request, result: result.map { PaginationResult(items: $0, offset: 0) },
+                        query: nil, bounds: nil, userPoint: nil, filters: nil, completion: completion)
+    }
+
+    func answerNextPage(_ index: Int, with items: [ExplorePointOfUse]) {
+        let (request, completion) = nextPages[index]
+        handle(request: request, result: .success(PaginationResult(items: items, offset: self.items.count)),
+               appending: true, completion: completion)
     }
 }
 

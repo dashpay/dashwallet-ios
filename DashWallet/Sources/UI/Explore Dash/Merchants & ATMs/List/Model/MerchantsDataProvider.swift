@@ -35,7 +35,7 @@ class AllMerchantsDataProvider: NearbyMerchantsDataProvider {
         // result is never sticky.
         if lastQuery == query && !items.isEmpty && lastFilters == filters &&
             !Self.movedSignificantly(from: lastUserPoint, to: userPoint) {
-            completion(.success(items))
+            answerFromCache(request: request, completion: completion)
             return
         }
 
@@ -88,15 +88,13 @@ class NearbyMerchantsDataProvider: PointOfUseDataProvider {
                         completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
         let request = beginRequest()
         guard let bounds, let userLocation = userPoint, DWLocationManager.shared.isAuthorized else {
-            items = []
-            currentPage = nil
-            completion(.success(items))
+            answerEmpty(request: request, completion: completion)
             return
         }
 
 
         if lastBounds == bounds && lastQuery == query && !items.isEmpty && lastFilters == filters {
-            completion(.success(items))
+            answerFromCache(request: request, completion: completion)
             return
         }
 
@@ -131,7 +129,7 @@ class OnlineMerchantsDataProvider: PointOfUseDataProvider {
                         completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
         let request = beginRequest()
         if lastQuery == query && !items.isEmpty && lastFilters == filters {
-            completion(.success(items))
+            answerFromCache(request: request, completion: completion)
             return
         }
 

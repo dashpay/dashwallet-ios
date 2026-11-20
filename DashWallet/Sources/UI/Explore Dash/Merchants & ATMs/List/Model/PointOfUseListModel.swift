@@ -77,6 +77,8 @@ class PointOfUseDataProvider {
         dataSource = ExploreDash.shared
     }
 
+    /// Answers on the main queue in a later turn, never from inside the call:
+    /// through `handleFirstPage`, `answerFromCache` or `answerEmpty`.
     func items(query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
                with filters: PointOfUseListFilters?, completion: @escaping (Swift.Result<[ExplorePointOfUse], Error>) -> Void) {
         // NOTE: must be overriden
@@ -119,9 +121,30 @@ class PointOfUseDataProvider {
         }
     }
 
+    /// Answers `request` with the rows already held, when they match it.
+    /// Like every answer, it arrives through `commit`, so the caller always
+    /// gets it on the main queue in a turn of its own.
+    internal func answerFromCache(request: Int, completion: @escaping (Result<[ExplorePointOfUse], Error>) -> Void) {
+        commit(request) { [weak self] in
+            completion(.success(self?.items ?? []))
+        }
+    }
+
+    /// Answers `request` with no rows (no location to search around) and
+    /// drops the rows held, both only if `request` is still the latest.
+    internal func answerEmpty(request: Int, completion: @escaping (Result<[ExplorePointOfUse], Error>) -> Void) {
+        commit(request) { [weak self] in
+            self?.items = []
+            self?.currentPage = nil
+            completion(.success([]))
+        }
+    }
+
     /// Runs `work` on the main queue if `request` is still the latest, so the
     /// provider's state is written on one queue (the DAOs answer on their
     /// own) and a superseded response writes nothing and calls no completion.
+    /// `PointOfUseListModel` applies the answer in the same main-queue turn,
+    /// so the provider and the list never disagree on which rows are shown.
     private func commit(_ request: Int, _ work: @escaping () -> Void) {
         DispatchQueue.main.async { [weak self] in
             guard let self, request == self.requestGeneration else { return }
@@ -312,7 +335,7 @@ extension PointOfUseListModel {
         let request = beginRequest()
         currentDataProvider?
             .items(query: query, in: currentMapBounds, userPoint: userCoordinates, with: filters) { [weak self] result in
-                DispatchQueue.main.async {
+                Self.onMain {
                     guard let self, self.isLatest(request) else { return }
 
                     switch result {
@@ -331,7 +354,7 @@ extension PointOfUseListModel {
     public func fetchNextPage() {
         let request = beginRequest()
         currentDataProvider?.nextPage { [weak self] result in
-            DispatchQueue.main.async {
+            Self.onMain {
                 guard let self, self.isLatest(request) else { return }
 
                 switch result {
@@ -368,5 +391,17 @@ extension PointOfUseListModel {
 
     private func isLatest(_ request: Int) -> Bool {
         request == requestGeneration
+    }
+
+    /// Applies a provider's answer in the turn it arrives in when that is on
+    /// the main queue. Providers write their own state in that same turn
+    /// (`PointOfUseDataProvider.commit`), so a request started in between
+    /// cannot leave the provider holding rows the list dropped.
+    private static func onMain(_ work: @escaping () -> Void) {
+        if Thread.isMainThread {
+            work()
+        } else {
+            DispatchQueue.main.async(execute: work)
+        }
     }
 }

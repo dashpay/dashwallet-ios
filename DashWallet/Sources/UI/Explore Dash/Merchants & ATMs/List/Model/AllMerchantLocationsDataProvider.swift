@@ -70,9 +70,7 @@ class AllMerchantLocationsDataProvider: PointOfUseDataProvider {
             let allowNilBounds = bounds == nil && userPoint == nil
 
             if DWLocationManager.shared.needsAuthorization || (DWLocationManager.shared.isAuthorized && !allowNilBounds && (bounds == nil || userPoint == nil)) {
-                items = []
-                currentPage = nil
-                completion(.success(items))
+                answerEmpty(request: request, completion: completion)
                 return
             } else if DWLocationManager.shared.isPermissionDenied {
                 bounds = nil
@@ -81,7 +79,7 @@ class AllMerchantLocationsDataProvider: PointOfUseDataProvider {
         }
 
         if lastQuery == query && !items.isEmpty && lastBounds == bounds && lastFilters == filters {
-            completion(.success(items))
+            answerFromCache(request: request, completion: completion)
             return
         }
 
