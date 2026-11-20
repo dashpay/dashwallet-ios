@@ -228,10 +228,13 @@ struct BIP70URI {
     private static func duffs(fromDecimalDash value: String) -> UInt64? {
         // The whole token, not a numeric prefix: "1abc" or "1,000" is no amount.
         guard value.range(of: #"\A(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?\z"#, options: .regularExpression) != nil,
-              let dash = Decimal(string: value, locale: Locale(identifier: "en_US_POSIX")) else { return nil }
-        let duffs = NSDecimalNumber(decimal: dash * Decimal(100_000_000))
-            .rounding(accordingToBehavior: roundUpToDuff)
-        guard duffs.compare(NSDecimalNumber(value: kMaxDashSupplyDuffs)) != .orderedDescending else { return nil }
+              let dash = Decimal(string: value, locale: Locale(identifier: "en_US_POSIX")), !dash.isNaN else { return nil }
+        // An exponent past what `Decimal` holds comes back as NaN, which compares as no amount at all.
+        let product = dash * Decimal(100_000_000)
+        guard !product.isNaN else { return nil }
+        let duffs = NSDecimalNumber(decimal: product).rounding(accordingToBehavior: roundUpToDuff)
+        guard !duffs.decimalValue.isNaN,
+              duffs.compare(NSDecimalNumber(value: kMaxDashSupplyDuffs)) != .orderedDescending else { return nil }
         return duffs.uint64Value
     }
 
