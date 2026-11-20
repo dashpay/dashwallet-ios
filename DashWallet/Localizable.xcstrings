@@ -324418,7 +324418,7 @@
       }
     },
     "NFC device didn't transmit a valid Dash address" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
