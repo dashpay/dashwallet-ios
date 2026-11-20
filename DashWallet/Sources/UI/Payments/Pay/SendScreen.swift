@@ -489,7 +489,7 @@ struct ExternalSendAmountScreen: View {
                     // wallet can start resyncing while this screen is open, and
                     // the contact flow never passes through that step at all.
                     if viewModel.isBlockedBySync {
-                        SyncGateNote()
+                        SyncGateNote(paysContact: viewModel.paysContact)
                             .padding(.horizontal, 20)
                     }
                 }
@@ -569,6 +569,8 @@ struct ExternalSendAmountScreen: View {
                     contactRecipient: viewModel.contactPaymentRecipient,
                     contactCoreFeeCredits: viewModel.contactCoreFeeCredits,
                     contactNetworkFeeCredits: viewModel.contactNetworkFeeCredits,
+                    contactUnavailableMessage: contactUnavailableMessage,
+                    recheckContact: recheckContact,
                     onCancel: { showConfirm = false },
                     onCompleted: {
                         didCompleteSend = true
@@ -578,6 +580,22 @@ struct ExternalSendAmountScreen: View {
                     .presentationDragIndicator(.hidden)
             }
         }
+    }
+
+    private var contactUnavailableMessage: String? {
+        #if DASHPAY
+        viewModel.contactUnavailableMessage
+        #else
+        nil
+        #endif
+    }
+
+    private func recheckContact() -> String? {
+        #if DASHPAY
+        viewModel.recheckContactAvailability()
+        #else
+        nil
+        #endif
     }
 
     private var shieldedRecipientRaw43: Data? {
@@ -1236,10 +1254,28 @@ struct SendConfirmSheet: View {
     /// an upper bound. Shown, and authorized with the amount; nil refuses the
     /// payment.
     var contactNetworkFeeCredits: UInt64? = nil
+    /// Why the contact cannot be paid now, as the amount step last saw it.
+    var contactUnavailableMessage: String? = nil
+    /// The same reason read from the contacts service now; Confirm and Try
+    /// again ask it before they start.
+    var recheckContact: () -> String? = { nil }
     var onCancel: () -> Void
     var onCompleted: () -> Void
 
     @StateObject private var coordinator = ShieldedTransferCoordinator()
+    @State private var contactRecheckMessage: String?
+
+    private var contactBlockMessage: String? {
+        guard contactRecipient != nil else { return nil }
+        return contactUnavailableMessage ?? contactRecheckMessage
+    }
+
+    /// False, showing why, when the contact can no longer be paid.
+    private func contactCanBePaid() -> Bool {
+        guard contactRecipient != nil else { return true }
+        contactRecheckMessage = recheckContact()
+        return contactRecheckMessage == nil
+    }
 
     /// The lock `CoreCoinConsolidationSheet` is up for, after the coordinator
     /// refused it over the asset-lock input limit.
@@ -1376,6 +1412,15 @@ struct SendConfirmSheet: View {
                     .padding(.top, 12)
             }
 
+            if let contactBlockMessage, !isInFlight {
+                Text(contactBlockMessage)
+                    .font(.system(size: 13))
+                    .foregroundColor(.red)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
+                    .padding(.top, 8)
+            }
+
             Spacer(minLength: 12)
 
             switch coordinator.phase {
@@ -1383,6 +1428,7 @@ struct SendConfirmSheet: View {
                 ButtonsGroup(
                     orientation: .horizontal,
                     size: .large,
+                    positiveActionEnabled: contactBlockMessage == nil,
                     positiveButtonText: NSLocalizedString("Confirm", comment: ""),
                     positiveButtonAction: confirm,
                     negativeButtonText: NSLocalizedString("Cancel", comment: ""),
@@ -1405,6 +1451,7 @@ struct SendConfirmSheet: View {
                     ButtonsGroup(
                         orientation: .horizontal,
                         size: .large,
+                        positiveActionEnabled: contactBlockMessage == nil,
                         positiveButtonText: NSLocalizedString("Try again", comment: ""),
                         positiveButtonAction: tryAgain,
                         negativeButtonText: NSLocalizedString("Close", comment: ""),
@@ -1742,6 +1789,7 @@ struct SendConfirmSheet: View {
     // MARK: - Actions
 
     private func confirm() {
+        guard contactCanBePaid() else { return }
         Task {
             switch route {
             case .coreToShielded:
@@ -1821,6 +1869,7 @@ struct SendConfirmSheet: View {
             }
             return
         }
+        guard contactCanBePaid() else { return }
         coordinator.reset()
         confirm()
     }
@@ -1838,14 +1887,18 @@ struct SendConfirmSheet: View {
 
 /// Shared explanation for the restored-wallet initial-sync gate.
 struct SyncGateNote: View {
+    var paysContact = false
+
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             Image(systemName: "clock.arrow.circlepath")
                 .font(.system(size: 13))
                 .foregroundColor(.orange)
-            Text(NSLocalizedString(
-                "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes.",
-                comment: "Core send blocked during a restored wallet's initial sync"))
+            Text(paysContact
+                ? WalletSendService.contactPaymentRestoreSyncMessage
+                : NSLocalizedString(
+                    "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes.",
+                    comment: "Core send blocked during a restored wallet's initial sync"))
                 .font(.caption)
                 .foregroundColor(.dash.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)

@@ -2387,7 +2387,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
                     contactIdentityId: recipient.identityId,
                     amountDuffs: amountDuffs,
                     amountIsEstimate: amountIsEstimate,
-                    source: source)
+                    source: source,
+                    coreHeight: WalletSendService.coreTipHeight())
             },
             journal: { try self.contactWithdrawalStore.recordReservedAddress($0, address: $1) })
         #else
@@ -2470,7 +2471,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         // The same per-contact lock an unknown Transparent contact payment
         // takes, so reopening the contact cannot start a duplicate.
         WalletSendService.shared.unknownContactPaymentOutcomes
-            .record(contactIdentityId: withdrawal.contactIdentityId)
+            .record(scope: withdrawal.scope, contactIdentityId: withdrawal.contactIdentityId)
         #endif
         contactWithdrawalOutcomeUnknown = true
         phase = .submittedUnconfirmed

@@ -328,8 +328,8 @@
 /* DashPay: a second payment to a contact started while one was still being sent */
 "A payment to this contact is already in progress." = "A payment to this contact is already in progress.";
 
-/* DashPay: too many contact addresses were reserved for payments that were never sent */
-"Several recent payments to this contact from Platform or Shielded were not sent. Pay this contact from your Dash balance instead." = "Several recent payments to this contact from Platform or Shielded were not sent. Pay this contact from your Dash balance instead.";
+/* DashPay: too many contact addresses were reserved for payments that may not have arrived */
+"No more payment addresses can be reserved for this contact from Platform or Shielded. If a recent payment's status is unknown, check that your contact received it before paying again." = "No more payment addresses can be reserved for this contact from Platform or Shielded. If a recent payment's status is unknown, check that your contact received it before paying again.";
 
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
@@ -7996,6 +7996,9 @@
 
 /* Core send blocked during a restored wallet's initial sync */
 "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes." = "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes.";
+
+/* Contact payment blocked during a restored wallet's initial sync */
+"Your restored wallet is completing its initial sync. Paying contacts will be available once it finishes." = "Your restored wallet is completing its initial sync. Paying contacts will be available once it finishes.";
 
 /* DashSpend */
 "Your session expired" = "Deine Session ist abgelaufen";
