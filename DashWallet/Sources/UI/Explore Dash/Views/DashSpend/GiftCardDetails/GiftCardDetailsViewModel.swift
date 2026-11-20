@@ -286,8 +286,12 @@ class GiftCardDetailsViewModel: ObservableObject {
     }
 
     private func fetchCTXGiftCardInfo() async {
-        guard let giftCard = await giftCardsDAO.get(byTxId: txId),
-              ctxSpendRepository.isUserSignedIn else {
+        guard let giftCard = await giftCardsDAO.get(byTxId: txId) else {
+            stopTicker()
+            return
+        }
+        guard ctxSpendRepository.isUserSignedIn else {
+            DWLogger.log("DashSpend: Stopped polling CTX gift card - user is not signed in to CTX")
             stopTicker()
             return
         }
@@ -308,6 +312,11 @@ class GiftCardDetailsViewModel: ObservableObject {
             // An answered poll — whatever the order status — ends the failure streak and
             // returns the ticker to its base cadence.
             noteSuccessfulPoll()
+
+            DWLogger.log("DashSpend: CTX gift card status: \(response.status), "
+                + "number: \(response.cardNumber?.isEmpty == false), "
+                + "redeemUrl: \(response.redeemUrl?.isEmpty == false), "
+                + "barcodeUrl: \(response.barcodeUrl?.isEmpty == false)")
 
             switch response.status {
             case "fulfilled":
@@ -370,8 +379,12 @@ class GiftCardDetailsViewModel: ObservableObject {
 
     private func fetchPiggyCardsGiftCardInfo() async {
         guard let giftCard = await giftCardsDAO.get(byTxId: txId),
-              let note = giftCard.note,
-              piggyCardsRepository.isUserSignedIn else {
+              let note = giftCard.note else {
+            stopTicker()
+            return
+        }
+        guard piggyCardsRepository.isUserSignedIn else {
+            DWLogger.log("DashSpend: Stopped polling PiggyCards gift card - user is not signed in to PiggyCards")
             stopTicker()
             return
         }
@@ -382,6 +395,9 @@ class GiftCardDetailsViewModel: ObservableObject {
             DWLogger.log("DashSpend: Calling PiggyCards API - OrderId: \(metadata.orderId)")
             let orderStatus = try await piggyCardsRepository.getOrderStatus(orderId: metadata.orderId)
             noteSuccessfulPoll()
+
+            DWLogger.log("DashSpend: PiggyCards order status: \(orderStatus.data.status), "
+                + "cards: \(orderStatus.data.cards.count)")
 
             switch orderStatus.data.status.lowercased() {
             case "complete", "completed":
@@ -439,6 +455,7 @@ class GiftCardDetailsViewModel: ObservableObject {
             }
         } catch {
             errorStreak += 1
+            let attempt = errorStreak
             if errorStreak >= maxErrorStreak {
                 await MainActor.run {
                     self.uiState.loadingError = error
@@ -448,6 +465,7 @@ class GiftCardDetailsViewModel: ObservableObject {
             } else {
                 pollInterval = min(pollInterval * 2, maxPollInterval)
             }
+            DWLogger.log("DashSpend: Failed to fetch PiggyCards order status (attempt \(attempt)): \(error)")
         }
     }
 
