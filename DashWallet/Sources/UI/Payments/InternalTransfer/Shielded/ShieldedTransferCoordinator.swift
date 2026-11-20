@@ -2383,10 +2383,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             for: recipient,
             reserving: {
                 try self.contactWithdrawalStore.beginReservation(
-                    scope: .init(
-                        networkRaw: recipient.network.rawValue,
-                        walletId: recipient.walletId,
-                        ownerIdentityId: recipient.ownerIdentityId),
+                    scope: .init(recipient),
                     contactIdentityId: recipient.identityId,
                     amountDuffs: amountDuffs,
                     amountIsEstimate: amountIsEstimate,

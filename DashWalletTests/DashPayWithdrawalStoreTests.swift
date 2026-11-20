@@ -332,7 +332,8 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
         let address = try XCTUnwrap(ScriptAddressCodec.address(forScript: script, network: .testnet))
         var nextId: UInt8 = 0
         func container(_ rows: [(status: Int, kind: Int, wallet: Data, counterparty: Data)]) throws -> ModelContainer {
-            let container = try ShieldedWithdrawalHistoryFixture.makeContainer()
+            let config = ModelConfiguration(schema: DashModelContainer.schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
+            let container = try ModelContainer(for: DashModelContainer.schema, configurations: [config])
             for row in rows {
                 nextId += 1
                 container.mainContext.insert(PersistentShieldedActivity(
@@ -386,7 +387,7 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
         let attempt = try store.recordReservedAddress(try reservation(), address: "reserved-contact-address")
         XCTAssertEqual(attempt.status, .submitting)
         XCTAssertEqual(attempt.address, "reserved-contact-address")
-        XCTAssertEqual(try unpaidStreak, 0)
+        XCTAssertEqual(try unpaidStreak, 1, "its outcome is unknown until the SDK answers")
         XCTAssertTrue(try store.hasUnresolvedEntry(scope: scope, contactIdentityId: contact, since: .distantPast))
         XCTAssertThrowsError(try store.recordReservedAddress(attempt, address: "another"))
     }
@@ -407,22 +408,96 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
         XCTAssertEqual(try unpaidStreak, 0)
     }
 
-    /// A Shielded withdrawal the SDK failed used up its address unpaid; a
-    /// Core payment to the contact ends the run.
-    func testFailedShieldedWithdrawalCountsAndACorePaymentEndsTheStreak() throws {
+    /// Only evidence that an address was paid ends the run: a withdrawal the
+    /// SDK accepted and didn't fail, a Shielded one it confirmed, or a Core
+    /// payment. An attempt whose outcome is unknown counts.
+    func testOnlyEvidenceOfAPaymentEndsTheStreak() throws {
+        func streak(_ state: DashPayWithdrawalStore.ShieldedSpendState = .pending) throws -> Int {
+            try store.unpaidReservationStreak(scope: scope, contactIdentityId: contact, shieldedSpendState: { _ in state })
+        }
         try store.update(try begin(source: .platform), status: .submitted)
+        try store.update(try begin(), status: .unused)
+        _ = try begin(source: .platform)
         try store.update(try begin(source: .shielded), status: .unconfirmed)
         try store.update(try begin(), status: .unused)
-        XCTAssertEqual(try unpaidStreak, 1, "a withdrawal that may have paid ends the run")
-        XCTAssertEqual(try store.unpaidReservationStreak(
-            scope: scope, contactIdentityId: contact, shieldedSpendState: { _ in .failed }), 2)
+        XCTAssertEqual(try streak(), 4, "unknown outcomes count, Platform or Shielded")
+        XCTAssertEqual(try streak(.confirmed), 1, "a confirmed Shielded withdrawal paid its address")
+
+        try store.update(try begin(source: .shielded), status: .submitted)
+        XCTAssertEqual(try streak(), 0)
+        XCTAssertEqual(try streak(.failed), 5, "the SDK failed it after accepting it")
+
         try store.recordCorePayment(scope: scope, contactIdentityId: contact, amountDuffs: 10_000)
-        XCTAssertEqual(try store.unpaidReservationStreak(
-            scope: scope, contactIdentityId: contact, shieldedSpendState: { _ in .failed }), 0)
+        XCTAssertEqual(try streak(.failed), 0)
         let core = try XCTUnwrap(try store.entries(scope: scope, contactIdentityId: contact).first { $0.status == .corePayment })
         XCTAssertFalse(core.mayHaveBeenSubmitted)
-        XCTAssertFalse(try DashPayWithdrawalStore(directory: directory).hasUnresolvedEntry(
-            scope: scope, contactIdentityId: contact, since: .distantPast, shieldedSpendState: { _ in .failed }))
+    }
+
+    /// A Platform attempt interrupted before its withdrawal was dispatched
+    /// still counts once its lock has expired: the address is used up.
+    func testAnAgedInterruptedAttemptStillCountsAfterReopening() throws {
+        try store.update(try begin(), status: .unused)
+        _ = try begin(source: .platform)
+        try store.update(try begin(), status: .unused)
+        let reopened = DashPayWithdrawalStore(directory: directory)
+        XCTAssertFalse(try reopened.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: Date().addingTimeInterval(60),
+            shieldedSpendState: { _ in .unrecorded }))
+        XCTAssertEqual(try reopened.unpaidReservationStreak(scope: scope, contactIdentityId: contact), 3)
+    }
+
+    // MARK: - What the contact's history shows
+
+    func testHistoryShowsWhatTheSDKSettled() throws {
+        let attempt = try begin(source: .shielded)
+        try store.update(attempt, status: .unconfirmed)
+        let unconfirmed = try XCTUnwrap(store.entries(scope: scope, contactIdentityId: contact).first)
+        let unknown = NSLocalizedString("Status unknown", comment: "DashPay payment history: outcome not confirmed")
+        func shown(_ state: DashPayWithdrawalStore.ShieldedSpendState, _ entry: DashPayWithdrawalStore.Entry) -> [String?] {
+            SwiftDashSDKContactsService.shownWithdrawals([entry], shieldedSpendState: { _ in state }).map(\.1)
+        }
+        XCTAssertEqual(shown(.pending, unconfirmed), [unknown])
+        XCTAssertEqual(shown(.unrecorded, unconfirmed), [unknown])
+        XCTAssertEqual(shown(.confirmed, unconfirmed), [nil])
+        XCTAssertEqual(shown(.failed, unconfirmed), [], "a failed withdrawal sent nothing")
+
+        var submitted = unconfirmed
+        submitted.status = .submitted
+        XCTAssertEqual(shown(.pending, submitted), [nil])
+        var unused = unconfirmed
+        unused.status = .unused
+        XCTAssertEqual(shown(.confirmed, unused), [])
+        var platform = try begin(source: .platform)
+        platform.status = .unconfirmed
+        XCTAssertEqual(shown(.failed, platform), [unknown], "the Shielded state says nothing about a Platform withdrawal")
+    }
+
+    // MARK: - Chains
+
+    /// Named devnets share a network kind but never a journal; removing the
+    /// wallet clears every chain's.
+    func testNamedDevnetsKeepSeparateJournals() throws {
+        let a = DashPayWithdrawalStore.Scope(networkRaw: 2, walletId: scope.walletId, ownerIdentityId: scope.ownerIdentityId,
+                                             chain: "devnet-a_1")
+        let b = DashPayWithdrawalStore.Scope(networkRaw: 2, walletId: scope.walletId, ownerIdentityId: scope.ownerIdentityId,
+                                             chain: "devnet-b")
+        _ = try begin(scope: a)
+        XCTAssertTrue(try store.hasUnresolvedEntry(scope: a, contactIdentityId: contact, since: .distantPast))
+        XCTAssertFalse(try store.hasUnresolvedEntry(scope: b, contactIdentityId: contact, since: .distantPast))
+        XCTAssertTrue(try store.entries(scope: b, contactIdentityId: contact).isEmpty)
+        _ = try begin(scope: b)
+        XCTAssertEqual(try store.files(ofWallet: scope.walletId).count, 2)
+        try store.clearForWallet(walletId: scope.walletId)
+        XCTAssertTrue(try store.entries(scope: a, contactIdentityId: contact).isEmpty)
+        XCTAssertTrue(try store.entries(scope: b, contactIdentityId: contact).isEmpty)
+    }
+
+    /// A record written before scopes named their chain reads as its kind's.
+    func testAScopeWithoutAChainReadsAsItsNetworkKind() throws {
+        let legacy = Data(#"{"networkRaw":1,"walletId":"AQ==","ownerIdentityId":"Ag=="}"#.utf8)
+        let decoded = try JSONDecoder().decode(DashPayWithdrawalStore.Scope.self, from: legacy)
+        XCTAssertEqual(decoded.chain, "testnet")
+        XCTAssertEqual(decoded, DashPayWithdrawalStore.Scope(networkRaw: 1, walletId: Data([1]), ownerIdentityId: Data([2])))
     }
 
     func testTooManyUnpaidReservationsRefuseTheNextOne() throws {
