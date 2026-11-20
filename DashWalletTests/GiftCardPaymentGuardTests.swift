@@ -419,7 +419,9 @@ final class DashSpendPayApprovalTests: XCTestCase {
     private func makeViewModel(provider: GiftCardProvider = .ctx,
                                rate: GiftCardPaymentGuard.ExchangeRate? = nil,
                                now: @escaping () -> Date = { Date() }) -> DashSpendPayViewModel {
-        let rate = rate ?? usableRate
+        // Retrieved at the view model's own clock: a rate stamped by the real clock can be a
+        // second ahead of a clock the test froze earlier, and a rate from the future is stale.
+        let rate = rate ?? GiftCardPaymentGuard.ExchangeRate(price: 40, retrievedAt: Int(now().timeIntervalSince1970))
         let viewModel = DashSpendPayViewModel(merchant: merchant, provider: provider, exchangeRate: { rate }, now: now)
         // No sheet is on screen in these tests, so nothing reports its dismissal.
         viewModel.sheetDismissalWait = 0.01
