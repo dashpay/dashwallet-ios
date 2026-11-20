@@ -256,7 +256,6 @@ jobs:
           CATALOG_WRITER_CACHE: ${{ runner.temp }}/l10n-catalog-writer
         run: |
           python3 -m unittest discover -s scripts/localization/tests
-          swift test --package-path scripts/localization/codemod
 
       - name: Write placeholder app configuration
         run: |

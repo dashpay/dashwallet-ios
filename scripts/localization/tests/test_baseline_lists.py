@@ -1,15 +1,16 @@
-"""T21: the Baseline reader lives in a kept module, not in the generator T20 deletes.
+"""The Baseline reader lives in baseline_lists, no kept localization module imports a removed
+migration tool, and no kept localization shell script or GitHub workflow names one.
 
 Run from the repository root:
 
     python3 -m unittest discover -s scripts/localization/tests -p 'test_baseline_lists.py'
 
-The rule: after T20 deletes the generator, the codemod, the entry mover, the Catalog project
-helper and regenerate.sh, every file that stays must still import. So no kept file imports
-(or runs) generate_catalog, and the Baseline reader is importable from baseline_lists.
+The Catalog generator, the codemod, the entry mover, the Catalog project helper and
+regenerate.sh were removed once the migration was done. No kept Python module under
+scripts/localization imports them, no kept shell script there and no file under .github names
+them, and the Baseline reader is importable from baseline_lists.
 """
 import ast
-import importlib
 import os
 import re
 import shutil
@@ -22,17 +23,17 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 LOCALIZATION_DIR = os.path.dirname(HERE)
 REPO_ROOT = os.path.dirname(os.path.dirname(LOCALIZATION_DIR))
 FIXTURE_REPO = os.path.join(LOCALIZATION_DIR, "fixtures", "zero_loss", "repo")
-T20 = os.path.join(REPO_ROOT, "docs", "features", "string-catalogs-migration", "tasks",
-                   "T20-remove-migration-tools.md")
 sys.path.insert(0, LOCALIZATION_DIR)
 
-# What T20 deletes (relative to scripts/localization); catalog_project.py is used only by regenerate.sh.
+# The removed migration tools (relative to scripts/localization).
 REMOVED_FILES = {
     "generate_catalog.py", "move_entries.py", "catalog_project.py", "regenerate.sh",
     "tests/test_generate_catalog.py", "tests/test_move_entries.py", "tests/test_catalog_project.py",
 }
 REMOVED_DIRS = ("codemod", "fixtures/catalog", "fixtures/move")
 REMOVED_MODULES = ("generate_catalog", "move_entries", "catalog_project")
+# A kept script or workflow that names one of these would run a removed tool.
+RUNS_REMOVED_TOOL = re.compile(r"generate_catalog|move_entries|catalog_project|regenerate\.sh|localization/codemod")
 
 
 def kept_files(extensions):
@@ -73,7 +74,7 @@ class KeptFilesDoNotNeedRemovedToolsTests(unittest.TestCase):
         self.assertEqual(offenders, [])
 
     def test_no_kept_script_or_workflow_runs_a_removed_tool(self):
-        pattern = re.compile(r"generate_catalog|move_entries|catalog_project|regenerate\.sh")
+        pattern = RUNS_REMOVED_TOOL
         offenders = []
         for rel, path in kept_files((".sh",)):
             with open(path, encoding="utf-8") as f:
@@ -87,12 +88,15 @@ class KeptFilesDoNotNeedRemovedToolsTests(unittest.TestCase):
                         offenders.append(os.path.relpath(os.path.join(root, name), REPO_ROOT))
         self.assertEqual(offenders, [])
 
-    @unittest.skipUnless(os.path.exists(T20), "the feature's planning drafts are not in this checkout")
-    def test_t20_lists_catalog_project(self):
-        with open(T20, encoding="utf-8") as f:
-            text = f.read()
-        self.assertIn("scripts/localization/catalog_project.py", text)
-        self.assertIn("scripts/localization/tests/test_catalog_project.py", text)
+    def test_the_guard_matches_a_run_of_each_removed_tool(self):
+        runs = [
+            "python3 scripts/localization/generate_catalog.py --rev HEAD --repo .",
+            "python3 scripts/localization/move_entries.py --repo .",
+            "python3 scripts/localization/catalog_project.py DashWallet.xcodeproj/project.pbxproj",
+            "scripts/localization/regenerate.sh",
+            "swift test --package-path scripts/localization/codemod",
+        ]
+        self.assertEqual([r for r in runs if not RUNS_REMOVED_TOOL.search(r)], [])
 
 
 class BaselineListsModuleTests(unittest.TestCase):
@@ -124,15 +128,6 @@ class BaselineListsModuleTests(unittest.TestCase):
         self.assertTrue(cat["strings"])
         for entry in cat["strings"].values():
             self.assertTrue({"en", "de", "uk"} >= set(entry["localizations"]))
-
-    def test_same_result_as_the_generator_while_it_exists(self):
-        import baseline_lists
-        try:
-            generate_catalog = importlib.import_module("generate_catalog")  # not a static import
-        except ImportError:
-            self.skipTest("generator already removed by T20")
-        self.assertEqual(baseline_lists.build_catalog(self.repo, self.rev),
-                         generate_catalog.build_catalog(self.repo, self.rev))
 
     def test_does_not_depend_on_the_generator(self):
         path = os.path.join(LOCALIZATION_DIR, "baseline_lists.py")
