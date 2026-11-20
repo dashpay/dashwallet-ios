@@ -170,7 +170,7 @@ final class QRScannerViewModel: ObservableObject {
                     // A merchant request is the merchant's to fill in, not
                     // a field's: offered, never unwrapped.
                     offerPaymentRedirect(parsed, fallbackMessage: nil)
-                } else if expectsDashAddress, parsed.isValidDashPaymentIntent,
+                } else if expectsDashAddress, parsed.isValidDashPaymentIntent, !parsed.requiresAmount,
                           parsed.isAddressValidForCurrentNetwork, let address = parsed.address {
                     // The field wants a bare Dash address; unwrap it from
                     // the payment URI instead of pasting the whole URI.

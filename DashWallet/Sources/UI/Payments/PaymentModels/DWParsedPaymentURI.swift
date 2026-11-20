@@ -84,6 +84,8 @@ final class ParsedPaymentURI: NSObject {
     /// The request was given as `req-r`, or more than once: only the merchant's request may be
     /// paid, never the embedded address in its place. Without a usable `rURL` nothing is payable.
     @objc let requiresRequest: Bool
+    /// The amount was given as `req-amount`: an invoice, never an address to fill in alone.
+    @objc let requiresAmount: Bool
     /// `sender=` x-callback-url scheme.
     @objc let callbackScheme: String?
     /// `user=` DashPay username (value carry only; DashPay deferred to C10).
@@ -129,6 +131,7 @@ final class ParsedPaymentURI: NSObject {
                  message: String?,
                  rURL: URL?,
                  requiresRequest: Bool,
+                 requiresAmount: Bool,
                  callbackScheme: String?,
                  dashpayUsername: String?,
                  fiatCurrencyCode: String?,
@@ -146,6 +149,7 @@ final class ParsedPaymentURI: NSObject {
         self.message = message
         self.rURL = rURL
         self.requiresRequest = requiresRequest
+        self.requiresAmount = requiresAmount
         self.callbackScheme = callbackScheme
         self.dashpayUsername = dashpayUsername
         self.fiatCurrencyCode = fiatCurrencyCode
@@ -171,6 +175,7 @@ final class ParsedPaymentURI: NSObject {
         guard let paymentString, let uri = BIP70URI(paymentString: paymentString) else {
             return ParsedPaymentURI(rawString: raw, scheme: nil, address: nil, amount: 0,
                                     hasInvalidAmount: false, label: nil, message: nil, rURL: nil, requiresRequest: false,
+                                    requiresAmount: false,
                                     callbackScheme: nil,
                                     dashpayUsername: nil, fiatCurrencyCode: nil, fiatAmount: 0,
                                     hasExplicitScheme: false, isAddressValidForCurrentNetwork: false,
@@ -191,6 +196,7 @@ final class ParsedPaymentURI: NSObject {
                                 message: uri.message,
                                 rURL: uri.r,
                                 requiresRequest: uri.requiredFields.contains("r"),
+                                requiresAmount: uri.requiredFields.contains("amount"),
                                 callbackScheme: uri.callbackScheme,
                                 dashpayUsername: uri.dashpayUsername,
                                 fiatCurrencyCode: uri.fiatCurrencyCode,
@@ -209,12 +215,12 @@ final class ParsedPaymentURI: NSObject {
     /// pay link (the plain `dashwallet:<address>` alias, which `BIP70URI` reads) is read as is.
     private static func deepLinkPaymentString(for raw: String) -> DeepLinkPayment {
         let link = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard link.hasPrefix("dashwallet:"), let url = URL(string: link) else { return .notAWrapper }
+        guard link.lowercased().hasPrefix("dashwallet:"), let url = URL(string: link) else { return .notAWrapper }
         if let paymentURL = DWURLParser.paymentURL(forScannedLink: url) {
             return .rewritten(paymentURL.absoluteString)
         }
         // The router's own test for a pay link: one it refused is refused here too, not reread.
-        let isPayLink = url.host?.hasPrefix("pay") == true || url.path == "/pay"
+        let isPayLink = url.host?.lowercased().hasPrefix("pay") == true || url.path.lowercased() == "/pay"
         return isPayLink ? .refused : .notAWrapper
     }
 
@@ -237,6 +243,7 @@ final class ParsedPaymentURI: NSObject {
                          message: message,
                          rURL: nil,
                          requiresRequest: requiresRequest,
+                         requiresAmount: requiresAmount,
                          callbackScheme: callbackScheme,
                          dashpayUsername: dashpayUsername,
                          fiatCurrencyCode: fiatCurrencyCode,
