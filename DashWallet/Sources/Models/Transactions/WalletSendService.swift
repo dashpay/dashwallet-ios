@@ -257,6 +257,8 @@ struct ContactPaymentRecipient: Equatable {
     /// The chain within `network` (`Network.persistenceScope`): named devnets
     /// share one kind.
     let chain: String
+    /// The contact's DPNS username, when known.
+    let username: String?
 
     init(
         identityId: Data,
@@ -264,14 +266,25 @@ struct ContactPaymentRecipient: Equatable {
         walletId: Data,
         ownerIdentityId: Data,
         network: WalletEnvironment.NetworkKind,
-        chain: String? = nil
+        chain: String? = nil,
+        username: String? = nil
     ) {
         self.identityId = identityId
         self.displayName = displayName
+        self.username = username
         self.walletId = walletId
         self.ownerIdentityId = ownerIdentityId
         self.network = network
         self.chain = chain ?? DashPayWithdrawalStore.Scope.kindChain(network.rawValue)
+    }
+
+    /// What tells this contact from another with the same display name on a
+    /// confirmation: the username, or the identity's first bytes without one.
+    var distinguishingDetail: String? {
+        if let username, !username.isEmpty {
+            return username == displayName ? nil : username
+        }
+        return "ID " + identityId.prefix(6).map { String(format: "%02x", $0) }.joined() + "…"
     }
 }
 
@@ -281,11 +294,15 @@ extension ContactPaymentRecipient {
     /// right now; nil when either is not ready.
     @MainActor
     static func current(for contact: ContactItem) -> ContactPaymentRecipient? {
-        current(contactIdentityId: contact.contactIdentityId, displayName: contact.displayTitle)
+        current(contactIdentityId: contact.contactIdentityId, displayName: contact.displayTitle, username: contact.username)
     }
 
     @MainActor
-    static func current(contactIdentityId: Data, displayName: String) -> ContactPaymentRecipient? {
+    static func current(
+        contactIdentityId: Data,
+        displayName: String,
+        username: String? = nil
+    ) -> ContactPaymentRecipient? {
         guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
               let ownerIdentityId = DWCurrentUserIdentityInfo.shared.identityId else {
             return nil
@@ -296,7 +313,8 @@ extension ContactPaymentRecipient {
             walletId: walletId,
             ownerIdentityId: ownerIdentityId,
             network: WalletEnvironment.networkKind,
-            chain: WalletEnvironment.network?.persistenceScope)
+            chain: WalletEnvironment.network?.persistenceScope,
+            username: username)
     }
 }
 
@@ -329,6 +347,20 @@ final class UnknownContactPaymentOutcomes {
         lock.lock()
         defer { lock.unlock() }
         return keys.contains(Key(scope: scope, contactIdentityId: contactIdentityId))
+    }
+
+    /// A removed wallet's outcomes go with its journal: a re-import of the
+    /// same phrase is a fresh wallet.
+    func removeAll(walletIds: Set<Data>) {
+        lock.lock()
+        defer { lock.unlock() }
+        keys = keys.filter { !walletIds.contains($0.scope.walletId) }
+    }
+
+    func removeAll() {
+        lock.lock()
+        defer { lock.unlock() }
+        keys.removeAll()
     }
 }
 

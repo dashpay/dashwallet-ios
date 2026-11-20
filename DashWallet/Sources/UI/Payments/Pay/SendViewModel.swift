@@ -121,6 +121,8 @@ final class SendViewModel: ObservableObject {
     @Published private(set) var contactSendError: String?
     /// Keeps `contactRecipient` current; see `setContactRecipient`.
     private var contactRefresh: AnyCancellable?
+    /// Keeps the payment lock current while the step is open.
+    private var contactLockRefresh: AnyCancellable?
     /// Where the step reads a contact's current state.
     private var contactLookup: @MainActor (Data) -> ContactItem? = {
         SwiftDashSDKContactsService.shared.contactItem(for: $0)
@@ -740,6 +742,15 @@ final class SendViewModel: ObservableObject {
             .publisher(for: SwiftDashSDKContactsService.contactsDidChangeNotification)
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in self?.refreshContactRecipient() }
+        // The lock moves while the step is open: the journal changes, and a
+        // new Core block can age an attempt or settle a Shielded spend.
+        contactLockRefresh = NotificationCenter.default
+            .publisher(for: DashPayWithdrawalStore.didChangeNotification).map { _ in () }
+            .merge(with: NotificationCenter.default
+                .publisher(for: SwiftDashSDKContactsService.contactsDidChangeNotification).map { _ in () })
+            .merge(with: SwiftDashSDKSPVCoordinator.shared.$tipHeight.removeDuplicates().dropFirst().map { _ in () })
+            .throttle(for: .seconds(1), scheduler: RunLoop.main, latest: true)
+            .sink { [weak self] _ in self?.refreshContactPaymentLock() }
         // The caller's snapshot may already be stale — the contact removed or
         // no longer established before any notification reached this step.
         refreshContactRecipient()
@@ -1060,6 +1071,7 @@ final class SendViewModel: ObservableObject {
 
     func contactAmountStepDidAppear() {
         isContactAmountStepVisible = true
+        refreshContactPaymentLock()
     }
 
     /// The amount step left the screen (not merely covered by the PIN prompt
@@ -1114,8 +1126,10 @@ final class SendViewModel: ObservableObject {
         guard let id = contactRecipient?.contactIdentityId else { return }
         let lock = WalletSendService.shared.contactPaymentLockState(
             contactIdentityId: id, recipient: contactPaymentRecipient)
-        contactSendOutcomeIsUnknown = lock != .none
-        contactPriorPaymentAwaitsDecision = lock == .awaitingDecision
+        if contactSendOutcomeIsUnknown != (lock != .none) { contactSendOutcomeIsUnknown = lock != .none }
+        if contactPriorPaymentAwaitsDecision != (lock == .awaitingDecision) {
+            contactPriorPaymentAwaitsDecision = lock == .awaitingDecision
+        }
     }
 
     /// The user's informed choice to pay again despite the earlier payment

@@ -332,6 +332,9 @@ final class SwiftDashSDKWalletWiper: NSObject {
                 "DashPay payment journal cleanup failed; preserving app state for retry: \(String(describing: error), privacy: .public)")
             return false
         }
+        #if DASHPAY
+        WalletSendService.shared.unknownContactPaymentOutcomes.removeAll()
+        #endif
 
         // The SDK wallet deletion is now known to have succeeded for every
         // network. Clear every global app-owned store only at this commit
@@ -989,6 +992,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
             logger.error("the DashPay payment journal of the removed wallet could not be cleared: \(String(describing: error), privacy: .public)")
             throw SwiftDashSDKWalletDeletionError.walletDeletionIncomplete
         }
+        WalletSendService.shared.unknownContactPaymentOutcomes.removeAll(walletIds: Set(walletIds.values))
 #endif
     }
 

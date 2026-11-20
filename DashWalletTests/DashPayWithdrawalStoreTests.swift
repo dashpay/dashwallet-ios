@@ -818,6 +818,58 @@ final class ContactPaymentSourceTests: XCTestCase {
             network: .testnet)
     }
 
+    /// An open amount step follows the journal: an attempt written while it
+    /// is up locks it without the contact being chosen again.
+    @MainActor
+    func testAnOpenContactStepFollowsThePaymentLock() throws {
+        let contact = ContactItem.fixture(idByte: 0x5c, relationship: .established, createdAt: Date(timeIntervalSince1970: 0))
+        let recipient = ContactPaymentRecipient(
+            identityId: contact.contactIdentityId, displayName: "c",
+            walletId: Data((0..<32).map { _ in UInt8.random(in: 0...255) }),
+            ownerIdentityId: Data(repeating: 2, count: 32), network: .testnet)
+        let viewModel = SendViewModel(contactLookup: { _ in contact })
+        viewModel.setContactRecipient(contact, paymentRecipient: recipient)
+        XCTAssertFalse(viewModel.contactSendOutcomeIsUnknown)
+        let locked = expectation(description: "locked")
+        let watch = viewModel.$contactSendOutcomeIsUnknown.filter { $0 }.first().sink { _ in locked.fulfill() }
+        let entry = try DashPayWithdrawalStore.shared.begin(
+            scope: .init(recipient), contactIdentityId: contact.contactIdentityId,
+            address: "reserved-contact-address", amountDuffs: 10_000, source: .platform)
+        defer { try? DashPayWithdrawalStore.shared.remove(entry) }
+        wait(for: [locked], timeout: 5)
+        watch.cancel()
+    }
+
+    /// A removed wallet's session outcomes go with it; other wallets keep theirs.
+    func testRemovingAWalletClearsOnlyItsSessionOutcomes() {
+        let outcomes = UnknownContactPaymentOutcomes()
+        let contact = Data(repeating: 7, count: 32)
+        func scope(_ byte: UInt8) -> DashPayWithdrawalStore.Scope {
+            .init(networkRaw: 1, walletId: Data(repeating: byte, count: 32), ownerIdentityId: Data(repeating: 2, count: 32))
+        }
+        outcomes.record(scope: scope(0xA1), contactIdentityId: contact)
+        outcomes.record(scope: scope(0xB2), contactIdentityId: contact)
+        outcomes.removeAll(walletIds: [scope(0xA1).walletId])
+        XCTAssertFalse(outcomes.contains(scope: scope(0xA1), contactIdentityId: contact))
+        XCTAssertTrue(outcomes.contains(scope: scope(0xB2), contactIdentityId: contact))
+        outcomes.removeAll()
+        XCTAssertFalse(outcomes.contains(scope: scope(0xB2), contactIdentityId: contact))
+    }
+
+    /// Two contacts with one display name differ on the confirmation by
+    /// username, or by identity without one.
+    func testTheConfirmationTellsContactsWithOneNameApart() {
+        func recipient(_ byte: UInt8, username: String?) -> ContactPaymentRecipient {
+            ContactPaymentRecipient(
+                identityId: Data(repeating: byte, count: 32), displayName: "Alex",
+                walletId: Data(repeating: 1, count: 32), ownerIdentityId: Data(repeating: 2, count: 32),
+                network: .testnet, username: username)
+        }
+        XCTAssertEqual(recipient(1, username: "alex-1").distinguishingDetail, "alex-1")
+        XCTAssertNil(recipient(1, username: "Alex").distinguishingDetail)
+        XCTAssertEqual(recipient(0xab, username: nil).distinguishingDetail, "ID abababababab…")
+    }
+
     /// The contact profile's Pay hosts the amount step without a From step or
     /// a withdrawal confirmation, so it pays only from Transparent even with a
     /// wallet context that would admit every balance.

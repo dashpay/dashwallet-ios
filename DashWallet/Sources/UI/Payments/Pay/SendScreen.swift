@@ -1536,10 +1536,25 @@ struct SendConfirmSheet: View {
                     .font(.system(size: 14))
                     .foregroundColor(.dash.secondaryText)
                 Spacer()
-                Text(contactRecipient?.displayName ?? truncateMiddle(destinationAddress))
-                    .font(.system(.footnote, design: contactRecipient == nil ? .monospaced : .default))
-                    .foregroundColor(.dash.primaryText)
-                    .lineLimit(1)
+                if let contactRecipient {
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text(contactRecipient.displayName)
+                            .font(.footnote)
+                            .foregroundColor(.dash.primaryText)
+                            .lineLimit(1)
+                        if let detail = contactRecipient.distinguishingDetail {
+                            Text(detail)
+                                .font(.caption)
+                                .foregroundColor(.dash.secondaryText)
+                                .lineLimit(1)
+                        }
+                    }
+                } else {
+                    Text(truncateMiddle(destinationAddress))
+                        .font(.system(.footnote, design: .monospaced))
+                        .foregroundColor(.dash.primaryText)
+                        .lineLimit(1)
+                }
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 14)
