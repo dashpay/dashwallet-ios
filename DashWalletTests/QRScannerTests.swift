@@ -497,6 +497,43 @@ final class QRScannerTests: XCTestCase {
         XCTAssertFalse(delegate.confirmed)
     }
 
+    /// A pay link naming two recipients, in either order, is refused by both
+    /// entry points; so is a refused pay link in any letter case, which is
+    /// not reread as the plain alias.
+    func testAmbiguousOrMixedCasePayLinkIsRefused() throws {
+        let other = "yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW"
+        let single = "dashwallet://pay=\(Self.address)&amount=1&sender=ctx"
+        XCTAssertNotNil(DWURLParser.action(for: try XCTUnwrap(URL(string: single))))
+        for link in ["dashwallet://pay=\(Self.address)&pay=\(other)&amount=1&sender=ctx",
+                     "dashwallet://pay=\(other)&amount=1&pay=\(Self.address)&sender=ctx",
+                     "DashWallet://pay=\(Self.address)&amount=1&amount=2&sender=ctx",
+                     "DASHWALLET://PAY=\(Self.address)&amount=1&amount=2&sender=ctx"] {
+            XCTAssertNil(DWURLParser.action(for: try XCTUnwrap(URL(string: link))), link)
+            let parsed = ParsedPaymentURI.parse(paymentString: link)
+            XCTAssertFalse(parsed.isValidDashPaymentIntent, link)
+            XCTAssertNil(parsed.address, link)
+            let (scanner, recorder) = makeScanner(.payment)
+            scanner.didDetectCodes([link])
+            XCTAssertTrue(recorder.results.isEmpty, link)
+        }
+    }
+
+    /// An invoice's required amount is not dropped to fill an address field:
+    /// it is offered to Send instead. An optional amount still unwraps.
+    func testRequiredAmountInvoiceIsNotUnwrappedIntoAnAddressField() {
+        let (invoice, invoiceRecorder) = makeScanner(.addressInput(expectsDashAddress: true))
+        invoice.didDetectCodes(["dash:\(Self.address)?req-amount=1.5"])
+        XCTAssertTrue(isOffer(invoice.status))
+        XCTAssertTrue(invoiceRecorder.results.isEmpty)
+
+        let (optional, optionalRecorder) = makeScanner(.addressInput(expectsDashAddress: true))
+        optional.didDetectCodes(["dash:\(Self.address)?amount=1.5"])
+        guard case .text(let address) = optionalRecorder.results.first else {
+            return XCTFail("an optional amount still unwraps the address")
+        }
+        XCTAssertEqual(address, Self.address)
+    }
+
     /// A Dash request the wallet would refuse to fetch does not outrank a
     /// payable code later in the frame.
     func testUnfetchableDashRequestDoesNotCrowdOutAPayableCode() {
