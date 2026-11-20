@@ -193,6 +193,10 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     @Published public private(set) var state: SPVSyncState = .idle
     @Published public private(set) var tipHeight: UInt32 = 0
     @Published public private(set) var bestPeerHeight: UInt32 = 0
+    /// The header tip as of the last progress tick, this session, that found
+    /// the client synced with a connected peer; nil until one has. Persisted
+    /// heights, published before any peer answers, never set it.
+    @Published public private(set) var liveSyncedTipHeight: UInt32?
     @Published public private(set) var lastError: String? = nil
     /// English reason for `lastError`, for the exported log: `lastError` is shown on screen, so it is localized.
     /// When a stop records the caller's error, this is `String(describing:)` of that error.
@@ -1253,6 +1257,9 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         state = mappedState
         tipHeight = headersCurrent
         bestPeerHeight = max(headersTarget, headersCurrent)
+        liveSyncedTipHeight = Self.liveSyncedTip(
+            state: mappedState, hasConnectedPeer: !connectedPeers.isEmpty,
+            headersCurrent: headersCurrent, previous: liveSyncedTipHeight)
         if mappedState != .error {
             setLastError(nil, log: nil)
         }
@@ -1321,11 +1328,24 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         }
     }
 
+    /// A tip only from a synced tick with a peer connected; otherwise the
+    /// last such one stands.
+    nonisolated static func liveSyncedTip(
+        state: SPVSyncState,
+        hasConnectedPeer: Bool,
+        headersCurrent: UInt32,
+        previous: UInt32?
+    ) -> UInt32? {
+        guard state == .synced, hasConnectedPeer, headersCurrent > 0 else { return previous }
+        return headersCurrent
+    }
+
     private func resetPublishedState() {
         progress = 0.0
         state = .idle
         tipHeight = 0
         bestPeerHeight = 0
+        liveSyncedTipHeight = nil
         syncProgress = .default()
         connectedPeers = []
     }

@@ -41,6 +41,7 @@ struct ContactProfileSheet: View {
     @State private var noteText = ""
     @State private var isHidden = false
     @State private var payments: [SwiftDashSDKContactsService.ContactPayment] = []
+    @State private var historyIsIncomplete = false
     /// Payment txid (display hex) → the resolved wallet `Transaction`,
     /// for the rows whose on-chain tx exists in this wallet's store.
     /// A payment absent here (H1 loss, or a received tx not yet synced)
@@ -532,8 +533,16 @@ struct ContactProfileSheet: View {
             Text(String(localized: "Payments made directly to an address aren't retained here.", comment: "DashPay Contacts"))
                 .font(.system(size: 12))
                 .foregroundColor(.dash.tertiaryText)
-            if activityEntries.isEmpty {
-                Text(String(localized: "No payments with this contact yet", comment: "DashPay Contacts"))
+            if historyIsIncomplete {
+                Text(NSLocalizedString(
+                    "Some payments with this contact could not be loaded, so this list may be incomplete.",
+                    comment: "DashPay Contacts: the payment history could not be read in full"))
+                    .font(.system(size: 13))
+                    .foregroundColor(.dash.red)
+                    .padding(.top, 2)
+            }
+            if activityEntries.isEmpty, !historyIsIncomplete {
+                Text(NSLocalizedString("No payments with this contact yet", comment: "DashPay Contacts"))
                     .font(.system(size: 14))
                     .foregroundColor(.dash.secondaryText)
                     .padding(.top, 2)
@@ -721,7 +730,9 @@ struct ContactProfileSheet: View {
     /// Fetch the payment history and resolve each row's on-chain tx
     /// (main-thread SwiftData reads; a handful of rows, <10ms each).
     private func loadPayments() {
-        let rows = service.payments(with: contact.contactIdentityId)
+        let history = service.paymentHistory(with: contact.contactIdentityId)
+        let rows = history.payments
+        historyIsIncomplete = history.isIncomplete
         var resolved: [String: Transaction] = [:]
         for payment in rows {
             if let wire = payment.txidWire,

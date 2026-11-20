@@ -591,16 +591,35 @@ final class SwiftDashSDKContactsService: ObservableObject {
     }
 
     /// DashPay payment history with one contact, newest first.
+    /// The payments with a contact, and whether some could not be read: an
+    /// incomplete history must not read as a complete one.
+    struct ContactPaymentHistory {
+        var payments: [ContactPayment]
+        var isIncomplete: Bool
+    }
+
     func payments(with contactId: Data) -> [ContactPayment] {
+        paymentHistory(with: contactId).payments
+    }
+
+    func paymentHistory(with contactId: Data) -> ContactPaymentHistory {
         guard let ownerId = DWCurrentUserIdentityInfo.shared.identityId,
               let modelContainer = SwiftDashSDKHost.shared.modelContainer else {
-            return []
+            return ContactPaymentHistory(payments: [], isIncomplete: false)
         }
+        var isIncomplete = false
         let descriptor = FetchDescriptor<PersistentDashpayPayment>(
             predicate: PersistentDashpayPayment.predicate(
                 ownerIdentityId: ownerId,
                 counterpartyIdentityId: contactId))
-        let rows = (try? modelContainer.mainContext.fetch(descriptor)) ?? []
+        let rows: [PersistentDashpayPayment]
+        do {
+            rows = try modelContainer.mainContext.fetch(descriptor)
+        } catch {
+            Self.logger.error("DashPay payment history could not be read: \(String(describing: error), privacy: .public)")
+            rows = []
+            isIncomplete = true
+        }
 
         // When the payment happened, from the transaction itself.
         //
@@ -653,33 +672,47 @@ final class SwiftDashSDKContactsService: ObservableObject {
                 networkRaw: network.rawValue,
                 walletId: walletId, ownerIdentityId: ownerId,
                 chain: WalletEnvironment.network?.persistenceScope)
-            do {
-                let withdrawals = try DashPayWithdrawalStore.shared.entries(
-                    scope: scope, contactIdentityId: contactId)
-                payments += Self.shownWithdrawals(
-                    withdrawals,
-                    shieldedSpendState: WalletSendService.shieldedSpendState(walletId: walletId, network: network)
-                ).map { entry, statusNote in
-                    ContactPayment(
-                        id: "withdrawal:\(entry.id.uuidString)",
-                        txid: nil,
-                        amountDuffs: entry.amountDuffs,
-                        amountIsEstimate: entry.amountIsEstimate,
-                        direction: .sent,
-                        memo: nil,
-                        date: entry.createdAt,
-                        fiatString: CurrencyExchanger.shared.fiatAmountString(
-                            for: Decimal(entry.amountDuffs) / Decimal(100_000_000)),
-                        statusNote: statusNote)
-                }
-            } catch {
-                Self.logger.error("DashPay withdrawal history could not be read: \(String(describing: error), privacy: .public)")
+            let withdrawals = Self.withdrawalPayments(
+                reading: { try DashPayWithdrawalStore.shared.entries(scope: scope, contactIdentityId: contactId) },
+                shieldedSpendState: WalletSendService.shieldedSpendState(walletId: walletId, network: network))
+            payments += withdrawals.payments
+            if withdrawals.isIncomplete {
+                Self.logger.error("DashPay withdrawal history could not be read")
+                isIncomplete = true
             }
         }
         // Sort on the payment date, not the row's insert order: reconstructed
         // rows are all written within the same second, so insert order says
         // nothing about which payment came first.
-        return payments.sorted { $0.date > $1.date }
+        return ContactPaymentHistory(payments: payments.sorted { $0.date > $1.date }, isIncomplete: isIncomplete)
+    }
+
+    /// The journaled withdrawals as history rows; an unreadable journal is an
+    /// incomplete history, not an empty one.
+    nonisolated static func withdrawalPayments(
+        reading: () throws -> [DashPayWithdrawalStore.Entry],
+        shieldedSpendState: (DashPayWithdrawalStore.Entry) -> DashPayWithdrawalStore.ShieldedSpendState
+    ) -> ContactPaymentHistory {
+        let entries: [DashPayWithdrawalStore.Entry]
+        do {
+            entries = try reading()
+        } catch {
+            return ContactPaymentHistory(payments: [], isIncomplete: true)
+        }
+        let payments = shownWithdrawals(entries, shieldedSpendState: shieldedSpendState).map { entry, statusNote in
+            ContactPayment(
+                id: "withdrawal:\(entry.id.uuidString)",
+                txid: nil,
+                amountDuffs: entry.amountDuffs,
+                amountIsEstimate: entry.amountIsEstimate,
+                direction: .sent,
+                memo: nil,
+                date: entry.createdAt,
+                fiatString: CurrencyExchanger.shared.fiatAmountString(
+                    for: Decimal(entry.amountDuffs) / Decimal(100_000_000)),
+                statusNote: statusNote)
+        }
+        return ContactPaymentHistory(payments: payments, isIncomplete: false)
     }
 
     /// The journaled withdrawals the contact's history shows, each with its

@@ -1024,9 +1024,12 @@ final class WalletSendService: NSObject {
     }
 
     /// The user, told an earlier payment to the contact may still arrive,
-    /// chose to pay again. False while that payment is still locked.
+    /// chose to pay again. False while that payment is still locked; throws,
+    /// releasing nothing, unless the captured sender is still the active one.
+    @MainActor
     func releaseAgedContactPayments(_ recipient: ContactPaymentRecipient) throws -> Bool {
-        try DashPayWithdrawalStore.shared.releaseAgedEntries(
+        try Self.validateContactRecipient(recipient)
+        return try DashPayWithdrawalStore.shared.releaseAgedEntries(
             scope: .init(recipient),
             contactIdentityId: recipient.identityId,
             since: Date().addingTimeInterval(-Self.unresolvedContactWithdrawalLockWindow),
@@ -1034,22 +1037,17 @@ final class WalletSendService: NSObject {
             shieldedSpendState: Self.shieldedSpendState(for: recipient))
     }
 
-    /// The Core SPV tip of `chain`, once it has caught up with the network:
-    /// a tip still catching up says nothing about blocks mined since. nil
-    /// otherwise, which keeps a lock held.
+    /// The Core SPV tip of `chain` as last seen synced with a connected peer
+    /// in this session (`liveSyncedTipHeight`): a persisted or still-catching-up
+    /// height says nothing about blocks mined since. nil otherwise, which
+    /// keeps a lock held.
     static func coreTipHeight(chain: String) -> UInt32? {
         let observed = SwiftDashSDKWalletSource.onMain {
             (SwiftDashSDKHost.shared.runningNetwork?.persistenceScope,
-             SwiftDashSDKSPVCoordinator.shared.tipHeight,
-             SwiftDashSDKSPVCoordinator.shared.bestPeerHeight)
+             SwiftDashSDKSPVCoordinator.shared.liveSyncedTipHeight)
         }
         guard observed.0 == chain else { return nil }
-        return currentCoreTip(local: observed.1, network: observed.2)
-    }
-
-    static func currentCoreTip(local: UInt32, network: UInt32) -> UInt32? {
-        guard local > 0, network > 0, local >= network else { return nil }
-        return local
+        return observed.1
     }
 
     /// The SDK's state for a journaled Shielded withdrawal of the
