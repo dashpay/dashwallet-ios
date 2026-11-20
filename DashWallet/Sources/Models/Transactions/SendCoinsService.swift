@@ -81,7 +81,7 @@ public final class SendCoinsService: NSObject {
     func payWithDashUrl(url paymentUrlString: String, awaitAcceptance: Bool = true) async throws -> Data {
         // No app asked for this payment, so none is called back: a checkout that requires an app
         // callback cannot be met here, and an optional one is ignored.
-        guard let uri = BIP70URI(paymentUrlString), !uri.hasUnsupportedRequirement,
+        guard let uri = BIP70URI(paymentUrlString), uri.scheme == "dash", !uri.hasUnsupportedRequirement,
               !uri.requiredFields.contains("sender"), let requestURL = uri.r else {
             throw DashSpendError.paymentProcessingError(NSLocalizedString("Invalid payment request", comment: "DashSpend"))
         }
