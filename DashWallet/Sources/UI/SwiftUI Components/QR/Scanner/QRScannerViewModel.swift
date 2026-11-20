@@ -432,6 +432,9 @@ final class QRScannerViewModel: ObservableObject {
         if parsed.scheme == "dash", parsed.hasInvalidAmount {
             return NSLocalizedString("Invalid payment amount", comment: "")
         }
+        if parsed.scheme == "dash", parsed.requiresRequest, parsed.rURL == nil {
+            return NSLocalizedString("Invalid Payment Request", comment: "")
+        }
         if parsed.hasExplicitScheme, parsed.scheme == "dash", let address = parsed.address, address.count > 1 {
             return "\(NSLocalizedString("Not a valid Dash address", comment: "")):\n\(address)"
         }

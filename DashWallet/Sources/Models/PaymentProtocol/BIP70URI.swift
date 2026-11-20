@@ -97,6 +97,7 @@ struct BIP70URI {
         var amount: UInt64?
         var hasInvalidAmount = false
         var amountSeen = false
+        var requestSeen = false
         var label: String?
         var message: String?
         var r: URL?
@@ -123,7 +124,16 @@ struct BIP70URI {
                 hasInvalidAmount = hasInvalidAmount || amount == nil
             case "label", "req-label": label = value
             case "message", "req-message": message = value
-            case "r", "req-r": r = URL(string: value)
+            case "r", "req-r":
+                // One request: a second one is a conflict, and no request may then be paid, nor the
+                // address in its place.
+                if requestSeen {
+                    r = nil
+                    requiredFields.insert("r")
+                } else {
+                    r = URL(string: value)
+                }
+                requestSeen = true
             // Not a scheme an app can own → no callback; the rest of the link still stands.
             case "sender", "req-sender": callbackScheme = CallbackScheme.validated(value)
             case "user", "req-user": dashpayUsername = value
@@ -208,7 +218,7 @@ struct BIP70URI {
     /// and for one above the coin supply, before it is narrowed.
     private static func duffs(fromDecimalDash value: String) -> UInt64? {
         // The whole token, not a numeric prefix: "1abc" or "1,000" is no amount.
-        guard value.range(of: #"^([0-9]+\.?[0-9]*|\.[0-9]+)([eE][+-]?[0-9]+)?$"#, options: .regularExpression) != nil,
+        guard value.range(of: #"\A(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?\z"#, options: .regularExpression) != nil,
               let dash = Decimal(string: value, locale: Locale(identifier: "en_US_POSIX")) else { return nil }
         let duffs = NSDecimalNumber(decimal: dash * Decimal(100_000_000))
             .rounding(accordingToBehavior: roundUpToDuff)

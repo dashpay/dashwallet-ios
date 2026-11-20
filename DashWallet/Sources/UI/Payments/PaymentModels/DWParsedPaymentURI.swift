@@ -81,8 +81,8 @@ final class ParsedPaymentURI: NSObject {
     /// The BIP72 `r=` URL, or the whole BIP73 URL. nil when absent/unparseable — call sites fetch
     /// only when this is non-nil (the coordinator takes a non-optional `URL`).
     @objc let rURL: URL?
-    /// The request was given as `req-r`: only the merchant's request may be paid, never the
-    /// embedded address in its place.
+    /// The request was given as `req-r`, or more than once: only the merchant's request may be
+    /// paid, never the embedded address in its place. Without a usable `rURL` nothing is payable.
     @objc let requiresRequest: Bool
     /// `sender=` x-callback-url scheme.
     @objc let callbackScheme: String?
@@ -110,7 +110,7 @@ final class ParsedPaymentURI: NSObject {
     /// arms are compiled out under `SHAPESHIFT_ENABLED`, undefined in this app), widened to accept
     /// every payable address form (bech32m Platform/Shielded included).
     @objc var isValidDashPaymentIntent: Bool {
-        scheme == "dash" && ((isAddressPayableForCurrentNetwork && !hasInvalidAmount) || rURL != nil)
+        scheme == "dash" && ((isAddressPayableForCurrentNetwork && !hasInvalidAmount && !requiresRequest) || rURL != nil)
     }
 
     /// A plain https payment-request URL read whole (BIP73), the one form without a `dash:`

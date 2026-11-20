@@ -346,10 +346,13 @@ final class QRScannerTests: XCTestCase {
 
     private final class ProcessorDelegate: NSObject, DWPaymentProcessorDelegate {
         var amountRequested = false
+        var confirmed = false
         var failure: (error: Error?, title: String?)?
         func paymentProcessor(_ processor: DWPaymentProcessor, requestAmountWithDestination sendingDestination: String,
                               amount: UInt64) { amountRequested = true }
-        func paymentProcessor(_ processor: DWPaymentProcessor, confirmPaymentOutput paymentOutput: DWPaymentOutput) {}
+        func paymentProcessor(_ processor: DWPaymentProcessor, confirmPaymentOutput paymentOutput: DWPaymentOutput) {
+            confirmed = true
+        }
         func paymentProcessorDidCancelTransactionSigning(_ processor: DWPaymentProcessor) {}
         func paymentProcessor(_ processor: DWPaymentProcessor, didFailWithError error: Error?, title: String?,
                               message: String?) { failure = (error, title) }
@@ -392,6 +395,50 @@ final class QRScannerTests: XCTestCase {
             paymentString: "dash:\(Self.address)?amount=1&r=https%3A%2F%2Fmerchant.invalid%2Fpr")
         processor.processPaymentInput(DWPaymentInputBuilder().paymentInput(withParsedURI: optional, source: .scanQR))
         XCTAssertTrue(delegate.amountRequested, "an optional request keeps the amount screen")
+    }
+
+    /// A required request the wallet can't use (unreadable, or given twice
+    /// in either order) leaves nothing payable: the scanner and the
+    /// processor refuse it with an error the payment controller shows,
+    /// never an amount prompt or a plain confirmation to the address.
+    func testUnusableRequiredRequestIsRefused() {
+        let a = "https%3A%2F%2Fmerchant.invalid%2Fa", b = "https%3A%2F%2Fmerchant.invalid%2Fb"
+        let codes = ["dash:\(Self.address)?amount=1&req-r=",
+                     "dash:\(Self.address)?amount=1&req-r=\(a)&r=\(b)",
+                     "dash:\(Self.address)?amount=1&r=\(b)&req-r=\(a)",
+                     "dash:\(Self.address)?amount=1&r=\(a)&r=\(b)",
+                     "dashwallet://pay=\(Self.address)&amount=1&req-r=\(a)&r=\(b)&sender=ctx",
+                     "dashwallet://pay=\(Self.address)&amount=1&r=\(b)&req-r=\(a)&sender=ctx"]
+        for code in codes {
+            let parsed = ParsedPaymentURI.parse(paymentString: code)
+            XCTAssertFalse(parsed.isValidDashPaymentIntent, code)
+            XCTAssertNil(parsed.rURL, code)
+
+            let modes: [QRScannerMode] = code.hasPrefix("dash:")
+                ? [.payment, .addressInput(expectsDashAddress: true)] : [.payment]
+            for mode in modes {
+                let (scanner, recorder) = makeScanner(mode)
+                scanner.didDetectCodes([code])
+                if case .connecting = scanner.status { XCTFail("nothing is fetched: \(code)") }
+                XCTAssertTrue(recorder.results.isEmpty, code)
+                XCTAssertTrue(isInvalid(scanner.status), code)
+            }
+
+            guard code.hasPrefix("dash:") else {
+                XCTAssertNil(DWURLParser.action(for: URL(string: code)!), code)
+                continue
+            }
+            for source in [DWPaymentInputSource.deepLink, .scanQR] {
+                let delegate = ProcessorDelegate()
+                let processor = DWPaymentProcessor()
+                processor.delegate = delegate
+                processor.processPaymentInput(DWPaymentInputBuilder().paymentInput(withParsedURI: parsed, source: source))
+                XCTAssertFalse(delegate.amountRequested, code)
+                XCTAssertFalse(delegate.confirmed, code)
+                XCTAssertNotNil(delegate.failure?.error, code)
+                XCTAssertEqual(delegate.failure?.title, NSLocalizedString("Invalid Payment Request", comment: ""), code)
+            }
+        }
     }
 
     /// A Dash request the wallet would refuse to fetch does not outrank a
