@@ -415,6 +415,7 @@ struct ExternalSendAmountScreen: View {
     @State private var didCompleteSend = false
     /// Pre-send review for the DashPay contact route.
     @State private var showContactConfirm = false
+    @State private var showPayAgainConfirm = false
     /// The review the sheet is showing (`SendViewModel.contactReviewID`),
     /// set when it appears. Its `onDismiss` closes that review only, so a
     /// late dismissal never closes the next one; and the amount step's Send
@@ -483,6 +484,26 @@ struct ExternalSendAmountScreen: View {
                         TransferAmountValidationNote(message: message)
                             .padding(.horizontal, 20)
                     }
+                    #if DASHPAY
+                    if viewModel.contactPriorPaymentAwaitsDecision {
+                        Button(NSLocalizedString("Pay again", comment: "Send to contact: pay despite an earlier payment whose outcome is unknown")) {
+                            showPayAgainConfirm = true
+                        }
+                        .alert(
+                            NSLocalizedString("Pay this contact again?", comment: "Send to contact: confirm paying despite an earlier unconfirmed payment"),
+                            isPresented: $showPayAgainConfirm
+                        ) {
+                            Button(NSLocalizedString("Pay again", comment: "Send to contact: pay despite an earlier payment whose outcome is unknown"), role: .destructive) {
+                                viewModel.payAgainDespiteUnconfirmedPayment()
+                            }
+                            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {}
+                        } message: {
+                            Text(NSLocalizedString(
+                                "The earlier payment may still arrive, and your contact could be paid twice.",
+                                comment: "Send to contact: risk of paying again despite an earlier unconfirmed payment"))
+                        }
+                    }
+                    #endif
 
                     // The address flow meets this gate on the source step,
                     // which won't advance while it is up — but a restored
@@ -1254,27 +1275,25 @@ struct SendConfirmSheet: View {
     /// an upper bound. Shown, and authorized with the amount; nil refuses the
     /// payment.
     var contactNetworkFeeCredits: UInt64? = nil
-    /// Why the contact cannot be paid now, as the amount step last saw it.
+    /// Why the contact cannot be paid now, from the amount step's model.
     var contactUnavailableMessage: String? = nil
-    /// The same reason read from the contacts service now; Confirm and Try
-    /// again ask it before they start.
+    /// Has that model re-read the contacts service and answers the same
+    /// reason; Confirm and Try again ask it before they start. The model's
+    /// refreshed state is the one the sheet shows.
     var recheckContact: () -> String? = { nil }
     var onCancel: () -> Void
     var onCompleted: () -> Void
 
     @StateObject private var coordinator = ShieldedTransferCoordinator()
-    @State private var contactRecheckMessage: String?
 
     private var contactBlockMessage: String? {
-        guard contactRecipient != nil else { return nil }
-        return contactUnavailableMessage ?? contactRecheckMessage
+        contactRecipient == nil ? nil : contactUnavailableMessage
     }
 
-    /// False, showing why, when the contact can no longer be paid.
+    /// False when the contact can no longer be paid; the refreshed model then
+    /// shows why.
     private func contactCanBePaid() -> Bool {
-        guard contactRecipient != nil else { return true }
-        contactRecheckMessage = recheckContact()
-        return contactRecheckMessage == nil
+        contactRecipient == nil || recheckContact() == nil
     }
 
     /// The lock `CoreCoinConsolidationSheet` is up for, after the coordinator

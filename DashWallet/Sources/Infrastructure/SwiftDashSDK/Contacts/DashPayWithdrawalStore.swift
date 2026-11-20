@@ -117,6 +117,9 @@ final class DashPayWithdrawalStore {
         /// The Core chain tip when the attempt was recorded, or when the lock
         /// was first checked with a known tip.
         var coreHeight: UInt32?
+        /// When the user, told this attempt may still be paid out, chose to
+        /// pay the contact again.
+        var releasedAt: Date?
 
         /// A withdrawal that was, or may have been, submitted: what the
         /// contact's payment history shows.
@@ -247,15 +250,17 @@ final class DashPayWithdrawalStore {
     /// jumps forward does not move the chain.
     static let lockBlocks: UInt32 = 576
 
-    /// True when a withdrawal to this contact was never confirmed as
-    /// submitted (`.submitting` or `.unconfirmed`) and may still execute: one
-    /// recorded since `date` or fewer than `lockBlocks` Core blocks before
-    /// `coreHeight` — an unknown tip keeps it locked — or a Shielded one of
-    /// any age the SDK still holds Pending: it keeps re-broadcasting that
-    /// spend on later syncs, whatever the device clock says. A Shielded one
-    /// the SDK confirmed or failed is resolved at any age. An attempt recorded
-    /// without a tip starts counting from the first check that has one.
-    /// `shieldedSpendState` is called without the store lock held.
+    enum LockState: Equatable {
+        case none
+        /// A payment may still execute and must not be repeated.
+        case locked
+        /// Only attempts past the window remain. Platform can keep a payout
+        /// queued past any window, so these hold until the user, told the
+        /// payment may still arrive, releases them (`releaseAgedEntries`).
+        case awaitingDecision
+    }
+
+    /// `lockState` is not `.none`.
     func hasUnresolvedEntry(
         scope: Scope,
         contactIdentityId: Data,
@@ -263,16 +268,81 @@ final class DashPayWithdrawalStore {
         coreHeight: UInt32? = nil,
         shieldedSpendState: (Entry) -> ShieldedSpendState = { _ in .pending }
     ) throws -> Bool {
-        try unresolvedEntriesStampingHeight(coreHeight, scope: scope, contactIdentityId: contactIdentityId)
-            .contains { entry in
-                let isRecent = entry.createdAt >= date || !Self.chainAdvanced(from: entry.coreHeight, to: coreHeight)
-                guard entry.source == .shielded else { return isRecent }
-                switch shieldedSpendState(entry) {
-                case .pending: return true
-                case .confirmed, .failed: return false
-                case .unrecorded: return isRecent
-                }
+        try lockState(
+            scope: scope, contactIdentityId: contactIdentityId, since: date,
+            coreHeight: coreHeight, shieldedSpendState: shieldedSpendState) != .none
+    }
+
+    /// Whether a withdrawal to this contact that was never confirmed as
+    /// submitted (`.submitting` or `.unconfirmed`) may still execute. Locked:
+    /// one recorded since `date` or fewer than `lockBlocks` Core blocks before
+    /// `coreHeight` (an unknown tip keeps it), or a Shielded one of any age the
+    /// SDK still holds Pending, which it re-broadcasts on later syncs. A
+    /// Shielded one the SDK confirmed or failed is resolved at any age; any
+    /// other older one awaits the user's decision. An attempt recorded without
+    /// a tip starts counting from the first check that has one.
+    /// `shieldedSpendState` is called without the store lock held.
+    func lockState(
+        scope: Scope,
+        contactIdentityId: Data,
+        since date: Date,
+        coreHeight: UInt32? = nil,
+        shieldedSpendState: (Entry) -> ShieldedSpendState = { _ in .pending }
+    ) throws -> LockState {
+        var state = LockState.none
+        for entry in try unresolvedEntriesStampingHeight(coreHeight, scope: scope, contactIdentityId: contactIdentityId)
+        where entry.releasedAt == nil {
+            switch Self.lockState(of: entry, since: date, coreHeight: coreHeight, shieldedSpendState: shieldedSpendState) {
+            case .locked: return .locked
+            case .awaitingDecision: state = .awaitingDecision
+            case .none: break
             }
+        }
+        return state
+    }
+
+    /// The user's informed choice to pay the contact again: releases the
+    /// attempts that only await it. False, releasing nothing, while any
+    /// attempt is still locked.
+    func releaseAgedEntries(
+        scope: Scope,
+        contactIdentityId: Data,
+        since date: Date,
+        coreHeight: UInt32? = nil,
+        shieldedSpendState: (Entry) -> ShieldedSpendState = { _ in .pending }
+    ) throws -> Bool {
+        let states = try unresolvedEntriesStampingHeight(coreHeight, scope: scope, contactIdentityId: contactIdentityId)
+            .filter { $0.releasedAt == nil }
+            .map { ($0.id, Self.lockState(of: $0, since: date, coreHeight: coreHeight, shieldedSpendState: shieldedSpendState)) }
+        guard !states.contains(where: { $0.1 == .locked }) else { return false }
+        let released = Set(states.filter { $0.1 == .awaitingDecision }.map(\.0))
+        guard !released.isEmpty else { return true }
+        lock.lock()
+        defer { lock.unlock() }
+        var entries = try load(scope: scope)
+        let now = Date()
+        for index in entries.indices where released.contains(entries[index].id) {
+            entries[index].releasedAt = now
+        }
+        try save(entries, scope: scope)
+        return true
+    }
+
+    private static func lockState(
+        of entry: Entry,
+        since date: Date,
+        coreHeight: UInt32?,
+        shieldedSpendState: (Entry) -> ShieldedSpendState
+    ) -> LockState {
+        if entry.source == .shielded {
+            switch shieldedSpendState(entry) {
+            case .pending: return .locked
+            case .confirmed, .failed: return .none
+            case .unrecorded: break
+            }
+        }
+        let isRecent = entry.createdAt >= date || !chainAdvanced(from: entry.coreHeight, to: coreHeight)
+        return isRecent ? .locked : .awaitingDecision
     }
 
     static func chainAdvanced(from start: UInt32?, to tip: UInt32?) -> Bool {

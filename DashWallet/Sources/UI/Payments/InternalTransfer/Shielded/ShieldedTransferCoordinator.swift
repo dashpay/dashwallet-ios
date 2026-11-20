@@ -2388,7 +2388,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                     amountDuffs: amountDuffs,
                     amountIsEstimate: amountIsEstimate,
                     source: source,
-                    coreHeight: WalletSendService.coreTipHeight())
+                    coreHeight: WalletSendService.coreTipHeight(chain: recipient.chain))
             },
             journal: { try self.contactWithdrawalStore.recordReservedAddress($0, address: $1) })
         #else

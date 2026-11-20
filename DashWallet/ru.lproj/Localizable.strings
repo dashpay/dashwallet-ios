@@ -7451,6 +7451,18 @@
 /* Send to contact: the broadcast outcome is unknown */
 "We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history." = "We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history.";
 
+/* Send to contact: an earlier payment's outcome is still unknown after the lock window */
+"An earlier payment to this contact could not be confirmed and may still arrive. Check with your contact before paying again." = "An earlier payment to this contact could not be confirmed and may still arrive. Check with your contact before paying again.";
+
+/* Send to contact: pay despite an earlier payment whose outcome is unknown */
+"Pay again" = "Pay again";
+
+/* Send to contact: confirm paying despite an earlier unconfirmed payment */
+"Pay this contact again?" = "Pay this contact again?";
+
+/* Send to contact: risk of paying again despite an earlier unconfirmed payment */
+"The earlier payment may still arrive, and your contact could be paid twice." = "The earlier payment may still arrive, and your contact could be paid twice.";
+
 /* Dash DEX / dex_error_build_failed */
 "We couldn't prepare this swap. Please try again." = "We couldn't prepare this swap. Please try again.";
 
