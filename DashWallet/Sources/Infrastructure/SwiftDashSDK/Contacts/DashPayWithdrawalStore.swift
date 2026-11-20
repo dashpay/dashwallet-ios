@@ -49,6 +49,22 @@ final class DashPayWithdrawalStore {
         case submitted
         /// Submission was attempted but its result could not be established.
         case unconfirmed
+        /// Not a withdrawal: the contact was paid from the Core balance. Kept
+        /// only to end an unpaid streak (`unpaidReservationStreak`).
+        case corePayment
+    }
+
+    /// What the SDK's Shielded activity says about a Shielded withdrawal. The
+    /// SDK records its Pending row just before the spend is dispatched, and
+    /// can re-broadcast the spend while that row stays Pending; a stranded
+    /// spend it releases is flipped to Failed.
+    enum ShieldedSpendState {
+        case pending
+        case confirmed
+        case failed
+        /// No row, or one the user stopped recovering (Unknown): nothing is
+        /// re-broadcast, but the row is written best-effort.
+        case unrecorded
     }
 
     struct Entry: Codable, Equatable, Identifiable {
@@ -184,39 +200,76 @@ final class DashPayWithdrawalStore {
     }
 
     /// True when a withdrawal to this contact was never confirmed as
-    /// submitted (`.submitting` or `.unconfirmed`) and may still execute: a
-    /// Platform one recorded since `date`, or a Shielded one of any age whose
-    /// outcome `shieldedOutcomeIsSettled` can't establish — the SDK keeps
-    /// re-broadcasting a Shielded spend on later syncs, whatever its age.
+    /// submitted (`.submitting` or `.unconfirmed`) and may still execute: one
+    /// recorded since `date`, or a Shielded one of any age the SDK still holds
+    /// Pending — it keeps re-broadcasting that spend on later syncs, whatever
+    /// the device clock says. A Shielded one the SDK confirmed or failed is
+    /// resolved at any age. `shieldedSpendState` is called without the store
+    /// lock held.
     func hasUnresolvedEntry(
         scope: Scope,
         contactIdentityId: Data,
         since date: Date,
-        shieldedOutcomeIsSettled: (Entry) -> Bool = { _ in false }
+        shieldedSpendState: (Entry) -> ShieldedSpendState = { _ in .pending }
     ) throws -> Bool {
         try entries(scope: scope, contactIdentityId: contactIdentityId).contains { entry in
             guard entry.status == .submitting || entry.status == .unconfirmed else { return false }
-            switch entry.source {
-            case .platform: return entry.createdAt >= date
-            case .shielded: return !shieldedOutcomeIsSettled(entry)
+            guard entry.source == .shielded else { return entry.createdAt >= date }
+            switch shieldedSpendState(entry) {
+            case .pending: return true
+            case .confirmed, .failed: return false
+            case .unrecorded: return entry.createdAt >= date
             }
         }
     }
 
     /// How many of the contact's addresses the latest attempts reserved
-    /// without submitting a payment to them: the newest consecutive
-    /// `.reserving` and `.unused` entries. The contact's wallet only looks a
+    /// without paying them: the newest consecutive `.reserving` and `.unused`
+    /// entries, and Shielded withdrawals the SDK failed. Any other entry, a
+    /// Core payment included, ends the run. The contact's wallet only looks a
     /// fixed number of addresses past the last one paid.
+    ///
     /// Read in the order the entries were written, not by date: attempts in
-    /// quick succession can share a timestamp.
-    func unpaidReservationStreak(scope: Scope, contactIdentityId: Data) throws -> Int {
+    /// quick succession can share a timestamp. `shieldedSpendState` is
+    /// called without the store lock held.
+    func unpaidReservationStreak(
+        scope: Scope,
+        contactIdentityId: Data,
+        shieldedSpendState: (Entry) -> ShieldedSpendState = { _ in .pending }
+    ) throws -> Int {
+        let written: [Entry]
+        lock.lock()
+        do {
+            written = try load(scope: scope)
+                .filter { $0.scope == scope && $0.contactIdentityId == contactIdentityId }
+            lock.unlock()
+        } catch {
+            lock.unlock()
+            throw error
+        }
+        return written.reversed().prefix { entry in
+            switch entry.status {
+            case .reserving, .unused: return true
+            case .corePayment: return false
+            case .submitting, .submitted, .unconfirmed:
+                return entry.source == .shielded && shieldedSpendState(entry) == .failed
+            }
+        }.count
+    }
+
+    /// Records that the contact was paid from the Core balance, ending any
+    /// unpaid streak: the Core payment pays the next of the contact's
+    /// addresses, which their wallet then looks past.
+    func recordCorePayment(scope: Scope, contactIdentityId: Data, amountDuffs: UInt64) throws {
+        guard contactIdentityId.count == 32 else { throw StoreError.invalidPayment }
         lock.lock()
         defer { lock.unlock() }
-        return try load(scope: scope)
-            .filter { $0.scope == scope && $0.contactIdentityId == contactIdentityId }
-            .reversed()
-            .prefix { $0.status == .reserving || $0.status == .unused }
-            .count
+        var entries = try load(scope: scope)
+        entries.append(Entry(
+            id: UUID(), scope: scope, contactIdentityId: contactIdentityId,
+            address: "", amountDuffs: amountDuffs, amountIsEstimate: false, source: .platform,
+            createdAt: Date(), status: .corePayment))
+        try save(entries, scope: scope)
     }
 
     /// The wallet's journal files. Throws when the journal can't be read:

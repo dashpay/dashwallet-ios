@@ -296,75 +296,69 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
     }
 
     /// The SDK keeps the signed Shielded spend and re-broadcasts it on later
-    /// syncs whatever the device clock says, so age alone never unlocks it.
-    func testAgedShieldedRecordLocksUntilTheSDKSettlesIt() throws {
+    /// syncs while its row is Pending, whatever the device clock says. A
+    /// Confirmed or Failed row resolves it at any age; with no row, or an
+    /// Unknown one, nothing is re-broadcast and the window applies.
+    func testShieldedRecordLocksWhileTheSDKHoldsItPending() throws {
         try store.update(try begin(source: .shielded), status: .unconfirmed)
         let reopened = DashPayWithdrawalStore(directory: directory)
+        func locked(_ state: DashPayWithdrawalStore.ShieldedSpendState, since: Date) throws -> Bool {
+            try reopened.hasUnresolvedEntry(
+                scope: scope, contactIdentityId: contact, since: since, shieldedSpendState: { _ in state })
+        }
         let afterTheWindow = Date().addingTimeInterval(60)
-        XCTAssertTrue(try reopened.hasUnresolvedEntry(
-            scope: scope, contactIdentityId: contact, since: afterTheWindow))
-        XCTAssertTrue(try reopened.hasUnresolvedEntry(
-            scope: scope, contactIdentityId: contact, since: afterTheWindow,
-            shieldedOutcomeIsSettled: { _ in false }))
+        XCTAssertTrue(try reopened.hasUnresolvedEntry(scope: scope, contactIdentityId: contact, since: afterTheWindow),
+                      "an unreadable state holds the lock")
+        XCTAssertTrue(try locked(.pending, since: afterTheWindow))
+        XCTAssertFalse(try locked(.unrecorded, since: afterTheWindow))
+        XCTAssertTrue(try locked(.unrecorded, since: lockWindowStart))
+        XCTAssertFalse(try locked(.confirmed, since: lockWindowStart))
+        XCTAssertFalse(try locked(.failed, since: lockWindowStart))
         var asked: [String] = []
-        XCTAssertFalse(try reopened.hasUnresolvedEntry(
+        _ = try reopened.hasUnresolvedEntry(
             scope: scope, contactIdentityId: contact, since: afterTheWindow,
-            shieldedOutcomeIsSettled: { asked.append($0.address); return true }))
+            shieldedSpendState: { asked.append($0.address); return .pending })
         XCTAssertEqual(asked, ["reserved-contact-address"])
     }
 
-    /// Only a Confirmed or Failed withdrawal row for the reserved address
-    /// settles it: a Pending or Unknown one may still be re-broadcast or land,
-    /// and a missing one is no proof nothing was sent.
+    /// The SDK state of a withdrawal comes from its activity rows for the
+    /// reserved address: Pending wins, then Confirmed, then Failed; no row,
+    /// or only an Unknown one, is unrecorded.
     @MainActor
-    func testOnlyATerminalShieldedWithdrawalRowSettlesTheAddress() throws {
-        let container = try ShieldedWithdrawalHistoryFixture.makeContainer()
+    func testShieldedWithdrawalStateComesFromTheAddressesActivityRows() throws {
         let walletId = Data(repeating: 0x41, count: 32)
         let script = Data([0x76, 0xa9, 0x14] + Array(repeating: UInt8(0x52), count: 20) + [0x88, 0xac])
         let otherScript = Data([0x76, 0xa9, 0x14] + Array(repeating: UInt8(0x53), count: 20) + [0x88, 0xac])
         let address = try XCTUnwrap(ScriptAddressCodec.address(forScript: script, network: .testnet))
         var nextId: UInt8 = 0
-        func insert(status: Int, kind: Int = 5, wallet: Data = walletId, counterparty: Data = script) throws {
-            nextId += 1
-            container.mainContext.insert(PersistentShieldedActivity(
-                walletId: wallet, accountIndex: 0, entryId: Data(repeating: nextId, count: 32),
-                kindTag: kind, direction: 1, status: status, amount: 1_000_000, fee: 1000, hasFee: true,
-                blockHeight: 0, hasBlockHeight: false, createdAtMs: 1_800_000_000_000,
-                identityId: Data(), counterparty: counterparty, memo: Data(), noteCmxs: Data(),
-                spentNullifiers: Data(repeating: nextId, count: 32)))
+        func container(_ rows: [(status: Int, kind: Int, wallet: Data, counterparty: Data)]) throws -> ModelContainer {
+            let container = try ShieldedWithdrawalHistoryFixture.makeContainer()
+            for row in rows {
+                nextId += 1
+                container.mainContext.insert(PersistentShieldedActivity(
+                    walletId: row.wallet, accountIndex: 0, entryId: Data(repeating: nextId, count: 32),
+                    kindTag: row.kind, direction: 1, status: row.status, amount: 1_000_000, fee: 1000, hasFee: true,
+                    blockHeight: 0, hasBlockHeight: false, createdAtMs: 1_800_000_000_000,
+                    identityId: Data(), counterparty: row.counterparty, memo: Data(), noteCmxs: Data(),
+                    spentNullifiers: Data(repeating: nextId, count: 32)))
+            }
             try container.mainContext.save()
+            return container
         }
-        func settled() -> Bool {
-            WalletSendService.shieldedWithdrawalIsSettled(
-                to: address, walletId: walletId, network: .testnet, in: container)
+        func state(_ rows: [(status: Int, kind: Int, wallet: Data, counterparty: Data)],
+                   address: String = address) throws -> DashPayWithdrawalStore.ShieldedSpendState {
+            WalletSendService.shieldedWithdrawalState(
+                to: address, walletId: walletId, network: .testnet, in: try container(rows))
         }
-
-        XCTAssertFalse(settled(), "no row")
-        try insert(status: 0)
-        XCTAssertFalse(settled(), "pending")
-        try insert(status: 3)
-        XCTAssertFalse(settled(), "unknown")
-        try insert(status: 1, kind: 4)
-        XCTAssertFalse(settled(), "confirmed, but not a withdrawal")
-        try insert(status: 1, wallet: Data(repeating: 0x42, count: 32))
-        XCTAssertFalse(settled(), "confirmed, another wallet")
-        try insert(status: 2, counterparty: otherScript)
-        XCTAssertFalse(settled(), "failed, another address")
-        XCTAssertFalse(WalletSendService.shieldedWithdrawalIsSettled(
-            to: "", walletId: walletId, network: .testnet, in: container), "no address recorded")
-        try insert(status: 2)
-        XCTAssertTrue(settled(), "failed")
-
-        let confirmedOnly = try ShieldedWithdrawalHistoryFixture.makeContainer()
-        confirmedOnly.mainContext.insert(PersistentShieldedActivity(
-            walletId: walletId, accountIndex: 0, entryId: Data(repeating: 0xEE, count: 32),
-            kindTag: 5, direction: 1, status: 1, amount: 1_000_000, fee: 1000, hasFee: true,
-            blockHeight: 0, hasBlockHeight: false, createdAtMs: 1_800_000_000_000,
-            identityId: Data(), counterparty: script, memo: Data(), noteCmxs: Data(),
-            spentNullifiers: Data(repeating: 0xEE, count: 32)))
-        try confirmedOnly.mainContext.save()
-        XCTAssertTrue(WalletSendService.shieldedWithdrawalIsSettled(
-            to: address, walletId: walletId, network: .testnet, in: confirmedOnly))
+        let otherWallet = Data(repeating: 0x42, count: 32)
+        XCTAssertEqual(try state([]), .unrecorded)
+        XCTAssertEqual(try state([(3, 5, walletId, script)]), .unrecorded)
+        XCTAssertEqual(try state([(1, 4, walletId, script), (1, 5, otherWallet, script), (2, 5, walletId, otherScript)]),
+                       .unrecorded, "another kind, wallet or address")
+        XCTAssertEqual(try state([(2, 5, walletId, script)]), .failed)
+        XCTAssertEqual(try state([(2, 5, walletId, script), (1, 5, walletId, script)]), .confirmed)
+        XCTAssertEqual(try state([(1, 5, walletId, script), (0, 5, walletId, script)]), .pending)
+        XCTAssertEqual(try state([(0, 5, walletId, script)], address: ""), .unrecorded)
     }
 
     // MARK: - Addresses reserved without a payment
@@ -411,6 +405,24 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
             scope: scope, contactIdentityId: Data(repeating: 9, count: 32)), 0)
         try store.update(try begin(), status: .submitted)
         XCTAssertEqual(try unpaidStreak, 0)
+    }
+
+    /// A Shielded withdrawal the SDK failed used up its address unpaid; a
+    /// Core payment to the contact ends the run.
+    func testFailedShieldedWithdrawalCountsAndACorePaymentEndsTheStreak() throws {
+        try store.update(try begin(source: .platform), status: .submitted)
+        try store.update(try begin(source: .shielded), status: .unconfirmed)
+        try store.update(try begin(), status: .unused)
+        XCTAssertEqual(try unpaidStreak, 1, "a withdrawal that may have paid ends the run")
+        XCTAssertEqual(try store.unpaidReservationStreak(
+            scope: scope, contactIdentityId: contact, shieldedSpendState: { _ in .failed }), 2)
+        try store.recordCorePayment(scope: scope, contactIdentityId: contact, amountDuffs: 10_000)
+        XCTAssertEqual(try store.unpaidReservationStreak(
+            scope: scope, contactIdentityId: contact, shieldedSpendState: { _ in .failed }), 0)
+        let core = try XCTUnwrap(try store.entries(scope: scope, contactIdentityId: contact).first { $0.status == .corePayment })
+        XCTAssertFalse(core.mayHaveBeenSubmitted)
+        XCTAssertFalse(try DashPayWithdrawalStore(directory: directory).hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: .distantPast, shieldedSpendState: { _ in .failed }))
     }
 
     func testTooManyUnpaidReservationsRefuseTheNextOne() throws {
