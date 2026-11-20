@@ -476880,7 +476880,7 @@
       }
     },
     "Setup Wallet" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
