@@ -78,7 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
         }
         else if ([url.host hasPrefix:@"pay"] || [url.path isEqual:@"/pay"]) {
             NSDictionary<NSString *, NSString *> *params = [self parseParamsFromURL:url];
-            if (![self isPayParamsValid:params] || [self hasAmbiguousAmountInURL:url]) {
+            if (![self isPayParamsValid:params] || [self hasAmbiguousPaymentParameterInURL:url]) {
                 return nil;
             }
 
@@ -129,15 +129,21 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 /// `parseParamsFromURL` keeps the last of a repeated key and drops a pair it cannot split, so an
-/// amount given twice, or malformed, could vanish and leave an open amount. Such a link is refused.
-+ (BOOL)hasAmbiguousAmountInURL:(NSURL *)url {
+/// amount or merchant request given twice, or malformed, could vanish or be replaced, leaving an
+/// open amount or a different request. Such a link is refused.
++ (BOOL)hasAmbiguousPaymentParameterInURL:(NSURL *)url {
     NSUInteger amounts = 0;
+    NSUInteger requests = 0;
     for (NSString *param in [url.host componentsSeparatedByString:@"&"]) {
         NSArray<NSString *> *pair = [param componentsSeparatedByString:@"="];
-        if ([pair.firstObject isEqualToString:@"amount"] || [pair.firstObject isEqualToString:@"req-amount"]) {
-            if (pair.count != 2 || ++amounts > 1) {
-                return YES;
-            }
+        NSString *key = pair.firstObject;
+        BOOL isAmount = [key isEqualToString:@"amount"] || [key isEqualToString:@"req-amount"];
+        BOOL isRequest = [key isEqualToString:@"r"] || [key isEqualToString:@"req-r"];
+        if (!isAmount && !isRequest) {
+            continue;
+        }
+        if (pair.count != 2 || (isAmount && ++amounts > 1) || (isRequest && ++requests > 1)) {
+            return YES;
         }
     }
     return NO;

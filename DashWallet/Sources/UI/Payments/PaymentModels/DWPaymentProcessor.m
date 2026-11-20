@@ -193,6 +193,15 @@ static NSString *DWReversedHexString(NSData *data) {
                                          userInfo:@{NSLocalizedDescriptionKey : title}];
         [self failedWithError:error title:title message:nil];
     }
+    else if (!parsed.isValidDashPaymentIntent && parsed.requiresRequest) {
+        // A required merchant request that can't be read (or was given twice): nothing to verify, and
+        // the address alone may not be paid.
+        NSString *title = NSLocalizedString(@"Invalid Payment Request", nil);
+        NSError *error = [NSError errorWithDomain:@"DashWallet.PaymentProcessor"
+                                             code:-3
+                                         userInfo:@{NSLocalizedDescriptionKey : title}];
+        [self failedWithError:error title:title message:nil];
+    }
     else if (!parsed.isValidDashPaymentIntent) {
         // Not a payable dash: intent and no BIP70 request URL → reject. (Paper-wallet sweep — the old
         // WIF/BIP38 arm here — was dropped in C8 step 5; it needs an arbitrary-address UTXO FFI to return.)
