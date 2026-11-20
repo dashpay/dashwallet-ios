@@ -1,6 +1,6 @@
 #!/bin/bash
 # Rebuild the generated state of the String Catalog move on the current merge-base
-# (ADR-0006 "How the pull request is built", steps 2-4; removed after the merge, T20):
+# (ADR-0069 "How the pull request is built", steps 2-4; removed after the merge, T20):
 #   1. generate DashWallet/Localizable.xcstrings from the Baseline lists
 #   2. point the project at the Catalog and delete the 86 lists
 #   3. rewrite Swift lookups with the codemod (keys looked up from Objective-C stay literal)

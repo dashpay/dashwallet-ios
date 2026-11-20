@@ -1,4 +1,4 @@
-"""Move Catalog entries whose lookup key changed and rewrite their format codes (T9, ADR-0003).
+"""Move Catalog entries whose lookup key changed and rewrite their format codes (T9, ADR-0066).
 
 API:
   plan_moves(pairs, objc_keys)           -> sorted list of distinct (old, new) key moves

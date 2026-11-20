@@ -181,7 +181,7 @@ class GenerateCatalogTests(RepoCase):
                 "variations": {"plural": {
                     "one": unit("note"), "other": unit("notes")}}}}})
 
-    # --- output format (ADR-0008, pilot rule 5) -----------------------------
+    # --- output format (ADR-0071, pilot rule 5) -----------------------------
     def test_bytes_utf8_no_bom_no_trailing_newline(self):
         self.assertFalse(self.raw.startswith(b"\xef\xbb\xbf"))
         self.assertFalse(self.raw.endswith(b"\n"))
