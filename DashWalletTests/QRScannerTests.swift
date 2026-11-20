@@ -449,7 +449,8 @@ final class QRScannerTests: XCTestCase {
         let request = "r=https%3A%2F%2Fmerchant.invalid%2Fpr"
         for code in ["dash:\(Self.address)?req-memo=hi", "dash:\(Self.address)?amount=1&req-expires=1",
                      "dash:\(Self.address)?amount=1&\(request)&req-memo=hi", "dash:?\(request)&req-memo=hi",
-                     "dash:\(Self.platformAddress)?req-memo=hi"] {
+                     "dash:\(Self.platformAddress)?req-memo=hi", "dash:\(Self.address)?req-local=25&req-currency=USD",
+                     "dash:\(Self.address)?amount=1&req-user=alice"] {
             let parsed = ParsedPaymentURI.parse(paymentString: code)
             XCTAssertTrue(parsed.hasUnsupportedRequirement, code)
             XCTAssertFalse(parsed.isValidDashPaymentIntent, code)
@@ -475,7 +476,8 @@ final class QRScannerTests: XCTestCase {
             }
         }
 
-        for code in ["dash:\(Self.address)?memo=hi", "dash:\(Self.address)?req-label=Shop&req-message=Thanks&amount=1"] {
+        for code in ["dash:\(Self.address)?memo=hi", "dash:\(Self.address)?req-label=Shop&req-message=Thanks&amount=1",
+                     "dash:\(Self.address)?amount=1&req-IS=1", "dash:\(Self.address)?local=25&currency=USD"] {
             let parsed = ParsedPaymentURI.parse(paymentString: code)
             XCTAssertFalse(parsed.hasUnsupportedRequirement, code)
             XCTAssertTrue(parsed.isValidDashPaymentIntent, code)
@@ -486,6 +488,39 @@ final class QRScannerTests: XCTestCase {
             }
             XCTAssertEqual(address, Self.address, code)
         }
+    }
+
+    /// A paste or an NFC tag with a requirement the wallet can't meet is
+    /// handed to the processor to refuse, never fetched and paid.
+    func testPastedOrTappedUnsupportedRequirementIsRefused() {
+        let code = "dash:?r=https%3A%2F%2Fmerchant.invalid%2Fpr&req-memo=hi"
+        for source in [DWPaymentInputSource.pasteboard, .NFC] {
+            var read: DWPaymentInput?
+            DWPaymentInputBuilder().payFirst(from: [code], source: source) { read = $0 }
+            let input = try? XCTUnwrap(read, "handed on without a fetch")
+            XCTAssertNil(input?.bip70Confirmation)
+            XCTAssertEqual(input?.parsedURI?.hasUnsupportedRequirement, true)
+
+            let delegate = ProcessorDelegate()
+            let processor = DWPaymentProcessor()
+            processor.delegate = delegate
+            if let input { processor.processPaymentInput(input) }
+            XCTAssertFalse(delegate.confirmed)
+            XCTAssertEqual(delegate.failure?.title, NSLocalizedString("Invalid Payment Request", comment: ""))
+        }
+    }
+
+    /// A pay link can't lose a requirement on its way to the `dash:` URI:
+    /// one the rewrite would drop as malformed, or one in the query it never
+    /// reads, refuses the link. A well-formed one is carried over.
+    func testPayLinkKeepsOrRefusesItsRequirements() throws {
+        let link = "dashwallet://pay=\(Self.address)&amount=1&sender=ctx"
+        for refused in ["\(link)&req-memo", "\(link)&req-memo=a=b", "\(link)?req-memo=hi", "\(link)?req-IS=1"] {
+            XCTAssertNil(DWURLParser.action(for: try XCTUnwrap(URL(string: refused))), refused)
+        }
+        let carried = try XCTUnwrap(DWURLParser.paymentURL(forScannedLink: try XCTUnwrap(URL(string: "\(link)&req-memo=hi"))))
+        XCTAssertTrue(ParsedPaymentURI.parse(paymentString: carried.absoluteString).hasUnsupportedRequirement)
+        XCTAssertNotNil(DWURLParser.action(for: try XCTUnwrap(URL(string: "\(link)&req-IS=1"))))
     }
 
     /// An invoice that requires an amount of nothing is refused, so a rescan

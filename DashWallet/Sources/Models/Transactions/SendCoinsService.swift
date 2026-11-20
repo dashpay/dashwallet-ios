@@ -79,7 +79,7 @@ public final class SendCoinsService: NSObject {
     ///   window (30 s). The gift-card flow uses it: CTX fulfils the order from the bytes it just
     ///   acknowledged, so the verdict decides nothing the buyer is standing by for.
     func payWithDashUrl(url paymentUrlString: String, awaitAcceptance: Bool = true) async throws -> Data {
-        guard let uri = BIP70URI(paymentUrlString), let requestURL = uri.r else {
+        guard let uri = BIP70URI(paymentUrlString), !uri.hasUnsupportedRequirement, let requestURL = uri.r else {
             throw DashSpendError.paymentProcessingError(NSLocalizedString("Invalid payment request", comment: "DashSpend"))
         }
 
