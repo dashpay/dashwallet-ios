@@ -454,10 +454,15 @@ static CGFloat ActionButtonsHeight(void) {
     // record "Forgot PIN?" would be a lie — nothing was forgotten. A PIN
     // set while this screen is alive immediately unlocks (delegate), so the
     // title never needs to flip back.
-    NSString *escapeTitle = self.model.hasPinSet
+    const BOOL hasPinSet = self.model.hasPinSet;
+    NSString *escapeTitle = hasPinSet
                                 ? NSLocalizedString(@"Forgot PIN?", nil)
                                 : NSLocalizedString(@"Set PIN", nil);
     [self.forgotPinButton setTitle:escapeTitle forState:UIControlStateNormal];
+    self.forgotPinButton.accessibilityIdentifier = hasPinSet ? @"lock_forgot_pin_button" : @"lock_set_pin_button";
+    self.quickReceiveButton.accessibilityIdentifier = @"lock_quick_receive_button";
+    self.loginButton.accessibilityIdentifier = @"lock_biometric_login_button";
+    self.scanToPayButton.accessibilityIdentifier = @"lock_scan_to_send_button";
 
     self.quickReceiveButton.title = NSLocalizedString(@"Quick Receive", nil);
     self.quickReceiveButton.image = [UIImage imageNamed:@"icon_lock_receive"];

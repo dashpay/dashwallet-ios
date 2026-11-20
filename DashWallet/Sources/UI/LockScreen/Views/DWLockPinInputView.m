@@ -68,6 +68,7 @@ static CGFloat const SPACING = 8.0;
     titleLabel.textAlignment = NSTextAlignmentCenter;
     titleLabel.adjustsFontSizeToFitWidth = YES;
     titleLabel.minimumScaleFactor = 0.5;
+    titleLabel.accessibilityIdentifier = @"lock_pin_title";
     [self addSubview:titleLabel];
     _titleLabel = titleLabel;
 

@@ -175,6 +175,8 @@ static NSTimeInterval const ANIMATION_DURATION = 0.25;
 - (void)setupView {
     [self.createWalletButton setTitle:NSLocalizedString(@"Create a New Wallet", nil) forState:UIControlStateNormal];
     [self.recoverWalletButton setTitle:NSLocalizedString(@"Recover Wallet", nil) forState:UIControlStateNormal];
+    self.createWalletButton.accessibilityIdentifier = @"setup_create_wallet_button";
+    self.recoverWalletButton.accessibilityIdentifier = @"setup_recover_wallet_button";
 }
 
 - (nullable UIViewController *)nextControllerForCreateWalletRoutine {
