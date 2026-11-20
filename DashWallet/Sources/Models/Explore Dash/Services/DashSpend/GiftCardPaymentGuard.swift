@@ -24,6 +24,12 @@ enum GiftCardPaymentGuard {
     /// (500 = 5%).
     static let warningBasisPoints: UInt64 = 500
 
+    /// How long the buyer has to accept a higher price when the provider's order states no
+    /// expiry of its own. Two minutes is the PIN prompt's own timeout, which was the longest
+    /// such an order waited for its payment before the price was put to the buyer. The value
+    /// is not taken from a provider: how long an unpaid order stays open is not known here.
+    static let priceAnswerLimit: TimeInterval = 120
+
     /// The wallet's exchange rate as read when a purchase is approved.
     struct ExchangeRate {
         /// Fiat price of one Dash; nil when the wallet has no rate.
@@ -195,6 +201,11 @@ enum GiftCardPaymentGuard {
         .customError(NSLocalizedString(
             "The gift card provider returned an invalid payment address. Nothing was sent. Please try again or contact support.",
             comment: "DashSpend"))
+    }
+
+    /// A higher price that was accepted after `priceAnswerLimit`.
+    static var quoteExpiredError: DashSpendError {
+        .customError(NSLocalizedString("This quote expired. Please go back and try again.", comment: "DashSpend"))
     }
 
     static var rateUnavailableError: DashSpendError {

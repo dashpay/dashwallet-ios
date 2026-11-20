@@ -38,6 +38,10 @@ final class GiftCardPaymentGuardTests: XCTestCase {
         XCTAssertEqual(GiftCardPaymentGuard.warningBasisPoints, 500)
     }
 
+    func testAHigherPriceIsAnsweredWithinTwoMinutes() {
+        XCTAssertEqual(GiftCardPaymentGuard.priceAnswerLimit, 120)
+    }
+
     func testQuoteEqualToConfirmedIsPaidAsConfirmed() throws {
         XCTAssertNil(try change(confirmed))
     }
@@ -394,18 +398,25 @@ final class DashSpendPayApprovalTests: XCTestCase {
         GiftCardPaymentGuard.ExchangeRate(price: 40, retrievedAt: Int(Date().timeIntervalSince1970))
     }
 
+    /// A clock the test moves by hand.
+    private final class Clock {
+        var time = Date()
+    }
+
     private func makeViewModel(provider: GiftCardProvider = .ctx,
-                               rate: GiftCardPaymentGuard.ExchangeRate? = nil) -> DashSpendPayViewModel {
+                               rate: GiftCardPaymentGuard.ExchangeRate? = nil,
+                               now: @escaping () -> Date = { Date() }) -> DashSpendPayViewModel {
         let rate = rate ?? usableRate
-        let viewModel = DashSpendPayViewModel(merchant: merchant, provider: provider, exchangeRate: { rate })
+        let viewModel = DashSpendPayViewModel(merchant: merchant, provider: provider, exchangeRate: { rate }, now: now)
         // No sheet is on screen in these tests, so nothing reports its dismissal.
         viewModel.sheetDismissalWait = 0.01
         return viewModel
     }
 
     /// A view model with the Confirm sheet open for a $25 card: 0.625 Dash at $40.
-    private func viewModelWithConfirmSheet() throws -> (DashSpendPayViewModel, GiftCardPurchaseSnapshot) {
-        let viewModel = makeViewModel()
+    private func viewModelWithConfirmSheet(now: @escaping () -> Date = { Date() }) throws
+        -> (DashSpendPayViewModel, GiftCardPurchaseSnapshot) {
+        let viewModel = makeViewModel(now: now)
         try viewModel.beginPurchase(price: 25)
         guard case .confirm(let snapshot)? = viewModel.purchaseSheet else {
             XCTFail("the Confirm sheet did not open")
@@ -419,8 +430,12 @@ final class DashSpendPayApprovalTests: XCTestCase {
 
     /// Starts `confirmQuote` for `requested` Dash.
     private func startQuote(_ requested: UInt64, on viewModel: DashSpendPayViewModel,
-                            snapshot: GiftCardPurchaseSnapshot) -> Task<Void, Error> {
-        Task { try await viewModel.confirmQuote(requested: requested, approval: snapshot.approval) }
+                            snapshot: GiftCardPurchaseSnapshot,
+                            answerWithin: TimeInterval? = nil) -> Task<Void, Error> {
+        Task {
+            try await viewModel.confirmQuote(
+                requested: requested, approval: snapshot.approval, answerWithin: answerWithin)
+        }
     }
 
     /// Runs `confirmQuote` and returns once the "Price updated" sheet is up. Fails the test
@@ -428,9 +443,10 @@ final class DashSpendPayApprovalTests: XCTestCase {
     /// change before they answer it.
     private func quote(_ requested: UInt64, on viewModel: DashSpendPayViewModel,
                        snapshot: GiftCardPurchaseSnapshot,
+                       answerWithin: TimeInterval? = nil,
                        file: StaticString = #filePath, line: UInt = #line) async
         -> (task: Task<Void, Error>, change: GiftCardPaymentGuard.PriceChange?) {
-        let task = startQuote(requested, on: viewModel, snapshot: snapshot)
+        let task = startQuote(requested, on: viewModel, snapshot: snapshot, answerWithin: answerWithin)
         let deadline = Date().addingTimeInterval(Self.patience)
         while Date() < deadline {
             if case .priceUpdated(let change)? = viewModel.purchaseSheet { return (task, change) }
@@ -743,6 +759,80 @@ final class DashSpendPayApprovalTests: XCTestCase {
         _ = try XCTUnwrap(shown)
         viewModel.resolvePriceChange(pay: true)
         try await finish(task, on: viewModel)
+    }
+
+    // MARK: Time to answer a higher price
+
+    /// Puts a higher price to the buyer with two minutes to answer and returns the task once
+    /// the sheet is up.
+    private func higherQuoteWithALimit(clock: Clock) async throws
+        -> (viewModel: DashSpendPayViewModel, task: Task<Void, Error>) {
+        let (viewModel, snapshot) = try viewModelWithConfirmSheet(now: { clock.time })
+        let (task, shown) = await quote(snapshot.approval.amount * 2, on: viewModel, snapshot: snapshot,
+                                        answerWithin: GiftCardPaymentGuard.priceAnswerLimit)
+        _ = try XCTUnwrap(shown)
+        return (viewModel, task)
+    }
+
+    func testHigherPriceAcceptedWithinTheLimitGoesOn() async throws {
+        let clock = Clock()
+        let (viewModel, task) = try await higherQuoteWithALimit(clock: clock)
+
+        clock.time += GiftCardPaymentGuard.priceAnswerLimit
+        viewModel.resolvePriceChange(pay: true)
+        try await finish(task, on: viewModel)
+    }
+
+    /// Accepted one second too late: the purchase ends with the expired-quote message, and
+    /// `confirmQuote` does not return, so nothing after it runs.
+    func testHigherPriceAcceptedAfterTheLimitEndsThePurchase() async throws {
+        let clock = Clock()
+        let (viewModel, task) = try await higherQuoteWithALimit(clock: clock)
+
+        clock.time += GiftCardPaymentGuard.priceAnswerLimit + 1
+        viewModel.resolvePriceChange(pay: true)
+        do {
+            try await finish(task, on: viewModel)
+            XCTFail("a price accepted after the limit went on")
+        } catch DashSpendError.customError(let message) {
+            XCTAssertEqual(message, GiftCardPaymentGuard.quoteExpiredError.errorDescription)
+        } catch {
+            XCTFail("unexpected error: \(error)")
+        }
+        XCTAssertNil(viewModel.purchaseSheet)
+    }
+
+    /// A late "no" is still just a "no": nothing is reported to the buyer.
+    func testHigherPriceDeclinedAfterTheLimitIsACancellation() async throws {
+        let clock = Clock()
+        let (viewModel, task) = try await higherQuoteWithALimit(clock: clock)
+
+        clock.time += 3_600
+        viewModel.resolvePriceChange(pay: false)
+        await assertCancelled(task, on: viewModel)
+    }
+
+    /// Without a limit (a provider whose payment request carries its own expiry) the answer
+    /// may come at any time.
+    func testHigherPriceWithNoLimitCanBeAcceptedAnyTime() async throws {
+        let clock = Clock()
+        let (viewModel, snapshot) = try viewModelWithConfirmSheet(now: { clock.time })
+        let (task, shown) = await quote(snapshot.approval.amount * 2, on: viewModel, snapshot: snapshot)
+        _ = try XCTUnwrap(shown)
+
+        clock.time += 3_600
+        viewModel.resolvePriceChange(pay: true)
+        try await finish(task, on: viewModel)
+    }
+
+    /// A quote that needs no answer is not timed: the limit applies to the answer only.
+    func testQuoteAsConfirmedIsNotTimed() async throws {
+        let clock = Clock()
+        let (viewModel, snapshot) = try viewModelWithConfirmSheet(now: { clock.time })
+        clock.time += 3_600
+        try await finish(startQuote(snapshot.approval.amount, on: viewModel, snapshot: snapshot,
+                                    answerWithin: GiftCardPaymentGuard.priceAnswerLimit), on: viewModel)
+        XCTAssertNil(viewModel.purchaseSheet)
     }
 
     func testZeroQuoteIsRefusedWithoutAsking() async throws {

@@ -427,10 +427,18 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     /// It also throws `DashSpendError.purchaseCancelled` when the purchase screen has gone
     /// away (a sign-out closes it), whatever the quote: checked when the quote arrives and
     /// again once the sheet has left, so no PIN prompt follows a screen that is gone.
-    func confirmQuote(requested: UInt64, approval: GiftCardPaymentGuard.Approval) async throws {
+    ///
+    /// - Parameter answerWithin: how long the buyer has to accept a higher price, counted
+    ///   from the moment the sheet is put up; `nil` for no limit. A higher price accepted
+    ///   later than that throws `GiftCardPaymentGuard.quoteExpiredError` once the sheet has
+    ///   left the screen. For an order that carries no expiry the payment could be checked
+    ///   against.
+    func confirmQuote(requested: UInt64, approval: GiftCardPaymentGuard.Approval,
+                      answerWithin: TimeInterval? = nil) async throws {
         let assessment = try approval.assess(requested: requested)
         try endPurchaseIfScreenIsGone()
 
+        var answeredLate = false
         switch assessment {
         case .asConfirmed:
             guard purchaseSheet != nil else { return }
@@ -438,12 +446,21 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         case .higher(let change):
             DWLogger.log("Gift card price changed: requested \(requested) duffs, confirmed \(approval.amount)")
             purchaseSheet = .priceUpdated(change)
+            let shownAt = now()
             let pay = await withCheckedContinuation { priceDecision = $0 }
             guard pay else { throw DashSpendError.purchaseCancelled }
+            if let answerWithin {
+                answeredLate = now().timeIntervalSince(shownAt) > answerWithin
+            }
         }
 
         await waitForSheetDismissal()
         try endPurchaseIfScreenIsGone()
+
+        if answeredLate {
+            DWLogger.log("Gift card purchase ended: the higher price was accepted after the time allowed for it. Nothing was sent")
+            throw GiftCardPaymentGuard.quoteExpiredError
+        }
     }
 
     private func endPurchaseIfScreenIsGone() throws {
@@ -567,7 +584,9 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
             // Compared here, before sendCoins prompts for the PIN: a declined quote shows no
             // prompt. The payment address was validated when the order response was parsed.
-            try await confirmQuote(requested: dashAmountInSatoshis, approval: approval)
+            // The order states no expiry, so a higher price has to be accepted in limited time.
+            try await confirmQuote(requested: dashAmountInSatoshis, approval: approval,
+                                   answerWithin: GiftCardPaymentGuard.priceAnswerLimit)
 
             // Use sendCoins directly with address and amount
             // This will properly trigger PIN authorization
