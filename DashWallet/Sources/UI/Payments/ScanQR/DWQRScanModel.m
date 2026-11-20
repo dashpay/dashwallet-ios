@@ -281,7 +281,11 @@ NS_ASSUME_NONNULL_END
                                                [strongSelf.delegate qrScanModel:strongSelf didScanPaymentInput:paymentInput];
                                            }
                                            else {
-                                               [strongSelf.qrCodeObject setInvalidWithErrorMessage:[strongSelf invalidQRErrorMessageForURI:parsed]];
+                                               // A request the app refused by rule says why; any other failure keeps the generic text.
+                                               NSString *message = (error && [DWBIP70InteractiveCoordinator isRefusalError:error])
+                                                                       ? error.localizedDescription
+                                                                       : [strongSelf invalidQRErrorMessageForURI:parsed];
+                                               [strongSelf.qrCodeObject setInvalidWithErrorMessage:message];
                                                [strongSelf performSelector:@selector(resumeQRCodeSearch)
                                                                 withObject:nil
                                                                 afterDelay:kResumeSearchTimeInterval];

@@ -6453,11 +6453,20 @@
 /* Voting */
 "This node will no longer vote from this wallet. You can add its voting key again at any time." = "This node will no longer vote from this wallet. You can add its voting key again at any time.";
 
+/* Payment confirmation: a payment request with several outputs */
+"This payment goes to %ld addresses." = "This payment goes to %ld addresses.";
+
 /* BIP70 payment error */
 "This payment is already being processed." = "This payment is already being processed.";
 
+/* Payment request refused */
+"This payment request does not use a secure connection." = "This payment request does not use a secure connection.";
+
 /* BIP70 payment error */
 "This payment request has expired." = "This payment request has expired.";
+
+/* Payment request refused */
+"This payment request is unsigned and pays more than one address." = "This payment request is unsigned and pays more than one address.";
 
 /* BIP70 payment error */
 "This payment request uses an unsupported output type." = "This payment request uses an unsupported output type.";
@@ -7000,6 +7009,15 @@
 
 /* Log export */
 "Unlock with your wallet PIN to export logs." = "Unlock with your wallet PIN to export logs.";
+
+/* Payment confirmation: note supplied by an unsigned payment request */
+"Unverified note: %@" = "Unverified note: %@";
+
+/* Payment confirmation: unsigned payment request without a name */
+"Unverified recipient" = "Unverified recipient";
+
+/* Payment confirmation: name supplied by an unsigned payment request */
+"Unverified recipient: %@" = "Unverified recipient: %@";
 
 /* No comment provided by engineer. */
 "Unshielded" = "Varjamata";

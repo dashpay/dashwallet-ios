@@ -351,6 +351,10 @@ final class MockURLProtocol: URLProtocol {
     /// validation can be exercised. Consulted before `handler` when set.
     static var responseHandler: ((URLRequest) -> (Int, [String: String], Data))?
 
+    /// When set and it returns a URL for a request, that request answers with a 302 to the URL.
+    /// Consulted first.
+    static var redirectHandler: ((URLRequest) -> URL?)?
+
     static func bodyString(of request: URLRequest) -> String? {
         if let body = request.httpBody {
             return String(data: body, encoding: .utf8)
@@ -396,6 +400,15 @@ final class MockURLProtocol: URLProtocol {
         let statusCode: Int
         let headerFields: [String: String]?
         let data: Data
+        if let target = MockURLProtocol.redirectHandler?(request), let from = request.url {
+            let redirect = HTTPURLResponse(url: from, statusCode: 302, httpVersion: "HTTP/1.1",
+                                           headerFields: ["Location": target.absoluteString])!
+            client?.urlProtocol(self, wasRedirectedTo: URLRequest(url: target), redirectResponse: redirect)
+            // A redirect the session's delegate refuses ends the task with the 302 itself.
+            client?.urlProtocol(self, didReceive: redirect, cacheStoragePolicy: .notAllowed)
+            client?.urlProtocolDidFinishLoading(self)
+            return
+        }
         if let responseHandler = MockURLProtocol.responseHandler {
             (statusCode, headerFields, data) = responseHandler(request)
         } else if let handler = MockURLProtocol.handler {
