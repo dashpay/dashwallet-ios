@@ -612,18 +612,22 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             try await confirmQuote(requested: dashAmountInSatoshis, approval: approval,
                                    answerWithin: GiftCardPaymentGuard.priceAnswerLimit)
 
-            // Use sendCoins directly with address and amount
-            // This will properly trigger PIN authorization
-
-            txidWire = try await dependencies.payments.sendCoins(
-                address: giftCardInfo.paymentAddress,
-                amount: dashAmountInSatoshis,
-                sessionAuthSufficient: false
-            )
-
-
             giftCardNote = buildPiggyOrderNote(
                 orderId: giftCardInfo.orderId, selectedQuantities: snapshot.quantities, cardValue: confirmedPrice)
+
+            // Paid to the order's address; this is where the PIN is asked.
+            do {
+                txidWire = try await dependencies.payments.payGiftCardOrder(
+                    address: giftCardInfo.paymentAddress, amount: dashAmountInSatoshis)
+            } catch DashSpendError.paymentStatusUnknown(let unconfirmedTxIdWire, let reason) {
+                // The transaction was handed to the network and no acceptance was seen in
+                // time; the wallet keeps trying while it is open. Record the order against
+                // the txid, as the CTX branch does: without the record a payment that goes
+                // through leaves the buyer with no card, and a second try pays twice.
+                DWLogger.log("Gift card payment status unknown, recording the order anyway: \(reason)")
+                recordPurchase(txidWire: unconfirmedTxIdWire, giftCardNote: giftCardNote, price: confirmedPrice)
+                throw DashSpendError.paymentStatusUnknown(txIdWire: unconfirmedTxIdWire, reason: reason)
+            }
         #endif
         }
 

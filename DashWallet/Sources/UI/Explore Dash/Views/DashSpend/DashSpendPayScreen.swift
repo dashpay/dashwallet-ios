@@ -229,6 +229,13 @@ struct DashSpendPayScreen: View {
                 DWLogger.log("Gift card purchase pending network confirmation: \(reason)")
                 presentationMode.wrappedValue.dismiss()
                 onPurchaseSuccess?(txId)
+            } catch DashSpendError.paymentNotAcknowledged(let txId, let reason) {
+                // Posted to CTX, acknowledgement not read. CTX may be fulfilling the order
+                // already and the purchase is recorded, so this is not a failed purchase:
+                // route to the card details, whose poller shows the card once CTX issues it.
+                DWLogger.log("Gift card payment not acknowledged by the provider: \(reason)")
+                presentationMode.wrappedValue.dismiss()
+                onPurchaseSuccess?(txId)
             } catch {
                 showPurchaseError(error)
             }

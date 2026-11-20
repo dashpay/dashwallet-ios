@@ -39,6 +39,31 @@ public final class SendCoinsService: NSObject {
         )
     }
 
+    /// Pays a gift card order that names a plain address and an amount (PiggyCards).
+    ///
+    /// An unknown broadcast outcome is thrown as `DashSpendError.paymentStatusUnknown` with
+    /// the txid, as `payWithDashUrl` does, so the caller can record the order against the
+    /// transaction it just handed to the network. Every other failure is thrown as
+    /// `sendCoins` throws it.
+    ///
+    /// - Returns: the wire-order txid of the broadcast transaction
+    ///   (`Transaction.txHashData` convention).
+    func payGiftCardOrder(address: String, amount: UInt64) async throws -> Data {
+        do {
+            return try await walletSendService.sendCarryingUnknownOutcome(address: address, amount: amount)
+        } catch let unknown as WalletSendService.BroadcastOutcomeUnknown {
+            throw Self.paymentStatusUnknown(from: unknown)
+        }
+    }
+
+    /// The gift card error for a payment whose broadcast outcome is unknown. The reason is the
+    /// SDK's diagnostic when the send error carries one; it is logged, never shown.
+    static func paymentStatusUnknown(from unknown: WalletSendService.BroadcastOutcomeUnknown) -> DashSpendError {
+        let reason = unknown.underlying.userInfo[WalletSendService.diagnosticKey] as? String
+        return .paymentStatusUnknown(
+            txIdWire: unknown.txidWire, reason: reason ?? unknown.underlying.localizedDescription)
+    }
+
     /// Submits a DashDEX (SwapKit) deposit. Memo-less routes remain a plain send to the
     /// route's deposit address; memo-bearing routes build a MAYACHAIN-style deposit with the
     /// memo encoded in a zero-value OP_RETURN output.
