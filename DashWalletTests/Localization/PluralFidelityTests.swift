@@ -21,7 +21,8 @@ import XCTest
 
 /// Every counted phrase of the Baseline, formatted from the app's compiled String Catalog in each
 /// locale the app ships, for the counts 0, 1, 2, 5, 21 and 101, gives the Baseline form; and no
-/// locale has plural variants its Baseline lacked.
+/// counted phrase of the Baseline has plural variants in a locale whose Baseline lacked them.
+/// Counted phrases added since the Baseline are not held to it.
 ///
 /// A phrase the code looks up with an interpolation (`String(localized: "\(count) words")`) is
 /// formatted through that same call; any other phrase with `String(format:locale:arguments:)` over
@@ -98,14 +99,19 @@ final class PluralFidelityTests: XCTestCase {
         let fixture = try loadFixture()
         for locale in fixture.locales {
             let bundle = try localization(locale)
-            let allowed = Set(fixture.variant_keys[locale] ?? [])
             let path = try XCTUnwrap(bundle.path(forResource: "Localizable", ofType: "stringsdict"),
                                      "\(locale).lproj has no compiled plural table")
             let entries = try XCTUnwrap(NSDictionary(contentsOfFile: path) as? [String: Any])
-            for key in entries.keys.sorted() where !allowed.contains(key) {
+            for key in Self.variantsTheBaselineLacked(Array(entries.keys), in: locale, fixture.variant_keys) {
                 XCTFail("\(key) has plural variants in \(locale), which its Baseline did not have")
             }
         }
+    }
+
+    func testOnlyTheBaselinesCountedPhrasesAreHeldToItsVariants() {
+        let baseline = ["en": ["%d syncs", "%d items"], "uk": ["%d items"]]
+        XCTAssertEqual(Self.variantsTheBaselineLacked(["%d items", "%d syncs"], in: "uk", baseline), ["%d syncs"])
+        XCTAssertEqual(Self.variantsTheBaselineLacked(["%d items", "%lld new phrases"], in: "uk", baseline), [])
     }
 
     /// The two Baseline defects: `ja` and `tr` took `%d merchant(s) in %@` with unnumbered codes in
@@ -129,6 +135,16 @@ final class PluralFidelityTests: XCTestCase {
     }
 
     // MARK: Helpers
+
+    /// The compiled plural keys of `locale` that some Baseline locale had as a counted phrase but
+    /// `locale`'s Baseline did not. A key no Baseline locale had is a counted phrase added since and
+    /// is not held to the Baseline.
+    static func variantsTheBaselineLacked(_ compiled: [String], in locale: String,
+                                          _ baseline: [String: [String]]) -> [String] {
+        let counted = baseline.values.reduce(into: Set<String>()) { $0.formUnion($1) }
+        let allowed = Set(baseline[locale] ?? [])
+        return compiled.filter { counted.contains($0) && !allowed.contains($0) }.sorted()
+    }
 
     private func format(_ phrase: Phrase, arguments: [Argument], in bundle: Bundle, locale: String) throws -> String {
         let values = zip(phrase.types, arguments).map { type, argument -> CVarArg in
