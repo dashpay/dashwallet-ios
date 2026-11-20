@@ -25,9 +25,9 @@ import XCTest
 /// Counted phrases added since the Baseline are not held to it.
 ///
 /// A phrase the code looks up with an interpolation (`String(localized: "\(count) words")`) is
-/// formatted through that same call; any other phrase with `String(format:locale:arguments:)` over
-/// the table text. Both get the locale under test, so its plural rules apply whatever the
-/// simulator's language is.
+/// formatted through that same call with the locale under test. Every other counted phrase the app
+/// looks up goes through the app's own call, `String.localizedStringWithFormat(String(localized:
+/// "<key>"), …)`, with the locale under test in place of the current locale the app formats with.
 ///
 /// `BaselinePluralForms.json` is written from the Baseline lists by the zero-loss check's formatter:
 ///
@@ -126,9 +126,8 @@ final class PluralFidelityTests: XCTestCase {
         ]
         for (locale, expected) in cases {
             let bundle = try localization(locale)
-            let template = bundle.localizedString(forKey: key, value: nil, table: "Localizable")
             for (count, text) in expected {
-                let actual = String(format: template, locale: Locale(identifier: locale), arguments: [count, "2 km"])
+                let actual = appFormat(key, [count, "2 km"], in: bundle, locale: locale)
                 XCTAssertEqual(actual, text, "\(locale), count \(count)")
             }
         }
@@ -162,8 +161,17 @@ final class PluralFidelityTests: XCTestCase {
                               bundle: bundle,
                               locale: Locale(identifier: locale))
         }
-        let template = bundle.localizedString(forKey: phrase.key, value: nil, table: "Localizable")
-        return String(format: template, locale: Locale(identifier: locale), arguments: values)
+        return appFormat(phrase.key, values, in: bundle, locale: locale)
+    }
+
+    /// The app's call for every counted phrase it looks up without an interpolation:
+    /// `String.localizedStringWithFormat(String(localized: "<key>"), …)`. That call formats with
+    /// `Locale.current`, which in the app follows the app's language; here the locale under test
+    /// stands in for it, because the simulator's current locale is not the one under test.
+    private func appFormat(_ key: String, _ values: [CVarArg], in bundle: Bundle, locale: String) -> String {
+        let format = String(localized: String.LocalizationValue(key), table: "Localizable", bundle: bundle,
+                            locale: Locale(identifier: locale))
+        return String(format: format, locale: Locale(identifier: locale), arguments: values)
     }
 
     /// The localization value `String(localized: "…\(value)…")` builds, for a key the compiler derived.
