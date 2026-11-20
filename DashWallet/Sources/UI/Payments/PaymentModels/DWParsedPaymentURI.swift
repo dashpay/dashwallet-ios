@@ -171,6 +171,18 @@ final class ParsedPaymentURI: NSObject {
     /// which always returns an object), so ObjC nil-messaging needs no special cases.
     @objc(parsePaymentString:)
     static func parse(paymentString raw: String) -> ParsedPaymentURI {
+        parse(paymentString: raw, honorsCallback: false)
+    }
+
+    /// A link another app opened: its `sender` is called back after the payment, so a required
+    /// one is met. Anything the wallet read itself (a scan, a paste, an NFC tag) calls no app back,
+    /// so `req-sender` there is a requirement the wallet cannot meet.
+    @objc(parseOpenedLinkString:)
+    static func parse(openedLink raw: String) -> ParsedPaymentURI {
+        parse(paymentString: raw, honorsCallback: true)
+    }
+
+    private static func parse(paymentString raw: String, honorsCallback: Bool) -> ParsedPaymentURI {
         let paymentString: String?
         switch deepLinkPaymentString(for: raw) {
         case .notAWrapper: paymentString = raw
@@ -203,7 +215,8 @@ final class ParsedPaymentURI: NSObject {
                                 rURL: uri.r,
                                 requiresRequest: uri.requiredFields.contains("r"),
                                 requiresAmount: uri.requiredFields.contains("amount"),
-                                hasUnsupportedRequirement: uri.hasUnsupportedRequirement,
+                                hasUnsupportedRequirement: uri.hasUnsupportedRequirement
+                                    || (!honorsCallback && uri.requiredFields.contains("sender")),
                                 callbackScheme: uri.callbackScheme,
                                 dashpayUsername: uri.dashpayUsername,
                                 fiatCurrencyCode: uri.fiatCurrencyCode,

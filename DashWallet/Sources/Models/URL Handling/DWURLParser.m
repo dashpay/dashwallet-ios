@@ -199,14 +199,18 @@ NS_ASSUME_NONNULL_BEGIN
 /// Otherwise (`namingSender` is NO, or `sender` is not a scheme an app can own) `sender` is
 /// dropped and the link keeps its own label. `BIP70URI` reads `req-sender` and `req-label` as
 /// `sender` and `label`, so neither is passed on: the URI carries one sender and one label, the
-/// ones decided here.
+/// ones decided here. A scanned link (`namingSender` NO) keeps `req-sender`, so the payment parser
+/// refuses a callback that no scan can send.
 + (nullable NSURL *)paymentURLWithParams:(NSDictionary<NSString *, NSString *> *)params
                             namingSender:(BOOL)namingSender {
     NSMutableDictionary<NSString *, NSString *> *mutableParams = [params mutableCopy];
 
     NSString *sender = namingSender ? [DWCallbackScheme validated:mutableParams[@"sender"]] : nil;
     NSString *ownLabel = mutableParams[@"label"] ?: mutableParams[@"req-label"];
-    [mutableParams removeObjectsForKeys:@[ @"sender", @"req-sender", @"label", @"req-label" ]];
+    [mutableParams removeObjectsForKeys:@[ @"sender", @"label", @"req-label" ]];
+    if (namingSender) {
+        [mutableParams removeObjectForKey:@"req-sender"];
+    }
 
     if (sender) {
         mutableParams[@"sender"] = sender;

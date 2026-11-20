@@ -523,6 +523,36 @@ final class QRScannerTests: XCTestCase {
         XCTAssertNotNil(DWURLParser.action(for: try XCTUnwrap(URL(string: "\(link)&req-IS=1"))))
     }
 
+    /// A scan calls no app back, so a required callback is refused there,
+    /// while an optional `sender` is still ignored and a link another app
+    /// opened still meets it.
+    func testScannedRequiredCallbackIsRefused() throws {
+        let required = "dash:\(Self.address)?amount=1&req-sender=ctx"
+        XCTAssertTrue(ParsedPaymentURI.parse(paymentString: required).hasUnsupportedRequirement)
+        XCTAssertFalse(ParsedPaymentURI.parse(openedLink: required).hasUnsupportedRequirement)
+        XCTAssertFalse(ParsedPaymentURI.parse(paymentString: "dash:\(Self.address)?amount=1&sender=ctx").hasUnsupportedRequirement)
+
+        let link = try XCTUnwrap(URL(string: "dashwallet://pay=\(Self.address)&amount=1&sender=ctx&req-sender=ctx"))
+        XCTAssertNotNil(DWURLParser.action(for: link))
+        let scanned = try XCTUnwrap(DWURLParser.paymentURL(forScannedLink: link))
+        XCTAssertTrue(ParsedPaymentURI.parse(paymentString: scanned.absoluteString).hasUnsupportedRequirement)
+
+        for code in [required, link.absoluteString] {
+            let (scanner, recorder) = makeScanner(.payment)
+            scanner.didDetectCodes([code])
+            XCTAssertTrue(recorder.results.isEmpty, code)
+        }
+    }
+
+    /// Only Max takes the full-balance withdrawal, which pays whatever the
+    /// balance is at submission; an amount that equals the quote is fixed.
+    func testOnlyMaxSelectsTheFullPlatformWithdrawal() {
+        XCTAssertTrue(SendViewModel.isFullPlatformWithdrawal(maxDuffs: 5_000, withdrawableDuffs: 5_000))
+        XCTAssertFalse(SendViewModel.isFullPlatformWithdrawal(maxDuffs: nil, withdrawableDuffs: 5_000))
+        XCTAssertFalse(SendViewModel.isFullPlatformWithdrawal(maxDuffs: 5_000, withdrawableDuffs: 6_000))
+        XCTAssertFalse(SendViewModel.isFullPlatformWithdrawal(maxDuffs: nil, withdrawableDuffs: nil))
+    }
+
     /// A pay link's recipient is a bare destination: one carrying URI syntax
     /// could hide fields the rewrite then replaces, so it is refused, opened
     /// or scanned.

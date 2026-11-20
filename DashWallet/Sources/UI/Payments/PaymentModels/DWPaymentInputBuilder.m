@@ -115,7 +115,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (DWPaymentInput *)paymentInputWithURL:(NSURL *)url {
     // The parser normalizes `pay:`/`dashwallet:` → `dash:` natively, so the scheme fork is gone.
-    DWParsedPaymentURI *parsed = [DWParsedPaymentURI parsePaymentString:url.absoluteString];
+    DWParsedPaymentURI *parsed = [DWParsedPaymentURI parseOpenedLinkString:url.absoluteString];
 
     // A deep link carrying a valid Dash address is a "deep link"; otherwise it's a generic URL.
     DWPaymentInputSource sourceType = parsed.isAddressValidForCurrentNetwork

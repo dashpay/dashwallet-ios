@@ -1433,12 +1433,17 @@ final class SendViewModel: ObservableObject {
         return largest > preflight.estimatedFee ? largest - preflight.estimatedFee : 0
     }
 
-    /// True when the typed amount is exactly the full-balance net payout —
-    /// confirm then runs the AUTO (all-addresses) withdrawal.
+    /// True when Max selected exactly the full-balance net payout — confirm
+    /// then runs the AUTO (all-addresses) withdrawal, which pays whatever the
+    /// balance is at submission. An amount that merely equals the quote (typed,
+    /// or a scanned invoice's) is a fixed amount and takes the exact path.
     var isFullPlatformWithdrawal: Bool {
         route == .platformToCore
-            && platformWithdrawableDuffs != nil
-            && dashDuffsUnsigned == platformWithdrawableDuffs
+            && Self.isFullPlatformWithdrawal(maxDuffs: maxAmountDuffs, withdrawableDuffs: platformWithdrawableDuffs)
+    }
+
+    static func isFullPlatformWithdrawal(maxDuffs: UInt64?, withdrawableDuffs: UInt64?) -> Bool {
+        maxDuffs != nil && maxDuffs == withdrawableDuffs
     }
 
     /// Only Core-funded routes during a restored wallet's first sync block.
