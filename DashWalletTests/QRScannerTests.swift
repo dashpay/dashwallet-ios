@@ -507,8 +507,10 @@ final class QRScannerTests: XCTestCase {
         for link in ["dashwallet://pay=\(Self.address)&pay=\(other)&amount=1&sender=ctx",
                      "dashwallet://pay=\(other)&amount=1&pay=\(Self.address)&sender=ctx",
                      "DashWallet://pay=\(Self.address)&amount=1&amount=2&sender=ctx",
-                     "DASHWALLET://PAY=\(Self.address)&amount=1&amount=2&sender=ctx"] {
-            XCTAssertNil(DWURLParser.action(for: try XCTUnwrap(URL(string: link))), link)
+                     "DASHWALLET://PAY=\(Self.address)&amount=1&amount=2&sender=ctx",
+                     "dashwallet://pay=\(Self.address)&amount=1&amount=2@x",
+                     "dashwallet://pay=\(Self.address)&amount=1&amount=2&sender=ctx&label=a b"] {
+            if let url = URL(string: link) { XCTAssertNil(DWURLParser.action(for: url), link) }
             let parsed = ParsedPaymentURI.parse(paymentString: link)
             XCTAssertFalse(parsed.isValidDashPaymentIntent, link)
             XCTAssertNil(parsed.address, link)
@@ -516,6 +518,26 @@ final class QRScannerTests: XCTestCase {
             scanner.didDetectCodes([link])
             XCTAssertTrue(recorder.results.isEmpty, link)
         }
+    }
+
+    /// A rescan into the same Send form takes the new invoice's required
+    /// amount instead of keeping the first one's; an optional amount still
+    /// leaves an entered one alone.
+    func testRescannedInvoiceReplacesTheAmount() {
+        let other = "yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW"
+        let send = SendViewModel(contactLookup: { _ in nil })
+        let builder = DWPaymentInputBuilder()
+        func ingest(_ code: String) {
+            XCTAssertTrue(send.ingestScannedInput(
+                builder.paymentInput(withParsedURI: ParsedPaymentURI.parse(paymentString: code), source: .scanQR)))
+        }
+        ingest("dash:\(Self.address)?req-amount=1")
+        ingest("dash:\(other)?req-amount=2")
+        XCTAssertEqual(send.addressText, other)
+        XCTAssertEqual(send.dashDuffs, 200_000_000)
+
+        ingest("dash:\(Self.address)?amount=3")
+        XCTAssertEqual(send.dashDuffs, 200_000_000, "an optional amount is a hint")
     }
 
     /// An invoice's required amount is not dropped to fill an address field:
@@ -682,7 +704,7 @@ final class QRScannerTests: XCTestCase {
             // Home and the lock screen open a bech32 destination's Send form
             // through the controller's `prefill(address:amountDuffs:)`.
             let routed = SendViewModel(contactLookup: { _ in nil })
-            routed.prefill(address: Self.platformAddress, amountDuffs: parsed.amount)
+            routed.prefill(address: Self.platformAddress, amountDuffs: parsed.amount, requiresAmount: parsed.requiresAmount)
             XCTAssertEqual(routed.dashDuffs, duffs, amount)
         }
     }

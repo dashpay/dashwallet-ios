@@ -219,7 +219,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// address step, which is the screen that says so.
 - (void)routeScannedBech32Address:(DWParsedPaymentURI *)parsed {
     DWSendScreenViewController *controller = [[DWSendScreenViewController alloc] init];
-    [controller prefillWithAddress:parsed.address amountDuffs:parsed.amount];
+    [controller prefillWithAddress:parsed.address amountDuffs:parsed.amount requiresAmount:parsed.requiresAmount];
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
     if (controller.hasResolvedDestination) {
