@@ -314,7 +314,7 @@ final class CoreCoinConsolidationViewModel: ObservableObject {
         NSLocalizedString("Couldn't combine your coins. Please try again.", comment: "Asset-lock input limit")
     }
 
-    /// Exported-log line (DWLogger reaches "Share logs"; os.Logger does not).
+    /// Exported-log line.
     private static func log(_ message: String) {
         DWLogger.log("🔒 COMBINE-COINS :: \(message)", className: "CoreCoinConsolidationViewModel")
     }

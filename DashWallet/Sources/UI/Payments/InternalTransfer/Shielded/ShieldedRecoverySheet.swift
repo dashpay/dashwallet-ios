@@ -4,7 +4,6 @@
 //
 
 import Combine
-import OSLog
 import SwiftUI
 import DashUIKit
 import SwiftDashSDK
@@ -130,7 +129,7 @@ final class ShieldedRecoveryViewModel: ObservableObject {
         Self.successCopy(paidOwnBalanceWithoutRecord: coordinator.resumePaidOwnBalanceWithoutRecord)
     }
 
-    private static let logger = Logger(subsystem: "org.dashfoundation.dash", category: "ShieldedRecovery")
+    private static let logger = AppLogger(category: "ShieldedRecovery")
 
     private let outPoint: (txidWire: Data, vout: UInt32)?
     private let coordinator = ShieldedTransferCoordinator()
@@ -196,7 +195,7 @@ final class ShieldedRecoveryViewModel: ObservableObject {
                 Self.logger.info("🛡️ SHIELD-TX :: recovery retry after failure")
                 coordinator.reset()
             case .ignore:
-                Self.logger.info("🛡️ SHIELD-TX :: recovery tap ignored phase=\(String(describing: self.coordinator.phase), privacy: .public)")
+                Self.logger.info("🛡️ SHIELD-TX :: recovery tap ignored phase=\(AppLogMessage.caseName(of: self.coordinator.phase) ?? "-", privacy: .public)")
                 return
             }
 

@@ -259,7 +259,7 @@ enum AssetLockInputLimit {
             verdict = AssetLockInputPolicy.drainVerdict(finalCount: finalValues.count, inputBudget: check.inputBudget)
         }
         DWLogger.log(
-            "🔒 ASSET-LOCK-INPUTS :: amount=\(check.amountDuffs.map(String.init) ?? "drain") budget=\(check.inputBudget) "
+            "🔒 ASSET-LOCK-INPUTS :: amount=\(check.amountDuffs == nil ? "drain" : "<private>") budget=\(check.inputBudget) "
                 + "coins=\(utxos.count) final=\(finalValues.count) verdict=\(verdict)",
             className: "AssetLockInputLimit")
         return verdict

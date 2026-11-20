@@ -1,6 +1,5 @@
 import CryptoKit
 import Foundation
-import os
 import SwiftDashSDK
 
 /// App Connect (DashConnect from protocol version 14): the wallet registers
@@ -335,9 +334,7 @@ final class UserDefaultsAppConnectIntentStore: AppConnectIntentStore {
     private let encoder: JSONEncoder
     private let decoder: JSONDecoder
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "dashconnect.app-connect-store")
+    private static let logger = AppLogger(category: "dashconnect.app-connect-store")
 
     /// Where the scope comes from.
     enum Scope {

@@ -91,7 +91,7 @@ final class SwapFlowCoordinator {
 
     private func navigateToReceive(coin: SwapCryptoCurrency, order: BuyOrder) {
         guard !(navigationController?.topViewController is BuyReceiveHostingController) else { return }
-        DWLogger.log("Swap: Buy receive \(coin.code) amount=\(order.sellAmount) deposit=\(order.depositAddress)")
+        DWLogger.log("Swap: Buy receive \(coin.code)")
         let receiveVC = BuyReceiveHostingController(coin: coin, order: order)
         navigationController?.pushViewController(receiveVC, animated: true)
     }

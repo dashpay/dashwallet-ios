@@ -9,16 +9,13 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 @MainActor
 final class PlatformSendExecutor {
     static let shared = PlatformSendExecutor()
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.platform-send-executor")
+    private static let logger = AppLogger(category: "swift-sdk-migration.platform-send-executor")
 
     private init() {}
 

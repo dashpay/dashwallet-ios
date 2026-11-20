@@ -27,7 +27,6 @@
 
 import Combine
 import Foundation
-import OSLog
 import SwiftDashSDK
 import SwiftData
 
@@ -44,9 +43,7 @@ struct AssetLockRecoveryService {
         self.probeStore = probeStore
     }
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.asset-lock-recovery")
+    private static let logger = AppLogger(category: "swift-sdk-migration.asset-lock-recovery")
 
     enum RecoveryError: LocalizedError {
         case notReady
@@ -268,9 +265,7 @@ struct AssetLockRecoveryService {
         var failed = 0
         var cancelled = false
         /// First failure's message, surfaced so a run that mostly failed says
-        /// WHY on screen instead of a bare count. Bulk failures land in OSLog,
-        /// which a diagnostic export never captures (the gap ticket 32004
-        /// found for sends), so the count alone left nothing to diagnose from.
+        /// WHY on screen instead of a bare count.
         var firstFailureMessage: String?
         /// Set when the pass gave up early after repeated failures.
         var stoppedAfterRepeatedFailures = false
@@ -622,7 +617,7 @@ struct AssetLockRecoveryService {
                 let step = Self.bulkStep(for: error)
                 let stop = Self.apply(step, to: &outcome, consecutiveFailures: &consecutiveFailures)
                 if case .failed = step {
-                    // File logger, not just OSLog: a bulk pass that fails is
+                    // A bulk pass that fails is
                     // exactly what a diagnostic export needs to carry, with the
                     // typed error case so a consensus refusal is searchable.
                     AssetLockRetryLog.logFailure(

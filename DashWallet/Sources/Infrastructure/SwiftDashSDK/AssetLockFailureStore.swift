@@ -18,7 +18,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 /// The last failure a tracked asset lock's retry produced, as the diagnostic
@@ -34,22 +33,27 @@ struct AssetLockFailureRecord: Codable, Equatable, Sendable {
     /// `transferFailed`…) — the searchable part.
     let errorCase: String
     /// The error's own text: the SDK detail string, with the consensus code
-    /// in front when the rejection carried one.
+    /// in front when the rejection carried one. Stored only: it is Raw error
+    /// text, so neither the log line nor `summary.txt` writes it.
     let detail: String
     let recordedAt: Date
+    /// The error's `AppLogMessage.errorSummary`: type, case, code and a
+    /// consensus rejection's code and kind. Nil for a failure stored before
+    /// it existed.
+    var summary: String?
 
-    /// One log-line form: `case=<errorCase> detail=<detail>`.
+    /// One log-line form: `case=<errorCase> error=<summary>`.
     var logDescription: String {
-        "case=\(errorCase) detail=\(detail)"
+        "case=\(errorCase)" + (summary.map { " error=\($0)" } ?? "")
     }
 
     /// The detail recorded for `PlatformWalletError.assetLockRecipientMismatch`
     /// in place of the SDK's text.
     static let recipientMismatchDetail = "recorded and requested shielded recipients differ"
 
-    /// Name the error by its typed case and keep its detail string, unwrapping
-    /// the coordinator's `transferFailed` envelope so a Platform rejection
-    /// reaches the log as `assetLockTooManyInputs` / `consensusRejection`
+    /// Name the error by its typed case and Error summary and keep its detail
+    /// string, unwrapping the coordinator's `transferFailed` envelope so a Platform
+    /// rejection reaches the log as `assetLockTooManyInputs` / `consensusRejection`
     /// rather than as the envelope's name. A recipient mismatch keeps its case
     /// name but records `recipientMismatchDetail` instead of the SDK's text.
     ///
@@ -77,28 +81,16 @@ struct AssetLockFailureRecord: Codable, Equatable, Sendable {
                 detail += " reason=\(reason)"
             }
             return AssetLockFailureRecord(
-                errorCase: caseName(of: platformError) ?? String(describing: type(of: platformError)),
+                errorCase: AppLogMessage.caseName(of: platformError) ?? String(describing: type(of: platformError)),
                 detail: detail,
-                recordedAt: date)
+                recordedAt: date,
+                summary: AppLogMessage.errorSummary(platformError))
         }
         let typeName = String(describing: type(of: error))
-        let errorCase = caseName(of: error).map { "\(typeName).\($0)" } ?? typeName
+        let errorCase = AppLogMessage.caseName(of: error).map { "\(typeName).\($0)" } ?? typeName
         let detail = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
-        return AssetLockFailureRecord(errorCase: errorCase, detail: detail, recordedAt: date)
-    }
-
-    /// The enum case label without its payload. A payload-less case has no
-    /// mirror child, so its description is already the bare name. `nil` for
-    /// an error that is not an enum: a struct's first child is a stored
-    /// property (`URLError._nsError`), and an `NSError`'s description is its
-    /// whole `Error Domain=… UserInfo={…}` dump, neither of which names a case.
-    static func caseName(of error: Error) -> String? {
-        let mirror = Mirror(reflecting: error)
-        guard mirror.displayStyle == .enum else { return nil }
-        if let label = mirror.children.first?.label {
-            return label
-        }
-        return String(describing: error)
+        return AssetLockFailureRecord(
+            errorCase: errorCase, detail: detail, recordedAt: date, summary: AppLogMessage.errorSummary(error))
     }
 }
 
@@ -232,15 +224,12 @@ final class AssetLockFailureStore {
 
 /// The one format every asset-lock retry outcome is logged in, whichever
 /// surface ran the retry (transaction details, the bulk pass, the transfer
-/// sheet's resume). Lines go to os_log AND to `DWLogger`, whose files are what
-/// a diagnostic export carries — os_log alone never reaches support.
+/// sheet's resume).
 enum AssetLockRetryLog {
     static let lockRetryPrefix = "🔁 LOCK-RETRY ::"
     static let shieldPrefix = "🛡️ SHIELD-TX ::"
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.asset-lock-retry")
+    private static let logger = AppLogger(category: "swift-sdk-migration.asset-lock-retry")
 
     /// `<prefix> <event> txid=<display hex>:<vout> type=<n> (<name>)
     /// statusBefore=<n> (<name>) <result>`. Pure, so the format is pinned by
@@ -274,14 +263,13 @@ enum AssetLockRetryLog {
         write(bulkLine(count: count, result: result), isFailure: false)
     }
 
-    /// Write a finished line to both sinks.
+    /// Write a finished line.
     static func write(_ line: String, isFailure: Bool) {
         if isFailure {
             logger.error("\(line, privacy: .public)")
         } else {
             logger.info("\(line, privacy: .public)")
         }
-        DWLogger.log(line)
     }
 
     /// Log a non-failure outcome (`result` is e.g. `outcome=completed`).

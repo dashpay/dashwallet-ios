@@ -211,7 +211,7 @@ class ToolsMenuViewModel: ObservableObject {
     /// "Move CoinJoin Funds" row self-removes once the balance drops below the
     /// threshold.
     func performCoinJoinSweep() async {
-        DWLogger.log("ToolsMenuViewModel: sweep invoked from Tools menu (\(coinJoinLeftoverFormatted))")
+        DWLogger.log("ToolsMenuViewModel: sweep invoked from Tools menu")
         do {
             _ = try await WalletSendService.shared.sweepCoinJoin()
         } catch {

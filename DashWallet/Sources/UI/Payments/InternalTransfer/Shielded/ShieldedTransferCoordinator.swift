@@ -38,7 +38,7 @@
 
 import Combine
 import Foundation
-import OSLog
+import os
 import SwiftData
 import SwiftDashSDK
 
@@ -285,9 +285,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         phase == .success && source == .ownLegacy
     }
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.shielded-transfer")
+    private static let logger = AppLogger(category: "swift-sdk-migration.shielded-transfer")
 
     /// Matches `PersistentAssetLock.fundingTypeRaw` for
     /// `AssetLockShieldedAddressTopUp` (see
@@ -305,7 +303,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
     private var lastAssetLockContext: CoreShieldedDrainContext?
 
-    private let authorizer = DWIdentityAuthorizer()
+    /// The PIN / biometric gate every spending route runs before it builds
+    /// anything. Injected so a test can stop a route there.
+    private let authorizeUser: @MainActor () async throws -> Void
     private var assetLockPollingTask: Task<Void, Never>?
 
     /// Where a resume whose network call threw records the error as the
@@ -313,8 +313,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// touching the shared store.
     private let failureStore: AssetLockFailureStore
 
-    init(failureStore: AssetLockFailureStore = .shared) {
+    init(failureStore: AssetLockFailureStore = .shared, authorize: (@MainActor () async throws -> Void)? = nil) {
         self.failureStore = failureStore
+        let authorizer = DWIdentityAuthorizer()
+        authorizeUser = authorize ?? { try await authorizer.authorize() }
     }
 
     /// Outpoint (wire-order txid + vout) of the asset lock the most recent
@@ -772,7 +774,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     ) async {
         guard beginTransfer() else { return }
         lastAssetLockOutPoint = nil
-        Self.logger.info("🛡️ SHIELD-TX :: asset-lock route funding=\(String(describing: funding), privacy: .public) external=\(recipientOverride != nil)")
+        Self.logger.info("🛡️ SHIELD-TX :: asset-lock route funding=\(AppLogMessage.caseName(of: funding) ?? "-", privacy: .public) external=\(recipientOverride != nil)")
 
         // The single fee-on-top point: the BIP44 form carries the amount the
         // recipient must receive, and the lock is inflated by the pool fee
@@ -793,7 +795,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 return
             }
             bip44LockValueDuffs = lockDuffs
-            Self.logger.info("🛡️ SHIELD-TX :: fee-on-top lock recipient=\(recipientAmountDuffs) lock=\(lockDuffs)")
+            Self.logger.info("🛡️ SHIELD-TX :: fee-on-top lock recipient=\(recipientAmountDuffs, privacy: .private) lock=\(lockDuffs, privacy: .private)")
         } else {
             bip44LockValueDuffs = nil
         }
@@ -1210,7 +1212,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
                 identity: CoreShieldedDrainRowIdentity(operationIdBytes: row.operationId),
                 recordedRecipientRaw43: row.shieldedRecipientRaw43)
         } catch {
-            logger.error("🛡️ SHIELD-TX :: asset-lock row unreadable \(String(describing: error), privacy: .public)")
+            logger.error("🛡️ SHIELD-TX :: asset-lock row unreadable \(error)")
             return nil
         }
     }
@@ -1292,7 +1294,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// identical — the recipient does not change input selection.
     func performShield(amountCredits: UInt64, recipientRaw43: Data? = nil) async {
         guard beginTransfer() else { return }
-        Self.logger.info("🛡️ SHIELD-TX :: shield route amount=\(amountCredits) credits external=\(recipientRaw43 != nil)")
+        Self.logger.info("🛡️ SHIELD-TX :: shield route amount=\(amountCredits, privacy: .private) credits external=\(recipientRaw43 != nil)")
 
         let env: Environment
         do {
@@ -1393,7 +1395,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         toCoreAddress destinationOverride: String? = nil
     ) async {
         guard beginTransfer() else { return }
-        Self.logger.info("🛡️ SHIELD-TX :: withdraw route amount=\(amountCredits) credits external=\(destinationOverride != nil)")
+        Self.logger.info("🛡️ SHIELD-TX :: withdraw route amount=\(amountCredits, privacy: .private) credits external=\(destinationOverride != nil)")
 
         let env: Environment
         do {
@@ -1499,7 +1501,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         toPlatformAddress destinationOverride: String? = nil
     ) async {
         guard beginTransfer() else { return }
-        Self.logger.info("🛡️ SHIELD-TX :: unshield route amount=\(amountCredits) credits external=\(destinationOverride != nil)")
+        Self.logger.info("🛡️ SHIELD-TX :: unshield route amount=\(amountCredits, privacy: .private) credits external=\(destinationOverride != nil)")
 
         let env: Environment
         do {
@@ -1613,7 +1615,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             handleFailure(CoordinatorError.addressFundingFeeUnavailable)
             return
         }
-        Self.logger.info("🛡️ SHIELD-TX :: core→platform fund route recipient=\(recipientAmountDuffs) lock=\(lockValueDuffs)")
+        Self.logger.info("🛡️ SHIELD-TX :: core→platform fund route recipient=\(recipientAmountDuffs, privacy: .private) lock=\(lockValueDuffs, privacy: .private)")
 
         let env: BasicEnvironment
         do {
@@ -1789,7 +1791,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         toCoreAddress destinationOverride: String? = nil
     ) async {
         guard beginTransfer() else { return }
-        Self.logger.info("🛡️ SHIELD-TX :: platform→core withdraw route full=\(fullBalance) amount=\(amountCredits) external=\(destinationOverride != nil)")
+        Self.logger.info("🛡️ SHIELD-TX :: platform→core withdraw route full=\(fullBalance) amount=\(amountCredits, privacy: .private) external=\(destinationOverride != nil)")
 
         // Destination Core (BIP44, Base58Check) address — for the internal
         // transfer, the wallet's own receive address (same resolution as the
@@ -1845,7 +1847,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         recipientRaw43: Data
     ) async {
         guard beginTransfer() else { return }
-        Self.logger.info("🛡️ SHIELD-TX :: shielded→shielded send amount=\(amountCredits) credits")
+        Self.logger.info("🛡️ SHIELD-TX :: shielded→shielded send amount=\(amountCredits, privacy: .private) credits")
 
         let env: BasicEnvironment
         do {
@@ -1910,7 +1912,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// .success` — a single opaque transition, no proof and no asset lock.
     func performPlatformSend(destination: String, amountCredits: UInt64) async {
         guard beginTransfer() else { return }
-        Self.logger.info("🛡️ SHIELD-TX :: platform→platform send amount=\(amountCredits) credits")
+        Self.logger.info("🛡️ SHIELD-TX :: platform→platform send amount=\(amountCredits, privacy: .private) credits")
 
         do {
             try await authorize()
@@ -2082,7 +2084,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     private func beginTransfer() -> Bool {
         guard phase == .idle else {
             // Logged so a tap that starts nothing is visible in the export.
-            Self.logger.info("🛡️ SHIELD-TX :: begin refused phase=\(String(describing: self.phase), privacy: .public)")
+            Self.logger.info("🛡️ SHIELD-TX :: begin refused phase=\(AppLogMessage.caseName(of: self.phase) ?? "-", privacy: .public)")
             return false
         }
         lastFailure = nil
@@ -2198,7 +2200,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// the cancel/fail outcomes onto coordinator errors.
     private func authorize() async throws {
         do {
-            try await authorizer.authorize()
+            try await authorizeUser()
         } catch DWIdentityAuthorizer.AuthError.cancelled {
             throw CoordinatorError.authCancelled
         } catch {
@@ -2207,12 +2209,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     }
 
     private func handleFailure(_ error: Error) {
-        // The SDK's recipient-mismatch payload names both Orchard addresses;
-        // its failure record keeps the case name without them.
-        let logged = Self.isRecipientMismatch(error)
-            ? AssetLockFailureRecord.describe(error).logDescription
-            : String(describing: error)
-        Self.logger.error("🛡️ SHIELD-TX :: failure \(logged, privacy: .public)")
+        Self.logger.error("🛡️ SHIELD-TX :: failure \(error)")
         lastFailure = error
         phase = .failed(Self.failureMessage(for: error))
     }
@@ -2345,7 +2342,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             else { return }
             advancePhaseForAssetLockStatus(row.statusRaw)
         } catch {
-            Self.logger.warning("🛡️ SHIELD-TX :: asset-lock poll failed: \(String(describing: error), privacy: .public)")
+            Self.logger.warning("🛡️ SHIELD-TX :: asset-lock poll failed: \(error)")
         }
     }
 

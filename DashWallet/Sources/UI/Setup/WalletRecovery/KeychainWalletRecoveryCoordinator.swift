@@ -8,7 +8,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 import UIKit
 
@@ -46,9 +45,7 @@ final class WalletDeleteAllConfirmationCoordinator: NSObject {
 
 @objc(DWKeychainWalletRecoveryCoordinator)
 final class KeychainWalletRecoveryCoordinator: NSObject {
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "keychain-wallet-recovery")
+    private static let logger = AppLogger(category: "keychain-wallet-recovery")
 
     /// `true` = keep the stored wallets (or none exist), `false` = continue to
     /// the support-phrase gate. This coordinator never deletes wallets itself.

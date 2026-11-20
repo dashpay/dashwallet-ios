@@ -1,5 +1,4 @@
 import Foundation
-import OSLog
 
 enum WalletEnvironment {
     static var activeWalletIdHex: String?
@@ -132,7 +131,7 @@ final class ShieldedTransferCoordinator {
     static let addressAssetLockFundingType = 4
     static let shieldedAssetLockFundingType = 5
     let failureStore = AssetLockFailureStore(defaults: UserDefaults(suiteName: "RecoveryHarness." + UUID().uuidString)!)
-    static let logger = Logger(subsystem: "RecoveryHarness", category: "test")
+    static let logger = AppLogger(category: "test")
     var phase: Phase = .idle {
         didSet {
             if !phase.isInFlight { releaseInFlightOutPoint() }
@@ -289,7 +288,14 @@ enum DiagnosticLogExporter {
     static func fundingTypeName(_ value: Int) -> String { String(value) }
     static func assetLockStatusName(_ value: Int) -> String { String(value) }
 }
-enum DWLogger { static func log(_ message: String) {} }
+enum DWLogger {
+    static func log(_ message: String) {}
+    static func log(_ message: String, className: String) {}
+    static func logDebug(_ message: String, className: String) {}
+    static func logWarning(_ message: String, className: String) {}
+    static func logError(_ message: String, className: String) {}
+    static func sharedInstance() -> Any? { nil }
+}
 
 @MainActor final class DrainClaimSettler {
     init(operation: UUID, timeout: TimeInterval, lookup: ShieldedTxLookup) {}

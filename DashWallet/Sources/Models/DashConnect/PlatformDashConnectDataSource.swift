@@ -19,7 +19,7 @@
 
 import Combine
 import Foundation
-import OSLog
+import os
 import Security
 import SwiftData
 import SwiftDashSDK
@@ -394,9 +394,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
     }
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "dashconnect.platform-data-source")
+    private static let logger = AppLogger(category: "dashconnect.platform-data-source")
 
     static let loginKeyExchangeDocumentType = "loginKeyResponse"
 

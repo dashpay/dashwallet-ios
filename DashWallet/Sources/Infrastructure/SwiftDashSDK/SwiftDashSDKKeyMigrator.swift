@@ -32,7 +32,6 @@
 //
 
 import Foundation
-import OSLog
 import Security
 import SwiftDashSDK
 
@@ -41,9 +40,7 @@ final class SwiftDashSDKKeyMigrator: NSObject {
 
     // MARK: - Logging
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.key-migrator")
+    private static let logger = AppLogger(category: "swift-sdk-migration.key-migrator")
 
     /// Migration and destructive legacy cleanup share one queue. If cleanup
     /// arrives during launch migration, it waits for the import and the caller
@@ -181,23 +178,20 @@ final class SwiftDashSDKKeyMigrator: NSObject {
         defaults.removeObject(forKey: deferredUnknownChainKey)
         defaults.removeObject(forKey: deferredFailureKey)
 
-        // The os_log lines below never reach a diagnostic export, so every run
-        // that gets past the done check also leaves one summary line in the
-        // app log: counts only, never wallet ids.
+        // Every run that gets past the done check leaves one summary line in
+        // the app log: counts only, never wallet ids.
         let accounts: [String]
         do {
             accounts = try strictlyEnumerateDashSyncAccounts()
         } catch {
             defaults.set(true, forKey: deferredFailureKey)
-            logger.error(
-                "🔑 KEYMIG :: DashSync mnemonic enumeration failed: \(String(describing: error), privacy: .public)")
+            logger.error(enumerationFailedLine(error))
             DWLogger.log("🔑 KEYMIG :: legacy keychain unreadable (enumeration failed); migration deferred")
             return
         }
         let mnemonicAccounts = accounts.filter { $0.hasPrefix(dashSyncMnemonicAccountPrefix) }
         if mnemonicAccounts.isEmpty {
             defaults.set("v1", forKey: doneKey)
-            logger.info("🔑 KEYMIG :: no DashSync mnemonics found — fresh install or post-wipe, marking done")
             DWLogger.log("🔑 KEYMIG :: no legacy mnemonics; migration complete")
             return
         }
@@ -235,19 +229,19 @@ final class SwiftDashSDKKeyMigrator: NSObject {
                 // Not material to migrate, and never deleted here.
                 orphaned += 1
                 logger.info(
-                    "🔑 KEYMIG :: \(walletID, privacy: .public) not listed by any chain (reset in the previous app) — left in place, not migrated")
+                    "🔑 KEYMIG :: \(walletID.prefix(8), privacy: .public) not listed by any chain (reset in the previous app) — left in place, not migrated")
                 continue
             case .undetermined:
                 undetermined += 1
                 hadFailure = true
                 logger.error(
-                    "🔑 KEYMIG :: \(walletID, privacy: .public) is on no readable chain list, and list(s) [\(listsUnreadable, privacy: .public)] could not be read")
+                    "🔑 KEYMIG :: \(walletID.prefix(8), privacy: .public) is on no readable chain list, and list(s) [\(listsUnreadable, privacy: .public)] could not be read")
                 continue
             case .unresolved:
                 unresolved += 1
                 hadUnknownChain = true
                 logger.error(
-                    "🔑 KEYMIG :: \(walletID, privacy: .public) cannot be mapped: no \(dashSyncChainWalletsKeyPrefix, privacy: .public)* list in the keychain")
+                    "🔑 KEYMIG :: \(walletID.prefix(8), privacy: .public) cannot be mapped: no \(dashSyncChainWalletsKeyPrefix, privacy: .public)* list in the keychain")
                 continue
             case let .listed(chains):
                 if chains.contains(mainnetGenesisShortHex) {
@@ -259,14 +253,14 @@ final class SwiftDashSDKKeyMigrator: NSObject {
                     unsupportedChain += 1
                     hadUnknownChain = true
                     logger.error(
-                        "🔑 KEYMIG :: \(walletID, privacy: .public) belongs to unsupported chain(s) \(chains.sorted().joined(separator: ","), privacy: .public)")
+                        "🔑 KEYMIG :: \(walletID.prefix(8), privacy: .public) belongs to unsupported chain(s) \(chains.sorted().joined(separator: ","), privacy: .public)")
                     continue
                 }
             }
 
             guard let mnemonic = readKeychainString(service: dashSyncService, account: account),
                   Mnemonic.validate(mnemonic) else {
-                logger.error("🔑 KEYMIG :: \(walletID, privacy: .public) mnemonic read/validate failed")
+                logger.error("🔑 KEYMIG :: \(walletID.prefix(8), privacy: .public) mnemonic read/validate failed")
                 failed += 1
                 hadFailure = true
                 continue
@@ -278,13 +272,13 @@ final class SwiftDashSDKKeyMigrator: NSObject {
                     network: network,
                     isImported: true)
                 let prefix = sdkWalletId.prefix(4).map { String(format: "%02x", $0) }.joined()
-                logger.info("🔑 KEYMIG :: migrated \(walletID, privacy: .public) → \(prefix, privacy: .public)… on \(String(describing: network), privacy: .public)")
+                logger.info("🔑 KEYMIG :: migrated \(walletID.prefix(8), privacy: .public) → \(prefix, privacy: .public)… on \(String(describing: network), privacy: .public)")
 
                 migrated.insert(walletID)
                 defaults.set(migrated.sorted(), forKey: migratedDashSyncWalletIdsKey)
                 migratedThisRun += 1
             } catch {
-                logger.error("🔑 KEYMIG :: \(walletID, privacy: .public) threw: \(String(describing: error), privacy: .public)")
+                logger.error("🔑 KEYMIG :: \(walletID.prefix(8), privacy: .public) threw: \(error)")
                 failed += 1
                 hadFailure = true
             }
@@ -340,8 +334,7 @@ final class SwiftDashSDKKeyMigrator: NSObject {
                 mnemonicWalletIDs: walletIDs,
                 inventory: readDashSyncChainWalletLists(from: accounts))
         } catch {
-            logger.error(
-                "🔑 KEYMIG :: DashSync mnemonic enumeration failed during launch probe: \(String(describing: error), privacy: .public)")
+            logger.error(enumerationFailedLine(error, during: "launch probe"))
             return .unreadable
         }
     }
@@ -395,7 +388,23 @@ final class SwiftDashSDKKeyMigrator: NSObject {
         let mnemonic: String
     }
 
-    private enum LegacyMnemonicCleanupError: LocalizedError {
+    /// The KEYMIG line for a failed enumeration of the DashSync keychain
+    /// items: the Error summary and the keychain status.
+    static func enumerationFailedLine(_ error: Error, during phase: String? = nil) -> AppLogMessage {
+        let context = phase.map { " during \($0)" } ?? ""
+        return "🔑 KEYMIG :: DashSync mnemonic enumeration failed\(context, privacy: .public): \(error) status=\(keychainStatus(of: error), privacy: .public)"
+    }
+
+    /// The Security framework status of a failed keychain read, for the log;
+    /// `errorSummary` keeps only the case name.
+    static func keychainStatus(of error: Error) -> String {
+        guard case LegacyMnemonicCleanupError.keychainRead(let status)? = error as? LegacyMnemonicCleanupError else {
+            return "-"
+        }
+        return String(status)
+    }
+
+    enum LegacyMnemonicCleanupError: LocalizedError {
         case keychainRead(OSStatus)
         case mnemonicRead
         case deletionFailed

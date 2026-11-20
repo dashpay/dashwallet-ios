@@ -18,8 +18,6 @@
 //
 
 import Foundation
-import os
-
 protocol DashConnectStore {
     func load() -> [DAppConnection]
     func save(_ connections: [DAppConnection])
@@ -133,9 +131,7 @@ final class UserDefaultsDashConnectStore: DashConnectStore {
         self.decoder = decoder
     }
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "dashconnect.store")
+    private static let logger = AppLogger(category: "dashconnect.store")
 
     /// `nil` until a wallet identifier exists. Connections are wallet-scoped,
     /// so a shared placeholder scope would let one wallet's rows be saved and

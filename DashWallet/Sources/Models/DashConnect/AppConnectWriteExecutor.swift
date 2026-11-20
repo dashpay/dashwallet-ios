@@ -134,7 +134,7 @@ struct AppConnectWriteExecutor {
     /// identities (SAD §8 Logging).
     static func logDescription(of error: Error) -> String {
         var parts = [String(describing: type(of: error))]
-        if let caseName = AssetLockFailureRecord.caseName(of: error) {
+        if let caseName = AppLogMessage.caseName(of: error) {
             parts.append(caseName)
         }
         if let refusal = PlatformDashConnectDataSource.consensusRefusal(from: error, at: Date()) {

@@ -1100,7 +1100,7 @@ class CreateUsernameViewModel: ObservableObject {
                 // The registration-activity sink of the Home card re-checks
                 // the invitation once this attempt has ended.
                 if let failure = InvitationClaimFailure.classify(error) {
-                    DWLogger.log("CreateUsername: invitation claim refused (\(failure)): \(String(describing: error))")
+                    DWLogger.log("CreateUsername: invitation claim refused (\(failure)): \(AppLogMessage.errorSummary(error))")
                     return .failure(failure.message)
                 }
                 return .failure(
@@ -1131,7 +1131,7 @@ class CreateUsernameViewModel: ObservableObject {
                     if error.domain == NSCocoaErrorDomain && error.code == NSUserCancelledError {
                         continuation.resume(returning: .cancelled)
                     } else if let check = AssetLockInputLimit.check(for: error) {
-                        DWLogger.log("CreateUsername: registration refused over the asset-lock input limit for '\(submittedUsername)'")
+                        DWLogger.log("CreateUsername: registration refused over the asset-lock input limit")
                         continuation.resume(returning: .needsCoinConsolidation(check))
                     } else {
                         continuation.resume(
@@ -1184,7 +1184,7 @@ class CreateUsernameViewModel: ObservableObject {
             purchaseSubmissionUnconfirmed = true
             return .submittedUnconfirmed(error.localizedDescription)
         }
-        DWLogger.log("CreateUsername: purchase failed: \(error.localizedDescription)")
+        DWLogger.log("CreateUsername: purchase failed: \(AppLogMessage.errorSummary(error))")
         if let check = AssetLockInputLimit.check(for: error) {
             return .needsCoinConsolidation(check)
         }
@@ -1193,13 +1193,13 @@ class CreateUsernameViewModel: ObservableObject {
 
     /// Human wording for a failed registration — the shared mapping
     /// (`UsernameRegistrationFailureWording`) the Home / More row reports with
-    /// too. The raw text always reaches the log.
+    /// too. The log gets the error's summary, never its text.
     private static func registrationFailureMessage(
         _ error: Error,
         username: String
     ) -> String {
         let raw = error.localizedDescription
-        DWLogger.log("CreateUsername: registration failed for '\(username)': \(raw)")
+        DWLogger.log("CreateUsername: registration failed: \(AppLogMessage.errorSummary(error))")
         return UsernameRegistrationFailureWording.message(forRaw: raw, username: username)
     }
 
@@ -1414,12 +1414,11 @@ class CreateUsernameViewModel: ObservableObject {
         // Log the funding verdict only after typing settles. Logging it from
         // the local validator did synchronous file work for every keystroke.
         let isContested = DWContestedNameStatusService.isContestedLabel(username)
-        let requiredCost = requiredFundingDuffs(isContested: isContested)
         DWLogger.log(
-            "CreateUsername: checking '\(username)' "
-                + "(contested=\(isContested), required=\(requiredCost) duffs"
+            "CreateUsername: checking "
+                + "(contested=\(isContested)"
                 + "\(identityTopUpDuffs != nil ? " top-up of existing identity" : "")) — "
-                + "core=\(hasMinimumRequiredCoreBalance) [spendable \(coreSpendableDuffs) duffs], "
+                + "core=\(hasMinimumRequiredCoreBalance), "
                 + "platform=\(hasMinimumRequiredPlatformBalance), "
                 + "shielded=\(hasReadyShieldedFunding), "
                 + "recovery=\(hasPendingRegistrationRecovery), voucher=\(isInvitationMode) — "
@@ -1479,7 +1478,7 @@ class CreateUsernameViewModel: ObservableObject {
                     result = .invalidCritical
                 case let .activeContest(contenders, endsAt):
                     DWLogger.log(
-                        "CreateUsername: '\(username)' is in an active vote "
+                        "CreateUsername: the name is in an active vote "
                             + "(\(contenders) contenders, ends \(endsAt.map { "\($0)" } ?? "unknown"))")
                     // Our own running vote shows as "in voting", not as a
                     // joinable contest. The submission bookmark answers first;

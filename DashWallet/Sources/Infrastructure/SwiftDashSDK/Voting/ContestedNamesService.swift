@@ -18,7 +18,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 // MARK: - ContestedNamesService
@@ -36,9 +35,7 @@ import SwiftDashSDK
 @MainActor
 final class ContestedNamesService {
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.voting")
+    private static let logger = AppLogger(category: "swift-sdk-migration.voting")
 
     /// Ceiling on the active-contest listing. The FFI exposes no cursor on
     /// this query, so this is a hard cap rather than a page size. DPNS

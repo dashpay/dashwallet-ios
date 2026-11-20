@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 /// Core-chain transaction constants the app needs without DashSync.
@@ -270,9 +269,7 @@ final class UnknownContactPaymentOutcomes {
 final class WalletSendService: NSObject {
     @objc(sharedService) static let shared = WalletSendService()
 
-    fileprivate static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.wallet-send-service")
+    fileprivate static let logger = AppLogger(category: "swift-sdk-migration.wallet-send-service")
 
     /// `userInfo` key carrying the SDK's own explanation of a broadcast
     /// outcome.
@@ -425,7 +422,7 @@ final class WalletSendService: NSObject {
             )
         }
 
-        Self.logger.info("💸 TXSEND :: preparing CoinJoin sweep — balance \(amount, privacy: .public) duffs (\(Double(amount) / 1e8, privacy: .public) DASH)")
+        Self.logger.info("💸 TXSEND :: preparing CoinJoin sweep — balance \(amount, privacy: .private) duffs (\(Double(amount) / 1e8, privacy: .private) DASH)")
         try await sendAuthorizer.authorizeSend(spendAmount: amount)
 
         guard let resolved = SwiftDashSDKReceiveAddressReader.receiveDestination() else {
@@ -441,7 +438,7 @@ final class WalletSendService: NSObject {
         }
         let destination = resolved.address
 
-        Self.logger.info("💸 TXSEND :: CoinJoin sweep destination resolved \(destination, privacy: .public)")
+        Self.logger.info("💸 TXSEND :: CoinJoin sweep destination resolved \(destination)")
         let outcome: SwiftDashSDKTransactionSender.CoinJoinSweepOutcome
         do {
             outcome = try SwiftDashSDKTransactionSender.sweepCoinJoin(to: destination, expecting: pinned)
@@ -462,7 +459,7 @@ final class WalletSendService: NSObject {
             // A reported-success sweep that produced no transaction is treated
             // as a failure, so the caller surfaces an error (the sweep alert)
             // rather than silently "succeeding" with the balance unchanged.
-            Self.logger.error("💸 TXSEND :: CoinJoin sweep returned no transactions for \(amount, privacy: .public) duffs — treating as failure")
+            Self.logger.error("💸 TXSEND :: CoinJoin sweep returned no transactions for \(amount, privacy: .private) duffs — treating as failure")
             throw Self.makeError(
                 code: .coinJoinSweepUnavailable,
                 description: NSLocalizedString("CoinJoin sweep produced no transactions", comment: "Send error: CoinJoin move funds")
@@ -479,7 +476,7 @@ final class WalletSendService: NSObject {
         await MainActor.run {
             SwiftDashSDKWalletState.shared.refreshCoinJoinBalance()
             let post = SwiftDashSDKWalletState.shared.coinJoinBalanceDuffs
-        Self.logger.info("💸 TXSEND :: post-sweep CoinJoin balance \(post, privacy: .public) duffs (was \(amount, privacy: .public))")
+        Self.logger.info("💸 TXSEND :: post-sweep CoinJoin balance \(post, privacy: .private) duffs (was \(amount, privacy: .private))")
             // The per-network recovery flag is owned solely by the recovery scan-
             // completion path (SwiftDashSDKSPVCoordinator.maybeCompleteCoinJoinRecovery,
             // which marks recovered once the one-time wide scan reaches .synced). A
@@ -551,7 +548,7 @@ final class WalletSendService: NSObject {
         amount: UInt64,
         memo: String? = nil
     ) async throws -> PreparedContactPayment {
-        Self.logger.info("💸 TXSEND :: pay-to-contact preparing — \(amount, privacy: .public) duffs")
+        Self.logger.info("💸 TXSEND :: pay-to-contact preparing — \(amount, privacy: .private) duffs")
         // Refused before the PIN prompt: see `UnknownContactPaymentOutcomes`.
         try refuseContactWithUnknownOutcome(contactIdentityId)
         try Self.ensureInitialRestoreSyncCompleted()
@@ -671,7 +668,7 @@ final class WalletSendService: NSObject {
         do {
             try await prepared.wallet.abandonPreparedDashPayPayment(prepared.payment)
         } catch {
-            Self.logger.error("💸 TXSEND :: pay-to-contact abandon failed: \(error.localizedDescription, privacy: .public)")
+            Self.logger.error("💸 TXSEND :: pay-to-contact abandon failed: \(error)")
         }
     }
 
@@ -772,17 +769,14 @@ final class WalletSendService: NSObject {
         for txid in txids {
             CoinJoinWithdrawalStore.shared.record(txid: txid)
         }
-        let hexes = txids.map { Data($0.reversed()).map { String(format: "%02x", $0) }.joined() }
-        logger.info("💸 TXSEND :: recorded \(txids.count, privacy: .public) sweep txid(s) in CoinJoinWithdrawalStore: \(hexes.joined(separator: ","), privacy: .public)")
+        logger.info("💸 TXSEND :: recorded \(txids.count, privacy: .public) sweep txid(s) in CoinJoinWithdrawalStore")
     }
 
     /// An error's type and code for the exported log. Not its description:
     /// send and builder errors quote txids, outpoints and addresses, which
-    /// lead to the wallet's own addresses (the sender's os.Logger keeps the
-    /// detail, outside the export).
+    /// lead to the wallet's own addresses.
     static func logSummary(of error: Error) -> String {
-        let nsError = error as NSError
-        return "\(type(of: error)) \(nsError.domain) #\(nsError.code)"
+        AppLogMessage.errorSummary(error)
     }
 
     /// A failed sweep for the exported log: `logSummary(of:)` plus what it
@@ -999,7 +993,7 @@ private final class SendAuthorizer {
                 description: NSLocalizedString("Authentication cancelled", comment: "Send error")
             )
         case .failed, .timedOut:
-            WalletSendService.logger.error("💸 TXSEND :: authentication failed (\(outcome == .timedOut ? "timed out" : "failed"))")
+            WalletSendService.logger.error("💸 TXSEND :: authentication failed (\(outcome == .timedOut ? "timed out" : "failed", privacy: .public))")
             throw WalletSendService.makeError(
                 code: .authenticationFailed,
                 description: NSLocalizedString("Authentication failed", comment: "")

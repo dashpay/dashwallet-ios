@@ -449,4 +449,38 @@ final class HostRecoveryTests: XCTestCase {
         XCTAssertNil(SwiftDashSDKHost.preparationFailure(forStartError: HostError.sdkInitFailed(swiftData)))
         XCTAssertNil(SwiftDashSDKHost.keysFailure(in: swiftData))
     }
+
+    // AC-04 (PR review r10): two keychain failures while storing or reading
+    // the recovery phrase write their status numbers; any other error writes
+    // the empty status marker.
+    func testMnemonicKeychainFailuresShowTheirStatus() {
+        let notAvailable = SwiftDashSDKHost.mnemonicFailureLine(
+            "mnemonic persistence failed", WalletStorageError.keychainError(-25291)).text
+        let locked = SwiftDashSDKHost.mnemonicFailureLine(
+            "existing mnemonic lookup failed", WalletStorageError.keychainError(-25308)).text
+        XCTAssertTrue(notAvailable.hasPrefix("🪺 HOST :: mnemonic persistence failed: "), notAvailable)
+        XCTAssertTrue(notAvailable.hasSuffix(" status=-25291"), notAvailable)
+        XCTAssertTrue(locked.hasSuffix(" status=-25308"), locked)
+        let other = SwiftDashSDKHost.mnemonicFailureLine(
+            "mnemonic persistence failed", WalletStorageError.mnemonicNotFound).text
+        XCTAssertTrue(other.hasSuffix(" status=-"), other)
+    }
+
+    /// The recovery-phrase read before a wallet removal writes the same
+    /// status (AC-04); a source check, because the line needs a bound wallet.
+    func testWalletRemovalMnemonicReadFailureWritesItsStatus() throws {
+        let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+        let text = try String(
+            contentsOf: root.appendingPathComponent("DashWallet/Sources/UI/Menu/Security/Wallets/WalletsViewModel.swift"),
+            encoding: .utf8)
+        // Both keychain reads on the removal path: the phrase read and the
+        // last-wallet proof.
+        let status = "status=\\(SwiftDashSDKHost.keychainStatus(of: error), privacy: .public)"
+        for fragment in ["removeWallet mnemonic read failed", "last-wallet proof failed"] {
+            let lines = text.split(separator: "\n").filter { $0.contains(fragment) }
+            XCTAssertEqual(lines.count, 1, fragment)
+            let line = String(lines.first ?? "")
+            XCTAssertTrue(line.contains(status), line)
+        }
+    }
 }

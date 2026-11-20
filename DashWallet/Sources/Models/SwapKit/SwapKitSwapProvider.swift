@@ -550,7 +550,7 @@ final class SwapKitSwapProvider: SwapProvider {
         // A response that describes a deposit channel gives this order an address of its
         // own. Without one the address may be a shared router or vault.
         let hasDepositChannel = swapResponse.meta?.depositChannelExpiration != nil
-        DWLogger.log("SwapKit: buy order deposit=\(depositAddress) deadline=\(depositDeadline.map { "\(Int($0.timeIntervalSince1970))" } ?? "none")")
+        DWLogger.log("SwapKit: buy order deadline=\(depositDeadline.map { "\(Int($0.timeIntervalSince1970))" } ?? "none")")
         // An empty memo is no memo.
         let memo = swapResponse.memo.flatMap { $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : $0 }
         return BuyOrder(
@@ -708,7 +708,7 @@ final class SwapKitSwapProvider: SwapProvider {
             }
             // Non-fatal; return not-yet-observed so polling continues — flagged, so a caller
             // that draws conclusions from "not observed" can tell it from a real answer.
-            DWLogger.log("SwapKit: track request failed (deposit=\(depositAddress ?? "nil")): \(error)")
+            DWLogger.log("SwapKit: track request failed: \(error)")
             return SwapStatusResult(error: nil, isObserved: false, observedStatus: nil, outHashes: nil, requestFailed: true)
         }
     }
