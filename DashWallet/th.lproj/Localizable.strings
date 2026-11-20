@@ -3670,6 +3670,9 @@
 /* DashPay Contacts */
 "No payments with this contact yet" = "No payments with this contact yet";
 
+/* DashPay Contacts: the payment history could not be read in full */
+"Some payments with this contact could not be loaded, so this list may be incomplete." = "Some payments with this contact could not be loaded, so this list may be incomplete.";
+
 /* SPV diagnostics */
 "No peers connected" = "No peers connected";
 

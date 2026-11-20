@@ -315,18 +315,50 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
                        "released, it still counts against the address budget")
     }
 
-    /// A Core tip still catching up with the network is no observation of
-    /// blocks mined since an attempt: it neither starts nor ends a lock.
-    func testOnlyACaughtUpTipCounts() throws {
-        XCTAssertNil(WalletSendService.currentCoreTip(local: Self.recordedTip, network: Self.agedTip))
-        XCTAssertNil(WalletSendService.currentCoreTip(local: Self.agedTip, network: 0))
-        XCTAssertNil(WalletSendService.currentCoreTip(local: 0, network: 0))
-        XCTAssertEqual(WalletSendService.currentCoreTip(local: Self.agedTip, network: Self.agedTip), Self.agedTip)
+    /// An unreadable journal makes the contact's history incomplete, never
+    /// an empty or complete one.
+    func testAnUnreadableJournalMakesTheHistoryIncomplete() throws {
+        struct Unreadable: Error {}
+        let failed = SwiftDashSDKContactsService.withdrawalPayments(
+            reading: { throw Unreadable() }, shieldedSpendState: { _ in .pending })
+        XCTAssertTrue(failed.isIncomplete)
+        XCTAssertTrue(failed.payments.isEmpty)
 
-        _ = try begin(source: .platform,
-                      coreHeight: WalletSendService.currentCoreTip(local: Self.recordedTip, network: Self.agedTip))
+        try store.update(try begin(source: .platform), status: .submitted)
+        let read = SwiftDashSDKContactsService.withdrawalPayments(
+            reading: { try self.store.entries(scope: self.scope, contactIdentityId: self.contact) },
+            shieldedSpendState: { _ in .pending })
+        XCTAssertFalse(read.isIncomplete)
+        XCTAssertEqual(read.payments.count, 1)
+    }
+
+    /// Pay again releases only the active sender's attempts: a captured
+    /// wallet that is no longer active is refused before the journal changes.
+    @MainActor
+    func testPayAgainRefusesASenderNoLongerActive() {
+        let recipient = ContactPaymentRecipient(
+            identityId: contact, displayName: "c", walletId: Data(repeating: 0xEE, count: 32),
+            ownerIdentityId: scope.ownerIdentityId, network: .testnet)
+        XCTAssertThrowsError(try WalletSendService.shared.releaseAgedContactPayments(recipient))
+    }
+
+    /// Only a tip seen synced with a connected peer this session counts: a
+    /// persisted height, or one still catching up, neither starts nor ends a
+    /// lock.
+    func testOnlyALiveSyncedTipCounts() throws {
+        func live(_ state: SPVSyncState, peer: Bool, _ current: UInt32, previous: UInt32? = nil) -> UInt32? {
+            SwiftDashSDKSPVCoordinator.liveSyncedTip(
+                state: state, hasConnectedPeer: peer, headersCurrent: current, previous: previous)
+        }
+        XCTAssertNil(live(.synced, peer: false, Self.agedTip), "persisted heights before any peer answers")
+        XCTAssertNil(live(.syncing, peer: true, Self.agedTip), "still catching up")
+        XCTAssertNil(live(.waitingForConnections, peer: false, Self.agedTip))
+        XCTAssertEqual(live(.synced, peer: true, Self.agedTip), Self.agedTip)
+        XCTAssertEqual(live(.syncing, peer: true, Self.agedTip + 5, previous: Self.agedTip), Self.agedTip)
+
+        _ = try begin(source: .platform, coreHeight: live(.syncing, peer: true, Self.recordedTip))
         let afterTheWindow = Date().addingTimeInterval(60)
-        let caughtUp = WalletSendService.currentCoreTip(local: Self.agedTip, network: Self.agedTip)
+        let caughtUp = live(.synced, peer: true, Self.agedTip)
         XCTAssertEqual(try store.lockState(
             scope: scope, contactIdentityId: contact, since: afterTheWindow, coreHeight: caughtUp), .locked)
         XCTAssertEqual(try store.entries(scope: scope, contactIdentityId: contact).map(\.coreHeight), [Self.agedTip])
