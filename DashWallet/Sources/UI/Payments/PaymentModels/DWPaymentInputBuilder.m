@@ -68,7 +68,8 @@ NS_ASSUME_NONNULL_BEGIN
 
         i++;
 
-        if (parsed.isAddressValidForCurrentNetwork) {
+        if (parsed.isAddressValidForCurrentNetwork || parsed.hasUnsupportedRequirement) {
+            // A requirement the wallet can't meet is handed on as is, for the processor to refuse.
             if (completion) {
                 DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:source];
                 [paymentInput attachParsedURI:parsed];

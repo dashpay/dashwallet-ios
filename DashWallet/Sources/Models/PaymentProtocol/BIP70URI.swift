@@ -55,9 +55,11 @@ struct BIP70URI {
     /// Keys carrying the `req-` prefix (params the request demands; amount immutability etc.).
     let requiredFields: Set<String>
 
-    /// The parameters this parser reads. BIP21: a `req-` parameter outside them makes the URI
-    /// unpayable.
-    static let understoodFields: Set<String> = ["amount", "label", "message", "r", "sender", "user", "currency", "local"]
+    /// The parameters a payment honours. BIP21: a `req-` parameter outside them makes the URI
+    /// unpayable. `user`, `currency` and `local` are read but no payment applies them, so they can
+    /// only be optional. `IS` (InstantSend, Dash Android's `req-IS`) is met by every payment: the
+    /// network locks transactions automatically.
+    static let understoodFields: Set<String> = ["amount", "label", "message", "r", "sender", "IS"]
 
     var hasUnsupportedRequirement: Bool { !requiredFields.isSubset(of: Self.understoodFields) }
 
