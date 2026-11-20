@@ -347,7 +347,7 @@ class PiggyCardsRepository: DashSpendRepository {
         guard let paymentUri = payTo else {
             throw DashSpendError.customError(NSLocalizedString("No payment information received", comment: "DashSpend"))
         }
-        let paymentInfo = try parsePaymentURI(paymentUri, orderId: orderResponse.id, message: orderResponse.payMessage)
+        let paymentInfo = try Self.parsePaymentURI(paymentUri, message: orderResponse.payMessage)
 
         return GiftCardInfo(
             orderId: orderResponse.id,
@@ -448,7 +448,12 @@ class PiggyCardsRepository: DashSpendRepository {
     }
 
     /// Parse payment URI into address and amount
-    private func parsePaymentURI(_ payTo: String, orderId: String, message: String?) throws -> (address: String, amount: Double) {
+    /// - Parameter isValidAddress: whether an address is valid on the wallet's network.
+    static func parsePaymentURI(
+        _ payTo: String,
+        message: String?,
+        isValidAddress: (String) -> Bool = { $0.isValidDashAddressForCurrentNetwork }
+    ) throws -> (address: String, amount: Decimal) {
         // Check for empty or invalid URI
         guard !payTo.isEmpty else {
             let errorMessage = message ?? NSLocalizedString("Payment URI unavailable", comment: "DashSpend")
@@ -469,7 +474,14 @@ class PiggyCardsRepository: DashSpendRepository {
         }
 
         let address = String(components[0])
-        var amount: Double = 0
+        guard isValidAddress(address) else {
+            DWLogger.log("PiggyCards payment refused: the payment address is not valid on this network")
+            throw GiftCardPaymentGuard.invalidPaymentAddressError
+        }
+
+        // Parsed as a decimal string, never through Double: the amount becomes duffs exactly.
+        // An amount that is not plain decimal digits stays 0 and is refused below.
+        var amount: Decimal = 0
 
         // Parse query parameters
         if components.count > 1 {
@@ -479,7 +491,7 @@ class PiggyCardsRepository: DashSpendRepository {
             for item in queryItems {
                 let keyValue = item.split(separator: "=", maxSplits: 1)
                 if keyValue.count == 2 && keyValue[0] == "amount" {
-                    amount = Double(keyValue[1]) ?? 0
+                    amount = GiftCardPaymentGuard.dashAmount(fromQuotedString: String(keyValue[1])) ?? 0
                     break
                 }
             }

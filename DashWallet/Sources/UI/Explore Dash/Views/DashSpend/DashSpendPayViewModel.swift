@@ -28,6 +28,30 @@ private struct GiftCardOrderMetadata: Codable {
     let cardAmounts: [String]?
 }
 
+/// What the Confirm sheet showed, captured when Pay is tapped. The purchase uses these
+/// values, not the view model's current state, which a merchant refresh can change while the
+/// sheet is open.
+struct GiftCardPurchaseSnapshot: Equatable {
+    /// The card value.
+    let price: Decimal
+    /// The discount fraction.
+    let discount: Decimal
+    /// Cards per denomination for a multi-card order; empty for a single card.
+    let quantities: [Decimal: Int]
+    /// The price the buyer pays, in fiat and in Dash at the wallet's rate.
+    let approval: GiftCardPaymentGuard.Approval
+}
+
+/// The purchase sheet's content.
+enum GiftCardPurchaseSheet: Equatable {
+    /// The buyer is reading the price.
+    case confirm(GiftCardPurchaseSnapshot)
+    /// The buyer confirmed; the provider has not answered yet.
+    case waitingForProvider(GiftCardPurchaseSnapshot)
+    /// The provider asks for more Dash than the buyer confirmed.
+    case priceUpdated(GiftCardPaymentGuard.PriceChange)
+}
+
 @MainActor
 class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHandling {
     private var cancellableBag = Set<AnyCancellable>()
@@ -37,6 +61,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     private lazy var customIconProvider = CustomIconMetadataProvider.shared
     private lazy var txMetadataDao = TransactionMetadataDAOImpl.shared
     private lazy var sendCoinsService = SendCoinsService()
+    private let exchangeRate: () -> GiftCardPaymentGuard.ExchangeRate
+    private let now: () -> Date
     
     private let repository: [GiftCardProvider: any DashSpendRepository] = {
         var dict: [GiftCardProvider: any DashSpendRepository] = [
@@ -60,6 +86,17 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     private(set) var savingsFraction: Decimal = 0.0
     @Published private(set) var isLoading = false
     @Published private(set) var isProcessingPayment = false
+    /// The purchase sheet to show; nil when there is none.
+    @Published private(set) var purchaseSheet: GiftCardPurchaseSheet?
+    /// Resumed with the buyer's answer to a price change.
+    private var priceDecision: CheckedContinuation<Bool, Never>?
+    /// Resumed once the purchase sheet has left the screen.
+    private var sheetDismissal: CheckedContinuation<Void, Never>?
+    /// The longest the purchase waits for the sheet to report that it left the screen.
+    var sheetDismissalWait: TimeInterval = 1
+    /// `true` from the screen's `unsubscribeFromAll()` until its next `subscribeToUpdates()`:
+    /// no purchase sheet can be shown then, so nobody could answer a price change.
+    private var isScreenGone = false
     @Published private(set) var isUserSignedIn = false
     
     let currencySymbol: String = {
@@ -192,8 +229,16 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     }
 
 
-    init(merchant: ExplorePointOfUse, provider: GiftCardProvider = .ctx) {
+    /// - Parameters:
+    ///   - exchangeRate: reads the wallet's USD rate and when it was retrieved. It is read
+    ///     when the Confirm sheet opens; the purchase uses that value.
+    ///   - now: the clock the rate's age is judged by, when the sheet opens and again on Confirm.
+    init(merchant: ExplorePointOfUse, provider: GiftCardProvider = .ctx,
+         exchangeRate: @escaping () -> GiftCardPaymentGuard.ExchangeRate = DashSpendPayViewModel.walletExchangeRate,
+         now: @escaping () -> Date = { Date() }) {
         self.provider = provider
+        self.exchangeRate = exchangeRate
+        self.now = now
 
         merchantTitle = merchant.name
         merchantIconUrl = merchant.logoLocation ?? ""
@@ -261,6 +306,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     }
     
     func subscribeToUpdates() {
+        isScreenGone = false
+
         // Start network monitoring
         startNetworkMonitoring()
         
@@ -318,9 +365,154 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         }
     }
     
-    func purchaseGiftCardAndPay(selectedQuantities: [Decimal: Int] = [:]) async throws -> Data {
+    /// Opens the Confirm sheet for `price`, with the discount on screen and the Dash amount
+    /// the price comes to at the wallet's rate.
+    ///
+    /// Throws `GiftCardPaymentGuard.rateUnavailableError` when the wallet has no usable rate:
+    /// the sheet could not show a Dash amount, and a provider's quote could not be compared.
+    func beginPurchase(price: Decimal, quantities: [Decimal: Int] = [:]) throws {
+        let discount = displaySavingsFraction
+        let approval: GiftCardPaymentGuard.Approval
+        do {
+            approval = try GiftCardPaymentGuard.approve(price: price, discount: discount, rate: exchangeRate(), now: now())
+        } catch {
+            DWLogger.log("Gift card purchase not opened: \(error)")
+            throw error
+        }
+        // Pay was tapped on the screen, so the screen is there, whatever was last reported.
+        isScreenGone = false
+        purchaseSheet = .confirm(GiftCardPurchaseSnapshot(
+            price: price, discount: discount, quantities: quantities, approval: approval))
+    }
+
+    /// Closes the purchase sheet on the buyer's Cancel or swipe. A price change is declined.
+    /// The sheet is not closed while the provider's answer is awaited.
+    func dismissPurchaseSheet() {
+        switch purchaseSheet {
+        case .confirm:
+            purchaseSheet = nil
+        case .priceUpdated:
+            resolvePriceChange(pay: false)
+        case .waitingForProvider, nil:
+            break
+        }
+    }
+
+    /// The buyer's answer on the "Price updated" sheet.
+    func resolvePriceChange(pay: Bool) {
+        guard case .priceUpdated(let change) = purchaseSheet else { return }
+        if pay {
+            DWLogger.log("Gift card price change accepted: paying \(change.requestedAmount) duffs, confirmed \(change.confirmedAmount)")
+        }
+        purchaseSheet = nil
+        priceDecision?.resume(returning: pay)
+        priceDecision = nil
+    }
+
+    /// Called by the screen when the purchase sheet has left the screen.
+    func purchaseSheetDidDismiss() {
+        sheetDismissal?.resume()
+        sheetDismissal = nil
+    }
+
+    /// Compares a provider's quote with what the buyer confirmed, before anything is signed.
+    ///
+    /// A quote at or below the confirmed amount, or above it by a margin too small to ask
+    /// about, closes the sheet and returns. A higher quote is shown on the "Price updated"
+    /// sheet; this returns when the buyer chooses to pay it and throws
+    /// `DashSpendError.purchaseCancelled` when they decline. When it returns, the sheet has
+    /// left the screen, so the PIN prompt that follows is not presented over a sheet that is
+    /// still closing.
+    ///
+    /// It also throws `DashSpendError.purchaseCancelled` when the purchase screen has gone
+    /// away (a sign-out closes it), whatever the quote: checked when the quote arrives and
+    /// again once the sheet has left, so no PIN prompt follows a screen that is gone.
+    ///
+    /// - Parameter answerWithin: how long the buyer has to accept a higher price, counted
+    ///   from the moment the sheet is put up; `nil` for no limit. A higher price accepted
+    ///   later than that throws `GiftCardPaymentGuard.quoteExpiredError` once the sheet has
+    ///   left the screen. For an order that carries no expiry the payment could be checked
+    ///   against.
+    func confirmQuote(requested: UInt64, approval: GiftCardPaymentGuard.Approval,
+                      answerWithin: TimeInterval? = nil) async throws {
+        let assessment = try approval.assess(requested: requested)
+        try endPurchaseIfScreenIsGone()
+
+        var answeredLate = false
+        switch assessment {
+        case .asConfirmed:
+            guard purchaseSheet != nil else { return }
+            purchaseSheet = nil
+        case .higher(let change):
+            DWLogger.log("Gift card price changed: requested \(requested) duffs, confirmed \(approval.amount)")
+            purchaseSheet = .priceUpdated(change)
+            let shownAt = now()
+            let pay = await withCheckedContinuation { priceDecision = $0 }
+            guard pay else { throw DashSpendError.purchaseCancelled }
+            if let answerWithin {
+                answeredLate = now().timeIntervalSince(shownAt) > answerWithin
+            }
+        }
+
+        await waitForSheetDismissal()
+        try endPurchaseIfScreenIsGone()
+
+        if answeredLate {
+            DWLogger.log("Gift card purchase ended: the higher price was accepted after the time allowed for it. Nothing was sent")
+            throw GiftCardPaymentGuard.quoteExpiredError
+        }
+    }
+
+    private func endPurchaseIfScreenIsGone() throws {
+        guard isScreenGone else { return }
+        DWLogger.log("Gift card purchase ended: the purchase screen is gone. Nothing was sent")
+        throw DashSpendError.purchaseCancelled
+    }
+
+    /// Suspends until the screen reports the sheet gone, or `sheetDismissalWait` has passed.
+    private func waitForSheetDismissal() async {
+        let wait = sheetDismissalWait
+        let fallback = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: UInt64(wait * 1_000_000_000))
+            guard !Task.isCancelled else { return }
+            self?.purchaseSheetDidDismiss()
+        }
+        await withCheckedContinuation { sheetDismissal = $0 }
+        fallback.cancel()
+    }
+
+    /// Orders the gift card the buyer confirmed and pays for it.
+    ///
+    /// Starts only for the snapshot the Confirm sheet is showing, and only once: a call for
+    /// any other snapshot, after the sheet was cancelled, or while a purchase is already
+    /// running throws `DashSpendError.purchaseCancelled` with nothing ordered. The sheet's
+    /// Confirm button can be tapped again before the sheet has redrawn or left the screen.
+    ///
+    /// - Parameter snapshot: what the Confirm sheet showed. A provider's quote is compared
+    ///   with its `approval` through `confirmQuote` before the payment is authorized.
+    func purchaseGiftCardAndPay(_ snapshot: GiftCardPurchaseSnapshot) async throws -> Data {
+        guard !isProcessingPayment, case .confirm(let shown) = purchaseSheet, shown == snapshot else {
+            DWLogger.log("Gift card purchase not started: not the confirmation on screen, or one is already running")
+            throw DashSpendError.purchaseCancelled
+        }
+
+        let approval = snapshot.approval
+        let confirmedPrice = snapshot.price
+
+        // Read again here: the sheet can stay open past the stale-rate limit, and a quote
+        // cannot be compared with a Dash amount computed from a rate that old.
+        guard approval.isRateFresh(now: now()) else {
+            DWLogger.log("Gift card purchase stopped: the confirmed rate went stale while the sheet was open")
+            purchaseSheet = nil
+            throw GiftCardPaymentGuard.rateUnavailableError
+        }
+
         isProcessingPayment = true
-        defer { isProcessingPayment = false }
+        purchaseSheet = .waitingForProvider(snapshot)
+        defer {
+            isProcessingPayment = false
+            purchaseSheet = nil
+        }
 
         // Wire-order txid (`Transaction.txHashData` convention) — the gift-card
         // metadata key.
@@ -329,7 +521,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
         switch provider {
         case .ctx:
-            let response = try await purchaseGiftCardAPI()
+            let response = try await purchaseGiftCardAPI(cardValue: confirmedPrice)
 
             // Process the payment using the payment URL
             guard let url = response.paymentUrls?.first?.value else {
@@ -343,13 +535,20 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             // blocking the buyer for the SDK's 30 s acceptance window only delays the card that
             // is already being issued (the email routinely arrived before the screen moved on).
             do {
-                txidWire = try await sendCoinsService.payWithDashUrl(url: url, awaitAcceptance: false)
+                txidWire = try await sendCoinsService.payWithDashUrl(
+                    url: url, awaitAcceptance: false,
+                    validate: { confirmation in
+                        try await self.confirmQuote(
+                            requested: confirmation.amount, approval: approval,
+                            answerWithin: GiftCardPaymentGuard.priceAnswerLimit(
+                                requestExpires: confirmation.request.details.expires))
+                    })
             } catch DashSpendError.paymentNotAcknowledged(let unacknowledgedTxIdWire, let reason) {
                 // Same loss, one step earlier: the network dropped between posting the payment
                 // and reading the acknowledgement. Record the order — CTX may be fulfilling it
                 // already — but keep the error, since we genuinely cannot say it was received.
                 DWLogger.log("Gift card payment unacknowledged, recording the order anyway: \(reason)")
-                recordPurchase(txidWire: unacknowledgedTxIdWire, giftCardNote: giftCardNote)
+                recordPurchase(txidWire: unacknowledgedTxIdWire, giftCardNote: giftCardNote, price: confirmedPrice)
                 throw DashSpendError.paymentNotAcknowledged(
                     txIdWire: unacknowledgedTxIdWire, reason: reason)
             } catch DashSpendError.paymentStatusUnknown(let unconfirmedTxIdWire, let reason) {
@@ -358,7 +557,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 // txid we do have so the order survives — without this the customer pays,
                 // CTX fulfils the order, and the app keeps no trace of the card at all.
                 DWLogger.log("Gift card payment status unknown, recording the order anyway: \(reason)")
-                recordPurchase(txidWire: unconfirmedTxIdWire, giftCardNote: giftCardNote)
+                recordPurchase(txidWire: unconfirmedTxIdWire, giftCardNote: giftCardNote, price: confirmedPrice)
                 throw DashSpendError.paymentStatusUnknown(txIdWire: unconfirmedTxIdWire, reason: reason)
             }
 
@@ -370,7 +569,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 throw DashSpendError.unauthorized
             }
 
-            let lineItems = buildPiggyOrderLineItems(selectedQuantities: selectedQuantities)
+            let lineItems = buildPiggyOrderLineItems(
+                selectedQuantities: snapshot.quantities, cardValue: confirmedPrice)
             let giftCardInfo = try await piggyCardsRepo.orderGiftCards(
                 merchantId: merchantId,
                 lineItems: lineItems,
@@ -381,17 +581,15 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
             // PiggyCards returns a simple address and amount, not a BIP70 URL
             // Convert DASH amount to satoshis (1 DASH = 100,000,000 satoshis)
-            guard giftCardInfo.amount.isFinite,
-                  giftCardInfo.amount >= 0 else {
-                throw DashSpendError.paymentProcessingError(NSLocalizedString("Invalid gift card amount", comment: "DashSpend"))
+            guard let dashAmountInSatoshis = GiftCardPaymentGuard.duffs(fromDashAmount: giftCardInfo.amount) else {
+                throw GiftCardPaymentGuard.invalidAmountError
             }
 
-            let satoshis = NSDecimalNumber(decimal: Decimal(giftCardInfo.amount) * Decimal(100_000_000))
-            guard satoshis.compare(NSDecimalNumber.zero) != .orderedAscending,
-                  satoshis.compare(NSDecimalNumber(value: UInt64.max)) != .orderedDescending else {
-                throw DashSpendError.paymentProcessingError(NSLocalizedString("Gift card amount is out of range", comment: "DashSpend"))
-            }
-            let dashAmountInSatoshis = satoshis.uint64Value
+            // Compared here, before sendCoins prompts for the PIN: a declined quote shows no
+            // prompt. The payment address was validated when the order response was parsed.
+            // The order states no expiry, so a higher price has to be accepted in limited time.
+            try await confirmQuote(requested: dashAmountInSatoshis, approval: approval,
+                                   answerWithin: GiftCardPaymentGuard.priceAnswerLimit)
 
             // Use sendCoins directly with address and amount
             // This will properly trigger PIN authorization
@@ -402,23 +600,33 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             )
 
 
-            giftCardNote = buildPiggyOrderNote(orderId: giftCardInfo.orderId, selectedQuantities: selectedQuantities)
+            giftCardNote = buildPiggyOrderNote(
+                orderId: giftCardInfo.orderId, selectedQuantities: snapshot.quantities, cardValue: confirmedPrice)
         #endif
         }
 
         // Payment successful - save gift card information
-        recordPurchase(txidWire: txidWire, giftCardNote: giftCardNote)
+        recordPurchase(txidWire: txidWire, giftCardNote: giftCardNote, price: confirmedPrice)
 
         return txidWire
+    }
+
+    /// The wallet's current USD rate and the time it was retrieved.
+    nonisolated static func walletExchangeRate() -> GiftCardPaymentGuard.ExchangeRate {
+        GiftCardPaymentGuard.ExchangeRate(
+            price: try? CurrencyExchanger.shared.rate(for: kDefaultCurrencyCode),
+            retrievedAt: BaseRatesProvider.shared.lastUpdated)
     }
 
     /// Persist everything that ties a paid order to its transaction: the tax/service metadata,
     /// the merchant icon, and the `gift_cards` row whose `note` carries the order id the
     /// details poller needs. Shared by the confirmed and the unconfirmed-broadcast paths.
-    private func recordPurchase(txidWire: Data, giftCardNote: String) {
+    ///
+    /// - Parameter price: the card value the buyer confirmed, stored as the card's price.
+    private func recordPurchase(txidWire: Data, giftCardNote: String, price: Decimal) {
         markGiftCardTransaction(txId: txidWire, provider: provider.displayName)
         customIconProvider.updateIcon(txId: txidWire, iconUrl: merchantIconUrl)
-        saveGiftCardDummy(txHashData: txidWire, giftCardNote: giftCardNote)
+        saveGiftCardDummy(txHashData: txidWire, giftCardNote: giftCardNote, price: price)
     }
 
     var contactSupportButtonText: String {
@@ -454,6 +662,12 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     func unsubscribeFromAll() {
         cancellableBag.removeAll()
         stopNetworkMonitoring()
+
+        // A price change waiting for the buyer's answer has nobody left to answer it, and a
+        // quote that arrives from here on has no screen to go on from: `confirmQuote` ends
+        // the purchase for both.
+        isScreenGone = true
+        resolvePriceChange(pay: false)
     }
     
     private func refreshBalance() {
@@ -733,7 +947,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         }
     }
     
-    private func purchaseGiftCardAPI() async throws -> GiftCardResponse {
+    /// - Parameter cardValue: the card value the buyer confirmed; the order is created for it.
+    private func purchaseGiftCardAPI(cardValue: Decimal) async throws -> GiftCardResponse {
         guard !merchantId.isEmpty, repository[provider]?.isUserSignedIn == true else {
             throw DashSpendError.unauthorized
         }
@@ -748,10 +963,10 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         formatter.usesGroupingSeparator = false
 
         // Round to 2 decimal places without converting to Double
-        let roundedAmount = NSDecimalNumber(decimal: amount)
+        let roundedAmount = NSDecimalNumber(decimal: cardValue)
         let fiatAmountString = formatter.string(from: roundedAmount) ?? "0.00"
 
-        DWLogger.log("Attempting to purchase gift card for merchant \(merchantId) with amount \(amount)")
+        DWLogger.log("Attempting to purchase gift card for merchant \(merchantId) with amount \(cardValue)")
 
         do {
             let response = try await ctxSpendRepository.purchaseGiftCard(
@@ -766,14 +981,14 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         }
     }
     
-    private func saveGiftCardDummy(txHashData: Data, giftCardNote: String) {
+    private func saveGiftCardDummy(txHashData: Data, giftCardNote: String, price: Decimal) {
         DWLogger.log("Gift card saved - txId: \(txHashData.hexEncodedString()), note: \(giftCardNote)")
 
         let giftCard = GiftCard(
             txId: txHashData,
             merchantName: merchantTitle,
             merchantUrl: merchantUrl,
-            price: amount,
+            price: price,
             note: giftCardNote, // Store payment/order metadata in note field temporarily
             provider: provider.displayName  // Store provider (CTX or PiggyCards)
         )
@@ -805,7 +1020,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         checkAmountForErrors()
     }
 
-    private func buildPiggyOrderLineItems(selectedQuantities: [Decimal: Int]) -> [PiggyCardsRepository.OrderLineItem] {
+    private func buildPiggyOrderLineItems(selectedQuantities: [Decimal: Int],
+                                          cardValue: Decimal) -> [PiggyCardsRepository.OrderLineItem] {
         let positiveSelections = selectedQuantities
             .filter { $0.value > 0 }
             .map { PiggyCardsRepository.OrderLineItem(denomination: decimalToDouble($0.key), quantity: $0.value) }
@@ -814,17 +1030,18 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             return positiveSelections
         }
 
-        return [PiggyCardsRepository.OrderLineItem(denomination: decimalToDouble(amount), quantity: 1)]
+        return [PiggyCardsRepository.OrderLineItem(denomination: decimalToDouble(cardValue), quantity: 1)]
     }
 
-    private func buildPiggyOrderNote(orderId: String, selectedQuantities: [Decimal: Int]) -> String {
+    private func buildPiggyOrderNote(orderId: String, selectedQuantities: [Decimal: Int],
+                                     cardValue: Decimal) -> String {
         var expandedAmounts = selectedQuantities
             .filter { $0.value > 0 }
             .sorted { $0.key < $1.key }
             .flatMap { entry in Array(repeating: entry.key.description, count: entry.value) }
 
         if expandedAmounts.isEmpty {
-            expandedAmounts = [amount.description]
+            expandedAmounts = [cardValue.description]
         }
 
         let metadata = GiftCardOrderMetadata(

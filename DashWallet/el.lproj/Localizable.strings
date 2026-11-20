@@ -1021,6 +1021,9 @@
 /* Voting */
 "Cancel approval" = "Cancel approval";
 
+/* DashSpend */
+"Cancel purchase" = "Cancel purchase";
+
 /* Coinbase/Buy Dash/Cancel Order */
 "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "Η ακύρωση αυτής της συναλλαγής δεν ακυρώνει την εντολή ανταλλαγής. Θα λάβετε DASH στο λογαριασμό σας Coinbase σύντομα.";
 
@@ -1900,6 +1903,9 @@
 /* Devnet */
 "Devnet Settings" = "Devnet Settings";
 
+/* DashSpend */
+"Difference" = "Difference";
+
 /* No comment provided by engineer. */
 "Differs from this evonode" = "Διαφέρει από αυτόν τον evonode";
 
@@ -2295,6 +2301,9 @@
 /* Explore Dash */
 "Filters" = "Φίλτρα";
 
+/* DashSpend */
+"Final price" = "Final price";
+
 /* No comment provided by engineer. */
 "Find" = "Εύρεση";
 
@@ -2515,6 +2524,9 @@
 
 /* No comment provided by engineer. */
 "Gift card purchase was rejected" = "Η αγορά δωροκάρτας απορρίφθηκε";
+
+/* DashSpend */
+"Gift card total" = "Gift card total";
 
 /* Explore Dash/Merchants/Filters */
 "Gift card types" = "Τύποι δωροκάρτας";
@@ -4063,6 +4075,9 @@
 /* No comment provided by engineer. */
 "Pay" = "πληρώστε";
 
+/* DashSpend: pay the Dash amount that follows */
+"Pay %@" = "Pay %@";
+
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "Πληρώστε και πληρωθείτε άμεσα με εύκολες στην χρήση πληρωμές";
 
@@ -4399,6 +4414,9 @@
 /* Username marketplace: price placeholder */
 "Price in DASH" = "Τιμή σε DASH";
 
+/* DashSpend */
+"Price updated" = "Price updated";
+
 /* Stale rates */
 "Prices are at least 30 minutes old. Fiat values may be incorrect." = "Οι τιμές είναι τουλάχιστον 30 λεπτά παλαιότερες. Οι τιμές Fiat ενδέχεται να είναι λανθασμένες.";
 
@@ -4461,6 +4479,9 @@
 
 /* No comment provided by engineer. */
 "Provider Address" = "Διεύθυνση Παρόχου";
+
+/* DashSpend */
+"Provider asks" = "Provider asks";
 
 /* Masternodes */
 "Provider transactions" = "Συναλλαγές παρόχου";
@@ -5903,6 +5924,9 @@
 /* No comment provided by engineer. */
 "The evonode's answer couldn't be read." = "Δεν ήταν δυνατή η ανάγνωση της απάντησης του evonode.";
 
+/* DashSpend */
+"The exchange rate is unavailable, so this payment could not be checked. Nothing was sent. Please try again in a moment." = "The exchange rate is unavailable, so this payment could not be checked. Nothing was sent. Please try again in a moment.";
+
 /* Dash DEX */
 "The final amount you receive may differ from this estimate by up to %d%% due to price slippage." = "The final amount you receive may differ from this estimate by up to %d%% due to price slippage.";
 
@@ -5911,6 +5935,9 @@
 
 /* CSV Export */
 "The full transaction history will be exported as a CSV file" = "The full transaction history will be exported as a CSV file";
+
+/* DashSpend */
+"The gift card provider returned an invalid payment address. Nothing was sent. Please try again or contact support." = "The gift card provider returned an invalid payment address. Nothing was sent. Please try again or contact support.";
 
 /* Identity top-up second leg cancelled */
 "The identity top-up result could not be confirmed. Check your balances before continuing." = "The identity top-up result could not be confirmed. Check your balances before continuing.";
@@ -6046,6 +6073,9 @@
 
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "Η αποθηκευμένη εγγραφή πορτοφολιού δεν έχει δίκτυο — δεν είναι δυνατός ο προγραμματισμός επανασυγχρονισμού.";
+
+/* DashSpend: %@ is a percentage */
+"The price is %@ higher than expected" = "The price is %@ higher than expected";
 
 /* Dash DEX / dex_error_price_moved */
 "The price moved too much. Please go back and try again." = "The price moved too much. Please go back and try again.";
@@ -6320,6 +6350,9 @@
 
 /* SDK identity profile sheet — explains the identity credit balance */
 "This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits." = "Αυτό το υπόλοιπο πληρώνει τα τέλη δικτύου του Dash Platform — ονόματα χρήστη, αιτήματα επαφής, ενημερώσεις προφίλ. Ανήκει στην ταυτότητά σας, όχι στο πορτοφόλι σας: σε αντίθεση με τα υπόλοιπά σας Διαφανές, Platform και Shielded, δεν μπορεί να ξοδευτεί ως κανονικά Dash. Το γέμισμα μετατρέπει Dash από ένα υπόλοιπο της επιλογής σας — από προεπιλογή το Shielded — σε credits ταυτότητας.";
+
+/* DashSpend */
+"This can mean the market moved fast or the provider's price is wrong. If you're not sure, cancel and try again in a few minutes." = "This can mean the market moved fast or the provider's price is wrong. If you're not sure, cancel and try again in a few minutes.";
 
 /* DashSpend */
 "This card works only in the United States." = "This card works only in the United States.";
@@ -7651,6 +7684,9 @@
 
 /* Usernames */
 "You chose “%@” as your username." = "Επιλέξατε το \"%@\" ως όνομα χρήστη.";
+
+/* DashSpend */
+"You confirmed" = "You confirmed";
 
 /* DashSpend */
 "You do not have sufficient funds to complete this transaction" = "Δεν έχετε αρκετά χρήματα για να ολοκληρώσετε αυτή την συναλλαγή";

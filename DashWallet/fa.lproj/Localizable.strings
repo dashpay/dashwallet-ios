@@ -1021,6 +1021,9 @@
 /* Voting */
 "Cancel approval" = "Cancel approval";
 
+/* DashSpend */
+"Cancel purchase" = "Cancel purchase";
+
 /* Coinbase/Buy Dash/Cancel Order */
 "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." = "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly.";
 
@@ -1900,6 +1903,9 @@
 /* Devnet */
 "Devnet Settings" = "Devnet Settings";
 
+/* DashSpend */
+"Difference" = "Difference";
+
 /* No comment provided by engineer. */
 "Differs from this evonode" = "با این evonode تفاوت دارد";
 
@@ -2295,6 +2301,9 @@
 /* Explore Dash */
 "Filters" = "فیلترها";
 
+/* DashSpend */
+"Final price" = "Final price";
+
 /* No comment provided by engineer. */
 "Find" = "یافتن";
 
@@ -2515,6 +2524,9 @@
 
 /* No comment provided by engineer. */
 "Gift card purchase was rejected" = "Gift card purchase was rejected";
+
+/* DashSpend */
+"Gift card total" = "Gift card total";
 
 /* Explore Dash/Merchants/Filters */
 "Gift card types" = "انواع کارت هدیه";
@@ -4063,6 +4075,9 @@
 /* No comment provided by engineer. */
 "Pay" = "پرداخت";
 
+/* DashSpend: pay the Dash amount that follows */
+"Pay %@" = "Pay %@";
+
 /* No comment provided by engineer. */
 "Pay and get paid instantly with easy to use payment flows" = "به شکلی ساده و سریع مبلغی را پرداخت یا دریافت کنید";
 
@@ -4399,6 +4414,9 @@
 /* Username marketplace: price placeholder */
 "Price in DASH" = "قیمت به DASH";
 
+/* DashSpend */
+"Price updated" = "Price updated";
+
 /* Stale rates */
 "Prices are at least 30 minutes old. Fiat values may be incorrect." = "قیمت‌ها متعلق به حداقل ۳۰ دقیقه یش است. قیمت‌های پول رسمی شاید درست نباشد. ";
 
@@ -4461,6 +4479,9 @@
 
 /* No comment provided by engineer. */
 "Provider Address" = "Provider Address";
+
+/* DashSpend */
+"Provider asks" = "Provider asks";
 
 /* Masternodes */
 "Provider transactions" = "تراکنش‌های ارائه‌دهنده";
@@ -5903,6 +5924,9 @@
 /* No comment provided by engineer. */
 "The evonode's answer couldn't be read." = "پاسخ evonode خوانده نشد.";
 
+/* DashSpend */
+"The exchange rate is unavailable, so this payment could not be checked. Nothing was sent. Please try again in a moment." = "The exchange rate is unavailable, so this payment could not be checked. Nothing was sent. Please try again in a moment.";
+
 /* Dash DEX */
 "The final amount you receive may differ from this estimate by up to %d%% due to price slippage." = "The final amount you receive may differ from this estimate by up to %d%% due to price slippage.";
 
@@ -5911,6 +5935,9 @@
 
 /* CSV Export */
 "The full transaction history will be exported as a CSV file" = "The full transaction history will be exported as a CSV file";
+
+/* DashSpend */
+"The gift card provider returned an invalid payment address. Nothing was sent. Please try again or contact support." = "The gift card provider returned an invalid payment address. Nothing was sent. Please try again or contact support.";
 
 /* Identity top-up second leg cancelled */
 "The identity top-up result could not be confirmed. Check your balances before continuing." = "The identity top-up result could not be confirmed. Check your balances before continuing.";
@@ -6046,6 +6073,9 @@
 
 /* SPV diagnostics */
 "The persisted wallet row has no network — cannot arm a resync." = "ردیف ذخیره‌شده کیف پول شبکه ندارد — نمی‌توان همزمان‌سازی مجدد را آماده کرد.";
+
+/* DashSpend: %@ is a percentage */
+"The price is %@ higher than expected" = "The price is %@ higher than expected";
 
 /* Dash DEX / dex_error_price_moved */
 "The price moved too much. Please go back and try again." = "The price moved too much. Please go back and try again.";
@@ -6320,6 +6350,9 @@
 
 /* SDK identity profile sheet — explains the identity credit balance */
 "This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits." = "این موجودی کارمزدهای شبکه Dash Platform را می‌پردازد — نام‌های کاربری، درخواست‌های مخاطب، به‌روزرسانی نمایه. این موجودی به هویت شما تعلق دارد، نه به کیف پولتان: برخلاف موجودی‌های شفاف، Platform و Shielded نمی‌توان آن را مانند Dash معمولی خرج کرد. شارژ‌کردن، Dash را از موجودی انتخابی شما — به‌طور پیش‌فرض Shielded — به اعتبار هویت تبدیل می‌کند.";
+
+/* DashSpend */
+"This can mean the market moved fast or the provider's price is wrong. If you're not sure, cancel and try again in a few minutes." = "This can mean the market moved fast or the provider's price is wrong. If you're not sure, cancel and try again in a few minutes.";
 
 /* DashSpend */
 "This card works only in the United States." = "This card works only in the United States.";
@@ -7651,6 +7684,9 @@
 
 /* Usernames */
 "You chose “%@” as your username." = "You chose “%@” as your username.";
+
+/* DashSpend */
+"You confirmed" = "You confirmed";
 
 /* DashSpend */
 "You do not have sufficient funds to complete this transaction" = "موجودی‌تان برای انجام این تراکنش، کافی نیست";
