@@ -293,6 +293,20 @@ private struct DashSpendPurchaseSheet: View {
         return false
     }
 
+    /// The share of the screen height the sheet may take. Given to the sheet and used for
+    /// `contentHeightLimit`, so the two cannot differ.
+    private static let maxHeightFraction: CGFloat = 0.95
+
+    /// `DashUIKit.BottomSheet`'s chrome above the content: an 18pt grabber and a 74pt header.
+    private static let chromeHeight: CGFloat = 92
+
+    /// The height left for the content once the sheet is at its tallest. Content that is
+    /// taller than the sheet is cut off at the bottom, so the "Price updated" dialog is held
+    /// to this and scrolls inside it.
+    private var contentHeightLimit: CGFloat {
+        (UIDevice.screenHeight * Self.maxHeightFraction - Self.chromeHeight).rounded(.down)
+    }
+
     var body: some View {
         DashUIKit.BottomSheet.selfSizing(
             title: title,
@@ -301,6 +315,7 @@ private struct DashSpendPurchaseSheet: View {
             isCloseButtonEnabled: !isWaiting,
             onClose: { viewModel.dismissPurchaseSheet() },
             fallback: DashSpendConfirmationDialog.sheetFallbackHeight,
+            maxHeightFraction: Self.maxHeightFraction,
             cornerRadius: 32,
             animatesHeightChanges: true
         ) {
@@ -331,6 +346,7 @@ private struct DashSpendPurchaseSheet: View {
         case .priceUpdated(let change):
             DashSpendPriceUpdatedDialog(
                 change: change,
+                maxHeight: contentHeightLimit,
                 onPay: { viewModel.resolvePriceChange(pay: true) },
                 onCancel: { viewModel.resolvePriceChange(pay: false) }
             )

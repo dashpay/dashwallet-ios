@@ -7,6 +7,7 @@
 //  question carries a warning, and the exact conversion of a quoted Dash amount to duffs.
 //
 
+import SwiftUI
 import XCTest
 @testable import dashpay
 
@@ -951,5 +952,36 @@ final class PiggyCardsPaymentURITests: XCTestCase {
         assertRefused("bitcoin:\(Self.testnetAddress)?amount=1")
         assertRefused("\(Self.testnetAddress)?amount=1")
         assertRefused("")
+    }
+}
+
+/// The "Price updated" dialog on a screen too short for all of it.
+@MainActor
+final class DashSpendPriceUpdatedDialogLayoutTests: XCTestCase {
+    /// What an iPhone SE leaves for the dialog: 95% of its 667 pt, less the sheet's 92 pt
+    /// of grabber and header.
+    private static let shortScreenLimit: CGFloat = 541
+
+    private func height(maxHeight: CGFloat?, warning: Bool) -> CGFloat {
+        let change = GiftCardPaymentGuard.PriceChange(
+            confirmedAmount: 493_700_000, confirmedFiat: 192.50,
+            requestedAmount: warning ? 552_940_000 : 513_440_000,
+            requestedFiat: warning ? 215.60 : 200.20, needsWarning: warning)
+        let host = UIHostingController(rootView: DashSpendPriceUpdatedDialog(
+            change: change, maxHeight: maxHeight, onPay: {}, onCancel: {}))
+        return host.sizeThatFits(in: CGSize(width: 375, height: 10_000)).height
+    }
+
+    /// The warning variant is taller than a short screen allows, and takes no more than it
+    /// is given: the part above the buttons scrolls instead.
+    func testWarningVariantIsHeldToItsHeightLimit() {
+        XCTAssertGreaterThan(height(maxHeight: nil, warning: true), Self.shortScreenLimit)
+        XCTAssertEqual(height(maxHeight: Self.shortScreenLimit, warning: true), Self.shortScreenLimit, accuracy: 0.5)
+    }
+
+    func testDialogShorterThanItsLimitKeepsItsNaturalHeight() {
+        XCTAssertLessThan(height(maxHeight: nil, warning: false), Self.shortScreenLimit)
+        XCTAssertEqual(height(maxHeight: Self.shortScreenLimit, warning: false),
+                       height(maxHeight: nil, warning: false), accuracy: 0.5)
     }
 }

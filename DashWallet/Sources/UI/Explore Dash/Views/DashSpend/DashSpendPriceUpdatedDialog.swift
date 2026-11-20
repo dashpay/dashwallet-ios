@@ -22,6 +22,9 @@ import DashUIKit
 /// prices, the difference, and the choice to pay the new price or cancel.
 struct DashSpendPriceUpdatedDialog: View {
     let change: GiftCardPaymentGuard.PriceChange
+    /// The most height the dialog may take; `nil` for its natural height. When the content
+    /// is taller, the prices and the warning scroll and the buttons stay in place below them.
+    var maxHeight: CGFloat? = nil
     let onPay: () -> Void
     let onCancel: () -> Void
 
@@ -53,57 +56,70 @@ struct DashSpendPriceUpdatedDialog: View {
     }
 
     var body: some View {
-        VStack(spacing: 20) {
-            VStack(spacing: 4) {
-                Text(fiat(change.requestedFiat))
-                    .font(.largeTitle.weight(.semibold))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.5)
-                DashSpendDashFigure(text: GiftCardAmountText.exactDash(change.requestedAmount),
-                                    color: .dash.blue)
-            }
-            .foregroundColor(.dash.blue)
-            .padding(.horizontal, 20)
-
-            VStack(alignment: .leading, spacing: 2) {
-                DashSpendDetailsRow(title: NSLocalizedString("You confirmed", comment: "DashSpend")) {
-                    figures(fiat(change.confirmedFiat),
-                            dash: GiftCardAmountText.approximateDash(change.confirmedAmount))
-                }
-
-                DashSpendDetailsRow(title: NSLocalizedString("Provider asks", comment: "DashSpend")) {
-                    figures(approximateRequestedFiat,
-                            dash: GiftCardAmountText.exactDash(change.requestedAmount))
-                }
-
-                DashSpendDetailsRow(title: NSLocalizedString("Difference", comment: "DashSpend")) {
-                    figures("+\(increasePercent) · \(fiat(change.differenceFiat))",
-                            dash: "+" + GiftCardAmountText.exactDash(change.differenceAmount))
-                }
-
-                if change.needsWarning {
-                    DashSpendDetailsRow(title: NSLocalizedString("Final price", comment: "DashSpend")) {
-                        Text(approximateRequestedFiat)
-                            .font(.subhead)
-                            .foregroundColor(.dash.primaryText)
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(spacing: 20) {
+                    VStack(spacing: 4) {
+                        Text(fiat(change.requestedFiat))
+                            .font(.largeTitle.weight(.semibold))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.5)
+                        DashSpendDashFigure(text: GiftCardAmountText.exactDash(change.requestedAmount),
+                                            color: .dash.blue)
                     }
+                    .foregroundColor(.dash.blue)
+                    .padding(.horizontal, 20)
 
-                    warning
+                    details
                 }
+                .padding(.horizontal, 20)
+                // Room for the box's shadow, which the scroll view would otherwise cut off.
+                .padding(.bottom, 20)
             }
-            .padding(6)
-            .background(Color.dash.secondaryBackground)
-            .cornerRadius(20)
-            .shadow(color: Color.dash.shadow, radius: 20, x: 0, y: 5)
+            .scrollBounceBehavior(.basedOnSize)
 
             buttons
-                .padding(.horizontal, 10)
+                .padding(.horizontal, 30)
         }
-        .padding(.horizontal, 20)
         .padding(.bottom, 20)
-        // Keep the natural height independent of the offered detent so DashUIKit's
-        // `.selfSizingSheet()` can measure a stable intrinsic height.
+        .frame(maxHeight: maxHeight)
+        // Keep the height independent of the offered detent so DashUIKit's
+        // `.selfSizingSheet()` can measure a stable one: the natural height, or `maxHeight`
+        // when that is less.
         .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var details: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            DashSpendDetailsRow(title: NSLocalizedString("You confirmed", comment: "DashSpend")) {
+                figures(fiat(change.confirmedFiat),
+                        dash: GiftCardAmountText.approximateDash(change.confirmedAmount))
+            }
+
+            DashSpendDetailsRow(title: NSLocalizedString("Provider asks", comment: "DashSpend")) {
+                figures(approximateRequestedFiat,
+                        dash: GiftCardAmountText.exactDash(change.requestedAmount))
+            }
+
+            DashSpendDetailsRow(title: NSLocalizedString("Difference", comment: "DashSpend")) {
+                figures("+\(increasePercent) · \(fiat(change.differenceFiat))",
+                        dash: "+" + GiftCardAmountText.exactDash(change.differenceAmount))
+            }
+
+            if change.needsWarning {
+                DashSpendDetailsRow(title: NSLocalizedString("Final price", comment: "DashSpend")) {
+                    Text(approximateRequestedFiat)
+                        .font(.subhead)
+                        .foregroundColor(.dash.primaryText)
+                }
+
+                warning
+            }
+        }
+        .padding(6)
+        .background(Color.dash.secondaryBackground)
+        .cornerRadius(20)
+        .shadow(color: Color.dash.shadow, radius: 20, x: 0, y: 5)
     }
 
     private func figures(_ fiat: String, dash: String) -> some View {
