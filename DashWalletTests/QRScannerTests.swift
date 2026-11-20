@@ -563,10 +563,18 @@ final class QRScannerTests: XCTestCase {
     func testAnInvoiceAmountStaysExactAcrossUnits() {
         let send = SendViewModel(contactLookup: { _ in nil })
         send.prefill(address: Self.address, amountDuffs: 123_456_789, requiresAmount: true)
+        let shown = send.amountText
         send.unit = .fiat
         XCTAssertEqual(send.dashDuffsUnsigned, 123_456_789)
+        if let fiat = SendViewModel.exactAmountText(123_456_789, in: .fiat) {
+            XCTAssertEqual(send.amountText, fiat)
+        } else {
+            XCTAssertEqual(send.unit, .dash, "without a rate the amount stays in DASH")
+            XCTAssertEqual(send.amountText, shown)
+        }
         send.unit = .dash
         XCTAssertEqual(send.dashDuffsUnsigned, 123_456_789)
+        XCTAssertEqual(send.amountText, shown, "drawn from the duffs, not from the fiat reading")
         send.amountText = "2"
         XCTAssertEqual(send.dashDuffsUnsigned, 200_000_000)
     }
@@ -594,15 +602,44 @@ final class QRScannerTests: XCTestCase {
         XCTAssertFalse(ParsedPaymentURI.textCarriesUnpayableLink("dash:\(Self.address)?amount=1"))
     }
 
+    /// Both clipboard readers take a link whole, even inside brackets: a
+    /// refused one yields no address, an addressless merchant request none
+    /// from its metadata, and a valid one next to punctuation its recipient.
+    func testClipboardReadsDelimitedLinksWhole() {
+        let refused = "dashwallet://pay=\(Self.address)&amount=1&sender=ctx&req-memo=x"
+        for text in ["(\(refused))", "<\(refused)>"] {
+            XCTAssertNil(SendViewModel.detect(in: text), text)
+            XCTAssertTrue(ParsedPaymentURI.textCarriesUnpayableLink(text), text)
+        }
+        XCTAssertNil(SendViewModel.detect(in: "see [dash:\(Self.address)?req-amount=1]."))
+        XCTAssertNil(SendViewModel.detect(in: "dash:?r=https://merchant.example/r&label=\(Self.address)"))
+
+        let valid = "Pay (dash:\(Self.address)?amount=1)."
+        XCTAssertEqual(ParsedPaymentURI.paymentLinkSpans(in: valid), ["dash:\(Self.address)?amount=1"])
+        XCTAssertFalse(ParsedPaymentURI.textCarriesUnpayableLink(valid))
+        XCTAssertEqual(SendViewModel.detect(in: valid)?.address, Self.address)
+        XCTAssertEqual(SendViewModel.detect(in: "Send to \(Self.address), thanks")?.address, Self.address)
+    }
+
     /// DashSpend's checkout calls no app back, so one that requires it is
     /// refused before anything is authorized or fetched.
     func testDashSpendRefusesARequiredAppCallback() async {
+        await assertDashSpendRefuses("dash:?r=https://merchant.example/r&req-sender=ctx")
+    }
+
+    /// DashSpend pays only a Dash merchant request: another currency's is
+    /// refused before anything is authorized or fetched.
+    func testDashSpendRefusesAForeignMerchantRequest() async {
+        await assertDashSpendRefuses("bitcoin:?r=https://merchant.example/r")
+    }
+
+    private func assertDashSpendRefuses(_ url: String, line: UInt = #line) async {
         do {
-            _ = try await SendCoinsService().payWithDashUrl(url: "dash:?r=https://merchant.example/r&req-sender=ctx")
-            XCTFail("paid")
+            _ = try await SendCoinsService().payWithDashUrl(url: url)
+            XCTFail("paid", line: line)
         } catch DashSpendError.paymentProcessingError {
         } catch {
-            XCTFail("\(error)")
+            XCTFail("\(error)", line: line)
         }
     }
 

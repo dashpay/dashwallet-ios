@@ -314,10 +314,16 @@ final class SendViewModel: ObservableObject {
                 isApplyingMax = true
                 defer { isApplyingMax = false }
                 applyMaxAmountText(maxAmountDuffs)
-            } else if invoiceAmountDuffs != nil {
+            } else if let invoiceAmountDuffs {
+                // Drawn from the stored duffs, never from the other unit's
+                // rounded text. Without a rate the amount stays in its unit.
+                guard let text = Self.exactAmountText(invoiceAmountDuffs, in: unit) else {
+                    unit = oldValue
+                    return
+                }
                 isApplyingMax = true
                 defer { isApplyingMax = false }
-                convertAmountText(from: oldValue, to: unit)
+                amountText = text
             } else {
                 convertAmountText(from: oldValue, to: unit)
             }
@@ -1213,15 +1219,20 @@ final class SendViewModel: ObservableObject {
     static func detect(in raw: String) -> ClipboardSuggestion? {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty { return nil }
-        // A copied payment URI is a payment, not prose to pick an address
-        // out of: one the scanner would refuse suggests nothing.
+        // A copied payment link is a payment, not prose to pick an address
+        // out of: one the scanner would refuse, or whose recipient may not be
+        // paid alone, suggests nothing; otherwise only its parsed recipient.
         if ParsedPaymentURI.textCarriesUnpayableLink(trimmed) { return nil }
-        for token in trimmed.split(whereSeparator: \.isWhitespace) where token.contains(":") {
-            let parsed = ParsedPaymentURI.parse(paymentString: String(token))
-            if parsed.hasExplicitScheme, Self.refusesAddressOnly(parsed) { return nil }
+        for span in ParsedPaymentURI.paymentLinkSpans(in: trimmed) {
+            let parsed = ParsedPaymentURI.parse(paymentString: span)
+            if Self.refusesAddressOnly(parsed) { return nil }
+            if let address = parsed.address, let kind = classify(address) {
+                return ClipboardSuggestion(address: address, kind: kind)
+            }
         }
 
-        for candidate in trimmed.split(whereSeparator: { !$0.isLetter && !$0.isNumber }) {
+        let prose = ParsedPaymentURI.textOutsideLinks(trimmed)
+        for candidate in prose.split(whereSeparator: { !$0.isLetter && !$0.isNumber }) {
             let word = String(candidate)
             if let kind = classify(word) {
                 return ClipboardSuggestion(address: word, kind: kind)
@@ -1890,6 +1901,19 @@ final class SendViewModel: ObservableObject {
 
     /// Keep the selected Max amount exact in duffs while rendering either
     /// DASH or an approximate two-decimal fiat value.
+    /// An exact amount as editor text in `unit`: the DASH amount itself, or
+    /// its two-decimal fiat reading. nil without an exchange rate.
+    static func exactAmountText(_ duffs: UInt64, in unit: InternalTransferUnit) -> String? {
+        switch unit {
+        case .dash:
+            return editorText(duffs: duffs)
+        case .fiat:
+            guard let fiat = try? CurrencyExchanger.shared.convertDash(amount: duffs.dashAmount, to: App.fiatCurrency)
+            else { return nil }
+            return InternalTransferViewModel.formatTyped(fiat, fractionDigits: 2)
+        }
+    }
+
     private func applyMaxAmountText(_ duffs: UInt64) {
         guard duffs > 0 else {
             maxAmountDuffs = nil

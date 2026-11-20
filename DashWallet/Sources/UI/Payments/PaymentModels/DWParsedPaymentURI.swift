@@ -125,18 +125,37 @@ final class ParsedPaymentURI: NSObject {
         scheme == "https" && rURL.map(PaymentProtocolTransport.isSecure) == true
     }
 
-    /// A payment link (`dash:`, `pay:` or `dashwallet:`) in `text` that cannot be paid as it
-    /// stands, a refused pay wrapper among them: the text is then no prose to pick an address out
-    /// of, which would pay the recipient without what the link required.
-    @objc(textCarriesUnpayableLink:)
-    static func textCarriesUnpayableLink(_ text: String) -> Bool {
-        text.split(whereSeparator: \.isWhitespace).contains { token in
-            let lowercased = token.lowercased()
-            guard let scheme = ["dash:", "pay:", "dashwallet:"].first(where: { lowercased.hasPrefix($0) }),
-                  token.count > scheme.count else { return false }
-            return !parse(paymentString: String(token)).isValidDashPaymentIntent
+    /// The payment links (`dash:`, `pay:`, `dashwallet:`) in copied text, each a whole span: it
+    /// ends at whitespace or an enclosing bracket or quote, less trailing sentence punctuation.
+    /// Every reader of the clipboard parses these whole and never picks addresses out of them.
+    @objc(paymentLinkSpansIn:)
+    static func paymentLinkSpans(in text: String) -> [String] {
+        let range = NSRange(text.startIndex..., in: text)
+        return linkPattern.matches(in: text, range: range).compactMap { match in
+            Range(match.range, in: text).map { String(text[$0]).trimmingCharacters(in: trailingPunctuation) }
+        }.filter { span in
+            !["dash:", "pay:", "dashwallet:"].contains(span.lowercased())
         }
     }
+
+    /// `text` with its payment links taken out, for finding a bare address in prose.
+    @objc(textOutsideLinks:)
+    static func textOutsideLinks(_ text: String) -> String {
+        linkPattern.stringByReplacingMatches(
+            in: text, range: NSRange(text.startIndex..., in: text), withTemplate: " ")
+    }
+
+    /// A payment link in `text` that cannot be paid as it stands, a refused pay wrapper among
+    /// them: no address may then be taken from the text, which would pay the recipient without
+    /// what the link required.
+    @objc(textCarriesUnpayableLink:)
+    static func textCarriesUnpayableLink(_ text: String) -> Bool {
+        paymentLinkSpans(in: text).contains { !parse(paymentString: $0).isValidDashPaymentIntent }
+    }
+
+    private static let linkPattern = try! NSRegularExpression(
+        pattern: #"(?i)(?<![A-Za-z0-9])(?:dashwallet|dash|pay):[^\s<>()\[\]{}"'`]+"#)
+    private static let trailingPunctuation = CharacterSet(charactersIn: ".,;:!?")
 
     /// A merchant request the wallet fetches: one in a `dash:` URI it can pay, or a whole https
     /// URL. Another currency's `r=` is that currency's request, never fetched as Dash's.

@@ -37,7 +37,10 @@ NS_ASSUME_NONNULL_BEGIN
         [resultSet addObject:str];
         // A link that cannot be paid as it stands is not prose: its recipient is not paid alone.
         if (![DWParsedPaymentURI textCarriesUnpayableLink:str]) {
-            [resultSet addObjectsFromArray:[str componentsSeparatedByCharactersInSet:separatorsSet]];
+            // Links whole, and addresses only from the prose around them.
+            [resultSet addObjectsFromArray:[DWParsedPaymentURI paymentLinkSpansIn:str]];
+            [resultSet addObjectsFromArray:[[DWParsedPaymentURI textOutsideLinks:str]
+                                               componentsSeparatedByCharactersInSet:separatorsSet]];
         }
     }
 
@@ -78,7 +81,10 @@ NS_ASSUME_NONNULL_BEGIN
         [resultSet addObject:str];
         // A link that cannot be paid as it stands is not prose: its recipient is not paid alone.
         if (![DWParsedPaymentURI textCarriesUnpayableLink:str]) {
-            [resultSet addObjectsFromArray:[str componentsSeparatedByCharactersInSet:separatorsSet]];
+            // Links whole, and addresses only from the prose around them.
+            [resultSet addObjectsFromArray:[DWParsedPaymentURI paymentLinkSpansIn:str]];
+            [resultSet addObjectsFromArray:[[DWParsedPaymentURI textOutsideLinks:str]
+                                               componentsSeparatedByCharactersInSet:separatorsSet]];
         }
     }
 
