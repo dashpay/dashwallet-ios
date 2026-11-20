@@ -523,6 +523,36 @@ final class QRScannerTests: XCTestCase {
         XCTAssertNotNil(DWURLParser.action(for: try XCTUnwrap(URL(string: "\(link)&req-IS=1"))))
     }
 
+    /// A pay link's recipient is a bare destination: one carrying URI syntax
+    /// could hide fields the rewrite then replaces, so it is refused, opened
+    /// or scanned.
+    func testPayLinkRecipientWithURISyntaxIsRefused() throws {
+        let single = "dashwallet://pay=\(Self.address)&amount=1&sender=ctx"
+        XCTAssertNotNil(DWURLParser.action(for: try XCTUnwrap(URL(string: single))))
+        XCTAssertNotNil(DWURLParser.paymentURL(forScannedLink: try XCTUnwrap(URL(string: single))))
+        for pay in ["\(Self.address)%3Freq-memo%3Dhi", "\(Self.address)%3Famount%3D2", "dash%3A\(Self.address)",
+                    "\(Self.address)%23x", "\(Self.address)%2Fx"] {
+            let link = "dashwallet://pay=\(pay)&amount=1&sender=ctx"
+            guard let url = URL(string: link) else { continue }
+            XCTAssertNil(DWURLParser.action(for: url), link)
+            XCTAssertNil(DWURLParser.paymentURL(forScannedLink: url), link)
+            let (scanner, recorder) = makeScanner(.payment)
+            scanner.didDetectCodes([link])
+            XCTAssertTrue(recorder.results.isEmpty, link)
+        }
+    }
+
+    /// An amount whose exponent overflows `Decimal` is no amount the wallet
+    /// can pay, never an open amount.
+    func testOverflowingURIAmountIsRefused() {
+        for amount in ["1e300", "9e200", "1E999"] {
+            let parsed = ParsedPaymentURI.parse(paymentString: "dash:\(Self.address)?amount=\(amount)")
+            XCTAssertTrue(parsed.hasInvalidAmount, amount)
+            XCTAssertFalse(parsed.isValidDashPaymentIntent, amount)
+        }
+        XCTAssertEqual(ParsedPaymentURI.parse(paymentString: "dash:\(Self.address)?amount=1e-9").amount, 1)
+    }
+
     /// An invoice that requires an amount of nothing is refused, so a rescan
     /// can't keep the earlier invoice's amount for its recipient. A required
     /// amount always replaces the form's, even an empty one.

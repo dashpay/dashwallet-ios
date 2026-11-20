@@ -173,8 +173,21 @@ NS_ASSUME_NONNULL_BEGIN
     return NO;
 }
 
+/// `pay` is interpolated into the `dash:` URI, so it must be a bare destination: base58 and bech32m
+/// use ASCII letters and digits only. Anything else (`?`, `&`, `#`, `%`, `:`) could carry fields that
+/// the rewrite then replaces before the payment parser checks them.
 + (BOOL)isPayParamsValid:(NSDictionary<NSString *, NSString *> *)params {
-    if (params[@"pay"] && params[@"sender"]) {
+    static NSCharacterSet *notInDestination;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        notInDestination = [[NSCharacterSet characterSetWithCharactersInString:
+                                                @"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"] invertedSet];
+    });
+    NSString *pay = params[@"pay"];
+    if (pay.length == 0 || [pay rangeOfCharacterFromSet:notInDestination].location != NSNotFound) {
+        return NO;
+    }
+    if (params[@"sender"]) {
         return YES;
     }
 
