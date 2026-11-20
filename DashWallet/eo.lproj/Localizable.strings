@@ -2510,6 +2510,9 @@
 /* DashSpend */
 "Gift card is being prepared" = "Gift card is being prepared";
 
+/* No comment provided by engineer. */
+"Gift card order expired. Please contact support." = "Gift card order expired. Please contact support.";
+
 /* DashSpend */
 "Gift card purchase successful" = "Gift card purchase successful";
 

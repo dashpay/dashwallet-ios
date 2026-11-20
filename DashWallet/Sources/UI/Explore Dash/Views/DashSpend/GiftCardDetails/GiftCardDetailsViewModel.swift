@@ -356,6 +356,14 @@ class GiftCardDetailsViewModel: ObservableObject {
                 }
                 stopTicker()
 
+            case "expired":
+                await MainActor.run {
+                    self.uiState.loadingError = DashSpendError.customError(
+                        NSLocalizedString("Gift card order expired. Please contact support.", comment: "")
+                    )
+                }
+                stopTicker()
+
             default:
                 break
             }
