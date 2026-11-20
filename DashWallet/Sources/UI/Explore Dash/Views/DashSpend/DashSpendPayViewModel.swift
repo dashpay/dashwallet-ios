@@ -538,7 +538,10 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 txidWire = try await sendCoinsService.payWithDashUrl(
                     url: url, awaitAcceptance: false,
                     validate: { confirmation in
-                        try await self.confirmQuote(requested: confirmation.amount, approval: approval)
+                        try await self.confirmQuote(
+                            requested: confirmation.amount, approval: approval,
+                            answerWithin: GiftCardPaymentGuard.priceAnswerLimit(
+                                requestExpires: confirmation.request.details.expires))
                     })
             } catch DashSpendError.paymentNotAcknowledged(let unacknowledgedTxIdWire, let reason) {
                 // Same loss, one step earlier: the network dropped between posting the payment

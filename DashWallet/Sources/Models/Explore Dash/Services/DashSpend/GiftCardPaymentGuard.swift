@@ -30,6 +30,17 @@ enum GiftCardPaymentGuard {
     /// is not taken from a provider: how long an unpaid order stays open is not known here.
     static let priceAnswerLimit: TimeInterval = 120
 
+    /// The time allowed for accepting a higher price on a payment request.
+    ///
+    /// - Parameter requestExpires: the request's `expires` time; 0 when it states none, which
+    ///   is also how an omitted field decodes.
+    /// - Returns: `priceAnswerLimit` for a request with no expiry, `nil` for one that states
+    ///   an expiry: `BIP70PaymentService.authorizeAndSend` checks that expiry again once the
+    ///   buyer has answered.
+    static func priceAnswerLimit(requestExpires: UInt64) -> TimeInterval? {
+        requestExpires == 0 ? priceAnswerLimit : nil
+    }
+
     /// The wallet's exchange rate as read when a purchase is approved.
     struct ExchangeRate {
         /// Fiat price of one Dash; nil when the wallet has no rate.

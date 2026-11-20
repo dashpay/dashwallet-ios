@@ -42,6 +42,18 @@ final class GiftCardPaymentGuardTests: XCTestCase {
         XCTAssertEqual(GiftCardPaymentGuard.priceAnswerLimit, 120)
     }
 
+    /// A payment request that states no expiry (an omitted field decodes as 0) is answered
+    /// within the same two minutes.
+    func testPaymentRequestWithoutExpiryGetsTheAnswerLimit() {
+        XCTAssertEqual(GiftCardPaymentGuard.priceAnswerLimit(requestExpires: 0), 120)
+    }
+
+    /// A payment request with its own expiry is left to that expiry.
+    func testPaymentRequestWithAnExpiryGetsNoAnswerLimit() {
+        XCTAssertNil(GiftCardPaymentGuard.priceAnswerLimit(requestExpires: 1))
+        XCTAssertNil(GiftCardPaymentGuard.priceAnswerLimit(requestExpires: 1_900_000_000))
+    }
+
     func testQuoteEqualToConfirmedIsPaidAsConfirmed() throws {
         XCTAssertNil(try change(confirmed))
     }
@@ -800,6 +812,26 @@ final class DashSpendPayApprovalTests: XCTestCase {
             XCTFail("unexpected error: \(error)")
         }
         XCTAssertNil(viewModel.purchaseSheet)
+    }
+
+    /// The limit a payment request with no expiry is given ends a late acceptance the same way.
+    func testHigherPriceOnARequestWithoutExpiryAcceptedLateEndsThePurchase() async throws {
+        let clock = Clock()
+        let (viewModel, snapshot) = try viewModelWithConfirmSheet(now: { clock.time })
+        let (task, shown) = await quote(snapshot.approval.amount * 2, on: viewModel, snapshot: snapshot,
+                                        answerWithin: GiftCardPaymentGuard.priceAnswerLimit(requestExpires: 0))
+        _ = try XCTUnwrap(shown)
+
+        clock.time += GiftCardPaymentGuard.priceAnswerLimit + 1
+        viewModel.resolvePriceChange(pay: true)
+        do {
+            try await finish(task, on: viewModel)
+            XCTFail("a price accepted after the limit went on")
+        } catch DashSpendError.customError(let message) {
+            XCTAssertEqual(message, GiftCardPaymentGuard.quoteExpiredError.errorDescription)
+        } catch {
+            XCTFail("unexpected error: \(error)")
+        }
     }
 
     /// A late "no" is still just a "no": nothing is reported to the buyer.
