@@ -1245,15 +1245,18 @@ final class SendViewModel: ObservableObject {
     @discardableResult
     func ingestScannedInput(_ paymentInput: DWPaymentInput) -> Bool {
         guard let address = Self.scannedAddress(in: paymentInput) else { return false }
-        prefill(address: address, amountDuffs: paymentInput.parsedURI?.amount ?? 0)
+        prefill(address: address, amountDuffs: paymentInput.parsedURI?.amount ?? 0,
+                requiresAmount: paymentInput.parsedURI?.requiresAmount ?? false)
         return true
     }
 
     /// Every scan entry point fills the form here, so each reads back
-    /// exactly the scanned duffs.
-    func prefill(address: String, amountDuffs: UInt64) {
+    /// exactly the scanned duffs. An optional amount does not replace one
+    /// already entered; an invoice's required amount always does, so a
+    /// rescan never pairs its recipient with an earlier amount.
+    func prefill(address: String, amountDuffs: UInt64, requiresAmount: Bool = false) {
         addressText = address
-        if amountDuffs > 0, dashDuffsUnsigned == 0 {
+        if amountDuffs > 0, requiresAmount || dashDuffsUnsigned == 0 {
             unit = .dash
             amountText = Self.editorText(duffs: amountDuffs)
         }

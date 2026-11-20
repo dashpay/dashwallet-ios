@@ -215,13 +215,15 @@ final class ParsedPaymentURI: NSObject {
     /// pay link (the plain `dashwallet:<address>` alias, which `BIP70URI` reads) is read as is.
     private static func deepLinkPaymentString(for raw: String) -> DeepLinkPayment {
         let link = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard link.lowercased().hasPrefix("dashwallet:"), let url = URL(string: link) else { return .notAWrapper }
-        if let paymentURL = DWURLParser.paymentURL(forScannedLink: url) {
+        let scheme = "dashwallet:"
+        guard link.lowercased().hasPrefix(scheme) else { return .notAWrapper }
+        if let url = URL(string: link), let paymentURL = DWURLParser.paymentURL(forScannedLink: url) {
             return .rewritten(paymentURL.absoluteString)
         }
-        // The router's own test for a pay link: one it refused is refused here too, not reread.
-        let isPayLink = url.host?.lowercased().hasPrefix("pay") == true || url.path.lowercased() == "/pay"
-        return isPayLink ? .refused : .notAWrapper
+        // Only the bare alias (`dashwallet:<address>`) is read as is. Any other form the router
+        // did not turn into a payment, a `//` link it refused or could not even parse among them,
+        // is refused here too, never reread.
+        return link.dropFirst(scheme.count).hasPrefix("/") ? .refused : .notAWrapper
     }
 
     private enum DeepLinkPayment {
