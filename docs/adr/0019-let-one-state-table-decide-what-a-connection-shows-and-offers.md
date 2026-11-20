@@ -23,9 +23,9 @@ publish failed" came from screens deciding on their own.
 
 1. **One pure table.** `AppConnect.StateActions.row(for:)` maps each status to its tab, badge
    colour, text and allowed actions. The row and the connection sheet read the badge colour and the
-   actions from it, and the Active and Expired tabs read the tab. The badge's text is a switch of its
-   own in `ConnectionStatusBadge`, and the Disconnected tab lists the wallet's disconnect history
-   rather than the table's tab. The table's switch has no `default`, so a new status does not
+   actions from it, and the page's tabs read the tab (the data source splits the Disconnected rows
+   off by it). The badge's text is a switch of its own in `ConnectionStatusBadge`, with the same
+   strings as the table's `textKey`. The table's switch has no `default`, so a new status does not
    compile until it has a row.
 2. **Rules in each view model**, as before.
 

@@ -25,7 +25,7 @@ user to whatever host the request named.
    callbacks without asking, caution the rest.
 2. **Know no app, ask before returning**: every app is unknown, the sheet says "This wallet does not
    know this app." (naming the return host when there is one), and after Approve or Deny on a link
-   request with a callback the sheet asks "Return to <host>?" before opening it.
+   request with a callback the sheet asks `Return to <host>?` before opening it.
 3. **Never return**: drop callbacks; the user switches back by hand.
 
 ## Decision outcome

@@ -64,12 +64,12 @@ accounts for is access nobody can see or end otherwise.
 - A profile key another app, or another device of the same wallet, still uses is turned off too;
   that app has to ask again.
 - It differs from the Android wallet, which only reports such keys.
-- A v2 approval whose outcome was unknown when it failed has no record, so its profile key is
-  turned off like any other (`TODO(app-connect-v2-pending-record)`).
 - Only the active identity is covered; profile keys on another identity of the wallet stay on
   until a disconnect runs while that identity is active.
 
 **Neutral**
+- An approval records its intent before it sends the update, so a profile key whose approval
+  ended with an unknown outcome is named by that intent and is not one of these keys.
 - A key of another app or wallet with a bound this build cannot read is left on and reported as
   not checked; the profile keys still go.
 - Letting the user keep such keys can come back in a later release as a new decision.

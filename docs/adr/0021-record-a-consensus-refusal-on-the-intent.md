@@ -35,7 +35,8 @@ identity updates. After a refusal Platform keeps nothing, so the fact cannot be 
 
 **Positive**
 - Refused needs no fence. The row shows the label Refused and the approve sheet one fixed
-  sentence for every code; the code reaches the log only.
+  sentence for every code but the identity's insufficient balance, which shows the top-up text
+  instead; the code reaches the log only.
 - Remove hides the row without a PIN and writes nothing to Platform.
 - A sign-in that may still land is never shown Refused.
 

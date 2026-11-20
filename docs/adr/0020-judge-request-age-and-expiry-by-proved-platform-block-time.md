@@ -36,10 +36,10 @@ commit (`1721ca7a8b`) contains it.
 
 **Positive**
 - Expiry and request freshness follow what Platform enforces; the phone clock plays no part.
-- Nothing is shown Expired on a guess. Without a Platform time a key past its expiry still shows
-  Active until a read brings one.
+- Nothing is shown Expired on a guess.
 
 **Negative**
+- Without a Platform time a key past its expiry still shows Active until a read brings one.
 - Every request check and every Connections read waits for a proved read.
 - On a quiet network the latest block can be minutes old, so the 2-minute "future" bound may
   refuse a request scanned at once; it is to be measured on a protocol-14 testnet and widened if

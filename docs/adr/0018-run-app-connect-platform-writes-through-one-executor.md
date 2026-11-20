@@ -29,7 +29,9 @@ timeout was treated differently by each.
    `AppConnect.nextStep` routes a key update to `recordRefusal` when Platform refused it by
    consensus (the approval records the refusal on its intent and fails without a read) and to the
    identity read otherwise, a publish or delete to the response read, and a fence to `.stop`. The
-   approval does the routed read in the same run. A disconnect does not follow the route step by
+   approval does the routed read in the same run. An approval that first fences a superseded
+   sign-in (`fenceAndDisable`, ADR-0029) stops before its own key update when that fails, and reads
+   the identity again when it succeeds. A disconnect does not follow the route step by
    step: a key update that is not `.done`, a consensus refusal included (it is not recorded on an
    intent), stops its key updates, and the disconnect then tries one identity read in the same
    run. A key that read shows off no longer counts as live; if the read fails, the keys of the
@@ -47,8 +49,7 @@ timeout was treated differently by each.
 ## Consequences
 
 **Positive**
-- One log, timeout and outcome for every write, and one place (`AppConnect.nextStep`) that decides
-  what follows an error or a timeout. The executor does not retry a write.
+- One log, timeout and outcome for every write. The executor does not retry a write.
 - A disconnect that stops part-way reports what is still live and keeps the row, and its outcome
   is settled from the read after its writes; this is covered by seam tests.
 

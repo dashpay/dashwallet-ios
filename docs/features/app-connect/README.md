@@ -51,7 +51,8 @@ one-scan login possible, and with it DashConnect on mainnet once mainnet runs pr
   against Platform (who owns each contract, the identity hint), clamps the limits, derives one key
   per binding, and registers them in one identity update that also turns off the keys of its
   earlier grant on the same connection. The keys are published sealed on the App Connect contract,
-  and the app's callback opens after the user answers. A `dash-key:` v2 code for mainnet is refused; a
+  and for a request that came as a link the wallet asks `Return to <host>?` before it opens the
+  app's callback ([ADR-0056](../../adr/0056-know-no-app-and-ask-before-returning-to-one.md)). A `dash-key:` v2 code for mainnet is refused; a
   `dashpay://connect` one is answered ([ADR-0053](../../adr/0053-open-dashconnect-on-mainnet-and-gate-each-request-by-protocol-14.md)).
   [ADR-0009](../../adr/0009-answer-app-connect-request-v2-with-wallet-derived-keys-under-wallet-limits.md).
 
