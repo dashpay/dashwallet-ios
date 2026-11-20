@@ -293,10 +293,43 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
             scope: scope, contactIdentityId: contact, since: lockWindowStart))
     }
 
-    func testUnresolvedPlatformRecordOutsideWindowDoesNotLock() throws {
+    /// Past the window a Platform payout may still be queued: the attempt
+    /// stays unresolved until the user, told so, chooses to pay again.
+    func testAnAgedPlatformRecordAwaitsTheUsersDecision() throws {
         _ = try begin(source: .platform, coreHeight: Self.recordedTip)
-        XCTAssertFalse(try store.hasUnresolvedEntry(
-            scope: scope, contactIdentityId: contact, since: Date().addingTimeInterval(60), coreHeight: Self.agedTip))
+        let afterTheWindow = Date().addingTimeInterval(60)
+        XCTAssertEqual(try store.lockState(
+            scope: scope, contactIdentityId: contact, since: afterTheWindow, coreHeight: Self.agedTip),
+            .awaitingDecision)
+        XCTAssertTrue(try store.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: afterTheWindow, coreHeight: Self.agedTip))
+        XCTAssertFalse(try store.releaseAgedEntries(
+            scope: scope, contactIdentityId: contact, since: lockWindowStart, coreHeight: Self.agedTip),
+            "a lock still within its window is not released")
+        XCTAssertTrue(try store.releaseAgedEntries(
+            scope: scope, contactIdentityId: contact, since: afterTheWindow, coreHeight: Self.agedTip))
+        let reopened = DashPayWithdrawalStore(directory: directory)
+        XCTAssertEqual(try reopened.lockState(
+            scope: scope, contactIdentityId: contact, since: afterTheWindow, coreHeight: Self.agedTip), .none)
+        XCTAssertEqual(try reopened.unpaidReservationStreak(scope: scope, contactIdentityId: contact), 1,
+                       "released, it still counts against the address budget")
+    }
+
+    /// A Core tip still catching up with the network is no observation of
+    /// blocks mined since an attempt: it neither starts nor ends a lock.
+    func testOnlyACaughtUpTipCounts() throws {
+        XCTAssertNil(WalletSendService.currentCoreTip(local: Self.recordedTip, network: Self.agedTip))
+        XCTAssertNil(WalletSendService.currentCoreTip(local: Self.agedTip, network: 0))
+        XCTAssertNil(WalletSendService.currentCoreTip(local: 0, network: 0))
+        XCTAssertEqual(WalletSendService.currentCoreTip(local: Self.agedTip, network: Self.agedTip), Self.agedTip)
+
+        _ = try begin(source: .platform,
+                      coreHeight: WalletSendService.currentCoreTip(local: Self.recordedTip, network: Self.agedTip))
+        let afterTheWindow = Date().addingTimeInterval(60)
+        let caughtUp = WalletSendService.currentCoreTip(local: Self.agedTip, network: Self.agedTip)
+        XCTAssertEqual(try store.lockState(
+            scope: scope, contactIdentityId: contact, since: afterTheWindow, coreHeight: caughtUp), .locked)
+        XCTAssertEqual(try store.entries(scope: scope, contactIdentityId: contact).map(\.coreHeight), [Self.agedTip])
     }
 
     /// A device clock moved forward does not move the chain: until the Core
@@ -324,9 +357,9 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
         XCTAssertEqual(try reopened.entries(scope: scope, contactIdentityId: contact).map(\.coreHeight), [Self.agedTip])
         XCTAssertTrue(try reopened.hasUnresolvedEntry(
             scope: scope, contactIdentityId: contact, since: afterTheWindow, coreHeight: Self.agedTip + 1))
-        XCTAssertFalse(try reopened.hasUnresolvedEntry(
+        XCTAssertEqual(try reopened.lockState(
             scope: scope, contactIdentityId: contact, since: afterTheWindow,
-            coreHeight: Self.agedTip + DashPayWithdrawalStore.lockBlocks))
+            coreHeight: Self.agedTip + DashPayWithdrawalStore.lockBlocks), .awaitingDecision)
     }
 
     /// The SDK keeps the signed Shielded spend and re-broadcasts it on later
@@ -345,7 +378,9 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
         XCTAssertTrue(try reopened.hasUnresolvedEntry(scope: scope, contactIdentityId: contact, since: afterTheWindow),
                       "an unreadable state holds the lock")
         XCTAssertTrue(try locked(.pending, since: afterTheWindow))
-        XCTAssertFalse(try locked(.unrecorded, since: afterTheWindow))
+        XCTAssertEqual(try reopened.lockState(
+            scope: scope, contactIdentityId: contact, since: afterTheWindow, coreHeight: Self.agedTip,
+            shieldedSpendState: { _ in .unrecorded }), .awaitingDecision)
         XCTAssertTrue(try locked(.unrecorded, since: lockWindowStart))
         XCTAssertFalse(try locked(.confirmed, since: lockWindowStart))
         XCTAssertFalse(try locked(.failed, since: lockWindowStart))
@@ -475,9 +510,9 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
         _ = try begin(source: .platform, coreHeight: Self.recordedTip)
         try store.update(try begin(), status: .unused)
         let reopened = DashPayWithdrawalStore(directory: directory)
-        XCTAssertFalse(try reopened.hasUnresolvedEntry(
+        XCTAssertEqual(try reopened.lockState(
             scope: scope, contactIdentityId: contact, since: Date().addingTimeInterval(60), coreHeight: Self.agedTip,
-            shieldedSpendState: { _ in .unrecorded }))
+            shieldedSpendState: { _ in .unrecorded }), .awaitingDecision)
         XCTAssertEqual(try reopened.unpaidReservationStreak(scope: scope, contactIdentityId: contact), 3)
     }
 

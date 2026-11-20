@@ -749,9 +749,7 @@ final class SendViewModel: ObservableObject {
         // A fresh amount step for a contact whose last payment has an unknown
         // outcome opens already locked — otherwise Back and reselecting the
         // contact would hand back the Send button the lock exists to withhold.
-        contactSendOutcomeIsUnknown = WalletSendService.shared.contactPaymentOutcomeIsUnknown(
-            contactIdentityId: contact.contactIdentityId,
-            recipient: contactPaymentRecipient)
+        refreshContactPaymentLock()
         destination = .core
         // Each balance counts by what one contact payment from it can send,
         // so dust neither opens the payment on nor offers a source that pays
@@ -1104,6 +1102,33 @@ final class SendViewModel: ObservableObject {
     /// (`WalletSendService.unknownContactPaymentOutcomes`). The send may have
     /// happened, so it must not be offered again.
     @Published private(set) var contactSendOutcomeIsUnknown = false
+    /// The lock is only an earlier payment past its window, which may still
+    /// be paid out: the user may choose to pay again once told so.
+    @Published private(set) var contactPriorPaymentAwaitsDecision = false
+
+    static let contactPriorPaymentMayArriveMessage = NSLocalizedString(
+        "An earlier payment to this contact could not be confirmed and may still arrive. Check with your contact before paying again.",
+        comment: "Send to contact: an earlier payment's outcome is still unknown after the lock window")
+
+    private func refreshContactPaymentLock() {
+        guard let id = contactRecipient?.contactIdentityId else { return }
+        let lock = WalletSendService.shared.contactPaymentLockState(
+            contactIdentityId: id, recipient: contactPaymentRecipient)
+        contactSendOutcomeIsUnknown = lock != .none
+        contactPriorPaymentAwaitsDecision = lock == .awaitingDecision
+    }
+
+    /// The user's informed choice to pay again despite the earlier payment
+    /// whose outcome is unknown.
+    func payAgainDespiteUnconfirmedPayment() {
+        guard contactPriorPaymentAwaitsDecision, let recipient = contactPaymentRecipient else { return }
+        do {
+            _ = try WalletSendService.shared.releaseAgedContactPayments(recipient)
+        } catch {
+            contactSendError = error.localizedDescription
+        }
+        refreshContactPaymentLock()
+    }
 
     static let contactSendUnknownOutcomeMessage = String(
         localized: "We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history.",
@@ -1188,6 +1213,7 @@ final class SendViewModel: ObservableObject {
         // with it.
         if WalletSendService.isBroadcastUnknownError(nsError) {
             contactSendOutcomeIsUnknown = true
+            contactPriorPaymentAwaitsDecision = false
         }
     }
     #endif
@@ -1676,7 +1702,10 @@ final class SendViewModel: ObservableObject {
         // changes: an unknown outcome disables this screen for good, so the
         // reason has to outlive the next keystroke or the button reads as
         // dead for no stated reason.
-        if contactSendOutcomeIsUnknown { return Self.contactSendUnknownOutcomeMessage }
+        if contactSendOutcomeIsUnknown {
+            return contactPriorPaymentAwaitsDecision
+                ? Self.contactPriorPaymentMayArriveMessage : Self.contactSendUnknownOutcomeMessage
+        }
         if let contactBalanceMissMessage { return contactBalanceMissMessage }
         if let contactSendError { return contactSendError }
         #endif

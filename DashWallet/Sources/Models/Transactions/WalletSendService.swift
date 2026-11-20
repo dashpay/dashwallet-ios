@@ -958,34 +958,66 @@ final class WalletSendService: NSObject {
     /// True when `contactIdentityId` must not be paid again yet: a payment to
     /// it this session had an unknown outcome
     /// (`UnknownContactPaymentOutcomes`), or — given the wallet context — a
-    /// withdrawal to it is still unresolved, which survives a relaunch.
+    /// withdrawal to it is unresolved and not released by the user, which
+    /// survives a relaunch.
     func contactPaymentOutcomeIsUnknown(
         contactIdentityId: Data,
         recipient: ContactPaymentRecipient?
     ) -> Bool {
-        guard let recipient else { return false }
+        contactPaymentLockState(contactIdentityId: contactIdentityId, recipient: recipient) != .none
+    }
+
+    /// See `DashPayWithdrawalStore.LockState`. An unreadable journal locks.
+    func contactPaymentLockState(
+        contactIdentityId: Data,
+        recipient: ContactPaymentRecipient?
+    ) -> DashPayWithdrawalStore.LockState {
+        guard let recipient else { return .none }
         if unknownContactPaymentOutcomes.contains(scope: .init(recipient), contactIdentityId: contactIdentityId) {
-            return true
+            return .locked
         }
         do {
-            return try DashPayWithdrawalStore.shared.hasUnresolvedEntry(
+            return try DashPayWithdrawalStore.shared.lockState(
                 scope: .init(recipient),
                 contactIdentityId: contactIdentityId,
                 since: Date().addingTimeInterval(-Self.unresolvedContactWithdrawalLockWindow),
-                coreHeight: Self.coreTipHeight(),
+                coreHeight: Self.coreTipHeight(chain: recipient.chain),
                 shieldedSpendState: Self.shieldedSpendState(for: recipient))
         } catch {
             Self.logger.error("💸 TXSEND :: DashPay withdrawal history unreadable: \(String(describing: error), privacy: .public)")
             // Fail closed: after a relaunch the journal is the only record of
             // an unresolved withdrawal, and a duplicate payment can't be undone.
-            return true
+            return .locked
         }
     }
 
-    /// The Core SPV tip, or nil before one is known.
-    static func coreTipHeight() -> UInt32? {
-        let tip = SwiftDashSDKWalletSource.onMain { SwiftDashSDKSPVCoordinator.shared.tipHeight }
-        return tip > 0 ? tip : nil
+    /// The user, told an earlier payment to the contact may still arrive,
+    /// chose to pay again. False while that payment is still locked.
+    func releaseAgedContactPayments(_ recipient: ContactPaymentRecipient) throws -> Bool {
+        try DashPayWithdrawalStore.shared.releaseAgedEntries(
+            scope: .init(recipient),
+            contactIdentityId: recipient.identityId,
+            since: Date().addingTimeInterval(-Self.unresolvedContactWithdrawalLockWindow),
+            coreHeight: Self.coreTipHeight(chain: recipient.chain),
+            shieldedSpendState: Self.shieldedSpendState(for: recipient))
+    }
+
+    /// The Core SPV tip of `chain`, once it has caught up with the network:
+    /// a tip still catching up says nothing about blocks mined since. nil
+    /// otherwise, which keeps a lock held.
+    static func coreTipHeight(chain: String) -> UInt32? {
+        let observed = SwiftDashSDKWalletSource.onMain {
+            (SwiftDashSDKHost.shared.runningNetwork?.persistenceScope,
+             SwiftDashSDKSPVCoordinator.shared.tipHeight,
+             SwiftDashSDKSPVCoordinator.shared.bestPeerHeight)
+        }
+        guard observed.0 == chain else { return nil }
+        return currentCoreTip(local: observed.1, network: observed.2)
+    }
+
+    static func currentCoreTip(local: UInt32, network: UInt32) -> UInt32? {
+        guard local > 0, network > 0, local >= network else { return nil }
+        return local
     }
 
     /// The SDK's state for a journaled Shielded withdrawal of the
