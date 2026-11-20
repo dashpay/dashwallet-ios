@@ -218,6 +218,7 @@ final class SendViewModel: ObservableObject {
             if contactBalanceMissDuffs != nil { contactBalanceMissDuffs = nil }
             #endif
             guard !isApplyingMax else { return }
+            invoiceAmountDuffs = nil
             clearShieldedMaxSelection()
         }
     }
@@ -302,6 +303,9 @@ final class SendViewModel: ObservableObject {
     /// Exact duff amount selected by Max. The two-decimal fiat value is only
     /// its display representation and must not be converted back for sending.
     private var maxAmountDuffs: UInt64?
+    /// A scanned invoice's amount, exact in duffs until the user edits it:
+    /// switching to fiat changes only how it is shown.
+    private var invoiceAmountDuffs: UInt64?
     private var shieldedSweepAmountCredits: UInt64?
     @Published var unit: InternalTransferUnit = .dash {
         didSet {
@@ -310,6 +314,10 @@ final class SendViewModel: ObservableObject {
                 isApplyingMax = true
                 defer { isApplyingMax = false }
                 applyMaxAmountText(maxAmountDuffs)
+            } else if invoiceAmountDuffs != nil {
+                isApplyingMax = true
+                defer { isApplyingMax = false }
+                convertAmountText(from: oldValue, to: unit)
             } else {
                 convertAmountText(from: oldValue, to: unit)
             }
@@ -1207,6 +1215,7 @@ final class SendViewModel: ObservableObject {
         if trimmed.isEmpty { return nil }
         // A copied payment URI is a payment, not prose to pick an address
         // out of: one the scanner would refuse suggests nothing.
+        if ParsedPaymentURI.textCarriesUnpayableLink(trimmed) { return nil }
         for token in trimmed.split(whereSeparator: \.isWhitespace) where token.contains(":") {
             let parsed = ParsedPaymentURI.parse(paymentString: String(token))
             if parsed.hasExplicitScheme, Self.refusesAddressOnly(parsed) { return nil }
@@ -1277,9 +1286,11 @@ final class SendViewModel: ObservableObject {
         if requiresAmount {
             unit = .dash
             amountText = amountDuffs > 0 ? Self.editorText(duffs: amountDuffs) : ""
+            invoiceAmountDuffs = amountDuffs > 0 ? amountDuffs : nil
         } else if amountDuffs > 0, dashDuffsUnsigned == 0 {
             unit = .dash
             amountText = Self.editorText(duffs: amountDuffs)
+            invoiceAmountDuffs = amountDuffs
         }
     }
 
@@ -1306,6 +1317,9 @@ final class SendViewModel: ObservableObject {
         }
         if let maxAmountDuffs {
             return maxAmountDuffs.dashAmount
+        }
+        if let invoiceAmountDuffs {
+            return invoiceAmountDuffs.dashAmount
         }
         let raw = rawTypedDecimal
         switch unit {
@@ -1866,6 +1880,7 @@ final class SendViewModel: ObservableObject {
 
     /// Max's amount, kept exact in duffs.
     func applyMax(duffs: UInt64) {
+        invoiceAmountDuffs = nil
         isApplyingMax = true
         defer { isApplyingMax = false }
         applyMaxAmountText(duffs)

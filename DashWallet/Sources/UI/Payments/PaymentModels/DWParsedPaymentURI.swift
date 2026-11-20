@@ -125,6 +125,19 @@ final class ParsedPaymentURI: NSObject {
         scheme == "https" && rURL.map(PaymentProtocolTransport.isSecure) == true
     }
 
+    /// A payment link (`dash:`, `pay:` or `dashwallet:`) in `text` that cannot be paid as it
+    /// stands, a refused pay wrapper among them: the text is then no prose to pick an address out
+    /// of, which would pay the recipient without what the link required.
+    @objc(textCarriesUnpayableLink:)
+    static func textCarriesUnpayableLink(_ text: String) -> Bool {
+        text.split(whereSeparator: \.isWhitespace).contains { token in
+            let lowercased = token.lowercased()
+            guard let scheme = ["dash:", "pay:", "dashwallet:"].first(where: { lowercased.hasPrefix($0) }),
+                  token.count > scheme.count else { return false }
+            return !parse(paymentString: String(token)).isValidDashPaymentIntent
+        }
+    }
+
     /// A merchant request the wallet fetches: one in a `dash:` URI it can pay, or a whole https
     /// URL. Another currency's `r=` is that currency's request, never fetched as Dash's.
     @objc var isFetchableDashRequest: Bool {

@@ -122,7 +122,10 @@ public final class SendCoinsService: NSObject {
     ///   acknowledged, so the verdict decides nothing the buyer is standing by for.
     func payWithDashUrl(url paymentUrlString: String, awaitAcceptance: Bool = true,
                         validate: @escaping (Confirmation) async throws -> Void) async throws -> Data {
-        guard let uri = BIP70URI(paymentUrlString), !uri.hasUnsupportedRequirement, let requestURL = uri.r else {
+        // No app asked for this payment, so none is called back: a checkout that requires an app
+        // callback cannot be met here, and an optional one is ignored.
+        guard let uri = BIP70URI(paymentUrlString), !uri.hasUnsupportedRequirement,
+              !uri.requiredFields.contains("sender"), let requestURL = uri.r else {
             throw DashSpendError.paymentProcessingError(String(localized: "Invalid payment request", comment: "DashSpend"))
         }
 
@@ -132,7 +135,7 @@ public final class SendCoinsService: NSObject {
         do {
             result = try await service.confirmAndSendHeadless(
                 from: requestURL, scheme: uri.scheme, network: network,
-                callbackScheme: uri.callbackScheme, awaitAcceptance: awaitAcceptance,
+                callbackScheme: nil, awaitAcceptance: awaitAcceptance,
                 validate: validate)
         } catch BIP70Error.paymentNotAcknowledged(let txHashDisplay, let reason) {
             // The merchant may already hold the signed bytes; hand the caller the txid so the

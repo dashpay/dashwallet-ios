@@ -19,6 +19,8 @@
 
 #import <UIKit/UIKit.h>
 
+#import "dashwallet-Swift.h"
+
 NS_ASSUME_NONNULL_BEGIN
 
 @implementation DWPasteboardAddressExtractor
@@ -33,7 +35,10 @@ NS_ASSUME_NONNULL_BEGIN
         NSCharacterSet *separatorsSet = [NSCharacterSet alphanumericCharacterSet].invertedSet;
 
         [resultSet addObject:str];
-        [resultSet addObjectsFromArray:[str componentsSeparatedByCharactersInSet:separatorsSet]];
+        // A link that cannot be paid as it stands is not prose: its recipient is not paid alone.
+        if (![DWParsedPaymentURI textCarriesUnpayableLink:str]) {
+            [resultSet addObjectsFromArray:[str componentsSeparatedByCharactersInSet:separatorsSet]];
+        }
     }
 
     UIImage *img = [UIPasteboard generalPasteboard].image;
@@ -71,7 +76,10 @@ NS_ASSUME_NONNULL_BEGIN
         NSCharacterSet *separatorsSet = [NSCharacterSet alphanumericCharacterSet].invertedSet;
 
         [resultSet addObject:str];
-        [resultSet addObjectsFromArray:[str componentsSeparatedByCharactersInSet:separatorsSet]];
+        // A link that cannot be paid as it stands is not prose: its recipient is not paid alone.
+        if (![DWParsedPaymentURI textCarriesUnpayableLink:str]) {
+            [resultSet addObjectsFromArray:[str componentsSeparatedByCharactersInSet:separatorsSet]];
+        }
     }
 
     return resultSet.array;
