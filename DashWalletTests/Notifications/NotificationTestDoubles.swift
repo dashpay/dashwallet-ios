@@ -222,7 +222,8 @@ extension ContactItem {
                         alias: String? = nil,
                         createdAt: Date,
                         incomingCreatedAt: Date? = nil,
-                        outgoingCreatedAt: Date? = nil) -> ContactItem {
+                        outgoingCreatedAt: Date? = nil,
+                        paymentChannelBroken: Bool = false) -> ContactItem {
         ContactItem(
             contactIdentityId: Data(repeating: idByte, count: 32),
             relationship: relationship,
@@ -231,7 +232,7 @@ extension ContactItem {
             alias: alias,
             note: nil,
             isHidden: false,
-            paymentChannelBroken: false,
+            paymentChannelBroken: paymentChannelBroken,
             avatarURL: nil,
             publicMessage: nil,
             createdAt: createdAt,

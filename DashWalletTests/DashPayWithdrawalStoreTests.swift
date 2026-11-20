@@ -26,12 +26,16 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
 
     private func begin(
         scope: DashPayWithdrawalStore.Scope? = nil,
-        source: DashPayWithdrawalStore.Source = .shielded
+        source: DashPayWithdrawalStore.Source = .shielded,
+        coreHeight: UInt32? = nil
     ) throws -> DashPayWithdrawalStore.Entry {
         try store.begin(
             scope: scope ?? self.scope, contactIdentityId: contact,
-            address: "reserved-contact-address", amountDuffs: 10_000, source: source)
+            address: "reserved-contact-address", amountDuffs: 10_000, source: source, coreHeight: coreHeight)
     }
+
+    private static let recordedTip: UInt32 = 1_000
+    private static let agedTip = recordedTip + DashPayWithdrawalStore.lockBlocks
 
     func testAttemptSurvivesRestartWithoutClaimingSubmissionSucceeded() throws {
         let entry = try begin()
@@ -290,9 +294,39 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
     }
 
     func testUnresolvedPlatformRecordOutsideWindowDoesNotLock() throws {
-        _ = try begin(source: .platform)
+        _ = try begin(source: .platform, coreHeight: Self.recordedTip)
         XCTAssertFalse(try store.hasUnresolvedEntry(
-            scope: scope, contactIdentityId: contact, since: Date().addingTimeInterval(60)))
+            scope: scope, contactIdentityId: contact, since: Date().addingTimeInterval(60), coreHeight: Self.agedTip))
+    }
+
+    /// A device clock moved forward does not move the chain: until the Core
+    /// tip has advanced too, or while it is unknown, the lock holds.
+    func testAClockJumpAloneDoesNotExpireAPlatformLock() throws {
+        _ = try begin(source: .platform, coreHeight: Self.recordedTip)
+        let reopened = DashPayWithdrawalStore(directory: directory)
+        let afterTheWindow = Date().addingTimeInterval(60)
+        XCTAssertTrue(try reopened.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: afterTheWindow, coreHeight: Self.agedTip - 1))
+        XCTAssertTrue(try reopened.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: afterTheWindow, coreHeight: nil))
+        XCTAssertTrue(try reopened.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: lockWindowStart, coreHeight: Self.agedTip))
+    }
+
+    /// An attempt recorded before the tip was known starts counting from the
+    /// first check that knows it.
+    func testAnAttemptWithoutATipCountsFromTheFirstKnownTip() throws {
+        _ = try begin(source: .platform)
+        let afterTheWindow = Date().addingTimeInterval(60)
+        XCTAssertTrue(try store.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: afterTheWindow, coreHeight: Self.agedTip))
+        let reopened = DashPayWithdrawalStore(directory: directory)
+        XCTAssertEqual(try reopened.entries(scope: scope, contactIdentityId: contact).map(\.coreHeight), [Self.agedTip])
+        XCTAssertTrue(try reopened.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: afterTheWindow, coreHeight: Self.agedTip + 1))
+        XCTAssertFalse(try reopened.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: afterTheWindow,
+            coreHeight: Self.agedTip + DashPayWithdrawalStore.lockBlocks))
     }
 
     /// The SDK keeps the signed Shielded spend and re-broadcasts it on later
@@ -300,11 +334,12 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
     /// Confirmed or Failed row resolves it at any age; with no row, or an
     /// Unknown one, nothing is re-broadcast and the window applies.
     func testShieldedRecordLocksWhileTheSDKHoldsItPending() throws {
-        try store.update(try begin(source: .shielded), status: .unconfirmed)
+        try store.update(try begin(source: .shielded, coreHeight: Self.recordedTip), status: .unconfirmed)
         let reopened = DashPayWithdrawalStore(directory: directory)
         func locked(_ state: DashPayWithdrawalStore.ShieldedSpendState, since: Date) throws -> Bool {
             try reopened.hasUnresolvedEntry(
-                scope: scope, contactIdentityId: contact, since: since, shieldedSpendState: { _ in state })
+                scope: scope, contactIdentityId: contact, since: since, coreHeight: Self.agedTip,
+                shieldedSpendState: { _ in state })
         }
         let afterTheWindow = Date().addingTimeInterval(60)
         XCTAssertTrue(try reopened.hasUnresolvedEntry(scope: scope, contactIdentityId: contact, since: afterTheWindow),
@@ -437,11 +472,11 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
     /// still counts once its lock has expired: the address is used up.
     func testAnAgedInterruptedAttemptStillCountsAfterReopening() throws {
         try store.update(try begin(), status: .unused)
-        _ = try begin(source: .platform)
+        _ = try begin(source: .platform, coreHeight: Self.recordedTip)
         try store.update(try begin(), status: .unused)
         let reopened = DashPayWithdrawalStore(directory: directory)
         XCTAssertFalse(try reopened.hasUnresolvedEntry(
-            scope: scope, contactIdentityId: contact, since: Date().addingTimeInterval(60),
+            scope: scope, contactIdentityId: contact, since: Date().addingTimeInterval(60), coreHeight: Self.agedTip,
             shieldedSpendState: { _ in .unrecorded }))
         XCTAssertEqual(try reopened.unpaidReservationStreak(scope: scope, contactIdentityId: contact), 3)
     }
@@ -513,6 +548,26 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
         try Data("not json".utf8).write(to: try XCTUnwrap(FileManager.default
             .contentsOfDirectory(at: directory, includingPropertiesForKeys: nil).first))
         XCTAssertThrowsError(try WalletSendService.rejectIfTooManyUnpaidReservations(recipient, store: store))
+    }
+
+    /// The cap names what it knows: no address can be reserved. Some of the
+    /// attempts behind it may have paid, so it never says they were not sent.
+    func testTheCapMessageDoesNotClaimAmbiguousPaymentsWereNotSent() throws {
+        let recipient = ContactPaymentRecipient(
+            identityId: contact, displayName: "contact", walletId: scope.walletId,
+            ownerIdentityId: scope.ownerIdentityId, network: .testnet)
+        for _ in 0..<3 {
+            try store.update(try begin(), status: .unused)
+        }
+        _ = try begin(source: .platform)
+        try store.update(try begin(source: .platform), status: .unconfirmed)
+        let reopened = DashPayWithdrawalStore(directory: directory)
+        XCTAssertThrowsError(try WalletSendService.rejectIfTooManyUnpaidReservations(recipient, store: reopened)) {
+            let message = $0.localizedDescription
+            XCTAssertTrue(message.contains("No more payment addresses can be reserved"), message)
+            XCTAssertTrue(message.contains("received it before paying again"), message)
+            XCTAssertFalse(message.contains("not sent"), message)
+        }
     }
 
     func testUnresolvedRecordLocksOnlyItsContact() throws {
@@ -602,7 +657,16 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
         XCTAssertTrue(concluded)
         XCTAssertEqual(coordinator.phase, .submittedUnconfirmed)
         XCTAssertTrue(coordinator.contactWithdrawalOutcomeUnknown)
-        XCTAssertTrue(WalletSendService.shared.unknownContactPaymentOutcomes.contains(contactIdentityId: contact))
+        let outcomes = WalletSendService.shared.unknownContactPaymentOutcomes
+        XCTAssertTrue(outcomes.contains(scope: scope, contactIdentityId: contact))
+        let otherWallet = DashPayWithdrawalStore.Scope(
+            networkRaw: scope.networkRaw, walletId: Data(repeating: 0xEE, count: 32),
+            ownerIdentityId: scope.ownerIdentityId, chain: scope.chain)
+        let otherDevnet = DashPayWithdrawalStore.Scope(
+            networkRaw: scope.networkRaw, walletId: scope.walletId,
+            ownerIdentityId: scope.ownerIdentityId, chain: "devnet-other")
+        XCTAssertFalse(outcomes.contains(scope: otherWallet, contactIdentityId: contact))
+        XCTAssertFalse(outcomes.contains(scope: otherDevnet, contactIdentityId: contact))
         let reopened = DashPayWithdrawalStore(directory: directory)
         XCTAssertEqual(try reopened.entries(scope: scope, contactIdentityId: contact).map(\.status), [.unconfirmed])
         XCTAssertTrue(try reopened.hasUnresolvedEntry(scope: scope, contactIdentityId: contact, since: .distantPast))
@@ -974,6 +1038,44 @@ final class ContactWithdrawalTotalTests: XCTestCase {
         try service.beginContactPayment(recipient, validate: current)
         service.endContactPayment(recipient)
         XCTAssertFalse(service.contactPaymentClaims.isClaimed(contactIdentityId: recipient.identityId))
+    }
+
+    /// Until a restored wallet's first sync has found its payments, the SDK
+    /// could reserve an address already paid, so no contact payment starts.
+    @MainActor
+    func testContactPaymentWaitsForTheRestoredWalletsFirstSync() throws {
+        try XCTSkipIf(SyncingActivityMonitor.shared.state == .syncDone)
+        let options = DWGlobalOptions.sharedInstance()
+        let saved = options.initialRestoreSyncGate
+        defer { options.initialRestoreSyncGate = saved }
+        options.initialRestoreSyncGate = .everyNetwork
+        let recipient = ContactPaymentRecipient(
+            identityId: Data((0..<32).map { _ in UInt8.random(in: 0...255) }), displayName: "c",
+            walletId: Data((0..<32).map { _ in UInt8.random(in: 0...255) }),
+            ownerIdentityId: Data(repeating: 2, count: 32), network: .testnet)
+        let service = WalletSendService.shared
+        XCTAssertThrowsError(try service.beginContactPayment(recipient, validate: { _ in })) {
+            XCTAssertEqual($0.localizedDescription, WalletSendService.contactPaymentRestoreSyncMessage)
+        }
+        XCTAssertFalse(service.contactPaymentClaims.isClaimed(contactIdentityId: recipient.identityId))
+    }
+
+    /// A contact that was removed, is no longer established, or whose payment
+    /// channel broke is refused wherever the recipient is validated — before
+    /// authorization, at reservation and before submission.
+    @MainActor
+    func testAContactThatCannotBePaidIsRefused() {
+        let id = Data(repeating: 0xaa, count: 32)
+        let at = Date(timeIntervalSince1970: 0)
+        func reason(_ contact: ContactItem?) -> String? {
+            WalletSendService.contactUnavailableMessage(for: id, lookup: { _ in contact })
+        }
+        XCTAssertEqual(reason(nil), SendViewModel.contactGoneMessage)
+        XCTAssertEqual(reason(.fixture(relationship: .outgoing, createdAt: at)), SendViewModel.contactGoneMessage)
+        XCTAssertEqual(
+            reason(.fixture(relationship: .established, createdAt: at, paymentChannelBroken: true)),
+            SendViewModel.contactPaymentsUnavailableMessage)
+        XCTAssertNil(reason(.fixture(relationship: .established, createdAt: at)))
     }
 
     /// A recipient captured for a wallet or identity that is no longer active

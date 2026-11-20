@@ -22,7 +22,7 @@ final class DashPayWithdrawalStore {
 
     static let didChangeNotification = Notification.Name("DWDashPayWithdrawalsDidChange")
 
-    struct Scope: Codable, Equatable {
+    struct Scope: Codable, Hashable {
         let networkRaw: Int
         let walletId: Data
         let ownerIdentityId: Data
@@ -114,6 +114,9 @@ final class DashPayWithdrawalStore {
         let source: Source
         let createdAt: Date
         var status: Status
+        /// The Core chain tip when the attempt was recorded, or when the lock
+        /// was first checked with a known tip.
+        var coreHeight: UInt32?
 
         /// A withdrawal that was, or may have been, submitted: what the
         /// contact's payment history shows.
@@ -156,7 +159,8 @@ final class DashPayWithdrawalStore {
         contactIdentityId: Data,
         amountDuffs: UInt64,
         amountIsEstimate: Bool = false,
-        source: Source
+        source: Source,
+        coreHeight: UInt32? = nil
     ) throws -> Entry {
         guard scope.walletId.count == 32, scope.ownerIdentityId.count == 32,
               contactIdentityId.count == 32, amountDuffs > 0,
@@ -170,7 +174,7 @@ final class DashPayWithdrawalStore {
             id: UUID(), scope: scope, contactIdentityId: contactIdentityId,
             address: "", amountDuffs: amountDuffs,
             amountIsEstimate: amountIsEstimate, source: source,
-            createdAt: Date(), status: .reserving)
+            createdAt: Date(), status: .reserving, coreHeight: coreHeight)
         entries.append(entry)
         try save(entries, scope: scope)
         return entry
@@ -198,12 +202,14 @@ final class DashPayWithdrawalStore {
         address: String,
         amountDuffs: UInt64,
         amountIsEstimate: Bool = false,
-        source: Source
+        source: Source,
+        coreHeight: UInt32? = nil
     ) throws -> Entry {
         guard !address.isEmpty else { throw StoreError.invalidPayment }
         let reservation = try beginReservation(
             scope: scope, contactIdentityId: contactIdentityId,
-            amountDuffs: amountDuffs, amountIsEstimate: amountIsEstimate, source: source)
+            amountDuffs: amountDuffs, amountIsEstimate: amountIsEstimate, source: source,
+            coreHeight: coreHeight)
         return try recordReservedAddress(reservation, address: address)
     }
 
@@ -236,28 +242,64 @@ final class DashPayWithdrawalStore {
             .sorted { $0.createdAt > $1.createdAt }
     }
 
+    /// Core blocks an unresolved attempt stays locked for, besides the
+    /// device-clock window: about a day at 2.5 minutes a block. A clock that
+    /// jumps forward does not move the chain.
+    static let lockBlocks: UInt32 = 576
+
     /// True when a withdrawal to this contact was never confirmed as
     /// submitted (`.submitting` or `.unconfirmed`) and may still execute: one
-    /// recorded since `date`, or a Shielded one of any age the SDK still holds
-    /// Pending — it keeps re-broadcasting that spend on later syncs, whatever
-    /// the device clock says. A Shielded one the SDK confirmed or failed is
-    /// resolved at any age. `shieldedSpendState` is called without the store
-    /// lock held.
+    /// recorded since `date` or fewer than `lockBlocks` Core blocks before
+    /// `coreHeight` — an unknown tip keeps it locked — or a Shielded one of
+    /// any age the SDK still holds Pending: it keeps re-broadcasting that
+    /// spend on later syncs, whatever the device clock says. A Shielded one
+    /// the SDK confirmed or failed is resolved at any age. An attempt recorded
+    /// without a tip starts counting from the first check that has one.
+    /// `shieldedSpendState` is called without the store lock held.
     func hasUnresolvedEntry(
         scope: Scope,
         contactIdentityId: Data,
         since date: Date,
+        coreHeight: UInt32? = nil,
         shieldedSpendState: (Entry) -> ShieldedSpendState = { _ in .pending }
     ) throws -> Bool {
-        try entries(scope: scope, contactIdentityId: contactIdentityId).contains { entry in
-            guard entry.status == .submitting || entry.status == .unconfirmed else { return false }
-            guard entry.source == .shielded else { return entry.createdAt >= date }
-            switch shieldedSpendState(entry) {
-            case .pending: return true
-            case .confirmed, .failed: return false
-            case .unrecorded: return entry.createdAt >= date
+        try unresolvedEntriesStampingHeight(coreHeight, scope: scope, contactIdentityId: contactIdentityId)
+            .contains { entry in
+                let isRecent = entry.createdAt >= date || !Self.chainAdvanced(from: entry.coreHeight, to: coreHeight)
+                guard entry.source == .shielded else { return isRecent }
+                switch shieldedSpendState(entry) {
+                case .pending: return true
+                case .confirmed, .failed: return false
+                case .unrecorded: return isRecent
+                }
+            }
+    }
+
+    static func chainAdvanced(from start: UInt32?, to tip: UInt32?) -> Bool {
+        guard let start, let tip else { return false }
+        return UInt64(tip) >= UInt64(start) + UInt64(lockBlocks)
+    }
+
+    private func unresolvedEntriesStampingHeight(
+        _ coreHeight: UInt32?,
+        scope: Scope,
+        contactIdentityId: Data
+    ) throws -> [Entry] {
+        lock.lock()
+        defer { lock.unlock() }
+        var entries = try load(scope: scope)
+        let unresolved = entries.indices.filter {
+            entries[$0].scope == scope && entries[$0].contactIdentityId == contactIdentityId
+                && (entries[$0].status == .submitting || entries[$0].status == .unconfirmed)
+        }
+        if let coreHeight {
+            let unstamped = unresolved.filter { entries[$0].coreHeight == nil }
+            if !unstamped.isEmpty {
+                unstamped.forEach { entries[$0].coreHeight = coreHeight }
+                try save(entries, scope: scope)
             }
         }
+        return unresolved.map { entries[$0] }
     }
 
     /// How many of the contact's addresses the latest attempts reserved

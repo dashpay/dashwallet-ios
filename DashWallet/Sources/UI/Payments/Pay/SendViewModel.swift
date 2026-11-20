@@ -1036,6 +1036,14 @@ final class SendViewModel: ObservableObject {
         return isSendingToContact
     }
 
+    /// `contactUnavailableMessage` read from the contacts service now rather
+    /// than at the last change notification: the withdrawal confirmation's
+    /// Confirm and Try again ask this before they start.
+    func recheckContactAvailability() -> String? {
+        refreshContactRecipient()
+        return contactUnavailableMessage
+    }
+
     /// Why this contact cannot be paid right now, or nil. Shown on the amount
     /// step and in the open review, which disables its Send meanwhile.
     var contactUnavailableMessage: String? {
@@ -1628,7 +1636,7 @@ final class SendViewModel: ObservableObject {
             && creditsPreview < ShieldedTransferCoordinator.contactWithdrawalMinimumCredits
     }
 
-    private var paysContact: Bool {
+    var paysContact: Bool {
         #if DASHPAY
         return contactRecipient != nil
         #else
@@ -1636,17 +1644,20 @@ final class SendViewModel: ObservableObject {
         #endif
     }
 
-    /// Only Core-funded routes during a restored wallet's first sync block.
+    /// Only Core-funded routes during a restored wallet's first sync block,
+    /// and every contact payment: its address is reserved by the payments the
+    /// wallet has found so far.
     var isBlockedBySync: Bool {
         guard let route else { return false }
         switch route {
         case .coreToCore, .coreToShielded:
-            return WalletSendService.isBlockedByInitialRestoreSync(
-                isResyncingWallet: DWGlobalOptions.sharedInstance().isResyncingCurrentNetworkWallet,
-                isChainSynced: isChainSynced)
+            break
         default:
-            return false
+            guard paysContact else { return false }
         }
+        return WalletSendService.isBlockedByInitialRestoreSync(
+            isResyncingWallet: DWGlobalOptions.sharedInstance().isResyncingCurrentNetworkWallet,
+            isChainSynced: isChainSynced)
     }
 
     private var hasUnavailableSourceBalance: Bool {
