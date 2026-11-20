@@ -162,8 +162,13 @@ final class ParsedPaymentURI: NSObject {
     /// which always returns an object), so ObjC nil-messaging needs no special cases.
     @objc(parsePaymentString:)
     static func parse(paymentString raw: String) -> ParsedPaymentURI {
-        let paymentString = deepLinkPaymentString(for: raw) ?? raw
-        guard let uri = BIP70URI(paymentString: paymentString) else {
+        let paymentString: String?
+        switch deepLinkPaymentString(for: raw) {
+        case .notAWrapper: paymentString = raw
+        case .refused: paymentString = nil
+        case .rewritten(let rewritten): paymentString = rewritten
+        }
+        guard let paymentString, let uri = BIP70URI(paymentString: paymentString) else {
             return ParsedPaymentURI(rawString: raw, scheme: nil, address: nil, amount: 0,
                                     hasInvalidAmount: false, label: nil, message: nil, rURL: nil, requiresRequest: false,
                                     callbackScheme: nil,
@@ -200,16 +205,23 @@ final class ParsedPaymentURI: NSObject {
     /// link to. Read raw, `pay=<address>` would be taken for the address. A deep link is rewritten
     /// before it gets here, so this is a link the wallet read itself (a scan, a paste, an NFC tag):
     /// it keeps the address and the link's own parameters and loses `sender`, since no app asked
-    /// for the payment. nil for anything the router does not turn into a payment — the plain
-    /// `dashwallet:<address>` alias among them, which `BIP70URI` reads.
-    private static func deepLinkPaymentString(for raw: String) -> String? {
+    /// for the payment. A pay link the router refused stays refused; anything else that is not a
+    /// pay link (the plain `dashwallet:<address>` alias, which `BIP70URI` reads) is read as is.
+    private static func deepLinkPaymentString(for raw: String) -> DeepLinkPayment {
         let link = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard link.hasPrefix("dashwallet:"),
-              let url = URL(string: link),
-              let paymentURL = DWURLParser.paymentURL(forScannedLink: url) else {
-            return nil
+        guard link.hasPrefix("dashwallet:"), let url = URL(string: link) else { return .notAWrapper }
+        if let paymentURL = DWURLParser.paymentURL(forScannedLink: url) {
+            return .rewritten(paymentURL.absoluteString)
         }
-        return paymentURL.absoluteString
+        // The router's own test for a pay link: one it refused is refused here too, not reread.
+        let isPayLink = url.host?.hasPrefix("pay") == true || url.path == "/pay"
+        return isPayLink ? .refused : .notAWrapper
+    }
+
+    private enum DeepLinkPayment {
+        case notAWrapper
+        case refused
+        case rewritten(String)
     }
 
     /// The fetch-failed fallback: a copy without the BIP70 request URL (was the

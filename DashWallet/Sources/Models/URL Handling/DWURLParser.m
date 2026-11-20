@@ -130,8 +130,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// `parseParamsFromURL` keeps the last of a repeated key and drops a pair it cannot split, so an
 /// amount or merchant request given twice, or malformed, could vanish or be replaced, leaving an
-/// open amount or a different request. Such a link is refused.
+/// open amount or a different request. Such a link is refused, as is one carrying payment fields
+/// in its query, which the rewrite never reads.
 + (BOOL)hasAmbiguousPaymentParameterInURL:(NSURL *)url {
+    NSArray<NSString *> *paymentKeys = @[ @"pay", @"amount", @"req-amount", @"r", @"req-r" ];
+    for (NSURLQueryItem *item in [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:NO].queryItems) {
+        if ([paymentKeys containsObject:item.name]) {
+            return YES;
+        }
+    }
+
     NSUInteger amounts = 0;
     NSUInteger requests = 0;
     for (NSString *param in [url.host componentsSeparatedByString:@"&"]) {

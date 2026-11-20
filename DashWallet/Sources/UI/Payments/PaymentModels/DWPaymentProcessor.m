@@ -43,6 +43,9 @@ static NSString *DWReversedHexString(NSData *data) {
 
 /// Retains the BIP70 coordinator for the duration of an async fetch/confirm-and-send.
 @property (nullable, nonatomic, strong) id bip70Coordinator;
+/// The current payment's merchant-request fetch. Replaced or reset, the old one is cancelled
+/// (on release) and its late answer ignored.
+@property (nullable, nonatomic, strong) DWBIP70InteractiveCoordinator *fetchCoordinator;
 
 @property (nonatomic, assign) uint64_t amount;
 /// The app-side send carrier for a plain-dash: send, set on the URI path. C8 step 4.
@@ -210,23 +213,26 @@ static NSString *DWReversedHexString(NSData *data) {
     else if (parsed.rURL != nil) { // payment protocol over HTTP (app-side BIP70)
         __weak typeof(self) weakSelf = self;
         DWBIP70InteractiveCoordinator *coordinator = [[DWBIP70InteractiveCoordinator alloc] init];
-        self.bip70Coordinator = coordinator;
+        __weak DWBIP70InteractiveCoordinator *weakCoordinator = coordinator;
+        DWPaymentIntent *intent = self.paymentInput.paymentIntent;
+        self.fetchCoordinator = coordinator;
         [coordinator fetchAndVerifyWithRequestURL:parsed.rURL
                                            scheme:parsed.scheme
                                    callbackScheme:self.paymentInput.callbackScheme
                                        completion:^(DWBIP70ConfirmationBox *_Nullable box, NSError *_Nullable error) {
                                            __strong typeof(weakSelf) strongSelf = weakSelf;
-                                           if (!strongSelf) {
+                                           DWBIP70InteractiveCoordinator *strongCoordinator = weakCoordinator;
+                                           if (!strongSelf || !strongCoordinator || strongSelf.fetchCoordinator != strongCoordinator) {
                                                return;
                                            }
-                                           strongSelf.bip70Coordinator = nil;
+                                           strongSelf.fetchCoordinator = nil;
 
                                            if (box) {
                                                [strongSelf confirmBIP70Output:box];
                                            }
                                            else if (parsed.isAddressValidForCurrentNetwork && !parsed.hasInvalidAmount && !parsed.requiresRequest) {
                                                // fetch failed but there's a valid fallback address → plain send (app-side, C8 step 4)
-                                               [strongSelf confirmPaymentIntent:strongSelf.paymentInput.paymentIntent];
+                                               [strongSelf confirmPaymentIntent:intent];
                                            }
                                            else {
                                                [strongSelf failedWithError:error
@@ -434,6 +440,7 @@ static NSString *DWReversedHexString(NSData *data) {
 }
 
 - (void)reset {
+    self.fetchCoordinator = nil;
     self.paymentInput = nil;
     self.paymentIntent = nil;
     [self cancel];
