@@ -47,6 +47,32 @@ struct PointOfUseDetailsRequest {
     let filters: PointOfUseListFilters?
 }
 
+// MARK: - PointOfUseRowModel
+
+/// What one list row shows, worked out by the view model so the row only
+/// draws it.
+struct PointOfUseRowModel: Equatable {
+    enum PaymentMethod: Equatable {
+        case dash
+        case giftCard
+    }
+
+    enum Accessory: Equatable {
+        /// The best discount across the gift card providers ("~4%"), if any,
+        /// and how the merchant is paid.
+        case merchant(savings: String?, paymentMethod: PaymentMethod)
+        /// Which operations the ATM supports.
+        case atm(buy: Bool, sell: Bool)
+        case none
+    }
+
+    let title: String
+    let logoURL: URL?
+    /// Distance for a physical merchant; distance and operator for an ATM.
+    let subtitle: String?
+    let accessory: Accessory
+}
+
 // MARK: - PointOfUseListViewModel
 
 /// State and behaviour of a point-of-use list (ATMs, Where to Spend): the
@@ -307,6 +333,51 @@ final class PointOfUseListViewModel: ObservableObject {
                 self.filterTitle = place
             }
         }
+    }
+
+    // MARK: Rows
+
+    func rowModel(for pointOfUse: ExplorePointOfUse) -> PointOfUseRowModel {
+        let logoURL = pointOfUse.logoLocation.flatMap(URL.init(string:))
+
+        if let atm = pointOfUse.atm {
+            // ATMs measure from the device, not a panned map center.
+            let distance = location.isAuthorized ? distanceText(to: pointOfUse, from: location.currentLocation) : nil
+            let subtitle = [distance, pointOfUse.source].compactMap { $0 }.joined(separator: " • ")
+            return PointOfUseRowModel(title: pointOfUse.name, logoURL: logoURL,
+                                      subtitle: subtitle.isEmpty ? nil : subtitle,
+                                      accessory: .atm(buy: atm.type != .sell,
+                                                      sell: atm.type == .sell || atm.type == .buySell))
+        }
+
+        guard let merchant = pointOfUse.merchant else {
+            return PointOfUseRowModel(title: pointOfUse.name, logoURL: logoURL, subtitle: nil, accessory: .none)
+        }
+
+        var subtitle: String?
+        if merchant.type != .online {
+            // From the panned map center when there is one, else the device.
+            let origin = searchCenterCoordinate.map { CLLocation(latitude: $0.latitude, longitude: $0.longitude) }
+                ?? (location.isAuthorized ? location.currentLocation : nil)
+            subtitle = distanceText(to: pointOfUse, from: origin)
+        }
+
+        // The best discount across providers; the merchant-level value when
+        // there are none. Both are basis points (400 = 4%).
+        let basisPoints = merchant.giftCardProviders.map(\.savingsPercentage).max() ?? merchant.savingsBasisPoints
+        let savings = basisPoints > 0
+            ? String(format: NSLocalizedString("~%.0f%%", comment: "Savings percentage"), (Double(basisPoints) / 100).rounded())
+            : nil
+
+        return PointOfUseRowModel(title: pointOfUse.name, logoURL: logoURL, subtitle: subtitle,
+                                  accessory: .merchant(savings: savings,
+                                                       paymentMethod: merchant.paymentMethod == .giftCard ? .giftCard : .dash))
+    }
+
+    private func distanceText(to pointOfUse: ExplorePointOfUse, from origin: CLLocation?) -> String? {
+        guard let origin, let latitude = pointOfUse.latitude, let longitude = pointOfUse.longitude else { return nil }
+        let distance = CLLocation(latitude: latitude, longitude: longitude).distance(from: origin)
+        return ExploreDash.distanceFormatter.string(from: Measurement(value: floor(distance), unit: UnitLength.meters))
     }
 
     // MARK: Details
