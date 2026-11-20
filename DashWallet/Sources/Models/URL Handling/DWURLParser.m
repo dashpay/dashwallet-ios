@@ -143,6 +143,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSUInteger recipients = 0;
     NSUInteger amounts = 0;
     NSUInteger requests = 0;
+    NSUInteger requiredSenders = 0;
     for (NSString *param in [url.host componentsSeparatedByString:@"&"]) {
         NSArray<NSString *> *pair = [param componentsSeparatedByString:@"="];
         NSString *key = pair.firstObject;
@@ -153,8 +154,9 @@ NS_ASSUME_NONNULL_BEGIN
         if (!isRecipient && !isAmount && !isRequest && !isRequirement) {
             continue;
         }
+        BOOL isRequiredSender = [key isEqualToString:@"req-sender"];
         if (pair.count != 2 || (isRecipient && ++recipients > 1) || (isAmount && ++amounts > 1) ||
-            (isRequest && ++requests > 1)) {
+            (isRequest && ++requests > 1) || (isRequiredSender && ++requiredSenders > 1)) {
             return YES;
         }
     }
@@ -206,6 +208,11 @@ NS_ASSUME_NONNULL_BEGIN
     NSMutableDictionary<NSString *, NSString *> *mutableParams = [params mutableCopy];
 
     NSString *sender = namingSender ? [DWCallbackScheme validated:mutableParams[@"sender"]] : nil;
+    // An opened link meets a required callback only when it names the same app as `sender`.
+    if (namingSender && mutableParams[@"req-sender"] &&
+        ![[DWCallbackScheme validated:mutableParams[@"req-sender"]] isEqualToString:sender]) {
+        return nil;
+    }
     NSString *ownLabel = mutableParams[@"label"] ?: mutableParams[@"req-label"];
     [mutableParams removeObjectsForKeys:@[ @"sender", @"label", @"req-label" ]];
     if (namingSender) {

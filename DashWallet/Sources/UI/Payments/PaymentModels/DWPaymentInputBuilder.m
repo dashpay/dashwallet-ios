@@ -78,7 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
 
             return;
         }
-        else if (parsed.rURL != nil) { // may be BIP73 url: https://github.com/bitcoin/bips/blob/master/bip-0073.mediawiki
+        else if (parsed.isFetchableDashRequest) { // may be BIP73 url: https://github.com/bitcoin/bips/blob/master/bip-0073.mediawiki
             DWBIP70InteractiveCoordinator *coordinator = [[DWBIP70InteractiveCoordinator alloc] init];
             // No callback scheme: a paste or an NFC tag is not an app asking, so none is called back.
             [coordinator fetchAndVerifyWithRequestURL:parsed.rURL
