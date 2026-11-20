@@ -822,6 +822,15 @@ final class WalletSendService: NSObject {
             throw mapped
         }
         Self.logger.info("💸 TXSEND :: pay-to-contact broadcast, txid \(txid.map { String(format: "%02x", $0) }.joined(), privacy: .public), fee \(feeDuffs, privacy: .public) duffs")
+        // Best-effort: a lost record only keeps Platform and Shielded payments
+        // to the contact refused for longer.
+        try? DashPayWithdrawalStore.shared.recordCorePayment(
+            scope: .init(
+                networkRaw: prepared.recipient.network.rawValue,
+                walletId: prepared.recipient.walletId,
+                ownerIdentityId: prepared.recipient.ownerIdentityId),
+            contactIdentityId: contactIdentityId,
+            amountDuffs: prepared.amount)
         // The send-success screen resolves the amount from this registry while
         // the Rust persister hasn't written the transaction row yet — same as
         // every other broadcast-success point. `txid` is already wire order
@@ -893,12 +902,14 @@ final class WalletSendService: NSObject {
         }
     }
 
-    /// How long an unresolved Platform withdrawal to a contact keeps payments
-    /// to that contact locked across launches. Nothing reconciles a Platform
-    /// withdrawal's outcome (TODO(dashpay-withdrawal-reconcile)), so unlike the
-    /// session lock this one cannot wait for a sync to clear it; a day is far
-    /// longer than a payout takes to land, and leaves the user time to check.
-    /// A Shielded one has no window: see `shieldedWithdrawalIsSettled`.
+    /// How long an unresolved withdrawal to a contact keeps payments to that
+    /// contact locked across launches when nothing shows it may still execute.
+    /// Nothing reconciles a Platform withdrawal's outcome
+    /// (TODO(dashpay-withdrawal-reconcile)), so unlike the session lock this
+    /// one cannot wait for a sync to clear it; a day is far longer than a
+    /// payout takes to land, and leaves the user time to check. A Shielded one
+    /// the SDK still holds Pending stays locked past it
+    /// (`shieldedWithdrawalState`).
     private static let unresolvedContactWithdrawalLockWindow: TimeInterval = 24 * 60 * 60
 
     /// How many of a contact's addresses Platform and Shielded payments may
@@ -927,13 +938,7 @@ final class WalletSendService: NSObject {
                     ownerIdentityId: recipient.ownerIdentityId),
                 contactIdentityId: contactIdentityId,
                 since: Date().addingTimeInterval(-Self.unresolvedContactWithdrawalLockWindow),
-                shieldedOutcomeIsSettled: { entry in
-                    guard let container = SwiftDashSDKWalletSource.onMain({ SwiftDashSDKHost.shared.modelContainer })
-                    else { return false }
-                    return Self.shieldedWithdrawalIsSettled(
-                        to: entry.address, walletId: recipient.walletId,
-                        network: recipient.network, in: container)
-                })
+                shieldedSpendState: Self.shieldedSpendState(for: recipient))
         } catch {
             Self.logger.error("💸 TXSEND :: DashPay withdrawal history unreadable: \(String(describing: error), privacy: .public)")
             // Fail closed: after a relaunch the journal is the only record of
@@ -942,27 +947,42 @@ final class WalletSendService: NSObject {
         }
     }
 
-    /// True when the SDK recorded the wallet's Shielded withdrawal to
-    /// `address` as Confirmed or Failed. Until then the SDK may re-broadcast
-    /// the signed spend on any later sync. A missing row settles nothing: the
-    /// SDK writes it best-effort, so its absence doesn't show nothing was sent.
-    static func shieldedWithdrawalIsSettled(
+    /// The SDK's state for a journaled Shielded withdrawal of the
+    /// recipient's wallet. Pending when the activity can't be read: the lock
+    /// then holds.
+    static func shieldedSpendState(
+        for recipient: ContactPaymentRecipient
+    ) -> (DashPayWithdrawalStore.Entry) -> DashPayWithdrawalStore.ShieldedSpendState {
+        { entry in
+            guard let container = SwiftDashSDKWalletSource.onMain({ SwiftDashSDKHost.shared.modelContainer })
+            else { return .pending }
+            return shieldedWithdrawalState(
+                to: entry.address, walletId: recipient.walletId, network: recipient.network, in: container)
+        }
+    }
+
+    /// What the SDK's activity rows say about the wallet's Shielded withdrawal
+    /// to `address` (see `DashPayWithdrawalStore.ShieldedSpendState`). A
+    /// Pending row wins over any other for the same address.
+    static func shieldedWithdrawalState(
         to address: String,
         walletId: Data,
         network: WalletEnvironment.NetworkKind,
         in container: ModelContainer
-    ) -> Bool {
-        guard !address.isEmpty else { return false }
+    ) -> DashPayWithdrawalStore.ShieldedSpendState {
+        guard !address.isEmpty else { return .unrecorded }
         let withdrawal = ShieldedActivityItem.Kind.withdrawal.rawValue
-        let settled = [ShieldedActivityItem.Status.confirmed.rawValue, ShieldedActivityItem.Status.failed.rawValue]
         let descriptor = FetchDescriptor<PersistentShieldedActivity>(
             predicate: #Predicate { $0.walletId == walletId && $0.kindTag == withdrawal })
-        guard let rows = try? ModelContext(container).fetch(descriptor) else { return false }
+        guard let rows = try? ModelContext(container).fetch(descriptor) else { return .pending }
         let codecNetwork: PaymentNetwork = network == .mainnet ? .mainnet : .testnet
-        return rows.contains { row in
-            settled.contains(row.status)
-                && ScriptAddressCodec.address(forScript: row.counterparty, network: codecNetwork) == address
-        }
+        let statuses = Set(rows
+            .filter { ScriptAddressCodec.address(forScript: $0.counterparty, network: codecNetwork) == address }
+            .compactMap { ShieldedActivityItem.Status(rawValue: $0.status) })
+        if statuses.contains(.pending) { return .pending }
+        if statuses.contains(.confirmed) { return .confirmed }
+        if statuses.contains(.failed) { return .failed }
+        return .unrecorded
     }
 
     /// Refused before the payment is built: see `contactPaymentOutcomeIsUnknown`.
@@ -1013,7 +1033,8 @@ final class WalletSendService: NSObject {
                     networkRaw: recipient.network.rawValue,
                     walletId: recipient.walletId,
                     ownerIdentityId: recipient.ownerIdentityId),
-                contactIdentityId: recipient.identityId)
+                contactIdentityId: recipient.identityId,
+                shieldedSpendState: shieldedSpendState(for: recipient))
         } catch {
             logger.error("💸 TXSEND :: DashPay withdrawal history unreadable: \(String(describing: error), privacy: .public)")
             throw contactPaymentUnavailableError()
