@@ -47,6 +47,8 @@ The App Connect DIP defines the `dash-key:` version 2 code for testnet and devne
 
 ## Links
 
+- Supersedes [ADR-0006](0006-choose-the-app-connect-login-by-the-protocol-version-read-at-runtime.md): its runtime protocol-version rule lives on here as the gate of each request; its two-scan login below protocol 14 was removed by [ADR-0028](0028-answer-app-connect-v2-only-and-remove-the-two-scan-login.md), and its "off on mainnet" note is replaced above.
+
 - Feature summary: [docs/features/app-connect/README.md](../features/app-connect/README.md)
 - [ADR-0006](0006-choose-the-app-connect-login-by-the-protocol-version-read-at-runtime.md): the login is chosen by the protocol version read at runtime.
 - [ADR-0009](0009-answer-app-connect-request-v2-with-wallet-derived-keys-under-wallet-limits.md): request v2; its "Networks" rule is replaced here.

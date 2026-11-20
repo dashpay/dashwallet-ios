@@ -19,8 +19,9 @@ identity updates. After a refusal Platform keeps nothing, so the fact cannot be 
 ## Considered options
 
 1. **Record the refusal on the intent.** When the broadcast returns an error from Platform's
-   validation of the transition, the intent records its code and reason; the projection shows
-   Refused only while no key of the intent is live. A timeout, a transport error or an unknown
+   validation of the transition, the intent records its code and when the wallet learned of it
+   (Platform's message text is not stored); the projection shows Refused only while none of the
+   intent's keys is on the identity. A timeout, a transport error or an unknown
    error leaves it Confirming.
 2. **Derive it from the identity revision.** Store the revision the update was signed at, and show
    Refused once Platform shows a later revision without the keys. The SDK signs over a cached
@@ -33,8 +34,10 @@ identity updates. After a refusal Platform keeps nothing, so the fact cannot be 
 ## Consequences
 
 **Positive**
-- Refused shows the reason the network gave and needs no fence; Remove hides the row without a PIN
-  and writes nothing to Platform.
+- Refused needs no fence. The row shows the label Refused and the approve sheet one fixed
+  sentence for every code but the identity's insufficient balance, which shows the top-up text
+  instead; the code reaches the log only.
+- Remove hides the row without a PIN and writes nothing to Platform.
 - A sign-in that may still land is never shown Refused.
 
 **Negative**
