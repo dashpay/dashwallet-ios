@@ -26,6 +26,43 @@ final class DashPayWithdrawalStore {
         let networkRaw: Int
         let walletId: Data
         let ownerIdentityId: Data
+        /// The chain within the network kind (`Network.persistenceScope`):
+        /// named devnets share one kind.
+        let chain: String
+
+        init(networkRaw: Int, walletId: Data, ownerIdentityId: Data, chain: String? = nil) {
+            self.networkRaw = networkRaw
+            self.walletId = walletId
+            self.ownerIdentityId = ownerIdentityId
+            self.chain = chain ?? Self.kindChain(networkRaw)
+        }
+
+        init(_ recipient: ContactPaymentRecipient) {
+            self.init(
+                networkRaw: recipient.network.rawValue, walletId: recipient.walletId,
+                ownerIdentityId: recipient.ownerIdentityId, chain: recipient.chain)
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            let networkRaw = try container.decode(Int.self, forKey: .networkRaw)
+            self.init(
+                networkRaw: networkRaw,
+                walletId: try container.decode(Data.self, forKey: .walletId),
+                ownerIdentityId: try container.decode(Data.self, forKey: .ownerIdentityId),
+                chain: try container.decodeIfPresent(String.self, forKey: .chain))
+        }
+
+        /// The chain a network kind names on its own, as `persistenceScope`
+        /// spells mainnet and testnet.
+        static func kindChain(_ networkRaw: Int) -> String {
+            switch WalletEnvironment.NetworkKind(rawValue: networkRaw) {
+            case .mainnet: return "mainnet"
+            case .testnet: return "testnet"
+            case .devnet: return "devnet"
+            case nil: return "\(networkRaw)"
+            }
+        }
     }
 
     enum Source: String, Codable {
@@ -224,10 +261,12 @@ final class DashPayWithdrawalStore {
     }
 
     /// How many of the contact's addresses the latest attempts reserved
-    /// without paying them: the newest consecutive `.reserving` and `.unused`
-    /// entries, and Shielded withdrawals the SDK failed. Any other entry, a
-    /// Core payment included, ends the run. The contact's wallet only looks a
-    /// fixed number of addresses past the last one paid.
+    /// without evidence that one was paid. The contact's wallet only looks a
+    /// fixed number of addresses past the last one paid, so only that
+    /// evidence ends the run: a withdrawal the SDK accepted (`.submitted`)
+    /// and didn't later fail, a Shielded one it confirmed, or a Core
+    /// payment. An attempt whose outcome is unknown counts, whether or not
+    /// it still locks the contact.
     ///
     /// Read in the order the entries were written, not by date: attempts in
     /// quick succession can share a timestamp. `shieldedSpendState` is
@@ -251,8 +290,8 @@ final class DashPayWithdrawalStore {
             switch entry.status {
             case .reserving, .unused: return true
             case .corePayment: return false
-            case .submitting, .submitted, .unconfirmed:
-                return entry.source == .shielded && shieldedSpendState(entry) == .failed
+            case .submitted: return entry.source == .shielded && shieldedSpendState(entry) == .failed
+            case .submitting, .unconfirmed: return entry.source == .platform || shieldedSpendState(entry) != .confirmed
             }
         }.count
     }
@@ -404,14 +443,19 @@ final class DashPayWithdrawalStore {
         return try liveFiles().filter { Self.walletHex(ofFile: $0) == walletHex }
     }
 
-    /// `<network>_<walletHex>_<ownerHex>.json` → `walletHex`.
+    /// `<network>[-<chain>]_<walletHex>_<ownerHex>.json` → `walletHex`. Read
+    /// from the end: a devnet's name may itself contain `_`.
     private static func walletHex(ofFile url: URL) -> String? {
-        url.lastPathComponent.split(separator: "_").dropFirst().first.map(String.init)
+        let parts = url.deletingPathExtension().lastPathComponent.split(separator: "_")
+        return parts.count >= 3 ? String(parts[parts.count - 2]) : nil
     }
 
+    /// A chain other than its kind's own (a named devnet) is part of the
+    /// name, so two devnets never share a journal.
     private func fileURL(scope: Scope) -> URL {
-        directory.appendingPathComponent(
-            "\(scope.networkRaw)_\(Self.hex(scope.walletId))_\(Self.hex(scope.ownerIdentityId)).json")
+        let chain = scope.chain == Scope.kindChain(scope.networkRaw) ? "" : "-\(scope.chain)"
+        return directory.appendingPathComponent(
+            "\(scope.networkRaw)\(chain)_\(Self.hex(scope.walletId))_\(Self.hex(scope.ownerIdentityId)).json")
     }
 
     /// The live file, or else the copy a clear that has not finished staged.

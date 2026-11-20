@@ -254,6 +254,25 @@ struct ContactPaymentRecipient: Equatable {
     let walletId: Data
     let ownerIdentityId: Data
     let network: WalletEnvironment.NetworkKind
+    /// The chain within `network` (`Network.persistenceScope`): named devnets
+    /// share one kind.
+    let chain: String
+
+    init(
+        identityId: Data,
+        displayName: String,
+        walletId: Data,
+        ownerIdentityId: Data,
+        network: WalletEnvironment.NetworkKind,
+        chain: String? = nil
+    ) {
+        self.identityId = identityId
+        self.displayName = displayName
+        self.walletId = walletId
+        self.ownerIdentityId = ownerIdentityId
+        self.network = network
+        self.chain = chain ?? DashPayWithdrawalStore.Scope.kindChain(network.rawValue)
+    }
 }
 
 #if DASHPAY
@@ -276,7 +295,8 @@ extension ContactPaymentRecipient {
             displayName: displayName,
             walletId: walletId,
             ownerIdentityId: ownerIdentityId,
-            network: WalletEnvironment.networkKind)
+            network: WalletEnvironment.networkKind,
+            chain: WalletEnvironment.network?.persistenceScope)
     }
 }
 
@@ -825,10 +845,7 @@ final class WalletSendService: NSObject {
         // Best-effort: a lost record only keeps Platform and Shielded payments
         // to the contact refused for longer.
         try? DashPayWithdrawalStore.shared.recordCorePayment(
-            scope: .init(
-                networkRaw: prepared.recipient.network.rawValue,
-                walletId: prepared.recipient.walletId,
-                ownerIdentityId: prepared.recipient.ownerIdentityId),
+            scope: .init(prepared.recipient),
             contactIdentityId: contactIdentityId,
             amountDuffs: prepared.amount)
         // The send-success screen resolves the amount from this registry while
@@ -932,10 +949,7 @@ final class WalletSendService: NSObject {
         guard let recipient else { return false }
         do {
             return try DashPayWithdrawalStore.shared.hasUnresolvedEntry(
-                scope: .init(
-                    networkRaw: recipient.network.rawValue,
-                    walletId: recipient.walletId,
-                    ownerIdentityId: recipient.ownerIdentityId),
+                scope: .init(recipient),
                 contactIdentityId: contactIdentityId,
                 since: Date().addingTimeInterval(-Self.unresolvedContactWithdrawalLockWindow),
                 shieldedSpendState: Self.shieldedSpendState(for: recipient))
@@ -953,11 +967,17 @@ final class WalletSendService: NSObject {
     static func shieldedSpendState(
         for recipient: ContactPaymentRecipient
     ) -> (DashPayWithdrawalStore.Entry) -> DashPayWithdrawalStore.ShieldedSpendState {
+        shieldedSpendState(walletId: recipient.walletId, network: recipient.network)
+    }
+
+    static func shieldedSpendState(
+        walletId: Data,
+        network: WalletEnvironment.NetworkKind
+    ) -> (DashPayWithdrawalStore.Entry) -> DashPayWithdrawalStore.ShieldedSpendState {
         { entry in
             guard let container = SwiftDashSDKWalletSource.onMain({ SwiftDashSDKHost.shared.modelContainer })
             else { return .pending }
-            return shieldedWithdrawalState(
-                to: entry.address, walletId: recipient.walletId, network: recipient.network, in: container)
+            return shieldedWithdrawalState(to: entry.address, walletId: walletId, network: network, in: container)
         }
     }
 
@@ -1029,10 +1049,7 @@ final class WalletSendService: NSObject {
         let streak: Int
         do {
             streak = try store.unpaidReservationStreak(
-                scope: .init(
-                    networkRaw: recipient.network.rawValue,
-                    walletId: recipient.walletId,
-                    ownerIdentityId: recipient.ownerIdentityId),
+                scope: .init(recipient),
                 contactIdentityId: recipient.identityId,
                 shieldedSpendState: shieldedSpendState(for: recipient))
         } catch {
@@ -1069,6 +1086,7 @@ final class WalletSendService: NSObject {
         guard recipient.identityId.count == 32,
               recipient.ownerIdentityId.count == 32,
               recipient.network == WalletEnvironment.networkKind,
+              recipient.chain == WalletEnvironment.network?.persistenceScope,
               recipient.walletId == SwiftDashSDKHost.shared.wallet?.walletId,
               recipient.walletId == WalletEnvironment.activeWalletId(for: recipient.network),
               SwiftDashSDKHost.shared.runningNetwork != nil,

@@ -648,13 +648,18 @@ final class SwiftDashSDKContactsService: ObservableObject {
                 statusNote: nil)
         }
         if let walletId = WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind) {
+            let network = WalletEnvironment.networkKind
             let scope = DashPayWithdrawalStore.Scope(
-                networkRaw: WalletEnvironment.networkKind.rawValue,
-                walletId: walletId, ownerIdentityId: ownerId)
+                networkRaw: network.rawValue,
+                walletId: walletId, ownerIdentityId: ownerId,
+                chain: WalletEnvironment.network?.persistenceScope)
             do {
                 let withdrawals = try DashPayWithdrawalStore.shared.entries(
                     scope: scope, contactIdentityId: contactId)
-                payments += withdrawals.filter(\.mayHaveBeenSubmitted).map { entry in
+                payments += Self.shownWithdrawals(
+                    withdrawals,
+                    shieldedSpendState: WalletSendService.shieldedSpendState(walletId: walletId, network: network)
+                ).map { entry, statusNote in
                     ContactPayment(
                         id: "withdrawal:\(entry.id.uuidString)",
                         txid: nil,
@@ -665,11 +670,7 @@ final class SwiftDashSDKContactsService: ObservableObject {
                         date: entry.createdAt,
                         fiatString: CurrencyExchanger.shared.fiatAmountString(
                             for: Decimal(entry.amountDuffs) / Decimal(100_000_000)),
-                        // A submitted payment reads like any other sent one;
-                        // only an unresolved outcome needs saying.
-                        statusNote: entry.status == .submitted
-                            ? nil
-                            : NSLocalizedString("Status unknown", comment: "DashPay payment history: outcome not confirmed"))
+                        statusNote: statusNote)
                 }
             } catch {
                 Self.logger.error("DashPay withdrawal history could not be read: \(String(describing: error), privacy: .public)")
@@ -679,6 +680,26 @@ final class SwiftDashSDKContactsService: ObservableObject {
         // rows are all written within the same second, so insert order says
         // nothing about which payment came first.
         return payments.sorted { $0.date > $1.date }
+    }
+
+    /// The journaled withdrawals the contact's history shows, each with its
+    /// status note. One that never left, or a Shielded one the SDK failed, is
+    /// no money sent and is not shown. One the SDK accepted, or a Shielded one
+    /// it confirmed, reads like any other sent payment: the Platform side is
+    /// done, and the Core payout shows on the contact's side. Only an
+    /// unresolved outcome needs saying.
+    nonisolated static func shownWithdrawals(
+        _ entries: [DashPayWithdrawalStore.Entry],
+        shieldedSpendState: (DashPayWithdrawalStore.Entry) -> DashPayWithdrawalStore.ShieldedSpendState
+    ) -> [(DashPayWithdrawalStore.Entry, String?)] {
+        entries.compactMap { entry in
+            guard entry.mayHaveBeenSubmitted else { return nil }
+            let state: DashPayWithdrawalStore.ShieldedSpendState? =
+                entry.source == .shielded ? shieldedSpendState(entry) : nil
+            if state == .failed { return nil }
+            if entry.status == .submitted || state == .confirmed { return (entry, nil) }
+            return (entry, NSLocalizedString("Status unknown", comment: "DashPay payment history: outcome not confirmed"))
+        }
     }
 
     /// Write the owner-private contact metadata (alias / note / hidden)
