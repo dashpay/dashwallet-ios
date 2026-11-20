@@ -133,8 +133,10 @@ final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
     // Claims and releases are for `ShieldedTransferCoordinator` (`claim` for
     // the tests) only: claims are counted, not owned, so a release from
     // anywhere else would drop a running transfer's claim (drain claims are
-    // also released by `DrainClaimSettler`). Funding calls are
-    // also held by `AssetLockRecoveryService`'s bulk pass, and removals by
+    // also released by `DrainClaimSettler`). Funding calls are held by
+    // `ShieldedTransferCoordinator`, by `InternalTransferRunner` (a
+    // transfer's start, and the resume of a Max drain's lock) and by
+    // `AssetLockRecoveryService`'s bulk pass, and removals by
     // `UnconfirmedTransactionRemover`.
 
     @MainActor

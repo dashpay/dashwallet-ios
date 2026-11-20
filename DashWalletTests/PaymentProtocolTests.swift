@@ -568,7 +568,7 @@ private final class FakeWallet: WalletSending {
     var calls: [String] = []
     var lastRecipients: [(address: String, amountDuffs: UInt64)] = []
     var buildErrorsRemaining = 0 // throw from build this many times before succeeding (pre-spend failure)
-    var broadcastError: BIP70Error?
+    var broadcastError: Error?
     func buildSignedTransaction(recipients: [(address: String, amountDuffs: UInt64)]) async throws -> PreparedSend {
         calls.append("build")
         if buildErrorsRemaining > 0 { buildErrorsRemaining -= 1; throw BIP70Error.walletNotReady }
@@ -610,9 +610,10 @@ final class BIP70PaymentServiceTests: XCTestCase {
     }
 
     private func service(_ t: FakeTransport, _ w: FakeWallet, receive: FakeReceive = FakeReceive(),
-                         auth: FakeAuth = FakeAuth(), allowUntrusted: Bool = true) -> BIP70PaymentService {
+                         auth: FakeAuth = FakeAuth(), allowUntrusted: Bool = true,
+                         clock: @escaping () -> Date = Date.init) -> BIP70PaymentService {
         BIP70PaymentService(transport: t, verifier: PaymentRequestVerifier(), wallet: w,
-                            receiveAddress: receive, auth: auth, allowUntrustedUnsigned: allowUntrusted)
+                            receiveAddress: receive, auth: auth, allowUntrustedUnsigned: allowUntrusted, clock: clock)
     }
 
     private func assertThrowsBIP70<T>(_ expression: @autoclosure () async throws -> T, _ expected: BIP70Error,
@@ -694,7 +695,7 @@ final class BIP70PaymentServiceTests: XCTestCase {
 
     func testBroadcastFailureKeepsBIP70ConfirmationOneShot() async throws {
         let w = FakeWallet()
-        w.broadcastError = .walletNotReady
+        w.broadcastError = BIP70Error.walletNotReady
         let svc = service(FakeTransport(unsigned(paymentURL: nil)), w)
         let confirmation = try await svc.prepareForConfirmation(
             from: url, scheme: "dash", network: .testnet)
@@ -704,6 +705,48 @@ final class BIP70PaymentServiceTests: XCTestCase {
         await assertThrowsBIP70(
             try await svc.confirmAndSend(confirmation), .alreadySent)
         XCTAssertEqual(w.calls.filter { $0 == "broadcast" }.count, 1)
+    }
+
+    /// Once the merchant's Payment POST was acknowledged it holds the signed bytes, so whatever the local
+    /// broadcast throws afterwards is not provably unsent: the outcome is `inFlight` (no Retry), never `notSent`.
+    func testErrorAfterMerchantAckIsInFlightNeverNotSent() async throws {
+        let postAckErrors: [Error] = [
+            PlatformWalletError.staleReservationToken("stale"),
+            SwiftDashSDKTransactionSender.SendError.walletNotReady("not ready"),
+            SwiftDashSDKTransactionSender.SendError.invalidInput("bad input")
+        ]
+        for postAckError in postAckErrors {
+            let w = FakeWallet(); w.broadcastError = postAckError
+            let t = FakeTransport(unsigned())
+            let svc = service(t, w)
+            let confirmation = try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
+
+            do {
+                _ = try await svc.confirmAndSend(confirmation)
+                XCTFail("expected the broadcast to throw")
+            } catch {
+                XCTAssertNotNil(t.postedPayment, "the merchant acknowledged before the failure")
+                guard case .inFlight = SendOutcome(error: error) else {
+                    return XCTFail("post-ACK \(postAckError) must be inFlight, got \(SendOutcome(error: error))")
+                }
+            }
+        }
+    }
+
+    /// Without a payment_url nothing was POSTed, so a refused broadcast is still provably unsent.
+    func testBroadcastErrorWithoutPaymentURLKeepsItsNotSentMapping() async throws {
+        let w = FakeWallet(); w.broadcastError = PlatformWalletError.staleReservationToken("stale")
+        let svc = service(FakeTransport(unsigned(paymentURL: nil)), w)
+        let confirmation = try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
+
+        do {
+            _ = try await svc.confirmAndSend(confirmation)
+            XCTFail("expected the broadcast to throw")
+        } catch {
+            guard case .notSent = SendOutcome(error: error) else {
+                return XCTFail("no POST happened, expected notSent, got \(SendOutcome(error: error))")
+            }
+        }
     }
 
     func testMultiOutputPassthrough() async throws {
@@ -744,6 +787,71 @@ final class BIP70PaymentServiceTests: XCTestCase {
         let c = try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
         await assertThrowsBIP70(try await svc.confirmAndSend(c, now: Date(timeIntervalSince1970: Double(expires) + 100)), .expired)
         XCTAssertFalse(w.calls.contains("broadcast"))
+    }
+
+    /// Built while the request was valid, tapped after it expired: nothing is POSTed or broadcast and the
+    /// claim is released, so the same confirmation can be built again.
+    func testExpiryAtPostThrowsBeforePostAndBroadcastAndReleasesTheClaim() async throws {
+        let expires = futureExpiry
+        let w = FakeWallet(); let t = FakeTransport(unsigned(expires: expires)); t.onPost = { w.calls.append("post") }
+        let svc = service(t, w)
+        let c = try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
+        let beforeExpiry = Date(timeIntervalSince1970: Double(expires) - 10)
+        let built = try await svc.buildForSend(c, now: beforeExpiry)
+
+        await assertThrowsBIP70(
+            try await svc.postAndBroadcast(built, now: Date(timeIntervalSince1970: Double(expires) + 1)), .expired)
+        XCTAssertNil(t.postedPayment)
+        XCTAssertEqual(w.calls, ["build"])
+
+        let rebuilt = try await svc.buildForSend(c, now: beforeExpiry)
+        _ = try await svc.postAndBroadcast(rebuilt, now: beforeExpiry)
+        XCTAssertEqual(w.calls, ["build", "build", "post", "broadcast"])
+    }
+
+    /// Valid when the Payment is POSTed, expired when the merchant's ACK comes back: the merchant holds the signed
+    /// bytes, so nothing is broadcast, the claim is kept and the send is in flight, never retried.
+    func testExpiryDuringThePostDoesNotBroadcastAndKeepsTheClaim() async throws {
+        final class Clock { var now = Date() }
+        let expires = futureExpiry
+        let clock = Clock()
+        clock.now = Date(timeIntervalSince1970: Double(expires) - 10)
+        let w = FakeWallet(); let t = FakeTransport(unsigned(expires: expires))
+        t.onPost = {
+            w.calls.append("post")
+            clock.now = Date(timeIntervalSince1970: Double(expires) + 1)
+        }
+        let svc = service(t, w, clock: { clock.now })
+        let c = try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet, now: clock.now)
+        let built = try await svc.buildForSend(c, now: clock.now)
+
+        var thrown: Error?
+        do { _ = try await svc.postAndBroadcast(built, now: clock.now) } catch { thrown = error }
+
+        guard case BIP70Error.failedAfterAcknowledgement(let txHash, _)? = thrown as? BIP70Error else {
+            return XCTFail("expected failedAfterAcknowledgement, got \(String(describing: thrown))")
+        }
+        XCTAssertEqual(txHash, w.prepared.txHashDisplay)
+        XCTAssertEqual(w.calls, ["build", "post"], "an expired request is never broadcast")
+        await assertThrowsBIP70(
+            try await svc.buildForSend(c, now: Date(timeIntervalSince1970: Double(expires) - 10)), .alreadySent)
+    }
+
+    /// The merchant acknowledged the Payment, then the broadcast failed: it holds the signed bytes and may fulfil the
+    /// order, so DashSpend gets the in-progress error with the txid it records the purchase against.
+    func testPayWithDashUrlReportsAFailureAfterTheAcknowledgementAsInProgressWithTheTxid() async {
+        let w = FakeWallet(); w.broadcastError = NSError(domain: "test.local", code: 7)
+        let svc = service(FakeTransport(unsigned(network: nil)), w)
+        let sendCoins = SendCoinsService(makePaymentService: { svc })
+
+        var thrown: Error?
+        do { _ = try await sendCoins.payWithDashUrl(url: "dash:?r=http://h/pr") } catch { thrown = error }
+
+        guard case DashSpendError.paymentStatusUnknown(let txIdWire, _)? = thrown as? DashSpendError else {
+            return XCTFail("expected paymentStatusUnknown, got \(String(describing: thrown))")
+        }
+        XCTAssertEqual(txIdWire, Data(w.prepared.txHashDisplay.reversed()))
+        XCTAssertEqual(w.calls, ["build", "broadcast"])
     }
 
     func testAuthCancelStopsBeforeBuild() async {

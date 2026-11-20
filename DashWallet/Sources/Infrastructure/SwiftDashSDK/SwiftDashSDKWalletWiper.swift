@@ -947,6 +947,7 @@ final class SwiftDashSDKWalletWiper: NSObject {
         ShieldedWithdrawalStore.shared.resetForWipe()
         AssetLockProbeStore.shared.resetForWipe()
         AssetLockFailureStore.shared.resetForWipe()
+        UserDefaultsFundingRecipientStore().resetForWipe()
         DashConnectStores.removeAllWallets(in: .standard)
         SPVChainResyncMarker.resetForWipe()
     }

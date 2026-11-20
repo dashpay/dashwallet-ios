@@ -241,6 +241,11 @@ final class SwiftDashSDKWalletRuntime: NSObject {
 
     static let shared = SwiftDashSDKWalletRuntime()
 
+    /// Counts the active-wallet changes this process published (`publishActiveWalletDidChange`): a wallet switch,
+    /// a network switch, a removal, a store reset. Work that spans an await compares it, so a change and its
+    /// reversal in between (A → B → A) still reads as a change.
+    private(set) static var activeWalletGeneration: UInt64 = 0
+
     /// Serial gate at the Obj-C/Swift entrypoint boundary. Each entrypoint
     /// pushes its enqueue step through here so that two callers from
     /// different threads (e.g. a wipe and a wallet-material-changed
@@ -1213,6 +1218,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     // MARK: - Helpers
 
     private func publishActiveWalletDidChange(reason: String) {
+        Self.activeWalletGeneration &+= 1
         let walletId = SwiftDashSDKHost.shared.wallet?.walletId.hexEncodedString() ?? "none"
         NotificationCenter.default.post(
             name: SwiftDashSDKWalletState.activeWalletDidChangeNotification,
