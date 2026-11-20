@@ -5,8 +5,12 @@
   strings from that code and marks such an entry stale after a build, while the command-line sync
   phase keeps it; the two writers would disagree on every build.
 - Swift looked up only in a branch the dashpay Debug build does not compile (the `#else` of
-  `#if DEBUG`, an undefined flag), or under a condition the scan cannot evaluate, and Objective-C
-  looked up only under a positive `DEBUG` condition: the sync marks the entry stale.
+  `#if DEBUG`, an undefined flag), and Objective-C looked up only under a positive `DEBUG`
+  condition or `#if 0`: the sync marks the entry stale.
+- Out of caution the scan also counts as unseen some code the sync may see: Swift in any other
+  branch of an `#if` that names `DEBUG`, under a condition it cannot evaluate or in an `#elseif`
+  branch, and Objective-C in any branch of a chain
+  that names `DEBUG` other than a lone negative `DEBUG` branch or the `#else` of a lone positive one.
 - Looked up only by the Today extension, which compiles the Catalog but has no sync phase, or only
   in Swift under `#if !DASHPAY`: the dashpay sync marks the entry stale, so it reads as an Unused
   entry while a target still shows it.
@@ -19,7 +23,8 @@ import re
 import unittest
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-SOURCES = os.path.join(REPO, "DashWallet", "Sources")
+# Every directory with `.swift` / `.m` sources the dashpay target compiles.
+DASHPAY_SOURCES = [os.path.join(REPO, name) for name in ("DashWallet", "DashPay", "Shared")]
 TODAY_SOURCES = os.path.join(REPO, "TodayExtension")
 CATALOG = os.path.join(REPO, "DashWallet", "Localizable.xcstrings")
 # `String(localized:)` and the SwiftUI initializers and modifiers whose first literal is a
@@ -36,9 +41,9 @@ DEBUG_BUILD_FLAGS = {"DEBUG", "PIGGYCARDS_ENABLED", "DASHPAY"}
 
 
 def swift_branch_seen(condition, is_else):
-    """True when the dashpay Debug sync sees a Swift branch: the build compiles it and its condition does not
-    name DEBUG (the Xcode app drops keys only `#if DEBUG` code looks up). A condition the scan cannot evaluate,
-    or None for an `#elseif` chain, is unseen."""
+    """True when the scan counts a Swift branch as seen: the dashpay Debug build compiles it and its condition
+    does not name DEBUG (the Xcode app drops keys only `#if DEBUG` code looks up). A condition the scan cannot
+    evaluate, or None for an `#elseif` chain, counts as unseen out of caution."""
     if condition is None or re.search(r"\bDEBUG\b", condition):
         return False
     flag = re.fullmatch(r"(!?)\s*(\w+)", condition)
@@ -84,37 +89,44 @@ def lookups_by_region(text):
     return debug, other
 
 
-def objc_debug_kind(condition):
-    """"pos" for a condition that holds only with DEBUG defined, "neg" for one that holds only without it."""
-    if not re.search(r"\bDEBUG\b", condition):
-        return None
-    return "neg" if "!" in condition else "pos"
+OBJC_DIRECTIVE = re.compile(r"#\s*(ifdef|ifndef|if|elif|else|endif)\b(.*)")
+LONE_DEBUG = re.compile(r"\(?\s*(!?)\s*(?:defined\s*\(\s*DEBUG\s*\)|defined\s+DEBUG|DEBUG)\s*\)?")
+
+
+def objc_branch_seen(chain, is_else):
+    """True when the scan counts an Objective-C branch as seen. `chain` holds the conditions of the `#if` and
+    each `#elif` up to this branch (all of them for an `#else`). The sync marks stale a lookup under a positive
+    DEBUG condition or `#if 0`; out of caution, a chain that names DEBUG is seen only in a lone negative DEBUG
+    branch or in the `#else` of a lone positive one."""
+    if not any(re.search(r"\bDEBUG\b", c) for c in chain):
+        return is_else or chain[-1] != "0"
+    lone = LONE_DEBUG.fullmatch(chain[0])
+    return len(chain) == 1 and lone is not None and bool(lone.group(1)) != is_else
 
 
 def objc_lookups_by_region(text):
-    """(keys looked up only where `xcstringstool sync` marks them stale, keys looked up elsewhere) for one
-    Objective-C file. The legacy extraction records each lookup's `#if` condition, and the sync marks stale a
-    key seen only under a positive DEBUG condition; every other condition is kept."""
+    """(keys looked up only in branches the scan counts as unseen, keys looked up elsewhere) for one
+    Objective-C file."""
     unseen_lines = set()
-    stack = []  # the DEBUG kind of the current branch of each open #if
+    stack = []  # (chain of conditions, True in the #else) of each open #if
     for number, line in enumerate(text.splitlines()):
-        stripped = line.strip()
-        if stripped.startswith("#ifdef"):
-            stack.append("pos" if directive_condition(stripped, "#ifdef") == "DEBUG" else None)
-        elif stripped.startswith("#ifndef"):
-            stack.append("neg" if directive_condition(stripped, "#ifndef") == "DEBUG" else None)
-        elif stripped.startswith("#if"):
-            stack.append(objc_debug_kind(directive_condition(stripped, "#if")))
-        elif stripped.startswith("#elif"):
-            if stack:
-                stack[-1] = objc_debug_kind(directive_condition(stripped, "#elif"))
-        elif stripped.startswith("#else"):
-            if stack:
-                stack[-1] = {"pos": "neg", "neg": "pos"}.get(stack[-1])
-        elif stripped.startswith("#endif"):
-            if stack:
+        directive = OBJC_DIRECTIVE.match(line.strip())
+        if directive:
+            name = directive.group(1)
+            condition = re.sub(r"/\*.*?\*/", " ", directive.group(2)).split("//")[0].strip()
+            if name == "ifdef":
+                stack.append(([condition], False))
+            elif name == "ifndef":
+                stack.append(([f"!{condition}"], False))
+            elif name == "if":
+                stack.append(([condition], False))
+            elif name == "elif" and stack:
+                stack[-1] = (stack[-1][0] + [condition], False)
+            elif name == "else" and stack:
+                stack[-1] = (stack[-1][0], True)
+            elif name == "endif" and stack:
                 stack.pop()
-        if "pos" in stack:
+        if not all(objc_branch_seen(chain, is_else) for chain, is_else in stack):
             unseen_lines.add(number)
     unseen, seen = set(), set()
     for match in OBJC_LOOKUP.finditer(text):
@@ -123,11 +135,11 @@ def objc_lookups_by_region(text):
     return unseen, seen
 
 
-def scan(root):
-    """(keys looked up only in code the dashpay Debug sync does not see, keys looked up elsewhere) under `root`,
-    Swift and Objective-C together."""
+def scan(roots):
+    """(keys looked up only in code the scan counts as unseen, keys looked up elsewhere) under `roots`, Swift
+    and Objective-C together."""
     unseen, seen = set(), set()
-    for directory, _, files in os.walk(root):
+    for directory, _, files in (entry for root in roots for entry in os.walk(root)):
         for name in files:
             path = os.path.join(directory, name)
             if name.endswith(".swift"):
@@ -151,13 +163,13 @@ def not_manual(keys):
 
 class PreviewOnlyKeysTests(unittest.TestCase):
     def test_debug_only_lookups_are_manual_entries(self):
-        unseen, seen = scan(SOURCES)
+        unseen, seen = scan(DASHPAY_SOURCES)
         self.assertEqual(not_manual(unseen - seen), [],
-                         "looked up only in code the dashpay Debug sync does not see but not manual")
+                         "looked up only in code the scan counts as unseen but not manual")
 
     def test_keys_only_the_today_extension_looks_up_are_manual_entries(self):
-        _, seen = scan(SOURCES)
-        today = set().union(*scan(TODAY_SOURCES))
+        _, seen = scan(DASHPAY_SOURCES)
+        today = set().union(*scan([TODAY_SOURCES]))
         self.assertTrue(today, "no lookup found under TodayExtension")
         self.assertEqual(not_manual(today - seen), [],
                          "looked up only by the Today extension but not manual")
@@ -228,6 +240,40 @@ class PreviewOnlyKeysTests(unittest.TestCase):
         self.assertEqual(unseen, {"Ifdef debug", "If debug", "Nested", "Defined debug"})
         self.assertEqual(seen, {"Plain", "Else of ifdef debug", "Not debug", "Ifndef debug",
                                 "Snapshot", "Else of snapshot"})
+
+    def test_objc_branches_are_seen_only_in_the_allowed_shapes(self):
+        cases = [  # (source, unseen keys, seen keys)
+            ('#if DEBUG && !SNAPSHOT\nA\n#endif\n', {"A"}, set()),
+            ('#if defined(DEBUG) && !defined(SNAPSHOT)\nA\n#endif\n', {"A"}, set()),
+            ('#if FRESH_INSTALL && !DEBUG\nA\n#else\nB\n#endif\n', {"A", "B"}, set()),
+            ('#if DEBUG || SNAPSHOT\nA\n#else\nB\n#endif\n', {"A", "B"}, set()),
+            ('#ifndef DEBUG\nA\n#elif SNAPSHOT\nB\n#else\nC\n#endif\n', {"B", "C"}, {"A"}),
+            ('#if SNAPSHOT\nA\n#elif DEBUG\nB\n#else\nC\n#endif\n', {"B", "C"}, {"A"}),
+            ('#if 0\nA\n#else\nB\n#endif\n', {"A"}, {"B"}),
+            ('# if DEBUG\nA\n# else\nB\n# endif\n', {"A"}, {"B"}),
+            ('#ifdef DEBUG /* c */\nA\n#else\nB\n#endif\n', {"A"}, {"B"}),
+            ('#if DEBUG // c\nA\n#else\nB\n#endif\n', {"A"}, {"B"}),
+            ('#if (DEBUG)\nA\n#else\nB\n#endif\n', {"A"}, {"B"}),
+            ('#if !defined(DEBUG)\nA\n#else\nB\n#endif\n', {"B"}, {"A"}),
+            ('#if (!DEBUG)\nA\n#endif\n', set(), {"A"}),
+            ('#if DASHPAY\n#ifndef DEBUG\nA\n#endif\n#endif\n', set(), {"A"}),
+            ('#if DEBUG\n#else\n#if 0\nA\n#endif\n#endif\n', {"A"}, set()),
+        ]
+        for source, unseen, seen in cases:
+            with self.subTest(source=source):
+                source = re.sub(r"^([ABC])$", r'NSLocalizedString(@"\1", nil);', source, flags=re.M)
+                self.assertEqual(objc_lookups_by_region(source), (unseen, seen))
+
+    def test_every_source_the_dashpay_target_compiles_is_scanned(self):
+        self.assertEqual(sorted(os.path.relpath(r, REPO) for r in DASHPAY_SOURCES),
+                         ["DashPay", "DashWallet", "Shared"])
+        _, seen = scan(DASHPAY_SOURCES)
+        _, in_sources = scan([os.path.join(REPO, "DashWallet", "Sources")])
+        _, in_dashpay = scan([os.path.join(REPO, "DashPay")])
+        _, in_app_delegate = objc_lookups_by_region(
+            open(os.path.join(REPO, "DashWallet", "AppDelegate.m"), encoding="utf-8").read())
+        self.assertTrue(in_dashpay - in_sources, "no lookup only DashPay/ makes")
+        self.assertLessEqual(in_dashpay | in_app_delegate, seen)
 
     def test_the_scanner_sees_swiftui_literal_keys(self):
         source = ('Text("Shown text")\n'
