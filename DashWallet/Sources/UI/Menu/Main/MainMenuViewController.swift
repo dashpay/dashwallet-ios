@@ -711,9 +711,8 @@ extension MainMenuScreen {
             #if DASHPAY
             // The credit gate runs BEFORE the write, against the identity's
             // real balance — the warning used to fire after the update had
-            // already been broadcast, and against a mock counter
-            // (`BuyCreditsModel.currentCredits`) that had nothing to do with
-            // the identity.
+            // already been broadcast, and against a mock counter that had
+            // nothing to do with the identity.
             Task { @MainActor in
                 switch await controller.confirmAgainstIdentityCredits() {
                 case .proceed:
