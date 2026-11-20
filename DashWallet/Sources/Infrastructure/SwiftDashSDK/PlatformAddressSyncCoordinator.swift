@@ -2364,7 +2364,7 @@ final class ShieldedTxLookup {
                 assetLockCount: 0,
                 typesSeen: [],
                 uncoveredTxids: [],
-                errorDescription: String(describing: error),
+                errorDescription: AppLogMessage.errorSummary(error),
                 workerRanOffMain: workerRanOffMain)
         }
     }

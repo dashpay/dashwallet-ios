@@ -984,11 +984,6 @@ final class SwiftDashSDKTransactionSender: NSObject {
         }
     }
 
-    /// Require a positive Core acceptance verdict for programmatic send paths
-    /// that do not expose the outcome enum directly. Rejected and unknown are
-    /// deliberately different errors: rejected may be retried (by rebuilding —
-    /// the finalized handle is consumed), while unknown must not be
-    /// automatically broadcast again.
     /// The sweep loop's line for one failed part.
     /// A refused or unconfirmed part keeps its txid and the network's reason
     /// (ADR-0061, like `broadcastLine`); any other failure is its Error summary.
@@ -1003,6 +998,11 @@ final class SwiftDashSDKTransactionSender: NSObject {
         }
     }
 
+    /// Require a positive Core acceptance verdict for programmatic send paths
+    /// that do not expose the outcome enum directly. Rejected and unknown are
+    /// deliberately different errors: rejected may be retried (by rebuilding —
+    /// the finalized handle is consumed), while unknown must not be
+    /// automatically broadcast again.
     static func requireAccepted(_ outcome: CoreTransactionBroadcastOutcome) throws -> String {
         switch outcome {
         case .accepted(let txid):

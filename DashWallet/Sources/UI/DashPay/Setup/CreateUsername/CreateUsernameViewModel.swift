@@ -1100,7 +1100,7 @@ class CreateUsernameViewModel: ObservableObject {
                 // The registration-activity sink of the Home card re-checks
                 // the invitation once this attempt has ended.
                 if let failure = InvitationClaimFailure.classify(error) {
-                    DWLogger.log("CreateUsername: invitation claim refused (\(failure)): \(String(describing: error))")
+                    DWLogger.log("CreateUsername: invitation claim refused (\(failure)): \(AppLogMessage.errorSummary(error))")
                     return .failure(failure.message)
                 }
                 return .failure(
@@ -1184,7 +1184,7 @@ class CreateUsernameViewModel: ObservableObject {
             purchaseSubmissionUnconfirmed = true
             return .submittedUnconfirmed(error.localizedDescription)
         }
-        DWLogger.log("CreateUsername: purchase failed: \(error.localizedDescription)")
+        DWLogger.log("CreateUsername: purchase failed: \(AppLogMessage.errorSummary(error))")
         if let check = AssetLockInputLimit.check(for: error) {
             return .needsCoinConsolidation(check)
         }
@@ -1478,7 +1478,7 @@ class CreateUsernameViewModel: ObservableObject {
                     result = .invalidCritical
                 case let .activeContest(contenders, endsAt):
                     DWLogger.log(
-                        "CreateUsername: '\(username)' is in an active vote "
+                        "CreateUsername: the name is in an active vote "
                             + "(\(contenders) contenders, ends \(endsAt.map { "\($0)" } ?? "unknown"))")
                     // Our own running vote shows as "in voting", not as a
                     // joinable contest. The submission bookmark answers first;

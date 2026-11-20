@@ -473,10 +473,14 @@ final class HostRecoveryTests: XCTestCase {
         let text = try String(
             contentsOf: root.appendingPathComponent("DashWallet/Sources/UI/Menu/Security/Wallets/WalletsViewModel.swift"),
             encoding: .utf8)
-        let lines = text.split(separator: "\n").filter { $0.contains("removeWallet mnemonic read failed") }
-        XCTAssertEqual(lines.count, 1)
-        XCTAssertTrue(
-            lines.first?.contains("status=\\(SwiftDashSDKHost.keychainStatus(of: error), privacy: .public)") == true,
-            String(lines.first ?? ""))
+        // Both keychain reads on the removal path: the phrase read and the
+        // last-wallet proof.
+        let status = "status=\\(SwiftDashSDKHost.keychainStatus(of: error), privacy: .public)"
+        for fragment in ["removeWallet mnemonic read failed", "last-wallet proof failed"] {
+            let lines = text.split(separator: "\n").filter { $0.contains(fragment) }
+            XCTAssertEqual(lines.count, 1, fragment)
+            let line = String(lines.first ?? "")
+            XCTAssertTrue(line.contains(status), line)
+        }
     }
 }

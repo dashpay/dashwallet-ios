@@ -380,7 +380,7 @@ final class WalletsViewModel: ObservableObject {
             guard let target = entries.first(where: { $0.walletId == walletId }) else { return false }
             return SwiftDashSDKHost.allMnemonicsMatch(phrase: target.mnemonic, in: entries)
         } catch {
-            Self.logger.error("last-wallet proof failed; refusing global reset: \(error)")
+            Self.logger.error("last-wallet proof failed; refusing global reset: \(error) status=\(SwiftDashSDKHost.keychainStatus(of: error), privacy: .public)")
             return false
         }
     }

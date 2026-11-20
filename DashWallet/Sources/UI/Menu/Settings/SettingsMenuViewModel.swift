@@ -340,7 +340,7 @@ class SettingsMenuViewModel: ObservableObject {
     /// BIP44 address → sweep → balance refresh). The "Move CoinJoin Funds"
     /// row self-removes once the refreshed balance drops below the threshold.
     func performCoinJoinSweep() async {
-        DWLogger.log("SettingsMenuViewModel: sweep invoked from Settings menu (\(coinJoinLeftoverFormatted))")
+        DWLogger.log("SettingsMenuViewModel: sweep invoked from Settings menu")
         do {
             _ = try await WalletSendService.shared.sweepCoinJoin()
         } catch {

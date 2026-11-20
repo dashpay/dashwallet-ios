@@ -16,7 +16,8 @@ can no longer be told apart from the rest.
 
 ## Decision drivers
 
-- No raw error text, no amount, no address and no full wallet id in the export.
+- No raw error text, no amount, no address and no full wallet id in the app's lines of the export.
+  The SDK session logs in the same archive are outside this decision and keep balances and amounts.
 - A free-text value the line does not mark public is written as `<private>`; counts and flags stay
   visible.
 - Existing call sites already carry `privacy:` annotations written for `os.Logger` (512 of 529 calls

@@ -666,11 +666,6 @@ final class SwiftDashSDKHost {
         }
     }
 
-    /// Only a cause this host knows to be about the keys classifies as one;
-    /// every other error is treated as a store failure. Matched by type, not
-    /// by NSError domain: app enums bridge to domains carrying the module
-    /// name, and `WalletStorageError.keychainError` loses its status when
-    /// bridged.
     /// A recovery-phrase keychain failure line: the Error summary keeps only
     /// the case, so the keychain status is added, `-` when there is none.
     nonisolated static func mnemonicFailureLine(_ event: String, _ error: Error) -> AppLogMessage {
@@ -682,6 +677,11 @@ final class SwiftDashSDKHost {
         keysFailure(in: error)?.status.map { String($0) } ?? "-"
     }
 
+    /// Only a cause this host knows to be about the keys classifies as one;
+    /// every other error is treated as a store failure. Matched by type, not
+    /// by NSError domain: app enums bridge to domains carrying the module
+    /// name, and `WalletStorageError.keychainError` loses its status when
+    /// bridged.
     nonisolated static func keysFailure(in error: Error) -> (reason: WalletPreparationFailure.KeysReason, status: OSStatus?)? {
         switch error {
         case WalletStorageError.keychainError(let status):

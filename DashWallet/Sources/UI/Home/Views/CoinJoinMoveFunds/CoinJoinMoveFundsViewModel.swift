@@ -380,7 +380,7 @@ final class CoinJoinMoveFundsViewModel: ObservableObject {
         }
 
         var description: String {
-            "CoinJoin UTXOs n=\(state?.count ?? -1) final=\(state?.finalCount ?? -1) total=\(state?.totalDuffs ?? 0) duffs, "
+            "CoinJoin UTXOs n=\(state?.count ?? -1) final=\(state?.finalCount ?? -1), "
                 + "plan=\(step.map { String(describing: $0) } ?? "unknown")"
         }
     }

@@ -355,7 +355,7 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
             textBlock1: String(format: NSLocalizedString("You have %@ in CoinJoin mixed coins. CoinJoin is no longer supported — move them to your spendable balance.", comment: "CoinJoin"), amount),
             positiveButtonText: NSLocalizedString("Move funds", comment: "CoinJoin"),
             positiveButtonAction: {
-                DWLogger.log("HomeViewController: sweep invoked from Home popup (\(amount))")
+                DWLogger.log("HomeViewController: sweep invoked from Home popup")
                 self.viewModel.showCoinJoinSweepDialog = false
                 Task { @MainActor in
                     // The post-sync popup (LegacyModalDialog) is mid-dismissal here —

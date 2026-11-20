@@ -663,10 +663,84 @@ final class AppLoggerTests: XCTestCase {
         let path = "DashWallet/Sources/UI/DashPay/Setup/CreateUsername/CreateUsernameViewModel.swift"
         let refused = try sourceLine(path, containing: "refused over the asset-lock input limit")
         XCTAssertFalse(refused.contains("\\(submittedUsername)"), refused)
+        for fragment in ["\"CreateUsername: purchase failed", "\"CreateUsername: invitation claim refused"] {
+            let line = try sourceLine(path, containing: fragment)
+            XCTAssertTrue(line.contains("AppLogMessage.errorSummary(error)"), line)
+            XCTAssertFalse(line.contains("localizedDescription") || line.contains("String(describing: error)"), line)
+        }
+        let contest = try sourceLine(path, containing: "is in an active vote")
+        XCTAssertFalse(contest.contains("\\(username)"), contest)
         let failed = try sourceLine(path, containing: "\"CreateUsername: registration failed")
         XCTAssertFalse(failed.contains("\\(username)"), failed)
         XCTAssertFalse(failed.contains("\\(raw)"), failed)
         XCTAssertTrue(failed.contains("AppLogMessage.errorSummary(error)"), failed)
+    }
+
+    // AC-05 (owner, 2026-11-19): legacy DWLogger / DWLog lines take a finished
+    // string, so no privacy marker applies; none of them may write a balance,
+    // a payment amount or an address.
+    func testLegacyDirectLinesWriteNoAmount() throws {
+        let sources = "DashWallet/Sources/"
+        struct Check {
+            let path: String
+            let fragment: String
+            let forbidden: [String]
+        }
+        let swap = "UI/Swap/SwapFlowCoordinator.swift"
+        let giftCard = "UI/Explore Dash/Views/DashSpend/DashSpendPayViewModel.swift"
+        let checks = [
+            Check(path: "UI/Home/Views/HomeViewModel.swift", fragment: "sweep dialog check",
+                  forbidden: ["\\(balance)", "kOneDash"]),
+            Check(path: "UI/Home/HomeViewController.swift", fragment: "sweep invoked from Home popup",
+                  forbidden: ["\\(amount)"]),
+            Check(path: "UI/Menu/Settings/SettingsMenuViewModel.swift", fragment: "sweep invoked from Settings menu",
+                  forbidden: ["\\(coinJoinLeftoverFormatted)"]),
+            Check(path: "UI/Menu/Tools/ToolsMenuViewModel.swift", fragment: "sweep invoked from Tools menu",
+                  forbidden: ["\\(coinJoinLeftoverFormatted)"]),
+            Check(path: "UI/Home/Views/CoinJoinMoveFunds/CoinJoinMoveFundsViewModel.swift",
+                  fragment: "\"CoinJoin UTXOs n=", forbidden: ["totalDuffs"]),
+            Check(path: "UI/Payments/Receive/Models/DWReceiveModel.m", fragment: "DWReceiveModel: Received",
+                  forbidden: ["total"]),
+            Check(path: swap, fragment: "Swap: Buy receive", forbidden: ["sellAmount", "depositAddress"]),
+            Check(path: giftCard, fragment: "Attempting to purchase gift card", forbidden: ["\\(amount)"]),
+            Check(path: giftCard, fragment: "Gift card saved", forbidden: ["giftCardNote"]),
+        ]
+        for check in checks {
+            let line = try sourceLine(sources + check.path, containing: check.fragment)
+            for value in check.forbidden {
+                XCTAssertFalse(line.contains(value), "\(check.path): \(line)")
+            }
+        }
+    }
+
+    // AC-03: the kept SHIELD-TX-REFRESH failure line carries the Error
+    // summary of the snapshot build, not the error's description.
+    func testShieldRefreshFailureCarriesTheErrorSummary() throws {
+        let text = try sourceText("DashWallet/Sources/Infrastructure/SwiftDashSDK/PlatformAddressSyncCoordinator.swift")
+        XCTAssertFalse(text.contains("errorDescription: String(describing: error)"))
+        XCTAssertTrue(text.contains("errorDescription: AppLogMessage.errorSummary(error)"))
+    }
+
+    // AC-05 (owner, 2026-11-19): no legacy DWLogger line writes an address.
+    // The rule over every call, not a list of lines.
+    func testLegacyDirectLinesWriteNoAddress() throws {
+        let marker = "DWLogger.log("
+        var offenders: [String] = []
+        for (path, text) in try appSources() {
+            var rest = text[...]
+            while let start = rest.range(of: marker) {
+                let tail = rest[start.upperBound...]
+                let end = tail.range(of: "\")\n")?.upperBound ?? tail.endIndex
+                let call = String(tail[..<end])
+                let interpolations = call.components(separatedBy: "\\(").dropFirst()
+                let names = interpolations.map { $0.prefix(while: { $0 != ")" }).lowercased() }
+                if names.contains(where: { $0.contains("address") }) {
+                    offenders.append("\(path): \(call.prefix(160))")
+                }
+                rest = tail[end...]
+            }
+        }
+        XCTAssertEqual(offenders, [], offenders.joined(separator: "\n"))
     }
 
     // AC-11 (PR review r10): a failed part of a sweep keeps its txid and the
