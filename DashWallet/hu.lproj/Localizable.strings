@@ -328,6 +328,9 @@
 /* DashPay: a second payment to a contact started while one was still being sent */
 "A payment to this contact is already in progress." = "A payment to this contact is already in progress.";
 
+/* DashPay: too many contact addresses were reserved for payments that were never sent */
+"Several recent payments to this contact from Platform or Shielded were not sent. Pay this contact from your Dash balance instead." = "Several recent payments to this contact from Platform or Shielded were not sent. Pay this contact from your Dash balance instead.";
+
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
 

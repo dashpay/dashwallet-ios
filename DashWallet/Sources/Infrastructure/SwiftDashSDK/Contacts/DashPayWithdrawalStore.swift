@@ -34,6 +34,14 @@ final class DashPayWithdrawalStore {
     }
 
     enum Status: String, Codable {
+        /// Persisted before the SDK reserves the contact's address, so a
+        /// reservation is counted even when its record can't be completed.
+        /// Nothing was submitted from this state.
+        case reserving
+        /// The address was reserved but the withdrawal was proven never
+        /// submitted. Kept so `unpaidReservationStreak` can bound how many of
+        /// the contact's addresses go unpaid.
+        case unused
         /// Persisted before invoking the opaque withdrawal SDK call. A crash
         /// can leave this state behind even if submission succeeded.
         case submitting
@@ -47,12 +55,18 @@ final class DashPayWithdrawalStore {
         let id: UUID
         let scope: Scope
         let contactIdentityId: Data
-        let address: String
+        var address: String
         let amountDuffs: UInt64
         let amountIsEstimate: Bool
         let source: Source
         let createdAt: Date
         var status: Status
+
+        /// A withdrawal that was, or may have been, submitted: what the
+        /// contact's payment history shows.
+        var mayHaveBeenSubmitted: Bool {
+            status == .submitting || status == .submitted || status == .unconfirmed
+        }
     }
 
     enum StoreError: LocalizedError {
@@ -81,19 +95,18 @@ final class DashPayWithdrawalStore {
         self.removeItem = removeItem
     }
 
-    /// Call after authorization and address reservation, immediately BEFORE
-    /// invoking the withdrawal. A failed save must prevent submission. Keep
+    /// Call after authorization, immediately BEFORE asking the SDK to reserve
+    /// the contact's address. A failed save must prevent the reservation. Keep
     /// the captured scope through awaits so a wallet switch cannot relabel it.
-    func begin(
+    func beginReservation(
         scope: Scope,
         contactIdentityId: Data,
-        address: String,
         amountDuffs: UInt64,
         amountIsEstimate: Bool = false,
         source: Source
     ) throws -> Entry {
         guard scope.walletId.count == 32, scope.ownerIdentityId.count == 32,
-              contactIdentityId.count == 32, !address.isEmpty, amountDuffs > 0,
+              contactIdentityId.count == 32, amountDuffs > 0,
               WalletEnvironment.NetworkKind(rawValue: scope.networkRaw) != nil else {
             throw StoreError.invalidPayment
         }
@@ -102,12 +115,43 @@ final class DashPayWithdrawalStore {
         var entries = try load(scope: scope)
         let entry = Entry(
             id: UUID(), scope: scope, contactIdentityId: contactIdentityId,
-            address: address, amountDuffs: amountDuffs,
+            address: "", amountDuffs: amountDuffs,
             amountIsEstimate: amountIsEstimate, source: source,
-            createdAt: Date(), status: .submitting)
+            createdAt: Date(), status: .reserving)
         entries.append(entry)
         try save(entries, scope: scope)
         return entry
+    }
+
+    /// Records the reserved address, immediately BEFORE invoking the
+    /// withdrawal. A failed save must prevent submission.
+    func recordReservedAddress(_ reservation: Entry, address: String) throws -> Entry {
+        guard reservation.status == .reserving, !address.isEmpty else { throw StoreError.invalidPayment }
+        lock.lock()
+        defer { lock.unlock() }
+        var entries = try load(scope: reservation.scope)
+        guard let index = entries.firstIndex(where: { $0.id == reservation.id }) else {
+            throw StoreError.missingEntry
+        }
+        entries[index].address = address
+        entries[index].status = .submitting
+        try save(entries, scope: reservation.scope)
+        return entries[index]
+    }
+
+    func begin(
+        scope: Scope,
+        contactIdentityId: Data,
+        address: String,
+        amountDuffs: UInt64,
+        amountIsEstimate: Bool = false,
+        source: Source
+    ) throws -> Entry {
+        guard !address.isEmpty else { throw StoreError.invalidPayment }
+        let reservation = try beginReservation(
+            scope: scope, contactIdentityId: contactIdentityId,
+            amountDuffs: amountDuffs, amountIsEstimate: amountIsEstimate, source: source)
+        return try recordReservedAddress(reservation, address: address)
     }
 
     func update(_ entry: Entry, status: Status) throws {
@@ -139,11 +183,40 @@ final class DashPayWithdrawalStore {
             .sorted { $0.createdAt > $1.createdAt }
     }
 
-    /// True when a withdrawal to this contact recorded since `date` was never
-    /// confirmed as submitted (`.submitting` or `.unconfirmed`).
-    func hasUnresolvedEntry(scope: Scope, contactIdentityId: Data, since date: Date) throws -> Bool {
-        try entries(scope: scope, contactIdentityId: contactIdentityId)
-            .contains { $0.status != .submitted && $0.createdAt >= date }
+    /// True when a withdrawal to this contact was never confirmed as
+    /// submitted (`.submitting` or `.unconfirmed`) and may still execute: a
+    /// Platform one recorded since `date`, or a Shielded one of any age whose
+    /// outcome `shieldedOutcomeIsSettled` can't establish — the SDK keeps
+    /// re-broadcasting a Shielded spend on later syncs, whatever its age.
+    func hasUnresolvedEntry(
+        scope: Scope,
+        contactIdentityId: Data,
+        since date: Date,
+        shieldedOutcomeIsSettled: (Entry) -> Bool = { _ in false }
+    ) throws -> Bool {
+        try entries(scope: scope, contactIdentityId: contactIdentityId).contains { entry in
+            guard entry.status == .submitting || entry.status == .unconfirmed else { return false }
+            switch entry.source {
+            case .platform: return entry.createdAt >= date
+            case .shielded: return !shieldedOutcomeIsSettled(entry)
+            }
+        }
+    }
+
+    /// How many of the contact's addresses the latest attempts reserved
+    /// without submitting a payment to them: the newest consecutive
+    /// `.reserving` and `.unused` entries. The contact's wallet only looks a
+    /// fixed number of addresses past the last one paid.
+    /// Read in the order the entries were written, not by date: attempts in
+    /// quick succession can share a timestamp.
+    func unpaidReservationStreak(scope: Scope, contactIdentityId: Data) throws -> Int {
+        lock.lock()
+        defer { lock.unlock() }
+        return try load(scope: scope)
+            .filter { $0.scope == scope && $0.contactIdentityId == contactIdentityId }
+            .reversed()
+            .prefix { $0.status == .reserving || $0.status == .unused }
+            .count
     }
 
     /// The wallet's journal files. Throws when the journal can't be read:
