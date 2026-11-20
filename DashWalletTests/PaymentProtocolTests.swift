@@ -1609,14 +1609,15 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertNil(box.callbackScheme)
     }
 
-    /// Without `sender` the deep-link router rejects a `pay=` link, so the scan still falls back to
-    /// `BIP70URI` and stays unpayable: the deep link's own rule, not a scan-only one.
+    /// Without `sender` the deep-link router rejects a `pay=` link, and the scan keeps that
+    /// verdict: the deep link's own rule, not a scan-only one.
     func testParsedBoxDashWalletPayLinkWithoutSenderStaysRejected() {
         let box = ParsedPaymentURI.parse(paymentString: "dashwallet://pay=yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW&amount=1")
-        // The rewrite was not applied: `BIP70URI` read the raw link, so `pay=` is still in the
-        // address. This holds on every network; the verdicts below alone would also pass on
-        // mainnet for a testnet address.
-        XCTAssertEqual(box.address, "pay=yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW")
+        // A refused pay link is not reread as the plain alias: nothing is parsed out of it. This
+        // holds on every network; the verdicts below alone would also pass on mainnet for a
+        // testnet address.
+        XCTAssertNil(box.address)
+        XCTAssertNil(box.rURL)
         XCTAssertFalse(box.isAddressPayableForCurrentNetwork)
         XCTAssertFalse(box.isValidDashPaymentIntent)
     }
