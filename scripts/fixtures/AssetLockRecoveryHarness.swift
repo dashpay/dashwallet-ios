@@ -146,6 +146,7 @@ final class ShieldedTransferCoordinator {
     var lastResumeReport: ResumeReport?
     var lastResumeRecipientSource: ShieldedResumeRecipient.Source?
     var lastFailure: Error?
+    var contactWithdrawalOutcomeUnknown = false
     var lastAssetLockContext: CoreShieldedDrainContext?
     var lastAssetLockOutPoint: ShieldedAssetLocksInFlight.OutPoint?
     let environment: Environment

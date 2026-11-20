@@ -115,6 +115,9 @@
 /* Sync diagnostics - shielded note count */
 "%@ notes" = "%@ notes";
 
+/* Send confirm sheet: DashPay contact payment from Platform or Shielded */
+"%@ receives it once the network processes the payment — this can take up to 10 minutes." = "%@ receives it once the network processes the payment — this can take up to 10 minutes.";
+
 /* Username marketplace: registration success */
 "%@ registered" = "%@ u regjistrua";
 
@@ -126,6 +129,9 @@
 
 /* DashPay Contacts */
 "%@ wants to connect. Accept to pay each other directly by username." = "%@ wants to connect. Accept to pay each other directly by username.";
+
+/* DashPay contact payment sent from Platform or Shielded */
+"%@ will receive it in a few minutes, once the network processes the payment." = "%@ will receive it in a few minutes, once the network processes the payment.";
 
 /* Credits */
 "%@ ~ %lu contacts / %lu profile updates" = "%1$@ ~ %2$lu contacts / %3$lu profile updates";
@@ -321,6 +327,12 @@
 
 /* Platform partial withdrawal cap */
 "A partial withdrawal is limited to %@. Tap Max to withdraw the full balance." = "A partial withdrawal is limited to %@. Tap Max to withdraw the full balance.";
+
+/* DashPay: a second payment to a contact started while one was still being sent */
+"A payment to this contact is already in progress." = "A payment to this contact is already in progress.";
+
+/* DashPay: too many contact addresses were reserved for payments that may not have arrived */
+"No more payment addresses can be reserved for this contact from Platform or Shielded. If a recent payment's status is unknown, check that your contact received it before paying again." = "No more payment addresses can be reserved for this contact from Platform or Shielded. If a recent payment's status is unknown, check that your contact received it before paying again.";
 
 /* DashSpend/Maya */
 "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one." = "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.";
@@ -3664,6 +3676,9 @@
 /* DashPay Contacts */
 "No payments with this contact yet" = "No payments with this contact yet";
 
+/* DashPay Contacts: the payment history could not be read in full */
+"Some payments with this contact could not be loaded, so this list may be incomplete." = "Some payments with this contact could not be loaded, so this list may be incomplete.";
+
 /* SPV diagnostics */
 "No peers connected" = "No peers connected";
 
@@ -4129,11 +4144,14 @@
 /* DashSpend */
 "Payment URI unavailable" = "Payment URI unavailable";
 
+/* DashPay contact payment */
+"Payment status unknown" = "Payment status unknown";
+
 /* DashPay Contacts */
 "Payments" = "Payments";
 
 /* DashPay FAQ */
-"Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." = "Pagesat janë private: adresat që shkëmbeni me një kontakt udhëtojnë brenda një përmbajtjeje të fshehtëzuar që vetëm ju të dy mund ta lexoni dhe nuk botohen kurrë — prandaj pagesat tuaja nuk lidhen lehtë me emrin tuaj të përdoruesit. Megjithatë ato mbeten pagesa të zakonshme në një zinxhir transparent: një analizë e sofistikuar e zinxhirit mund të nxjerrë informacion. Shielded DashPay (së shpejti) do ta mbyllë atë boshllëk. Vetë kërkesat për kontakt aktualisht NUK janë private: kushdo mund të shohë se dy identitete janë të lidhura. Kërkesat private për kontakt janë një veçori që vjen së shpejti. Emri juaj i përdoruesit dhe profili janë gjithashtu publikë në Dash Platform.";
+"Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read. A payment still shows its address on the chain like any other, but nothing published links that address to your username. You can pay from your Transparent, Platform, or Shielded balance. However you pay, your contact receives it as a regular transparent-chain payment, so the payment itself is public. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform." = "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read. A payment still shows its address on the chain like any other, but nothing published links that address to your username. You can pay from your Transparent, Platform, or Shielded balance. However you pay, your contact receives it as a regular transparent-chain payment, so the payment itself is public. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform.";
 
 /* Balance info sheet */
 "Payments confirm in seconds with InstantSend" = "Pagesat konfirmohen brenda sekondash me InstantSend";
@@ -4416,7 +4434,7 @@
 "Privacy tip" = "Privacy tip";
 
 /* DashPay FAQ */
-"Private contact requests (so who you connect with stays private), Shielded DashPay — contact payments from your private Shielded balance — and paying users who aren't in your contacts yet are all coming soon." = "Kërkesat private për kontakt (që të mbetet private se me kë lidheni), Shielded DashPay — pagesa për kontaktet nga balanca juaj private e mbrojtur — dhe pagesat për përdorues që ende nuk janë te kontaktet tuaja, të gjitha vijnë së shpejti.";
+"Private contact requests (so who you connect with stays private), payments that remain Shielded for the recipient, and paying users who aren't in your contacts yet are all coming soon." = "Private contact requests (so who you connect with stays private), payments that remain Shielded for the recipient, and paying users who aren't in your contacts yet are all coming soon.";
 
 /* DashPay FAQ */
 "Private contact requests are in development and expected around September–October 2026. Today the request itself is public — anyone can see that two identities are connected, even though the payment details inside it are encrypted. Once private contact requests ship, you will have the choice of having your friendship be public or private." = "Kërkesat private për kontakt janë në zhvillim dhe priten rreth shtatorit–tetorit 2026. Sot vetë kërkesa është publike — kushdo mund të shohë se dy identitete janë të lidhura, edhe pse të dhënat e pagesës brenda saj janë të fshehtëzuara. Sapo të dalin kërkesat private për kontakt, do të mund të zgjidhni nëse miqësia juaj do të jetë publike apo private.";
@@ -5509,6 +5527,9 @@
 /* DashConnect: do not return to an app the wallet does not know */
 "Stay in the wallet" = "Stay in the wallet";
 
+/* DashPay payment history: outcome not confirmed */
+"Status unknown" = "Status unknown";
+
 /* Step 1 */
 "Step %ld" = "Step %ld";
 
@@ -5875,6 +5896,9 @@
 /* DashConnect */
 "The DashConnect login contract is not available on this network." = "The DashConnect login contract is not available on this network.";
 
+/* DashPay: the payment record to update is missing */
+"The DashPay payment record is unavailable." = "The DashPay payment record is unavailable.";
+
 /* Swap */
 "The destination address isn’t valid for %@ (%@). Go back and enter a %@ address." = "The destination address isn’t valid for %1$@ (%2$@). Go back and enter a %3$@ address.";
 
@@ -5904,6 +5928,9 @@
 
 /* No comment provided by engineer. */
 "The evonode's answer couldn't be read." = "Përgjigjja e evonode-it nuk u lexua dot.";
+
+/* DashPay contact payment from Platform or Shielded: its network fee was unknown at confirmation */
+"The fee for this payment could not be worked out. Go back and try again." = "The fee for this payment could not be worked out. Go back and try again.";
 
 /* Dash DEX */
 "The final amount you receive may differ from this estimate by up to %d%% due to price slippage." = "The final amount you receive may differ from this estimate by up to %d%% due to price slippage.";
@@ -5985,6 +6012,9 @@
 
 /* Core sync (SPV) error */
 "The network changed while Core SPV was starting." = "The network changed while Core SPV was starting.";
+
+/* DashPay contact payment from Platform or Shielded: priced again, it would now cost more than the confirmed fee */
+"The network fee for this payment changed. Close this confirmation and review it again." = "The network fee for this payment changed. Close this confirmation and review it again.";
 
 /* DashConnect App Connect v2 */
 "The network has not caught up with your identity's keys yet. Try again in a moment." = "The network has not caught up with your identity's keys yet. Try again in a moment.";
@@ -6929,6 +6959,9 @@
 /* Swap */
 "Unable to refresh quote. Please try again." = "Unable to refresh quote. Please try again.";
 
+/* DashPay: the payment record could not be written, so nothing was sent */
+"Unable to save this DashPay payment." = "Unable to save this DashPay payment.";
+
 /* No comment provided by engineer. */
 "Unable to send contact request" = "Unable to send contact request";
 
@@ -7426,8 +7459,23 @@
 /* Send: broadcast outcome unknown; the argument is the SDK's reason */
 "We couldn't confirm whether the transaction was accepted. Don't send it again; wait for wallet synchronization. %@" = "We couldn't confirm whether the transaction was accepted. Don't send it again; wait for wallet synchronization. %@";
 
+/* DashPay contact payment */
+"We couldn't confirm whether this payment went through. Don't send it again — check your balance and this contact's activity first." = "We couldn't confirm whether this payment went through. Don't send it again — check your balance and this contact's activity first.";
+
 /* Send to contact: the broadcast outcome is unknown */
 "We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history." = "We couldn't confirm whether this payment went through. Don't send it again — wait for the wallet to finish synchronizing and check your history.";
+
+/* Send to contact: an earlier payment's outcome is still unknown after the lock window */
+"An earlier payment to this contact could not be confirmed and may still arrive. Check with your contact before paying again." = "An earlier payment to this contact could not be confirmed and may still arrive. Check with your contact before paying again.";
+
+/* Send to contact: pay despite an earlier payment whose outcome is unknown */
+"Pay again" = "Pay again";
+
+/* Send to contact: confirm paying despite an earlier unconfirmed payment */
+"Pay this contact again?" = "Pay this contact again?";
+
+/* Send to contact: risk of paying again despite an earlier unconfirmed payment */
+"The earlier payment may still arrive, and your contact could be paid twice." = "The earlier payment may still arrive, and your contact could be paid twice.";
 
 /* Dash DEX / dex_error_build_failed */
 "We couldn't prepare this swap. Please try again." = "We couldn't prepare this swap. Please try again.";
@@ -7632,6 +7680,12 @@
 
 /* Explore */
 "You can pay with Dash at the cashier." = "You can pay with Dash at the cashier.";
+
+/* DashPay contact payment from Platform: single-payment cap */
+"You can send up to %@ to a contact from your Platform balance in one payment." = "You can send up to %@ to a contact from your Platform balance in one payment.";
+
+/* DashPay contact payment from Shielded: the protocol's single-withdrawal maximum */
+"You can send up to %@ to a contact from your Shielded balance in one payment." = "You can send up to %@ to a contact from your Shielded balance in one payment.";
 
 /* No comment provided by engineer. */
 "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network." = "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network.";
@@ -7936,6 +7990,9 @@
 /* Platform balance cannot fund shield selection headroom */
 "Your Platform balance cannot currently cover the Shield transfer selection headroom." = "Your Platform balance cannot currently cover the Shield transfer selection headroom.";
 
+/* Full-balance Platform payment: the balance grew after it was authorized */
+"Your Platform balance changed. Close this confirmation and tap Max again." = "Your Platform balance changed. Close this confirmation and tap Max again.";
+
 /* DashPay registration recovery */
 "Your previous payment was found. Continue to finish creating the identity and username without paying again." = "Your previous payment was found. Continue to finish creating the identity and username without paying again.";
 
@@ -7965,6 +8022,9 @@
 
 /* Core send blocked during a restored wallet's initial sync */
 "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes." = "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes.";
+
+/* Contact payment blocked during a restored wallet's initial sync */
+"Your restored wallet is completing its initial sync. Paying contacts will be available once it finishes." = "Your restored wallet is completing its initial sync. Paying contacts will be available once it finishes.";
 
 /* DashSpend */
 "Your session expired" = "Your session expired";
@@ -8064,6 +8124,9 @@
 
 /* Wallet preparation help */
 "Your wallet keys could not be read from this device. Do not delete the app. Try opening your wallet again, or contact support if the problem continues." = "Your wallet keys could not be read from this device. Do not delete the app. Try opening your wallet again, or contact support if the problem continues.";
+
+/* DashPay: the wallet or identity changed while a contact payment was open */
+"Your wallet or DashPay identity changed. Reopen the payment and try again." = "Your wallet or DashPay identity changed. Reopen the payment and try again.";
 
 /* No comment provided by engineer. */
 "ZenLedger" = "ZenLedger";

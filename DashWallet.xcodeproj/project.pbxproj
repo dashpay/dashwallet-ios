@@ -2018,6 +2018,9 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		AE4A372E7EC798A350694542 /* ShieldedWithdrawalHistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E12F7F1F376A7ED784840839 /* ShieldedWithdrawalHistoryTests.swift */; };
 		6E2230E18A5A739428FB9172 /* ShieldedWithdrawalHistoryUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17AA5286B0A6B87FBDBFECF4 /* ShieldedWithdrawalHistoryUITests.swift */; };
 		74648FE9B1A4F560BD376049 /* ShieldedWithdrawalHistoryFixture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E6EC867403319C64E4E6101 /* ShieldedWithdrawalHistoryFixture.swift */; };
+		C4A14BAD09A608E7499B32B8 /* DashPayWithdrawalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC9653678681D52B55713B5A /* DashPayWithdrawalStore.swift */; };
+		4F3D13471128A38D468CCADE /* DashPayWithdrawalStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78F1E6AB037F85A309E8DBA4 /* DashPayWithdrawalStoreTests.swift */; };
+		D45A707A1000000000000001 /* DashPayWithdrawalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC9653678681D52B55713B5A /* DashPayWithdrawalStore.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -3804,6 +3807,8 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		0E6EC867403319C64E4E6101 /* ShieldedWithdrawalHistoryFixture.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedWithdrawalHistoryFixture.swift; sourceTree = "<group>"; };
 		E12F7F1F376A7ED784840839 /* ShieldedWithdrawalHistoryTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedWithdrawalHistoryTests.swift; sourceTree = "<group>"; };
 		17AA5286B0A6B87FBDBFECF4 /* ShieldedWithdrawalHistoryUITests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedWithdrawalHistoryUITests.swift; sourceTree = "<group>"; };
+		EC9653678681D52B55713B5A /* DashPayWithdrawalStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DashPayWithdrawalStore.swift; sourceTree = "<group>"; };
+		78F1E6AB037F85A309E8DBA4 /* DashPayWithdrawalStoreTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DashPayWithdrawalStoreTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -6696,6 +6701,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				4D0A7C21B5E39F04A11C2D57 /* DashPayUserLink.swift */,
 				02357928871603392E797C9A /* SwiftDashSDKContactsService.swift */,
 				5ADPR0012E4A0000000000F1 /* DashPayContactAddressReadiness.swift */,
+				EC9653678681D52B55713B5A /* DashPayWithdrawalStore.swift */,
 			);
 			path = Contacts;
 			sourceTree = "<group>";
@@ -7199,6 +7205,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				DA57A1010000000000000001 /* PastedAmountNormalizationTests.swift */,
 				DA5A00000000000000000005 /* DashPayIdentityKeysTests.swift */,
 				D5E2D975669CB53883D56803 /* DWAvatarUploadClientTests.swift */,
+				78F1E6AB037F85A309E8DBA4 /* DashPayWithdrawalStoreTests.swift */,
 			);
 			path = DashWalletTests;
 			sourceTree = "<group>";
@@ -10154,6 +10161,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				05F4E88EEF1A4256BAD9E7CE /* CoreShieldedDrainService.swift in Sources */,
 				7C0DE5A1B2C34D5E6F708194 /* CoreShieldedDrainMaxController.swift in Sources */,
 				8F1651BA35F24398B543F53B /* CoreShieldedDrainStore.swift in Sources */,
+				D45A707A1000000000000001 /* DashPayWithdrawalStore.swift in Sources */,
 				06132521E7B4D21B4A1597E7 /* PlatformSendExecutor.swift in Sources */,
 				D3DA37D1924A7F5B089FE110 /* StorageExplorerView.swift in Sources */,
 				5E0C5A1E0000000000ABC003 /* StorageExplorerNavigation.swift in Sources */,
@@ -10332,6 +10340,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				DA57A1010000000000000002 /* PastedAmountNormalizationTests.swift in Sources */,
 				DA5A00000000000000000004 /* DashPayIdentityKeysTests.swift in Sources */,
 				215F9BB0CAADF4D47D95C444 /* DWAvatarUploadClientTests.swift in Sources */,
+				4F3D13471128A38D468CCADE /* DashPayWithdrawalStoreTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -11313,6 +11322,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C0F1E5ED0A14B2C3D4E5F606 /* ContestedUsernameFee+IdentityFunding.swift in Sources */,
 				D15607B6987D27ACDC844F9E /* DWAvatarUploadClient.swift in Sources */,
 				A365C2F95472285830E6CDEB /* HomeUsernameRow.swift in Sources */,
+				C4A14BAD09A608E7499B32B8 /* DashPayWithdrawalStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
