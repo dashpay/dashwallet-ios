@@ -56,37 +56,22 @@ struct DashSpendPriceUpdatedDialog: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            ScrollView {
-                VStack(spacing: 20) {
-                    VStack(spacing: 4) {
-                        Text(fiat(change.requestedFiat))
-                            .font(.largeTitle.weight(.semibold))
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.5)
-                        DashSpendDashFigure(text: GiftCardAmountText.exactDash(change.requestedAmount),
-                                            color: .dash.blue)
-                    }
-                    .foregroundColor(.dash.blue)
-                    .padding(.horizontal, 20)
-
-                    details
-                }
-                .padding(.horizontal, 20)
-                // Room for the box's shadow, which the scroll view would otherwise cut off.
-                .padding(.bottom, 20)
+        DashSpendSheetBody(maxHeight: maxHeight) {
+            VStack(spacing: 4) {
+                Text(fiat(change.requestedFiat))
+                    .font(.largeTitle.weight(.semibold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
+                DashSpendDashFigure(text: GiftCardAmountText.exactDash(change.requestedAmount),
+                                    color: .dash.blue)
             }
-            .scrollBounceBehavior(.basedOnSize)
+            .foregroundColor(.dash.blue)
+            .padding(.horizontal, 20)
 
+            details
+        } buttons: {
             buttons
-                .padding(.horizontal, 30)
         }
-        .padding(.bottom, 20)
-        .frame(maxHeight: maxHeight)
-        // Keep the height independent of the offered detent so DashUIKit's
-        // `.selfSizingSheet()` can measure a stable one: the natural height, or `maxHeight`
-        // when that is less.
-        .fixedSize(horizontal: false, vertical: true)
     }
 
     private var details: some View {

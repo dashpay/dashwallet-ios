@@ -301,8 +301,8 @@ private struct DashSpendPurchaseSheet: View {
     private static let chromeHeight: CGFloat = 92
 
     /// The height left for the content once the sheet is at its tallest. Content that is
-    /// taller than the sheet is cut off at the bottom, so the "Price updated" dialog is held
-    /// to this and scrolls inside it.
+    /// taller than the sheet is cut off at the bottom, so both dialogs are held to this and
+    /// scroll inside it.
     private var contentHeightLimit: CGFloat {
         (UIDevice.screenHeight * Self.maxHeightFraction - Self.chromeHeight).rounded(.down)
     }
@@ -340,6 +340,7 @@ private struct DashSpendPurchaseSheet: View {
                 dashAmount: snapshot.approval.amount,
                 quantities: snapshot.quantities.isEmpty ? nil : snapshot.quantities,
                 isWaiting: isWaiting,
+                maxHeight: contentHeightLimit,
                 onConfirm: { onConfirm(snapshot) },
                 onCancel: { viewModel.dismissPurchaseSheet() }
             )

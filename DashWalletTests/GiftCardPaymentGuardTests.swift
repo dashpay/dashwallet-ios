@@ -955,33 +955,55 @@ final class PiggyCardsPaymentURITests: XCTestCase {
     }
 }
 
-/// The "Price updated" dialog on a screen too short for all of it.
+/// The purchase sheet's dialogs on a screen too short for all of them.
 @MainActor
-final class DashSpendPriceUpdatedDialogLayoutTests: XCTestCase {
-    /// What an iPhone SE leaves for the dialog: 95% of its 667 pt, less the sheet's 92 pt
-    /// of grabber and header.
+final class DashSpendPurchaseSheetLayoutTests: XCTestCase {
+    /// What an iPhone SE leaves for a dialog: 95% of its 667 pt, less the sheet's 92 pt of
+    /// grabber and header.
     private static let shortScreenLimit: CGFloat = 541
 
-    private func height(maxHeight: CGFloat?, warning: Bool) -> CGFloat {
+    private func height(of view: some View) -> CGFloat {
+        UIHostingController(rootView: view).sizeThatFits(in: CGSize(width: 375, height: 10_000)).height
+    }
+
+    private func priceUpdated(maxHeight: CGFloat?, warning: Bool) -> CGFloat {
         let change = GiftCardPaymentGuard.PriceChange(
             confirmedAmount: 493_700_000, confirmedFiat: 192.50,
             requestedAmount: warning ? 552_940_000 : 513_440_000,
             requestedFiat: warning ? 215.60 : 200.20, needsWarning: warning)
-        let host = UIHostingController(rootView: DashSpendPriceUpdatedDialog(
-            change: change, maxHeight: maxHeight, onPay: {}, onCancel: {}))
-        return host.sizeThatFits(in: CGSize(width: 375, height: 10_000)).height
+        return height(of: DashSpendPriceUpdatedDialog(change: change, maxHeight: maxHeight, onPay: {}, onCancel: {}))
+    }
+
+    private func confirm(maxHeight: CGFloat?, quantities: [Decimal: Int]?) -> CGFloat {
+        height(of: DashSpendConfirmationDialog(
+            merchantName: "Merchant", merchantIconUrl: "", originalPrice: 200, discount: 0.0375,
+            dashAmount: 493_700_000, quantities: quantities, isWaiting: false, maxHeight: maxHeight,
+            onConfirm: {}, onCancel: {}))
     }
 
     /// The warning variant is taller than a short screen allows, and takes no more than it
     /// is given: the part above the buttons scrolls instead.
-    func testWarningVariantIsHeldToItsHeightLimit() {
-        XCTAssertGreaterThan(height(maxHeight: nil, warning: true), Self.shortScreenLimit)
-        XCTAssertEqual(height(maxHeight: Self.shortScreenLimit, warning: true), Self.shortScreenLimit, accuracy: 0.5)
+    func testPriceWarningIsHeldToItsHeightLimit() {
+        XCTAssertGreaterThan(priceUpdated(maxHeight: nil, warning: true), Self.shortScreenLimit)
+        XCTAssertEqual(priceUpdated(maxHeight: Self.shortScreenLimit, warning: true), Self.shortScreenLimit, accuracy: 0.5)
     }
 
-    func testDialogShorterThanItsLimitKeepsItsNaturalHeight() {
-        XCTAssertLessThan(height(maxHeight: nil, warning: false), Self.shortScreenLimit)
-        XCTAssertEqual(height(maxHeight: Self.shortScreenLimit, warning: false),
-                       height(maxHeight: nil, warning: false), accuracy: 0.5)
+    func testPriceChangeShorterThanItsLimitKeepsItsNaturalHeight() {
+        XCTAssertLessThan(priceUpdated(maxHeight: nil, warning: false), Self.shortScreenLimit)
+        XCTAssertEqual(priceUpdated(maxHeight: Self.shortScreenLimit, warning: false),
+                       priceUpdated(maxHeight: nil, warning: false), accuracy: 0.5)
+    }
+
+    /// Several card values add lines to the Confirm dialog and take it past a short screen.
+    func testConfirmWithSeveralCardValuesIsHeldToItsHeightLimit() {
+        let quantities: [Decimal: Int] = [25: 2, 50: 1, 100: 1]
+        XCTAssertGreaterThan(confirm(maxHeight: nil, quantities: quantities), Self.shortScreenLimit)
+        XCTAssertEqual(confirm(maxHeight: Self.shortScreenLimit, quantities: quantities), Self.shortScreenLimit, accuracy: 0.5)
+    }
+
+    func testConfirmShorterThanItsLimitKeepsItsNaturalHeight() {
+        XCTAssertLessThan(confirm(maxHeight: nil, quantities: nil), Self.shortScreenLimit)
+        XCTAssertEqual(confirm(maxHeight: Self.shortScreenLimit, quantities: nil),
+                       confirm(maxHeight: nil, quantities: nil), accuracy: 0.5)
     }
 }
