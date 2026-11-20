@@ -98,8 +98,6 @@ struct WalletAccountsScreen: View {
                     Text(viewModel.walletName)
                         .dashFont(.subheadMedium)
                         .foregroundColor(.dash.primaryText)
-                        .lineLimit(1)
-                        .padding(.horizontal, 60)
                 }
             )
 
