@@ -33,12 +33,13 @@ python3 foundation_format.py --self-test
     variable FORMATTER_FORCE_ROUTE=localizedStringWithFormat forces the wrong
     route (Locale.current decides), so a test can prove the self-test fails.
 """
-import hashlib
 import json
 import os
 import subprocess
 import sys
 import tempfile
+
+import swift_helper
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FORMAT_SOURCE = os.path.join(HERE, "format.swift")
@@ -56,20 +57,11 @@ class FormatError(Exception):
 
 def _binary():
     """Compile format.swift once into a cache outside the repository (FORMATTER_CACHE overrides)."""
-    with open(FORMAT_SOURCE, "rb") as f:
-        digest = hashlib.sha256(f.read()).hexdigest()[:16]
-    cache = os.environ.get("FORMATTER_CACHE") or os.path.join(
-        os.path.expanduser("~"), "Library", "Caches", "dashwallet-foundation-format")
-    binary = os.path.join(cache, "format-" + digest)
-    if not os.path.exists(binary):
-        os.makedirs(cache, exist_ok=True)
-        partial = "%s.%d.tmp" % (binary, os.getpid())
-        res = subprocess.run(["xcrun", "swiftc", "-O", "-o", partial, FORMAT_SOURCE],
-                             capture_output=True, text=True)
-        if res.returncode != 0:
-            raise FormatError("cannot compile %s:\n%s" % (FORMAT_SOURCE, res.stderr))
-        os.replace(partial, binary)
-    return binary
+    try:
+        return swift_helper.host_binary(FORMAT_SOURCE, "FORMATTER_CACHE",
+                                        "dashwallet-foundation-format", "format-")
+    except swift_helper.SwiftHelperError as e:
+        raise FormatError(str(e))
 
 
 def format_texts(lproj_root, requests):
