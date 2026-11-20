@@ -125,6 +125,12 @@ final class ParsedPaymentURI: NSObject {
         scheme == "https" && rURL.map(PaymentProtocolTransport.isSecure) == true
     }
 
+    /// A merchant request the wallet fetches: one in a `dash:` URI it can pay, or a whole https
+    /// URL. Another currency's `r=` is that currency's request, never fetched as Dash's.
+    @objc var isFetchableDashRequest: Bool {
+        rURL != nil && (isValidDashPaymentIntent || isWholeRequestURL)
+    }
+
     private init(rawString: String,
                  scheme: String?,
                  address: String?,

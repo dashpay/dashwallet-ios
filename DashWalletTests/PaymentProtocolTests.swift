@@ -1276,25 +1276,13 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertFalse(action.paymentURL.absoluteString.contains("sender"))
     }
 
-    /// `BIP70URI` reads `req-sender` as `sender`, so an invalid `sender` must not leave a
-    /// `req-sender` behind to be called back.
-    func testDeepLinkPayActionDropsReqSenderWithAnInvalidSender() throws {
-        let url = try XCTUnwrap(URL(string: "dashwallet://pay=Xabc&amount=1&sender=https&req-sender=foo"))
-        let action = try XCTUnwrap(DWURLParser.action(for: url) as? DWURLPayAction)
-        let uri = try XCTUnwrap(BIP70URI(action.paymentURL.absoluteString))
-        XCTAssertEqual(uri.address, "Xabc")
-        XCTAssertNil(uri.callbackScheme)
-        XCTAssertFalse(action.paymentURL.absoluteString.contains("sender"))
-    }
-
-    /// The app named on screen and the app called back are the same one: `sender`.
-    func testDeepLinkPayActionIgnoresReqSenderNextToAValidSender() throws {
-        let url = try XCTUnwrap(URL(string: "dashwallet://pay=Xabc&amount=1&sender=ctx&req-sender=foo"))
-        let action = try XCTUnwrap(DWURLParser.action(for: url) as? DWURLPayAction)
-        let uri = try XCTUnwrap(BIP70URI(action.paymentURL.absoluteString))
-        XCTAssertEqual(uri.callbackScheme, "ctx")
-        XCTAssertTrue(uri.label?.contains("ctx") ?? false)
-        XCTAssertFalse(action.paymentURL.absoluteString.contains("foo"))
+    /// A required callback that `sender` does not name — an invalid `sender`, or another app —
+    /// cannot be met: the link is refused rather than paid without it or called back elsewhere.
+    func testDeepLinkPayActionRefusesAReqSenderItsSenderDoesNotName() throws {
+        for query in ["sender=https&req-sender=foo", "sender=ctx&req-sender=foo"] {
+            let url = try XCTUnwrap(URL(string: "dashwallet://pay=Xabc&amount=1&\(query)"))
+            XCTAssertNil(DWURLParser.action(for: url), query)
+        }
     }
 
     /// A `req-label` cannot replace the label the wallet wrote for a valid `sender`.
@@ -1325,10 +1313,35 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertNil(box.label)
         XCTAssertFalse(box.hasUnsupportedRequirement)
 
-        let required = ParsedPaymentURI.parse(paymentString: "\(link)&req-sender=foo")
+        let required = ParsedPaymentURI.parse(paymentString: "\(link)&req-sender=ctx")
         XCTAssertTrue(required.hasUnsupportedRequirement)
         XCTAssertFalse(required.isValidDashPaymentIntent)
         XCTAssertNil(required.label)
+    }
+
+    /// An opened link meets `req-sender` only with one callback that names an app, and any
+    /// optional `sender` naming the same one; an invalid optional sender is still just dropped.
+    func testAnOpenedLinksRequiredCallbackMustBeUnambiguous() throws {
+        let link = "dash:yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW?amount=1"
+        let met = ParsedPaymentURI.parse(openedLink: "\(link)&req-sender=ctx&sender=ctx")
+        XCTAssertFalse(met.hasUnsupportedRequirement)
+        XCTAssertEqual(met.callbackScheme, "ctx")
+        for unmet in ["req-sender=", "req-sender=https", "req-sender=ctx&sender=other",
+                      "sender=other&req-sender=ctx", "req-sender=ctx&req-sender=ctx"] {
+            let parsed = ParsedPaymentURI.parse(openedLink: "\(link)&\(unmet)")
+            XCTAssertTrue(parsed.hasUnsupportedRequirement, unmet)
+            XCTAssertNil(parsed.callbackScheme, unmet)
+        }
+        let dropped = ParsedPaymentURI.parse(openedLink: "\(link)&sender=https")
+        XCTAssertFalse(dropped.hasUnsupportedRequirement)
+        XCTAssertNil(dropped.callbackScheme)
+
+        let wrapper = "dashwallet://pay=yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW&amount=1&sender=ctx"
+        let action = try XCTUnwrap(DWURLParser.action(for: try XCTUnwrap(URL(string: "\(wrapper)&req-sender=ctx"))) as? DWURLPayAction)
+        XCTAssertEqual(try XCTUnwrap(BIP70URI(action.paymentURL.absoluteString)).callbackScheme, "ctx")
+        for unmet in ["req-sender=other", "req-sender=https", "req-sender=ctx&req-sender=ctx"] {
+            XCTAssertNil(DWURLParser.action(for: try XCTUnwrap(URL(string: "\(wrapper)&\(unmet)"))), unmet)
+        }
     }
 
     func testAddressRequestNeedsAValidSender() throws {
@@ -1359,6 +1372,23 @@ final class BIP70PaymentServiceTests: XCTestCase {
             XCTAssertEqual(read?.parsedURI?.callbackScheme, "ctx")
             XCTAssertNil(read?.callbackScheme)
             XCTAssertNil(read?.paymentIntent?.callbackScheme)
+        }
+    }
+
+    /// NFC and paste fetch only a Dash merchant request or a whole https request URL: another
+    /// currency's request is never fetched and shown as a Dash payment.
+    func testNFCAndPasteFetchOnlyDashRequests() {
+        let foreign = "bitcoin:?r=https://merchant.example/r"
+        XCTAssertFalse(ParsedPaymentURI.parse(paymentString: foreign).isFetchableDashRequest)
+        XCTAssertTrue(ParsedPaymentURI.parse(paymentString: "dash:?r=https://merchant.example/r").isFetchableDashRequest)
+        XCTAssertTrue(ParsedPaymentURI.parse(paymentString: "https://merchant.example/r").isFetchableDashRequest)
+        let builder = DWPaymentInputBuilder()
+        for source in [DWPaymentInputSource.pasteboard, .NFC] {
+            var read: DWPaymentInput?
+            builder.payFirst(from: [foreign], source: source) { read = $0 }
+            XCTAssertNotNil(read, "answered at once, without a fetch")
+            XCTAssertNil(read?.parsedURI)
+            XCTAssertNil(read?.bip70Confirmation)
         }
     }
 

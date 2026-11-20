@@ -544,6 +544,36 @@ final class QRScannerTests: XCTestCase {
         }
     }
 
+    /// Send's clipboard suggestion reads a copied payment URI as a payment:
+    /// one the scanner would refuse suggests no address, while an unknown
+    /// optional parameter and plain prose still suggest one.
+    func testClipboardSuggestionRefusesWhatTheScannerRefuses() {
+        for refused in ["dash:\(Self.address)?amount=1&req-memo=x", "dash:\(Self.address)?req-amount=1",
+                        "Pay dash:\(Self.address)?amount=abc today", "dash:\(Self.address)?req-r"] {
+            XCTAssertNil(SendViewModel.detect(in: refused), refused)
+        }
+        for suggested in ["dash:\(Self.address)?amount=1", "dash:\(Self.address)?amount=1&memo=x",
+                          "Note: pay \(Self.address) please"] {
+            XCTAssertEqual(SendViewModel.detect(in: suggested)?.address, Self.address, suggested)
+        }
+    }
+
+    /// A rescan does not carry Max to the new recipient: the amount starts
+    /// afresh, or takes the invoice's.
+    func testRescanClearsMax() {
+        let send = SendViewModel(contactLookup: { _ in nil })
+        send.applyMax(duffs: 5_000_000)
+        XCTAssertTrue(send.isMaxSelected)
+        send.prefill(address: Self.address, amountDuffs: 0)
+        XCTAssertFalse(send.isMaxSelected)
+        XCTAssertEqual(send.dashDuffsUnsigned, 0)
+
+        send.applyMax(duffs: 5_000_000)
+        send.prefill(address: Self.address, amountDuffs: 150_000_000)
+        XCTAssertFalse(send.isMaxSelected)
+        XCTAssertEqual(send.dashDuffsUnsigned, 150_000_000)
+    }
+
     /// Only Max takes the full-balance withdrawal, which pays whatever the
     /// balance is at submission; an amount that equals the quote is fixed.
     func testOnlyMaxSelectsTheFullPlatformWithdrawal() {

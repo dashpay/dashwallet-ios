@@ -54,6 +54,9 @@ struct BIP70URI {
     let fiatAmount: Float?
     /// Keys carrying the `req-` prefix (params the request demands; amount immutability etc.).
     let requiredFields: Set<String>
+    /// A `req-sender` that names no app scheme, is given twice, or disagrees with `sender`: no
+    /// callback can be the one the request demands.
+    let hasUnmetCallbackRequirement: Bool
 
     /// The parameters a payment honours. BIP21: a `req-` parameter outside them makes the URI
     /// unpayable. `user`, `currency` and `local` are read but no payment applies them, so they can
@@ -61,7 +64,9 @@ struct BIP70URI {
     /// network locks transactions automatically.
     static let understoodFields: Set<String> = ["amount", "label", "message", "r", "sender", "IS"]
 
-    var hasUnsupportedRequirement: Bool { !requiredFields.isSubset(of: Self.understoodFields) }
+    var hasUnsupportedRequirement: Bool {
+        hasUnmetCallbackRequirement || !requiredFields.isSubset(of: Self.understoodFields)
+    }
 
     /// true ⇒ BIP70 protocol flow (fetch `r`); false ⇒ plain BIP21 address send.
     var isBIP70: Bool { r != nil }
@@ -109,7 +114,8 @@ struct BIP70URI {
         var label: String?
         var message: String?
         var r: URL?
-        var callbackScheme: String?
+        var senders: [String] = []
+        var requiredSenders: [String] = []
         var dashpayUsername: String?
         var fiatCurrencyCode: String?
         var fiatAmount: Float?
@@ -142,8 +148,8 @@ struct BIP70URI {
                     r = URL(string: value)
                 }
                 requestSeen = true
-            // Not a scheme an app can own → no callback; the rest of the link still stands.
-            case "sender", "req-sender": callbackScheme = CallbackScheme.validated(value)
+            case "sender": senders.append(value)
+            case "req-sender": requiredSenders.append(value)
             case "user", "req-user": dashpayUsername = value
             case "currency", "req-currency": fiatCurrencyCode = value
             case "local", "req-local": fiatAmount = (value as NSString).floatValue
@@ -157,7 +163,17 @@ struct BIP70URI {
         self.label = label
         self.message = message
         self.r = r
-        self.callbackScheme = callbackScheme
+        // An optional sender that is not a scheme an app can own is no callback; the rest of the
+        // link still stands. A required one must name one app, and any optional one the same.
+        if requiredSenders.isEmpty {
+            callbackScheme = senders.last.flatMap(CallbackScheme.validated)
+            hasUnmetCallbackRequirement = false
+        } else {
+            let required = requiredSenders.count == 1 ? CallbackScheme.validated(requiredSenders[0]) : nil
+            let agrees = senders.allSatisfy { CallbackScheme.validated($0) == required }
+            callbackScheme = agrees ? required : nil
+            hasUnmetCallbackRequirement = required == nil || !agrees
+        }
         self.dashpayUsername = dashpayUsername
         self.fiatCurrencyCode = fiatCurrencyCode
         self.fiatAmount = fiatAmount
@@ -203,6 +219,7 @@ struct BIP70URI {
         fiatCurrencyCode = nil
         fiatAmount = nil
         requiredFields = []
+        hasUnmetCallbackRequirement = false
     }
 
     private init(bip73URL url: URL, scheme: String) {
@@ -219,6 +236,7 @@ struct BIP70URI {
         fiatCurrencyCode = nil
         fiatAmount = nil
         requiredFields = []
+        hasUnmetCallbackRequirement = false
     }
 
     /// Decimal DASH string → duffs (1 DASH = 100_000_000 duffs), via `Decimal` to avoid binary

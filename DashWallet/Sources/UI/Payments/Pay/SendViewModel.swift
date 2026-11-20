@@ -1202,9 +1202,15 @@ final class SendViewModel: ObservableObject {
         addressText = suggestion.address
     }
 
-    private static func detect(in raw: String) -> ClipboardSuggestion? {
+    static func detect(in raw: String) -> ClipboardSuggestion? {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty { return nil }
+        // A copied payment URI is a payment, not prose to pick an address
+        // out of: one the scanner would refuse suggests nothing.
+        for token in trimmed.split(whereSeparator: \.isWhitespace) where token.contains(":") {
+            let parsed = ParsedPaymentURI.parse(paymentString: String(token))
+            if parsed.hasExplicitScheme, Self.refusesAddressOnly(parsed) { return nil }
+        }
 
         for candidate in trimmed.split(whereSeparator: { !$0.isLetter && !$0.isNumber }) {
             let word = String(candidate)
@@ -1213,6 +1219,12 @@ final class SendViewModel: ObservableObject {
             }
         }
         return nil
+    }
+
+    /// A payment URI whose address may not be paid on its own: an unmet or
+    /// unknown requirement, an unpayable amount, a required request or amount.
+    static func refusesAddressOnly(_ parsed: ParsedPaymentURI) -> Bool {
+        parsed.hasUnsupportedRequirement || parsed.hasInvalidAmount || parsed.requiresRequest || parsed.requiresAmount
     }
 
     /// The address a scanned input would put in the address field, or nil for
@@ -1255,7 +1267,13 @@ final class SendViewModel: ObservableObject {
     /// already entered; an invoice's required amount always does, so a
     /// rescan never pairs its recipient with an earlier amount.
     func prefill(address: String, amountDuffs: UInt64, requiresAmount: Bool = false) {
+        // Max was chosen for the previous recipient: a scan starts the amount
+        // afresh rather than carry a full-balance choice to a new one. Read
+        // first — a new destination can drop the selection but not its text.
+        let hadMax = maxAmountDuffs != nil || isFullShieldedSweep
         addressText = address
+        clearShieldedMaxSelection()
+        if hadMax { amountText = "" }
         if requiresAmount {
             unit = .dash
             amountText = amountDuffs > 0 ? Self.editorText(duffs: amountDuffs) : ""
@@ -1851,10 +1869,17 @@ final class SendViewModel: ObservableObject {
             }
         }
 
+        applyMax(duffs: sourceDuffs)
+    }
+
+    /// Max's amount, kept exact in duffs.
+    func applyMax(duffs: UInt64) {
         isApplyingMax = true
         defer { isApplyingMax = false }
-        applyMaxAmountText(sourceDuffs)
+        applyMaxAmountText(duffs)
     }
+
+    var isMaxSelected: Bool { maxAmountDuffs != nil }
 
     /// Keep the selected Max amount exact in duffs while rendering either
     /// DASH or an approximate two-decimal fiat value.
