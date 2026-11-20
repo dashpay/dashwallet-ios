@@ -86,6 +86,8 @@ final class ParsedPaymentURI: NSObject {
     @objc let requiresRequest: Bool
     /// The amount was given as `req-amount`: an invoice, never an address to fill in alone.
     @objc let requiresAmount: Bool
+    /// A `req-` parameter the wallet doesn't understand: per BIP21 nothing in the URI is payable.
+    @objc let hasUnsupportedRequirement: Bool
     /// `sender=` x-callback-url scheme.
     @objc let callbackScheme: String?
     /// `user=` DashPay username (value carry only; DashPay deferred to C10).
@@ -112,7 +114,8 @@ final class ParsedPaymentURI: NSObject {
     /// arms are compiled out under `SHAPESHIFT_ENABLED`, undefined in this app), widened to accept
     /// every payable address form (bech32m Platform/Shielded included).
     @objc var isValidDashPaymentIntent: Bool {
-        scheme == "dash" && ((isAddressPayableForCurrentNetwork && !hasInvalidAmount && !requiresRequest) || rURL != nil)
+        scheme == "dash" && !hasUnsupportedRequirement
+            && ((isAddressPayableForCurrentNetwork && !hasInvalidAmount && !requiresRequest) || rURL != nil)
     }
 
     /// A plain https payment-request URL read whole (BIP73), the one form without a `dash:`
@@ -132,6 +135,7 @@ final class ParsedPaymentURI: NSObject {
                  rURL: URL?,
                  requiresRequest: Bool,
                  requiresAmount: Bool,
+                 hasUnsupportedRequirement: Bool,
                  callbackScheme: String?,
                  dashpayUsername: String?,
                  fiatCurrencyCode: String?,
@@ -150,6 +154,7 @@ final class ParsedPaymentURI: NSObject {
         self.rURL = rURL
         self.requiresRequest = requiresRequest
         self.requiresAmount = requiresAmount
+        self.hasUnsupportedRequirement = hasUnsupportedRequirement
         self.callbackScheme = callbackScheme
         self.dashpayUsername = dashpayUsername
         self.fiatCurrencyCode = fiatCurrencyCode
@@ -176,6 +181,7 @@ final class ParsedPaymentURI: NSObject {
             return ParsedPaymentURI(rawString: raw, scheme: nil, address: nil, amount: 0,
                                     hasInvalidAmount: false, label: nil, message: nil, rURL: nil, requiresRequest: false,
                                     requiresAmount: false,
+                                    hasUnsupportedRequirement: false,
                                     callbackScheme: nil,
                                     dashpayUsername: nil, fiatCurrencyCode: nil, fiatAmount: 0,
                                     hasExplicitScheme: false, isAddressValidForCurrentNetwork: false,
@@ -197,6 +203,7 @@ final class ParsedPaymentURI: NSObject {
                                 rURL: uri.r,
                                 requiresRequest: uri.requiredFields.contains("r"),
                                 requiresAmount: uri.requiredFields.contains("amount"),
+                                hasUnsupportedRequirement: uri.hasUnsupportedRequirement,
                                 callbackScheme: uri.callbackScheme,
                                 dashpayUsername: uri.dashpayUsername,
                                 fiatCurrencyCode: uri.fiatCurrencyCode,
@@ -246,6 +253,7 @@ final class ParsedPaymentURI: NSObject {
                          rURL: nil,
                          requiresRequest: requiresRequest,
                          requiresAmount: requiresAmount,
+                         hasUnsupportedRequirement: hasUnsupportedRequirement,
                          callbackScheme: callbackScheme,
                          dashpayUsername: dashpayUsername,
                          fiatCurrencyCode: fiatCurrencyCode,

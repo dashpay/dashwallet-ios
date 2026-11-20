@@ -1256,7 +1256,10 @@ final class SendViewModel: ObservableObject {
     /// rescan never pairs its recipient with an earlier amount.
     func prefill(address: String, amountDuffs: UInt64, requiresAmount: Bool = false) {
         addressText = address
-        if amountDuffs > 0, requiresAmount || dashDuffsUnsigned == 0 {
+        if requiresAmount {
+            unit = .dash
+            amountText = amountDuffs > 0 ? Self.editorText(duffs: amountDuffs) : ""
+        } else if amountDuffs > 0, dashDuffsUnsigned == 0 {
             unit = .dash
             amountText = Self.editorText(duffs: amountDuffs)
         }

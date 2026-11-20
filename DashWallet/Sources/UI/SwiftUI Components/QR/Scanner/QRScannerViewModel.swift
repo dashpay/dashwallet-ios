@@ -235,7 +235,7 @@ final class QRScannerViewModel: ObservableObject {
     /// when the embedded address and amount are ones the wallet can pay. Any
     /// payable form: a Platform or Shielded address goes on to the Send screen.
     nonisolated static func fallback(afterFailedRequest parsed: ParsedPaymentURI) -> ParsedPaymentURI? {
-        guard !parsed.requiresRequest else { return nil }
+        guard !parsed.requiresRequest, !parsed.hasUnsupportedRequirement else { return nil }
         let cleared = parsed.byClearingRequestURL()
         guard cleared.isValidDashPaymentIntent, cleared.address != nil else { return nil }
         return cleared
@@ -428,7 +428,7 @@ final class QRScannerViewModel: ObservableObject {
         if parsed.scheme == "dash", parsed.hasInvalidAmount {
             return NSLocalizedString("Invalid payment amount", comment: "")
         }
-        if parsed.scheme == "dash", parsed.requiresRequest, parsed.rURL == nil {
+        if parsed.scheme == "dash", parsed.hasUnsupportedRequirement || (parsed.requiresRequest && parsed.rURL == nil) {
             return NSLocalizedString("Invalid Payment Request", comment: "")
         }
         if parsed.hasExplicitScheme, parsed.scheme == "dash", let address = parsed.address, address.count > 1 {
