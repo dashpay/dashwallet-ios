@@ -280,9 +280,7 @@ final class BIP70PaymentService {
         try Self.assertNotExpired(confirmation.request.details.expires, now: now)
 
         // 2. A signed merchant request with nowhere to POST is invalid.
-        if confirmation.isSecure, confirmation.paymentURL == nil {
-            throw BIP70Error.missingPaymentURL
-        }
+        try Self.assertSignedRequestHasPaymentURL(confirmation)
 
         // 3. Claim the single-use send slot AFTER the pre-spend checks (so an expired/no-URL
         //    request stays freely retryable). A concurrent double-tap or a re-tap after a
@@ -387,7 +385,20 @@ final class BIP70PaymentService {
                                 validate: ((Confirmation) async throws -> Void)? = nil) async throws -> SendResult {
         let confirmation = try await prepareForConfirmation(from: requestURL, scheme: scheme,
                                                             network: network, callbackScheme: callbackScheme, now: now())
+        return try await authorizeAndSend(confirmation, now: now, awaitAcceptance: awaitAcceptance, validate: validate)
+    }
+
+    /// The headless flow from a prepared request on: the checks that need no prompt, the
+    /// caller's `validate`, the PIN/biometric prompt, then the send.
+    ///
+    /// A signed request with no payment URL is refused here, before `validate` and before the
+    /// prompt, so the user is asked nothing about a request that `confirmAndSend` would refuse.
+    func authorizeAndSend(_ confirmation: Confirmation,
+                          now: () -> Date = { Date() },
+                          awaitAcceptance: Bool = true,
+                          validate: ((Confirmation) async throws -> Void)? = nil) async throws -> SendResult {
         try Self.assertNotExpired(confirmation.request.details.expires, now: now())
+        try Self.assertSignedRequestHasPaymentURL(confirmation)
         if let validate {
             try await validate(confirmation)
             try Self.assertNotExpired(confirmation.request.details.expires, now: now())
@@ -417,6 +428,12 @@ final class BIP70PaymentService {
         if verdict.isExpired { return .expired }
         assertionFailure("Failed BIP70 verdict without a reason")
         return .untrustedCertificate(.untrustedChain)
+    }
+
+    private static func assertSignedRequestHasPaymentURL(_ confirmation: Confirmation) throws {
+        if confirmation.isSecure, confirmation.paymentURL == nil {
+            throw BIP70Error.missingPaymentURL
+        }
     }
 
     private static func assertNotExpired(_ expires: UInt64, now: Date) throws {

@@ -885,6 +885,40 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertTrue(w.calls.isEmpty)
     }
 
+    /// A signed request with no payment URL is refused before the caller's check and before
+    /// the PIN prompt. The signed request is built from an unsigned one, because a signature
+    /// the system trusts cannot be made in a test.
+    func testHeadlessSignedRequestWithoutPaymentURLIsRefusedBeforeAsking() async throws {
+        let t = FakeTransport(unsigned(paymentURL: nil)); let auth = FakeAuth(); let w = FakeWallet()
+        let svc = service(t, w, auth: auth)
+        let prepared = try await svc.prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
+        let signed = Confirmation(
+            merchantName: "Merchant", isSecure: true, recipients: prepared.recipients, amount: prepared.amount,
+            estimatedFee: prepared.estimatedFee, network: prepared.network, paymentURL: nil,
+            scheme: prepared.scheme, merchantData: prepared.merchantData, memo: prepared.memo,
+            callbackScheme: prepared.callbackScheme, request: prepared.request)
+        var validateCalled = false
+
+        await assertThrowsBIP70(
+            try await svc.authorizeAndSend(signed, validate: { _ in validateCalled = true }),
+            .missingPaymentURL)
+
+        XCTAssertFalse(validateCalled)
+        XCTAssertEqual(auth.authorizeCount, 0)
+        XCTAssertTrue(w.calls.isEmpty)
+    }
+
+    /// An unsigned request with no payment URL is a plain address-style payment and goes on.
+    func testHeadlessUnsignedRequestWithoutPaymentURLGoesOn() async throws {
+        let auth = FakeAuth(); let w = FakeWallet()
+        let svc = service(FakeTransport(unsigned(paymentURL: nil)), w, auth: auth)
+
+        _ = try await svc.confirmAndSendHeadless(from: url, scheme: "dash", network: .testnet)
+
+        XCTAssertEqual(auth.authorizeCount, 1)
+        XCTAssertEqual(w.calls, ["build", "broadcast"])
+    }
+
     /// The caller's check may wait for the buyer's answer. A request that expires meanwhile
     /// gets no PIN prompt: the expiry is checked again once the check returns.
     func testHeadlessRequestExpiringDuringTheCallersCheckIsNotAuthorized() async {
