@@ -348,6 +348,7 @@ final class QRScannerTests: XCTestCase {
         var amountRequested = false
         var confirmed = false
         var failure: (error: Error?, title: String?)?
+        var onFailure: (() -> Void)?
         func paymentProcessor(_ processor: DWPaymentProcessor, requestAmountWithDestination sendingDestination: String,
                               amount: UInt64) { amountRequested = true }
         func paymentProcessor(_ processor: DWPaymentProcessor, confirmPaymentOutput paymentOutput: DWPaymentOutput) {
@@ -355,7 +356,7 @@ final class QRScannerTests: XCTestCase {
         }
         func paymentProcessorDidCancelTransactionSigning(_ processor: DWPaymentProcessor) {}
         func paymentProcessor(_ processor: DWPaymentProcessor, didFailWithError error: Error?, title: String?,
-                              message: String?) { failure = (error, title) }
+                              message: String?) { failure = (error, title); onFailure?() }
         func paymentProcessor(_ processor: DWPaymentProcessor, didSendWithTxidWire txidWire: Data) {}
         func paymentProcessor(_ processor: DWPaymentProcessor, showProgressHUDWithMessage message: String?) {}
         func paymentInputProcessorHideProgressHUD(_ processor: DWPaymentProcessor) {}
@@ -441,6 +442,61 @@ final class QRScannerTests: XCTestCase {
         }
     }
 
+    /// A pay link with payment fields in its query, which the rewrite never
+    /// reads, is refused by both entry points rather than paid without them.
+    func testPayLinkWithPaymentFieldsInItsQueryIsRefused() throws {
+        let a = "https%3A%2F%2Fmerchant.invalid%2Fa", b = "https%3A%2F%2Fmerchant.invalid%2Fb"
+        let single = "dashwallet://pay=\(Self.address)&amount=1&r=\(a)&sender=ctx"
+        XCTAssertNotNil(DWURLParser.action(for: try XCTUnwrap(URL(string: single))))
+        for link in ["\(single)?req-r=\(b)", "\(single)?amount=2", "\(single)?pay=\(Self.address)"] {
+            XCTAssertNil(DWURLParser.action(for: try XCTUnwrap(URL(string: link))), link)
+            let parsed = ParsedPaymentURI.parse(paymentString: link)
+            XCTAssertFalse(parsed.isValidDashPaymentIntent, link)
+            XCTAssertNil(parsed.rURL, link)
+        }
+    }
+
+    /// Offers use the ranking's verdict: a required request the transport
+    /// would refuse is not offered, while an optional one with a payable
+    /// address still is.
+    func testOfferNeedsAUsableRequestOrAPayableFallback() {
+        let cleartext = "http%3A%2F%2Fmerchant.invalid%2Fpr"
+        let (required, requiredRecorder) = makeScanner(.addressInput(expectsDashAddress: false))
+        required.didDetectCodes(["dash:\(Self.address)?amount=1&req-r=\(cleartext)"])
+        XCTAssertFalse(isOffer(required.status))
+        XCTAssertTrue(isInvalid(required.status))
+        XCTAssertTrue(requiredRecorder.results.isEmpty)
+
+        let (optional, _) = makeScanner(.addressInput(expectsDashAddress: false))
+        optional.didDetectCodes(["dash:\(Self.address)?amount=1&r=\(cleartext)"])
+        XCTAssertTrue(isOffer(optional.status))
+    }
+
+    /// A superseded payment's merchant answer is ignored: only the current
+    /// payment can reach the delegate.
+    func testProcessorIgnoresASupersededRequest() {
+        let delegate = ProcessorDelegate()
+        let processor = DWPaymentProcessor()
+        processor.delegate = delegate
+        func required(_ path: String) -> DWPaymentInput {
+            let parsed = ParsedPaymentURI.parse(
+                paymentString: "dash:\(Self.address)?amount=1&req-r=https%3A%2F%2F127.0.0.1%3A1%2F\(path)")
+            return DWPaymentInputBuilder().paymentInput(withParsedURI: parsed, source: .deepLink)
+        }
+        processor.processPaymentInput(required("first"))
+        processor.reset()
+        processor.processPaymentInput(required("second"))
+
+        let failed = expectation(description: "the current request fails")
+        failed.assertForOverFulfill = false
+        var failures = 0
+        delegate.onFailure = { failures += 1; failed.fulfill() }
+        wait(for: [failed], timeout: 40)
+        RunLoop.main.run(until: Date().addingTimeInterval(1))
+        XCTAssertEqual(failures, 1, "the first request's answer is not delivered")
+        XCTAssertFalse(delegate.confirmed)
+    }
+
     /// A Dash request the wallet would refuse to fetch does not outrank a
     /// payable code later in the frame.
     func testUnfetchableDashRequestDoesNotCrowdOutAPayableCode() {
@@ -466,13 +522,21 @@ final class QRScannerTests: XCTestCase {
     /// A wrapper link that gives its amount twice is not read as an open
     /// amount, however the repeats are ordered.
     func testScannedWrapperLinkWithARepeatedAmountIsRefused() {
+        let request = "r=https%3A%2F%2Fmerchant.invalid%2Fpr"
         for link in ["dashwallet://pay=\(Self.address)&amount=99999999999&amount=&sender=ctx",
-                     "dashwallet://pay=\(Self.address)&amount=1&req-amount=2&sender=ctx"] {
-            XCTAssertFalse(ParsedPaymentURI.parse(paymentString: link).isValidDashPaymentIntent, link)
+                     "dashwallet://pay=\(Self.address)&amount=1&req-amount=2&sender=ctx",
+                     "dashwallet://pay=\(Self.address)&amount=1&amount=2&\(request)&sender=ctx",
+                     "dashwallet://pay=&amount=1&amount=2&\(request)&sender=ctx"] {
+            let parsed = ParsedPaymentURI.parse(paymentString: link)
+            XCTAssertFalse(parsed.isValidDashPaymentIntent, link)
+            XCTAssertNil(parsed.rURL, "a refused wrapper is not reread: \(link)")
             let (scanner, recorder) = makeScanner(.payment)
             scanner.didDetectCodes([link])
+            if case .connecting = scanner.status { XCTFail("a refused wrapper is not fetched: \(link)") }
             XCTAssertTrue(recorder.results.isEmpty, link)
         }
+        let accepted = ParsedPaymentURI.parse(paymentString: "dashwallet://pay=\(Self.address)&amount=1&\(request)&sender=ctx")
+        XCTAssertNotNil(accepted.rURL, "a well-formed wrapper keeps its request")
         XCTAssertTrue(ParsedPaymentURI.parse(
             paymentString: "dashwallet://pay=\(Self.address)&amount=1&sender=ctx").isValidDashPaymentIntent)
     }

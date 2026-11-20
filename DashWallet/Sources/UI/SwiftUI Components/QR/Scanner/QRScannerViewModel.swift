@@ -130,17 +130,9 @@ final class QRScannerViewModel: ObservableObject {
                 return false
             }?.0
         }
-        return firstPayment(where: Self.isUsableDashIntent)
+        return firstPayment(where: Self.isOfferablePayment)
             ?? firstPayment { $0.isWholeRequestURL }
             ?? values.first
-    }
-
-    /// A Dash intent the scanner can act on: a request the transport would fetch, or an
-    /// address payable on its own.
-    private static func isUsableDashIntent(_ parsed: ParsedPaymentURI) -> Bool {
-        guard parsed.isValidDashPaymentIntent else { return false }
-        if let request = parsed.rURL, PaymentProtocolTransport.isSecure(request) { return true }
-        return parsed.isAddressPayableForCurrentNetwork && !parsed.hasInvalidAmount && !parsed.requiresRequest
     }
 
     private func process(_ value: String) {
@@ -259,8 +251,9 @@ final class QRScannerViewModel: ObservableObject {
         coordinator.fetchAndVerify(
             requestURL: requestURL,
             scheme: parsed.scheme ?? "dash",
-            callbackScheme: nil) { [weak self] box, error in
-                guard let self, !self.finished else { return }
+            callbackScheme: nil) { [weak self, weak coordinator] box, error in
+                // A superseded fetch's late answer is not this scan's.
+                guard let self, !self.finished, let coordinator, self.bip70Coordinator === coordinator else { return }
                 self.bip70Coordinator = nil
 
                 if let box {
@@ -303,11 +296,14 @@ final class QRScannerViewModel: ObservableObject {
         }
     }
 
-    /// A payable address or an explicit Dash merchant request; accepting the
-    /// offer fetches a request before the router opens Send. A bare request
-    /// URL is not offered.
+    /// A Dash intent the scanner can act on, shared by ranking and offers: a
+    /// merchant request the transport would fetch, or an address payable on
+    /// its own. Accepting the offer fetches a request before the router opens
+    /// Send. A bare request URL is not offered.
     nonisolated static func isOfferablePayment(_ parsed: ParsedPaymentURI) -> Bool {
-        parsed.isValidDashPaymentIntent && (parsed.address != nil || parsed.rURL != nil)
+        guard parsed.isValidDashPaymentIntent else { return false }
+        if let request = parsed.rURL, PaymentProtocolTransport.isSecure(request) { return true }
+        return parsed.isAddressPayableForCurrentNetwork && !parsed.hasInvalidAmount && !parsed.requiresRequest
     }
 
     private func offerPaymentRedirect(_ parsed: ParsedPaymentURI, fallbackMessage: String?) {
