@@ -175,8 +175,8 @@ final class QRScannerViewModel: ObservableObject {
                     // The field wants a bare Dash address; unwrap it from
                     // the payment URI instead of pasting the whole URI.
                     finish(.text(address))
-                } else if expectsDashAddress, parsed.rURL == nil, parsed.address != nil,
-                          !parsed.isValidDashPaymentIntent {
+                } else if parsed.hasUnsupportedRequirement
+                            || (expectsDashAddress && parsed.rURL == nil && parsed.address != nil && !parsed.isValidDashPaymentIntent) {
                     showInvalid(message: invalidQRMessage(for: parsed))
                 } else if Self.isOfferablePayment(parsed) {
                     offerPaymentRedirect(parsed, fallbackMessage: nil)
