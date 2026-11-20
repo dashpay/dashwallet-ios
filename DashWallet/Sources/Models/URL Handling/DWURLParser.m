@@ -144,6 +144,7 @@ NS_ASSUME_NONNULL_BEGIN
     NSUInteger amounts = 0;
     NSUInteger requests = 0;
     NSUInteger requiredSenders = 0;
+    NSUInteger senders = 0;
     for (NSString *param in [url.host componentsSeparatedByString:@"&"]) {
         NSArray<NSString *> *pair = [param componentsSeparatedByString:@"="];
         NSString *key = pair.firstObject;
@@ -151,12 +152,16 @@ NS_ASSUME_NONNULL_BEGIN
         BOOL isAmount = [key isEqualToString:@"amount"] || [key isEqualToString:@"req-amount"];
         BOOL isRequest = [key isEqualToString:@"r"] || [key isEqualToString:@"req-r"];
         BOOL isRequirement = [key hasPrefix:@"req-"];
-        if (!isRecipient && !isAmount && !isRequest && !isRequirement) {
+        // The app called back, and the one a required callback must match: one of each, or the
+        // last of several would decide.
+        BOOL isSender = [key isEqualToString:@"sender"];
+        if (!isRecipient && !isAmount && !isRequest && !isRequirement && !isSender) {
             continue;
         }
         BOOL isRequiredSender = [key isEqualToString:@"req-sender"];
-        if (pair.count != 2 || (isRecipient && ++recipients > 1) || (isAmount && ++amounts > 1) ||
-            (isRequest && ++requests > 1) || (isRequiredSender && ++requiredSenders > 1)) {
+        if ((pair.count != 2 && !isSender) || (isRecipient && ++recipients > 1) || (isAmount && ++amounts > 1) ||
+            (isRequest && ++requests > 1) || (isRequiredSender && ++requiredSenders > 1) ||
+            (isSender && ++senders > 1)) {
             return YES;
         }
     }

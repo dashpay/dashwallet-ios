@@ -558,6 +558,54 @@ final class QRScannerTests: XCTestCase {
         }
     }
 
+    /// A scanned invoice's amount is what is sent, in either unit: fiat's two
+    /// decimals only display it. An edit replaces it.
+    func testAnInvoiceAmountStaysExactAcrossUnits() {
+        let send = SendViewModel(contactLookup: { _ in nil })
+        send.prefill(address: Self.address, amountDuffs: 123_456_789, requiresAmount: true)
+        send.unit = .fiat
+        XCTAssertEqual(send.dashDuffsUnsigned, 123_456_789)
+        send.unit = .dash
+        XCTAssertEqual(send.dashDuffsUnsigned, 123_456_789)
+        send.amountText = "2"
+        XCTAssertEqual(send.dashDuffsUnsigned, 200_000_000)
+    }
+
+    /// A pay wrapper that names its sender twice, in either order, is refused:
+    /// the last would decide which app is called back.
+    func testPayLinkWithConflictingSendersIsRefused() throws {
+        let link = "dashwallet://pay=\(Self.address)&amount=1"
+        for senders in ["sender=ctx&sender=other&req-sender=ctx", "sender=other&sender=ctx&req-sender=ctx",
+                        "sender=ctx&sender=ctx"] {
+            XCTAssertNil(DWURLParser.action(for: try XCTUnwrap(URL(string: "\(link)&\(senders)"))), senders)
+        }
+        XCTAssertNotNil(DWURLParser.action(for: try XCTUnwrap(URL(string: "\(link)&sender=ctx&req-sender=ctx"))))
+    }
+
+    /// A refused pay wrapper is not prose: neither Send's clipboard suggestion
+    /// nor the pasteboard extractor picks its recipient out of it.
+    func testARefusedPayLinkYieldsNoAddress() {
+        let refused = "dashwallet://pay=\(Self.address)&amount=1&sender=ctx&req-memo=x"
+        XCTAssertNil(SendViewModel.detect(in: refused))
+        XCTAssertTrue(ParsedPaymentURI.textCarriesUnpayableLink(refused), "the extractor then adds no pieces")
+        let prose = "Note: pay \(Self.address) please"
+        XCTAssertEqual(SendViewModel.detect(in: prose)?.address, Self.address)
+        XCTAssertFalse(ParsedPaymentURI.textCarriesUnpayableLink(prose))
+        XCTAssertFalse(ParsedPaymentURI.textCarriesUnpayableLink("dash:\(Self.address)?amount=1"))
+    }
+
+    /// DashSpend's checkout calls no app back, so one that requires it is
+    /// refused before anything is authorized or fetched.
+    func testDashSpendRefusesARequiredAppCallback() async {
+        do {
+            _ = try await SendCoinsService().payWithDashUrl(url: "dash:?r=https://merchant.example/r&req-sender=ctx")
+            XCTFail("paid")
+        } catch DashSpendError.paymentProcessingError {
+        } catch {
+            XCTFail("\(error)")
+        }
+    }
+
     /// A rescan does not carry Max to the new recipient: the amount starts
     /// afresh, or takes the invoice's.
     func testRescanClearsMax() {
