@@ -12,11 +12,33 @@ class SchemaReleaseTest < Minitest::Test
 
   class GitHub
     attr_accessor :registry
-    attr_reader :dispatches, :retained_sources
+    attr_reader :dispatches, :retained_sources, :tags, :comparisons, :fast_forwards, :pulls
+    attr_accessor :open_pull
     def initialize
       @registry = { "format_version" => 1, "schemas" => {}, "releases" => {} }
       @dispatches = []
       @retained_sources = []
+      # The release mirror: tags by name, and how a head stands against a base.
+      @tags, @comparisons, @fast_forwards, @pulls, @open_pull = {}, {}, [], [], false
+    end
+    def tag_commit(_repo, name)
+      @tags[name]
+    end
+    def create_tag(_repo, name, commit)
+      @tags[name] = commit
+    end
+    def compare(_repo, base, head)
+      @comparisons.fetch([base, head])
+    end
+    def fast_forward(_repo, branch, commit)
+      @fast_forwards << [branch, commit]
+    end
+    def open_pull?(_repo, head:, base:)
+      @open_pull
+    end
+    def create_pull(_repo, head:, base:, title:, body:)
+      @pulls << { head: head, base: base, title: title, body: body }
+      "https://example.test/pull/1"
     end
     def file(*_args)
       SchemaRelease.json(@registry)
@@ -156,6 +178,104 @@ class SchemaReleaseTest < Minitest::Test
     @pipeline.sync(dry_run: true)
     assert_empty @store.writes
     assert_empty @store.github.dispatches
+  end
+
+  # The release mirror. 9.1.0 is below the real cutoff, so these tests lower it.
+  WALLET = "a" * 40
+
+  def mirroring(release: "ahead", development: "behind")
+    github = @store.github
+    github.comparisons[["master", WALLET]] = release
+    github.comparisons[["develop", "master"]] = development
+    @output = StringIO.new
+    SchemaRelease::Pipeline.new(store: @store, apple: @apple, bundle_id: BUNDLE, output: @output, mirror_after: "9.0.0")
+  end
+
+  def test_publications_up_to_the_cutoff_are_not_mirrored
+    @pipeline.sync
+    github = @store.github
+    assert_empty github.tags
+    assert_empty github.fast_forwards
+    assert_empty github.pulls
+    assert_equal [["new", @store.head]], github.dispatches
+  end
+
+  def test_publication_is_tagged_and_the_release_branch_fast_forwarded
+    mirroring.sync
+    github = @store.github
+    assert_equal({ "v9.1.0" => WALLET }, github.tags)
+    assert_equal [["master", WALLET]], github.fast_forwards
+    assert_empty github.pulls
+    assert_equal [["new", @store.head]], github.dispatches
+  end
+
+  def test_mirror_runs_for_a_release_whose_freeze_is_already_merged
+    merge_release
+    mirroring.sync
+    assert_equal({ "v9.1.0" => WALLET }, @store.github.tags)
+    assert_equal [["master", WALLET]], @store.github.fast_forwards
+    assert_empty @store.github.dispatches
+  end
+
+  def test_mirrored_release_is_left_alone_on_later_runs
+    @store.github.tags["v9.1.0"] = WALLET
+    %w[identical behind].each do |standing|
+      mirroring(release: standing).sync
+      assert_equal({ "v9.1.0" => WALLET }, @store.github.tags)
+      assert_empty @store.github.fast_forwards
+    end
+  end
+
+  def test_tag_on_another_commit_is_reported_and_never_moved_but_the_branch_still_advances
+    @store.github.tags["v9.1.0"] = "c" * 40
+    error = assert_raises(SchemaRelease::Error) { mirroring.sync }
+    assert_includes error.message, "Tag v9.1.0 names #{'c' * 40}"
+    assert_equal({ "v9.1.0" => "c" * 40 }, @store.github.tags)
+    assert_equal [["master", WALLET]], @store.github.fast_forwards
+    assert_equal [["new", @store.head]], @store.github.dispatches
+  end
+
+  def test_diverged_publication_is_tagged_and_reported_without_moving_the_branch
+    error = assert_raises(SchemaRelease::Error) { mirroring(release: "diverged", development: "diverged").sync }
+    assert_includes error.message, "does not descend from master"
+    assert_equal({ "v9.1.0" => WALLET }, @store.github.tags)
+    assert_empty @store.github.fast_forwards
+    # Nothing above the cutoff is on the release branch yet, so whatever else
+    # it holds is not offered to develop.
+    assert_empty @store.github.pulls
+    assert_equal [["new", @store.head]], @store.github.dispatches
+  end
+
+  def test_hotfix_on_the_release_branch_is_offered_back_to_develop_once
+    mirroring(release: "identical", development: "ahead").sync
+    pull = @store.github.pulls.fetch(0)
+    assert_equal %w[master develop], pull.values_at(:head, :base)
+    assert_match(/\Achore: /, pull[:title])
+    assert_includes pull[:body], "merge commit, not a squash"
+
+    @store.github.open_pull = true
+    mirroring(release: "identical", development: "diverged").sync
+    assert_equal 1, @store.github.pulls.length
+  end
+
+  def test_mirror_dry_run_reports_and_changes_nothing
+    mirroring(development: "ahead").sync(dry_run: true)
+    github = @store.github
+    assert_empty github.tags
+    assert_empty github.fast_forwards
+    assert_empty github.pulls
+    assert_includes @output.string, "would tag #{WALLET} as v9.1.0"
+    assert_includes @output.string, "would fast-forward master"
+    assert_includes @output.string, "would open a pull request"
+  end
+
+  def test_manifest_without_a_wallet_commit_is_reported_and_does_not_stop_the_freeze
+    @manifest.delete("wallet_sha")
+    save_manifest
+    assert_raises(SchemaRelease::Error) { mirroring.sync }
+    assert_empty @store.github.tags
+    assert_empty @store.github.fast_forwards
+    assert_equal [["new", @store.head]], @store.github.dispatches
   end
 
   def test_manual_id_must_be_a_published_post_baseline_version
@@ -768,6 +888,69 @@ class SchemaGitHubRequestTest < Minitest::Test
       assert_includes error.message, "without moving or deleting"
     end
     assert_equal ["GET"], @calls
+  end
+
+  def release_tag(type, sha)
+    { "ref" => "refs/tags/v9.2.0", "object" => { "type" => type, "sha" => sha } }
+  end
+
+  def test_tag_commit_reads_through_an_annotated_tag_and_reports_a_missing_one
+    with_responses([Response.new("404", "")]) do
+      assert_nil @api.tag_commit("dashpay/dashwallet-ios", "v9.2.0")
+    end
+    @calls.clear
+    @requests.clear
+    with_responses([Response.new("200", JSON.generate(release_tag("tag", "e" * 40))),
+                    Response.new("200", JSON.generate({ "object" => { "type" => "commit", "sha" => "a" * 40 } }))]) do
+      assert_equal "a" * 40, @api.tag_commit("dashpay/dashwallet-ios", "v9.2.0")
+    end
+    assert_equal ["/repos/dashpay/dashwallet-ios/git/ref/tags/v9.2.0", "/repos/dashpay/dashwallet-ios/git/tags/#{'e' * 40}"],
+                 @requests.map(&:path)
+  end
+
+  def test_create_tag_race_returns_the_commit_the_tag_names_without_moving_it
+    with_responses([Response.new("422", "exists"), Response.new("200", JSON.generate(release_tag("commit", "c" * 40)))]) do
+      assert_equal "c" * 40, @api.create_tag("dashpay/dashwallet-ios", "v9.2.0", "a" * 40)
+    end
+    assert_equal %w[POST GET], @calls
+  end
+
+  def test_release_branch_update_is_never_forced
+    with_responses([Response.new("200", "{}")]) do
+      @api.fast_forward("dashpay/dashwallet-ios", "master", "a" * 40)
+    end
+    assert_equal "PATCH", @calls.fetch(0)
+    assert_equal "/repos/dashpay/dashwallet-ios/git/refs/heads/master", @requests.fetch(0).path
+    assert_equal({ "sha" => "a" * 40, "force" => false }, JSON.parse(@requests.fetch(0).body))
+  end
+
+  def test_compare_rejects_a_status_it_does_not_know
+    with_responses([Response.new("200", '{"status":"ahead"}')]) do
+      assert_equal "ahead", @api.compare("dashpay/dashwallet-ios", "master", "a" * 40)
+    end
+    assert_equal "/repos/dashpay/dashwallet-ios/compare/master...#{'a' * 40}?per_page=1", @requests.fetch(0).path
+    @calls.clear
+    with_responses([Response.new("200", "{}")]) do
+      assert_raises(SchemaRelease::Error) { @api.compare("dashpay/dashwallet-ios", "master", "a" * 40) }
+    end
+  end
+
+  def test_open_pull_lookup_and_a_token_that_cannot_open_one
+    with_responses([Response.new("200", "[]")]) do
+      refute @api.open_pull?("dashpay/dashwallet-ios", head: "master", base: "develop")
+    end
+    assert_equal "/repos/dashpay/dashwallet-ios/pulls?state=open&base=develop&head=dashpay:master&per_page=1", @requests.fetch(0).path
+    @calls.clear
+    with_responses([Response.new("200", '[{"number":1}]')]) do
+      assert @api.open_pull?("dashpay/dashwallet-ios", head: "master", base: "develop")
+    end
+    @calls.clear
+    with_responses([Response.new("403", "")]) do
+      error = assert_raises(SchemaRelease::Error) do
+        @api.create_pull("dashpay/dashwallet-ios", head: "master", base: "develop", title: "t", body: "b")
+      end
+      assert_includes error.message, "cannot open pull requests"
+    end
   end
 
   def test_source_tag_ambiguous_write_stops_until_a_later_run_can_reconcile

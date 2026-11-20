@@ -11,6 +11,8 @@ name: "Unit tests (dashpay)"
 #
 # Caches a pull request creates are visible only to that pull request, so the
 # `push: develop` trigger exists to seed caches every other PR can restore.
+# `push: master` gives a hotfix merged there, and each release the mirror
+# fast-forwards to, a test result of its own.
 #
 # The host app needs the gitignored *-Info.plist files to build and launch;
 # this job writes inert placeholders (scripts/ci/make-placeholder-plists.sh)
@@ -24,14 +26,15 @@ on:
   push:
     branches:
       - develop
+      - master
   workflow_dispatch:
 
 permissions:
   contents: read
 
 # Pull request runs share a group per branch, so a new push cancels the old
-# run. Every other run (a develop push, a dispatch) gets its own group per
-# commit, so each develop commit keeps its own test result.
+# run. Every other run (a develop or master push, a dispatch) gets its own
+# group per commit, so each commit on those branches keeps its own test result.
 concurrency:
   group: unit-tests-${{ github.ref }}${{ github.event_name != 'pull_request' && format('-{0}', github.sha) || '' }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
