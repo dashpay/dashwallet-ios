@@ -654,7 +654,7 @@ final class SwiftDashSDKContactsService: ObservableObject {
             do {
                 let withdrawals = try DashPayWithdrawalStore.shared.entries(
                     scope: scope, contactIdentityId: contactId)
-                payments += withdrawals.map { entry in
+                payments += withdrawals.filter(\.mayHaveBeenSubmitted).map { entry in
                     ContactPayment(
                         id: "withdrawal:\(entry.id.uuidString)",
                         txid: nil,

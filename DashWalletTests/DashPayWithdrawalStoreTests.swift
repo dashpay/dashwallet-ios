@@ -1,5 +1,6 @@
 import Foundation
 import SwiftDashSDK
+import SwiftData
 import XCTest
 @testable import dashpay
 
@@ -282,17 +283,149 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
             scope: scope, contactIdentityId: contact, since: lockWindowStart))
     }
 
-    /// A definite non-submission drops its record, so the retry is not locked.
     func testRemovedRecordDoesNotLock() throws {
         try store.remove(try begin())
         XCTAssertFalse(try store.hasUnresolvedEntry(
             scope: scope, contactIdentityId: contact, since: lockWindowStart))
     }
 
-    func testUnresolvedRecordOutsideWindowDoesNotLock() throws {
-        _ = try begin()
+    func testUnresolvedPlatformRecordOutsideWindowDoesNotLock() throws {
+        _ = try begin(source: .platform)
         XCTAssertFalse(try store.hasUnresolvedEntry(
             scope: scope, contactIdentityId: contact, since: Date().addingTimeInterval(60)))
+    }
+
+    /// The SDK keeps the signed Shielded spend and re-broadcasts it on later
+    /// syncs whatever the device clock says, so age alone never unlocks it.
+    func testAgedShieldedRecordLocksUntilTheSDKSettlesIt() throws {
+        try store.update(try begin(source: .shielded), status: .unconfirmed)
+        let reopened = DashPayWithdrawalStore(directory: directory)
+        let afterTheWindow = Date().addingTimeInterval(60)
+        XCTAssertTrue(try reopened.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: afterTheWindow))
+        XCTAssertTrue(try reopened.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: afterTheWindow,
+            shieldedOutcomeIsSettled: { _ in false }))
+        var asked: [String] = []
+        XCTAssertFalse(try reopened.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: afterTheWindow,
+            shieldedOutcomeIsSettled: { asked.append($0.address); return true }))
+        XCTAssertEqual(asked, ["reserved-contact-address"])
+    }
+
+    /// Only a Confirmed or Failed withdrawal row for the reserved address
+    /// settles it: a Pending or Unknown one may still be re-broadcast or land,
+    /// and a missing one is no proof nothing was sent.
+    @MainActor
+    func testOnlyATerminalShieldedWithdrawalRowSettlesTheAddress() throws {
+        let container = try ShieldedWithdrawalHistoryFixture.makeContainer()
+        let walletId = Data(repeating: 0x41, count: 32)
+        let script = Data([0x76, 0xa9, 0x14] + Array(repeating: UInt8(0x52), count: 20) + [0x88, 0xac])
+        let otherScript = Data([0x76, 0xa9, 0x14] + Array(repeating: UInt8(0x53), count: 20) + [0x88, 0xac])
+        let address = try XCTUnwrap(ScriptAddressCodec.address(forScript: script, network: .testnet))
+        var nextId: UInt8 = 0
+        func insert(status: Int, kind: Int = 5, wallet: Data = walletId, counterparty: Data = script) throws {
+            nextId += 1
+            container.mainContext.insert(PersistentShieldedActivity(
+                walletId: wallet, accountIndex: 0, entryId: Data(repeating: nextId, count: 32),
+                kindTag: kind, direction: 1, status: status, amount: 1_000_000, fee: 1000, hasFee: true,
+                blockHeight: 0, hasBlockHeight: false, createdAtMs: 1_800_000_000_000,
+                identityId: Data(), counterparty: counterparty, memo: Data(), noteCmxs: Data(),
+                spentNullifiers: Data(repeating: nextId, count: 32)))
+            try container.mainContext.save()
+        }
+        func settled() -> Bool {
+            WalletSendService.shieldedWithdrawalIsSettled(
+                to: address, walletId: walletId, network: .testnet, in: container)
+        }
+
+        XCTAssertFalse(settled(), "no row")
+        try insert(status: 0)
+        XCTAssertFalse(settled(), "pending")
+        try insert(status: 3)
+        XCTAssertFalse(settled(), "unknown")
+        try insert(status: 1, kind: 4)
+        XCTAssertFalse(settled(), "confirmed, but not a withdrawal")
+        try insert(status: 1, wallet: Data(repeating: 0x42, count: 32))
+        XCTAssertFalse(settled(), "confirmed, another wallet")
+        try insert(status: 2, counterparty: otherScript)
+        XCTAssertFalse(settled(), "failed, another address")
+        XCTAssertFalse(WalletSendService.shieldedWithdrawalIsSettled(
+            to: "", walletId: walletId, network: .testnet, in: container), "no address recorded")
+        try insert(status: 2)
+        XCTAssertTrue(settled(), "failed")
+
+        let confirmedOnly = try ShieldedWithdrawalHistoryFixture.makeContainer()
+        confirmedOnly.mainContext.insert(PersistentShieldedActivity(
+            walletId: walletId, accountIndex: 0, entryId: Data(repeating: 0xEE, count: 32),
+            kindTag: 5, direction: 1, status: 1, amount: 1_000_000, fee: 1000, hasFee: true,
+            blockHeight: 0, hasBlockHeight: false, createdAtMs: 1_800_000_000_000,
+            identityId: Data(), counterparty: script, memo: Data(), noteCmxs: Data(),
+            spentNullifiers: Data(repeating: 0xEE, count: 32)))
+        try confirmedOnly.mainContext.save()
+        XCTAssertTrue(WalletSendService.shieldedWithdrawalIsSettled(
+            to: address, walletId: walletId, network: .testnet, in: confirmedOnly))
+    }
+
+    // MARK: - Addresses reserved without a payment
+
+    private func reservation() throws -> DashPayWithdrawalStore.Entry {
+        try store.beginReservation(scope: scope, contactIdentityId: contact, amountDuffs: 10_000, source: .shielded)
+    }
+
+    private var unpaidStreak: Int {
+        get throws { try store.unpaidReservationStreak(scope: scope, contactIdentityId: contact) }
+    }
+
+    /// A reservation whose address could not be recorded is still counted,
+    /// but it locks nothing and is not shown as a payment.
+    func testReservationWithoutARecordedAddressCountsButNeitherLocksNorShows() throws {
+        _ = try reservation()
+        let reopened = DashPayWithdrawalStore(directory: directory)
+        XCTAssertEqual(try reopened.unpaidReservationStreak(scope: scope, contactIdentityId: contact), 1)
+        XCTAssertFalse(try reopened.hasUnresolvedEntry(
+            scope: scope, contactIdentityId: contact, since: .distantPast))
+        XCTAssertEqual(try reopened.entries(scope: scope, contactIdentityId: contact).map(\.mayHaveBeenSubmitted), [false])
+    }
+
+    func testRecordingTheAddressMakesTheReservationAnAttempt() throws {
+        let attempt = try store.recordReservedAddress(try reservation(), address: "reserved-contact-address")
+        XCTAssertEqual(attempt.status, .submitting)
+        XCTAssertEqual(attempt.address, "reserved-contact-address")
+        XCTAssertEqual(try unpaidStreak, 0)
+        XCTAssertTrue(try store.hasUnresolvedEntry(scope: scope, contactIdentityId: contact, since: .distantPast))
+        XCTAssertThrowsError(try store.recordReservedAddress(attempt, address: "another"))
+    }
+
+    /// Only the newest unpaid reservations count: a submitted payment after
+    /// them gives the contact's wallet a new address to look past.
+    func testUnpaidStreakCountsOnlyReservationsSinceTheLastPayment() throws {
+        try store.update(try begin(), status: .unused)
+        try store.update(try begin(), status: .submitted)
+        XCTAssertEqual(try unpaidStreak, 0)
+        try store.update(try begin(), status: .unused)
+        _ = try reservation()
+        try store.update(try begin(), status: .unused)
+        XCTAssertEqual(try unpaidStreak, 3)
+        XCTAssertEqual(try store.unpaidReservationStreak(
+            scope: scope, contactIdentityId: Data(repeating: 9, count: 32)), 0)
+        try store.update(try begin(), status: .submitted)
+        XCTAssertEqual(try unpaidStreak, 0)
+    }
+
+    func testTooManyUnpaidReservationsRefuseTheNextOne() throws {
+        let recipient = ContactPaymentRecipient(
+            identityId: contact, displayName: "contact", walletId: scope.walletId,
+            ownerIdentityId: scope.ownerIdentityId, network: .testnet)
+        for _ in 1..<WalletSendService.maxUnpaidContactReservations {
+            try store.update(try begin(), status: .unused)
+        }
+        XCTAssertNoThrow(try WalletSendService.rejectIfTooManyUnpaidReservations(recipient, store: store))
+        _ = try reservation()
+        XCTAssertThrowsError(try WalletSendService.rejectIfTooManyUnpaidReservations(recipient, store: store))
+        try Data("not json".utf8).write(to: try XCTUnwrap(FileManager.default
+            .contentsOfDirectory(at: directory, includingPropertiesForKeys: nil).first))
+        XCTAssertThrowsError(try WalletSendService.rejectIfTooManyUnpaidReservations(recipient, store: store))
     }
 
     func testUnresolvedRecordLocksOnlyItsContact() throws {
@@ -368,7 +501,9 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
         let concluded = coordinator.concludeUncertainContactWithdrawal(
             attempt, error: PlatformWalletError.shieldedBroadcastFailed("rejected"))
         XCTAssertFalse(concluded)
-        XCTAssertTrue(try store.entries(scope: scope, contactIdentityId: contact).isEmpty)
+        XCTAssertEqual(try store.entries(scope: scope, contactIdentityId: contact).map(\.status), [.unused])
+        XCTAssertFalse(try store.hasUnresolvedEntry(scope: scope, contactIdentityId: contact, since: .distantPast))
+        XCTAssertEqual(try unpaidStreak, 1)
         XCTAssertFalse(coordinator.contactWithdrawalOutcomeUnknown)
         XCTAssertNotEqual(coordinator.phase, .submittedUnconfirmed)
     }
@@ -420,7 +555,8 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
             return XCTFail("expected a retryable failure, got \(coordinator.phase)")
         }
         XCTAssertFalse(coordinator.contactWithdrawalOutcomeUnknown)
-        XCTAssertTrue(try store.entries(scope: scope, contactIdentityId: contact).isEmpty)
+        XCTAssertEqual(try store.entries(scope: scope, contactIdentityId: contact).map(\.status), [.unused])
+        XCTAssertEqual(try unpaidStreak, 1)
     }
 }
 

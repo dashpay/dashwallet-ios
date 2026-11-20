@@ -2387,18 +2387,20 @@ final class ShieldedTransferCoordinator: ObservableObject {
     ) async throws -> ContactWithdrawal? {
         guard let recipient else { return nil }
         #if DASHPAY
-        return try await WalletSendService.shared.reserveContactPaymentAddress(for: recipient) { address in
-            try self.contactWithdrawalStore.begin(
-                scope: .init(
-                    networkRaw: recipient.network.rawValue,
-                    walletId: recipient.walletId,
-                    ownerIdentityId: recipient.ownerIdentityId),
-                contactIdentityId: recipient.identityId,
-                address: address,
-                amountDuffs: amountDuffs,
-                amountIsEstimate: amountIsEstimate,
-                source: source)
-        }
+        return try await WalletSendService.shared.reserveContactPaymentAddress(
+            for: recipient,
+            reserving: {
+                try self.contactWithdrawalStore.beginReservation(
+                    scope: .init(
+                        networkRaw: recipient.network.rawValue,
+                        walletId: recipient.walletId,
+                        ownerIdentityId: recipient.ownerIdentityId),
+                    contactIdentityId: recipient.identityId,
+                    amountDuffs: amountDuffs,
+                    amountIsEstimate: amountIsEstimate,
+                    source: source)
+            },
+            journal: { try self.contactWithdrawalStore.recordReservedAddress($0, address: $1) })
         #else
         // Only the DashPay target creates a `ContactPaymentRecipient`.
         throw CoordinatorError.noWallet
@@ -2454,14 +2456,16 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
     }
 
-    /// Drops the record of a withdrawal known never to have been submitted:
-    /// left behind it would show as an unknown payment that never left. False
-    /// when it can't be dropped — it then still reads as unknown and locks the
+    /// Marks the record of a withdrawal known never to have been submitted
+    /// `.unused`: left as it is it would show as an unknown payment that never
+    /// left, and dropped it would no longer count the address it used up
+    /// (`WalletSendService.maxUnpaidContactReservations`). False when it
+    /// can't be marked — it then still reads as unknown and locks the
     /// contact, so a retry would only be refused, and the payment has to end
     /// on the unknown outcome instead.
     private func dropUnsubmittedContactWithdrawal(_ withdrawal: ContactWithdrawal) -> Bool {
         do {
-            try contactWithdrawalStore.remove(withdrawal)
+            try contactWithdrawalStore.update(withdrawal, status: .unused)
             return true
         } catch {
             Self.logger.error("🛡️ SHIELD-TX :: unsubmitted contact withdrawal record could not be dropped \(String(describing: error), privacy: .public)")

@@ -8,6 +8,7 @@
 import Foundation
 import OSLog
 import SwiftDashSDK
+import SwiftData
 
 /// Core-chain transaction constants the app needs without DashSync.
 enum CoreTxConstants {
@@ -892,18 +893,26 @@ final class WalletSendService: NSObject {
         }
     }
 
-    /// How long an unresolved withdrawal to a contact keeps payments to that
-    /// contact locked across launches. Nothing reconciles a withdrawal's
-    /// outcome (TODO(dashpay-withdrawal-reconcile)), so unlike the session
-    /// lock this one cannot wait for a sync to clear it; a day is far longer
-    /// than a payout takes to land, and leaves the user time to check.
+    /// How long an unresolved Platform withdrawal to a contact keeps payments
+    /// to that contact locked across launches. Nothing reconciles a Platform
+    /// withdrawal's outcome (TODO(dashpay-withdrawal-reconcile)), so unlike the
+    /// session lock this one cannot wait for a sync to clear it; a day is far
+    /// longer than a payout takes to land, and leaves the user time to check.
+    /// A Shielded one has no window: see `shieldedWithdrawalIsSettled`.
     private static let unresolvedContactWithdrawalLockWindow: TimeInterval = 24 * 60 * 60
+
+    /// How many of a contact's addresses Platform and Shielded payments may
+    /// reserve in a row without paying any of them. The SDK uses an address up
+    /// for good when it reserves it, and the contact's wallet looks only 10
+    /// addresses past the last one paid (the DIP-15 gap limit), so a payment
+    /// after too many unpaid ones is never found. Half the limit leaves room
+    /// for the contact's other payers.
+    static let maxUnpaidContactReservations = 5
 
     /// True when `contactIdentityId` must not be paid again yet: a payment to
     /// it this session had an unknown outcome
     /// (`UnknownContactPaymentOutcomes`), or — given the wallet context — a
-    /// withdrawal to it from the last day is still unresolved, which survives
-    /// a relaunch.
+    /// withdrawal to it is still unresolved, which survives a relaunch.
     func contactPaymentOutcomeIsUnknown(
         contactIdentityId: Data,
         recipient: ContactPaymentRecipient?
@@ -917,12 +926,42 @@ final class WalletSendService: NSObject {
                     walletId: recipient.walletId,
                     ownerIdentityId: recipient.ownerIdentityId),
                 contactIdentityId: contactIdentityId,
-                since: Date().addingTimeInterval(-Self.unresolvedContactWithdrawalLockWindow))
+                since: Date().addingTimeInterval(-Self.unresolvedContactWithdrawalLockWindow),
+                shieldedOutcomeIsSettled: { entry in
+                    guard let container = SwiftDashSDKWalletSource.onMain({ SwiftDashSDKHost.shared.modelContainer })
+                    else { return false }
+                    return Self.shieldedWithdrawalIsSettled(
+                        to: entry.address, walletId: recipient.walletId,
+                        network: recipient.network, in: container)
+                })
         } catch {
             Self.logger.error("💸 TXSEND :: DashPay withdrawal history unreadable: \(String(describing: error), privacy: .public)")
             // Fail closed: after a relaunch the journal is the only record of
             // an unresolved withdrawal, and a duplicate payment can't be undone.
             return true
+        }
+    }
+
+    /// True when the SDK recorded the wallet's Shielded withdrawal to
+    /// `address` as Confirmed or Failed. Until then the SDK may re-broadcast
+    /// the signed spend on any later sync. A missing row settles nothing: the
+    /// SDK writes it best-effort, so its absence doesn't show nothing was sent.
+    static func shieldedWithdrawalIsSettled(
+        to address: String,
+        walletId: Data,
+        network: WalletEnvironment.NetworkKind,
+        in container: ModelContainer
+    ) -> Bool {
+        guard !address.isEmpty else { return false }
+        let withdrawal = ShieldedActivityItem.Kind.withdrawal.rawValue
+        let settled = [ShieldedActivityItem.Status.confirmed.rawValue, ShieldedActivityItem.Status.failed.rawValue]
+        let descriptor = FetchDescriptor<PersistentShieldedActivity>(
+            predicate: #Predicate { $0.walletId == walletId && $0.kindTag == withdrawal })
+        guard let rows = try? ModelContext(container).fetch(descriptor) else { return false }
+        let codecNetwork: PaymentNetwork = network == .mainnet ? .mainnet : .testnet
+        return rows.contains { row in
+            settled.contains(row.status)
+                && ScriptAddressCodec.address(forScript: row.counterparty, network: codecNetwork) == address
         }
     }
 
@@ -954,10 +993,37 @@ final class WalletSendService: NSObject {
         do {
             try validate(recipient)
             try rejectIfContactPaymentOutcomeUnknown(recipient.identityId, recipient: recipient)
+            try Self.rejectIfTooManyUnpaidReservations(recipient)
         } catch {
             contactPaymentClaims.release(contactIdentityId: recipient.identityId)
             throw error
         }
+    }
+
+    /// Refused before another of the contact's addresses is reserved: see
+    /// `maxUnpaidContactReservations`. An unreadable journal refuses too.
+    static func rejectIfTooManyUnpaidReservations(
+        _ recipient: ContactPaymentRecipient,
+        store: DashPayWithdrawalStore = .shared
+    ) throws {
+        let streak: Int
+        do {
+            streak = try store.unpaidReservationStreak(
+                scope: .init(
+                    networkRaw: recipient.network.rawValue,
+                    walletId: recipient.walletId,
+                    ownerIdentityId: recipient.ownerIdentityId),
+                contactIdentityId: recipient.identityId)
+        } catch {
+            logger.error("💸 TXSEND :: DashPay withdrawal history unreadable: \(String(describing: error), privacy: .public)")
+            throw contactPaymentUnavailableError()
+        }
+        guard streak >= maxUnpaidContactReservations else { return }
+        throw makeError(
+            code: .dashPayPaymentUnavailable,
+            description: NSLocalizedString(
+                "Several recent payments to this contact from Platform or Shielded were not sent. Pay this contact from your Dash balance instead.",
+                comment: "DashPay: too many contact addresses were reserved for payments that were never sent"))
     }
 
     @MainActor
@@ -1005,8 +1071,9 @@ final class WalletSendService: NSObject {
     }
 
     /// Reserves a fresh DIP-15 address of the contact's for a Platform- or
-    /// Shielded-funded payment, which pays it through a withdrawal, and
-    /// journals the withdrawal to it via `journal`.
+    /// Shielded-funded payment, which pays it through a withdrawal. The
+    /// attempt is journaled via `reserving` before the SDK is asked, so a
+    /// reservation is counted even when `journal` can't record its address.
     ///
     /// Call only after the user confirmed the payment and authorized it: the
     /// SDK marks the address used before returning it, and it stays used if
@@ -1015,9 +1082,10 @@ final class WalletSendService: NSObject {
     /// payment to the contact can run between the lock check and the record
     /// that locks it from then on.
     @MainActor
-    func reserveContactPaymentAddress<Record>(
+    func reserveContactPaymentAddress<Reservation, Record>(
         for recipient: ContactPaymentRecipient,
-        journal: (String) throws -> Record
+        reserving: () throws -> Reservation,
+        journal: (Reservation, String) throws -> Record
     ) async throws -> Record {
         guard contactPaymentClaims.isClaimed(contactIdentityId: recipient.identityId) else {
             assertionFailure("contact payment address reserved outside beginContactPayment")
@@ -1028,9 +1096,11 @@ final class WalletSendService: NSObject {
         try rejectIfContactPaymentOutcomeUnknown(recipient.identityId, recipient: recipient)
         try Self.validateContactRecipient(recipient)
         try Self.ensureOnline()
+        try Self.rejectIfTooManyUnpaidReservations(recipient)
         guard let wallet = SwiftDashSDKHost.shared.wallet else {
             throw Self.contactPaymentUnavailableError()
         }
+        let reservation = try reserving()
         let address: String
         do {
             address = try await wallet.reserveDashPayPaymentAddress(
@@ -1040,7 +1110,7 @@ final class WalletSendService: NSObject {
             throw Self.contactPaymentError(from: error)
         }
         try Self.validateContactRecipient(recipient)
-        return try journal(address)
+        return try journal(reservation, address)
     }
 #endif
 
