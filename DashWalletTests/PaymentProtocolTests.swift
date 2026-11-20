@@ -1782,13 +1782,20 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertEqual(uri.label, "Shop")
     }
 
-    /// A link the wallet read itself carries no sender under either name.
-    func testParsedBoxDropsReqSenderOfDashWalletPayLink() {
-        let box = ParsedPaymentURI.parse(
-            paymentString: "dashwallet://pay=yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW&amount=1&sender=ctx&req-sender=foo")
+    /// A link the wallet read itself drops an optional sender and refuses a
+    /// required one: it calls no app back.
+    func testParsedBoxDropsSenderAndRefusesReqSenderOfDashWalletPayLink() {
+        let link = "dashwallet://pay=yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW&amount=1&sender=ctx"
+        let box = ParsedPaymentURI.parse(paymentString: link)
         XCTAssertEqual(box.address, "yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW")
         XCTAssertNil(box.callbackScheme)
         XCTAssertNil(box.label)
+        XCTAssertFalse(box.hasUnsupportedRequirement)
+
+        let required = ParsedPaymentURI.parse(paymentString: "\(link)&req-sender=foo")
+        XCTAssertTrue(required.hasUnsupportedRequirement)
+        XCTAssertFalse(required.isValidDashPaymentIntent)
+        XCTAssertNil(required.label)
     }
 
     func testAddressRequestNeedsAValidSender() throws {
