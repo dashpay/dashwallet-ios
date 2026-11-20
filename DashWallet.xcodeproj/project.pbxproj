@@ -2009,6 +2009,7 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		0CC58E06B79948481E52B517 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2ABCA9172357A61B00092C09 /* Foundation.framework */; };
 		104ED77DD2298A025814CF83 /* SwiftDashSDKProtocolCompatibilityClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4994DE8F1D303A26F3CA8F48 /* SwiftDashSDKProtocolCompatibilityClient.swift */; };
 		1FED152A2C6BCE50AFB0445B /* WalletProtocolCompatibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE98C99944BC32EA668EBF52 /* WalletProtocolCompatibilityTests.swift */; };
+		B4C0DE5A7E57000000000B01 /* BarcodeFormatTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4C0DE5A7E57000000000F01 /* BarcodeFormatTests.swift */; };
 		3825BD7459C4884DD70D9A90 /* WalletProtocolCompatibilityController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465C77403526106317A41475 /* WalletProtocolCompatibilityController.swift */; };
 		A976B61C558151C1AC300A54 /* ProtocolCompatibilityBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = E28E4AA75ADC1A7BAAA6C5E7 /* ProtocolCompatibilityBanner.swift */; };
 		C25AD4D28CA0532D65F80780 /* ProtocolCompatibilityBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = E28E4AA75ADC1A7BAAA6C5E7 /* ProtocolCompatibilityBanner.swift */; };
@@ -3800,6 +3801,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		465C77403526106317A41475 /* WalletProtocolCompatibilityController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WalletProtocolCompatibilityController.swift; path = DashWallet/Sources/Infrastructure/SwiftDashSDK/WalletProtocolCompatibilityController.swift; sourceTree = "<group>"; };
 		4994DE8F1D303A26F3CA8F48 /* SwiftDashSDKProtocolCompatibilityClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SwiftDashSDKProtocolCompatibilityClient.swift; path = DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKProtocolCompatibilityClient.swift; sourceTree = "<group>"; };
 		DE98C99944BC32EA668EBF52 /* WalletProtocolCompatibilityTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WalletProtocolCompatibilityTests.swift; path = DashWalletTests/WalletProtocolCompatibilityTests.swift; sourceTree = "<group>"; };
+		B4C0DE5A7E57000000000F01 /* BarcodeFormatTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BarcodeFormatTests.swift; path = DashWalletTests/BarcodeFormatTests.swift; sourceTree = "<group>"; };
 		E28E4AA75ADC1A7BAAA6C5E7 /* ProtocolCompatibilityBanner.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ProtocolCompatibilityBanner.swift; path = DashWallet/Sources/UI/Main/ProtocolCompatibilityBanner.swift; sourceTree = "<group>"; };
 		0E6EC867403319C64E4E6101 /* ShieldedWithdrawalHistoryFixture.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedWithdrawalHistoryFixture.swift; sourceTree = "<group>"; };
 		E12F7F1F376A7ED784840839 /* ShieldedWithdrawalHistoryTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedWithdrawalHistoryTests.swift; sourceTree = "<group>"; };
@@ -6978,6 +6980,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				4994DE8F1D303A26F3CA8F48 /* SwiftDashSDKProtocolCompatibilityClient.swift */,
 				E28E4AA75ADC1A7BAAA6C5E7 /* ProtocolCompatibilityBanner.swift */,
 				DE98C99944BC32EA668EBF52 /* WalletProtocolCompatibilityTests.swift */,
+				B4C0DE5A7E57000000000F01 /* BarcodeFormatTests.swift */,
 				C9D2C9552A320AC100D15901 /* DashPay */,
 				2ADF83FB23632D55008459A7 /* Shared */,
 				75D5F3C7191EC270004AB296 /* DashWallet */,
@@ -10226,6 +10229,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				AE4A372E7EC798A350694542 /* ShieldedWithdrawalHistoryTests.swift in Sources */,
 				A11C00001274000000000032 /* AssetLockInputPolicyTests.swift in Sources */,
 				1FED152A2C6BCE50AFB0445B /* WalletProtocolCompatibilityTests.swift in Sources */,
+				B4C0DE5A7E57000000000B01 /* BarcodeFormatTests.swift in Sources */,
 				2A2120EC22145CAE009906DC /* DWAmountInputValidatorTests.m in Sources */,
 				17E47391430C11AC728B69A3 /* DWRegistrationPhaseAdapterTests.swift in Sources */,
 				F44028CBF49F4A2FE6268874 /* UsernameRegistrationRecoveryTests.swift in Sources */,
