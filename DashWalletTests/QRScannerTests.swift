@@ -478,22 +478,23 @@ final class QRScannerTests: XCTestCase {
         let delegate = ProcessorDelegate()
         let processor = DWPaymentProcessor()
         processor.delegate = delegate
-        func required(_ path: String) -> DWPaymentInput {
-            let parsed = ParsedPaymentURI.parse(
-                paymentString: "dash:\(Self.address)?amount=1&req-r=https%3A%2F%2F127.0.0.1%3A1%2F\(path)")
+        func required(_ request: String) -> DWPaymentInput {
+            let parsed = ParsedPaymentURI.parse(paymentString: "dash:\(Self.address)?amount=1&req-r=\(request)")
             return DWPaymentInputBuilder().paymentInput(withParsedURI: parsed, source: .deepLink)
         }
-        processor.processPaymentInput(required("first"))
+        // The stale request goes out to the network; its replacement is refused before any, with
+        // a different error, so the answer that arrives says whose it is.
+        processor.processPaymentInput(required("https%3A%2F%2F127.0.0.1%3A1%2Fstale"))
         processor.reset()
-        processor.processPaymentInput(required("second"))
+        processor.processPaymentInput(required("http%3A%2F%2F127.0.0.1%3A1%2Fcurrent"))
 
         let failed = expectation(description: "the current request fails")
         failed.assertForOverFulfill = false
-        var failures = 0
-        delegate.onFailure = { failures += 1; failed.fulfill() }
+        var failures: [String?] = []
+        delegate.onFailure = { failures.append(delegate.failure?.error?.localizedDescription); failed.fulfill() }
         wait(for: [failed], timeout: 40)
-        RunLoop.main.run(until: Date().addingTimeInterval(1))
-        XCTAssertEqual(failures, 1, "the first request's answer is not delivered")
+        RunLoop.main.run(until: Date().addingTimeInterval(3))
+        XCTAssertEqual(failures, [BIP70Error.badURL.errorDescription], "only the current request's answer is delivered")
         XCTAssertFalse(delegate.confirmed)
     }
 
