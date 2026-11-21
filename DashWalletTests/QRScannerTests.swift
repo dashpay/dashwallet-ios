@@ -558,25 +558,47 @@ final class QRScannerTests: XCTestCase {
         }
     }
 
-    /// A scanned invoice's amount is what is sent, in either unit: fiat's two
-    /// decimals only display it. An edit replaces it.
+    /// A scanned invoice's amount is what is sent, in either unit: at a known
+    /// rate fiat shows its two-decimal reading, and DASH comes back exact from
+    /// the duffs. Without a rate the amount stays in DASH. An edit replaces it.
     func testAnInvoiceAmountStaysExactAcrossUnits() {
+        let exchanger = CurrencyExchanger.shared
+        let saved = exchanger.currencies
+        let provider = MockRatesProvider()
+        exchanger.configure(dataProvider: provider)
+        defer { provider.updateHandler?(saved) }
+        provider.updateHandler?([RateObject(code: App.fiatCurrency, name: App.fiatCurrency, price: 30)])
+
         let send = SendViewModel(contactLookup: { _ in nil })
         send.prefill(address: Self.address, amountDuffs: 123_456_789, requiresAmount: true)
         let shown = send.amountText
         send.unit = .fiat
+        XCTAssertEqual(send.unit, .fiat)
+        XCTAssertEqual(send.amountText, "37.04")
         XCTAssertEqual(send.dashDuffsUnsigned, 123_456_789)
-        if let fiat = SendViewModel.exactAmountText(123_456_789, in: .fiat) {
-            XCTAssertEqual(send.amountText, fiat)
-        } else {
-            XCTAssertEqual(send.unit, .dash, "without a rate the amount stays in DASH")
-            XCTAssertEqual(send.amountText, shown)
-        }
         send.unit = .dash
-        XCTAssertEqual(send.dashDuffsUnsigned, 123_456_789)
         XCTAssertEqual(send.amountText, shown, "drawn from the duffs, not from the fiat reading")
+        XCTAssertEqual(send.dashDuffsUnsigned, 123_456_789)
+
+        provider.updateHandler?([])
+        send.unit = .fiat
+        XCTAssertEqual(send.unit, .dash, "without a rate the amount stays in DASH")
+        XCTAssertEqual(send.amountText, shown)
+
         send.amountText = "2"
         XCTAssertEqual(send.dashDuffsUnsigned, 200_000_000)
+    }
+
+    /// Max takes the amount over from a scanned invoice; once Max is cleared,
+    /// what is sent is what the editor shows. The Core drain's estimate is
+    /// applied through the same path.
+    func testMaxReplacesAnInvoiceAmount() {
+        let send = SendViewModel(contactLookup: { _ in nil })
+        send.prefill(address: Self.address, amountDuffs: 123_456_789, requiresAmount: true)
+        send.applyMax(duffs: 5_000_000)
+        send.addressText = ""
+        XCTAssertFalse(send.isMaxSelected)
+        XCTAssertNotEqual(send.dashDuffsUnsigned, 123_456_789)
     }
 
     /// A pay wrapper that names its sender twice, in either order, is refused:
