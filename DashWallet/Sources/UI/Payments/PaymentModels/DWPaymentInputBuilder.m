@@ -28,6 +28,20 @@ NS_ASSUME_NONNULL_BEGIN
     return [[DWPaymentInput alloc] initWithSource:source];
 }
 
+- (DWPaymentInput *)paymentInputWithParsedURI:(DWParsedPaymentURI *)parsedURI
+                                       source:(DWPaymentInputSource)source {
+    DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:source];
+    [paymentInput attachParsedURI:parsedURI];
+    return paymentInput;
+}
+
+- (DWPaymentInput *)paymentInputWithBIP70Confirmation:(id)bip70Confirmation
+                                               source:(DWPaymentInputSource)source {
+    DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:source];
+    paymentInput.bip70Confirmation = bip70Confirmation;
+    return paymentInput;
+}
+
 - (nullable DWPaymentInput *)payToAddress:(NSString *)address
                                    amount:(uint64_t)amount {
     DWParsedPaymentURI *parsed = [DWParsedPaymentURI parsePaymentString:address];
@@ -54,7 +68,8 @@ NS_ASSUME_NONNULL_BEGIN
 
         i++;
 
-        if (parsed.isAddressValidForCurrentNetwork) {
+        if (parsed.isAddressValidForCurrentNetwork || parsed.hasUnsupportedRequirement) {
+            // A requirement the wallet can't meet is handed on as is, for the processor to refuse.
             if (completion) {
                 DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:source];
                 [paymentInput attachParsedURI:parsed];
@@ -63,7 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
 
             return;
         }
-        else if (parsed.rURL != nil) { // may be BIP73 url: https://github.com/bitcoin/bips/blob/master/bip-0073.mediawiki
+        else if (parsed.isFetchableDashRequest) { // may be BIP73 url: https://github.com/bitcoin/bips/blob/master/bip-0073.mediawiki
             DWBIP70InteractiveCoordinator *coordinator = [[DWBIP70InteractiveCoordinator alloc] init];
             // No callback scheme: a paste or an NFC tag is not an app asking, so none is called back.
             [coordinator fetchAndVerifyWithRequestURL:parsed.rURL
@@ -100,7 +115,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (DWPaymentInput *)paymentInputWithURL:(NSURL *)url {
     // The parser normalizes `pay:`/`dashwallet:` → `dash:` natively, so the scheme fork is gone.
-    DWParsedPaymentURI *parsed = [DWParsedPaymentURI parsePaymentString:url.absoluteString];
+    DWParsedPaymentURI *parsed = [DWParsedPaymentURI parseOpenedLinkString:url.absoluteString];
 
     // A deep link carrying a valid Dash address is a "deep link"; otherwise it's a generic URL.
     DWPaymentInputSource sourceType = parsed.isAddressValidForCurrentNetwork

@@ -25,6 +25,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (DWPaymentInput *)emptyPaymentInputWithSource:(DWPaymentInputSource)source;
 
+/// Wrap an already-parsed payment string. The parse carries the routing /
+/// validity verdicts; this only attaches the source tag.
+- (DWPaymentInput *)paymentInputWithParsedURI:(DWParsedPaymentURI *)parsedURI
+                                       source:(DWPaymentInputSource)source;
+
+/// Wrap a fetched + verified BIP70 request (`DWBIP70ConfirmationBox`).
+- (DWPaymentInput *)paymentInputWithBIP70Confirmation:(id)bip70Confirmation
+                                               source:(DWPaymentInputSource)source;
+
 - (nullable DWPaymentInput *)payToAddress:(NSString *)address
                                    amount:(uint64_t)amount;
 - (void)payFirstFromArray:(NSArray<NSString *> *)array

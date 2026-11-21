@@ -104,8 +104,10 @@ extension PaymentController {
 
 extension PaymentController: ConfirmPaymentViewControllerDelegate {
     func confirmPaymentViewControllerDidConfirm(_ controller: ConfirmPaymentViewController) {
+        // The output on screen at the tap, not whatever arrives during the dismissal.
+        let output = controller.model.dataSource as? DWPaymentOutput
         controller.dismiss(animated: true) { [weak self] in
-            if let output = self?.paymentOutput {
+            if let output {
                 self?.paymentProcessor.confirmPaymentOutput(output)
             }
         }

@@ -19,12 +19,8 @@ final class SendScreenViewController: DWBasePayViewController {
     /// Scan-routing prefill (`DWBasePayViewController`'s ObjC scan handler):
     /// a scanned bech32m Platform/Shielded destination opens this screen
     /// with the address (and BIP21 amount, when present) applied.
-    @objc func prefill(address: String, amountDuffs: UInt64) {
-        sendViewModel.addressText = address
-        if amountDuffs > 0 {
-            sendViewModel.unit = .dash
-            sendViewModel.amountText = amountDuffs.formattedDashAmountWithoutCurrencySymbol
-        }
+    @objc func prefill(address: String, amountDuffs: UInt64, requiresAmount: Bool) {
+        sendViewModel.prefill(address: address, amountDuffs: amountDuffs, requiresAmount: requiresAmount)
     }
 
     /// Scan-routing prefill from the payments landing, whose Send tab is a
@@ -129,13 +125,10 @@ final class SendScreenViewController: DWBasePayViewController {
     // MARK: - QR scan
 
     /// The base class routes a scanned payment straight into the payment
-    /// processor (its `DWQRScanModelDelegate` conformance is a private
-    /// class extension, so this can't be `override` — the matching selector
-    /// shadows it through ObjC dispatch). On this screen a scan fills the
-    /// form instead, so the destination-type detection and From picker
-    /// apply to scanned addresses exactly like typed/pasted ones.
-    @objc(qrScanModel:didScanPaymentInput:)
-    func qrScanModel(_ viewModel: DWQRScanModel, didScanPaymentInput paymentInput: DWPaymentInput) {
+    /// processor. On this screen a scan fills the form instead, so the
+    /// destination-type detection and From picker apply to scanned
+    /// addresses exactly like typed/pasted ones.
+    override func didScanPaymentInput(_ paymentInput: DWPaymentInput) {
         dismiss(animated: true) { [weak self] in
             guard let self else { return }
             // A BIP70 request has no address to put in the field — filling the

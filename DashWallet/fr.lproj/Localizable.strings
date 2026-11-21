@@ -101,9 +101,6 @@
 "%@ is not allowed to access Face ID. Allow Face ID access in Settings" = "%@ n'a pas l'autorisation d'accéder à Face ID. Veuillez autoriser l'accès à Face ID dans Réglages";
 
 /* No comment provided by engineer. */
-"%@ is not allowed to access the camera" = "%@ n'est pas autorisé à accéder à l'appareil photo";
-
-/* No comment provided by engineer. */
 "%@ is not allowed to access Touch ID. Allow Touch ID access in Settings" = "%@ n'a pas l'autorisation d'accéder à Touch ID. Veuillez autoriser l'accès à Touch ID dans Réglages";
 
 /* DashPay Notifications: established contact, accepting side unknown */
@@ -995,9 +992,6 @@
 "by default will be marked as" = "by default will be marked as";
 
 /* No comment provided by engineer. */
-"Camera is required to scan QR codes." = "Camera is required to scan QR codes.";
-
-/* No comment provided by engineer. */
 "Camera Unavailable" = "Camera Unavailable";
 
 /* Username marketplace: join deadline still open — value of the New contenders row */
@@ -1138,6 +1132,9 @@
 
 /* No comment provided by engineer. */
 "Chunk process avg time" = "Temps moyen de traitement d'un fragment";
+
+/* QR scanner */
+"Claim Invitation" = "Claim Invitation";
 
 /* No comment provided by engineer. */
 "Claimable balance" = "Solde réclamable";
@@ -2954,6 +2951,9 @@
 /* Settings: advanced mode */
 "Keep credits to pay for on-chain actions and Platform apps" = "Keep credits to pay for on-chain actions and Platform apps";
 
+/* QR scanner */
+"Keep Scanning" = "Keep Scanning";
+
 /* CoinJoin */
 "Keep these coins private. Network and privacy fees apply." = "Gardez ces pièces privées. Des frais de réseau et de confidentialité s'appliquent.";
 
@@ -3957,6 +3957,9 @@
 
 /* DashConnect: return to an app the wallet does not know; the placeholder is a website, e.g. yap.pr */
 "Open %@" = "Open %@";
+
+/* QR scanner */
+"Open Send" = "Open Send";
 
 /* Notifications */
 "Open Settings" = "Open Settings";
@@ -6400,6 +6403,9 @@
 /* DashPay Contacts: scanned QR is a payment/invitation/foreign code */
 "This isn't a DashPay user QR code." = "Ce n'est pas un code QR d'utilisateur DashPay.";
 
+/* DashPay Invitations */
+"This isn't an invitation QR code." = "This isn't an invitation QR code.";
+
 /* DashConnect */
 "This kind of code is not accepted on mainnet. Ask the app for a DashPay connect link or code." = "This kind of code is not accepted on mainnet. Ask the app for a DashPay connect link or code.";
 
@@ -6471,6 +6477,15 @@
 
 /* DashConnect error */
 "This QR code is not a DashConnect QR code." = "This QR code is not a DashConnect QR code.";
+
+/* QR scanner */
+"This QR code is a Dash payment request." = "This QR code is a Dash payment request.";
+
+/* QR scanner */
+"This QR code is a DashPay invitation." = "This QR code is a DashPay invitation.";
+
+/* QR scanner */
+"This QR code is a DashPay user." = "This QR code is a DashPay user.";
 
 /* Receive screen */
 "This QR contains the specified amount" = "This QR contains the specified amount";
@@ -6876,6 +6891,12 @@
 /* Alert title */
 "Turn device passcode on" = "Activer le code d'accès de l'appareil";
 
+/* QR scanner */
+"Turn off flashlight" = "Turn off flashlight";
+
+/* QR scanner */
+"Turn on flashlight" = "Turn on flashlight";
+
 /* Notifications */
 "Turned off in iOS Settings" = "Turned off in iOS Settings";
 
@@ -7194,6 +7215,9 @@
 
 /* Maya */
 "View transaction on MayaScan" = "View transaction on MayaScan";
+
+/* QR scanner */
+"View User" = "View User";
 
 /* Voting */
 "Vote" = "Voter";

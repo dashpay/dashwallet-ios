@@ -51,14 +51,18 @@ struct AddMasternodeScreen: View {
         .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
         .navigationBarHidden(true)
         .sheet(isPresented: $showScanner) {
-            QRScannerRepresentable(
-                onScanned: { value in
-                    viewModel.query = value
+            // The locator field takes private keys as well as IPs and
+            // proTxHashes: the scan comes back raw, never routed elsewhere.
+            QRScannerView(
+                mode: .rawText,
+                onResult: { result in
                     showScanner = false
-                    Task { await viewModel.search() }
+                    if case .text(let value) = result {
+                        viewModel.query = value
+                        Task { await viewModel.search() }
+                    }
                 },
                 onCancel: { showScanner = false })
-                .ignoresSafeArea()
         }
     }
 

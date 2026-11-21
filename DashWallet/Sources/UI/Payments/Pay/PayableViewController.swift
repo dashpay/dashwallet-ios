@@ -20,22 +20,12 @@ import SwiftUI
 
 // MARK: - PayableViewController
 
-protocol PayableViewController: DWQRScanModelDelegate {
+protocol PayableViewController {
     var payModel: DWPayModelProtocol! { get }
     var paymentController: PaymentController! { get }
 }
 
 extension PayableViewController where Self: UIViewController {
-    func performScanQRCodeAction(delegate: DWQRScanModelDelegate) {
-        if let vc = presentedViewController, vc is DWQRScanViewController {
-            return;
-        }
-
-        let controller = DWQRScanViewController()
-        controller.model.delegate = delegate
-        present(controller, animated: true, completion: nil)
-    }
-
     func performNFCReadingAction() {
         payModel?.performNFCReading(completion: { [weak self] paymentInput in
             guard let strongSelf = self else { return }
@@ -51,6 +41,18 @@ extension PayableViewController where Self: UIViewController {
     func processPaymentInput(_ input: DWPaymentInput) {
         paymentController.performPayment(with: input)
     }
+
+    /// A scanned or entered address: a Platform or Shielded destination
+    /// opens the Send screen, whose route model handles every destination
+    /// form; anything else goes to the classic processor.
+    @MainActor
+    func dispatchPaymentInput(_ input: DWPaymentInput) {
+        if QRScanResultRouter.requiresSendScreen(input) {
+            QRScanResultRouter.routePayment(input, from: self)
+        } else {
+            processPaymentInput(input)
+        }
+    }
     
 #if DASHPAY
     /// Row #18: "Send to a Contact" opens the SwiftUI contacts screen;
@@ -63,5 +65,3 @@ extension PayableViewController where Self: UIViewController {
     }
 #endif
 }
-
-extension PayableViewController where Self: UIViewController { }

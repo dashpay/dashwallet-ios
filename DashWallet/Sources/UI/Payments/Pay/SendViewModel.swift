@@ -218,6 +218,7 @@ final class SendViewModel: ObservableObject {
             if contactBalanceMissDuffs != nil { contactBalanceMissDuffs = nil }
             #endif
             guard !isApplyingMax else { return }
+            invoiceAmountDuffs = nil
             clearShieldedMaxSelection()
         }
     }
@@ -302,6 +303,9 @@ final class SendViewModel: ObservableObject {
     /// Exact duff amount selected by Max. The two-decimal fiat value is only
     /// its display representation and must not be converted back for sending.
     private var maxAmountDuffs: UInt64?
+    /// A scanned invoice's amount, exact in duffs until the user edits it:
+    /// switching to fiat changes only how it is shown.
+    private var invoiceAmountDuffs: UInt64?
     private var shieldedSweepAmountCredits: UInt64?
     @Published var unit: InternalTransferUnit = .dash {
         didSet {
@@ -310,6 +314,16 @@ final class SendViewModel: ObservableObject {
                 isApplyingMax = true
                 defer { isApplyingMax = false }
                 applyMaxAmountText(maxAmountDuffs)
+            } else if let invoiceAmountDuffs {
+                // Drawn from the stored duffs, never from the other unit's
+                // rounded text. Without a rate the amount stays in its unit.
+                guard let text = Self.exactAmountText(invoiceAmountDuffs, in: unit) else {
+                    unit = oldValue
+                    return
+                }
+                isApplyingMax = true
+                defer { isApplyingMax = false }
+                amountText = text
             } else {
                 convertAmountText(from: oldValue, to: unit)
             }
@@ -1202,17 +1216,35 @@ final class SendViewModel: ObservableObject {
         addressText = suggestion.address
     }
 
-    private static func detect(in raw: String) -> ClipboardSuggestion? {
+    static func detect(in raw: String) -> ClipboardSuggestion? {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty { return nil }
+        // A copied payment link is a payment, not prose to pick an address
+        // out of: one the scanner would refuse, or whose recipient may not be
+        // paid alone, suggests nothing; otherwise only its parsed recipient.
+        if ParsedPaymentURI.textCarriesUnpayableLink(trimmed) { return nil }
+        for span in ParsedPaymentURI.paymentLinkSpans(in: trimmed) {
+            let parsed = ParsedPaymentURI.parse(paymentString: span)
+            if Self.refusesAddressOnly(parsed) { return nil }
+            if let address = parsed.address, let kind = classify(address) {
+                return ClipboardSuggestion(address: address, kind: kind)
+            }
+        }
 
-        for candidate in trimmed.split(whereSeparator: { !$0.isLetter && !$0.isNumber }) {
+        let prose = ParsedPaymentURI.textOutsideLinks(trimmed)
+        for candidate in prose.split(whereSeparator: { !$0.isLetter && !$0.isNumber }) {
             let word = String(candidate)
             if let kind = classify(word) {
                 return ClipboardSuggestion(address: word, kind: kind)
             }
         }
         return nil
+    }
+
+    /// A payment URI whose address may not be paid on its own: an unmet or
+    /// unknown requirement, an unpayable amount, a required request or amount.
+    static func refusesAddressOnly(_ parsed: ParsedPaymentURI) -> Bool {
+        parsed.hasUnsupportedRequirement || parsed.hasInvalidAmount || parsed.requiresRequest || parsed.requiresAmount
     }
 
     /// The address a scanned input would put in the address field, or nil for
@@ -1245,13 +1277,40 @@ final class SendViewModel: ObservableObject {
     @discardableResult
     func ingestScannedInput(_ paymentInput: DWPaymentInput) -> Bool {
         guard let address = Self.scannedAddress(in: paymentInput) else { return false }
-        addressText = address
-        let scannedAmount = paymentInput.parsedURI?.amount ?? 0
-        if scannedAmount > 0, dashDuffsUnsigned == 0 {
-            unit = .dash
-            amountText = scannedAmount.formattedDashAmountWithoutCurrencySymbol
-        }
+        prefill(address: address, amountDuffs: paymentInput.parsedURI?.amount ?? 0,
+                requiresAmount: paymentInput.parsedURI?.requiresAmount ?? false)
         return true
+    }
+
+    /// Every scan entry point fills the form here, so each reads back
+    /// exactly the scanned duffs. An optional amount does not replace one
+    /// already entered; an invoice's required amount always does, so a
+    /// rescan never pairs its recipient with an earlier amount.
+    func prefill(address: String, amountDuffs: UInt64, requiresAmount: Bool = false) {
+        // Max was chosen for the previous recipient: a scan starts the amount
+        // afresh rather than carry a full-balance choice to a new one. Read
+        // first — a new destination can drop the selection but not its text.
+        let hadMax = maxAmountDuffs != nil || isFullShieldedSweep
+        addressText = address
+        clearShieldedMaxSelection()
+        if hadMax { amountText = "" }
+        if requiresAmount {
+            unit = .dash
+            amountText = amountDuffs > 0 ? Self.editorText(duffs: amountDuffs) : ""
+            invoiceAmountDuffs = amountDuffs > 0 ? amountDuffs : nil
+        } else if amountDuffs > 0, dashDuffsUnsigned == 0 {
+            unit = .dash
+            amountText = Self.editorText(duffs: amountDuffs)
+            invoiceAmountDuffs = amountDuffs
+        }
+    }
+
+    /// A scanned amount as editor text that `rawTypedDecimal` reads back
+    /// exactly: Latin digits, no grouping, and the decimal separator it
+    /// accepts. Locale formatting can add grouping or other digits.
+    static func editorText(duffs: UInt64) -> String {
+        let text = NSDecimalNumber(decimal: Decimal(duffs) / Decimal(100_000_000)).stringValue
+        return Locale.current.decimalSeparator == "," ? text.replacingOccurrences(of: ".", with: ",") : text
     }
 
     // MARK: - Amount
@@ -1269,6 +1328,9 @@ final class SendViewModel: ObservableObject {
         }
         if let maxAmountDuffs {
             return maxAmountDuffs.dashAmount
+        }
+        if let invoiceAmountDuffs {
+            return invoiceAmountDuffs.dashAmount
         }
         let raw = rawTypedDecimal
         switch unit {
@@ -1307,7 +1369,10 @@ final class SendViewModel: ObservableObject {
         if isFullShieldedSweep, let shieldedSweepAmountCredits {
             return shieldedSweepAmountCredits
         }
-        return NSDecimalNumber(decimal: Decimal(dashDuffsUnsigned) * 1000).uint64Value
+        // Saturates rather than wraps: an amount past the credit range then
+        // fails every affordability check instead of reading as a small one.
+        let (credits, overflow) = dashDuffsUnsigned.multipliedReportingOverflow(by: 1000)
+        return overflow ? .max : credits
     }
 
     var fiatAmountString: String {
@@ -1411,12 +1476,17 @@ final class SendViewModel: ObservableObject {
         return largest > preflight.estimatedFee ? largest - preflight.estimatedFee : 0
     }
 
-    /// True when the typed amount is exactly the full-balance net payout —
-    /// confirm then runs the AUTO (all-addresses) withdrawal.
+    /// True when Max selected exactly the full-balance net payout — confirm
+    /// then runs the AUTO (all-addresses) withdrawal, which pays whatever the
+    /// balance is at submission. An amount that merely equals the quote (typed,
+    /// or a scanned invoice's) is a fixed amount and takes the exact path.
     var isFullPlatformWithdrawal: Bool {
         route == .platformToCore
-            && platformWithdrawableDuffs != nil
-            && dashDuffsUnsigned == platformWithdrawableDuffs
+            && Self.isFullPlatformWithdrawal(maxDuffs: maxAmountDuffs, withdrawableDuffs: platformWithdrawableDuffs)
+    }
+
+    static func isFullPlatformWithdrawal(maxDuffs: UInt64?, withdrawableDuffs: UInt64?) -> Bool {
+        maxDuffs != nil && maxDuffs == withdrawableDuffs
     }
 
     /// Only Core-funded routes during a restored wallet's first sync block.
@@ -1774,6 +1844,7 @@ final class SendViewModel: ObservableObject {
             // SDK prices every eligible Core account with the fee on top and
             // no change, so the amount is its estimate, not a local
             // `spendable − fee`. The recipient is fixed at confirm.
+            invoiceAmountDuffs = nil
             coreDrainMax.select()
             return
         case .platformToPlatform:
@@ -1824,14 +1895,38 @@ final class SendViewModel: ObservableObject {
             }
         }
 
+        applyMax(duffs: sourceDuffs)
+    }
+
+    /// Max's amount, kept exact in duffs.
+    func applyMax(duffs: UInt64) {
+        invoiceAmountDuffs = nil
         isApplyingMax = true
         defer { isApplyingMax = false }
-        applyMaxAmountText(sourceDuffs)
+        applyMaxAmountText(duffs)
     }
+
+    var isMaxSelected: Bool { maxAmountDuffs != nil }
 
     /// Keep the selected Max amount exact in duffs while rendering either
     /// DASH or an approximate two-decimal fiat value.
+    /// An exact amount as editor text in `unit`: the DASH amount itself, or
+    /// its two-decimal fiat reading. nil without an exchange rate.
+    static func exactAmountText(_ duffs: UInt64, in unit: InternalTransferUnit) -> String? {
+        switch unit {
+        case .dash:
+            return editorText(duffs: duffs)
+        case .fiat:
+            guard let fiat = try? CurrencyExchanger.shared.convertDash(amount: duffs.dashAmount, to: App.fiatCurrency)
+            else { return nil }
+            return InternalTransferViewModel.formatTyped(fiat, fractionDigits: 2)
+        }
+    }
+
     private func applyMaxAmountText(_ duffs: UInt64) {
+        // Max, the Core drain's estimate included, takes the amount over from
+        // a scanned invoice: once it is cleared the editor's text is the amount.
+        invoiceAmountDuffs = nil
         guard duffs > 0 else {
             maxAmountDuffs = nil
             amountText = "0"

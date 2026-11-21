@@ -71,13 +71,23 @@ final class ParsedPaymentURI: NSObject {
     /// Percent-decoded address (or a bare key string) — UNVALIDATED; consult
     /// `isAddressValidForCurrentNetwork`. nil for `dash:?r=…` and unparseable inputs.
     @objc let address: String?
-    /// Amount in duffs; 0 when absent.
+    /// Amount in duffs; 0 when absent or invalid.
     @objc let amount: UInt64
+    /// An amount was given but is not payable (empty, unreadable, negative, above the supply). The
+    /// address alone is then not a payment: paying it would drop the amount the payer asked for.
+    @objc let hasInvalidAmount: Bool
     @objc let label: String?
     @objc let message: String?
     /// The BIP72 `r=` URL, or the whole BIP73 URL. nil when absent/unparseable — call sites fetch
     /// only when this is non-nil (the coordinator takes a non-optional `URL`).
     @objc let rURL: URL?
+    /// The request was given as `req-r`, or more than once: only the merchant's request may be
+    /// paid, never the embedded address in its place. Without a usable `rURL` nothing is payable.
+    @objc let requiresRequest: Bool
+    /// The amount was given as `req-amount`: an invoice, never an address to fill in alone.
+    @objc let requiresAmount: Bool
+    /// A `req-` parameter the wallet doesn't understand: per BIP21 nothing in the URI is payable.
+    @objc let hasUnsupportedRequirement: Bool
     /// `sender=` x-callback-url scheme.
     @objc let callbackScheme: String?
     /// `user=` DashPay username (value carry only; DashPay deferred to C10).
@@ -104,16 +114,66 @@ final class ParsedPaymentURI: NSObject {
     /// arms are compiled out under `SHAPESHIFT_ENABLED`, undefined in this app), widened to accept
     /// every payable address form (bech32m Platform/Shielded included).
     @objc var isValidDashPaymentIntent: Bool {
-        scheme == "dash" && (isAddressPayableForCurrentNetwork || rURL != nil)
+        scheme == "dash" && !hasUnsupportedRequirement
+            && ((isAddressPayableForCurrentNetwork && !hasInvalidAmount && !requiresRequest) || rURL != nil)
+    }
+
+    /// A plain https payment-request URL read whole (BIP73), the one form without a `dash:`
+    /// scheme whose request the wallet fetches. Cleartext is not: nothing would vouch for the
+    /// request it returns.
+    @objc var isWholeRequestURL: Bool {
+        scheme == "https" && rURL.map(PaymentProtocolTransport.isSecure) == true
+    }
+
+    /// The payment links (`dash:`, `pay:`, `dashwallet:`) in copied text, each a whole span: it
+    /// ends at whitespace or an enclosing bracket or quote, less trailing sentence punctuation.
+    /// Every reader of the clipboard parses these whole and never picks addresses out of them.
+    @objc(paymentLinkSpansIn:)
+    static func paymentLinkSpans(in text: String) -> [String] {
+        let range = NSRange(text.startIndex..., in: text)
+        return linkPattern.matches(in: text, range: range).compactMap { match in
+            Range(match.range, in: text).map { String(text[$0]).trimmingCharacters(in: trailingPunctuation) }
+        }.filter { span in
+            !["dash:", "pay:", "dashwallet:"].contains(span.lowercased())
+        }
+    }
+
+    /// `text` with its payment links taken out, for finding a bare address in prose.
+    @objc(textOutsideLinks:)
+    static func textOutsideLinks(_ text: String) -> String {
+        linkPattern.stringByReplacingMatches(
+            in: text, range: NSRange(text.startIndex..., in: text), withTemplate: " ")
+    }
+
+    /// A payment link in `text` that cannot be paid as it stands, a refused pay wrapper among
+    /// them: no address may then be taken from the text, which would pay the recipient without
+    /// what the link required.
+    @objc(textCarriesUnpayableLink:)
+    static func textCarriesUnpayableLink(_ text: String) -> Bool {
+        paymentLinkSpans(in: text).contains { !parse(paymentString: $0).isValidDashPaymentIntent }
+    }
+
+    private static let linkPattern = try! NSRegularExpression(
+        pattern: #"(?i)(?<![A-Za-z0-9])(?:dashwallet|dash|pay):[^\s<>()\[\]{}"'`]+"#)
+    private static let trailingPunctuation = CharacterSet(charactersIn: ".,;:!?")
+
+    /// A merchant request the wallet fetches: one in a `dash:` URI it can pay, or a whole https
+    /// URL. Another currency's `r=` is that currency's request, never fetched as Dash's.
+    @objc var isFetchableDashRequest: Bool {
+        rURL != nil && (isValidDashPaymentIntent || isWholeRequestURL)
     }
 
     private init(rawString: String,
                  scheme: String?,
                  address: String?,
                  amount: UInt64,
+                 hasInvalidAmount: Bool,
                  label: String?,
                  message: String?,
                  rURL: URL?,
+                 requiresRequest: Bool,
+                 requiresAmount: Bool,
+                 hasUnsupportedRequirement: Bool,
                  callbackScheme: String?,
                  dashpayUsername: String?,
                  fiatCurrencyCode: String?,
@@ -126,9 +186,13 @@ final class ParsedPaymentURI: NSObject {
         self.scheme = scheme
         self.address = address
         self.amount = amount
+        self.hasInvalidAmount = hasInvalidAmount
         self.label = label
         self.message = message
         self.rURL = rURL
+        self.requiresRequest = requiresRequest
+        self.requiresAmount = requiresAmount
+        self.hasUnsupportedRequirement = hasUnsupportedRequirement
         self.callbackScheme = callbackScheme
         self.dashpayUsername = dashpayUsername
         self.fiatCurrencyCode = fiatCurrencyCode
@@ -145,10 +209,30 @@ final class ParsedPaymentURI: NSObject {
     /// which always returns an object), so ObjC nil-messaging needs no special cases.
     @objc(parsePaymentString:)
     static func parse(paymentString raw: String) -> ParsedPaymentURI {
-        let paymentString = deepLinkPaymentString(for: raw) ?? raw
-        guard let uri = BIP70URI(paymentString: paymentString) else {
+        parse(paymentString: raw, honorsCallback: false)
+    }
+
+    /// A link another app opened: its `sender` is called back after the payment, so a required
+    /// one is met. Anything the wallet read itself (a scan, a paste, an NFC tag) calls no app back,
+    /// so `req-sender` there is a requirement the wallet cannot meet.
+    @objc(parseOpenedLinkString:)
+    static func parse(openedLink raw: String) -> ParsedPaymentURI {
+        parse(paymentString: raw, honorsCallback: true)
+    }
+
+    private static func parse(paymentString raw: String, honorsCallback: Bool) -> ParsedPaymentURI {
+        let paymentString: String?
+        switch deepLinkPaymentString(for: raw) {
+        case .notAWrapper: paymentString = raw
+        case .refused: paymentString = nil
+        case .rewritten(let rewritten): paymentString = rewritten
+        }
+        guard let paymentString, let uri = BIP70URI(paymentString: paymentString) else {
             return ParsedPaymentURI(rawString: raw, scheme: nil, address: nil, amount: 0,
-                                    label: nil, message: nil, rURL: nil, callbackScheme: nil,
+                                    hasInvalidAmount: false, label: nil, message: nil, rURL: nil, requiresRequest: false,
+                                    requiresAmount: false,
+                                    hasUnsupportedRequirement: false,
+                                    callbackScheme: nil,
                                     dashpayUsername: nil, fiatCurrencyCode: nil, fiatAmount: 0,
                                     hasExplicitScheme: false, isAddressValidForCurrentNetwork: false,
                                     isAddressPayableForCurrentNetwork: false,
@@ -163,9 +247,14 @@ final class ParsedPaymentURI: NSObject {
                                 scheme: uri.scheme,
                                 address: uri.address,
                                 amount: uri.amount ?? 0,
+                                hasInvalidAmount: uri.hasInvalidAmount,
                                 label: uri.label,
                                 message: uri.message,
                                 rURL: uri.r,
+                                requiresRequest: uri.requiredFields.contains("r"),
+                                requiresAmount: uri.requiredFields.contains("amount"),
+                                hasUnsupportedRequirement: uri.hasUnsupportedRequirement
+                                    || (!honorsCallback && uri.requiredFields.contains("sender")),
                                 callbackScheme: uri.callbackScheme,
                                 dashpayUsername: uri.dashpayUsername,
                                 fiatCurrencyCode: uri.fiatCurrencyCode,
@@ -180,16 +269,25 @@ final class ParsedPaymentURI: NSObject {
     /// link to. Read raw, `pay=<address>` would be taken for the address. A deep link is rewritten
     /// before it gets here, so this is a link the wallet read itself (a scan, a paste, an NFC tag):
     /// it keeps the address and the link's own parameters and loses `sender`, since no app asked
-    /// for the payment. nil for anything the router does not turn into a payment — the plain
-    /// `dashwallet:<address>` alias among them, which `BIP70URI` reads.
-    private static func deepLinkPaymentString(for raw: String) -> String? {
+    /// for the payment. A pay link the router refused stays refused; anything else that is not a
+    /// pay link (the plain `dashwallet:<address>` alias, which `BIP70URI` reads) is read as is.
+    private static func deepLinkPaymentString(for raw: String) -> DeepLinkPayment {
         let link = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard link.hasPrefix("dashwallet:"),
-              let url = URL(string: link),
-              let paymentURL = DWURLParser.paymentURL(forScannedLink: url) else {
-            return nil
+        let scheme = "dashwallet:"
+        guard link.lowercased().hasPrefix(scheme) else { return .notAWrapper }
+        if let url = URL(string: link), let paymentURL = DWURLParser.paymentURL(forScannedLink: url) {
+            return .rewritten(paymentURL.absoluteString)
         }
-        return paymentURL.absoluteString
+        // Only the bare alias (`dashwallet:<address>`) is read as is. Any other form the router
+        // did not turn into a payment, a `//` link it refused or could not even parse among them,
+        // is refused here too, never reread.
+        return link.dropFirst(scheme.count).hasPrefix("/") ? .refused : .notAWrapper
+    }
+
+    private enum DeepLinkPayment {
+        case notAWrapper
+        case refused
+        case rewritten(String)
     }
 
     /// The fetch-failed fallback: a copy without the BIP70 request URL (was the
@@ -200,9 +298,13 @@ final class ParsedPaymentURI: NSObject {
                          scheme: scheme,
                          address: address,
                          amount: amount,
+                         hasInvalidAmount: hasInvalidAmount,
                          label: label,
                          message: message,
                          rURL: nil,
+                         requiresRequest: requiresRequest,
+                         requiresAmount: requiresAmount,
+                         hasUnsupportedRequirement: hasUnsupportedRequirement,
                          callbackScheme: callbackScheme,
                          dashpayUsername: dashpayUsername,
                          fiatCurrencyCode: fiatCurrencyCode,

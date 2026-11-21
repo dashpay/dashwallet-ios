@@ -46,6 +46,8 @@ struct EvonodeWithdrawalScreen: View {
     /// the sheet has finished dismissing, never while it is still on screen.
     @State private var popsAfterConfirmation = false
     @State private var showScanner = false
+    @State private var pendingRedirect: QRScanResult?
+    @State private var presenterAnchor = QRScanPresenterAnchor()
 
     init(
         vc: UINavigationController?,
@@ -121,14 +123,23 @@ struct EvonodeWithdrawalScreen: View {
                 .presentationDetents([.large])
                 .presentationDragIndicator(.hidden)
         }
-        .fullScreenCover(isPresented: $showScanner) {
-            QRScannerRepresentable(
-                onScanned: { value in
+        .qrScanPresenterAnchor(presenterAnchor)
+        .fullScreenCover(isPresented: $showScanner, onDismiss: {
+            guard let result = pendingRedirect else { return }
+            pendingRedirect = nil
+            QRScanResultRouter.route(result, from: presenterAnchor.controller)
+        }) {
+            QRScannerView(
+                mode: .addressInput(expectsDashAddress: true),
+                onResult: { result in
                     showScanner = false
-                    viewModel.setDestination(value)
+                    if case .text(let value) = result {
+                        viewModel.setDestination(value)
+                    } else {
+                        pendingRedirect = result
+                    }
                 },
                 onCancel: { showScanner = false })
-                .ignoresSafeArea()
         }
     }
 
@@ -644,26 +655,5 @@ struct EvonodeWithdrawalConfirmSheet: View {
             .fill(Color.dash.gray300.opacity(0.3))
             .frame(height: 1)
             .padding(.horizontal, 14)
-    }
-}
-
-// MARK: - QRScannerRepresentable
-
-/// SwiftUI wrapper for the UIKit `GenericQRScannerController`. Internal: the
-/// add-masternode locator field reuses it.
-struct QRScannerRepresentable: UIViewControllerRepresentable {
-    let onScanned: (String) -> Void
-    let onCancel: () -> Void
-
-    func makeUIViewController(context: Context) -> GenericQRScannerController {
-        let scanner = GenericQRScannerController()
-        scanner.onQRCodeScanned = onScanned
-        scanner.onCancel = onCancel
-        return scanner
-    }
-
-    func updateUIViewController(_ uiViewController: GenericQRScannerController, context: Context) {
-        uiViewController.onQRCodeScanned = onScanned
-        uiViewController.onCancel = onCancel
     }
 }

@@ -44,10 +44,20 @@ final class BIP70SendResultBox: NSObject {
 final class BIP70InteractiveCoordinator: NSObject {
 
     private let service: BIP70PaymentService
+    private var fetchTask: Task<Void, Never>?
 
     @objc override init() {
         service = BIP70PaymentService.makeForCurrentWallet()
         super.init()
+    }
+
+    /// A fetch nobody waits for any more is not left downloading.
+    deinit {
+        fetchTask?.cancel()
+    }
+
+    @objc func cancelFetch() {
+        fetchTask?.cancel()
     }
 
     /// Fetch + verify a BIP70 request (no build, no spend). Completion fires on the main thread.
@@ -56,8 +66,9 @@ final class BIP70InteractiveCoordinator: NSObject {
                         scheme: String,
                         callbackScheme: String?,
                         completion: @escaping (BIP70ConfirmationBox?, NSError?) -> Void) {
-        let normalizedScheme = Self.normalize(scheme)
-        Task {
+        let normalizedScheme = Self.paymentProtocolScheme(scheme)
+        let service = service
+        fetchTask = Task {
             do {
                 let network = try PaymentNetworkResolver.current()
                 let confirmation = try await service.prepareForConfirmation(
@@ -95,9 +106,12 @@ final class BIP70InteractiveCoordinator: NSObject {
 
     // MARK: - Helpers
 
-    private static func normalize(_ scheme: String) -> String {
+    /// The payment protocol a request is fetched for. A whole https URL (BIP73) names where the
+    /// request is, not its currency: the wallet asks it for a Dash request. A cleartext one is
+    /// not taken for Dash: anyone on the path could rewrite what it returns.
+    static func paymentProtocolScheme(_ scheme: String) -> String {
         switch scheme.lowercased() {
-        case "pay", "dashwallet": return "dash"
+        case "pay", "dashwallet", "https": return "dash"
         default: return scheme.lowercased()
         }
     }

@@ -33,18 +33,23 @@ final class InvitationEntry: NSObject {
     /// Present the invitation QR scanner; a scanned invitation goes through
     /// the same store as an opened link.
     static func presentScanner(from presenter: UIViewController, onStored: @escaping () -> Void) {
-        let scanner = GenericQRScannerController()
-        scanner.modalPresentationStyle = .fullScreen
+        let scanner = QRScannerController(mode: .invitation)
         scanner.onCancel = { [weak scanner] in
             scanner?.dismiss(animated: true)
         }
-        scanner.onQRCodeScanned = { [weak scanner, weak presenter] value in
+        // The scanner reports one result and stops: the camera's further
+        // reports while the dismissal animates are dropped there.
+        scanner.onResult = { [weak scanner, weak presenter] result in
             guard let scanner else { return }
-            // One code per scan: the camera keeps reporting while the
-            // dismissal animates.
-            scanner.onQRCodeScanned = nil
             scanner.dismiss(animated: true) {
-                let outcome = PendingInvitationStore.shared.receive(value)
+                guard case .invitation(let url) = result else {
+                    // An accepted redirect offer: the QR belongs to another flow.
+                    QRScanResultRouter.route(result, from: presenter)
+                    return
+                }
+                // The lock may have engaged while the scanner was dismissing.
+                guard !QRScanResultRouter.isWalletLocked() else { return }
+                let outcome = PendingInvitationStore.shared.receive(url)
                 if handle(outcome, presenter: presenter) {
                     onStored()
                 }
