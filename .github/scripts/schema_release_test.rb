@@ -187,7 +187,13 @@ class SchemaReleaseTest < Minitest::Test
   # `release`: the published commit against master. `development`: master (or
   # the tip a dry run would give it) against develop. `cutover`: the same tip
   # against the tag the mirror starts from.
+  def bind(build_id, path)
+    @store.files["apple-builds/#{build_id}.json"] = SchemaRelease.json(
+      { build_id: build_id, manifest_path: path, manifest_sha256: Digest::SHA256.hexdigest(@store.files.fetch(path)) })
+  end
+
   def mirroring(release: "ahead", development: "behind", cutover: "ahead")
+    bind("apple21", @path) unless @store.files.key?("apple-builds/apple21.json") || @unbound
     github = @store.github
     github.comparisons[["master", WALLET]] = release
     ["master", WALLET].each do |tip|
@@ -312,6 +318,16 @@ class SchemaReleaseTest < Minitest::Test
     @apple.builds["older"] = { "id" => "apple20", "attributes" => { "version" => "20" } }
     @store.files[SchemaRelease.manifest_path(BUNDLE, "9.0.5", "20")] =
       SchemaRelease.json(@manifest.merge("app_version" => "9.0.5", "build_number" => "20", "wallet_sha" => commit))
+    bind("apple20", SchemaRelease.manifest_path(BUNDLE, "9.0.5", "20"))
+  end
+
+  def test_publication_without_a_recorded_apple_build_binding_writes_no_tag_or_branch
+    @unbound = true
+    error = assert_raises(SchemaRelease::Error) { mirroring.sync }
+    assert_includes error.message, "no recorded binding"
+    assert_empty @store.github.tags
+    assert_empty @store.github.fast_forwards
+    assert_equal [["new", @store.head]], @store.github.dispatches
   end
 
   def test_older_publication_is_tagged_but_only_the_newest_moves_the_release_branch

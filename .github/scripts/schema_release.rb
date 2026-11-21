@@ -530,6 +530,13 @@ module SchemaRelease
       return if AppStoreConnectRelease::MarketingVersion.new(version) <= @mirror_after
       commit = SchemaRelease.sha(manifest.fetch("wallet_sha"))
       label = "App Store #{version} (#{record['build_number']})"
+      # The manifest is found by version and build number, which an upload made
+      # outside the release workflow could share. Only the binding the workflow
+      # records after its own upload ties this Apple build to that manifest;
+      # `evidence` has already checked that a binding, when present, matches.
+      unless @store.document("apple-builds/#{SchemaRelease.component(record.fetch('build_id'))}.json", optional: true)
+        raise Error, "#{label} has no recorded binding between its Apple build and its build evidence, so the commit it was cut from is not established. No tag or branch was written; record the binding (bind-build) once the build's origin is confirmed."
+      end
       id = record["release_id"]
       mirror_step(failures, id) { tag_release(label, "v#{SchemaRelease.component(version)}", commit, dry_run) }
       mirror_step(failures, id) { advance_release_branch(label, commit, dry_run) } if newest

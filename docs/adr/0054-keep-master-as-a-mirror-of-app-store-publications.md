@@ -34,6 +34,7 @@ The rules:
 
 - All work lands on `develop`. `master` takes no ordinary pull request.
 - For each publication above 9.1.4 the observer creates the tag `vX.Y.Z` on the build's recorded wallet commit. It never moves an existing tag: one that names another commit is reported and left alone.
+- A publication is mirrored only when the release workflow recorded the binding between its Apple build and its build evidence. Without it the commit is not established, and the observer reports that and writes nothing.
 - Only publications App Store Connect lists in that run are mirrored, and only the newest of them moves `master`; an older one is tagged and nothing more. A manual retry of an older release therefore cannot choose the tip.
 - For that newest publication the observer advances `master` to its commit with a non-forced update, so only a fast-forward can happen. A commit already on `master` needs nothing. A commit that does not descend from `master` is reported and nothing is moved; someone finds out how the two parted before anything is merged.
 - A hotfix branches from `master`, merges into `master` by pull request, and is built for release from `master`. From that merge until the hotfix is published, `master` is ahead of the App Store by the hotfix; the observer says so in its run summary and does not treat it as an error.
