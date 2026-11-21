@@ -822,6 +822,15 @@ class SchemaReleaseTest < Minitest::Test
     assert_raises(SchemaRelease::Error) { @pipeline.sync }
   end
 
+  def test_apple_build_binding_that_is_not_an_object_is_refused
+    ["false", "0", "\"bound\"", "[]"].each do |document|
+      @store.files["apple-builds/apple21.json"] = document
+      assert_raises(SchemaRelease::Error) { @pipeline.sync }
+    end
+    assert_empty @store.github.tags
+    assert_empty @store.github.fast_forwards
+  end
+
   def test_rejects_path_injection_and_missing_fingerprint
     assert_raises(SchemaRelease::Error) { SchemaRelease.manifest_path(BUNDLE, "../../main", "21") }
     assert_raises(SchemaRelease::Error) { SchemaRelease.validate_schema(SCHEMA.merge("entity_hashes" => {})) }

@@ -391,8 +391,11 @@ module SchemaRelease
       SchemaRelease.sha(manifest.fetch("platform_sha"))
       SchemaRelease.validate_schema(manifest.fetch("schema"))
       binding = @store.document("apple-builds/#{SchemaRelease.component(record.fetch('build_id'))}.json", commit: commit, optional: true)
-      if binding && (binding.fetch("manifest_path") != path || binding.fetch("manifest_sha256") != Digest::SHA256.hexdigest(bytes))
-        raise Error, "Apple build is already bound to different release evidence"
+      unless binding.nil?
+        raise Error, "Apple build binding is not a JSON object" unless binding.is_a?(Hash)
+        if binding["manifest_path"] != path || binding["manifest_sha256"] != Digest::SHA256.hexdigest(bytes)
+          raise Error, "Apple build is already bound to different release evidence"
+        end
       end
       fixture_path = "stores/#{manifest.fetch('fixture_sha256')}.store"
       raise Error, "Invalid fixture path" unless fixture_path == manifest.fetch("fixture_path") && manifest.fetch("fixture_sha256").match?(/\A[0-9a-f]{64}\z/)
