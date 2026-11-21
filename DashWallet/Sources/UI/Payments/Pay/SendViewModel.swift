@@ -1844,6 +1844,7 @@ final class SendViewModel: ObservableObject {
             // SDK prices every eligible Core account with the fee on top and
             // no change, so the amount is its estimate, not a local
             // `spendable − fee`. The recipient is fixed at confirm.
+            invoiceAmountDuffs = nil
             coreDrainMax.select()
             return
         case .platformToPlatform:
@@ -1923,6 +1924,9 @@ final class SendViewModel: ObservableObject {
     }
 
     private func applyMaxAmountText(_ duffs: UInt64) {
+        // Max, the Core drain's estimate included, takes the amount over from
+        // a scanned invoice: once it is cleared the editor's text is the amount.
+        invoiceAmountDuffs = nil
         guard duffs > 0 else {
             maxAmountDuffs = nil
             amountText = "0"
