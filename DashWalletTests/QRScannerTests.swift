@@ -674,6 +674,11 @@ final class QRScannerTests: XCTestCase {
             XCTAssertEqual(SendViewModel.detect(in: text)?.address, address, text)
         }
         XCTAssertNil(ParsedPaymentURI.soleLink(in: "Pay (dash:\(address)?amount=1)."))
+        // A whole merchant request URL is fetched, never mined for an order reference.
+        for request in ["https://merchant.example/pay?order=\(address)", "http://merchant.example/pay?order=\(address)"] {
+            XCTAssertTrue(ParsedPaymentURI.textMentionsPaymentLink(request), request)
+            XCTAssertNil(SendViewModel.detect(in: request), request)
+        }
         XCTAssertEqual(SendViewModel.detect(in: "Send to \(address), thanks")?.address, address)
     }
 

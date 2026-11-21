@@ -133,6 +133,21 @@ NS_ASSUME_NONNULL_BEGIN
 /// leaving a different recipient, an open amount or a different request. Such a link is refused, as is one carrying payment fields
 /// or a requirement (`req-`) in its query, which the rewrite never reads, or a requirement it would drop as malformed.
 + (BOOL)hasAmbiguousPaymentParameterInURL:(NSURL *)url {
+    // Only the host is read: a user, port, path or fragment carries text the rewrite would drop.
+    // Read from the link's own text, whichever way Foundation split it.
+    NSString *link = url.absoluteString;
+    NSRange schemeEnd = [link rangeOfString:@"://"];
+    if (schemeEnd.location == NSNotFound || url.fragment) {
+        return YES;
+    }
+    NSString *authority = [link substringFromIndex:NSMaxRange(schemeEnd)];
+    NSRange queryStart = [authority rangeOfString:@"?"];
+    if (queryStart.location != NSNotFound) {
+        authority = [authority substringToIndex:queryStart.location];
+    }
+    if ([authority rangeOfCharacterFromSet:[NSCharacterSet characterSetWithCharactersInString:@"/#@:"]].location != NSNotFound) {
+        return YES;
+    }
     NSArray<NSString *> *paymentKeys = @[ @"pay", @"amount", @"req-amount", @"r", @"req-r" ];
     for (NSURLQueryItem *item in [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:NO].queryItems) {
         if ([paymentKeys containsObject:item.name] || [item.name hasPrefix:@"req-"]) {

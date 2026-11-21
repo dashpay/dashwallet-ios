@@ -1752,6 +1752,30 @@ final class BIP70PaymentServiceTests: XCTestCase {
         }
     }
 
+    /// A wrapper is read from its host alone, so text Foundation puts in a
+    /// user, port, path or fragment — a requirement among it — refuses the
+    /// link, opened or scanned, rather than being dropped.
+    func testAPayWrapperWithTextOutsideItsHostIsRefused() throws {
+        let address = "yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW"
+        for link in ["dashwallet://pay=\(address)&amount=1&sender=ctx&label=a/b&req-memo=hi",
+                     "dashwallet://pay=\(address)&amount=1&sender=ctx#&req-memo=hi",
+                     "dashwallet://pay=\(address)&amount=1&sender=ctx?label=a#&req-memo=hi",
+                     "dashwallet://req-memo=hi@pay=\(address)&amount=1&sender=ctx",
+                     "dashwallet://pay=\(address)&amount=1&sender=ctx&label=a:5",
+                     "dashwallet://pay=\(address)&amount=1&sender=ctx/"] {
+            let url = try XCTUnwrap(URL(string: link), link)
+            XCTAssertNil(DWURLParser.action(for: url), link)
+            XCTAssertNil(DWURLParser.paymentURL(forScannedLink: url), link)
+            XCTAssertFalse(ParsedPaymentURI.parse(paymentString: link).isValidDashPaymentIntent, link)
+        }
+        for link in ["dashwallet://pay=\(address)&amount=1&sender=ctx", "dashwallet://pay=\(address)&amount=1&sender=ctx&label=Joe%20Shop"] {
+            XCTAssertNotNil(DWURLParser.action(for: try XCTUnwrap(URL(string: link))), link)
+        }
+        // An encoded requirement in the host is still read as one.
+        let encoded = "dashwallet://pay=\(address)&amount=1&sender=ctx&req%2Dmemo=hi"
+        XCTAssertFalse(ParsedPaymentURI.parse(paymentString: encoded).isValidDashPaymentIntent)
+    }
+
     /// A `req-label` cannot replace the label the wallet wrote for a valid `sender`.
     func testDeepLinkPayActionKeepsItsSenderLabelOverReqLabel() throws {
         let url = try XCTUnwrap(URL(string: "dashwallet://pay=Xabc&amount=1&sender=ctx&req-label=Shop"))

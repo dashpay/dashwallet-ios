@@ -134,12 +134,13 @@ final class ParsedPaymentURI: NSObject {
         scheme == "https" && rURL.map(PaymentProtocolTransport.isSecure) == true
     }
 
-    /// Whether copied text mentions a payment link (`dash:`, `pay:`, `dashwallet:`, `bitcoin:`). Such
-    /// text is a payment, not prose: no address is picked out of it, since part of a link would
-    /// pay without what the rest of it required.
+    /// Whether copied text mentions a payment link (`dash:`, `pay:`, `dashwallet:`, `bitcoin:`) or a
+    /// web URL. Such text is a payment, not prose: no address is picked out of it, since part of a
+    /// link would pay without what the rest of it required, and an address inside a URL, a merchant
+    /// request's among them, is a reference, not the payee.
     @objc(textMentionsPaymentLink:)
     static func textMentionsPaymentLink(_ text: String) -> Bool {
-        text.range(of: #"(?i)(?:dashwallet:|dash:|bitcoin:|pay:\S)"#, options: .regularExpression) != nil
+        text.range(of: #"(?i)(?:dashwallet:|dash:|bitcoin:|pay:\S|https?:)"#, options: .regularExpression) != nil
     }
 
     /// The payment link copied text is, read whole: whitespace, trailing sentence punctuation and
