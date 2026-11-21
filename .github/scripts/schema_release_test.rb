@@ -823,9 +823,10 @@ class SchemaReleaseTest < Minitest::Test
   end
 
   def test_apple_build_binding_that_is_not_an_object_is_refused
+    pipeline = mirroring
     ["false", "0", "\"bound\"", "[]"].each do |document|
       @store.files["apple-builds/apple21.json"] = document
-      assert_raises(SchemaRelease::Error) { @pipeline.sync }
+      assert_raises(SchemaRelease::Error) { pipeline.sync }
     end
     assert_empty @store.github.tags
     assert_empty @store.github.fast_forwards
