@@ -174,14 +174,21 @@ class SendAmountModel: BaseAmountModel {
         guard canShowInsufficientFunds else { return nil }
         guard gatesOnWalletSendPool else { return .insufficientFunds }
         let state = SwiftDashSDKWalletState.shared
-        let gate = state.feeAwareMaxSendableAndReserve()
+        // One UTXO walk at most, and none for an amount the pool can never cover.
+        var gate: (max: UInt64, reserve: UInt64)?
+        func readGate() -> (max: UInt64, reserve: UInt64) {
+            if let gate { return gate }
+            let read = state.feeAwareMaxSendableAndReserve()
+            gate = read
+            return read
+        }
         let verdict = state.sendVerdict(
             requestedDuffs: amount.plainAmount,
             ceilingDuffs: state.sendableDuffs,
-            reserveDuffs: gate.reserve)
+            reserveDuffs: readGate().reserve)
         // The gate holds nothing back for the fee, so the amount to offer is
         // the fee-aware one Max fills, not `sendableDuffs`.
-        return SendAmountError(refusing: verdict, availableNowDuffs: gate.max) ?? .insufficientFunds
+        return SendAmountError(refusing: verdict, availableNowDuffs: readGate().max) ?? .insufficientFunds
     }
 
     override func selectAllFunds() {
