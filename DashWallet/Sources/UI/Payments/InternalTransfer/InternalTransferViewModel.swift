@@ -1566,7 +1566,7 @@ final class InternalTransferViewModel: ObservableObject {
         case .fits:
             return nil
         case .confirming(let duffs):
-            return SendAmountError.fundsStillConfirming(duffs).errorDescription
+            return SendAmountError.fundsStillConfirming(duffs, availableNowDuffs: ceilingDuffs).errorDescription
         case .insufficient:
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: ChainNetwork.core.balanceName,

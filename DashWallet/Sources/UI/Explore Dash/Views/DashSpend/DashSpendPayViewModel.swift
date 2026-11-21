@@ -489,7 +489,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         if let refusal = SendAmountError(refusing: state.sendVerdict(
             requestedDuffs: requestedDashDuffs,
             ceilingDuffs: ceilingDuffs,
-            reserveDuffs: reserveDuffs)) {
+            reserveDuffs: reserveDuffs), availableNowDuffs: ceilingDuffs) {
             // Re-checked on every balance event while it is up: re-setting the
             // same refusal would only re-render both panels.
             if (error as? SendAmountError) != refusal { error = refusal }

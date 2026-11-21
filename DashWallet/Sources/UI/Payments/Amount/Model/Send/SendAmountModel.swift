@@ -29,15 +29,20 @@ enum SendAmountError: Error, Equatable, ColorizedText, LocalizedError {
     /// `InternalTransferViewModel.coreZeroMaxMessage`.
     case maxUnavailable(String)
     /// The amount is more than the confirmed balance but would fit once the
-    /// carried amount (duffs) confirms. See
-    /// `SwiftDashSDKWalletState.sendVerdict`.
-    case fundsStillConfirming(UInt64)
+    /// first amount (duffs) confirms; `availableNowDuffs` is the most the same
+    /// gate accepts right now. See `SwiftDashSDKWalletState.sendVerdict`.
+    case fundsStillConfirming(UInt64, availableNowDuffs: UInt64)
 
     var errorDescription: String? {
         switch self {
         case .maxUnavailable(let message): return message
-        case .fundsStillConfirming(let duffs):
-            return String(localized: "\(duffs.formattedDashAmountWithoutCurrencySymbol) DASH is still confirming. Wait a few minutes or enter a smaller amount.", comment: "Send amount fits the balance once incoming funds confirm")
+        case .fundsStillConfirming(let duffs, let availableNowDuffs):
+            guard availableNowDuffs > 0 else {
+                return String(localized: "\(duffs.formattedDashAmountWithoutCurrencySymbol) DASH is still confirming and none of this balance can be used yet. Wait a few minutes.",
+                              comment: "Send amount fits the balance once incoming funds confirm; nothing is usable before then")
+            }
+            return String(localized: "\(duffs.formattedDashAmountWithoutCurrencySymbol) DASH is still confirming. You can use up to \(availableNowDuffs.formattedDashAmountWithoutCurrencySymbol) DASH now, or wait a few minutes for the rest.",
+                          comment: "Send amount fits the balance once incoming funds confirm; %2$@ is the most usable right now")
         case .insufficientFunds: return String(localized: "Insufficient funds", comment: "Send screen")
         case .syncingChain: return String(localized: "Wait until wallet is synced to complete the transaction",
                                                      comment: "Send screen")
@@ -62,11 +67,12 @@ enum SendAmountError: Error, Equatable, ColorizedText, LocalizedError {
 extension SendAmountError {
     /// The refusal a wallet gate's verdict names, or `nil` when the amount
     /// fits: "still confirming" when the coins the gate does not count yet
-    /// would cover it, else "Insufficient funds".
-    init?(refusing verdict: SendFundsVerdict) {
+    /// would cover it, else "Insufficient funds". `availableNowDuffs` is read
+    /// only for a "still confirming" verdict.
+    init?(refusing verdict: SendFundsVerdict, availableNowDuffs: @autoclosure () -> UInt64) {
         switch verdict {
         case .fits: return nil
-        case .confirming(let duffs): self = .fundsStillConfirming(duffs)
+        case .confirming(let duffs): self = .fundsStillConfirming(duffs, availableNowDuffs: availableNowDuffs())
         case .insufficient: self = .insufficientFunds
         }
     }
@@ -171,7 +177,7 @@ class SendAmountModel: BaseAmountModel {
             requestedDuffs: amount.plainAmount,
             ceilingDuffs: state.sendableDuffs,
             reserveDuffs: SwiftDashSDKTransactionSender.maxSendFeeReserveDuffs())
-        return SendAmountError(refusing: verdict) ?? .insufficientFunds
+        return SendAmountError(refusing: verdict, availableNowDuffs: state.feeAwareMaxSendable()) ?? .insufficientFunds
     }
 
     override func selectAllFunds() {

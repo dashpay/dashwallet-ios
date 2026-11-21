@@ -1499,7 +1499,7 @@ final class SendViewModel: ObservableObject {
                requestedDuffs: requestedDuffs,
                ceilingDuffs: gate.ceilingDuffs,
                reserveDuffs: reserveDuffs) {
-            return SendAmountError.fundsStillConfirming(duffs).errorDescription
+            return SendAmountError.fundsStillConfirming(duffs, availableNowDuffs: gate.ceilingDuffs).errorDescription
         }
         return TransferSpendAmountPolicy.insufficientBalanceMessage(
             balanceName: source.balanceName,
@@ -1534,7 +1534,7 @@ final class SendViewModel: ObservableObject {
                 requestedDuffs: dashDuffsUnsigned,
                 ceilingDuffs: ceilingDuffs,
                 reserveDuffs: reserveDuffs &+ feeDuffs) {
-                return SendAmountError.fundsStillConfirming(duffs).errorDescription
+                return SendAmountError.fundsStillConfirming(duffs, availableNowDuffs: ceilingDuffs).errorDescription
             }
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: balanceName,
