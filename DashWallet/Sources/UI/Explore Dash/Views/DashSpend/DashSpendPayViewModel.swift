@@ -522,9 +522,11 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     }
 
     /// What the cheapest card this merchant sells costs, priced like
-    /// `requestedDashDuffs`: the smallest denomination, or the range minimum.
+    /// `requestedDashDuffs`: the smallest in-stock denomination, or the range
+    /// minimum. A denomination with no inventory entry has no stock limit.
     private var cheapestPurchaseDuffs: UInt64 {
-        let cheapest = isFixedDenomination ? Decimal(denominations.min() ?? 0) : minimumAmount
+        let inStock = denominations.filter { denominationInventory[$0] != 0 }
+        let cheapest = isFixedDenomination ? Decimal(inStock.min() ?? 0) : minimumAmount
         return Self.dashDuffs(forFiat: cheapest)
     }
 
