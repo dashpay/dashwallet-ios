@@ -10028,269 +10028,6 @@
         }
       }
     },
-    "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes." : {
-      "comment" : "Send amount fits the balance once incoming funds confirm; nothing is usable before then",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "bg" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "ca" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "eo" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "et" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "fa" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "fi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "fil" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "hr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "hu" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "mk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "nb" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "ro" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "sk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "sl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "sl_SI" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "sq" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "zh" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "zh_TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ DASH is still confirming and none of this balance can be used yet. Wait a few minutes."
-          }
-        }
-      }
-    },
     "%@ DASH is still confirming. Try again once it settles." : {
       "comment" : "Shielded sweep pending change",
       "localizations" : {
@@ -345976,6 +345713,269 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "None of your %@ DASH is spendable yet — it is still confirming."
+          }
+        }
+      }
+    },
+    "None of your balance can be used until %@ DASH confirms. Wait a few minutes." : {
+      "comment" : "Send amount fits the balance once incoming funds confirm; nothing is usable before then",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "fil" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "mk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "sl_SI" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "sq" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "zh" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "zh_TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "None of your balance can be used until %@ DASH confirms. Wait a few minutes."
           }
         }
       }

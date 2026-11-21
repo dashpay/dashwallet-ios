@@ -594,7 +594,7 @@ final class PooledSendableBalanceTests: XCTestCase {
             .errorDescription ?? ""
         XCTAssertTrue(message.contains(UInt64(200_000_000).formattedDashAmountWithoutCurrencySymbol),
                       "got: \(message)")
-        XCTAssertTrue(message.contains("none of this balance can be used yet"), "got: \(message)")
+        XCTAssertTrue(message.contains("None of your balance can be used until"), "got: \(message)")
         XCTAssertFalse(message.contains("up to"), "a zero ceiling must not be offered as an amount: \(message)")
     }
 

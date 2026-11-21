@@ -29,8 +29,9 @@ enum SendAmountError: Error, Equatable, ColorizedText, LocalizedError {
     /// `InternalTransferViewModel.coreZeroMaxMessage`.
     case maxUnavailable(String)
     /// The amount is more than the confirmed balance but would fit once the
-    /// first amount (duffs) confirms; `availableNowDuffs` is the most the same
-    /// gate accepts right now. See `SwiftDashSDKWalletState.sendVerdict`.
+    /// first amount (duffs) confirms; `availableNowDuffs` is the most the
+    /// screen can send right now (its fee-aware ceiling). See
+    /// `SwiftDashSDKWalletState.sendVerdict`.
     case fundsStillConfirming(UInt64, availableNowDuffs: UInt64)
 
     var errorDescription: String? {
@@ -38,7 +39,7 @@ enum SendAmountError: Error, Equatable, ColorizedText, LocalizedError {
         case .maxUnavailable(let message): return message
         case .fundsStillConfirming(let duffs, let availableNowDuffs):
             guard availableNowDuffs > 0 else {
-                return String(localized: "\(duffs.formattedDashAmountWithoutCurrencySymbol) DASH is still confirming and none of this balance can be used yet. Wait a few minutes.",
+                return String(localized: "None of your balance can be used until \(duffs.formattedDashAmountWithoutCurrencySymbol) DASH confirms. Wait a few minutes.",
                               comment: "Send amount fits the balance once incoming funds confirm; nothing is usable before then")
             }
             return String(localized: "\(duffs.formattedDashAmountWithoutCurrencySymbol) DASH is still confirming. You can use up to \(availableNowDuffs.formattedDashAmountWithoutCurrencySymbol) DASH now, or wait a few minutes for the rest.",
@@ -173,11 +174,14 @@ class SendAmountModel: BaseAmountModel {
         guard canShowInsufficientFunds else { return nil }
         guard gatesOnWalletSendPool else { return .insufficientFunds }
         let state = SwiftDashSDKWalletState.shared
+        let gate = state.feeAwareMaxSendableAndReserve()
         let verdict = state.sendVerdict(
             requestedDuffs: amount.plainAmount,
             ceilingDuffs: state.sendableDuffs,
-            reserveDuffs: SwiftDashSDKTransactionSender.maxSendFeeReserveDuffs())
-        return SendAmountError(refusing: verdict, availableNowDuffs: state.feeAwareMaxSendable()) ?? .insufficientFunds
+            reserveDuffs: gate.reserve)
+        // The gate holds nothing back for the fee, so the amount to offer is
+        // the fee-aware one Max fills, not `sendableDuffs`.
+        return SendAmountError(refusing: verdict, availableNowDuffs: gate.max) ?? .insufficientFunds
     }
 
     override func selectAllFunds() {

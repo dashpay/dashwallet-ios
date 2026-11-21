@@ -136,7 +136,7 @@ extension AmountView {
         errorLabel = UILabel()
         errorLabel.translatesAutoresizingMaskIntoConstraints = false
         errorLabel.textColor = .systemRed
-        errorLabel.numberOfLines = 2
+        errorLabel.numberOfLines = 0
         errorLabel.lineBreakMode = .byWordWrapping
         errorLabel.font = .dw_font(forTextStyle: .footnote)
         errorLabel.textAlignment = .center
