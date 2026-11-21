@@ -657,7 +657,7 @@ final class QRScannerTests: XCTestCase {
                      "Pay (dash:\(address)?amount=1) or dash:\(address)?req-memo=hi",
                      "dash: \(address)?req-memo=hi", "pay: \(address)?req-memo=hi", "(pay: \(address)?req-memo=hi)",
                      "<pay: \(address)?req-memo=hi>", "\"pay: \(address)?req-memo=hi\"",
-                     "Invoice (pay: \(address)?req-memo=hi)", "\u{201C}pay: \(address)?req-memo=hi\u{201D}", ".dash:\(address)?req-amount=5..",
+                     "Invoice (pay: \(address)?req-memo=hi)", "Invoice (pay: \(address)&req-memo=hi)", "\u{201C}pay: \(address)?req-memo=hi\u{201D}", ".dash:\(address)?req-amount=5..",
                      "(bitcoin:\(address)?req-memo=1)"] {
             XCTAssertNil(SendViewModel.detect(in: text), text)
             XCTAssertTrue(ParsedPaymentURI.textMentionsPaymentLink(text), text)
@@ -683,7 +683,7 @@ final class QRScannerTests: XCTestCase {
         }
         XCTAssertEqual(SendViewModel.detect(in: "Send to \(address), thanks")?.address, address)
         for prose in ["Amount to pay: 1 DASH to \(address)", "Our site moved to https: see \(address)",
-                      "Is this your address \(address)? Thanks"] {
+                      "Is this your address \(address)? Thanks", "Send to \(address) & thanks"] {
             XCTAssertFalse(ParsedPaymentURI.textMentionsPaymentLink(prose), prose)
             XCTAssertEqual(SendViewModel.detect(in: prose)?.address, address, prose)
         }
