@@ -307,6 +307,21 @@ class SchemaReleaseTest < Minitest::Test
     assert_includes @output.string, "would open a pull request"
   end
 
+  def test_dry_run_keeps_the_tip_a_newer_publication_gave_when_an_older_one_follows
+    pipeline = mirroring(development: "ahead")
+    older = "c" * 40
+    @apple.versions << @apple.version("older", "9.0.5")
+    @apple.builds["older"] = { "id" => "apple20", "attributes" => { "version" => "20" } }
+    @store.files[SchemaRelease.manifest_path(BUNDLE, "9.0.5", "20")] =
+      SchemaRelease.json(@manifest.merge("app_version" => "9.0.5", "build_number" => "20", "wallet_sha" => older))
+    github = @store.github
+    github.comparisons[["develop", "master"]] = "behind"
+    github.comparisons[[WALLET, older]] = "behind"
+    pipeline.sync(dry_run: true)
+    assert_includes @output.string, "would open a pull request"
+    refute_includes @output.string, "would fast-forward master to #{older}"
+  end
+
   def test_manifest_without_a_wallet_commit_is_reported_and_does_not_stop_the_freeze
     @manifest.delete("wallet_sha")
     save_manifest

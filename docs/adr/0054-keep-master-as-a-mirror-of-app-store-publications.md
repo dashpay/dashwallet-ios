@@ -40,6 +40,14 @@ The rules:
 - The observer runs every four hours, so `master` and the tag follow a publication by up to four hours.
 - Publications up to 9.1.4 are not mirrored. `master` starts at `v9.1.3`, the last release that lies on `develop`. The old `master` stays reachable under the tag `archive/master-8.7.0`.
 
+The cutover is done once, by hand, by someone allowed to force-push `master`:
+
+1. Tag the tip of the old `master` as `archive/master-8.7.0`.
+2. Reset `master` to the commit `v9.1.3` names. This is the only forced update `master` ever gets, so a branch rule on `master` is added after it, or lifted for it.
+3. Check that `master` is an ancestor of `develop`.
+
+Until the cutover `master` holds the 8.x line. The observer then tags publications, reports that it cannot move `master`, and offers nothing to `develop`.
+
 ## Consequences
 
 **Positive**
@@ -51,7 +59,7 @@ The rules:
 - Between a hotfix merge and its publication `master` is not exactly the published app. Building hotfixes from a side branch and letting the observer move `master` afterwards would avoid that, at the cost of a hotfix pull request with no branch to merge into; the team chose the simpler flow.
 - `master` does not gate a release. A broken `develop` still has to pass regression before an external build.
 - The fast-forward depends on `develop` descending from `master`. One squashed or skipped merge of `master` back into `develop` makes the next publication fail to mirror until someone repairs it by hand.
-- Until the first publication after 9.1.4, `master` is one release behind the App Store, and a hotfix for 9.1.4 starts from the tag `v9.1.4`.
+- From the cutover until the first publication after 9.1.4, `master` is one release behind the App Store, and a hotfix for 9.1.4 starts from the tag `v9.1.4`.
 - The observer's token needs write access to `master` and to pull requests. A branch rule on `master` must exempt it.
 
 **Neutral**

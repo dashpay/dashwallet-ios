@@ -551,7 +551,9 @@ module SchemaRelease
 
     def advance_release_branch(label, commit, newest, dry_run)
       github = @store.github
-      case github.compare(IOS_REPO, RELEASE_BRANCH, commit)
+      # In a dry run an earlier record may already have moved the tip on paper;
+      # an older record must then be judged against that, not move it back.
+      case github.compare(IOS_REPO, @projected_release_tip || RELEASE_BRANCH, commit)
       when "identical"
         @out.puts "#{label}: #{RELEASE_BRANCH} is at #{commit}."
       when "behind"
