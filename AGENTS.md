@@ -120,6 +120,16 @@ Distilled from the 2026-07 branch review (`ARCH_REVIEW_2026-07-03.md`) — each 
 - An ADR you draft stays Proposed until a human Reviewer who is not its author approves the PR; your own approval never counts. After that approval, setting Accepted is a status-only change (ADR-0001 rule 3).
 - Record a significant decision as an ADR in the same PR that makes it (threshold and "not needed" cases: ADR-0001).
 
+## Branches and releases
+
+Decision: [ADR-0054](docs/adr/0054-keep-master-as-a-mirror-of-app-store-publications.md).
+
+- **`develop`** is the default branch. Every pull request targets it, and work branches are cut from it.
+- **`master`** holds what the App Store has published, plus at most a hotfix on its way there. Never open an ordinary pull request into it and never push to it. The App Store observer (`.github/workflows/appstore-schema-release.yml`) tags each publication above 9.1.4 `vX.Y.Z` on its wallet commit and fast-forwards `master` to it.
+- **Hotfix**: branch from `master`, open the pull request into `master`, build the release from `master`. Until the first publication after 9.1.4, `master` is at `v9.1.3`: a hotfix for 9.1.4 starts from the tag `v9.1.4` instead.
+- **`master` back into `develop`**: the observer opens this pull request after a hotfix. Merge it with a merge commit, never a squash; a squash breaks the next fast-forward of `master`.
+- Do not create or move `vX.Y.Z` tags by hand.
+
 ## Publicity
 
 The repository is public. Never put customer data, unfixed vulnerability detail, secrets or step-by-step attack detail against keys, PIN or encryption into files, commit messages, branch names, PRs, issues or their attachments; describe a support case by its symptom (ADR-0001 rule 2).
