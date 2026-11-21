@@ -489,9 +489,9 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         if let refusal = SendAmountError(refusing: state.sendVerdict(
             requestedDuffs: requestedDashDuffs,
             ceilingDuffs: ceilingDuffs,
-            reserveDuffs: reserveDuffs), availableNowDuffs: SendAmountError.usableNowDuffs(
-                ceilingDuffs: ceilingDuffs,
-                minimumDuffs: cheapestPurchaseDuffs)) {
+            reserveDuffs: reserveDuffs), availableNowDuffs: cheapestPurchaseDuffs.map {
+                SendAmountError.usableNowDuffs(ceilingDuffs: ceilingDuffs, minimumDuffs: $0)
+            } ?? 0) {
             // Re-checked on every balance event while it is up: re-setting the
             // same refusal would only re-render both panels.
             if (error as? SendAmountError) != refusal { error = refusal }
@@ -523,11 +523,12 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
     /// What the cheapest card this merchant sells costs, priced like
     /// `requestedDashDuffs`: the smallest in-stock denomination, or the range
-    /// minimum. A denomination with no inventory entry has no stock limit.
-    private var cheapestPurchaseDuffs: UInt64 {
+    /// minimum; nil when every denomination is out of stock. A denomination
+    /// with no inventory entry has no stock limit.
+    private var cheapestPurchaseDuffs: UInt64? {
+        guard isFixedDenomination else { return Self.dashDuffs(forFiat: minimumAmount) }
         let inStock = denominations.filter { denominationInventory[$0] != 0 }
-        let cheapest = isFixedDenomination ? Decimal(inStock.min() ?? 0) : minimumAmount
-        return Self.dashDuffs(forFiat: cheapest)
+        return inStock.min().map { Self.dashDuffs(forFiat: Decimal($0)) }
     }
 
     private static func dashDuffs(forFiat fiat: Decimal) -> UInt64 {

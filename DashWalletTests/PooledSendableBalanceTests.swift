@@ -641,6 +641,22 @@ final class PooledSendableBalanceTests: XCTestCase {
                        "a subclass's own failure is not the ceiling's to clear")
     }
 
+    func testAReserveMoveRefreshesOnlyAStaleConfirmingNote() {
+        let shown = SendAmountError.fundsStillConfirming(10_000, availableNowDuffs: 50_000)
+        XCTAssertFalse(SendAmountModel.confirmingHintRefreshes(shown: shown, refreshed: shown),
+                       "an unchanged note must not be re-presented")
+        XCTAssertTrue(SendAmountModel.confirmingHintRefreshes(
+            shown: shown, refreshed: .fundsStillConfirming(10_000, availableNowDuffs: 49_000)))
+        XCTAssertTrue(SendAmountModel.confirmingHintRefreshes(
+            shown: shown, refreshed: .fundsStillConfirming(10_000, availableNowDuffs: 0)),
+            "a figure that falls below the output minimum switches to wait-only wording")
+        XCTAssertTrue(SendAmountModel.confirmingHintRefreshes(shown: shown, refreshed: nil),
+                      "an amount the smaller reserve now fits must clear the note")
+        XCTAssertFalse(SendAmountModel.confirmingHintRefreshes(
+            shown: .insufficientFunds, refreshed: shown),
+            "only a ceiling move re-judges any other refusal")
+    }
+
     // MARK: How Max explains an empty result
 
     func testAConfirmedCoinJoinOnlyBalanceIsNotBlamedOnTheFee() {
