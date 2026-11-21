@@ -419,6 +419,12 @@ module SchemaRelease
       records = published_records do |id, error|
         report_release_failure(failures, id, error)
       end
+      # The release mirror acts only on what Apple lists in this run, and only
+      # the newest of those may move the release branch. Both are settled here,
+      # ahead of the retained proofs and the manual-retry filter, so neither a
+      # retained record nor a retry of an older release can choose the tip.
+      listed = records.map { |record| record["release_id"] }
+      newest = records.max_by { |record| AppStoreConnectRelease::MarketingVersion.new(record.fetch("app_version")) }&.fetch("release_id")
       # Retained publication proofs are obligations even after Apple stops
       # listing a version. Merge them before filtering a manual retry.
       @store.paths("releases/").each do |path|
@@ -430,7 +436,6 @@ module SchemaRelease
         raise Error, "Requested version is not a published App Store release after the baseline" if records.empty? && failures.empty?
       end
       registry = merged_registry
-      newest = records.map { |record| record["app_version"] }.max_by { |version| AppStoreConnectRelease::MarketingVersion.new(version) }
       records.each do |record|
         manifest, path, hash = evidence(record)
         id = record.fetch("release_id")
@@ -449,9 +454,8 @@ module SchemaRelease
           end
           proof = existing
         end
-        # The mirror applies to every publication on every run, whatever state
-        # its schema freeze is in.
-        mirror_release(record, manifest, failures, newest: record["app_version"] == newest, dry_run: dry_run)
+        # The mirror applies on every run, whatever state the schema freeze is in.
+        mirror_release(record, manifest, failures, newest: id == newest, dry_run: dry_run) if listed.include?(id)
         if frozen
           @out.puts "App Store #{record['app_version']} (#{record['build_number']}): freeze merged."
           unless dry_run
@@ -515,8 +519,10 @@ module SchemaRelease
 
     private
 
-    # Tags the published wallet commit and brings the release branch up to it.
-    # The two are independent: a tag someone placed elsewhere must not hold the
+    # Tags the published wallet commit and, for the newest publication, brings
+    # the release branch up to it. An older publication is only tagged: two
+    # versions cut from different lines must not each pull the branch their way.
+    # The two steps are independent: a tag someone placed elsewhere must not hold the
     # branch back, and a branch that cannot move must not cost the tag. A
     # failure here is reported and never stops the schema freeze.
     def mirror_release(record, manifest, failures, newest:, dry_run:)
@@ -526,7 +532,7 @@ module SchemaRelease
       label = "App Store #{version} (#{record['build_number']})"
       id = record["release_id"]
       mirror_step(failures, id) { tag_release(label, "v#{SchemaRelease.component(version)}", commit, dry_run) }
-      mirror_step(failures, id) { advance_release_branch(label, commit, newest, dry_run) }
+      mirror_step(failures, id) { advance_release_branch(label, commit, dry_run) } if newest
     rescue Error, KeyError => error
       report_release_failure(failures, record["release_id"], error)
     end
@@ -549,19 +555,16 @@ module SchemaRelease
       raise Error, "Tag #{tag} names #{tagged}, but #{label} was built from #{commit}. The tag was left as it is; move it by hand only after confirming which commit shipped."
     end
 
-    def advance_release_branch(label, commit, newest, dry_run)
+    def advance_release_branch(label, commit, dry_run)
       github = @store.github
-      # In a dry run an earlier record may already have moved the tip on paper;
-      # an older record must then be judged against that, not move it back.
-      case github.compare(IOS_REPO, @projected_release_tip || RELEASE_BRANCH, commit)
+      case github.compare(IOS_REPO, RELEASE_BRANCH, commit)
       when "identical"
         @out.puts "#{label}: #{RELEASE_BRANCH} is at #{commit}."
       when "behind"
-        # For the newest publication this is a hotfix merged into the release
-        # branch and not published yet; say so, since the branch is then ahead
-        # of the App Store.
-        note = newest ? " and commits after it that the App Store has not published" : ""
-        @out.puts "#{label}: #{RELEASE_BRANCH} holds #{commit}#{note}."
+        # A hotfix merged into the release branch and not published yet, or a
+        # version cut from an older commit. Either way the branch is ahead of
+        # the App Store, and it is never moved back.
+        @out.puts "#{label}: #{RELEASE_BRANCH} holds #{commit} and commits after it that the App Store has not published."
       when "ahead"
         @out.puts "#{label}: #{dry_run ? 'would fast-forward' : 'fast-forwarding'} #{RELEASE_BRANCH} to #{commit}."
         # A dry run moves nothing, so what follows judges the tip it would have.
