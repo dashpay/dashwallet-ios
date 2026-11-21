@@ -655,7 +655,8 @@ final class QRScannerTests: XCTestCase {
                      "dash:\(address)?label=Shop(1)&req%2Dmemo=hi", "dash:\(address)?label=Shop(1)&amount=abc",
                      "Invoice dash:\(address)?label=Joe Shop&req-memo=hi", "Due:5 DASHdash:\(address)?req-amount=5",
                      "Pay (dash:\(address)?amount=1) or dash:\(address)?req-memo=hi",
-                     "dash: \(address)?req-memo=hi", "pay: \(address)?req-memo=hi", ".dash:\(address)?req-amount=5..",
+                     "dash: \(address)?req-memo=hi", "pay: \(address)?req-memo=hi", "(pay: \(address)?req-memo=hi)",
+                     "<pay: \(address)?req-memo=hi>", "\"pay: \(address)?req-memo=hi\"", ".dash:\(address)?req-amount=5..",
                      "(bitcoin:\(address)?req-memo=1)"] {
             XCTAssertNil(SendViewModel.detect(in: text), text)
             XCTAssertTrue(ParsedPaymentURI.textMentionsPaymentLink(text), text)

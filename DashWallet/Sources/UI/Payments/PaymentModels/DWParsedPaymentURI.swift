@@ -140,7 +140,7 @@ final class ParsedPaymentURI: NSObject {
     /// request's among them, is a reference, not the payee.
     @objc(textMentionsPaymentLink:)
     static func textMentionsPaymentLink(_ text: String) -> Bool {
-        text.range(of: #"(?i)(?:dashwallet:|dash:|bitcoin:|pay:\S|^\s*pay:|https?://\S)"#, options: .regularExpression) != nil
+        text.range(of: #"(?i)(?:dashwallet:|dash:|bitcoin:|pay:\S|^[\s(<\[{"'`]*pay:|https?://\S)"#, options: .regularExpression) != nil
     }
 
     /// The payment link copied text is, read whole: whitespace, trailing sentence punctuation and
