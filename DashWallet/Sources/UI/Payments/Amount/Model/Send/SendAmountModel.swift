@@ -78,6 +78,13 @@ extension SendAmountError {
         }
     }
 
+    /// The amount a "still confirming" refusal may offer: the screen's ceiling
+    /// when the smallest amount it accepts fits under it, else 0, which
+    /// selects the wait-only wording rather than an amount the screen refuses.
+    static func usableNowDuffs(ceilingDuffs: UInt64, minimumDuffs: UInt64) -> UInt64 {
+        ceilingDuffs >= minimumDuffs ? ceilingDuffs : 0
+    }
+
     /// An affordability verdict — the only kind a wallet-balance change may
     /// re-check without clearing something it does not own.
     var isFundsVerdict: Bool {
@@ -188,7 +195,11 @@ class SendAmountModel: BaseAmountModel {
             reserveDuffs: readGate().reserve)
         // The gate holds nothing back for the fee, so the amount to offer is
         // the fee-aware one Max fills, not `sendableDuffs`.
-        return SendAmountError(refusing: verdict, availableNowDuffs: readGate().max) ?? .insufficientFunds
+        return SendAmountError(
+            refusing: verdict,
+            availableNowDuffs: SendAmountError.usableNowDuffs(
+                ceilingDuffs: readGate().max,
+                minimumDuffs: CoreTxConstants.minOutputAmount)) ?? .insufficientFunds
     }
 
     override func selectAllFunds() {

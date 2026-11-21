@@ -1545,6 +1545,7 @@ final class InternalTransferViewModel: ObservableObject {
         sendableDuffs: UInt64,
         l1ReserveDuffs: UInt64,
         routeCostDuffs: UInt64,
+        minimumDuffs: UInt64 = 0,
         pooledKnown: Bool,
         pool: () -> SendPoolConfirmationSnapshot?
     ) -> String? {
@@ -1566,7 +1567,11 @@ final class InternalTransferViewModel: ObservableObject {
         case .fits:
             return nil
         case .confirming(let duffs):
-            return SendAmountError.fundsStillConfirming(duffs, availableNowDuffs: ceilingDuffs).errorDescription
+            return SendAmountError.fundsStillConfirming(
+                duffs,
+                availableNowDuffs: SendAmountError.usableNowDuffs(
+                    ceilingDuffs: ceilingDuffs,
+                    minimumDuffs: minimumDuffs)).errorDescription
         case .insufficient:
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: ChainNetwork.core.balanceName,
@@ -1578,7 +1583,11 @@ final class InternalTransferViewModel: ObservableObject {
     /// `coreTransferFundsMessage` for the typed amount: the caller gives its
     /// route's ceiling and the cost the route adds on top of the L1 reserve;
     /// the L1 reserve is the cached one and the pooled figures are read live.
-    private func coreRouteFundsMessage(ceilingDuffs: UInt64, routeCostDuffs: UInt64) -> String? {
+    private func coreRouteFundsMessage(
+        ceilingDuffs: UInt64,
+        routeCostDuffs: UInt64,
+        minimumDuffs: UInt64 = 0
+    ) -> String? {
         let state = SwiftDashSDKWalletState.shared
         return Self.coreTransferFundsMessage(
             requestedDuffs: dashDuffsUnsigned,
@@ -1586,6 +1595,7 @@ final class InternalTransferViewModel: ObservableObject {
             sendableDuffs: state.sendableDuffs,
             l1ReserveDuffs: coreL1FeeReserveDuffs,
             routeCostDuffs: routeCostDuffs,
+            minimumDuffs: minimumDuffs,
             pooledKnown: state.pooledSpendableDuffs != nil,
             pool: SwiftDashSDKTransactionSender.sendPoolConfirmationSnapshot)
     }
@@ -1779,7 +1789,8 @@ final class InternalTransferViewModel: ObservableObject {
             // the ordinary L1 reserve, so the ceiling is the cached envelope.
             return coreRouteFundsMessage(
                 ceilingDuffs: coreSpendableDuffs,
-                routeCostDuffs: 0)
+                routeCostDuffs: 0,
+                minimumDuffs: IdentityTopUpViewModel.customMinimumDuffs)
         case .platform:
             guard let ceiling = platformIdentityFundableDuffs else {
                 return Self.feeEstimateUnavailableMessage

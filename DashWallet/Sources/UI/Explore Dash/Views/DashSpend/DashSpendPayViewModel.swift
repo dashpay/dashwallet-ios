@@ -489,7 +489,9 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         if let refusal = SendAmountError(refusing: state.sendVerdict(
             requestedDuffs: requestedDashDuffs,
             ceilingDuffs: ceilingDuffs,
-            reserveDuffs: reserveDuffs), availableNowDuffs: ceilingDuffs) {
+            reserveDuffs: reserveDuffs), availableNowDuffs: SendAmountError.usableNowDuffs(
+                ceilingDuffs: ceilingDuffs,
+                minimumDuffs: cheapestPurchaseDuffs)) {
             // Re-checked on every balance event while it is up: re-setting the
             // same refusal would only re-render both panels.
             if (error as? SendAmountError) != refusal { error = refusal }
@@ -516,7 +518,18 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     }
 
     private var requestedDashDuffs: UInt64 {
-        let dashAmount = (try? CurrencyExchanger.shared.convertToDash(amount: amount, currency: kDefaultCurrencyCode)) ?? 0
+        Self.dashDuffs(forFiat: amount)
+    }
+
+    /// What the cheapest card this merchant sells costs, priced like
+    /// `requestedDashDuffs`: the smallest denomination, or the range minimum.
+    private var cheapestPurchaseDuffs: UInt64 {
+        let cheapest = isFixedDenomination ? Decimal(denominations.min() ?? 0) : minimumAmount
+        return Self.dashDuffs(forFiat: cheapest)
+    }
+
+    private static func dashDuffs(forFiat fiat: Decimal) -> UInt64 {
+        let dashAmount = (try? CurrencyExchanger.shared.convertToDash(amount: fiat, currency: kDefaultCurrencyCode)) ?? 0
         return dashAmount.plainDashAmount
     }
     

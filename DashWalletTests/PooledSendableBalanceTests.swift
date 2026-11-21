@@ -267,6 +267,28 @@ final class PooledSendableBalanceTests: XCTestCase {
         XCTAssertFalse(message.contains("smaller amount"), "got: \(message)")
     }
 
+    func testCoreRouteConfirmingMessageWaitsWhenTheCeilingIsBelowTheRouteMinimum() {
+        let message = InternalTransferViewModel.coreTransferFundsMessage(
+            requestedDuffs: 2_000_000,
+            ceilingDuffs: 500_000,
+            sendableDuffs: 500_000,
+            l1ReserveDuffs: 0,
+            routeCostDuffs: 0,
+            minimumDuffs: 1_000_000,
+            pooledKnown: true,
+            pool: { self.pool(confirmed: 500_000, unconfirmed: 5_000_000) }) ?? ""
+
+        XCTAssertTrue(message.contains("None of your balance can be used until"), "got: \(message)")
+        XCTAssertFalse(message.contains("up to"), "an amount below the minimum must not be offered: \(message)")
+    }
+
+    func testTheOfferIsTheCeilingOnlyWhenTheMinimumFitsUnderIt() {
+        XCTAssertEqual(SendAmountError.usableNowDuffs(ceilingDuffs: 1_000, minimumDuffs: 546), 1_000)
+        XCTAssertEqual(SendAmountError.usableNowDuffs(ceilingDuffs: 546, minimumDuffs: 546), 546)
+        XCTAssertEqual(SendAmountError.usableNowDuffs(ceilingDuffs: 545, minimumDuffs: 546), 0)
+        XCTAssertEqual(SendAmountError.usableNowDuffs(ceilingDuffs: 0, minimumDuffs: 0), 0)
+    }
+
     func testCoreToShieldedRouteReturnsInsufficientWhenTheAmountCannotFitAfterConfirmation() {
         let message = coreRouteMessage(
             requestedDuffs: 121_000_000,
