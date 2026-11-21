@@ -1215,18 +1215,20 @@ final class SendViewModel: ObservableObject {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty { return nil }
         // A copied payment link is a payment, not prose to pick an address
-        // out of: only text that is one link the scanner would accept, and
-        // whose recipient may be paid alone, suggests that recipient.
+        // out of: only text that is one link the scanner would accept, whose
+        // recipient may be paid alone and that names no merchant request to
+        // fetch first, suggests that recipient.
         if ParsedPaymentURI.textMentionsPaymentLink(trimmed) {
             // Read whole first, as the pasteboard reader does: trimming must
             // not turn a refused link into a payable one.
             let whole = ParsedPaymentURI.parse(paymentString: trimmed)
-            if whole.hasExplicitScheme, !whole.isValidDashPaymentIntent || Self.refusesAddressOnly(whole) {
+            if whole.hasExplicitScheme,
+               !whole.isValidDashPaymentIntent || Self.refusesAddressOnly(whole) || whole.rURL != nil {
                 return nil
             }
             guard let link = ParsedPaymentURI.soleLink(in: trimmed) else { return nil }
             let parsed = ParsedPaymentURI.parse(paymentString: link)
-            guard parsed.isValidDashPaymentIntent, !Self.refusesAddressOnly(parsed),
+            guard parsed.isValidDashPaymentIntent, !Self.refusesAddressOnly(parsed), parsed.rURL == nil,
                   let address = parsed.address, let kind = classify(address) else { return nil }
             return ClipboardSuggestion(address: address, kind: kind)
         }

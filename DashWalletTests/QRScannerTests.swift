@@ -655,7 +655,7 @@ final class QRScannerTests: XCTestCase {
                      "dash:\(address)?label=Shop(1)&req%2Dmemo=hi", "dash:\(address)?label=Shop(1)&amount=abc",
                      "Invoice dash:\(address)?label=Joe Shop&req-memo=hi", "Due:5 DASHdash:\(address)?req-amount=5",
                      "Pay (dash:\(address)?amount=1) or dash:\(address)?req-memo=hi",
-                     "dash: \(address)?req-memo=hi", ".dash:\(address)?req-amount=5..",
+                     "dash: \(address)?req-memo=hi", "pay: \(address)?req-memo=hi", ".dash:\(address)?req-amount=5..",
                      "(bitcoin:\(address)?req-memo=1)"] {
             XCTAssertNil(SendViewModel.detect(in: text), text)
             XCTAssertTrue(ParsedPaymentURI.textMentionsPaymentLink(text), text)
@@ -680,6 +680,18 @@ final class QRScannerTests: XCTestCase {
             XCTAssertNil(SendViewModel.detect(in: request), request)
         }
         XCTAssertEqual(SendViewModel.detect(in: "Send to \(address), thanks")?.address, address)
+        for prose in ["Amount to pay: 1 DASH to \(address)", "Our site moved to https: see \(address)"] {
+            XCTAssertFalse(ParsedPaymentURI.textMentionsPaymentLink(prose), prose)
+            XCTAssertEqual(SendViewModel.detect(in: prose)?.address, address, prose)
+        }
+
+        // A merchant request is tried before its fallback address, so a passive
+        // read offers neither.
+        for text in ["dash:\(address)?r=https%3A%2F%2Fmerchant.example%2Fpr",
+                     "dash:\(address)?amount=1&r=https://merchant.example/pr"] {
+            XCTAssertTrue(ParsedPaymentURI.parse(paymentString: text).isValidDashPaymentIntent, text)
+            XCTAssertNil(SendViewModel.detect(in: text), text)
+        }
     }
 
     /// The receive QR a payer scans, center cutout and logo included, still
