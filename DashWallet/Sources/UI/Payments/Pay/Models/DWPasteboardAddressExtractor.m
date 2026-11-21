@@ -35,12 +35,16 @@ NS_ASSUME_NONNULL_BEGIN
         NSCharacterSet *separatorsSet = [NSCharacterSet alphanumericCharacterSet].invertedSet;
 
         [resultSet addObject:str];
-        // A link that cannot be paid as it stands is not prose: its recipient is not paid alone.
-        if (![DWParsedPaymentURI textCarriesUnpayableLink:str]) {
-            // Links whole, and addresses only from the prose around them.
-            [resultSet addObjectsFromArray:[DWParsedPaymentURI paymentLinkSpansIn:str]];
-            [resultSet addObjectsFromArray:[[DWParsedPaymentURI textOutsideLinks:str]
-                                               componentsSeparatedByCharactersInSet:separatorsSet]];
+        // Text that mentions a payment link is a payment, not prose: only the link itself is
+        // read, whole, and only when the text is that one link.
+        if ([DWParsedPaymentURI textMentionsPaymentLink:str]) {
+            NSString *link = [DWParsedPaymentURI soleLinkIn:str];
+            if (link) {
+                [resultSet addObject:link];
+            }
+        }
+        else {
+            [resultSet addObjectsFromArray:[str componentsSeparatedByCharactersInSet:separatorsSet]];
         }
     }
 
@@ -79,12 +83,16 @@ NS_ASSUME_NONNULL_BEGIN
         NSCharacterSet *separatorsSet = [NSCharacterSet alphanumericCharacterSet].invertedSet;
 
         [resultSet addObject:str];
-        // A link that cannot be paid as it stands is not prose: its recipient is not paid alone.
-        if (![DWParsedPaymentURI textCarriesUnpayableLink:str]) {
-            // Links whole, and addresses only from the prose around them.
-            [resultSet addObjectsFromArray:[DWParsedPaymentURI paymentLinkSpansIn:str]];
-            [resultSet addObjectsFromArray:[[DWParsedPaymentURI textOutsideLinks:str]
-                                               componentsSeparatedByCharactersInSet:separatorsSet]];
+        // Text that mentions a payment link is a payment, not prose: only the link itself is
+        // read, whole, and only when the text is that one link.
+        if ([DWParsedPaymentURI textMentionsPaymentLink:str]) {
+            NSString *link = [DWParsedPaymentURI soleLinkIn:str];
+            if (link) {
+                [resultSet addObject:link];
+            }
+        }
+        else {
+            [resultSet addObjectsFromArray:[str componentsSeparatedByCharactersInSet:separatorsSet]];
         }
     }
 

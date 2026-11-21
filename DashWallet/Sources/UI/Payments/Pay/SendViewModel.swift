@@ -1215,19 +1215,23 @@ final class SendViewModel: ObservableObject {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty { return nil }
         // A copied payment link is a payment, not prose to pick an address
-        // out of: one the scanner would refuse, or whose recipient may not be
-        // paid alone, suggests nothing; otherwise only its parsed recipient.
-        if ParsedPaymentURI.textCarriesUnpayableLink(trimmed) { return nil }
-        for span in ParsedPaymentURI.paymentLinkSpans(in: trimmed) {
-            let parsed = ParsedPaymentURI.parse(paymentString: span)
-            if Self.refusesAddressOnly(parsed) { return nil }
-            if let address = parsed.address, let kind = classify(address) {
-                return ClipboardSuggestion(address: address, kind: kind)
+        // out of: only text that is one link the scanner would accept, and
+        // whose recipient may be paid alone, suggests that recipient.
+        if ParsedPaymentURI.textMentionsPaymentLink(trimmed) {
+            // Read whole first, as the pasteboard reader does: trimming must
+            // not turn a refused link into a payable one.
+            let whole = ParsedPaymentURI.parse(paymentString: trimmed)
+            if whole.hasExplicitScheme, !whole.isValidDashPaymentIntent || Self.refusesAddressOnly(whole) {
+                return nil
             }
+            guard let link = ParsedPaymentURI.soleLink(in: trimmed) else { return nil }
+            let parsed = ParsedPaymentURI.parse(paymentString: link)
+            guard parsed.isValidDashPaymentIntent, !Self.refusesAddressOnly(parsed),
+                  let address = parsed.address, let kind = classify(address) else { return nil }
+            return ClipboardSuggestion(address: address, kind: kind)
         }
 
-        let prose = ParsedPaymentURI.textOutsideLinks(trimmed)
-        for candidate in prose.split(whereSeparator: { !$0.isLetter && !$0.isNumber }) {
+        for candidate in trimmed.split(whereSeparator: { !$0.isLetter && !$0.isNumber }) {
             let word = String(candidate)
             if let kind = classify(word) {
                 return ClipboardSuggestion(address: word, kind: kind)

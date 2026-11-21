@@ -134,36 +134,30 @@ final class ParsedPaymentURI: NSObject {
         scheme == "https" && rURL.map(PaymentProtocolTransport.isSecure) == true
     }
 
-    /// The payment links (`dash:`, `pay:`, `dashwallet:`) in copied text, each a whole span: it
-    /// ends at whitespace or an enclosing bracket or quote, less trailing sentence punctuation.
-    /// Every reader of the clipboard parses these whole and never picks addresses out of them.
-    @objc(paymentLinkSpansIn:)
-    static func paymentLinkSpans(in text: String) -> [String] {
-        let range = NSRange(text.startIndex..., in: text)
-        return linkPattern.matches(in: text, range: range).compactMap { match in
-            Range(match.range, in: text).map { String(text[$0]).trimmingCharacters(in: trailingPunctuation) }
-        }.filter { span in
-            !["dash:", "pay:", "dashwallet:"].contains(span.lowercased())
+    /// Whether copied text mentions a payment link (`dash:`, `pay:`, `dashwallet:`, `bitcoin:`). Such
+    /// text is a payment, not prose: no address is picked out of it, since part of a link would
+    /// pay without what the rest of it required.
+    @objc(textMentionsPaymentLink:)
+    static func textMentionsPaymentLink(_ text: String) -> Bool {
+        text.range(of: #"(?i)(?:dashwallet:|dash:|bitcoin:|pay:\S)"#, options: .regularExpression) != nil
+    }
+
+    /// The payment link copied text is, read whole: whitespace, trailing sentence punctuation and
+    /// one enclosing pair of brackets or quotes aside. nil when the text is anything more.
+    @objc(soleLinkIn:)
+    static func soleLink(in text: String) -> String? {
+        var link = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        while let last = link.unicodeScalars.last, trailingPunctuation.contains(last) { link.removeLast() }
+        if let (open, close) = enclosingPairs.first(where: { link.count > 2 && link.hasPrefix($0.0) && link.hasSuffix($0.1) }) {
+            link = String(link.dropFirst(open.count).dropLast(close.count))
         }
+        guard link.range(of: #"^(?i)(?:dashwallet|dash|pay):\S+$"#, options: .regularExpression) != nil
+        else { return nil }
+        return link
     }
 
-    /// `text` with its payment links taken out, for finding a bare address in prose.
-    @objc(textOutsideLinks:)
-    static func textOutsideLinks(_ text: String) -> String {
-        linkPattern.stringByReplacingMatches(
-            in: text, range: NSRange(text.startIndex..., in: text), withTemplate: " ")
-    }
-
-    /// A payment link in `text` that cannot be paid as it stands, a refused pay wrapper among
-    /// them: no address may then be taken from the text, which would pay the recipient without
-    /// what the link required.
-    @objc(textCarriesUnpayableLink:)
-    static func textCarriesUnpayableLink(_ text: String) -> Bool {
-        paymentLinkSpans(in: text).contains { !parse(paymentString: $0).isValidDashPaymentIntent }
-    }
-
-    private static let linkPattern = try! NSRegularExpression(
-        pattern: #"(?i)(?<![A-Za-z0-9])(?:dashwallet|dash|pay):[^\s<>()\[\]{}"'`]+"#)
+    private static let enclosingPairs = [("(", ")"), ("<", ">"), ("[", "]"), ("{", "}"),
+                                         ("\"", "\""), ("'", "'"), ("`", "`")]
     private static let trailingPunctuation = CharacterSet(charactersIn: ".,;:!?")
 
     /// A merchant request the wallet fetches: one in a `dash:` URI it can pay, or a whole https

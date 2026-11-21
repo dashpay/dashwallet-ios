@@ -458,7 +458,6 @@ final class QRScannerTests: XCTestCase {
             XCTAssertNil(QRScannerViewModel.fallback(afterFailedRequest: parsed), code)
             XCTAssertFalse(parsed.requiresSendScreenRouting, code)
             let input = DWPaymentInputBuilder().paymentInput(withParsedURI: parsed, source: .scanQR)
-            XCTAssertFalse(QRScanResultRouter.requiresSendScreen(input), code)
             XCTAssertNil(SendViewModel.scannedAddress(in: input), code)
 
             for mode in [QRScannerMode.payment, .addressInput(expectsDashAddress: true), .addressInput(expectsDashAddress: false)] {
@@ -633,30 +632,71 @@ final class QRScannerTests: XCTestCase {
     func testARefusedPayLinkYieldsNoAddress() {
         let refused = "dashwallet://pay=\(Self.address)&amount=1&sender=ctx&req-memo=x"
         XCTAssertNil(SendViewModel.detect(in: refused))
-        XCTAssertTrue(ParsedPaymentURI.textCarriesUnpayableLink(refused), "the extractor then adds no pieces")
+        XCTAssertTrue(ParsedPaymentURI.textMentionsPaymentLink(refused), "the extractor then adds no pieces")
+        XCTAssertFalse(ParsedPaymentURI.parse(paymentString: ParsedPaymentURI.soleLink(in: refused) ?? "")
+            .isValidDashPaymentIntent)
         let prose = "Note: pay \(Self.address) please"
         XCTAssertEqual(SendViewModel.detect(in: prose)?.address, Self.address)
-        XCTAssertFalse(ParsedPaymentURI.textCarriesUnpayableLink(prose))
-        XCTAssertFalse(ParsedPaymentURI.textCarriesUnpayableLink("dash:\(Self.address)?amount=1"))
+        XCTAssertFalse(ParsedPaymentURI.textMentionsPaymentLink(prose))
+        XCTAssertFalse(ParsedPaymentURI.textMentionsPaymentLink("Amount to pay: 1 DASH to \(Self.address)"))
     }
 
-    /// Both clipboard readers take a link whole, even inside brackets: a
-    /// refused one yields no address, an addressless merchant request none
-    /// from its metadata, and a valid one next to punctuation its recipient.
+    /// Both clipboard readers take a payment link whole and only when the
+    /// text is that one link: a query may hold brackets, quotes, spaces and
+    /// percent-encoded keys, so any part of a link could pay without what the
+    /// rest of it required. Prose with no link still yields its address.
     func testClipboardReadsDelimitedLinksWhole() {
-        let refused = "dashwallet://pay=\(Self.address)&amount=1&sender=ctx&req-memo=x"
-        for text in ["(\(refused))", "<\(refused)>"] {
+        let address = Self.address
+        let refused = "dashwallet://pay=\(address)&amount=1&sender=ctx&req-memo=x"
+        // A merchant request is fetched whole; its metadata names no recipient.
+        XCTAssertNil(SendViewModel.detect(in: "dash:?r=https://merchant.example/r&label=\(address)"))
+        for text in ["(\(refused))", "<\(refused)>", "see [dash:\(address)?req-amount=1].",
+                     "dash:\(address)?label=Shop(1)&req-memo=hi", "(dash:\(address)?label=a(b)&req-memo=hi)",
+                     "dash:\(address)?label=Shop(1)&req%2Dmemo=hi", "dash:\(address)?label=Shop(1)&amount=abc",
+                     "Invoice dash:\(address)?label=Joe Shop&req-memo=hi", "Due:5 DASHdash:\(address)?req-amount=5",
+                     "Pay (dash:\(address)?amount=1) or dash:\(address)?req-memo=hi",
+                     "dash: \(address)?req-memo=hi", ".dash:\(address)?req-amount=5..",
+                     "(bitcoin:\(address)?req-memo=1)"] {
             XCTAssertNil(SendViewModel.detect(in: text), text)
-            XCTAssertTrue(ParsedPaymentURI.textCarriesUnpayableLink(text), text)
+            XCTAssertTrue(ParsedPaymentURI.textMentionsPaymentLink(text), text)
+            if let link = ParsedPaymentURI.soleLink(in: text) {
+                XCTAssertFalse(ParsedPaymentURI.parse(paymentString: link).isValidDashPaymentIntent, text)
+            }
         }
-        XCTAssertNil(SendViewModel.detect(in: "see [dash:\(Self.address)?req-amount=1]."))
-        XCTAssertNil(SendViewModel.detect(in: "dash:?r=https://merchant.example/r&label=\(Self.address)"))
 
-        let valid = "Pay (dash:\(Self.address)?amount=1)."
-        XCTAssertEqual(ParsedPaymentURI.paymentLinkSpans(in: valid), ["dash:\(Self.address)?amount=1"])
-        XCTAssertFalse(ParsedPaymentURI.textCarriesUnpayableLink(valid))
-        XCTAssertEqual(SendViewModel.detect(in: valid)?.address, Self.address)
-        XCTAssertEqual(SendViewModel.detect(in: "Send to \(Self.address), thanks")?.address, Self.address)
+        // Read whole first: trimming does not make a refused link payable.
+        let unpayable = "dash:\(address)?amount=1.5."
+        XCTAssertFalse(ParsedPaymentURI.parse(paymentString: unpayable).isValidDashPaymentIntent)
+        XCTAssertNil(SendViewModel.detect(in: unpayable))
+
+        for text in ["(dash:\(address)?amount=1).", "dash:\(address)?amount=1", "<dash:\(address)>"] {
+            XCTAssertNotNil(ParsedPaymentURI.soleLink(in: text), text)
+            XCTAssertEqual(SendViewModel.detect(in: text)?.address, address, text)
+        }
+        XCTAssertNil(ParsedPaymentURI.soleLink(in: "Pay (dash:\(address)?amount=1)."))
+        XCTAssertEqual(SendViewModel.detect(in: "Send to \(address), thanks")?.address, address)
+    }
+
+    /// The receive QR a payer scans, center cutout and logo included, still
+    /// decodes to its payload at the sizes the receive screen shows.
+    func testTheReceiveQRStillDecodes() throws {
+        let payload = "dash:\(Self.address)?amount=1.5"
+        let raw = try XCTUnwrap(UIImage.dw_image(withQRCodeData: Data(payload.utf8), color: .black))
+        let detector = try XCTUnwrap(CIDetector(ofType: CIDetectorTypeQRCode, context: nil,
+                                                options: [CIDetectorAccuracy: CIDetectorAccuracyHigh]))
+        for amount: UInt64 in [0, 150_000_000] {
+            let model = DWBaseReceiveModel(amount: amount)
+            let shown = model.qrCodeImage(withRawQRImage: raw, hasAmount: amount > 0)
+            let onWhite = UIGraphicsImageRenderer(size: shown.size).image { context in
+                UIColor.white.setFill()
+                context.fill(CGRect(origin: .zero, size: shown.size))
+                shown.draw(at: .zero)
+            }
+            let cgImage = try XCTUnwrap(onWhite.cgImage)
+            let decoded = detector.features(in: CIImage(cgImage: cgImage))
+                .compactMap { ($0 as? CIQRCodeFeature)?.messageString }
+            XCTAssertEqual(decoded, [payload], "amount \(amount)")
+        }
     }
 
     /// DashSpend's checkout calls no app back, so one that requires it is
@@ -1124,21 +1164,20 @@ final class QRScannerTests: XCTestCase {
         XCTAssertTrue(isInvalid(bare.status), "a bare request URL is not a Dash payment offer")
     }
 
-    /// The Payments screen and Enter Address hand scans to
-    /// `dispatchPaymentInput`, which must send a Platform destination to the
-    /// Send screen and keep a Core address on the classic processor.
-    func testOnlyPlatformDestinationsRequireTheSendScreen() {
+    /// `DWBasePayViewController didScanPaymentInput:` sends a Platform
+    /// destination to the Send screen and keeps a Core address on the
+    /// classic processor.
+    func testOnlyPlatformDestinationsRequireTheSendScreen() throws {
         let (scanner, recorder) = makeScanner(.payment)
         scanner.didDetectCodes(["dash:\(Self.platformAddress)?amount=1.5"])
         guard case .payment(let platformInput) = recorder.results.first else {
             return XCTFail("a Platform destination is a payment")
         }
-        XCTAssertTrue(QRScanResultRouter.requiresSendScreen(platformInput))
-        XCTAssertEqual(platformInput.parsedURI?.amount, 150_000_000)
+        let platform = try XCTUnwrap(platformInput.parsedURI)
+        XCTAssertTrue(platform.requiresSendScreenRouting)
+        XCTAssertEqual(platform.amount, 150_000_000)
 
-        let core = DWPaymentInputBuilder().paymentInput(
-            withParsedURI: ParsedPaymentURI.parse(paymentString: "dash:\(Self.address)"), source: .scanQR)
-        XCTAssertFalse(QRScanResultRouter.requiresSendScreen(core))
+        XCTAssertFalse(ParsedPaymentURI.parse(paymentString: "dash:\(Self.address)").requiresSendScreenRouting)
     }
 
     /// A merchant request whose fetch fails falls back to its embedded
@@ -1150,8 +1189,7 @@ final class QRScannerTests: XCTestCase {
             afterFailedRequest: ParsedPaymentURI.parse(paymentString: "dash:\(Self.platformAddress)?\(request)"))
         XCTAssertEqual(platform?.address, Self.platformAddress)
         XCTAssertNil(platform?.rURL)
-        XCTAssertTrue(QRScanResultRouter.requiresSendScreen(
-            DWPaymentInputBuilder().paymentInput(withParsedURI: platform!, source: .scanQR)))
+        XCTAssertEqual(platform?.requiresSendScreenRouting, true)
 
         let core = QRScannerViewModel.fallback(
             afterFailedRequest: ParsedPaymentURI.parse(paymentString: "dash:\(Self.address)?\(request)"))

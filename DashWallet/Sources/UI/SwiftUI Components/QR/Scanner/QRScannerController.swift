@@ -114,22 +114,3 @@ final class QRScannerController: UIViewController {
         }
     }
 }
-
-extension UIViewController {
-    /// Presents the payment QR scanner. The completion owns dismissal;
-    /// cross-context payloads (contact / invitation QR) are routed by the
-    /// scanner itself. (ObjC call sites go through
-    /// `DWBasePayViewController performScanQRCodeAction` instead.)
-    func presentPaymentScanner(onPaymentInput: @escaping (DWPaymentInput) -> Void) {
-        if presentedViewController is QRScannerController {
-            return
-        }
-
-        let controller = QRScannerController.paymentScanner()
-        controller.onPaymentInput = onPaymentInput
-        controller.onCancel = { [weak self] in
-            self?.dismiss(animated: true)
-        }
-        present(controller, animated: true, completion: nil)
-    }
-}
