@@ -398,7 +398,9 @@ module SchemaRelease
       raise Error, "Invalid fixture path" unless fixture_path == manifest.fetch("fixture_path") && manifest.fetch("fixture_sha256").match?(/\A[0-9a-f]{64}\z/)
       store_bytes = @store.read(fixture_path, commit: commit)
       raise Error, "Fixture digest does not match" unless Digest::SHA256.hexdigest(store_bytes) == manifest.fetch("fixture_sha256")
-      [manifest, path, Digest::SHA256.hexdigest(bytes)]
+      # The last element says whether this snapshot binds the Apple build to
+      # the manifest; the release mirror requires that, the freeze does not.
+      [manifest, path, Digest::SHA256.hexdigest(bytes), !binding.nil?]
     end
 
     def registered?(registry, record, manifest, manifest_hash)
@@ -425,6 +427,12 @@ module SchemaRelease
       # retained record nor a retry of an older release can choose the tip.
       listed = records.map { |record| record["release_id"] }
       newest = records.max_by { |record| AppStoreConnectRelease::MarketingVersion.new(record.fetch("app_version")) }&.fetch("release_id")
+      # A publication that could not be read is missing from the list, and it
+      # may be the newest one. Nothing moves the release branch in such a run.
+      unless failures.empty?
+        newest = nil
+        @out.puts "#{RELEASE_BRANCH} is left where it is in this run: not every listed publication could be read."
+      end
       # Retained publication proofs are obligations even after Apple stops
       # listing a version. Merge them before filtering a manual retry.
       @store.paths("releases/").each do |path|
@@ -437,7 +445,7 @@ module SchemaRelease
       end
       registry = merged_registry
       records.each do |record|
-        manifest, path, hash = evidence(record)
+        manifest, path, hash, bound = evidence(record)
         id = record.fetch("release_id")
         # Both checks raise when this publication contradicts what was merged
         # or observed before. They run ahead of the mirror, so a tag or branch
@@ -455,7 +463,7 @@ module SchemaRelease
           proof = existing
         end
         # The mirror applies on every run, whatever state the schema freeze is in.
-        mirror_release(record, manifest, failures, newest: id == newest, dry_run: dry_run) if listed.include?(id)
+        mirror_release(record, manifest, failures, bound: bound, newest: id == newest, dry_run: dry_run) if listed.include?(id)
         if frozen
           @out.puts "App Store #{record['app_version']} (#{record['build_number']}): freeze merged."
           unless dry_run
@@ -525,16 +533,17 @@ module SchemaRelease
     # The two steps are independent: a tag someone placed elsewhere must not hold the
     # branch back, and a branch that cannot move must not cost the tag. A
     # failure here is reported and never stops the schema freeze.
-    def mirror_release(record, manifest, failures, newest:, dry_run:)
+    def mirror_release(record, manifest, failures, bound:, newest:, dry_run:)
       version = record.fetch("app_version")
       return if AppStoreConnectRelease::MarketingVersion.new(version) <= @mirror_after
       commit = SchemaRelease.sha(manifest.fetch("wallet_sha"))
       label = "App Store #{version} (#{record['build_number']})"
       # The manifest is found by version and build number, which an upload made
       # outside the release workflow could share. Only the binding the workflow
-      # records after its own upload ties this Apple build to that manifest;
-      # `evidence` has already checked that a binding, when present, matches.
-      unless @store.document("apple-builds/#{SchemaRelease.component(record.fetch('build_id'))}.json", optional: true)
+      # records after its own upload ties this Apple build to that manifest.
+      # `bound` comes from the snapshot `evidence` validated, so a binding that
+      # appears later is not accepted unchecked.
+      unless bound
         raise Error, "#{label} has no recorded binding between its Apple build and its build evidence, so the commit it was cut from is not established. No tag or branch was written; record the binding (bind-build) once the build's origin is confirmed."
       end
       id = record["release_id"]

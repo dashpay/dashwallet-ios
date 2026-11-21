@@ -321,6 +321,16 @@ class SchemaReleaseTest < Minitest::Test
     bind("apple20", SchemaRelease.manifest_path(BUNDLE, "9.0.5", "20"))
   end
 
+  def test_unreadable_listed_publication_keeps_the_release_branch_where_it_is
+    pipeline = mirroring
+    add_publication_without_build
+    assert_raises(SchemaRelease::Error) { pipeline.sync }
+    # The readable publication is still tagged; it just cannot be taken for the newest.
+    assert_equal({ "v9.1.0" => WALLET }, @store.github.tags)
+    assert_empty @store.github.fast_forwards
+    assert_includes @output.string, "master is left where it is"
+  end
+
   def test_publication_without_a_recorded_apple_build_binding_writes_no_tag_or_branch
     @unbound = true
     error = assert_raises(SchemaRelease::Error) { mirroring.sync }
