@@ -28,15 +28,15 @@ The App Store observer (`appstore-schema-release.yml`) already runs on a schedul
 
 ## Decision outcome
 
-**Chosen:** option 1, `master` holds only commits the App Store has published, and the App Store observer keeps it there. Option 2 would restrict where TestFlight builds come from, which the team does not want, and it adds a manual step to every release. Option 3 records the commit but gives a hotfix no branch to target. Option 4 leaves the problems in Context as they are.
+**Chosen:** option 1, `master` follows what the App Store has published, moved there by the App Store observer, and holds nothing else except a hotfix on its way to publication. Option 2 would restrict where TestFlight builds come from, which the team does not want, and it adds a manual step to every release. Option 3 records the commit but gives a hotfix no branch to target. Option 4 leaves the problems in Context as they are.
 
 The rules:
 
 - All work lands on `develop`. `master` takes no ordinary pull request.
 - For each publication above 9.1.4 the observer creates the tag `vX.Y.Z` on the build's recorded wallet commit. It never moves an existing tag: one that names another commit is reported and left alone.
-- The observer then advances `master` to that commit with a non-forced update, so only a fast-forward can happen. A commit already on `master` needs nothing. A commit that does not descend from `master` is reported and nothing is moved; the repair is a pull request that merges it into `master` with a merge commit.
-- A hotfix branches from `master`, merges into `master` by pull request, and is built for release from `master`.
-- When `master` holds commits that `develop` lacks, the observer opens a pull request from `master` into `develop`. It is merged with a merge commit, never a squash. A squash carries the changes without the history, and the next release from `develop` would then not descend from `master`.
+- The observer then advances `master` to that commit with a non-forced update, so only a fast-forward can happen. A commit already on `master` needs nothing. A commit that does not descend from `master` is reported and nothing is moved; someone finds out how the two parted before anything is merged.
+- A hotfix branches from `master`, merges into `master` by pull request, and is built for release from `master`. From that merge until the hotfix is published, `master` is ahead of the App Store by the hotfix; the observer says so in its run summary and does not treat it as an error.
+- When `master` descends from `v9.1.3` and holds commits that `develop` lacks, the observer opens a pull request from `master` into `develop`, whether or not a publication could be mirrored in that run. This can happen before the hotfix is published; `develop` wants the fix either way. It is merged with a merge commit, never a squash. A squash carries the changes without the history, and the next release from `develop` would then not descend from `master`.
 - The observer runs every four hours, so `master` and the tag follow a publication by up to four hours.
 - Publications up to 9.1.4 are not mirrored. `master` starts at `v9.1.3`, the last release that lies on `develop`. The old `master` stays reachable under the tag `archive/master-8.7.0`.
 
@@ -48,9 +48,10 @@ The rules:
 - A mistake cannot overwrite history: the branch update is never forced and tags are never moved.
 
 **Negative**
+- Between a hotfix merge and its publication `master` is not exactly the published app. Building hotfixes from a side branch and letting the observer move `master` afterwards would avoid that, at the cost of a hotfix pull request with no branch to merge into; the team chose the simpler flow.
 - `master` does not gate a release. A broken `develop` still has to pass regression before an external build.
 - The fast-forward depends on `develop` descending from `master`. One squashed or skipped merge of `master` back into `develop` makes the next publication fail to mirror until someone repairs it by hand.
-- Until the first publication after 9.1.4, `master` is one release behind the App Store, and a hotfix for 9.1.4 starts from its tag.
+- Until the first publication after 9.1.4, `master` is one release behind the App Store, and a hotfix for 9.1.4 starts from the tag `v9.1.4`.
 - The observer's token needs write access to `master` and to pull requests. A branch rule on `master` must exempt it.
 
 **Neutral**

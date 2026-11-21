@@ -19,7 +19,8 @@ class SchemaReleaseTest < Minitest::Test
       @dispatches = []
       @retained_sources = []
       # The release mirror: tags by name, and how a head stands against a base.
-      @tags, @comparisons, @fast_forwards, @pulls, @open_pull = {}, {}, [], [], false
+      # By default the release branch is still the pre-mirror line.
+      @tags, @comparisons, @fast_forwards, @pulls, @open_pull = {}, { ["v9.1.3", "master"] => "diverged" }, [], [], false
     end
     def tag_commit(_repo, name)
       @tags[name]
@@ -183,10 +184,16 @@ class SchemaReleaseTest < Minitest::Test
   # The release mirror. 9.1.0 is below the real cutoff, so these tests lower it.
   WALLET = "a" * 40
 
-  def mirroring(release: "ahead", development: "behind")
+  # `release`: the published commit against master. `development`: master (or
+  # the tip a dry run would give it) against develop. `cutover`: the same tip
+  # against the tag the mirror starts from.
+  def mirroring(release: "ahead", development: "behind", cutover: "ahead")
     github = @store.github
     github.comparisons[["master", WALLET]] = release
-    github.comparisons[["develop", "master"]] = development
+    ["master", WALLET].each do |tip|
+      github.comparisons[["develop", tip]] = development
+      github.comparisons[["v9.1.3", tip]] = cutover
+    end
     @output = StringIO.new
     SchemaRelease::Pipeline.new(store: @store, apple: @apple, bundle_id: BUNDLE, output: @output, mirror_after: "9.0.0")
   end
@@ -238,12 +245,40 @@ class SchemaReleaseTest < Minitest::Test
   def test_diverged_publication_is_tagged_and_reported_without_moving_the_branch
     error = assert_raises(SchemaRelease::Error) { mirroring(release: "diverged", development: "diverged").sync }
     assert_includes error.message, "does not descend from master"
+    refute_includes error.message, "with a merge commit"
     assert_equal({ "v9.1.0" => WALLET }, @store.github.tags)
     assert_empty @store.github.fast_forwards
-    # Nothing above the cutoff is on the release branch yet, so whatever else
-    # it holds is not offered to develop.
-    assert_empty @store.github.pulls
     assert_equal [["new", @store.head]], @store.github.dispatches
+    # A publication that cannot be mirrored does not hide a hotfix that
+    # develop still lacks.
+    assert_equal 1, @store.github.pulls.length
+  end
+
+  def test_release_branch_from_before_the_cutover_is_never_offered_to_develop
+    assert_raises(SchemaRelease::Error) { mirroring(release: "diverged", development: "diverged", cutover: "diverged").sync }
+    assert_empty @store.github.pulls
+    assert_empty @store.github.fast_forwards
+  end
+
+  def test_changed_publication_evidence_stops_before_any_tag_or_branch_write
+    mirroring.sync
+    github = @store.github
+    github.tags.clear
+    github.fast_forwards.clear
+    @apple.builds["new"] = { "id" => "apple22", "attributes" => { "version" => "22" } }
+    @store.files[SchemaRelease.manifest_path(BUNDLE, "9.1.0", "22")] =
+      SchemaRelease.json(@manifest.merge("build_number" => "22", "wallet_sha" => "f" * 40))
+    error = assert_raises(SchemaRelease::Error) { mirroring.sync }
+    assert_includes error.message, "Published release evidence changed"
+    assert_empty github.tags
+    assert_empty github.fast_forwards
+  end
+
+  def test_newest_publication_behind_the_release_branch_is_said_to_leave_it_ahead_of_the_app_store
+    @store.github.tags["v9.1.0"] = WALLET
+    mirroring(release: "behind").sync
+    assert_includes @output.string, "commits after it that the App Store has not published"
+    assert_empty @store.github.fast_forwards
   end
 
   def test_hotfix_on_the_release_branch_is_offered_back_to_develop_once
@@ -259,7 +294,10 @@ class SchemaReleaseTest < Minitest::Test
   end
 
   def test_mirror_dry_run_reports_and_changes_nothing
-    mirroring(development: "ahead").sync(dry_run: true)
+    pipeline = mirroring(development: "ahead")
+    # Today's master has nothing develop lacks; the tip the run would give it does.
+    @store.github.comparisons[["develop", "master"]] = "behind"
+    pipeline.sync(dry_run: true)
     github = @store.github
     assert_empty github.tags
     assert_empty github.fast_forwards
@@ -906,6 +944,23 @@ class SchemaGitHubRequestTest < Minitest::Test
     end
     assert_equal ["/repos/dashpay/dashwallet-ios/git/ref/tags/v9.2.0", "/repos/dashpay/dashwallet-ios/git/tags/#{'e' * 40}"],
                  @requests.map(&:path)
+  end
+
+  def test_tag_commit_follows_a_tag_that_names_another_tag
+    inner = JSON.generate({ "object" => { "type" => "tag", "sha" => "f" * 40 } })
+    commit = JSON.generate({ "object" => { "type" => "commit", "sha" => "a" * 40 } })
+    with_responses([Response.new("200", JSON.generate(release_tag("tag", "e" * 40))),
+                    Response.new("200", inner), Response.new("200", commit)]) do
+      assert_equal "a" * 40, @api.tag_commit("dashpay/dashwallet-ios", "v9.2.0")
+    end
+  end
+
+  def test_malformed_json_is_an_error_that_does_not_carry_the_body
+    with_responses([Response.new("200", "<html>private-test-token</html>")]) do
+      error = assert_raises(SchemaRelease::Error) { @api.request("get", "repos/example/test") }
+      refute_kind_of JSON::ParserError, error
+      refute_includes error.message, "private-test-token"
+    end
   end
 
   def test_create_tag_race_returns_the_commit_the_tag_names_without_moving_it
