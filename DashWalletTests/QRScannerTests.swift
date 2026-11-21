@@ -456,6 +456,10 @@ final class QRScannerTests: XCTestCase {
             XCTAssertFalse(parsed.isValidDashPaymentIntent, code)
             XCTAssertFalse(QRScannerViewModel.isOfferablePayment(parsed), code)
             XCTAssertNil(QRScannerViewModel.fallback(afterFailedRequest: parsed), code)
+            XCTAssertFalse(parsed.requiresSendScreenRouting, code)
+            let input = DWPaymentInputBuilder().paymentInput(withParsedURI: parsed, source: .scanQR)
+            XCTAssertFalse(QRScanResultRouter.requiresSendScreen(input), code)
+            XCTAssertNil(SendViewModel.scannedAddress(in: input), code)
 
             for mode in [QRScannerMode.payment, .addressInput(expectsDashAddress: true), .addressInput(expectsDashAddress: false)] {
                 let (scanner, recorder) = makeScanner(mode)
@@ -487,7 +491,11 @@ final class QRScannerTests: XCTestCase {
                 return XCTFail("an understood or optional parameter still unwraps: \(code)")
             }
             XCTAssertEqual(address, Self.address, code)
+            let input = DWPaymentInputBuilder().paymentInput(withParsedURI: parsed, source: .scanQR)
+            XCTAssertEqual(SendViewModel.scannedAddress(in: input), Self.address, code)
         }
+        let optional = ParsedPaymentURI.parse(paymentString: "dash:\(Self.platformAddress)?memo=hi")
+        XCTAssertTrue(optional.requiresSendScreenRouting)
     }
 
     /// A paste or an NFC tag with a requirement the wallet can't meet is
@@ -589,16 +597,24 @@ final class QRScannerTests: XCTestCase {
         XCTAssertEqual(send.dashDuffsUnsigned, 200_000_000)
     }
 
-    /// Max takes the amount over from a scanned invoice; once Max is cleared,
-    /// what is sent is what the editor shows. The Core drain's estimate is
-    /// applied through the same path.
+    /// Max, the Core drain's estimate included, takes the amount over from a
+    /// scanned invoice. Once a funding change drops the selection, what is
+    /// sent is exactly the estimate the editor still shows.
     func testMaxReplacesAnInvoiceAmount() {
-        let send = SendViewModel(contactLookup: { _ in nil })
-        send.prefill(address: Self.address, amountDuffs: 123_456_789, requiresAmount: true)
-        send.applyMax(duffs: 5_000_000)
-        send.addressText = ""
-        XCTAssertFalse(send.isMaxSelected)
-        XCTAssertNotEqual(send.dashDuffsUnsigned, 123_456_789)
+        // Large enough for a locale formatter to group: "1,234.56789012".
+        let estimate: UInt64 = 123_456_789_012
+        for apply in [{ (send: SendViewModel) in send.applyMax(duffs: estimate) },
+                      { (send: SendViewModel) in send.applyCoreDrainEstimate(estimate) }] {
+            let send = SendViewModel(contactLookup: { _ in nil })
+            send.prefill(address: Self.address, amountDuffs: 123_456_789, requiresAmount: true)
+            apply(send)
+            XCTAssertTrue(send.isMaxSelected)
+            XCTAssertEqual(send.amountText, SendViewModel.editorText(duffs: estimate))
+            send.source = send.source == .core ? .platform : .core
+            XCTAssertFalse(send.isMaxSelected)
+            XCTAssertEqual(send.amountText, SendViewModel.editorText(duffs: estimate))
+            XCTAssertEqual(send.dashDuffsUnsigned, estimate)
+        }
     }
 
     /// A pay wrapper that names its sender twice, in either order, is refused:

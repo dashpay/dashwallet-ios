@@ -105,10 +105,19 @@ final class ParsedPaymentURI: NSObject {
     /// the current network: base58 Core, DIP-0018 bech32m Platform, or
     /// shielded. The QR scanner's accept gate.
     @objc let isAddressPayableForCurrentNetwork: Bool
-    /// True when the address is a bech32m Platform/Shielded destination —
-    /// those can't ride the classic L1 payment processor, so scan entry
-    /// points route them into the Send screen instead.
+    /// True when the address is a bech32m Platform/Shielded destination that
+    /// may be paid on its own — those can't ride the classic L1 payment
+    /// processor, so scan entry points route them into the Send screen
+    /// instead. A link that refuses its address alone stays with the
+    /// processor, which says why.
     @objc let requiresSendScreenRouting: Bool
+
+    /// A link whose address may not fill a form by itself: a requirement the
+    /// wallet cannot meet, an unpayable amount, or a merchant request it must
+    /// fetch.
+    @objc var refusesAddressAlone: Bool {
+        hasUnsupportedRequirement || hasInvalidAmount || requiresRequest
+    }
 
     /// Mirrors `DSPaymentRequest.isValidAsNonDashpayPaymentRequest` (dash-only arm; the `bitcoin:`
     /// arms are compiled out under `SHAPESHIFT_ENABLED`, undefined in this app), widened to accept
@@ -242,6 +251,8 @@ final class ParsedPaymentURI: NSObject {
         let addressValid = uri.address?.isValidDashAddressForCurrentNetwork ?? false
         let classified = uri.address.flatMap(DashAddressClassifier.classify)
         let isBech32Destination = !addressValid && classified != nil
+        let hasUnsupportedRequirement = uri.hasUnsupportedRequirement
+            || (!honorsCallback && uri.requiredFields.contains("sender"))
 
         return ParsedPaymentURI(rawString: raw,
                                 scheme: uri.scheme,
@@ -253,8 +264,7 @@ final class ParsedPaymentURI: NSObject {
                                 rURL: uri.r,
                                 requiresRequest: uri.requiredFields.contains("r"),
                                 requiresAmount: uri.requiredFields.contains("amount"),
-                                hasUnsupportedRequirement: uri.hasUnsupportedRequirement
-                                    || (!honorsCallback && uri.requiredFields.contains("sender")),
+                                hasUnsupportedRequirement: hasUnsupportedRequirement,
                                 callbackScheme: uri.callbackScheme,
                                 dashpayUsername: uri.dashpayUsername,
                                 fiatCurrencyCode: uri.fiatCurrencyCode,
@@ -262,7 +272,8 @@ final class ParsedPaymentURI: NSObject {
                                 hasExplicitScheme: uri.kind != .bareAddress,
                                 isAddressValidForCurrentNetwork: addressValid,
                                 isAddressPayableForCurrentNetwork: addressValid || classified != nil,
-                                requiresSendScreenRouting: isBech32Destination)
+                                requiresSendScreenRouting: isBech32Destination && !hasUnsupportedRequirement
+                                    && !uri.hasInvalidAmount && !uri.requiredFields.contains("r"))
     }
 
     /// The `dash:` URI that `DWURLParser`, the deep-link router, rewrites a `dashwallet://pay=…`

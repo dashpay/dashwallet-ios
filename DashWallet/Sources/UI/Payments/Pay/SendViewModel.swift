@@ -235,12 +235,7 @@ final class SendViewModel: ObservableObject {
             return InternalTransferViewModel.coreDrainInsufficientFundsMessage(
                 coreSpendableDuffs: self.coreSpendableDuffs, coreBalanceDuffs: self.coreBalanceDuffs)
         },
-        applyEstimate: { [weak self] duffs in
-            guard let self else { return }
-            self.isApplyingMax = true
-            self.applyMaxAmountText(duffs ?? 0)
-            self.isApplyingMax = false
-        },
+        applyEstimate: { [weak self] duffs in self?.applyCoreDrainEstimate(duffs) },
         onContextChanged: { [weak self] in
             guard let self else { return }
             self.clearShieldedMaxSelection()
@@ -1244,7 +1239,7 @@ final class SendViewModel: ObservableObject {
     /// A payment URI whose address may not be paid on its own: an unmet or
     /// unknown requirement, an unpayable amount, a required request or amount.
     static func refusesAddressOnly(_ parsed: ParsedPaymentURI) -> Bool {
-        parsed.hasUnsupportedRequirement || parsed.hasInvalidAmount || parsed.requiresRequest || parsed.requiresAmount
+        parsed.refusesAddressAlone || parsed.requiresAmount
     }
 
     /// The address a scanned input would put in the address field, or nil for
@@ -1262,6 +1257,9 @@ final class SendViewModel: ObservableObject {
         // classify as an address would otherwise become the destination, and
         // the form would pay it INSTEAD of the confirmed payment output.
         guard paymentInput.bip70Confirmation == nil else { return nil }
+        // A required amount is prefilled; any other requirement this form
+        // cannot meet fills nothing.
+        if paymentInput.parsedURI?.refusesAddressAlone == true { return nil }
         if let address = paymentInput.parsedURI?.address, !address.isEmpty {
             return address
         }
@@ -1900,8 +1898,13 @@ final class SendViewModel: ObservableObject {
 
     var isMaxSelected: Bool { maxAmountDuffs != nil }
 
-    /// Keep the selected Max amount exact in duffs while rendering either
-    /// DASH or an approximate two-decimal fiat value.
+    /// The Core drain's estimate, applied as the Max amount.
+    func applyCoreDrainEstimate(_ duffs: UInt64?) {
+        isApplyingMax = true
+        defer { isApplyingMax = false }
+        applyMaxAmountText(duffs ?? 0)
+    }
+
     /// An exact amount as editor text in `unit`: the DASH amount itself, or
     /// its two-decimal fiat reading. nil without an exchange rate.
     static func exactAmountText(_ duffs: UInt64, in unit: InternalTransferUnit) -> String? {
@@ -1925,19 +1928,13 @@ final class SendViewModel: ObservableObject {
             return
         }
 
-        maxAmountDuffs = duffs
-        switch unit {
-        case .dash:
-            amountText = duffs.formattedDashAmountWithoutCurrencySymbol
-        case .fiat:
-            let dashDecimal = duffs.dashAmount
-            if let fiat = try? CurrencyExchanger.shared.convertDash(amount: dashDecimal, to: App.fiatCurrency) {
-                amountText = InternalTransferViewModel.formatTyped(fiat, fractionDigits: 2)
-            } else {
-                maxAmountDuffs = nil
-                amountText = "0"
-            }
+        guard let text = Self.exactAmountText(duffs, in: unit) else {
+            maxAmountDuffs = nil
+            amountText = "0"
+            return
         }
+        maxAmountDuffs = duffs
+        amountText = text
     }
 
     private func clearShieldedMaxSelection() {
