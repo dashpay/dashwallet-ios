@@ -135,14 +135,15 @@ final class ParsedPaymentURI: NSObject {
     }
 
     /// Whether copied text mentions a payment link (`dash:`, `pay:`, `dashwallet:`, `bitcoin:`), a
-    /// web URL, or an address-like word followed by a query (`?` or, as `BIP70URI` also reads it,
-    /// `&`), however the link around it is written.
+    /// web URL, an address-like word followed by a query, or a query anywhere (`?` or, as
+    /// `BIP70URI` also reads it, `&`, directly followed by a key), however the link around it is
+    /// written and whether or not a recipient precedes the query.
     /// Such text is a payment, not prose: no address is picked out of it, since part of a link would
     /// pay without what the rest of it required, and an address inside a URL, a merchant request's
     /// among them, is a reference, not the payee.
     @objc(textMentionsPaymentLink:)
     static func textMentionsPaymentLink(_ text: String) -> Bool {
-        text.range(of: #"(?i)(?:dashwallet:|dash:|bitcoin:|pay:\S|^[\s(<\[{"'`]*pay:|https?://\S|(?<![a-z0-9])[a-z0-9]{20,}+[?&]\S)"#,
+        text.range(of: #"(?i)(?:dashwallet:|dash:|bitcoin:|pay:\S|^[\s(<\[{"'`]*pay:|https?://\S|(?<![a-z0-9])[a-z0-9]{20,}+[?&]\S|[?&][a-z%])"#,
                    options: .regularExpression) != nil
     }
 
