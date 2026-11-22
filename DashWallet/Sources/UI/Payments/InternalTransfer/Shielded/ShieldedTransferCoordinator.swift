@@ -2413,6 +2413,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         switch error {
         case PlatformAddressSyncCoordinator.SendError.coordinatorNotReady,
              PlatformAddressSyncCoordinator.SendError.noFundedAddress,
+             PlatformAddressSyncCoordinator.SendError.notSubmitted,
              PlatformWalletError.shieldedNoRecordedAnchor,
              PlatformWalletError.shieldedBroadcastFailed,
              PlatformWalletError.shieldedInsufficientBalance:

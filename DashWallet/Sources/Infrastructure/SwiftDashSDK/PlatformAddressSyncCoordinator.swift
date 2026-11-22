@@ -853,19 +853,21 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
               let network = runningNetwork
         else { throw SendError.coordinatorNotReady }
         let context = container.mainContext
-        let senderRow = try highestBalanceRow(context: context, walletId: walletId)
-
-        let headroom: UInt64
-        if let feeHeadroomCredits {
-            headroom = feeHeadroomCredits
-        } else {
-            headroom = try await addressWallet
-                .preflightWithdrawal(accountIndex: senderRow.accountIndex)
-                .estimatedFee
+        let senderRow = try await Self.beforeSubmission {
+            let senderRow = try highestBalanceRow(context: context, walletId: walletId)
+            let headroom: UInt64
+            if let feeHeadroomCredits {
+                headroom = feeHeadroomCredits
+            } else {
+                headroom = try await addressWallet
+                    .preflightWithdrawal(accountIndex: senderRow.accountIndex)
+                    .estimatedFee
+            }
+            guard senderRow.balance >= headroom,
+                  amountCredits <= senderRow.balance - headroom
+            else { throw SendError.noFundedAddress }
+            return senderRow
         }
-        guard senderRow.balance >= headroom,
-              amountCredits <= senderRow.balance - headroom
-        else { throw SendError.noFundedAddress }
 
         let signer = KeychainSigner(modelContainer: container, network: network)
         let input = ManagedPlatformAddressWallet.WithdrawalInput(
@@ -884,6 +886,20 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
         applyUpdatedBalances(updated, context: context)
         Task { await self.syncNow() }
+    }
+
+    /// Runs the reads in front of a withdrawal's SDK call. A failure there
+    /// submitted nothing, which a `SendError` already says; any other error
+    /// is wrapped in `notSubmitted` so the caller can tell it from a failure
+    /// of the submission itself.
+    static func beforeSubmission<T>(_ body: () async throws -> T) async throws -> T {
+        do {
+            return try await body()
+        } catch let error as SendError {
+            throw error
+        } catch {
+            throw SendError.notSubmitted(error)
+        }
     }
 
     /// Fund the wallet's own Platform balance from the Core L1 balance via an
@@ -2007,9 +2023,13 @@ extension PlatformAddressSyncCoordinator {
         case invalidAmount
         case mnemonicUnavailable
         case keyDecodeFailed(String)
+        /// A read before the SDK call failed: nothing was submitted.
+        case notSubmitted(Error)
 
         public var errorDescription: String? {
             switch self {
+            case .notSubmitted(let underlying):
+                return underlying.localizedDescription
             case .coordinatorNotReady:
                 return String(
                     localized: "Platform sync is not running. Open Sync Info → Platform Sync Status to start it.",

@@ -431,6 +431,7 @@ final class DashPayWithdrawalStore {
     func files(ofWallet walletId: Data) throws -> [URL] {
         lock.lock()
         defer { lock.unlock() }
+        try sweepLeftovers()
         return try walletFiles(walletId)
     }
 
@@ -441,12 +442,12 @@ final class DashPayWithdrawalStore {
     /// All or nothing across every wallet id given — a logical wallet has one
     /// per network: their files move into one staging directory that still
     /// reads as the journal, which is then retired in one rename. A failure
-    /// part way leaves every record counted, here or there.
+    /// before that rename leaves every record counted, here or there; one
+    /// after it fails every read until a sweep finishes the deletion.
     func clearForWallets(walletIds: [Data]) throws {
         lock.lock()
         defer { lock.unlock() }
-        try sweepRetired(in: directory)
-        try sweepRetired(in: directory.deletingLastPathComponent())
+        try sweepLeftovers()
         let walletHexes = Set(walletIds.map(Self.hex))
         // Records an earlier, interrupted clear staged first: a live file of
         // the same name was written after it, from its contents, so it is
@@ -490,9 +491,11 @@ final class DashPayWithdrawalStore {
     }
 
     /// Renames `url` out of the journal — the one step that drops its
-    /// records — then deletes it. A deletion that fails renames what is left
-    /// back, so the records still read and the clear or wipe throws; only a
-    /// copy a crash left behind is found by the next sweep.
+    /// records, all at once — then deletes it. A deletion that fails, maybe
+    /// part way, throws and leaves the rest where it is: renamed back, the
+    /// records it had already deleted would be gone while the others still
+    /// counted. Until a sweep deletes it, every read fails (`sweepLeftovers`),
+    /// which locks every contact payment.
     /// `skippingMissing` skips a `url` that was never created; a deletion
     /// failing with "no such file" still throws.
     private func retire(_ url: URL, in parent: URL, skippingMissing: Bool = false) throws {
@@ -503,12 +506,15 @@ final class DashPayWithdrawalStore {
         } catch CocoaError.fileNoSuchFile where skippingMissing {
             return
         }
-        do {
-            try removeItem(retired)
-        } catch {
-            try FileManager.default.moveItem(at: retired, to: url)
-            throw error
-        }
+        try removeItem(retired)
+    }
+
+    /// Deletes what a failed or interrupted retire left, throwing while any
+    /// of it can't be: it may hold the rest of a clear that dropped some
+    /// records, so the journal can't be read as complete until it is gone.
+    private func sweepLeftovers() throws {
+        try sweepRetired(in: directory)
+        try sweepRetired(in: directory.deletingLastPathComponent())
     }
 
     /// Throws when a leftover cannot be deleted, or `parent` cannot be
@@ -580,6 +586,7 @@ final class DashPayWithdrawalStore {
     /// lock contact payments rather than read as empty. Nor is corrupt
     /// history overwritten with an empty one.
     private func load(scope: Scope) throws -> [Entry] {
+        try sweepLeftovers()
         if let data = try read(fileURL(scope: scope)) {
             return try JSONDecoder().decode([Entry].self, from: data)
         }

@@ -326,7 +326,7 @@ extension SyncingActivityMonitor {
             // window (progress.rs — overall is Synced only while ALL managers
             // are simultaneously Synced). WaitForEvents is also the pre-start
             // default, so disambiguate on progress: fully caught up → done.
-            if sdkProgress >= 0.999 {
+            if sdkState.isCaughtUp(progress: sdkProgress) {
                 mapped = .syncDone
             } else {
                 mapped = (state == .syncing) ? .syncing : .unknown

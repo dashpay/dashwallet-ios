@@ -134,13 +134,14 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
         XCTAssertThrowsError(try nested.resetForWipe())
     }
 
-    /// A deletion that fails leaves the records where they are read, and the
-    /// clear or wipe throws, so neither reports success while they survive.
-    func testFailedDeletionKeepsRecordsReadableAndThrows() throws {
+    /// A deletion that fails throws, so neither a clear nor a wipe reports
+    /// success while records survive, and every read fails until a sweep
+    /// finishes it: the records it dropped are dropped all at once.
+    func testFailedDeletionFailsEveryReadUntilASweepFinishesIt() throws {
         struct RemovalFailed: Error {}
         let journal = directory.appendingPathComponent("journal")
         let failing = DashPayWithdrawalStore(directory: journal, removeItem: { _ in throw RemovalFailed() })
-        let entry = try failing.begin(
+        _ = try failing.begin(
             scope: scope, contactIdentityId: contact, address: "yAddress",
             amountDuffs: 1_000, source: .shielded)
         let since = Date.distantPast
@@ -148,19 +149,51 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
         XCTAssertThrowsError(try failing.clearForWallet(walletId: scope.walletId)) {
             XCTAssertTrue($0 is RemovalFailed, "\($0)")
         }
-        XCTAssertEqual(try failing.entries(scope: scope, contactIdentityId: contact), [entry])
-        XCTAssertTrue(try failing.hasUnresolvedEntry(scope: scope, contactIdentityId: contact, since: since))
-
+        XCTAssertThrowsError(try failing.entries(scope: scope, contactIdentityId: contact))
+        XCTAssertThrowsError(try failing.hasUnresolvedEntry(scope: scope, contactIdentityId: contact, since: since))
+        XCTAssertThrowsError(try failing.files(ofWallet: scope.walletId))
+        XCTAssertThrowsError(try failing.begin(
+            scope: scope, contactIdentityId: contact, address: "yAddress",
+            amountDuffs: 1_000, source: .shielded), "nor can a new attempt start")
         XCTAssertThrowsError(try failing.resetForWipe()) {
             XCTAssertTrue($0 is RemovalFailed, "\($0)")
         }
-        XCTAssertEqual(try failing.entries(scope: scope, contactIdentityId: contact), [entry])
-        let leftovers = try FileManager.default.contentsOfDirectory(atPath: directory.path)
-        XCTAssertEqual(leftovers, ["journal"])
+        XCTAssertThrowsError(try failing.entries(scope: scope, contactIdentityId: contact))
 
         let working = DashPayWithdrawalStore(directory: journal)
-        try working.resetForWipe()
         XCTAssertTrue(try working.entries(scope: scope, contactIdentityId: contact).isEmpty)
+        XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: directory.path), [])
+    }
+
+    /// A deletion that removes some records before it fails leaves none of
+    /// the cleared wallet's records reading as gone while another still
+    /// counts: every read fails until the rest is deleted.
+    func testDeletionFailingPartWayDropsNoRecordAlone() throws {
+        struct RemovalFailed: Error {}
+        let journal = directory.appendingPathComponent("journal")
+        let partial = DashPayWithdrawalStore(directory: journal, removeItem: { url in
+            let children = (try? FileManager.default.contentsOfDirectory(
+                at: url, includingPropertiesForKeys: nil)) ?? []
+            if let first = children.min(by: { $0.lastPathComponent < $1.lastPathComponent }) {
+                try FileManager.default.removeItem(at: first)
+            }
+            throw RemovalFailed()
+        })
+        let otherOwner = DashPayWithdrawalStore.Scope(
+            networkRaw: scope.networkRaw, walletId: scope.walletId, ownerIdentityId: Data(repeating: 3, count: 32))
+        for owner in [scope, otherOwner] {
+            _ = try partial.begin(
+                scope: owner, contactIdentityId: contact, address: "yAddress",
+                amountDuffs: 1_000, source: .platform)
+        }
+
+        XCTAssertThrowsError(try partial.clearForWallet(walletId: scope.walletId))
+        for owner in [scope, otherOwner] {
+            XCTAssertThrowsError(try partial.lockState(
+                scope: owner, contactIdentityId: contact, since: .distantPast))
+        }
+        XCTAssertTrue(try DashPayWithdrawalStore(directory: journal)
+            .entries(scope: otherOwner, contactIdentityId: contact).isEmpty)
     }
 
     /// A deletion failing with "no such file" is still a failure, not a
@@ -169,12 +202,12 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
         let journal = directory.appendingPathComponent("journal")
         let failing = DashPayWithdrawalStore(
             directory: journal, removeItem: { _ in throw CocoaError(.fileNoSuchFile) })
-        let entry = try failing.begin(
+        _ = try failing.begin(
             scope: scope, contactIdentityId: contact, address: "yAddress",
             amountDuffs: 1_000, source: .shielded)
 
         XCTAssertThrowsError(try failing.resetForWipe())
-        XCTAssertEqual(try failing.entries(scope: scope, contactIdentityId: contact), [entry])
+        XCTAssertThrowsError(try failing.entries(scope: scope, contactIdentityId: contact))
     }
 
     /// A retired copy the sweep cannot delete fails the clear and the wipe:
@@ -332,6 +365,26 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
         XCTAssertEqual(read.payments.count, 1)
     }
 
+    /// A history read without the identity, store or wallet it goes through
+    /// is incomplete: only a lookup that ran can show there were no payments.
+    @MainActor
+    func testAHistoryWithoutItsContextIsIncomplete() throws {
+        let config = ModelConfiguration(schema: DashModelContainer.schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
+        let container = try ModelContainer(for: DashModelContainer.schema, configurations: [config])
+        let service = SwiftDashSDKContactsService.shared
+        let owner = scope.ownerIdentityId
+        XCTAssertTrue(service.paymentHistory(
+            with: contact, ownerId: nil, modelContainer: container, walletId: scope.walletId).isIncomplete)
+        XCTAssertTrue(service.paymentHistory(
+            with: contact, ownerId: owner, modelContainer: nil, walletId: scope.walletId).isIncomplete)
+        XCTAssertTrue(service.paymentHistory(
+            with: contact, ownerId: owner, modelContainer: container, walletId: nil).isIncomplete)
+        let read = service.paymentHistory(
+            with: contact, ownerId: owner, modelContainer: container, walletId: scope.walletId)
+        XCTAssertFalse(read.isIncomplete)
+        XCTAssertTrue(read.payments.isEmpty)
+    }
+
     /// Pay again releases only the active sender's attempts: a captured
     /// wallet that is no longer active is refused before the journal changes.
     @MainActor
@@ -342,26 +395,43 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
         XCTAssertThrowsError(try WalletSendService.shared.releaseAgedContactPayments(recipient))
     }
 
-    /// Only a tip seen synced with a connected peer this session counts: a
-    /// persisted height, or one still catching up, neither starts nor ends a
-    /// lock.
-    func testOnlyALiveSyncedTipCounts() throws {
-        func live(_ state: SPVSyncState, peer: Bool, _ current: UInt32, previous: UInt32? = nil) -> UInt32? {
+    /// Only a tip from a tick that finds the client caught up with a peer
+    /// connected counts: `.synced`, or the steady `.waitForEvents` at full
+    /// progress, which never needs a transient `.synced` tick. An earlier tip
+    /// is not carried into a later catch-up, so an attempt begun then is left
+    /// unstamped and counts from the next caught-up tip.
+    func testOnlyACurrentCaughtUpTipCounts() throws {
+        func live(
+            _ state: SPVSyncState, progress: Double = 1, peer: Bool = true,
+            _ current: UInt32, target: UInt32? = nil
+        ) -> UInt32? {
             SwiftDashSDKSPVCoordinator.liveSyncedTip(
-                state: state, hasConnectedPeer: peer, headersCurrent: current, previous: previous)
+                state: state, progress: progress, hasConnectedPeer: peer,
+                headersCurrent: current, headersTarget: target ?? current)
         }
         XCTAssertNil(live(.synced, peer: false, Self.agedTip), "persisted heights before any peer answers")
-        XCTAssertNil(live(.syncing, peer: true, Self.agedTip), "still catching up")
-        XCTAssertNil(live(.waitingForConnections, peer: false, Self.agedTip))
-        XCTAssertEqual(live(.synced, peer: true, Self.agedTip), Self.agedTip)
-        XCTAssertEqual(live(.syncing, peer: true, Self.agedTip + 5, previous: Self.agedTip), Self.agedTip)
+        XCTAssertNil(live(.syncing, progress: 0.5, Self.agedTip), "still catching up")
+        XCTAssertNil(live(.waitingForConnections, progress: 0, peer: false, Self.agedTip))
+        XCTAssertNil(live(.waitForEvents, progress: 0, Self.agedTip), "the pre-start default")
+        XCTAssertNil(live(.waitForEvents, Self.agedTip, target: Self.agedTip + 1), "a taller header is known")
+        XCTAssertNil(live(.waitForEvents, peer: false, Self.agedTip))
+        XCTAssertEqual(live(.synced, Self.agedTip), Self.agedTip)
+        XCTAssertEqual(live(.waitForEvents, Self.agedTip), Self.agedTip)
+        XCTAssertEqual(live(.waitForEvents, progress: 0.999, Self.agedTip), Self.agedTip)
+        XCTAssertNil(live(.waitForEvents, progress: 0.9989, Self.agedTip))
+        XCTAssertNil(live(.syncing, progress: 0.99, Self.agedTip + 5, target: Self.agedTip + 6),
+                     "the last caught-up tip does not stand through a catch-up")
 
-        _ = try begin(source: .platform, coreHeight: live(.syncing, peer: true, Self.recordedTip))
+        _ = try begin(source: .platform, coreHeight: live(.syncing, progress: 0.9, Self.recordedTip))
+        XCTAssertEqual(try store.entries(scope: scope, contactIdentityId: contact).map(\.coreHeight), [nil])
         let afterTheWindow = Date().addingTimeInterval(60)
-        let caughtUp = live(.synced, peer: true, Self.agedTip)
+        let caughtUp = live(.waitForEvents, Self.agedTip)
         XCTAssertEqual(try store.lockState(
             scope: scope, contactIdentityId: contact, since: afterTheWindow, coreHeight: caughtUp), .locked)
         XCTAssertEqual(try store.entries(scope: scope, contactIdentityId: contact).map(\.coreHeight), [Self.agedTip])
+        XCTAssertEqual(try store.lockState(
+            scope: scope, contactIdentityId: contact, since: afterTheWindow,
+            coreHeight: live(.waitForEvents, Self.agedTip + DashPayWithdrawalStore.lockBlocks)), .awaitingDecision)
     }
 
     /// A device clock moved forward does not move the chain: until the Core
@@ -675,6 +745,7 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
         let definite: [Error] = [
             PlatformAddressSyncCoordinator.SendError.coordinatorNotReady,
             PlatformAddressSyncCoordinator.SendError.noFundedAddress,
+            PlatformAddressSyncCoordinator.SendError.notSubmitted(CocoaError(.fileReadUnknown)),
             PlatformWalletError.shieldedNoRecordedAnchor("mid-block"),
             PlatformWalletError.shieldedBroadcastFailed("rejected"),
             PlatformWalletError.shieldedInsufficientBalance("short"),
@@ -760,6 +831,39 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
         let reopened = DashPayWithdrawalStore(directory: directory)
         XCTAssertEqual(try reopened.entries(scope: scope, contactIdentityId: contact).map(\.status), [.submitting])
         XCTAssertTrue(try reopened.hasUnresolvedEntry(scope: scope, contactIdentityId: contact, since: .distantPast))
+    }
+
+    /// A local read in front of the withdrawal SDK call that fails submitted
+    /// nothing: the attempt is dropped as retryable, not left unknown. A
+    /// `SendError` from there keeps its own case.
+    @MainActor
+    func testALocalReadFailingBeforeTheSDKCallIsNotASubmission() async throws {
+        let readFailure = CocoaError(.fileReadUnknown)
+        var thrown: Error?
+        do {
+            _ = try await PlatformAddressSyncCoordinator.beforeSubmission { () throws -> Int in throw readFailure }
+        } catch {
+            thrown = error
+        }
+        let error = try XCTUnwrap(thrown)
+        guard case PlatformAddressSyncCoordinator.SendError.notSubmitted = error else {
+            return XCTFail("expected notSubmitted, got \(error)")
+        }
+        XCTAssertEqual(error.localizedDescription, readFailure.localizedDescription)
+        let (coordinator, attempt) = try coordinatorAndAttempt()
+        XCTAssertFalse(coordinator.concludeUncertainContactWithdrawal(attempt, error: error))
+        XCTAssertEqual(try store.entries(scope: scope, contactIdentityId: contact).map(\.status), [.unused])
+        XCTAssertFalse(coordinator.contactWithdrawalOutcomeUnknown)
+
+        do {
+            _ = try await PlatformAddressSyncCoordinator.beforeSubmission { () throws -> Int in
+                throw PlatformAddressSyncCoordinator.SendError.noFundedAddress
+            }
+            XCTFail("expected a throw")
+        } catch PlatformAddressSyncCoordinator.SendError.noFundedAddress {
+        } catch {
+            XCTFail("expected noFundedAddress, got \(error)")
+        }
     }
 
     /// Refused after its record was written but before the SDK was called:
@@ -868,6 +972,29 @@ final class ContactPaymentSourceTests: XCTestCase {
             scope: .init(recipient), contactIdentityId: contact.contactIdentityId,
             address: "reserved-contact-address", amountDuffs: 10_000, source: .platform)
         defer { try? DashPayWithdrawalStore.shared.remove(entry) }
+        wait(for: [locked], timeout: 5)
+        watch.cancel()
+    }
+
+    /// A change no journal notification announces — a Shielded activity row
+    /// the SDK's persister settles, or here a session outcome — reaches an
+    /// open step on the next persister save, without choosing the contact
+    /// again.
+    func testAnOpenContactStepRereadsTheLockOnAPersisterSave() {
+        let contact = ContactItem.fixture(idByte: 0x5d, relationship: .established, createdAt: Date(timeIntervalSince1970: 0))
+        let recipient = ContactPaymentRecipient(
+            identityId: contact.contactIdentityId, displayName: "c",
+            walletId: Data((0..<32).map { _ in UInt8.random(in: 0...255) }),
+            ownerIdentityId: Data(repeating: 2, count: 32), network: .testnet)
+        let viewModel = SendViewModel(contactLookup: { _ in contact })
+        viewModel.setContactRecipient(contact, paymentRecipient: recipient)
+        XCTAssertFalse(viewModel.contactSendOutcomeIsUnknown)
+        let outcomes = WalletSendService.shared.unknownContactPaymentOutcomes
+        outcomes.record(scope: .init(recipient), contactIdentityId: contact.contactIdentityId)
+        defer { outcomes.removeAll(walletIds: [recipient.walletId]) }
+        let locked = expectation(description: "locked")
+        let watch = viewModel.$contactSendOutcomeIsUnknown.filter { $0 }.first().sink { _ in locked.fulfill() }
+        NotificationCenter.default.post(name: .NSManagedObjectContextDidSave, object: nil)
         wait(for: [locked], timeout: 5)
         watch.cancel()
     }

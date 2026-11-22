@@ -28,6 +28,7 @@ import Foundation
 import OSLog
 import SwiftDashSDK
 import SwiftData
+import UIKit
 
 /// The exact transaction used for an in-process Core SPV restart. It is kept
 /// free of SDK types so the stop → start ordering, error propagation and busy
@@ -136,6 +137,13 @@ public enum SPVSyncState {
     case unknown
 
     public func isComplete() -> Bool { self == .synced }
+
+    /// Caught up with the chain: `.synced`, or dash-spv's steady state once
+    /// fully synced, `.waitForEvents` at full progress. `.waitForEvents` is
+    /// also the pre-start default, which the progress tells apart.
+    public func isCaughtUp(progress: Double) -> Bool {
+        self == .synced || (self == .waitForEvents && progress >= 0.999)
+    }
 }
 
 /// Local replacement for the SDK's removed `SPVSyncProgress`.
@@ -193,9 +201,10 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     @Published public private(set) var state: SPVSyncState = .idle
     @Published public private(set) var tipHeight: UInt32 = 0
     @Published public private(set) var bestPeerHeight: UInt32 = 0
-    /// The header tip as of the last progress tick, this session, that found
-    /// the client synced with a connected peer; nil until one has. Persisted
-    /// heights, published before any peer answers, never set it.
+    /// The header tip from the last progress tick, when that tick found the
+    /// client caught up with a connected peer (`liveSyncedTip`); nil after any
+    /// other tick, once peers drop, and when the app goes to the background.
+    /// Persisted heights, published before any peer answers, never set it.
     @Published public private(set) var liveSyncedTipHeight: UInt32?
     @Published public private(set) var lastError: String? = nil
     /// English reason for `lastError`, for the exported log: `lastError` is shown on screen, so it is localized.
@@ -221,6 +230,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     private var progressCancellable: AnyCancellable?
     private var peersCancellable: AnyCancellable?
     private var balanceRefreshCancellable: AnyCancellable?
+    private var backgroundCancellable: AnyCancellable?
 
     /// Network whose CoinJoin gap was widened for a one-time recovery scan
     /// during the current run, so a subsequent full sync can mark recovery
@@ -774,6 +784,8 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         peersCancellable = nil
         balanceRefreshCancellable?.cancel()
         balanceRefreshCancellable = nil
+        backgroundCancellable?.cancel()
+        backgroundCancellable = nil
     }
 
     /// Drop the outgoing network's balance the moment a network switch is
@@ -1188,7 +1200,16 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
             .sink { [weak self] peers in
                 MainActor.assumeIsolated {
                     self?.connectedPeers = peers
+                    if peers.isEmpty { self?.liveSyncedTipHeight = nil }
                 }
+            }
+        // Once synced, ticks stop until something changes, so a tip from
+        // before a suspension would stand until the next block or peer loss.
+        backgroundCancellable = NotificationCenter.default
+            .publisher(for: UIApplication.didEnterBackgroundNotification)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                MainActor.assumeIsolated { self?.liveSyncedTipHeight = nil }
             }
 
         // Refresh the published balance whenever Rust's persister commits a
@@ -1258,8 +1279,8 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         tipHeight = headersCurrent
         bestPeerHeight = max(headersTarget, headersCurrent)
         liveSyncedTipHeight = Self.liveSyncedTip(
-            state: mappedState, hasConnectedPeer: !connectedPeers.isEmpty,
-            headersCurrent: headersCurrent, previous: liveSyncedTipHeight)
+            state: mappedState, progress: p.overallPercentage, hasConnectedPeer: !connectedPeers.isEmpty,
+            headersCurrent: headersCurrent, headersTarget: headersTarget)
         if mappedState != .error {
             setLastError(nil, log: nil)
         }
@@ -1328,15 +1349,20 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         }
     }
 
-    /// A tip only from a synced tick with a peer connected; otherwise the
-    /// last such one stands.
+    /// The header tip from a tick that finds the client caught up, with a
+    /// peer connected and no taller header known; nil from any other tick.
+    /// An earlier tip is not carried over: a payment started while the client
+    /// is behind would be stamped with a height from before it.
     nonisolated static func liveSyncedTip(
         state: SPVSyncState,
+        progress: Double,
         hasConnectedPeer: Bool,
         headersCurrent: UInt32,
-        previous: UInt32?
+        headersTarget: UInt32
     ) -> UInt32? {
-        guard state == .synced, hasConnectedPeer, headersCurrent > 0 else { return previous }
+        guard state.isCaughtUp(progress: progress), hasConnectedPeer,
+              headersCurrent > 0, headersCurrent >= headersTarget
+        else { return nil }
         return headersCurrent
     }
 

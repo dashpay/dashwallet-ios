@@ -1037,10 +1037,11 @@ final class WalletSendService: NSObject {
             shieldedSpendState: Self.shieldedSpendState(for: recipient))
     }
 
-    /// The Core SPV tip of `chain` as last seen synced with a connected peer
-    /// in this session (`liveSyncedTipHeight`): a persisted or still-catching-up
+    /// The Core SPV tip of `chain` from the last progress tick, when that tick
+    /// found the client caught up with a connected peer
+    /// (`liveSyncedTipHeight`): a persisted, earlier or still-catching-up
     /// height says nothing about blocks mined since. nil otherwise, which
-    /// keeps a lock held.
+    /// keeps a lock held and leaves a new attempt unstamped.
     static func coreTipHeight(chain: String) -> UInt32? {
         let observed = SwiftDashSDKWalletSource.onMain {
             (SwiftDashSDKHost.shared.runningNetwork?.persistenceScope,

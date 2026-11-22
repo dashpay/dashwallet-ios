@@ -603,9 +603,24 @@ final class SwiftDashSDKContactsService: ObservableObject {
     }
 
     func paymentHistory(with contactId: Data) -> ContactPaymentHistory {
-        guard let ownerId = DWCurrentUserIdentityInfo.shared.identityId,
-              let modelContainer = SwiftDashSDKHost.shared.modelContainer else {
-            return ContactPaymentHistory(payments: [], isIncomplete: false)
+        paymentHistory(
+            with: contactId,
+            ownerId: DWCurrentUserIdentityInfo.shared.identityId,
+            modelContainer: SwiftDashSDKHost.shared.modelContainer,
+            walletId: WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind))
+    }
+
+    /// Incomplete when the identity, store or wallet it is read through is
+    /// unavailable: only a lookup that ran can show there were no payments.
+    func paymentHistory(
+        with contactId: Data,
+        ownerId: Data?,
+        modelContainer: ModelContainer?,
+        walletId: Data?
+    ) -> ContactPaymentHistory {
+        guard let ownerId, let modelContainer else {
+            Self.logger.error("DashPay payment history unavailable: no identity or store")
+            return ContactPaymentHistory(payments: [], isIncomplete: true)
         }
         var isIncomplete = false
         let descriptor = FetchDescriptor<PersistentDashpayPayment>(
@@ -666,7 +681,7 @@ final class SwiftDashSDKContactsService: ObservableObject {
                     : nil,
                 statusNote: nil)
         }
-        if let walletId = WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind) {
+        if let walletId {
             let network = WalletEnvironment.networkKind
             let scope = DashPayWithdrawalStore.Scope(
                 networkRaw: network.rawValue,
@@ -680,6 +695,9 @@ final class SwiftDashSDKContactsService: ObservableObject {
                 Self.logger.error("DashPay withdrawal history could not be read")
                 isIncomplete = true
             }
+        } else {
+            Self.logger.error("DashPay withdrawal history unavailable: no active wallet")
+            isIncomplete = true
         }
         // Sort on the payment date, not the row's insert order: reconstructed
         // rows are all written within the same second, so insert order says

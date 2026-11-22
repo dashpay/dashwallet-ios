@@ -742,13 +742,16 @@ final class SendViewModel: ObservableObject {
             .publisher(for: SwiftDashSDKContactsService.contactsDidChangeNotification)
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in self?.refreshContactRecipient() }
-        // The lock moves while the step is open: the journal changes, and a
-        // new Core block can age an attempt or settle a Shielded spend.
+        // The lock moves while the step is open: the journal changes, the
+        // caught-up Core tip it reads moves (`coreTipHeight`), and the SDK's
+        // persister settles a Shielded spend's activity row.
         contactLockRefresh = NotificationCenter.default
             .publisher(for: DashPayWithdrawalStore.didChangeNotification).map { _ in () }
             .merge(with: NotificationCenter.default
                 .publisher(for: SwiftDashSDKContactsService.contactsDidChangeNotification).map { _ in () })
-            .merge(with: SwiftDashSDKSPVCoordinator.shared.$tipHeight.removeDuplicates().dropFirst().map { _ in () })
+            .merge(with: SwiftDashSDKSPVCoordinator.shared.$liveSyncedTipHeight
+                .removeDuplicates().dropFirst().map { _ in () })
+            .merge(with: NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave).map { _ in () })
             .throttle(for: .seconds(1), scheduler: RunLoop.main, latest: true)
             .sink { [weak self] _ in self?.refreshContactPaymentLock() }
         // The caller's snapshot may already be stale — the contact removed or
