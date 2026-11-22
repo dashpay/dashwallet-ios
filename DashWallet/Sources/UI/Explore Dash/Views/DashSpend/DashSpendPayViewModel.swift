@@ -98,7 +98,15 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         basketSavingsFraction ?? savingsFraction
     }
 
-    func updateTotalAmount(_ total: Decimal, quantities: [Decimal: Int]? = nil) {
+    /// `denominations` are the cards the flexible Multiple panel offers, passed
+    /// with its basket and kept until an update without a basket (the Single
+    /// panel) clears them.
+    func updateTotalAmount(_ total: Decimal, quantities: [Decimal: Int]? = nil, denominations: [Decimal]? = nil) {
+        if quantities == nil {
+            basketDenominations = nil
+        } else if let denominations {
+            basketDenominations = denominations
+        }
         amount = total
         basketSavingsFraction = basketDiscountFraction(from: quantities)
         checkAmountForErrors()
@@ -521,12 +529,22 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         Self.dashDuffs(forFiat: amount)
     }
 
-    /// What the cheapest card this merchant sells costs, priced like
-    /// `requestedDashDuffs`: the smallest in-stock denomination, or the range
-    /// minimum; nil when every denomination is out of stock. A denomination
-    /// with no inventory entry has no stock limit.
+    /// The cards the active Multiple panel offers, or nil on the Single panel.
+    private var basketDenominations: [Decimal]?
+
+    /// What the cheapest card the active panel sells costs, priced like
+    /// `requestedDashDuffs`: the smallest card the Multiple panel offers, the
+    /// smallest in-stock denomination, or the range minimum. Nil when no card
+    /// can be bought: the panel offers none, every denomination is out of
+    /// stock, or the range has not loaded. A denomination with no inventory
+    /// entry has no stock limit.
     private var cheapestPurchaseDuffs: UInt64? {
-        guard isFixedDenomination else { return Self.dashDuffs(forFiat: minimumAmount) }
+        if let basketDenominations {
+            return basketDenominations.min().map { Self.dashDuffs(forFiat: $0) }
+        }
+        guard isFixedDenomination else {
+            return hasValidLimits ? Self.dashDuffs(forFiat: minimumAmount) : nil
+        }
         let inStock = denominations.filter { denominationInventory[$0] != 0 }
         return inStock.min().map { Self.dashDuffs(forFiat: Decimal($0)) }
     }

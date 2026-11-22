@@ -243,10 +243,10 @@ struct DashSpendFlexibleContent: View {
                 ))
                 .onChange(of: quantities) { newQuantities in
                     let total = newQuantities.reduce(Decimal(0)) { $0 + $1.key * Decimal($1.value) }
-                    viewModel.updateTotalAmount(total, quantities: newQuantities)
+                    viewModel.updateTotalAmount(total, quantities: newQuantities, denominations: multipleDenominations)
                 }
                 .onAppear {
-                    viewModel.updateTotalAmount(multipleTotalAmount, quantities: quantities)
+                    viewModel.updateTotalAmount(multipleTotalAmount, quantities: quantities, denominations: multipleDenominations)
                 }
             }
         }
