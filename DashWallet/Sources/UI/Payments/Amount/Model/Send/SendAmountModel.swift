@@ -90,6 +90,18 @@ extension SendAmountError {
         ceilingDuffs >= minimumDuffs ? ceilingDuffs : 0
     }
 
+    /// The amount a confirming refusal on a Core-funded asset-lock route may
+    /// name: nil when the route's minimum or one lock's capacity
+    /// (`lockCapDuffs`, the most the amount can be) is unknown, or when the
+    /// typed ceiling leaves nothing but a lock can still be funded — the
+    /// drain Max prices differently, so zero would not establish that nothing
+    /// is usable. 0 only when no lock can be funded at all.
+    static func assetLockOfferDuffs(ceilingDuffs: UInt64, minimumDuffs: UInt64?, lockCapDuffs: UInt64?) -> UInt64? {
+        guard let minimumDuffs, let lockCapDuffs else { return nil }
+        let offer = usableNowDuffs(ceilingDuffs: min(ceilingDuffs, lockCapDuffs), minimumDuffs: minimumDuffs)
+        return offer == 0 && lockCapDuffs > 0 ? nil : offer
+    }
+
     /// An affordability verdict — the only kind a wallet-balance change may
     /// re-check without clearing something it does not own.
     var isFundsVerdict: Bool {

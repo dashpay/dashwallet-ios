@@ -1545,15 +1545,16 @@ final class InternalTransferViewModel: ObservableObject {
     /// The caller supplies its exact route ceiling, including any conversion
     /// cap, so validation uses the same envelope as Continue and Max. The pool
     /// is read only above that ceiling while the pooled figure is known. The
-    /// amount offered for a confirming shortfall is also held to
-    /// `offerCapDuffs`, read only for that verdict; nil names no amount.
+    /// amount a confirming shortfall names is `SendAmountError.assetLockOfferDuffs`
+    /// over `minimumDuffs` (nil: unknown) and `offerCapDuffs`, one lock's
+    /// capacity, read only for that verdict and only with a known minimum.
     nonisolated static func coreTransferFundsMessage(
         requestedDuffs: UInt64,
         ceilingDuffs: UInt64,
         sendableDuffs: UInt64,
         l1ReserveDuffs: UInt64,
         routeCostDuffs: UInt64,
-        minimumDuffs: UInt64 = 0,
+        minimumDuffs: UInt64? = 0,
         offerCapDuffs: () -> UInt64? = { .max },
         pooledKnown: Bool,
         pool: () -> SendPoolConfirmationSnapshot?
@@ -1578,8 +1579,9 @@ final class InternalTransferViewModel: ObservableObject {
         case .confirming(let duffs):
             return SendAmountError.fundsStillConfirming(
                 duffs,
-                availableNowDuffs: offerCapDuffs().map {
-                    SendAmountError.usableNowDuffs(ceilingDuffs: min(ceilingDuffs, $0), minimumDuffs: minimumDuffs)
+                availableNowDuffs: minimumDuffs.flatMap { minimum in
+                    SendAmountError.assetLockOfferDuffs(
+                        ceilingDuffs: ceilingDuffs, minimumDuffs: minimum, lockCapDuffs: offerCapDuffs())
                 }).errorDescription
         case .insufficient:
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
@@ -1597,7 +1599,7 @@ final class InternalTransferViewModel: ObservableObject {
     private func coreRouteFundsMessage(
         ceilingDuffs: UInt64,
         routeCostDuffs: UInt64,
-        minimumDuffs: UInt64 = 0
+        minimumDuffs: UInt64? = 0
     ) -> String? {
         let state = SwiftDashSDKWalletState.shared
         return Self.coreTransferFundsMessage(
@@ -1675,8 +1677,7 @@ final class InternalTransferViewModel: ObservableObject {
                     spendableDuffs: coreSpendableDuffs,
                     reserveCredits: reserveCredits),
                 routeCostDuffs: routeReserveDuffs,
-                // An unknown minimum offers no amount.
-                minimumDuffs: CoreToPlatformAmountPolicy.currentMinimumOutputDuffs ?? .max)
+                minimumDuffs: CoreToPlatformAmountPolicy.currentMinimumOutputDuffs)
 
         case .platformToShielded:
             if awaitingPlatformShieldResync {

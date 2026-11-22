@@ -283,16 +283,19 @@ enum AssetLockInputLimit {
 
     /// The largest lock the wallet's final pooled coins fund within
     /// `inputBudget` inputs (`AssetLockInputPolicy.maxLockDuffs`), or nil when
-    /// that cannot be established: the coins cannot be read, or the wallet
-    /// holds immature coinbase, which the UTXO rows do not mark although the
-    /// SDK's selector skips it.
+    /// that cannot be established: the coins cannot be read; the wallet holds
+    /// immature coinbase, which the UTXO rows do not mark although the SDK's
+    /// selector skips it; or there are more final coins than the budget, when
+    /// the SDK's selector may pick more inputs than the cap allows. With at
+    /// most `inputBudget` final coins no selection can exceed it.
     @MainActor
     static func maxLockDuffs(inputBudget: Int) -> UInt64? {
         guard (SwiftDashSDKWalletState.shared.balance?.immature ?? 0) == 0,
               let utxos = SwiftDashSDKTransactionSender.pooledSpendableUtxos()
         else { return nil }
-        return AssetLockInputPolicy.maxLockDuffs(
-            utxoValues: utxos.filter(\.isFinal).map(\.valueDuffs), inputBudget: inputBudget)
+        let finalValues = utxos.filter(\.isFinal).map(\.valueDuffs)
+        guard finalValues.count <= inputBudget else { return nil }
+        return AssetLockInputPolicy.maxLockDuffs(utxoValues: finalValues, inputBudget: inputBudget)
     }
 
     /// The most a Core-funded asset-lock route can offer for its amount when
