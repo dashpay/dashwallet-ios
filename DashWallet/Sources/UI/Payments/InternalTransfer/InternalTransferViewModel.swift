@@ -1546,7 +1546,7 @@ final class InternalTransferViewModel: ObservableObject {
     /// cap, so validation uses the same envelope as Continue and Max. The pool
     /// is read only above that ceiling while the pooled figure is known. The
     /// amount offered for a confirming shortfall is also held to
-    /// `offerCapDuffs` (nil: no cap), read only for that verdict.
+    /// `offerCapDuffs`, read only for that verdict; nil names no amount.
     nonisolated static func coreTransferFundsMessage(
         requestedDuffs: UInt64,
         ceilingDuffs: UInt64,
@@ -1554,7 +1554,7 @@ final class InternalTransferViewModel: ObservableObject {
         l1ReserveDuffs: UInt64,
         routeCostDuffs: UInt64,
         minimumDuffs: UInt64 = 0,
-        offerCapDuffs: () -> UInt64? = { nil },
+        offerCapDuffs: () -> UInt64? = { .max },
         pooledKnown: Bool,
         pool: () -> SendPoolConfirmationSnapshot?
     ) -> String? {
@@ -1578,9 +1578,9 @@ final class InternalTransferViewModel: ObservableObject {
         case .confirming(let duffs):
             return SendAmountError.fundsStillConfirming(
                 duffs,
-                availableNowDuffs: SendAmountError.usableNowDuffs(
-                    ceilingDuffs: offerCapDuffs().map { min(ceilingDuffs, $0) } ?? ceilingDuffs,
-                    minimumDuffs: minimumDuffs)).errorDescription
+                availableNowDuffs: offerCapDuffs().map {
+                    SendAmountError.usableNowDuffs(ceilingDuffs: min(ceilingDuffs, $0), minimumDuffs: minimumDuffs)
+                }).errorDescription
         case .insufficient:
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: ChainNetwork.core.balanceName,

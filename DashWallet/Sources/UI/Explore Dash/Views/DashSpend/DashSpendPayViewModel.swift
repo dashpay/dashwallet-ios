@@ -499,7 +499,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             ceilingDuffs: ceilingDuffs,
             reserveDuffs: reserveDuffs), availableNowDuffs: cheapestPurchaseDuffs.map {
                 SendAmountError.usableNowDuffs(ceilingDuffs: ceilingDuffs, minimumDuffs: $0)
-            } ?? 0) {
+            }) {
             // Re-checked on every balance event while it is up: re-setting the
             // same refusal would only re-render both panels.
             if (error as? SendAmountError) != refusal { error = refusal }

@@ -1539,7 +1539,7 @@ final class SendViewModel: ObservableObject {
                 ceilingDuffs: ceilingDuffs,
                 reserveDuffs: reserveDuffs &+ feeDuffs) {
                 let offerDuffs = AssetLockInputLimit.maxAmountDuffs(routeCostDuffs: feeDuffs)
-                    .map { min(ceilingDuffs, $0) } ?? ceilingDuffs
+                    .map { min(ceilingDuffs, $0) }
                 return SendAmountError.fundsStillConfirming(duffs, availableNowDuffs: offerDuffs).errorDescription
             }
             return TransferSpendAmountPolicy.insufficientBalanceMessage(

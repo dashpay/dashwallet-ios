@@ -30,14 +30,19 @@ enum SendAmountError: Error, Equatable, ColorizedText, LocalizedError {
     case maxUnavailable(String)
     /// The amount is more than the confirmed balance but would fit once the
     /// first amount (duffs) confirms; `availableNowDuffs` is the most the
-    /// screen can send right now (its fee-aware ceiling). See
+    /// screen can send right now, or nil when no amount can be named (no
+    /// purchase option, or a limit the screen cannot verify). See
     /// `SwiftDashSDKWalletState.sendVerdict`.
-    case fundsStillConfirming(UInt64, availableNowDuffs: UInt64)
+    case fundsStillConfirming(UInt64, availableNowDuffs: UInt64?)
 
     var errorDescription: String? {
         switch self {
         case .maxUnavailable(let message): return message
         case .fundsStillConfirming(let duffs, let availableNowDuffs):
+            guard let availableNowDuffs else {
+                return String(localized: "\(duffs.formattedDashAmountWithoutCurrencySymbol) DASH is still confirming.",
+                              comment: "Send amount fits the balance once incoming funds confirm; no usable amount can be named")
+            }
             guard availableNowDuffs > 0 else {
                 return String(localized: "None of your balance can be used until \(duffs.formattedDashAmountWithoutCurrencySymbol) DASH confirms. Wait a few minutes.",
                               comment: "Send amount fits the balance once incoming funds confirm; nothing is usable before then")
@@ -70,7 +75,7 @@ extension SendAmountError {
     /// fits: "still confirming" when the coins the gate does not count yet
     /// would cover it, else "Insufficient funds". `availableNowDuffs` is read
     /// only for a "still confirming" verdict.
-    init?(refusing verdict: SendFundsVerdict, availableNowDuffs: @autoclosure () -> UInt64) {
+    init?(refusing verdict: SendFundsVerdict, availableNowDuffs: @autoclosure () -> UInt64?) {
         switch verdict {
         case .fits: return nil
         case .confirming(let duffs): self = .fundsStillConfirming(duffs, availableNowDuffs: availableNowDuffs())

@@ -649,6 +649,27 @@ final class PooledSendableBalanceTests: XCTestCase {
         XCTAssertFalse(message.contains("up to"), "a zero ceiling must not be offered as an amount: \(message)")
     }
 
+    func testAnUnknownUsableAmountNamesNoAmountAndPromisesNothing() {
+        let message = SendAmountError.fundsStillConfirming(200_000_000, availableNowDuffs: nil)
+            .errorDescription ?? ""
+        XCTAssertEqual(message, "\(UInt64(200_000_000).formattedDashAmountWithoutCurrencySymbol) DASH is still confirming.")
+    }
+
+    func testCoreRouteConfirmingNamesNoAmountWhenTheLockCapIsUnknown() {
+        let message = InternalTransferViewModel.coreTransferFundsMessage(
+            requestedDuffs: 110_000_000,
+            ceilingDuffs: 96_000_000,
+            sendableDuffs: 100_000_000,
+            l1ReserveDuffs: 1_000_000,
+            routeCostDuffs: 3_000_000,
+            offerCapDuffs: { nil },
+            pooledKnown: true,
+            pool: { self.pool(confirmed: 100_000_000, unconfirmed: 20_000_000) }) ?? ""
+        XCTAssertFalse(message.contains("up to"), "got: \(message)")
+        XCTAssertFalse(message.contains("None of your balance"), "got: \(message)")
+        XCTAssertTrue(message.hasSuffix("DASH is still confirming."), "got: \(message)")
+    }
+
     func testOnlyAffordabilityVerdictsCountAsFundsVerdicts() {
         XCTAssertTrue(SendAmountError.insufficientFunds.isFundsVerdict)
         XCTAssertTrue(SendAmountError.fundsStillConfirming(1, availableNowDuffs: 0).isFundsVerdict)
