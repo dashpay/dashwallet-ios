@@ -641,20 +641,32 @@ final class PooledSendableBalanceTests: XCTestCase {
                        "a subclass's own failure is not the ceiling's to clear")
     }
 
-    func testAReserveMoveRefreshesOnlyAStaleConfirmingNote() {
+    func testAVerdictInputRefreshesOnlyAStaleFundsVerdict() {
         let shown = SendAmountError.fundsStillConfirming(10_000, availableNowDuffs: 50_000)
-        XCTAssertFalse(SendAmountModel.confirmingHintRefreshes(shown: shown, refreshed: shown),
+        XCTAssertFalse(SendAmountModel.verdictInputsRefresh(shown: shown, refreshed: shown),
                        "an unchanged note must not be re-presented")
-        XCTAssertTrue(SendAmountModel.confirmingHintRefreshes(
+        XCTAssertTrue(SendAmountModel.verdictInputsRefresh(
             shown: shown, refreshed: .fundsStillConfirming(10_000, availableNowDuffs: 49_000)))
-        XCTAssertTrue(SendAmountModel.confirmingHintRefreshes(
+        XCTAssertTrue(SendAmountModel.verdictInputsRefresh(
             shown: shown, refreshed: .fundsStillConfirming(10_000, availableNowDuffs: 0)),
             "a figure that falls below the output minimum switches to wait-only wording")
-        XCTAssertTrue(SendAmountModel.confirmingHintRefreshes(shown: shown, refreshed: nil),
+        XCTAssertTrue(SendAmountModel.verdictInputsRefresh(shown: shown, refreshed: nil),
                       "an amount the smaller reserve now fits must clear the note")
-        XCTAssertFalse(SendAmountModel.confirmingHintRefreshes(
-            shown: .insufficientFunds, refreshed: shown),
-            "only a ceiling move re-judges any other refusal")
+        XCTAssertFalse(SendAmountModel.verdictInputsRefresh(
+            shown: .syncingChain, refreshed: shown),
+            "only a funds verdict is the verdict inputs' to replace")
+        XCTAssertFalse(SendAmountModel.verdictInputsRefresh(
+            shown: .maxUnavailable("x"), refreshed: shown))
+    }
+
+    func testAPooledOutageAndRecoveryRestoresTheConfirmingNote() {
+        // Known → unavailable → known with the ceiling constant: the outage
+        // turns the note into "Insufficient funds", and recovery must turn it
+        // back, since the ceiling observer stays silent throughout.
+        let confirming = SendAmountError.fundsStillConfirming(10_000, availableNowDuffs: 50_000)
+        XCTAssertTrue(SendAmountModel.verdictInputsRefresh(shown: confirming, refreshed: .insufficientFunds))
+        XCTAssertTrue(SendAmountModel.verdictInputsRefresh(shown: .insufficientFunds, refreshed: confirming))
+        XCTAssertFalse(SendAmountModel.verdictInputsRefresh(shown: .insufficientFunds, refreshed: .insufficientFunds))
     }
 
     // MARK: How Max explains an empty result

@@ -676,6 +676,13 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
     // MARK: - Transfer
 
+    /// The per-output credit minimum the chain enforces on address-funds
+    /// transitions (`ManagedPlatformAddressWallet.minOutputAmount`), or nil
+    /// while the address wallet is not up or the SDK cannot read it.
+    public var minOutputCredits: UInt64? {
+        try? platformAddressWallet?.minOutputAmount()
+    }
+
     /// Submits a Platform credit transfer to `destination`. Inputs are
     /// auto-selected largest-first by `ManagedPlatformAddressWallet.transfer`
     /// (dashpay/platform#3626) across the account holding the highest-balance

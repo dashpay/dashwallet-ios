@@ -185,6 +185,12 @@ enum CoreToPlatformAmountPolicy {
         currentReserveCredits.map(reserveDuffs(reserveCredits:))
     }
 
+    /// The explicit recipient output's minimum in duffs, rounded up, or nil
+    /// while the SDK cannot say.
+    @MainActor static var currentMinimumOutputDuffs: UInt64? {
+        PlatformAddressSyncCoordinator.shared.minOutputCredits.map(reserveDuffs(reserveCredits:))
+    }
+
     /// Funding reserve (duffs) the lock carries on top of `amountDuffs`,
     /// rounded UP so a duff-denominated lock always covers the
     /// credit-denominated minimum fee. `nil` when `amountDuffs` cannot be
@@ -1662,7 +1668,9 @@ final class InternalTransferViewModel: ObservableObject {
                 ceilingDuffs: CoreToPlatformAmountPolicy.maxAmountDuffs(
                     spendableDuffs: coreSpendableDuffs,
                     reserveCredits: reserveCredits),
-                routeCostDuffs: routeReserveDuffs)
+                routeCostDuffs: routeReserveDuffs,
+                // An unknown minimum offers no amount.
+                minimumDuffs: CoreToPlatformAmountPolicy.currentMinimumOutputDuffs ?? .max)
 
         case .platformToShielded:
             if awaitingPlatformShieldResync {

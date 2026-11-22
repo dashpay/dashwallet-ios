@@ -128,7 +128,7 @@ class SendAmountModel: BaseAmountModel {
 
         initializeSyncingActivityMonitor()
         observeSendableCeiling()
-        observeConfirmingHint()
+        observeVerdictInputs()
         checkAmountForErrors()
     }
 
@@ -150,8 +150,8 @@ class SendAmountModel: BaseAmountModel {
     /// screens present each assigned error (dropping a progress indicator and
     /// re-enabling Continue), so re-judging on every balance event is a hazard
     /// of its own. Coins that confirm raise the ceiling, which is what clears
-    /// a "still confirming" note; `observeConfirmingHint` keeps that note's
-    /// figure current in between.
+    /// a "still confirming" note; `observeVerdictInputs` keeps a shown funds
+    /// verdict current in between.
     private func observeSendableCeiling() {
         SwiftDashSDKWalletState.shared.sendableCeiling
             .receive(on: RunLoop.main)
@@ -165,16 +165,17 @@ class SendAmountModel: BaseAmountModel {
     }
 
     /// A "still confirming" note names the fee-aware Max, which follows the fee
-    /// reserve as well as the ceiling, and the reserve can move on its own.
-    /// While that note is up, every verdict input re-judges the amount, and
-    /// the error is re-presented only when the refusal it would show differs.
-    private func observeConfirmingHint() {
+    /// reserve as well as the ceiling, and the reserve, or whether the pooled
+    /// figure is known at all, can move on its own. While a funds verdict is
+    /// up, every verdict input re-judges the amount, and the error is
+    /// re-presented only when the refusal it would show differs.
+    private func observeVerdictInputs() {
         SwiftDashSDKWalletState.shared.sendVerdictInputsPublisher
             .receive(on: RunLoop.main)
             .sink { [weak self] in
                 guard let self,
                       let shown = self.error as? SendAmountError,
-                      Self.confirmingHintRefreshes(shown: shown, refreshed: self.gateRefusal())
+                      Self.verdictInputsRefresh(shown: shown, refreshed: self.gateRefusal())
                 else { return }
                 self.error = nil
                 self.checkAmountForErrors()
@@ -184,10 +185,9 @@ class SendAmountModel: BaseAmountModel {
     }
 
     /// Whether a re-judged refusal replaces the `shown` one: only a shown
-    /// "still confirming" note, and only when the refusal now differs from it.
-    static func confirmingHintRefreshes(shown: SendAmountError, refreshed: SendAmountError?) -> Bool {
-        guard case .fundsStillConfirming = shown else { return false }
-        return refreshed != shown
+    /// funds verdict, and only when the refusal now differs from it.
+    static func verdictInputsRefresh(shown: SendAmountError, refreshed: SendAmountError?) -> Bool {
+        shown.isFundsVerdict && refreshed != shown
     }
 
     /// Whether a moved ceiling may re-judge the amount over `error`: only when
