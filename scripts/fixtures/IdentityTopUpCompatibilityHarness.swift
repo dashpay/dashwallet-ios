@@ -114,6 +114,11 @@ enum SwiftDashSDKTransactionSender {
 }
 
 enum CoinJoinShieldPlanner { static let maxAssetLockInputs = 100 }
+@MainActor final class SwiftDashSDKWalletState {
+    static let shared = SwiftDashSDKWalletState()
+    struct Balance { let immature: UInt64 }
+    var balance: Balance?
+}
 
 // The runner's post-authorization identity dispatch and outcome handling are
 // production methods; request metadata irrelevant to that dispatch is omitted.
