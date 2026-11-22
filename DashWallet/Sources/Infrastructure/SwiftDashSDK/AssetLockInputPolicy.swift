@@ -102,6 +102,22 @@ enum AssetLockInputPolicy {
         return .insufficientFunds
     }
 
+    /// The largest lock `utxoValues` (final coins) can fund within
+    /// `inputBudget` inputs at the lowest fee: the best of the largest k coins
+    /// less `minimumFeeDuffs(k)`, for k up to the budget. Every amount up to it
+    /// gets `.fits` from `verdict`; 0 when no coin covers its own fee.
+    static func maxLockDuffs(utxoValues: [UInt64], inputBudget: Int) -> UInt64 {
+        var total: UInt64 = 0
+        var best: UInt64 = 0
+        for (index, value) in utxoValues.sorted(by: >).prefix(max(inputBudget, 0)).enumerated() {
+            let (sum, overflow) = total.addingReportingOverflow(value)
+            total = overflow ? .max : sum
+            let fee = minimumFeeDuffs(inputCount: index + 1)
+            if total > fee { best = max(best, total - fee) }
+        }
+        return best
+    }
+
     /// The verdict for a whole-balance drain, which spends every final coin.
     static func drainVerdict(finalCount: Int, inputBudget: Int) -> Verdict {
         guard finalCount > 0 else { return .insufficientFunds }
@@ -263,6 +279,27 @@ enum AssetLockInputLimit {
                 + "coins=\(utxos.count) final=\(finalValues.count) verdict=\(verdict)",
             className: "AssetLockInputLimit")
         return verdict
+    }
+
+    /// The largest lock the wallet's final pooled coins fund within
+    /// `inputBudget` inputs (`AssetLockInputPolicy.maxLockDuffs`), or nil when
+    /// the coins cannot be read.
+    @MainActor
+    static func maxLockDuffs(inputBudget: Int) -> UInt64? {
+        guard let utxos = SwiftDashSDKTransactionSender.pooledSpendableUtxos() else { return nil }
+        return AssetLockInputPolicy.maxLockDuffs(
+            utxoValues: utxos.filter(\.isFinal).map(\.valueDuffs), inputBudget: inputBudget)
+    }
+
+    /// The most a Core-funded asset-lock route can offer for its amount when
+    /// it adds `routeCostDuffs` on top: the largest lock one transaction funds
+    /// (`platformInputBudget` inputs) less that cost, or nil when the coins
+    /// cannot be read.
+    @MainActor
+    static func maxAmountDuffs(routeCostDuffs: UInt64) -> UInt64? {
+        maxLockDuffs(inputBudget: AssetLockInputPolicy.platformInputBudget).map {
+            $0 > routeCostDuffs ? $0 - routeCostDuffs : 0
+        }
     }
 
     /// The estimated fee of combining the coins (`CoreCoinConsolidationSheet`)

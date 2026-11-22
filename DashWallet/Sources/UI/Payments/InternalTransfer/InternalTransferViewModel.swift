@@ -1544,7 +1544,9 @@ final class InternalTransferViewModel: ObservableObject {
     /// The raw `sendableDuffs` and `pooledKnown` inputs mirror `sendVerdict`.
     /// The caller supplies its exact route ceiling, including any conversion
     /// cap, so validation uses the same envelope as Continue and Max. The pool
-    /// is read only above that ceiling while the pooled figure is known.
+    /// is read only above that ceiling while the pooled figure is known. The
+    /// amount offered for a confirming shortfall is also held to
+    /// `offerCapDuffs` (nil: no cap), read only for that verdict.
     nonisolated static func coreTransferFundsMessage(
         requestedDuffs: UInt64,
         ceilingDuffs: UInt64,
@@ -1552,6 +1554,7 @@ final class InternalTransferViewModel: ObservableObject {
         l1ReserveDuffs: UInt64,
         routeCostDuffs: UInt64,
         minimumDuffs: UInt64 = 0,
+        offerCapDuffs: () -> UInt64? = { nil },
         pooledKnown: Bool,
         pool: () -> SendPoolConfirmationSnapshot?
     ) -> String? {
@@ -1576,7 +1579,7 @@ final class InternalTransferViewModel: ObservableObject {
             return SendAmountError.fundsStillConfirming(
                 duffs,
                 availableNowDuffs: SendAmountError.usableNowDuffs(
-                    ceilingDuffs: ceilingDuffs,
+                    ceilingDuffs: offerCapDuffs().map { min(ceilingDuffs, $0) } ?? ceilingDuffs,
                     minimumDuffs: minimumDuffs)).errorDescription
         case .insufficient:
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
@@ -1589,6 +1592,8 @@ final class InternalTransferViewModel: ObservableObject {
     /// `coreTransferFundsMessage` for the typed amount: the caller gives its
     /// route's ceiling and the cost the route adds on top of the L1 reserve;
     /// the L1 reserve is the cached one and the pooled figures are read live.
+    /// Every caller funds one asset lock, so the offer is held to what one
+    /// lock can fund (`AssetLockInputLimit.maxAmountDuffs`).
     private func coreRouteFundsMessage(
         ceilingDuffs: UInt64,
         routeCostDuffs: UInt64,
@@ -1602,6 +1607,7 @@ final class InternalTransferViewModel: ObservableObject {
             l1ReserveDuffs: coreL1FeeReserveDuffs,
             routeCostDuffs: routeCostDuffs,
             minimumDuffs: minimumDuffs,
+            offerCapDuffs: { AssetLockInputLimit.maxAmountDuffs(routeCostDuffs: routeCostDuffs) },
             pooledKnown: state.pooledSpendableDuffs != nil,
             pool: SwiftDashSDKTransactionSender.sendPoolConfirmationSnapshot)
     }

@@ -539,14 +539,14 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     /// stock, or the range has not loaded. A denomination with no inventory
     /// entry has no stock limit.
     private var cheapestPurchaseDuffs: UInt64? {
+        if isFixedDenomination {
+            let inStock = denominations.filter { denominationInventory[$0] != 0 }
+            return inStock.min().map { Self.dashDuffs(forFiat: Decimal($0)) }
+        }
         if let basketDenominations {
             return basketDenominations.min().map { Self.dashDuffs(forFiat: $0) }
         }
-        guard isFixedDenomination else {
-            return hasValidLimits ? Self.dashDuffs(forFiat: minimumAmount) : nil
-        }
-        let inStock = denominations.filter { denominationInventory[$0] != 0 }
-        return inStock.min().map { Self.dashDuffs(forFiat: Decimal($0)) }
+        return hasValidLimits ? Self.dashDuffs(forFiat: minimumAmount) : nil
     }
 
     private static func dashDuffs(forFiat fiat: Decimal) -> UInt64 {

@@ -1538,7 +1538,9 @@ final class SendViewModel: ObservableObject {
                 requestedDuffs: dashDuffsUnsigned,
                 ceilingDuffs: ceilingDuffs,
                 reserveDuffs: reserveDuffs &+ feeDuffs) {
-                return SendAmountError.fundsStillConfirming(duffs, availableNowDuffs: ceilingDuffs).errorDescription
+                let offerDuffs = AssetLockInputLimit.maxAmountDuffs(routeCostDuffs: feeDuffs)
+                    .map { min(ceilingDuffs, $0) } ?? ceilingDuffs
+                return SendAmountError.fundsStillConfirming(duffs, availableNowDuffs: offerDuffs).errorDescription
             }
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: balanceName,

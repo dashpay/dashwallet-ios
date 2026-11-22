@@ -267,6 +267,35 @@ final class PooledSendableBalanceTests: XCTestCase {
         XCTAssertFalse(message.contains("smaller amount"), "got: \(message)")
     }
 
+    func testCoreRouteConfirmingOfferIsHeldToWhatOneLockCanFund() {
+        var capReads = 0
+        let message = InternalTransferViewModel.coreTransferFundsMessage(
+            requestedDuffs: 110_000_000,
+            ceilingDuffs: 96_000_000,
+            sendableDuffs: 100_000_000,
+            l1ReserveDuffs: 1_000_000,
+            routeCostDuffs: 3_000_000,
+            offerCapDuffs: { capReads += 1; return 40_000_000 },
+            pooledKnown: true,
+            pool: { self.pool(confirmed: 100_000_000, unconfirmed: 20_000_000) }) ?? ""
+
+        XCTAssertTrue(message.contains("up to \(UInt64(40_000_000).formattedDashAmountWithoutCurrencySymbol) DASH"),
+                      "got: \(message)")
+        XCTAssertEqual(capReads, 1)
+
+        let fits = InternalTransferViewModel.coreTransferFundsMessage(
+            requestedDuffs: 50_000_000,
+            ceilingDuffs: 96_000_000,
+            sendableDuffs: 100_000_000,
+            l1ReserveDuffs: 1_000_000,
+            routeCostDuffs: 3_000_000,
+            offerCapDuffs: { capReads += 1; return 0 },
+            pooledKnown: true,
+            pool: { nil })
+        XCTAssertNil(fits)
+        XCTAssertEqual(capReads, 1, "the cap is read only for a confirming verdict")
+    }
+
     func testCoreRouteConfirmingMessageWaitsWhenTheCeilingIsBelowTheRouteMinimum() {
         let message = InternalTransferViewModel.coreTransferFundsMessage(
             requestedDuffs: 2_000_000,
