@@ -70,11 +70,14 @@ extension SendAmountError {
     /// The refusal a wallet gate's verdict names, or `nil` when the amount
     /// fits: "still confirming" when the coins the gate does not count yet
     /// would cover it, else "Insufficient funds". `ceilingDuffs` is the most
-    /// the gate of an ordinary Core send accepts.
-    init?(refusing verdict: SendFundsVerdict, ceilingDuffs: UInt64) {
+    /// an ordinary Core send's gate accepts; nil gives no ceiling, so a
+    /// confirming refusal never says nothing is usable.
+    init?(refusing verdict: SendFundsVerdict, ceilingDuffs: UInt64?) {
         switch verdict {
         case .fits: return nil
-        case .confirming(let duffs): self = .stillConfirming(duffs, ceilingDuffs: ceilingDuffs)
+        case .confirming(let duffs):
+            self = ceilingDuffs.map { .stillConfirming(duffs, ceilingDuffs: $0) }
+                ?? .fundsStillConfirming(duffs, nothingUsableYet: false)
         case .insufficient: self = .insufficientFunds
         }
     }

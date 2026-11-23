@@ -273,7 +273,7 @@ final class PooledSendableBalanceTests: XCTestCase {
     }
 
     func testAnOrdinarySendAtOrAboveTheOutputMinimumNeverSaysNothingIsUsable() {
-        // Legacy Send, contact Send and DashSpend gate on the pooled figure,
+        // Legacy Send and contact Send gate on the pooled figure,
         // which still counts inputs another payment has reserved, and one
         // transaction takes at most 500 inputs: no ceiling the gate accepts
         // is an amount the build is known to take.
@@ -294,53 +294,18 @@ final class PooledSendableBalanceTests: XCTestCase {
         }
     }
 
-    /// DashSpend's refusal for a wallet whose gate accepts nothing, given
-    /// what is known about the card options.
-    private func dashSpendRefusal(
-        loaded: Bool = true, fixed: Bool, offered: [Int] = [10, 25, 50], minimum: Decimal = 0, maximum: Decimal = 0,
-        basket: [Decimal: Int]? = nil, inventory: [Int: Int] = [:]
-    ) -> SendAmountError {
-        DashSpendPayViewModel.downgrading(
-            .stillConfirming(50_000_000, ceilingDuffs: 0),
-            cardOptionsAvailable: DashSpendPayViewModel.cardOptionsAreAvailable(
-                detailsLoaded: loaded, isFixedDenomination: fixed, denominations: fixed ? offered : [],
-                minimumAmount: minimum, maximumAmount: maximum, basket: basket, inventory: inventory))
-    }
-
-    func testDashSpendDoesNotBlameTheWalletForASoldOutBasket() {
-        let plain = SendAmountError.fundsStillConfirming(50_000_000, nothingUsableYet: false)
-        XCTAssertEqual(dashSpendRefusal(fixed: true, basket: [25: 1], inventory: [25: 0]), plain,
-                       "confirmation does not restock a sold-out card")
-        XCTAssertEqual(dashSpendRefusal(fixed: true, basket: [25: 3, 50: 1], inventory: [25: 2, 50: 4]), plain,
-                       "a basket card above its stock")
-        XCTAssertEqual(dashSpendRefusal(fixed: true, offered: [10, 50], basket: [25: 1]), plain,
-                       "a basket card the merchant no longer offers")
-    }
-
-    func testDashSpendDoesNotBlameTheWalletWhileCardOptionsAreUnknown() {
-        let plain = SendAmountError.fundsStillConfirming(50_000_000, nothingUsableYet: false)
-        XCTAssertEqual(dashSpendRefusal(fixed: false), plain, "merchant limits not loaded")
-        XCTAssertEqual(dashSpendRefusal(fixed: false, minimum: 0, maximum: 100), plain, "no minimum loaded")
-        XCTAssertEqual(dashSpendRefusal(fixed: false, minimum: 100, maximum: 50), plain, "maximum below minimum")
-        XCTAssertEqual(dashSpendRefusal(loaded: false, fixed: true, basket: [25: 1]), plain,
-                       "merchant details not loaded")
-        XCTAssertEqual(dashSpendRefusal(loaded: false, fixed: false, minimum: 5, maximum: 100), plain,
-                       "seeded limits are not loaded ones")
-    }
-
-    func testDashSpendKeepsTheWaitWordingForAnInStockBasketTheWalletCannotPay() {
-        let nothingYet = SendAmountError.fundsStillConfirming(50_000_000, nothingUsableYet: true)
-        XCTAssertEqual(dashSpendRefusal(fixed: true, basket: [25: 2], inventory: [25: 2]), nothingYet)
-        XCTAssertEqual(dashSpendRefusal(fixed: true, basket: [25: 2]), nothingYet, "no stock limit reported")
-        XCTAssertEqual(dashSpendRefusal(fixed: false, minimum: 5, maximum: 100), nothingYet)
-        XCTAssertEqual(dashSpendRefusal(fixed: true, offered: [10, 50], basket: [25: 0, 50: 1]), nothingYet,
-                       "a card removed from the basket keeps a 0 entry")
-        XCTAssertEqual(dashSpendRefusal(fixed: true, basket: [25: 0, 50: 1], inventory: [25: 0, 50: 2]), nothingYet)
-        XCTAssertEqual(
-            DashSpendPayViewModel.downgrading(.insufficientFunds, cardOptionsAvailable: false), .insufficientFunds)
-        XCTAssertEqual(
-            DashSpendPayViewModel.downgrading(.fundsStillConfirming(5, nothingUsableYet: false), cardOptionsAvailable: false),
-            .fundsStillConfirming(5, nothingUsableYet: false))
+    func testDashSpendNeverSaysNothingCanBeSentYet() {
+        // A wallet whose gate accepts nothing while 1 DASH confirms. The card
+        // side (sold out, details or limits not loaded, or in stock with only
+        // the wallet short) is not an input: the refusal is the plain line in
+        // every case.
+        let verdict = judge(25_000_000, reserve: 1_000, sendable: 0, pool: pool(confirmed: 0, unconfirmed: 100_000_000))
+        XCTAssertEqual(verdict, .confirming(100_000_000))
+        let refusal = DashSpendPayViewModel.fundsRefusal(verdict)
+        XCTAssertEqual(refusal, .fundsStillConfirming(100_000_000, nothingUsableYet: false))
+        XCTAssertEqual(refusal?.errorDescription, confirmingMessage(100_000_000))
+        XCTAssertNil(DashSpendPayViewModel.fundsRefusal(.fits))
+        XCTAssertEqual(DashSpendPayViewModel.fundsRefusal(.insufficient), .insufficientFunds)
     }
 
     func testCoreToShieldedRouteReturnsInsufficientWhenTheAmountCannotFitAfterConfirmation() {

@@ -100,7 +100,6 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
     func updateTotalAmount(_ total: Decimal, quantities: [Decimal: Int]? = nil) {
         amount = total
-        basketQuantities = quantities
         basketSavingsFraction = basketDiscountFraction(from: quantities)
         checkAmountForErrors()
     }
@@ -487,18 +486,10 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         // The screen shows the whole balance, the gate counts confirmed coins
         // only — so right after a receive the shortfall is often just time,
         // and must not read as "Insufficient funds".
-        if let verdictRefusal = SendAmountError(refusing: state.sendVerdict(
+        if let refusal = Self.fundsRefusal(state.sendVerdict(
             requestedDuffs: requestedDashDuffs,
             ceilingDuffs: ceilingDuffs,
-            reserveDuffs: reserveDuffs), ceilingDuffs: ceilingDuffs) {
-            let refusal = Self.downgrading(verdictRefusal, cardOptionsAvailable: Self.cardOptionsAreAvailable(
-                detailsLoaded: merchantDetailsLoaded,
-                isFixedDenomination: isFixedDenomination,
-                denominations: denominations,
-                minimumAmount: minimumAmount,
-                maximumAmount: maximumAmount,
-                basket: basketQuantities,
-                inventory: denominationInventory))
+            reserveDuffs: reserveDuffs)) {
             // Re-checked on every balance event while it is up: re-setting the
             // same refusal would only re-render both panels.
             if (error as? SendAmountError) != refusal { error = refusal }
@@ -524,46 +515,11 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             isChainSynced: SyncingActivityMonitor.shared.state == .syncDone)
     }
 
-    /// The basket the last `updateTotalAmount` carried, or nil when it carried none.
-    private var basketQuantities: [Decimal: Int]?
-
-    /// Set once `updateMerchantInfo` has published the merchant's details;
-    /// cleared when a load starts.
-    private var merchantDetailsLoaded = false
-
-    /// Whether the merchant's details have loaded and the card options the
-    /// amount depends on are buyable: a range merchant has a minimum and a
-    /// maximum at or above it; a fixed merchant offers every basket card. No
-    /// basket card asks for more than its stock, and a card with no
-    /// inventory entry has no stock limit. Cards with a count of 0 are
-    /// ignored.
-    nonisolated static func cardOptionsAreAvailable(
-        detailsLoaded: Bool,
-        isFixedDenomination: Bool,
-        denominations: [Int],
-        minimumAmount: Decimal,
-        maximumAmount: Decimal,
-        basket: [Decimal: Int]?,
-        inventory: [Int: Int]
-    ) -> Bool {
-        guard detailsLoaded else { return false }
-        if !isFixedDenomination, !(minimumAmount > 0 && maximumAmount >= minimumAmount) { return false }
-        guard let basket else { return true }
-        let offered = Set(denominations.map { Decimal($0) })
-        let stock = Dictionary(inventory.map { (Decimal($0.key), $0.value) }, uniquingKeysWith: { first, _ in first })
-        return basket.allSatisfy { card, count in
-            guard count > 0 else { return true }
-            guard !isFixedDenomination || offered.contains(card) else { return false }
-            return stock[card].map { count <= $0 } ?? true
-        }
-    }
-
-    /// `verdict` without the "nothing can be sent yet" wording while the card
-    /// options are not available: confirmation would not make an unavailable
-    /// or unknown card purchasable.
-    nonisolated static func downgrading(_ verdict: SendAmountError, cardOptionsAvailable: Bool) -> SendAmountError {
-        guard !cardOptionsAvailable, case .fundsStillConfirming(let duffs, true) = verdict else { return verdict }
-        return .fundsStillConfirming(duffs, nothingUsableYet: false)
+    /// The refusal a wallet verdict gives here. It never says nothing can be
+    /// sent yet: whether a card can be bought also turns on stock, merchant
+    /// limits and the amount, which confirmation does not change.
+    nonisolated static func fundsRefusal(_ verdict: SendFundsVerdict) -> SendAmountError? {
+        SendAmountError(refusing: verdict, ceilingDuffs: nil)
     }
 
     private var requestedDashDuffs: UInt64 {
@@ -590,7 +546,6 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         // Set loading state
         await MainActor.run {
             self.isLoading = true
-            self.merchantDetailsLoaded = false
         }
 
         do {
@@ -764,7 +719,6 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             // Force UI update on main thread
             await MainActor.run {
                 self.isLoading = false
-                self.merchantDetailsLoaded = true
                 self.objectWillChange.send()
                 self.checkAmountForErrors()
             }
