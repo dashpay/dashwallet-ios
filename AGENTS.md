@@ -125,9 +125,9 @@ Distilled from the 2026-07 branch review (`ARCH_REVIEW_2026-07-03.md`) — each 
 Decision: [ADR-0054](docs/adr/0054-keep-master-as-a-mirror-of-app-store-publications.md).
 
 - **`develop`** is the default branch. Every pull request targets it, and work branches are cut from it.
-- **`master`** holds what the App Store has published, plus at most a hotfix on its way there. Never open an ordinary pull request into it and never push to it. The App Store observer (`.github/workflows/appstore-schema-release.yml`) tags each publication above 9.1.4 `vX.Y.Z` on its wallet commit and fast-forwards `master` to it.
-- **Hotfix**: branch from `master`, open the pull request into `master`, build the release from `master`. Until the first publication after 9.1.4, `master` is at `v9.1.3`: a hotfix for 9.1.4 starts from the tag `v9.1.4` instead.
-- **`master` back into `develop`**: the observer opens this pull request after a hotfix. Merge it with a merge commit, never a squash; a squash breaks the next fast-forward of `master`.
+- **`master`** holds what the App Store has published and nothing else. Never open a pull request into it and never push to it; only the App Store observer writes it. The observer (`.github/workflows/appstore-schema-release.yml`) tags each publication above 9.1.4 `vX.Y.Z` on its wallet commit and fast-forwards `master` to it.
+- **Hotfix**: cut a branch `hotfix/X.Y.Z` from `master`, open pull requests into that branch, and build the release from it. Once the App Store publishes the build, the observer moves `master` to it. Until the first publication after 9.1.4, `master` is at `v9.1.3`: a hotfix for 9.1.4 starts from the tag `v9.1.4` instead, and the observer cannot move `master` to it (ADR-0054).
+- **`master` back into `develop`**: the observer opens this pull request once a hotfix is published. Merge it with a merge commit, never a squash; a squash breaks the next fast-forward of `master`.
 - Do not create or move `vX.Y.Z` tags by hand.
 
 ## Publicity

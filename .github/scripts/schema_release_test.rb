@@ -232,11 +232,9 @@ class SchemaReleaseTest < Minitest::Test
 
   def test_mirrored_release_is_left_alone_on_later_runs
     @store.github.tags["v9.1.0"] = WALLET
-    %w[identical behind].each do |standing|
-      mirroring(release: standing).sync
-      assert_equal({ "v9.1.0" => WALLET }, @store.github.tags)
-      assert_empty @store.github.fast_forwards
-    end
+    mirroring(release: "identical").sync
+    assert_equal({ "v9.1.0" => WALLET }, @store.github.tags)
+    assert_empty @store.github.fast_forwards
   end
 
   def test_tag_on_another_commit_is_reported_and_never_moved_but_the_branch_still_advances
@@ -255,8 +253,8 @@ class SchemaReleaseTest < Minitest::Test
     assert_equal({ "v9.1.0" => WALLET }, @store.github.tags)
     assert_empty @store.github.fast_forwards
     assert_equal [["new", @store.head]], @store.github.dispatches
-    # A publication that cannot be mirrored does not hide a hotfix that
-    # develop still lacks.
+    # A publication that cannot be mirrored does not hide a published hotfix
+    # that develop still lacks.
     assert_equal 1, @store.github.pulls.length
   end
 
@@ -280,14 +278,22 @@ class SchemaReleaseTest < Minitest::Test
     assert_empty github.fast_forwards
   end
 
-  def test_newest_publication_behind_the_release_branch_is_said_to_leave_it_ahead_of_the_app_store
+  def test_release_branch_past_the_newest_publication_is_an_error_and_is_not_offered_to_develop
     @store.github.tags["v9.1.0"] = WALLET
-    mirroring(release: "behind").sync
-    assert_includes @output.string, "commits after it that the App Store has not published"
+    pipeline = mirroring(release: "behind", development: "ahead")
+    error = assert_raises(SchemaRelease::Error) { pipeline.sync }
+    assert_includes error.message, "commits after it that the App Store has not published"
     assert_empty @store.github.fast_forwards
+    assert_empty @store.github.pulls
+    assert_equal [["new", @store.head]], @store.github.dispatches
+
+    # The hold does not outlive the run that found it.
+    @store.github.comparisons[["master", WALLET]] = "identical"
+    pipeline.sync
+    assert_equal 1, @store.github.pulls.length
   end
 
-  def test_hotfix_on_the_release_branch_is_offered_back_to_develop_once
+  def test_published_hotfix_on_the_release_branch_is_offered_back_to_develop_once
     mirroring(release: "identical", development: "ahead").sync
     pull = @store.github.pulls.fetch(0)
     assert_equal %w[master develop], pull.values_at(:head, :base)

@@ -17,8 +17,9 @@ module SchemaRelease
   REGISTRY = "packages/swift-sdk/schema-releases.json"
   # `master` holds only what the App Store has published: every publication
   # observed here tags its wallet commit and fast-forwards the branch to it.
-  # Work lands on `develop`; a hotfix merged into `master` returns there by a
-  # pull request this script opens.
+  # Nothing else writes `master`. Work lands on `develop`; a hotfix is built
+  # from its own branch, and once it is published and `master` has moved to
+  # it, it returns to `develop` by a pull request this script opens.
   RELEASE_BRANCH = "master"
   DEVELOPMENT_BRANCH = "develop"
   # Publications up to this version predate the mirror. 9.1.4 itself shipped
@@ -580,10 +581,14 @@ module SchemaRelease
       when "identical"
         @out.puts "#{label}: #{RELEASE_BRANCH} is at #{commit}."
       when "behind"
-        # A hotfix merged into the release branch and not published yet, or a
-        # version cut from an older commit. Either way the branch is ahead of
-        # the App Store, and it is never moved back.
-        @out.puts "#{label}: #{RELEASE_BRANCH} holds #{commit} and commits after it that the App Store has not published."
+        # Only this observer writes the release branch, and only to a published
+        # commit, so its tip can never be past the newest publication: either
+        # someone wrote to it by hand, or the newest version was cut from an
+        # older commit. The branch is never moved back, and what it holds past
+        # the publication is not offered to development.
+        @release_branch_unpublished = true
+        raise Error, "#{label} was built from #{commit}, but #{RELEASE_BRANCH} holds commits after it that the App Store has not published. " \
+                     "Nothing was moved. Find out how they got there; #{RELEASE_BRANCH} is written only by this observer (ADR-0054)."
       when "ahead"
         @out.puts "#{label}: #{dry_run ? 'would fast-forward' : 'fast-forwarding'} #{RELEASE_BRANCH} to #{commit}."
         # A dry run moves nothing, so what follows judges the tip it would have.
@@ -595,11 +600,14 @@ module SchemaRelease
       end
     end
 
-    # A hotfix lands on the release branch first. Development must take it back
-    # as a merge commit, or its next release no longer descends from the
-    # release branch and cannot be fast-forwarded to. This runs whether or not
-    # a publication could be mirrored in this run.
+    # A published hotfix reaches the release branch from its own branch, so the
+    # release branch then holds commits development lacks. Development must
+    # take them back as a merge commit, or its next release no longer descends
+    # from the release branch and cannot be fast-forwarded to. This runs
+    # whether or not a publication could be mirrored in this run, except when
+    # the release branch was found past the newest publication.
     def return_release_branch(failures, dry_run:)
+      return if @release_branch_unpublished
       github = @store.github
       tip = @projected_release_tip || RELEASE_BRANCH
       # Before the cutover the release branch is the abandoned 8.x line.
@@ -613,7 +621,7 @@ module SchemaRelease
       url = github.create_pull(
         IOS_REPO, head: RELEASE_BRANCH, base: DEVELOPMENT_BRANCH,
         title: "chore: merge #{RELEASE_BRANCH} back into #{DEVELOPMENT_BRANCH}",
-        body: "`#{RELEASE_BRANCH}` holds commits that `#{DEVELOPMENT_BRANCH}` lacks, usually a hotfix.\n\n" \
+        body: "`#{RELEASE_BRANCH}` holds commits that `#{DEVELOPMENT_BRANCH}` lacks, usually a published hotfix.\n\n" \
               "Merge this with **a merge commit, not a squash**. A squash carries the changes over but not the history, " \
               "so the next release from `#{DEVELOPMENT_BRANCH}` would not descend from `#{RELEASE_BRANCH}` and the " \
               "release mirror could not fast-forward to it.\n\nOpened by the App Store release observer.")
@@ -622,6 +630,7 @@ module SchemaRelease
       report_release_failure(failures, "#{RELEASE_BRANCH} into #{DEVELOPMENT_BRANCH}", error)
     ensure
       @projected_release_tip = nil
+      @release_branch_unpublished = false
     end
 
     def historical_schema(registry)
