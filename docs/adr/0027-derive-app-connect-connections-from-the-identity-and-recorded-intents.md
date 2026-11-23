@@ -1,6 +1,6 @@
 # 0027 — Derive App Connect connections from the identity and recorded intents
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-09
 - **Deciders:** romchornyi (ADR author)
 
