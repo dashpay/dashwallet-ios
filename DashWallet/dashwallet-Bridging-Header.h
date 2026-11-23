@@ -93,8 +93,11 @@ static const bool _SNAPSHOT = 0;
 #import "DWContainerViewController.h"
 #import "DWDashPaySetupModel.h"
 #import "UIViewController+DWDisplayError.h"
-#import "DWEditProfileViewController.h"
-#import "DWSaveAlertViewController.h"
+#import "DWAvatarEditSelectorViewController.h"
+#import "DWAvatarGravatarViewController.h"
+#import "DWAvatarPublicURLViewController.h"
+#import "DWCropAvatarViewController.h"
+#import "UIImageView+DWDPAvatar.h"
 #import "DWDPUpdateProfileModel.h"
 #endif
 

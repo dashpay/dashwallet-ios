@@ -15,121 +15,163 @@
 //  limitations under the License.
 //
 
-import DashUIKit
 import SwiftUI
 import UIKit
+import UniformTypeIdentifiers
 
 #if DASHPAY
 protocol RootEditProfileViewControllerDelegate: AnyObject {
-    /// Row #17 proper: `avatarImage` is the cropped UIImage the user
-    /// picked (or `nil` if the avatar wasn't changed in this session).
-    /// The SDK profile-update path JPEG-encodes it and hands the bytes
-    /// to `DashPayProfileUpdate.avatarBytes` for hash computation.
-    /// DashSync-side callers can ignore the parameter.
+    /// `avatarImage` is the picked image (or `nil` if the avatar wasn't
+    /// changed in this session). The SDK profile-update path JPEG-encodes it
+    /// and hands the bytes to `DashPayProfileUpdate.avatarBytes` for hash
+    /// computation.
     func editProfileViewController(_ controller: RootEditProfileViewController, updateDisplayName rawDisplayName: String, aboutMe rawAboutMe: String, avatarURLString: String?, avatarImage: UIImage?)
     func editProfileViewControllerDidCancel(_ controller: RootEditProfileViewController)
 }
 
-class RootEditProfileViewController: ActionButtonViewController, DWEditProfileViewControllerDelegate, DWSaveAlertViewControllerDelegate, NavigationBarDisplayable {
-    
-    var isBackButtonHidden: Bool = false
-    var isNavigationBarHidden: Bool { true }
+/// Hosts `EditProfileScreen` and runs the avatar flows, which are still
+/// UIKit: source selector, photo picker, Gravatar / public URL, crop and
+/// upload.
+final class RootEditProfileViewController: UIHostingController<EditProfileScreen> {
     weak var delegate: RootEditProfileViewControllerDelegate?
-    private var editController: DWEditProfileViewController!
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        self.title = NSLocalizedString("Edit Profile", comment: "")
-        
-        let contentView = UIView()
-        contentView.translatesAutoresizingMaskIntoConstraints = false
-        setupContentView(contentView)
-        installNavigationBar()
-        
-        self.editController = DWEditProfileViewController()
-        self.editController.delegate = self
-        self.dw_embedChild(self.editController, inContainer: contentView)
-        
-        self.editProfileViewControllerDidUpdate(self.editController)
-    }
-    
-    override var actionButtonTitle: String {
-        return NSLocalizedString("Save", comment: "")
-    }
-    
-    @objc private func cancelButtonAction() {
-        if self.editController.hasChanges() {
-            let saveAlert = DWSaveAlertViewController()
-            saveAlert.delegate = self
-            self.present(saveAlert, animated: true, completion: nil)
-        } else {
-            self.delegate?.editProfileViewControllerDidCancel(self)
-        }
-    }
-    
-    @objc override func actionButtonAction(sender: UIView) {
-        performSave()
-    }
-    
-    private func performSave() {
-        self.delegate?.editProfileViewController(
-            self,
-            updateDisplayName: self.editController.displayName,
-            aboutMe: self.editController.aboutMe,
-            avatarURLString: self.editController.avatarURLString,
-            avatarImage: self.editController.unsavedAvatarImage)
-    }
-    
-    // MARK: - DWEditProfileViewControllerDelegate
-    
-    func editProfileViewControllerDidUpdate(_ controller: DWEditProfileViewController) {
-        self.actionButton?.isEnabled = controller.isValid
-    }
-    
-    // MARK: - DWSaveAlertViewControllerDelegate
-    
-    func saveAlertViewControllerCancelAction(_ controller: DWSaveAlertViewController) {
-        controller.dismiss(animated: true) {
-            self.delegate?.editProfileViewControllerDidCancel(self)
-        }
-    }
-    
-    func saveAlertViewControllerOKAction(_ controller: DWSaveAlertViewController) {
-        controller.dismiss(animated: true) {
-            self.performSave()
-        }
-    }
-    
-    /// The DashUIKit bar replaces the system one (`isNavigationBarHidden`):
-    /// a close circle that runs the cancel flow, and the screen title.
-    private func installNavigationBar() {
-        let bar = DashUIKit.NavigationBar(
-            leading: {
-                DashUIKit.NavigationBarElement.close.button { [weak self] in
-                    self?.cancelButtonAction()
-                }
+    private let viewModel: EditProfileViewModel
+
+    init() {
+        let viewModel = EditProfileViewModel()
+        self.viewModel = viewModel
+        // The closures need `self`, which exists only after `super.init`.
+        super.init(rootView: EditProfileScreen(
+            viewModel: viewModel, onClose: {}, onSave: {}, onEditAvatar: {}, onCopyUsername: { _ in }))
+        rootView = EditProfileScreen(
+            viewModel: viewModel,
+            onClose: { [weak self] in
+                guard let self else { return }
+                self.delegate?.editProfileViewControllerDidCancel(self)
             },
-            central: {
-                Text(NSLocalizedString("Edit Profile", comment: ""))
-                    .dashFont(.subheadMedium)
-                    .foregroundColor(.dash.primaryText)
+            onSave: { [weak self] in self?.save() },
+            onEditAvatar: { [weak self] in self?.showAvatarSourceSelector() },
+            onCopyUsername: { [weak self] name in
+                UIPasteboard.general.string = name
+                self?.view.dw_showInfoHUD(withText: NSLocalizedString("Copied", comment: ""), offsetForNavBar: true)
             })
-        let host = UIHostingController(rootView: bar)
-        host.sizingOptions = .intrinsicContentSize
-        host.view.backgroundColor = .clear
-        addChild(host)
-        stackView.insertArrangedSubview(host.view, at: 0)
-        host.didMove(toParent: self)
     }
 
-    private func dw_embedChild(_ child: UIViewController, inContainer container: UIView) {
-        addChild(child)
-        container.addSubview(child.view)
-        child.view.frame = container.bounds
-        child.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        child.didMove(toParent: self)
+    @MainActor dynamic required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .dw_secondaryBackground()
+    }
+
+    private func save() {
+        delegate?.editProfileViewController(
+            self,
+            updateDisplayName: viewModel.displayName,
+            aboutMe: viewModel.aboutMe,
+            avatarURLString: viewModel.avatarURLString,
+            avatarImage: viewModel.pickedAvatarImage)
+    }
+
+    // MARK: Avatar flows
+
+    private func showAvatarSourceSelector() {
+        let controller = DWAvatarEditSelectorViewController()
+        controller.delegate = self
+        present(controller, animated: true)
+    }
+
+    private func showImagePicker(_ sourceType: UIImagePickerController.SourceType) {
+        guard UIImagePickerController.isSourceTypeAvailable(sourceType) else { return }
+        let picker = UIImagePickerController()
+        picker.delegate = self
+        picker.sourceType = sourceType
+        picker.mediaTypes = [UTType.image.identifier]
+        present(picker, animated: true)
+    }
+
+    private func showCrop(_ image: UIImage, url: URL?) {
+        let controller = DWCropAvatarViewController(image: image, imageURL: url)
+        controller.delegate = self
+        controller.modalPresentationStyle = .fullScreen
+        present(controller, animated: true)
     }
 }
+
+// MARK: DWAvatarEditSelectorViewControllerDelegate
+
+extension RootEditProfileViewController: DWAvatarEditSelectorViewControllerDelegate {
+    func avatarEditSelectorViewController(_ controller: DWAvatarEditSelectorViewController, photoButtonAction sender: UIButton) {
+        controller.dismiss(animated: true) { [weak self] in self?.showImagePicker(.camera) }
+    }
+
+    func avatarEditSelectorViewController(_ controller: DWAvatarEditSelectorViewController, galleryButtonAction sender: UIButton) {
+        controller.dismiss(animated: true) { [weak self] in self?.showImagePicker(.photoLibrary) }
+    }
+
+    func avatarEditSelectorViewController(_ controller: DWAvatarEditSelectorViewController, gravatarButtonAction sender: UIButton) {
+        controller.dismiss(animated: true) { [weak self] in
+            guard let self else { return }
+            let source = DWAvatarGravatarViewController()
+            source.delegate = self
+            self.present(source, animated: true)
+        }
+    }
+
+    func avatarEditSelectorViewController(_ controller: DWAvatarEditSelectorViewController, urlButtonAction sender: UIButton) {
+        controller.dismiss(animated: true) { [weak self] in
+            guard let self else { return }
+            let source = DWAvatarPublicURLViewController()
+            source.delegate = self
+            source.setCurrentInput(self.viewModel.avatarURLString ?? "")
+            self.present(source, animated: true)
+        }
+    }
+}
+
+// MARK: UIImagePickerControllerDelegate
+
+extension RootEditProfileViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
+        let image = info[.originalImage] as? UIImage
+        picker.dismiss(animated: true) { [weak self] in
+            guard let image else { return }
+            self?.showCrop(image, url: nil)
+        }
+    }
+
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true)
+    }
+}
+
+// MARK: DWCropAvatarViewControllerDelegate
+
+extension RootEditProfileViewController: DWCropAvatarViewControllerDelegate {
+    func cropAvatarViewController(_ controller: DWCropAvatarViewController, didCropImage croppedImage: UIImage, urlString: String) {
+        viewModel.pickAvatar(croppedImage, url: urlString)
+        controller.dismiss(animated: true)
+    }
+
+    func cropAvatarViewControllerDidCancel(_ controller: DWCropAvatarViewController) {
+        controller.dismiss(animated: true)
+    }
+}
+
+// MARK: DWExternalSourceViewControllerDelegate
+
+extension RootEditProfileViewController: DWExternalSourceViewControllerDelegate {
+    func externalSourceViewController(_ controller: DWExternalSourceViewController, didLoad image: UIImage, url: URL, shouldCrop: Bool) {
+        if shouldCrop {
+            controller.dismiss(animated: true) { [weak self] in self?.showCrop(image, url: url) }
+        } else {
+            viewModel.pickAvatar(image, url: url.absoluteString)
+            controller.dismiss(animated: true)
+        }
+    }
+}
+
 #else
 protocol RootEditProfileViewControllerDelegate: AnyObject { }
 #endif

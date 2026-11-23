@@ -1067,6 +1067,9 @@
 /* SPV sync */
 "Change peers" = "Change peers";
 
+/* Edit profile: VoiceOver label of the button on the avatar */
+"Change profile picture" = "Change profile picture";
+
 /* No comment provided by engineer. */
 "Change PIN" = "Change PIN";
 
