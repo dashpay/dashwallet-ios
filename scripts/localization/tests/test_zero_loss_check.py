@@ -290,6 +290,28 @@ class BaselineDefectTests(ZeroLossCase):
         self.assertEqual(z.sample_args("%d shops in %@"), [1001, "‹a2›"])
         self.assertEqual(z.sample_args("%2$@ at %1$.1f"), [1001.5, "‹a2›"])
 
+    def test_sample_args_match_format_swift_on_every_code(self):
+        # LL3: the crash path judges baseline defects with the Python copy, so it must infer what format.swift does.
+        import foundation_format
+        import zero_loss_check as z
+        texts = [
+            "%d shops in %@", "%2$@ at %1$.1f", "%1$ld of %2$lld", "%3$@ then %1$@",
+            "%u %hd %hhd %qd %zd %td %jd %Lf", "%x %X %o %O %D %U %i %c %p",
+            "%f %F %e %E %g %G", "%'d %+d %-5d %05d %#x %.2f %10.3e",
+            "Prices moved more than 50% since the update.", "50%% off %d", "%#@places@ and %d",
+        ]
+        got = foundation_format.format_texts(os.path.join(LOCALIZATION_DIR, "fixtures", "format"),
+                                             [("en", t, None) for t in texts])
+        for text, res in zip(texts, got):
+            self.assertEqual(res["args"], z.sample_args(text), text)
+
+    def test_sample_args_pattern_is_format_swift_s_pattern(self):
+        # Codes the behavioural test cannot format (%s and %S crash with an object argument) read the same pattern.
+        import zero_loss_check as z
+        with open(os.path.join(LOCALIZATION_DIR, "format.swift"), encoding="utf-8") as f:
+            swift = re.search(r'let pattern = "(.*)"', f.read()).group(1).replace("\\\\", "\\")
+        self.assertEqual(swift.replace("(hh|h|ll|l|q|z|t|j|L)?", "(?:hh|h|ll|l|q|z|t|j|L)?"), z._SWIFT_CODE.pattern)
+
     def test_wrong_type_rule(self):
         import zero_loss_check as z
         args = [1001, "‹a2›"]
