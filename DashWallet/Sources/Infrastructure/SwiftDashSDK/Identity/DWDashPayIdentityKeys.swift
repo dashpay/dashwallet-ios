@@ -46,9 +46,9 @@ enum DWDashPayIdentityKeys {
             case .noIdentityRow:
                 return NSLocalizedString("No DashPay identity is registered", comment: "DashPay")
             case .derivationMismatch:
-                return "Derived key didn't match its public key — refusing to broadcast."
+                return NSLocalizedString("Derived key didn't match its public key — refusing to broadcast.", comment: "DashPay identity key error")
             case .keychainWriteFailed:
-                return "Could not persist new key to the iOS Keychain — aborted before broadcast."
+                return NSLocalizedString("Could not persist new key to the iOS Keychain — aborted before broadcast.", comment: "DashPay identity key error")
             }
         }
     }

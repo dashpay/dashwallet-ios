@@ -19,6 +19,7 @@ import Foundation
 
 private let kVotingEnabled = "votingEnabledKey"
 private let kVotingNodeSelection = "votingNodeSelectionKey"
+private let kVotingSetUp = "votingSetUpKey"
 
 // MARK: - VotingPrefs
 
@@ -26,13 +27,35 @@ private let kVotingNodeSelection = "votingNodeSelectionKey"
 /// Voting). Defaults on for DASHPAY builds.
 class VotingPrefs {
     public static let shared: VotingPrefs = .init()
-    
-    init() {
+
+    private let defaults: UserDefaults
+    /// Whose voting choice it is: the Platform network and the active wallet
+    /// on it. Read on every access, so a network or wallet switch reads that
+    /// wallet's choice.
+    private let owner: () -> String
+
+    init(defaults: UserDefaults = .standard,
+         owner: @escaping () -> String = VotingPrefs.activeWalletOwner) {
+        self.defaults = defaults
+        self.owner = owner
         UserDefaults.standard.register(defaults: [
             kVotingEnabled: true,
         ])
     }
-    
+
+    /// The network and the active wallet on it, e.g. `testnet.<walletId hex>`.
+    static func activeWalletOwner() -> String {
+        let wallet = WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind)?.hexEncodedString() ?? "none"
+        return "\(MasternodeVoteCaster.networkKey).\(wallet)"
+    }
+
+    /// The masternode choice and "voting set up" are kept per network and
+    /// wallet: one wallet's masternodes are not another's, and a testnet
+    /// masternode is not a mainnet one.
+    private func scoped(_ key: String) -> String {
+        "\(key).\(owner())"
+    }
+
     private var _votingEnabled: Bool? = nil
     var votingEnabled: Bool {
         get {
@@ -59,13 +82,36 @@ class VotingPrefs {
     /// node is permitted to do.
     var votingNodeSelection: Set<Data> {
         get {
-            let stored = UserDefaults.standard.array(forKey: kVotingNodeSelection) as? [String] ?? []
+            // A mainnet wallet that has not saved its own choice yet reads the
+            // single choice stored before the choice was kept per wallet. It
+            // ticks only the nodes this wallet can vote with (`VotingStore`
+            // intersects it with them), and the wallet's next save replaces it.
+            let key = scoped(kVotingNodeSelection)
+            let legacy = defaults.object(forKey: key) == nil && owner().hasPrefix("mainnet.")
+            let stored = defaults.array(forKey: legacy ? kVotingNodeSelection : key) as? [String] ?? []
             return Set(stored.compactMap { Data(base64Encoded: $0) })
         }
         set {
-            UserDefaults.standard.set(
+            defaults.set(
                 newValue.map { $0.base64EncodedString() }.sorted(),
-                forKey: kVotingNodeSelection)
+                forKey: scoped(kVotingNodeSelection))
+        }
+    }
+
+    /// Whether the user confirmed "Add your voting keys" once, with its Block
+    /// or Approve button. Until then the default tick is not a choice and a
+    /// vote opens that screen first (AC-12).
+    var isVotingSetUp: Bool {
+        get { defaults.bool(forKey: scoped(kVotingSetUp)) }
+        set { defaults.set(newValue, forKey: scoped(kVotingSetUp)) }
+    }
+
+    /// Forget the masternode choice and "voting set up" on every network, as
+    /// a wallet wipe does: the next wallet starts at "Add your voting keys".
+    func forgetVotingSetup() {
+        for key in defaults.dictionaryRepresentation().keys
+            where [kVotingNodeSelection, kVotingSetUp].contains(where: { key == $0 || key.hasPrefix("\($0).") }) {
+            defaults.removeObject(forKey: key)
         }
     }
 }

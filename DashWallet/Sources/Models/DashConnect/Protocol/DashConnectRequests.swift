@@ -4,6 +4,15 @@ enum DashConnectNetwork: String {
     case mainnet = "m"
     case testnet = "t"
     case devnet = "d"
+
+    /// Name of the network from the source text list, the same key every screen uses.
+    var displayName: String {
+        switch self {
+        case .mainnet: return WalletEnvironment.displayName(of: WalletEnvironment.NetworkKind.mainnet)
+        case .testnet: return WalletEnvironment.displayName(of: WalletEnvironment.NetworkKind.testnet)
+        case .devnet: return WalletEnvironment.displayName(of: WalletEnvironment.NetworkKind.devnet)
+        }
+    }
 }
 
 struct DashKeyRequest: Equatable {

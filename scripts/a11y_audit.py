@@ -169,7 +169,7 @@ RULES: Dict[str, Rule] = {
         Rule("A11Y006", "P1", "Custom back button replaces the labeled system one",
              "Set .accessibilityLabel on the custom back button."),
         Rule("A11Y007", "P2", "Fixed font size ignores Dynamic Type",
-             "Use .system(size:..., relativeTo: .body) or a text style."),
+             "Use .scaledSystemFont(size:..., relativeTo: .body), an @ScaledMetric size, or a text style."),
         Rule("A11Y008", "P0", "extension Font shadows an Apple text style",
              "Rename the token; a shadowed style silently stops scaling."),
         Rule("A11Y009", "P1", "accessibilityLabel is not localized",
@@ -720,6 +720,11 @@ def rule_fixed_font_size(code: str, original: str, path: str,
         close = balanced_parens(code, code.rindex("(", 0, match.end()))
         args = code[match.start():close] if close else code[match.start():match.end() + 120]
         if "relativeTo" in args:
+            continue
+        # A size held in an @ScaledMetric property already follows Dynamic Type.
+        size_arg = re.match(r"\.system\s*\(\s*size\s*:\s*([A-Za-z_][A-Za-z0-9_]*)\s*[,)]", args + ")")
+        if size_arg and re.search(
+                r"@ScaledMetric\b[^\n]*\bvar\s+{}\b".format(re.escape(size_arg.group(1))), code):
             continue
         line_no = line_of(code, match.start())
         add(findings, original, "A11Y007", path, line_no,

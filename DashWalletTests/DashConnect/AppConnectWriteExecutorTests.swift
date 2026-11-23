@@ -156,18 +156,24 @@ final class AppConnectWriteExecutorTests: XCTestCase {
                 XCTFail("\(kind): expected .timedOut, got \(outcome)")
                 continue
             }
+            // The cancelled submit logs its late failure before or after the
+            // outcome line.
+            await waitForLines(of: probe, count: 3)
             let lines = probe.lines
-            XCTAssertEqual(lines.count, 2, "\(kind): one start and one outcome line, got \(lines)")
+            XCTAssertEqual(lines.count, 3, "\(kind): start, timedOut and late failed lines, got \(lines)")
             XCTAssertTrue(lines.allSatisfy { $0.contains(kind) }, "\(kind): every line names the write kind: \(lines)")
-            XCTAssertTrue(lines.last?.contains("timedOut") ?? false, "\(kind): outcome line says timedOut: \(lines)")
+            XCTAssertTrue(lines.first?.contains("start") ?? false, "\(kind): the first line is the start: \(lines)")
+            XCTAssertTrue(lines.contains { $0.contains("timedOut") }, "\(kind): an outcome line says timedOut: \(lines)")
+            XCTAssertTrue(lines.contains { $0.contains("late failed") }, "\(kind): a late line says late failed: \(lines)")
             XCTAssertEqual(probe.requestedSleeps, [.seconds(60)], "\(kind): the clock is asked for the 60 second timeout")
         }
     }
 
     /// The real submits block inside Rust and ignore Swift cancellation, so the
     /// timeout must end `run` without waiting for the submit to return. A late
-    /// finish of the submit writes no further line: the outcome line already
-    /// said `timedOut`, and the caller's next read decides what landed.
+    /// finish of the submit is logged as one more line (`late submitted`); the
+    /// outcome line already said `timedOut`, and the caller's next read decides
+    /// what landed.
     func testTimeoutEndsRunWhileTheSubmitIgnoresCancellation() async {
         let probe = Probe()
         let blocked = BlockedSubmit()
@@ -187,8 +193,52 @@ final class AppConnectWriteExecutorTests: XCTestCase {
             XCTFail("expected .timedOut while the submit never returned, got \(String(describing: result.value))")
             return
         }
-        XCTAssertEqual(probe.lines.count, 2, "no line is written when the submit finishes late: \(probe.lines)")
-        XCTAssertTrue(probe.lines.last?.contains("timedOut") ?? false, "outcome line says timedOut: \(probe.lines)")
+        await waitForLines(of: probe, count: 3)
+        XCTAssertEqual(probe.lines.count, 3, "start, timedOut and one late line: \(probe.lines)")
+        XCTAssertTrue(probe.lines[1].contains("timedOut"), "outcome line says timedOut: \(probe.lines)")
+        XCTAssertTrue(probe.lines.last?.contains("late submitted") ?? false, "late line: \(probe.lines)")
+    }
+
+    // MARK: - Late outcome (T3)
+
+    /// Edge: a submit that ends after the timeout is logged by kind and
+    /// type, never the error text; its outcome goes nowhere else.
+    func testLateOutcomeIsLoggedWithoutTheErrorText() async {
+        let probe = Probe()
+        let gate = LateGate()
+        let executor = probe.executor(neverTimesOut: false) { _ in try await gate.block() }
+
+        let outcome = await executor.run(.publish(requestHash: Data([0x01])))
+        guard case .timedOut = outcome else { return XCTFail("expected .timedOut, got \(outcome)") }
+        gate.release(throwing: SDKError.networkError(sentinel))
+        await waitForLines(of: probe, count: 3)
+
+        let late = probe.lines.last ?? ""
+        XCTAssertTrue(late.contains("platform write publish: late failed"), "late line: \(probe.lines)")
+        XCTAssertTrue(late.contains("SDKError"), "the error type is logged: \(late)")
+        XCTAssertFalse(probe.lines.joined().contains(sentinel), "the error text is never logged: \(probe.lines)")
+    }
+
+    /// Edge: a late success of any write is logged.
+    func testLateSuccessIsLogged() async {
+        let probe = Probe()
+        let gate = LateGate()
+        let executor = probe.executor(neverTimesOut: false) { _ in try await gate.block() }
+
+        let outcome = await executor.run(.fence(keyIds: [1]))
+        gate.release()
+        await waitForLines(of: probe, count: 3)
+
+        guard case .timedOut = outcome else { return XCTFail("expected .timedOut, got \(outcome)") }
+        XCTAssertTrue(probe.lines.last?.contains("platform write fence: late submitted") ?? false,
+                      "late line: \(probe.lines)")
+    }
+
+    /// Polls until the probe holds `count` lines, or gives up after 5 s.
+    private func waitForLines(of probe: Probe, count: Int) async {
+        for _ in 0..<1000 where probe.lines.count < count {
+            try? await Task.sleep(for: .milliseconds(5))
+        }
     }
 
     /// R15: cancelling the caller while the submit is blocked (the real
@@ -395,3 +445,34 @@ private final class CallerCancelSubmit: @unchecked Sendable {
         waiter?.resume()
     }
 }
+
+/// A submit that ignores cancellation until released, then returns or throws.
+private final class LateGate: @unchecked Sendable {
+    private let lock = NSLock()
+    private var continuation: CheckedContinuation<Error?, Never>?
+    private var released = false
+    private var releasedError: Error?
+
+    func block() async throws {
+        let error = await withCheckedContinuation { (waiter: CheckedContinuation<Error?, Never>) in
+            let ready = lock.withLock { () -> (Bool, Error?) in
+                if released { return (true, releasedError) }
+                continuation = waiter
+                return (false, nil)
+            }
+            if ready.0 { waiter.resume(returning: ready.1) }
+        }
+        if let error { throw error }
+    }
+
+    func release(throwing error: Error? = nil) {
+        let waiter = lock.withLock { () -> CheckedContinuation<Error?, Never>? in
+            released = true
+            releasedError = error
+            defer { continuation = nil }
+            return continuation
+        }
+        waiter?.resume(returning: error)
+    }
+}
+

@@ -563,7 +563,8 @@ extension MainTabbarController {
             return
         }
 
-        let controller = DashConnectHostingController(navigationController: menuNav, uri: uri)
+        let controller = DashConnectHostingController(
+            navigationController: menuNav, uri: uri, dashPayModel: homeModel?.dashPayModel)
         menuNav.pushViewController(controller, animated: true)
     }
 
@@ -621,28 +622,22 @@ extension MainTabbarController: DWWipeDelegate {
     }
 }
 
-// MARK: PaymentsViewControllerDelegate
+// MARK: - PaymentsViewControllerState
 
-extension MainTabbarController: PaymentsViewControllerDelegate {
-    func paymentsViewControllerDidFinishPayment(_ controller: PaymentsViewController, txidWire: Data) {
-        closePayments { [weak self] in
-            self?.presentTxDetails(for: txidWire)
-        }
-    }
+/// Which payments page a shortcut or Home action opens.
+@objc(DWPaymentsViewControllerIndex)
+enum PaymentsViewControllerState: Int {
+    @objc(DWPaymentsViewControllerIndex_None)
+    case none = -1
 
-    private func presentTxDetails(for txidWire: Data) {
-        // Resolves the txid to the SDK-backed row (or the recent-send
-        // registry entry) — see TxDetailModel.init(txidWire:).
-        let model = TxDetailModel(txidWire: txidWire)
-        let vc = SuccessTxDetailViewController(model: model)
-        vc.modalPresentationStyle = .fullScreen
-        vc.delegate = self
-        selectedViewController?.topController().present(vc, animated: true)
-    }
+    @objc(DWPaymentsViewControllerIndex_Receive)
+    case receive = 0
 
-    func paymentsViewControllerDidCancel(_ controller: PaymentsViewController) {
-        closePayments()
-    }
+    @objc(DWPaymentsViewControllerIndex_Pay)
+    case pay = 1
+
+    @objc(DWPaymentsViewControllerIndex_EnterAddress)
+    case enterAddress = 2
 }
 
 // MARK: HomeViewControllerDelegate
@@ -780,12 +775,6 @@ extension MainTabbarController: UITabBarControllerDelegate {
 // MARK: - EmptyController
 
 private final class EmptyController: UIViewController { }
-
-// MARK: - MainTabbarController + SuccessTxDetailViewControllerDelegate
-
-extension MainTabbarController: SuccessTxDetailViewControllerDelegate {
-    func txDetailViewControllerDidFinish(controller: SuccessTxDetailViewController) { }
-}
 
 // MARK: - Exchange Rates
 

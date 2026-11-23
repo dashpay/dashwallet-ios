@@ -6,7 +6,7 @@
 
 A Wallet holder could be paid to their identity by its ID, but the wallet never showed that ID
 where a Payer is pointed to, and gave no feedback when credits landed.
-[ADR-0035](../../adr/0035-model-receive-options-as-a-receive-only-enum.md),
+[ADR-0064](../../adr/0064-model-receive-options-as-a-receive-only-enum.md),
 [ADR-0034](../../adr/0034-subtract-own-top-ups-via-a-typed-top-up-event.md).
 
 ## What changed
@@ -14,7 +14,7 @@ where a Payer is pointed to, and gave no feedback when credits landed.
 - **A fourth Receive option, Identity**, with Advanced Mode on and a username on the Current
   identity, on both Receive presentations (Payments and the sheet from a balance row) and nowhere
   else. Receive options are a Receive-only enum; Send and Internal transfer keep their own type.
-  [ADR-0035](../../adr/0035-model-receive-options-as-a-receive-only-enum.md).
+  [ADR-0064](../../adr/0064-model-receive-options-as-a-receive-only-enum.md).
 - **The Identity card:** a QR of the bare Base58 Identity ID, the ID as text, the username, Copy,
   Share ID, Specify amount unavailable, and a warning that identity funds pay for Dash apps and
   usernames and that most exchanges and many wallets send only to Core.

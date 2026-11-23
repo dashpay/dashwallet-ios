@@ -24,43 +24,43 @@ enum DashConnectUriError: LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .invalidKeyScheme:
-            return "The URI does not use the dash-key scheme."
+            return NSLocalizedString("The URI does not use the dash-key scheme.", comment: "DashConnect QR code error")
         case .invalidStScheme:
-            return "The URI does not use the dash-st scheme."
+            return NSLocalizedString("The URI does not use the dash-st scheme.", comment: "DashConnect QR code error")
         case .unexpectedAuthority:
-            return "DashConnect URIs must not contain // authority separators."
+            return NSLocalizedString("DashConnect URIs must not contain // authority separators.", comment: "DashConnect QR code error")
         case .missingQuery:
-            return "DashConnect URIs must include query parameters."
+            return NSLocalizedString("DashConnect URIs must include query parameters.", comment: "DashConnect QR code error")
         case .emptyBody:
-            return "DashConnect URIs must include a non-empty Base58 body."
+            return NSLocalizedString("DashConnect URIs must include a non-empty Base58 body.", comment: "DashConnect QR code error")
         case .missingNetwork:
-            return "DashConnect URIs must include the network query item."
+            return NSLocalizedString("DashConnect URIs must include the network query item.", comment: "DashConnect QR code error")
         case .missingVersion:
-            return "DashConnect URIs must include the version query item."
+            return NSLocalizedString("DashConnect URIs must include the version query item.", comment: "DashConnect QR code error")
         case .unsupportedVersion:
-            return "Only DashConnect URI version 1 is supported."
+            return NSLocalizedString("Only DashConnect URI version 1 is supported.", comment: "DashConnect QR code error")
         case .unknownNetwork:
-            return "The URI contains an unknown DashConnect network code."
+            return NSLocalizedString("The URI contains an unknown DashConnect network code.", comment: "DashConnect QR code error")
         case .invalidBase58:
-            return "The URI body is not valid Base58."
+            return NSLocalizedString("The URI body is not valid Base58.", comment: "DashConnect QR code error")
         case .keyPayloadTooShort:
-            return "The dash-key payload is shorter than the minimum 67-byte format."
+            return NSLocalizedString("The dash-key payload is shorter than the minimum 67-byte format.", comment: "DashConnect QR code error")
         case .invalidKeyPayloadVersion:
-            return "The dash-key payload version byte is not supported."
+            return NSLocalizedString("The dash-key payload version byte is not supported.", comment: "DashConnect QR code error")
         case .keyLabelTooLong:
-            return "The dash-key payload label is longer than 64 bytes."
+            return NSLocalizedString("The dash-key payload label is longer than 64 bytes.", comment: "DashConnect QR code error")
         case .keyLabelLengthOverrunsPayload:
-            return "The dash-key payload label length overruns the payload."
+            return NSLocalizedString("The dash-key payload label length overruns the payload.", comment: "DashConnect QR code error")
         case .invalidEphemeralPublicKey:
-            return "The dash-key payload contains an invalid compressed secp256k1 point."
+            return NSLocalizedString("The dash-key payload contains an invalid compressed secp256k1 point.", comment: "DashConnect QR code error")
         case .invalidKeyLabelEncoding:
-            return "The dash-key application label is not valid UTF-8."
+            return NSLocalizedString("The dash-key application label is not valid UTF-8.", comment: "DashConnect QR code error")
         case .emptyTransitionPayload:
-            return "The dash-st payload must be non-empty."
+            return NSLocalizedString("The dash-st payload must be non-empty.", comment: "DashConnect QR code error")
         case .bodyTooLong:
-            return "The URI body is longer than the DashConnect payload format allows."
+            return NSLocalizedString("The URI body is longer than the DashConnect payload format allows.", comment: "DashConnect QR code error")
         case .queryTooLong:
-            return "The URI query is longer than DashConnect allows."
+            return NSLocalizedString("The URI query is longer than DashConnect allows.", comment: "DashConnect QR code error")
         }
     }
 }
@@ -233,7 +233,7 @@ enum DashConnectUri {
         if query.first == "?" { query = query.dropFirst() }
         let parameters = try appConnectParameters(query, known: ["n", "v", "cb"])
 
-        return try finishAppConnectRequest(parameters) {
+        return try finishAppConnectRequest(parameters, refusesMainnet: true) {
             // Before the decode, as for the other two formats: its cost is
             // quadratic in the encoded length.
             guard body.utf8.count <= maxEncodedLength(forPayloadBytes: maxAppConnectPayloadLength) else {
@@ -334,7 +334,7 @@ enum DashConnectUri {
         }
         let parameters = try appConnectParameters(query.dropFirst(), known: ["n", "v", "r", "cb"])
 
-        return try finishAppConnectRequest(parameters) {
+        return try finishAppConnectRequest(parameters, refusesMainnet: false) {
             guard let encoded = parameters["r"], !encoded.isEmpty else {
                 throw AppConnectRequestError.invalid("request is missing")
             }
@@ -405,8 +405,10 @@ enum DashConnectUri {
     }
 
     /// The part both carriers share: `v`, then `n`, then the body bytes the
-    /// carrier produces, then `cb`, then the body decoder.
+    /// carrier produces, then `cb`, then the body decoder. `refusesMainnet`
+    /// refuses a request for mainnet before its body is read.
     private static func finishAppConnectRequest(_ parameters: [String: String],
+                                                refusesMainnet: Bool,
                                                 payload: () throws -> Data) throws -> AppConnectUri {
         guard parameters["v"] == appConnectVersion else {
             // The value is untrusted and unbounded: only a short number is echoed.
@@ -416,11 +418,10 @@ enum DashConnectUri {
         guard let network = parameters["n"].flatMap(DashConnectNetwork.init(rawValue:)) else {
             throw AppConnectRequestError.invalid("unknown network")
         }
-        // Not enabled on mainnet yet (ADR-0009), on either carrier; the DIP
-        // allows `dashpay://connect` there. Refused here, so it does not rest
-        // on DashConnect being off on mainnet.
-        guard network != .mainnet else {
-            throw AppConnectRequestError.invalid("request v2 is not enabled on mainnet")
+        // The DIP defines `dash-key:` version 2 for testnet and devnets
+        // only; on mainnet a request comes as `dashpay://connect`.
+        guard !(refusesMainnet && network == .mainnet) else {
+            throw AppConnectRequestError.invalid("dash-key request v2 is not accepted on mainnet")
         }
         let body = try payload()
         guard body.count <= maxAppConnectPayloadLength else {

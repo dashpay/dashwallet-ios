@@ -47,7 +47,8 @@ final class AppConnectProjectionTests: XCTestCase {
 
     private static func intent(
         _ keys: [Key], app: Data = app, identity: Data = identity, published: Bool = false, createdAt: TimeInterval = 0,
-        refusal: AppConnect.ConsensusRefusal? = nil, removedAt: Date? = nil, label: String = "App", url: String = ""
+        refusal: AppConnect.ConsensusRefusal? = nil, removedAt: Date? = nil, label: String = "App", url: String = "",
+        publishStartBlockTimeMs: UInt64? = nil
     ) -> Intent {
         var intent = Intent(
             id: UUID(), identityId: identity, appId: app, appLabel: label, appUrl: url, requestHash: Data(repeating: 0xEE, count: 20),
@@ -56,6 +57,7 @@ final class AppConnectProjectionTests: XCTestCase {
             responseDocumentId: published ? Data(repeating: 0xDD, count: 32) : nil, responseRemoved: !published, createdAt: Date(timeIntervalSince1970: createdAt), closedAt: nil)
         intent.refusal = refusal
         intent.removedAt = removedAt
+        intent.publishStartBlockTimeMs = publishStartBlockTimeMs
         return intent
     }
 
@@ -393,6 +395,19 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertEqual(entry.connectedAt, Date(timeIntervalSince1970: 300))
     }
 
+    /// The Disconnected tab lists entries, not rows: an entry carries its
+    /// row's "response may still be on Platform" mark (CodeRabbit, #1414).
+    func testADisconnectedEntryCarriesItsRowsResponseMark() {
+        var row = DAppConnection(
+            id: Self.app.toBase58String(), name: "App", url: "app.example", status: .disconnected,
+            updatedAt: Date(timeIntervalSince1970: 1))
+        XCTAssertFalse(PlatformDashConnectDataSource.disconnectedEntry(of: row, intents: []).responseMayRemain)
+
+        row.responseMayRemain = true
+
+        XCTAssertTrue(PlatformDashConnectDataSource.disconnectedEntry(of: row, intents: []).responseMayRemain)
+    }
+
     /// A Disconnected row whose marked intents cannot be read (none loaded)
     /// is listed with no disconnect time and no access, not with the row's
     /// own time.
@@ -454,6 +469,62 @@ final class AppConnectProjectionTests: XCTestCase {
         XCTAssertEqual(older.id, intent.id)
         intent.disconnectedAt = Date(timeIntervalSince1970: 1_773_132_300)
         XCTAssertEqual(try JSONDecoder().decode(Intent.self, from: JSONEncoder().encode(intent)), intent)
+    }
+
+    // MARK: The publish start and the unresolved predicate
+
+    private static let window: UInt64 = 172_800_000
+    private static let start: UInt64 = 1_799_000_000_000
+
+    /// Edge case: start nil (written before the change, or no publish).
+    func testAPublishWithNoRecordedStartIsNotUnresolved() {
+        let intent = Self.intent([Self.authKey(10)], publishStartBlockTimeMs: nil)
+        XCTAssertFalse(AppConnect.isPublishUnresolved(intent, platformTime: Self.start))
+        XCTAssertFalse(AppConnect.isPublishUnresolved(intent, platformTime: nil))
+    }
+
+    /// Edge case: responseDocumentId set.
+    func testAPublishWhoseDocumentIsKnownIsNotUnresolved() {
+        let intent = Self.intent([Self.authKey(10)], published: true, publishStartBlockTimeMs: Self.start)
+        XCTAssertNotNil(intent.responseDocumentId)
+        XCTAssertFalse(AppConnect.isPublishUnresolved(intent, platformTime: Self.start))
+        XCTAssertFalse(AppConnect.isPublishUnresolved(intent, platformTime: nil))
+    }
+
+    /// Edge cases: 48 h minus 1 ms, exactly 48 h.
+    func testAPublishIsUnresolvedUntilFortyEightHoursOfPlatformTimePassed() {
+        let intent = Self.intent([Self.authKey(10)], publishStartBlockTimeMs: Self.start)
+        XCTAssertNil(intent.responseDocumentId)
+        XCTAssertTrue(AppConnect.isPublishUnresolved(intent, platformTime: Self.start + Self.window - 1))
+        XCTAssertFalse(AppConnect.isPublishUnresolved(intent, platformTime: Self.start + Self.window))
+        XCTAssertFalse(AppConnect.isPublishUnresolved(intent, platformTime: Self.start + Self.window + 1))
+    }
+
+    /// Edge case: no fresh block time keeps the publish unresolved (ADR-0002).
+    func testAPublishStaysUnresolvedWithoutPlatformTime() {
+        let intent = Self.intent([Self.authKey(10)], publishStartBlockTimeMs: Self.start)
+        XCTAssertTrue(AppConnect.isPublishUnresolved(intent, platformTime: nil))
+    }
+
+    /// Edge case: a lagging node reports a block time before the start.
+    func testAPublishIsUnresolvedWhenPlatformTimeIsEarlierThanItsStart() {
+        let intent = Self.intent([Self.authKey(10)], publishStartBlockTimeMs: Self.start)
+        XCTAssertTrue(AppConnect.isPublishUnresolved(intent, platformTime: Self.start - 1))
+        XCTAssertTrue(AppConnect.isPublishUnresolved(intent, platformTime: 0))
+    }
+
+    /// Edge case: a row decoded from JSON without the key; a row with it round-trips.
+    func testAnIntentStoredWithoutThePublishStartLoadsAsNilAndOneWithItRoundTrips() throws {
+        var intent = Self.intent([Self.authKey(10)])
+        var json = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(intent)) as? [String: Any])
+        json.removeValue(forKey: "publishStartBlockTimeMs")
+        let older = try JSONDecoder().decode(Intent.self, from: JSONSerialization.data(withJSONObject: json))
+        XCTAssertNil(older.publishStartBlockTimeMs)
+        XCTAssertEqual(older.id, intent.id)
+        intent.publishStartBlockTimeMs = Self.start
+        let decoded = try JSONDecoder().decode(Intent.self, from: JSONEncoder().encode(intent))
+        XCTAssertEqual(decoded.publishStartBlockTimeMs, Self.start)
+        XCTAssertEqual(decoded, intent)
     }
 
     // MARK: Status of one intent
@@ -980,6 +1051,210 @@ final class AppConnectProjectionTests: XCTestCase {
         let rows = PlatformDashConnectDataSource.rows(
             [], after: projection, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 2))
         XCTAssertEqual(rows.map(\.status), [.disconnected])
+    }
+
+    // MARK: Response may remain on a Disconnected row (T2, AC-12)
+
+    private static func projectedRows(_ intents: [Intent], _ keys: [AppConnect.PlatformKey]) -> [DAppConnection] {
+        PlatformDashConnectDataSource.rows(
+            [], after: AppConnect.project([snapshot(keys)], intents: intents), of: identity, intents: [], at: Date(timeIntervalSince1970: 2))
+    }
+
+    /// AC-12: a closed intent whose response is not removed marks the app's
+    /// Disconnected row, and the mark goes once the response is recorded removed.
+    func testADisconnectedRowWithAClosedNotRemovedResponseMayHaveItRemain() {
+        let a = Self.authKey(10)
+        let keys = [Self.onPlatform(a, disabledAt: 1)]
+        let closed = Self.closed(Self.intent([a], published: true))
+        XCTAssertFalse(closed.responseRemoved)
+        XCTAssertTrue(try XCTUnwrap(Self.connection([closed], keys)).responseMayRemain)
+        let rows = Self.projectedRows([closed], keys)
+        XCTAssertEqual(rows.map(\.status), [.disconnected])
+        XCTAssertEqual(rows.first?.responseMayRemain, true)
+
+        var removed = closed
+        removed.responseRemoved = true
+        XCTAssertFalse(try XCTUnwrap(Self.connection([removed], keys)).responseMayRemain)
+        XCTAssertEqual(Self.projectedRows([removed], keys).first?.responseMayRemain, false, "the mark goes once the response is removed")
+    }
+
+    /// A row kept while a key's bound is unknown (an open intent C a
+    /// disconnect marked) keeps its status, but its mark follows the read:
+    /// the older closed A's response recorded removed clears it.
+    func testARowKeptWhileAKeyIsUnplacedTakesItsMarkFromTheRead() {
+        let a = Self.authKey(10), c = Self.authKey(11)
+        let older = Self.closed(Self.intent([a], published: false, createdAt: 1))
+        XCTAssertTrue(older.responseRemoved)
+        var marked = Self.intent([c], published: true, createdAt: 2)
+        marked.disconnectedAt = Date(timeIntervalSince1970: 5)
+        let projection = AppConnect.project(
+            [Self.snapshot([Self.onPlatform(a, disabledAt: 1), Self.onPlatform(c, disabledAt: 1)])], intents: [older, marked])
+        var row = DAppConnection(
+            id: Self.app.toBase58String(), name: "App", url: "", status: .disconnected,
+            updatedAt: Date(timeIntervalSince1970: 1))
+        row.responseMayRemain = true
+
+        let rows = PlatformDashConnectDataSource.rows(
+            [row], after: projection, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 2),
+            keeping: [Self.app.toBase58String()])
+
+        XCTAssertEqual(rows.map(\.status), [.disconnected], "the kept row keeps its status")
+        XCTAssertEqual(rows.first?.responseMayRemain, false, "the mark follows the read")
+    }
+
+    /// A row kept because its intents could not be read: the read has no
+    /// connection of the app, so its mark stays (CodeRabbit, #1414).
+    func testARowKeptWithNoConnectionInTheReadKeepsItsMark() {
+        let projection = AppConnect.project([Self.snapshot([])], intents: [])
+        var row = DAppConnection(
+            id: Self.app.toBase58String(), name: "App", url: "", status: .disconnected,
+            updatedAt: Date(timeIntervalSince1970: 1))
+        row.responseMayRemain = true
+
+        let rows = PlatformDashConnectDataSource.rows(
+            [row], after: projection, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 2),
+            keeping: [Self.app.toBase58String()])
+
+        XCTAssertEqual(rows.first?.responseMayRemain, true)
+    }
+
+    /// A row kept because some of the app's intents could not be read keeps
+    /// its mark, though a readable intent of the same app has its response
+    /// removed: the unread one may still hold one (PastaClaw round 8, #1414).
+    func testAMarkOfAnAppReadOnlyInPartIsNotClearedByAReadableSibling() {
+        let a = Self.authKey(10)
+        let keys = [Self.onPlatform(a, disabledAt: 1)]
+        let readable = Self.closed(Self.intent([a], published: false))
+        XCTAssertTrue(readable.responseRemoved)
+        let projection = AppConnect.project([Self.snapshot(keys)], intents: [readable])
+        XCTAssertFalse(try XCTUnwrap(Self.connection([readable], keys)).responseMayRemain)
+        var row = DAppConnection(
+            id: Self.app.toBase58String(), name: "App", url: "", status: .disconnected,
+            updatedAt: Date(timeIntervalSince1970: 1))
+        row.responseMayRemain = true
+        let app: Set<String> = [Self.app.toBase58String()]
+
+        let partial = PlatformDashConnectDataSource.rows(
+            [row], after: projection, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 2),
+            keeping: app, unreadable: app)
+        XCTAssertEqual(partial.map(\.status), [.disconnected])
+        XCTAssertEqual(partial.first?.responseMayRemain, true, "the unread intent may hold a response")
+
+        let whole = PlatformDashConnectDataSource.rows(
+            [row], after: projection, of: Self.identity, intents: [], at: Date(timeIntervalSince1970: 2))
+        XCTAssertEqual(whole.first?.responseMayRemain, false, "a whole read clears it")
+    }
+
+    /// A closed intent of another identity whose response is not removed
+    /// keeps the Disconnected row's mark, though this identity's own closed
+    /// intent has its response removed (CodeRabbit, #1414).
+    func testAMarkHeldByAnotherIdentitysResponseIsNotClearedByThisRead() {
+        let a = Self.authKey(10)
+        let keys = [Self.onPlatform(a, disabledAt: 1)]
+        let own = Self.closed(Self.intent([a], published: false))
+        XCTAssertTrue(own.responseRemoved)
+        let projection = AppConnect.project([Self.snapshot(keys)], intents: [own])
+        var row = DAppConnection(
+            id: Self.app.toBase58String(), name: "App", url: "", status: .disconnected,
+            updatedAt: Date(timeIntervalSince1970: 1))
+        row.responseMayRemain = true
+        let other = Self.closed(Self.intent([Self.authKey(20)], identity: Self.otherIdentity, published: true))
+        XCTAssertFalse(other.responseRemoved)
+
+        let held = PlatformDashConnectDataSource.rows(
+            [row], after: projection, of: Self.identity, intents: [other], at: Date(timeIntervalSince1970: 2))
+        XCTAssertEqual(held.map(\.status), [.disconnected])
+        XCTAssertEqual(held.first?.responseMayRemain, true, "the other identity's response may remain")
+
+        var removed = other
+        removed.responseRemoved = true
+        let cleared = PlatformDashConnectDataSource.rows(
+            [row], after: projection, of: Self.identity, intents: [removed], at: Date(timeIntervalSince1970: 2))
+        XCTAssertEqual(cleared.first?.responseMayRemain, false, "with every response removed the mark goes")
+    }
+
+    /// Edge: every closed intent of the Disconnected app has its response removed.
+    func testADisconnectedRowWhoseClosedResponsesAreAllRemovedHasNoMark() {
+        let a = Self.authKey(10)
+        let closed = Self.closed(Self.intent([a], published: false))
+        XCTAssertTrue(closed.responseRemoved)
+        let rows = Self.projectedRows([closed], [Self.onPlatform(a, disabledAt: 1)])
+        XCTAssertEqual(rows.map(\.status), [.disconnected])
+        XCTAssertEqual(rows.first?.responseMayRemain, false)
+    }
+
+    /// Edge: one closed intent of the app with a response left is enough, wherever it sits among the app's intents.
+    func testOneClosedIntentWithAResponseLeftMarksTheRowAmongRemovedOnes() {
+        let a = Self.authKey(10), b = Self.authKey(11)
+        let left = Self.closed(Self.intent([a], published: true, createdAt: 1))
+        let gone = Self.closed(Self.intent([b], published: false, createdAt: 2))
+        let keys = [Self.onPlatform(a, disabledAt: 1), Self.onPlatform(b, disabledAt: 1)]
+        let rows = Self.projectedRows([left, gone], keys)
+        XCTAssertEqual(rows.map(\.status), [.disconnected])
+        XCTAssertEqual(rows.first?.responseMayRemain, true)
+    }
+
+    /// Edge: an Active row never carries the mark, though an older connection
+    /// of the app is closed with its response not removed.
+    func testAnActiveRowIsNotMarkedByAnOlderClosedNotRemovedResponse() {
+        let a = Self.authKey(10), b = Self.authKey(11)
+        let older = Self.closed(Self.intent([a], published: true, createdAt: 1))
+        let newer = Self.intent([b], published: true, createdAt: 2)
+        let rows = Self.projectedRows([older, newer], [Self.fence(a), Self.onPlatform(b)])
+        XCTAssertEqual(rows.map(\.status), [.active])
+        XCTAssertEqual(rows.first?.responseMayRemain, false)
+    }
+
+    /// Edge: a Confirming row never carries the mark either.
+    func testAConfirmingRowIsNotMarkedByAnOlderClosedNotRemovedResponse() {
+        let a = Self.authKey(10), b = Self.authKey(11)
+        let older = Self.closed(Self.intent([a], published: true, createdAt: 1))
+        let newer = Self.intent([b], createdAt: 2)
+        let rows = Self.projectedRows([older, newer], [Self.fence(a)])
+        XCTAssertEqual(rows.map(\.status), [.confirming])
+        XCTAssertEqual(rows.first?.responseMayRemain, false)
+    }
+
+    /// Edge: another app's closed, not-removed response marks that app's row only.
+    func testAnotherAppsClosedResponseMarksThatAppsRowOnly() {
+        let a = Self.authKey(10), b = Self.authKey(11, bound: .singleContract(Self.otherApp))
+        let mine = Self.closed(Self.intent([a], published: false))
+        let theirs = Self.closed(Self.intent([b], app: Self.otherApp, published: true))
+        let rows = Self.projectedRows([mine, theirs], [Self.onPlatform(a, disabledAt: 1), Self.onPlatform(b, disabledAt: 1)])
+        XCTAssertEqual(rows.count, 2)
+        XCTAssertEqual(rows.first { $0.id == Self.app.toBase58String() }?.responseMayRemain, false)
+        XCTAssertEqual(rows.first { $0.id == Self.otherApp.toBase58String() }?.responseMayRemain, true)
+    }
+
+    /// Another identity's closed, not-removed response of the same app does
+    /// not mark the row projected from this identity's read: only that
+    /// identity's refresh and operations reach it.
+    func testAnotherIdentitysClosedResponseDoesNotMarkTheRowOfTheReadIdentity() {
+        let a = Self.authKey(10), b = Self.authKey(11)
+        let mine = Self.closed(Self.intent([a], published: false))
+        let theirs = Self.closed(Self.intent([b], identity: Self.otherIdentity, published: true))
+        let keys = [Self.onPlatform(a, disabledAt: 1)]
+
+        let rows = Self.projectedRows([mine, theirs], keys)
+
+        XCTAssertEqual(rows.map(\.status), [.disconnected])
+        XCTAssertEqual(rows.first?.responseMayRemain, false)
+        XCTAssertEqual(Self.connection([mine, theirs], keys)?.responseMayRemain, false)
+
+        var mineLeft = mine
+        mineLeft.responseRemoved = false
+        mineLeft.responseDocumentId = Data(repeating: 0xDD, count: 32)
+        let ownMark = Self.projectedRows([mineLeft, theirs], keys).first?.responseMayRemain
+        XCTAssertEqual(ownMark, true, "its own still marks it")
+    }
+
+    /// Edge: an intent hidden by Remove yields no row, so no mark.
+    func testAnIntentHiddenByRemoveYieldsNoRowAndNoMark() {
+        let a = Self.authKey(10)
+        let gone = Self.closed(Self.intent([a], published: true, removedAt: Self.removedAt))
+        let keys = [Self.onPlatform(a, disabledAt: 1)]
+        XCTAssertEqual(Self.projectedRows([gone], keys).count, 0)
+        XCTAssertNotEqual(Self.connection([gone], keys)?.responseMayRemain, true)
     }
 
     /// T36 (G2, AC-19): a closed Disconnected A keeps its row when a newer
@@ -1532,7 +1807,7 @@ final class AppConnectProjectionTests: XCTestCase {
             appId: app, appEphemeralPubKeyHash: Data(repeating: 0xEE, count: 20),
             auth: [AppConnect.AuthGrant(bindingIndex: 0, binding: binding, totalBudget: budget, expiresAt: expiresAt)],
             encryption: encryption.enumerated().map { AppConnect.EncryptionGrant(bindingIndex: $0.offset, binding: $0.element) },
-            connectionId: connectionId, identityHint: nil, createdAt: 0, callbackHost: nil)
+            connectionId: connectionId, identityHint: nil, createdAt: 0)
     }
 
     // MARK: Fence

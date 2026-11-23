@@ -981,7 +981,7 @@ private struct SendAddressSummary: View {
                 identitySeed: contact.contactIdentityId)
             VStack(alignment: .leading, spacing: 2) {
                 Text(contact.displayTitle)
-                    .font(.system(size: 15, weight: .medium))
+                    .scaledSystemFont(size: 15, weight: .medium, relativeTo: .subheadline)
                     .foregroundColor(.primaryText)
                     .lineLimit(1)
                 // Only when it adds something: the title is already the alias
@@ -990,14 +990,14 @@ private struct SendAddressSummary: View {
                    !username.isEmpty,
                    username != contact.displayTitle {
                     Text(username)
-                        .font(.system(size: 12))
+                        .scaledSystemFont(size: 12, relativeTo: .caption)
                         .foregroundColor(Color.dash.tertiaryText)
                         .lineLimit(1)
                 }
             }
             Spacer()
             Image(systemName: "chevron.right")
-                .font(.system(size: 13, weight: .medium))
+                .scaledSystemFont(size: 13, weight: .medium, relativeTo: .footnote)
                 .foregroundColor(.secondary)
         }
         .padding(12)
