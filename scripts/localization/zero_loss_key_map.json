@@ -1,5 +1,5 @@
 {
-  "baseline": "088eead15e5f829476fa740ae6c09cb40de9f743",
+  "baseline": "ee68513eb002dd3cdfb4e00800563cf5dea95bf2",
   "keys": {
     " ": [
       " "
@@ -135,9 +135,6 @@
     ],
     "%@ wants to connect. Accept to pay each other directly by username.": [
       "%@ wants to connect. Accept to pay each other directly by username."
-    ],
-    "%@ ~ %lu contacts / %lu profile updates": [
-      "%@ ~ %llu contacts / %llu profile updates"
     ],
     "%@ · Claimable %@ DASH": [
       "%@ · Claimable %@ DASH"
@@ -471,9 +468,6 @@
     ],
     "Add to your Shielded balance now and register your username privately a few hours later": [
       "Add to your Shielded balance now and register your username privately a few hours later"
-    ],
-    "Add your Friends & Family": [
-      "Add your Friends & Family"
     ],
     "Add your friends & family": [
       "Add your friends & family"
@@ -1104,9 +1098,6 @@
     ],
     "Choose Wallet": [
       "Choose Wallet"
-    ],
-    "Choose Your Username": [
-      "Choose Your Username"
     ],
     "Chunk process avg time": [
       "Chunk process avg time"
@@ -2422,9 +2413,6 @@
     "Get started by setting up your profile picture and other information.": [
       "Get started by setting up your profile picture and other information."
     ],
-    "Get your Username": [
-      "Get your Username"
-    ],
     "Gift card": [
       "Gift card"
     ],
@@ -2517,9 +2505,6 @@
     ],
     "Hold any button above to replace it with the function you need": [
       "Hold any button above to replace it with the function you need"
-    ],
-    "How do I get Test Dash?": [
-      "How do I get Test Dash?"
     ],
     "How does this compare to Bitcoin in terms of privacy?": [
       "How does this compare to Bitcoin in terms of privacy?"
@@ -2749,9 +2734,6 @@
     "Invalid": [
       "Invalid"
     ],
-    "Invalid Dash address": [
-      "Invalid Dash address"
-    ],
     "Invalid Input": [
       "Invalid Input"
     ],
@@ -2959,14 +2941,8 @@
     "Let another Dash Wallet user scan this code to add you as a contact.": [
       "Let another Dash Wallet user scan this code to add you as a contact."
     ],
-    "Let me know when it’s done": [
-      "Let me know when it’s done"
-    ],
     "Letter, numbers and hyphens only": [
       "Letter, numbers and hyphens only"
-    ],
-    "Let’s Get Started": [
-      "Let’s Get Started"
     ],
     "Link": [
       "Link"
@@ -3970,9 +3946,6 @@
     "Pay to usernames": [
       "Pay to usernames"
     ],
-    "Pay to usernames. No more alphanumeric addresses": [
-      "Pay to usernames. No more alphanumeric addresses"
-    ],
     "Pay with": [
       "Pay with"
     ],
@@ -4065,9 +4038,6 @@
     ],
     "Per-Phase Progress": [
       "Per-Phase Progress"
-    ],
-    "Personalize": [
-      "Personalize"
     ],
     "Personalize profile": [
       "Personalize profile"
@@ -4215,9 +4185,6 @@
     ],
     "Please vote to approve my requested Dash username - %@": [
       "Please vote to approve my requested Dash username - %@"
-    ],
-    "Please wait": [
-      "Please wait"
     ],
     "Please wait until the wallet is fully synced before exporting your transaction history": [
       "Please wait until the wallet is fully synced before exporting your transaction history"
@@ -4915,9 +4882,6 @@
     "Searching…": [
       "Searching…"
     ],
-    "Secure Your Wallet": [
-      "Secure Your Wallet"
-    ],
     "Security": [
       "Security"
     ],
@@ -5103,9 +5067,6 @@
     ],
     "Set PIN": [
       "Set PIN"
-    ],
-    "Set Your PIN": [
-      "Set Your PIN"
     ],
     "Set a funding limit and an expiry within the limits, then approve.": [
       "Set a funding limit and an expiry within the limits, then approve."
@@ -5353,9 +5314,6 @@
     "Stay in the wallet": [
       "Stay in the wallet"
     ],
-    "Step %ld": [
-      "Step %ld"
-    ],
     "Step 1 of 2 — moving Dash out of your Shielded balance…": [
       "Step 1 of 2 — moving Dash out of your Shielded balance…"
     ],
@@ -5530,9 +5488,6 @@
     "Takes your vote back": [
       "Takes your vote back"
     ],
-    "Tap the address from the clipboard to paste it": [
-      "Tap the address from the clipboard to paste it"
-    ],
     "Tap to copy": [
       "Tap to copy"
     ],
@@ -5568,9 +5523,6 @@
     ],
     "Test Dash is free and can be obtained from what is called a faucet.": [
       "Test Dash is free and can be obtained from what is called a faucet."
-    ],
-    "Test Dash is free and can be obtained from what is called a faucet.\nCopy an address from the Receive screen of your wallet and click on the button bellow to get your Dash.": [
-      "Test Dash is free and can be obtained from what is called a faucet.\nCopy an address from the Receive screen of your wallet and click on the button bellow to get your Dash."
     ],
     "Testnet": [
       "Testnet"
@@ -7126,9 +7078,6 @@
     "Wallet %@…": [
       "Wallet %@…"
     ],
-    "Wallet Address": [
-      "Wallet Address"
-    ],
     "Wallet birth height": [
       "Wallet birth height"
     ],
@@ -7236,9 +7185,6 @@
     ],
     "Welcome": [
       "Welcome"
-    ],
-    "Welcome to DashPay": [
-      "Welcome to DashPay"
     ],
     "What about Unstoppable Domains and similar name services?": [
       "What about Unstoppable Domains and similar name services?"
@@ -7782,9 +7728,6 @@
     ],
     "Your transfer must include this memo. Funds sent without it cannot be matched to your swap and will be lost.": [
       "Your transfer must include this memo. Funds sent without it cannot be matched to your swap and will be lost."
-    ],
-    "Your username %@ is being created on the Dash Network": [
-      "Your username %@ is being created on the Dash Network"
     ],
     "Your username has been successfully created": [
       "Your username has been successfully created"
