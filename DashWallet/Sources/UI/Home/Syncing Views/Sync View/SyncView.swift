@@ -15,162 +15,110 @@
 //  limitations under the License.
 //
 
-import UIKit
-
-// MARK: - SyncViewDelegate
-
-protocol SyncViewDelegate: AnyObject {
-    func syncViewRetryButtonAction(_ view: SyncView)
-}
+import SwiftUI
 
 // MARK: - SyncView
 
-final class SyncView: UIView {
-    weak var delegate: SyncViewDelegate?
+/// The card under the shortcut bar that reports a sync the wallet cannot
+/// continue: no connection, or a failed sync with a retry button. Hidden
+/// while the wallet syncs or is synced; the transaction list header shows
+/// that progress instead.
+struct SyncView: View {
+    // `@StateObject`: `SyncModelImpl.init` registers with the shared sync
+    // monitor, which holds it, so a model built on every re-init would leak.
+    @StateObject private var model = SyncModelImpl()
+    @Environment(\.horizontalSizeClass)
+    private var horizontalSizeClass
+    let onRetry: () -> Void
 
-    var hasNetwork: Bool {
-        model.networkStatus == .online
+    private enum Status {
+        case noConnection
+        case failed
     }
 
-    var syncState: SyncingActivityMonitor.State {
-        model.state
-    }
-
-    var viewStateSeeingBlocks = false
-
-    @IBOutlet var roundedView: UIView!
-    @IBOutlet var titleLabel: UILabel!
-    @IBOutlet var descriptionLabel: UILabel!
-    @IBOutlet var percentLabel: UILabel!
-    @IBOutlet var retryButton: UIButton!
-    @IBOutlet var progressView: ProgressView!
-
-    internal lazy var model: SyncModel = SyncModelImpl()
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-    }
-
-    required init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
-    }
-
-    private func commonInit() {
-        backgroundColor = UIColor.dw_secondaryBackground()
-
-        titleLabel.font = UIFont.dw_font(forTextStyle: .subheadline)
-        descriptionLabel.font = UIFont.dw_font(forTextStyle: .footnote)
-        percentLabel.font = UIFont.dw_font(forTextStyle: .title1)
-        viewStateSeeingBlocks = false
-
-        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(changeSeeBlocksStateAction(_:)))
-        roundedView.addGestureRecognizer(tapGestureRecognizer)
-
-        model.networkStatusDidChange = { [weak self] _ in
-            self?.updateView()
-        }
-
-        model.progressDidChange = { [weak self] progress in
-            self?.set(progress: Float(progress), animated: true)
-        }
-
-        model.stateDidChage = { [weak self] _ in
-            self?.updateView()
-        }
-    }
-
-    private func set(progress: Float, animated: Bool) {
-        percentLabel.text = String(format: "%.1f%%", progress * 100.0)
-        progressView.setProgress(progress, animated: animated)
-
-        if viewStateSeeingBlocks && syncState == .syncing {
-            updateUIForViewStateSeeingBlocks()
-        }
-    }
-
-    func updateUIForViewStateSeeingBlocks() {
-        if syncState == .syncing || syncState == .syncDone {
-            if viewStateSeeingBlocks {
-                let snapshot = SyncingActivityMonitor.shared.snapshot
-                switch snapshot.kind {
-                case .headers, .filterHeaders, .filters:
-                    descriptionLabel.text = String(format: NSLocalizedString("header #%d of %d", comment: ""),
-                        snapshot.lastTerminalBlockHeight,
-                        snapshot.estimatedBlockHeight)
-                case .masternodes:
-                    descriptionLabel.text = String(format: NSLocalizedString("masternode list #%d of %d", comment: ""),
-                        snapshot.masternodeListsReceived,
-                        snapshot.masternodeListsTotal)
-                default:
-                    descriptionLabel.text = String(format: NSLocalizedString("block #%d of %d", comment: ""),
-                        snapshot.lastSyncBlockHeight,
-                        snapshot.estimatedBlockHeight)
-                }
-            }
-            else {
-                descriptionLabel.text = NSLocalizedString("with Dash blockchain", comment: "")
-            }
-        }
-    }
-
-    @objc
-    func changeSeeBlocksStateAction(_ sender: Any) {
-        viewStateSeeingBlocks.toggle()
-        updateUIForViewStateSeeingBlocks()
-    }
-
-    @IBAction
-    func retryButtonAction(_ sender: Any) {
-        model.forceStartSyncingActivity()
-
-        delegate?.syncViewRetryButtonAction(self)
-    }
-
-    override func awakeFromNib() {
-        super.awakeFromNib()
-
-        commonInit()
-        updateView()
-    }
-}
-
-extension SyncView {
-    private func updateView() {
-        switch syncState {
-        case .syncing, .syncDone:
-            roundedView.backgroundColor = UIColor.dw_background()
-            percentLabel.isHidden = false
-            retryButton.isHidden = true
-            progressView.isHidden = false
-            titleLabel.text = NSLocalizedString("Syncing", comment: "")
-            updateUIForViewStateSeeingBlocks()
-
+    private var status: Status? {
+        switch model.state {
+        case .noConnection:
+            return .noConnection
         case .syncFailed:
-            roundedView.backgroundColor = UIColor.dw_background()
-            percentLabel.isHidden = true
-            retryButton.tintColor = UIColor.dw_red()
-            retryButton.isHidden = false
-            progressView.isHidden = false
-            titleLabel.text = NSLocalizedString("Sync Failed", comment: "")
-            descriptionLabel.text = NSLocalizedString("Please try again", comment: "")
+            return model.networkStatus == .online ? .failed : .noConnection
         default:
-            break
+            return nil
         }
+    }
 
-        if hasNetwork {
-            titleLabel.textColor = UIColor.dw_secondaryText()
-            descriptionLabel.textColor = UIColor.dw_quaternaryText()
-        } else {
-            titleLabel.textColor = UIColor.dw_lightTitle()
-            descriptionLabel.textColor = UIColor.dw_lightTitle()
-
-            roundedView.backgroundColor = UIColor.dw_red()
-            percentLabel.isHidden = true
-            retryButton.tintColor = UIColor.dw_background()
-            retryButton.isHidden = false
-            progressView.isHidden = true
-            titleLabel.text = NSLocalizedString("Unable to connect", comment: "")
-            descriptionLabel.text = NSLocalizedString("Check your connection", comment: "")
+    var body: some View {
+        if let status {
+            card(status)
+                .padding(.horizontal, horizontalSizeClass == .regular ? 20 : 16)
+                .padding(.vertical, 8)
         }
+    }
+
+    private func card(_ status: Status) -> some View {
+        HStack(spacing: 16) {
+            VStack(alignment: .leading, spacing: 0) {
+                Text(title(status))
+                    .font(Font(UIFont.dw_font(forTextStyle: .subheadline)))
+                    .foregroundColor(Color(uiColor: status == .noConnection ? .dw_lightTitle() : .dw_secondaryText()))
+                Text(subtitle(status))
+                    .font(Font(UIFont.dw_font(forTextStyle: .footnote)))
+                    .foregroundColor(Color(uiColor: status == .noConnection ? .dw_lightTitle() : .dw_quaternaryText()))
+            }
+            .padding(.leading, 7)
+            .padding(.vertical, 5)
+
+            Spacer(minLength: 0)
+
+            Button(action: retry) {
+                Image("icon_reload")
+                    .renderingMode(.template)
+                    .foregroundColor(Color(uiColor: status == .noConnection ? .dw_background() : .dw_red()))
+                    .frame(width: 44, height: 44)
+            }
+            .accessibilityLabel(Text(NSLocalizedString("Retry", comment: "")))
+        }
+        .padding(.horizontal, 16)
+        .frame(minHeight: 70)
+        .overlay(alignment: .bottom) {
+            if status == .failed {
+                progressBar
+            }
+        }
+        .background(Color(uiColor: status == .noConnection ? .dw_red() : .dw_background()))
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .shadow(color: Color(uiColor: .dw_shadow()).opacity(0.02), radius: 2.5)
+    }
+
+    /// How far the sync got before it failed.
+    private var progressBar: some View {
+        GeometryReader { proxy in
+            ZStack(alignment: .leading) {
+                Color(uiColor: .dw_progressBackground())
+                Color(uiColor: .dw_green())
+                    .frame(width: proxy.size.width * min(max(model.progress, 0), 1))
+            }
+        }
+        .frame(height: 5)
+        .accessibilityHidden(true)
+    }
+
+    private func title(_ status: Status) -> String {
+        switch status {
+        case .noConnection: NSLocalizedString("Unable to connect", comment: "")
+        case .failed: NSLocalizedString("Sync Failed", comment: "")
+        }
+    }
+
+    private func subtitle(_ status: Status) -> String {
+        switch status {
+        case .noConnection: NSLocalizedString("Check your connection", comment: "")
+        case .failed: NSLocalizedString("Please try again", comment: "")
+        }
+    }
+
+    private func retry() {
+        model.forceStartSyncingActivity()
+        onRetry()
     }
 }
