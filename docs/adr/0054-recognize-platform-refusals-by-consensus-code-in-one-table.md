@@ -61,3 +61,4 @@ and makes the remaining text matches a visible, bounded list.
 - Related ADRs: [0021](0021-record-a-consensus-refusal-on-the-intent.md),
   [0013](0013-treat-dashuikit-and-swiftdashsdk-as-library-surfaces.md)
 - Upstream: dashpay/platform#4838
+- PR: #1476
