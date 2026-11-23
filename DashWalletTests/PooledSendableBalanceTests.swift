@@ -168,10 +168,9 @@ final class PooledSendableBalanceTests: XCTestCase {
             pool: { pool })
     }
 
-    /// The "still confirming" message a Core-funded route gives: it names
-    /// no usable amount.
+    /// The "still confirming" message that names no usable amount.
     private func confirmingMessage(_ confirmingDuffs: UInt64) -> String? {
-        SendAmountError.fundsStillConfirming(confirmingDuffs, availableNowDuffs: nil).errorDescription
+        SendAmountError.fundsStillConfirming(confirmingDuffs, nothingUsableYet: false).errorDescription
     }
 
     func testCoreRouteFitDoesNotReadThePoolEvenIfTheReserveOverflows() {
@@ -243,9 +242,7 @@ final class PooledSendableBalanceTests: XCTestCase {
             routeCostDuffs: 3_000_000,
             pool: pool(confirmed: 100_000_000, unconfirmed: 20_000_000))
 
-        XCTAssertEqual(
-            message,
-            confirmingMessage(20_000_000))
+        XCTAssertEqual(message, confirmingMessage(20_000_000))
     }
 
     // MARK: What a "still confirming" note may name
@@ -263,7 +260,7 @@ final class PooledSendableBalanceTests: XCTestCase {
             pool: { self.pool(confirmed: sendableDuffs, unconfirmed: 50_000_000) }) ?? ""
     }
 
-    func testACoreFundedRouteNeverNamesAUsableAmount() {
+    func testACoreFundedRouteNeverSaysNothingIsUsable() {
         // Whatever the typed ceiling, an asset lock draws only final,
         // unreserved inputs the app cannot quote: a positive ceiling may be
         // held by a reservation or pending coins, and a zero one does not
@@ -271,95 +268,30 @@ final class PooledSendableBalanceTests: XCTestCase {
         for (ceiling, sendable) in [(UInt64(96_000_000), UInt64(100_000_000)), (0, 213_081), (0, 0)] {
             let message = coreRouteConfirmingMessage(ceilingDuffs: ceiling, sendableDuffs: sendable)
             XCTAssertEqual(message, confirmingMessage(50_000_000), "ceiling \(ceiling)")
-            XCTAssertFalse(message.contains("up to"), "got: \(message)")
-            XCTAssertFalse(message.contains("None of your balance"), "got: \(message)")
+            XCTAssertFalse(message.contains("Nothing can be sent"), "got: \(message)")
         }
     }
 
-    private func usableNow(
-        gate: UInt64,
-        offer: UInt64? = nil,
-        minimum: UInt64? = 546,
-        oneTransactionMax: UInt64?,
-        reads: UnsafeMutablePointer<Int>? = nil
-    ) -> UInt64? {
-        SendAmountError.usableNowDuffs(
-            gateCeilingDuffs: gate,
-            offerCeilingDuffs: offer ?? gate,
-            minimumDuffs: minimum,
-            oneTransactionMaxDuffs: { reads?.pointee += 1; return oneTransactionMax })
-    }
-
-    func testAnOrdinaryOfferIsHeldToWhatOneTransactionCanSpend() {
-        // 501 confirmed coins of 0.01 DASH: the fee-aware Max sees all of
-        // them, but one transaction takes at most 500 inputs.
-        let oneTransaction: UInt64 = 499_925_000
-        XCTAssertEqual(usableNow(gate: 501_000_000, offer: 500_888_439, oneTransactionMax: oneTransaction),
-                       oneTransaction)
-        XCTAssertEqual(usableNow(gate: 30_000_000, oneTransactionMax: oneTransaction), 30_000_000,
-                       "an offer under the transaction limit is the gate's own Max")
-    }
-
-    func testAnOrdinaryOfferNamesNoAmountWhenOneTransactionCannotBeQuoted() {
-        XCTAssertNil(usableNow(gate: 30_000_000, oneTransactionMax: nil))
-        XCTAssertNil(usableNow(gate: 30_000_000, oneTransactionMax: 500),
-                     "what one transaction pays falls below the output minimum, which does not mean nothing is usable")
-        XCTAssertNil(usableNow(gate: 1_000, offer: 400, oneTransactionMax: 1_000),
-                     "the gate accepts more than Max fills, so a dust-sized Max is not a reason to wait")
-    }
-
-    func testOnlyAGateThatRefusesEverythingSaysNothingIsUsable() {
-        var reads = 0
-        XCTAssertEqual(usableNow(gate: 545, oneTransactionMax: 10_000, reads: &reads), 0)
-        XCTAssertEqual(usableNow(gate: 0, oneTransactionMax: nil, reads: &reads), 0)
-        XCTAssertEqual(reads, 0, "nothing passes the gate, so one transaction's limit is not read")
-        XCTAssertNil(usableNow(gate: 30_000_000, minimum: nil, oneTransactionMax: 10_000, reads: &reads),
-                     "an unknown minimum names nothing")
-        XCTAssertEqual(reads, 0)
-    }
-
-    private func purchaseRange(
-        fixed: Bool = false, denominations: [Int] = [], inventory: [Int: Int] = [:],
-        basket: [Decimal]? = nil, minimum: Decimal, maximum: Decimal
-    ) -> ClosedRange<Decimal>? {
-        DashSpendPayViewModel.purchaseRangeFiat(
-            isFixedDenomination: fixed, denominations: denominations, inventory: inventory,
-            basketDenominations: basket, basketMaximum: 2_500, minimumAmount: minimum, maximumAmount: maximum)
-    }
-
-    func testDashSpendNamesNoCardPriceUntilTheMerchantRangeIsLoaded() {
-        XCTAssertNil(purchaseRange(minimum: 0, maximum: 0), "range still loading")
-        XCTAssertNil(purchaseRange(minimum: 10, maximum: 0), "no maximum: Continue refuses every amount")
-        XCTAssertNil(purchaseRange(minimum: 0, maximum: 500), "no minimum loaded")
-        XCTAssertNil(purchaseRange(minimum: 600, maximum: 500))
-        XCTAssertEqual(purchaseRange(minimum: 10, maximum: 500), 10...500)
-        XCTAssertNil(purchaseRange(basket: [], minimum: 0, maximum: 0), "the Multiple panel offers no card")
-        XCTAssertEqual(purchaseRange(basket: [50, 25, 100], minimum: 5, maximum: 500), 25...2_500)
-        XCTAssertEqual(purchaseRange(fixed: true, denominations: [25, 10, 50], inventory: [10: 0],
-                                     minimum: 0, maximum: 0), 25...50)
-        XCTAssertNil(purchaseRange(fixed: true, denominations: [10], inventory: [10: 0], minimum: 0, maximum: 0))
-
-        let message = SendAmountError.fundsStillConfirming(
-            50_000_000,
-            availableNowDuffs: usableNow(gate: 25_000_000, minimum: nil, oneTransactionMax: 25_000_000))
-            .errorDescription ?? ""
-        XCTAssertEqual(message, confirmingMessage(50_000_000))
-    }
-
-    func testDashSpendNeverOffersMoreThanTheLargestPurchase() {
-        // A $5–$100 merchant, $150 typed, $120 confirmed: checkout refuses
-        // anything above $100, so that is the most the note may name.
-        XCTAssertEqual(purchaseRange(minimum: 5, maximum: 100), 5...100)
-        func offer(ceiling: UInt64, purchases: ClosedRange<UInt64>?, oneTransactionMax: UInt64? = .max) -> UInt64? {
-            DashSpendPayViewModel.usableNowDuffs(
-                ceilingDuffs: ceiling, purchasesDuffs: purchases, oneTransactionMaxDuffs: { oneTransactionMax })
+    func testAnOrdinarySendAtOrAboveTheOutputMinimumNeverSaysNothingIsUsable() {
+        // Legacy Send, contact Send and DashSpend gate on the pooled figure,
+        // which still counts inputs another payment has reserved, and one
+        // transaction takes at most 500 inputs: no ceiling the gate accepts
+        // is an amount the build is known to take.
+        let minimum = CoreTxConstants.minOutputAmount
+        for ceiling in [minimum, 30_000_000, 501_000_000] {
+            let refusal = SendAmountError.stillConfirming(50_000_000, ceilingDuffs: ceiling)
+            XCTAssertEqual(refusal, .fundsStillConfirming(50_000_000, nothingUsableYet: false), "ceiling \(ceiling)")
+            XCTAssertEqual(refusal.errorDescription, confirmingMessage(50_000_000), "ceiling \(ceiling)")
         }
-        let purchases: ClosedRange<UInt64> = 5_000_000...100_000_000
-        XCTAssertEqual(offer(ceiling: 120_000_000, purchases: purchases), 100_000_000)
-        XCTAssertEqual(offer(ceiling: 60_000_000, purchases: purchases), 60_000_000)
-        XCTAssertEqual(offer(ceiling: 120_000_000, purchases: purchases, oneTransactionMax: 80_000_000), 80_000_000)
-        XCTAssertEqual(offer(ceiling: 4_000_000, purchases: purchases), 0, "the cheapest card is out of reach")
-        XCTAssertNil(offer(ceiling: 120_000_000, purchases: nil), "no purchase is known")
+    }
+
+    func testOnlyACeilingBelowTheOutputMinimumSaysNothingIsUsable() {
+        // Reservations only lower what a send can use, so a ceiling that
+        // cannot pay the smallest output certainly leaves nothing usable.
+        for ceiling in [0, CoreTxConstants.minOutputAmount - 1] {
+            XCTAssertEqual(SendAmountError.stillConfirming(50_000_000, ceilingDuffs: ceiling),
+                           .fundsStillConfirming(50_000_000, nothingUsableYet: true), "ceiling \(ceiling)")
+        }
     }
 
     func testCoreToShieldedRouteReturnsInsufficientWhenTheAmountCannotFitAfterConfirmation() {
@@ -397,9 +329,7 @@ final class PooledSendableBalanceTests: XCTestCase {
             routeCostDuffs: 3_000_000,
             pool: pool(confirmed: 0, unconfirmed: 100_000_000))
 
-        XCTAssertEqual(
-            message,
-            confirmingMessage(100_000_000))
+        XCTAssertEqual(message, confirmingMessage(100_000_000))
     }
 
     func testCoreToShieldedRouteHandlesConfirmedFundsBelowTheL1Reserve() {
@@ -410,9 +340,7 @@ final class PooledSendableBalanceTests: XCTestCase {
             routeCostDuffs: 3_000_000,
             pool: pool(confirmed: 50_000, unconfirmed: 100_000_000))
 
-        XCTAssertEqual(
-            message,
-            confirmingMessage(100_000_000))
+        XCTAssertEqual(message, confirmingMessage(100_000_000))
     }
 
     func testCoreToShieldedRouteDoesNotWaitWhileThePooledFigureIsUnknown() {
@@ -431,9 +359,7 @@ final class PooledSendableBalanceTests: XCTestCase {
             routeCostDuffs: 5_000_000,
             pool: pool(confirmed: 100_000_000, unconfirmed: 20_000_000))
 
-        XCTAssertEqual(
-            message,
-            confirmingMessage(20_000_000))
+        XCTAssertEqual(message, confirmingMessage(20_000_000))
     }
 
     func testCoreToPlatformRouteReturnsInsufficientWhenTheAmountCannotFitAfterConfirmation() {
@@ -471,9 +397,7 @@ final class PooledSendableBalanceTests: XCTestCase {
             routeCostDuffs: 5_000_000,
             pool: pool(confirmed: 0, unconfirmed: 100_000_000))
 
-        XCTAssertEqual(
-            message,
-            confirmingMessage(100_000_000))
+        XCTAssertEqual(message, confirmingMessage(100_000_000))
     }
 
     func testCoreToPlatformRouteHandlesConfirmedFundsBelowTheL1Reserve() {
@@ -484,9 +408,7 @@ final class PooledSendableBalanceTests: XCTestCase {
             routeCostDuffs: 5_000_000,
             pool: pool(confirmed: 50_000, unconfirmed: 100_000_000))
 
-        XCTAssertEqual(
-            message,
-            confirmingMessage(100_000_000))
+        XCTAssertEqual(message, confirmingMessage(100_000_000))
     }
 
     func testCoreToPlatformRouteDoesNotWaitWhileThePooledFigureIsUnknown() {
@@ -508,9 +430,7 @@ final class PooledSendableBalanceTests: XCTestCase {
             routeCostDuffs: 0,
             pool: pool(confirmed: 100_000_000, unconfirmed: 20_000_000))
 
-        XCTAssertEqual(
-            message,
-            confirmingMessage(20_000_000))
+        XCTAssertEqual(message, confirmingMessage(20_000_000))
     }
 
     func testNoRouteCostReturnsInsufficientWhenTheL1ReserveUsesTheLastRoom() {
@@ -578,9 +498,7 @@ final class PooledSendableBalanceTests: XCTestCase {
             routeCostDuffs: 0,
             pool: pool(confirmed: 100_000_000, unconfirmed: 20_000_000))
 
-        XCTAssertEqual(
-            message,
-            confirmingMessage(20_000_000))
+        XCTAssertEqual(message, confirmingMessage(20_000_000))
     }
 
     func testAGapWithNothingConfirmingIsNeverCalledAWait() {
@@ -662,46 +580,32 @@ final class PooledSendableBalanceTests: XCTestCase {
     }
 
     func testAVerdictMapsToTheRefusalItNames() {
-        var availableReads = 0
-        let available: () -> UInt64 = { availableReads += 1; return 7 }
-        XCTAssertNil(SendAmountError(refusing: .fits, availableNowDuffs: available()))
-        XCTAssertEqual(SendAmountError(refusing: .insufficient, availableNowDuffs: available()),
-                       .insufficientFunds)
-        XCTAssertEqual(availableReads, 0, "only a confirming verdict needs what is available now")
-        XCTAssertEqual(SendAmountError(refusing: .confirming(5), availableNowDuffs: available()),
-                       .fundsStillConfirming(5, availableNowDuffs: 7))
-        XCTAssertEqual(availableReads, 1)
+        XCTAssertNil(SendAmountError(refusing: .fits, ceilingDuffs: 30_000_000))
+        XCTAssertEqual(SendAmountError(refusing: .insufficient, ceilingDuffs: 30_000_000), .insufficientFunds)
+        XCTAssertEqual(SendAmountError(refusing: .confirming(5), ceilingDuffs: 30_000_000),
+                       .fundsStillConfirming(5, nothingUsableYet: false))
+        XCTAssertEqual(SendAmountError(refusing: .confirming(5), ceilingDuffs: 0),
+                       .fundsStillConfirming(5, nothingUsableYet: true))
     }
 
-    func testTheConfirmingMessageNamesTheWaitingAndTheAvailableAmounts() {
-        let message = SendAmountError.fundsStillConfirming(200_000_000, availableNowDuffs: 30_000_000)
-            .errorDescription ?? ""
-        XCTAssertTrue(message.contains("still confirming"), "got: \(message)")
-        XCTAssertTrue(message.contains(UInt64(200_000_000).formattedDashAmountWithoutCurrencySymbol),
-                      "got: \(message)")
-        XCTAssertTrue(message.contains("up to \(UInt64(30_000_000).formattedDashAmountWithoutCurrencySymbol) DASH"),
-                      "got: \(message)")
-        XCTAssertFalse(message.contains("smaller amount"), "got: \(message)")
-    }
-
-    func testTheConfirmingMessageSaysWhenNothingIsAvailableYet() {
-        let message = SendAmountError.fundsStillConfirming(200_000_000, availableNowDuffs: 0)
-            .errorDescription ?? ""
-        XCTAssertTrue(message.contains(UInt64(200_000_000).formattedDashAmountWithoutCurrencySymbol),
-                      "got: \(message)")
-        XCTAssertTrue(message.contains("None of your balance can be used until"), "got: \(message)")
-        XCTAssertFalse(message.contains("up to"), "a zero ceiling must not be offered as an amount: \(message)")
-    }
-
-    func testAnUnknownUsableAmountNamesNoAmountAndPromisesNothing() {
-        let message = SendAmountError.fundsStillConfirming(200_000_000, availableNowDuffs: nil)
+    func testTheConfirmingMessageNamesOnlyTheWaitingAmount() {
+        let message = SendAmountError.fundsStillConfirming(200_000_000, nothingUsableYet: false)
             .errorDescription ?? ""
         XCTAssertEqual(message, "\(UInt64(200_000_000).formattedDashAmountWithoutCurrencySymbol) DASH is still confirming.")
     }
 
+    func testTheConfirmingMessageSaysWhenNothingIsAvailableYet() {
+        let message = SendAmountError.fundsStillConfirming(200_000_000, nothingUsableYet: true)
+            .errorDescription ?? ""
+        XCTAssertTrue(message.contains(UInt64(200_000_000).formattedDashAmountWithoutCurrencySymbol),
+                      "got: \(message)")
+        XCTAssertTrue(message.hasPrefix("Nothing can be sent yet"), "got: \(message)")
+        XCTAssertFalse(message.contains("smaller amount"), "got: \(message)")
+    }
+
     func testOnlyAffordabilityVerdictsCountAsFundsVerdicts() {
         XCTAssertTrue(SendAmountError.insufficientFunds.isFundsVerdict)
-        XCTAssertTrue(SendAmountError.fundsStillConfirming(1, availableNowDuffs: 0).isFundsVerdict)
+        XCTAssertTrue(SendAmountError.fundsStillConfirming(1, nothingUsableYet: true).isFundsVerdict)
         XCTAssertFalse(SendAmountError.maxUnavailable("x").isFundsVerdict,
                        "a Max explanation must survive a balance change")
         XCTAssertFalse(SendAmountError.syncingChain.isFundsVerdict)
@@ -711,7 +615,7 @@ final class PooledSendableBalanceTests: XCTestCase {
         XCTAssertTrue(SendAmountModel.ceilingMoveRechecks(nil))
         XCTAssertTrue(SendAmountModel.ceilingMoveRechecks(SendAmountError.insufficientFunds))
         XCTAssertTrue(SendAmountModel.ceilingMoveRechecks(
-            SendAmountError.fundsStillConfirming(1, availableNowDuffs: 0)))
+            SendAmountError.fundsStillConfirming(1, nothingUsableYet: true)))
         // `checkAmountForErrors` never sets these again, so clearing them on
         // a wallet update would leave the screen with no explanation at all.
         XCTAssertFalse(SendAmountModel.ceilingMoveRechecks(SendAmountError.maxUnavailable("x")),
@@ -721,13 +625,13 @@ final class PooledSendableBalanceTests: XCTestCase {
     }
 
     func testAVerdictInputRefreshesOnlyAStaleFundsVerdict() {
-        let shown = SendAmountError.fundsStillConfirming(10_000, availableNowDuffs: 50_000)
+        let shown = SendAmountError.fundsStillConfirming(10_000, nothingUsableYet: false)
         XCTAssertFalse(SendAmountModel.verdictInputsRefresh(shown: shown, refreshed: shown),
                        "an unchanged note must not be re-presented")
         XCTAssertTrue(SendAmountModel.verdictInputsRefresh(
-            shown: shown, refreshed: .fundsStillConfirming(10_000, availableNowDuffs: 49_000)))
+            shown: shown, refreshed: .fundsStillConfirming(20_000, nothingUsableYet: false)))
         XCTAssertTrue(SendAmountModel.verdictInputsRefresh(
-            shown: shown, refreshed: .fundsStillConfirming(10_000, availableNowDuffs: 0)),
+            shown: shown, refreshed: .fundsStillConfirming(10_000, nothingUsableYet: true)),
             "a gate that falls below the output minimum switches to wait-only wording")
         XCTAssertTrue(SendAmountModel.verdictInputsRefresh(shown: shown, refreshed: nil),
                       "an amount the smaller reserve now fits must clear the note")
@@ -742,7 +646,7 @@ final class PooledSendableBalanceTests: XCTestCase {
         // Known → unavailable → known with the ceiling constant: the outage
         // turns the note into "Insufficient funds", and recovery must turn it
         // back, since the ceiling observer stays silent throughout.
-        let confirming = SendAmountError.fundsStillConfirming(10_000, availableNowDuffs: 50_000)
+        let confirming = SendAmountError.fundsStillConfirming(10_000, nothingUsableYet: false)
         XCTAssertTrue(SendAmountModel.verdictInputsRefresh(shown: confirming, refreshed: .insufficientFunds))
         XCTAssertTrue(SendAmountModel.verdictInputsRefresh(shown: .insufficientFunds, refreshed: confirming))
         XCTAssertFalse(SendAmountModel.verdictInputsRefresh(shown: .insufficientFunds, refreshed: .insufficientFunds))

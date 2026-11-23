@@ -1499,13 +1499,7 @@ final class SendViewModel: ObservableObject {
                requestedDuffs: requestedDuffs,
                ceilingDuffs: gate.ceilingDuffs,
                reserveDuffs: reserveDuffs) {
-            return SendAmountError.fundsStillConfirming(
-                duffs,
-                availableNowDuffs: SendAmountError.usableNowDuffs(
-                    gateCeilingDuffs: gate.ceilingDuffs,
-                    offerCeilingDuffs: gate.ceilingDuffs,
-                    minimumDuffs: CoreTxConstants.minOutputAmount,
-                    oneTransactionMaxDuffs: SwiftDashSDKTransactionSender.pooledMaxSendableDuffs)).errorDescription
+            return SendAmountError.stillConfirming(duffs, ceilingDuffs: gate.ceilingDuffs).errorDescription
         }
         return TransferSpendAmountPolicy.insufficientBalanceMessage(
             balanceName: source.balanceName,
@@ -1535,14 +1529,13 @@ final class SendViewModel: ObservableObject {
             let (spendableDuffs, reserveDuffs) = state.feeAwareMaxSendableAndReserve()
             let ceilingDuffs = SwiftDashSDKWalletState.feeAwareMax(spendable: spendableDuffs, reserve: feeDuffs)
             // The asset lock spends only confirmed or InstantSend-locked coins,
-            // so here waiting genuinely is the fix. No usable amount is named:
-            // the lock's builder picks final, unreserved inputs the app cannot
-            // quote.
+            // so here waiting genuinely is the fix. It never says nothing is
+            // usable: this ceiling does not bound what a drain Max can lock.
             if case .confirming(let duffs) = state.sendVerdict(
                 requestedDuffs: dashDuffsUnsigned,
                 ceilingDuffs: ceilingDuffs,
                 reserveDuffs: reserveDuffs &+ feeDuffs) {
-                return SendAmountError.fundsStillConfirming(duffs, availableNowDuffs: nil).errorDescription
+                return SendAmountError.fundsStillConfirming(duffs, nothingUsableYet: false).errorDescription
             }
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: balanceName,

@@ -1539,8 +1539,8 @@ final class InternalTransferViewModel: ObservableObject {
     /// The caller supplies its exact route ceiling, including any conversion
     /// cap, so validation uses the same envelope as Continue and Max. The pool
     /// is read only above that ceiling while the pooled figure is known.
-    /// A confirming shortfall names no usable amount: the lock's builder picks
-    /// final, unreserved inputs the app cannot quote.
+    /// A confirming shortfall never says nothing is usable: the ceiling does
+    /// not bound what a drain Max can lock.
     nonisolated static func coreTransferFundsMessage(
         requestedDuffs: UInt64,
         ceilingDuffs: UInt64,
@@ -1568,7 +1568,7 @@ final class InternalTransferViewModel: ObservableObject {
         case .fits:
             return nil
         case .confirming(let duffs):
-            return SendAmountError.fundsStillConfirming(duffs, availableNowDuffs: nil).errorDescription
+            return SendAmountError.fundsStillConfirming(duffs, nothingUsableYet: false).errorDescription
         case .insufficient:
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: ChainNetwork.core.balanceName,
