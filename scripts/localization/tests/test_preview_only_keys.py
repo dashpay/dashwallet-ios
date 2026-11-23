@@ -63,7 +63,8 @@ def debug_build_flags():
     """The conditions the dashpay Debug build compiles Swift with, as `xcodebuild` resolves them: its
     SWIFT_ACTIVE_COMPILATION_CONDITIONS and the `-D` flags of its OTHER_SWIFT_FLAGS. CocoaPods' xcconfig adds
     `COCOAPODS` and `SystemSQLite`, so `pod install` must have run. The settings are read through the workspace with
-    the package versions its `Package.resolved` pins, as the test build reads them, so no package is fetched."""
+    the package versions its `Package.resolved` pins, as the test build reads them, so no newer revision is resolved;
+    a pinned package that DerivedData does not hold yet is still fetched."""
     if not os.path.isfile(PODS_DEBUG_XCCONFIG):
         raise RuntimeError("%s is missing: run `pod install` first" % os.path.relpath(PODS_DEBUG_XCCONFIG, REPO))
     entries = json.loads(subprocess.run(
