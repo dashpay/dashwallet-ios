@@ -185,12 +185,6 @@ enum CoreToPlatformAmountPolicy {
         currentReserveCredits.map(reserveDuffs(reserveCredits:))
     }
 
-    /// The explicit recipient output's minimum in duffs, rounded up, or nil
-    /// while the SDK cannot say.
-    @MainActor static var currentMinimumOutputDuffs: UInt64? {
-        PlatformAddressSyncCoordinator.shared.minOutputCredits.map(reserveDuffs(reserveCredits:))
-    }
-
     /// Funding reserve (duffs) the lock carries on top of `amountDuffs`,
     /// rounded UP so a duff-denominated lock always covers the
     /// credit-denominated minimum fee. `nil` when `amountDuffs` cannot be
@@ -1544,18 +1538,15 @@ final class InternalTransferViewModel: ObservableObject {
     /// The raw `sendableDuffs` and `pooledKnown` inputs mirror `sendVerdict`.
     /// The caller supplies its exact route ceiling, including any conversion
     /// cap, so validation uses the same envelope as Continue and Max. The pool
-    /// is read only above that ceiling while the pooled figure is known. The
-    /// amount a confirming shortfall names is `SendAmountError.assetLockOfferDuffs`
-    /// over `minimumDuffs` (nil: unknown) and `offerCapDuffs`, one lock's
-    /// capacity, read only for that verdict and only with a known minimum.
+    /// is read only above that ceiling while the pooled figure is known.
+    /// A confirming shortfall names no usable amount: the lock's builder picks
+    /// final, unreserved inputs the app cannot quote.
     nonisolated static func coreTransferFundsMessage(
         requestedDuffs: UInt64,
         ceilingDuffs: UInt64,
         sendableDuffs: UInt64,
         l1ReserveDuffs: UInt64,
         routeCostDuffs: UInt64,
-        minimumDuffs: UInt64? = 0,
-        offerCapDuffs: () -> UInt64? = { .max },
         pooledKnown: Bool,
         pool: () -> SendPoolConfirmationSnapshot?
     ) -> String? {
@@ -1577,12 +1568,7 @@ final class InternalTransferViewModel: ObservableObject {
         case .fits:
             return nil
         case .confirming(let duffs):
-            return SendAmountError.fundsStillConfirming(
-                duffs,
-                availableNowDuffs: minimumDuffs.flatMap { minimum in
-                    SendAmountError.assetLockOfferDuffs(
-                        ceilingDuffs: ceilingDuffs, minimumDuffs: minimum, lockCapDuffs: offerCapDuffs())
-                }).errorDescription
+            return SendAmountError.fundsStillConfirming(duffs, availableNowDuffs: nil).errorDescription
         case .insufficient:
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: ChainNetwork.core.balanceName,
@@ -1594,13 +1580,7 @@ final class InternalTransferViewModel: ObservableObject {
     /// `coreTransferFundsMessage` for the typed amount: the caller gives its
     /// route's ceiling and the cost the route adds on top of the L1 reserve;
     /// the L1 reserve is the cached one and the pooled figures are read live.
-    /// Every caller funds one asset lock, so the offer is held to what one
-    /// lock can fund (`AssetLockInputLimit.maxAmountDuffs`).
-    private func coreRouteFundsMessage(
-        ceilingDuffs: UInt64,
-        routeCostDuffs: UInt64,
-        minimumDuffs: UInt64? = 0
-    ) -> String? {
+    private func coreRouteFundsMessage(ceilingDuffs: UInt64, routeCostDuffs: UInt64) -> String? {
         let state = SwiftDashSDKWalletState.shared
         return Self.coreTransferFundsMessage(
             requestedDuffs: dashDuffsUnsigned,
@@ -1608,8 +1588,6 @@ final class InternalTransferViewModel: ObservableObject {
             sendableDuffs: state.sendableDuffs,
             l1ReserveDuffs: coreL1FeeReserveDuffs,
             routeCostDuffs: routeCostDuffs,
-            minimumDuffs: minimumDuffs,
-            offerCapDuffs: { AssetLockInputLimit.maxAmountDuffs(routeCostDuffs: routeCostDuffs) },
             pooledKnown: state.pooledSpendableDuffs != nil,
             pool: SwiftDashSDKTransactionSender.sendPoolConfirmationSnapshot)
     }
@@ -1676,8 +1654,7 @@ final class InternalTransferViewModel: ObservableObject {
                 ceilingDuffs: CoreToPlatformAmountPolicy.maxAmountDuffs(
                     spendableDuffs: coreSpendableDuffs,
                     reserveCredits: reserveCredits),
-                routeCostDuffs: routeReserveDuffs,
-                minimumDuffs: CoreToPlatformAmountPolicy.currentMinimumOutputDuffs)
+                routeCostDuffs: routeReserveDuffs)
 
         case .platformToShielded:
             if awaitingPlatformShieldResync {
@@ -1804,8 +1781,7 @@ final class InternalTransferViewModel: ObservableObject {
             // the ordinary L1 reserve, so the ceiling is the cached envelope.
             return coreRouteFundsMessage(
                 ceilingDuffs: coreSpendableDuffs,
-                routeCostDuffs: 0,
-                minimumDuffs: IdentityTopUpViewModel.customMinimumDuffs)
+                routeCostDuffs: 0)
         case .platform:
             guard let ceiling = platformIdentityFundableDuffs else {
                 return Self.feeEstimateUnavailableMessage

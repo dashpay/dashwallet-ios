@@ -497,9 +497,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         if let refusal = SendAmountError(refusing: state.sendVerdict(
             requestedDuffs: requestedDashDuffs,
             ceilingDuffs: ceilingDuffs,
-            reserveDuffs: reserveDuffs), availableNowDuffs: cheapestPurchaseDuffs.map {
-                SendAmountError.usableNowDuffs(ceilingDuffs: ceilingDuffs, minimumDuffs: $0)
-            }) {
+            reserveDuffs: reserveDuffs), availableNowDuffs: usableNowDuffs(ceilingDuffs: ceilingDuffs)) {
             // Re-checked on every balance event while it is up: re-setting the
             // same refusal would only re-render both panels.
             if (error as? SendAmountError) != refusal { error = refusal }
@@ -532,21 +530,67 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     /// The cards the active Multiple panel offers, or nil on the Single panel.
     private var basketDenominations: [Decimal]?
 
-    /// What the cheapest card the active panel sells costs, priced like
-    /// `requestedDashDuffs`: the smallest card the Multiple panel offers, the
-    /// smallest in-stock denomination, or the range minimum. Nil when no card
-    /// can be bought: the panel offers none, every denomination is out of
-    /// stock, or the range has not loaded. A denomination with no inventory
-    /// entry has no stock limit.
-    private var cheapestPurchaseDuffs: UInt64? {
+    /// The amount a "still confirming" note may name for the active panel,
+    /// over its purchases (`purchaseRangeFiat`) priced like
+    /// `requestedDashDuffs`.
+    private func usableNowDuffs(ceilingDuffs: UInt64) -> UInt64? {
+        let purchases = Self.purchaseRangeFiat(
+            isFixedDenomination: isFixedDenomination,
+            denominations: denominations,
+            inventory: denominationInventory,
+            basketDenominations: basketDenominations,
+            basketMaximum: PiggyCardsConstants.maxOrderAmount,
+            minimumAmount: minimumAmount,
+            maximumAmount: maximumAmount)
+        return Self.usableNowDuffs(
+            ceilingDuffs: ceilingDuffs,
+            purchasesDuffs: purchases.map { Self.dashDuffs(forFiat: $0.lowerBound)...Self.dashDuffs(forFiat: $0.upperBound) },
+            oneTransactionMaxDuffs: SwiftDashSDKTransactionSender.pooledMaxSendableDuffs)
+    }
+
+    /// `SendAmountError.usableNowDuffs` between the cheapest and the largest
+    /// purchase (`purchasesDuffs`), never more than the largest, which
+    /// checkout refuses; none while no purchase is known.
+    nonisolated static func usableNowDuffs(
+        ceilingDuffs: UInt64,
+        purchasesDuffs: ClosedRange<UInt64>?,
+        oneTransactionMaxDuffs: () -> UInt64?
+    ) -> UInt64? {
+        guard let purchasesDuffs else { return nil }
+        return SendAmountError.usableNowDuffs(
+            gateCeilingDuffs: ceilingDuffs,
+            offerCeilingDuffs: min(ceilingDuffs, purchasesDuffs.upperBound),
+            minimumDuffs: purchasesDuffs.lowerBound,
+            oneTransactionMaxDuffs: oneTransactionMaxDuffs)
+    }
+
+    /// The cheapest and the largest purchase the active panel accepts: its
+    /// in-stock denominations; the Multiple panel's cards up to
+    /// `basketMaximum`, its order limit; or the merchant range. Nil when no
+    /// card can be bought: the panel offers none, every denomination is out
+    /// of stock, or the range is not fully loaded (a minimum and a maximum at
+    /// or above it). A denomination with no inventory entry has no stock
+    /// limit.
+    nonisolated static func purchaseRangeFiat(
+        isFixedDenomination: Bool,
+        denominations: [Int],
+        inventory: [Int: Int],
+        basketDenominations: [Decimal]?,
+        basketMaximum: Decimal,
+        minimumAmount: Decimal,
+        maximumAmount: Decimal
+    ) -> ClosedRange<Decimal>? {
         if isFixedDenomination {
-            let inStock = denominations.filter { denominationInventory[$0] != 0 }
-            return inStock.min().map { Self.dashDuffs(forFiat: Decimal($0)) }
+            let inStock = denominations.filter { inventory[$0] != 0 }
+            guard let cheapest = inStock.min(), let largest = inStock.max() else { return nil }
+            return Decimal(cheapest)...Decimal(largest)
         }
         if let basketDenominations {
-            return basketDenominations.min().map { Self.dashDuffs(forFiat: $0) }
+            guard let cheapest = basketDenominations.min(), cheapest <= basketMaximum else { return nil }
+            return cheapest...basketMaximum
         }
-        return hasValidLimits ? Self.dashDuffs(forFiat: minimumAmount) : nil
+        guard minimumAmount > 0, maximumAmount >= minimumAmount else { return nil }
+        return minimumAmount...maximumAmount
     }
 
     private static func dashDuffs(forFiat fiat: Decimal) -> UInt64 {

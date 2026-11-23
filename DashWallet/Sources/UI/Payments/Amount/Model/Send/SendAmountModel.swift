@@ -30,8 +30,9 @@ enum SendAmountError: Error, Equatable, ColorizedText, LocalizedError {
     case maxUnavailable(String)
     /// The amount is more than the confirmed balance but would fit once the
     /// first amount (duffs) confirms; `availableNowDuffs` is the most the
-    /// screen can send right now, or nil when no amount can be named (no
-    /// purchase option, or a limit the screen cannot verify). See
+    /// screen can send right now, or nil when no amount can be named (a
+    /// Core-funded asset lock, no purchase option, or a limit the screen
+    /// cannot verify). See
     /// `SwiftDashSDKWalletState.sendVerdict`.
     case fundsStillConfirming(UInt64, availableNowDuffs: UInt64?)
 
@@ -83,23 +84,25 @@ extension SendAmountError {
         }
     }
 
-    /// The amount a "still confirming" refusal may offer: the screen's ceiling
-    /// when the smallest amount it accepts fits under it, else 0, which
-    /// selects the wait-only wording rather than an amount the screen refuses.
-    static func usableNowDuffs(ceilingDuffs: UInt64, minimumDuffs: UInt64) -> UInt64 {
-        ceilingDuffs >= minimumDuffs ? ceilingDuffs : 0
-    }
-
-    /// The amount a confirming refusal on a Core-funded asset-lock route may
-    /// name: nil when the route's minimum or one lock's capacity
-    /// (`lockCapDuffs`, the most the amount can be) is unknown, or when the
-    /// typed ceiling leaves nothing but a lock can still be funded — the
-    /// drain Max prices differently, so zero would not establish that nothing
-    /// is usable. 0 only when no lock can be funded at all.
-    static func assetLockOfferDuffs(ceilingDuffs: UInt64, minimumDuffs: UInt64?, lockCapDuffs: UInt64?) -> UInt64? {
-        guard let minimumDuffs, let lockCapDuffs else { return nil }
-        let offer = usableNowDuffs(ceilingDuffs: min(ceilingDuffs, lockCapDuffs), minimumDuffs: minimumDuffs)
-        return offer == 0 && lockCapDuffs > 0 ? nil : offer
+    /// The amount a "still confirming" refusal on an ordinary Core send may
+    /// name, or nil when it cannot be established. `gateCeilingDuffs` is the
+    /// most the screen's gate accepts and `minimumDuffs` the smallest amount
+    /// the screen accepts (nil: unknown). 0, the wait-only wording, only when
+    /// the gate refuses every amount the screen accepts. Otherwise the offer
+    /// is `offerCeilingDuffs` (the most the screen's own checks accept) held to
+    /// `oneTransactionMaxDuffs()`, the most one transaction can pay out, and
+    /// nil when that is unknown or leaves less than the minimum.
+    static func usableNowDuffs(
+        gateCeilingDuffs: UInt64,
+        offerCeilingDuffs: UInt64,
+        minimumDuffs: UInt64?,
+        oneTransactionMaxDuffs: () -> UInt64?
+    ) -> UInt64? {
+        guard let minimumDuffs else { return nil }
+        guard gateCeilingDuffs >= minimumDuffs else { return 0 }
+        guard let transactionMaxDuffs = oneTransactionMaxDuffs() else { return nil }
+        let offer = min(offerCeilingDuffs, transactionMaxDuffs)
+        return offer >= minimumDuffs ? offer : nil
     }
 
     /// An affordability verdict — the only kind a wallet-balance change may
@@ -181,8 +184,8 @@ class SendAmountModel: BaseAmountModel {
             .store(in: &cancellableBag)
     }
 
-    /// A "still confirming" note names the fee-aware Max, which follows the fee
-    /// reserve as well as the ceiling, and the reserve, or whether the pooled
+    /// A "still confirming" note can name the fee-aware Max, which follows the
+    /// fee reserve as well as the ceiling, and the reserve, or whether the pooled
     /// figure is known at all, can move on its own. While a funds verdict is
     /// up, every verdict input re-judges the amount, and the error is
     /// re-presented only when the refusal it would show differs.
@@ -234,17 +237,20 @@ class SendAmountModel: BaseAmountModel {
             gate = read
             return read
         }
+        let ceilingDuffs = state.sendableDuffs
         let verdict = state.sendVerdict(
             requestedDuffs: amount.plainAmount,
-            ceilingDuffs: state.sendableDuffs,
+            ceilingDuffs: ceilingDuffs,
             reserveDuffs: readGate().reserve)
         // The gate holds nothing back for the fee, so the amount to offer is
         // the fee-aware one Max fills, not `sendableDuffs`.
         return SendAmountError(
             refusing: verdict,
             availableNowDuffs: SendAmountError.usableNowDuffs(
-                ceilingDuffs: readGate().max,
-                minimumDuffs: CoreTxConstants.minOutputAmount)) ?? .insufficientFunds
+                gateCeilingDuffs: ceilingDuffs,
+                offerCeilingDuffs: readGate().max,
+                minimumDuffs: CoreTxConstants.minOutputAmount,
+                oneTransactionMaxDuffs: SwiftDashSDKTransactionSender.pooledMaxSendableDuffs)) ?? .insufficientFunds
     }
 
     override func selectAllFunds() {

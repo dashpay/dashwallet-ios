@@ -46,22 +46,6 @@ final class AssetLockInputPolicyTests: XCTestCase {
 
     // MARK: - Budgets
 
-    func testTheLargestFundableLockIsTheEdgeOfTheVerdict() {
-        // 101 coins at a budget of 100: the largest lock is what the largest
-        // 100 cover at the lowest fee, which fits; one duff more does not.
-        let values = coins(101)
-        let max = Policy.maxLockDuffs(utxoValues: values, inputBudget: 100)
-        XCTAssertEqual(max, amountNeeding(inputs: 100))
-        XCTAssertEqual(Policy.verdict(utxoValues: values, amountDuffs: max, inputBudget: 100), .fits)
-        XCTAssertEqual(Policy.verdict(utxoValues: values, amountDuffs: max + 1, inputBudget: 100), .needsConsolidation)
-    }
-
-    func testNoLockIsFundableFromCoinsThatCannotCoverTheirFee() {
-        XCTAssertEqual(Policy.maxLockDuffs(utxoValues: [], inputBudget: 100), 0)
-        XCTAssertEqual(Policy.maxLockDuffs(utxoValues: [100], inputBudget: 100), 0)
-        XCTAssertEqual(Policy.maxLockDuffs(utxoValues: coins(3), inputBudget: 0), 0)
-    }
-
     func testTheBudgetIsTheNetworkCap() {
         // Shielded locks included: the SDK resubmits an oversized one with a
         // ChainLock proof (dashpay/platform#5460).

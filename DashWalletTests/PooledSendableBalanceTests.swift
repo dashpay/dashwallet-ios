@@ -153,7 +153,6 @@ final class PooledSendableBalanceTests: XCTestCase {
         cachedSpendableDuffs: UInt64 = 99_000_000,
         sendableDuffs: UInt64 = 100_000_000,
         routeCostDuffs: UInt64,
-        lockCapDuffs: UInt64? = .max,
         pooledKnown: Bool = true,
         pool: SendPoolConfirmationSnapshot?
     ) -> String? {
@@ -165,23 +164,14 @@ final class PooledSendableBalanceTests: XCTestCase {
             sendableDuffs: sendableDuffs,
             l1ReserveDuffs: 1_000_000,
             routeCostDuffs: routeCostDuffs,
-            offerCapDuffs: { lockCapDuffs },
             pooledKnown: pooledKnown,
             pool: { pool })
     }
 
-    /// The "still confirming" message `coreRouteMessage` gives, offering the
-    /// same route ceiling it gates on.
-    private func confirmingMessage(
-        _ confirmingDuffs: UInt64,
-        cachedSpendableDuffs: UInt64,
-        routeCostDuffs: UInt64
-    ) -> String? {
-        SendAmountError.fundsStillConfirming(
-            confirmingDuffs,
-            availableNowDuffs: SwiftDashSDKWalletState.feeAwareMax(
-                spendable: cachedSpendableDuffs,
-                reserve: routeCostDuffs)).errorDescription
+    /// The "still confirming" message a Core-funded route gives: it names
+    /// no usable amount.
+    private func confirmingMessage(_ confirmingDuffs: UInt64) -> String? {
+        SendAmountError.fundsStillConfirming(confirmingDuffs, availableNowDuffs: nil).errorDescription
     }
 
     func testCoreRouteFitDoesNotReadThePoolEvenIfTheReserveOverflows() {
@@ -255,98 +245,121 @@ final class PooledSendableBalanceTests: XCTestCase {
 
         XCTAssertEqual(
             message,
-            confirmingMessage(20_000_000, cachedSpendableDuffs: 99_000_000, routeCostDuffs: 3_000_000))
+            confirmingMessage(20_000_000))
     }
 
-    func testCoreRouteConfirmingMessageOffersTheRouteCeilingInsteadOfASmallerAmount() {
-        let message = coreRouteMessage(
-            requestedDuffs: 110_000_000,
-            routeCostDuffs: 3_000_000,
-            pool: pool(confirmed: 100_000_000, unconfirmed: 20_000_000)) ?? ""
+    // MARK: What a "still confirming" note may name
 
-        XCTAssertTrue(message.contains("up to \(UInt64(96_000_000).formattedDashAmountWithoutCurrencySymbol) DASH"),
-                      "got: \(message)")
-        XCTAssertFalse(message.contains("smaller amount"), "got: \(message)")
-    }
-
-    func testCoreRouteConfirmingOfferIsHeldToWhatOneLockCanFund() {
-        var capReads = 0
-        let message = InternalTransferViewModel.coreTransferFundsMessage(
-            requestedDuffs: 110_000_000,
-            ceilingDuffs: 96_000_000,
-            sendableDuffs: 100_000_000,
-            l1ReserveDuffs: 1_000_000,
-            routeCostDuffs: 3_000_000,
-            offerCapDuffs: { capReads += 1; return 40_000_000 },
-            pooledKnown: true,
-            pool: { self.pool(confirmed: 100_000_000, unconfirmed: 20_000_000) }) ?? ""
-
-        XCTAssertTrue(message.contains("up to \(UInt64(40_000_000).formattedDashAmountWithoutCurrencySymbol) DASH"),
-                      "got: \(message)")
-        XCTAssertEqual(capReads, 1)
-
-        let fits = InternalTransferViewModel.coreTransferFundsMessage(
-            requestedDuffs: 50_000_000,
-            ceilingDuffs: 96_000_000,
-            sendableDuffs: 100_000_000,
-            l1ReserveDuffs: 1_000_000,
-            routeCostDuffs: 3_000_000,
-            offerCapDuffs: { capReads += 1; return 0 },
-            pooledKnown: true,
-            pool: { nil })
-        XCTAssertNil(fits)
-        XCTAssertEqual(capReads, 1, "the cap is read only for a confirming verdict")
-    }
-
-    func testCoreRouteConfirmingMessageNamesNoAmountWhenTheCeilingIsBelowTheRouteMinimum() {
-        let message = InternalTransferViewModel.coreTransferFundsMessage(
-            requestedDuffs: 2_000_000,
-            ceilingDuffs: 500_000,
-            sendableDuffs: 500_000,
-            l1ReserveDuffs: 0,
+    /// A Core-funded route's confirming message for a ceiling, with a pool
+    /// that confirms the shortfall.
+    private func coreRouteConfirmingMessage(ceilingDuffs: UInt64, sendableDuffs: UInt64) -> String {
+        InternalTransferViewModel.coreTransferFundsMessage(
+            requestedDuffs: ceilingDuffs + 10_000_000,
+            ceilingDuffs: ceilingDuffs,
+            sendableDuffs: sendableDuffs,
+            l1ReserveDuffs: 1_000,
             routeCostDuffs: 0,
-            minimumDuffs: 1_000_000,
             pooledKnown: true,
-            pool: { self.pool(confirmed: 500_000, unconfirmed: 5_000_000) }) ?? ""
-
-        XCTAssertTrue(message.hasSuffix("DASH is still confirming."), "got: \(message)")
-        XCTAssertFalse(message.contains("up to"), "an amount below the minimum must not be offered: \(message)")
+            pool: { self.pool(confirmed: sendableDuffs, unconfirmed: 50_000_000) }) ?? ""
     }
 
-    func testCoreRouteConfirmingMessageNamesNoAmountWhenTheMinimumIsUnknown() {
-        var capReads = 0
-        let message = InternalTransferViewModel.coreTransferFundsMessage(
-            requestedDuffs: 110_000_000,
-            ceilingDuffs: 96_000_000,
-            sendableDuffs: 100_000_000,
-            l1ReserveDuffs: 1_000_000,
-            routeCostDuffs: 3_000_000,
-            minimumDuffs: nil,
-            offerCapDuffs: { capReads += 1; return .max },
-            pooledKnown: true,
-            pool: { self.pool(confirmed: 100_000_000, unconfirmed: 20_000_000) }) ?? ""
-        XCTAssertTrue(message.hasSuffix("DASH is still confirming."), "got: \(message)")
-        XCTAssertFalse(message.contains("None of your balance"), "got: \(message)")
-        XCTAssertEqual(capReads, 0, "no lock capacity is read without a known minimum")
+    func testACoreFundedRouteNeverNamesAUsableAmount() {
+        // Whatever the typed ceiling, an asset lock draws only final,
+        // unreserved inputs the app cannot quote: a positive ceiling may be
+        // held by a reservation or pending coins, and a zero one does not
+        // mean the drain Max cannot proceed.
+        for (ceiling, sendable) in [(UInt64(96_000_000), UInt64(100_000_000)), (0, 213_081), (0, 0)] {
+            let message = coreRouteConfirmingMessage(ceilingDuffs: ceiling, sendableDuffs: sendable)
+            XCTAssertEqual(message, confirmingMessage(50_000_000), "ceiling \(ceiling)")
+            XCTAssertFalse(message.contains("up to"), "got: \(message)")
+            XCTAssertFalse(message.contains("None of your balance"), "got: \(message)")
+        }
     }
 
-    func testAnAssetLockOfferSaysNothingIsUsableOnlyWhenNoLockCanBeFunded() {
-        typealias E = SendAmountError
-        XCTAssertEqual(E.assetLockOfferDuffs(ceilingDuffs: 900, minimumDuffs: 0, lockCapDuffs: 1_000), 900)
-        XCTAssertEqual(E.assetLockOfferDuffs(ceilingDuffs: 900, minimumDuffs: 0, lockCapDuffs: 600), 600)
-        XCTAssertNil(E.assetLockOfferDuffs(ceilingDuffs: 0, minimumDuffs: 0, lockCapDuffs: 600),
-                     "a zero typed ceiling does not establish that Max cannot proceed")
-        XCTAssertNil(E.assetLockOfferDuffs(ceilingDuffs: 900, minimumDuffs: 1_000, lockCapDuffs: 2_000))
-        XCTAssertEqual(E.assetLockOfferDuffs(ceilingDuffs: 0, minimumDuffs: 0, lockCapDuffs: 0), 0)
-        XCTAssertNil(E.assetLockOfferDuffs(ceilingDuffs: 900, minimumDuffs: nil, lockCapDuffs: 1_000))
-        XCTAssertNil(E.assetLockOfferDuffs(ceilingDuffs: 900, minimumDuffs: 0, lockCapDuffs: nil))
+    private func usableNow(
+        gate: UInt64,
+        offer: UInt64? = nil,
+        minimum: UInt64? = 546,
+        oneTransactionMax: UInt64?,
+        reads: UnsafeMutablePointer<Int>? = nil
+    ) -> UInt64? {
+        SendAmountError.usableNowDuffs(
+            gateCeilingDuffs: gate,
+            offerCeilingDuffs: offer ?? gate,
+            minimumDuffs: minimum,
+            oneTransactionMaxDuffs: { reads?.pointee += 1; return oneTransactionMax })
     }
 
-    func testTheOfferIsTheCeilingOnlyWhenTheMinimumFitsUnderIt() {
-        XCTAssertEqual(SendAmountError.usableNowDuffs(ceilingDuffs: 1_000, minimumDuffs: 546), 1_000)
-        XCTAssertEqual(SendAmountError.usableNowDuffs(ceilingDuffs: 546, minimumDuffs: 546), 546)
-        XCTAssertEqual(SendAmountError.usableNowDuffs(ceilingDuffs: 545, minimumDuffs: 546), 0)
-        XCTAssertEqual(SendAmountError.usableNowDuffs(ceilingDuffs: 0, minimumDuffs: 0), 0)
+    func testAnOrdinaryOfferIsHeldToWhatOneTransactionCanSpend() {
+        // 501 confirmed coins of 0.01 DASH: the fee-aware Max sees all of
+        // them, but one transaction takes at most 500 inputs.
+        let oneTransaction: UInt64 = 499_925_000
+        XCTAssertEqual(usableNow(gate: 501_000_000, offer: 500_888_439, oneTransactionMax: oneTransaction),
+                       oneTransaction)
+        XCTAssertEqual(usableNow(gate: 30_000_000, oneTransactionMax: oneTransaction), 30_000_000,
+                       "an offer under the transaction limit is the gate's own Max")
+    }
+
+    func testAnOrdinaryOfferNamesNoAmountWhenOneTransactionCannotBeQuoted() {
+        XCTAssertNil(usableNow(gate: 30_000_000, oneTransactionMax: nil))
+        XCTAssertNil(usableNow(gate: 30_000_000, oneTransactionMax: 500),
+                     "what one transaction pays falls below the output minimum, which does not mean nothing is usable")
+        XCTAssertNil(usableNow(gate: 1_000, offer: 400, oneTransactionMax: 1_000),
+                     "the gate accepts more than Max fills, so a dust-sized Max is not a reason to wait")
+    }
+
+    func testOnlyAGateThatRefusesEverythingSaysNothingIsUsable() {
+        var reads = 0
+        XCTAssertEqual(usableNow(gate: 545, oneTransactionMax: 10_000, reads: &reads), 0)
+        XCTAssertEqual(usableNow(gate: 0, oneTransactionMax: nil, reads: &reads), 0)
+        XCTAssertEqual(reads, 0, "nothing passes the gate, so one transaction's limit is not read")
+        XCTAssertNil(usableNow(gate: 30_000_000, minimum: nil, oneTransactionMax: 10_000, reads: &reads),
+                     "an unknown minimum names nothing")
+        XCTAssertEqual(reads, 0)
+    }
+
+    private func purchaseRange(
+        fixed: Bool = false, denominations: [Int] = [], inventory: [Int: Int] = [:],
+        basket: [Decimal]? = nil, minimum: Decimal, maximum: Decimal
+    ) -> ClosedRange<Decimal>? {
+        DashSpendPayViewModel.purchaseRangeFiat(
+            isFixedDenomination: fixed, denominations: denominations, inventory: inventory,
+            basketDenominations: basket, basketMaximum: 2_500, minimumAmount: minimum, maximumAmount: maximum)
+    }
+
+    func testDashSpendNamesNoCardPriceUntilTheMerchantRangeIsLoaded() {
+        XCTAssertNil(purchaseRange(minimum: 0, maximum: 0), "range still loading")
+        XCTAssertNil(purchaseRange(minimum: 10, maximum: 0), "no maximum: Continue refuses every amount")
+        XCTAssertNil(purchaseRange(minimum: 0, maximum: 500), "no minimum loaded")
+        XCTAssertNil(purchaseRange(minimum: 600, maximum: 500))
+        XCTAssertEqual(purchaseRange(minimum: 10, maximum: 500), 10...500)
+        XCTAssertNil(purchaseRange(basket: [], minimum: 0, maximum: 0), "the Multiple panel offers no card")
+        XCTAssertEqual(purchaseRange(basket: [50, 25, 100], minimum: 5, maximum: 500), 25...2_500)
+        XCTAssertEqual(purchaseRange(fixed: true, denominations: [25, 10, 50], inventory: [10: 0],
+                                     minimum: 0, maximum: 0), 25...50)
+        XCTAssertNil(purchaseRange(fixed: true, denominations: [10], inventory: [10: 0], minimum: 0, maximum: 0))
+
+        let message = SendAmountError.fundsStillConfirming(
+            50_000_000,
+            availableNowDuffs: usableNow(gate: 25_000_000, minimum: nil, oneTransactionMax: 25_000_000))
+            .errorDescription ?? ""
+        XCTAssertEqual(message, confirmingMessage(50_000_000))
+    }
+
+    func testDashSpendNeverOffersMoreThanTheLargestPurchase() {
+        // A $5–$100 merchant, $150 typed, $120 confirmed: checkout refuses
+        // anything above $100, so that is the most the note may name.
+        XCTAssertEqual(purchaseRange(minimum: 5, maximum: 100), 5...100)
+        func offer(ceiling: UInt64, purchases: ClosedRange<UInt64>?, oneTransactionMax: UInt64? = .max) -> UInt64? {
+            DashSpendPayViewModel.usableNowDuffs(
+                ceilingDuffs: ceiling, purchasesDuffs: purchases, oneTransactionMaxDuffs: { oneTransactionMax })
+        }
+        let purchases: ClosedRange<UInt64> = 5_000_000...100_000_000
+        XCTAssertEqual(offer(ceiling: 120_000_000, purchases: purchases), 100_000_000)
+        XCTAssertEqual(offer(ceiling: 60_000_000, purchases: purchases), 60_000_000)
+        XCTAssertEqual(offer(ceiling: 120_000_000, purchases: purchases, oneTransactionMax: 80_000_000), 80_000_000)
+        XCTAssertEqual(offer(ceiling: 4_000_000, purchases: purchases), 0, "the cheapest card is out of reach")
+        XCTAssertNil(offer(ceiling: 120_000_000, purchases: nil), "no purchase is known")
     }
 
     func testCoreToShieldedRouteReturnsInsufficientWhenTheAmountCannotFitAfterConfirmation() {
@@ -382,12 +395,11 @@ final class PooledSendableBalanceTests: XCTestCase {
             cachedSpendableDuffs: 0,
             sendableDuffs: 0,
             routeCostDuffs: 3_000_000,
-            lockCapDuffs: 0,
             pool: pool(confirmed: 0, unconfirmed: 100_000_000))
 
         XCTAssertEqual(
             message,
-            confirmingMessage(100_000_000, cachedSpendableDuffs: 0, routeCostDuffs: 3_000_000))
+            confirmingMessage(100_000_000))
     }
 
     func testCoreToShieldedRouteHandlesConfirmedFundsBelowTheL1Reserve() {
@@ -396,12 +408,11 @@ final class PooledSendableBalanceTests: XCTestCase {
             cachedSpendableDuffs: 0,
             sendableDuffs: 50_000,
             routeCostDuffs: 3_000_000,
-            lockCapDuffs: 0,
             pool: pool(confirmed: 50_000, unconfirmed: 100_000_000))
 
         XCTAssertEqual(
             message,
-            confirmingMessage(100_000_000, cachedSpendableDuffs: 0, routeCostDuffs: 3_000_000))
+            confirmingMessage(100_000_000))
     }
 
     func testCoreToShieldedRouteDoesNotWaitWhileThePooledFigureIsUnknown() {
@@ -422,7 +433,7 @@ final class PooledSendableBalanceTests: XCTestCase {
 
         XCTAssertEqual(
             message,
-            confirmingMessage(20_000_000, cachedSpendableDuffs: 99_000_000, routeCostDuffs: 5_000_000))
+            confirmingMessage(20_000_000))
     }
 
     func testCoreToPlatformRouteReturnsInsufficientWhenTheAmountCannotFitAfterConfirmation() {
@@ -458,12 +469,11 @@ final class PooledSendableBalanceTests: XCTestCase {
             cachedSpendableDuffs: 0,
             sendableDuffs: 0,
             routeCostDuffs: 5_000_000,
-            lockCapDuffs: 0,
             pool: pool(confirmed: 0, unconfirmed: 100_000_000))
 
         XCTAssertEqual(
             message,
-            confirmingMessage(100_000_000, cachedSpendableDuffs: 0, routeCostDuffs: 5_000_000))
+            confirmingMessage(100_000_000))
     }
 
     func testCoreToPlatformRouteHandlesConfirmedFundsBelowTheL1Reserve() {
@@ -472,12 +482,11 @@ final class PooledSendableBalanceTests: XCTestCase {
             cachedSpendableDuffs: 0,
             sendableDuffs: 50_000,
             routeCostDuffs: 5_000_000,
-            lockCapDuffs: 0,
             pool: pool(confirmed: 50_000, unconfirmed: 100_000_000))
 
         XCTAssertEqual(
             message,
-            confirmingMessage(100_000_000, cachedSpendableDuffs: 0, routeCostDuffs: 5_000_000))
+            confirmingMessage(100_000_000))
     }
 
     func testCoreToPlatformRouteDoesNotWaitWhileThePooledFigureIsUnknown() {
@@ -501,7 +510,7 @@ final class PooledSendableBalanceTests: XCTestCase {
 
         XCTAssertEqual(
             message,
-            confirmingMessage(20_000_000, cachedSpendableDuffs: 99_000_000, routeCostDuffs: 0))
+            confirmingMessage(20_000_000))
     }
 
     func testNoRouteCostReturnsInsufficientWhenTheL1ReserveUsesTheLastRoom() {
@@ -519,12 +528,9 @@ final class PooledSendableBalanceTests: XCTestCase {
             cachedSpendableDuffs: 0,
             sendableDuffs: 50_000,
             routeCostDuffs: 0,
-            // The 50,000 confirmed duffs still fund a small lock, which the
-            // drain Max can use, so a zero typed ceiling names no amount.
-            lockCapDuffs: AssetLockInputPolicy.maxLockDuffs(utxoValues: [50_000], inputBudget: 100),
             pool: pool(confirmed: 50_000, unconfirmed: 100_000_000))
 
-        XCTAssertEqual(message, SendAmountError.fundsStillConfirming(100_000_000, availableNowDuffs: nil).errorDescription)
+        XCTAssertEqual(message, confirmingMessage(100_000_000))
     }
 
     func testNoRouteCostHandlesTheFirstReceiveIntoAnEmptyWallet() {
@@ -535,10 +541,9 @@ final class PooledSendableBalanceTests: XCTestCase {
             cachedSpendableDuffs: 0,
             sendableDuffs: 0,
             routeCostDuffs: 0,
-            lockCapDuffs: 0,
             pool: pool(confirmed: 0, unconfirmed: 100_000_000))
 
-        XCTAssertEqual(message, confirmingMessage(100_000_000, cachedSpendableDuffs: 0, routeCostDuffs: 0))
+        XCTAssertEqual(message, confirmingMessage(100_000_000))
     }
 
     func testNoRouteCostReturnsInsufficientWhenTheAmountCannotFitAfterConfirmation() {
@@ -575,7 +580,7 @@ final class PooledSendableBalanceTests: XCTestCase {
 
         XCTAssertEqual(
             message,
-            confirmingMessage(20_000_000, cachedSpendableDuffs: 99_000_000, routeCostDuffs: 0))
+            confirmingMessage(20_000_000))
     }
 
     func testAGapWithNothingConfirmingIsNeverCalledAWait() {
@@ -694,21 +699,6 @@ final class PooledSendableBalanceTests: XCTestCase {
         XCTAssertEqual(message, "\(UInt64(200_000_000).formattedDashAmountWithoutCurrencySymbol) DASH is still confirming.")
     }
 
-    func testCoreRouteConfirmingNamesNoAmountWhenTheLockCapIsUnknown() {
-        let message = InternalTransferViewModel.coreTransferFundsMessage(
-            requestedDuffs: 110_000_000,
-            ceilingDuffs: 96_000_000,
-            sendableDuffs: 100_000_000,
-            l1ReserveDuffs: 1_000_000,
-            routeCostDuffs: 3_000_000,
-            offerCapDuffs: { nil },
-            pooledKnown: true,
-            pool: { self.pool(confirmed: 100_000_000, unconfirmed: 20_000_000) }) ?? ""
-        XCTAssertFalse(message.contains("up to"), "got: \(message)")
-        XCTAssertFalse(message.contains("None of your balance"), "got: \(message)")
-        XCTAssertTrue(message.hasSuffix("DASH is still confirming."), "got: \(message)")
-    }
-
     func testOnlyAffordabilityVerdictsCountAsFundsVerdicts() {
         XCTAssertTrue(SendAmountError.insufficientFunds.isFundsVerdict)
         XCTAssertTrue(SendAmountError.fundsStillConfirming(1, availableNowDuffs: 0).isFundsVerdict)
@@ -738,7 +728,7 @@ final class PooledSendableBalanceTests: XCTestCase {
             shown: shown, refreshed: .fundsStillConfirming(10_000, availableNowDuffs: 49_000)))
         XCTAssertTrue(SendAmountModel.verdictInputsRefresh(
             shown: shown, refreshed: .fundsStillConfirming(10_000, availableNowDuffs: 0)),
-            "a figure that falls below the output minimum switches to wait-only wording")
+            "a gate that falls below the output minimum switches to wait-only wording")
         XCTAssertTrue(SendAmountModel.verdictInputsRefresh(shown: shown, refreshed: nil),
                       "an amount the smaller reserve now fits must clear the note")
         XCTAssertFalse(SendAmountModel.verdictInputsRefresh(

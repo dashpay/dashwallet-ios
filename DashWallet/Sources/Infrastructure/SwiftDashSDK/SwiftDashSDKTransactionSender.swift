@@ -824,6 +824,17 @@ final class SwiftDashSDKTransactionSender: NSObject {
         }
     }
 
+    /// The most one ordinary send can pay out net of its fee, within the
+    /// standard input cap: the SDK's `pooledMaxSendable` over `.allSpendable`
+    /// at the builder's default fee rate, the funding `buildAndSign` and
+    /// contact payments use. Inputs an in-flight build has reserved are not
+    /// subtracted. `nil` when there is no wallet or the SDK cannot say.
+    static func pooledMaxSendableDuffs() -> UInt64? {
+        readSendPool { _, _, _ in
+            try? SwiftDashSDKHost.shared.wallet?.coreWallet().pooledMaxSendable()
+        }
+    }
+
     /// Runs `read` on the main actor over the accounts `.allSpendable` funds a
     /// send from, from any thread. `nil` when there is no wallet/manager or
     /// none of those accounts exists.
