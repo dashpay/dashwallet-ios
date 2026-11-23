@@ -835,6 +835,7 @@
 		759063E92C411673002F2AA9 /* ZenLedgerInfoSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EBAA1C2BBA71D9004488E3 /* ZenLedgerInfoSheet.swift */; };
 		759063ED2C42687F002F2AA9 /* RootEditProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759063EC2C42687F002F2AA9 /* RootEditProfileViewController.swift */; };
 		F68FB62E74374B6C9FBB74E2 /* EditProfileScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1609A964B0DE467BB31FA5E0 /* EditProfileScreen.swift */; };
+		F87B377A24834749959FFBC3 /* AvatarSourceSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E345463F2FA4C6DB5109194 /* AvatarSourceSheet.swift */; };
 		7592AA7C2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7592AA7B2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift */; };
 		7592AA7D2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7592AA7B2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift */; };
 		7596091A2C4550F500F3BF04 /* DWDashPaySetupModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 759609182C4550F400F3BF04 /* DWDashPaySetupModel.m */; };
@@ -938,6 +939,7 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		75EE9F432DE2F750000AD1AD /* DashSpendConfirmationDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EE9F412DE2F74B000AD1AD /* DashSpendConfirmationDialog.swift */; };
 		75F3F00D2C48F819004470EA /* RootEditProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759063EC2C42687F002F2AA9 /* RootEditProfileViewController.swift */; };
 		93982538FCB549D4BBCFBA67 /* EditProfileScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1609A964B0DE467BB31FA5E0 /* EditProfileScreen.swift */; };
+		C3F5F5E26466465EA42CF861 /* AvatarSourceSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E345463F2FA4C6DB5109194 /* AvatarSourceSheet.swift */; };
 		75F51AAD2ABD8C800057B499 /* IntegrationViewController+Uphold.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F51AAC2ABD8C800057B499 /* IntegrationViewController+Uphold.swift */; };
 		75F51AAF2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F51AAE2ABD8D070057B499 /* IntegrationViewController+Coinbase.swift */; };
 		75F9D1822FE0A00100C0D001 /* ShortcutItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F9D1812FE0A00100C0D001 /* ShortcutItemView.swift */; };
@@ -973,6 +975,7 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		7A11E5E70000000000000032 /* AdvancedSecurityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11E5E70000000000000031 /* AdvancedSecurityTests.swift */; };
 		7A11E5E70000000000000022 /* LocalCurrencyViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A11E5E70000000000000021 /* LocalCurrencyViewModelTests.swift */; };
 		9A77FEAF8870409F8707674F /* PointOfUseListViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C9AB2E8384F48D590575096 /* PointOfUseListViewModelTests.swift */; };
+		01E7DA762BDC49178FC85EDA /* ExternalAvatarSourceModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 460A66CDCF244BBE9B539160 /* ExternalAvatarSourceModelTests.swift */; };
 		7A30001630A1000000000016 /* ShieldedAssetLocksInFlightTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30001530A1000000000015 /* ShieldedAssetLocksInFlightTests.swift */; };
 		7A30001830A1000000000018 /* ShieldedTxLookupConsumedOverlayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30001730A1000000000017 /* ShieldedTxLookupConsumedOverlayTests.swift */; };
 		7A30002030A1000000000020 /* TxDetailRecoveryRowsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30001930A1000000000019 /* TxDetailRecoveryRowsTests.swift */; };
@@ -1310,14 +1313,6 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		C943B3222A408CED00AF23C5 /* DWImgurInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B2D72A408CEC00AF23C5 /* DWImgurInfoViewController.m */; };
 		C943B3232A408CED00AF23C5 /* DWFaceDetector.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B2DC2A408CEC00AF23C5 /* DWFaceDetector.m */; };
 		C943B3262A408CED00AF23C5 /* DWCropAvatarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B2DF2A408CEC00AF23C5 /* DWCropAvatarViewController.m */; };
-		C943B3272A408CED00AF23C5 /* DWAvatarEditSelectorViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B2E12A408CEC00AF23C5 /* DWAvatarEditSelectorViewController.m */; };
-		C943B3282A408CED00AF23C5 /* DWAvatarEditSelectorContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B2E42A408CEC00AF23C5 /* DWAvatarEditSelectorContentView.m */; };
-		C943B3292A408CED00AF23C5 /* DWExternalSourceViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B2E92A408CEC00AF23C5 /* DWExternalSourceViewController.m */; };
-		C943B32A2A408CED00AF23C5 /* DWAvatarExternalSourceView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B2EC2A408CEC00AF23C5 /* DWAvatarExternalSourceView.m */; };
-		C943B32B2A408CED00AF23C5 /* DWAvatarExternalLoadingView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B2EE2A408CEC00AF23C5 /* DWAvatarExternalLoadingView.m */; };
-		C943B32C2A408CED00AF23C5 /* DWAvatarExternalSourceConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B2EF2A408CEC00AF23C5 /* DWAvatarExternalSourceConfig.m */; };
-		C943B32D2A408CED00AF23C5 /* DWAvatarPublicURLViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B2F22A408CEC00AF23C5 /* DWAvatarPublicURLViewController.m */; };
-		C943B32E2A408CED00AF23C5 /* DWAvatarGravatarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B2F32A408CEC00AF23C5 /* DWAvatarGravatarViewController.m */; };
 		C943B3392A408CED00AF23C5 /* DWUploadAvatarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B30F2A408CEC00AF23C5 /* DWUploadAvatarViewController.m */; };
 		C943B33A2A408CED00AF23C5 /* DWUploadAvatarModel.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3102A408CEC00AF23C5 /* DWUploadAvatarModel.m */; };
 		C943B33B2A408CED00AF23C5 /* DWUploadAvatarChildView.m in Sources */ = {isa = PBXBuildFile; fileRef = C943B3152A408CEC00AF23C5 /* DWUploadAvatarChildView.m */; };
@@ -2968,6 +2963,7 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		758CE59B2BC566DE0062AF53 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		759063EC2C42687F002F2AA9 /* RootEditProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootEditProfileViewController.swift; sourceTree = "<group>"; };
 		1609A964B0DE467BB31FA5E0 /* EditProfileScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditProfileScreen.swift; sourceTree = "<group>"; };
+		8E345463F2FA4C6DB5109194 /* AvatarSourceSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarSourceSheet.swift; sourceTree = "<group>"; };
 		7592AA7B2B9B08C000417F9E /* SupportedTopperPaymentMethods.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportedTopperPaymentMethods.swift; sourceTree = "<group>"; };
 		759609172C4550F400F3BF04 /* DWDashPaySetupModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWDashPaySetupModel.h; sourceTree = "<group>"; };
 		759609182C4550F400F3BF04 /* DWDashPaySetupModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWDashPaySetupModel.m; sourceTree = "<group>"; };
@@ -3087,6 +3083,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		7A11E5E70000000000000031 /* AdvancedSecurityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvancedSecurityTests.swift; sourceTree = "<group>"; };
 		7A11E5E70000000000000021 /* LocalCurrencyViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalCurrencyViewModelTests.swift; sourceTree = "<group>"; };
 		7C9AB2E8384F48D590575096 /* PointOfUseListViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointOfUseListViewModelTests.swift; sourceTree = "<group>"; };
+		460A66CDCF244BBE9B539160 /* ExternalAvatarSourceModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalAvatarSourceModelTests.swift; sourceTree = "<group>"; };
 		7A30001530A1000000000015 /* ShieldedAssetLocksInFlightTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedAssetLocksInFlightTests.swift; sourceTree = "<group>"; };
 		7A30001730A1000000000017 /* ShieldedTxLookupConsumedOverlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedTxLookupConsumedOverlayTests.swift; sourceTree = "<group>"; };
 		7A30001930A1000000000019 /* TxDetailRecoveryRowsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxDetailRecoveryRowsTests.swift; sourceTree = "<group>"; };
@@ -3292,22 +3289,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		C943B2DB2A408CEC00AF23C5 /* DWFaceDetector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWFaceDetector.h; sourceTree = "<group>"; };
 		C943B2DC2A408CEC00AF23C5 /* DWFaceDetector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWFaceDetector.m; sourceTree = "<group>"; };
 		C943B2DF2A408CEC00AF23C5 /* DWCropAvatarViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWCropAvatarViewController.m; sourceTree = "<group>"; };
-		C943B2E12A408CEC00AF23C5 /* DWAvatarEditSelectorViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWAvatarEditSelectorViewController.m; sourceTree = "<group>"; };
-		C943B2E22A408CEC00AF23C5 /* DWAvatarEditSelectorViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWAvatarEditSelectorViewController.h; sourceTree = "<group>"; };
-		C943B2E42A408CEC00AF23C5 /* DWAvatarEditSelectorContentView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWAvatarEditSelectorContentView.m; sourceTree = "<group>"; };
-		C943B2E52A408CEC00AF23C5 /* DWAvatarEditSelectorContentView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWAvatarEditSelectorContentView.h; sourceTree = "<group>"; };
-		C943B2E82A408CEC00AF23C5 /* DWExternalSourceViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWExternalSourceViewController.h; sourceTree = "<group>"; };
-		C943B2E92A408CEC00AF23C5 /* DWExternalSourceViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWExternalSourceViewController.m; sourceTree = "<group>"; };
-		C943B2EB2A408CEC00AF23C5 /* DWAvatarExternalLoadingView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWAvatarExternalLoadingView.h; sourceTree = "<group>"; };
-		C943B2EC2A408CEC00AF23C5 /* DWAvatarExternalSourceView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWAvatarExternalSourceView.m; sourceTree = "<group>"; };
-		C943B2ED2A408CEC00AF23C5 /* DWAvatarExternalSourceConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWAvatarExternalSourceConfig.h; sourceTree = "<group>"; };
-		C943B2EE2A408CEC00AF23C5 /* DWAvatarExternalLoadingView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWAvatarExternalLoadingView.m; sourceTree = "<group>"; };
-		C943B2EF2A408CEC00AF23C5 /* DWAvatarExternalSourceConfig.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWAvatarExternalSourceConfig.m; sourceTree = "<group>"; };
-		C943B2F02A408CEC00AF23C5 /* DWAvatarExternalSourceView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWAvatarExternalSourceView.h; sourceTree = "<group>"; };
-		C943B2F12A408CEC00AF23C5 /* DWAvatarGravatarViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWAvatarGravatarViewController.h; sourceTree = "<group>"; };
-		C943B2F22A408CEC00AF23C5 /* DWAvatarPublicURLViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWAvatarPublicURLViewController.m; sourceTree = "<group>"; };
-		C943B2F32A408CEC00AF23C5 /* DWAvatarGravatarViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWAvatarGravatarViewController.m; sourceTree = "<group>"; };
-		C943B2F42A408CEC00AF23C5 /* DWAvatarPublicURLViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWAvatarPublicURLViewController.h; sourceTree = "<group>"; };
 		C943B30F2A408CEC00AF23C5 /* DWUploadAvatarViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUploadAvatarViewController.m; sourceTree = "<group>"; };
 		C943B3102A408CEC00AF23C5 /* DWUploadAvatarModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWUploadAvatarModel.m; sourceTree = "<group>"; };
 		C943B3112A408CEC00AF23C5 /* DWHourGlassAnimationView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DWHourGlassAnimationView.h; sourceTree = "<group>"; };
@@ -6863,6 +6844,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			children = (
 				759063EC2C42687F002F2AA9 /* RootEditProfileViewController.swift */,
 				1609A964B0DE467BB31FA5E0 /* EditProfileScreen.swift */,
+				8E345463F2FA4C6DB5109194 /* AvatarSourceSheet.swift */,
 			);
 			path = "Edit Profile";
 			sourceTree = "<group>";
@@ -7120,6 +7102,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				7A11E5E70000000000000031 /* AdvancedSecurityTests.swift */,
 				7A11E5E70000000000000021 /* LocalCurrencyViewModelTests.swift */,
 				7C9AB2E8384F48D590575096 /* PointOfUseListViewModelTests.swift */,
+				460A66CDCF244BBE9B539160 /* ExternalAvatarSourceModelTests.swift */,
 				7A30001530A1000000000015 /* ShieldedAssetLocksInFlightTests.swift */,
 				7A30001730A1000000000017 /* ShieldedTxLookupConsumedOverlayTests.swift */,
 				7A30001930A1000000000019 /* TxDetailRecoveryRowsTests.swift */,
@@ -7604,8 +7587,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C943B2D32A408CEC00AF23C5 /* Imgur */,
 				C943B2DA2A408CEC00AF23C5 /* Utils */,
 				C943B2DF2A408CEC00AF23C5 /* DWCropAvatarViewController.m */,
-				C943B2E02A408CEC00AF23C5 /* Avatar */,
-				C943B2E62A408CEC00AF23C5 /* External Sources */,
 				C943B30E2A408CEC00AF23C5 /* Upload */,
 			);
 			path = EditProfile;
@@ -7631,60 +7612,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C943B2DC2A408CEC00AF23C5 /* DWFaceDetector.m */,
 			);
 			path = Utils;
-			sourceTree = "<group>";
-		};
-		C943B2E02A408CEC00AF23C5 /* Avatar */ = {
-			isa = PBXGroup;
-			children = (
-				C943B2E12A408CEC00AF23C5 /* DWAvatarEditSelectorViewController.m */,
-				C943B2E22A408CEC00AF23C5 /* DWAvatarEditSelectorViewController.h */,
-				C943B2E32A408CEC00AF23C5 /* Views */,
-			);
-			path = Avatar;
-			sourceTree = "<group>";
-		};
-		C943B2E32A408CEC00AF23C5 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				C943B2E42A408CEC00AF23C5 /* DWAvatarEditSelectorContentView.m */,
-				C943B2E52A408CEC00AF23C5 /* DWAvatarEditSelectorContentView.h */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		C943B2E62A408CEC00AF23C5 /* External Sources */ = {
-			isa = PBXGroup;
-			children = (
-				C943B2E72A408CEC00AF23C5 /* Skeleton */,
-				C943B2F12A408CEC00AF23C5 /* DWAvatarGravatarViewController.h */,
-				C943B2F22A408CEC00AF23C5 /* DWAvatarPublicURLViewController.m */,
-				C943B2F32A408CEC00AF23C5 /* DWAvatarGravatarViewController.m */,
-				C943B2F42A408CEC00AF23C5 /* DWAvatarPublicURLViewController.h */,
-			);
-			path = "External Sources";
-			sourceTree = "<group>";
-		};
-		C943B2E72A408CEC00AF23C5 /* Skeleton */ = {
-			isa = PBXGroup;
-			children = (
-				C943B2E82A408CEC00AF23C5 /* DWExternalSourceViewController.h */,
-				C943B2E92A408CEC00AF23C5 /* DWExternalSourceViewController.m */,
-				C943B2EA2A408CEC00AF23C5 /* Views */,
-			);
-			path = Skeleton;
-			sourceTree = "<group>";
-		};
-		C943B2EA2A408CEC00AF23C5 /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				C943B2EB2A408CEC00AF23C5 /* DWAvatarExternalLoadingView.h */,
-				C943B2EC2A408CEC00AF23C5 /* DWAvatarExternalSourceView.m */,
-				C943B2ED2A408CEC00AF23C5 /* DWAvatarExternalSourceConfig.h */,
-				C943B2EE2A408CEC00AF23C5 /* DWAvatarExternalLoadingView.m */,
-				C943B2EF2A408CEC00AF23C5 /* DWAvatarExternalSourceConfig.m */,
-				C943B2F02A408CEC00AF23C5 /* DWAvatarExternalSourceView.h */,
-			);
-			path = Views;
 			sourceTree = "<group>";
 		};
 		C943B30E2A408CEC00AF23C5 /* Upload */ = {
@@ -9376,6 +9303,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				479DBDDD2995168C00F30AF1 /* Transactions.swift in Sources */,
 				75F3F00D2C48F819004470EA /* RootEditProfileViewController.swift in Sources */,
 				93982538FCB549D4BBCFBA67 /* EditProfileScreen.swift in Sources */,
+				C3F5F5E26466465EA42CF861 /* AvatarSourceSheet.swift in Sources */,
 				2A74EFFB2305464C00C475EB /* DWRecoverTextView.m in Sources */,
 				4709C315287EA11900B4BD48 /* TransactionMetadata.swift in Sources */,
 				B3A1F2C4D5E6078901234568 /* ExtendedPublicKeySheet.swift in Sources */,
@@ -10196,6 +10124,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				7A11E5E70000000000000032 /* AdvancedSecurityTests.swift in Sources */,
 				7A11E5E70000000000000022 /* LocalCurrencyViewModelTests.swift in Sources */,
 				9A77FEAF8870409F8707674F /* PointOfUseListViewModelTests.swift in Sources */,
+				01E7DA762BDC49178FC85EDA /* ExternalAvatarSourceModelTests.swift in Sources */,
 				7A30001630A1000000000016 /* ShieldedAssetLocksInFlightTests.swift in Sources */,
 				7A30001830A1000000000018 /* ShieldedTxLookupConsumedOverlayTests.swift in Sources */,
 				7A30002030A1000000000020 /* TxDetailRecoveryRowsTests.swift in Sources */,
@@ -10310,7 +10239,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C9D2C6B62A320AA000D15901 /* NumberKeyboardButton.swift in Sources */,
 				750CEFA42CCA713300E87A32 /* CreateUsernameViewController.swift in Sources */,
 				5151CE182F9624D000F0A604 /* CurrencyItem.swift in Sources */,
-				C943B32A2A408CED00AF23C5 /* DWAvatarExternalSourceView.m in Sources */,
 				C9D2C6BC2A320AA000D15901 /* WalletKeysOverviewModel.swift in Sources */,
 				C9D2C6BD2A320AA000D15901 /* UIAssembly.swift in Sources */,
 				C9D2C6BE2A320AA000D15901 /* DWLocationManager.swift in Sources */,
@@ -10318,7 +10246,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C943B3432A409F9E00AF23C5 /* UIImageView+DWDPAvatar.m in Sources */,
 				C9D2C6BF2A320AA000D15901 /* FetchingNextPageCell.swift in Sources */,
 				757422282DF87B8300CB0175 /* MerchantFiltersViewModel.swift in Sources */,
-				C943B32E2A408CED00AF23C5 /* DWAvatarGravatarViewController.m in Sources */,
 				BA1B0003C0FFEE00B15B0003 /* RawTransactionInspector.swift in Sources */,
 				C9D2C6C02A320AA000D15901 /* Transaction.swift in Sources */,
 				C943B3232A408CED00AF23C5 /* DWFaceDetector.m in Sources */,
@@ -10448,7 +10375,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C9D2C7262A320AA000D15901 /* EmptyUIView.swift in Sources */,
 				C9D2C7272A320AA000D15901 /* (null) in Sources */,
 				C9D2C7282A320AA000D15901 /* DWQRScanModel.m in Sources */,
-				C943B3292A408CED00AF23C5 /* DWExternalSourceViewController.m in Sources */,
 				C9D2C72A2A320AA000D15901 /* SyncView.swift in Sources */,
 				C9D2C72B2A320AA000D15901 /* SuccessfulOperationStatusViewController.swift in Sources */,
 				C9D2C72C2A320AA000D15901 /* CustodialSwapsModel.swift in Sources */,
@@ -10494,7 +10420,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C9D2C7412A320AA000D15901 /* DWUpholdCardObject.m in Sources */,
 				C9D2C7422A320AA000D15901 /* DWIntrinsicCollectionView.m in Sources */,
 				C9D2C7432A320AA000D15901 /* DWRootModelStub.m in Sources */,
-				C943B3272A408CED00AF23C5 /* DWAvatarEditSelectorViewController.m in Sources */,
 				C9D2C7452A320AA000D15901 /* UIDevice+DashWallet.m in Sources */,
 				C930784B2A6AD56B00906E4B /* SheetViewController.swift in Sources */,
 				C9D2C7462A320AA000D15901 /* CBAccountManager.swift in Sources */,
@@ -10545,7 +10470,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C0FFEE012E0A000100A10003 /* ExploreNavigationBar.swift in Sources */,
 				754C27CD2CC3C15B00BA7B9F /* FeatureSingleItem.swift in Sources */,
 				C9D2C76E2A320AA000D15901 /* DWBaseSeedViewController.m in Sources */,
-				C943B32D2A408CED00AF23C5 /* DWAvatarPublicURLViewController.m in Sources */,
 				75AA33D32BF9E18E00F12465 /* Color+DWStyle.swift in Sources */,
 				7549BE532DEAEA18004F0BAF /* MetadataProvider.swift in Sources */,
 				C9D2C76F2A320AA000D15901 /* DWProgressAnimator.mm in Sources */,
@@ -10579,7 +10503,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C9D2C78E2A320AA000D15901 /* DWModalPopupPresentationController.m in Sources */,
 				C9D2C7902A320AA000D15901 /* String+DashWallet.swift in Sources */,
 				C9D2C7932A320AA000D15901 /* DWBaseModalViewController.m in Sources */,
-				C943B32C2A408CED00AF23C5 /* DWAvatarExternalSourceConfig.m in Sources */,
 				C9D2C7952A320AA000D15901 /* KeysOverviewCell.swift in Sources */,
 				C93078482A6AD4F500906E4B /* ConfirmPaymentViewController.swift in Sources */,
 				C9D2C7962A320AA000D15901 /* UIViewController+DWShareReceiveInfo.m in Sources */,
@@ -10636,7 +10559,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				7A11E5E70000000000000002 /* ResetWalletInfoScreen.swift in Sources */,
 				752F81992E30F55E00ADA76D /* SecurityMenuViewModel.swift in Sources */,
 				A1C0D0030000000000000003 /* RecoveryPhraseFlow.swift in Sources */,
-				C943B32B2A408CED00AF23C5 /* DWAvatarExternalLoadingView.m in Sources */,
 				C9D2C7C62A320AA000D15901 /* Tools.swift in Sources */,
 				C9D2C7C72A320AA000D15901 /* BuySellPortalModel.swift in Sources */,
 				757B937E2BFF4F93002046A5 /* GroupedTransactionsScreen.swift in Sources */,
@@ -10857,6 +10779,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				75387B4B2E0400C300BCCC72 /* MerchantDenominations.swift in Sources */,
 				759063ED2C42687F002F2AA9 /* RootEditProfileViewController.swift in Sources */,
 				F68FB62E74374B6C9FBB74E2 /* EditProfileScreen.swift in Sources */,
+				F87B377A24834749959FFBC3 /* AvatarSourceSheet.swift in Sources */,
 				C9D2C8952A320AA000D15901 /* ConvertCryptoOrderPreviewModel.swift in Sources */,
 				75CDD7872C08D61300F433D2 /* DashAmount.swift in Sources */,
 				C9D2C8972A320AA000D15901 /* RatesProvider.swift in Sources */,
@@ -10932,7 +10855,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C943B3262A408CED00AF23C5 /* DWCropAvatarViewController.m in Sources */,
 				C9D2C8EA2A320AA000D15901 /* ConvertCryptoOrderPreviewViews.swift in Sources */,
 				C9D2C8EB2A320AA000D15901 /* DWAboutModel.m in Sources */,
-				C943B3282A408CED00AF23C5 /* DWAvatarEditSelectorContentView.m in Sources */,
 				51A577492FBB3A6000FB4097 /* OrderPreviewViewModel.swift in Sources */,
 				C9D2C8F02A320AA000D15901 /* DWProgressView.m in Sources */,
 				C9D2C8F12A320AA000D15901 /* TxDetailCells.swift in Sources */,
