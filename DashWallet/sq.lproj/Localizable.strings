@@ -4316,6 +4316,9 @@
 /* No comment provided by engineer. */
 "Platform could not be reached, so owner and payout keys were not checked." = "Platform nuk u arrit dot, prandaj çelësat e pronarit dhe të pagesës nuk u kontrolluan.";
 
+/* External send */
+"Platform could not find this identity. Your funds were not sent." = "Platform could not find this identity. Your funds were not sent.";
+
 /* SDK identity profile sheet */
 "Platform Credits" = "Platform Credits";
 
@@ -6482,9 +6485,6 @@
 
 /* Identities */
 "This identity is being used for your pending username request." = "This identity is being used for your pending username request.";
-
-/* External send */
-"This identity was not found in your wallet. Your funds were not sent." = "This identity was not found in your wallet. Your funds were not sent.";
 
 /* DashPay Invitations */
 "This invitation couldn't be used. Check it on the Home screen." = "This invitation couldn't be used. Check it on the Home screen.";
