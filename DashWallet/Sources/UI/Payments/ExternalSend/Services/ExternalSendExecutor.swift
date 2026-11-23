@@ -1228,19 +1228,16 @@ struct LiveShieldedPlatformSend: ShieldedPlatformSending {
     }
 }
 
-/// The identity top-up from Platform credits (`IdentityCreditsTopUp.fromPlatform`, the core of the Top Up sheet). The
-/// holder's Current identity keeps the managed top-up; any other identity, another identity of the same wallet too,
-/// takes the external one. A failure before any credits moved is `notStarted`.
+/// The identity top-up from Platform credits (`IdentityCreditsTopUp.fromPlatform`, the core of the Top Up sheet). Every
+/// identity, the holder's Current one too, takes the SDK's top-up for any identity (dashpay/platform#5929): it reads
+/// the identity from Platform, so one Platform does not show yet is `identityNotFound` before anything is signed. A
+/// failure before any credits moved is `notStarted`.
 struct LiveIdentityTopUpFromCredits: IdentityTopUpFromCreditsSending {
     /// The wallet or its store is not open, so nothing was planned or sent.
     struct WalletNotOpen: Error {}
 
-    /// The holder's Current identity; nil when the wallet has none.
-    var currentIdentityId: @MainActor () -> Data? = { DWCurrentUserIdentityInfo.shared.refreshedSnapshot().identityId }
-    /// Tops up `identityId` with `amountDuffs` from the Platform addresses; `external` for an identity that is not the
-    /// holder's Current one.
-    var topUp: @MainActor (_ identityId: Data, _ amountDuffs: UInt64, _ external: Bool) async throws -> Void =
-        Self.topUpFromPlatform
+    /// Tops up `identityId` with `amountDuffs` from the Platform addresses.
+    var topUp: @MainActor (_ identityId: Data, _ amountDuffs: UInt64) async throws -> Void = Self.topUpFromPlatform
 
     func run(
         route: SendRoute, destination: Destination, amount: UInt64, bindingFeeDuffs: UInt64
@@ -1254,7 +1251,7 @@ struct LiveIdentityTopUpFromCredits: IdentityTopUpFromCreditsSending {
         else { return .notStarted }
         precondition(route == .platformToIdentity, "\(route) is not an identity top-up from credits route")
         do {
-            try await topUp(identityId, amount, identityId != currentIdentityId())
+            try await topUp(identityId, amount)
             return .completed
         } catch is PlatformPaymentIdentityFundingPolicy.PlanningError {
             return .notStarted
@@ -1266,13 +1263,13 @@ struct LiveIdentityTopUpFromCredits: IdentityTopUpFromCreditsSending {
     }
 
     @MainActor
-    private static func topUpFromPlatform(identityId: Data, amountDuffs: UInt64, external: Bool) async throws {
+    private static func topUpFromPlatform(identityId: Data, amountDuffs: UInt64) async throws {
         guard let wallet = SwiftDashSDKHost.shared.wallet,
               let modelContainer = SwiftDashSDKHost.shared.modelContainer
         else { throw WalletNotOpen() }
         _ = try await IdentityCreditsTopUp().fromPlatform(
             identityId: identityId, amountDuffs: amountDuffs, wallet: wallet, modelContainer: modelContainer,
-            external: external)
+            anyIdentity: true)
     }
 }
 

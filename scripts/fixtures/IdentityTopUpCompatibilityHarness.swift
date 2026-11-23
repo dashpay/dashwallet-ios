@@ -25,11 +25,9 @@ enum PlatformPaymentIdentityFundingPolicy {
     static let creditsPerDuff: UInt64 = 1_000
     static let feeHeadroomCredits: UInt64 = 5
     enum PlanningError: Error { case insufficient(UInt64, UInt64) }
-    static func candidates(walletId: Data, modelContainer: ModelContainer) throws -> [Int] {
-        throw TestBoundaryError.unusedRoute
-    }
+    static func candidates(walletId: Data, modelContainer: ModelContainer) throws -> [Int] { [1] }
     static func makeInputs(candidates: [Int], targetCredits: UInt64) throws -> [ManagedPlatformWallet.IdentityAddressInput] {
-        throw TestBoundaryError.unusedRoute
+        [ManagedPlatformWallet.IdentityAddressInput(addressType: 0, hash: Data([1]), credits: targetCredits)]
     }
 }
 
@@ -49,6 +47,14 @@ enum PlatformPaymentIdentityFundingPolicy {
         if let failure { throw failure }
         afterTopUp()
         return 97
+    }
+    var anyIdentityTopUpCalls = 0
+    func topUpIdentityFromAddresses(
+        identityId: Data, inputs: [IdentityAddressInput], addressSigner: KeychainSigner
+    ) async throws -> UInt64 {
+        anyIdentityTopUpCalls += 1
+        if let failure { throw failure }
+        return 98
     }
 }
 

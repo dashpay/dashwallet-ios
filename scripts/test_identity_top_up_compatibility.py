@@ -48,8 +48,14 @@ with tempfile.TemporaryDirectory(prefix="identity-top-up-compatibility-") as dir
             "    static func estimatedFee(", "    static func balancedChunks<T>(")))
     sentinel = "    // PRODUCTION_TOP_UP"
     assert scaffold.count(sentinel) == 1
+    # The external send's top-up from Platform, as `LiveIdentityTopUpFromCredits` makes it: the SDK call it takes is
+    # the one under test, so it runs over the fake wallet rather than a closure a test supplies.
+    executor = (repository / "DashWallet/Sources/UI/Payments/ExternalSend/Services/ExternalSendExecutor.swift").read_text()
+    send_top_up = declaration("    private static func topUpFromPlatform(", executor).replace(
+        "private static func", "static func", 1)
     (source / "IdentityTopUpHarness.swift").write_text(
-        scaffold.replace(sentinel, methods) + "\n@MainActor\n" + declaration("struct IdentityCreditsTopUp {") + "\n")
+        scaffold.replace(sentinel, methods) + "\n@MainActor\n" + declaration("struct IdentityCreditsTopUp {") + "\n"
+        + "\n@MainActor\nenum LiveIdentityTopUpFromCredits {\n    struct WalletNotOpen: Error {}\n" + send_top_up + "\n}\n")
     (tests / "IdentityTopUpCompatibilityTests.swift").symlink_to(
         repository / "scripts/fixtures/IdentityTopUpCompatibilityTests.swift")
     (package / "Package.swift").write_text("""// swift-tools-version: 5.9
