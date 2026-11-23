@@ -131,6 +131,10 @@ enum SendOutcome {
         // The external identity top-up throws it, before anything is signed, for an identity Platform does not know.
         case .identityNotFound:
             return .notSent(.identityNotFound)
+        // The address top-ups read the identity from Platform before they sign (dashpay/platform#5860): a failed
+        // read (80) sent nothing.
+        case .identityLookupFailed:
+            return .notSent(.failed)
         // The Platform withdrawal's address network check runs before signing; the Platform-to-shielded capacity
         // checks run during input selection and the input fetch, before the proof is built.
         case .invalidNetwork, .shieldedInsufficientBalance:
