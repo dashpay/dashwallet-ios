@@ -15,7 +15,7 @@ Probed on Xcode 27.2 (2026-11-18): `xcrun xcstringstool extract --legacy-localiz
 - Wording preservation: 100% of (code lookup key, locale) pairs with a Baseline translation resolve to the same wording, "same" meaning equal text after formatting with the same sample arguments (spec §6, AC-10).
 - AC-09: a failure names the file and line, the key the code asks for now and the Baseline key.
 - Plural fidelity: plural forms are chosen by each language's rules (spec §6) — the check must not trust its own guess of those rules.
-- The check is run by the release preparer three more times (spec §7) — one command, seconds to minutes, no simulator.
+- The check is run by the release preparer three more times (spec §7) — one command after a build, no simulator.
 
 ## Considered options
 
@@ -25,15 +25,16 @@ Probed on Xcode 27.2 (2026-11-18): `xcrun xcstringstool extract --legacy-localiz
 
 ## Decision outcome
 
-**Chosen:** option 1. It formats with the real Foundation — the real format-code handling and plural rules — so the check proves what a phone does rather than what an emulation thinks (option 2), and it stays one command that runs in seconds after a build, without a simulator, for the release preparer (option 3).
+**Chosen:** option 1. It formats with the real Foundation — the real format-code handling and plural rules — so the check proves what a phone does rather than what an emulation thinks (option 2), and it stays one command after a build, without a simulator, for the release preparer (option 3).
 
 How it works:
-- **Baseline side:** the merge-base's sources and per-locale lists, read from git into a temporary directory; places and keys from the legacy extraction.
+- **Sources:** every file under `DashWallet/` and every file the `dashpay` target compiles (for example the Objective-C under `DashPay/`), each side's list read from its own project file. The Today extension is not covered.
+- **Baseline side:** the merge-base's sources and per-locale lists, read from git into a temporary directory. Its Swift places are the compiler's `.stringsdata` of a `dashpay` build of the Baseline commit plus the legacy extraction of `NSLocalizedString`, because a lightweight extraction cannot derive the keys of SwiftUI interpolations (owner decision 2026-11-19); its Objective-C places come from the legacy extraction.
 - **Current side:** Swift places from the latest build's `.stringsdata`, Objective-C places from the legacy extraction of the working tree (their keys do not change); wording from `xcstringstool compile` of the Catalog.
 - **Pairing:** by file and the ordinal position of the place in that file. A file whose number of places differs between the two sides fails the check and is named, because the rewrite is one-for-one.
-- **Comparison:** for each of the 43 locales, each place whose Baseline key had a Baseline translation is formatted on both sides with the same sample arguments — a distinct value per argument position, so swapped arguments show up as different text; for counted phrases the counts 0, 1, 2, 5, 21, 101 under that locale, and the texts must be equal; every Unused entry must still hold its Baseline translations.
+- **Comparison:** for each of the 43 locales, each place whose Baseline key had a Baseline translation is formatted on both sides with the same sample arguments — a distinct value per argument position, so swapped arguments show up as different text; for counted phrases the counts 0, 1, 2, 5, 21, 101 under that locale, and the texts must be equal; every Unused entry must still hold its Baseline translations. A Baseline translation whose format codes take a sample argument as another type (an object code for a number, an integer code for an object or a float) formats undefined text on a phone, so it is a **baseline defect**: left out of both sides and printed, not a finding. The rule judges the codes, never the key (owner decision 2026-11-19).
 - **Plural rules per locale:** Foundation picks plural rules by the formatting locale, and `String.localizedStringWithFormat` uses `Locale.current` (probe 2026-11-18), so the formatter passes each locale explicitly (`String(format:locale:arguments:)`) or runs once per locale with that locale as the process locale; the pilot proves which works. A self-test guards it: for `uk`, a counted phrase must format differently for 2 and for 5, else the check fails as misconfigured.
-- **Key set (AC-06):** the Catalog's keys equal the Baseline's keys, except that each Moved key replaces its Baseline key; Not-for-translation text is never a key. A missing Baseline key fails the check whether or not it had translations.
+- **Key set (AC-06):** the comparison runs both ways (owner decision 2026-11-19). The Catalog's keys must be exactly the Baseline's keys with each Moved key in place of the Baseline key it replaced; Not-for-translation text is never a key. A Baseline key with no entry and no Moved key is a `missing-key` finding, whether or not it had translations; any other Catalog key is an `extra-key` finding, and a leftover old copy of a Moved key is an `old-copy` finding. A key that a current place asks for is never a finding, so a text added after the move is legitimate.
 - **Watch files (AC-15):** every `WatchApp/<lang>.lproj/Interface.strings` is byte-identical to the Baseline commit.
 - **Output:** per-locale counts (places with a Baseline translation, places whose current key resolves to the same wording) and, on failure, file, line, current key, Baseline key and locale. Exact report format and exit codes: `scripts/localization/ZERO_LOSS_CHECK.md` (ADR-0064).
 
@@ -44,7 +45,7 @@ How it works:
 - Moved keys need no special-casing: a place passes when its current key's text formats to the Baseline text, whichever key it is.
 
 **Negative**
-- The check needs a fresh build of the `dashpay` target for the `.stringsdata`; a stale DerivedData gives stale current keys, so the check must detect and refuse a build older than the working tree (how: `tasks`).
+- The check needs a fresh build of the `dashpay` target for the `.stringsdata`; a stale DerivedData gives stale current keys, so the check refuses (exit 2) a build whose `.stringsdata` is older than the working tree's Swift files.
 - Ordinal pairing breaks when the rewrite merges or splits lookups in a file; the file then fails and needs a hand look.
 
 **Neutral**
