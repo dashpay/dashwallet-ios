@@ -32,8 +32,9 @@ class SchemaReleaseTest < Minitest::Test
       # A merge-back branch holds the commit it was created at unless a test says otherwise.
       @comparisons.fetch([base, head]) { head.start_with?("merge-back/") ? "identical" : raise(KeyError, "no comparison for #{base}...#{head}") }
     end
-    def step_succeeded?(_repo, run_id, attempt, workflow:, step:)
-      workflow == SchemaRelease::RELEASE_WORKFLOW && step == SchemaRelease::UPLOAD_STEP && Array(@uploaded_runs).include?([run_id, attempt])
+    UPLOAD_WINDOW = [Time.utc(2026, 11, 1, 10, 0, 0), Time.utc(2026, 11, 1, 10, 6, 0)].freeze
+    def successful_step_window(_repo, run_id, attempt, workflow:, step:)
+      UPLOAD_WINDOW if workflow == SchemaRelease::RELEASE_WORKFLOW && step == SchemaRelease::UPLOAD_STEP && Array(@uploaded_runs).include?([run_id, attempt])
     end
     def fast_forward(_repo, branch, commit)
       @fast_forwards << [branch, commit]
@@ -394,6 +395,7 @@ class SchemaReleaseTest < Minitest::Test
     save_manifest
     pipeline = mirroring
     @store.github.uploaded_runs = [%w[4242 2]]
+    @apple.builds["new"]["attributes"]["uploadedDate"] = "2026-11-01T10:05:00Z"
     pipeline.sync(dry_run: true)
     refute @store.files.key?("apple-builds/apple21.json")
     assert_includes @output.string, "would record the binding"
@@ -412,11 +414,39 @@ class SchemaReleaseTest < Minitest::Test
     save_manifest
     pipeline = mirroring
     @store.github.uploaded_runs = [%w[4242 1]]
+    @apple.builds["new"]["attributes"]["uploadedDate"] = "2026-11-01T10:05:00Z"
     error = assert_raises(SchemaRelease::Error) { pipeline.sync }
     assert_includes error.message, "does not show a successful upload"
     refute @store.files.key?("apple-builds/apple21.json")
     assert_empty @store.github.tags
     assert_empty @store.github.fast_forwards
+  end
+
+  def test_unbound_publication_is_not_bound_when_apple_received_the_build_outside_the_upload_step
+    # A build number Apple freed after a failed processing, used again by an
+    # upload from elsewhere: same version and number, another archive.
+    @unbound = true
+    @manifest.merge!("workflow_run_id" => "4242", "workflow_run_attempt" => "2")
+    save_manifest
+    pipeline = mirroring
+    @store.github.uploaded_runs = [%w[4242 2]]
+    ["2026-11-01T11:30:00Z", nil, "yesterday"].each do |uploaded|
+      @apple.builds["new"]["attributes"]["uploadedDate"] = uploaded
+      error = assert_raises(SchemaRelease::Error) { pipeline.sync }
+      assert_includes error.message, "no recorded binding"
+      refute @store.files.key?("apple-builds/apple21.json")
+      assert_empty @store.github.tags
+      assert_empty @store.github.fast_forwards
+    end
+  end
+
+  def test_retry_of_one_release_leaves_no_mirror_state_for_the_next_run
+    @store.github.tags["v9.1.0"] = WALLET
+    pipeline = mirroring(release: "behind", development: "ahead")
+    assert_raises(SchemaRelease::Error) { pipeline.sync(release_id: "new") }
+    @store.github.comparisons[["master", WALLET]] = "identical"
+    pipeline.sync
+    assert_equal 1, @store.github.pulls.length
   end
 
   def test_release_workflow_still_has_the_upload_step_the_observer_reads

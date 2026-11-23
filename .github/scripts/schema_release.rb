@@ -242,18 +242,22 @@ module SchemaRelease
       "closed" unless pulls.empty?
     end
 
-    # Whether `step` concluded with success in that attempt of a run of
-    # `workflow`. A run that cannot be read, or belongs to another workflow,
-    # is not a success.
-    def step_succeeded?(repo, run_id, attempt, workflow:, step:)
+    # When `step` ran, as [started, completed], if it concluded with success
+    # in that attempt of a run of `workflow`; nil for a run that cannot be
+    # read, belongs to another workflow, or has no such successful step.
+    def successful_step_window(repo, run_id, attempt, workflow:, step:)
       run = request("get", "repos/#{repo}/actions/runs/#{run_id}/attempts/#{attempt}", optional: true)
-      return false unless run.is_a?(Hash) && run["path"] == workflow
+      return nil unless run.is_a?(Hash) && run["path"] == workflow
       jobs = request("get", "repos/#{repo}/actions/runs/#{run_id}/attempts/#{attempt}/jobs?per_page=100", optional: true)
-      return false unless jobs.is_a?(Hash) && jobs["jobs"].is_a?(Array)
-      jobs["jobs"].any? do |job|
-        job.is_a?(Hash) && job["steps"].is_a?(Array) &&
-          job["steps"].any? { |item| item.is_a?(Hash) && item["name"] == step && item["conclusion"] == "success" }
+      return nil unless jobs.is_a?(Hash) && jobs["jobs"].is_a?(Array)
+      jobs["jobs"].each do |job|
+        next unless job.is_a?(Hash) && job["steps"].is_a?(Array)
+        found = job["steps"].find { |item| item.is_a?(Hash) && item["name"] == step && item["conclusion"] == "success" }
+        return [Time.iso8601(found.fetch("started_at")), Time.iso8601(found.fetch("completed_at"))] if found
       end
+      nil
+    rescue ArgumentError, KeyError, TypeError
+      nil
     end
 
     # Creates `name` at `commit`. One that already exists must be at that commit.
@@ -395,6 +399,8 @@ module SchemaRelease
         unless build.is_a?(Hash) && build["attributes"].is_a?(Hash)
           raise Error, "Malformed build for App Store version #{version.fetch('id')}: expected a build attributes object."
         end
+        # When Apple received the build; read only to recover a missing binding.
+        (@build_uploads ||= {})[SchemaRelease.component(version.fetch("id"))] = build.fetch("attributes")["uploadedDate"]
         {
           "format_version" => 1, "release_id" => SchemaRelease.component(version.fetch("id")),
           "app_id" => app.fetch("id"), "bundle_id" => @bundle, "app_version" => number,
@@ -451,6 +457,10 @@ module SchemaRelease
     end
 
     def sync(release_id: nil, dry_run: false)
+      # Per-run state of the release mirror; a retry on the same instance must
+      # not inherit it.
+      @projected_release_tip = nil
+      @release_branch_unpublished = false
       failures = []
       # The version of each listed publication that could not be read, nil
       # when even that is unknown.
@@ -598,17 +608,29 @@ module SchemaRelease
 
     # The release workflow records the binding only after Apple has processed
     # the build, and gives up waiting after a while. A build Apple accepted
-    # and processed later is published all the same. Apple takes one build per
-    # version and build number, so when the run named in the manifest shows
-    # its upload step succeeded, the build Apple lists under that number is
-    # the one that run uploaded, and the observer records the binding itself.
+    # and processed later is published all the same. When the run named in the
+    # manifest shows its upload step succeeded, and Apple received the
+    # published build while that step ran, the build is the one that run
+    # uploaded, and the observer records the binding itself. The time matters:
+    # Apple frees a build number whose processing failed, so a later upload
+    # from elsewhere can carry the same version and number.
+    UPLOAD_SLACK = 120
     def recover_binding(label, record, manifest, evidence, dry_run)
       run, attempt = manifest["workflow_run_id"].to_s, manifest["workflow_run_attempt"].to_s
-      uploaded = run.match?(/\A[0-9]+\z/) && attempt.match?(/\A[0-9]+\z/) &&
-                 @store.github.step_succeeded?(IOS_REPO, run, attempt, workflow: RELEASE_WORKFLOW, step: UPLOAD_STEP)
-      unless uploaded
-        raise Error, "#{label} has no recorded binding between its Apple build and its build evidence, and the release run in its manifest " \
-                     "(#{run.empty? ? 'none' : run}) does not show a successful upload, so the commit it was cut from is not established. " \
+      window = run.match?(/\A[0-9]+\z/) && attempt.match?(/\A[0-9]+\z/) &&
+               @store.github.successful_step_window(IOS_REPO, run, attempt, workflow: RELEASE_WORKFLOW, step: UPLOAD_STEP)
+      received = begin
+        Time.iso8601((@build_uploads || {})[record["release_id"]].to_s)
+      rescue ArgumentError
+        nil
+      end
+      unless window && received && received.between?(window.first - UPLOAD_SLACK, window.last + UPLOAD_SLACK)
+        reason = if !window then "the release run in its manifest (#{run.empty? ? 'none' : run}) does not show a successful upload"
+                 elsif !received then "Apple does not say when it received the build"
+                 else "Apple received the build at #{received.utc.iso8601}, not while run #{run} was uploading (#{window.first.utc.iso8601} to #{window.last.utc.iso8601})"
+                 end
+        raise Error, "#{label} has no recorded binding between its Apple build and its build evidence, and #{reason}, " \
+                     "so the commit it was cut from is not established. " \
                      "No tag or branch was written. See SCHEMA_RELEASES.md, \"When the mirror reports an error\"."
       end
       path, digest = evidence
@@ -691,7 +713,8 @@ module SchemaRelease
         # Not asked again, but not settled either: the next release cut from
         # development will not descend from the release branch.
         raise Error, "#{RELEASE_BRANCH} at #{commit} has commits #{DEVELOPMENT_BRANCH} lacks, and the pull request from #{head} was closed or squashed. " \
-                     "Not opening another. Merge #{head} into #{DEVELOPMENT_BRANCH} with a merge commit, or the next release cannot move #{RELEASE_BRANCH}."
+                     "Not opening another. Check that #{head} still contains #{commit}, and recreate it from that commit if it does not; " \
+                     "then merge it into #{DEVELOPMENT_BRANCH} with a merge commit, or the next release cannot move #{RELEASE_BRANCH}."
       end
       if dry_run
         @out.puts "#{RELEASE_BRANCH} has commits #{DEVELOPMENT_BRANCH} lacks: would open a pull request from #{head}."
