@@ -81,7 +81,7 @@ one-scan login possible, and with it DashConnect on mainnet once mainnet runs pr
   wallet knows its document, or it is 48 hours old in proved Platform block time
   ([ADR-0050](../../adr/0050-bound-an-unresolved-publish-by-48-hours-of-proved-platform-block-time.md)),
   no operation records the response removed
-  ([ADR-0052](../../adr/0052-refuse-response-removed-at-its-one-write-point-while-the-publish-is-unresolved.md)).
+  ([ADR-0065](../../adr/0065-report-a-kept-response-from-the-write-point-or-from-a-failed-lookup.md)).
   A publish Platform refused (a consensus rejection) leaves nothing to wait for; any other error
   keeps it unresolved. A submit that ends late is only logged; the next read decides.
   A disconnect in that window still turns the keys off at once and says the response may still
