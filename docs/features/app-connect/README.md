@@ -16,7 +16,7 @@ one-scan login possible, and with it DashConnect on mainnet once mainnet runs pr
   approval sheet. From 14 it derives a session key for the request, registers it on the identity
   bound to the app's contract with a budget and an expiry, and publishes the encrypted key to the
   App Connect system contract. Below 14 App Connect is not offered.
-  [ADR-0006](../../adr/0006-choose-the-app-connect-login-by-the-protocol-version-read-at-runtime.md).
+  [ADR-0053](../../adr/0053-open-dashconnect-on-mainnet-and-gate-each-request-by-protocol-14.md).
 - **App Connect v2 only** ([#1301](https://github.com/dashpay/dashwallet-ios/pull/1301)). The
   two-scan (v1) login is removed: a v1 `dash-key` QR is refused with a message asking the app for
   a new code. [ADR-0028](../../adr/0028-answer-app-connect-v2-only-and-remove-the-two-scan-login.md).
@@ -51,7 +51,8 @@ one-scan login possible, and with it DashConnect on mainnet once mainnet runs pr
   against Platform (who owns each contract, the identity hint), clamps the limits, derives one key
   per binding, and registers them in one identity update that also turns off the keys of its
   earlier grant on the same connection. The keys are published sealed on the App Connect contract,
-  and the app's callback opens after the user answers. A `dash-key:` v2 code for mainnet is refused; a
+  and for a request that came as a link the wallet asks `Return to <host>?` before it opens the
+  app's callback ([ADR-0056](../../adr/0056-know-no-app-and-ask-before-returning-to-one.md)). A `dash-key:` v2 code for mainnet is refused; a
   `dashpay://connect` one is answered ([ADR-0053](../../adr/0053-open-dashconnect-on-mainnet-and-gate-each-request-by-protocol-14.md)).
   [ADR-0009](../../adr/0009-answer-app-connect-request-v2-with-wallet-derived-keys-under-wallet-limits.md).
 
@@ -97,17 +98,36 @@ one-scan login possible, and with it DashConnect on mainnet once mainnet runs pr
 - The wallet records a key before it submits the key's registration, so a key that lands without
   a confirmation is still found and can be turned off.
 
+## Later changes
+
+- **The redesigned Connections page and approve sheet**
+  ([#1277](https://github.com/dashpay/dashwallet-ios/pull/1277),
+  [#1399](https://github.com/dashpay/dashwallet-ios/pull/1399),
+  [#1289](https://github.com/dashpay/dashwallet-ios/pull/1289),
+  [#1293](https://github.com/dashpay/dashwallet-ios/pull/1293),
+  [#1278](https://github.com/dashpay/dashwallet-ios/pull/1278)). Active, Disconnected and Expired
+  tabs on the state table above; a connection sheet whose access and funding come from one read of
+  the identity, with access claimed only from keys whose bound is known
+  ([ADR-0057](../../adr/0057-tell-a-connection-sheet-from-one-basis-and-placed-keys-only.md)); an
+  approve sheet with funding limit and expiry pickers that shows every app as unknown and asks
+  before returning to it
+  ([ADR-0056](../../adr/0056-know-no-app-and-ask-before-returning-to-one.md)). A login request on
+  a wallet without a username opens nothing; the page asks for a username
+  ([ADR-0058](../../adr/0058-answer-a-login-without-a-username-with-the-pages-own-state.md)). The
+  rules stay in Swift for now
+  ([ADR-0055](../../adr/0055-keep-the-app-connect-rules-in-swift-until-android-shares-the-platform-wallet.md)).
+
+- **Encryption keys and the `dashpay://connect` carrier**
+  ([#1258](https://github.com/dashpay/dashwallet-ios/pull/1258),
+  [#1257](https://github.com/dashpay/dashwallet-ios/pull/1257)). Encryption keys are chosen by the
+  DIP's rotation rules
+  ([ADR-0009](../../adr/0009-answer-app-connect-request-v2-with-wallet-derived-keys-under-wallet-limits.md)),
+  and on mainnet a request arrives as a `dashpay://connect` link
+  ([ADR-0053](../../adr/0053-open-dashconnect-on-mainnet-and-gate-each-request-by-protocol-14.md)).
+
 ## Not in scope
 
-The later DashConnect PRs build on this one. Each of them adds its own ADRs to the log:
-
-- Encryption key rotation and the `dashpay://connect` carrier
-  ([#1257](https://github.com/dashpay/dashwallet-ios/pull/1257),
-  [#1258](https://github.com/dashpay/dashwallet-ios/pull/1258)).
-- The redesigned Connections page, approve sheet, expiry and disconnected apps
-  ([#1277](https://github.com/dashpay/dashwallet-ios/pull/1277),
-  [#1278](https://github.com/dashpay/dashwallet-ios/pull/1278),
-  [#1293](https://github.com/dashpay/dashwallet-ios/pull/1293),
-  [#1289](https://github.com/dashpay/dashwallet-ios/pull/1289)).
+- The approval boundary as one place (a request re-checked after the PIN against Platform) is
+  [#1273](https://github.com/dashpay/dashwallet-ios/issues/1273).
 
 The screens follow the design canon in [`docs/design-system.md`](../../design-system.md).
