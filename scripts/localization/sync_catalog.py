@@ -2,8 +2,10 @@
 """Sync DashWallet/Localizable.xcstrings with the build's strings (ADR-0071).
 
 Run by the "Sync String Catalog" build phase after compilation, with the Xcode build
-environment: SRCROOT, OBJECT_FILE_DIR_normal, TARGET_NAME. ARCHS / CURRENT_ARCH are not
-needed: every <arch> directory under OBJECT_FILE_DIR_normal is scanned.
+environment: SRCROOT, OBJECT_FILE_DIR_normal, TARGET_NAME, and ARCHS: only the <arch> directories of
+the build's architectures are scanned, because Xcode keeps the directory of an architecture an earlier
+build compiled (one x86_64 build would keep its keys counted as seen). Without ARCHS (the script run
+by hand) every <arch> directory under OBJECT_FILE_DIR_normal is scanned.
 
 It collects the compiler's *.stringsdata, runs a legacy (NSLocalizedString-style)
 extraction over the target's Swift files (<arch>/<TARGET_NAME>.SwiftFileList) and the
@@ -63,12 +65,17 @@ def read_dependencies(path):
         return [t for t in split_escaped(f.read()) if not t.endswith(":")]
 
 
-def collect(srcroot, object_dir, target):
+def collect(srcroot, object_dir, target, archs=None):
     stringsdata, swift_files, objc_files = [], [], []
     try:
         arch_dirs = sorted(e.path for e in os.scandir(object_dir) if e.is_dir())
     except OSError as e:
         raise SyncError("cannot read OBJECT_FILE_DIR_normal %s: %s" % (object_dir, e))
+    if archs:
+        missing = [a for a in archs if os.path.join(object_dir, a) not in arch_dirs]
+        if missing:
+            raise SyncError("ARCHS names %s, but %s has no folder for it" % (", ".join(missing), object_dir))
+        arch_dirs = sorted(os.path.join(object_dir, a) for a in archs)
     src_prefix = os.path.join(os.path.realpath(srcroot), "")
     for arch in arch_dirs:
         # Xcode leaves the .stringsdata/.d of a deleted source behind; only a file whose object
@@ -184,7 +191,7 @@ def main(argv=None):
             print("note: %s not found; Catalog sync skipped" % catalog)
             return 0
         stringsdata, swift_files, objc_files = collect(
-            srcroot, env["OBJECT_FILE_DIR_normal"], env["TARGET_NAME"])
+            srcroot, env["OBJECT_FILE_DIR_normal"], env["TARGET_NAME"], env.get("ARCHS", "").split())
         inputs = stringsdata + swift_files + objc_files
         stamp = os.path.join(env["OBJECT_FILE_DIR_normal"], STAMP_NAME)
         if read_stamp(stamp) == fingerprint(catalog, inputs):
@@ -195,9 +202,18 @@ def main(argv=None):
             synced = sync(catalog, stringsdata + legacy, tmp)
             changed = not same_bytes(synced, catalog)
             if changed:
-                staging = os.path.join(os.path.dirname(os.path.abspath(catalog)), ".Localizable.xcstrings.sync.tmp")
-                shutil.copyfile(synced, staging)
-                os.replace(staging, catalog)
+                # Its own staging file in the Catalog's folder: the replace stays atomic, and two
+                # builds of one checkout that sync at once do not share it.
+                fd, staging = tempfile.mkstemp(prefix=".Localizable.xcstrings.", suffix=".sync",
+                                               dir=os.path.dirname(os.path.abspath(catalog)))
+                os.close(fd)
+                try:
+                    shutil.copyfile(synced, staging)
+                    shutil.copymode(catalog, staging)
+                    os.replace(staging, catalog)
+                finally:
+                    if os.path.exists(staging):
+                        os.remove(staging)
             stale = count_stale(catalog)
         with open(stamp, "w", encoding="utf-8") as f:
             f.write(fingerprint(catalog, inputs) + "\n")

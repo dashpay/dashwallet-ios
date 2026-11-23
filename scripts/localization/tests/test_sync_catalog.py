@@ -6,7 +6,8 @@ Run from the repository root:
 
 Contract of scripts/localization/sync_catalog.py (run as a subprocess, like the Xcode
 run-script phase runs it): environment SRCROOT, OBJECT_FILE_DIR_normal, TARGET_NAME
-(ARCHS / CURRENT_ARCH may be unset; every <arch> dir is scanned).
+(ARCHS set: only its <arch> dirs are scanned, and one without a dir is an error; unset: every
+<arch> dir is scanned).
   - $SRCROOT/DashWallet/Localizable.xcstrings missing -> note on stdout, exit 0, nothing created.
   - Otherwise: xcstringstool sync with the compiler .stringsdata, plus a legacy extraction of
     the target's Swift files (<arch>/<TARGET_NAME>.SwiftFileList, `\\ `-escaped paths) and the
@@ -179,6 +180,52 @@ class SyncCatalogTest(unittest.TestCase):
         self.assertEqual(entry(cat, "Leftover key").get("extractionState"), "stale")
         self.assertNotEqual(entry(cat, "Hello from Swift").get("extractionState"), "stale")
         self.assertNotEqual(entry(cat, "Objc only").get("extractionState"), "stale")
+
+    def leftover_arch(self):
+        """An x86_64 folder left by an earlier build, whose own link list still names a deleted key's object."""
+        cat = catalog_io.read_catalog(self.catalog)
+        cat["strings"]["Leftover key"] = {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "x"}}}}
+        catalog_io.write_catalog(self.catalog, cat)
+        old = os.path.join(self.root, "obj", "x86_64")
+        os.makedirs(old)
+        with open(os.path.join(old, "Target.LinkFileList"), "w", encoding="utf-8") as f:
+            f.write(os.path.join(old, "Old.o") + "\n")
+        with open(os.path.join(old, "Old.stringsdata"), "w", encoding="utf-8") as f:
+            json.dump({"source": os.path.join(self.srcroot, "DashWallet", "Sources", "Old.swift"), "version": 2,
+                       "tables": {"Localizable": [{"key": "Leftover key", "comment": "",
+                                                   "location": {"startingLine": 1, "startingColumn": 1}}]}}, f)
+
+    def test_a_build_reads_only_the_folders_of_its_architectures(self):
+        self.leftover_arch()
+        res = self.run_sync(dict(self.env, ARCHS="arm64"))
+        self.assertEqual(res.returncode, 0, res.stderr)
+        cat = catalog_io.read_catalog(self.catalog)
+        self.assertEqual(entry(cat, "Leftover key").get("extractionState"), "stale")
+        self.assertNotEqual(entry(cat, "Hello from Swift").get("extractionState"), "stale")
+
+    def test_run_by_hand_without_archs_reads_every_folder(self):
+        self.leftover_arch()
+        res = self.run_sync()
+        self.assertEqual(res.returncode, 0, res.stderr)
+        self.assertNotEqual(entry(catalog_io.read_catalog(self.catalog), "Leftover key").get("extractionState"), "stale")
+
+    def test_an_architecture_of_the_build_without_a_folder_is_an_error(self):
+        self.assert_sync_error(dict(self.env, ARCHS="arm64 x86_64"), "x86_64")
+
+    def test_another_run_s_staging_file_does_not_fail_the_sync(self):
+        # Two builds of one checkout can sync at once; a staging path one run holds must not break the other.
+        os.makedirs(os.path.join(self.srcroot, "DashWallet", ".Localizable.xcstrings.sync.tmp"))
+        cat = catalog_io.read_catalog(self.catalog)
+        cat["strings"]["Leftover key"] = {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "x"}}}}
+        catalog_io.write_catalog(self.catalog, cat)
+        os.chmod(self.catalog, 0o644)
+        res = self.run_sync()
+        self.assertEqual(res.returncode, 0, res.stderr)
+        self.assertEqual(entry(catalog_io.read_catalog(self.catalog), "Leftover key").get("extractionState"), "stale")
+        self.assertEqual(os.stat(self.catalog).st_mode & 0o777, 0o644)
+        left = [n for n in os.listdir(os.path.dirname(self.catalog))
+                if n.startswith(".Localizable.xcstrings") and n != ".Localizable.xcstrings.sync.tmp"]
+        self.assertEqual(left, [])
 
     def test_inputs_whose_object_is_listed_in_the_link_file_list_still_count(self):
         self.write_link_list(["My View.o"])  # Legacy Objc.o dropped: its .d must be ignored
