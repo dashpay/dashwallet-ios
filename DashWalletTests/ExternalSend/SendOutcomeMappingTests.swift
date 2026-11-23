@@ -207,6 +207,14 @@ final class SendOutcomeMappingTests: XCTestCase {
         }
     }
 
+    /// The address top-ups read the identity from Platform before signing (dashpay/platform#5860): a failed read
+    /// (80) sent nothing, so Send offers Retry instead of "Send in progress".
+    func testIdentityLookupFailedIsNotSentFailed() {
+        guard case .failed? = assertNotSent(PlatformWalletError.identityLookupFailed(Self.rawSdkText)) else {
+            return XCTFail("expected .failed for identityLookupFailed")
+        }
+    }
+
     func testOtherRefusalsProvenBeforeSubmissionAreNotSentFailed() {
         guard case .failed? = assertNotSent(PlatformWalletError.invalidNetwork(Self.rawSdkText)) else {
             return XCTFail("expected .failed for invalidNetwork")
