@@ -1885,6 +1885,15 @@ final class ExternalSendExecutorTests: XCTestCase {
         XCTAssertTrue(logged.last.map { isNotSent($0, "identityNotFound") } ?? false)
     }
 
+    /// Platform could not be asked for the identity (code 80), so nothing was signed: Send failed with Retry, never
+    /// the "Send in progress" Toast.
+    func testPlatformToIdentityIdentityLookupFailureIsNotSent() async throws {
+        identityTopUp.result = .failed(PlatformWalletError.identityLookupFailed("raw"), handedOver: false)
+        let executor = makeExecutor()
+        let outcome = await executor.send(try await prepare(executor, .platformToIdentity))
+        XCTAssertTrue(isNotSent(outcome, "failed"), "\(outcome)")
+    }
+
     func testPlatformToIdentityFailureAfterTheMoneyWasHandedOverIsInFlightEvenForAPreBroadcastError() async throws {
         identityTopUp.result = .failed(CoordinatorError.noWallet, handedOver: true)
         let executor = makeExecutor()
