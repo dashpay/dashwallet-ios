@@ -1,7 +1,9 @@
 """Lookup places at the Baseline and now, paired by file and ordinal (ADR-0067).
 
 A place is Place(file, line, column, key); `file` is relative to the repo root.
-Only app sources under DashWallet/ are covered.
+The sources covered are every file under DashWallet/ and every file the dashpay target compiles
+(`dashpay_target.sources`, e.g. the Objective-C under DashPay/), each side read from its own project
+file. The Today extension's sources are not covered.
 """
 import json
 import os
@@ -9,6 +11,8 @@ import plistlib
 import subprocess
 import tempfile
 from collections import defaultdict, namedtuple
+
+import dashpay_target
 
 Place = namedtuple("Place", "file line column key")
 
@@ -62,12 +66,15 @@ def _read_stringsdata(path, roots):
 
 
 def _app_files(root, suffixes):
+    """Files with suffixes under APP_DIR or compiled by the dashpay target, relative to root."""
     root = os.path.realpath(root)
-    found = []
+    found = set()
     for dirpath, _, names in os.walk(os.path.join(root, APP_DIR)):
         for n in names:
             if n.endswith(suffixes):
-                found.append(os.path.relpath(os.path.join(dirpath, n), root))
+                found.add(os.path.relpath(os.path.join(dirpath, n), root))
+    found |= {os.path.relpath(f, root) for f in dashpay_target.sources(root)
+              if f.endswith(suffixes) and os.path.isfile(f)}
     return sorted(found)
 
 
@@ -82,8 +89,9 @@ def _baseline_keys(root):
     return keys
 
 
-def _baseline_compiler_places(stringsdata_dir, baseline_root):
-    """Places of the Baseline build's .stringsdata, sources mapped to repo-relative files."""
+def _baseline_compiler_places(stringsdata_dir, baseline_root, present):
+    """Places of the Baseline build's .stringsdata, sources mapped to repo-relative files; without
+    baseline_root a source maps to the file of `present` it ends with."""
     out = []
     for path in _stringsdata_files(stringsdata_dir):
         with open(path) as f:
@@ -95,10 +103,9 @@ def _baseline_compiler_places(stringsdata_dir, baseline_root):
                 continue
             rel = source[len(prefix):]
         else:
-            i = source.find("/" + APP_DIR + "/")
-            if i < 0:
+            rel = next((f for f in present if source.endswith("/" + f)), None)
+            if rel is None:
                 continue
-            rel = source[i + 1:]
         for entries in doc.get("tables", {}).values():
             for e in entries:
                 loc = e["location"]
@@ -112,13 +119,15 @@ def _dedupe(found):
 
 def baseline_places(repo, rev, baseline_stringsdata=None, baseline_root=None):
     with tempfile.TemporaryDirectory(prefix="places-baseline-") as tmp:
-        tar = _run(["git", "-C", repo, "archive", rev, APP_DIR])
-        subprocess.run(["tar", "-x", "-C", tmp], input=tar, check=True)
+        _archive(repo, rev, [APP_DIR, dashpay_target.PROJECT], tmp)
+        # The target's files outside APP_DIR, from the Baseline's own project file.
+        outside = sorted({os.path.relpath(f, tmp).split(os.sep)[0] for f in dashpay_target.sources(tmp)} - {APP_DIR})
+        _archive(repo, rev, [d for d in outside if _in_rev(repo, rev, d)], tmp)
         keys = _baseline_keys(tmp)
         swift_files = _app_files(tmp, (".swift",))
         if baseline_stringsdata:
             present = set(swift_files)
-            swift = [p for p in _baseline_compiler_places(baseline_stringsdata, baseline_root)
+            swift = [p for p in _baseline_compiler_places(baseline_stringsdata, baseline_root, present)
                      if p.file in present]
             swift += _extract(tmp, swift_files, ["--legacy-localizable-strings"])
             swift = _dedupe(swift)
@@ -127,6 +136,16 @@ def baseline_places(repo, rev, baseline_stringsdata=None, baseline_root=None):
         objc = _extract(tmp, _app_files(tmp, (".m", ".mm", ".h")),
                         ["--legacy-localizable-strings"])
     return [p for p in swift if p.key in keys] + objc
+
+
+def _archive(repo, rev, paths, dest):
+    if paths:
+        tar = _run(["git", "-C", repo, "archive", rev] + paths)
+        subprocess.run(["tar", "-x", "-C", dest], input=tar, check=True)
+
+
+def _in_rev(repo, rev, path):
+    return bool(_run(["git", "-C", repo, "ls-tree", "--name-only", rev, path]).strip())
 
 
 def _stringsdata_files(stringsdata_dir):

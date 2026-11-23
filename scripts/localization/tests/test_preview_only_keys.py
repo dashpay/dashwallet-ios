@@ -47,10 +47,10 @@ from unittest import mock
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 sys.path.insert(0, os.path.join(REPO, "scripts", "localization"))
 
+import dashpay_target  # noqa: E402
 import sync_catalog  # noqa: E402
+from dashpay_target import files_under  # noqa: E402
 
-PROJECT = os.path.join(REPO, "DashWallet.xcodeproj", "project.pbxproj")
-SOURCE_SUFFIXES = (".swift", ".m", ".mm")
 TODAY_SOURCES = os.path.join(REPO, "TodayExtension")
 CATALOG = os.path.join(REPO, "DashWallet", "Localizable.xcstrings")
 PODS_DEBUG_XCCONFIG = os.path.join(REPO, "Pods", "Target Support Files", "Pods-dashpay", "Pods-dashpay.debug.xcconfig")
@@ -178,40 +178,9 @@ def scan(paths):
     return objc_unseen | swift_unseen, objc_seen | swift_seen
 
 
-def files_under(root):
-    return [os.path.join(d, n) for d, _, names in os.walk(root) for n in names if n.endswith(SOURCE_SUFFIXES)]
-
-
 def dashpay_sources():
-    """Every `.swift` / `.m` / `.mm` file the dashpay target compiles: the files of its Sources build phase and of
-    its synchronized folders, less the folders' membership exceptions for it. A synchronized folder missing on
-    disk compiles nothing."""
-    objects = json.loads(subprocess.run(["plutil", "-convert", "json", "-o", "-", PROJECT],
-                                        capture_output=True, check=True).stdout)["objects"]
-    parent = {child: key for key, value in objects.items() for child in value.get("children", [])}
-
-    def path(key):
-        parts = []
-        while key in objects:
-            parts.append(objects[key].get("path", ""))
-            if objects[key].get("sourceTree") != "<group>":
-                break
-            key = parent.get(key)
-        return os.path.normpath(os.path.join(REPO, *reversed(parts)))
-
-    target_key, target = next((k, v) for k, v in objects.items()
-                              if v.get("isa") == "PBXNativeTarget" and v.get("name") == "dashpay")
-    files = set()
-    for phase in target["buildPhases"]:
-        if objects[phase]["isa"] == "PBXSourcesBuildPhase":
-            files |= {path(objects[f]["fileRef"]) for f in objects[phase]["files"] if "fileRef" in objects[f]}
-    for group in target.get("fileSystemSynchronizedGroups", []):
-        root = path(group)
-        excluded = {os.path.join(root, name) for exception in objects[group].get("exceptions", [])
-                    if objects[exception].get("target") == target_key
-                    for name in objects[exception].get("membershipExceptions", [])}
-        files |= set(files_under(root)) - excluded
-    return sorted(f for f in files if f.endswith(SOURCE_SUFFIXES))
+    """Every `.swift` / `.m` / `.mm` file the dashpay target compiles (`dashpay_target.sources`)."""
+    return dashpay_target.sources(REPO)
 
 
 @functools.lru_cache(maxsize=None)

@@ -235,6 +235,9 @@
     "%ld used": [
       "%ld used"
     ],
+    "%ld/%ld Characters": [
+      "%ld/%ld Characters"
+    ],
     "(1/3) Processing Payment": [
       "(1/3) Processing Payment"
     ],
@@ -369,6 +372,9 @@
     ],
     "About DashPay": [
       "About DashPay"
+    ],
+    "About me": [
+      "About me"
     ],
     "About the identity account balance": [
       "About the identity account balance"
@@ -513,6 +519,9 @@
     ],
     "Aggregate Progress": [
       "Aggregate Progress"
+    ],
+    "Agree": [
+      "Agree"
     ],
     "Alias": [
       "Alias"
@@ -825,6 +834,9 @@
     ],
     "Best peer height": [
       "Best peer height"
+    ],
+    "Between %ld and %ld characters": [
+      "Between %ld and %ld characters"
     ],
     "Between 20 and 23 characters": [
       "Between 20 and 23 characters"
@@ -1882,6 +1894,9 @@
     "Dismiss": [
       "Dismiss"
     ],
+    "Display Name": [
+      "Display Name"
+    ],
     "Distance": [
       "Distance"
     ],
@@ -2059,6 +2074,9 @@
     "Enter your 2FA code below": [
       "Enter your 2FA code below"
     ],
+    "Enter your Gravatar Email ID": [
+      "Enter your Gravatar Email ID"
+    ],
     "Enter your recovery phrase to reset your PIN": [
       "Enter your recovery phrase to reset your PIN"
     ],
@@ -2184,6 +2202,9 @@
     ],
     "Fees in crypto purchases": [
       "Fees in crypto purchases"
+    ],
+    "Fetching Image": [
+      "Fetching Image"
     ],
     "Fetching Info": [
       "Fetching Info"
@@ -2623,6 +2644,15 @@
     "Ignore": [
       "Ignore"
     ],
+    "Image URL can't be longer than %ld characters.": [
+      "Image URL can't be longer than %ld characters."
+    ],
+    "Image uploaded can be viewed publicly by anyone.": [
+      "Image uploaded can be viewed publicly by anyone."
+    ],
+    "Images Privacy Policy": [
+      "Images Privacy Policy"
+    ],
     "Imgur refused the upload, so picture upload is unavailable right now.": [
       "Imgur refused the upload, so picture upload is unavailable right now."
     ],
@@ -2943,6 +2973,9 @@
     ],
     "Letter, numbers and hyphens only": [
       "Letter, numbers and hyphens only"
+    ],
+    "Letters, numbers and hyphens only": [
+      "Letters, numbers and hyphens only"
     ],
     "Link": [
       "Link"
@@ -3280,6 +3313,9 @@
     "Move Dash into a private, encrypted balance that can't be traced.": [
       "Move Dash into a private, encrypted balance that can't be traced."
     ],
+    "Move and Zoom your photo to find the perfect fit": [
+      "Move and Zoom your photo to find the perfect fit"
+    ],
     "Move funds": [
       "Move funds"
     ],
@@ -3315,6 +3351,9 @@
     ],
     "Multiple wallets are stored on this device": [
       "Multiple wallets are stored on this device"
+    ],
+    "Must start and end with a letter or number": [
+      "Must start and end with a letter or number"
     ],
     "My Contacts": [
       "My Contacts"
@@ -3922,6 +3961,9 @@
     "Paste or scan the key": [
       "Paste or scan the key"
     ],
+    "Paste your image URL": [
+      "Paste your image URL"
+    ],
     "Pay": [
       "Pay"
     ],
@@ -4153,6 +4195,12 @@
     "Please contact Uphold to update your proof of address.": [
       "Please contact Uphold to update your proof of address."
     ],
+    "Please enter a valid gravatar email ID.": [
+      "Please enter a valid gravatar email ID."
+    ],
+    "Please enter a valid image URL.": [
+      "Please enter a valid image URL."
+    ],
     "Please go to your Uphold account to answer some questions about yourself.": [
       "Please go to your Uphold account to answer some questions about yourself."
     ],
@@ -4305,6 +4353,9 @@
     ],
     "Provider update payload": [
       "Provider update payload"
+    ],
+    "Public URL": [
+      "Public URL"
     ],
     "Public key": [
       "Public key"
@@ -4801,6 +4852,9 @@
     "Save": [
       "Save"
     ],
+    "Save Changes": [
+      "Save Changes"
+    ],
     "Save keys": [
       "Save keys"
     ],
@@ -4918,6 +4972,9 @@
     "See your username": [
       "See your username"
     ],
+    "Select": [
+      "Select"
+    ],
     "Select a coin": [
       "Select a coin"
     ],
@@ -4935,6 +4992,9 @@
     ],
     "Select coin": [
       "Select coin"
+    ],
+    "Select from Gallery": [
+      "Select from Gallery"
     ],
     "Select gift card provider": [
       "Select gift card provider"
@@ -5485,6 +5545,9 @@
     "TXOs": [
       "TXOs"
     ],
+    "Take a Photo from Camera": [
+      "Take a Photo from Camera"
+    ],
     "Takes your vote back": [
       "Takes your vote back"
     ],
@@ -5718,6 +5781,9 @@
     ],
     "The identity top-up result could not be confirmed. Check your balances before continuing.": [
       "The identity top-up result could not be confirmed. Check your balances before continuing."
+    ],
+    "The image you select will be uploaded to Imgur anonymously.": [
+      "The image you select will be uploaded to Imgur anonymously."
     ],
     "The instant username “%@” could not be registered, so you have no username to use while the vote runs.": [
       "The instant username “%@” could not be registered, so you have no username to use while the vote runs."
@@ -6670,6 +6736,12 @@
     "Unable to determine your Dash receive address.": [
       "Unable to determine your Dash receive address."
     ],
+    "Unable to fetch image. Please enter a valid image URL or check your connection.": [
+      "Unable to fetch image. Please enter a valid image URL or check your connection."
+    ],
+    "Unable to fetch your Gravatar. Please enter a valid gravatar email ID.": [
+      "Unable to fetch your Gravatar. Please enter a valid gravatar email ID."
+    ],
     "Unable to load merchant details. Please try again.": [
       "Unable to load merchant details. Please try again."
     ],
@@ -6681,6 +6753,9 @@
     ],
     "Unable to refresh quote. Please try again.": [
       "Unable to refresh quote. Please try again."
+    ],
+    "Unable to upload your picture. Please try again.": [
+      "Unable to upload your picture. Please try again."
     ],
     "Unable to verify your session. Please check your internet connection and try again.": [
       "Unable to verify your session. Please check your internet connection and try again."
@@ -6784,8 +6859,14 @@
     "Uphold error": [
       "Uphold error"
     ],
+    "Upload Error": [
+      "Upload Error"
+    ],
     "Upload your picture, personalize your identity": [
       "Upload your picture, personalize your identity"
+    ],
+    "Uploading your picture to the network": [
+      "Uploading your picture to the network"
     ],
     "Use at most %ld digits after the decimal point": [
       "Use at most %lld digits after the decimal point"
@@ -7273,6 +7354,9 @@
     "Would you like to make a deposit for your purchase using a linked bank account?": [
       "Would you like to make a deposit for your purchase using a linked bank account?"
     ],
+    "Would you like to save the changes you made to your profile?": [
+      "Would you like to save the changes you made to your profile?"
+    ],
     "Would you like to switch to \"%@\"? You can always switch back later.": [
       "Would you like to switch to \"%@\"? You can always switch back later."
     ],
@@ -7315,6 +7399,9 @@
     "You can also track any masternode on the network — by IP, proTxHash, or one of its keys — with the + button.": [
       "You can also track any masternode on the network — by IP, proTxHash, or one of its keys — with the + button."
     ],
+    "You can always delete the image uploaded, as long as you have access to this wallet.": [
+      "You can always delete the image uploaded, as long as you have access to this wallet."
+    ],
     "You can authenticate with Face ID for payments below": [
       "You can authenticate with Face ID for payments below"
     ],
@@ -7344,6 +7431,9 @@
     ],
     "You can pay with Dash at the cashier.": [
       "You can pay with Dash at the cashier."
+    ],
+    "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network.": [
+      "You can specify any URL which is publicly available on the internet so other users can see it on the Dash network."
     ],
     "You can withdraw up to %@ DASH — the rest stays to cover the Platform fee. Tap Max to use it.": [
       "You can withdraw up to %@ DASH — the rest stays to cover the Platform fee. Tap Max to use it."
@@ -7518,6 +7608,9 @@
     ],
     "Your DashPay Username is ready to use": [
       "Your DashPay Username is ready to use"
+    ],
+    "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded.": [
+      "Your Email is not stored in the DashPay wallet nor on any servers. It is used once to get your Gravatar account details and then discarded."
     ],
     "Your Identity balance can't cover this amount plus the network fee. Enter a smaller amount and try again.": [
       "Your Identity balance can't cover this amount plus the network fee. Enter a smaller amount and try again."

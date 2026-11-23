@@ -59,6 +59,8 @@ class PlacesCase(unittest.TestCase):
         git(self.repo, "config", "commit.gpgsign", "false")
         shutil.copytree(os.path.join(FIXTURES, "repo", "DashWallet"),
                         os.path.join(self.repo, "DashWallet"))
+        shutil.copytree(os.path.join(FIXTURES, "repo", "DashWallet.xcodeproj"),
+                        os.path.join(self.repo, "DashWallet.xcodeproj"))
         self.rev = self.commit()
 
     def commit(self, msg="baseline"):
@@ -172,6 +174,53 @@ class CurrentPlacesTests(PlacesCase):
         self.write_stringsdata(derived, "Gone.stringsdata", "DashWallet/Sources/Gone.swift", [("Gone", 2, 5)])
         got = places.current_places(self.repo, derived)
         self.assertNotIn("DashWallet/Sources/Gone.swift", [p.file for p in got])
+
+
+
+PROFILE = "DashPay/Profile.m"
+DASHPAY_PROJECT = """// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	objectVersion = 77;
+	objects = {
+		ROOT = {isa = PBXGroup; children = (DPG); sourceTree = "<group>"; };
+		DPG = {isa = PBXGroup; children = (FREF); path = DashPay; sourceTree = "<group>"; };
+		FREF = {isa = PBXFileReference; path = Profile.m; sourceTree = "<group>"; };
+		BF = {isa = PBXBuildFile; fileRef = FREF; };
+		PHASE = {isa = PBXSourcesBuildPhase; files = (BF); };
+		TGT = {isa = PBXNativeTarget; name = dashpay; buildPhases = (PHASE); };
+	};
+	rootObject = ROOT;
+}
+"""
+
+
+class DashPayTargetPlacesTests(PlacesCase):
+    """LL1: a file the dashpay target compiles outside DashWallet/ is a place on both sides."""
+
+    def setUp(self):
+        super().setUp()
+        self.write("DashWallet.xcodeproj/project.pbxproj", DASHPAY_PROJECT)
+        self.write(PROFILE, '@implementation Profile\n- (id)a { return NSLocalizedString(@"Save Changes", @""); }\n@end\n')
+        self.write("DashPay/Unbuilt.m", '@implementation U\n- (id)a { return NSLocalizedString(@"Unbuilt", @""); }\n@end\n')
+        self.rev = self.commit("dashpay")
+
+    def test_baseline_reads_a_dashpay_target_file_outside_the_app_folder(self):
+        got = places.baseline_places(self.repo, self.rev)
+        self.assertEqual(self.keys(got, PROFILE), ["Save Changes"])
+
+    def test_current_side_reads_a_dashpay_target_file_outside_the_app_folder(self):
+        got = places.current_places(self.repo, self.stringsdata("same"))
+        self.assertEqual(self.keys(got, PROFILE), ["Save Changes"])
+
+    def test_a_file_outside_the_app_folder_and_the_target_is_not_a_place(self):
+        got = places.baseline_places(self.repo, self.rev) + places.current_places(self.repo, self.stringsdata("same"))
+        self.assertNotIn("DashPay/Unbuilt.m", [p.file for p in got])
+
+    def test_baseline_reads_the_target_list_of_the_baseline_commit(self):
+        self.write("DashWallet.xcodeproj/project.pbxproj", DASHPAY_PROJECT.replace("Profile.m", "Other.m"))
+        got = places.baseline_places(self.repo, self.rev)
+        self.assertEqual(self.keys(got, PROFILE), ["Save Changes"])
 
 
 FAKE_ROOT = "/Users/ci/baseline-checkout"
