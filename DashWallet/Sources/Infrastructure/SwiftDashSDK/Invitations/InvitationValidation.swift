@@ -268,13 +268,14 @@ enum InvitationClaimFailure: Equatable {
              PlatformWalletError.invalidParameter,
              PlatformWalletError.invalidNetwork:
             return .refused
-        case let error as PlatformWalletError where PlatformRefusal.of(error) == .assetLockOutPointConsumed:
-            return .refused
         default:
             break
         }
-        // A consensus code that names another refusal decides alone.
-        guard PlatformRefusal.of(underlying) == nil else { return nil }
+        // A consensus code decides alone, on either SDK error type: the
+        // spent report is a refusal, any other code says nothing here.
+        if let refusal = PlatformRefusal.of(underlying) {
+            return refusal == .assetLockOutPointConsumed ? .refused : nil
+        }
         // An error without a typed case or a consensus code: only its text
         // names the cause.
         // TODO(platform-error-codes): a spent report that reaches Swift with

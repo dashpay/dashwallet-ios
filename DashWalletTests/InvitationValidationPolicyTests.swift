@@ -160,6 +160,15 @@ final class InvitationValidationPolicyTests: XCTestCase {
         let reported = InvitationClaimFailure.classify(wrapped(PlatformWalletError.consensusRejection(
             PlatformConsensusError(code: 10504, kind: .basic), "reworded by Platform")))
         XCTAssertEqual(reported, .refused)
+        // The same code on the SDK's own error type, and beside text that
+        // names another outcome: the code decides.
+        XCTAssertEqual(
+            InvitationClaimFailure.classify(wrapped(SDKError.consensusRejection(
+                PlatformConsensusError(code: 10504, kind: .basic), "reworded by Platform"))),
+            .refused)
+        XCTAssertNil(
+            InvitationClaimFailure.classify(wrapped(SDKError.consensusRejection(
+                PlatformConsensusError(code: 40722, kind: .state), "already completely used"))))
         XCTAssertNil(
             InvitationClaimFailure.classify(wrapped(PlatformWalletError.consensusRejection(
                 PlatformConsensusError(code: 40722, kind: .state), "some other rejection"))))
