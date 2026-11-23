@@ -55,7 +55,13 @@ enum RecoveryPhraseWalletNetwork: Int, CaseIterable, Hashable {
         }
     }
 
-    var displayName: String { WalletEnvironment.displayName(of: environmentKind) }
+    var displayName: String {
+        switch self {
+        case .mainnet: return NSLocalizedString("Mainnet", comment: "Wallet network")
+        case .testnet: return NSLocalizedString("Testnet", comment: "Wallet network")
+        case .devnet: return NSLocalizedString("Devnet", comment: "Wallet network")
+        }
+    }
 }
 
 struct RecoveryPhraseWalletDescriptor: Identifiable, Equatable {

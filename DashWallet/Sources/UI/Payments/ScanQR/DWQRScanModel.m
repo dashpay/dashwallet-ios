@@ -238,7 +238,6 @@ NS_ASSUME_NONNULL_END
                                                if (error) {
                                                    // payment protocol fetch failed, so use the plain fallback address
                                                    [paymentInput attachParsedURI:cleared];
-                                                   paymentInput.requestCleared = YES;
                                                }
                                                else {
                                                    [paymentInput attachParsedURI:parsed];

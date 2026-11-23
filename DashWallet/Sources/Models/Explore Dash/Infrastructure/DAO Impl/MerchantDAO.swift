@@ -588,9 +588,7 @@ extension MerchantDAO {
         serialQueue.async { [weak self] in
             guard let self else { return }
             guard let db = self.connection.db else {
-                completion(.failure(NSError(domain: "MerchantDAO", code: 1, userInfo: [
-                    NSLocalizedDescriptionKey: NSLocalizedString("Database connection is unavailable.", comment: "Explore: merchant list error"),
-                ])))
+                completion(.failure(NSError(domain: "MerchantDAO", code: 1, userInfo: [NSLocalizedDescriptionKey: "Database connection is unavailable."])))
                 return
             }
 

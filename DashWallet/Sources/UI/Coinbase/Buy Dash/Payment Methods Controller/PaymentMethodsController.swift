@@ -21,7 +21,6 @@ import UIKit
 
 final class PaymentMethodsController: BaseViewController {
     @IBOutlet var tableView: UITableView!
-    @IBOutlet var titleLabel: UILabel!
 
     public var paymentMethods: [CoinbasePaymentMethod] = []
     public var selectedPaymentMethod: CoinbasePaymentMethod?
@@ -55,8 +54,6 @@ final class PaymentMethodsController: BaseViewController {
     private func configureHierarchy() {
         view.layer.cornerRadius = 15
         view.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-
-        titleLabel.text = NSLocalizedString("Choose Payment Method", comment: "Coinbase/Payment Methods")
 
         tableView.rowHeight = 62
     }

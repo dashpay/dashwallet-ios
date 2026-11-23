@@ -19,7 +19,7 @@
 import SwiftDashSDK
 import XCTest
 
-/// The one pair policy (ADR-0062, ADR-0041): for every source and destination type it answers the route or the
+/// The one pair policy (ADR-0038, ADR-0041): for every source and destination type it answers the route or the
 /// unavailable reason, the starting source (AC-10, AC-14) and the Confirm warnings (AC-16, AC-17, AC-18).
 final class SendPairPolicyTests: XCTestCase {
     private let ownID = "own-current-identity-id"
@@ -245,7 +245,7 @@ final class SendPairPolicyTests: XCTestCase {
 
     // MARK: - AC-10: starting source
 
-    private func balances(_ core: UInt64?, _ shielded: UInt64?, _ platform: UInt64?) -> SendBalances {
+    private func balances(_ core: UInt64, _ shielded: UInt64, _ platform: UInt64) -> SendBalances {
         SendBalances(core: core, shielded: shielded, platform: platform)
     }
 
@@ -300,17 +300,6 @@ final class SendPairPolicyTests: XCTestCase {
         // Core cannot pay these, so the first that can is Shielded, at 0.
         XCTAssertEqual(start(destination(.identityID, text: otherID), zero).source, .shielded)
         XCTAssertEqual(start(destination(.platformAddress, script: true), zero).source, .shielded)
-    }
-
-    /// An unreadable balance is unknown: never taken for a funded source, and not skipped as an empty one, so with
-    /// nothing read as funded the order decides.
-    func testStartingSourceTreatsAnUnreadableBalanceAsUnknown() {
-        let dest = destination(.shieldedAddress)
-        XCTAssertEqual(start(dest, balances(nil, 4, 0)).source, .shielded)
-        XCTAssertEqual(start(dest, balances(nil, 0, 7)).source, .platform)
-        XCTAssertEqual(start(dest, balances(nil, 0, 0)).source, .core)
-        XCTAssertEqual(start(dest, balances(nil, nil, nil)).source, .core)
-        XCTAssertNil(balances(nil, 1, 2).balance(of: .core))
     }
 
     func testStartingSourceWithoutPinIsNeverFlaggedAsChanged() {

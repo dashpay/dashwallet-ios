@@ -394,7 +394,6 @@
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="iUnderstandButton" destination="YYM-yT-ALK" id="uN1-dE-rS7"/>
                         <outlet property="incomingTransactionsSubtitle1Label" destination="Zoc-qP-eQk" id="xFl-kU-bQm"/>
                         <outlet property="incomingTransactionsSubtitle1TagLabel" destination="Gui-O3-zm6" id="Yq3-tc-WTZ"/>
                         <outlet property="incomingTransactionsSubtitle2Label" destination="hTW-l2-QgY" id="vnM-JX-sCY"/>

@@ -374,20 +374,6 @@ final class AddressViewModelTests: XCTestCase {
         XCTAssertEqual(handed.first?.1, recipient)
     }
 
-    /// The holder went back or closed while the identity was looked up: its answer reaches nothing.
-    func testALookupThatFinishesAfterAddressClosedHandsNothingOn() async {
-        let id = identityID()
-        lookup.suspends = true
-        let vm = makeVM()
-        vm.setText(id)
-        let task = Task { await vm.continueTapped() }
-        await waitUntilLookupSuspended()
-        vm.close()
-        lookup.resume(.found(IdentityRecipient(id: id, username: "alice", isOwnCurrentIdentity: false)))
-        await task.value
-        XCTAssertTrue(handed.isEmpty)
-    }
-
     func testFoundIdentityWithoutUsernameStillContinues() async {
         let id = identityID()
         let recipient = IdentityRecipient(id: id, username: nil, isOwnCurrentIdentity: false)

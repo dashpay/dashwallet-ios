@@ -10,20 +10,6 @@
 
 import Foundation
 
-/// Why a signed payment request failed X.509 verification. It carries no text, so
-/// `BIP70Error` equality does not depend on the language; `BIP70Error.errorDescription`
-/// turns it into the localized sentence.
-enum BIP70CertificateFailure: Equatable {
-    /// The request names an X.509 PKI type but carries no certificate.
-    case missingCertificate
-    /// The certificate chain is not trusted by the system trust store.
-    case untrustedChain
-    /// The merchant signature does not verify with the leaf certificate's key.
-    case invalidSignature
-    /// The PKI type or the leaf key's algorithm is not one the verifier supports.
-    case unsupportedSignatureType
-}
-
 enum BIP70Error: Error, Equatable {
     /// The payment-request / payment URL was missing or unparseable.
     case badURL
@@ -40,9 +26,7 @@ enum BIP70Error: Error, Equatable {
     /// The request's `expires` time has passed.
     case expired
     /// X.509 chain/signature verification failed for a signed request.
-    case untrustedCertificate(BIP70CertificateFailure)
-    /// An unsigned request while the policy allows only signed ones.
-    case unsignedRequest
+    case untrustedCertificate(detail: String?)
     /// An output used a scriptPubKey we can't send to (not P2PKH/P2SH).
     case nonStandardScript
     /// A signed merchant request without a `payment_url` to POST the Payment back to.
@@ -77,69 +61,23 @@ enum BIP70Error: Error, Equatable {
 extension BIP70Error: LocalizedError {
     var errorDescription: String? {
         switch self {
-        case .badURL:
-            return NSLocalizedString("Invalid payment request URL.", comment: "BIP70 payment error")
-        case let .unexpectedResponse(host):
-            guard let host else {
-                return NSLocalizedString("Unexpected response from the payment server.", comment: "BIP70 payment error")
-            }
-            return String(format: NSLocalizedString("Unexpected response from %@.",
-                                                    comment: "BIP70 payment error: the payment server's host name"), host)
-        case .payloadTooLarge:
-            return NSLocalizedString("The payment request is too large.", comment: "BIP70 payment error")
-        case .malformedRequest:
-            return NSLocalizedString("The payment request could not be read.", comment: "BIP70 payment error")
-        case .malformedACK:
-            return NSLocalizedString("The payment acknowledgement could not be read.", comment: "BIP70 payment error")
-        case let .networkMismatch(requested):
-            return String(format: NSLocalizedString("Requested network \"%@\" is not currently in use.",
-                                                    comment: "BIP70 payment error: the network name the request asks for"),
-                          requested)
-        case .expired:
-            return NSLocalizedString("This payment request has expired.", comment: "BIP70 payment error")
-        case let .untrustedCertificate(failure):
-            let reason: String
-            switch failure {
-            case .untrustedChain:
-                return NSLocalizedString("Untrusted certificate.", comment: "BIP70 payment error")
-            case .missingCertificate:
-                reason = NSLocalizedString("Missing certificate", comment: "BIP70 payment error: why the certificate is not trusted")
-            case .invalidSignature:
-                reason = NSLocalizedString("Invalid signature", comment: "BIP70 payment error: why the certificate is not trusted")
-            case .unsupportedSignatureType:
-                reason = NSLocalizedString("Unsupported signature type",
-                                           comment: "BIP70 payment error: why the certificate is not trusted")
-            }
-            return Self.untrustedCertificateText(reason)
-        case .unsignedRequest:
-            return Self.untrustedCertificateText(
-                NSLocalizedString("Unsigned request", comment: "BIP70 payment error: why the certificate is not trusted"))
-        case .nonStandardScript:
-            return NSLocalizedString("This payment request uses an unsupported output type.", comment: "BIP70 payment error")
-        case .missingPaymentURL:
-            return NSLocalizedString("The payment request is missing a payment URL.", comment: "BIP70 payment error")
-        case .ackRejected:
-            return NSLocalizedString("The merchant did not acknowledge the payment.", comment: "BIP70 payment error")
-        case .walletNotReady:
-            return NSLocalizedString("The wallet isn't ready yet. Please try again in a moment.", comment: "BIP70 payment error")
-        case .authCancelled:
-            return NSLocalizedString("Authentication was cancelled.", comment: "BIP70 payment error")
-        case .alreadySent:
-            return NSLocalizedString("This payment is already being processed.", comment: "BIP70 payment error")
-        case .paymentNotAcknowledged:
-            return NSLocalizedString("The merchant did not confirm receiving the payment.", comment: "BIP70 payment error")
-        case .broadcastOutcomeUnknown:
-            return NSLocalizedString("Your payment was sent, but the network has not confirmed it yet.",
-                                     comment: "BIP70 payment error")
-        case let .failedAfterAcknowledgement(_, reason):
-            return reason
+        case .badURL: return "Invalid payment request URL."
+        case let .unexpectedResponse(host): return "Unexpected response from \(host ?? "the payment server")."
+        case .payloadTooLarge: return "The payment request is too large."
+        case .malformedRequest: return "The payment request could not be read."
+        case .malformedACK: return "The payment acknowledgement could not be read."
+        case let .networkMismatch(requested): return "Requested network \"\(requested)\" is not currently in use."
+        case .expired: return "This payment request has expired."
+        case let .untrustedCertificate(detail): return "Untrusted certificate\(detail.map { " - \($0)" } ?? "")."
+        case .nonStandardScript: return "This payment request uses an unsupported output type."
+        case .missingPaymentURL: return "The payment request is missing a payment URL."
+        case .ackRejected: return "The merchant did not acknowledge the payment."
+        case .walletNotReady: return "The wallet isn't ready yet. Please try again in a moment."
+        case .authCancelled: return "Authentication was cancelled."
+        case .alreadySent: return "This payment is already being processed."
+        case .paymentNotAcknowledged: return "The merchant did not confirm receiving the payment."
+        case .broadcastOutcomeUnknown: return "Your payment was sent, but the network has not confirmed it yet."
+        case let .failedAfterAcknowledgement(_, reason): return reason
         }
-    }
-
-    /// "Untrusted certificate - <reason>." from the text lists.
-    private static func untrustedCertificateText(_ reason: String) -> String {
-        String(format: NSLocalizedString("Untrusted certificate - %@.",
-                                         comment: "BIP70 payment error: why the certificate is not trusted"),
-               reason)
     }
 }

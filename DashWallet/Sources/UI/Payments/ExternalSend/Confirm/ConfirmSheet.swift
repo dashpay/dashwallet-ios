@@ -143,7 +143,7 @@ struct ConfirmSheet: View {
                     DashUIKit.SystemMessageView(
                         title: NSLocalizedString("Waiting for the network", comment: "External send"),
                         subtitle: NSLocalizedString(
-                            "Confirming this send can take a few minutes. You can close this screen. Don't send it again.",
+                            "Confirming this send can take a few minutes. You can close this screen: the send will finish on its own.",
                             comment: "External send"),
                         icon: DashIcon.SystemMessage.timerSmall.source,
                         backgroundColor: Color.dash.blueAlpha5)

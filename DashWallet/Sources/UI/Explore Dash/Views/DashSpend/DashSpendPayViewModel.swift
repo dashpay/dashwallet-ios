@@ -333,7 +333,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
             // Process the payment using the payment URL
             guard let url = response.paymentUrls?.first?.value else {
-                throw DashSpendError.paymentProcessingError(NSLocalizedString("No payment URL received", comment: "DashSpend"))
+                throw DashSpendError.paymentProcessingError("No payment URL received")
             }
 
             giftCardNote = response.id
@@ -383,13 +383,13 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             // Convert DASH amount to satoshis (1 DASH = 100,000,000 satoshis)
             guard giftCardInfo.amount.isFinite,
                   giftCardInfo.amount >= 0 else {
-                throw DashSpendError.paymentProcessingError(NSLocalizedString("Invalid gift card amount", comment: "DashSpend"))
+                throw DashSpendError.paymentProcessingError("Invalid gift card amount")
             }
 
             let satoshis = NSDecimalNumber(decimal: Decimal(giftCardInfo.amount) * Decimal(100_000_000))
             guard satoshis.compare(NSDecimalNumber.zero) != .orderedAscending,
                   satoshis.compare(NSDecimalNumber(value: UInt64.max)) != .orderedDescending else {
-                throw DashSpendError.paymentProcessingError(NSLocalizedString("Gift card amount is out of range", comment: "DashSpend"))
+                throw DashSpendError.paymentProcessingError("Gift card amount is out of range")
             }
             let dashAmountInSatoshis = satoshis.uint64Value
 

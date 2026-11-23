@@ -45,86 +45,29 @@ protocol PaymentRequestFetching {
     func fetch(url: URL, callbackScheme: String?) async throws -> PaymentRequestDetails
 }
 
-/// The existing BIP70 fetch of the interactive coordinator, awaited. A cancelled fetch ends at once with
-/// `CancellationError`; the coordinator's answer that arrives afterwards is dropped.
+/// The existing BIP70 fetch of the interactive coordinator, awaited.
 struct LivePaymentRequestFetcher: PaymentRequestFetching {
-    /// Starts fetching and verifying the request at `url`; `completion` runs once, on the main thread.
-    typealias Start = (_ url: URL, _ callbackScheme: String?,
-                       _ completion: @escaping (BIP70ConfirmationBox?, Error?) -> Void) -> Void
-
     private struct MissingAddress: LocalizedError {
         var errorDescription: String? {
             NSLocalizedString("The payment request has no address", comment: "External send")
         }
     }
 
-    private let start: Start
-
-    init(start: @escaping Start = Self.coordinatorFetch) {
-        self.start = start
-    }
-
-    private static func coordinatorFetch(url: URL, callbackScheme: String?,
-                                         completion: @escaping (BIP70ConfirmationBox?, Error?) -> Void) {
-        let coordinator = BIP70InteractiveCoordinator()
-        coordinator.fetchAndVerify(requestURL: url, scheme: "dash", callbackScheme: callbackScheme) { box, error in
-            withExtendedLifetime(coordinator) {}
-            completion(box, error)
-        }
-    }
-
     func fetch(url: URL, callbackScheme: String?) async throws -> PaymentRequestDetails {
-        let pending = PendingFetch()
-        return try await withTaskCancellationHandler {
-            try await withCheckedThrowingContinuation { continuation in
-                guard pending.wait(continuation) else { return }
-                start(url, callbackScheme) { box, error in
-                    guard let box else { return pending.resume(.failure(error ?? MissingAddress())) }
-                    pending.resume(PaymentRequestDetails(box: box).map { .success($0) } ?? .failure(MissingAddress()))
+        try await withCheckedThrowingContinuation { continuation in
+            let coordinator = BIP70InteractiveCoordinator()
+            coordinator.fetchAndVerify(requestURL: url, scheme: "dash", callbackScheme: callbackScheme) { box, error in
+                withExtendedLifetime(coordinator) {}
+                guard let box else {
+                    continuation.resume(throwing: error ?? MissingAddress())
+                    return
                 }
+                guard let details = PaymentRequestDetails(box: box) else {
+                    continuation.resume(throwing: MissingAddress())
+                    return
+                }
+                continuation.resume(returning: details)
             }
-        } onCancel: {
-            pending.cancel()
         }
-    }
-}
-
-/// One fetch's continuation, resumed once: by the fetch's answer or by its task's cancellation, whichever comes
-/// first. The cancellation can arrive on any thread, so the state is locked.
-private final class PendingFetch: @unchecked Sendable {
-    private let lock = NSLock()
-    private var continuation: CheckedContinuation<PaymentRequestDetails, Error>?
-    private var isCancelled = false
-
-    /// Keeps `continuation` for the answer; false when the task was already cancelled and it was resumed instead.
-    func wait(_ continuation: CheckedContinuation<PaymentRequestDetails, Error>) -> Bool {
-        lock.lock()
-        guard !isCancelled else {
-            lock.unlock()
-            continuation.resume(throwing: CancellationError())
-            return false
-        }
-        self.continuation = continuation
-        lock.unlock()
-        return true
-    }
-
-    func resume(_ result: Result<PaymentRequestDetails, Error>) {
-        take()?.resume(with: result)
-    }
-
-    func cancel() {
-        lock.lock()
-        isCancelled = true
-        lock.unlock()
-        take()?.resume(throwing: CancellationError())
-    }
-
-    private func take() -> CheckedContinuation<PaymentRequestDetails, Error>? {
-        lock.lock()
-        defer { lock.unlock() }
-        let taken = continuation
-        continuation = nil
-        return taken
     }
 }

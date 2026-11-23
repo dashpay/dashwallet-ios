@@ -16,6 +16,7 @@
 //
 
 import Foundation
+import OSLog
 import SwiftDashSDK
 
 /// Why `prepare` produced nothing. Each case sends the user back to Send (or blocks Confirm) with nothing broadcast.
@@ -250,8 +251,6 @@ protocol PlatformFundingCandidatesReading {
 protocol PlatformSendFundingChecking {
     /// Platform to Core: the single-row withdrawal can pay `amountDuffs`.
     func canWithdrawToCore(amountDuffs: UInt64) async -> SendFundingCheck
-    /// Platform to Core Max: what the whole-balance withdrawal pays now, in duffs; nil when it cannot be read.
-    func withdrawableMaxDuffs() async -> UInt64?
     /// Platform to Platform: the account the transfer selects holds `amountDuffs` plus `feeDuffs`.
     func canTransferOnPlatform(amountDuffs: UInt64, feeDuffs: UInt64) async -> SendFundingCheck
     /// Platform to Identity: the top-up's input planning can fund `amountDuffs`.
@@ -391,7 +390,9 @@ final class ExternalSendExecutor: ExternalSendExecuting {
     private let currentIdentityId: @MainActor () -> Data?
     private let logOutcome: (SendOutcome) -> Void
     private let slowNetworkDelay: Duration
-    private let paymentNetwork: @MainActor () -> PaymentNetwork?
+    private let topUpsInFlight: IdentityTopUpsInFlight
+    private let topUpCenter: NotificationCenter
+    private let topUpKey: @MainActor (Destination) -> IdentityTopUpsInFlight.Key?
 
     init(
         standardSend: CoreStandardSending = LiveCoreStandardSend(),
@@ -416,7 +417,9 @@ final class ExternalSendExecutor: ExternalSendExecuting {
         },
         logOutcome: @escaping (SendOutcome) -> Void = { $0.log() },
         slowNetworkDelay: Duration = .seconds(20),
-        paymentNetwork: @escaping @MainActor () -> PaymentNetwork? = { try? PaymentNetworkResolver.current() }
+        topUpsInFlight: IdentityTopUpsInFlight? = nil,
+        topUpCenter: NotificationCenter = .default,
+        topUpKey: @escaping @MainActor (Destination) -> IdentityTopUpsInFlight.Key? = ExternalSendExecutor.liveTopUpKey
     ) {
         self.standardSend = standardSend
         self.paymentRequestSend = paymentRequestSend
@@ -436,7 +439,9 @@ final class ExternalSendExecutor: ExternalSendExecuting {
         self.currentIdentityId = currentIdentityId
         self.logOutcome = logOutcome
         self.slowNetworkDelay = slowNetworkDelay
-        self.paymentNetwork = paymentNetwork
+        self.topUpsInFlight = topUpsInFlight ?? .shared
+        self.topUpCenter = topUpCenter
+        self.topUpKey = topUpKey
     }
 
     func prepare(
@@ -504,7 +509,9 @@ final class ExternalSendExecutor: ExternalSendExecuting {
         case .paymentRequest(let request)?:
             outcome = await sendPaymentRequest(request, into: prepared)
         case .routed(let destination)?:
-            outcome = await runRouted(prepared, destination: destination)
+            outcome = await announcingTopUp(prepared, destination: destination) {
+                await runRouted(prepared, destination: destination)
+            }
         }
         logOutcome(outcome)
         return outcome
@@ -538,8 +545,6 @@ final class ExternalSendExecutor: ExternalSendExecuting {
     ) async throws -> PreparedExternalSend {
         let requestAmount = verified.confirmation.amount
         guard amount == requestAmount else { throw ExternalSendError.feeUnavailable }
-        // A request verified on another network (testnet and devnet share address bytes) is never built here.
-        guard verified.confirmation.network == paymentNetwork() else { throw ExternalSendError.feeUnavailable }
         let request: PreparedPaymentRequestSend
         do {
             request = try await paymentRequestSend.preparePaymentRequestSend(verified)
@@ -671,24 +676,54 @@ final class ExternalSendExecutor: ExternalSendExecuting {
         }
     }
 
-    /// A Platform to Core Max withdraws the whole balance as it is at dispatch: it goes only while that is still the
-    /// amount Confirm showed (the Max Send planned), otherwise nothing is sent and Send plans Max again.
-    private func platformMaxRefusal(_ prepared: PreparedExternalSend) async -> SendOutcome? {
-        guard prepared.route == .platformToCore, prepared.isMax else { return nil }
-        guard await platformFunding.withdrawableMaxDuffs() == prepared.amount else {
-            DWLogger.log("External send refused: the Platform balance changed since Confirm")
-            return .notSent(.balanceChanged)
+    /// The user authenticated on Continue, so the seam's own prompt is suppressed for the run.
+    /// A top-up of an identity is announced like every other top-up from this wallet (ADR-0034), so the Identity option
+    /// on Receive raises no Receipt for it: in `IdentityTopUpsInFlight` while it runs, and `IdentityTopUpDidComplete`
+    /// once it was sent. The send reports no balance after it, so the event carries only the credits it was handed.
+    /// Someone else's identity is announced too; Receive watches only the Current identity.
+    private func announcingTopUp(
+        _ prepared: PreparedExternalSend, destination: Destination, _ run: () async -> SendOutcome
+    ) async -> SendOutcome {
+        switch prepared.route {
+        case .coreToIdentity, .platformToIdentity, .shieldedToIdentity:
+            break
+        default:
+            return await run()
         }
-        return nil
+        guard let key = topUpKey(destination) else { return await run() }
+        topUpsInFlight.begin(key)
+        defer { topUpsInFlight.end(key) }
+        let outcome = await run()
+        if case .sent = outcome {
+            IdentityTopUpDidComplete(
+                walletId: key.walletId, network: key.network, identityId: key.identityId, balanceAfter: nil,
+                suppliedCredits: Self.suppliedTopUpCredits(prepared))
+                .post(to: topUpCenter)
+        }
+        return outcome
     }
 
-    /// The user authenticated on Continue, so the seam's own prompt is suppressed for the run.
+    /// The most a top-up can add: the Shielded plan's amount, or the amount in credits.
+    private static func suppliedTopUpCredits(_ prepared: PreparedExternalSend) -> UInt64 {
+        if let planned = prepared.shieldedPlan?.amountCredits { return planned }
+        let (credits, overflow) = prepared.amount.multipliedReportingOverflow(
+            by: PlatformPaymentIdentityFundingPolicy.creditsPerDuff)
+        return overflow ? .max : credits
+    }
+
+    /// The top-up's key in the active wallet and running network; nil without them or for a destination that is not
+    /// a 32-byte Identity ID, and then nothing is announced.
+    static func liveTopUpKey(_ destination: Destination) -> IdentityTopUpsInFlight.Key? {
+        guard let wallet = SwiftDashSDKHost.shared.wallet,
+              let network = SwiftDashSDKHost.shared.runningNetwork,
+              let identityId = ScriptAddressCodec.base58Decode(destination.text), identityId.count == 32
+        else { return nil }
+        return .init(walletId: wallet.walletId, network: network, identityId: identityId)
+    }
+
     private func runRouted(_ prepared: PreparedExternalSend, destination: Destination) async -> SendOutcome {
         if let refusal = Self.minimumAmountRefusal(route: prepared.route, amountDuffs: prepared.amount) {
             return SendOutcome(error: refusal)
-        }
-        if let refusal = await platformMaxRefusal(prepared) {
-            return refusal
         }
         switch prepared.route {
         case .coreToShielded, .coreToPlatform, .coreToIdentity:
@@ -963,11 +998,6 @@ struct LivePlatformSendFunding: PlatformSendFundingChecking {
         return .fundable
     }
 
-    func withdrawableMaxDuffs() async -> UInt64? {
-        guard let capacity = await withdrawalCapacity() else { return nil }
-        return capacity.canWithdraw ? capacity.netWithdrawableCredits / PlatformPaymentIdentityFundingPolicy.creditsPerDuff : 0
-    }
-
     func canFundIdentity(amountDuffs: UInt64) async -> SendFundingCheck {
         guard let candidates = await fundingCandidates.fundingCandidates() else { return .unknown }
         return PlatformPaymentIdentityFundingPolicy.canFund(candidates: candidates, fundingDuffs: amountDuffs)
@@ -1144,12 +1174,6 @@ struct LiveCoreTwoStepSend: CoreTwoStepSending {
     /// `topUpIdentityWithFunding` reports no asset-lock outpoint, so a failure is classified by its type.
     @MainActor
     private func toIdentity(destination: Destination, amount: UInt64) async -> CoreTwoStepResult {
-        // Held like the coordinator's asset-lock calls, so a removal of unconfirmed transactions cannot reload the
-        // runtime under the funding call and lose the just-built lock's local record.
-        guard ShieldedAssetLocksInFlight.shared.beginFundingCall() else {
-            return .failed(CoordinatorError.walletReloading, assetLockRecorded: false)
-        }
-        defer { ShieldedAssetLocksInFlight.shared.endFundingCall() }
         guard let wallet = SwiftDashSDKHost.shared.wallet else {
             return .failed(CoordinatorError.noWallet, assetLockRecorded: false)
         }
@@ -1158,13 +1182,35 @@ struct LiveCoreTwoStepSend: CoreTwoStepSending {
         }
         let check = AssetLockInputLimit.Check(
             amountDuffs: amount, inputBudget: AssetLockInputPolicy.platformInputBudget)
+        let isOwnIdentity = await WalletCurrentIdentityReader().currentIdentity()?.id == destination.text
+        guard !isOwnIdentity else {
+            do {
+                try AssetLockInputLimit.requireFits(check)
+                _ = try await AssetLockInputLimit.mappingRefusal(check) {
+                    try await wallet.topUpIdentityWithFunding(
+                        identityId: identityId, amountDuffs: amount, accountIndex: 0)
+                }
+                return .completed
+            } catch {
+                return Self.identityTopUpFailure(after: error)
+            }
+        }
+        // Someone else's identity: the lock records the identity it pays (dashpay/platform#5931), and the SDK reports
+        // its outpoint once built, so a failure after it is known to hold the money in the lock.
+        let built = OSAllocatedUnfairLock<AssetLockBuiltOutPoint?>(initialState: nil)
         do {
             try AssetLockInputLimit.requireFits(check)
             _ = try await AssetLockInputLimit.mappingRefusal(check) {
-                try await wallet.topUpIdentityWithFunding(identityId: identityId, amountDuffs: amount, accountIndex: 0)
+                try await wallet.topUpExternalIdentityWithFunding(
+                    identityId: identityId, amountDuffs: amount, accountIndex: 0,
+                    onAssetLockBuilt: { outPoint in built.withLock { $0 = outPoint } })
             }
             return .completed
         } catch {
+            if built.withLock({ $0 }) != nil {
+                DWLogger.log("External send: Core top-up of another identity failed after its asset lock was built")
+                return .failed(error, assetLockRecorded: true)
+            }
             return Self.identityTopUpFailure(after: error)
         }
     }

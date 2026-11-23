@@ -36,10 +36,10 @@ private struct NetworkChoiceAlert: ViewModifier {
             NSLocalizedString("Network", comment: ""),
             isPresented: $isPresented
         ) {
-            Button(WalletEnvironment.displayName(of: WalletEnvironment.NetworkKind.mainnet), action: onMainnet)
-            Button(WalletEnvironment.displayName(of: WalletEnvironment.NetworkKind.testnet), action: onTestnet)
+            Button(NSLocalizedString("Mainnet", comment: ""), action: onMainnet)
+            Button(NSLocalizedString("Testnet", comment: ""), action: onTestnet)
             if let onDevnet {
-                Button(WalletEnvironment.displayName(of: WalletEnvironment.NetworkKind.devnet), action: onDevnet)
+                Button(NSLocalizedString("Devnet", comment: ""), action: onDevnet)
             }
             Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
         }
@@ -149,14 +149,4 @@ extension View {
             onConfirm: onConfirm,
             errorMessage: errorMessage))
     }
-}
-
-#Preview("Network choice") {
-    Text(verbatim: "Settings")
-        .networkChoiceAlert(isPresented: .constant(true), onMainnet: { }, onTestnet: { })
-}
-
-#Preview("Network choice with devnet") {
-    Text(verbatim: "Settings")
-        .networkChoiceAlert(isPresented: .constant(true), onMainnet: { }, onTestnet: { }, onDevnet: { })
 }

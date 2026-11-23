@@ -160,14 +160,12 @@
                 <outlet property="addressButton" destination="Xr5-Vn-acb" id="weK-db-IjM"/>
                 <outlet property="addressContainer" destination="RaT-Ej-cHE" id="ib9-Di-Npr"/>
                 <outlet property="addressLabel" destination="1CX-Au-x58" id="IDw-B2-u0N"/>
-                <outlet property="addressTitleLabel" destination="lWz-IE-Gom" id="aDt-3Q-Hp7"/>
                 <outlet property="qrCodeButton" destination="o9A-Nq-Am2" id="wLm-gF-nRf"/>
                 <outlet property="qrContainer" destination="iRW-QI-X6Y" id="POe-kl-Z7c"/>
                 <outlet property="secondButton" destination="Yxz-Ss-dgD" id="bYU-DO-qPJ"/>
                 <outlet property="specifyAmountButton" destination="Kht-g7-sDW" id="ffA-zq-bDb"/>
                 <outlet property="usernameContainer" destination="9nj-2z-HcH" id="35m-8d-ybE"/>
                 <outlet property="usernameLabel" destination="tFL-6u-bUn" id="CMJ-Lh-ueQ"/>
-                <outlet property="usernameTitleLabel" destination="haT-7z-9eY" id="bGv-7R-Kc2"/>
             </connections>
             <point key="canvasLocation" x="57.251908396946561" y="43.661971830985919"/>
         </stackView>

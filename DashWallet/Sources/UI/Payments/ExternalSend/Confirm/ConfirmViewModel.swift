@@ -173,7 +173,7 @@ final class ConfirmViewModel: ObservableObject {
         guard !isReleasedWhileSending else { return }
         switch outcome {
         case .notSent(.balanceChanged), .notSent(.balanceNotEnough):
-            // Nothing was sent: Send plans again against the balance and notes as they are now.
+            // Nothing was sent: Send recomputes Max against the balance as it is now.
             onBackToSend?(.balanceNotEnough)
             return
         default:

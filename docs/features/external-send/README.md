@@ -19,11 +19,11 @@ destination type into one flow.
   to a Core address (or a dash: payment request), a Platform address, a Shielded address or an
   Identity ID. The type is judged by the whole address, not its prefix. Every source and
   destination pair is decided in one pure policy; a pair that cannot pay stays visible in Select
-  source with its reason. [ADR-0062](../../adr/0062-decide-every-source-and-destination-pair-in-one-policy.md).
+  source with its reason. [ADR-0038](../../adr/0038-decide-every-source-and-destination-pair-in-one-policy.md).
 - **A new module over the existing spend paths:** a ViewModel per screen and one executor that
   calls the wallet's existing send, transfer, withdrawal, shield/unshield and identity seams. No
   new way of spending money.
-  [ADR-0054](../../adr/0054-build-external-send-as-a-new-module-over-the-existing-spend-seams.md).
+  [ADR-0037](../../adr/0037-build-external-send-as-a-new-module-over-the-existing-spend-seams.md).
 - **Fee on Send, prepared fee on Confirm:** Send shows an estimate; Continue authenticates and
   prepares the send, Confirm shows the prepared fee and total, and its tap only broadcasts. A fee
   that no longer fits sends the holder back to Send. The fee is exact only where the send is built
@@ -33,11 +33,9 @@ destination type into one flow.
   superseding [ADR-0039](../../adr/0039-estimate-the-fee-on-send-and-recompute-it-on-confirm.md).
 - **Four outcomes:** sent; not sent (nothing left the source, Retry returns to Send with the same
   destination, source and amount); in progress (submitted, outcome unknown: no Retry, the sheet
-  closes with a "Send in progress" Toast telling the holder not to send it again; sync usually
-  settles it, but a Core → Platform lock whose recipient note is lost can stay locked, see Known
-  limits); lock held (a Core payment's asset lock is recorded but its Platform step did not
-  finish: the sheet offers Finish, which resumes that lock, never a new payment; Close leaves it
-  for Rebroadcast in the transaction details).
+  closes with a "Send in progress" Toast and sync settles it); lock held (a Core payment's asset
+  lock is recorded but its Platform step did not finish: the sheet offers Finish, which resumes
+  that lock, never a new payment; Close leaves it for Rebroadcast in the transaction details).
   [ADR-0040](../../adr/0040-report-three-send-outcomes-and-retry-only-when-nothing-left-the-source.md).
   Shielded → Identity is one top-up transition, so it has no half-done outcome of its own.
   [ADR-0044](../../adr/0044-top-up-an-identity-from-shielded-in-one-step.md), superseding ADR-0042.

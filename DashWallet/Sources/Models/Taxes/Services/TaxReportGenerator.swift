@@ -78,9 +78,7 @@ enum TaxReportGenerator {
             guard let documentsDir = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first else {
                 errorHandler(NSError(domain: "DashWallet",
                                      code: 500,
-                                     userInfo: [NSLocalizedDescriptionKey: NSLocalizedString(
-                                         "Unable to locate document directory",
-                                         comment: "Tax report export error")]))
+                                     userInfo: [NSLocalizedDescriptionKey: "Unable to locate document directory"]))
                 return
             }
 

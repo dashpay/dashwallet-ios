@@ -564,7 +564,7 @@ struct WalletLifecycleOverlayView: View {
                 progressCard(
                     title: String(
                         format: NSLocalizedString("Switching to %@…", comment: "Network switch overlay"),
-                        WalletEnvironment.displayName(of: to)),
+                        Self.displayName(of: to)),
                     subtitle: NSLocalizedString(
                         "Preparing the wallet on the selected network…",
                         comment: "Network switch overlay"))
@@ -595,7 +595,7 @@ struct WalletLifecycleOverlayView: View {
                     preparationFailureHeader(
                         title: String(
                             format: NSLocalizedString("Switching to %@ failed", comment: "Network switch overlay"),
-                            WalletEnvironment.displayName(of: target)),
+                            Self.displayName(of: target)),
                         message: message)
                     actionButton(NSLocalizedString("Retry", comment: ""), prominent: true) {
                         viewModel.retryNetworkSwitch(to: target)
@@ -797,6 +797,14 @@ struct WalletLifecycleOverlayView: View {
                     .frame(maxWidth: .infinity, minHeight: viewport.size.height)
             }
             .scrollBounceBehavior(.basedOnSize)
+        }
+    }
+
+    private static func displayName(of kind: WalletEnvironment.NetworkKind) -> String {
+        switch kind {
+        case .mainnet: return "Mainnet"
+        case .testnet: return "Testnet"
+        case .devnet: return "Devnet"
         }
     }
 }

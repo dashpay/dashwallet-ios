@@ -175,7 +175,7 @@ protocol WalletRuntimeLifecycleSteps: AnyObject {
         trigger: SwiftDashSDKWalletRuntime.RefreshTrigger,
         runtimeAlreadyStopped: Bool
     ) async -> WalletPreparationFailure?
-    func fullReset(lastError: Error?, forWipe: Bool, preservingShieldedRecovery: Bool) async
+    func fullReset(lastError: String?, forWipe: Bool, preservingShieldedRecovery: Bool) async
     func dropLocalStoreDerivedState()
     func clearLocalStoreMaintenanceFlags()
     func selectSolePersistedNetworkIfNeeded(currentNetwork: Network) -> Bool
@@ -289,7 +289,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             await runtime.refresh(trigger: trigger, runtimeAlreadyStopped: runtimeAlreadyStopped)
         }
 
-        func fullReset(lastError: Error?, forWipe: Bool, preservingShieldedRecovery: Bool) async {
+        func fullReset(lastError: String?, forWipe: Bool, preservingShieldedRecovery: Bool) async {
             await runtime.fullReset(
                 lastError: lastError, forWipe: forWipe, preservingShieldedRecovery: preservingShieldedRecovery)
         }
@@ -799,14 +799,11 @@ final class SwiftDashSDKWalletRuntime: NSObject {
             self.lifecycleState.finish()
             DWLogger.log("🔀 NETSWITCH [\(transitionID)] ready in \(ms)ms platform=\(platformPhase.logLabel)")
         } else {
-            let spv = SwiftDashSDKSPVCoordinator.shared
-            let platform = PlatformAddressSyncCoordinator.shared
-            let detail = spv.lastError ?? platform.lastError
-            // `detail` is shown, so it is localized; the exported log gets the English reason.
-            let logReason = spv.lastError != nil ? spv.lastErrorLogReason : platform.lastErrorLogReason
+            let detail = SwiftDashSDKSPVCoordinator.shared.lastError
+                ?? PlatformAddressSyncCoordinator.shared.lastError
             self.lifecycleState.fail(.failedNetworkSwitch(from: from, target: kind, message: detail))
-            DWLogger.log("🔀 NETSWITCH [\(transitionID)] FAILED after \(ms)ms: \(logReason ?? "runtime did not become ready")")
-            throw SwitchError.startFailed(detail, logReason: logReason)
+            DWLogger.log("🔀 NETSWITCH [\(transitionID)] FAILED after \(ms)ms: \(detail ?? "runtime did not become ready")")
+            throw SwitchError.startFailed(detail)
         }
     }
 
@@ -973,7 +970,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         }.value
     }
 
-    private func enqueueFullReset(lastError: Error?, forWipe: Bool) {
+    private func enqueueFullReset(lastError: String?, forWipe: Bool) {
         enqueue { [weak self] in
             await self?.fullReset(lastError: lastError, forWipe: forWipe)
         }
@@ -1002,7 +999,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         Self.logger.info("🧭 RUNTIME :: refreshing runtime for \(trigger.rawValue, privacy: .public)")
 
         guard await waitForSeedMigratorIfNeeded() else {
-            await fullReset(lastError: RuntimeError.keyMigrationIncomplete, forWipe: false)
+            await fullReset(lastError: "Key migration not complete; SwiftDashSDK runtime cannot start.", forWipe: false)
             return WalletPreparationFailure(error: RuntimeError.keyMigrationIncomplete)
         }
 
@@ -1012,7 +1009,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         let preparationsAtStart = SwiftDashSDKSPVCoordinator.shared.networkSwitchStartToken()
         switch resolveCurrentNetwork() {
         case .failure(let error):
-            await fullReset(lastError: error, forWipe: false)
+            await fullReset(lastError: error.localizedDescription, forWipe: false)
             return WalletPreparationFailure(error: error)
         case .success(let network):
             if shouldSkipRefresh(for: network, trigger: trigger) {
@@ -1112,7 +1109,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
                 } else {
                     DWLogger.log("RUNTIME Core start failed outside the wallet open codes=\(failure.codes.joined(separator: ","))")
                 }
-                await fullReset(lastError: error, forWipe: false)
+                await fullReset(lastError: error.localizedDescription, forWipe: false)
                 return failure
             }
 
@@ -1188,7 +1185,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// sync stop, which drains a pass in flight off the main thread while SPV
     /// stops; it is awaited before the host stop.
     private func fullReset(
-        lastError: Error?, forWipe: Bool, preservingShieldedRecovery: Bool = false
+        lastError: String?, forWipe: Bool, preservingShieldedRecovery: Bool = false
     ) async {
         if forWipe {
             await PlatformAddressSyncCoordinator.stopForWipeAsync()
@@ -1402,11 +1399,11 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         var errorDescription: String? {
             switch self {
             case .unsupportedCurrentNetwork(let name):
-                return String(format: NSLocalizedString("SwiftDashSDK runtime does not support %@", comment: "Wallet runtime error"), name)
+                return "SwiftDashSDK runtime does not support \(name)"
             case .keyMigrationIncomplete:
-                return NSLocalizedString("Key migration has not completed.", comment: "Wallet runtime error")
+                return "Key migration has not completed."
             case .walletUnavailable:
-                return NSLocalizedString("The stored wallet could not be read.", comment: "Wallet runtime error")
+                return "The stored wallet could not be read."
             }
         }
     }
@@ -1414,7 +1411,7 @@ final class SwiftDashSDKWalletRuntime: NSObject {
     /// Failure modes of `switchWallet(to:)` / `switchNetwork(to:)`. Surfaced
     /// to the caller rather than logged-and-swallowed so a UI switch flow can
     /// report why it failed.
-    enum SwitchError: LocalizedError, CustomStringConvertible {
+    enum SwitchError: LocalizedError {
         /// The current network isn't SDK-supported.
         case unsupportedNetwork
         /// Devnet was requested without a quorum URL + devnet name
@@ -1432,40 +1429,27 @@ final class SwiftDashSDKWalletRuntime: NSObject {
         case switchInProgress
         /// The switch's teardown+rebuild ran but the destination runtime did
         /// not come up ready; carries the coordinators' last error when one
-        /// was recorded: the shown (localized) text and its English log reason.
-        case startFailed(String?, logReason: String?)
+        /// was recorded.
+        case startFailed(String?)
 
         var errorDescription: String? {
             switch self {
             case .unsupportedNetwork:
-                return NSLocalizedString("Cannot switch wallet: the current network is not supported.", comment: "Wallet runtime error")
+                return "Cannot switch wallet: the current network is not supported."
             case .devnetNotConfigured:
                 return NSLocalizedString(
                     "Devnet is not configured. Enter a Quorum URL and Devnet Name in Settings → Devnet Settings first.",
                     comment: "Devnet")
             case .unknownWallet:
-                return NSLocalizedString("Cannot switch wallet: no wallet with that id is stored on this network.", comment: "Wallet runtime error")
+                return "Cannot switch wallet: no wallet with that id is stored on this network."
             case .bindFailed:
-                return NSLocalizedString("Switching wallet failed: the new wallet could not be loaded.", comment: "Wallet runtime error")
+                return "Switching wallet failed: the new wallet could not be loaded."
             case .switchInProgress:
-                return NSLocalizedString("Another wallet operation is already in progress.", comment: "Wallet runtime error")
-            case .startFailed(let detail, _):
-                let base = NSLocalizedString(
-                    "Switching networks failed: the runtime did not start.", comment: "Wallet runtime error")
+                return "Another wallet operation is already in progress."
+            case .startFailed(let detail):
+                let base = "Switching networks failed: the runtime did not start."
                 guard let detail, !detail.isEmpty else { return base }
                 return base + " (\(detail))"
-            }
-        }
-
-        /// English, for the exported log: `errorDescription` is localized.
-        var description: String {
-            switch self {
-            case .unsupportedNetwork: return "unsupportedNetwork"
-            case .devnetNotConfigured: return "devnetNotConfigured"
-            case .unknownWallet: return "unknownWallet"
-            case .bindFailed: return "bindFailed"
-            case .switchInProgress: return "switchInProgress"
-            case .startFailed(_, let logReason): return "startFailed(\(logReason ?? "runtime did not become ready"))"
             }
         }
     }

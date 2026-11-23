@@ -65,7 +65,7 @@ final class RecordingLifecycleSteps: WalletRuntimeLifecycleSteps {
         return postOpenFailure
     }
 
-    func fullReset(lastError: Error?, forWipe: Bool, preservingShieldedRecovery: Bool) async {
+    func fullReset(lastError: String?, forWipe: Bool, preservingShieldedRecovery: Bool) async {
         events.append("fullReset")
     }
 

@@ -24,43 +24,43 @@ enum DashConnectUriError: LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .invalidKeyScheme:
-            return NSLocalizedString("The URI does not use the dash-key scheme.", comment: "DashConnect QR code error")
+            return "The URI does not use the dash-key scheme."
         case .invalidStScheme:
-            return NSLocalizedString("The URI does not use the dash-st scheme.", comment: "DashConnect QR code error")
+            return "The URI does not use the dash-st scheme."
         case .unexpectedAuthority:
-            return NSLocalizedString("DashConnect URIs must not contain // authority separators.", comment: "DashConnect QR code error")
+            return "DashConnect URIs must not contain // authority separators."
         case .missingQuery:
-            return NSLocalizedString("DashConnect URIs must include query parameters.", comment: "DashConnect QR code error")
+            return "DashConnect URIs must include query parameters."
         case .emptyBody:
-            return NSLocalizedString("DashConnect URIs must include a non-empty Base58 body.", comment: "DashConnect QR code error")
+            return "DashConnect URIs must include a non-empty Base58 body."
         case .missingNetwork:
-            return NSLocalizedString("DashConnect URIs must include the network query item.", comment: "DashConnect QR code error")
+            return "DashConnect URIs must include the network query item."
         case .missingVersion:
-            return NSLocalizedString("DashConnect URIs must include the version query item.", comment: "DashConnect QR code error")
+            return "DashConnect URIs must include the version query item."
         case .unsupportedVersion:
-            return NSLocalizedString("Only DashConnect URI version 1 is supported.", comment: "DashConnect QR code error")
+            return "Only DashConnect URI version 1 is supported."
         case .unknownNetwork:
-            return NSLocalizedString("The URI contains an unknown DashConnect network code.", comment: "DashConnect QR code error")
+            return "The URI contains an unknown DashConnect network code."
         case .invalidBase58:
-            return NSLocalizedString("The URI body is not valid Base58.", comment: "DashConnect QR code error")
+            return "The URI body is not valid Base58."
         case .keyPayloadTooShort:
-            return NSLocalizedString("The dash-key payload is shorter than the minimum 67-byte format.", comment: "DashConnect QR code error")
+            return "The dash-key payload is shorter than the minimum 67-byte format."
         case .invalidKeyPayloadVersion:
-            return NSLocalizedString("The dash-key payload version byte is not supported.", comment: "DashConnect QR code error")
+            return "The dash-key payload version byte is not supported."
         case .keyLabelTooLong:
-            return NSLocalizedString("The dash-key payload label is longer than 64 bytes.", comment: "DashConnect QR code error")
+            return "The dash-key payload label is longer than 64 bytes."
         case .keyLabelLengthOverrunsPayload:
-            return NSLocalizedString("The dash-key payload label length overruns the payload.", comment: "DashConnect QR code error")
+            return "The dash-key payload label length overruns the payload."
         case .invalidEphemeralPublicKey:
-            return NSLocalizedString("The dash-key payload contains an invalid compressed secp256k1 point.", comment: "DashConnect QR code error")
+            return "The dash-key payload contains an invalid compressed secp256k1 point."
         case .invalidKeyLabelEncoding:
-            return NSLocalizedString("The dash-key application label is not valid UTF-8.", comment: "DashConnect QR code error")
+            return "The dash-key application label is not valid UTF-8."
         case .emptyTransitionPayload:
-            return NSLocalizedString("The dash-st payload must be non-empty.", comment: "DashConnect QR code error")
+            return "The dash-st payload must be non-empty."
         case .bodyTooLong:
-            return NSLocalizedString("The URI body is longer than the DashConnect payload format allows.", comment: "DashConnect QR code error")
+            return "The URI body is longer than the DashConnect payload format allows."
         case .queryTooLong:
-            return NSLocalizedString("The URI query is longer than DashConnect allows.", comment: "DashConnect QR code error")
+            return "The URI query is longer than DashConnect allows."
         }
     }
 }

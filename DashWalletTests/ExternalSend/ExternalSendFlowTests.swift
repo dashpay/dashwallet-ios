@@ -73,9 +73,6 @@ final class ExternalSendFlowTests: XCTestCase {
         Destination(type: .coreAddress, text: coreAddress, amountDuffs: amountDuffs, paymentRequestURL: requestURL)
     }
 
-    private let requestExpired = ExternalSendFlow.RequestFailure(
-        title: "Couldn't make payment", message: "Request expired")
-
     private var paymentRequestDestination: Destination {
         Destination(type: .paymentRequest, text: "", paymentRequestURL: requestURL)
     }
@@ -100,7 +97,6 @@ final class ExternalSendFlowTests: XCTestCase {
 
     private final class FinishLog {
         var all: [ExternalSendFlow.Finish] = []
-        var requestFailures: [ExternalSendFlow.RequestFailure] = []
     }
 
     private func makeHarness(
@@ -125,7 +121,6 @@ final class ExternalSendFlowTests: XCTestCase {
             initialRestoreSyncNow: { restoreSync.isRunning }, lockResumer: lockResumer ?? FakeLockResumer())
         let log = FinishLog()
         flow.onFinish = { log.all.append($0) }
-        flow.onRequestFailed = { log.requestFailures.append($0) }
         return Harness(flow: flow, executor: executor, estimator: estimator, lookup: lookup, fetcher: fetcher,
                        clipboard: clipboard, balances: fakeBalances, identity: identity, restoreSync: restoreSync,
                        finishes: log)
@@ -140,8 +135,7 @@ final class ExternalSendFlowTests: XCTestCase {
     private func executor(paymentRequestSend: FakePaymentRequestSend) -> ExternalSendExecutor {
         ExternalSendExecutor(
             paymentRequestSend: paymentRequestSend,
-            balances: FakeBalances(values: [.core: 5 * oneDash]), logOutcome: { _ in },
-            paymentNetwork: { .testnet })
+            balances: FakeBalances(values: [.core: 5 * oneDash]), logOutcome: { _ in })
     }
 
     /// Opens Send for a Core address and enters `amount` duffs, so Continue is enabled.
@@ -167,21 +161,6 @@ final class ExternalSendFlowTests: XCTestCase {
         await send.load()
         await send.proceed()
         return harness.flow.confirmViewModel
-    }
-
-    /// Reads `text` into a scan input the way the scanner and the link entry do, and opens the flow with it. False
-    /// when the text is not valid here and nothing opened.
-    @discardableResult
-    private func scan(_ harness: Harness, _ text: String, prefetched: PaymentRequestDetails? = nil,
-                      openedByApp: Bool = false, requestCleared: Bool = false) async -> Bool {
-        guard let input = ScanInput(text: text, network: network, prefetched: prefetched, openedByApp: openedByApp,
-                                    requestCleared: requestCleared) else { return false }
-        await harness.flow.open(input)?.value
-        return true
-    }
-
-    private func scanInput(_ text: String, openedByApp: Bool = false, requestCleared: Bool = false) -> ScanInput? {
-        ScanInput(text: text, network: network, openedByApp: openedByApp, requestCleared: requestCleared)
     }
 
     private func eventually(_ condition: @autoclosure () -> Bool, _ message: String = "condition not met",
@@ -288,24 +267,24 @@ final class ExternalSendFlowTests: XCTestCase {
     func testAScannedTextThatIsNotValidHereNeverOpensTheFlow() async {
         let harness = makeHarness()
 
-        let accepted = await scan(harness, "not an address")
+        let accepted = await harness.flow.start(scanned: "not an address")
 
         XCTAssertFalse(accepted, "the scanner stays open to scan again")
         XCTAssertNil(harness.flow.step)
         XCTAssertNil(harness.flow.sendViewModel)
     }
 
-    /// The host reads a scan or link into one input before it is presented, so an invalid one never shows an empty
-    /// Address that a dismiss during the presentation would leave behind; the flow opens that same input.
-    func testTheScanInputTheHostChecksBeforePresentingIsTheOneTheFlowOpens() {
+    /// The host checks a scan or link before it is presented, so an invalid one never shows an empty Address that
+    /// a dismiss during the presentation would leave behind; the check is the same acceptance handleScanned uses.
+    func testTheScanCheckBeforePresentingAcceptsWhatHandleScannedAccepts() {
         let harness = makeHarness()
 
-        XCTAssertNil(scanInput("not an address"))
-        XCTAssertNil(scanInput(mainnetCoreAddress))
-        XCTAssertNil(scanInput("ftp://merchant.example/pay/1"))
-        XCTAssertEqual(scanInput(coreAddress)?.destination.type, .coreAddress)
-        XCTAssertEqual(scanInput("dash:\(coreAddress)?amount=1")?.destination.amountDuffs, oneDash)
-        let request = scanInput(requestURL.absoluteString)?.destination
+        XCTAssertNil(harness.flow.scannedDestination("not an address"))
+        XCTAssertNil(harness.flow.scannedDestination(mainnetCoreAddress))
+        XCTAssertNil(harness.flow.scannedDestination("ftp://merchant.example/pay/1"))
+        XCTAssertEqual(harness.flow.scannedDestination(coreAddress)?.type, .coreAddress)
+        XCTAssertEqual(harness.flow.scannedDestination("dash:\(coreAddress)?amount=1")?.amountDuffs, oneDash)
+        let request = harness.flow.scannedDestination(requestURL.absoluteString)
         XCTAssertEqual(request?.type, .paymentRequest)
         XCTAssertEqual(request?.paymentRequestURL, requestURL)
         XCTAssertNil(harness.flow.step, "checking opens nothing")
@@ -315,8 +294,8 @@ final class ExternalSendFlowTests: XCTestCase {
     func testAScannedAddressOfAnotherNetworkNeverOpensSend() async {
         let harness = makeHarness()
 
-        let accepted = await scan(harness, mainnetCoreAddress)
-        let linkAccepted = await scan(harness, "dash:\(mainnetCoreAddress)?amount=1")
+        let accepted = await harness.flow.start(scanned: mainnetCoreAddress)
+        let linkAccepted = await harness.flow.start(scanned: "dash:\(mainnetCoreAddress)?amount=1")
 
         XCTAssertFalse(accepted)
         XCTAssertFalse(linkAccepted)
@@ -328,7 +307,7 @@ final class ExternalSendFlowTests: XCTestCase {
     func testAScannedCoreAddressOpensSend() async {
         let harness = makeHarness()
 
-        let accepted = await scan(harness, coreAddress)
+        let accepted = await harness.flow.start(scanned: coreAddress)
 
         XCTAssertTrue(accepted)
         XCTAssertEqual(harness.flow.step, .send)
@@ -337,7 +316,7 @@ final class ExternalSendFlowTests: XCTestCase {
     func testAScannedDashLinkFillsInTheAddressAndItsAmount() async throws {
         let harness = makeHarness()
 
-        let accepted = await scan(harness, "dash:\(coreAddress)?amount=1.5")
+        let accepted = await harness.flow.start(scanned: "dash:\(coreAddress)?amount=1.5")
         let send = try XCTUnwrap(harness.flow.sendViewModel)
         await send.load()
 
@@ -351,7 +330,7 @@ final class ExternalSendFlowTests: XCTestCase {
         let harness = makeHarness()
         harness.lookup.results = [.found(foundRecipient)]
 
-        let accepted = await scan(harness, identityID)
+        let accepted = await harness.flow.start(scanned: identityID)
 
         XCTAssertTrue(accepted)
         XCTAssertEqual(harness.lookup.lookedUp, [identityID])
@@ -366,7 +345,7 @@ final class ExternalSendFlowTests: XCTestCase {
             for openedByApp in [false, true] {
                 let harness = makeHarness()
 
-                let accepted = await scan(harness, "dash:\(address)?amount=1.5", openedByApp: openedByApp)
+                let accepted = await harness.flow.start(scanned: "dash:\(address)?amount=1.5", openedByApp: openedByApp)
                 let send = try XCTUnwrap(harness.flow.sendViewModel, typeText)
                 await send.load()
 
@@ -384,7 +363,7 @@ final class ExternalSendFlowTests: XCTestCase {
             let harness = makeHarness()
             harness.lookup.results = [.found(foundRecipient)]
 
-            let accepted = await scan(harness, "dash:\(identityID)?amount=0.1", openedByApp: openedByApp)
+            let accepted = await harness.flow.start(scanned: "dash:\(identityID)?amount=0.1", openedByApp: openedByApp)
             let send = try XCTUnwrap(harness.flow.sendViewModel)
             await send.load()
 
@@ -401,7 +380,7 @@ final class ExternalSendFlowTests: XCTestCase {
         let harness = makeHarness()
         harness.lookup.results = [.found(foundRecipient)]
 
-        let accepted = await scan(harness, "dash:\(identityID)")
+        let accepted = await harness.flow.start(scanned: "dash:\(identityID)")
         let send = try XCTUnwrap(harness.flow.sendViewModel)
         await send.load()
 
@@ -413,8 +392,7 @@ final class ExternalSendFlowTests: XCTestCase {
     func testAnIdentityLinkTheHostChecksBeforePresentingIsAccepted() {
         let harness = makeHarness()
 
-        let input = scanInput("dash:\(identityID)?amount=0.1", openedByApp: true)
-        let destination = input?.destination
+        let destination = harness.flow.scannedDestination("dash:\(identityID)?amount=0.1", openedByApp: true)
 
         XCTAssertEqual(destination?.type, .identityID)
         XCTAssertEqual(destination?.amountDuffs, oneDash / 10)
@@ -425,7 +403,7 @@ final class ExternalSendFlowTests: XCTestCase {
     func testAPaymentRequestIsFetchedAndSendOpensLockedToTheFetchedAmount() async throws {
         let harness = makeHarness(fetchResult: .success(details()))
 
-        let accepted = await scan(harness, "dash:?r=\(requestURL.absoluteString)")
+        let accepted = await harness.flow.start(scanned: "dash:?r=\(requestURL.absoluteString)")
         let send = try XCTUnwrap(harness.flow.sendViewModel)
         await send.load()
 
@@ -444,7 +422,7 @@ final class ExternalSendFlowTests: XCTestCase {
         let harness = makeHarness(fetchResult: .success(details()))
         let link = "dash:\(coreAddress)?amount=1&label=Coffee%20Shop&message=Table%204&r=\(requestURL.absoluteString)"
 
-        let accepted = await scan(harness, link, requestCleared: true)
+        let accepted = await harness.flow.start(scanned: link, requestCleared: true)
         let send = try XCTUnwrap(harness.flow.sendViewModel)
         await send.load()
 
@@ -461,66 +439,14 @@ final class ExternalSendFlowTests: XCTestCase {
     func testACodeWithOnlyARequestIsNotValidOnceTheRequestIsCleared() async {
         let harness = makeHarness(fetchResult: .success(details()))
         let link = "dash:?r=\(requestURL.absoluteString)"
-        XCTAssertNil(scanInput(link, requestCleared: true))
-        XCTAssertNotNil(scanInput(link))
-    }
-
-    /// The scanner states that its own fetch failed and it cleared the code's request; the input takes that from the
-    /// scanner's typed input instead of reading the code's text again, and the flow does not fetch the request.
-    func testTheScannersClearedRequestIsHonouredFromItsInputWithoutReparsing() async throws {
-        let harness = makeHarness(fetchResult: .success(details()))
-        let link = "dash:\(coreAddress)?amount=1&r=\(requestURL.absoluteString)"
-        let paymentInput = DWPaymentInput(source: .scanQR)
-        paymentInput.attachParsedURI(ParsedPaymentURI.parse(paymentString: link).byClearingRequestURL())
-        paymentInput.requestCleared = true
-
-        let input = try XCTUnwrap(ScanInput(paymentInput, network: network))
-        await harness.flow.open(input)?.value
-        let send = try XCTUnwrap(harness.flow.sendViewModel)
-        await send.load()
-
-        XCTAssertTrue(input.requestCleared)
-        XCTAssertFalse(input.openedByApp)
-        XCTAssertNil(input.destination.paymentRequestURL)
-        XCTAssertTrue(harness.fetcher.fetched.isEmpty, "the request is not fetched again")
-        XCTAssertEqual(send.amountDuffs, oneDash)
-        XCTAssertFalse(send.isAmountLocked)
-    }
-
-    /// A request the scanner fetched and verified rides in the same input, so the flow does not fetch it again.
-    func testTheScannersFetchedRequestRidesInItsInput() async throws {
-        let harness = makeHarness()
-        let link = "dash:?r=\(requestURL.absoluteString)"
-        let paymentInput = DWPaymentInput(source: .scanQR)
-        paymentInput.attachParsedURI(ParsedPaymentURI.parse(paymentString: link))
-
-        let input = try XCTUnwrap(ScanInput(paymentInput, network: network))
-
-        XCTAssertFalse(input.requestCleared)
-        XCTAssertEqual(input.destination.paymentRequestURL, requestURL)
-        XCTAssertNil(input.prefetched, "nothing fetched yet: no confirmation on the scanner's input")
-    }
-
-    /// A scanner input with nothing payable builds no input: the host presents nothing and shows the alert.
-    func testAScannerInputWithNothingParsedBuildsNoInput() {
-        XCTAssertNil(ScanInput(DWPaymentInput(source: .scanQR), network: network))
-        XCTAssertNil(scanInput("not an address"))
-    }
-
-    /// A dash: link another app opened is read once with `openedByApp`, so its callback scheme is kept.
-    func testALinkAnotherAppOpenedIsReadOnceAsOpenedByApp() throws {
-        let url = try XCTUnwrap(URL(string: "dash:?r=\(requestURL.absoluteString)&sender=merchantapp"))
-
-        let input = try XCTUnwrap(ScanInput(link: url, network: network))
-
-        XCTAssertTrue(input.openedByApp)
-        XCTAssertEqual(input.destination.callbackScheme, "merchantapp")
+        XCTAssertNil(harness.flow.scannedDestination(link, requestCleared: true))
+        XCTAssertNotNil(harness.flow.scannedDestination(link))
     }
 
     /// The old Send showed the merchant with 🔒 when the request's signature verified, and the memo (AC-15).
     func testAVerifiedPaymentRequestShowsTheMerchantWithTheLockAndTheMemo() async throws {
         let harness = makeHarness(fetchResult: .success(details(isSecure: true)))
-        _ = await scan(harness, "dash:?r=\(requestURL.absoluteString)")
+        _ = await harness.flow.start(scanned: "dash:?r=\(requestURL.absoluteString)")
         let send = try XCTUnwrap(harness.flow.sendViewModel)
         await send.load()
 
@@ -530,7 +456,7 @@ final class ExternalSendFlowTests: XCTestCase {
 
     func testAnUnverifiedPaymentRequestShowsTheMerchantWithoutTheLock() async throws {
         let harness = makeHarness(fetchResult: .success(details(isSecure: false)))
-        _ = await scan(harness, "dash:?r=\(requestURL.absoluteString)")
+        _ = await harness.flow.start(scanned: "dash:?r=\(requestURL.absoluteString)")
         let send = try XCTUnwrap(harness.flow.sendViewModel)
         await send.load()
 
@@ -539,7 +465,7 @@ final class ExternalSendFlowTests: XCTestCase {
 
     func testALinksLabelAndMessageAreShownOnSend() async throws {
         let harness = makeHarness()
-        _ = await scan(harness, "dash:\(coreAddress)?amount=1&label=Coffee%20Shop&message=Table%204")
+        _ = await harness.flow.start(scanned: "dash:\(coreAddress)?amount=1&label=Coffee%20Shop&message=Table%204")
         let send = try XCTUnwrap(harness.flow.sendViewModel)
         await send.load()
 
@@ -551,8 +477,8 @@ final class ExternalSendFlowTests: XCTestCase {
     /// the old Send does, so a leading 🔒 shows as its name and only a verified request gets the lock.
     func testALinksLabelStartingWithTheLockIsSanitizedAndNeverLooksVerified() async throws {
         let harness = makeHarness()
-        await scan(
-            harness, "dash:\(coreAddress)?amount=1&label=%F0%9F%94%92%20Amazon&message=%F0%9F%94%92%20Paid")
+        _ = await harness.flow.start(
+            scanned: "dash:\(coreAddress)?amount=1&label=%F0%9F%94%92%20Amazon&message=%F0%9F%94%92%20Paid")
         let send = try XCTUnwrap(harness.flow.sendViewModel)
         await send.load()
 
@@ -566,7 +492,7 @@ final class ExternalSendFlowTests: XCTestCase {
         let harness = makeHarness(fetchResult: .success(details()))
         harness.flow.start()
 
-        let accepted = await scan(harness, requestURL.absoluteString)
+        let accepted = await harness.flow.handleScanned(requestURL.absoluteString)
 
         XCTAssertTrue(accepted)
         XCTAssertEqual(harness.fetcher.fetched, [requestURL])
@@ -577,7 +503,7 @@ final class ExternalSendFlowTests: XCTestCase {
         let harness = makeHarness()
         harness.flow.start()
 
-        let accepted = await scan(harness, "dashwallet://pay=\(coreAddress)&amount=1&sender=shop.app")
+        let accepted = await harness.flow.handleScanned("dashwallet://pay=\(coreAddress)&amount=1&sender=shop.app")
         let send = try XCTUnwrap(harness.flow.sendViewModel)
         await send.load()
 
@@ -596,8 +522,8 @@ final class ExternalSendFlowTests: XCTestCase {
     func testARequestTheScannerAlreadyFetchedIsNotFetchedAgain() async throws {
         let harness = makeHarness()
 
-        let accepted = await scan(
-            harness, "dash:?r=\(requestURL.absoluteString)", prefetched: details(isSecure: true))
+        let accepted = await harness.flow.handleScanned(
+            "dash:?r=\(requestURL.absoluteString)", prefetched: details(isSecure: true))
         let send = try XCTUnwrap(harness.flow.sendViewModel)
         await send.load()
 
@@ -613,12 +539,12 @@ final class ExternalSendFlowTests: XCTestCase {
         harness.fetcher.holds = true
         harness.flow.start()
 
-        let first = Task { await scan(harness, "dash:?r=\(requestURL.absoluteString)") }
+        let first = Task { await harness.flow.handleScanned("dash:?r=\(requestURL.absoluteString)") }
         for _ in 0 ..< 200 where !harness.fetcher.isHolding { await Task.yield() }
         XCTAssertTrue(harness.fetcher.isHolding)
         XCTAssertEqual(harness.flow.addressViewModel?.state, .checking)
 
-        let second = await scan(harness, "dash:?r=\(requestURL.absoluteString)")
+        let second = await harness.flow.handleScanned("dash:?r=\(requestURL.absoluteString)")
         XCTAssertTrue(second, "ignored, not refused: no invalid-address alert for it")
         XCTAssertEqual(harness.fetcher.fetched.count, 1, "a scan while one is starting starts nothing")
 
@@ -629,28 +555,11 @@ final class ExternalSendFlowTests: XCTestCase {
         XCTAssertEqual(harness.flow.step, .send)
     }
 
-    /// Closing Address while a scanned request is fetched: the late answer opens no Send.
-    func testAScannedRequestFetchedAfterAddressClosedOpensNothing() async throws {
-        let harness = makeHarness(fetchResult: .success(details()))
-        harness.fetcher.holds = true
-        harness.flow.start()
-
-        let scanning = Task { await scan(harness, "dash:?r=\(requestURL.absoluteString)") }
-        for _ in 0 ..< 200 where !harness.fetcher.isHolding { await Task.yield() }
-        XCTAssertTrue(harness.fetcher.isHolding)
-        harness.flow.backFromAddress()
-
-        harness.fetcher.release()
-        _ = await scanning.value
-        XCTAssertNil(harness.flow.sendViewModel, "no Send opened after Address closed")
-        XCTAssertNotEqual(harness.flow.step, .send)
-    }
-
     /// BIP73: the current scanner fetches a payment-request URL scanned whole; only the scan path accepts it.
     func testAScannedBarePaymentRequestURLIsFetchedLikeADashLink() async throws {
         let harness = makeHarness(fetchResult: .success(details()))
 
-        let accepted = await scan(harness, " \(requestURL.absoluteString)\n")
+        let accepted = await harness.flow.start(scanned: " \(requestURL.absoluteString)\n")
         let send = try XCTUnwrap(harness.flow.sendViewModel)
         await send.load()
 
@@ -663,7 +572,7 @@ final class ExternalSendFlowTests: XCTestCase {
     func testAScannedURLThatIsNotHTTPIsRejected() async {
         let harness = makeHarness(fetchResult: .success(details()))
 
-        let accepted = await scan(harness, "ftp://merchant.example/pr")
+        let accepted = await harness.flow.start(scanned: "ftp://merchant.example/pr")
 
         XCTAssertFalse(accepted)
         XCTAssertTrue(harness.fetcher.fetched.isEmpty)
@@ -689,27 +598,8 @@ final class ExternalSendFlowTests: XCTestCase {
 
         XCTAssertNil(harness.flow.sendViewModel)
         XCTAssertNotEqual(harness.flow.step, .send)
-        XCTAssertEqual(harness.finishes.requestFailures, [requestExpired])
-        XCTAssertTrue(harness.finishes.all.isEmpty, "a request failure does not end the flow")
-    }
-
-    /// A payment-request error is not an exit: the host keeps Address on screen, so an Identity ID entered as the
-    /// correction is still looked up and opens Send instead of stopping in Checking.
-    func testAddressStaysUsableAfterAPaymentRequestError() async throws {
-        let harness = makeHarness(fetchResult: .failure(FakeFetchError(message: "Request expired")))
-        harness.lookup.results = [.found(foundRecipient)]
-        harness.flow.start()
-        harness.flow.addressViewModel?.setText("dash:?r=\(requestURL.absoluteString)")
-        await harness.flow.addressViewModel?.continueTapped()
-        await eventually(!harness.finishes.requestFailures.isEmpty, "the request never failed")
-        XCTAssertEqual(harness.finishes.requestFailures, [requestExpired])
-        XCTAssertTrue(harness.finishes.all.isEmpty)
-
-        harness.flow.addressViewModel?.setText(identityID)
-        await harness.flow.addressViewModel?.continueTapped()
-
-        await eventually(harness.flow.sendViewModel != nil, "the corrected entry never opened Send")
-        XCTAssertEqual(harness.flow.sendViewModel?.recipientName, alice)
+        XCTAssertEqual(harness.finishes.all,
+                       [.requestFailed(title: "Couldn't make payment", message: "Request expired")])
     }
 
     func testAFailedFetchWithAValidFallbackAddressSendsToThatAddressUnlocked() async throws {
@@ -732,11 +622,10 @@ final class ExternalSendFlowTests: XCTestCase {
         let harness = makeHarness(
             fetchResult: .failure(FakeFetchError(message: "Request expired")),
             executor: ExternalSendExecutor(
-                standardSend: standardSend, balances: FakeBalances(values: [.core: 5 * oneDash]), logOutcome: { _ in },
-                paymentNetwork: { .testnet }))
+                standardSend: standardSend, balances: FakeBalances(values: [.core: 5 * oneDash]), logOutcome: { _ in }))
 
-        await scan(
-            harness, "dash:\(coreAddress)?amount=1&r=\(requestURL.absoluteString)&sender=merchantapp",
+        await harness.flow.start(
+            scanned: "dash:\(coreAddress)?amount=1&r=\(requestURL.absoluteString)&sender=merchantapp",
             openedByApp: true)
         let confirmed = try await confirmThroughTheFlow(harness)
         let confirm = try XCTUnwrap(confirmed)
@@ -919,7 +808,7 @@ final class ExternalSendFlowTests: XCTestCase {
     ) async throws -> HeldContinue {
         let harness = makeHarness(fetchResult: .success(details()),
                                   executor: executor(paymentRequestSend: paymentRequests))
-        await scan(harness, "dash:?r=\(requestURL.absoluteString)")
+        await harness.flow.start(scanned: "dash:?r=\(requestURL.absoluteString)")
         let send = try XCTUnwrap(harness.flow.sendViewModel)
         await send.load()
         let toFlow = send.onContinue
@@ -1086,7 +975,7 @@ final class ExternalSendFlowTests: XCTestCase {
 
         XCTAssertEqual(harness.finishes.all, [.toast(
             title: "Send in progress",
-            message: "Don't send it again. It can take a few minutes to finish.")])
+            message: "It will finish on its own. You don't need to send it again.")])
     }
 
     func testLockHeldOpensTheLockHeldSheetAndKeepsTheFlowOpen() async throws {
@@ -1128,33 +1017,6 @@ final class ExternalSendFlowTests: XCTestCase {
 
         XCTAssertTrue(resumer.resumed.isEmpty)
         XCTAssertEqual(harness.finishes.all, [.closed])
-    }
-
-    /// The resume can wait for a proof without a deadline, so Close stays available while Finish runs. Leaving neither
-    /// cancels the resume nor reports its later result: the transfer goes on, and the transaction details show it.
-    func testCloseWhileFinishRunsClosesTheFlowAndTheResumeRunsOn() async throws {
-        let lock = HeldAssetLock(fundingTypeRaw: 4, txidWire: Data(repeating: 0x0F, count: 32), vout: 0)
-        let resumer = FakeLockResumer()
-        let harness = makeHarness(lockResumer: resumer)
-        harness.executor.sendOutcome = .lockHeld(lock)
-        let confirm = try await openConfirm(harness)
-        await confirm.confirm()
-        let flow = harness.flow
-        let finishes = harness.finishes
-        let lockHeld = try XCTUnwrap(flow.lockHeldViewModel)
-        var cancelledAfterClose: Bool?
-        resumer.onResume = {
-            XCTAssertTrue(lockHeld.isFinishing)
-            flow.closeFromLockHeld()
-            XCTAssertEqual(finishes.all, [.closed])
-            cancelledAfterClose = Task.isCancelled
-        }
-
-        await lockHeld.finish()
-
-        XCTAssertFalse(try XCTUnwrap(cancelledAfterClose), "leaving does not cancel the resume")
-        XCTAssertEqual(resumer.resumed, [lock])
-        XCTAssertEqual(finishes.all, [.closed], "the result that arrives after leaving reports nothing")
     }
 
     func testNotSentOpensSendFailedWithTheReason() async throws {
@@ -1219,7 +1081,7 @@ final class ExternalSendFlowTests: XCTestCase {
     func testAScannedLinksSenderReachesNeitherTheFetchNorTheDestination() async throws {
         let harness = makeHarness(fetchResult: .success(details()))
 
-        await scan(harness, "dash:?r=\(requestURL.absoluteString)&sender=merchantapp")
+        await harness.flow.start(scanned: "dash:?r=\(requestURL.absoluteString)&sender=merchantapp")
 
         XCTAssertEqual(harness.fetcher.callbackSchemes, [nil])
         let confirmed = try await confirmThroughTheFlow(harness)
@@ -1230,7 +1092,7 @@ final class ExternalSendFlowTests: XCTestCase {
     func testTheCallbackSchemeOfALinkAnotherAppOpenedReachesTheFetchAndTheDestination() async throws {
         let harness = makeHarness(fetchResult: .success(details()))
 
-        await scan(harness, "dash:?r=\(requestURL.absoluteString)&sender=merchantapp", openedByApp: true)
+        await harness.flow.start(scanned: "dash:?r=\(requestURL.absoluteString)&sender=merchantapp", openedByApp: true)
 
         XCTAssertEqual(harness.fetcher.callbackSchemes, ["merchantapp"])
         let confirmed = try await confirmThroughTheFlow(harness)
@@ -1246,7 +1108,7 @@ final class ExternalSendFlowTests: XCTestCase {
         let harness = makeHarness(fetchResult: .success(fetched),
                                   executor: executor(paymentRequestSend: paymentRequests))
 
-        await scan(harness, "dash:?r=\(requestURL.absoluteString)&sender=merchantapp", openedByApp: true)
+        await harness.flow.start(scanned: "dash:?r=\(requestURL.absoluteString)&sender=merchantapp", openedByApp: true)
         let send = try XCTUnwrap(harness.flow.sendViewModel)
         await send.load()
         await send.proceed()
@@ -1270,7 +1132,7 @@ final class ExternalSendFlowTests: XCTestCase {
         let harness = makeHarness(fetchResult: .success(fetched),
                                   executor: executor(paymentRequestSend: paymentRequests))
 
-        await scan(harness, "dash:?r=\(requestURL.absoluteString)")
+        await harness.flow.start(scanned: "dash:?r=\(requestURL.absoluteString)")
         let confirmedConfirm = try await confirmThroughTheFlow(harness)
         let confirm = try XCTUnwrap(confirmedConfirm)
         await confirm.confirm()
@@ -1293,7 +1155,7 @@ final class ExternalSendFlowTests: XCTestCase {
         let attempted = details()
         let harness = makeHarness(fetchResult: .success(attempted),
                                   executor: executor(paymentRequestSend: paymentRequests))
-        await scan(harness, "dash:?r=\(requestURL.absoluteString)")
+        await harness.flow.start(scanned: "dash:?r=\(requestURL.absoluteString)")
         let confirmedFirst = try await confirmThroughTheFlow(harness)
         let first = try XCTUnwrap(confirmedFirst)
         await first.confirm()
@@ -1325,17 +1187,18 @@ final class ExternalSendFlowTests: XCTestCase {
             txid: "t", reason: "bad-txns")
         let harness = makeHarness(fetchResult: .success(details()),
                                   executor: executor(paymentRequestSend: paymentRequests))
-        await scan(harness, "dash:?r=\(requestURL.absoluteString)")
+        await harness.flow.start(scanned: "dash:?r=\(requestURL.absoluteString)")
         let confirmed = try await confirmThroughTheFlow(harness)
         let confirm = try XCTUnwrap(confirmed)
         await confirm.confirm()
         harness.fetcher.result = .failure(FakeFetchError(message: "Request expired"))
 
         harness.flow.retryFromSendFailed()
-        await eventually(!harness.finishes.requestFailures.isEmpty, "Retry never finished")
+        await eventually(!harness.finishes.all.isEmpty, "Retry never finished")
 
-        XCTAssertEqual(harness.finishes.requestFailures, [requestExpired])
-        XCTAssertTrue(harness.finishes.all.isEmpty)
+        XCTAssertEqual(harness.finishes.all, [
+            .requestFailed(title: "Couldn't make payment", message: "Request expired"),
+        ])
         XCTAssertEqual(paymentRequests.prepared.count, 1, "nothing is built from the attempted request")
     }
 
@@ -1347,7 +1210,7 @@ final class ExternalSendFlowTests: XCTestCase {
             txid: "t", reason: "bad-txns")
         let harness = makeHarness(fetchResult: .success(details()),
                                   executor: executor(paymentRequestSend: paymentRequests))
-        await scan(harness, "dash:?r=\(requestURL.absoluteString)")
+        await harness.flow.start(scanned: "dash:?r=\(requestURL.absoluteString)")
         let confirmed = try await confirmThroughTheFlow(harness)
         let confirm = try XCTUnwrap(confirmed)
         await confirm.confirm()
@@ -1476,121 +1339,6 @@ final class ExternalSendFlowTests: XCTestCase {
 
         XCTAssertEqual(harness.finishes.all, [.closed])
     }
-
-    // MARK: - One lifecycle owner (ADR-0013)
-
-    /// The host forwards every dismissal to `close()`, including the one a finish of its own caused: the flow has
-    /// ended by then, so nothing is reported twice.
-    func testCloseAfterTheFlowFinishedReportsNothingMore() {
-        let harness = makeHarness()
-        harness.flow.start()
-
-        harness.flow.backFromAddress()
-        harness.flow.close()
-        harness.flow.close()
-
-        XCTAssertEqual(harness.finishes.all, [.backToMenu])
-    }
-
-    /// The host closed while a scanned request is still fetched: the opening ends at once, not when the fetch
-    /// returns, so the next scan or link is not refused; the fetch is cancelled and a late answer opens nothing.
-    func testClosingMidOpenReleasesTheOpeningAtOnceAndCancelsTheFetch() async throws {
-        let harness = makeHarness(fetchResult: .success(details()))
-        harness.fetcher.holds = true
-        let input = try XCTUnwrap(scanInput("dash:?r=\(requestURL.absoluteString)"))
-
-        let opening = harness.flow.open(input)
-        XCTAssertTrue(harness.flow.isOpening, "opening from the call on, before the host is on screen")
-        XCTAssertNil(harness.flow.open(input), "a second scan meanwhile starts nothing")
-        await eventually(harness.fetcher.isHolding, "the request was never fetched")
-
-        harness.flow.close()
-
-        XCTAssertFalse(harness.flow.isOpening, "released by the close, while the fetch is still out")
-        harness.fetcher.release()
-        await opening?.value
-        XCTAssertEqual(harness.fetcher.cancelledFetches, 1, "the fetch saw the cancellation")
-        XCTAssertNil(harness.flow.sendViewModel, "a closed flow does not open Send")
-        XCTAssertEqual(harness.finishes.all, [.closed])
-        XCTAssertNil(harness.flow.open(input), "a closed flow opens nothing")
-    }
-
-    /// A request failure is recoverable: the opening is released, Address stays open and an Identity ID entered as
-    /// the correction opens Send.
-    func testARequestFailedOnAScanThenAnIdentityIDCorrectionOpensSend() async throws {
-        let harness = makeHarness(fetchResult: .failure(FakeFetchError(message: "Request expired")))
-        harness.lookup.results = [.found(foundRecipient)]
-
-        let accepted = await scan(harness, "dash:?r=\(requestURL.absoluteString)")
-
-        XCTAssertTrue(accepted)
-        XCTAssertEqual(harness.finishes.requestFailures, [requestExpired])
-        XCTAssertTrue(harness.finishes.all.isEmpty, "a request failure does not end the flow")
-        XCTAssertFalse(harness.flow.isOpening, "the failed open released the opening")
-        XCTAssertEqual(harness.flow.step, .address)
-
-        harness.flow.addressViewModel?.setText(identityID)
-        await harness.flow.addressViewModel?.continueTapped()
-
-        await eventually(harness.flow.sendViewModel != nil, "the corrected entry never opened Send")
-        XCTAssertEqual(harness.flow.sendViewModel?.recipientName, alice)
-    }
-
-    /// A request failure ends only the open it belongs to: a scan opened right after the failure keeps its opening
-    /// until it is done, however late the failed open ends.
-    func testARequestFailureOfOneOpenDoesNotReleaseTheOpeningOfANewerOpen() async throws {
-        let harness = makeHarness(fetchResult: .failure(FakeFetchError(message: "Request expired")))
-        let input = try XCTUnwrap(scanInput("dash:?r=\(requestURL.absoluteString)"))
-        let flow = harness.flow
-        let fetcher = harness.fetcher
-        var newer: Task<Void, Never>?
-        flow.onRequestFailed = { _ in
-            guard newer == nil else { return }
-            fetcher.holds = true
-            fetcher.result = .success(self.details())
-            newer = flow.open(input)
-        }
-
-        await flow.open(input)?.value
-
-        XCTAssertNotNil(newer, "the newer scan opened after the failure")
-        await eventually(fetcher.isHolding, "the newer request was never fetched")
-        XCTAssertTrue(flow.isOpening, "the failed open does not release the newer open's opening")
-
-        fetcher.release()
-        await newer?.value
-        XCTAssertFalse(flow.isOpening, "the newer open released its own opening")
-        XCTAssertEqual(flow.step, .send)
-    }
-
-    /// The live fetch answers a cancellation at once, even though the BIP70 fetch it started never calls back, and a
-    /// late answer afterwards is dropped.
-    func testTheLiveFetchEndsOnCancellationWithoutWaitingForTheAnswer() async throws {
-        var answer: ((BIP70ConfirmationBox?, Error?) -> Void)?
-        let fetcher = LivePaymentRequestFetcher(start: { _, _, completion in answer = completion })
-
-        let fetch = Task { try await fetcher.fetch(url: requestURL, callbackScheme: nil) }
-        await eventually(answer != nil, "the fetch never started")
-        fetch.cancel()
-
-        do {
-            _ = try await fetch.value
-            XCTFail("a cancelled fetch returned details")
-        } catch {
-            XCTAssertTrue(error is CancellationError, "got \(error)")
-        }
-        answer?(nil, FakeFetchError(message: "late"))
-    }
-
-    func testTheLiveFetchReturnsTheVerifiedRequest() async throws {
-        let box = BIP70ConfirmationBox.fixture(address: coreAddress, amount: oneDash, isSecure: true)
-        let fetcher = LivePaymentRequestFetcher(start: { _, _, completion in completion(box, nil) })
-
-        let details = try await fetcher.fetch(url: requestURL, callbackScheme: nil)
-
-        XCTAssertEqual(details.address, coreAddress)
-        XCTAssertEqual(details.amountDuffs, oneDash)
-    }
 }
 
 // MARK: - Fakes
@@ -1611,17 +1359,10 @@ private final class FakePaymentRequests: PaymentRequestFetching {
 
     var isHolding: Bool { held != nil }
 
-    /// Fetches that found their task cancelled once released.
-    private(set) var cancelledFetches = 0
-
     func fetch(url: URL, callbackScheme: String?) async throws -> PaymentRequestDetails {
         fetched.append(url)
         callbackSchemes.append(callbackScheme)
         if holds { await withCheckedContinuation { held = $0 } }
-        if Task.isCancelled {
-            cancelledFetches += 1
-            throw CancellationError()
-        }
         return try result.get()
     }
 
@@ -1735,12 +1476,9 @@ private struct FakeConverter: SendAmountConverting {
 @MainActor
 private final class FakeLockResumer: HeldAssetLockResuming {
     private(set) var resumed: [HeldAssetLock] = []
-    /// Runs inside `resume`, before it answers.
-    var onResume: (() async -> Void)?
 
     func resume(_ lock: HeldAssetLock) async throws -> AssetLockRecoveryService.Outcome {
         resumed.append(lock)
-        await onResume?()
         return .completed
     }
 }

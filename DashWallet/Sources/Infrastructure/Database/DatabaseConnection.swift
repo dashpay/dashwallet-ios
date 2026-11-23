@@ -47,7 +47,7 @@ class DatabaseConnection: NSObject {
     func migrateIfNeeded() throws {
         guard let migrationManager else {
             throw NSError(domain: "DatabaseConnection", code: 1, userInfo: [
-                NSLocalizedDescriptionKey: NSLocalizedString("The wallet database could not be opened.", comment: "Database error")
+                NSLocalizedDescriptionKey: "The wallet database could not be opened."
             ])
         }
 

@@ -14,9 +14,6 @@ timeout was treated differently by each.
 
 - Every write logs its start and its outcome the same way, without the SDK's error text.
 - After an error or a timeout the next read of Platform decides; nothing guesses landed or failed.
-  While the publish of a response is unresolved, a read that finds no response decides nothing
-  ([ADR-0052](0052-refuse-response-removed-at-its-one-write-point-while-the-publish-is-unresolved.md));
-  a submit that ends after its timeout is only logged, and the next read decides.
 - Failures can be injected in tests without a network.
 
 ## Considered options

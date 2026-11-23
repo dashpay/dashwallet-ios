@@ -32,7 +32,7 @@ such a lock without the holder: only Rebroadcast in the transaction details does
 
 ## Decision outcome
 
-**Chosen:** option 1, extended by the revision below to four outcomes: the executor reports `sent`, `notSent`, `inFlight` or `lockHeld`, and only `notSent` offers Retry. A doubt about a submitted payment is reported as `inFlight`; a recorded asset lock whose Platform step did not finish is `lockHeld`, which offers Finish instead. Balances update with a delay after SPV or Platform sync, so a balance check could miss a payment that already left; the four outcomes follow the SDK's own no-retry contract.
+**Chosen:** option 1, extended by the revision below to four outcomes: the executor reports `sent`, `notSent`, `inFlight` or `lockHeld`, and only `notSent` offers Retry. A doubt about a submitted payment is reported as `inFlight`; a recorded asset lock whose Platform step did not finish is `lockHeld`, which offers Finish instead. Balances update with a delay after SPV or Platform sync, so a balance check could miss a payment that already left; the three outcomes follow the SDK's own no-retry contract.
 
 **Revised 2026-11-15** ([dashwallet-ios#1422](https://github.com/dashpay/dashwallet-ios/issues/1422)):
 a fourth outcome, `lockHeld(lock)`, for a send whose asset lock is recorded while its Platform step
@@ -57,4 +57,4 @@ Close leaves it for the transaction details. `inFlight` keeps only "submitted, o
 
 - Feature summary: [external-send](../features/external-send/README.md)
 - Android counterpart: [dashpay/dash-wallet#1680](https://github.com/dashpay/dash-wallet/pull/1680)
-- Related ADRs: [0054 — Build external send as a new module over the existing spend seams](0054-build-external-send-as-a-new-module-over-the-existing-spend-seams.md), [0042 — Report movedToPlatform when a Shielded to Identity top-up fails after the unshield](0042-report-moved-to-platform-when-a-shielded-to-identity-top-up-fails-after-the-unshield.md) (refines this ADR)
+- Related ADRs: [0037 — Build external send as a new module over the existing spend seams](0037-build-external-send-as-a-new-module-over-the-existing-spend-seams.md), [0042 — Report movedToPlatform when a Shielded to Identity top-up fails after the unshield](0042-report-moved-to-platform-when-a-shielded-to-identity-top-up-fails-after-the-unshield.md) (refines this ADR)

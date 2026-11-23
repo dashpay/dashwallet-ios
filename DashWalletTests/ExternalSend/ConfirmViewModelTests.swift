@@ -581,48 +581,6 @@ final class ConfirmViewModelTests: XCTestCase {
         guard case .sent? = outcomes.first else { return XCTFail("expected .sent, got \(outcomes)") }
     }
 
-    /// A whole-balance send whose balance changed after Confirm sent nothing: Send plans Max again.
-    func testABalanceChangedAtDispatchReturnsToSendInsteadOfAnOutcome() async {
-        executor.sendOutcome = .notSent(.balanceChanged)
-        let vm = await readyVM(route: .platformToCore)
-        await vm.confirm()
-        XCTAssertTrue(outcomes.isEmpty)
-        XCTAssertEqual(backToSend, [.balanceNotEnough])
-    }
-
-    /// The notes moved between Continue and Confirm: nothing was sent, so there is no outcome screen; Send recomputes
-    /// Max.
-    func testAChangedShieldedPlanAtConfirmGoesBackToSendWithoutAnOutcome() async {
-        executor.sendOutcome = .notSent(.balanceChanged)
-        let vm = await readyVM(route: .shieldedToShielded)
-        await vm.confirm()
-        XCTAssertEqual(executor.sentCalls, 1)
-        XCTAssertTrue(outcomes.isEmpty, "\(outcomes)")
-        XCTAssertEqual(backToSend, [.balanceNotEnough])
-    }
-
-    /// The identity's balance no longer covers the amount and the shield fee at Confirm: nothing was sent, so Send
-    /// recomputes Max.
-    func testAnIdentityBalanceNotEnoughAtConfirmGoesBackToSendWithoutAnOutcome() async {
-        executor.sendOutcome = .notSent(.balanceNotEnough)
-        let vm = await readyVM(route: .identityToShielded)
-        await vm.confirm()
-        XCTAssertEqual(executor.sentCalls, 1)
-        XCTAssertTrue(outcomes.isEmpty, "\(outcomes)")
-        XCTAssertEqual(backToSend, [.balanceNotEnough])
-    }
-
-    /// A withdrawal amount outside Platform's bounds for its Core fee is refused before anything is built.
-    func testAWithdrawalAmountOutOfRangeAtContinueIsNotSent() async {
-        executor.prepareResults = [.failure(.amountOutOfRange)]
-        let vm = makeVM(route: .shieldedToCore)
-        await vm.start()
-        XCTAssertTrue(backToSend.isEmpty)
-        guard case .notSent(.amountOutOfRange)? = outcomes.first else { return XCTFail("got \(outcomes)") }
-        XCTAssertEqual(outcomes.count, 1)
-        XCTAssertEqual(executor.sentCalls, 0)
-    }
-
     func testNotSentOutcomeIsHandedOnUnchanged() async {
         executor.sendOutcome = .notSent(.offline)
         let vm = await readyVM(route: .coreToCore)

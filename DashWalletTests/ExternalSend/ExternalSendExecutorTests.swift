@@ -22,7 +22,7 @@ import XCTest
 
 /// The Core-, Shielded- and Platform-source routes of the external send executor and its shared skeleton (AC-01,
 /// AC-01b, AC-19, ADR-0039, ADR-0040): authenticate on Continue, prepare (built and signed, never broadcast) with
-/// the binding fee, broadcast only on `send`, one of four outcomes, one log line per outcome.
+/// the binding fee, broadcast only on `send`, one of three outcomes, one log line per outcome.
 ///
 /// The executor, `AuthenticationGate`, `AmountRules`, `SendOutcome` and `PreparedStandardSend` (its broadcast state
 /// machine) are production. Only the edges are scripted: the PIN prompt (`SendAuthenticationPrompting`), the
@@ -326,8 +326,6 @@ final class ExternalSendExecutorTests: XCTestCase {
         var withdrawal: SendFundingCheck = .fundable
         var identity: SendFundingCheck = .fundable
         var transfer: SendFundingCheck = .fundable
-        /// What a whole-balance Platform to Core withdrawal pays now; nil reads as unreadable.
-        var withdrawableMax: UInt64? = ExternalSendExecutorTests.amount
         private(set) var withdrawalAmounts: [UInt64] = []
         private(set) var identityAmounts: [UInt64] = []
         private(set) var transferRequests: [[UInt64]] = []
@@ -341,8 +339,6 @@ final class ExternalSendExecutorTests: XCTestCase {
             identityAmounts.append(amountDuffs)
             return identity
         }
-
-        func withdrawableMaxDuffs() async -> UInt64? { withdrawableMax }
 
         func canTransferOnPlatform(amountDuffs: UInt64, feeDuffs: UInt64) async -> SendFundingCheck {
             transferRequests.append([amountDuffs, feeDuffs])
@@ -385,10 +381,10 @@ final class ExternalSendExecutorTests: XCTestCase {
     private var context = ExternalSendContext(walletId: Data([1]), network: .testnet)
     private static let identityA = Data(repeating: 0xA1, count: 32)
     private var currentIdentityId: Data? = identityA
+    private let topUpsInFlight = IdentityTopUpsInFlight()
+    private let topUpCenter = NotificationCenter()
 
-    private func makeExecutor(
-        slowNetworkDelay: Duration = .seconds(20), paymentNetwork: PaymentNetwork = .testnet
-    ) -> ExternalSendExecutor {
+    private func makeExecutor(slowNetworkDelay: Duration = .seconds(20)) -> ExternalSendExecutor {
         ExternalSendExecutor(
             standardSend: standard,
             paymentRequestSend: paymentRequest,
@@ -408,7 +404,9 @@ final class ExternalSendExecutorTests: XCTestCase {
             currentIdentityId: { [unowned self] in currentIdentityId },
             logOutcome: { [unowned self] in logged.append($0) },
             slowNetworkDelay: slowNetworkDelay,
-            paymentNetwork: { paymentNetwork })
+            topUpsInFlight: topUpsInFlight,
+            topUpCenter: topUpCenter,
+            topUpKey: { Self.topUpKey($0) })
     }
 
     private func destination(for route: SendRoute) -> Destination {
@@ -735,56 +733,6 @@ final class ExternalSendExecutorTests: XCTestCase {
         XCTAssertTrue(standard.prepareCalls.isEmpty, "a payment request never takes the standard send")
         XCTAssertTrue(fees.calls.isEmpty)
         XCTAssertTrue(logged.isEmpty, "preparing is not an outcome")
-    }
-
-    /// Testnet and devnet share address bytes, so a request verified on one would build on the other.
-    func testAPaymentRequestVerifiedOnAnotherNetworkIsRefusedBeforeAnythingIsBuilt() async throws {
-        balances.spendable = Self.amount * 10
-        do {
-            _ = try await prepareRequest(
-                makeExecutor(paymentNetwork: .devnet), amount: verifiedRequest.confirmation.amount)
-            XCTFail("expected a refusal")
-        } catch {
-            XCTAssertEqual(error as? ExternalSendError, .feeUnavailable)
-        }
-        XCTAssertTrue(paymentRequest.prepareCalls.isEmpty, "nothing is built")
-    }
-
-    // MARK: Platform to Core Max at dispatch
-
-    func testPlatformToCoreMaxWhoseWithdrawableBalanceChangedSinceConfirmSendsNothing() async throws {
-        balances.spendable = Self.amount * 10
-        let executor = makeExecutor()
-        let prepared = try await prepare(executor, .platformToCore, isMax: true)
-        platformFunding.withdrawableMax = Self.amount + 1
-
-        let outcome = await executor.send(prepared)
-
-        guard case .notSent(.balanceChanged) = outcome else { return XCTFail("got \(outcome)") }
-        XCTAssertTrue(credits.runs.isEmpty, "nothing is withdrawn")
-    }
-
-    func testPlatformToCoreMaxWithAnUnreadableBalanceSendsNothing() async throws {
-        balances.spendable = Self.amount * 10
-        let executor = makeExecutor()
-        let prepared = try await prepare(executor, .platformToCore, isMax: true)
-        platformFunding.withdrawableMax = nil
-
-        let outcome = await executor.send(prepared)
-
-        guard case .notSent(.balanceChanged) = outcome else { return XCTFail("got \(outcome)") }
-        XCTAssertTrue(credits.runs.isEmpty)
-    }
-
-    func testPlatformToCoreMaxStillPayingTheConfirmedAmountWithdraws() async throws {
-        balances.spendable = Self.amount * 10
-        let executor = makeExecutor()
-        let prepared = try await prepare(executor, .platformToCore, isMax: true)
-
-        let outcome = await executor.send(prepared)
-
-        guard case .sent = outcome else { return XCTFail("got \(outcome)") }
-        XCTAssertEqual(credits.runs.count, 1)
     }
 
     func testPaymentRequestWithAnAmountOtherThanTheRequestsIsRefusedBeforeAnythingIsBuilt() async throws {
@@ -3103,6 +3051,78 @@ extension ExternalSendExecutorTests {
         XCTAssertFalse(handedOver)
         guard case .notSent(.identityNotFound) = SendOutcome(error: error) else {
             return XCTFail("\(SendOutcome(error: error))")
+        }
+    }
+}
+
+/// A top-up of an identity the send makes is announced like every other top-up from this wallet (ADR-0034), so the
+/// Identity option on Receive raises no Receipt for it.
+extension ExternalSendExecutorTests {
+    private static let topUpRoutes: [SendRoute] = [.coreToIdentity, .platformToIdentity, .shieldedToIdentity]
+
+    fileprivate static func topUpKey(_ destination: Destination) -> IdentityTopUpsInFlight.Key {
+        .init(walletId: Data([1]), network: .testnet, identityId: Data(destination.text.utf8))
+    }
+
+    private func recordTopUps() -> (events: () -> [IdentityTopUpDidComplete], stop: () -> Void) {
+        var events: [IdentityTopUpDidComplete] = []
+        let token = topUpCenter.addObserver(forName: IdentityTopUpDidComplete.name, object: nil, queue: nil) {
+            if let event = IdentityTopUpDidComplete(notification: $0) { events.append(event) }
+        }
+        return ({ events }, { [topUpCenter] in topUpCenter.removeObserver(token) })
+    }
+
+    func testEveryTopUpRouteAnnouncesItsCompletedTopUp() async throws {
+        for route in Self.topUpRoutes {
+            let recorder = recordTopUps()
+            defer { recorder.stop() }
+            let executor = makeExecutor()
+            let prepared = try await prepare(executor, route)
+            let outcome = await executor.send(prepared)
+            XCTAssertTrue(isSent(outcome), "\(route): \(outcome)")
+            let key = Self.topUpKey(destination(for: route))
+            let supplied = prepared.shieldedPlan?.amountCredits
+                ?? Self.amount * PlatformPaymentIdentityFundingPolicy.creditsPerDuff
+            XCTAssertEqual(recorder.events(), [IdentityTopUpDidComplete(
+                walletId: key.walletId, network: key.network, identityId: key.identityId,
+                balanceAfter: nil, suppliedCredits: supplied)], "\(route)")
+            XCTAssertFalse(topUpsInFlight.contains(key), "\(route)")
+        }
+    }
+
+    func testATopUpIsInFlightWhileItRuns() async throws {
+        let key = Self.topUpKey(destination(for: .coreToIdentity))
+        var seen = false
+        twoStep.suspension = { [topUpsInFlight] in seen = topUpsInFlight.contains(key) }
+        let executor = makeExecutor()
+        _ = await executor.send(try await prepare(executor, .coreToIdentity))
+        XCTAssertTrue(seen)
+        XCTAssertFalse(topUpsInFlight.contains(key))
+    }
+
+    func testATopUpThatDidNotCompleteIsNotAnnounced() async throws {
+        let results: [CreditsSendResult] = [
+            .unconfirmed, .notStarted, .failed(PlatformWalletError.identityLookupFailed("raw"), handedOver: false),
+        ]
+        for result in results {
+            identityTopUp.result = result
+            let recorder = recordTopUps()
+            defer { recorder.stop() }
+            let executor = makeExecutor()
+            _ = await executor.send(try await prepare(executor, .platformToIdentity))
+            XCTAssertEqual(recorder.events(), [], "\(result)")
+            XCTAssertFalse(topUpsInFlight.contains(Self.topUpKey(destination(for: .platformToIdentity))))
+        }
+    }
+
+    func testRoutesThatTopUpNoIdentityAnnounceNothing() async throws {
+        for route in [SendRoute.coreToPlatform, .shieldedToPlatform, .identityToIdentity] {
+            let recorder = recordTopUps()
+            defer { recorder.stop() }
+            let executor = makeExecutor()
+            let outcome = await executor.send(try await prepare(executor, route))
+            XCTAssertTrue(isSent(outcome), "\(route): \(outcome)")
+            XCTAssertEqual(recorder.events(), [], "\(route)")
         }
     }
 }

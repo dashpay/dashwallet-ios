@@ -106,8 +106,7 @@ final class BIP70InteractiveCoordinator: NSObject {
         if let bip = error as? BIP70Error {
             return NSError(domain: "org.dashfoundation.dash.bip70",
                            code: 1,
-                           userInfo: [NSLocalizedDescriptionKey: bip.errorDescription
-                               ?? NSLocalizedString("Payment failed", comment: "BIP70 payment error")])
+                           userInfo: [NSLocalizedDescriptionKey: bip.errorDescription ?? "Payment failed"])
         }
         return error as NSError
     }

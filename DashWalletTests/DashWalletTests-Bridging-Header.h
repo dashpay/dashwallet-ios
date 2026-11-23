@@ -20,6 +20,5 @@
 
 #import "DashPay/Presentation/Profile/EditProfile/Upload/DWUploadAvatarModel.h"
 #import "DashWallet/Sources/Models/URL Handling/DWURLParser.h"
-#import "DashWallet/Sources/UI/Payments/PaymentModels/DWPaymentInput+Private.h"
 
 #endif /* DashWalletTests_Bridging_Header_h */

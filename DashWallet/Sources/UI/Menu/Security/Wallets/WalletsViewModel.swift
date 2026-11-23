@@ -203,7 +203,7 @@ final class WalletsViewModel: ObservableObject {
                 targetName: targetName,
                 previousId: previousId,
                 message: error.localizedDescription))
-            DWLogger.log("🔁 WALLETOP [\(opID)] switch FAILED after \(ms)ms: \(String(describing: error))")
+            DWLogger.log("🔁 WALLETOP [\(opID)] switch FAILED after \(ms)ms: \(error.localizedDescription)")
             throw error
         }
         if thenFinish {
@@ -299,7 +299,7 @@ final class WalletsViewModel: ObservableObject {
             // blocking overlay with no owner.
             state.finish()
             let ms = Int((CFAbsoluteTimeGetCurrent() - started) * 1000)
-            DWLogger.log("🔁 WALLETOP [\(opID)] add FAILED after \(ms)ms: \(String(describing: error))")
+            DWLogger.log("🔁 WALLETOP [\(opID)] add FAILED after \(ms)ms: \(error.localizedDescription)")
             Self.logger.error("addWallet failed: \(String(describing: error), privacy: .public)")
             errorMessage = error.localizedDescription
             return nil
@@ -486,7 +486,7 @@ final class WalletsViewModel: ObservableObject {
             // this screen, so only the overlay window can still surface the
             // failure. The wiper leaves wallet state retryable by design.
             state.fail(.failedWalletRemoval(message: error.localizedDescription))
-            DWLogger.log("🔁 WALLETOP [\(opID)] remove FAILED after \(ms)ms: \(String(describing: error))")
+            DWLogger.log("🔁 WALLETOP [\(opID)] remove FAILED after \(ms)ms: \(error.localizedDescription)")
             reload()
             return
         }

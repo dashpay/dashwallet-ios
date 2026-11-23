@@ -30,13 +30,8 @@ struct ToolsMenuScreen: View {
     @State private var showZenLedgerSheet = false
     @State private var showExtendedPublicKeySheet = false
 
-    /// Connections asks it whether the wallet has a username, and starts
-    /// creating one from it.
-    private let dashPayModel: DWDashPayProtocol?
-
-    init(vc: UINavigationController?, dashPayModel: DWDashPayProtocol? = nil) {
+    init(vc: UINavigationController?) {
         self.vc = vc
-        self.dashPayModel = dashPayModel
     }
 
     var body: some View {
@@ -279,7 +274,7 @@ struct ToolsMenuScreen: View {
 
     private func showConnections() {
         guard let vc else { return }
-        let controller = DashConnectHostingController(navigationController: vc, dashPayModel: dashPayModel)
+        let controller = DashConnectHostingController(navigationController: vc)
         vc.pushViewController(controller, animated: true)
     }
 

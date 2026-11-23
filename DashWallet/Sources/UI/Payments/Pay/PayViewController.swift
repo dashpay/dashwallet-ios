@@ -139,13 +139,7 @@ extension PayViewController: UITableViewDataSource, UITableViewDelegate {
 extension PayViewController: DWQRScanModelDelegate {
     func qrScanModel(_ viewModel: DWQRScanModel, didScanPaymentInput paymentInput: DWPaymentInput) {
         dismiss(animated: true) { [weak self] in
-            guard let self else { return }
-            // The scanner accepts an Identity ID, which only the new Send can pay.
-            if ParsedPaymentURI.isIdentityID(string: paymentInput.parsedURI?.rawString ?? "") {
-                ExternalSendLauncher.presentScanned(paymentInput, from: self)
-                return
-            }
-            paymentController.performPayment(with: paymentInput)
+            self?.paymentController.performPayment(with: paymentInput)
         }
     }
 

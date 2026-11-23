@@ -725,7 +725,7 @@ extension TxDetailModel {
                     plainDetail: NSLocalizedString("Platform balance", comment: "The Dash Platform credits balance")),
             ]
             if let statusRaw = transaction.platformFundingLockInfo?.statusRaw,
-               let status = Self.lockStatusText(statusRaw) {
+               let status = lockStatusTextAfterProbe(statusRaw) {
                 rows.append(DWTitleDetailCellModel(
                     style: .default,
                     title: NSLocalizedString("Status", comment: "Transaction details"),
@@ -742,7 +742,7 @@ extension TxDetailModel {
                     plainDetail: NSLocalizedString("Identity credits", comment: "Destination of an identity funding asset lock")),
             ]
             if let statusRaw = transaction.identityFundingLockInfo?.statusRaw,
-               let status = Self.lockStatusText(statusRaw) {
+               let status = lockStatusTextAfterProbe(statusRaw) {
                 rows.append(DWTitleDetailCellModel(
                     style: .default,
                     title: NSLocalizedString("Status", comment: "Transaction details"),
@@ -762,6 +762,12 @@ extension TxDetailModel {
         guard let statusRaw = ShieldedTxLookup.shared.info(forTxidHex: transactionId)?.statusRaw else {
             return nil
         }
+        return lockStatusTextAfterProbe(statusRaw)
+    }
+
+    /// `lockStatusText`, except that a restored lock already probed as spent reads as that weaker claim. Every funding
+    /// lock's status row (Shielded, Platform, Identity) reads through it.
+    private func lockStatusTextAfterProbe(_ statusRaw: Int) -> String? {
         // A restored lock we already probed reads as the weaker claim it earns:
         // the network says spent, we could not verify that, and there is
         // a user can retry that same outpoint. "Completion unknown" is for locks

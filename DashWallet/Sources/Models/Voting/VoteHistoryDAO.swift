@@ -46,16 +46,12 @@ struct CastVoteRecord: Hashable {
 protocol VoteHistoryDAO {
     /// Upsert — a node re-voting on the same contest replaces its own row,
     /// mirroring Platform, where a masternode has one live vote per poll.
-    /// - Throws: the store's error, so a caller whose vote already landed can
-    ///   still count it as a spent cast.
-    func record(_ record: CastVoteRecord, network: String) async throws
-    /// Votes this device cast on one contest, newest first. `nil` when the
-    /// store could not be read — unknown, not "no votes".
-    func votes(forContest normalizedLabel: String, network: String) async -> [CastVoteRecord]?
-    /// Votes this device cast on any of `normalizedLabels`, newest first. One
-    /// query for the whole list screen, which marks the user's own vote on
-    /// every row. `nil` when the store could not be read — unknown, not empty.
-    func votes(forContests normalizedLabels: Set<String>, network: String) async -> [CastVoteRecord]?
+    func record(_ record: CastVoteRecord, network: String) async
+    /// Votes this device cast on one contest, newest first.
+    func votes(forContest normalizedLabel: String, network: String) async -> [CastVoteRecord]
+    /// Every contest this device has voted on, mapped to its vote count.
+    /// One query for the whole list screen rather than one per row.
+    func voteCountsByContest(network: String) async -> [String: Int]
     func deleteAll()
 }
 
@@ -73,7 +69,7 @@ actor VoteHistoryDAOImpl: VoteHistoryDAO {
         self.connection = connection
     }
 
-    func record(_ record: CastVoteRecord, network: String) async throws {
+    func record(_ record: CastVoteRecord, network: String) async {
         let query = """
             INSERT INTO masternode_vote_history
                 (proTxHash, normalizedLabel, network, choice, contenderIdentityId, castAt, castCount)
@@ -96,10 +92,14 @@ actor VoteHistoryDAOImpl: VoteHistoryDAO {
             Int64(record.castAt.timeIntervalSince1970 * 1000),
         ]
 
-        try db.run(query, bindings)
+        do {
+            try db.run(query, bindings)
+        } catch {
+            DWLogger.log("VoteHistoryDAO: record failed: \(error)")
+        }
     }
 
-    func votes(forContest normalizedLabel: String, network: String) async -> [CastVoteRecord]? {
+    func votes(forContest normalizedLabel: String, network: String) async -> [CastVoteRecord] {
         let query = """
             SELECT proTxHash, normalizedLabel, choice, contenderIdentityId, castAt, castCount
             FROM masternode_vote_history
@@ -107,50 +107,47 @@ actor VoteHistoryDAOImpl: VoteHistoryDAO {
             ORDER BY castAt DESC
         """
         do {
-            return try db.prepare(query, [normalizedLabel, network]).compactMap(Self.record(from:))
+            // `prepare` yields positional `[Binding?]` rows, which is what a
+            // hand-written SELECT needs; `Row` subscripting is for typed
+            // `Expression` columns.
+            return try db.prepare(query, [normalizedLabel, network]).compactMap { row -> CastVoteRecord? in
+                guard let blob = row[0] as? Blob,
+                      let label = row[1] as? String,
+                      let kind = row[2] as? String,
+                      let castAt = row[4] as? Int64,
+                      let choice = VoteChoice(storageKind: kind, contenderId: row[3] as? String)
+                else { return nil }
+                return CastVoteRecord(
+                    proTxHash: Data(blob.bytes),
+                    normalizedLabel: label,
+                    choice: choice,
+                    castAt: Date(timeIntervalSince1970: Double(castAt) / 1000),
+                    castCount: Int(row[5] as? Int64 ?? 1))
+            }
         } catch {
             DWLogger.log("VoteHistoryDAO: votes(forContest:) failed: \(error)")
-            return nil
+            return []
         }
     }
 
-    func votes(forContests normalizedLabels: Set<String>, network: String) async -> [CastVoteRecord]? {
-        guard !normalizedLabels.isEmpty else { return [] }
-        // Bound by the open-contest list (the service caps it at 500), well
-        // under SQLite's parameter limit.
-        let placeholders = Array(repeating: "?", count: normalizedLabels.count).joined(separator: ", ")
+    func voteCountsByContest(network: String) async -> [String: Int] {
         let query = """
-            SELECT proTxHash, normalizedLabel, choice, contenderIdentityId, castAt, castCount
+            SELECT normalizedLabel, COUNT(*)
             FROM masternode_vote_history
-            WHERE network = ? AND normalizedLabel IN (\(placeholders))
-            ORDER BY castAt DESC
+            WHERE network = ?
+            GROUP BY normalizedLabel
         """
-        let bindings: [Binding?] = [network] + normalizedLabels.sorted().map { $0 as Binding? }
         do {
-            return try db.prepare(query, bindings).compactMap(Self.record(from:))
+            var counts: [String: Int] = [:]
+            for row in try db.prepare(query, [network]) {
+                guard let label = row[0] as? String, let count = row[1] as? Int64 else { continue }
+                counts[label] = Int(count)
+            }
+            return counts
         } catch {
-            DWLogger.log("VoteHistoryDAO: votes(forContests:) failed: \(error)")
-            return nil
+            DWLogger.log("VoteHistoryDAO: voteCountsByContest failed: \(error)")
+            return [:]
         }
-    }
-
-    /// One `SELECT proTxHash, normalizedLabel, choice, contenderIdentityId,
-    /// castAt, castCount` row. `prepare` yields positional `[Binding?]` rows,
-    /// which is what a hand-written SELECT needs; `Row` subscripting is for
-    /// typed `Expression` columns.
-    private static func record(from row: [Binding?]) -> CastVoteRecord? {
-        guard let blob = row[0] as? Blob,
-              let label = row[1] as? String,
-              let kind = row[2] as? String,
-              let castAt = row[4] as? Int64,
-              let choice = VoteChoice(storageKind: kind, contenderId: row[3] as? String)
-        else { return nil }
-        return CastVoteRecord(
-            proTxHash: Data(blob.bytes),
-            normalizedLabel: label,
-            choice: choice,
-            castAt: Date(timeIntervalSince1970: Double(castAt) / 1000),
-            castCount: Int(row[5] as? Int64 ?? 1))
     }
 
     nonisolated func deleteAll() {

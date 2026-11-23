@@ -16,15 +16,12 @@
 //
 import Foundation
 
-/// The balances of the auto-picked sources as they were read; nil where the read failed, so an unreadable source
-/// is unknown, never empty.
 struct SendBalances: Equatable {
-    let core: UInt64?
-    let shielded: UInt64?
-    let platform: UInt64?
+    let core: UInt64
+    let shielded: UInt64
+    let platform: UInt64
 
-    /// The balance held in `source`; nil when its read failed, and for Identity, whose funds are credits that
-    /// `SendBalances` does not hold.
+    /// The balance held in `source`; nil for Identity, whose funds are credits that `SendBalances` does not hold.
     func balance(of source: SendSource) -> UInt64? {
         switch source {
         case .core: return core
@@ -90,7 +87,7 @@ struct StartingSource: Equatable {
     let sourceChanged: Bool
 }
 
-/// The one rule set for every source and destination pair (ADR-0062; Identity to Shielded per the feature's ADR-0012,
+/// The one rule set for every source and destination pair (ADR-0038; Identity to Shielded per the feature's ADR-0012,
 /// which supersedes ADR-0041). Pure: no network, no state.
 enum SendPairPolicy {
     private static let autoPickOrder: [SendSource] = [.core, .shielded, .platform]
@@ -119,7 +116,8 @@ enum SendPairPolicy {
         case .platformAddress:
             return destination.isScriptForm ? .unavailable(.coreToScriptFormPlatformAddress) : .route(.coreToPlatform)
         case .identityID:
-            return isOwnIdentity(destination, facts) ? .route(.coreToIdentity) : .unavailable(.coreToOtherIdentity)
+            // Someone else's identity is paid through a lock that records it (dashpay/platform#5931).
+            return .route(.coreToIdentity)
         }
     }
 
@@ -155,9 +153,8 @@ enum SendPairPolicy {
         }
     }
 
-    /// The first of Core, Shielded, Platform (never Identity) that can pay and was read to hold more than zero;
-    /// when none was, the first that can pay. A balance that could not be read is unknown: never taken for one
-    /// that holds funds, and not skipped as an empty one. A pinned source that can pay is kept.
+    /// The first of Core, Shielded, Platform (never Identity) that holds more than zero and can pay; when none
+    /// does, the first that can pay, at 0. A pinned source that can pay is kept.
     static func startingSource(destination: Destination, balances: SendBalances, pinned: SendSource?,
                                facts: SendPairFacts) -> StartingSource {
         func canPay(_ source: SendSource) -> Bool {
@@ -168,7 +165,7 @@ enum SendPairPolicy {
             return StartingSource(source: pinned, sourceChanged: false)
         }
         let candidates = autoPickOrder.filter(canPay)
-        let funded = candidates.first { balances.balance(of: $0).map { $0 > 0 } ?? false }
+        let funded = candidates.first { (balances.balance(of: $0) ?? 0) > 0 }
         let picked = funded ?? candidates.first ?? .core
         return StartingSource(source: picked, sourceChanged: pinned != nil)
     }

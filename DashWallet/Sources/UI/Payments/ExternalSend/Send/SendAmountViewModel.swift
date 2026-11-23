@@ -208,11 +208,29 @@ final class SendAmountViewModel: ObservableObject {
         case ready
     }
 
-    /// What Send knows about the source; `state` and Continue derive from it.
-    @Published private(set) var facts = SourceFacts(source: .core, route: nil)
+    @Published private(set) var source: SendSource = .core
+    @Published private(set) var route: SendRoute?
+    /// The source's balance in duffs (an identity's credits already converted); nil when it could not be read.
+    @Published private(set) var sourceBalanceDuffs: UInt64?
     @Published private(set) var unit: InternalTransferUnit = .dash
     @Published private(set) var amountText = ""
     @Published private(set) var amountDuffs: UInt64 = 0
+    /// The fee estimate in the source's own unit (credits for an Identity); nil until known or when it failed.
+    @Published private(set) var fee: UInt64?
+    @Published private var isEstimating = false
+    /// The new source's balance is being read; until it lands no amount is checked against the old one.
+    @Published private var isReadingBalance = false
+    @Published private var isMax = false
+    /// The sweep credits of the last planned Max; handed on only while the amount is that Max.
+    private var maxSweepCredits: UInt64?
+    /// The Max plans still running; Continue waits for them.
+    @Published private var maxPlansRunning = 0
+    /// Confirm refused this typed amount on its binding fee, which can be above Send's estimate. Holds until the
+    /// amount or the source changes.
+    @Published private var confirmRefusedAmount = false
+    /// The route's funding step cannot pay the estimated amount (`SendMaxPlanning.canFund`).
+    @Published private var fundingRefusedAmount = false
+    @Published private var estimateFailed = false
     /// The note that says why the source was changed, until the holder picks a source.
     @Published private(set) var sourceChangedNotice: String?
     /// Continue's handler is still running (it authenticates and prepares the send).
@@ -234,16 +252,19 @@ final class SendAmountViewModel: ObservableObject {
     private let converter: SendAmountConverting
     private let currentIdentity: CurrentIdentityReading
     private let ownShieldedAddress: OwnShieldedAddressReading
-    private var pairFacts = SendPairFacts(ownIdentityID: nil)
+    private var facts = SendPairFacts(ownIdentityID: nil)
     /// `load` has run: the screen's `.task` runs again whenever the view reappears, and that must not reset a picked
     /// source or a typed amount.
     private var didLoad = false
-    /// The source operation running: the read of a source's balance and what follows it. A newer source operation
-    /// cancels it, and a cancelled one changes nothing.
-    private var sourceTask: Task<Void, Never>?
-    /// The amount operation running: an estimate or a Max plan. A newer one or a source operation cancels it, and a
-    /// cancelled one changes nothing.
-    private var amountTask: Task<Void, Never>?
+    /// The source's balance in its own unit, for `AmountRules`.
+    private var nativeBalance: UInt64?
+    private var estimateGeneration = 0
+    /// Bumped by every source change and amount edit, so a Max plan that one overtook is dropped.
+    private var editGeneration = 0
+    /// Counts source switches, so a balance read a newer switch overtook is dropped.
+    private var sourceGeneration = 0
+    /// The route `fee` was estimated for; nil while no estimate has succeeded.
+    private var feeRoute: SendRoute?
 
     init(destination: Destination, pinnedSource: SendSource?, recipient: IdentityRecipient? = nil,
          balances: ExternalSendBalanceReading = LiveExternalSendBalances(),
@@ -294,30 +315,6 @@ final class SendAmountViewModel: ObservableObject {
         case .platformAddress: return DashIcon.Features.platform.source
         case .identityID: return DashIcon.Features.identity.source
         }
-    }
-
-    var source: SendSource { facts.source }
-    var route: SendRoute? { facts.route }
-    /// The source's balance in duffs (an identity's credits already converted); nil while it is read or when it could
-    /// not be read.
-    var sourceBalanceDuffs: UInt64? {
-        facts.knownBalance.map { source == .identity ? AmountRules.dashValue(of: $0) : $0 }
-    }
-
-    /// The fee estimate in the source's own unit (credits for an Identity); nil until known or when it failed.
-    var fee: UInt64? { facts.knownFee }
-
-    private var nativeBalance: UInt64? { facts.knownBalance }
-
-    private var isMax: Bool {
-        if case .planned = facts.max { return true }
-        return false
-    }
-
-    /// The amount is a Max that a source or balance change plans again: planned, or being planned again. A Max tap
-    /// whose plan has not landed is not one yet.
-    private var isMaxAmount: Bool {
-        isMax || facts.max == .replanning
     }
 
     var sourceTitle: String { Self.title(of: source) }
@@ -407,30 +404,24 @@ final class SendAmountViewModel: ObservableObject {
         state == .feeFailed ? Self.feeFailureText : nil
     }
 
-    /// From `facts` and the amount alone. A balance, fee or funding check that could not be read offers Try again;
-    /// an unknown balance is never taken for too little.
     var state: State {
-        if facts.balance == .loading || facts.fee == .pending { return .estimating }
-        if facts.fee == .failed || facts.funding == .unknown { return .feeFailed }
-        if amountDuffs == 0 { return facts.balance == .known(0) ? .notEnough : .amountEmpty }
-        if facts.balance == .unknown { return .feeFailed }
+        if isEstimating || isReadingBalance { return .estimating }
+        if estimateFailed { return .feeFailed }
+        if amountDuffs == 0 { return sourceBalanceDuffs == 0 ? .notEnough : .amountEmpty }
         if route == .coreToIdentity, amountDuffs < DWIdentityRegistrationCoordinator.minimumCoreTopUpDuffs {
             return .belowMinimum
         }
-        if isMax { return facts.funding == .refused ? .notEnough : .ready }
-        return isAffordable && !facts.confirmRefusedAmount ? .ready : .notEnough
+        if isMax { return fundingRefusedAmount ? .notEnough : .ready }
+        return isAffordable && !confirmRefusedAmount ? .ready : .notEnough
     }
 
     /// The Core source cannot send during a restored wallet's first sync; the other sources can.
     var isBlockedBySync: Bool { source == .core && isInitialRestoreSyncRunning }
 
     /// A Max plan is running: its amount is not in yet.
-    var isPlanningMax: Bool { facts.max == .planning || facts.max == .replanning }
+    var isPlanningMax: Bool { maxPlansRunning > 0 }
 
-    /// Off while the funding check of the amount is pending, even with a known fee.
-    var isContinueEnabled: Bool {
-        state == .ready && facts.funding != .pending && !isContinuing && !isBlockedBySync && !isPlanningMax
-    }
+    var isContinueEnabled: Bool { state == .ready && !isContinuing && !isBlockedBySync && !isPlanningMax }
     var isContinueLoading: Bool { state == .estimating || isContinuing }
     /// Off while a Max plan runs, so a second tap cannot start a plan that races the first one.
     var isMaxEnabled: Bool {
@@ -449,27 +440,21 @@ final class SendAmountViewModel: ObservableObject {
             amountDuffs = linked
             amountText = unit == .dash ? Self.typed(linked.dashAmount, digits: 8) : shownText(forDuffs: linked)
         }
-        // A source operation: a source picked while the balances are read cancels it, and the pick stays.
-        sourceTask?.cancel()
-        let reading = Task {
-            pairFacts = SendPairFacts(
-                ownIdentityID: await currentIdentity.currentIdentity()?.id,
-                ownShieldedRaw43: await ownShieldedAddress.ownShieldedAddress())
-            let core = await balances.spendableBalance(of: .core)
-            let shielded = await balances.spendableBalance(of: .shielded)
-            let platform = await balances.spendableBalance(of: .platform)
-            guard !Task.isCancelled else { return }
-            let starting = SendPairPolicy.startingSource(
-                destination: destination, balances: SendBalances(core: core, shielded: shielded, platform: platform),
-                pinned: pinnedSource, facts: pairFacts)
-            await readSource(starting.source) {
-                self.sourceChangedNotice = starting.sourceChanged
-                    ? self.changedNotice(replacing: self.pinnedSource, with: starting.source) : nil
-                await self.runEstimate()
-            }
-        }
-        sourceTask = reading
-        await reading.value
+        let sourceGenerationAtStart = sourceGeneration
+        isReadingBalance = true
+        facts = SendPairFacts(ownIdentityID: await currentIdentity.currentIdentity()?.id,
+                              ownShieldedRaw43: await ownShieldedAddress.ownShieldedAddress())
+        let core = await balances.spendableBalance(of: .core) ?? 0
+        let shielded = await balances.spendableBalance(of: .shielded) ?? 0
+        let platform = await balances.spendableBalance(of: .platform) ?? 0
+        guard sourceGeneration == sourceGenerationAtStart else { return }
+        let starting = SendPairPolicy.startingSource(
+            destination: destination, balances: SendBalances(core: core, shielded: shielded, platform: platform),
+            pinned: pinnedSource, facts: facts)
+        guard await setSource(starting.source) else { return }
+        sourceChangedNotice = starting.sourceChanged
+            ? changedNotice(replacing: pinnedSource, with: starting.source) : nil
+        await runEstimate()
     }
 
     func setUnit(_ newUnit: InternalTransferUnit) {
@@ -487,8 +472,9 @@ final class SendAmountViewModel: ObservableObject {
         let value = Decimal(string: text.replacingOccurrences(of: ",", with: "."),
                             locale: Locale(identifier: "en_US_POSIX")) ?? 0
         amountText = text
-        facts.max = nil
-        facts.confirmRefusedAmount = false
+        editGeneration += 1
+        isMax = false
+        confirmRefusedAmount = false
         switch unit {
         case .dash: amountDuffs = Self.duffs(of: value) ?? 0
         case .fiat: amountDuffs = value > 0 ? (converter.duffs(forFiat: value) ?? 0) : 0
@@ -505,35 +491,36 @@ final class SendAmountViewModel: ObservableObject {
     }
 
     func tapMax() async {
-        guard isMaxEnabled, await planMax() else { return }
+        guard isMaxEnabled else { return }
+        await planMax()
         await runEstimate()
     }
 
     func pickSource(_ newSource: SendSource) async {
-        guard case .route = SendPairPolicy.decide(source: newSource, destination: destination, facts: pairFacts) else {
+        guard case .route = SendPairPolicy.decide(source: newSource, destination: destination, facts: facts) else {
             return
         }
         sourceChangedNotice = nil
-        let wasMax = isMaxAmount
-        await readSource(newSource, max: wasMax ? .replanning : nil) {
-            if wasMax {
-                // The Identity Max is planned from the fee, so it needs the new route's fee, not the old one's.
-                if newSource == .identity { guard await self.runEstimate() else { return } }
-                guard await self.planMax() else { return }
-            }
-            await self.runEstimate()
+        confirmRefusedAmount = false
+        startEstimating()
+        guard await setSource(newSource) else { return }
+        if isMax {
+            // The Identity Max is planned from the fee, so it needs the new route's fee, not the old one's.
+            if newSource == .identity { await runEstimate() }
+            await planMax()
         }
+        await runEstimate()
     }
 
     /// Confirm found the balance no longer covers the binding fee: read the balance again, plan a Max amount
     /// again and estimate once more. A typed amount stays not enough until it or the source changes.
     func confirmReportedNotEnough() async {
-        let wasMax = isMaxAmount
-        await readSource(source, max: wasMax ? .replanning : nil, confirmRefusedAmount: !wasMax) {
-            if wasMax { guard await self.planMax() else { return } }
-            self.facts.confirmRefusedAmount = !self.isMax
-            await self.runEstimate()
-        }
+        confirmRefusedAmount = !isMax
+        startEstimating()
+        guard await setSource(source) else { return }
+        if isMax { await planMax() }
+        confirmRefusedAmount = !isMax
+        await runEstimate()
     }
 
     /// The send was refused for the restore sync: reads the gate again, as the refusal can come before its sync state
@@ -545,30 +532,21 @@ final class SendAmountViewModel: ObservableObject {
     /// Confirm could not read the binding fee or the balance: Send shows that the fee could not be calculated, and
     /// Try again estimates anew.
     func confirmReportedFeeFailure() {
-        facts.fee = .failed
+        fee = nil
+        feeRoute = nil
+        estimateFailed = true
     }
 
-    /// Estimates again, and reads the balance again first when it could not be read. A Max re-plan it overtakes
-    /// ends, so the amount stays as typed.
     func retryFee() async {
-        if facts.max == .replanning { facts.max = nil }
-        guard facts.balance == .unknown else {
-            await runEstimate()
-            return
-        }
-        await readSource(source, max: facts.max, confirmRefusedAmount: facts.confirmRefusedAmount) {
-            await self.runEstimate()
-        }
+        await runEstimate()
     }
 
     func proceed() async {
         guard isContinueEnabled, let route else { return }
         isContinuing = true
         defer { isContinuing = false }
-        var sweepCredits: UInt64?
-        if case .planned(let credits) = facts.max { sweepCredits = credits }
         await onContinue?(SendAmountRequest(route: route, destination: destination, amount: amountDuffs, isMax: isMax,
-                                            sweepCredits: sweepCredits))
+                                            sweepCredits: isMax ? maxSweepCredits : nil))
     }
 
     #if DEBUG
@@ -578,17 +556,18 @@ final class SendAmountViewModel: ObservableObject {
                     isEstimating: Bool = false, estimateFailed: Bool = false,
                     sourceChangedNotice: String? = nil, initialRestoreSyncRunning: Bool = false,
                     ownIdentityID: String? = nil) {
-        pairFacts = SendPairFacts(ownIdentityID: ownIdentityID)
-        let route = SendPairPolicy.decide(source: source, destination: destination, facts: pairFacts).route
-        var preview = SourceFacts(source: source, route: route)
-        preview.balance = balanceDuffs.map { .known($0) } ?? .unknown
-        preview.fee = isEstimating ? .pending : estimateFailed ? .failed : fee.map { .known($0) } ?? .failed
-        preview.funding = .ok
-        preview.max = isMax ? .planned(sweepCredits: nil) : nil
-        facts = preview
+        facts = SendPairFacts(ownIdentityID: ownIdentityID)
+        self.source = source
+        route = SendPairPolicy.decide(source: source, destination: destination, facts: facts).route
+        sourceBalanceDuffs = balanceDuffs
+        nativeBalance = balanceDuffs
         self.unit = unit
         self.amountText = amountText
         self.amountDuffs = amountDuffs
+        self.fee = fee
+        self.isMax = isMax
+        self.isEstimating = isEstimating
+        self.estimateFailed = estimateFailed
         self.sourceChangedNotice = sourceChangedNotice
         isInitialRestoreSyncRunning = initialRestoreSyncRunning
     }
@@ -671,7 +650,7 @@ final class SendAmountViewModel: ObservableObject {
     private var isAffordable: Bool {
         guard let fee, let nativeBalance else { return false }
         guard let native = source == .identity ? amountCredits : amountDuffs else { return false }
-        return facts.funding != .refused
+        return !fundingRefusedAmount
             && AmountRules.check(amount: native, source: source, balance: nativeBalance, fee: fee) != .notEnough
     }
 
@@ -686,45 +665,28 @@ final class SendAmountViewModel: ObservableObject {
     private func changedNotice(replacing pinned: SendSource?, with replacement: SendSource) -> String? {
         guard let pinned,
               case .unavailable(let reason) = SendPairPolicy.decide(
-                  source: pinned, destination: destination, facts: pairFacts) else { return nil }
+                  source: pinned, destination: destination, facts: facts) else { return nil }
         let name = Self.title(of: replacement)
         return String(format: NSLocalizedString("%@, so the source was changed to %@.", comment: "External send"),
                       reason.localizedMessage, name)
     }
 
-    /// A source operation: cancels the running operations, starts a fresh snapshot for `newSource`, reads its
-    /// balance, then runs `work`. A newer source operation cancels it: that one owns the snapshot and what follows,
-    /// so `work` ends at the first step that reports it was overtaken, and every later step starts nothing.
-    private func readSource(_ newSource: SendSource, max: SourceFacts.Max? = nil, confirmRefusedAmount: Bool = false,
-                            then work: @escaping @MainActor () async -> Void) async {
-        sourceTask?.cancel()
-        amountTask?.cancel()
-        facts = SourceFacts(
-            source: newSource, route: SendPairPolicy.decide(source: newSource, destination: destination,
-                                                            facts: pairFacts).route,
-            max: max, confirmRefusedAmount: confirmRefusedAmount)
-        let reading = Task {
-            let balance = await balances.spendableBalance(of: newSource)
-            guard !Task.isCancelled else { return }
-            facts.balance = balance.map { .known($0) } ?? .unknown
-            await work()
-        }
-        sourceTask = reading
-        await reading.value
-    }
-
-    /// An amount operation: cancels the running one (a Max plan it overtook is dropped) and runs `work`, which
-    /// changes nothing once a newer operation cancelled it. Starts nothing when its caller was cancelled. Returns
-    /// false when it or its caller was overtaken, so the caller stops there.
+    /// Switches the source and reads its balance again. Returns false when a newer switch overtook the read: that
+    /// switch owns the balance, the reading flag and what follows, so the caller stops.
     @discardableResult
-    private func runAmountOperation(_ work: @escaping @MainActor () async -> Void) async -> Bool {
-        guard !Task.isCancelled else { return false }
-        amountTask?.cancel()
-        if facts.max == .planning { facts.max = nil }
-        let task = Task { await work() }
-        amountTask = task
-        await task.value
-        return !task.isCancelled && !Task.isCancelled
+    private func setSource(_ newSource: SendSource) async -> Bool {
+        editGeneration += 1
+        sourceGeneration += 1
+        let generation = sourceGeneration
+        source = newSource
+        route = SendPairPolicy.decide(source: newSource, destination: destination, facts: facts).route
+        isReadingBalance = true
+        let balance = await balances.spendableBalance(of: newSource)
+        guard generation == sourceGeneration else { return false }
+        nativeBalance = balance
+        isReadingBalance = false
+        sourceBalanceDuffs = newSource == .identity ? nativeBalance.map(AmountRules.dashValue(of:)) : nativeBalance
+        return true
     }
 
     /// The text the field shows for `duffs` in the current unit.
@@ -737,28 +699,32 @@ final class SendAmountViewModel: ObservableObject {
 
     /// Fills the Max amount: the route's planner, or the Identity rule. When nothing can be planned the amount stays
     /// as it is and is no longer a Max, so the balance check applies to it. A plan that a source change or an amount
-    /// edit overtook while it ran is dropped: its amount is not for the route or the amount now on screen. Returns
-    /// false when it was overtaken.
-    @discardableResult
-    private func planMax() async -> Bool {
-        guard let route else { return true }
-        return await runAmountOperation {
-            if self.facts.max != .replanning { self.facts.max = .planning }
-            let plan: SendMaxPlan?
-            if self.source == .identity {
-                plan = await self.identityMaxDuffs().map { SendMaxPlan(duffs: $0, sweepCredits: nil) }
-            } else {
-                plan = await self.maxPlanner.maxPlan(route: route)
-            }
-            guard !Task.isCancelled else { return }
-            guard let plan else {
-                self.facts.max = nil
-                return
-            }
-            self.amountDuffs = plan.duffs
-            self.amountText = plan.duffs > 0 ? self.shownText(forDuffs: plan.duffs) : ""
-            self.facts.max = plan.duffs > 0 ? .planned(sweepCredits: plan.sweepCredits) : nil
+    /// edit overtook while it ran is dropped: its amount is not for the route or the amount now on screen.
+    private func planMax() async {
+        guard let route else { return }
+        let generation = editGeneration
+        let plannedSource = source
+        maxPlansRunning += 1
+        defer { maxPlansRunning -= 1 }
+        let planned: UInt64?
+        let sweepCredits: UInt64?
+        if source == .identity {
+            planned = await identityMaxDuffs()
+            sweepCredits = nil
+        } else {
+            let plan = await maxPlanner.maxPlan(route: route)
+            planned = plan?.duffs
+            sweepCredits = plan?.sweepCredits
         }
+        guard generation == editGeneration, plannedSource == source, route == self.route else { return }
+        maxSweepCredits = sweepCredits
+        guard let planned else {
+            isMax = false
+            return
+        }
+        amountDuffs = planned
+        amountText = planned > 0 ? shownText(forDuffs: planned) : ""
+        isMax = planned > 0
     }
 
     private func identityMaxDuffs() async -> UInt64? {
@@ -769,31 +735,43 @@ final class SendAmountViewModel: ObservableObject {
         }
     }
 
+    /// Estimating from here on, so Continue never goes on with the old balance and fee; an estimate already running
+    /// is overtaken, so its answer is dropped.
+    private func startEstimating() {
+        estimateGeneration += 1
+        isEstimating = true
+    }
+
     /// Estimates the fee for the route and amount and asks whether the route's funding step can pay the amount; an
-    /// unknown answer fails like the fee, with Try again. An answer that a later operation has overtaken is dropped.
+    /// unknown answer fails like the fee, with Try again. An answer that a later estimate has overtaken is dropped.
     /// With `reusingKnownFee`, a route whose fee ignores the amount keeps the fee it already has, without Continue
-    /// turning into progress; a failed or running estimate is never reused. The funding check runs either way.
-    @discardableResult
-    private func runEstimate(reusingKnownFee: Bool = false) async -> Bool {
-        guard let route else { return true }
-        return await runAmountOperation {
-            let amount = self.amountDuffs
-            let reused = reusingKnownFee && route.hasAmountIndependentFee ? self.facts.knownFee : nil
-            if reused == nil { self.facts.fee = .pending }
-            self.facts.funding = .pending
-            let result: SendFeeEstimate
-            if let reused {
-                result = .fee(reused)
-            } else {
-                result = await self.feeEstimator.estimate(route: route, amount: amount)
-            }
-            let fundable = await self.maxPlanner.canFund(route: route, amount: amount)
-            guard !Task.isCancelled else { return }
-            self.facts.funding = SourceFacts.Funding(fundable)
-            switch result {
-            case .fee(let value, _): self.facts.fee = .known(value)
-            case .unavailable: self.facts.fee = .failed
-            }
+    /// turning into progress; a failed or running estimate is never reused.
+    private func runEstimate(reusingKnownFee: Bool = false) async {
+        guard let route else { return }
+        estimateGeneration += 1
+        let generation = estimateGeneration
+        let amount = amountDuffs
+        let result: SendFeeEstimate
+        if reusingKnownFee, route.hasAmountIndependentFee, feeRoute == route, let fee, !estimateFailed,
+           !isEstimating {
+            result = .fee(fee)
+        } else {
+            isEstimating = true
+            result = await feeEstimator.estimate(route: route, amount: amount)
+        }
+        let fundable = await maxPlanner.canFund(route: route, amount: amount)
+        guard generation == estimateGeneration else { return }
+        isEstimating = false
+        fundingRefusedAmount = fundable == .notFundable
+        switch result {
+        case .fee(let value, _) where fundable != .unknown:
+            fee = value
+            feeRoute = route
+            estimateFailed = false
+        case .fee, .unavailable:
+            fee = nil
+            feeRoute = nil
+            estimateFailed = true
         }
     }
 }

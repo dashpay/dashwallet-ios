@@ -18,8 +18,6 @@ where they disagree, ADR-0001 wins.
 | [0010](0010-probe-live-swap-routes-with-address-free-forced-quotes.md) | Probe live routes with address-free quotes forced to one provider | swap | Proposed | |
 | [0011](0011-keep-live-swap-route-answers-in-one-shared-in-memory-store.md) | Keep live route answers in one shared in-memory store with two-step ageing | swap | Proposed | |
 | [0012](0012-detect-a-near-outage-from-sentinel-coins.md) | Detect a NEAR outage from sentinel coins before per-coin checks | swap | Proposed | |
-| [0013](0013-treat-dashuikit-and-swiftdashsdk-as-library-surfaces.md) | Treat DashUIKit and SwiftDashSDK as library surfaces of this feature | ui | Proposed | |
-| [0014](0014-split-voting-state-into-a-shared-store-and-per-screen-view-models.md) | Split voting state into a shared store and per-screen view models | ui | Proposed | |
 | [0015](0015-fence-a-pending-sign-in-on-disconnect.md) | Fence a pending sign-in on disconnect and recover forward only | platform | Proposed | |
 | [0016](0016-turn-off-unrecorded-keys-on-disconnect-without-asking.md) | Turn off unrecorded keys on disconnect without asking | platform | Proposed | |
 | [0017](0017-answer-an-app-connect-request-at-most-once.md) | Answer an App Connect request at most once | platform | Proposed | |
@@ -39,10 +37,11 @@ where they disagree, ADR-0001 wins.
 | [0031](0031-turn-off-unattributed-dashpay-profile-keys-with-any-disconnect.md) | Turn off unattributed DashPay profile keys with any disconnect | keys | Proposed | |
 | [0032](0032-pass-owners-read-from-platform-into-the-pure-projection.md) | Pass the owners read from Platform into the pure App Connect projection | platform | Proposed | |
 | [0033](0033-turn-off-only-the-unrecorded-keys-the-question-listed.md) | Turn off only the unrecorded keys the question listed | keys | Superseded | [0016](0016-turn-off-unrecorded-keys-on-disconnect-without-asking.md) |
-| [0035](0035-run-every-vote-through-a-pure-vote-attempt-state-machine.md) | Run every vote through a pure vote-attempt state machine | ui | Proposed | |
+| [0034](0034-subtract-own-top-ups-via-a-typed-top-up-event.md) | Subtract own top-ups via a typed top-up event | ui | Proposed | |
+| [0035](0035-model-receive-options-as-a-receive-only-enum.md) | Model Receive options as a Receive-only enum | ui | Proposed | |
 | [0036](0036-ship-the-ios-screens-and-the-sdk-binding-as-two-surfaces.md) | Ship the iOS screens and the SDK binding as two surfaces | platform | Proposed | |
-| [0037](0037-cast-quick-voting-sequentially-under-one-authentication.md) | Cast Quick voting sequentially under one authentication | ui | Proposed | |
-| [0038](0038-let-only-the-voting-store-write-the-remembered-node-choice.md) | Let only the voting store write the remembered node choice | ui | Proposed | |
+| [0037](0037-build-external-send-as-a-new-module-over-the-existing-spend-seams.md) | Build external send as a new module over the existing spend seams | payments | Proposed | |
+| [0038](0038-decide-every-source-and-destination-pair-in-one-policy.md) | Decide every source and destination pair in one policy | payments | Proposed | |
 | [0039](0039-estimate-the-fee-on-send-and-recompute-it-on-confirm.md) | Estimate the fee on Send and recompute it on Confirm | payments | Superseded | [0043](0043-bind-the-fee-where-the-sdk-can-and-mark-the-rest-as-an-estimate.md) |
 | [0040](0040-report-three-send-outcomes-and-retry-only-when-nothing-left-the-source.md) | Report send outcomes and retry only when nothing left the source | payments | Proposed | |
 | [0041](0041-keep-identity-to-shielded-off-in-this-release.md) | Keep Identity to Shielded off in this release | payments | Proposed | |
@@ -50,13 +49,7 @@ where they disagree, ADR-0001 wins.
 | [0043](0043-bind-the-fee-where-the-sdk-can-and-mark-the-rest-as-an-estimate.md) | Bind the fee where the SDK can and mark the rest as an estimate | payments | Proposed | |
 | [0044](0044-top-up-an-identity-from-shielded-in-one-step.md) | Top up an identity from Shielded in one step | payments | Proposed | |
 | [0045](0045-add-an-external-identity-top-up-and-a-non-blocking-identity-read-to-the-sdk.md) | Add an external-identity top-up and a non-blocking identity read to the SDK | platform | Proposed | |
-| [0049](0049-record-the-publish-start-on-the-connection-intent.md) | Record the publish start on the connection intent | platform | Accepted | |
-| [0050](0050-bound-an-unresolved-publish-by-48-hours-of-proved-platform-block-time.md) | Bound an unresolved publish by 48 hours of proved Platform block time | platform | Accepted | |
-| [0052](0052-refuse-response-removed-at-its-one-write-point-while-the-publish-is-unresolved.md) | Refuse "response removed" at its one write point while the publish is unresolved | platform | Accepted | |
 | [0053](0053-open-dashconnect-on-mainnet-and-gate-each-request-by-protocol-14.md) | Open DashConnect on mainnet and gate each request by protocol 14 | platform | Proposed | |
-| [0054](0054-build-external-send-as-a-new-module-over-the-existing-spend-seams.md) | Build external send as a new module over the existing spend seams | payments | Proposed | |
-| [0062](0062-decide-every-source-and-destination-pair-in-one-policy.md) | Decide every source and destination pair in one policy | payments | Proposed | |
-| [0063](0063-give-the-send-flow-one-typed-scan-input-one-lifecycle-owner-and-one-source-snapshot.md) | Give the send flow one typed scan input, one lifecycle owner and one source snapshot | payments | Proposed | |
 
 Areas: `spv`, `platform`, `keys`, `storage`, `coinjoin`, `payments`, `swap`, `ui`, `build`, `process`. Each ADR takes one; a new
 Area is added to this list in the PR that first needs it.

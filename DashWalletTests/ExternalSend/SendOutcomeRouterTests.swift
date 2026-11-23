@@ -89,7 +89,7 @@ final class SendOutcomeRouterTests: XCTestCase {
         XCTAssertEqual(
             router.destination(for: .inFlight, request: request()),
             .infoToast(title: "Send in progress",
-                       message: "Don't send it again. It can take a few minutes to finish."))
+                       message: "It will finish on its own. You don't need to send it again."))
     }
 
     func testInFlightNeverOffersRetryOnAnyRoute() {
@@ -117,8 +117,8 @@ final class SendOutcomeRouterTests: XCTestCase {
     func testTheToastShowsTheTitleBeforeTheMessage() {
         XCTAssertEqual(
             ExternalSendHostController.toastText(
-                title: "Send in progress", message: "Don't send it again. It can take a few minutes to finish."),
-            "Send in progress. Don't send it again. It can take a few minutes to finish.")
+                title: "Send in progress", message: "It will finish on its own. You don't need to send it again."),
+            "Send in progress. It will finish on its own. You don't need to send it again.")
         XCTAssertEqual(ExternalSendHostController.toastText(title: "Done!", message: "All set."), "Done! All set.")
         XCTAssertEqual(ExternalSendHostController.toastText(title: "", message: "All set."), "All set.")
     }

@@ -42,8 +42,7 @@ struct ApproveTokenPurchaseSheet: View {
             showBackButton: .constant(false),
             isDismissalEnabled: .constant(!isLoading),
             isCloseButtonEnabled: !isLoading,
-            onClose: onDeny,
-            background: Color.primaryBackground
+            onClose: onDeny
         ) {
             VStack(spacing: 0) {
                 // The detail rows grow with Dynamic Type; without a scroll
@@ -146,6 +145,7 @@ struct ApproveTokenPurchaseSheet: View {
                 .padding(.top, 12)
                 .padding(.bottom, 20)
             }
+            .background(Color.primaryBackground)
         }
     }
 

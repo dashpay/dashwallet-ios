@@ -16,7 +16,7 @@ final class PaymentProtocolTests: XCTestCase {
 
     // A real x509+sha256-signed PaymentRequest (1175 bytes) from the test server:
     // network "test", one 0.001-DASH P2PKH output, merchant "Dash Sticker Shop".
-    static let signedRequestBase64 =
+    private static let signedRequestBase64 =
         "CAESC3g1MDkrc2hhMjU2GocGCoQGMIIDADCCAeigAwIBAgIJeF8eUl2va/tEMA0GCSqGSIb3DQEBCwUAMBwxGjAYBgNVBAMTEURhc2ggU3RpY2tlciBTaG9wMB4XDTI2MDYyOTA3MTI0MFoXDTI3MDYyOTA3MTI0MFowHDEaMBgGA1UEAxMRRGFzaCBTdGlja2VyIFNob3AwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCxelYthVoRtoiGR1BQ2tHnpw234RPUh6IIpx9u+Hikp8z2Ekk2NBqiFIPDi8Kd1RitITVn+/weivGJxOQ9K7iThUbHn8mw+iCIxWCMaWHUD+e2us2bDNgazibs7tpmaXTjK2vAcAgDRVBnlqiJG9i8+dE0nRynF5d8Yk8pzb9Nue4J5vkMYAYQ1tcuT2Lx2gTWDDOENyDW155TCjOmO9TkkCZkTQSYYV2YPKtEV8vaD/mtFDx6uhnYgxfqz4n1eK+a1gn1BYCRSI/KMugWU1Wk1caAkAB5fx7IeLIQU6rKz0kkyisVvaPfsnTdrHdeED+jrPWs/qyeQAuFB3fIvA+jAgMBAAGjRTBDMAwGA1UdEwQFMAMBAf8wCwYDVR0PBAQDAgL0MCYGA1UdEQQfMB2GG2h0dHA6Ly9leGFtcGxlLm9yZy93ZWJpZCNtZTANBgkqhkiG9w0BAQsFAAOCAQEAdyHL0WUTIyg8iwUQchYF4iS11Z6Qd9vmxD5wudeMDBfq6tJiIDfEvl1npnPogPo55EcmWBdwQWpaiV9sltCa+Y49JoOM65i/i+PjBWD3E9h0mAdNapm0yR/BgcyY+Co8LaIFnYo/9r3KV/OE7kOIVsQ2dcOgOn0sgCiPJSInHVXLQTjJUA53wlbibEzamA+GJxHHdvh2xgi+60tU0aCY+tp8OXN6bmaOZ9zXAd9HUhMJJRbCgvCFuz1UDz+pPbMA2KoY5MAJM7BvBVJe5x7tP6QuFqjHf0iL6v4tzIRZ2cOoGo/pkUfQAQBd420mNdirWDqkO9lktMwp7uJaHEKgeCJ5CgR0ZXN0Eh8IoI0GEhl2qRSqtEY2Cr6XL2tidvN0YYb+gsq9G4isGL3giNIGIM38iNIGKhlEYXNoIFN0aWNrZXIgLSAwLjAwMSBEQVNIMiZodHRwOi8vMTkyLjE2OC4wLjEwODozMDAwL3BheW1lbnQ/aWQ9MDoBMCqAAlyRLFTXZxc64H7iEoivPI4IEHQXSgfaQ0tFzK5piIXOv1Bb/Prk40GUhJcfJjk+WAZvxLFDwDg++KcWPTaMSF9797v5tFoGUfKAE1RldXUZekcB/r7eVuyYDpbmbTQKiNIGKLUi5FBmDN+3w2nS3zSwat9/ozel+iPNyaalJ2YYY2GcWnmtMVSAER2drCviPngYiY0bXDSx3t6/qyMTXLbAJo6J2NJr2+UeDXMsnBmq76x6+XFvA4vu7LKZf/86W+dgUgsiHW9GDDS+Xizm9qzaTbMukRHwfdFUxbUMcucz/Oltq17YxiXeBWIuWJ9AXdkzaMmko201pYltiQvQxO8="
 
     private var fixture: Data { Data(base64Encoded: Self.signedRequestBase64)! }
@@ -131,24 +131,9 @@ final class PaymentProtocolTests: XCTestCase {
         let verdict = PaymentRequestVerifier().verify(req)
         XCTAssertEqual(verdict.commonName, "Dash Sticker Shop")
         XCTAssertEqual(verdict.pkiType, "x509+sha256")
-        // In CI the self-signed cert is untrusted → not valid; the reason is the untrusted chain.
+        // In CI the self-signed cert is untrusted → not valid; message names the cert problem.
         XCTAssertFalse(verdict.isValid)
-        XCTAssertEqual(verdict.certificateFailure, .untrustedChain)
-        XCTAssertFalse(verdict.isExpired)
-    }
-
-    /// A signed request whose pki_data holds no certificate is refused as missing its
-    /// certificate, not as an unsupported signature type.
-    func testVerifierReportsMissingCertificate() throws {
-        let signed = try XCTUnwrap(PaymentRequest(fixture))
-        for pkiData in [nil, Data()] as [Data?] {
-            let req = PaymentRequest(pkiType: signed.pkiType, pkiData: pkiData,
-                                     serializedDetails: signed.serializedDetails, signature: signed.signature)
-            let verdict = PaymentRequestVerifier().verify(req)
-            XCTAssertFalse(verdict.isValid)
-            XCTAssertEqual(verdict.certificateFailure, .missingCertificate)
-            XCTAssertNil(verdict.commonName)
-        }
+        XCTAssertEqual(verdict.errorMessage?.contains("certificate"), true)
     }
 
     // MARK: - L2 verifier (expiry, unsigned)
@@ -163,8 +148,7 @@ final class PaymentProtocolTests: XCTestCase {
     func testExpiryRejectsPastRequest() {
         let verdict = PaymentRequestVerifier().verify(unsignedRequest(expires: 1)) // 1970
         XCTAssertFalse(verdict.isValid)
-        XCTAssertTrue(verdict.isExpired)
-        XCTAssertNil(verdict.certificateFailure)
+        XCTAssertEqual(verdict.errorMessage, "Request expired")
     }
 
     func testUnexpiredUnsignedIsValid() {
@@ -902,57 +886,9 @@ final class BIP70PaymentServiceTests: XCTestCase {
         await assertThrowsBIP70(
             try await service(FakeTransport(unsigned()), FakeWallet(), allowUntrusted: false)
                 .prepareForConfirmation(from: url, scheme: "dash", network: .testnet),
-            .unsignedRequest)
+            .untrustedCertificate(detail: "Unsigned request"))
         _ = try await service(FakeTransport(unsigned()), FakeWallet(), allowUntrusted: true)
             .prepareForConfirmation(from: url, scheme: "dash", network: .testnet)
-        XCTAssertEqual(BIP70Error.unsignedRequest.errorDescription, "Untrusted certificate - Unsigned request.")
-    }
-
-    /// A signed request whose chain is not trusted (the self-signed fixture in CI) is refused
-    /// with a typed reason, and the text names the problem once.
-    func testSignedUntrustedRequestThrowsTypedReason() async throws {
-        let fixture = try XCTUnwrap(Data(base64Encoded: PaymentProtocolTests.signedRequestBase64))
-        let req = try XCTUnwrap(PaymentRequest(fixture))
-        await assertThrowsBIP70(
-            try await service(FakeTransport(req), FakeWallet())
-                .prepareForConfirmation(from: url, scheme: "dash", network: .testnet),
-            .untrustedCertificate(.untrustedChain))
-        XCTAssertEqual(BIP70Error.untrustedCertificate(.untrustedChain).errorDescription, "Untrusted certificate.")
-    }
-
-    /// Every certificate-failure reason reads as one sentence from the text lists, with the
-    /// "Untrusted certificate" prefix once.
-    func testCertificateFailureTexts() {
-        let texts: [BIP70CertificateFailure: String] = [
-            .missingCertificate: "Untrusted certificate - Missing certificate.",
-            .untrustedChain: "Untrusted certificate.",
-            .invalidSignature: "Untrusted certificate - Invalid signature.",
-            .unsupportedSignatureType: "Untrusted certificate - Unsupported signature type.",
-        ]
-        for (failure, text) in texts {
-            XCTAssertEqual(BIP70Error.untrustedCertificate(failure).errorDescription, text)
-        }
-    }
-
-    /// A failed verdict maps to the error that names its reason: the certificate failure, or
-    /// expiry only when the verdict says the request expired.
-    func testVerdictErrorMapping() {
-        func verdict(_ pkiType: String, valid: Bool, failure: BIP70CertificateFailure? = nil,
-                     expired: Bool = false) -> PaymentRequestVerifier.Verdict {
-            PaymentRequestVerifier.Verdict(isValid: valid, commonName: nil, pkiType: pkiType,
-                                           certificateFailure: failure, isExpired: expired)
-        }
-        let error = BIP70PaymentService.verificationError(for:)
-        XCTAssertNil(error(verdict("x509+sha256", valid: true)))
-        XCTAssertNil(error(verdict("none", valid: true)))
-        XCTAssertEqual(error(verdict("x509+sha256", valid: false, expired: true)), .expired)
-        XCTAssertEqual(error(verdict("none", valid: false, expired: true)), .expired)
-        let failures: [BIP70CertificateFailure] = [.missingCertificate, .untrustedChain, .invalidSignature,
-                                                   .unsupportedSignatureType]
-        for failure in failures {
-            XCTAssertEqual(error(verdict("x509+sha256", valid: false, failure: failure)),
-                           .untrustedCertificate(failure))
-        }
     }
 
     func testCallbackURLFormat() async throws {

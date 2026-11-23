@@ -130,13 +130,6 @@ struct AssetLockRecoveryService {
     enum Outcome: Equatable {
         /// The transfer finished on Platform during this call.
         case completed
-        /// The lock was finished on Platform during this call, to the wallet's
-        /// own Shielded address, because nothing recorded where it was going
-        /// (`ShieldedResumeRecipient.Source.ownLegacy`). The interrupted
-        /// transfer may have been an internal one or a payment, so this is
-        /// reported as funds added to the Shielded balance, not as a
-        /// completed transfer.
-        case addedToOwnShielded
         /// Platform reported the outpoint already spent. That report is not
         /// quorum-authenticated, so it proves the retry has nothing left to
         /// do without proving this particular transfer succeeded — say that
@@ -196,10 +189,22 @@ struct AssetLockRecoveryService {
             // back — persisting an already-spent probe for it would report
             // "Already spent" for a transfer that may still be settling, and
             // would suppress the retry that settles it.
-            outcome = Self.outcome(
-                phase: coordinator.phase,
-                report: coordinator.lastResumeReport,
-                recipientSource: coordinator.lastResumeRecipientSource)
+            if coordinator.phase == .submittedUnconfirmed,
+               coordinator.lastResumeReport != .alreadyConsumed {
+                // The other producer of that phase: accepted, result unread.
+                // No probe — nothing here is evidence about the outpoint, and
+                // recording one would report "Already spent" for a transfer
+                // that may still be settling and suppress the retry that
+                // settles it. Reporting `.completed` would be worse still.
+                outcome = .submittedAwaitingSync
+            } else if coordinator.lastResumeReport == .alreadyConsumed {
+                // The coordinator records the advisory probe for its captured
+                // wallet, including calls made directly by the recovery sheet.
+                // Rust retains the nonterminal lock and its recovery proof.
+                outcome = .completionUnconfirmed
+            } else {
+                outcome = .completed
+            }
         default:
             throw RecoveryError.unsupportedRoute
         }
@@ -209,33 +214,6 @@ struct AssetLockRecoveryService {
         Self.logger.info(
             "🔁 LOCK-RETRY :: completed type=\(fundingTypeRaw, privacy: .public) outcome=\(String(describing: outcome), privacy: .public)")
         return outcome
-    }
-
-    /// What a coordinator resume that ended in `phase` without failing
-    /// established.
-    static func outcome(phase: ShieldedTransferCoordinator.Phase,
-                        report: ShieldedTransferCoordinator.ResumeReport?,
-                        recipientSource: ShieldedResumeRecipient.Source?) -> Outcome {
-        if phase == .submittedUnconfirmed, report != .alreadyConsumed {
-            // The other producer of that phase: accepted, result unread.
-            // No probe — nothing here is evidence about the outpoint, and
-            // recording one would report "Already spent" for a transfer
-            // that may still be settling and suppress the retry that
-            // settles it. Reporting `.completed` would be worse still.
-            return .submittedAwaitingSync
-        }
-        if report == .alreadyConsumed {
-            // The coordinator records the advisory probe for its captured
-            // wallet, including calls made directly by the recovery sheet.
-            // Rust retains the nonterminal lock and its recovery proof.
-            return .completionUnconfirmed
-        }
-        // Neither outcome above says where funds went, so the recipient's
-        // source matters only for a completion this call witnessed.
-        if ShieldedTransferCoordinator.resumePaidOwnBalanceWithoutRecord(phase: phase, source: recipientSource) {
-            return .addedToOwnShielded
-        }
-        return .completed
     }
 
     // MARK: - Bulk recovery
@@ -254,9 +232,6 @@ struct AssetLockRecoveryService {
     /// What a bulk pass ended up doing.
     struct BulkOutcome {
         var completed = 0
-        /// Finished to the wallet's own Shielded address because nothing
-        /// recorded where the lock was going (`Outcome.addedToOwnShielded`).
-        var addedToOwnShielded = 0
         var alreadySpent = 0
         /// Submitted, result not yet readable. Neither a win nor a failure —
         /// counted apart so the summary never folds it into "finished".
@@ -278,62 +253,7 @@ struct AssetLockRecoveryService {
         /// distinct from `cancelled`, which means the user backed out.
         var authFailureMessage: String?
 
-        var attempted: Int { completed + addedToOwnShielded + alreadySpent + awaitingSync + failed }
-
-        /// The pass's result line, one part per bucket that is not empty:
-        /// "finished", "added to your Shielded balance" and "already spent"
-        /// are different facts about the user's money, and only the first two
-        /// are completions this pass witnessed. The first failure's text
-        /// follows on its own line: a count of failures with no reason is
-        /// undiagnosable.
-        var summary: String {
-            var parts: [String] = []
-            if completed > 0 {
-                parts.append(String.localizedStringWithFormat(
-                    NSLocalizedString("%d finished", comment: "SPV diagnostics"),
-                    completed))
-            }
-            if addedToOwnShielded > 0 {
-                parts.append(String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "%d transfers added to your Shielded balance",
-                        comment: "SPV diagnostics: transfers finished to the wallet's own Shielded balance because their recipient was not on record"),
-                    addedToOwnShielded))
-            }
-            if alreadySpent > 0 {
-                parts.append(String.localizedStringWithFormat(
-                    NSLocalizedString("%d already spent", comment: "SPV diagnostics"),
-                    alreadySpent))
-            }
-            if awaitingSync > 0 {
-                parts.append(String.localizedStringWithFormat(
-                    NSLocalizedString("%d waiting for the network", comment: "SPV diagnostics"),
-                    awaitingSync))
-            }
-            if inProgress > 0 {
-                parts.append(String(
-                    format: NSLocalizedString("%d still in progress", comment: "SPV diagnostics"),
-                    inProgress))
-            }
-            if failed > 0 {
-                parts.append(String.localizedStringWithFormat(
-                    NSLocalizedString("%d could not be reached", comment: "SPV diagnostics"),
-                    failed))
-            }
-            if cancelled {
-                parts.append(NSLocalizedString("stopped early", comment: "SPV diagnostics"))
-            }
-            if stoppedAfterRepeatedFailures {
-                parts.append(NSLocalizedString("stopped after repeated failures", comment: "SPV diagnostics"))
-            }
-            var summary = parts.isEmpty
-                ? NSLocalizedString("Nothing to finish.", comment: "SPV diagnostics")
-                : parts.joined(separator: ", ")
-            if let reason = firstFailureMessage {
-                summary += "\n\(reason)"
-            }
-            return summary
-        }
+        var attempted: Int { completed + alreadySpent + awaitingSync + failed }
     }
 
     /// Consecutive failures after which the pass stops. A network refusing one
@@ -347,7 +267,6 @@ struct AssetLockRecoveryService {
     /// the only reason this bookkeeping was previously unpinned.
     enum BulkStep: Equatable {
         case completed
-        case addedToOwnShielded
         case alreadySpent
         case awaitingSync
         /// Refused because a running transfer is crediting the lock.
@@ -367,10 +286,6 @@ struct AssetLockRecoveryService {
         case .completed:
             consecutiveFailures = 0
             outcome.completed += 1
-        case .addedToOwnShielded:
-            // A completion this pass witnessed, counted apart for its wording.
-            consecutiveFailures = 0
-            outcome.addedToOwnShielded += 1
         case .alreadySpent:
             // Not a failure: the pass asked, got an answer, and there is
             // nothing left to do for this lock. It must reset the run for the
@@ -594,7 +509,6 @@ struct AssetLockRecoveryService {
                 let step: BulkStep
                 switch result {
                 case .completed: step = .completed
-                case .addedToOwnShielded: step = .addedToOwnShielded
                 case .completionUnconfirmed: step = .alreadySpent
                 case .submittedAwaitingSync: step = .awaitingSync
                 }
@@ -642,7 +556,8 @@ struct AssetLockRecoveryService {
             progress(index + 1, pending.count)
         }
 
-        DWLogger.log("LOCK-RETRY bulk finished completed=\(outcome.completed) addedToOwnShielded=\(outcome.addedToOwnShielded) alreadySpent=\(outcome.alreadySpent) awaitingSync=\(outcome.awaitingSync) inProgress=\(outcome.inProgress) failed=\(outcome.failed)")
+        DWLogger.log("LOCK-RETRY bulk finished completed=\(outcome.completed) alreadySpent=\(outcome.alreadySpent) awaitingSync=\(outcome.awaitingSync) inProgress=\(outcome.inProgress) failed=\(outcome.failed)")
+        Self.logger.info("🔁 LOCK-RETRY :: bulk finished completed=\(outcome.completed, privacy: .public) alreadySpent=\(outcome.alreadySpent, privacy: .public) awaitingSync=\(outcome.awaitingSync, privacy: .public) inProgress=\(outcome.inProgress, privacy: .public) failed=\(outcome.failed, privacy: .public)")
         return outcome
     }
 
@@ -716,6 +631,22 @@ struct AssetLockRecoveryService {
             Self.logger.error("🔁 LOCK-RETRY :: top-up aborted — no active wallet")
             throw RecoveryError.notReady
         }
+        // A lock built to top up someone else's identity records it (dashpay/platform#5931); the SDK resumes it only
+        // to that identity, and no Receipt is raised for it, as the wallet's own identity gains nothing.
+        if let container = SwiftDashSDKHost.shared.modelContainer,
+           let recipient = (try? Self.persistedLock(txidWire: txidWire, vout: vout, in: container.mainContext))?
+               .identityRecipient,
+           recipient != DWCurrentUserIdentityInfo.shared.identityId {
+            let walletIdHex = wallet.walletId.map { String(format: "%02x", $0) }.joined()
+            try await DWIdentityAuthorizer().authorize()
+            DWLogger.log("Asset lock retry: resuming a top-up to its recorded recipient")
+            return try await identityTopUpResumeOutcome(
+                txidWire: txidWire, vout: vout, walletIdHex: walletIdHex,
+                retryUnverifiedConsumption: retryUnverifiedConsumption
+            ) {
+                _ = try await wallet.resumeTopUpToRecordedRecipient(outPointTxid: txidWire, outPointVout: vout)
+            }
+        }
         guard let identityId = DWCurrentUserIdentityInfo.shared.identityId else {
             Self.logger.error("🔁 LOCK-RETRY :: top-up aborted — wallet has no identity")
             throw RecoveryError.noIdentity
@@ -726,10 +657,27 @@ struct AssetLockRecoveryService {
             txidWire: txidWire, vout: vout, walletIdHex: walletIdHex,
             retryUnverifiedConsumption: retryUnverifiedConsumption
         ) {
-            _ = try await wallet.resumeTopUpWithAssetLock(
-                identityId: identityId,
-                outPointTxid: txidWire,
-                outPointVout: vout)
+            let resume = {
+                try await wallet.resumeTopUpWithAssetLock(
+                    identityId: identityId,
+                    outPointTxid: txidWire,
+                    outPointVout: vout)
+            }
+            // Announced like every other own top-up (ADR-0034), so the watched
+            // Identity card raises no Receipt for it. The lock's value is the
+            // most it can add; without the lock row or a network it is not
+            // announced, as nothing true can be said about the credits.
+            if let network = SwiftDashSDKHost.shared.runningNetwork,
+               let container = SwiftDashSDKHost.shared.modelContainer,
+               let lock = try? Self.persistedLock(txidWire: txidWire, vout: vout, in: container.mainContext),
+               lock.amountDuffs > 0 {
+                _ = try await IdentityTopUpDidComplete.announcing(
+                    walletId: wallet.walletId, network: network, identityId: identityId,
+                    suppliedCredits: UInt64(lock.amountDuffs) * PlatformPaymentIdentityFundingPolicy.creditsPerDuff,
+                    resume)
+            } else {
+                _ = try await resume()
+            }
         }
         DWCurrentUserIdentityInfo.shared.refreshFromSDK()
         return outcome

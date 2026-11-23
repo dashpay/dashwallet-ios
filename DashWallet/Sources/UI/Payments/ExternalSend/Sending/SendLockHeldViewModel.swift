@@ -117,12 +117,6 @@ final class SendLockHeldViewModel: ObservableObject {
         switch outcome {
         case .completed:
             return .completed
-        case .addedToOwnShielded:
-            // Finished to the wallet's own Shielded address because the lock had no recorded recipient, so the
-            // transfer it was built for is not reported as completed.
-            return .info(NSLocalizedString(
-                "Funds added to your Shielded balance",
-                comment: "A transfer whose recipient was not on record was finished to the wallet's own Shielded balance"))
         case .completionUnconfirmed:
             return .info(NSLocalizedString(
                 "Already spent — nothing to transfer", comment: "Asset-lock retry found the lock already consumed"))

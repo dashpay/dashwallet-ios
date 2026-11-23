@@ -24,7 +24,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, strong) DWParsedPaymentURI *parsedURI;
 @property (nullable, nonatomic, strong) DWPaymentIntent *paymentIntent;
 @property (nullable, nonatomic, strong) id bip70Confirmation;
-@property (nonatomic, assign) BOOL requestCleared;
 
 - (instancetype)initWithSource:(DWPaymentInputSource)source;
 

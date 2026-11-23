@@ -23,8 +23,6 @@ class CoinbaseInfoViewController: UIViewController {
 
     @IBOutlet var contentView: UIView!
     @IBOutlet var actionButton: UIButton!
-    @IBOutlet var authorizationLimitLabel: UILabel!
-    @IBOutlet var changeLimitHintLabel: UILabel!
     @IBOutlet var hairline: UIView!
 
     @IBAction
@@ -51,10 +49,5 @@ extension CoinbaseInfoViewController {
         contentView.layer.cornerRadius = 15
         contentView.layer.masksToBounds = true
         contentView.backgroundColor = .white
-
-        authorizationLimitLabel.text = NSLocalizedString("Make sure you set up the right authorization limit on Coinbase", comment: "Coinbase authorization limit info screen")
-        changeLimitHintLabel.text = NSLocalizedString("You can change it anytime by logging out of your Coinbase account in Dash Wallet and logging back in.",
-                                                      comment: "Coinbase authorization limit info screen")
-        actionButton.configuration?.title = NSLocalizedString("I got it", comment: "Coinbase authorization limit info screen")
     }
 }

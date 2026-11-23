@@ -19,9 +19,7 @@ import Combine
 import Foundation
 
 /// The coordinator behind every external-send entry point: which screen opens first, how the screens hand over
-/// to one another and where each outcome leads. A host draws `step` and the ViewModels and acts on `onFinish` and
-/// `onRequestFailed`. The flow is the one owner of its lifetime: a `Finish` ends it once, and a host forwards every
-/// dismissal to `close()`.
+/// to one another and where each outcome leads. A host draws `step` and the ViewModels and reports `onFinish`.
 @MainActor
 final class ExternalSendFlow: ObservableObject {
     enum Step: Equatable {
@@ -35,22 +33,15 @@ final class ExternalSendFlow: ObservableObject {
         case sent(SendSuccessView)
     }
 
-    /// How the flow ended. Each one is terminal: Address closes, the flow's open work is cancelled and nothing is
-    /// reported after it.
     enum Finish: Equatable {
         case closed
         /// Back from Address to the Send menu it was opened from (SCR-01).
         case backToMenu
         /// The in-progress info Toast over Home.
         case toast(title: String, message: String)
+        /// A payment request that could not be fetched and has no address of its own to fall back to.
+        case requestFailed(title: String, message: String)
         case success(SendSuccessView, txidWire: Data?, callbackURL: URL?)
-    }
-
-    /// A payment request that could not be fetched and has no address of its own to fall back to. Recoverable: the
-    /// flow stays open on Address for a correction.
-    struct RequestFailure: Equatable {
-        let title: String
-        let message: String
     }
 
     @Published private(set) var step: Step?
@@ -61,7 +52,6 @@ final class ExternalSendFlow: ObservableObject {
     @Published private(set) var lockHeldViewModel: SendLockHeldViewModel?
 
     var onFinish: ((Finish) -> Void)?
-    var onRequestFailed: ((RequestFailure) -> Void)?
 
     private let network: WalletEnvironment.NetworkKind
     private let identityLookup: IdentityLooking
@@ -78,19 +68,14 @@ final class ExternalSendFlow: ObservableObject {
     private let lockResumer: HeldAssetLockResuming
     private let router = SendOutcomeRouter()
     private var pinned: SendSource?
-    /// A scan or link is being opened, from `open(_:)` until it reached a screen the holder can act on or the flow
-    /// ended; another one meanwhile starts nothing.
-    private(set) var isOpening = false
-    /// The id of the last `open(_:)`: an open releases `isOpening` only while it is still the last one.
-    private var openID = 0
-    /// A `Finish` was reported: nothing opens or reports after it.
-    private var isEnded = false
+    /// A scan or link is being resolved; another one meanwhile starts nothing.
+    private var isHandlingScan = false
     /// A Retry is fetching the payment request again; another Retry meanwhile starts nothing.
     @Published private(set) var isRefetchingRequest = false
     /// The Retry's fetch, cancelled when the flow closes so a closed flow does not open Send.
     private var refetchTask: Task<Void, Never>?
-    /// The open of a scanned, linked or resolved destination (its Identity check or its payment-request fetch),
-    /// cancelled when another one starts or the flow ends so it does not open Send on a flow that is gone.
+    /// The fetch of a resolved payment request, cancelled when the flow leaves Address or finishes so it does not
+    /// open Send on a flow that is gone.
     private var openTask: Task<Void, Never>?
     private var destination: Destination?
     private var recipient: IdentityRecipient?
@@ -148,41 +133,62 @@ final class ExternalSendFlow: ObservableObject {
     func start(destination: Destination, recipient: IdentityRecipient? = nil,
                prefetched: PaymentRequestDetails? = nil) async {
         if addressViewModel == nil { start() }
-        // Tracked like a typed entry, so ending the flow cancels the check or the fetch and a late answer opens
-        // nothing.
-        openTask?.cancel()
-        let task = Task<Void, Never> {
-            if destination.type == .identityID, recipient == nil {
-                await addressViewModel?.handleScanned(destination)
-            } else {
-                await open(destination, recipient, prefetched: prefetched)
-            }
+        if destination.type == .identityID, recipient == nil {
+            await addressViewModel?.handleScanned(destination)
+        } else {
+            await open(destination, recipient, prefetched: prefetched)
         }
-        openTask = task
-        await task.value
     }
 
-    /// The one entry for the Send menu's scanner, the address field's scanner and dash: links, with the scan or link
-    /// read once into `input`. Address shows at once and `isOpening` holds from this call until the input reached a
-    /// screen the holder can act on, a request failed, or the flow ended; an earlier open that ends later does not
-    /// release it. A request the scanner already fetched is used instead of a second fetch. Returns the task opening
-    /// it; nil when another scan is being opened or the flow ended, and nothing starts.
-    @discardableResult
-    func open(_ input: ScanInput) -> Task<Void, Never>? {
-        guard !isOpening, !isEnded else { return nil }
-        if addressViewModel == nil { start() }
-        isOpening = true
-        openID += 1
-        let id = openID
-        return Task {
-            await start(destination: input.destination, prefetched: input.prefetched)
-            if id == openID { isOpening = false }
+    /// For a scanned code or a dash: link; `openedByApp` when another app opened the link. False when the text is not
+    /// valid here and nothing opened.
+    func start(scanned text: String, openedByApp: Bool = false, requestCleared: Bool = false) async -> Bool {
+        await handleScanned(text, openedByApp: openedByApp, requestCleared: requestCleared)
+    }
+
+    /// The one acceptance for the Send menu's scanner, the address field's scanner and dash: links: a
+    /// `dashwallet://pay=` link is read as the deep-link router reads it, and a payment-request URL scanned whole
+    /// (BIP73) is a merchant request. `prefetched` is the request the scanner already fetched, used instead of a
+    /// second fetch. False when the text is not valid here and nothing opened; a scan while another one is still
+    /// being resolved starts nothing. `requestCleared` when the scanner's own fetch of the code's `r=` request
+    /// failed and it fell back to the code's Core address: the request is not fetched again.
+    func handleScanned(_ text: String, prefetched: PaymentRequestDetails? = nil,
+                       openedByApp: Bool = false, requestCleared: Bool = false) async -> Bool {
+        guard !isHandlingScan else { return true }
+        isHandlingScan = true
+        defer { isHandlingScan = false }
+        guard let destination = scannedDestination(text, openedByApp: openedByApp, requestCleared: requestCleared)
+        else { return false }
+        await start(destination: destination, prefetched: prefetched)
+        return true
+    }
+
+    /// What a scanned code or a dash: link pays, without opening anything; nil when it is not valid here. The host
+    /// checks it before it is presented, `handleScanned` before it starts. With `requestCleared` a code's `r=`
+    /// request is dropped: the destination is the code's own Core address, with its amount, label and message, and
+    /// a code with no address is not valid.
+    func scannedDestination(_ text: String, openedByApp: Bool = false, requestCleared: Bool = false) -> Destination? {
+        let paymentString = ParsedPaymentURI.paymentString(for: text)
+        if case .success(let parsed) = DestinationParser.parse(paymentString, network: network,
+                                                               openedByApp: openedByApp) {
+            guard requestCleared, parsed.paymentRequestURL != nil else { return parsed }
+            guard parsed.type != .paymentRequest else { return nil }
+            return Destination(type: parsed.type, text: parsed.text, isScriptForm: parsed.isScriptForm,
+                               amountDuffs: parsed.amountDuffs, label: parsed.label, message: parsed.message,
+                               callbackScheme: parsed.callbackScheme)
         }
+        guard !requestCleared else { return nil }
+        let trimmed = paymentString.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let url = URL(string: trimmed), let requestURL = DestinationParser.paymentRequestURL(url) else {
+            return nil
+        }
+        return Destination(type: .paymentRequest, text: "", paymentRequestURL: requestURL)
     }
 
     // MARK: - Navigation
 
     func backFromAddress() {
+        openTask?.cancel()
         finish(.backToMenu)
     }
 
@@ -226,22 +232,20 @@ final class ExternalSendFlow: ObservableObject {
         refetchTask = Task { await refetchRequest(url: url, callbackScheme: destination.callbackScheme) }
     }
 
-    /// Leaves the held lock for the transaction details' Rebroadcast. Allowed while Finish runs, because the resume can
-    /// wait for the lock's proof without a deadline: the resume is not cancelled and goes on, and the result it
-    /// reports after the flow ended is dropped (`finish` runs once).
+    /// Leaves the held lock for the transaction details' Rebroadcast. Refused while Finish runs.
     func closeFromLockHeld() {
-        if lockHeldViewModel?.isFinishing == true {
-            DWLogger.log("External send: left the held-lock sheet while Finish runs")
-        }
+        guard lockHeldViewModel?.isFinishing != true else { return }
         finish(.closed)
     }
 
     func closeFromSendFailed() {
+        cancelRefetch()
         finish(.closed)
     }
 
-    /// The holder's Close, and every dismissal of the host. A flow that already ended reports nothing.
     func close() {
+        cancelRefetch()
+        abandonPreparation()
         finish(.closed)
     }
 
@@ -332,10 +336,8 @@ final class ExternalSendFlow: ObservableObject {
         endRefetch()
     }
 
-    /// Recoverable: the flow stays open on Address, so the open is over but nothing is closed.
     private func finishRequestFailed(_ error: Error) {
-        isOpening = false
-        onRequestFailed?(RequestFailure(
+        finish(.requestFailed(
             title: NSLocalizedString("Couldn't make payment", comment: "External send"),
             message: error.localizedDescription))
     }
@@ -431,16 +433,8 @@ final class ExternalSendFlow: ObservableObject {
         }
     }
 
-    /// Ends the flow once: releases the opening, cancels the open, the Retry's fetch and a preparation still running,
-    /// closes Address and reports `result`. Later calls do nothing.
     private func finish(_ result: Finish) {
-        guard !isEnded else { return }
-        isEnded = true
-        isOpening = false
         openTask?.cancel()
-        cancelRefetch()
-        abandonPreparation()
-        addressViewModel?.close()
         onFinish?(result)
     }
 }

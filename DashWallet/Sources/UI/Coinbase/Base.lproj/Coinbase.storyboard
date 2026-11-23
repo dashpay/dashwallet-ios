@@ -89,8 +89,6 @@
                     </view>
                     <connections>
                         <outlet property="actionButton" destination="9oS-Uj-OBm" id="FYT-Hn-1k9"/>
-                        <outlet property="authorizationLimitLabel" destination="IpT-aJ-JtH" id="aU1-lM-t7A"/>
-                        <outlet property="changeLimitHintLabel" destination="pQf-vp-0PU" id="cH2-lM-h8B"/>
                         <outlet property="contentView" destination="UUf-El-1iK" id="CBY-08-3t5"/>
                         <outlet property="hairline" destination="kyU-Qw-aXI" id="1LJ-C5-76J"/>
                     </connections>
@@ -423,7 +421,6 @@
                     </view>
                     <connections>
                         <outlet property="tableView" destination="K9C-BC-VsY" id="Uuv-Oj-whd"/>
-                        <outlet property="titleLabel" destination="HQQ-Y3-GXb" id="tL3-pM-y9C"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="RO1-Ul-TDv" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>

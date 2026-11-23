@@ -99,15 +99,8 @@ final class SendAmountViewModelTests: XCTestCase {
         /// Released before the estimate reached its gate, so it passes straight through instead of waiting forever.
         private var releasedEarly: Set<UInt64> = []
 
-        /// When set, an estimate for this route suspends until `releaseRoute`.
-        var holdRoute: SendRoute?
-        private var heldRoute: CheckedContinuation<Void, Never>?
-
-        var isHoldingRoute: Bool { heldRoute != nil }
-
         func estimate(route: SendRoute, amount: UInt64) async -> SendFeeEstimate {
             calls.append((route, amount))
-            if route == holdRoute { await withCheckedContinuation { heldRoute = $0 } }
             if gatedAmounts.contains(amount), releasedEarly.remove(amount) == nil {
                 await withCheckedContinuation { gates[amount] = $0 }
             }
@@ -124,12 +117,6 @@ final class SendAmountViewModelTests: XCTestCase {
                 return
             }
             gate.resume()
-        }
-
-        func releaseRoute() {
-            holdRoute = nil
-            heldRoute?.resume()
-            heldRoute = nil
         }
     }
 
@@ -160,21 +147,8 @@ final class SendAmountViewModelTests: XCTestCase {
             held = nil
         }
 
-        /// When set, a funding check suspends until `releaseFunding`.
-        var holdFunding = false
-        private var heldFunding: CheckedContinuation<Void, Never>?
-
-        var isHoldingFunding: Bool { heldFunding != nil }
-
         func canFund(route: SendRoute, amount: UInt64) async -> SendFundingCheck {
-            if holdFunding { await withCheckedContinuation { heldFunding = $0 } }
-            return fundingCheck
-        }
-
-        func releaseFunding() {
-            holdFunding = false
-            heldFunding?.resume()
-            heldFunding = nil
+            fundingCheck
         }
     }
 
@@ -944,96 +918,6 @@ final class SendAmountViewModelTests: XCTestCase {
         XCTAssertEqual(continued.last?.amount, 99_990_000)
     }
 
-    /// Confirm refused a Max and its re-plan still runs when the holder picks Platform: what the old operation does
-    /// once the plan answers lands nowhere, so Platform is not flagged not enough and its estimate is not redone.
-    func testAConfirmReplanOvertakenByASourcePickChangesNothingOnTheNewSource() async {
-        planner.table[.coreToCore] = oneDash
-        let vm = await makeVM()
-        await vm.tapMax()
-        planner.holdRoute = .coreToCore
-        let confirm = Task { await vm.confirmReportedNotEnough() }
-        await waitUntilPlanHeld()
-
-        await vm.pickSource(.platform)
-        await vm.setAmountText("0.5")
-        let amount = vm.amountDuffs
-        let state = vm.state
-        let estimates = estimator.calls.count
-        XCTAssertNotEqual(state, .notEnough)
-
-        planner.release()
-        await confirm.value
-
-        XCTAssertEqual(vm.source, .platform)
-        XCTAssertNotEqual(vm.state, .notEnough, "the refusal of the Core Max does not land on the typed Platform amount")
-        XCTAssertEqual(vm.amountDuffs, amount, "the old operation sets no amount on Platform")
-        XCTAssertEqual(vm.state, state, "the refusal of the Core amount does not land on Platform")
-        XCTAssertEqual(estimator.calls.count, estimates, "the old operation starts no estimate on Platform")
-    }
-
-    /// A second pick while the first pick re-plans its Max keeps the amount a Max for the source picked last.
-    func testASecondPickWhileTheFirstPickReplansMaxKeepsMax() async {
-        let vm = await makeVM()
-        await vm.tapMax()
-        planner.holdRoute = .platformToCore
-        let first = Task { await vm.pickSource(.platform) }
-        await waitUntilPlanHeld()
-
-        await vm.pickSource(.shielded)
-        planner.release()
-        await first.value
-
-        XCTAssertEqual(vm.route, .shieldedToCore)
-        XCTAssertEqual(vm.amountDuffs, 299_000_000, "the Shielded Max")
-        XCTAssertEqual(vm.state, .ready)
-        await vm.proceed()
-        XCTAssertEqual(continued.last?.isMax, true)
-    }
-
-    /// A pick to Identity estimates its fee before it plans the Max. A pick overtaking it while the estimate runs ends
-    /// it there: the Max it would plan next does not overwrite the amount typed on the source picked after it.
-    func testAPickOvertakenWhileItEstimatesPlansNoMaxOnTheNextSource() async {
-        let vm = await makeVM()
-        await vm.tapMax()
-        estimator.holdRoute = .identityToCore
-        let identityPick = Task { await vm.pickSource(.identity) }
-        for _ in 0 ..< 200 where !estimator.isHoldingRoute {
-            await Task.yield()
-        }
-        XCTAssertTrue(estimator.isHoldingRoute, "the Identity estimate never started")
-
-        await vm.pickSource(.platform)
-        await vm.setAmountText("1")
-        estimator.releaseRoute()
-        await identityPick.value
-
-        XCTAssertEqual(vm.route, .platformToCore)
-        XCTAssertEqual(vm.amountDuffs, oneDash, "the typed amount stays")
-        XCTAssertEqual(vm.amountText, "1")
-        XCTAssertEqual(vm.state, .ready)
-        await vm.proceed()
-        XCTAssertEqual(continued.last?.isMax, false)
-        XCTAssertEqual(continued.last?.amount, oneDash)
-    }
-
-    /// Confirm refused a typed amount and the balance could not be read again; Try again reads it, and the amount
-    /// stays not enough until it or the source changes.
-    func testTryAgainAfterConfirmRefusedATypedAmountKeepsItNotEnough() async {
-        let vm = await makeVM()
-        await vm.setAmountText("4.99999")
-        XCTAssertEqual(vm.state, .ready)
-        balances.table[.core] = nil
-        await vm.confirmReportedNotEnough()
-        XCTAssertEqual(vm.state, .feeFailed)
-
-        balances.table[.core] = coreBalance
-        await vm.retryFee()
-
-        XCTAssertEqual(vm.sourceBalanceDuffs, coreBalance)
-        XCTAssertEqual(vm.state, .notEnough)
-        XCTAssertFalse(vm.isContinueEnabled)
-    }
-
     func testAnAmountAboveTheBalanceMinusTheFeeIsNotEnoughAndCannotContinue() async {
         let vm = await makeVM()
         await vm.setAmountText("4.999991")
@@ -1378,81 +1262,6 @@ final class SendAmountViewModelTests: XCTestCase {
         XCTAssertEqual(vm.source, .platform)
         XCTAssertEqual(vm.sourceBalanceDuffs, platformBalance)
         XCTAssertNotEqual(vm.state, .estimating)
-    }
-
-    // MARK: - One source snapshot (ADR-0013)
-
-    /// A balance that could not be read is unknown, never 0 and never too little: the amount offers Try again, which
-    /// reads the balance again.
-    func testAnUnreadableBalanceIsUnknownNotNotEnough() async {
-        balances.table[.core] = nil
-        let vm = await makeVM(pinned: .core)
-        XCTAssertEqual(vm.source, .core)
-        XCTAssertNil(vm.sourceBalanceDuffs)
-        XCTAssertEqual(vm.state, .amountEmpty, "an unknown balance is not an empty one")
-
-        await vm.setAmountText("1")
-
-        XCTAssertNotEqual(vm.state, .notEnough)
-        XCTAssertNil(vm.amountErrorMessage)
-        XCTAssertEqual(vm.state, .feeFailed)
-        XCTAssertNotNil(vm.feeFailureMessage)
-        XCTAssertFalse(vm.isContinueEnabled)
-
-        balances.table[.core] = coreBalance
-        await vm.retryFee()
-        XCTAssertEqual(vm.sourceBalanceDuffs, coreBalance, "Try again reads the balance again")
-        XCTAssertEqual(vm.state, .ready)
-        XCTAssertTrue(vm.isContinueEnabled)
-    }
-
-    /// A known fee is reused while typing, but the funding check of the new amount still runs: Continue stays off
-    /// until it answers, so an amount the funding step cannot pay never continues on the previous answer.
-    func testContinueWaitsForAPendingFundingCheck() async {
-        let vm = await makeVM(destination(.identityID, text: ownID), pinned: .platform,
-                              recipient: recipient(ownID, own: true))
-        XCTAssertEqual(vm.route, .platformToIdentity)
-        await vm.setAmountText("0.5")
-        XCTAssertTrue(vm.isContinueEnabled)
-
-        planner.fundingCheck = .notFundable
-        planner.holdFunding = true
-        let typing = Task { await vm.setAmountText("1") }
-        for _ in 0 ..< 200 where !planner.isHoldingFunding { await Task.yield() }
-        XCTAssertTrue(planner.isHoldingFunding, "the funding check never started")
-
-        XCTAssertFalse(vm.isContinueEnabled, "the funding check of the new amount is pending")
-        await vm.proceed()
-        XCTAssertTrue(continued.isEmpty)
-
-        planner.releaseFunding()
-        await typing.value
-        XCTAssertEqual(vm.state, .notEnough)
-        XCTAssertFalse(vm.isContinueEnabled)
-    }
-
-    /// While a picked source's balance is read, Send shows none rather than the previous source's, and the read a
-    /// newer pick overtook never lands.
-    func testAStaleReadAfterASourceSwitchIsDropped() async {
-        let vm = await makeVM()
-        await vm.setAmountText("1")
-        balances.holdSource = .shielded
-        let slowPick = Task { await vm.pickSource(.shielded) }
-        await waitUntilBalanceHeld()
-
-        XCTAssertEqual(vm.source, .shielded)
-        XCTAssertNil(vm.sourceBalanceDuffs, "not Core's balance under the Shielded title")
-        XCTAssertEqual(vm.state, .estimating)
-        XCTAssertFalse(vm.isContinueEnabled)
-
-        await vm.pickSource(.platform)
-        balances.table[.shielded] = 7
-        balances.release()
-        await slowPick.value
-
-        XCTAssertEqual(vm.source, .platform)
-        XCTAssertEqual(vm.sourceBalanceDuffs, platformBalance)
-        XCTAssertEqual(vm.state, .ready)
     }
 
     func testAPaymentRequestAmountIsLockedWithoutMaxOrKeypad() async throws {

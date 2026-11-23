@@ -51,12 +51,10 @@ enum DashAddressClassifier {
     /// - 44-byte payload `0x10` + 43 raw Orchard bytes → `.shielded`
     /// Anything else (a broken checksum, another HRP, another payload) → nil. A text longer than
     /// `maxBech32mLength` or with a non-ASCII character is refused before `decode` reads it, so a long pasted or
-    /// linked text is never decoded and `Bech32m.decode` never sees a character without an ASCII value. Bech32m is
-    /// all lowercase or all uppercase (BIP-173), so a text with both is refused before it is lowercased.
+    /// linked text is never decoded and `Bech32m.decode` never sees a character without an ASCII value.
     static func decodeBech32m(_ text: String,
                               decode: (String) -> Bech32m.DecodeResult? = Bech32m.decode) -> Bech32mAddress? {
         guard text.utf8.count <= maxBech32mLength, text.utf8.allSatisfy({ $0 < 128 }),
-              !isMixedCase(text),
               let decoded = decode(text.lowercased()) else { return nil }
         let isMainnet: Bool
         switch decoded.hrp {
@@ -76,12 +74,6 @@ enum DashAddressClassifier {
             return Bech32mAddress(isMainnet: isMainnet, form: .shielded(raw43: decoded.data.subdata(in: 1..<44)))
         }
         return nil
-    }
-
-    /// True when an ASCII text has both an uppercase and a lowercase letter.
-    private static func isMixedCase(_ text: String) -> Bool {
-        text.utf8.contains { (UInt8(ascii: "A")...UInt8(ascii: "Z")).contains($0) }
-            && text.utf8.contains { (UInt8(ascii: "a")...UInt8(ascii: "z")).contains($0) }
     }
 
     /// - Base58Check L1 address (network-checked) → `.core`

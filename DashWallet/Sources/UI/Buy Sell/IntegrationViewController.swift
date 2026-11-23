@@ -36,8 +36,6 @@ final class IntegrationViewController: BaseViewController, NetworkReachabilityHa
     @IBOutlet var tableView: UITableView!
     @IBOutlet var signInOutButton: UIButton!
     @IBOutlet var networkUnavailableView: UIView!
-    @IBOutlet var networkUnavailableTitleLabel: UILabel!
-    @IBOutlet var networkUnavailableSubtitleLabel: UILabel!
     @IBOutlet var mainContentView: UIView!
     @IBOutlet var lastKnownBalanceLabel: UILabel!
 
@@ -197,8 +195,6 @@ extension IntegrationViewController {
         lastKnownBalanceLabel.text = NSLocalizedString("Last known balance", comment: "Integration Entry Point")
         lastKnownBalanceLabel.isHidden = true
         networkUnavailableView.isHidden = true
-        networkUnavailableTitleLabel.text = NSLocalizedString("Network Unavailable", comment: "Integration Entry Point")
-        networkUnavailableSubtitleLabel.text = NSLocalizedString("Please check your network connection", comment: "Integration Entry Point")
 
         balanceTitleLabel.text = model.balanceTitle
 
@@ -368,7 +364,6 @@ final class ItemCell: UITableViewCell {
     @IBOutlet var secondaryLabel: UILabel!
     // The additional info view is pre-set to "Powered by Topper" for now.
     @IBOutlet var additionalInfoView: UIView!
-    @IBOutlet var additionalInfoLabel: UILabel!
 
     fileprivate func update(with item: ItemCellDataProvider, isLoggedIn: Bool) {
         iconView.image = .init(named: isLoggedIn || item.alwaysEnabled ? item.icon : item.icon + ".disabled")
@@ -381,7 +376,6 @@ final class ItemCell: UITableViewCell {
         super.awakeFromNib()
 
         contentView.backgroundColor = .dw_background()
-        additionalInfoLabel.text = NSLocalizedString("Powered by Topper", comment: "Integration Entry Point")
     }
 }
 

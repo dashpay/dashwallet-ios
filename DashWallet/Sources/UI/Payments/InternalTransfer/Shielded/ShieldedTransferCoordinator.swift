@@ -267,24 +267,6 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case alreadyConsumed
     }
 
-    /// Which record decided the recipient of the resume this coordinator ran
-    /// (`ShieldedResumeRecipient.Source`); nil before the recipient is decided
-    /// and for a resume refused before that. Cleared when a transfer starts
-    /// and on `reset()`.
-    private(set) var lastResumeRecipientSource: ShieldedResumeRecipient.Source?
-
-    /// The resume finished on Platform and paid the wallet's own Shielded
-    /// address because nothing recorded where its lock was going. A surface
-    /// that cannot know what the interrupted transfer was for reports this as
-    /// funds added to the Shielded balance, not as a completed transfer.
-    var resumePaidOwnBalanceWithoutRecord: Bool {
-        Self.resumePaidOwnBalanceWithoutRecord(phase: phase, source: lastResumeRecipientSource)
-    }
-
-    nonisolated static func resumePaidOwnBalanceWithoutRecord(phase: Phase, source: ShieldedResumeRecipient.Source?) -> Bool {
-        phase == .success && source == .ownLegacy
-    }
-
     private static let logger = Logger(
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.shielded-transfer")
@@ -951,10 +933,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// asset lock (which is what a fresh `performAssetLock` would do, stranding
     /// the first). The recipient is the one the original attempt was built
     /// for, resolved by `ShieldedResumeRecipient`: the recipient the SDK
-    /// recorded on the lock's row, or — for a row with no recorded recipient
-    /// — the Max drain marker's, the caller's `recipientRaw43`, or the
-    /// wallet's own default shielded address
-    /// (`lastResumeRecipientSource` says which). The
+    /// recorded on the lock's row, or — for a row tracked before the SDK
+    /// recorded recipients — the Max drain marker's, the caller's
+    /// `recipientRaw43`, or the wallet's own default shielded address. The
     /// SDK re-derives an identical `shield_amount` from the on-chain lock
     /// value, so a resume cannot desync funds and is safe to retry.
     /// Re-authorizes — this moves real funds.
@@ -1057,8 +1038,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
         // Every resume's recipient is decided here, whichever surface asked,
         // before the PIN prompt so a refusal asks for nothing. The SDK pays
-        // only the recipient it recorded on the row; a row with no recorded
-        // recipient falls back to the Max drain marker, the caller's
+        // only the recipient it recorded on the row; a row tracked before it
+        // recorded one falls back to the Max drain marker, the caller's
         // recipient, then the wallet's own address (`ShieldedResumeRecipient`).
         guard let row = Self.resumeRow(
             outPointTxidWire: outPointTxidWire, vout: outPointVout,
@@ -1102,7 +1083,6 @@ final class ShieldedTransferCoordinator: ObservableObject {
         switch resolution {
         case .pay(let raw43, let source):
             Self.logger.info("🛡️ SHIELD-TX :: resume recipient=\(source.rawValue, privacy: .public)")
-            lastResumeRecipientSource = source
             recipientRaw43 = raw43
         case .refuse(let refusal):
             Self.logger.error("🛡️ SHIELD-TX :: resume refused — recipient \(String(describing: refusal), privacy: .public)")
@@ -1794,15 +1774,6 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
 
-        // A wallet or network switch may complete during the prompt: the lock is built only from the wallet the
-        // holder authorized, as the resume does.
-        guard let current = try? resolveBasicEnvironment(),
-              current.walletId == env.walletId, current.network == env.network,
-              current.manager === env.manager else {
-            handleFailure(CoordinatorError.noWallet)
-            return
-        }
-
         phase = .locking
         let (newLock, onAssetLockBuilt) = beginNewAssetLock(modelContainer: env.modelContainer)
 
@@ -2180,7 +2151,6 @@ final class ShieldedTransferCoordinator: ObservableObject {
         lastAssetLockOutPoint = nil
         lastAssetLockContext = nil
         lastFailure = nil
-        lastResumeRecipientSource = nil
         lastResumeReport = nil
         phase = .idle
     }
@@ -2271,7 +2241,6 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return false
         }
         lastFailure = nil
-        lastResumeRecipientSource = nil
         lastResumeReport = nil
         phase = .signing
         return true

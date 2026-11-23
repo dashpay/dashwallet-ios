@@ -59,7 +59,6 @@ final class AddressViewModel: ObservableObject {
 
     /// The destination (and, for an Identity ID, the recipient found on Platform) the flow continues with.
     var onResolved: ((Destination, IdentityRecipient?) -> Void)?
-    private var isClosed = false
 
     private let network: WalletEnvironment.NetworkKind
     private let identityLookup: IdentityLooking
@@ -193,20 +192,13 @@ final class AddressViewModel: ObservableObject {
         onResolved?(destination, recipient)
     }
 
-    /// The flow left Address (back or close): a lookup still running reports nothing.
-    func close() {
-        isClosed = true
-    }
-
     private func proceed(with destination: Destination) async {
         guard destination.type == .identityID else {
             handOn(destination, nil)
             return
         }
         state = .checking
-        let result = await identityLookup.lookup(id: destination.text, network: network)
-        guard !isClosed else { return }
-        switch result {
+        switch await identityLookup.lookup(id: destination.text, network: network) {
         case .found(let recipient):
             state = .entered
             handOn(destination, recipient)

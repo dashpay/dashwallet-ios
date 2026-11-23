@@ -79,7 +79,6 @@ final class SendLockHeldViewModelTests: XCTestCase {
 
     func testAnUnconfirmedResumeReportsWhatTheResumeEstablished() async {
         let cases: [(AssetLockRecoveryService.Outcome, String)] = [
-            (.addedToOwnShielded, "Funds added to your Shielded balance"),
             (.completionUnconfirmed, "Already spent — nothing to transfer"),
             (.submittedAwaitingSync, "Submitted — waiting for the network to confirm"),
         ]

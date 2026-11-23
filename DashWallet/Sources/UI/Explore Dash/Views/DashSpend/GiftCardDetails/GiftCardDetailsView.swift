@@ -219,8 +219,7 @@ struct GiftCardDetailsView: View {
     
     private var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
-        // en_US stays "MMMM dd, yyyy 'at' h:mm a"; other locales get their own order, words and clock (`j`).
-        formatter.setLocalizedDateFormatFromTemplate("MMMMddyyyyjmm")
+        formatter.dateFormat = "MMMM dd, yyyy 'at' h:mm a"
         return formatter
     }
 }

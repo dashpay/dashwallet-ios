@@ -31,9 +31,7 @@ final class ReceiveContentView: UIStackView {
     @IBOutlet var qrContainer: UIView!
     @IBOutlet var addressContainer: UIView!
     @IBOutlet var usernameContainer: UIView!
-    @IBOutlet var addressTitleLabel: UILabel!
     @IBOutlet var addressLabel: UILabel!
-    @IBOutlet var usernameTitleLabel: UILabel!
     @IBOutlet var usernameLabel: UILabel!
 
     private var model: DWReceiveModelProtocol!
@@ -108,8 +106,6 @@ extension ReceiveContentView {
         secondButton.setTitle(NSLocalizedString("Share address", comment: "Receive screen"), for: .normal)
         
     #if DASHPAY
-        addressTitleLabel.text = NSLocalizedString("Dash address", comment: "Receive screen")
-        usernameTitleLabel.text = NSLocalizedString("Username", comment: "Receive screen")
         addressContainer.isHidden = false
         usernameContainer.isHidden = false
         addressButton.isHidden = true

@@ -138,11 +138,6 @@ final class SendScreenViewController: DWBasePayViewController {
     func qrScanModel(_ viewModel: DWQRScanModel, didScanPaymentInput paymentInput: DWPaymentInput) {
         dismiss(animated: true) { [weak self] in
             guard let self else { return }
-            // The scanner accepts an Identity ID, which only the new Send can pay.
-            if ParsedPaymentURI.isIdentityID(string: paymentInput.parsedURI?.rawString ?? "") {
-                ExternalSendLauncher.presentScanned(paymentInput, from: self)
-                return
-            }
             // A BIP70 request has no address to put in the field — filling the
             // form with it is a no-op, so the scan would end nowhere. That one
             // keeps the classic processor's confirmation.

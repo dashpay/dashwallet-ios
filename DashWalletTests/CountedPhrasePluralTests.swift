@@ -85,27 +85,6 @@ final class CountedPhrasePluralTests: XCTestCase {
                        "0 of 1 username voted on")
     }
 
-    /// The counts added on develop after the second change (the voting sheets,
-    /// the DashConnect expiry presets) are plural entries, so a language with
-    /// more forms than English can deliver them.
-    func testCountsAddedAfterTheSecondChangeArePluralEntriesInEnglish() throws {
-        let bundle = try appLocalization("en")
-        let path = try XCTUnwrap(bundle.path(forResource: "Localizable", ofType: "stringsdict"))
-        let entries = try XCTUnwrap(NSDictionary(contentsOfFile: path) as? [String: Any])
-
-        for key in ["%d votes will be cast", "The other %d votes were not cast.", "%ld days"] {
-            XCTAssertNotNil(entries[key], "\(key) is not on the plural list")
-        }
-        XCTAssertEqual(format("%d votes will be cast", in: bundle, locale: "en", 1), "1 vote will be cast")
-        XCTAssertEqual(format("%d votes will be cast", in: bundle, locale: "en", 22), "22 votes will be cast")
-        XCTAssertEqual(format("The other %d votes were not cast.", in: bundle, locale: "en", 1),
-                       "The other vote was not cast.")
-        XCTAssertEqual(format("The other %d votes were not cast.", in: bundle, locale: "en", 5),
-                       "The other 5 votes were not cast.")
-        XCTAssertEqual(format("%ld days", in: bundle, locale: "en", arguments: [1]), "1 day")
-        XCTAssertEqual(format("%ld days", in: bundle, locale: "en", arguments: [30]), "30 days")
-    }
-
     /// Every English plural entry, formatted with 1 and with 2, fills all its
     /// markers and picks a form instead of showing "(s)".
     func testEveryEnglishPluralEntryFormatsCleanly() throws {

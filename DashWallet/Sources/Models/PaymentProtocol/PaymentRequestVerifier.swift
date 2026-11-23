@@ -31,12 +31,8 @@ extension PaymentRequestVerifier {
         /// requests, the Dash extension reads `pki_data` as a UTF-8 name.
         let commonName: String?
         let pkiType: String
-        /// Why a signed request's certificate or signature failed; `nil` when they passed or
-        /// the request is unsigned.
-        let certificateFailure: BIP70CertificateFailure?
-        /// True when the request's `expires` time has passed. Checked only when everything
-        /// else passed, so it is `false` whenever `certificateFailure` is set.
-        let isExpired: Bool
+        /// Human-readable reason when `isValid == false`.
+        let errorMessage: String?
 
         /// Whether the request carries a real PKI signature (vs unsigned `pki_type == "none"`).
         var isSecure: Bool { isValid && pkiType != "none" }
@@ -48,8 +44,7 @@ struct PaymentRequestVerifier {
     func verify(_ request: PaymentRequest, now: Date = Date()) -> Verdict {
         let pkiType = request.pkiType
         var commonName: String?
-        var certificateFailure: BIP70CertificateFailure?
-        var isExpired = false
+        var errorMessage: String?
         var isValid = true
 
         if pkiType != "none" {
@@ -71,27 +66,25 @@ struct PaymentRequestVerifier {
                 : false
 
             if !trusted {
-                certificateFailure = certs.isEmpty ? .missingCertificate : .untrustedChain
+                var message = certs.isEmpty ? "Missing certificate" : "Untrusted certificate"
+                if let detail = (trustError as Error?)?.localizedDescription {
+                    message += " - \(detail)"
+                }
+                errorMessage = message
                 isValid = false
-                // The screen names only the failure kind; the log keeps the system's reason
-                // (expired certificate, unknown root, ...) for a support case.
-                DWLogger.log("BIP70: certificate trust failed, certificates=\(certs.count) create_status=\(createStatus) reason=\(trustError.map { String(describing: $0) } ?? "none")")
             }
 
             // Verify the signature with the leaf public key (works even if trust failed, matching
-            // the reference). A signature failure overrides the trust failure. Without a
-            // certificate there is no key to verify with, so the missing certificate stands.
-            if !certs.isEmpty {
-                switch verifySignature(request: request, pkiType: pkiType, trust: trust) {
-                case .valid:
-                    break
-                case .invalid:
-                    certificateFailure = .invalidSignature
-                    isValid = false
-                case .unsupported:
-                    certificateFailure = .unsupportedSignatureType
-                    isValid = false
-                }
+            // the reference). A signature failure overrides the trust error message.
+            switch verifySignature(request: request, pkiType: pkiType, trust: trust) {
+            case .valid:
+                break
+            case .invalid:
+                errorMessage = "Invalid signature"
+                isValid = false
+            case .unsupported:
+                errorMessage = "Unsupported signature type"
+                isValid = false
             }
         } else {
             // pki_type == "none": no verification. Dash extension — if pki_data carries a cert
@@ -106,13 +99,12 @@ struct PaymentRequestVerifier {
         if isValid {
             let expires = request.details.expires
             if expires >= 1, now.timeIntervalSince1970 > Double(expires) {
-                isExpired = true
+                errorMessage = "Request expired"
                 isValid = false
             }
         }
 
-        return Verdict(isValid: isValid, commonName: commonName, pkiType: pkiType,
-                       certificateFailure: certificateFailure, isExpired: isExpired)
+        return Verdict(isValid: isValid, commonName: commonName, pkiType: pkiType, errorMessage: errorMessage)
     }
 
     // MARK: - Signature

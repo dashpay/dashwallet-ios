@@ -39,7 +39,7 @@ enum AddressSourceType: Identifiable {
         switch self {
         case .uphold: return "Uphold"
         case .coinbase: return "Coinbase"
-        case .clipboard: return NSLocalizedString("Clipboard", comment: "Dash DEX")
+        case .clipboard: return "Clipboard"
         }
     }
 }

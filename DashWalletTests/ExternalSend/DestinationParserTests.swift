@@ -556,19 +556,6 @@ final class DestinationParserTests: XCTestCase {
         }
     }
 
-    /// Bech32m is one case or the other (BIP-173); a mixed-case text is not an address, even when its lowercase
-    /// form is one.
-    func testAMixedCaseShieldedOrPlatformAddressIsRefused() throws {
-        for network in [Network.mainnet, .testnet] {
-            for text in [shielded(network), platform(network)] {
-                let separator = try XCTUnwrap(text.lastIndex(of: "1"))
-                let mixed = text[..<separator].uppercased() + text[separator...]
-                XCTAssertNil(DashAddressClassifier.decodeBech32m(mixed), mixed)
-                XCTAssertEqual(parse(mixed, network), .failure(.invalid), mixed)
-            }
-        }
-    }
-
     func testFindStillFindsAShieldedAddressInsideALongClipboard() {
         let address = shielded(.testnet)
         let clipboard = String(repeating: "lorem ipsum ", count: 10_000) + address

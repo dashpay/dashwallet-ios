@@ -89,12 +89,14 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
          visibleTabs: [PaymentsLandingTab] = PaymentsLandingTab.allCases,
          embedInternalTransfer: Bool = false,
          showsHeader: Bool = true,
-         allowsTransactionDetails: Bool = true) {
+         allowsTransactionDetails: Bool = true,
+         isQuickReceive: Bool = false) {
         self.viewModel = PaymentsLandingViewModel(
             activeTab: activeTab,
-            network: receiveNetwork,
+            network: ReceiveOption(receiveNetwork),
             visibleTabs: visibleTabs,
-            allowsTransactionDetails: allowsTransactionDetails)
+            allowsTransactionDetails: allowsTransactionDetails,
+            isQuickReceive: isQuickReceive)
         self.showsHeader = showsHeader
         let transferViewModel = InternalTransferViewModel()
         if embedInternalTransfer {
@@ -123,7 +125,8 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
             activeTab: .receive,
             visibleTabs: [.receive],
             showsHeader: false,
-            allowsTransactionDetails: false)
+            allowsTransactionDetails: false,
+            isQuickReceive: true)
         let navigationController = BaseNavigationController(rootViewController: controller)
         navigationController.isNavigationBarHidden = true
         navigationController.isModalInPresentation = false
@@ -160,7 +163,9 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         if transferReceivePinned {
             viewModel.$network
                 .receive(on: RunLoop.main)
-                .sink { [weak self] network in
+                .sink { [weak self] option in
+                    // Identity is not a transfer endpoint: the route stays on the last chain.
+                    guard let network = option.chainNetwork else { return }
                     self?.embeddedTransferViewModel.applyReceiveRoute(into: network)
                 }
                 .store(in: &cancellables)

@@ -57,7 +57,7 @@ struct SendOutcomeRouter {
             return .infoToast(
                 title: NSLocalizedString("Send in progress", comment: "External send"),
                 message: NSLocalizedString(
-                    "Don't send it again. It can take a few minutes to finish.", comment: "External send"))
+                    "It will finish on its own. You don't need to send it again.", comment: "External send"))
         case .lockHeld(let lock):
             return .lockHeld(lock)
         case .notSent(let reason):

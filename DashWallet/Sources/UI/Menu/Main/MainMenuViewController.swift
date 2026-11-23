@@ -208,14 +208,6 @@ struct MainMenuScreen: View {
         self.viewModel = viewModel
     }
     #endif
-
-    private var toolsMenuScreen: ToolsMenuScreen {
-        #if DASHPAY
-        return ToolsMenuScreen(vc: vc, dashPayModel: viewModel.dashPayModel)
-        #else
-        return ToolsMenuScreen(vc: vc)
-        #endif
-    }
     
     
     var body: some View {
@@ -323,7 +315,7 @@ struct MainMenuScreen: View {
             }
             
             NavigationLink(
-                destination: toolsMenuScreen,
+                destination: ToolsMenuScreen(vc: vc),
                 isActive: $showTools
             ) {
                 EmptyView()
@@ -562,18 +554,11 @@ struct MainMenuScreen: View {
 
     #if DASHPAY
     private func showVoting() {
-        // The voting list needs its own `NavigationStack`. A bare hosting
-        // controller inherits the menu's hidden navigation bar
-        // (`BaseNavigationController.willShow` only restores it for a
-        // `NavigationBarDisplayable`), which left the voting screens with no
-        // back button and no way out — and silently dropped the `.toolbar`
-        // and `.navigationTitle` as well, since neither renders outside a
-        // navigation container.
         let navController = vc
         let popRoot: () -> Void = { [weak navController] in
             _ = navController?.popViewController(animated: true)
         }
-        let hosting = UsernameVotingHostingController(viewModel: VotingViewModel(), onClose: popRoot)
+        let hosting = UIHostingController(rootView: UsernameVotingScreen(vc: vc, onClose: popRoot))
         vc?.pushViewController(hosting, animated: true)
     }
     #endif
@@ -649,9 +634,7 @@ struct MainMenuScreen: View {
         Self.pushCreateUsernameForm(on: vc, dashPayModel: dashPayModel)
     }
 
-    /// Pushes the username creation form, as More does for a returning
-    /// user; Connections reuses it for a wallet without a username.
-    static func pushCreateUsernameForm(
+    private static func pushCreateUsernameForm(
         on navigationController: UINavigationController,
         dashPayModel: DWDashPayProtocol,
         definedUsername: String? = nil

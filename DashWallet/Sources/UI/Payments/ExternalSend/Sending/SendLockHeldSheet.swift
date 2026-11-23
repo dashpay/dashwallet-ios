@@ -18,8 +18,7 @@ import DashUIKit
 import SwiftUI
 
 /// The sheet a `lockHeld` send opens: the money is held in an asset lock whose Platform step did not finish. Finish
-/// runs the ViewModel's resume; Close leaves the lock for the transaction details. Close and the swipe stay available
-/// while Finish runs, since the resume can wait for the lock's proof without a deadline; leaving does not stop it.
+/// runs the ViewModel's resume; Close leaves the lock for the transaction details. Neither closes it while Finish runs.
 struct SendLockHeldSheet: View {
     @ObservedObject var viewModel: SendLockHeldViewModel
     let onClose: () -> Void
@@ -28,6 +27,7 @@ struct SendLockHeldSheet: View {
         DashUIKit.BottomSheet.selfSizing(
             title: viewModel.title,
             showBackButton: .constant(false),
+            isDismissalEnabled: .constant(!viewModel.isFinishing),
             showsCloseButton: false,
             onClose: onClose,
             content: {
@@ -58,6 +58,7 @@ struct SendLockHeldSheet: View {
             HStack(spacing: 8) {
                 DashUIKit.DashButton(
                     text: NSLocalizedString("Close", comment: "External send"),
+                    isEnabled: !viewModel.isFinishing,
                     fillsWidth: true,
                     size: .large,
                     style: .tintedGray,

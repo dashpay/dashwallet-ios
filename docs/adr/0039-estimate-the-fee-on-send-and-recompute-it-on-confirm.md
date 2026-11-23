@@ -44,4 +44,4 @@ can go stale before the send.
 
 - Feature summary: [external-send](../features/external-send/README.md)
 - Android counterpart: [dashpay/dash-wallet#1680](https://github.com/dashpay/dash-wallet/pull/1680)
-- Related ADR: [0062 — Decide every source and destination pair in one policy](0062-decide-every-source-and-destination-pair-in-one-policy.md)
+- Related ADR: [0038 — Decide every source and destination pair in one policy](0038-decide-every-source-and-destination-pair-in-one-policy.md)

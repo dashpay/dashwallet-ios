@@ -20,9 +20,10 @@ import UIKit
 
 /// The UIKit side of `ExternalSendFlow`: the host for `ExternalSendFlowScreen` (a step pushed in the Payments sheet,
 /// or full screen when presented), the QR scanner behind the address field's scan button, and what each way the flow
-/// finishes does to the screens around it. Every way the host leaves the screen closes the flow.
+/// finishes does to the screens around it.
 final class ExternalSendHostController: UIHostingController<ExternalSendFlowScreen> {
     private let flow: ExternalSendFlow
+    private weak var anchor: UIViewController?
 
     init(flow: ExternalSendFlow) {
         self.flow = flow
@@ -30,26 +31,6 @@ final class ExternalSendHostController: UIHostingController<ExternalSendFlowScre
         modalPresentationStyle = .fullScreen
         rootView.onScan = { [weak self] in self?.presentScanner() }
         flow.onFinish = { [weak self] in self?.handle($0) }
-        flow.onRequestFailed = { [weak self] in self?.presentRequestFailedAlert($0) }
-    }
-
-    /// A swipe, a pop, or a dismissal of the screens below it: the flow ends with the host, so a scan or link
-    /// it was opening no longer holds the next one. A finish that caused the dismissal already ended the flow.
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        guard isLeavingForGood else { return }
-        flow.onFinish = nil
-        flow.close()
-    }
-
-    /// Popped, or dismissed itself or with a controller below it; not merely covered by a screen it presented.
-    private var isLeavingForGood: Bool {
-        var current: UIViewController? = self
-        while let controller = current {
-            if controller.isBeingDismissed || controller.isMovingFromParent { return true }
-            current = controller.parent ?? controller.presentingViewController
-        }
-        return false
     }
 
     @available(*, unavailable)
@@ -64,26 +45,37 @@ final class ExternalSendHostController: UIHostingController<ExternalSendFlowScre
         return ExternalSendHostController(flow: flow)
     }
 
-    /// The flow of the last scan or link; while it is opening, another scan or link opens nothing. It stops opening
-    /// once the input reached a screen, its request failed, or the flow ended with its host.
-    private static weak var opening: ExternalSendFlow?
+    /// The host a scan or a link is opening; another scan or link meanwhile opens nothing.
+    private static weak var opening: ExternalSendHostController?
 
     /// Opens Send for a scanned code or a dash: link over `presenter`. The host shows at once, on Address while an
-    /// Identity ID is checked or a payment request is fetched. A scan or link that read into no input (nil) presents
-    /// nothing and shows the invalid-address alert.
-    static func present(_ input: ScanInput?, from presenter: UIViewController) {
-        guard opening?.isOpening != true else { return }
+    /// Identity ID is checked or a payment request is fetched; `prefetched` is the request the scanner already
+    /// fetched; `openedByApp` when another app opened the link. Text that is not valid here presents nothing and shows
+    /// the invalid-address alert. `requestCleared` when the scanner's fetch of the code's request failed and it fell
+    /// back to the code's own Core address: the request is not fetched again.
+    static func present(scanned text: String, prefetched: PaymentRequestDetails? = nil, openedByApp: Bool = false,
+                        requestCleared: Bool = false, from presenter: UIViewController) {
+        guard opening == nil else { return }
         let anchor = presenter.topController()
+        let flow = ExternalSendFlow()
         // Checked before presenting: a dismiss while the host is still animating in would be dropped.
-        guard let input else {
+        guard flow.scannedDestination(text, openedByApp: openedByApp, requestCleared: requestCleared) != nil else {
             presentInvalidAddressAlert(on: anchor)
             return
         }
-        let flow = ExternalSendFlow()
+        flow.start()
         let host = ExternalSendHostController(flow: flow)
-        flow.open(input)
-        opening = flow
-        anchor.present(host, animated: true)
+        opening = host
+        host.anchor = anchor
+        // Started once the host is on screen: a request that fails fast alerts on the host, and an alert presented
+        // while the host is still animating in would be dropped.
+        anchor.present(host, animated: true) {
+            Task { @MainActor in
+                _ = await host.flow.handleScanned(
+                    text, prefetched: prefetched, openedByApp: openedByApp, requestCleared: requestCleared)
+                opening = nil
+            }
+        }
     }
 
     private static func presentInvalidAddressAlert(on presenter: UIViewController) {
@@ -107,6 +99,8 @@ final class ExternalSendHostController: UIHostingController<ExternalSendFlowScre
         case let .toast(title, message):
             let text = Self.toastText(title: title, message: message)
             dismissAll { $0.presentDashUIKitToast(style: .info, message: text) }
+        case let .requestFailed(title, message):
+            presentRequestFailedAlert(title: title, message: message)
         case let .success(view, txidWire, callbackURL):
             if let callbackURL { UIApplication.shared.open(callbackURL) }
             showSuccess(view, txidWire: txidWire)
@@ -129,13 +123,14 @@ final class ExternalSendHostController: UIHostingController<ExternalSendFlowScre
         return title + (endsSentence ? " " : ". ") + message
     }
 
-    /// Address stays open under the alert to correct the entry.
-    private func presentRequestFailedAlert(_ failure: ExternalSendFlow.RequestFailure) {
-        let alert = UIAlertController(title: failure.title, message: failure.message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
-        // An alert presented while the host is still animating in would be dropped, so it waits for the transition.
-        guard let transition = transitionCoordinator else { return present(alert, animated: true) }
-        transition.animate(alongsideTransition: nil) { [weak self] _ in self?.present(alert, animated: true) }
+    private func presentRequestFailedAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        // A pushed Address stays open to correct the entry; a host opened for a scan or link closes.
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel) { [weak self] _ in
+            guard let self, !self.isPushed, self.presentingViewController != nil else { return }
+            self.dismissAll()
+        })
+        (isPushed || presentingViewController != nil ? self : anchor)?.present(alert, animated: true)
     }
 
     private func presentTransactionDetails(txidWire: Data) {
@@ -199,13 +194,18 @@ final class ExternalSendHostController: UIHostingController<ExternalSendFlowScre
 
 extension ExternalSendHostController: DWQRScanModelDelegate {
     func qrScanModel(_ viewModel: DWQRScanModel, didScanPaymentInput paymentInput: DWPaymentInput) {
-        guard let input = ScanInput(paymentInput) else {
+        guard let text = paymentInput.parsedURI?.rawString else {
             dismiss(animated: true) { [weak self] in self.map(Self.presentInvalidAddressAlert) }
             return
         }
         // The scanner closes first, so Address shows its checking state while the scan is resolved.
         dismiss(animated: true) { [weak self] in
-            self?.flow.open(input)
+            guard let self else { return }
+            Task { @MainActor in
+                let accepted = await self.flow.handleScanned(
+                    text, prefetched: paymentInput.prefetchedRequest, requestCleared: paymentInput.requestCleared)
+                if !accepted { Self.presentInvalidAddressAlert(on: self) }
+            }
         }
     }
 
@@ -223,35 +223,29 @@ extension ExternalSendHostController: SuccessTxDetailViewControllerDelegate {
 /// The entry points the ObjC payment screens call.
 @objc(DWExternalSendLauncher)
 final class ExternalSendLauncher: NSObject {
-    /// A scanned QR code.
+    /// A scanned QR code: the text it was read from, tried by the new destination parser.
     @objc
     static func presentScanned(_ input: DWPaymentInput, from presenter: UIViewController) {
-        ExternalSendHostController.present(ScanInput(input), from: presenter)
+        ExternalSendHostController.present(
+            scanned: input.parsedURI?.rawString ?? "", prefetched: input.prefetchedRequest,
+            requestCleared: input.requestCleared, from: presenter)
     }
 
     /// A dash: link from another app.
     @objc
     static func presentLink(_ url: URL, from presenter: UIViewController) {
-        ExternalSendHostController.present(ScanInput(link: url), from: presenter)
-    }
-}
-
-extension ScanInput {
-    /// The scanner's input: the text the code was read from, the request it fetched and whether it cleared the
-    /// code's request.
-    init?(_ input: DWPaymentInput, network: WalletEnvironment.NetworkKind = WalletEnvironment.networkKind) {
-        guard let text = input.parsedURI?.rawString else { return nil }
-        self.init(text: text, network: network, prefetched: input.prefetchedRequest,
-                  requestCleared: input.requestCleared)
-    }
-
-    /// A dash: link another app opened.
-    init?(link url: URL, network: WalletEnvironment.NetworkKind = WalletEnvironment.networkKind) {
-        self.init(text: url.absoluteString, network: network, openedByApp: true)
+        ExternalSendHostController.present(scanned: url.absoluteString, openedByApp: true, from: presenter)
     }
 }
 
 private extension DWPaymentInput {
+    /// The scanner's fetch of the code's request failed: it attached the code with its request URL cleared
+    /// (`uriByClearingRequestURL`), though the raw text still carries `r=`.
+    var requestCleared: Bool {
+        guard let parsed = parsedURI, parsed.rURL == nil else { return false }
+        return BIP70URI(ParsedPaymentURI.paymentString(for: parsed.rawString))?.r != nil
+    }
+
     /// The payment request the scanner fetched and verified with the code.
     var prefetchedRequest: PaymentRequestDetails? {
         (bip70Confirmation as? BIP70ConfirmationBox).flatMap(PaymentRequestDetails.init(box:))

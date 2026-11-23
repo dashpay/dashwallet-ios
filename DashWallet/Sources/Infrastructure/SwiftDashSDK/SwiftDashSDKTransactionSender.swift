@@ -1103,27 +1103,15 @@ final class SwiftDashSDKTransactionSender: NSObject {
         var errorDescription: String? {
             switch self {
             case .invalidInput(let reason):
-                return String(
-                    format: NSLocalizedString("Invalid transaction input: %@", comment: "Send failed on malformed input; the argument is the reason"),
-                    reason)
+                return "Invalid transaction input: \(reason)"
             case .invalidSwapMemo(let reason):
                 return reason
             case .walletNotReady(let reason):
-                return String(
-                    format: NSLocalizedString("Wallet not ready: %@", comment: "Send failed because the wallet is not ready; the argument is the reason"),
-                    reason)
+                return "Wallet not ready: \(reason)"
             case .transactionRejected(_, let reason):
-                return String(
-                    format: NSLocalizedString(
-                        "The transaction wasn't sent. You can try again. %@",
-                        comment: "Send: broadcast rejected; the argument is the SDK's reason"),
-                    reason)
+                return "The transaction wasn't sent. You can try again. \(reason)"
             case .transactionStatusUnknown(_, let reason):
-                return String(
-                    format: NSLocalizedString(
-                        "We couldn't confirm whether the transaction was accepted. Don't send it again; wait for wallet synchronization. %@",
-                        comment: "Send: broadcast outcome unknown; the argument is the SDK's reason"),
-                    reason)
+                return "We couldn't confirm whether the transaction was accepted. Don't send it again; wait for wallet synchronization. \(reason)"
             }
         }
     }

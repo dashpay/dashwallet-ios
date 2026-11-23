@@ -213,7 +213,7 @@ struct SecurityMenuScreen: View {
         } else if viewModel.hasFaceID {
             return String(format: NSLocalizedString("%@ is not allowed to access Face ID. Allow Face ID access in Settings", comment: ""), displayName)
         } else {
-            return NSLocalizedString("Biometrics Access Required", comment: "")
+            return "Biometrics access required"
         }
     }
     
