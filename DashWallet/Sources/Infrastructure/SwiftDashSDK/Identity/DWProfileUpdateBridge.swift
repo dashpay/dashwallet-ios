@@ -11,7 +11,7 @@
 //
 //  Avatar bytes plumbing:
 //    - Caller passes a `UIImage` (the cropped avatar from
-//      `DWCropAvatarViewController`).
+//      `AvatarCropScreen`).
 //    - Bridge JPEG-encodes at quality 0.8 — matches what the SDK
 //      example app does and keeps the on-chain hash stable for the
 //      same cropped image.

@@ -151,7 +151,7 @@ final class DWAvatarUploadClient: NSObject {
     /// retry; only a rate limit (429) is worth trying again.
     @objc static let errorCodeRefused = 3
 
-    // Internal test seam used by DWUploadAvatarModel tests. Production callers
+    // Internal test seam used by AvatarUploadModel tests. Production callers
     // always get the normal HTTPClient and image queue.
     static var testingHTTPClient: HTTPClient<DWAvatarEndpoint>?
     static var testingImageQueue: DispatchQueue?

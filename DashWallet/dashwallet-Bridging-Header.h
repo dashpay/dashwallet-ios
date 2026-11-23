@@ -88,12 +88,12 @@ static const bool _SNAPSHOT = 0;
 #import "DWBasePressableControl.h"
 
 #if DASHPAY
-#import "DPAlertViewController.h"
 #import "DWDashPayConstants.h"
 #import "DWContainerViewController.h"
 #import "DWDashPaySetupModel.h"
 #import "UIViewController+DWDisplayError.h"
-#import "DWCropAvatarViewController.h"
+#import <TOCropViewController/TOCropViewController.h>
+#import <TOCropViewController/UIImage+CropRotate.h>
 #import "UIImageView+DWDPAvatar.h"
 #import "DWDPUpdateProfileModel.h"
 #endif
