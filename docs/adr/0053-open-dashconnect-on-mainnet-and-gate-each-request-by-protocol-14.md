@@ -1,6 +1,6 @@
 # 0053 — Open DashConnect on mainnet and gate each request by protocol 14
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-13
 - **Deciders:** romchornyi (owner)
 

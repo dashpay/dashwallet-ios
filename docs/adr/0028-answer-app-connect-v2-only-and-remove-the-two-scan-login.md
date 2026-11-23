@@ -1,6 +1,6 @@
 # 0028 — Answer App Connect v2 only and remove the two-scan login
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-09
 - **Deciders:** romchornyi (ADR author)
 

@@ -1,6 +1,6 @@
 # 0057 — Tell a connection sheet from one basis, and claim access only from placed keys
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-13 (shipped in #1399; recorded 2026-11-17)
 - **Deciders:** romchornyi (ADR author)
 

@@ -1,6 +1,6 @@
 # 0058 — Answer a login without a username with the page's own state, and open nothing
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-02 (shipped in #1278, merged 2026-11-16; recorded 2026-11-17)
 - **Deciders:** romchornyi (ADR author)
 

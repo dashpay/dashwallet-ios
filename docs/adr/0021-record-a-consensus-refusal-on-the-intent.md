@@ -1,6 +1,6 @@
 # 0021 — Record a consensus refusal on the intent and show it as Refused
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-09
 - **Deciders:** romchornyi (ADR author)
 

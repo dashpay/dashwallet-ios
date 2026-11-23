@@ -1,6 +1,6 @@
 # 0055 — Keep the App Connect rules in Swift until Android shares the platform wallet
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-04
 - **Deciders:** romchornyi (ADR author)
 

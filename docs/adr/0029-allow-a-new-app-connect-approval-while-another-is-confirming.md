@@ -1,6 +1,6 @@
 # 0029 — Allow a new App Connect approval while another one is still confirming
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-09
 - **Deciders:** romchornyi (ADR author)
 

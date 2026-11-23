@@ -1,6 +1,6 @@
 # 0032 — Pass the owners read from Platform into the pure App Connect projection
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-10
 - **Deciders:** romchornyi (owner), with Claude during the design pass
 

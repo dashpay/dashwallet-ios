@@ -1,6 +1,6 @@
 # 0018 — Run App Connect Platform writes through one executor
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-09
 - **Deciders:** romchornyi (ADR author)
 

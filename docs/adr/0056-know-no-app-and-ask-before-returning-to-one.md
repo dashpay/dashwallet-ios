@@ -1,6 +1,6 @@
 # 0056 — Know no app: show every app as unknown and ask before returning to it
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-02 (shipped in #1278, merged 2026-11-16; recorded 2026-11-17)
 - **Deciders:** romchornyi (ADR author)
 
