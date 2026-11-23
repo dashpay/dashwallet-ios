@@ -476,7 +476,9 @@ extension ExplorePointOfUseListViewController {
         tableView.layer.zPosition = -1
         tableView.dataSource = self
         tableView.clipsToBounds = false
-        tableView.estimatedRowHeight = 0
+        // Item rows size from their content (see `heightForRowAt`); the
+        // other sections keep fixed heights.
+        tableView.estimatedRowHeight = PointOfUseRow.minHeight
         tableView.estimatedSectionHeaderHeight = 0
         tableView.estimatedSectionFooterHeight = 0
         tableView.register(PointOfUseListSegmentedCell.self,
@@ -824,13 +826,19 @@ extension ExplorePointOfUseListViewController: UITableViewDelegate, UITableViewD
         case .filters:
             return 50.0
         case .items:
-            // The table does not self-size (`estimatedRowHeight` is 0), so the
-            // row's height is given here: 56pt, scaled with the text size like
-            // the row's fonts.
-            return UIFontMetrics(forTextStyle: .subheadline).scaledValue(for: PointOfUseRow.minHeight)
+            // A long name wraps at large text sizes, so the row takes the
+            // height of its content (at least `PointOfUseRow.minHeight`).
+            return UITableView.automaticDimension
         case .nextPage:
             return 60.0
         }
+    }
+
+    func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
+        guard ExplorePointOfUseSections(rawValue: indexPath.section) == .items else {
+            return self.tableView(tableView, heightForRowAt: indexPath)
+        }
+        return UIFontMetrics(forTextStyle: .subheadline).scaledValue(for: PointOfUseRow.minHeight)
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
