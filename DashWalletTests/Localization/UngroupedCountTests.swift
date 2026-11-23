@@ -29,7 +29,7 @@ import XCTest
 /// zero-loss check formats both sides with `String(format:locale:)`, so it cannot see the route;
 /// the source check below does.
 final class UngroupedCountTests: XCTestCase {
-    /// (file under DashWallet/Sources, the Baseline key at that site, read from `git show 088eead15:<file>`)
+    /// (file under DashWallet/Sources, the Baseline key at that site, read from `git show <Baseline commit>:<file>`, the Baseline commit being the merge-base with develop)
     /// of each `String(format:)` + integer site whose value can reach 1000: block and list heights,
     /// list counts, transaction input/output counts and indexes, address-pool counts, epoch day,
     /// contact requests, system status codes.
