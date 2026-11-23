@@ -20,7 +20,7 @@ class SchemaReleaseTest < Minitest::Test
       @retained_sources = []
       # The release mirror: tags by name, and how a head stands against a base.
       # By default the release branch is still the pre-mirror line.
-      @tags, @comparisons, @fast_forwards, @pulls, @open_pull = {}, { ["v9.1.3", "master"] => "diverged" }, [], [], false
+      @tags, @comparisons, @fast_forwards, @pulls, @open_pull = {}, { ["master", "a" * 40] => "identical", ["v9.1.4", "master"] => "diverged" }, [], [], false
     end
     def tag_commit(_repo, name)
       @tags[name]
@@ -118,6 +118,8 @@ class SchemaReleaseTest < Minitest::Test
                   "wallet_sha" => "a" * 40, "platform_sha" => "b" * 40, "schema" => SCHEMA,
                   "fixture_path" => "stores/#{@digest}.store", "fixture_sha256" => @digest }
     save_manifest
+    # The release workflow binds every build it uploads; the mirror needs it.
+    bind("apple21", @path)
     historical_fixture = "SQLite format 3\x00historical synthetic test"
     @historical_fixture = historical_fixture
     @store.github.registry["historical_schemas"] = { "2.0.0" => {
@@ -185,7 +187,9 @@ class SchemaReleaseTest < Minitest::Test
     assert_empty @store.github.dispatches
   end
 
-  # The release mirror. 9.1.0 is below the real cutoff, so these tests lower it.
+  # The release mirror. By default the fake has `master` at the published
+  # commit and not yet cut over, so the other tests see a mirror with nothing
+  # to move and nothing to offer.
   WALLET = "a" * 40
   RELEASE_TIP = "d" * 40
 
@@ -198,21 +202,22 @@ class SchemaReleaseTest < Minitest::Test
   end
 
   def mirroring(release: "ahead", development: "behind", cutover: "ahead")
-    bind("apple21", @path) unless @store.files.key?("apple-builds/apple21.json") || @unbound
+    @store.files.delete("apple-builds/apple21.json") if @unbound
     github = @store.github
     github.comparisons[["master", WALLET]] = release
     ["master", WALLET].each do |tip|
       github.comparisons[["develop", tip]] = development
-      github.comparisons[["v9.1.3", tip]] = cutover
+      github.comparisons[["v9.1.4", tip]] = cutover
     end
     @output = StringIO.new
-    SchemaRelease::Pipeline.new(store: @store, apple: @apple, bundle_id: BUNDLE, output: @output, mirror_after: "9.0.0")
+    SchemaRelease::Pipeline.new(store: @store, apple: @apple, bundle_id: BUNDLE, output: @output)
   end
 
-  def test_publications_up_to_the_cutoff_are_not_mirrored
-    @pipeline.sync
+  def test_before_the_cutover_a_published_release_is_tagged_and_reported_and_nothing_else_is_written
+    error = assert_raises(SchemaRelease::Error) { mirroring(release: "diverged", development: "diverged", cutover: "diverged").sync }
+    assert_includes error.message, "do the cutover in ADR-0054"
     github = @store.github
-    assert_empty github.tags
+    assert_equal({ "v9.1.0" => WALLET }, github.tags)
     assert_empty github.fast_forwards
     assert_empty github.pulls
     assert_equal [["new", @store.head]], github.dispatches
@@ -397,6 +402,7 @@ class SchemaReleaseTest < Minitest::Test
   def test_manifest_without_a_wallet_commit_is_reported_and_does_not_stop_the_freeze
     @manifest.delete("wallet_sha")
     save_manifest
+    bind("apple21", @path)
     assert_raises(SchemaRelease::Error) { mirroring.sync }
     assert_empty @store.github.tags
     assert_empty @store.github.fast_forwards
@@ -810,10 +816,13 @@ class SchemaReleaseTest < Minitest::Test
     SchemaRelease.bind_build(@store, env)
     SchemaRelease.bind_build(@store, env)
     assert_equal @path, @store.document("apple-builds/apple21.json")["manifest_path"]
-    # Publication also works when the workflow crashed before this index write.
+    # The freeze also works when the workflow crashed before this index write;
+    # only the release mirror waits for the binding, and says so.
     @store.files.delete("apple-builds/apple21.json")
-    @pipeline.sync
+    error = assert_raises(SchemaRelease::Error) { @pipeline.sync }
+    assert_includes error.message, "no recorded binding"
     assert_equal "apple21", @store.document("releases/new.json")["build_id"]
+    assert_equal [["new", @store.head]], @store.github.dispatches
   end
 
   def test_record_build_preserves_capture_and_refuses_reused_tuple

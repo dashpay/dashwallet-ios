@@ -23,13 +23,10 @@ module SchemaRelease
   # it, it returns to `develop` by a pull request this script opens.
   RELEASE_BRANCH = "master"
   DEVELOPMENT_BRANCH = "develop"
-  # Publications up to this version predate the mirror. 9.1.4 itself shipped
-  # from a side branch `develop` never merged, so it cannot be fast-forwarded to.
-  MIRROR_AFTER_VERSION = "9.1.4"
-  # Where `master` starts as a mirror. Before the cutover it holds the abandoned
-  # 8.x line, which does not descend from this tag and is never offered to
-  # `develop`.
-  MIRROR_START_TAG = "v9.1.3"
+  # Where `master` starts as a mirror: the release the App Store had at the
+  # cutover. Before the cutover `master` holds the abandoned 8.x line, which
+  # does not descend from this tag and is never offered to `develop`.
+  MIRROR_START_TAG = "v9.1.4"
   CAPTURE_FILES = %w[
     packages/swift-sdk/schema-models.json
     packages/swift-sdk/scripts/freeze_schema_models.py
@@ -330,9 +327,8 @@ module SchemaRelease
   end
 
   class Pipeline
-    def initialize(store:, apple:, bundle_id:, output: $stdout, mirror_after: MIRROR_AFTER_VERSION)
+    def initialize(store:, apple:, bundle_id:, output: $stdout)
       @store, @apple, @bundle, @out = store, apple, SchemaRelease.component(bundle_id), output
-      @mirror_after = AppStoreConnectRelease::MarketingVersion.new(mirror_after)
     end
 
     def bootstrap(dry_run: false)
@@ -547,7 +543,6 @@ module SchemaRelease
     # failure here is reported and never stops the schema freeze.
     def mirror_release(record, manifest, failures, bound:, newest:, dry_run:)
       version = record.fetch("app_version")
-      return if AppStoreConnectRelease::MarketingVersion.new(version) <= @mirror_after
       commit = SchemaRelease.sha(manifest.fetch("wallet_sha"))
       label = "App Store #{version} (#{record['build_number']})"
       # The manifest is found by version and build number, which an upload made
