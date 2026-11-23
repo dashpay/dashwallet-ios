@@ -144,17 +144,6 @@ jobs:
           python3 scripts/test_asset_lock_recovery.py
           python3 scripts/test_identity_top_up_compatibility.py
 
-      # The String Catalog tools: the build's sync phase, the zero-loss check and
-      # its formatter. They compile Swift helpers, so Xcode must be selected; the
-      # compiled helpers are cached in the runner temp dir, outside the checkout.
-      - name: Test the String Catalog tools
-        env:
-          FORMATTER_CACHE: ${{ runner.temp }}/l10n-formatter
-          CATALOG_WRITER_CACHE: ${{ runner.temp }}/l10n-catalog-writer
-        run: |
-          python3 -m unittest discover -s scripts/localization/tests
-          swift test --package-path scripts/localization/codemod
-
       # Same key as release-dashpay-testflight.yml so the two workflows share
       # one cached artifact per platform commit.
       - name: Restore release XCFramework cache
@@ -254,6 +243,19 @@ jobs:
             ~/Library/Caches/CocoaPods
             ${{ github.workspace }}/dashwallet-ios/Pods
           key: ${{ steps.cocoapods-cache.outputs.cache-primary-key }}
+
+      # The String Catalog tools: the build's sync phase, the zero-loss check and
+      # its formatter. They compile Swift helpers, so Xcode must be selected; the
+      # compiled helpers are cached in the runner temp dir, outside the checkout.
+      # The manual-entry scan reads the dashpay Debug build's Swift flags through
+      # xcodebuild, and CocoaPods' xcconfig adds one, so it runs after pod install.
+      - name: Test the String Catalog tools
+        env:
+          FORMATTER_CACHE: ${{ runner.temp }}/l10n-formatter
+          CATALOG_WRITER_CACHE: ${{ runner.temp }}/l10n-catalog-writer
+        run: |
+          python3 -m unittest discover -s scripts/localization/tests
+          swift test --package-path scripts/localization/codemod
 
       - name: Write placeholder app configuration
         run: |
