@@ -86,7 +86,7 @@ final class BackupInfoViewController: BaseViewController {
     @IBOutlet private var showRecoveryPhraseButton: UIButton!
     @IBOutlet private var skipButton: UIButton!
 
-    private var closeButton: UIBarButtonItem!
+    private let navigationBar = NavigationBarModel()
     private var seedPhraseModel: DWPreviewSeedPhraseModel!
 
     /// `true` when this screen is the onboarding create-wallet step and no
@@ -205,6 +205,8 @@ extension BackupInfoViewController {
         showRecoveryPhraseButton.setTitle(NSLocalizedString("Show Recovery Phrase", comment: "Back up wallet"), for: .normal)
         skipButton.setTitle(NSLocalizedString("Skip", comment: "Back up wallet"), for: .normal)
 
+        installNavigationBar(navigationBar)
+
         show(item: .notStoredByDash)
         show(item: .unableToRestore)
         installPhraseLengthPickerIfNeeded()
@@ -215,6 +217,10 @@ extension BackupInfoViewController {
     }
 
     private func reloadView() {
+        navigationBar.leading = isAllActionHidden
+            ? .init(element: .back) { [weak self] in self?.navigationController?.popViewController(animated: true) }
+            : nil
+
         if isAllActionHidden {
             hideCloseButton()
             bottomButtonStack.isHidden = true
@@ -288,15 +294,11 @@ extension BackupInfoViewController {
     }
 
     private func showCloseButton() {
-        let item = UIBarButtonItem(barButtonSystemItem: .close, target: self, action: #selector(closeAction))
-        navigationItem.rightBarButtonItem = item
-
-        closeButton = item
+        navigationBar.trailing = .init(element: .close) { [weak self] in self?.closeAction() }
     }
 
     private func hideCloseButton() {
-        navigationItem.rightBarButtonItem = nil
-        closeButton = nil
+        navigationBar.trailing = nil
     }
 }
 
@@ -309,5 +311,5 @@ extension BackupInfoViewController {
 // MARK: NavigationBarDisplayable
 
 extension BackupInfoViewController: NavigationBarDisplayable {
-    var isBackButtonHidden: Bool { isAllActionHidden == false }
+    var isNavigationBarHidden: Bool { true }
 }

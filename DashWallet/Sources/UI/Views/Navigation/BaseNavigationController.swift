@@ -15,6 +15,8 @@
 //  limitations under the License.
 //
 
+import DashUIKit
+import SwiftUI
 import UIKit
 
 // MARK: - NavigationStackControllable
@@ -300,3 +302,115 @@ extension BaseNavigationController: UIGestureRecognizerDelegate {
         return viewControllers.count > 1 && isPushAnimationInProgress == false
     }
 }
+
+// MARK: - DashUIKit navigation bar for UIKit screens
+
+/// What a UIKit screen's DashUIKit bar shows. Change it at any time; the bar
+/// redraws.
+final class NavigationBarModel: ObservableObject {
+    struct Item {
+        let element: DashUIKit.NavigationBarElement
+        let action: () -> Void
+    }
+
+    @Published var title: String?
+    @Published var leading: Item?
+    @Published var trailing: Item?
+
+    init(title: String? = nil, leading: Item? = nil, trailing: Item? = nil) {
+        self.title = title
+        self.leading = leading
+        self.trailing = trailing
+    }
+}
+
+extension UIViewController {
+    /// Draws DashUIKit's `NavigationBar` at the top of a UIKit screen, under
+    /// the status bar. The screen hides the system bar itself
+    /// (`NavigationBarDisplayable.isNavigationBarHidden`).
+    ///
+    /// The bar's height is added to `additionalSafeAreaInsets.top`, so
+    /// content laid out against the safe area, and scroll views that adjust
+    /// their insets to it, start below the bar without new constraints.
+    func installNavigationBar(_ model: NavigationBarModel, background: UIColor = .dw_secondaryBackground()) {
+        let host = UIHostingController(rootView: UIKitNavigationBar(model: model))
+        host.sizingOptions = .intrinsicContentSize
+        // The bar sits inside the safe area it adds; ignoring it keeps the
+        // bar from growing by its own height on every layout pass.
+        host.safeAreaRegions = []
+        host.view.backgroundColor = .clear
+        host.view.translatesAutoresizingMaskIntoConstraints = false
+
+        let container = NavigationBarContainerView(owner: self)
+        container.translatesAutoresizingMaskIntoConstraints = false
+        container.backgroundColor = background
+        // Above content the screen adds later, which scrolls under the bar.
+        container.layer.zPosition = 1
+
+        addChild(host)
+        container.addSubview(host.view)
+        view.addSubview(container)
+        host.didMove(toParent: self)
+
+        NSLayoutConstraint.activate([
+            // The safe area includes the bar (see `NavigationBarContainerView`),
+            // so the bar ends where the safe area starts.
+            container.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            container.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            container.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+
+            host.view.topAnchor.constraint(equalTo: container.topAnchor),
+            host.view.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+            host.view.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            host.view.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+        ])
+    }
+}
+
+/// Keeps its owner's `additionalSafeAreaInsets.top` equal to its own height,
+/// so the bar can grow with the text size.
+private final class NavigationBarContainerView: UIView {
+    private weak var owner: UIViewController?
+
+    init(owner: UIViewController) {
+        self.owner = owner
+        super.init(frame: .zero)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        guard let owner, owner.additionalSafeAreaInsets.top != bounds.height else { return }
+        owner.additionalSafeAreaInsets.top = bounds.height
+    }
+}
+
+private struct UIKitNavigationBar: View {
+    @ObservedObject var model: NavigationBarModel
+
+    var body: some View {
+        DashUIKit.NavigationBar(
+            leading: {
+                if let item = model.leading {
+                    item.element.button(action: item.action)
+                }
+            },
+            central: {
+                if let title = model.title {
+                    Text(title)
+                        .dashFont(.subheadMedium)
+                        .foregroundColor(.dash.primaryText)
+                        .accessibilityAddTraits(.isHeader)
+                }
+            },
+            trailing: {
+                if let item = model.trailing {
+                    item.element.button(action: item.action)
+                }
+            })
+    }
+}
+
