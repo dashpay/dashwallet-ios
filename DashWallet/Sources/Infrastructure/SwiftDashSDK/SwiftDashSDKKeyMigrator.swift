@@ -389,19 +389,10 @@ final class SwiftDashSDKKeyMigrator: NSObject {
     }
 
     /// The KEYMIG line for a failed enumeration of the DashSync keychain
-    /// items: the Error summary and the keychain status.
+    /// items; the Error summary carries the keychain status.
     static func enumerationFailedLine(_ error: Error, during phase: String? = nil) -> AppLogMessage {
         let context = phase.map { " during \($0)" } ?? ""
-        return "🔑 KEYMIG :: DashSync mnemonic enumeration failed\(context, privacy: .public): \(error) status=\(keychainStatus(of: error), privacy: .public)"
-    }
-
-    /// The Security framework status of a failed keychain read, for the log;
-    /// `errorSummary` keeps only the case name.
-    static func keychainStatus(of error: Error) -> String {
-        guard case LegacyMnemonicCleanupError.keychainRead(let status)? = error as? LegacyMnemonicCleanupError else {
-            return "-"
-        }
-        return String(status)
+        return "🔑 KEYMIG :: DashSync mnemonic enumeration failed\(context, privacy: .public): \(error)"
     }
 
     enum LegacyMnemonicCleanupError: LocalizedError {

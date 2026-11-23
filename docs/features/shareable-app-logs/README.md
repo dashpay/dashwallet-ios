@@ -59,5 +59,8 @@ registration with a local helper; this change fixes it for the whole app.
 
 ## Not in scope
 
+- Log files written before this change: the rules apply when a line is written, so an export from an
+  updated install can still hold older entries as they were. Existing files are not rewritten or filtered;
+  they age out with the rolling log files.
 - About 50 `print()` calls and about 70 legacy `DWLogger` lines that still write raw error text:
   #1302.

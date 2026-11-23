@@ -110,6 +110,8 @@ enum RecoveryPhraseInventory {
     struct ReadableEntries {
         let entries: [RecoveryPhraseInventoryEntry]
         let skippedWalletIds: [Data]
+        /// Why each skipped entry was unreadable, in the same order.
+        let skippedErrors: [Error]
     }
 
     struct MnemonicMaterial {
@@ -131,8 +133,12 @@ enum RecoveryPhraseInventory {
             let labels = result.skippedWalletIds.map {
                 $0.prefix(4).map { String(format: "%02x", $0) }.joined()
             }.joined(separator: ",")
+            let reasons = result.skippedErrors.map(AppLogMessage.errorSummary).joined(separator: "; ")
             logger.error(
-                "Skipping \(result.skippedWalletIds.count, privacy: .public) unreadable recovery-phrase entry/entries ids=\(labels, privacy: .public)")
+                """
+                Skipping \(result.skippedWalletIds.count, privacy: .public) unreadable recovery-phrase \
+                entry/entries ids=\(labels, privacy: .public) errors=\(reasons, privacy: .public)
+                """)
         }
 
         let entries = selectableEntries(result.entries)
@@ -160,11 +166,13 @@ enum RecoveryPhraseInventory {
     ) throws -> ReadableEntries {
         var entries: [RecoveryPhraseInventoryEntry] = []
         var skippedWalletIds: [Data] = []
+        var skippedErrors: [Error] = []
         for walletId in walletIds {
             do {
                 entries.append(try loadEntry(walletId))
             } catch {
                 skippedWalletIds.append(walletId)
+                skippedErrors.append(error)
             }
         }
 
@@ -173,7 +181,8 @@ enum RecoveryPhraseInventory {
         }
         return ReadableEntries(
             entries: entries,
-            skippedWalletIds: skippedWalletIds)
+            skippedWalletIds: skippedWalletIds,
+            skippedErrors: skippedErrors)
     }
 
     /// The entries this build can actually act on.

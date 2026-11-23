@@ -137,8 +137,8 @@ struct AppConnectWriteExecutor {
         if let caseName = AppLogMessage.caseName(of: error) {
             parts.append(caseName)
         }
-        if let refusal = PlatformDashConnectDataSource.consensusRefusal(from: error, at: Date()) {
-            parts.append("code=\(refusal.code)")
+        if let consensus = AppLogMessage.consensusError(in: error) {
+            parts.append("code=\(consensus.code) kind=\(consensus.kind)")
         }
         return parts.joined(separator: " ")
     }

@@ -463,7 +463,7 @@ final class HostRecoveryTests: XCTestCase {
         XCTAssertTrue(locked.hasSuffix(" status=-25308"), locked)
         let other = SwiftDashSDKHost.mnemonicFailureLine(
             "mnemonic persistence failed", WalletStorageError.mnemonicNotFound).text
-        XCTAssertTrue(other.hasSuffix(" status=-"), other)
+        XCTAssertFalse(other.contains("status="), other)
     }
 
     /// The recovery-phrase read before a wallet removal writes the same
@@ -475,12 +475,14 @@ final class HostRecoveryTests: XCTestCase {
             encoding: .utf8)
         // Both keychain reads on the removal path: the phrase read and the
         // last-wallet proof.
-        let status = "status=\\(SwiftDashSDKHost.keychainStatus(of: error), privacy: .public)"
+        // The status rides in the Error summary (AC-04, PR review r11).
+        let status = ": \\(error)\")"
         for fragment in ["removeWallet mnemonic read failed", "last-wallet proof failed"] {
             let lines = text.split(separator: "\n").filter { $0.contains(fragment) }
             XCTAssertEqual(lines.count, 1, fragment)
             let line = String(lines.first ?? "")
             XCTAssertTrue(line.contains(status), line)
+            XCTAssertFalse(line.contains("status="), line)
         }
     }
 }

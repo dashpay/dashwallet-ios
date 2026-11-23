@@ -380,7 +380,7 @@ final class WalletsViewModel: ObservableObject {
             guard let target = entries.first(where: { $0.walletId == walletId }) else { return false }
             return SwiftDashSDKHost.allMnemonicsMatch(phrase: target.mnemonic, in: entries)
         } catch {
-            Self.logger.error("last-wallet proof failed; refusing global reset: \(error) status=\(SwiftDashSDKHost.keychainStatus(of: error), privacy: .public)")
+            Self.logger.error("last-wallet proof failed; refusing global reset: \(error)")
             return false
         }
     }
@@ -434,7 +434,7 @@ final class WalletsViewModel: ObservableObject {
         do {
             mnemonic = try SwiftDashSDKHost.strictlyPersistedMnemonic(for: walletId)
         } catch {
-            Self.logger.error("removeWallet mnemonic read failed: \(error) status=\(SwiftDashSDKHost.keychainStatus(of: error), privacy: .public)")
+            Self.logger.error("removeWallet mnemonic read failed: \(error)")
             errorMessage = error.localizedDescription
             return
         }

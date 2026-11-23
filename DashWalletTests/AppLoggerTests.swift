@@ -141,6 +141,28 @@ final class AppLoggerTests: XCTestCase {
         XCTAssertEqual(message.text, "<private>")
     }
 
+    // AC-03 (PR review r11): an error whose static type is erased (held in
+    // `Any` or an optional) is still written as its summary, never as text.
+    func testErasedErrorIsWrittenAsItsSummary() {
+        let error = SampleError.failed(path: "/var/mobile/secret.sqlite")
+        let summary = AppLogMessage.errorSummary(error)
+        let erased: Any = error
+        let optional: Error? = error
+        let none: Error? = nil
+
+        let publicErased: AppLogMessage = "\(erased, privacy: .public)"
+        let publicOptional: AppLogMessage = "\(optional, privacy: .public)"
+        let publicNone: AppLogMessage = "\(none, privacy: .public)"
+        let defaultErased: AppLogMessage = "\(erased)"
+        let privateOptional: AppLogMessage = "\(optional, privacy: .private)"
+
+        XCTAssertEqual(publicErased.text, summary)
+        XCTAssertEqual(publicOptional.text, summary)
+        XCTAssertEqual(publicNone.text, "nil")
+        XCTAssertEqual(defaultErased.text, "<private>")
+        XCTAssertEqual(privateOptional.text, "<private>")
+    }
+
     // AC-02, AC-08: the file has no level column, so warning, error and
     // fault lines carry a text tag, written once; a fault is in the file
     // when the call returns.
@@ -220,6 +242,27 @@ final class AppLoggerTests: XCTestCase {
         XCTAssertFalse(summary.contains("asset lock transaction"), summary)
     }
 
+    // AC-03 (PR review r11): an SDK consensus rejection keeps its code and
+    // kind too, at the top and when wrapped; App Connect lines write the kind.
+    func testSDKConsensusRejectionAddsItsCodeAndKind() {
+        enum Envelope: Error { case wrap(Error) }
+        let sdkError = SDKError.consensusRejection(
+            PlatformConsensusError(code: 40100, kind: .state), "identity 9f3b… nonce is out of range")
+        for error in [sdkError as Error, Envelope.wrap(sdkError)] {
+            let summary = AppLogMessage.errorSummary(error)
+            XCTAssertTrue(summary.contains("consensus code=40100 kind=state"), summary)
+            XCTAssertFalse(summary.contains("nonce"), summary)
+        }
+        let walletError = PlatformWalletError.consensusRejection(
+            PlatformConsensusError(code: 10534, kind: .basic), "too many inputs")
+        XCTAssertTrue(
+            AppLogMessage.errorSummary(Envelope.wrap(walletError)).contains("consensus code=10534 kind=basic"))
+
+        let appConnect = AppConnectWriteExecutor.logDescription(of: sdkError)
+        XCTAssertTrue(appConnect.contains("code=40100 kind=state"), appConnect)
+        XCTAssertFalse(appConnect.contains("nonce"), appConnect)
+    }
+
     // AC-03: the error and up to three wrapped errors; the fourth is dropped.
     func testWrappedChainDeeperThanThreeIsCutAtThree() {
         enum Envelope: Error { case wrap(Error) }
@@ -230,32 +273,46 @@ final class AppLoggerTests: XCTestCase {
         XCTAssertFalse(summary.contains("SampleError"), summary)
     }
 
-    // AC-04: the Error summary keeps only the case name, so two keychain
-    // read failures are told apart by the status number the KEYMIG lines add.
-    func testKeyMigrationKeychainFailuresShowTheirStatus() {
+    // AC-04 (PR review r11): the Error summary itself carries the keychain
+    // status, at the top and when wrapped, so every line that writes the
+    // error tells two keychain failures apart.
+    func testKeychainFailuresShowTheirStatusInTheSummary() {
         typealias CleanupError = SwiftDashSDKKeyMigrator.LegacyMnemonicCleanupError
-        let notFound: Error = CleanupError.keychainRead(errSecItemNotFound)
-        let locked: Error = CleanupError.keychainRead(errSecInteractionNotAllowed)
+        let notAvailable: Error = WalletStorageError.keychainError(-25291)
+        let locked: Error = WalletStorageError.keychainError(-25308)
+        let wrapped: Error = SwiftDashSDKHost.HostError.mnemonicPersistenceFailed(locked)
+        let legacy: Error = CleanupError.keychainRead(errSecItemNotFound)
 
-        XCTAssertEqual(
-            AppLogMessage.errorSummary(notFound), AppLogMessage.errorSummary(locked))
-        XCTAssertEqual(SwiftDashSDKKeyMigrator.keychainStatus(of: notFound), "-25300")
-        XCTAssertEqual(SwiftDashSDKKeyMigrator.keychainStatus(of: locked), "-25308")
+        XCTAssertTrue(AppLogMessage.errorSummary(notAvailable).hasSuffix(" status=-25291"))
+        XCTAssertTrue(AppLogMessage.errorSummary(locked).hasSuffix(" status=-25308"))
+        let wrappedSummary = AppLogMessage.errorSummary(wrapped)
+        XCTAssertTrue(wrappedSummary.hasSuffix(" status=-25308"), wrappedSummary)
+        XCTAssertTrue(AppLogMessage.errorSummary(legacy).hasSuffix(" status=-25300"))
+        XCTAssertFalse(AppLogMessage.errorSummary(WalletStorageError.mnemonicNotFound).contains("status="))
+        XCTAssertFalse(AppLogMessage.errorSummary(CleanupError.mnemonicRead).contains("status="))
 
-        // The line itself, as both KEYMIG enumeration sites write it.
-        let summary = AppLogMessage.errorSummary(notFound)
-        XCTAssertEqual(
-            SwiftDashSDKKeyMigrator.enumerationFailedLine(notFound).text,
-            "🔑 KEYMIG :: DashSync mnemonic enumeration failed: \(summary) status=-25300")
-        XCTAssertEqual(
-            SwiftDashSDKKeyMigrator.enumerationFailedLine(locked, during: "launch probe").text,
-            "🔑 KEYMIG :: DashSync mnemonic enumeration failed during launch probe: \(summary) status=-25308")
+        // The KEYMIG line writes the status once, through the summary.
+        let line = SwiftDashSDKKeyMigrator.enumerationFailedLine(legacy, during: "launch probe").text
+        let legacySummary = AppLogMessage.errorSummary(legacy)
+        XCTAssertEqual(line, "🔑 KEYMIG :: DashSync mnemonic enumeration failed during launch probe: \(legacySummary)")
+        XCTAssertEqual(line.components(separatedBy: "status=").count, 2, line)
     }
 
-    func testKeyMigrationNonKeychainFailureHasNoStatus() {
-        typealias CleanupError = SwiftDashSDKKeyMigrator.LegacyMnemonicCleanupError
-        XCTAssertEqual(SwiftDashSDKKeyMigrator.keychainStatus(of: CleanupError.mnemonicRead), "-")
-        XCTAssertEqual(SwiftDashSDKKeyMigrator.keychainStatus(of: SampleError.failed(path: "x")), "-")
+    // AC-04 (PR review r11): keychain lines that wrote a code list or only a
+    // count write the error summary, which carries the status.
+    func testKeychainLinesWithoutTheSummaryNowWriteIt() throws {
+        let host = "DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKHost.swift"
+        let fragments = ["HOST wallet-presence keychain read failed", "HOST mnemonic keychain enumeration failed"]
+        for fragment in fragments {
+            let line = try sourceLine(host, containing: fragment)
+            XCTAssertTrue(line.contains("AppLogMessage.errorSummary(error)"), line)
+        }
+        let skip = try sourceText("DashWallet/Sources/UI/Menu/Security/RecoveryPhraseFlow.swift")
+        XCTAssertTrue(skip.contains("result.skippedErrors.map(AppLogMessage.errorSummary)"))
+        for path in [host, "DashWallet/Sources/UI/Menu/Security/Wallets/WalletsViewModel.swift",
+                     "DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKKeyMigrator.swift"] {
+            XCTAssertFalse(try sourceText(path).contains("keychainStatus(of:"), path)
+        }
     }
 
     // AC-05: a Financial amount (a balance or a payment amount) is written as
@@ -776,6 +833,53 @@ final class AppLoggerTests: XCTestCase {
             containing: "recovery tap ignored phase")
         XCTAssertFalse(line.contains("String(describing:"), line)
         XCTAssertTrue(line.contains("AppLogMessage.caseName(of:"), line)
+    }
+
+    // AC-03 (PR review r11): three direct lines next to fixed AppLogger
+    // lines wrote the error's description; they write its summary.
+    func testLegacyErrorLinesNextToFixedLinesWriteTheSummary() throws {
+        let lines = [
+            ("DashWallet/Sources/Infrastructure/SwiftDashSDK/Identity/DWCurrentUserIdentityInfo.swift",
+             "failed after \\(elapsedMs())ms:"),
+            ("DashWallet/Sources/Infrastructure/SwiftDashSDK/AssetLockRecoveryService.swift",
+             "LOCK-RETRY bulk aborted"),
+            ("DashWallet/Sources/Models/SwapKit/SwapKitSwapProvider.swift", "SwapKit: track request failed"),
+        ]
+        for (path, fragment) in lines {
+            let line = try sourceLine(path, containing: fragment)
+            XCTAssertTrue(line.contains("AppLogMessage.errorSummary(error)"), line)
+            XCTAssertFalse(line.contains("String(describing:"), line)
+            XCTAssertFalse(line.contains("localizedDescription"), line)
+            XCTAssertFalse(line.contains("authFailureMessage"), line)
+        }
+    }
+
+    // AC-03 (PR review r11): one consensus extractor; no other copy matches
+    // the rejection case by hand.
+    func testConsensusRejectionIsExtractedInOnePlace() throws {
+        let dataSource = try sourceText("DashWallet/Sources/Models/DashConnect/PlatformDashConnectDataSource.swift")
+        XCTAssertTrue(dataSource.contains("AppLogMessage.consensusError(in: error)"))
+        XCTAssertFalse(dataSource.contains("case let error as SDKError: error.consensusError"))
+        let store = try sourceText("DashWallet/Sources/Infrastructure/SwiftDashSDK/AssetLockFailureStore.swift")
+        XCTAssertFalse(store.contains("case .consensusRejection(let consensus"))
+        let logger = try sourceText("DashWallet/Sources/Infrastructure/AppLogger.swift")
+        XCTAssertFalse(logger.contains("case .consensusRejection(let consensus"))
+    }
+
+    // AC-05 (PR review r11): App Connect preview lines, written before the
+    // Wallet user approved the request, name no contract or token position.
+    func testAppConnectPreviewLinesWriteNoContractId() throws {
+        let path = "DashWallet/Sources/Models/DashConnect/PlatformDashConnectDataSource.swift"
+        let fragments = [
+            "has no token at the requested position", "declares no decimals",
+            "token purchase: contract fetch failed", "app metadata resolution failed",
+        ]
+        for fragment in fragments {
+            let line = try sourceLine(path, containing: fragment)
+            XCTAssertFalse(line.contains("\\(id"), line)
+            XCTAssertFalse(line.contains("\\(contractId"), line)
+            XCTAssertFalse(line.contains("\\(position"), line)
+        }
     }
 
     private var repositoryRoot: URL {

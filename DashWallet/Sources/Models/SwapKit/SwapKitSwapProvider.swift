@@ -708,7 +708,7 @@ final class SwapKitSwapProvider: SwapProvider {
             }
             // Non-fatal; return not-yet-observed so polling continues — flagged, so a caller
             // that draws conclusions from "not observed" can tell it from a real answer.
-            DWLogger.log("SwapKit: track request failed: \(error)")
+            DWLogger.log("SwapKit: track request failed: \(AppLogMessage.errorSummary(error))")
             return SwapStatusResult(error: nil, isObserved: false, observedStatus: nil, outHashes: nil, requestFailed: true)
         }
     }

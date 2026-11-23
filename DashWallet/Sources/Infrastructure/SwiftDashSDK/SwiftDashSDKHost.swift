@@ -438,7 +438,7 @@ final class SwiftDashSDKHost {
         do {
             return try !WalletStorage().listWalletIdsWithMnemonic().isEmpty
         } catch {
-            DWLogger.log("HOST wallet-presence keychain read failed: \(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
+            DWLogger.log("HOST wallet-presence keychain read failed: \(AppLogMessage.errorSummary(error))")
             return false
         }
     }
@@ -459,7 +459,7 @@ final class SwiftDashSDKHost {
                 return (walletId: walletId, mnemonic: mnemonic)
             }
         } catch {
-            DWLogger.log("HOST mnemonic keychain enumeration failed: \(WalletPreparationFailure(error: error).codes.joined(separator: ","))")
+            DWLogger.log("HOST mnemonic keychain enumeration failed: \(AppLogMessage.errorSummary(error))")
             return []
         }
     }
@@ -666,15 +666,10 @@ final class SwiftDashSDKHost {
         }
     }
 
-    /// A recovery-phrase keychain failure line: the Error summary keeps only
-    /// the case, so the keychain status is added, `-` when there is none.
+    /// A recovery-phrase keychain failure line; the Error summary carries
+    /// the keychain status.
     nonisolated static func mnemonicFailureLine(_ event: String, _ error: Error) -> AppLogMessage {
-        "🪺 HOST :: \(event, privacy: .public): \(error) status=\(keychainStatus(of: error), privacy: .public)"
-    }
-
-    /// The keychain status of a recovery-phrase failure, `-` when there is none.
-    nonisolated static func keychainStatus(of error: Error) -> String {
-        keysFailure(in: error)?.status.map { String($0) } ?? "-"
+        "🪺 HOST :: \(event, privacy: .public): \(error)"
     }
 
     /// Only a cause this host knows to be about the keys classifies as one;

@@ -88,12 +88,36 @@ struct AppLogMessage: ExpressibleByStringInterpolation {
 
     private static let maxWrappedErrors = 3
 
+    /// The keychain status a recovery-phrase keychain failure carries; the
+    /// bridged error drops it. `nil` for any other error.
+    private static func keychainStatus(in error: Error) -> OSStatus? {
+        switch error {
+        case WalletStorageError.keychainError(let status): status
+        case SwiftDashSDKKeyMigrator.LegacyMnemonicCleanupError.keychainRead(let status): status
+        default: nil
+        }
+    }
+
+    /// The consensus rejection `error` itself carries, from the SDK or from
+    /// the wallet layer; `nil` for any other error. Not the errors it wraps:
+    /// `errorSummary` walks those level by level.
+    static func consensusError(in error: Error) -> PlatformConsensusError? {
+        switch error {
+        case let error as SDKError: error.consensusError
+        case let error as PlatformWalletError: error.consensusError
+        default: nil
+        }
+    }
+
     private static func errorSummary(_ error: Error, depth: Int) -> String {
         let nsError = error as NSError
         let caseSuffix = caseName(of: error).map { ".\($0)" } ?? ""
         var summary = "\(type(of: error))\(caseSuffix) \(nsError.domain) #\(nsError.code)"
-        if case .consensusRejection(let consensus, _)? = error as? PlatformWalletError {
+        if let consensus = consensusError(in: error) {
             summary += " consensus code=\(consensus.code) kind=\(consensus.kind)"
+        }
+        if let status = keychainStatus(in: error) {
+            summary += " status=\(status)"
         }
         if depth < maxWrappedErrors, let wrapped = wrappedError(of: error) {
             summary += " ← " + errorSummary(wrapped, depth: depth + 1)
@@ -170,8 +194,15 @@ struct AppLogMessage: ExpressibleByStringInterpolation {
             append(privacy) { AppLogMessage.errorSummary(error) }
         }
 
+        /// An `Error` whose static type is erased (held in `Any`, an
+        /// optional) still renders as its summary, never as its text.
         mutating func appendInterpolation<T>(_ value: T, privacy: AppLogPrivacy = .private) {
-            append(privacy) { String(describing: value) }
+            append(privacy) {
+                if let error = value as? Error {
+                    return AppLogMessage.errorSummary(error)
+                }
+                return String(describing: value)
+            }
         }
 
         private mutating func append(_ privacy: AppLogPrivacy, _ render: () -> String) {

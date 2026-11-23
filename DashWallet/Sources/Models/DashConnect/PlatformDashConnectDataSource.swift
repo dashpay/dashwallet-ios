@@ -1650,17 +1650,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// case of its own (an address-nonce race) carries no code and is one to
     /// retry. The refusal holds the code and the date, never Platform's text.
     static func consensusRefusal(from error: Error, at date: Date) -> AppConnect.ConsensusRefusal? {
-        consensusError(in: error).map { AppConnect.ConsensusRefusal(code: $0.code, at: date) }
-    }
-
-    /// The consensus rejection `error` carries, from the SDK or from the
-    /// wallet layer; `nil` for any other error.
-    private static func consensusError(in error: Error) -> PlatformConsensusError? {
-        switch error {
-        case let error as SDKError: error.consensusError
-        case let error as PlatformWalletError: error.consensusError
-        default: nil
-        }
+        AppLogMessage.consensusError(in: error).map { AppConnect.ConsensusRefusal(code: $0.code, at: date) }
     }
 
     /// What an identity update that ended with `error` (a failure or a
@@ -2400,7 +2390,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// the transition, so the publish stays unresolved.
     static func publishFailedForGood(_ outcome: AppConnectWriteExecutor.Outcome) -> Bool {
         guard case .failed(let error) = outcome else { return false }
-        return consensusError(in: error) != nil
+        return AppLogMessage.consensusError(in: error) != nil
     }
 
     /// Records that the response of the intent `id` is on Platform.
@@ -2733,7 +2723,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             let contract = try await sdk.dataContractGetOffMain(id: id)
             guard let tokens = contract["tokens"] as? [String: Any],
                   let tokenDict = tokens[String(position)] as? [String: Any] else {
-                logger.info("🔗 DASHCONNECT :: token purchase: contract \(id, privacy: .public) has no token at position \(position, privacy: .public); quantity shown as base units")
+                logger.info("🔗 DASHCONNECT :: token purchase: the contract has no token at the requested position; quantity shown as base units")
                 return nil
             }
             // `conventions.decimals` wins where both are present — the same
@@ -2741,7 +2731,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             // when it writes the persisted row.
             let conventions = tokenDict["conventions"] as? [String: Any]
             guard let decimals = (conventions?["decimals"] as? Int) ?? (tokenDict["decimals"] as? Int) else {
-                logger.info("🔗 DASHCONNECT :: token purchase: contract \(id, privacy: .public) declares no decimals; quantity shown as base units")
+                logger.info("🔗 DASHCONNECT :: token purchase: the token declares no decimals; quantity shown as base units")
                 return nil
             }
             let name = (tokenDict["name"] as? String)
@@ -2750,7 +2740,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             return (decimals, name)
         } catch {
             let reason = AppConnectWriteExecutor.logDescription(of: error)
-            logger.error("🔗 DASHCONNECT :: token purchase: contract fetch failed for \(id, privacy: .public): \(reason, privacy: .public); quantity shown as base units")
+            logger.error("🔗 DASHCONNECT :: token purchase: contract fetch failed: \(reason, privacy: .public); quantity shown as base units")
             return nil
         }
     }
@@ -3842,7 +3832,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 return label
             }
         } catch {
-            Self.logger.error("🔗 DASHCONNECT :: app metadata resolution failed for \(contractId, privacy: .public): \(AppConnectWriteExecutor.logDescription(of: error), privacy: .public)")
+            Self.logger.error("🔗 DASHCONNECT :: app metadata resolution failed: \(AppConnectWriteExecutor.logDescription(of: error), privacy: .public)")
         }
 
         return nil

@@ -69,7 +69,7 @@ struct AssetLockFailureRecord: Codable, Equatable, Sendable {
         }
         if let platformError = error as? PlatformWalletError {
             var detail = platformError.errorDescription ?? String(describing: platformError)
-            if case .consensusRejection(let consensus, _) = platformError {
+            if let consensus = AppLogMessage.consensusError(in: platformError) {
                 detail = "consensus code=\(consensus.code) kind=\(consensus.kind) \(detail)"
             }
             // The SDK's text names both Orchard addresses; the case name says
