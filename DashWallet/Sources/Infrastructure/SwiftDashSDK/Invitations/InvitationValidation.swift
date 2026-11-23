@@ -273,6 +273,8 @@ enum InvitationClaimFailure: Equatable {
         default:
             break
         }
+        // A consensus code that names another refusal decides alone.
+        guard PlatformRefusal.of(underlying) == nil else { return nil }
         // An error without a typed case or a consensus code: only its text
         // names the cause.
         // TODO(platform-error-codes): a spent report that reaches Swift with

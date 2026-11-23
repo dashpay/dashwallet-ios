@@ -2990,7 +2990,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     nonisolated static func isPlatformAddressInsufficientFunds(
         _ error: Error
     ) -> Bool {
-        if PlatformRefusal.of(error) == .combinedAddressBalanceTooLow { return true }
+        // A consensus code decides alone: the text is read only for an
+        // error that carries none.
+        if let refusal = PlatformRefusal.of(error) { return refusal == .combinedAddressBalanceTooLow }
         let message = error.localizedDescription
         return message.localizedCaseInsensitiveContains(
             "AddressesNotEnoughFundsError")

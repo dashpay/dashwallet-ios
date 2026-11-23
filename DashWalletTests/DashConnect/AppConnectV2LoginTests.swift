@@ -1156,7 +1156,7 @@ final class AppConnectConnectionTermsTests: XCTestCase {
     // MARK: Balance
 
     func testAConsensusRefusalForTheBalanceOffersATopUp() {
-        let refusal = DashConnectPlatformError.networkRefused(code: AppConnect.identityInsufficientBalanceCode)
+        let refusal = DashConnectPlatformError.networkRefused(code: PlatformConsensusCode.identityInsufficientBalance)
 
         XCTAssertTrue(AppConnect.isInsufficientBalance(refusal))
         XCTAssertFalse(AppConnect.isInsufficientBalance(DashConnectPlatformError.networkRefused(code: 40_100)))

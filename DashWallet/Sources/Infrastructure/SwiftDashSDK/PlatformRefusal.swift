@@ -112,6 +112,9 @@ enum PlatformRefusal: Equatable {
     /// The consensus rejection `error` carries, from the SDK or from the
     /// wallet layer; `nil` for any other error. Only the error itself is
     /// examined: a caller holding a wrapped error unwraps it first.
+    ///
+    /// This is also the list of errors App Connect records as refused for
+    /// good (ADR-0021), so an error type added here changes that too.
     static func consensusError(in error: Error) -> PlatformConsensusError? {
         switch error {
         case let error as SDKError: error.consensusError

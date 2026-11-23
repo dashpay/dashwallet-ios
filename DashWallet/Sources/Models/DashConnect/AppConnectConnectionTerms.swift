@@ -229,11 +229,6 @@ extension AppConnect {
         }
     }
 
-    /// The consensus code of Platform's `IdentityInsufficientBalanceError`:
-    /// a refused identity update that topping up the identity would let
-    /// through.
-    static let identityInsufficientBalanceCode = PlatformConsensusCode.identityInsufficientBalance
-
     /// Whether Platform refused an identity update because the identity's
     /// balance cannot pay for it: the consensus code, on the SDK error or on
     /// the recorded refusal, or the typed `insufficientIdentityCredits`.
@@ -244,9 +239,12 @@ extension AppConnect {
     /// code, so the text is matched as well.
     static func isInsufficientBalance(_ error: Error) -> Bool {
         if case .insufficientIdentityCredits? = error as? PlatformWalletError { return true }
-        if PlatformRefusal.of(error) == .identityBalanceTooLow { return true }
-        if case .networkRefused(let code)? = error as? DashConnectPlatformError,
-           PlatformRefusal(code: code) == .identityBalanceTooLow { return true }
+        // A consensus code decides alone: the text is read only for an
+        // error that carries none.
+        if let refusal = PlatformRefusal.of(error) { return refusal == .identityBalanceTooLow }
+        if case .networkRefused(let code)? = error as? DashConnectPlatformError {
+            return PlatformRefusal(code: code) == .identityBalanceTooLow
+        }
         let text = "\(error) \(error.localizedDescription)".lowercased()
         return text.contains("insufficient identity") || text.contains("identityinsufficientbalance")
     }
