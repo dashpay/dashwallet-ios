@@ -298,6 +298,7 @@ class SchemaReleaseTest < Minitest::Test
     pull = @store.github.pulls.fetch(0)
     assert_equal %w[master develop], pull.values_at(:head, :base)
     assert_match(/\Achore: /, pull[:title])
+    assert_includes pull[:title], "merge commit, do not squash"
     assert_includes pull[:body], "merge commit, not a squash"
 
     @store.github.open_pull = true

@@ -620,7 +620,7 @@ module SchemaRelease
       end
       url = github.create_pull(
         IOS_REPO, head: RELEASE_BRANCH, base: DEVELOPMENT_BRANCH,
-        title: "chore: merge #{RELEASE_BRANCH} back into #{DEVELOPMENT_BRANCH}",
+        title: "chore: merge #{RELEASE_BRANCH} back into #{DEVELOPMENT_BRANCH} (merge commit, do not squash)",
         body: "`#{RELEASE_BRANCH}` holds commits that `#{DEVELOPMENT_BRANCH}` lacks, usually a published hotfix.\n\n" \
               "Merge this with **a merge commit, not a squash**. A squash carries the changes over but not the history, " \
               "so the next release from `#{DEVELOPMENT_BRANCH}` would not descend from `#{RELEASE_BRANCH}` and the " \
