@@ -248,7 +248,8 @@ jobs:
       # its formatter. They compile Swift helpers, so Xcode must be selected; the
       # compiled helpers are cached in the runner temp dir, outside the checkout.
       # The manual-entry scan reads the dashpay Debug build's Swift flags through
-      # xcodebuild, and CocoaPods' xcconfig adds one, so it runs after pod install.
+      # xcodebuild with the pinned package versions, and CocoaPods' xcconfig adds
+      # two of them (COCOAPODS, SystemSQLite), so it runs after pod install.
       - name: Test the String Catalog tools
         env:
           FORMATTER_CACHE: ${{ runner.temp }}/l10n-formatter

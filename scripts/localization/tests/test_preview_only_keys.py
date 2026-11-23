@@ -5,13 +5,13 @@
   strings from that code and marks such an entry stale after a build, while the command-line sync
   phase keeps it; the two writers would disagree on every build.
 - Swift looked up only in a branch the dashpay Debug build does not compile (the `#else` of
-  `#if DEBUG`, a flag `xcodebuild` does not resolve for that build), and Objective-C looked up only where
+  `#if DEBUG`, a flag `xcodebuild` does not resolve for that build, `#if false`), and Objective-C looked up only where
   `xcstringstool extract` records a visibility the sync drops: a `DEBUG` condition that is not
   negated (alone or in a conjunction), `TARGET_OS_SIMULATOR`, or an always-false condition (`#if 0`,
   `#if false`, the `#else` of `#if 1`): the sync marks the entry stale.
 - Out of caution the scan also counts as unseen some code the sync may see: Swift under a condition
   that names `DEBUG` anywhere (any branch of `#if DEBUG`, `#if FOO && !DEBUG`) or that is not built
-  only of flags, `!`, `&&` and `||` (`os()`, `canImport()`, `targetEnvironment()`, `false`); and
+  only of flags, `!`, `&&` and `||` (`os()`, `canImport()`, `targetEnvironment()`); and
   Objective-C whose visibility names `DEBUG` not negated anywhere (a disjunction, the `#else` of
   `FOO && !DEBUG`), names the simulator at all, or is a condition the extractor records as opaque
   (`#if DEBUG == 1`, `__has_feature`), a module check (`__has_include`) or Catalyst.
@@ -42,6 +42,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 sys.path.insert(0, os.path.join(REPO, "scripts", "localization"))
@@ -61,13 +62,16 @@ SPECIFIER = r"%(?:\d+\$)?[-+ #0']*\d*(?:\.\d+)?(?:hh|h|ll|l|q|z|t|j|L)?[@dDiouUx
 def debug_build_flags():
     """The conditions the dashpay Debug build compiles Swift with, as `xcodebuild` resolves them: its
     SWIFT_ACTIVE_COMPILATION_CONDITIONS and the `-D` flags of its OTHER_SWIFT_FLAGS. CocoaPods' xcconfig adds
-    `COCOAPODS`, so `pod install` must have run."""
+    `COCOAPODS` and `SystemSQLite`, so `pod install` must have run. The settings are read through the workspace with
+    the package versions its `Package.resolved` pins, as the test build reads them, so no package is fetched."""
     if not os.path.isfile(PODS_DEBUG_XCCONFIG):
         raise RuntimeError("%s is missing: run `pod install` first" % os.path.relpath(PODS_DEBUG_XCCONFIG, REPO))
-    settings = json.loads(subprocess.run(
-        ["xcodebuild", "-project", os.path.join(REPO, "DashWallet.xcodeproj"), "-target", "dashpay",
-         "-configuration", "Debug", "-showBuildSettings", "-json"],
-        capture_output=True, check=True, cwd=REPO).stdout)[0]["buildSettings"]
+    entries = json.loads(subprocess.run(
+        ["xcodebuild", "-workspace", os.path.join(REPO, "DashWallet.xcworkspace"), "-scheme", "dashpay",
+         "-configuration", "Debug", "-disableAutomaticPackageResolution", "-onlyUsePackageVersionsFromResolvedFile",
+         "-showBuildSettings", "-json"],
+        capture_output=True, check=True, cwd=REPO).stdout)
+    (settings,) = [entry["buildSettings"] for entry in entries if entry["target"] == "dashpay"]
     flags = set(settings.get("SWIFT_ACTIVE_COMPILATION_CONDITIONS", "").split())
     args = shlex.split(settings.get("OTHER_SWIFT_FLAGS", ""))
     for i, arg in enumerate(args):
@@ -362,6 +366,28 @@ class PreviewOnlyKeysTests(unittest.TestCase):
         self.assertLessEqual({"DEBUG", "PIGGYCARDS_ENABLED", "DASHPAY", "DASH_DEVNET", "COCOAPODS", "SystemSQLite",
                               "Debug"}, flags)
         self.assertNotIn("DASH_TESTNET", flags)
+
+    def test_the_swift_flags_are_read_with_the_pinned_packages(self):
+        """The settings come from the workspace with the pinned package versions, never from a fresh resolution."""
+        entries = [{"target": "Other", "buildSettings": {"SWIFT_ACTIVE_COMPILATION_CONDITIONS": "OTHER"}},
+                   {"target": "dashpay", "buildSettings": {"SWIFT_ACTIVE_COMPILATION_CONDITIONS": "DEBUG",
+                                                           "OTHER_SWIFT_FLAGS": "-DDebug"}}]
+        completed = subprocess.CompletedProcess([], 0, stdout=json.dumps(entries).encode())
+        debug_build_flags.cache_clear()
+        try:
+            with mock.patch.object(subprocess, "run", return_value=completed) as run:
+                flags = debug_build_flags()
+        finally:
+            debug_build_flags.cache_clear()
+        command = run.call_args.args[0]
+        self.assertEqual(command[0], "xcodebuild")
+        for option, value in (("-workspace", os.path.join(REPO, "DashWallet.xcworkspace")), ("-scheme", "dashpay"),
+                              ("-configuration", "Debug")):
+            self.assertEqual(command[command.index(option) + 1], value)
+        self.assertIn("-disableAutomaticPackageResolution", command)
+        self.assertIn("-onlyUsePackageVersionsFromResolvedFile", command)
+        self.assertNotIn("-project", command)
+        self.assertEqual(flags, {"DEBUG", "Debug"})
 
     def test_an_interpolated_lookup_is_compared_under_the_catalogs_typed_key(self):
         strings = {"Balance %lf": {}, "Balance": {}, "100%% of %lld items": {}, "Name %1$@ and %2$lld": {},
