@@ -77,11 +77,19 @@ struct EditProfileScreen: View {
     @ObservedObject var viewModel: EditProfileViewModel
     let onClose: () -> Void
     let onSave: () -> Void
-    let onEditAvatar: () -> Void
+    /// Opens the UIKit photo picker (camera or library); the picked photo
+    /// comes back through `EditProfileViewModel.pickAvatar` after cropping.
+    let onPickPhoto: (UIImagePickerController.SourceType) -> Void
+    /// Opens the cropper for an image downloaded from a public URL.
+    let onCrop: (UIImage, URL) -> Void
     let onCopyUsername: (String) -> Void
 
     @FocusState private var focusedField: Field?
     @State private var showsSaveDialog = false
+    @State private var showsAvatarSources = false
+    /// What to open once the source sheet has gone: UIKit cannot present
+    /// over a sheet that is still dismissing.
+    @State private var afterAvatarSources: (() -> Void)?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -148,6 +156,25 @@ struct EditProfileScreen: View {
                 saveDialog
             }
         }
+        .sheet(isPresented: $showsAvatarSources, onDismiss: {
+            afterAvatarSources?()
+            afterAvatarSources = nil
+        }) {
+            AvatarSourceSheet(
+                currentURL: viewModel.avatarURLString,
+                onPickPhoto: { sourceType in
+                    afterAvatarSources = { onPickPhoto(sourceType) }
+                    showsAvatarSources = false
+                },
+                onLoad: { image, url, shouldCrop in
+                    if shouldCrop {
+                        afterAvatarSources = { onCrop(image, url) }
+                    } else {
+                        viewModel.pickAvatar(image, url: url.absoluteString)
+                    }
+                    showsAvatarSources = false
+                })
+        }
     }
 
     private var avatar: some View {
@@ -162,7 +189,7 @@ struct EditProfileScreen: View {
             .frame(width: 134, height: 134)
             .clipShape(Circle())
 
-            Button(action: onEditAvatar) {
+            Button { showsAvatarSources = true } label: {
                 Image("dp_avatar_edit")
                     .frame(width: 46, height: 45)
             }

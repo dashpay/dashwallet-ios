@@ -29,9 +29,8 @@ protocol RootEditProfileViewControllerDelegate: AnyObject {
     func editProfileViewControllerDidCancel(_ controller: RootEditProfileViewController)
 }
 
-/// Hosts `EditProfileScreen` and runs the avatar flows, which are still
-/// UIKit: source selector, photo picker, Gravatar / public URL, crop and
-/// upload.
+/// Hosts `EditProfileScreen` and runs the avatar flows that are still UIKit:
+/// the photo picker, crop and upload.
 final class RootEditProfileViewController: UIHostingController<EditProfileScreen> {
     weak var delegate: RootEditProfileViewControllerDelegate?
     private let viewModel: EditProfileViewModel
@@ -41,7 +40,8 @@ final class RootEditProfileViewController: UIHostingController<EditProfileScreen
         self.viewModel = viewModel
         // The closures need `self`, which exists only after `super.init`.
         super.init(rootView: EditProfileScreen(
-            viewModel: viewModel, onClose: {}, onSave: {}, onEditAvatar: {}, onCopyUsername: { _ in }))
+            viewModel: viewModel, onClose: {}, onSave: {}, onPickPhoto: { _ in }, onCrop: { _, _ in },
+            onCopyUsername: { _ in }))
         rootView = EditProfileScreen(
             viewModel: viewModel,
             onClose: { [weak self] in
@@ -49,7 +49,8 @@ final class RootEditProfileViewController: UIHostingController<EditProfileScreen
                 self.delegate?.editProfileViewControllerDidCancel(self)
             },
             onSave: { [weak self] in self?.save() },
-            onEditAvatar: { [weak self] in self?.showAvatarSourceSelector() },
+            onPickPhoto: { [weak self] sourceType in self?.showImagePicker(sourceType) },
+            onCrop: { [weak self] image, url in self?.showCrop(image, url: url) },
             onCopyUsername: { [weak self] name in
                 UIPasteboard.general.string = name
                 self?.view.dw_showInfoHUD(withText: NSLocalizedString("Copied", comment: ""), offsetForNavBar: true)
@@ -76,12 +77,6 @@ final class RootEditProfileViewController: UIHostingController<EditProfileScreen
 
     // MARK: Avatar flows
 
-    private func showAvatarSourceSelector() {
-        let controller = DWAvatarEditSelectorViewController()
-        controller.delegate = self
-        present(controller, animated: true)
-    }
-
     private func showImagePicker(_ sourceType: UIImagePickerController.SourceType) {
         guard UIImagePickerController.isSourceTypeAvailable(sourceType) else { return }
         let picker = UIImagePickerController()
@@ -96,37 +91,6 @@ final class RootEditProfileViewController: UIHostingController<EditProfileScreen
         controller.delegate = self
         controller.modalPresentationStyle = .fullScreen
         present(controller, animated: true)
-    }
-}
-
-// MARK: DWAvatarEditSelectorViewControllerDelegate
-
-extension RootEditProfileViewController: DWAvatarEditSelectorViewControllerDelegate {
-    func avatarEditSelectorViewController(_ controller: DWAvatarEditSelectorViewController, photoButtonAction sender: UIButton) {
-        controller.dismiss(animated: true) { [weak self] in self?.showImagePicker(.camera) }
-    }
-
-    func avatarEditSelectorViewController(_ controller: DWAvatarEditSelectorViewController, galleryButtonAction sender: UIButton) {
-        controller.dismiss(animated: true) { [weak self] in self?.showImagePicker(.photoLibrary) }
-    }
-
-    func avatarEditSelectorViewController(_ controller: DWAvatarEditSelectorViewController, gravatarButtonAction sender: UIButton) {
-        controller.dismiss(animated: true) { [weak self] in
-            guard let self else { return }
-            let source = DWAvatarGravatarViewController()
-            source.delegate = self
-            self.present(source, animated: true)
-        }
-    }
-
-    func avatarEditSelectorViewController(_ controller: DWAvatarEditSelectorViewController, urlButtonAction sender: UIButton) {
-        controller.dismiss(animated: true) { [weak self] in
-            guard let self else { return }
-            let source = DWAvatarPublicURLViewController()
-            source.delegate = self
-            source.setCurrentInput(self.viewModel.avatarURLString ?? "")
-            self.present(source, animated: true)
-        }
     }
 }
 
@@ -156,19 +120,6 @@ extension RootEditProfileViewController: DWCropAvatarViewControllerDelegate {
 
     func cropAvatarViewControllerDidCancel(_ controller: DWCropAvatarViewController) {
         controller.dismiss(animated: true)
-    }
-}
-
-// MARK: DWExternalSourceViewControllerDelegate
-
-extension RootEditProfileViewController: DWExternalSourceViewControllerDelegate {
-    func externalSourceViewController(_ controller: DWExternalSourceViewController, didLoad image: UIImage, url: URL, shouldCrop: Bool) {
-        if shouldCrop {
-            controller.dismiss(animated: true) { [weak self] in self?.showCrop(image, url: url) }
-        } else {
-            viewModel.pickAvatar(image, url: url.absoluteString)
-            controller.dismiss(animated: true)
-        }
     }
 }
 
