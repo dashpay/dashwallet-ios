@@ -497,7 +497,10 @@ module SchemaRelease
       rescue Error, KeyError, JSON::ParserError => error
         report_release_failure(failures, record["release_id"], error)
       end
-      return_release_branch(failures, dry_run: dry_run)
+      # A retry of one release skips the others, the newest among them, so it
+      # cannot tell whether the release branch is past the newest publication.
+      # Offering the branch to development is left to the runs that see all.
+      return_release_branch(failures, dry_run: dry_run) unless release_id
       raise Error, "Some App Store releases still need attention: #{failures.join('; ')}" unless failures.empty?
     end
 
@@ -649,7 +652,9 @@ module SchemaRelease
               "Merge this with **a merge commit, not a squash**. A squash carries the changes over but not the history, " \
               "so the next release from `#{DEVELOPMENT_BRANCH}` would not descend from `#{RELEASE_BRANCH}` and the " \
               "release mirror could not fast-forward to it.\n\n`#{head}` is a copy of `#{RELEASE_BRANCH}` at `#{commit}`, " \
-              "so resolving conflicts here never writes to `#{RELEASE_BRANCH}`. Delete it after the merge.\n\n" \
+              "so resolving conflicts here never writes to `#{RELEASE_BRANCH}`. Resolve them by merging `#{DEVELOPMENT_BRANCH}` " \
+              "into `#{head}`, never by rebasing it: a rebase rewrites the published commits, and the merge would then " \
+              "carry copies of them. Delete `#{head}` after the merge.\n\n" \
               "Opened by the App Store release observer.")
       @out.puts "#{RELEASE_BRANCH} has commits #{DEVELOPMENT_BRANCH} lacks: #{url}"
     rescue Error, KeyError => error

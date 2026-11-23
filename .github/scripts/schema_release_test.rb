@@ -316,6 +316,7 @@ class SchemaReleaseTest < Minitest::Test
     assert_match(/\Achore: /, pull[:title])
     assert_includes pull[:title], "merge commit, do not squash"
     assert_includes pull[:body], "merge commit, not a squash"
+    assert_includes pull[:body], "never by rebasing it"
 
     @store.github.open_pull = true
     mirroring(release: "identical", development: "diverged").sync
@@ -387,11 +388,14 @@ class SchemaReleaseTest < Minitest::Test
 
   def test_manual_retry_of_an_older_publication_does_not_move_the_release_branch
     older = "c" * 40
-    pipeline = mirroring
+    pipeline = mirroring(development: "ahead")
     add_older_publication(older)
     pipeline.sync(release_id: "older")
     assert_equal({ "v9.0.5" => older }, @store.github.tags)
     assert_empty @store.github.fast_forwards
+    # Nor does it offer the release branch to develop: it has not looked at
+    # the newest publication, so it cannot tell whether the branch is past it.
+    assert_empty @store.github.pulls
   end
 
   def test_publication_apple_no_longer_lists_is_not_mirrored_from_its_retained_proof
