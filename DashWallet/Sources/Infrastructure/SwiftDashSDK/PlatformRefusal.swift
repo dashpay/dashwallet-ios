@@ -67,8 +67,12 @@ enum PlatformRefusal: Equatable {
     case duplicateUniqueIndex
     /// The identity's credit balance cannot pay for the transition.
     case identityBalanceTooLow
-    /// The Platform addresses funding the transition hold too little.
+    /// One Platform address funding the transition holds less than the
+    /// amount drawn from it.
     case addressBalanceTooLow
+    /// The Platform addresses funding the transition hold too little
+    /// together.
+    case combinedAddressBalanceTooLow
     /// The voting masternode is not known to Platform.
     case voterNotFound
     /// The vote poll does not exist.
@@ -92,8 +96,8 @@ enum PlatformRefusal: Equatable {
         case PlatformConsensusCode.documentNotFound: self = .documentNotFound
         case PlatformConsensusCode.duplicateUniqueIndex: self = .duplicateUniqueIndex
         case PlatformConsensusCode.identityInsufficientBalance: self = .identityBalanceTooLow
-        case PlatformConsensusCode.addressNotEnoughFunds,
-             PlatformConsensusCode.addressesNotEnoughFunds: self = .addressBalanceTooLow
+        case PlatformConsensusCode.addressNotEnoughFunds: self = .addressBalanceTooLow
+        case PlatformConsensusCode.addressesNotEnoughFunds: self = .combinedAddressBalanceTooLow
         case PlatformConsensusCode.masternodeNotFound: self = .voterNotFound
         case PlatformConsensusCode.votePollNotFound: self = .votePollNotFound
         case PlatformConsensusCode.votePollNotAvailableForVoting: self = .votePollNotAvailable

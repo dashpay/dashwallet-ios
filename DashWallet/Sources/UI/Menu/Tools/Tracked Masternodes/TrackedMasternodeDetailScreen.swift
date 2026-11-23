@@ -103,12 +103,15 @@ final class TrackedMasternodeDetailViewModel: ObservableObject {
             }.value
             switch balance {
             case .credits(let credits):
+                DWLogger.log("🧱 MASTERNODE :: claimable balance (tracked): credits")
                 claimableCredits = credits
             case .noIdentity:
+                DWLogger.log("🧱 MASTERNODE :: claimable balance (tracked): no Platform identity")
                 claimableCredits = nil
                 balanceError = NSLocalizedString("This masternode has no Platform identity yet.", comment: "Masternodes")
             }
         } catch {
+            DWLogger.log("🧱 MASTERNODE :: claimable balance (tracked): read failed with \(type(of: error))")
             claimableCredits = nil
             balanceError = NSLocalizedString("Couldn't fetch the balance (network error). Try Refresh.", comment: "Masternodes")
         }

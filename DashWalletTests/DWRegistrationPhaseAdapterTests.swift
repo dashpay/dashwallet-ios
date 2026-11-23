@@ -445,18 +445,21 @@ final class PlatformPaymentIdentityFundingPolicyTests: XCTestCase {
                 .isPlatformAddressInsufficientFunds(error))
     }
 
-    func test_addressFundingConsensusCodesAreRecognizedWhateverTheText() {
-        for code in [PlatformConsensusCode.addressNotEnoughFunds, PlatformConsensusCode.addressesNotEnoughFunds] {
-            let error = PlatformWalletError.consensusRejection(
+    func test_combinedAddressShortfallCodeIsRecognizedWhateverTheText() {
+        let combined = PlatformWalletError.consensusRejection(
+            PlatformConsensusError(code: PlatformConsensusCode.addressesNotEnoughFunds, kind: .state),
+            "reworded by Platform")
+
+        XCTAssertTrue(DWIdentityRegistrationCoordinator.isPlatformAddressInsufficientFunds(combined))
+
+        // One short address is not a shortfall of the wallet's total.
+        for code in [PlatformConsensusCode.addressNotEnoughFunds, 40603] {
+            let other = PlatformWalletError.consensusRejection(
                 PlatformConsensusError(code: code, kind: .state), "reworded by Platform")
 
-            XCTAssertTrue(
-                DWIdentityRegistrationCoordinator.isPlatformAddressInsufficientFunds(error), "\(code)")
+            XCTAssertFalse(
+                DWIdentityRegistrationCoordinator.isPlatformAddressInsufficientFunds(other), "\(code)")
         }
-        let other = PlatformWalletError.consensusRejection(
-            PlatformConsensusError(code: 40603, kind: .state), "reworded by Platform")
-
-        XCTAssertFalse(DWIdentityRegistrationCoordinator.isPlatformAddressInsufficientFunds(other))
     }
 
     func test_unrelatedSDKErrorIsNotMisclassifiedAsFundingShortfall() {

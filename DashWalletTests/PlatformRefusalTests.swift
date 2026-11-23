@@ -26,7 +26,7 @@ final class PlatformRefusalTests: XCTestCase {
             (40_305, .incorrectVotingAddress),
             (40_306, .incorrectVoterIdentityId),
             (40_601, .addressBalanceTooLow),
-            (40_602, .addressBalanceTooLow)
+            (40_602, .combinedAddressBalanceTooLow)
         ]
         for (code, expected) in table {
             XCTAssertEqual(PlatformRefusal(code: code), expected, "\(code)")

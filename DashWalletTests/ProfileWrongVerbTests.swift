@@ -16,6 +16,17 @@ final class ProfileWrongVerbTests: XCTestCase {
         XCTAssertTrue(DWProfileUpdateCoordinator.isWrongVerb(rejection(40_105), preferCreate: true))
     }
 
+    func testACreateRefusedWithoutACodeIsRetriedByItsText() {
+        let undecoded = PlatformWalletError.unknown("Document abc has duplicate unique properties [\"$ownerId\"]")
+
+        XCTAssertTrue(DWProfileUpdateCoordinator.isWrongVerb(undecoded, preferCreate: true))
+        XCTAssertFalse(DWProfileUpdateCoordinator.isWrongVerb(undecoded, preferCreate: false))
+        // A code that names another refusal wins over the text beside it.
+        let other = PlatformWalletError.consensusRejection(
+            PlatformConsensusError(code: 40_210, kind: .state), "duplicate unique")
+        XCTAssertFalse(DWProfileUpdateCoordinator.isWrongVerb(other, preferCreate: true))
+    }
+
     func testAnUpdateWithNoProfileIsRetriedAsACreate() {
         // The SDK's own refusal, raised before anything is broadcast.
         let local = PlatformWalletError.unknown("SDK error: SDK error: No existing profile document found to update")
@@ -36,7 +47,6 @@ final class ProfileWrongVerbTests: XCTestCase {
         let errors: [Error] = [
             PlatformWalletError.identityNotFound("Identity not found: abc"),
             PlatformWalletError.unknown("Wallet not found: abc"),
-            PlatformWalletError.unknown("duplicate unique properties"),
             rejection(40_210),
             SDKError.timeout("Timeout expired"),
             URLError(.notConnectedToInternet)

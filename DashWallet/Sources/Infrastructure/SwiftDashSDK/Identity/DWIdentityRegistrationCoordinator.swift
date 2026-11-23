@@ -2979,8 +2979,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     }
 
     /// Whether Platform refused an address-funded registration because the
-    /// funding addresses hold too little: the consensus code when the error
-    /// carries one.
+    /// funding addresses hold too little together: the consensus code when
+    /// the error carries one. One address holding less than the amount drawn
+    /// from it is a different refusal, and the wallet's total does not
+    /// describe it.
     ///
     /// TODO(platform-error-codes): the wallet layer reports this
     /// registration's failure as text with no consensus code, so the DPP
@@ -2988,7 +2990,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     nonisolated static func isPlatformAddressInsufficientFunds(
         _ error: Error
     ) -> Bool {
-        if PlatformRefusal.of(error) == .addressBalanceTooLow { return true }
+        if PlatformRefusal.of(error) == .combinedAddressBalanceTooLow { return true }
         let message = error.localizedDescription
         return message.localizedCaseInsensitiveContains(
             "AddressesNotEnoughFundsError")

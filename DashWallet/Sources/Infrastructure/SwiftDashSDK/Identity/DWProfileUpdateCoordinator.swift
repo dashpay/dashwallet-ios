@@ -75,15 +75,25 @@ final class DWProfileUpdateCoordinator {
     /// document, raised before anything is broadcast.
     nonisolated static let noProfileToUpdateText = "No existing profile document found to update"
 
+    /// The words rs-dpp's `DuplicateUniqueIndexError` renders, matched only
+    /// when the error carries no consensus code.
+    nonisolated static let duplicateProfileText = "duplicate unique"
+
     /// Whether `error` says the opposite verb is the right one: a create
     /// refused because the identity already has a profile (the profile's
     /// unique `$ownerId` index), or an update for a profile that is not there.
     ///
     /// TODO(platform-error-codes): the SDK reports a missing profile on
-    /// update as a generic error with no code, so its text is matched.
+    /// update as a generic error with no code, so its text is matched. A
+    /// duplicate profile on create has a code, but it is not confirmed that
+    /// the refusal always reaches Swift with it, so an error with no code is
+    /// matched by that text as well.
     nonisolated static func isWrongVerb(_ error: Error, preferCreate: Bool) -> Bool {
         let refusal = PlatformRefusal.of(error)
-        if preferCreate { return refusal == .duplicateUniqueIndex }
+        if preferCreate {
+            return refusal == .duplicateUniqueIndex
+                || (refusal == nil && String(describing: error).localizedCaseInsensitiveContains(duplicateProfileText))
+        }
         return refusal == .documentNotFound
             || String(describing: error).contains(noProfileToUpdateText)
     }

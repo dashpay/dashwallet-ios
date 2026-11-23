@@ -1080,6 +1080,9 @@ private extension WalletSendService {
         default:
             break
         }
+        // TODO(platform-error-codes): a contact with no external account is
+        // a wallet-local failure with no result code of its own, so the
+        // account type's name is matched in the text.
         let description = error.localizedDescription
         guard description.contains("DashpayExternalAccount")
             || description.contains("register_external_contact_account")
