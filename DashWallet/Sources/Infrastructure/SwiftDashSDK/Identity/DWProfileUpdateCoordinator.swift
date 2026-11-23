@@ -95,7 +95,7 @@ final class DWProfileUpdateCoordinator {
                 || (refusal == nil && String(describing: error).localizedCaseInsensitiveContains(duplicateProfileText))
         }
         return refusal == .documentNotFound
-            || String(describing: error).contains(noProfileToUpdateText)
+            || (refusal == nil && String(describing: error).contains(noProfileToUpdateText))
     }
 
     enum CoordinatorError: LocalizedError {

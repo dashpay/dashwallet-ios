@@ -33,6 +33,10 @@ final class ProfileWrongVerbTests: XCTestCase {
 
         XCTAssertTrue(DWProfileUpdateCoordinator.isWrongVerb(local, preferCreate: false))
         XCTAssertTrue(DWProfileUpdateCoordinator.isWrongVerb(rejection(40_101), preferCreate: false))
+        // A code that names another refusal wins over the text beside it.
+        let other = PlatformWalletError.consensusRejection(
+            PlatformConsensusError(code: 40_210, kind: .state), "No existing profile document found to update")
+        XCTAssertFalse(DWProfileUpdateCoordinator.isWrongVerb(other, preferCreate: false))
     }
 
     func testTheRefusalOfOneVerbDoesNotFlipTheOther() {
