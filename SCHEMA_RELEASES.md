@@ -79,7 +79,10 @@ at whichever models happen to be current.
 ## Initial setup
 
 1. Before merging, create a fine-grained PAT restricted to `dashpay/dashwallet-ios` and
-   `dashpay/platform`, with Contents, Actions and Pull requests read/write.
+   `dashpay/platform`, with Contents, Actions, Pull requests and Workflows read/write.
+   Workflows is for the release mirror (ADR-0054): GitHub refuses a push that
+   changes workflow files without it, and moving `master` to a release
+   usually brings such changes in.
    Approve it in the organization if required. Store it as
    `SCHEMA_RELEASE_TOKEN` in both repositories (or an organization secret limited
    to them). The existing App Store Connect key stays in the iOS `testflight`
@@ -98,7 +101,7 @@ at whichever models happen to be current.
    Until this step completes, production-capable builds intentionally stop at
    preflight with setup instructions. `internal-only` builds remain available.
 4. Run `sync` in dry-run mode, then enable repository variable
-   `SCHEMA_RELEASE_ENABLED=true`. The observer runs at 05:17 and 17:17 UTC.
+   `SCHEMA_RELEASE_ENABLED=true`. The observer runs every four hours, at minute 17.
    Keep the automation able to use its environment without interactive approval
    if unattended scheduled checks are required.
    This variable controls the schedule only; it never bypasses candidate checks.

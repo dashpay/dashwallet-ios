@@ -12,7 +12,7 @@ class SchemaReleaseTest < Minitest::Test
 
   class GitHub
     attr_accessor :registry
-    attr_reader :dispatches, :retained_sources, :tags, :comparisons, :fast_forwards, :pulls
+    attr_reader :dispatches, :retained_sources, :tags, :comparisons, :fast_forwards, :pulls, :branches
     attr_accessor :open_pull, :closed_pull_commit
     def initialize
       @registry = { "format_version" => 1, "schemas" => {}, "releases" => {} }
@@ -34,9 +34,12 @@ class SchemaReleaseTest < Minitest::Test
     def fast_forward(_repo, branch, commit)
       @fast_forwards << [branch, commit]
     end
-    def offered_pull(_repo, head:, base:, commit:)
+    def offered_pull(_repo, head:, base:)
       return "open" if @open_pull
-      "closed" if @closed_pull_commit == commit
+      "closed" if @closed_pull_commit && head == "merge-back/#{@closed_pull_commit[0, 12]}"
+    end
+    def create_branch(_repo, name, commit)
+      (@branches ||= {})[name] = commit
     end
     def ref(_repo, _branch)
       RELEASE_TIP
@@ -306,7 +309,10 @@ class SchemaReleaseTest < Minitest::Test
   def test_published_hotfix_on_the_release_branch_is_offered_back_to_develop_once
     mirroring(release: "identical", development: "ahead").sync
     pull = @store.github.pulls.fetch(0)
-    assert_equal %w[master develop], pull.values_at(:head, :base)
+    # From a copy of master, never master itself: resolving conflicts in the
+    # pull request must not write to master.
+    assert_equal ["merge-back/#{RELEASE_TIP[0, 12]}", "develop"], pull.values_at(:head, :base)
+    assert_equal({ "merge-back/#{RELEASE_TIP[0, 12]}" => RELEASE_TIP }, @store.github.branches)
     assert_match(/\Achore: /, pull[:title])
     assert_includes pull[:title], "merge commit, do not squash"
     assert_includes pull[:body], "merge commit, not a squash"
@@ -316,11 +322,11 @@ class SchemaReleaseTest < Minitest::Test
     assert_equal 1, @store.github.pulls.length
   end
 
-  def test_closed_merge_back_pull_request_is_not_opened_again_for_the_same_commit
+  def test_closed_merge_back_pull_request_is_not_opened_again_and_keeps_failing_the_run
     @store.github.closed_pull_commit = RELEASE_TIP
-    mirroring(release: "identical", development: "diverged").sync
+    error = assert_raises(SchemaRelease::Error) { mirroring(release: "identical", development: "diverged").sync }
+    assert_includes error.message, "was closed or squashed"
     assert_empty @store.github.pulls
-    assert_includes @output.string, "already closed: not opening another"
 
     # A release branch that has moved since is a new offer.
     @store.github.closed_pull_commit = "9" * 40
@@ -1096,18 +1102,34 @@ class SchemaGitHubRequestTest < Minitest::Test
     end
   end
 
+  def test_merge_back_branch_is_created_once_and_must_stay_at_its_commit
+    commit = "a" * 40
+    with_responses([Response.new("201", "{}")]) do
+      @api.create_branch("dashpay/dashwallet-ios", "merge-back/aaaaaaaaaaaa", commit)
+    end
+    assert_equal "/repos/dashpay/dashwallet-ios/git/refs", @requests.fetch(0).path
+    @calls.clear
+    with_responses([Response.new("422", ""), Response.new("200", %({"object":{"sha":"#{commit}"}}))]) do
+      @api.create_branch("dashpay/dashwallet-ios", "merge-back/aaaaaaaaaaaa", commit)
+    end
+    @calls.clear
+    with_responses([Response.new("422", ""), Response.new("200", %({"object":{"sha":"#{'b' * 40}"}}))]) do
+      assert_raises(SchemaRelease::Error) { @api.create_branch("dashpay/dashwallet-ios", "merge-back/aaaaaaaaaaaa", commit) }
+    end
+    @calls.clear
+  end
+
   def test_offered_pull_lookup_and_a_token_that_cannot_open_one
     lookup = lambda do |body|
       @calls.clear
       with_responses([Response.new("200", body)]) do
-        @api.offered_pull("dashpay/dashwallet-ios", head: "master", base: "develop", commit: "a" * 40)
+        @api.offered_pull("dashpay/dashwallet-ios", head: "merge-back/aaaaaaaaaaaa", base: "develop")
       end
     end
     assert_nil lookup.call("[]")
-    assert_equal "/repos/dashpay/dashwallet-ios/pulls?state=all&base=develop&head=dashpay:master&per_page=100", @requests.fetch(0).path
-    assert_equal "open", lookup.call(%([{"state":"open","head":{"sha":"#{'b' * 40}"}}]))
-    assert_equal "closed", lookup.call(%([{"state":"closed","head":{"sha":"#{'a' * 40}"}}]))
-    assert_nil lookup.call(%([{"state":"closed","head":{"sha":"#{'b' * 40}"}}]))
+    assert_equal "/repos/dashpay/dashwallet-ios/pulls?state=all&base=develop&head=dashpay:merge-back/aaaaaaaaaaaa&per_page=100", @requests.fetch(0).path
+    assert_equal "open", lookup.call(%([{"state":"closed"},{"state":"open"}]))
+    assert_equal "closed", lookup.call(%([{"state":"closed"}]))
     assert_raises(SchemaRelease::Error) { lookup.call("{}") }
     @calls.clear
     with_responses([Response.new("403", "")]) do

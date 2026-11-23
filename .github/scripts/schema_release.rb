@@ -16,7 +16,8 @@ module SchemaRelease
   DATA_BRANCH = "schema-release-data"
   REGISTRY = "packages/swift-sdk/schema-releases.json"
   # `master` holds only what the App Store has published: every publication
-  # observed here tags its wallet commit and fast-forwards the branch to it.
+  # observed here gets a tag on its wallet commit, and the newest one Apple
+  # lists fast-forwards the branch to it.
   # `master` is meant to be written only by this script; the branch rule from
   # ADR-0054 enforces that, not this code. Work lands on `develop`; a hotfix is built
   # from its own branch, and once it is published and `master` has moved to
@@ -226,16 +227,23 @@ module SchemaRelease
       request("patch", "repos/#{repo}/git/refs/heads/#{branch}", { sha: SchemaRelease.sha(commit), force: false })
     end
 
-    # Whether `head` at `commit` was already offered to `base`: "open" while a
-    # pull request is open, "closed" when one for this very commit was closed,
-    # merged or not, and nil otherwise. A closed one is an answer; asking
-    # again on every run would only repeat the notification.
-    def offered_pull(repo, head:, base:, commit:)
+    # Whether `head` was already offered to `base`: "open" while a pull
+    # request is open, "closed" when one was closed, merged or not, and nil
+    # otherwise.
+    def offered_pull(repo, head:, base:)
       owner = repo.split("/").first
       pulls = request("get", "repos/#{repo}/pulls?state=all&base=#{base}&head=#{owner}:#{head}&per_page=100")
       raise Error, "Unexpected pull request listing for #{head} into #{base} in #{repo}" unless pulls.is_a?(Array)
       return "open" if pulls.any? { |pull| pull["state"] == "open" }
-      "closed" if pulls.any? { |pull| pull.dig("head", "sha") == commit }
+      "closed" unless pulls.empty?
+    end
+
+    # Creates `name` at `commit`. One that already exists must be at that commit.
+    def create_branch(repo, name, commit)
+      request("post", "repos/#{repo}/git/refs", { ref: "refs/heads/#{name}", sha: SchemaRelease.sha(commit) })
+    rescue HTTPError => error
+      raise unless error.status == 422
+      raise Error, "Branch #{name} in #{repo} exists and is not at #{commit}" unless ref(repo, name) == commit
     end
 
     def create_pull(repo, head:, base:, title:, body:)
@@ -616,24 +624,33 @@ module SchemaRelease
       # Before the cutover the release branch is the abandoned 8.x line.
       return unless %w[ahead identical].include?(github.compare(IOS_REPO, MIRROR_START_TAG, tip))
       return unless %w[ahead diverged].include?(github.compare(IOS_REPO, DEVELOPMENT_BRANCH, tip))
-      commit = @projected_release_tip || github.ref(IOS_REPO, RELEASE_BRANCH)
-      case github.offered_pull(IOS_REPO, head: RELEASE_BRANCH, base: DEVELOPMENT_BRANCH, commit: commit)
+      commit = SchemaRelease.sha(@projected_release_tip || github.ref(IOS_REPO, RELEASE_BRANCH))
+      # The pull request comes from a branch of its own at the release branch's
+      # commit. With the release branch as its head, "Update branch" and
+      # "Resolve conflicts" would merge development into the release branch.
+      head = "merge-back/#{commit[0, 12]}"
+      case github.offered_pull(IOS_REPO, head: head, base: DEVELOPMENT_BRANCH)
       when "open" then return
       when "closed"
-        @out.puts "#{RELEASE_BRANCH} at #{commit} has commits #{DEVELOPMENT_BRANCH} lacks, and a pull request for that commit was already closed: not opening another."
-        return
+        # Not asked again, but not settled either: the next release cut from
+        # development will not descend from the release branch.
+        raise Error, "#{RELEASE_BRANCH} at #{commit} has commits #{DEVELOPMENT_BRANCH} lacks, and the pull request from #{head} was closed or squashed. " \
+                     "Not opening another. Merge #{head} into #{DEVELOPMENT_BRANCH} with a merge commit, or the next release cannot move #{RELEASE_BRANCH}."
       end
       if dry_run
-        @out.puts "#{RELEASE_BRANCH} has commits #{DEVELOPMENT_BRANCH} lacks: would open a pull request."
+        @out.puts "#{RELEASE_BRANCH} has commits #{DEVELOPMENT_BRANCH} lacks: would open a pull request from #{head}."
         return
       end
+      github.create_branch(IOS_REPO, head, commit)
       url = github.create_pull(
-        IOS_REPO, head: RELEASE_BRANCH, base: DEVELOPMENT_BRANCH,
+        IOS_REPO, head: head, base: DEVELOPMENT_BRANCH,
         title: "chore: merge #{RELEASE_BRANCH} back into #{DEVELOPMENT_BRANCH} (merge commit, do not squash)",
         body: "`#{RELEASE_BRANCH}` holds commits that `#{DEVELOPMENT_BRANCH}` lacks, usually a published hotfix.\n\n" \
               "Merge this with **a merge commit, not a squash**. A squash carries the changes over but not the history, " \
               "so the next release from `#{DEVELOPMENT_BRANCH}` would not descend from `#{RELEASE_BRANCH}` and the " \
-              "release mirror could not fast-forward to it.\n\nOpened by the App Store release observer.")
+              "release mirror could not fast-forward to it.\n\n`#{head}` is a copy of `#{RELEASE_BRANCH}` at `#{commit}`, " \
+              "so resolving conflicts here never writes to `#{RELEASE_BRANCH}`. Delete it after the merge.\n\n" \
+              "Opened by the App Store release observer.")
       @out.puts "#{RELEASE_BRANCH} has commits #{DEVELOPMENT_BRANCH} lacks: #{url}"
     rescue Error, KeyError => error
       report_release_failure(failures, "#{RELEASE_BRANCH} into #{DEVELOPMENT_BRANCH}", error)
