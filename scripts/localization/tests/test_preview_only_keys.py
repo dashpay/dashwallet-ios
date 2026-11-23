@@ -454,8 +454,10 @@ class PreviewOnlyKeysTests(unittest.TestCase):
                      "Shared/Sources/UIImage+Utils.m"]:
             self.assertIn(name, sources)
         self.assertTrue(any(name.startswith("DashPay/") for name in sources))
-        # In no target: its lookups must not count as seen.
-        self.assertNotIn("DashWallet/Sources/UI/DashPay/Explore/Views/DWExploreHeaderView.m", sources)
+        # On disk and in no target: its lookups must not count as seen.
+        unbuilt = "DashWallet/Sources/UI/Views/SharedViews/Buttons/DWButton.m"
+        self.assertTrue(os.path.isfile(os.path.join(REPO, unbuilt)))
+        self.assertNotIn(unbuilt, sources)
         self.assertTrue(all(os.path.isfile(os.path.join(REPO, name)) for name in sources))
         _, seen = dashpay_scan()
         _, in_dashpay = scan([p for p in dashpay_sources() if os.path.relpath(p, REPO).startswith("DashPay/")])
