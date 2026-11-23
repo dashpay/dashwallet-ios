@@ -1,6 +1,6 @@
 # 0030 — Show an App Connect connection whose response was not published as Not delivered
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-09
 - **Deciders:** romchornyi (ADR author)
 
@@ -20,8 +20,8 @@ retry the publish; the app needs a new code.
 
 1. **A Not delivered row.** An app whose live access comes only from intents with no recorded
    response shows "Not delivered", with Disconnect. A response that landed without its
-   acknowledgement is looked up on Platform when Connections refreshes, within a day of the
-   request.
+   acknowledgement is looked up on Platform when Connections refreshes: until it is found when the
+   publish recorded its start, and within a day of the request when it did not.
 2. **Active**, as an ordinary connection.
 3. **A three-state delivery** (delivered, not delivered, unknown) on every intent.
 
@@ -35,8 +35,8 @@ retry the publish; the app needs a new code.
 - The row tells the user the app holds keys it cannot use, and offers to turn them off.
 
 **Negative**
-- A response that was published but neither acknowledged nor found by the lookup within a day
-  stays shown as Not delivered.
+- A response that was published with no recorded start, and neither acknowledged nor found by
+  the lookup within a day, stays shown as Not delivered.
 
 **Neutral**
 - Disconnect turns the keys off whichever way the delivery went.

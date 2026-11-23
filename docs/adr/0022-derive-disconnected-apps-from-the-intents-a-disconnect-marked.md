@@ -1,6 +1,6 @@
 # 0022 — Derive disconnected apps from the intents a disconnect marked
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-09
 - **Deciders:** romchornyi (ADR author)
 
