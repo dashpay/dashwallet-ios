@@ -121,7 +121,7 @@ def baseline_places(repo, rev, baseline_stringsdata=None, baseline_root=None):
     with tempfile.TemporaryDirectory(prefix="places-baseline-") as tmp:
         _archive(repo, rev, [APP_DIR, dashpay_target.PROJECT], tmp)
         # The target's files outside APP_DIR, from the Baseline's own project file.
-        outside = sorted({os.path.relpath(f, tmp).split(os.sep)[0] for f in dashpay_target.sources(tmp)} - {APP_DIR})
+        outside = [d for d in dashpay_target.top_folders(tmp) if d != APP_DIR]
         _archive(repo, rev, [d for d in outside if _in_rev(repo, rev, d)], tmp)
         keys = _baseline_keys(tmp)
         swift_files = _app_files(tmp, (".swift",))

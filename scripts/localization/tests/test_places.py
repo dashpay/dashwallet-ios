@@ -223,6 +223,37 @@ class DashPayTargetPlacesTests(PlacesCase):
         self.assertEqual(self.keys(got, PROFILE), ["Save Changes"])
 
 
+SYNCED_PROJECT = """// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	objectVersion = 77;
+	objects = {
+		ROOT = {isa = PBXGroup; children = (SG); sourceTree = "<group>"; };
+		SG = {isa = PBXFileSystemSynchronizedRootGroup; path = Extra; sourceTree = "<group>"; };
+		PHASE = {isa = PBXSourcesBuildPhase; files = (); };
+		TGT = {isa = PBXNativeTarget; name = dashpay; buildPhases = (PHASE); fileSystemSynchronizedGroups = (SG); };
+	};
+	rootObject = ROOT;
+}
+"""
+
+
+class SynchronizedFolderPlacesTests(PlacesCase):
+    """MM1: a synchronized folder of the dashpay target outside DashWallet/ is read on both sides."""
+
+    def setUp(self):
+        super().setUp()
+        self.write("DashWallet.xcodeproj/project.pbxproj", SYNCED_PROJECT)
+        self.write("Extra/P.m", '@implementation P\n- (id)a { return NSLocalizedString(@"K", @""); }\n@end\n')
+        self.rev = self.commit("synced")
+
+    def test_both_sides_read_a_synchronized_folder_outside_the_app_folder(self):
+        baseline = places.baseline_places(self.repo, self.rev)
+        current = places.current_places(self.repo, self.stringsdata("same"))
+        self.assertEqual(self.keys(baseline, "Extra/P.m"), ["K"])
+        self.assertEqual(self.keys(current, "Extra/P.m"), ["K"])
+
+
 FAKE_ROOT = "/Users/ci/baseline-checkout"
 INTERP = "DashWallet/Sources/Interp.swift"
 EN_LIST = "DashWallet/en.lproj/Localizable.strings"
