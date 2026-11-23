@@ -13,7 +13,7 @@ class SchemaReleaseTest < Minitest::Test
   class GitHub
     attr_accessor :registry
     attr_reader :dispatches, :retained_sources, :tags, :comparisons, :fast_forwards, :pulls
-    attr_accessor :open_pull
+    attr_accessor :open_pull, :closed_pull_commit
     def initialize
       @registry = { "format_version" => 1, "schemas" => {}, "releases" => {} }
       @dispatches = []
@@ -34,8 +34,12 @@ class SchemaReleaseTest < Minitest::Test
     def fast_forward(_repo, branch, commit)
       @fast_forwards << [branch, commit]
     end
-    def open_pull?(_repo, head:, base:)
-      @open_pull
+    def offered_pull(_repo, head:, base:, commit:)
+      return "open" if @open_pull
+      "closed" if @closed_pull_commit == commit
+    end
+    def ref(_repo, _branch)
+      RELEASE_TIP
     end
     def create_pull(_repo, head:, base:, title:, body:)
       @pulls << { head: head, base: base, title: title, body: body }
@@ -183,6 +187,7 @@ class SchemaReleaseTest < Minitest::Test
 
   # The release mirror. 9.1.0 is below the real cutoff, so these tests lower it.
   WALLET = "a" * 40
+  RELEASE_TIP = "d" * 40
 
   # `release`: the published commit against master. `development`: master (or
   # the tip a dry run would give it) against develop. `cutover`: the same tip
@@ -302,6 +307,18 @@ class SchemaReleaseTest < Minitest::Test
     assert_includes pull[:body], "merge commit, not a squash"
 
     @store.github.open_pull = true
+    mirroring(release: "identical", development: "diverged").sync
+    assert_equal 1, @store.github.pulls.length
+  end
+
+  def test_closed_merge_back_pull_request_is_not_opened_again_for_the_same_commit
+    @store.github.closed_pull_commit = RELEASE_TIP
+    mirroring(release: "identical", development: "diverged").sync
+    assert_empty @store.github.pulls
+    assert_includes @output.string, "already closed: not opening another"
+
+    # A release branch that has moved since is a new offer.
+    @store.github.closed_pull_commit = "9" * 40
     mirroring(release: "identical", development: "diverged").sync
     assert_equal 1, @store.github.pulls.length
   end
@@ -1070,15 +1087,19 @@ class SchemaGitHubRequestTest < Minitest::Test
     end
   end
 
-  def test_open_pull_lookup_and_a_token_that_cannot_open_one
-    with_responses([Response.new("200", "[]")]) do
-      refute @api.open_pull?("dashpay/dashwallet-ios", head: "master", base: "develop")
+  def test_offered_pull_lookup_and_a_token_that_cannot_open_one
+    lookup = lambda do |body|
+      @calls.clear
+      with_responses([Response.new("200", body)]) do
+        @api.offered_pull("dashpay/dashwallet-ios", head: "master", base: "develop", commit: "a" * 40)
+      end
     end
-    assert_equal "/repos/dashpay/dashwallet-ios/pulls?state=open&base=develop&head=dashpay:master&per_page=1", @requests.fetch(0).path
-    @calls.clear
-    with_responses([Response.new("200", '[{"number":1}]')]) do
-      assert @api.open_pull?("dashpay/dashwallet-ios", head: "master", base: "develop")
-    end
+    assert_nil lookup.call("[]")
+    assert_equal "/repos/dashpay/dashwallet-ios/pulls?state=all&base=develop&head=dashpay:master&per_page=100", @requests.fetch(0).path
+    assert_equal "open", lookup.call(%([{"state":"open","head":{"sha":"#{'b' * 40}"}}]))
+    assert_equal "closed", lookup.call(%([{"state":"closed","head":{"sha":"#{'a' * 40}"}}]))
+    assert_nil lookup.call(%([{"state":"closed","head":{"sha":"#{'b' * 40}"}}]))
+    assert_raises(SchemaRelease::Error) { lookup.call("{}") }
     @calls.clear
     with_responses([Response.new("403", "")]) do
       error = assert_raises(SchemaRelease::Error) do

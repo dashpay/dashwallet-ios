@@ -17,7 +17,8 @@ module SchemaRelease
   REGISTRY = "packages/swift-sdk/schema-releases.json"
   # `master` holds only what the App Store has published: every publication
   # observed here tags its wallet commit and fast-forwards the branch to it.
-  # Nothing else writes `master`. Work lands on `develop`; a hotfix is built
+  # `master` is meant to be written only by this script; the branch rule from
+  # ADR-0054 enforces that, not this code. Work lands on `develop`; a hotfix is built
   # from its own branch, and once it is published and `master` has moved to
   # it, it returns to `develop` by a pull request this script opens.
   RELEASE_BRANCH = "master"
@@ -228,9 +229,16 @@ module SchemaRelease
       request("patch", "repos/#{repo}/git/refs/heads/#{branch}", { sha: SchemaRelease.sha(commit), force: false })
     end
 
-    def open_pull?(repo, head:, base:)
+    # Whether `head` at `commit` was already offered to `base`: "open" while a
+    # pull request is open, "closed" when one for this very commit was closed,
+    # merged or not, and nil otherwise. A closed one is an answer; asking
+    # again on every run would only repeat the notification.
+    def offered_pull(repo, head:, base:, commit:)
       owner = repo.split("/").first
-      !request("get", "repos/#{repo}/pulls?state=open&base=#{base}&head=#{owner}:#{head}&per_page=1").empty?
+      pulls = request("get", "repos/#{repo}/pulls?state=all&base=#{base}&head=#{owner}:#{head}&per_page=100")
+      raise Error, "Unexpected pull request listing for #{head} into #{base} in #{repo}" unless pulls.is_a?(Array)
+      return "open" if pulls.any? { |pull| pull["state"] == "open" }
+      "closed" if pulls.any? { |pull| pull.dig("head", "sha") == commit }
     end
 
     def create_pull(repo, head:, base:, title:, body:)
@@ -581,14 +589,14 @@ module SchemaRelease
       when "identical"
         @out.puts "#{label}: #{RELEASE_BRANCH} is at #{commit}."
       when "behind"
-        # Only this observer writes the release branch, and only to a published
-        # commit, so its tip can never be past the newest publication: either
-        # someone wrote to it by hand, or the newest version was cut from an
-        # older commit. The branch is never moved back, and what it holds past
+        # This observer moves the release branch only to a published commit,
+        # so a tip past the newest publication was not put there by it: either
+        # someone wrote to the branch by hand, or the newest version was cut
+        # from an older commit. The branch is never moved back, and what it holds past
         # the publication is not offered to development.
         @release_branch_unpublished = true
         raise Error, "#{label} was built from #{commit}, but #{RELEASE_BRANCH} holds commits after it that the App Store has not published. " \
-                     "Nothing was moved. Find out how they got there; #{RELEASE_BRANCH} is written only by this observer (ADR-0054)."
+                     "Nothing was moved. Find out how they got there; #{RELEASE_BRANCH} is meant to be written only by this observer (ADR-0054)."
       when "ahead"
         @out.puts "#{label}: #{dry_run ? 'would fast-forward' : 'fast-forwarding'} #{RELEASE_BRANCH} to #{commit}."
         # A dry run moves nothing, so what follows judges the tip it would have.
@@ -613,7 +621,13 @@ module SchemaRelease
       # Before the cutover the release branch is the abandoned 8.x line.
       return unless %w[ahead identical].include?(github.compare(IOS_REPO, MIRROR_START_TAG, tip))
       return unless %w[ahead diverged].include?(github.compare(IOS_REPO, DEVELOPMENT_BRANCH, tip))
-      return if github.open_pull?(IOS_REPO, head: RELEASE_BRANCH, base: DEVELOPMENT_BRANCH)
+      commit = @projected_release_tip || github.ref(IOS_REPO, RELEASE_BRANCH)
+      case github.offered_pull(IOS_REPO, head: RELEASE_BRANCH, base: DEVELOPMENT_BRANCH, commit: commit)
+      when "open" then return
+      when "closed"
+        @out.puts "#{RELEASE_BRANCH} at #{commit} has commits #{DEVELOPMENT_BRANCH} lacks, and a pull request for that commit was already closed: not opening another."
+        return
+      end
       if dry_run
         @out.puts "#{RELEASE_BRANCH} has commits #{DEVELOPMENT_BRANCH} lacks: would open a pull request."
         return
