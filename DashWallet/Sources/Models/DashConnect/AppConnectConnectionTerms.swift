@@ -245,6 +245,8 @@ extension AppConnect {
         if case .networkRefused(let code)? = error as? DashConnectPlatformError {
             return PlatformRefusal(code: code) == .identityBalanceTooLow
         }
+        // An unconfirmed update may have landed: its text names no shortfall.
+        guard PlatformRefusal.textMayNameRefusal(error) else { return false }
         let text = "\(error) \(error.localizedDescription)".lowercased()
         return text.contains("insufficient identity") || text.contains("identityinsufficientbalance")
     }

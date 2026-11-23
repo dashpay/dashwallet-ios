@@ -71,4 +71,25 @@ final class PlatformRefusalTests: XCTestCase {
             XCTAssertNil(PlatformRefusal.consensusError(in: error), "\(error)")
         }
     }
+
+    func testTheTextOfAnUnconfirmedResultOrOfACodedErrorNamesNoRefusal() {
+        let unconfirmed: [Error] = [
+            SDKError.stateTransitionResultUnconfirmed("duplicate unique"),
+            PlatformWalletError.transactionBroadcastUnconfirmed("duplicate unique"),
+            PlatformWalletError.shieldedSpendUnconfirmed("x"),
+            PlatformWalletError.shieldedBroadcastUnconfirmed("x"),
+            PlatformWalletError.masternodeWithdrawalUnconfirmed("x"),
+            PlatformWalletError.publicContactRequestUnconfirmed("x")
+        ]
+        for error in unconfirmed {
+            XCTAssertTrue(PlatformRefusal.isUnconfirmedOutcome(error), "\(error)")
+            XCTAssertFalse(PlatformRefusal.textMayNameRefusal(error), "\(error)")
+        }
+        let coded = PlatformWalletError.consensusRejection(PlatformConsensusError(code: 40_210, kind: .state), "x")
+        XCTAssertFalse(PlatformRefusal.isUnconfirmedOutcome(coded))
+        XCTAssertFalse(PlatformRefusal.textMayNameRefusal(coded))
+
+        XCTAssertFalse(PlatformRefusal.isUnconfirmedOutcome(PlatformWalletError.unknown("x")))
+        XCTAssertTrue(PlatformRefusal.textMayNameRefusal(PlatformWalletError.unknown("x")))
+    }
 }

@@ -60,4 +60,17 @@ final class ProfileWrongVerbTests: XCTestCase {
             XCTAssertFalse(DWProfileUpdateCoordinator.isWrongVerb(error, preferCreate: false), "\(error)")
         }
     }
+
+    func testAnUnconfirmedWriteIsNeverRetriedWithTheOppositeVerb() {
+        // The first write may have landed; its diagnostic is not a verdict.
+        let create = PlatformWalletError.transactionBroadcastUnconfirmed(
+            "Document abc has duplicate unique properties [\"$ownerId\"]")
+        let update = PlatformWalletError.transactionBroadcastUnconfirmed(
+            "No existing profile document found to update")
+        let sdk = SDKError.stateTransitionResultUnconfirmed("duplicate unique")
+
+        XCTAssertFalse(DWProfileUpdateCoordinator.isWrongVerb(create, preferCreate: true))
+        XCTAssertFalse(DWProfileUpdateCoordinator.isWrongVerb(update, preferCreate: false))
+        XCTAssertFalse(DWProfileUpdateCoordinator.isWrongVerb(sdk, preferCreate: true))
+    }
 }

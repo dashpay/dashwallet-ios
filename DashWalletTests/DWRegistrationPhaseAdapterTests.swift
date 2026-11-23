@@ -462,6 +462,13 @@ final class PlatformPaymentIdentityFundingPolicyTests: XCTestCase {
         }
     }
 
+    func test_unconfirmedRegistrationIsNotAFundingShortfallWhateverItsText() {
+        let error = PlatformWalletError.transactionBroadcastUnconfirmed(
+            "AddressesNotEnoughFundsError: Insufficient combined address balances")
+
+        XCTAssertFalse(DWIdentityRegistrationCoordinator.isPlatformAddressInsufficientFunds(error))
+    }
+
     func test_unrelatedSDKErrorIsNotMisclassifiedAsFundingShortfall() {
         let error = NSError(
             domain: "SwiftDashSDK",

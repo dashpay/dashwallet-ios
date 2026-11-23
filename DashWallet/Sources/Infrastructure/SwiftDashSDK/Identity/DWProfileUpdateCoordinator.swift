@@ -90,12 +90,14 @@ final class DWProfileUpdateCoordinator {
     /// matched by that text as well.
     nonisolated static func isWrongVerb(_ error: Error, preferCreate: Bool) -> Bool {
         let refusal = PlatformRefusal.of(error)
+        // An unconfirmed write may have landed: its text never flips the verb.
+        let readText = PlatformRefusal.textMayNameRefusal(error)
         if preferCreate {
             return refusal == .duplicateUniqueIndex
-                || (refusal == nil && String(describing: error).localizedCaseInsensitiveContains(duplicateProfileText))
+                || (readText && String(describing: error).localizedCaseInsensitiveContains(duplicateProfileText))
         }
         return refusal == .documentNotFound
-            || (refusal == nil && String(describing: error).contains(noProfileToUpdateText))
+            || (readText && String(describing: error).contains(noProfileToUpdateText))
     }
 
     enum CoordinatorError: LocalizedError {

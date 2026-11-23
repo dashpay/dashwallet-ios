@@ -128,4 +128,28 @@ enum PlatformRefusal: Equatable {
     static func of(_ error: Error) -> PlatformRefusal? {
         consensusError(in: error).map { PlatformRefusal(code: $0.code) }
     }
+
+    /// Whether `error` is one of the SDK's typed "unconfirmed" results: the
+    /// transition was sent and nothing settled whether Platform took it.
+    static func isUnconfirmedOutcome(_ error: Error) -> Bool {
+        switch error {
+        case SDKError.stateTransitionResultUnconfirmed,
+             PlatformWalletError.transactionBroadcastUnconfirmed,
+             PlatformWalletError.shieldedSpendUnconfirmed,
+             PlatformWalletError.shieldedBroadcastUnconfirmed,
+             PlatformWalletError.masternodeWithdrawalUnconfirmed,
+             PlatformWalletError.publicContactRequestUnconfirmed:
+            true
+        default:
+            false
+        }
+    }
+
+    /// Whether a classifier may read `error`'s text to name a refusal: only
+    /// when it carries no consensus code and is not an unconfirmed result.
+    /// The text of an unconfirmed result is a diagnostic of one attempt, not
+    /// a verdict, so it names no refusal.
+    static func textMayNameRefusal(_ error: Error) -> Bool {
+        consensusError(in: error) == nil && !isUnconfirmedOutcome(error)
+    }
 }

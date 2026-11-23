@@ -2993,6 +2993,9 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         // A consensus code decides alone: the text is read only for an
         // error that carries none.
         if let refusal = PlatformRefusal.of(error) { return refusal == .combinedAddressBalanceTooLow }
+        // An unconfirmed registration may have landed: its text names no
+        // shortfall.
+        guard PlatformRefusal.textMayNameRefusal(error) else { return false }
         let message = error.localizedDescription
         return message.localizedCaseInsensitiveContains(
             "AddressesNotEnoughFundsError")
