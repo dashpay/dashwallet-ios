@@ -2735,14 +2735,12 @@ extension BIP70ConfirmationBox {
     }
 }
 
-/// The identity top-up from Platform credits picks the SDK call by whose identity it pays: the holder's Current
-/// identity keeps the managed `topUpFromAddresses`, any other identity (another identity of the same wallet too) takes
-/// `topUpExternalIdentityFromAddresses`.
+/// The identity top-up from Platform credits takes the SDK's top-up for any identity, for the holder's Current identity
+/// and for someone else's alike (dashpay/platform#5929).
 extension ExternalSendExecutorTests {
     private struct TopUpCall: Equatable {
         let identityId: Data
         let amountDuffs: UInt64
-        let external: Bool
     }
 
     private final class TopUpCalls {
@@ -2752,13 +2750,10 @@ extension ExternalSendExecutorTests {
     private static let ownIdentityId = Data(repeating: 0x11, count: 32)
     private static let otherIdentityId = Data(repeating: 0x22, count: 32)
 
-    private func makeTopUp(
-        _ recorder: TopUpCalls, currentId: Data?, error: Error? = nil
-    ) -> LiveIdentityTopUpFromCredits {
+    private func makeTopUp(_ recorder: TopUpCalls, error: Error? = nil) -> LiveIdentityTopUpFromCredits {
         LiveIdentityTopUpFromCredits(
-            currentIdentityId: { currentId },
-            topUp: { identityId, amountDuffs, external in
-                recorder.calls.append(TopUpCall(identityId: identityId, amountDuffs: amountDuffs, external: external))
+            topUp: { identityId, amountDuffs in
+                recorder.calls.append(TopUpCall(identityId: identityId, amountDuffs: amountDuffs))
                 if let error { throw error }
             })
     }
@@ -2769,34 +2764,18 @@ extension ExternalSendExecutorTests {
                         amount: 50_000, bindingFeeDuffs: 100)
     }
 
-    func testSomeoneElsesIdentityTakesTheExternalTopUp() async {
-        let recorder = TopUpCalls()
-        let result = await run(makeTopUp(recorder, currentId: Self.ownIdentityId), to: Self.otherIdentityId)
+    func testEveryIdentityTakesTheTopUpForAnyIdentity() async {
+        for identityId in [Self.ownIdentityId, Self.otherIdentityId] {
+            let recorder = TopUpCalls()
+            let result = await run(makeTopUp(recorder), to: identityId)
 
-        XCTAssertEqual(recorder.calls,
-                       [TopUpCall(identityId: Self.otherIdentityId, amountDuffs: 50_000, external: true)])
-        guard case .completed = result else { return XCTFail("\(result)") }
-    }
-
-    func testOwnCurrentIdentityKeepsTheManagedTopUp() async {
-        let recorder = TopUpCalls()
-        let result = await run(makeTopUp(recorder, currentId: Self.ownIdentityId), to: Self.ownIdentityId)
-
-        XCTAssertEqual(recorder.calls,
-                       [TopUpCall(identityId: Self.ownIdentityId, amountDuffs: 50_000, external: false)])
-        guard case .completed = result else { return XCTFail("\(result)") }
-    }
-
-    func testWithoutACurrentIdentityEveryIdentityIsExternal() async {
-        let recorder = TopUpCalls()
-        _ = await run(makeTopUp(recorder, currentId: nil), to: Self.ownIdentityId)
-
-        XCTAssertEqual(recorder.calls.map(\.external), [true])
+            XCTAssertEqual(recorder.calls, [TopUpCall(identityId: identityId, amountDuffs: 50_000)])
+            guard case .completed = result else { return XCTFail("\(result)") }
+        }
     }
 
     func testIdentityPlatformDoesNotKnowIsNotSentAsNotFound() async {
-        let topUp = makeTopUp(TopUpCalls(), currentId: Self.ownIdentityId,
-                              error: PlatformWalletError.identityNotFound("gone"))
+        let topUp = makeTopUp(TopUpCalls(), error: PlatformWalletError.identityNotFound("gone"))
         let result = await run(topUp, to: Self.otherIdentityId)
 
         guard case .failed(let error, let handedOver) = result else { return XCTFail("\(result)") }

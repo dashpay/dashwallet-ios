@@ -59,7 +59,7 @@ this section describes the flow as it works once all three are in.
 |---|---|---|---|---|
 | Core | send (a payment request: Core only) | unavailable until [dashpay/platform#5824](https://github.com/dashpay/platform/issues/5824); the holder's own Platform address is funded from Internal Transfer | shield | own Current identity: top-up; others unavailable |
 | Shielded | unshield to Core (withdrawal) | unshield | shielded transfer | top-up in one step ([ADR-0044](../../adr/0044-top-up-an-identity-from-shielded-in-one-step.md)) |
-| Platform | withdrawal | transfer; script form unavailable | shield | own Current identity: top-up; others unavailable |
+| Platform | withdrawal | transfer; script form unavailable | shield | top-up of any existing identity ([ADR-0045](../../adr/0045-add-an-external-identity-top-up-and-a-non-blocking-identity-read-to-the-sdk.md)) |
 | Identity | withdrawal | credit transfer | unavailable (ADR-0041) | credit transfer; own Current identity unavailable |
 
 ## Acceptance criteria

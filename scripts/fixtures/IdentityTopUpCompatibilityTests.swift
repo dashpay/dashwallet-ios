@@ -16,6 +16,33 @@ import XCTest
             wallet: host.wallet!, modelContainer: ModelContainer())
     }
 
+    /// The Top Up sheet keeps the managed top-up; the external send asks for the top-up for any identity.
+    func testFromPlatformTakesTheManagedOrTheAnyIdentityTopUp() async throws {
+        let managed = try await IdentityCreditsTopUp().fromPlatform(
+            identityId: Data([2]), amountDuffs: 100, wallet: host.wallet!, modelContainer: ModelContainer())
+        XCTAssertEqual(managed, 97)
+        XCTAssertEqual(host.wallet!.topUpCalls, 1)
+        XCTAssertEqual(host.wallet!.anyIdentityTopUpCalls, 0)
+
+        let anyIdentity = try await IdentityCreditsTopUp().fromPlatform(
+            identityId: Data([2]), amountDuffs: 100, wallet: host.wallet!, modelContainer: ModelContainer(),
+            anyIdentity: true)
+        XCTAssertEqual(anyIdentity, 98)
+        XCTAssertEqual(host.wallet!.topUpCalls, 1)
+        XCTAssertEqual(host.wallet!.anyIdentityTopUpCalls, 1)
+    }
+
+    /// O88: the external send's own top-up, not a value a test passes, takes the top-up for any identity, for another
+    /// person's identity and the holder's own alike.
+    func testTheExternalSendTakesTheAnyIdentityTopUp() async throws {
+        for identityId in [Data([2]), Data([3])] {
+            host.wallet = ManagedPlatformWallet()
+            try await LiveIdentityTopUpFromCredits.topUpFromPlatform(identityId: identityId, amountDuffs: 100)
+            XCTAssertEqual(host.wallet!.anyIdentityTopUpCalls, 1)
+            XCTAssertEqual(host.wallet!.topUpCalls, 0)
+        }
+    }
+
     func testAmbiguousSecondLegRetainsUnknownOutcome() async {
         let unknowns: [Error] = [
             SDKError.stateTransitionResultUnconfirmed("result unavailable"),
