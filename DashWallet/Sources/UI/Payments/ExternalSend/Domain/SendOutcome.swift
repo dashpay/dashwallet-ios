@@ -215,7 +215,7 @@ enum NotSentReason {
                 comment: "External send")
         case .identityNotFound:
             return NSLocalizedString(
-                "Platform could not find this identity. Your funds were not sent.",
+                "This identity could not be found. Your funds were not sent.",
                 comment: "External send")
         case .belowMinimum:
             return NSLocalizedString(

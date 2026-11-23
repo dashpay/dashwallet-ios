@@ -170,8 +170,7 @@ final class SendPairPolicyTests: XCTestCase {
         XCTAssertEqual(decide(.platform, sibling), .route(.platformToIdentity))
     }
 
-    /// The holder's own Current identity takes the managed top-up, any other identity the external one; both are
-    /// the same route.
+    /// The holder's own Current identity and someone else's are the same route.
     func testPlatformPaysTheOwnAndSomeoneElsesIdentity() {
         XCTAssertEqual(decide(.platform, destination(.identityID, text: ownID)), .route(.platformToIdentity))
         XCTAssertEqual(decide(.platform, destination(.identityID, text: otherID)), .route(.platformToIdentity))
