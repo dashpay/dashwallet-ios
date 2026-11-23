@@ -2978,14 +2978,17 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         return Data(SHA256.hash(data: first))
     }
 
-    /// The Platform Wallet FFI currently folds DPP consensus errors into a
-    /// message-bearing `PlatformWalletError`, so this is the narrowest
-    /// recoverable classification available to the app. Keep both the DPP
-    /// type name and its stable user-facing text for compatibility across
-    /// SDK revisions.
+    /// Whether Platform refused an address-funded registration because the
+    /// funding addresses hold too little: the consensus code when the error
+    /// carries one.
+    ///
+    /// TODO(platform-error-codes): the wallet layer reports this
+    /// registration's failure as text with no consensus code, so the DPP
+    /// type name and its message are matched as well.
     nonisolated static func isPlatformAddressInsufficientFunds(
         _ error: Error
     ) -> Bool {
+        if PlatformRefusal.of(error) == .addressBalanceTooLow { return true }
         let message = error.localizedDescription
         return message.localizedCaseInsensitiveContains(
             "AddressesNotEnoughFundsError")

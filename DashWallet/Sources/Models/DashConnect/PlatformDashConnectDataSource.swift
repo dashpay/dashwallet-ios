@@ -1652,17 +1652,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// case of its own (an address-nonce race) carries no code and is one to
     /// retry. The refusal holds the code and the date, never Platform's text.
     static func consensusRefusal(from error: Error, at date: Date) -> AppConnect.ConsensusRefusal? {
-        consensusError(in: error).map { AppConnect.ConsensusRefusal(code: $0.code, at: date) }
-    }
-
-    /// The consensus rejection `error` carries, from the SDK or from the
-    /// wallet layer; `nil` for any other error.
-    private static func consensusError(in error: Error) -> PlatformConsensusError? {
-        switch error {
-        case let error as SDKError: error.consensusError
-        case let error as PlatformWalletError: error.consensusError
-        default: nil
-        }
+        PlatformRefusal.consensusError(in: error).map { AppConnect.ConsensusRefusal(code: $0.code, at: date) }
     }
 
     /// What an identity update that ended with `error` (a failure or a
@@ -2402,7 +2392,7 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
     /// the transition, so the publish stays unresolved.
     static func publishFailedForGood(_ outcome: AppConnectWriteExecutor.Outcome) -> Bool {
         guard case .failed(let error) = outcome else { return false }
-        return consensusError(in: error) != nil
+        return PlatformRefusal.consensusError(in: error) != nil
     }
 
     /// Records that the response of the intent `id` is on Platform.

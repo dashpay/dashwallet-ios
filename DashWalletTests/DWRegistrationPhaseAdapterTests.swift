@@ -9,6 +9,7 @@
 //  needed.
 //
 
+import SwiftDashSDK
 import XCTest
 @testable import dashpay
 
@@ -442,6 +443,20 @@ final class PlatformPaymentIdentityFundingPolicyTests: XCTestCase {
         XCTAssertTrue(
             DWIdentityRegistrationCoordinator
                 .isPlatformAddressInsufficientFunds(error))
+    }
+
+    func test_addressFundingConsensusCodesAreRecognizedWhateverTheText() {
+        for code in [PlatformConsensusCode.addressNotEnoughFunds, PlatformConsensusCode.addressesNotEnoughFunds] {
+            let error = PlatformWalletError.consensusRejection(
+                PlatformConsensusError(code: code, kind: .state), "reworded by Platform")
+
+            XCTAssertTrue(
+                DWIdentityRegistrationCoordinator.isPlatformAddressInsufficientFunds(error), "\(code)")
+        }
+        let other = PlatformWalletError.consensusRejection(
+            PlatformConsensusError(code: 40603, kind: .state), "reworded by Platform")
+
+        XCTAssertFalse(DWIdentityRegistrationCoordinator.isPlatformAddressInsufficientFunds(other))
     }
 
     func test_unrelatedSDKErrorIsNotMisclassifiedAsFundingShortfall() {

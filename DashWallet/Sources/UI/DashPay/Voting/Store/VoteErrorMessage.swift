@@ -24,27 +24,10 @@ import SwiftDashSDK
 /// words. Platform's own text is never passed through: an error that is not
 /// mapped here reads as the generic "try again" message.
 enum VoteErrorMessage {
-    // Platform voting consensus codes, rs-dpp `src/errors/consensus/codes.rs`
-    // ("Voting Errors: 40300-40399").
-    /// `MasternodeNotFoundError`
-    private static let voterNotFound: UInt32 = 40300
-    /// `VotePollNotFoundError`
-    private static let votePollNotFound: UInt32 = 40301
-    /// `VotePollNotAvailableForVotingError`
-    private static let votePollNotAvailable: UInt32 = 40302
-    /// `MasternodeVotedTooManyTimesError`
-    private static let votedTooManyTimes: UInt32 = 40303
-    /// `MasternodeVoteAlreadyPresentError`
-    private static let voteAlreadyPresent: UInt32 = 40304
-    /// `MasternodeIncorrectVotingAddressError`
-    private static let incorrectVotingAddress: UInt32 = 40305
-    /// `MasternodeIncorrectVoterIdentityIdError`
-    private static let incorrectVoterIdentityId: UInt32 = 40306
-
     /// Platform refused the vote because the masternode has spent its votes here.
     static func isNoVotesLeft(_ error: Error) -> Bool {
-        if case .consensusRejection(let consensus, _) = error as? SDKError { return consensus.code == votedTooManyTimes }
-        return false
+        guard let sdkError = error as? SDKError else { return false }
+        return PlatformRefusal.of(sdkError) == .votedTooManyTimes
     }
 
     /// The SDK could not confirm the broadcast: the vote may have landed.
@@ -69,7 +52,7 @@ enum VoteErrorMessage {
             case .networkError, .timeout:
                 return connection
             case .consensusRejection(let consensus, _):
-                return message(forConsensusCode: consensus.code)
+                return message(for: PlatformRefusal(code: consensus.code))
             default:
                 return generic
             }
@@ -81,17 +64,17 @@ enum VoteErrorMessage {
         return generic
     }
 
-    private static func message(forConsensusCode code: UInt32) -> String {
-        switch code {
-        case votedTooManyTimes:
+    private static func message(for refusal: PlatformRefusal) -> String {
+        switch refusal {
+        case .votedTooManyTimes:
             return NSLocalizedString("No votes left", comment: "Voting")
-        case votePollNotAvailable, votePollNotFound:
+        case .votePollNotAvailable, .votePollNotFound:
             return closed
-        case voteAlreadyPresent:
+        case .voteAlreadyPresent:
             // A vote this device has no record of (another device, a reinstall):
             // the same refusal comes back on every try.
             return NSLocalizedString("The vote was not cast. This masternode already holds this vote.", comment: "Voting")
-        case voterNotFound, incorrectVotingAddress, incorrectVoterIdentityId:
+        case .voterNotFound, .incorrectVotingAddress, .incorrectVoterIdentityId:
             return NSLocalizedString(
                 "The vote was not cast. This voting key does not belong to an active masternode.",
                 comment: "Voting")

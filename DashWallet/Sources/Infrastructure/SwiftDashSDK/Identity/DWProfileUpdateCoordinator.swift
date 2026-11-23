@@ -71,6 +71,23 @@ final class DWProfileUpdateCoordinator {
 
     // MARK: - Errors
 
+    /// The SDK's own refusal of an update for an identity with no profile
+    /// document, raised before anything is broadcast.
+    nonisolated static let noProfileToUpdateText = "No existing profile document found to update"
+
+    /// Whether `error` says the opposite verb is the right one: a create
+    /// refused because the identity already has a profile (the profile's
+    /// unique `$ownerId` index), or an update for a profile that is not there.
+    ///
+    /// TODO(platform-error-codes): the SDK reports a missing profile on
+    /// update as a generic error with no code, so its text is matched.
+    nonisolated static func isWrongVerb(_ error: Error, preferCreate: Bool) -> Bool {
+        let refusal = PlatformRefusal.of(error)
+        if preferCreate { return refusal == .duplicateUniqueIndex }
+        return refusal == .documentNotFound
+            || String(describing: error).contains(noProfileToUpdateText)
+    }
+
     enum CoordinatorError: LocalizedError {
         case noWallet
         case noModelContainer
@@ -214,17 +231,12 @@ final class DWProfileUpdateCoordinator {
                     signer: signer)
             }
         } catch let firstError {
-            // Flip the verb only when the error string makes it
-            // unambiguous that we picked the wrong one. Transport /
-            // decoding / network errors are propagated as-is — they
-            // would fail the same way with the opposite verb and the
-            // resulting "duplicate" / "not found" noise on the fall-
-            // back would mask the real failure.
-            let errorText = String(describing: firstError).lowercased()
-            let wrongVerb = preferCreate
-                ? errorText.contains("duplicate unique") || errorText.contains("duplicate $ownerid")
-                : errorText.contains("not found") || errorText.contains("document not found")
-            if wrongVerb {
+            // Flip the verb only when the error makes it unambiguous
+            // that we picked the wrong one. Transport / decoding /
+            // network errors are propagated as-is — they would fail the
+            // same way with the opposite verb and the resulting noise on
+            // the fallback would mask the real failure.
+            if Self.isWrongVerb(firstError, preferCreate: preferCreate) {
                 Self.logger.warning("🪪 PROFILE-COORD :: \(preferCreate ? "create" : "update", privacy: .public) failed with wrong-verb signature; retrying with opposite verb")
                 do {
                     if preferCreate {

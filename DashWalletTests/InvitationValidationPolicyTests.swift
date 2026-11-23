@@ -163,11 +163,11 @@ final class InvitationValidationPolicyTests: XCTestCase {
         XCTAssertNil(
             InvitationClaimFailure.classify(wrapped(PlatformWalletError.consensusRejection(
                 PlatformConsensusError(code: 40722, kind: .state), "some other rejection"))))
-        // No consensus code: text is only a fallback, never definitive.
-        XCTAssertEqual(
+        // No consensus code and not the consensus error's own wording: the
+        // text says nothing the claim can act on.
+        XCTAssertNil(
             InvitationClaimFailure.classify(wrapped(PlatformWalletError.walletOperation(
-                "IdentityAssetLockTransactionOutPointAlreadyConsumedError: asset lock outpoint already consumed"))),
-            .refused)
+                "IdentityAssetLockTransactionOutPointAlreadyConsumedError: asset lock outpoint already consumed"))))
     }
 
     func testUntypedSpentTextNeverDeletesTheInvitation() {

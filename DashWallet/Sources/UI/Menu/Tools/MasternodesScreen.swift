@@ -506,21 +506,19 @@ final class MasternodeDetailViewModel: ObservableObject {
         balanceLoading = true
         balanceError = nil
         do {
-            let credits = try await Task.detached(priority: .userInitiated) {
-                try sdk.identities.getBalance(id: identityId)
+            let balance = try await Task.detached(priority: .userInitiated) {
+                try MasternodeClaimableBalance.fetch(sdk: sdk, identityId: identityId)
             }.value
-            claimableCredits = credits
+            switch balance {
+            case .credits(let credits):
+                claimableCredits = credits
+            case .noIdentity:
+                claimableCredits = nil
+                balanceError = NSLocalizedString("This masternode has no Platform identity yet.", comment: "Masternodes")
+            }
         } catch {
             claimableCredits = nil
-            // Distinguish "no identity registered" from a transport failure
-            // so the copy isn't misleading on a transient network error.
-            let message = error.localizedDescription.lowercased()
-            if message.contains("not found") || message.contains("no identity")
-                || message.contains("does not exist") {
-                balanceError = NSLocalizedString("This masternode has no Platform identity yet.", comment: "Masternodes")
-            } else {
-                balanceError = NSLocalizedString("Couldn't fetch the balance (network error). Try Refresh.", comment: "Masternodes")
-            }
+            balanceError = NSLocalizedString("Couldn't fetch the balance (network error). Try Refresh.", comment: "Masternodes")
         }
         balanceLoading = false
     }

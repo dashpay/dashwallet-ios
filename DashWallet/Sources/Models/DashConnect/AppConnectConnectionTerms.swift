@@ -232,17 +232,21 @@ extension AppConnect {
     /// The consensus code of Platform's `IdentityInsufficientBalanceError`:
     /// a refused identity update that topping up the identity would let
     /// through.
-    static let identityInsufficientBalanceCode: UInt32 = 40210
+    static let identityInsufficientBalanceCode = PlatformConsensusCode.identityInsufficientBalance
 
     /// Whether Platform refused an identity update because the identity's
-    /// balance cannot pay for it. The identity update reports the broadcast
-    /// failure as text ("Failed to broadcast identity update: … Insufficient
-    /// identity <id> balance …"), so the text is matched; the typed
-    /// `insufficientIdentityCredits` is matched for when it carries one.
+    /// balance cannot pay for it: the consensus code, on the SDK error or on
+    /// the recorded refusal, or the typed `insufficientIdentityCredits`.
+    ///
+    /// TODO(platform-error-codes): the wallet layer reports an identity
+    /// update's broadcast failure as text ("Failed to broadcast identity
+    /// update: … Insufficient identity <id> balance …") with no consensus
+    /// code, so the text is matched as well.
     static func isInsufficientBalance(_ error: Error) -> Bool {
         if case .insufficientIdentityCredits? = error as? PlatformWalletError { return true }
+        if PlatformRefusal.of(error) == .identityBalanceTooLow { return true }
         if case .networkRefused(let code)? = error as? DashConnectPlatformError,
-           code == identityInsufficientBalanceCode { return true }
+           PlatformRefusal(code: code) == .identityBalanceTooLow { return true }
         let text = "\(error) \(error.localizedDescription)".lowercased()
         return text.contains("insufficient identity") || text.contains("identityinsufficientbalance")
     }

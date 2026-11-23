@@ -347,14 +347,6 @@ final class MasternodeUnbanViewModel: ObservableObject {
             payoutAddressRequired = true
             errorText = message
             phase = .ready
-        case .invalidParameter(let message) where message.contains("extended network info"):
-            // v3 extended entries can't be re-asserted by a v2 payload —
-            // fail closed rather than downgrade the node's endpoint map.
-            errorText = NSLocalizedString(
-                "This masternode uses extended (v3) network info, which this wallet can't re-assert yet. Unban it with dash-cli instead.",
-                comment: "Masternode unban")
-            terminal = true
-            phase = .ready
         default:
             errorText = error.errorDescription
             phase = .ready

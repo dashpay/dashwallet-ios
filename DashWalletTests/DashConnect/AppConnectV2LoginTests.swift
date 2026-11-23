@@ -1163,6 +1163,15 @@ final class AppConnectConnectionTermsTests: XCTestCase {
         XCTAssertEqual(PlatformDashConnectDataSource.approvalFailure(after: refusal) as? DashConnectPlatformError, refusal)
     }
 
+    func testABalanceRefusalIsReadFromTheSDKErrorsConsensusCode() {
+        let balance = PlatformConsensusError(code: 40_210, kind: .state)
+
+        XCTAssertTrue(AppConnect.isInsufficientBalance(PlatformWalletError.consensusRejection(balance, "reworded by Platform")))
+        XCTAssertTrue(AppConnect.isInsufficientBalance(SDKError.consensusRejection(balance, "reworded by Platform")))
+        XCTAssertFalse(AppConnect.isInsufficientBalance(
+            PlatformWalletError.consensusRejection(PlatformConsensusError(code: 40_100, kind: .state), "reworded by Platform")))
+    }
+
     func testABalanceFailureAfterTheUpdateStaysABalanceFailure() {
         let failure = NSError(
             domain: "test", code: 1, userInfo: [NSLocalizedDescriptionKey:
