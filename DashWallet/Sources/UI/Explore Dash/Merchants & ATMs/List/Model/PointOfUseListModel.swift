@@ -63,6 +63,13 @@ class PointOfUseDataProvider {
         return requestGeneration
     }
 
+    /// Supersedes every request in flight and keeps the rows already taken,
+    /// so a page that lands after the list has moved to another segment
+    /// writes nothing; coming back answers from the rows the list last showed.
+    func cancelRequests() {
+        requestGeneration += 1
+    }
+
     func clearCache() {
         requestGeneration += 1
         items = []
@@ -377,6 +384,11 @@ extension PointOfUseListModel {
     /// overwrite newer rows nor end the loading state early.
     private func beginRequest() -> Int {
         requestGeneration += 1
+        // The segment left behind may still have a request in flight; it must
+        // not commit rows or a paging offset the list will never show.
+        for provider in dataProviders.values where provider !== currentDataProvider {
+            provider.cancelRequests()
+        }
         isFetching = true
         DispatchQueue.main.async { [weak self] in
             self?.fetchingStateDidChange?()

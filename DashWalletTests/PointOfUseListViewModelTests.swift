@@ -531,6 +531,43 @@ final class PointOfUseListViewModelTests: XCTestCase {
         XCTAssertNil(provider.lastQuery)
     }
 
+    /// Leaving a segment supersedes its request in flight: a page that lands
+    /// after the switch changes neither its rows nor its paging offset, so
+    /// coming back shows, and pages from, the rows the list last showed.
+    func testSwitchingSegmentsDropsTheOutgoingPage() async {
+        let all = PagingProvider()
+        let nearby = PagingProvider()
+        let viewModel = makeViewModel(segments: [segment(tag: 0, provider: all), segment(tag: 1, provider: nearby)])
+        all.answerFirstPage(0, with: .success([atm(1)]))
+        await drainMainQueue()
+
+        viewModel.fetchNextPage()
+        _ = viewModel.selectSegment(at: 1, searchBounds: { _ in self.bounds })
+        all.answerNextPage(0, with: [atm(2)])
+        await drainMainQueue()
+
+        XCTAssertEqual(all.items.map(\.id), [1])
+        XCTAssertEqual(all.currentPage?.offset, 0, "Paging must continue after the rows the list showed")
+    }
+
+    /// A request made again while the first is still in flight is not
+    /// answered from the rows of the request before it.
+    func testAllMerchantsFetchesARepeatedPendingQuery() async {
+        let provider = DeferredAllMerchantsProvider()
+        var answers: [[Int64]] = []
+        let record: (Result<[ExplorePointOfUse], Error>) -> Void = { answers.append((try? $0.get())?.map(\.id) ?? []) }
+        provider.items(query: "a", in: nil, userPoint: nil, with: nil, completion: record)
+        provider.completeFetch(0, with: [atm(1)])
+        await drainMainQueue()
+
+        provider.items(query: "b", in: nil, userPoint: nil, with: nil, completion: record)
+        provider.items(query: "b", in: nil, userPoint: nil, with: nil, completion: record)
+        await drainMainQueue()
+
+        XCTAssertEqual(provider.fetchCount, 3, "The repeated b request must fetch, not read a's rows")
+        XCTAssertEqual(answers, [[1]])
+    }
+
     // MARK: - Helpers
 
     private let bounds = ExploreMapBounds(rect: MKMapRect(x: 0, y: 0, width: 1000, height: 1000))
@@ -690,6 +727,23 @@ private final class PagingProvider: PointOfUseDataProvider {
         let (request, completion) = nextPages[index]
         handle(request: request, result: .success(PaginationResult(items: items, offset: self.items.count)),
                appending: true, completion: completion)
+    }
+}
+
+/// The All merchants provider with its database fetch held until the test
+/// answers it.
+private final class DeferredAllMerchantsProvider: AllMerchantsDataProvider {
+    private var fetches: [(Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void] = []
+    var fetchCount: Int { fetches.count }
+
+    override func fetch(by query: String?, in bounds: ExploreMapBounds?, userPoint: CLLocationCoordinate2D?,
+                        with filters: PointOfUseListFilters?, offset: Int,
+                        completion: @escaping (Result<PaginationResult<ExplorePointOfUse>, Error>) -> Void) {
+        fetches.append(completion)
+    }
+
+    func completeFetch(_ index: Int, with items: [ExplorePointOfUse]) {
+        fetches[index](.success(PaginationResult(items: items, offset: 0)))
     }
 }
 
