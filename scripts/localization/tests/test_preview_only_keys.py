@@ -5,26 +5,40 @@
   strings from that code and marks such an entry stale after a build, while the command-line sync
   phase keeps it; the two writers would disagree on every build.
 - Swift looked up only in a branch the dashpay Debug build does not compile (the `#else` of
-  `#if DEBUG`, an undefined flag), and Objective-C looked up only under a positive `DEBUG`
-  condition or `#if 0`: the sync marks the entry stale.
+  `#if DEBUG`, an undefined flag), and Objective-C looked up only where `xcstringstool extract`
+  records a visibility the sync drops: a `DEBUG` condition that is not negated (alone or in a
+  conjunction), `TARGET_OS_SIMULATOR`, or an always-false condition (`#if 0`, `#if false`, the
+  `#else` of `#if 1`): the sync marks the entry stale.
 - Out of caution the scan also counts as unseen some code the sync may see: Swift in any other
   branch of an `#if` that names `DEBUG`, under a condition it cannot evaluate or in an `#elseif`
-  branch, and Objective-C in any branch of a chain
-  that names `DEBUG` other than a lone negative `DEBUG` branch or the `#else` of a lone positive one.
+  branch, and Objective-C whose visibility names `DEBUG` not negated anywhere (a disjunction, the
+  `#else` of `FOO && !DEBUG`) or names the simulator at all.
+
+The Objective-C lookups come from the same extraction the sync phase runs, so comments, line
+continuations and every directive shape read as the sync reads them. The dashpay files are the
+target's own list in `project.pbxproj`; a file in no target is not read.
 - Looked up only by the Today extension, which compiles the Catalog but has no sync phase, or only
   in Swift under `#if !DASHPAY`: the dashpay sync marks the entry stale, so it reads as an Unused
   entry while a target still shows it.
 
 Neither writer changes a `manual` entry (ADR-0071).
 """
+import functools
 import json
 import os
 import re
+import subprocess
+import sys
+import tempfile
 import unittest
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-# Every directory with `.swift` / `.m` sources the dashpay target compiles.
-DASHPAY_SOURCES = [os.path.join(REPO, name) for name in ("DashWallet", "DashPay", "Shared")]
+sys.path.insert(0, os.path.join(REPO, "scripts", "localization"))
+
+import sync_catalog  # noqa: E402
+
+PROJECT = os.path.join(REPO, "DashWallet.xcodeproj", "project.pbxproj")
+SOURCE_SUFFIXES = (".swift", ".m", ".mm")
 TODAY_SOURCES = os.path.join(REPO, "TodayExtension")
 CATALOG = os.path.join(REPO, "DashWallet", "Localizable.xcstrings")
 # `String(localized:)` and the SwiftUI initializers and modifiers whose first literal is a
@@ -35,7 +49,6 @@ LOOKUP = re.compile(r'(?:String\(\s*localized:\s*'
                     r'|DisclosureGroup|LabeledContent|GroupBox|ColorPicker|LocalizedStringKey'
                     r'|navigationTitle|navigationSubtitle|alert|confirmationDialog|help)\(\s*)'
                     r'"((?:[^"\\]|\\.)*)"')
-OBJC_LOOKUP = re.compile(r'NSLocalizedString\(\s*@"((?:[^"\\]|\\.)*)"')
 # The dashpay Debug build's SWIFT_ACTIVE_COMPILATION_CONDITIONS.
 DEBUG_BUILD_FLAGS = {"DEBUG", "PIGGYCARDS_ENABLED", "DASHPAY"}
 
@@ -89,70 +102,100 @@ def lookups_by_region(text):
     return debug, other
 
 
-OBJC_DIRECTIVE = re.compile(r"#\s*(ifdef|ifndef|if|elif|else|endif)\b(.*)")
-LONE_DEBUG = re.compile(r"\(?\s*(!?)\s*(?:defined\s*\(\s*DEBUG\s*\)|defined\s+DEBUG|DEBUG)\s*\)?")
+def objc_visibility_seen(visibility, negated=False):
+    """True when the scan counts an Objective-C lookup as seen, from the visibility `xcstringstool extract`
+    records for it: none, or one built only of `defined`, `platform`, negation, conjunction and disjunction that
+    names `DEBUG` only under an odd number of negations. `never` (an always-false condition), `simulator`
+    (`TARGET_OS_SIMULATOR`) and any other shape count as unseen."""
+    if visibility is None:
+        return True
+    if not isinstance(visibility, dict):
+        return False
+    kind = visibility.get("type")
+    if kind == "negation":
+        return objc_visibility_seen(visibility["value"], not negated)
+    if kind == "defined":
+        return visibility["value"] != "DEBUG" or negated
+    if kind == "platform":
+        return True
+    if kind in ("conjunction", "disjunction"):
+        return all(objc_visibility_seen(v, negated) for v in visibility["values"])
+    return False
 
 
-def objc_branch_seen(chain, is_else):
-    """True when the scan counts an Objective-C branch as seen. `chain` holds the conditions of the `#if` and
-    each `#elif` up to this branch (all of them for an `#else`). The sync marks stale a lookup under a positive
-    DEBUG condition or `#if 0`; out of caution, a chain that names DEBUG is seen only in a lone negative DEBUG
-    branch or in the `#else` of a lone positive one."""
-    if not any(re.search(r"\bDEBUG\b", c) for c in chain):
-        return is_else or chain[-1] != "0"
-    lone = LONE_DEBUG.fullmatch(chain[0])
-    return len(chain) == 1 and lone is not None and bool(lone.group(1)) != is_else
-
-
-def objc_lookups_by_region(text):
-    """(keys looked up only in branches the scan counts as unseen, keys looked up elsewhere) for one
-    Objective-C file."""
-    unseen_lines = set()
-    stack = []  # (chain of conditions, True in the #else) of each open #if
-    for number, line in enumerate(text.splitlines()):
-        directive = OBJC_DIRECTIVE.match(line.strip())
-        if directive:
-            name = directive.group(1)
-            condition = re.sub(r"/\*.*?\*/", " ", directive.group(2)).split("//")[0].strip()
-            if name == "ifdef":
-                stack.append(([condition], False))
-            elif name == "ifndef":
-                stack.append(([f"!{condition}"], False))
-            elif name == "if":
-                stack.append(([condition], False))
-            elif name == "elif" and stack:
-                stack[-1] = (stack[-1][0] + [condition], False)
-            elif name == "else" and stack:
-                stack[-1] = (stack[-1][0], True)
-            elif name == "endif" and stack:
-                stack.pop()
-        if not all(objc_branch_seen(chain, is_else) for chain, is_else in stack):
-            unseen_lines.add(number)
+def objc_lookups(paths):
+    """(keys looked up only where the scan counts as unseen, keys looked up elsewhere) for Objective-C files,
+    through the extraction the sync phase runs on them."""
     unseen, seen = set(), set()
-    for match in OBJC_LOOKUP.finditer(text):
-        line = text.count("\n", 0, match.start())
-        (unseen if line in unseen_lines else seen).add(match.group(1))
+    with tempfile.TemporaryDirectory() as tmp:
+        for data in sync_catalog.extract_legacy(list(paths), tmp):
+            with open(data, encoding="utf-8") as f:
+                for entry in json.load(f)["tables"].get("Localizable", []):
+                    (seen if objc_visibility_seen(entry.get("visibility")) else unseen).add(entry["key"])
     return unseen, seen
 
 
-def scan(roots):
-    """(keys looked up only in code the scan counts as unseen, keys looked up elsewhere) under `roots`, Swift
-    and Objective-C together."""
-    unseen, seen = set(), set()
-    for directory, _, files in (entry for root in roots for entry in os.walk(root)):
-        for name in files:
-            path = os.path.join(directory, name)
-            if name.endswith(".swift"):
-                regions = lookups_by_region
-            elif name.endswith(".m"):
-                regions = objc_lookups_by_region
-            else:
-                continue
+def scan(paths):
+    """(keys looked up only in code the scan counts as unseen, keys looked up elsewhere) in the given `.swift`,
+    `.m` and `.mm` files, Swift and Objective-C together."""
+    unseen, seen = objc_lookups(p for p in paths if p.endswith((".m", ".mm")))
+    for path in paths:
+        if path.endswith(".swift"):
             with open(path, encoding="utf-8") as f:
-                u, s = regions(f.read())
+                u, s = lookups_by_region(f.read())
             unseen |= u
             seen |= s
     return unseen, seen
+
+
+def files_under(root):
+    return [os.path.join(d, n) for d, _, names in os.walk(root) for n in names if n.endswith(SOURCE_SUFFIXES)]
+
+
+def dashpay_sources():
+    """Every `.swift` / `.m` / `.mm` file the dashpay target compiles: the files of its Sources build phase and of
+    its synchronized folders, less the folders' membership exceptions for it. A synchronized folder missing on
+    disk compiles nothing."""
+    objects = json.loads(subprocess.run(["plutil", "-convert", "json", "-o", "-", PROJECT],
+                                        capture_output=True, check=True).stdout)["objects"]
+    parent = {child: key for key, value in objects.items() for child in value.get("children", [])}
+
+    def path(key):
+        parts = []
+        while key in objects:
+            parts.append(objects[key].get("path", ""))
+            if objects[key].get("sourceTree") != "<group>":
+                break
+            key = parent.get(key)
+        return os.path.normpath(os.path.join(REPO, *reversed(parts)))
+
+    target_key, target = next((k, v) for k, v in objects.items()
+                              if v.get("isa") == "PBXNativeTarget" and v.get("name") == "dashpay")
+    files = set()
+    for phase in target["buildPhases"]:
+        if objects[phase]["isa"] == "PBXSourcesBuildPhase":
+            files |= {path(objects[f]["fileRef"]) for f in objects[phase]["files"] if "fileRef" in objects[f]}
+    for group in target.get("fileSystemSynchronizedGroups", []):
+        root = path(group)
+        excluded = {os.path.join(root, name) for exception in objects[group].get("exceptions", [])
+                    if objects[exception].get("target") == target_key
+                    for name in objects[exception].get("membershipExceptions", [])}
+        files |= set(files_under(root)) - excluded
+    return sorted(f for f in files if f.endswith(SOURCE_SUFFIXES))
+
+
+@functools.lru_cache(maxsize=None)
+def dashpay_scan():
+    return scan(dashpay_sources())
+
+
+def objc_lookups_in(source):
+    """objc_lookups() for one Objective-C file holding `source`."""
+    with tempfile.TemporaryDirectory() as tmp:
+        path = os.path.join(tmp, "a.m")
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(source)
+        return objc_lookups([path])
 
 
 def not_manual(keys):
@@ -163,13 +206,13 @@ def not_manual(keys):
 
 class PreviewOnlyKeysTests(unittest.TestCase):
     def test_debug_only_lookups_are_manual_entries(self):
-        unseen, seen = scan(DASHPAY_SOURCES)
+        unseen, seen = dashpay_scan()
         self.assertEqual(not_manual(unseen - seen), [],
                          "looked up only in code the scan counts as unseen but not manual")
 
     def test_keys_only_the_today_extension_looks_up_are_manual_entries(self):
-        _, seen = scan(DASHPAY_SOURCES)
-        today = set().union(*scan([TODAY_SOURCES]))
+        _, seen = dashpay_scan()
+        today = set().union(*scan(files_under(TODAY_SOURCES)))
         self.assertTrue(today, "no lookup found under TodayExtension")
         self.assertEqual(not_manual(today - seen), [],
                          "looked up only by the Today extension but not manual")
@@ -236,7 +279,7 @@ class PreviewOnlyKeysTests(unittest.TestCase):
                   '#ifndef DEBUG\nNSLocalizedString(@"Ifndef debug", nil);\n#endif\n'
                   '#if SNAPSHOT\nNSLocalizedString(@"Snapshot", nil);\n#else\n'
                   'NSLocalizedString(@"Else of snapshot", nil);\n#endif\n')
-        unseen, seen = objc_lookups_by_region(source)
+        unseen, seen = objc_lookups_in(source)
         self.assertEqual(unseen, {"Ifdef debug", "If debug", "Nested", "Defined debug"})
         self.assertEqual(seen, {"Plain", "Else of ifdef debug", "Not debug", "Ifndef debug",
                                 "Snapshot", "Else of snapshot"})
@@ -245,10 +288,10 @@ class PreviewOnlyKeysTests(unittest.TestCase):
         cases = [  # (source, unseen keys, seen keys)
             ('#if DEBUG && !SNAPSHOT\nA\n#endif\n', {"A"}, set()),
             ('#if defined(DEBUG) && !defined(SNAPSHOT)\nA\n#endif\n', {"A"}, set()),
-            ('#if FRESH_INSTALL && !DEBUG\nA\n#else\nB\n#endif\n', {"A", "B"}, set()),
-            ('#if DEBUG || SNAPSHOT\nA\n#else\nB\n#endif\n', {"A", "B"}, set()),
+            ('#if FRESH_INSTALL && !DEBUG\nA\n#else\nB\n#endif\n', {"B"}, {"A"}),
+            ('#if DEBUG || SNAPSHOT\nA\n#else\nB\n#endif\n', {"A"}, {"B"}),
             ('#ifndef DEBUG\nA\n#elif SNAPSHOT\nB\n#else\nC\n#endif\n', {"B", "C"}, {"A"}),
-            ('#if SNAPSHOT\nA\n#elif DEBUG\nB\n#else\nC\n#endif\n', {"B", "C"}, {"A"}),
+            ('#if SNAPSHOT\nA\n#elif DEBUG\nB\n#else\nC\n#endif\n', {"B"}, {"A", "C"}),
             ('#if 0\nA\n#else\nB\n#endif\n', {"A"}, {"B"}),
             ('# if DEBUG\nA\n# else\nB\n# endif\n', {"A"}, {"B"}),
             ('#ifdef DEBUG /* c */\nA\n#else\nB\n#endif\n', {"A"}, {"B"}),
@@ -258,22 +301,44 @@ class PreviewOnlyKeysTests(unittest.TestCase):
             ('#if (!DEBUG)\nA\n#endif\n', set(), {"A"}),
             ('#if DASHPAY\n#ifndef DEBUG\nA\n#endif\n#endif\n', set(), {"A"}),
             ('#if DEBUG\n#else\n#if 0\nA\n#endif\n#endif\n', {"A"}, set()),
+            # The simulator and always-false conditions the sync marks stale.
+            ('#if TARGET_OS_SIMULATOR\nA\n#else\nB\n#endif\n', {"A", "B"}, set()),
+            ('#if TARGET_IPHONE_SIMULATOR\nA\n#endif\n', {"A"}, set()),
+            ('#if (TARGET_OS_SIMULATOR && DASHPAY)\nA\n#endif\n', {"A"}, set()),
+            ('#if (0)\nA\n#endif\n', {"A"}, set()),
+            ('#if 0 && SNAPSHOT\nA\n#endif\n', {"A"}, set()),
+            ('#if false\nA\n#endif\n', {"A"}, set()),
+            ('#if 1\nA\n#else\nB\n#endif\n', {"B"}, {"A"}),
+            ('#if 1\nA\n#elif SNAPSHOT\nB\n#endif\n', {"B"}, {"A"}),
+            ('#if SNAPSHOT\nA\n#elifdef DEBUG\nB\n#endif\n', {"B"}, {"A"}),
+            ('#if SNAPSHOT && \\\n    DEBUG\nA\n#endif\n', {"A"}, set()),
+            ('#if TARGET_OS_IOS\nA\n#endif\n', set(), {"A"}),
+            # Comments: a commented-out lookup is no lookup, and a commented-out directive opens no branch.
+            ('// A\n/* B */\n', set(), set()),
+            ('/*\n#if DEBUG\n*/\nA\n/* #endif */\n', set(), {"A"}),
         ]
         for source, unseen, seen in cases:
             with self.subTest(source=source):
-                source = re.sub(r"^([ABC])$", r'NSLocalizedString(@"\1", nil);', source, flags=re.M)
-                self.assertEqual(objc_lookups_by_region(source), (unseen, seen))
+                source = re.sub(r"^(// |/\* )?([ABC])( \*/)?$", r'\1NSLocalizedString(@"\2", nil);\3', source,
+                                flags=re.M)
+                self.assertEqual(objc_lookups_in(source), (unseen, seen))
 
-    def test_every_source_the_dashpay_target_compiles_is_scanned(self):
-        self.assertEqual(sorted(os.path.relpath(r, REPO) for r in DASHPAY_SOURCES),
-                         ["DashPay", "DashWallet", "Shared"])
-        _, seen = scan(DASHPAY_SOURCES)
-        _, in_sources = scan([os.path.join(REPO, "DashWallet", "Sources")])
-        _, in_dashpay = scan([os.path.join(REPO, "DashPay")])
-        _, in_app_delegate = objc_lookups_by_region(
-            open(os.path.join(REPO, "DashWallet", "AppDelegate.m"), encoding="utf-8").read())
-        self.assertTrue(in_dashpay - in_sources, "no lookup only DashPay/ makes")
-        self.assertLessEqual(in_dashpay | in_app_delegate, seen)
+    def test_the_scan_reads_exactly_the_files_the_dashpay_target_compiles(self):
+        sources = {os.path.relpath(p, REPO) for p in dashpay_sources()}
+        for name in ["DashWallet/AppDelegate.m",  # outside DashWallet/Sources
+                     "DashWallet/Sources/UI/Views/SharedViews/SegmentedControl/DWProgressAnimator.mm",
+                     "DashWallet/Sources/Infrastructure/Notifications/NotificationRouter.swift",  # synchronized
+                     "Shared/Sources/UIImage+Utils.m"]:
+            self.assertIn(name, sources)
+        self.assertTrue(any(name.startswith("DashPay/") for name in sources))
+        # In no target: its lookups must not count as seen.
+        self.assertNotIn("DashWallet/Sources/UI/DashPay/Explore/Views/DWExploreHeaderView.m", sources)
+        self.assertTrue(all(os.path.isfile(os.path.join(REPO, name)) for name in sources))
+        _, seen = dashpay_scan()
+        _, in_dashpay = scan([p for p in dashpay_sources() if os.path.relpath(p, REPO).startswith("DashPay/")])
+        _, outside = scan([p for p in dashpay_sources() if not os.path.relpath(p, REPO).startswith("DashPay/")])
+        self.assertTrue(in_dashpay - outside, "no lookup only DashPay/ makes")
+        self.assertLessEqual(in_dashpay, seen)
 
     def test_the_scanner_sees_swiftui_literal_keys(self):
         source = ('Text("Shown text")\n'
