@@ -28,19 +28,6 @@ protocol ActionButtonProtocol: AnyObject {
 
 extension ActionButton: ActionButtonProtocol { }
 
-// MARK: - UIBarButtonItem + ActionButtonProtocol
-
-extension UIBarButtonItem: ActionButtonProtocol {
-    var isHidden: Bool {
-        set {
-            isEnabled = newValue
-        }
-        get {
-            isEnabled
-        }
-    }
-}
-
 // MARK: - ActivityIndicatorPreviewing
 
 protocol ActivityIndicatorPreviewing: AnyObject {
@@ -55,7 +42,6 @@ class ActionButtonViewController: BaseViewController, ActivityIndicatorPreviewin
 
     internal var isKeyboardNotificationsEnabled = false
     internal var showsActionButton: Bool { true }
-    internal var isActionButtonInNavigationBar: Bool { false }
     internal var actionButtonTitle: String! {
         fatalError("Must be overriden in subclass")
     }
@@ -65,7 +51,6 @@ class ActionButtonViewController: BaseViewController, ActivityIndicatorPreviewin
     internal var stackView: UIStackView!
     internal var buttonContainer: UIView!
     private var button: ActionButton!
-    private var barButton: UIBarButtonItem!
     private var contentBottomConstraint: NSLayoutConstraint!
 
     func setupContentView(_ view: UIView) {
@@ -73,23 +58,11 @@ class ActionButtonViewController: BaseViewController, ActivityIndicatorPreviewin
     }
 
     func showActivityIndicator() {
-        if isActionButtonInNavigationBar {
-            let activityIndicator = configuredActivityIndicator()
-            activityIndicator.startAnimating()
-            activityIndicator.sizeToFit()
-            let barButtonItem = UIBarButtonItem(customView: activityIndicator)
-            navigationItem.rightBarButtonItem = barButtonItem
-        } else {
-            button.showActivityIndicator()
-        }
+        button.showActivityIndicator()
     }
 
     func hideActivityIndicator() {
-        if isActionButtonInNavigationBar {
-            navigationItem.rightBarButtonItem = barButton
-        } else {
-            button.hideActivityIndicator()
-        }
+        button.hideActivityIndicator()
     }
 
     @objc
@@ -141,50 +114,40 @@ extension ActionButtonViewController {
     }
 
     private func configureActionButton() {
-        if isActionButtonInNavigationBar {
-            barButton = UIBarButtonItem(title: actionButtonTitle, style: .plain, target: self,
-                                        action: #selector(actionButtonAction(sender:)))
-            navigationItem.rightBarButtonItem = barButton
-            actionButton = barButton
+        buttonContainer = UIView()
+        buttonContainer.backgroundColor = .dw_secondaryBackground()
+        buttonContainer.translatesAutoresizingMaskIntoConstraints = false
+        stackView.addArrangedSubview(buttonContainer)
+
+        button = ActionButton()
+        button.setTitle(actionButtonTitle, for: .normal)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(actionButtonAction(sender:)), for: .touchUpInside)
+
+        if _SNAPSHOT {
+            button?.accessibilityIdentifier = "action_button"
         }
-        else {
-            buttonContainer = UIView()
-            buttonContainer.backgroundColor = .dw_secondaryBackground()
-            buttonContainer.translatesAutoresizingMaskIntoConstraints = false
-            stackView.addArrangedSubview(buttonContainer)
 
-            button = ActionButton()
-            button.setTitle(actionButtonTitle, for: .normal)
-            button.translatesAutoresizingMaskIntoConstraints = false
-            button.addTarget(self, action: #selector(actionButtonAction(sender:)), for: .touchUpInside)
+        buttonContainer.addSubview(button)
+        actionButton = button
 
-            if _SNAPSHOT {
-                button?.accessibilityIdentifier = "action_button"
-            }
+        let marginsGuide = view.layoutMarginsGuide
 
-            buttonContainer.addSubview(button)
-            actionButton = button
+        NSLayoutConstraint.activate([
+            button.topAnchor.constraint(equalTo: buttonContainer.topAnchor, constant: 0),
+            button.bottomAnchor.constraint(equalTo: buttonContainer.safeAreaLayoutGuide.bottomAnchor, constant: 0),
+            button.leadingAnchor.constraint(equalTo: marginsGuide.leadingAnchor),
+            button.trailingAnchor.constraint(equalTo: marginsGuide.trailingAnchor),
+            button.heightAnchor.constraint(equalToConstant: 46),
 
-            let marginsGuide = view.layoutMarginsGuide
-
-            NSLayoutConstraint.activate([
-                button.topAnchor.constraint(equalTo: buttonContainer.topAnchor, constant: 0),
-                button.bottomAnchor.constraint(equalTo: buttonContainer.safeAreaLayoutGuide.bottomAnchor, constant: 0),
-                button.leadingAnchor.constraint(equalTo: marginsGuide.leadingAnchor),
-                button.trailingAnchor.constraint(equalTo: marginsGuide.trailingAnchor),
-                button.heightAnchor.constraint(equalToConstant: 46),
-
-            ])
-        }
+        ])
 
         actionButton?.isEnabled = false
     }
 
     private func reloadActionButtonTitles() {
-        if !isActionButtonInNavigationBar {
-            button.setTitle(actionButtonTitle, for: .normal)
-            button.setTitle(actionButtonDisabledTitle, for: .disabled)
-        }
+        button.setTitle(actionButtonTitle, for: .normal)
+        button.setTitle(actionButtonDisabledTitle, for: .disabled)
     }
 }
 
@@ -198,19 +161,8 @@ extension ActionButtonViewController {
 }
 
 extension ActionButtonViewController {
-    private func configuredActivityIndicator() -> UIActivityIndicatorView {
-        let activityIndicatorView = UIActivityIndicatorView(style: .medium)
-        activityIndicatorView.color = .dw_darkBlue()
-        return activityIndicatorView
-    }
-
     private func deviceSpecificBottomPadding() -> CGFloat {
-        if isActionButtonInNavigationBar {
-            return 0
-        }
-        else {
-            return 15
-        }
+        15
     }
 }
 

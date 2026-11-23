@@ -396,26 +396,6 @@ extension HomeViewController {
         let safariViewController = SFSafariViewController.dw_controller(with: TestnetFaucet.webURL)
         present(safariViewController, animated: true)
     }
-    private func presentControllerModallyInNavigationController(_ controller: UIViewController) {
-        if #available(iOS 13.0, *) {
-            presentControllerModallyInNavigationController(controller, modalPresentationStyle: .automatic)
-        } else {
-            presentControllerModallyInNavigationController(controller, modalPresentationStyle: .fullScreen)
-        }
-    }
-
-    private func presentControllerModallyInNavigationController(_ controller: UIViewController, modalPresentationStyle: UIModalPresentationStyle) {
-        let cancelButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(dismissModalControllerBarButtonAction(_:)))
-        controller.navigationItem.leftBarButtonItem = cancelButton
-
-        let navigationController = BaseNavigationController(rootViewController: controller)
-        navigationController.modalPresentationStyle = modalPresentationStyle
-        present(navigationController, animated: true, completion: nil)
-    }
-
-    @objc private func dismissModalControllerBarButtonAction(_ sender: Any) {
-        dismiss(animated: true, completion: nil)
-    }
 
     // MARK: - Shortcut Customization
 
