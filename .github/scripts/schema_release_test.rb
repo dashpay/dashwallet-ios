@@ -13,7 +13,7 @@ class SchemaReleaseTest < Minitest::Test
   class GitHub
     attr_accessor :registry
     attr_reader :dispatches, :retained_sources, :tags, :comparisons, :fast_forwards, :pulls, :branches
-    attr_accessor :open_pull, :closed_pull_commit
+    attr_accessor :open_pull, :closed_pull_commit, :uploaded_runs
     def initialize
       @registry = { "format_version" => 1, "schemas" => {}, "releases" => {} }
       @dispatches = []
@@ -29,7 +29,11 @@ class SchemaReleaseTest < Minitest::Test
       @tags[name] = commit
     end
     def compare(_repo, base, head)
-      @comparisons.fetch([base, head])
+      # A merge-back branch holds the commit it was created at unless a test says otherwise.
+      @comparisons.fetch([base, head]) { head.start_with?("merge-back/") ? "identical" : raise(KeyError, "no comparison for #{base}...#{head}") }
+    end
+    def step_succeeded?(_repo, run_id, attempt, workflow:, step:)
+      workflow == SchemaRelease::RELEASE_WORKFLOW && step == SchemaRelease::UPLOAD_STEP && Array(@uploaded_runs).include?([run_id, attempt])
     end
     def fast_forward(_repo, branch, commit)
       @fast_forwards << [branch, commit]
@@ -357,9 +361,17 @@ class SchemaReleaseTest < Minitest::Test
     bind("apple20", SchemaRelease.manifest_path(BUNDLE, "9.0.5", "20"))
   end
 
-  def test_unreadable_listed_publication_keeps_the_release_branch_where_it_is
+  def test_unreadable_older_publication_does_not_hold_the_release_branch
     pipeline = mirroring
-    add_publication_without_build
+    add_publication_without_build("9.0.1")
+    assert_raises(SchemaRelease::Error) { pipeline.sync }
+    assert_equal [["master", WALLET]], @store.github.fast_forwards
+    refute_includes @output.string, "master is left where it is"
+  end
+
+  def test_unreadable_listed_publication_that_may_be_the_newest_keeps_the_release_branch_where_it_is
+    pipeline = mirroring
+    add_publication_without_build("9.1.1")
     assert_raises(SchemaRelease::Error) { pipeline.sync }
     # The readable publication is still tagged; it just cannot be taken for the newest.
     assert_equal({ "v9.1.0" => WALLET }, @store.github.tags)
@@ -374,6 +386,54 @@ class SchemaReleaseTest < Minitest::Test
     assert_empty @store.github.tags
     assert_empty @store.github.fast_forwards
     assert_equal [["new", @store.head]], @store.github.dispatches
+  end
+
+  def test_publication_whose_release_run_uploaded_but_never_bound_is_bound_by_the_observer
+    @unbound = true
+    @manifest.merge!("workflow_run_id" => "4242", "workflow_run_attempt" => "2")
+    save_manifest
+    pipeline = mirroring
+    @store.github.uploaded_runs = [%w[4242 2]]
+    pipeline.sync(dry_run: true)
+    refute @store.files.key?("apple-builds/apple21.json")
+    assert_includes @output.string, "would record the binding"
+    assert_includes @output.string, "would tag #{WALLET} as v9.1.0"
+
+    pipeline.sync
+    binding = @store.document("apple-builds/apple21.json")
+    assert_equal [@path, Digest::SHA256.hexdigest(@store.files.fetch(@path))], binding.values_at("manifest_path", "manifest_sha256")
+    assert_equal({ "v9.1.0" => WALLET }, @store.github.tags)
+    assert_equal [["master", WALLET]], @store.github.fast_forwards
+  end
+
+  def test_unbound_publication_is_not_bound_when_its_release_run_shows_no_upload
+    @unbound = true
+    @manifest.merge!("workflow_run_id" => "4242", "workflow_run_attempt" => "2")
+    save_manifest
+    pipeline = mirroring
+    @store.github.uploaded_runs = [%w[4242 1]]
+    error = assert_raises(SchemaRelease::Error) { pipeline.sync }
+    assert_includes error.message, "does not show a successful upload"
+    refute @store.files.key?("apple-builds/apple21.json")
+    assert_empty @store.github.tags
+    assert_empty @store.github.fast_forwards
+  end
+
+  def test_release_workflow_still_has_the_upload_step_the_observer_reads
+    steps = File.read(File.expand_path("../workflows/release-dashpay-testflight.yml", __dir__), encoding: "UTF-8").scan(/^\s+- name: (.+)$/).flatten
+    upload = steps.index(SchemaRelease::UPLOAD_STEP)
+    refute_nil upload, "rename UPLOAD_STEP together with the workflow step"
+    # Evidence is written before the upload and the binding after it.
+    assert_operator steps.index("Persist candidate evidence before upload"), :<, upload
+    assert_operator upload, :<, steps.index("Bind the processed Apple build to its recorded sources")
+  end
+
+  def test_rewritten_merge_back_branch_is_reported
+    @store.github.open_pull = true
+    @store.github.comparisons[[RELEASE_TIP, "merge-back/#{RELEASE_TIP[0, 12]}"]] = "diverged"
+    error = assert_raises(SchemaRelease::Error) { mirroring(release: "identical", development: "diverged").sync }
+    assert_includes error.message, "it was rewritten"
+    assert_empty @store.github.pulls
   end
 
   def test_older_publication_is_tagged_but_only_the_newest_moves_the_release_branch
@@ -430,8 +490,8 @@ class SchemaReleaseTest < Minitest::Test
     assert_empty @store.github.dispatches
   end
 
-  def add_publication_without_build
-    @apple.versions.insert(1, @apple.version("missing-build", "9.0.1"))
+  def add_publication_without_build(version = "9.0.1")
+    @apple.versions.insert(1, @apple.version("missing-build", version))
     @apple.define_singleton_method(:version_build) do |id|
       raise AppStoreConnectRelease::Error, "Published App Store version #{id} has no associated build." if id == "missing-build"
       builds.fetch(id)

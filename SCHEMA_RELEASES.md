@@ -227,6 +227,26 @@ that mismatch; it must not roll back current code or invent a migration.
   immutable evidence is preserved; ordinary concurrent ref conflicts still
   use the atomic reconciliation loop.
 
+## When the mirror reports an error
+
+The same observer run keeps `master` and the `vX.Y.Z` tags in step with the App
+Store (ADR-0054). Each of these is reported on every run, as long as Apple
+lists the release, until someone acts:
+
+| The run says | What happened | What to do |
+|---|---|---|
+| `Tag vX.Y.Z names …, but … was built from …` | Someone placed the tag by hand on another commit. The observer never moves a tag. | Confirm which commit shipped (the build's `manifest.json` on `schema-release-data` records `wallet_sha`), then move the tag by hand. |
+| `has no recorded binding … does not show a successful upload` | The release run did not bind the Apple build, and its upload step did not succeed or the run cannot be read, so the build may come from outside the workflow. | Find out where the build came from. If it is the workflow's, run `bind-build` from `.github/scripts/schema_release.rb` with `BUNDLE_ID`, `EFFECTIVE_VERSION`, `BUILD_NUMBER`, `ASC_BUILD_ID` and the token. |
+| `does not descend from master` | The release was cut from a line that does not contain `master`: `master` was not merged back into `develop` with a merge commit, or the cutover in ADR-0054 has not been done. | Before the cutover, do it. After it, merge `master` into `develop` with a merge commit; the next release from `develop` then moves `master`. |
+| `master holds commits after it that the App Store has not published` | Someone wrote to `master` by hand, or the newest version was cut from an older commit. | Find out which. The observer never moves `master` back; an admin resets it to the published commit. |
+| `the pull request from merge-back/… was closed or squashed` | `develop` still lacks what `master` holds. | Merge that `merge-back/…` branch into `develop` with a merge commit. |
+| `merge-back/… no longer contains …; it was rewritten` | The merge-back branch was rebased. | Reset it to the commit named, then merge `develop` into it instead. |
+| `master is left where it is in this run` | A listed publication that may be the newest could not be read; its own error is reported next to this line. | Fix that error. Tags are still written for the readable publications. |
+
+A release whose run uploaded the build and then gave up waiting for Apple needs
+nothing: the observer reads that run, sees the upload step succeeded, and
+records the binding itself.
+
 ## First publication and failure recovery
 
 For the first tracked App Store release, the release operator verifies the whole
