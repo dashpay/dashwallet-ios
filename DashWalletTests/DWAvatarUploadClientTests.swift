@@ -4,6 +4,7 @@
 //
 
 
+import Combine
 import Moya
 import UIKit
 import XCTest
@@ -249,6 +250,7 @@ final class DWAvatarUploadClientTests: XCTestCase {
         XCTAssertEqual(recorder.targets.filter(\.isUpload).count, 2)
     }
 
+    @MainActor
     func testModelManualRetryRestartsWholeCycleAndMutatesStateOnMain() {
         let firstFailure = expectation(description: "model reaches error")
         let retrySuccess = expectation(description: "model reaches success")
@@ -263,13 +265,12 @@ final class DWAvatarUploadClientTests: XCTestCase {
         DWAvatarUploadClient.testingHTTPClient = client.httpClientForTesting
         UserDefaults.standard.set("old-hash", forKey: "ImgurImageDeleteHash")
 
-        let model = DWUploadAvatarModel(image: Self.image)
-        var observation: NSKeyValueObservation?
-        observation = model.observe(\.state, options: [.new]) { observed, _ in
+        let model = AvatarUploadModel(image: Self.image)
+        let observation = model.$state.dropFirst().sink { state in
             XCTAssertTrue(Thread.isMainThread)
-            if observed.state == .error {
+            if state == .error {
                 firstFailure.fulfill()
-            } else if observed.state == .success {
+            } else if state == .success {
                 retrySuccess.fulfill()
             }
         }
@@ -283,6 +284,7 @@ final class DWAvatarUploadClientTests: XCTestCase {
         withExtendedLifetime(observation) {}
     }
 
+    @MainActor
     func testModelSuccessWithoutDeleteHashClearsStoredHash() {
         let success = expectation(description: "model succeeds")
         let body = Data(#"{"success":true,"data":{"link":"https://i.imgur.com/avatar.jpg"}}"#.utf8)
@@ -297,10 +299,9 @@ final class DWAvatarUploadClientTests: XCTestCase {
         DWAvatarUploadClient.testingHTTPClient = client.httpClientForTesting
         UserDefaults.standard.set("old-hash", forKey: "ImgurImageDeleteHash")
 
-        let model = DWUploadAvatarModel(image: Self.image)
-        var observation: NSKeyValueObservation?
-        observation = model.observe(\.state, options: [.new]) { observed, _ in
-            if observed.state == .success {
+        let model = AvatarUploadModel(image: Self.image)
+        let observation = model.$state.sink { state in
+            if state == .success {
                 success.fulfill()
             }
         }
@@ -378,6 +379,7 @@ final class DWAvatarUploadClientTests: XCTestCase {
         XCTAssertEqual(recorder.targets.filter(\.isUpload).count, 1)
     }
 
+    @MainActor
     func testModelCancelDuringUploadPreventsLateStateMutation() {
         let uploadStarted = expectation(description: "model upload starts")
         let recorder = Recorder()
@@ -389,7 +391,7 @@ final class DWAvatarUploadClientTests: XCTestCase {
         }
         DWAvatarUploadClient.testingHTTPClient = client.httpClientForTesting
 
-        let model = DWUploadAvatarModel(image: Self.image)
+        let model = AvatarUploadModel(image: Self.image)
         wait(for: [uploadStarted], timeout: 1)
         model.cancel()
 

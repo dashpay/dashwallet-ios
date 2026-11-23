@@ -94,10 +94,30 @@ enum InvitationOutcomeDialogs {
 
     @MainActor
     private static func alert(title: String, message: String) -> UIViewController {
-        DPAlertViewController(
-            icon: UIImage(named: "icon_invitation_error")!,
-            title: title,
-            description: message)
+        let host = UIHostingController(rootView: InvitationErrorDialog(title: title, message: message))
+        host.modalPresentationStyle = .overFullScreen
+        host.modalTransitionStyle = .crossDissolve
+        host.view.backgroundColor = .clear
+        return host
+    }
+}
+
+/// An invitation that cannot be used: DashUIKit's dialog with one OK.
+struct InvitationErrorDialog: View {
+    let title: String
+    let message: String
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        ZStack {
+            Color.dash.backgroundOverlay.ignoresSafeArea()
+            DashUIKit.ModalDialog(
+                icon: .warning,
+                heading: title,
+                paragraphs: [message],
+                primaryAction: .init(title: NSLocalizedString("OK", comment: "")) { dismiss() })
+                .padding(.horizontal, 20)
+        }
     }
 }
 

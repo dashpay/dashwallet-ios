@@ -29,8 +29,8 @@ protocol RootEditProfileViewControllerDelegate: AnyObject {
     func editProfileViewControllerDidCancel(_ controller: RootEditProfileViewController)
 }
 
-/// Hosts `EditProfileScreen` and runs the avatar flows that are still UIKit:
-/// the photo picker, crop and upload.
+/// Hosts `EditProfileScreen` and presents the avatar flows from UIKit: the
+/// photo picker, and the crop screen over the whole window.
 final class RootEditProfileViewController: UIHostingController<EditProfileScreen> {
     weak var delegate: RootEditProfileViewControllerDelegate?
     private let viewModel: EditProfileViewModel
@@ -87,10 +87,17 @@ final class RootEditProfileViewController: UIHostingController<EditProfileScreen
     }
 
     private func showCrop(_ image: UIImage, url: URL?) {
-        let controller = DWCropAvatarViewController(image: image, imageURL: url)
-        controller.delegate = self
-        controller.modalPresentationStyle = .fullScreen
-        present(controller, animated: true)
+        let crop = UIHostingController(rootView: AvatarCropScreen(
+            image: image,
+            imageURL: url,
+            onDone: { [weak self] image, urlString in
+                self?.viewModel.pickAvatar(image, url: urlString)
+                self?.dismiss(animated: true)
+            },
+            onCancel: { [weak self] in self?.dismiss(animated: true) }))
+        crop.modalPresentationStyle = .fullScreen
+        crop.overrideUserInterfaceStyle = .dark
+        present(crop, animated: true)
     }
 }
 
@@ -107,19 +114,6 @@ extension RootEditProfileViewController: UIImagePickerControllerDelegate, UINavi
 
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true)
-    }
-}
-
-// MARK: DWCropAvatarViewControllerDelegate
-
-extension RootEditProfileViewController: DWCropAvatarViewControllerDelegate {
-    func cropAvatarViewController(_ controller: DWCropAvatarViewController, didCropImage croppedImage: UIImage, urlString: String) {
-        viewModel.pickAvatar(croppedImage, url: urlString)
-        controller.dismiss(animated: true)
-    }
-
-    func cropAvatarViewControllerDidCancel(_ controller: DWCropAvatarViewController) {
-        controller.dismiss(animated: true)
     }
 }
 
