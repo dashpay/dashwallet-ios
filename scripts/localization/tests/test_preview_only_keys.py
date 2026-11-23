@@ -9,17 +9,21 @@
   records a visibility the sync drops: a `DEBUG` condition that is not negated (alone or in a
   conjunction), `TARGET_OS_SIMULATOR`, or an always-false condition (`#if 0`, `#if false`, the
   `#else` of `#if 1`): the sync marks the entry stale.
-- Out of caution the scan also counts as unseen some code the sync may see: Swift in any other
-  branch of an `#if` that names `DEBUG`, under a condition it cannot evaluate or in an `#elseif`
-  branch, and Objective-C whose visibility names `DEBUG` not negated anywhere (a disjunction, the
-  `#else` of `FOO && !DEBUG`) or names the simulator at all.
-
-The Objective-C lookups come from the same extraction the sync phase runs, so comments, line
-continuations and every directive shape read as the sync reads them. The dashpay files are the
-target's own list in `project.pbxproj`; a file in no target is not read.
+- Out of caution the scan also counts as unseen some code the sync may see: Swift under a condition
+  that names `DEBUG` anywhere (any branch of `#if DEBUG`, `#if FOO && !DEBUG`) or that is not built
+  only of flags, `!`, `&&` and `||` (`os()`, `canImport()`, `targetEnvironment()`, `false`); and
+  Objective-C whose visibility names `DEBUG` not negated anywhere (a disjunction, the `#else` of
+  `FOO && !DEBUG`), names the simulator at all, or is a condition the extractor records as opaque
+  (`#if DEBUG == 1`, `__has_feature`), a module check (`__has_include`) or Catalyst.
 - Looked up only by the Today extension, which compiles the Catalog but has no sync phase, or only
   in Swift under `#if !DASHPAY`: the dashpay sync marks the entry stale, so it reads as an Unused
   entry while a target still shows it.
+
+The lookups of both languages and their conditions come from `xcstringstool extract`: Objective-C
+through the extraction the sync phase runs, Swift through its `String(localized:)` and SwiftUI
+extraction, which stands in for the compiler's. Comments, calls wrapped over lines, line
+continuations, `#elseif` and every directive shape read as the extractor reads them. The dashpay
+files are the target's own list in `project.pbxproj`; a file in no target is not read.
 
 Neither writer changes a `manual` entry (ADR-0071).
 """
@@ -41,65 +45,41 @@ PROJECT = os.path.join(REPO, "DashWallet.xcodeproj", "project.pbxproj")
 SOURCE_SUFFIXES = (".swift", ".m", ".mm")
 TODAY_SOURCES = os.path.join(REPO, "TodayExtension")
 CATALOG = os.path.join(REPO, "DashWallet", "Localizable.xcstrings")
-# `String(localized:)` and the SwiftUI initializers and modifiers whose first literal is a
-# `LocalizedStringKey`; `Text(verbatim:)` and non-literal arguments are not lookups.
-LOOKUP = re.compile(r'(?:String\(\s*localized:\s*'
-                    r'|\b(?:Text|Button|Label|Toggle|Section|TextField|SecureField|Link|Picker|Menu'
-                    r'|ContentUnavailableView|NavigationLink|ProgressView|Stepper|DatePicker'
-                    r'|DisclosureGroup|LabeledContent|GroupBox|ColorPicker|LocalizedStringKey'
-                    r'|navigationTitle|navigationSubtitle|alert|confirmationDialog|help)\(\s*)'
-                    r'"((?:[^"\\]|\\.)*)"')
 # The dashpay Debug build's SWIFT_ACTIVE_COMPILATION_CONDITIONS.
 DEBUG_BUILD_FLAGS = {"DEBUG", "PIGGYCARDS_ENABLED", "DASHPAY"}
 
 
-def swift_branch_seen(condition, is_else):
-    """True when the scan counts a Swift branch as seen: the dashpay Debug build compiles it and its condition
-    does not name DEBUG (the Xcode app drops keys only `#if DEBUG` code looks up). A condition the scan cannot
-    evaluate, or None for an `#elseif` chain, counts as unseen out of caution."""
-    if condition is None or re.search(r"\bDEBUG\b", condition):
+def swift_condition(visibility):
+    """True or False for a condition built of `defined`, negation, conjunction and disjunction, evaluated for the
+    dashpay Debug build's flags; None for any other shape."""
+    kind = visibility.get("type") if isinstance(visibility, dict) else None
+    if kind == "defined":
+        return visibility["value"] in DEBUG_BUILD_FLAGS
+    if kind == "negation":
+        value = swift_condition(visibility["value"])
+        return None if value is None else not value
+    if kind in ("conjunction", "disjunction"):
+        values = [swift_condition(v) for v in visibility["values"]]
+        if None in values:
+            return None
+        return all(values) if kind == "conjunction" else any(values)
+    return None
+
+
+def names_debug(visibility):
+    if not isinstance(visibility, dict):
         return False
-    flag = re.fullmatch(r"(!?)\s*(\w+)", condition)
-    if not flag:
-        return False
-    compiled = (flag.group(2) in DEBUG_BUILD_FLAGS) != bool(flag.group(1))
-    return compiled != is_else
+    if visibility.get("type") == "defined":
+        return visibility["value"] == "DEBUG"
+    return any(names_debug(v) for v in [visibility.get("value")] + visibility.get("values", []))
 
 
-def directive_condition(stripped, directive):
-    return stripped[len(directive):].split("//")[0].strip()
-
-
-def lookups_by_region(text):
-    """(keys looked up in code the dashpay Debug sync does not see, keys looked up elsewhere) for one Swift file."""
-    debug, other = set(), set()
-    if_stack = []        # (condition, True while inside a branch the sync does not see)
-    preview_depth = None  # brace depth at which the current #Preview started
-    depth = 0
-    for line in text.splitlines():
-        stripped = line.strip()
-        if stripped.startswith("#if"):
-            condition = directive_condition(stripped, "#if")
-            if_stack.append((condition, not swift_branch_seen(condition, False)))
-        elif stripped.startswith("#elseif"):
-            if if_stack:
-                if_stack[-1] = (None, True)
-        elif stripped.startswith("#else"):
-            if if_stack:
-                condition = if_stack[-1][0]
-                if_stack[-1] = (condition, not swift_branch_seen(condition, True))
-        elif stripped.startswith("#endif"):
-            if if_stack:
-                if_stack.pop()
-        if stripped.startswith("#Preview") and preview_depth is None:
-            preview_depth = depth
-        in_debug = any(unseen for _, unseen in if_stack) or preview_depth is not None
-        for key in LOOKUP.findall(line):
-            (debug if in_debug else other).add(key)
-        depth += line.count("{") - line.count("}")
-        if preview_depth is not None and depth <= preview_depth and "}" in line:
-            preview_depth = None
-    return debug, other
+def swift_visibility_seen(visibility):
+    """True when the scan counts a Swift lookup as seen, from the visibility `xcstringstool extract` records for it:
+    none, or a condition `swift_condition` evaluates to True that names no `DEBUG` (the Xcode app drops keys
+    `#if DEBUG` code looks up). `preview`, `never`, `simulator`, `platform`, `availableModule` and any other shape
+    count as unseen."""
+    return visibility is None or (swift_condition(visibility) is True and not names_debug(visibility))
 
 
 def objc_visibility_seen(visibility, negated=False):
@@ -123,29 +103,34 @@ def objc_visibility_seen(visibility, negated=False):
     return False
 
 
-def objc_lookups(paths):
-    """(keys looked up only where the scan counts as unseen, keys looked up elsewhere) for Objective-C files,
-    through the extraction the sync phase runs on them."""
+def extracted_lookups(paths, seen_by, *modes):
+    """(keys looked up where `seen_by` counts the visibility as unseen, keys looked up elsewhere) in `paths`,
+    through `xcstringstool extract` in the given modes."""
     unseen, seen = set(), set()
     with tempfile.TemporaryDirectory() as tmp:
-        for data in sync_catalog.extract_legacy(list(paths), tmp):
+        for data in sync_catalog.extract(list(paths), tmp, *modes):
             with open(data, encoding="utf-8") as f:
                 for entry in json.load(f)["tables"].get("Localizable", []):
-                    (seen if objc_visibility_seen(entry.get("visibility")) else unseen).add(entry["key"])
+                    (seen if seen_by(entry.get("visibility")) else unseen).add(entry["key"])
     return unseen, seen
+
+
+def objc_lookups(paths):
+    """extracted_lookups() for Objective-C files, through the extraction the sync phase runs on them."""
+    return extracted_lookups(paths, objc_visibility_seen, "--legacy-localizable-strings")
+
+
+def swift_lookups(paths):
+    """extracted_lookups() for Swift files: `String(localized:)` and the SwiftUI APIs whose literal is a key."""
+    return extracted_lookups(paths, swift_visibility_seen, "--modern-localizable-strings", "--SwiftUI")
 
 
 def scan(paths):
     """(keys looked up only in code the scan counts as unseen, keys looked up elsewhere) in the given `.swift`,
     `.m` and `.mm` files, Swift and Objective-C together."""
-    unseen, seen = objc_lookups(p for p in paths if p.endswith((".m", ".mm")))
-    for path in paths:
-        if path.endswith(".swift"):
-            with open(path, encoding="utf-8") as f:
-                u, s = lookups_by_region(f.read())
-            unseen |= u
-            seen |= s
-    return unseen, seen
+    objc_unseen, objc_seen = objc_lookups([p for p in paths if p.endswith((".m", ".mm"))])
+    swift_unseen, swift_seen = swift_lookups([p for p in paths if p.endswith(".swift")])
+    return objc_unseen | swift_unseen, objc_seen | swift_seen
 
 
 def files_under(root):
@@ -189,13 +174,21 @@ def dashpay_scan():
     return scan(dashpay_sources())
 
 
-def objc_lookups_in(source):
-    """objc_lookups() for one Objective-C file holding `source`."""
+def lookups_in(source, name, lookups):
+    """lookups() for one file called `name` holding `source`."""
     with tempfile.TemporaryDirectory() as tmp:
-        path = os.path.join(tmp, "a.m")
+        path = os.path.join(tmp, name)
         with open(path, "w", encoding="utf-8") as f:
             f.write(source)
-        return objc_lookups([path])
+        return lookups([path])
+
+
+def objc_lookups_in(source):
+    return lookups_in(source, "a.m", objc_lookups)
+
+
+def swift_lookups_in(source):
+    return lookups_in(source, "a.swift", swift_lookups)
 
 
 def not_manual(keys):
@@ -222,7 +215,7 @@ class PreviewOnlyKeysTests(unittest.TestCase):
                   'let b = String(localized: "Dashpay one")\n#endif\n'
                   '#if DASHPAY\nlet c = String(localized: "Dashpay two")\n#else\n'
                   'let d = String(localized: "Not dashpay either")\n#endif\n')
-        debug, other = lookups_by_region(source)
+        debug, other = swift_lookups_in(source)
         self.assertEqual(debug, {"Not dashpay", "Not dashpay either"})
         self.assertEqual(other, {"Dashpay one", "Dashpay two"})
 
@@ -231,7 +224,7 @@ class PreviewOnlyKeysTests(unittest.TestCase):
                   '#if DEBUG\nlet b = String(localized: "Debug only")\n#endif\n'
                   '#Preview("x") {\n    Text(String(localized: "Preview only"))\n}\n'
                   'let c = String(localized: "After")\n')
-        debug, other = lookups_by_region(source)
+        debug, other = swift_lookups_in(source)
         self.assertEqual(debug, {"Debug only", "Preview only"})
         self.assertEqual(other, {"Shown", "After"})
 
@@ -242,7 +235,7 @@ class PreviewOnlyKeysTests(unittest.TestCase):
                   'let d = String(localized: "Debug again")\n#endif\n'
                   '#if DEBUG || Testflight\nlet e = String(localized: "Debug or TestFlight")\n#else\n'
                   'let f = String(localized: "Neither")\n#endif\n')
-        debug, other = lookups_by_region(source)
+        debug, other = swift_lookups_in(source)
         self.assertEqual(debug, {"Debug", "Release banner", "Not debug", "Debug again",
                                  "Debug or TestFlight", "Neither"})
         self.assertEqual(other, set())
@@ -253,20 +246,47 @@ class PreviewOnlyKeysTests(unittest.TestCase):
                   '#if PIGGYCARDS_ENABLED\nlet c = String(localized: "Piggy")\n#else\n'
                   'let d = String(localized: "No piggy")\n#endif\n'
                   '#if !SNAPSHOT\nlet e = String(localized: "Not snapshot")\n#endif\n')
-        debug, other = lookups_by_region(source)
+        debug, other = swift_lookups_in(source)
         self.assertEqual(debug, {"Testnet", "No piggy"})
         self.assertEqual(other, {"Not testnet", "Piggy", "Not snapshot"})
 
-    def test_a_condition_the_scan_cannot_evaluate_and_an_elseif_are_unseen(self):
+    def test_a_module_check_and_the_branches_after_a_compiled_one_are_unseen(self):
         source = ('#if canImport(UIKit)\nlet a = String(localized: "UIKit")\n#else\n'
                   'let b = String(localized: "No UIKit")\n#endif\n'
                   '#if DASHPAY\nlet c = String(localized: "Dashpay")\n#elseif SNAPSHOT\n'
                   'let d = String(localized: "Snapshot")\n#else\nlet e = String(localized: "Other")\n#endif\n'
                   '#if DASHPAY\n#if DEBUG\nlet f = String(localized: "Nested debug")\n#endif\n'
                   'let g = String(localized: "Outer dashpay")\n#endif\n')
-        debug, other = lookups_by_region(source)
+        debug, other = swift_lookups_in(source)
         self.assertEqual(debug, {"UIKit", "No UIKit", "Snapshot", "Other", "Nested debug"})
         self.assertEqual(other, {"Dashpay", "Outer dashpay"})
+
+    def test_swift_branches_are_seen_only_in_the_allowed_shapes(self):
+        cases = [  # (source, unseen keys, seen keys)
+            # A lookup wrapped over lines is still a lookup.
+            ('#if DEBUG\nlet a = String(\n    localized: "A")\n#endif\nlet b = String(\n    localized: "B")\n',
+             {"A"}, {"B"}),
+            # Comments: a commented-out lookup is no lookup, and a commented-out directive opens no branch.
+            ('// let a = String(localized: "A")\n/* let b = String(localized: "B") */\n', set(), set()),
+            ('/*\n#if DEBUG\n*/\nlet a = String(localized: "A")\n/* #endif */\n', set(), {"A"}),
+            ('import SwiftUI\n#Preview {\n    Text(String(\n        localized: "A"))\n}\n', {"A"}, set()),
+            # An `#elseif` branch is evaluated from its full condition.
+            ('#if SNAPSHOT\nlet a = String(localized: "A")\n#elseif DASHPAY\nlet b = String(localized: "B")\n'
+             '#else\nlet c = String(localized: "C")\n#endif\n', {"A", "C"}, {"B"}),
+            ('#if !SNAPSHOT && DASHPAY\nlet a = String(localized: "A")\n#endif\n', set(), {"A"}),
+            ('#if SNAPSHOT || PIGGYCARDS_ENABLED\nlet a = String(localized: "A")\n#endif\n', set(), {"A"}),
+            ('#if DASHPAY && !DEBUG\nlet a = String(localized: "A")\n#else\nlet b = String(localized: "B")\n'
+             '#endif\n', {"A", "B"}, set()),
+            # Conditions the scan does not evaluate.
+            ('#if os(iOS)\nlet a = String(localized: "A")\n#endif\n', {"A"}, set()),
+            ('#if targetEnvironment(simulator)\nlet a = String(localized: "A")\n#endif\n', {"A"}, set()),
+            ('#if false\nlet a = String(localized: "A")\n#endif\n', {"A"}, set()),
+            # A literal passed `as String` takes the verbatim overload: no lookup.
+            ('import SwiftUI\n#if DEBUG\nlet a = Button("A" as String) {}\n#endif\n', set(), set()),
+        ]
+        for source, unseen, seen in cases:
+            with self.subTest(source=source):
+                self.assertEqual(swift_lookups_in(source), (unseen, seen))
 
     def test_objc_lookups_under_a_positive_debug_condition_are_unseen(self):
         source = ('NSLocalizedString(@"Plain", nil);\n'
@@ -341,22 +361,32 @@ class PreviewOnlyKeysTests(unittest.TestCase):
         self.assertLessEqual(in_dashpay, seen)
 
     def test_the_scanner_sees_swiftui_literal_keys(self):
-        source = ('Text("Shown text")\n'
+        source = ('import SwiftUI\nText("Shown text")\n'
                   '#Preview("x") {\n    Text("Preview text")\n    Button("Preview button") {}\n'
                   '    Label("Preview label", systemImage: "x")\n        .navigationTitle("Preview title")\n}\n'
                   'Text(verbatim: "Not a key")\n')
-        debug, other = lookups_by_region(source)
+        debug, other = swift_lookups_in(source)
         self.assertEqual(debug, {"Preview text", "Preview button", "Preview label", "Preview title"})
         self.assertEqual(other, {"Shown text"})
 
     def test_the_scanner_sees_the_other_swiftui_literal_keys(self):
-        names = ["ContentUnavailableView", "NavigationLink", "ProgressView", "Stepper", "DatePicker",
-                 "DisclosureGroup", "LabeledContent", "GroupBox", "ColorPicker"]
-        modifiers = ["alert", "confirmationDialog", "help", "navigationSubtitle"]
-        body = "".join(f'    {n}("{n} key")\n' for n in names)
-        body += "".join(f'        .{m}("{m} key")\n' for m in modifiers)
-        debug, other = lookups_by_region('#Preview("x") {\n' + body + "}\n")
-        self.assertEqual(debug, {f"{n} key" for n in names + modifiers})
+        calls = {"ContentUnavailableView": '("{}", systemImage: "x")',
+                 "NavigationLink": '("{}") { EmptyView() }',
+                 "ProgressView": '("{}")',
+                 "Stepper": '("{}", value: $n)',
+                 "DatePicker": '("{}", selection: $d)',
+                 "DisclosureGroup": '("{}") { EmptyView() }',
+                 "LabeledContent": '("{}", value: "v")',
+                 "GroupBox": '("{}") { EmptyView() }',
+                 "ColorPicker": '("{}", selection: $c)'}
+        modifiers = {"alert": '("{}", isPresented: $b) {}',
+                     "confirmationDialog": '("{}", isPresented: $b) {}',
+                     "help": '("{}")',
+                     "navigationSubtitle": '("{}")'}
+        body = "".join(f'    {n}{call.replace("{}", n + " key", 1)}\n' for n, call in calls.items())
+        body += "".join(f'        .{m}{call.replace("{}", m + " key", 1)}\n' for m, call in modifiers.items())
+        debug, other = swift_lookups_in('import SwiftUI\n#Preview("x") {\n' + body + "}\n")
+        self.assertEqual(debug, {f"{n} key" for n in list(calls) + list(modifiers)})
         self.assertEqual(other, set())
 
 

@@ -110,12 +110,13 @@ def run(cmd):
                                                 (res.stderr or res.stdout).strip()))
 
 
-def extract_legacy(sources, out_dir):
+def extract(sources, out_dir, *modes):
+    """The .stringsdata `xcstringstool extract` writes for `sources` in the given extraction modes."""
     found = []
     for n, start in enumerate(range(0, len(sources), CHUNK)):
         chunk_dir = os.path.join(out_dir, "extract-%d" % n)
         os.makedirs(chunk_dir)
-        run(["xcrun", "xcstringstool", "extract", "--legacy-localizable-strings",
+        run(["xcrun", "xcstringstool", "extract", *modes,
              "-o", chunk_dir] + sources[start:start + CHUNK])
         for dirpath, _, names in os.walk(chunk_dir):
             found.extend(os.path.join(dirpath, x) for x in sorted(names) if x.endswith(".stringsdata"))
@@ -190,7 +191,7 @@ def main(argv=None):
             print("Catalog sync: skipped, inputs unchanged since the last sync (%.1fs)" % (time.time() - started))
             return 0
         with tempfile.TemporaryDirectory(prefix="sync-catalog-") as tmp:
-            legacy = extract_legacy(swift_files + objc_files, tmp)
+            legacy = extract(swift_files + objc_files, tmp, "--legacy-localizable-strings")
             synced = sync(catalog, stringsdata + legacy, tmp)
             changed = not same_bytes(synced, catalog)
             if changed:
