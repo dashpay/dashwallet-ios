@@ -662,18 +662,23 @@ final class SendAmountViewModel: ObservableObject {
 
     /// The label, sanitized. A fetched payment request is named as every confirm screen names it
     /// (`BIP70InteractivePolicy.recipientName`): 🔒 for a verified merchant, "Unverified recipient" for an unsigned
-    /// request, named or not.
+    /// request, named or not. Never an Identity ID's: an identity is named only by Platform (its username) or by the
+    /// wallet ("Your identity"), so an unsigned link cannot name someone else's identity as the holder's own.
     static func label(of destination: Destination) -> String? {
+        guard destination.type != .identityID else { return nil }
         if let request = destination.verifiedRequest { return request.recipientName }
         guard let label = sanitized(destination.label) else { return nil }
         return destination.isVerifiedMerchant ? "🔒 " + label : label
     }
 
     /// The message, sanitized; a fetched payment request's note as every confirm screen shows it
-    /// (`BIP70InteractivePolicy.note`: an unsigned one's labelled, on one line and capped).
+    /// (`BIP70InteractivePolicy.note`: an unsigned one's labelled, on one line and capped); an Identity ID's says it
+    /// came from the link, apart from the wallet's own notices.
     static func note(of destination: Destination) -> String? {
         if let request = destination.verifiedRequest { return request.note }
-        return sanitized(destination.message)
+        guard let message = sanitized(destination.message) else { return nil }
+        guard destination.type == .identityID else { return message }
+        return String(localized: "Message in the link: \(message)", comment: "External send")
     }
 
     /// The text the sender wrote, with every non-ASCII character spelled out by its Unicode name (a 🔒 reads
