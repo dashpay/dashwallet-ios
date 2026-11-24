@@ -489,8 +489,30 @@ struct UsernameMarketplaceService {
         // verbatim, so the typed form must be normalized here or "Greg"
         // reports fresh while "greg" is mid-vote.
         let normalized = (try? sdk.dpnsNormalizeLabel(label)) ?? label.lowercased()
+        let voteState: Result<[String: Any], Error>
         do {
-            let state = try await sdk.dpnsGetContestedVoteState(name: normalized)
+            voteState = .success(try await sdk.dpnsGetContestedVoteState(name: normalized))
+        } catch {
+            Self.logger.info("🏷️ MARKET :: contest precheck unavailable for \(label, privacy: .public): \(String(describing: error), privacy: .public)")
+            voteState = .failure(error)
+        }
+        let precheck = Self.contestPrecheck(voteState: voteState)
+        guard case .activeContest(let contenders, _) = precheck else { return precheck }
+        // The vote-state payload carries no deadline, so ask the
+        // current-contests listing (normalized name → TimestampMillis)
+        // for it. Best-effort: a failed or incomplete listing just
+        // leaves the deadline unknown.
+        let endsAt = (try? await sdk.dpnsGetCurrentContests())?[normalized]
+            .map { Date(timeIntervalSince1970: Double($0) / 1000) }
+        return .activeContest(contenders: contenders, endsAt: endsAt)
+    }
+
+    /// What the vote-state query's answer, or its failure, says about a
+    /// label. An active contest comes back with no deadline: the payload
+    /// carries none, so the caller adds it.
+    nonisolated static func contestPrecheck(voteState: Result<[String: Any], Error>) -> ContestPrecheck {
+        switch voteState {
+        case .success(let state):
             if state["winner"] is String {
                 // "LOCKED" or a winning identity's base58 id. Either way
                 // the vote is over and nobody can register the label, so
@@ -499,18 +521,11 @@ struct UsernameMarketplaceService {
             }
             let contenders = (state["contenders"] as? [[String: Any]]) ?? []
             if contenders.isEmpty { return .fresh }
-            // The vote-state payload carries no deadline, so ask the
-            // current-contests listing (normalized name → TimestampMillis)
-            // for it. Best-effort: a failed or incomplete listing just
-            // leaves the deadline unknown.
-            let endsAt = (try? await sdk.dpnsGetCurrentContests())?[normalized]
-                .map { Date(timeIntervalSince1970: Double($0) / 1000) }
-            return .activeContest(contenders: contenders.count, endsAt: endsAt)
-        } catch {
+            return .activeContest(contenders: contenders.count, endsAt: nil)
+        case .failure:
             // A label with no contest is not an error: the query answers
             // it with no contenders, handled above. A failure says nothing
             // about the label.
-            Self.logger.info("🏷️ MARKET :: contest precheck unavailable for \(label, privacy: .public): \(String(describing: error), privacy: .public)")
             return .unknown
         }
     }

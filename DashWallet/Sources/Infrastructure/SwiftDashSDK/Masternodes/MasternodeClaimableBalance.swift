@@ -31,7 +31,16 @@ enum MasternodeClaimableBalance: Equatable {
     /// identity with no balance rather than with an error, so "no identity"
     /// is told from a failed read without looking at an error's text.
     static func fetch(sdk: SDK, identityId: Data) throws -> MasternodeClaimableBalance {
-        resolve(try sdk.identities.fetchBalances(ids: [identityId]), identityId: identityId)
+        try fetch(identityId: identityId) { try sdk.identities.fetchBalances(ids: $0) }
+    }
+
+    /// `fetch(sdk:identityId:)` with the batch read passed in: asks
+    /// `fetchBalances` for `identityId` alone and lets its failure through.
+    static func fetch(
+        identityId: Data,
+        fetchBalances: ([Data]) throws -> [Data: UInt64?]
+    ) throws -> MasternodeClaimableBalance {
+        resolve(try fetchBalances([identityId]), identityId: identityId)
     }
 
     /// The balance `balances` holds for `identityId`; an identity with no
