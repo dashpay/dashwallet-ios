@@ -567,6 +567,29 @@ final class ShieldedTransferCoordinator: ObservableObject {
         return true
     }
 
+    /// The credits a Shielded spend submits: on a sweep, the plan re-priced against the notes as they stand now,
+    /// which must still pay `amountCredits`; otherwise `amountCredits` within the one-transition ceiling. nil after
+    /// the failure is reported.
+    private func submittableAmount(
+        _ amountCredits: UInt64,
+        sweepAll: Bool,
+        feeKind: PlatformWalletManager.ShieldedFeeKind
+    ) -> UInt64? {
+        guard sweepAll else {
+            return rejectIfAboveSpendCeiling(amountCredits, feeKind: feeKind) ? nil : amountCredits
+        }
+        switch Self.sweepAvailability(feeKind: feeKind) {
+        case .ready(let plan) where plan.amountCredits == amountCredits:
+            return plan.amountCredits
+        case .waitingForConfirmation(let credits):
+            handleFailure(CoordinatorError.shieldedSweepWaiting(credits))
+            return nil
+        case .ready, .unavailable:
+            handleFailure(CoordinatorError.shieldedSweepChanged)
+            return nil
+        }
+    }
+
     // MARK: - Public API
 
     /// Whole eligible-wallet intent. Correlation uses this call's durable UUID,
@@ -1021,9 +1044,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
         defer { if let drainClaim { Self.releaseDrainClaim(drainClaim, completed: false) } }
         var markerContext: CoreShieldedDrainContext?
-        let resolution = ShieldedResumeRecipient.resolve(
-            recordedRaw43: row.recordedRecipientRaw43,
-            row: row.identity,
+        let resolution = row.recipient(
             marker: {
                 let (lookup, context) = CoreShieldedDrainService().markerLookup()
                 markerContext = context
@@ -1171,6 +1192,20 @@ final class ShieldedTransferCoordinator: ObservableObject {
         /// The recipient the SDK recorded before broadcasting the lock;
         /// `nil` for a row tracked before the SDK recorded recipients.
         let recordedRecipientRaw43: Data?
+
+        /// The recipient a resume of this lock pays, or why it refuses (`ShieldedResumeRecipient`).
+        func recipient(
+            marker: () -> CoreShieldedDrainMarkerLookup,
+            callerRaw43: Data?,
+            ownRaw43: Data
+        ) -> ShieldedResumeRecipient {
+            ShieldedResumeRecipient.resolve(
+                recordedRaw43: recordedRecipientRaw43,
+                row: identity,
+                marker: marker,
+                callerRaw43: callerRaw43,
+                ownRaw43: ownRaw43)
+        }
     }
 
     /// The SDK row for this outpoint. `nil` when the row cannot be read or is
@@ -1210,11 +1245,13 @@ final class ShieldedTransferCoordinator: ObservableObject {
     }
 
     /// Whether a fresh preview still describes what the user confirmed: an
-    /// external drain must not sweep a larger candidate balance than the one
-    /// on the confirm sheet.
+    /// external drain must sweep exactly the confirmed candidate balance and
+    /// pay the recipient exactly the confirmed amount, so neither the payout
+    /// nor the fee differs from the confirm sheet.
     nonisolated static func drainStillMatches(_ preview: WalletDrainPreview, _ confirmation: CoreShieldedDrainConfirmation) -> Bool {
         preview.status != .insufficientFunds
-            && preview.candidateBalanceDuffs <= confirmation.candidateBalanceDuffs
+            && preview.candidateBalanceDuffs == confirmation.candidateBalanceDuffs
+            && preview.estimatedRecipientCredits == confirmation.estimatedRecipientCredits
     }
 
     /// Starts tracking the new asset lock of a fresh-build attempt: starts the
@@ -1391,21 +1428,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
 
-        let submittedAmount: UInt64
-        if sweepAll {
-            switch Self.sweepAvailability(feeKind: .withdrawal) {
-            case .ready(let plan) where plan.amountCredits == amountCredits:
-                submittedAmount = plan.amountCredits
-            case .waitingForConfirmation(let credits):
-                handleFailure(CoordinatorError.shieldedSweepWaiting(credits))
-                return
-            case .ready, .unavailable:
-                handleFailure(CoordinatorError.shieldedSweepChanged)
-                return
-            }
-        } else {
-            if rejectIfAboveSpendCeiling(amountCredits, feeKind: .withdrawal) { return }
-            submittedAmount = amountCredits
+        guard let submittedAmount = submittableAmount(amountCredits, sweepAll: sweepAll, feeKind: .withdrawal) else {
+            return
         }
 
         // Destination Core (BIP44, Base58Check) address. For the internal
@@ -1497,21 +1521,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return
         }
 
-        let submittedAmount: UInt64
-        if sweepAll {
-            switch Self.sweepAvailability(feeKind: .unshield) {
-            case .ready(let plan) where plan.amountCredits == amountCredits:
-                submittedAmount = plan.amountCredits
-            case .waitingForConfirmation(let credits):
-                handleFailure(CoordinatorError.shieldedSweepWaiting(credits))
-                return
-            case .ready, .unavailable:
-                handleFailure(CoordinatorError.shieldedSweepChanged)
-                return
-            }
-        } else {
-            if rejectIfAboveSpendCeiling(amountCredits, feeKind: .unshield) { return }
-            submittedAmount = amountCredits
+        guard let submittedAmount = submittableAmount(amountCredits, sweepAll: sweepAll, feeKind: .unshield) else {
+            return
         }
 
         // Destination Platform Payment (bech32m) address — for the internal
@@ -1571,6 +1582,59 @@ final class ShieldedTransferCoordinator: ObservableObject {
         schedulePlatformResync()
     }
 
+    /// External send: shielded Orchard notes → an existing identity's
+    /// credits, in one `IdentityTopUpFromShieldedPool` transition. The
+    /// identity does not have to belong to this wallet; the pool fee
+    /// (`.identityTopUpFromPool`) is spent from the notes on top of the
+    /// amount. Stages: `.signing → .proving → .broadcasting → .success`.
+    func performIdentityTopUpFromPool(
+        amountCredits: UInt64,
+        sweepAll: Bool = false,
+        identityId: Data
+    ) async {
+        guard beginTransfer() else { return }
+        DWLogger.log("🛡️ SHIELD-TX :: shielded→identity top-up amount=\(amountCredits) credits")
+
+        let env: BasicEnvironment
+        do {
+            env = try resolveBasicEnvironment()
+        } catch {
+            handleFailure(error)
+            return
+        }
+
+        guard let submittedAmount = submittableAmount(
+            amountCredits, sweepAll: sweepAll, feeKind: .identityTopUpFromPool)
+        else { return }
+
+        do {
+            try await authorize()
+        } catch {
+            handleFailure(error)
+            return
+        }
+
+        phase = .proving
+
+        do {
+            try await env.manager.shieldedIdentityTopUpFromPool(
+                walletId: env.walletId,
+                // Per-operation Orchard spend authority — see `performWithdraw`.
+                resolver: MnemonicResolver(),
+                account: 0,
+                identityId: identityId,
+                amount: submittedAmount)
+        } catch {
+            handleSpendError(error, manager: env.manager)
+            return
+        }
+
+        DWLogger.log("🛡️ SHIELD-TX :: shielded→identity top-up completed")
+        phase = .broadcasting
+        phase = .success
+        scheduleShieldedResync(manager: env.manager)
+    }
+
     /// Route 5: BIP44 Core UTXOs → asset lock → the wallet's own Platform
     /// address credits (funding type 4, `AssetLockAddressTopUp`). Stages:
     /// `.signing → .locking → .broadcasting → .success` — no Orchard proof,
@@ -1603,6 +1667,15 @@ final class ShieldedTransferCoordinator: ObservableObject {
         }
         Self.logger.info("🛡️ SHIELD-TX :: core→platform fund route recipient=\(recipientAmountDuffs) lock=\(lockValueDuffs)")
 
+        // Counts as activity from here on, so a removal cannot reload the
+        // runtime while this attempt reads the wallet, authorizes and builds
+        // its lock.
+        guard ShieldedAssetLocksInFlight.shared.beginFundingCall() else {
+            handleFailure(CoordinatorError.walletReloading)
+            return
+        }
+        defer { ShieldedAssetLocksInFlight.shared.endFundingCall() }
+
         let env: BasicEnvironment
         do {
             env = try resolveBasicEnvironment()
@@ -1610,13 +1683,6 @@ final class ShieldedTransferCoordinator: ObservableObject {
             handleFailure(error)
             return
         }
-        // Counts as activity from here on, so a removal cannot reload the
-        // runtime while this attempt authorizes and builds its lock.
-        guard ShieldedAssetLocksInFlight.shared.beginFundingCall() else {
-            handleFailure(CoordinatorError.walletReloading)
-            return
-        }
-        defer { ShieldedAssetLocksInFlight.shared.endFundingCall() }
 
         // Before the prompt, as on the shielded route.
         let inputCheck = AssetLockInputLimit.Check(
@@ -1632,6 +1698,15 @@ final class ShieldedTransferCoordinator: ObservableObject {
             try await authorize()
         } catch {
             handleFailure(error)
+            return
+        }
+
+        // A wallet or network switch may complete during the prompt: the lock is built only from the wallet the
+        // holder authorized, as the resume does.
+        guard let current = try? resolveBasicEnvironment(),
+              current.walletId == env.walletId, current.network == env.network,
+              current.manager === env.manager else {
+            handleFailure(CoordinatorError.noWallet)
             return
         }
 
@@ -1847,21 +1922,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
         // guard as `performWithdraw`, so a note that was spent or discovered
         // between Max and confirm fails closed instead of building a bundle
         // the pool can no longer fund exactly.
-        let submittedAmount: UInt64
-        if sweepAll {
-            switch Self.sweepAvailability(feeKind: .transfer) {
-            case .ready(let plan) where plan.amountCredits == amountCredits:
-                submittedAmount = plan.amountCredits
-            case .waitingForConfirmation(let credits):
-                handleFailure(CoordinatorError.shieldedSweepWaiting(credits))
-                return
-            case .ready, .unavailable:
-                handleFailure(CoordinatorError.shieldedSweepChanged)
-                return
-            }
-        } else {
-            if rejectIfAboveSpendCeiling(amountCredits, feeKind: .transfer) { return }
-            submittedAmount = amountCredits
+        guard let submittedAmount = submittableAmount(amountCredits, sweepAll: sweepAll, feeKind: .transfer) else {
+            return
         }
 
         do {
