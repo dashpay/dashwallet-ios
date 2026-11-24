@@ -345,11 +345,7 @@
 		4730586E295AB3BE004641DA /* UIDevice+Compatibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4730586D295AB3BD004641DA /* UIDevice+Compatibility.swift */; };
 		47305870295AD62B004641DA /* NavigationBarAppearanceCustomizable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4730586F295AD62B004641DA /* NavigationBarAppearanceCustomizable.swift */; };
 		47305872295C971F004641DA /* UIViewController+AlertPresenting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47305871295C971F004641DA /* UIViewController+AlertPresenting.swift */; };
-		474C720D298A19D100475CA6 /* TxDetailHeaderCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 474C720C298A19D100475CA6 /* TxDetailHeaderCell.xib */; };
-		474C720F298A1A3E00475CA6 /* TxDetailTaxCategoryCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 474C720E298A1A3E00475CA6 /* TxDetailTaxCategoryCell.xib */; };
 		474C7211298A1A9500475CA6 /* UIView+Reuse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 474C7210298A1A9500475CA6 /* UIView+Reuse.swift */; };
-		474C7213298A1EFC00475CA6 /* TxDetailInfoCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 474C7212298A1EFC00475CA6 /* TxDetailInfoCell.xib */; };
-		474C7215298A1FCF00475CA6 /* TxDetailActionCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 474C7214298A1FCF00475CA6 /* TxDetailActionCell.xib */; };
 		474C7218298A422500475CA6 /* TransactionItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 474C7217298A422400475CA6 /* TransactionItemView.swift */; };
 		4751136C28D9A3DB00223B77 /* BuySellPortalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4751136B28D9A3DB00223B77 /* BuySellPortalViewController.swift */; };
 		4751136F28D9B50E00223B77 /* CoinbaseInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4751136E28D9B50E00223B77 /* CoinbaseInfoViewController.swift */; };
@@ -411,8 +407,9 @@
 		47A2E3AC2972B1A60032A63B /* CoinbaseRatesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A2E3AB2972B1A60032A63B /* CoinbaseRatesProvider.swift */; };
 		47A50F3B2913BC0900C70123 /* TransferAmountModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A50F3A2913BC0900C70123 /* TransferAmountModel.swift */; };
 		47A514602848F75B005A8E3E /* TxDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A5145F2848F75B005A8E3E /* TxDetailViewController.swift */; };
+		E6248A6924774E1DBE800CFE /* TxDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C15A615D2CEA45EEB52621F3 /* TxDetailViewModel.swift */; };
+		DACC279C702F4BD8B0F6AF71 /* TxDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDF88847EA734AD6AB29B9C6 /* TxDetailScreen.swift */; };
 		47A514622848FEAD005A8E3E /* Tx.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 47A514612848FEAD005A8E3E /* Tx.storyboard */; };
-		47A5146428491C60005A8E3E /* TxDetailCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A5146328491C60005A8E3E /* TxDetailCells.swift */; };
 		C017200000000000000AA2 /* RequestAmountScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000000AA1 /* RequestAmountScreen.swift */; };
 		C017200000000000000AA3 /* RequestAmountScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000000AA1 /* RequestAmountScreen.swift */; };
 		C017200000000000000BA2 /* RequestAmountHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000000BA1 /* RequestAmountHostingController.swift */; };
@@ -1419,6 +1416,8 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		C9D2C6D52A320AA000D15901 /* TransactionMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C314287EA11900B4BD48 /* TransactionMetadata.swift */; };
 		C9D2C6D82A320AA000D15901 /* AtmListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BDD28C1305E00490F5E /* AtmListViewController.swift */; };
 		C9D2C6D92A320AA000D15901 /* TxDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A5145F2848F75B005A8E3E /* TxDetailViewController.swift */; };
+		A7F1C57C0CEE48ACB15045CD /* TxDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C15A615D2CEA45EEB52621F3 /* TxDetailViewModel.swift */; };
+		B4CD8ACC8D0641F7BEAB1546 /* TxDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDF88847EA734AD6AB29B9C6 /* TxDetailScreen.swift */; };
 		C9D2C6DA2A320AA000D15901 /* NSAttributedString+Builder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472D13E9299E5396006903F1 /* NSAttributedString+Builder.swift */; };
 		C9D2C6DB2A320AA000D15901 /* DWPreviewSeedPhraseContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE7922DB5F5200C99324 /* DWPreviewSeedPhraseContentView.m */; };
 		C9D2C6DC2A320AA000D15901 /* DWPhoneWCSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A858A0C237EE89B0097A7B5 /* DWPhoneWCSessionManager.m */; };
@@ -1739,18 +1738,14 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		C9D2C8EA2A320AA000D15901 /* ConvertCryptoOrderPreviewViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4751CAD82970509600F63AC4 /* ConvertCryptoOrderPreviewViews.swift */; };
 		C9D2C8EB2A320AA000D15901 /* DWAboutModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8F421F21BEFEEA00858B91 /* DWAboutModel.m */; };
 		C9D2C8F02A320AA000D15901 /* DWProgressView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E531C22EA49FE00E5168A /* DWProgressView.m */; };
-		C9D2C8F12A320AA000D15901 /* TxDetailCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A5146328491C60005A8E3E /* TxDetailCells.swift */; };
 		A1C0DE0000000000000BADA2 /* TxDetailContactViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0000000000000BADA1 /* TxDetailContactViews.swift */; };
 		C9D2C8F22A320AA000D15901 /* BaseViewController+NetworkReachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 477F501629543834003C7508 /* BaseViewController+NetworkReachability.swift */; };
 		C9D2C8F32A320AA000D15901 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 75D5F3CD191EC270004AB296 /* main.m */; settings = {COMPILER_FLAGS = "-DASHPAY"; }; };
-		C9D2C90E2A320AA000D15901 /* TxDetailHeaderCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 474C720C298A19D100475CA6 /* TxDetailHeaderCell.xib */; };
 		C9D2C9132A320AA000D15901 /* BiometricAuth.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A44314822CF82EF009BAF7F /* BiometricAuth.storyboard */; };
 		C9D2C9172A320AA000D15901 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 757E09971ADB8EEB006FD352 /* Localizable.strings */; };
 		C9D2C9182A320AA000D15901 /* LockScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A6300412328CCE900827825 /* LockScreen.storyboard */; };
 		C9D2C91A2A320AA000D15901 /* Migrations.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 4709C30E287E787700B4BD48 /* Migrations.bundle */; };
-		C9D2C91B2A320AA000D15901 /* TxDetailTaxCategoryCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 474C720E298A1A3E00475CA6 /* TxDetailTaxCategoryCell.xib */; };
 		C9D2C91C2A320AA000D15901 /* Localizable.stringsdict in Resources */ = {isa = PBXBuildFile; fileRef = 2ADC722723B5547000D9DD37 /* Localizable.stringsdict */; };
-		C9D2C9202A320AA000D15901 /* TxDetailInfoCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 474C7212298A1EFC00475CA6 /* TxDetailInfoCell.xib */; };
 		C9D2C9212A320AA000D15901 /* UpholdOTPStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE552230FF4600956D5F /* UpholdOTPStoryboard.storyboard */; };
 		C9D2C9222A320AA000D15901 /* AppAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2A4430F122CBD57A009BAF7F /* AppAssets.xcassets */; };
 		C9D2C9242A320AA000D15901 /* coinflip.aiff in Resources */ = {isa = PBXBuildFile; fileRef = 75E83CF51B5F997A0038FB70 /* coinflip.aiff */; };
@@ -1772,7 +1767,6 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		C9D2C9422A320AA000D15901 /* Setup.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A4430EA22CBBA82009BAF7F /* Setup.storyboard */; };
 		C9D2C9432A320AA000D15901 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C94F5E8729D3E7E30034FD57 /* GoogleService-Info.plist */; };
 		C9D2C9442A320AA000D15901 /* uphold-logout.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 2A811558269CE09300215F81 /* uphold-logout.jpg */; };
-		C9D2C9462A320AA000D15901 /* TxDetailActionCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 474C7214298A1FCF00475CA6 /* TxDetailActionCell.xib */; };
 		C9D2C95E2A386D7E00D15901 /* DWBasePressableControl.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D2C95D2A386D7E00D15901 /* DWBasePressableControl.m */; };
 		C9D2C9652A38733B00D15901 /* DPAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C9D2C9642A38733B00D15901 /* DPAssets.xcassets */; };
 		C9F067F229E4576D0022D958 /* HomeBalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F067F129E4576D0022D958 /* HomeBalanceView.swift */; };
@@ -2625,11 +2619,7 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		4730586D295AB3BD004641DA /* UIDevice+Compatibility.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIDevice+Compatibility.swift"; sourceTree = "<group>"; };
 		4730586F295AD62B004641DA /* NavigationBarAppearanceCustomizable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationBarAppearanceCustomizable.swift; sourceTree = "<group>"; };
 		47305871295C971F004641DA /* UIViewController+AlertPresenting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+AlertPresenting.swift"; sourceTree = "<group>"; };
-		474C720C298A19D100475CA6 /* TxDetailHeaderCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TxDetailHeaderCell.xib; sourceTree = "<group>"; };
-		474C720E298A1A3E00475CA6 /* TxDetailTaxCategoryCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TxDetailTaxCategoryCell.xib; sourceTree = "<group>"; };
 		474C7210298A1A9500475CA6 /* UIView+Reuse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Reuse.swift"; sourceTree = "<group>"; };
-		474C7212298A1EFC00475CA6 /* TxDetailInfoCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TxDetailInfoCell.xib; sourceTree = "<group>"; };
-		474C7214298A1FCF00475CA6 /* TxDetailActionCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TxDetailActionCell.xib; sourceTree = "<group>"; };
 		474C7217298A422400475CA6 /* TransactionItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionItemView.swift; sourceTree = "<group>"; };
 		4751136B28D9A3DB00223B77 /* BuySellPortalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuySellPortalViewController.swift; sourceTree = "<group>"; };
 		4751136E28D9B50E00223B77 /* CoinbaseInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseInfoViewController.swift; sourceTree = "<group>"; };
@@ -2697,8 +2687,9 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		47A50F3A2913BC0900C70123 /* TransferAmountModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferAmountModel.swift; sourceTree = "<group>"; };
 		47A5145E2848F75A005A8E3E /* dashwallet-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "dashwallet-Bridging-Header.h"; sourceTree = "<group>"; };
 		47A5145F2848F75B005A8E3E /* TxDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxDetailViewController.swift; sourceTree = "<group>"; };
+		C15A615D2CEA45EEB52621F3 /* TxDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxDetailViewModel.swift; sourceTree = "<group>"; };
+		CDF88847EA734AD6AB29B9C6 /* TxDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxDetailScreen.swift; sourceTree = "<group>"; };
 		47A514612848FEAD005A8E3E /* Tx.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Tx.storyboard; sourceTree = "<group>"; };
-		47A5146328491C60005A8E3E /* TxDetailCells.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxDetailCells.swift; sourceTree = "<group>"; };
 		C017200000000000000AA1 /* RequestAmountScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestAmountScreen.swift; sourceTree = "<group>"; };
 		C017200000000000000BA1 /* RequestAmountHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestAmountHostingController.swift; sourceTree = "<group>"; };
 		C0172000000000000009A1 /* SpecifyAmountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpecifyAmountView.swift; sourceTree = "<group>"; };
@@ -4325,12 +4316,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		2A1B7D82232156A600BA8C6A /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				47A5146328491C60005A8E3E /* TxDetailCells.swift */,
 				A1C0DE0000000000000BADA1 /* TxDetailContactViews.swift */,
-				474C720C298A19D100475CA6 /* TxDetailHeaderCell.xib */,
-				474C720E298A1A3E00475CA6 /* TxDetailTaxCategoryCell.xib */,
-				474C7212298A1EFC00475CA6 /* TxDetailInfoCell.xib */,
-				474C7214298A1FCF00475CA6 /* TxDetailActionCell.xib */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -6495,6 +6481,8 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				2A1B7D82232156A600BA8C6A /* Views */,
 				BA1B0011C0FFEE00B15B0011 /* RawTransactionView.swift */,
 				47A5145F2848F75B005A8E3E /* TxDetailViewController.swift */,
+				C15A615D2CEA45EEB52621F3 /* TxDetailViewModel.swift */,
+				CDF88847EA734AD6AB29B9C6 /* TxDetailScreen.swift */,
 				75D2B4A02D9D28AC00228DB0 /* BlockExplorerSelectionView.swift */,
 			);
 			path = Details;
@@ -8895,14 +8883,12 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				474C720D298A19D100475CA6 /* TxDetailHeaderCell.xib in Resources */,
 				75EBAA222BBA9D3C004488E3 /* ZenLedger-Info.plist in Resources */,
 				C9FAABB52AB793CE00878224 /* BuySellPortal.storyboard in Resources */,
 				2A44314922CF82EF009BAF7F /* BiometricAuth.storyboard in Resources */,
 				757E09991ADB8EEB006FD352 /* Localizable.strings in Resources */,
 				2A6300422328CCE900827825 /* LockScreen.storyboard in Resources */,
 				4709C30F287E787700B4BD48 /* Migrations.bundle in Resources */,
-				474C720F298A1A3E00475CA6 /* TxDetailTaxCategoryCell.xib in Resources */,
 				2ADC722923B5547000D9DD37 /* Localizable.stringsdict in Resources */,
 				5151C8CA2F913BF100F0A604 /* Coinbase-Info.plist in Resources */,
 				5151C8CB2F913BF100F0A604 /* ZenLedger-Info.plist in Resources */,
@@ -8910,7 +8896,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				5151C8CD2F913BF100F0A604 /* Topper-Info.plist in Resources */,
 				51646C723006263C00BE3070 /* Uphold-Info.plist in Resources */,
 				75E2F3C82AA4CF1900C3B458 /* Topper-Info.plist in Resources */,
-				474C7213298A1EFC00475CA6 /* TxDetailInfoCell.xib in Resources */,
 				2A9FFE942230FF4700956D5F /* UpholdOTPStoryboard.storyboard in Resources */,
 				2A4430F222CBD57A009BAF7F /* AppAssets.xcassets in Resources */,
 				51733DB22FCF04B300CF8713 /* SwapKit-Info.plist in Resources */,
@@ -8934,7 +8919,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				752772122AAA1CE30066557E /* Coinbase-Info.plist in Resources */,
 				C94F5E8829D3E7E30034FD57 /* GoogleService-Info.plist in Resources */,
 				2A811559269CE09300215F81 /* uphold-logout.jpg in Resources */,
-				474C7215298A1FCF00475CA6 /* TxDetailActionCell.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8981,7 +8965,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			buildActionMask = 2147483647;
 			files = (
 				51733DB32FCF04B300CF8713 /* SwapKit-Info.plist in Resources */,
-				C9D2C90E2A320AA000D15901 /* TxDetailHeaderCell.xib in Resources */,
 				752C3ED22B1AF19C00F46CD3 /* BuySellPortal.storyboard in Resources */,
 				C9D2C9652A38733B00D15901 /* DPAssets.xcassets in Resources */,
 				C9D2C9132A320AA000D15901 /* BiometricAuth.storyboard in Resources */,
@@ -8990,9 +8973,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C9D2C9182A320AA000D15901 /* LockScreen.storyboard in Resources */,
 				C9D2C91A2A320AA000D15901 /* Migrations.bundle in Resources */,
 				51646C733006263C00BE3070 /* Uphold-Info.plist in Resources */,
-				C9D2C91B2A320AA000D15901 /* TxDetailTaxCategoryCell.xib in Resources */,
 				C9D2C91C2A320AA000D15901 /* Localizable.stringsdict in Resources */,
-				C9D2C9202A320AA000D15901 /* TxDetailInfoCell.xib in Resources */,
 				C9D2C9212A320AA000D15901 /* UpholdOTPStoryboard.storyboard in Resources */,
 				C9D2C9222A320AA000D15901 /* AppAssets.xcassets in Resources */,
 				C9D2C9242A320AA000D15901 /* coinflip.aiff in Resources */,
@@ -9019,7 +9000,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C9D2C9422A320AA000D15901 /* Setup.storyboard in Resources */,
 				C9D2C9432A320AA000D15901 /* GoogleService-Info.plist in Resources */,
 				C9D2C9442A320AA000D15901 /* uphold-logout.jpg in Resources */,
-				C9D2C9462A320AA000D15901 /* TxDetailActionCell.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -9494,6 +9474,8 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				47AE8BFE28C1306000490F5E /* AtmListViewController.swift in Sources */,
 				BA1B0012C0FFEE00B15B0012 /* RawTransactionView.swift in Sources */,
 				47A514602848F75B005A8E3E /* TxDetailViewController.swift in Sources */,
+				E6248A6924774E1DBE800CFE /* TxDetailViewModel.swift in Sources */,
+				DACC279C702F4BD8B0F6AF71 /* TxDetailScreen.swift in Sources */,
 				472D13EA299E5396006903F1 /* NSAttributedString+Builder.swift in Sources */,
 				2AD1CE7A22DB5F5200C99324 /* DWPreviewSeedPhraseContentView.m in Sources */,
 				2A858A11237EE89C0097A7B5 /* DWPhoneWCSessionManager.m in Sources */,
@@ -10019,7 +10001,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				2A8F422021BEFEEA00858B91 /* DWAboutModel.m in Sources */,
 				2A4E531D22EA49FE00E5168A /* DWProgressView.m in Sources */,
 				7569D6892DE6DB6700768BFF /* ExploreContentsView.swift in Sources */,
-				47A5146428491C60005A8E3E /* TxDetailCells.swift in Sources */,
 				477F501729543834003C7508 /* BaseViewController+NetworkReachability.swift in Sources */,
 				75D5F3CE191EC270004AB296 /* main.m in Sources */,
 				AA0001022AA9F58E00A1B201 /* MayaPortalView.swift in Sources */,
@@ -10459,6 +10440,8 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C9D2C6D82A320AA000D15901 /* AtmListViewController.swift in Sources */,
 				BA1B0013C0FFEE00B15B0013 /* RawTransactionView.swift in Sources */,
 				C9D2C6D92A320AA000D15901 /* TxDetailViewController.swift in Sources */,
+				A7F1C57C0CEE48ACB15045CD /* TxDetailViewModel.swift in Sources */,
+				B4CD8ACC8D0641F7BEAB1546 /* TxDetailScreen.swift in Sources */,
 				C9D2C6DA2A320AA000D15901 /* NSAttributedString+Builder.swift in Sources */,
 				75D9EBB92DE5CC3A009416A2 /* AddGiftCardsTable.swift in Sources */,
 				C9D2C6DB2A320AA000D15901 /* DWPreviewSeedPhraseContentView.m in Sources */,
@@ -11063,7 +11046,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C943B3282A408CED00AF23C5 /* DWAvatarEditSelectorContentView.m in Sources */,
 				51A577492FBB3A6000FB4097 /* OrderPreviewViewModel.swift in Sources */,
 				C9D2C8F02A320AA000D15901 /* DWProgressView.m in Sources */,
-				C9D2C8F12A320AA000D15901 /* TxDetailCells.swift in Sources */,
 				A1C0DE0000000000000BADA2 /* TxDetailContactViews.swift in Sources */,
 				75D9EBC22DE5CD9C009416A2 /* GiftCardsDAO.swift in Sources */,
 				754565D12DABA5F300DA4E8E /* MerchantTypesDialog.swift in Sources */,
