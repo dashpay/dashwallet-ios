@@ -37,6 +37,12 @@ NS_ASSUME_NONNULL_BEGIN
 /// Assume pasteboard contains needed data and pay
 - (void)performPayToPasteboardAction;
 - (void)performNFCReadingAction;
+/// Opens the new Send flow for a scanned code. The lock screen overrides it: Send shows the source balances, so it
+/// opens only after the wallet is unlocked.
+- (void)presentScannedPaymentInput:(DWPaymentInput *)paymentInput;
+/// Whether the scanner hands a code's payment request on unfetched (`DWQRScanModel.defersPaymentRequests`): YES on
+/// the lock screen, where no merchant is contacted before the unlock.
+- (BOOL)defersPaymentRequests;
 - (void)performPayToURL:(NSURL *)url;
 /// Pay a send this flow has already fully specified — the address and the
 /// amount are both known and there is nothing left to ask for.

@@ -160,7 +160,7 @@ NS_ASSUME_NONNULL_END
 
         NSString *addr = [codeObject.stringValue stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
         DWParsedPaymentURI *parsed = [DWParsedPaymentURI parsePaymentString:addr];
-        if (parsed.isValidDashPaymentIntent) {
+        if (parsed.isValidDashPaymentIntent || [DWParsedPaymentURI isIdentityIDString:addr]) {
             return codeObject;
         }
         else if (!anyObject) {
@@ -211,8 +211,10 @@ NS_ASSUME_NONNULL_END
     DWParsedPaymentURI *parsed = [DWParsedPaymentURI parsePaymentString:addr];
     // The URI parse, `pay:` normalization and address validity are app-side now (the box). (Paper-wallet
     // sweep — the old WIF/BIP38 arm — was dropped in C8 step 5.)
-    if (parsed.isValidDashPaymentIntent) {
-        if (parsed.rURL != nil) {                       // start fetching payment protocol request right away
+    BOOL isIdentityID = [DWParsedPaymentURI isIdentityIDString:addr];
+    if (parsed.isValidDashPaymentIntent || isIdentityID) {
+        BOOL fetchesRequest = parsed.prefetchesPaymentRequest && !self.defersPaymentRequests;
+        if (fetchesRequest) {                           // start fetching payment protocol request right away
             dispatch_sync(dispatch_get_main_queue(), ^{ // sync!
                 QRCodeObject *qrCodeObject = [[QRCodeObject alloc] initWithMetadataObject:codeObject];
                 [qrCodeObject setValidPaymentRequest];
@@ -250,8 +252,10 @@ NS_ASSUME_NONNULL_END
                                                if (error) {
                                                    // payment protocol fetch failed, so use the plain fallback address
                                                    [paymentInput attachParsedURI:cleared];
+                                                   paymentInput.requestCleared = YES;
                                                }
                                                else {
+                                                   [paymentInput attachParsedURI:parsed];
                                                    paymentInput.bip70Confirmation = box;
                                                }
 
@@ -271,7 +275,19 @@ NS_ASSUME_NONNULL_END
             });
         }
     }
-    else if (parsed.rURL != nil) {
+    else if (parsed.prefetchesPaymentRequest && self.defersPaymentRequests) {
+        // A BIP73 request URL scanned on the lock screen: handed on unfetched, Send fetches it after the unlock.
+        dispatch_async(dispatch_get_main_queue(), ^{
+            QRCodeObject *qrCodeObject = [[QRCodeObject alloc] initWithMetadataObject:codeObject];
+            [qrCodeObject setValid];
+            self.qrCodeObject = qrCodeObject;
+
+            DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:DWPaymentInputSource_ScanQR];
+            [paymentInput attachParsedURI:parsed];
+            [self.delegate qrScanModel:self didScanPaymentInput:paymentInput];
+        });
+    }
+    else if (parsed.prefetchesPaymentRequest) {
         // Not a valid Dash intent, but a BIP73 http(s) request URL scanned whole → fetch it.
         // (A non-URL invalid input no longer triggers a doomed fetch / nil-URL trap.)
         dispatch_sync(dispatch_get_main_queue(), ^{ // sync!
@@ -293,6 +309,7 @@ NS_ASSUME_NONNULL_END
                                            if (box) {
                                                [strongSelf.qrCodeObject setValid];
                                                DWPaymentInput *paymentInput = [[DWPaymentInput alloc] initWithSource:DWPaymentInputSource_ScanQR];
+                                               [paymentInput attachParsedURI:parsed];
                                                paymentInput.bip70Confirmation = box;
                                                [strongSelf.delegate qrScanModel:strongSelf didScanPaymentInput:paymentInput];
                                            }

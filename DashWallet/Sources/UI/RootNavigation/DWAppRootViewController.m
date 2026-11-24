@@ -44,7 +44,9 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 @property (nullable, nonatomic, weak) DWLockScreenViewController *lockController;
 @property (nullable, nonatomic, weak) UIViewController *displayedLockNavigationController;
 
-@property (nullable, nonatomic, strong) NSURL *deferredURLToProcess;
+/// The one payment entry held for the unlock: a link (`NSURL`) opened while locked, or a code scanned on the lock
+/// screen (`DWPaymentInput`). One slot, so the newest entry replaces an older one of either kind.
+@property (nullable, nonatomic, strong) id heldPaymentEntry;
 /// An invitation arrived while locked: it is already stored; after unlock
 /// only Home is brought forward. The link itself (a voucher key) is never
 /// kept for replay.
@@ -113,11 +115,12 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 - (void)handleURL:(NSURL *)url {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
 
-    // Defer URL until unlocked.
+    // Defer URL until unlocked, whether or not one is deferred already: a link opens Send, which shows the source
+    // balances and may contact a merchant, so nothing of it runs while locked. The newest link or scan is the one opened.
     // This also prevents an issue with too fast unlocking via Face ID.
     BOOL isLocked = [self.model shouldShowLockScreen] || self.lockController;
-    if (isLocked && self.deferredURLToProcess == nil) {
-        self.deferredURLToProcess = url;
+    if (isLocked) {
+        self.heldPaymentEntry = url;
         return;
     }
 
@@ -348,6 +351,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 - (void)didWipeWallet {
     // Nothing received before the wipe may be acted on after it.
     self.showsInvitationAfterUnlock = NO;
+    self.heldPaymentEntry = nil;
 #if DASHPAY
     [DWInvitationEntry discardHeldNotice];
 #endif
@@ -474,6 +478,10 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
             self.lockWindow.rootViewController = nil;
             self.lockWindow.hidden = YES;
             self.lockWindow.alpha = 1.0;
+            // The lock is gone: a link replayed below is routed as one in the unlocked app, and one the router
+            // defers again (the session ended meanwhile) is kept for the next unlock.
+            self.lockController = nil;
+            self.displayedLockNavigationController = nil;
             [DWWalletLifecycleOverlayBridge setLockScreenVisible:NO];
 
             BOOL showsInvitation = NO;
@@ -487,14 +495,27 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
             // another invitation pending, could not be saved).
             [DWInvitationEntry presentHeldNoticeFrom:self];
 #endif
-            if (!showsInvitation && self.deferredURLToProcess) {
-                [self handleURL:self.deferredURLToProcess];
+            // A scan or link held for the unlock opens only while the session that unlocked is still current: if
+            // the app went to the background past the auto-lock meanwhile, both stay held for the next unlock.
+            if (![self.model shouldShowLockScreen]) {
+                id heldEntry = self.heldPaymentEntry;
+                self.heldPaymentEntry = nil;
+                if ([heldEntry isKindOfClass:[DWPaymentInput class]]) {
+                    [DWExternalSendLauncher presentScanned:heldEntry from:self.mainController];
+                }
+                else if (!showsInvitation && [heldEntry isKindOfClass:[NSURL class]]) {
+                    [self handleURL:heldEntry];
+                }
             }
-            self.deferredURLToProcess = nil;
 
             [[NSNotificationCenter defaultCenter] postNotificationName:DWAppDidUnlockNotification
                                                                 object:nil];
         }];
+}
+
+- (void)lockScreenViewController:(DWLockScreenViewController *)controller
+    didHoldScannedInputForUnlock:(DWPaymentInput *)paymentInput {
+    self.heldPaymentEntry = paymentInput;
 }
 
 - (void)lockScreenViewControllerDidWipe:(DWLockScreenViewController *)controller {

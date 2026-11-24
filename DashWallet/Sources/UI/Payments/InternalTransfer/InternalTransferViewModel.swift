@@ -16,7 +16,7 @@ enum InternalTransferUnit: String {
 /// Every balance-to-balance route the transfer engine can execute. The
 /// canonical read for validation, fees, and execution — derived from the
 /// current explicit (from, to) pair, whether the screen is standalone or
-/// one side is pinned by the send/receive sheet host.
+/// its destination is pinned by the receive sheet host.
 enum InternalTransferRoute: Equatable {
     /// BIP44 UTXOs → asset lock → Type 18 shield.
     case coreToShielded
@@ -542,17 +542,7 @@ final class InternalTransferViewModel: ObservableObject {
         didSet { guard oldValue != receiveTarget else { return }; routeEndpointDidChange() }
     }
 
-    /// Fixed source when this VM drives the send sheet's embedded form
-    /// (the balance-row out arrows): the balance being sent FROM. The To
-    /// rows pick `sendTarget` among the other two balances. Mutually
-    /// exclusive with `receiveTarget`; `nil` = not the send sheet.
-    @Published private(set) var sendSource: ChainNetwork? = nil {
-        didSet { guard oldValue != sendSource else { return }; routeEndpointDidChange() }
-    }
-
-    /// The destination balance picked on the send sheet's To rows. Only
-    /// meaningful while `sendSource` is set, but reused by the standalone
-    /// screen as the selected To balance as well.
+    /// The selected To balance of the standalone screen.
     @Published var sendTarget: ChainNetwork = .shielded {
         didSet { guard oldValue != sendTarget else { return }; routeEndpointDidChange() }
     }
@@ -568,7 +558,7 @@ final class InternalTransferViewModel: ObservableObject {
     /// the spendable FROM balance, `route` keeps meaning balance-to-balance
     /// and is not consulted while this is set — validation, Continue and
     /// execution go through the identity top-up path instead. Standalone
-    /// only; the send/receive-pinned variants stay balance-to-balance.
+    /// only; the receive-pinned variant stays balance-to-balance.
     @Published private(set) var isIdentityDestination = false {
         didSet { guard oldValue != isIdentityDestination else { return }; routeEndpointDidChange() }
     }
@@ -649,22 +639,8 @@ final class InternalTransferViewModel: ObservableObject {
     /// The From rows then pick the source among the other two balances.
     func applyReceiveRoute(into target: ChainNetwork) {
         applyingRouteChange {
-            sendSource = nil
             receiveTarget = target
             receiveSource = Self.sanitizedSource(into: target, proposed: receiveSource)
-        }
-    }
-
-    /// Pins the route for the send sheet: a transfer OUT OF `from`. The To
-    /// rows pick the destination among the other two balances. Default
-    /// destinations follow the old direct out-arrow routes: Core and
-    /// Platform default to Shielded (privacy-forward); Shielded defaults
-    /// to Core.
-    func applySendRoute(from source: ChainNetwork) {
-        applyingRouteChange {
-            receiveTarget = nil
-            sendSource = source
-            sendTarget = Self.sanitizedDestination(from: source, proposed: sendTarget)
         }
     }
 
@@ -836,11 +812,6 @@ final class InternalTransferViewModel: ObservableObject {
         }
     }
 
-    func selectSendTarget(_ network: ChainNetwork) {
-        let from = sendSource ?? source
-        sendTarget = Self.sanitizedDestination(from: from, proposed: network)
-    }
-
     func selectReceiveSource(_ network: ChainNetwork) {
         guard let receiveTarget else { return }
         receiveSource = Self.sanitizedSource(into: receiveTarget, proposed: network)
@@ -850,7 +821,7 @@ final class InternalTransferViewModel: ObservableObject {
     /// ever equaling the active From — always the same endpoint `route`
     /// executes, so a radio can't highlight a balance the transfer won't use.
     var resolvedSendTarget: ChainNetwork {
-        Self.sanitizedDestination(from: sendSource ?? source, proposed: sendTarget)
+        Self.sanitizedDestination(from: source, proposed: sendTarget)
     }
 
     /// The From selection the receive sheet's pickers display, guarded
@@ -862,11 +833,6 @@ final class InternalTransferViewModel: ObservableObject {
 
     /// The canonical route for validation/fees/execution.
     var route: InternalTransferRoute {
-        if let source = sendSource {
-            return Self.route(
-                from: source,
-                to: Self.sanitizedDestination(from: source, proposed: sendTarget))
-        }
         if let target = receiveTarget {
             return Self.route(
                 from: Self.sanitizedSource(into: target, proposed: receiveSource),
@@ -893,8 +859,8 @@ final class InternalTransferViewModel: ObservableObject {
     /// has just become unreachable, or the screen would sit on a route it is no
     /// longer allowed to execute.
     ///
-    /// The pinned variants (`sendSource`, `receiveTarget`) are deliberately not
-    /// touched: they are entered from a balance row that still exists, and
+    /// The pinned variant (`receiveTarget`) is deliberately not
+    /// touched: it is entered from a balance row that still exists, and
     /// rewriting the endpoint the user tapped would be a different bug.
     private func applyAdvancedMode() {
         isAdvancedMode = DWGlobalOptions.sharedInstance().advancedModeEnabled
@@ -1340,7 +1306,6 @@ final class InternalTransferViewModel: ObservableObject {
     private init(
         previewSource: ChainNetwork,
         previewTarget: ChainNetwork,
-        previewSendFrom: ChainNetwork?,
         previewReceiveInto: ChainNetwork?,
         previewIdentityDestination: Bool,
         previewIdentitySource: Bool,
@@ -1356,7 +1321,6 @@ final class InternalTransferViewModel: ObservableObject {
         source = previewSource
         sendTarget = previewTarget
         receiveSource = previewSource
-        sendSource = previewSendFrom
         receiveTarget = previewReceiveInto
         amountText = previewAmountText
         coreBalanceDuffs = previewCoreDuffs
@@ -1399,7 +1363,6 @@ final class InternalTransferViewModel: ObservableObject {
     static func makeForPreview(
         source: ChainNetwork = .core,
         target: ChainNetwork = .platform,
-        sendFrom: ChainNetwork? = nil,
         receiveInto: ChainNetwork? = nil,
         identityDestination: Bool = false,
         identitySource: Bool = false,
@@ -1414,7 +1377,6 @@ final class InternalTransferViewModel: ObservableObject {
         InternalTransferViewModel(
             previewSource: source,
             previewTarget: target,
-            previewSendFrom: sendFrom,
             previewReceiveInto: receiveInto,
             previewIdentityDestination: identityDestination,
             previewIdentitySource: identitySource,
@@ -1521,7 +1483,7 @@ final class InternalTransferViewModel: ObservableObject {
         return DWGlobalOptions.sharedInstance().isResyncingCurrentNetworkWallet
     }
 
-    /// Embedded send/receive sheets pin the route independently of `source`.
+    /// The embedded receive sheet pins the route independently of `source`.
     /// Identity top-ups keep their separate funding-source selection.
     private var sourceBalanceNetwork: ChainNetwork {
         isIdentityDestination ? source : route.source
