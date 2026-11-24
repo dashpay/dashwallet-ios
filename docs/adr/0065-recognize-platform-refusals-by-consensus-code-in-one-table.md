@@ -60,5 +60,6 @@ and makes the remaining text matches a visible, bounded list.
 
 - Related ADRs: [0021](0021-record-a-consensus-refusal-on-the-intent.md),
   [0013](0013-treat-dashuikit-and-swiftdashsdk-as-library-surfaces.md)
-- Upstream: dashpay/platform#4838
+- Upstream: dashpay/platform#4838 (the codes on both FFI layers), dashpay/platform#6230 (the wallet paths
+  that still lose the code)
 - PR: #1476
