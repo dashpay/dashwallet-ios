@@ -17,10 +17,12 @@ top="$(git rev-parse --show-toplevel)"
 cd "$top"
 BASE="$(git rev-parse --verify "${1:-$(git merge-base HEAD origin/develop)}^{commit}")"
 DERIVED="${2:-$HOME/Library/Caches/dashwallet-regenerate/baseline-${BASE:0:12}}"
+# xcodebuild runs inside the temporary worktree, so a relative folder is taken from the checkout root.
+case "$DERIVED" in /*) ;; *) DERIVED="$top/$DERIVED" ;; esac
 WT="$(dirname "$top")/.baseline-${BASE:0:12}"
 LOG="$(dirname "$DERIVED")/baseline-${BASE:0:12}-build.log"
 mkdir -p "$(dirname "$DERIVED")"
-# The records vouch only for a finished build of $BASE; a folder the script did not make is refused.
+# The records vouch only for a finished build of $BASE; any other non-empty folder is refused, never deleted.
 "$top/scripts/localization/prepare_baseline_folder.sh" "$DERIVED" "$BASE"
 
 cleanup() { git worktree remove --force "$WT" > /dev/null 2>&1 || true; }

@@ -744,7 +744,7 @@ class BaselineInputsTests(ZeroLossCase):
                          "the commit is recorded after the build succeeded")
 
     def prepare_folder(self, folder, base="a" * 40):
-        """Run build_baseline.sh's folder preparation with HOME in the temp dir (its default cache root)."""
+        """Run build_baseline.sh's folder preparation; HOME is the temp dir so no test can touch a real cache."""
         return subprocess.run(["bash", os.path.join(LOCALIZATION_DIR, "prepare_baseline_folder.sh"), folder, base],
                               capture_output=True, text=True, env=dict(os.environ, HOME=self.tmp))
 
@@ -757,26 +757,48 @@ class BaselineInputsTests(ZeroLossCase):
                 with open(os.path.join(folder, name), "w") as f:
                     f.write(text + "\n")
 
-    def test_build_baseline_script_prepares_its_folder_before_it_builds(self):
-        with open(os.path.join(LOCALIZATION_DIR, "build_baseline.sh"), encoding="utf-8") as f:
-            script = f.read()
-        self.assertIn("prepare_baseline_folder.sh", script[:script.index("xcodebuild")])
-
-    def test_a_foreign_folder_that_the_script_did_not_make_is_kept_and_refused(self):
-        # QQ1: e.g. Xcode's own DerivedData passed as the second argument
-        folder = os.path.join(self.tmp, "Xcode", "DerivedData")
-        self.fill(folder)
-        res = self.prepare_folder(folder)
+    def assert_refused_and_kept(self, folder, res):
         self.assertNotEqual(res.returncode, 0)
         self.assertIn(folder, res.stderr)
         self.assertTrue(os.path.exists(os.path.join(folder, "Build", "Send.stringsdata")))
 
-    def test_a_folder_built_for_another_commit_is_emptied(self):
+    def test_build_baseline_script_prepares_its_folder_before_it_builds(self):
+        with open(os.path.join(LOCALIZATION_DIR, "build_baseline.sh"), encoding="utf-8") as f:
+            script = f.read()
+        self.assertIn("prepare_baseline_folder.sh", script[:script.index("xcodebuild -workspace")])
+
+    def test_the_preparation_deletes_no_folder(self):
+        # QQ1/SS1: the script never removes a folder; the person running it does
+        with open(os.path.join(LOCALIZATION_DIR, "prepare_baseline_folder.sh"), encoding="utf-8") as f:
+            script = f.read()
+        commands = [line for line in script.splitlines() if not line.lstrip().startswith(("#", "echo", "\""))]
+        self.assertFalse([c for c in commands if re.search(r"\brm\s+-[a-zA-Z]*r", c)], commands)
+
+    def test_a_foreign_folder_is_refused_and_kept(self):
+        folder = os.path.join(self.tmp, "Xcode", "Derived Data")
+        self.fill(folder)
+        self.assert_refused_and_kept(folder, self.prepare_folder(folder))
+
+    def test_a_folder_built_for_another_commit_is_refused_and_kept(self):
         folder = os.path.join(self.tmp, "elsewhere", "baseline")
         self.fill(folder, record="b" * 40)
         res = self.prepare_folder(folder)
-        self.assertEqual(res.returncode, 0, res.stderr)
-        self.assertFalse(os.path.exists(os.path.join(folder, "Build")))
+        self.assert_refused_and_kept(folder, res)
+        self.assertIn("rm -rf", res.stderr)
+
+    def test_a_failed_build_without_a_record_is_refused_and_kept(self):
+        folder = os.path.join(self.tmp, "Library", "Caches", "dashwallet-regenerate", "baseline-aaaaaaaaaaaa")
+        self.fill(folder)
+        self.assert_refused_and_kept(folder, self.prepare_folder(folder))
+
+    def test_an_unlistable_folder_is_refused(self):
+        folder = os.path.join(self.tmp, "locked")
+        self.fill(folder)
+        os.chmod(folder, 0o300)
+        self.addCleanup(os.chmod, folder, 0o755)
+        res = self.prepare_folder(folder)
+        os.chmod(folder, 0o755)
+        self.assert_refused_and_kept(folder, res)
 
     def test_a_folder_of_the_same_commit_keeps_its_data_and_loses_its_records(self):
         folder = os.path.join(self.tmp, "elsewhere", "baseline")
@@ -787,48 +809,18 @@ class BaselineInputsTests(ZeroLossCase):
         self.assertFalse(os.path.exists(os.path.join(folder, BASELINE_COMMIT_FILE)))
         self.assertFalse(os.path.exists(os.path.join(folder, BASELINE_ROOT_FILE)))
 
-    def test_a_marked_folder_of_a_failed_build_is_emptied(self):
-        # the script marks its folder before building; a failed build leaves the mark and no record
-        folder = os.path.join(self.tmp, "elsewhere", "baseline")
-        self.fill(folder)
-        with open(os.path.join(folder, ".baseline-build-folder"), "w"):
-            pass
-        res = self.prepare_folder(folder)
-        self.assertEqual(res.returncode, 0, res.stderr)
-        self.assertFalse(os.path.exists(os.path.join(folder, "Build")))
-
-    def test_a_prepared_folder_carries_the_mark(self):
-        folder = os.path.join(self.tmp, "new-folder")
-        self.assertEqual(self.prepare_folder(folder).returncode, 0)
-        self.assertTrue(os.path.isfile(os.path.join(folder, ".baseline-build-folder")))
-
-    def test_a_foreign_folder_survives_when_the_cache_root_cannot_be_made(self):
-        # RR1: the default cache root path is a regular file
-        os.makedirs(os.path.join(self.tmp, "Library", "Caches"))
-        with open(os.path.join(self.tmp, "Library", "Caches", "dashwallet-regenerate"), "w") as f:
-            f.write("not a folder")
-        folder = os.path.join(self.tmp, "Xcode", "DerivedData")
-        self.fill(folder)
-        res = self.prepare_folder(folder)
-        self.assertNotEqual(res.returncode, 0)
-        self.assertTrue(os.path.exists(os.path.join(folder, "Build", "Send.stringsdata")))
-
-    def test_the_cache_root_itself_survives(self):
-        # RR2: it holds other commits' builds, but is no build folder itself
-        root = os.path.join(self.tmp, "Library", "Caches", "dashwallet-regenerate")
-        self.fill(os.path.join(root, "baseline-bbbbbbbbbbbb"), record="b" * 40)
-        with open(os.path.join(root, "notes.txt"), "w") as f:
-            f.write("mine")
-        res = self.prepare_folder(root)
-        self.assertNotEqual(res.returncode, 0)
-        self.assertTrue(os.path.exists(os.path.join(root, "notes.txt")))
-        self.assertTrue(os.path.exists(os.path.join(root, "baseline-bbbbbbbbbbbb", BASELINE_COMMIT_FILE)))
-
     def test_an_empty_or_missing_folder_is_fine(self):
         empty = os.path.join(self.tmp, "empty-folder")
         os.makedirs(empty)
         self.assertEqual(self.prepare_folder(empty).returncode, 0)
         self.assertEqual(self.prepare_folder(os.path.join(self.tmp, "missing")).returncode, 0)
+
+    def test_build_baseline_takes_a_relative_folder_from_the_checkout_root(self):
+        # SS3: xcodebuild runs inside the temporary worktree, so a relative path would land there
+        with open(os.path.join(LOCALIZATION_DIR, "build_baseline.sh"), encoding="utf-8") as f:
+            script = f.read()
+        head = script[:script.index("prepare_baseline_folder.sh")]
+        self.assertRegex(head, r'DERIVED="\$top/\$DERIVED"')
 
     # Baseline sources map to repository files through the recorded worktree root
     def test_baseline_sources_map_through_the_recorded_worktree_root(self):
