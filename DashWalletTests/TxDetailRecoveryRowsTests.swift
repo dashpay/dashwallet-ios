@@ -12,15 +12,14 @@ import Combine
 import XCTest
 @testable import dashpay
 
-/// Counts row rebuilds: `reloadDataSource()` starts each one by assigning an
-/// empty snapshot.
-private final class CountingDetailViewController: TXDetailViewController {
+/// Counts row rebuilds: each one publishes a new `revision`.
+@MainActor
+private final class RebuildCounter {
     private(set) var rebuilds = 0
+    private var subscription: AnyCancellable?
 
-    override var currentSnapshot: NSDiffableDataSourceSnapshot<Section, Item>! {
-        didSet {
-            if currentSnapshot?.numberOfSections == 0 { rebuilds += 1 }
-        }
+    init(_ viewModel: TxDetailViewModel) {
+        subscription = viewModel.$revision.dropFirst().sink { [unowned self] _ in rebuilds += 1 }
     }
 }
 
@@ -140,18 +139,18 @@ final class TxDetailRecoveryRowsTests: XCTestCase {
 
     // MARK: - Open screen
 
-    /// Runs the main queue until `controller` has rebuilt its rows `count`
+    /// Runs the main queue until the screen has rebuilt its rows `count`
     /// times, or ten seconds pass, then a little longer so a further rebuild
     /// has a chance to land, and checks it stopped at exactly `count`.
     @MainActor
-    private func waitForRebuilds(_ count: Int, of controller: CountingDetailViewController,
+    private func waitForRebuilds(_ count: Int, of counter: RebuildCounter,
                                  _ message: String = "") {
         let deadline = Date().addingTimeInterval(10)
-        while controller.rebuilds < count, Date() < deadline {
+        while counter.rebuilds < count, Date() < deadline {
             RunLoop.main.run(until: Date().addingTimeInterval(0.01))
         }
         RunLoop.main.run(until: Date().addingTimeInterval(0.1))
-        XCTAssertEqual(controller.rebuilds, count, message)
+        XCTAssertEqual(counter.rebuilds, count, message)
     }
 
     @MainActor
@@ -160,17 +159,18 @@ final class TxDetailRecoveryRowsTests: XCTestCase {
         let transaction = Transaction(
             syntheticTxid: txidWire, directionRaw: 1, netAmount: -1_000,
             fee: nil, contextRaw: 0, date: Date())
-        let controller = CountingDetailViewController(model: QuietTxDetailModel(transaction: transaction))
-        controller.recoveryInputs = inputs.eraseToAnyPublisher()
-        controller.loadViewIfNeeded()
+        let viewModel = TxDetailViewModel(model: QuietTxDetailModel(transaction: transaction),
+                                          recoveryInputs: inputs.eraseToAnyPublisher())
+        let counter = RebuildCounter(viewModel)
+        viewModel.start()
 
         continueAfterFailure = false
-        // `viewDidLoad` builds the rows once; after that only the inputs
-        // rebuild them, once each.
-        waitForRebuilds(1, of: controller, "viewDidLoad")
+        // Opening builds the rows once; after that only the inputs rebuild
+        // them, once each.
+        waitForRebuilds(1, of: counter, "start")
         for (index, input) in [Input.lockLookup, .inFlightLocks, .projection, .probes].enumerated() {
             inputs.send(input)
-            waitForRebuilds(2 + index, of: controller, "after \(input)")
+            waitForRebuilds(2 + index, of: counter, "after \(input)")
         }
     }
 
@@ -310,14 +310,14 @@ final class TxDetailRecoveryRowsTests: XCTestCase {
     @MainActor
     func testAnOpenBuySwapPlaceholderScreenBuildsNoRecoverySection() {
         let inputs = PassthroughSubject<Input, Never>()
-        let controller = CountingDetailViewController(model: placeholderModel())
-        controller.recoveryInputs = inputs.eraseToAnyPublisher()
-        controller.loadViewIfNeeded()
+        let viewModel = TxDetailViewModel(model: placeholderModel(), recoveryInputs: inputs.eraseToAnyPublisher())
+        let counter = RebuildCounter(viewModel)
+        viewModel.start()
         continueAfterFailure = false
-        waitForRebuilds(1, of: controller, "viewDidLoad")
+        waitForRebuilds(1, of: counter, "start")
         inputs.send(.inFlightLocks)
-        waitForRebuilds(2, of: controller, "after inFlightLocks")
+        waitForRebuilds(2, of: counter, "after inFlightLocks")
 
-        XCTAssertFalse(controller.currentSnapshot.sectionIdentifiers.contains(.recovery))
+        XCTAssertFalse(viewModel.sections.map(\.section).contains(.recovery))
     }
 }

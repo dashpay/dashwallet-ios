@@ -577,7 +577,7 @@ extension TxDetailModel {
     }
 
     // The contact itself is not a `DWTitleDetailItem` row: it renders as a
-    // dedicated avatar cell (`TxDetailContactCell`) built straight from
+    // dedicated row (`TxDetailContactRow`) built straight from
     // `contactParty`, so these deliberately return nothing and the address
     // group they would have replaced is simply dropped.
     private func sourceUsers(with title: String, font: UIFont) -> [DWTitleDetailItem] {
@@ -1099,9 +1099,9 @@ extension TxDetailModel {
     }
 }
 
-// MARK: TxDetailHeaderCellDataProvider
+// MARK: Header
 
-extension TxDetailModel: TxDetailHeaderCellDataProvider {
+extension TxDetailModel {
     var fiatAmount: String {
         swapOrderPlaceholder == nil ? transaction.fiatAmount : Self.missingValue
     }
