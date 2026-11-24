@@ -196,7 +196,7 @@ struct ShieldedActivityItem: Identifiable {
                 // shortened to row-pill size (the detail sheet carries
                 // the full address).
                 if let address = destinationAddress {
-                    return String(address.prefix(6)) + "…" + String(address.suffix(6))
+                    return Self.shortAddress(address)
                 }
                 return NSLocalizedString("Shielded", comment: "Shielded activity: funds moved into the private shielded balance")
             }
@@ -212,6 +212,11 @@ struct ShieldedActivityItem: Identifiable {
         case .received, .identityCreate, .shieldedSpend:
             return NSLocalizedString("Shielded", comment: "Shielded activity: funds moved into the private shielded balance")
         }
+    }
+
+    /// An address shortened to row-pill size: its first and last six characters.
+    static func shortAddress(_ address: String) -> String {
+        String(address.prefix(6)) + "…" + String(address.suffix(6))
     }
 
     /// Corner-badge SF symbol next to the shield primary icon; nil keeps

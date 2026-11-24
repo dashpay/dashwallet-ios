@@ -698,9 +698,12 @@ extension TxDetailModel {
             let source = transaction.isCoinJoinFundedTransfer
                 ? NSLocalizedString("CoinJoin balance", comment: "The wallet's mixed (CoinJoin) funds as the source of an internal transfer")
                 : transparent
+            // A send to someone else's Shielded address names the recipient,
+            // not the wallet's own Shielded balance.
             var rows: [DWTitleDetailItem] = [
                 DWTitleDetailCellModel(style: .default, title: NSLocalizedString("From", comment: ""), plainDetail: source),
-                DWTitleDetailCellModel(style: .default, title: NSLocalizedString("To", comment: ""), plainDetail: shielded),
+                DWTitleDetailCellModel(style: .default, title: NSLocalizedString("To", comment: ""),
+                                       plainDetail: transaction.externalShieldedRecipient ?? shielded),
             ]
             if let status = shieldedStatusText {
                 rows.append(DWTitleDetailCellModel(

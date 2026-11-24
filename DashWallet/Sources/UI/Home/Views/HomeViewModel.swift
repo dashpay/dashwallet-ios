@@ -2496,17 +2496,10 @@ class SwiftDashSDKWalletSource: TransactionSource {
     }
 
     /// Decode a shielded send's counterparty (43-byte raw Orchard address) to
-    /// its DIP-0018 display form: HRP `dash`/`tdash`, payload = 0x10 type
-    /// byte + the raw address bytes (same encoding as
-    /// `PaymentsLandingViewModel.reloadShieldedAddress`). Nil for empty /
-    /// non-43-byte counterparties.
+    /// its DIP-0018 display form (`Bech32m.shieldedDisplayAddress`). Nil for
+    /// empty / non-43-byte counterparties.
     private static func shieldedDestinationAddress(counterparty: Data) -> String? {
-        guard counterparty.count == 43 else { return nil }
-        return Bech32m.encode(
-            // Mainnet HRP only on mainnet — devnet uses the testnet HRP,
-            // matching its testnet-style address encoding.
-            hrp: Bech32m.platformHrp(mainnet: WalletEnvironment.isMainnet),
-            data: Data([0x10]) + counterparty)
+        Bech32m.shieldedDisplayAddress(raw43: counterparty, mainnet: WalletEnvironment.isMainnet)
     }
 
     /// True when `address` is one of the ACTIVE wallet's own DIP-17

@@ -763,7 +763,7 @@ final class ExternalSendFlowTests: XCTestCase {
     }
 
     /// Try again inside Confirm would authenticate over the open sheet, so a prepare that cannot read the fee or the
-    /// balance stays on Send, which shows its own could-not-calculate message and Try again.
+    /// balance stays on Send, which opens its own could-not-calculate dialog with Try again.
     func testAFeeFailureAtContinueStaysOnSendWithItsRetry() async throws {
         for failure in [ExternalSendError.feeUnavailable, .balanceUnavailable] {
             let harness = makeHarness()
@@ -779,7 +779,7 @@ final class ExternalSendFlowTests: XCTestCase {
             XCTAssertEqual(harness.flow.step, .send, "\(failure)")
             XCTAssertNil(harness.flow.confirmViewModel, "\(failure)")
             XCTAssertEqual(send.state, .feeFailed, "\(failure)")
-            XCTAssertEqual(send.feeFailureMessage, SendAmountViewModel.feeFailureText, "\(failure)")
+            XCTAssertTrue(send.isFeeFailureDialogPresented, "\(failure)")
             XCTAssertFalse(send.isContinueLoading, "\(failure)")
 
             await send.retryFee()

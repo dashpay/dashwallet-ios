@@ -230,7 +230,14 @@ final class SendAmountViewModel: ObservableObject {
     @Published private var confirmRefusedAmount = false
     /// The route's funding step cannot pay the estimated amount (`SendMaxPlanning.canFund`).
     @Published private var fundingRefusedAmount = false
-    @Published private var estimateFailed = false
+    @Published private var estimateFailed = false {
+        didSet { syncFeeFailureDialog() }
+    }
+    /// The fee-failure dialog is open. It opens once per failure streak: the first `.feeFailed` after an answered
+    /// estimate opens it, and no later failure reopens it until an estimate is answered again.
+    @Published private(set) var isFeeFailureDialogPresented = false
+    /// The dialog already opened for the current failure streak.
+    private var isFeeFailureStreakReported = false
     /// The note that says why the source was changed, until the holder picks a source.
     @Published private(set) var sourceChangedNotice: String?
     /// Continue's handler is still running (it authenticates and prepares the send).
@@ -400,14 +407,12 @@ final class SendAmountViewModel: ObservableObject {
         }
     }
 
-    var feeFailureMessage: String? {
-        state == .feeFailed ? Self.feeFailureText : nil
-    }
-
     var state: State {
         if isEstimating || isReadingBalance { return .estimating }
+        // An empty source is not enough before any fee answer: a pool-sized fee cannot even be estimated without coins.
+        if sourceBalanceDuffs == 0 { return .notEnough }
         if estimateFailed { return .feeFailed }
-        if amountDuffs == 0 { return sourceBalanceDuffs == 0 ? .notEnough : .amountEmpty }
+        if amountDuffs == 0 { return .amountEmpty }
         if route == .coreToIdentity, amountDuffs < DWIdentityRegistrationCoordinator.minimumCoreTopUpDuffs {
             return .belowMinimum
         }
@@ -537,8 +542,28 @@ final class SendAmountViewModel: ObservableObject {
         estimateFailed = true
     }
 
+    /// The dialog's Try again: closes it and estimates anew. A failure of this retry stays in the streak, so the
+    /// dialog does not reopen for it.
     func retryFee() async {
+        isFeeFailureDialogPresented = false
         await runEstimate()
+    }
+
+    /// The dialog's Close: the dialog stays closed for the rest of the failure streak.
+    func dismissFeeFailureDialog() {
+        isFeeFailureDialogPresented = false
+    }
+
+    private func syncFeeFailureDialog() {
+        if estimateFailed && sourceBalanceDuffs != 0 {
+            guard !isFeeFailureStreakReported else { return }
+            isFeeFailureStreakReported = true
+            isFeeFailureDialogPresented = true
+            DWLogger.log("External send: fee estimate failed, route \(route.map { "\($0)" } ?? "none")")
+        } else if !estimateFailed {
+            isFeeFailureStreakReported = false
+            isFeeFailureDialogPresented = false
+        }
     }
 
     func proceed() async {
@@ -575,8 +600,8 @@ final class SendAmountViewModel: ObservableObject {
 
     // MARK: - Internals
 
-    static let feeFailureText = NSLocalizedString(
-        "Couldn't calculate the network fee. Check your connection and try again.", comment: "External send")
+    static let feeFailureHeading = NSLocalizedString("Couldn't calculate the network fee", comment: "External send")
+    static let feeFailureText = NSLocalizedString("Check your connection and try again.", comment: "External send")
 
     // swiftlint:disable line_length
     static let reserveWarningText = NSLocalizedString(

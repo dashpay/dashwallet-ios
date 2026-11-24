@@ -47,6 +47,8 @@ struct SendAmountScreen: View {
             footer
         }
         .background(Color.dash.primaryBackground)
+        // Over the whole screen, keypad included, so the message is never squeezed into the scroll area.
+        .overlay { if viewModel.isFeeFailureDialogPresented { feeFailureDialog } }
         // Keyed by the model: a payment request's Retry installs a new one, which must load too.
         .task(id: ObjectIdentifier(viewModel)) { await viewModel.load() }
     }
@@ -122,17 +124,30 @@ struct SendAmountScreen: View {
             DashUIKit.SystemMessageView(title: text, backgroundColor: Color.dash.orangeAlpha10)
         }
         if viewModel.isBlockedBySync { SyncGateNote() }
-        if let message = viewModel.feeFailureMessage {
-            DashUIKit.SystemMessageView(
-                title: message,
-                backgroundColor: Color.dash.redAlpha5,
-                buttonName: NSLocalizedString("Try again", comment: "External send"),
-                onAction: { Task { await viewModel.retryFee() } })
-        }
         if let caption = viewModel.lockedCaption {
             Text(caption)
                 .dashFont(.footnote)
                 .foregroundStyle(Color.dash.secondaryText)
+        }
+    }
+
+    // MARK: - Fee failure
+
+    private var feeFailureDialog: some View {
+        ZStack {
+            Color.dash.backgroundOverlay.ignoresSafeArea()
+            DashUIKit.ModalDialog(
+                icon: .warning,
+                heading: SendAmountViewModel.feeFailureHeading,
+                paragraphs: [SendAmountViewModel.feeFailureText],
+                primaryAction: .init(title: NSLocalizedString("Try again", comment: "External send")) {
+                    Task { await viewModel.retryFee() }
+                },
+                secondaryAction: .init(title: NSLocalizedString("Close", comment: "External send")) {
+                    viewModel.dismissFeeFailureDialog()
+                })
+                .padding(.horizontal, 20)
+                .accessibilityIdentifier("send_fee_failure_dialog")
         }
     }
 
@@ -210,7 +225,8 @@ private func previewScreen(
     source: SendSource = .core, balance: UInt64? = 300_000_000, unit: InternalTransferUnit = .dash,
     text: String = "", duffs: UInt64 = 0, fee: UInt64? = 1_000, isMax: Bool = false,
     estimating: Bool = false, failed: Bool = false, recipient: IdentityRecipient? = nil,
-    changedNotice: String? = nil, restoreSyncRunning: Bool = false, ownIdentityID: String? = nil
+    changedNotice: String? = nil, restoreSyncRunning: Bool = false, ownIdentityID: String? = nil,
+    closesFeeDialog: Bool = false
 ) -> some View {
     let vm = SendAmountViewModel(destination: destination, pinnedSource: nil, recipient: recipient,
                                  balances: PreviewBalances(),
@@ -221,6 +237,7 @@ private func previewScreen(
                   fee: fee, isMax: isMax, isEstimating: estimating, estimateFailed: failed,
                   sourceChangedNotice: changedNotice, initialRestoreSyncRunning: restoreSyncRunning,
                   ownIdentityID: ownIdentityID)
+    if closesFeeDialog { vm.dismissFeeFailureDialog() }
     return PreviewHost(viewModel: vm)
 }
 
@@ -231,6 +248,10 @@ private func previewScreen(
 #Preview("Estimating") { previewScreen(text: "1.5", duffs: 150_000_000, estimating: true) }
 
 #Preview("Fee failed") { previewScreen(text: "1.5", duffs: 150_000_000, fee: nil, failed: true) }
+
+#Preview("Fee failed, dialog closed") {
+    previewScreen(text: "1.5", duffs: 150_000_000, fee: nil, failed: true, closesFeeDialog: true)
+}
 
 #Preview("Not enough") { previewScreen(text: "5", duffs: 500_000_000) }
 

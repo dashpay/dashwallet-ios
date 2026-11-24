@@ -853,7 +853,7 @@ final class SendAmountViewModelTests: XCTestCase {
 
         await vm.setAmountText("0.001")
         XCTAssertEqual(vm.state, .feeFailed, "a typed amount")
-        XCTAssertNotNil(vm.feeFailureMessage)
+        XCTAssertTrue(vm.isFeeFailureDialogPresented)
         XCTAssertFalse(vm.isContinueEnabled)
 
         let credits = oneDash * PlatformPaymentIdentityFundingPolicy.creditsPerDuff
@@ -1038,8 +1038,38 @@ final class SendAmountViewModelTests: XCTestCase {
         estimator.defaultResult = .unavailable
         let vm = await makeVM()
         XCTAssertEqual(vm.state, .feeFailed)
-        XCTAssertEqual(vm.feeFailureMessage,
-                       "Couldn't calculate the network fee. Check your connection and try again.")
+        XCTAssertTrue(vm.isFeeFailureDialogPresented)
+        XCTAssertEqual(SendAmountViewModel.feeFailureHeading, "Couldn't calculate the network fee")
+        XCTAssertEqual(SendAmountViewModel.feeFailureText, "Check your connection and try again.")
+    }
+
+    func testTheFeeFailureDialogOpensOncePerStreakAndAgainAfterASuccess() async {
+        estimator.defaultResult = .unavailable
+        let vm = await makeVM()
+        XCTAssertTrue(vm.isFeeFailureDialogPresented)
+        vm.dismissFeeFailureDialog()
+        await vm.setAmountText("1")
+        XCTAssertEqual(vm.state, .feeFailed)
+        XCTAssertFalse(vm.isFeeFailureDialogPresented, "a later failure of the same streak")
+        await vm.retryFee()
+        XCTAssertFalse(vm.isFeeFailureDialogPresented, "a failed Try again stays in the streak")
+
+        estimator.defaultResult = .fee(fee)
+        await vm.retryFee()
+        XCTAssertEqual(vm.state, .ready)
+        estimator.defaultResult = .unavailable
+        await vm.setAmountText("2")
+        XCTAssertTrue(vm.isFeeFailureDialogPresented, "a new streak after a success")
+    }
+
+    func testAnEmptySourceIsNotEnoughWithoutTheFeeDialog() async {
+        for source in [SendSource.core, .shielded, .platform] { balances.table[source] = 0 }
+        estimator.defaultResult = .unavailable
+        let vm = await makeVM(pinned: .core)
+        await vm.setAmountText("1")
+        XCTAssertEqual(vm.source, .core)
+        XCTAssertEqual(vm.state, .notEnough)
+        XCTAssertFalse(vm.isFeeFailureDialogPresented)
     }
 
     func testTryAgainReRunsTheEstimateAndRestoresTheScreen() async {
@@ -1055,7 +1085,7 @@ final class SendAmountViewModelTests: XCTestCase {
         XCTAssertEqual(vm.fee, fee)
         XCTAssertTrue(vm.isContinueEnabled)
         XCTAssertTrue(vm.isMaxEnabled)
-        XCTAssertNil(vm.feeFailureMessage)
+        XCTAssertFalse(vm.isFeeFailureDialogPresented)
     }
 
     func testMaxDoesNothingWhileTheEstimateIsFailed() async {

@@ -1513,7 +1513,8 @@
 "Couldn't authenticate: %@" = "Couldn't authenticate: %@";
 
 /* External send */
-"Couldn't calculate the network fee. Check your connection and try again." = "Couldn't calculate the network fee. Check your connection and try again.";
+"Couldn't calculate the network fee" = "Couldn't calculate the network fee";
+"Check your connection and try again." = "Check your connection and try again.";
 
 /* External send */
 "Couldn't check the identity. Check your connection and try again." = "Couldn't check the identity. Check your connection and try again.";
