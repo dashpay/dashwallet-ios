@@ -743,15 +743,63 @@ class BaselineInputsTests(ZeroLossCase):
         self.assertRegex(tail, r'\$BASE"?\s*>\s*"?\$DERIVED/' + BASELINE_COMMIT_FILE,
                          "the commit is recorded after the build succeeded")
 
-    def test_build_baseline_script_forgets_the_old_record_before_it_builds(self):
-        # PP2: a failed or partial rebuild must not keep a record that vouches for its new .stringsdata,
-        # and a folder built for another commit must not lend its records of files the Baseline keeps.
+    def prepare_folder(self, folder, base="a" * 40):
+        """Run build_baseline.sh's folder preparation with HOME in the temp dir (its default cache root)."""
+        return subprocess.run(["bash", os.path.join(LOCALIZATION_DIR, "prepare_baseline_folder.sh"), folder, base],
+                              capture_output=True, text=True, env=dict(os.environ, HOME=self.tmp))
+
+    def fill(self, folder, record=None):
+        os.makedirs(os.path.join(folder, "Build"), exist_ok=True)
+        with open(os.path.join(folder, "Build", "Send.stringsdata"), "w") as f:
+            f.write("{}")
+        if record:
+            for name, text in ((BASELINE_COMMIT_FILE, record), (BASELINE_ROOT_FILE, "/wt")):
+                with open(os.path.join(folder, name), "w") as f:
+                    f.write(text + "\n")
+
+    def test_build_baseline_script_prepares_its_folder_before_it_builds(self):
         with open(os.path.join(LOCALIZATION_DIR, "build_baseline.sh"), encoding="utf-8") as f:
             script = f.read()
-        head = script[:script.index("xcodebuild")]
-        self.assertRegex(head, r'rm -rf "\$DERIVED"', "a folder recorded for another commit is removed")
-        self.assertRegex(head, r'rm -f "\$DERIVED/' + BASELINE_COMMIT_FILE + r'" "\$DERIVED/' + BASELINE_ROOT_FILE + '"',
-                         "the records are removed before the build")
+        self.assertIn("prepare_baseline_folder.sh", script[:script.index("xcodebuild")])
+
+    def test_a_foreign_folder_that_the_script_did_not_make_is_kept_and_refused(self):
+        # QQ1: e.g. Xcode's own DerivedData passed as the second argument
+        folder = os.path.join(self.tmp, "Xcode", "DerivedData")
+        self.fill(folder)
+        res = self.prepare_folder(folder)
+        self.assertNotEqual(res.returncode, 0)
+        self.assertIn(folder, res.stderr)
+        self.assertTrue(os.path.exists(os.path.join(folder, "Build", "Send.stringsdata")))
+
+    def test_a_folder_built_for_another_commit_is_emptied(self):
+        folder = os.path.join(self.tmp, "elsewhere", "baseline")
+        self.fill(folder, record="b" * 40)
+        res = self.prepare_folder(folder)
+        self.assertEqual(res.returncode, 0, res.stderr)
+        self.assertFalse(os.path.exists(os.path.join(folder, "Build")))
+
+    def test_a_folder_of_the_same_commit_keeps_its_data_and_loses_its_records(self):
+        folder = os.path.join(self.tmp, "elsewhere", "baseline")
+        self.fill(folder, record="a" * 40)
+        res = self.prepare_folder(folder)
+        self.assertEqual(res.returncode, 0, res.stderr)
+        self.assertTrue(os.path.exists(os.path.join(folder, "Build", "Send.stringsdata")))
+        self.assertFalse(os.path.exists(os.path.join(folder, BASELINE_COMMIT_FILE)))
+        self.assertFalse(os.path.exists(os.path.join(folder, BASELINE_ROOT_FILE)))
+
+    def test_a_folder_without_a_record_under_the_default_cache_root_is_emptied(self):
+        # a failed build of the script's own default folder
+        folder = os.path.join(self.tmp, "Library", "Caches", "dashwallet-regenerate", "baseline-aaaaaaaaaaaa")
+        self.fill(folder)
+        res = self.prepare_folder(folder)
+        self.assertEqual(res.returncode, 0, res.stderr)
+        self.assertFalse(os.path.exists(os.path.join(folder, "Build")))
+
+    def test_an_empty_or_missing_folder_is_fine(self):
+        empty = os.path.join(self.tmp, "empty-folder")
+        os.makedirs(empty)
+        self.assertEqual(self.prepare_folder(empty).returncode, 0)
+        self.assertEqual(self.prepare_folder(os.path.join(self.tmp, "missing")).returncode, 0)
 
     # Baseline sources map to repository files through the recorded worktree root
     def test_baseline_sources_map_through_the_recorded_worktree_root(self):
