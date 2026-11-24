@@ -21,7 +21,7 @@ import XCTest
 
 /// The Core-, Shielded- and Platform-source routes of the external send executor and its shared skeleton (AC-01,
 /// AC-01b, AC-19, ADR-0039, ADR-0040): authenticate on Continue, prepare (built and signed, never broadcast) with
-/// the binding fee, broadcast only on `send`, one of three outcomes, one log line per outcome.
+/// the binding fee, broadcast only on `send`, one of four outcomes, one log line per outcome.
 ///
 /// The executor, `AuthenticationGate`, `AmountRules`, `SendOutcome` and `PreparedStandardSend` (its broadcast state
 /// machine) are production. Only the edges are scripted: the PIN prompt (`SendAuthenticationPrompting`), the
@@ -353,6 +353,7 @@ final class ExternalSendExecutorTests: XCTestCase {
     private let platformFunding = FakePlatformSendFunding()
     private let prompt = FakePrompt()
     private var logged: [SendOutcome] = []
+    private var loggedLines: [String] = []
     private var restoreSyncBlocks = false
     private var context = ExternalSendContext(walletId: Data([1]), network: .testnet)
     private static let identityA = Data(repeating: 0xA1, count: 32)
@@ -377,7 +378,7 @@ final class ExternalSendExecutorTests: XCTestCase {
             isBlockedByInitialRestoreSync: { [unowned self] in restoreSyncBlocks },
             currentContext: { [unowned self] in context },
             currentIdentityId: { [unowned self] in currentIdentityId },
-            logOutcome: { [unowned self] in logged.append($0) },
+            logOutcome: { [unowned self] in logged.append($0); loggedLines.append($1) },
             slowNetworkDelay: slowNetworkDelay,
             paymentNetwork: { paymentNetwork })
     }
@@ -635,22 +636,26 @@ final class ExternalSendExecutorTests: XCTestCase {
     // MARK: - Core asset-lock routes: what the coordinator's call reports (AC-19)
 
     func testACompletedCoordinatorCallIsCompleted() {
-        guard case .completed = LiveCoreTwoStepSend.result(phase: .success, lastFailure: nil, lockKept: false) else {
+        guard case .completed = LiveCoreTwoStepSend.result(phase: .success, lastFailure: nil, heldLock: nil) else {
             return XCTFail("expected completed")
         }
     }
 
     func testAnUnconfirmedCoordinatorCallIsUnconfirmed() {
-        let result = LiveCoreTwoStepSend.result(phase: .submittedUnconfirmed, lastFailure: nil, lockKept: true)
+        let result = LiveCoreTwoStepSend.result(
+            phase: .submittedUnconfirmed, lastFailure: nil, heldLock: Self.heldLock)
         guard case .unconfirmed = result else { return XCTFail("expected unconfirmed, got \(result)") }
     }
 
-    /// A lock the coordinator keeps after the failure holds the money: the send is in flight.
+    private static let heldLock = HeldAssetLock(fundingTypeRaw: 5, txidWire: Data(repeating: 0xAB, count: 32), vout: 1)
+
+    /// A lock the coordinator keeps after the failure holds the money: the send reports that lock.
     func testAFailureThatKeptTheBuiltLockReportsTheLock() {
         let failure = PlatformWalletError.transactionBroadcastUnconfirmed("unconfirmed")
-        let result = LiveCoreTwoStepSend.result(phase: .failed("x"), lastFailure: failure, lockKept: true)
-        guard case .failed(_, let recorded) = result else { return XCTFail("expected failed, got \(result)") }
-        XCTAssertTrue(recorded)
+        let result = LiveCoreTwoStepSend.result(phase: .failed("x"), lastFailure: failure, heldLock: Self.heldLock)
+        guard case .lockHeld(let lock, let after) = result else { return XCTFail("expected lockHeld, got \(result)") }
+        XCTAssertEqual(lock, Self.heldLock)
+        XCTAssertEqual(SendDecision.errorName(after), "PlatformWalletError.transactionBroadcastUnconfirmed")
     }
 
     /// A definite broadcast rejection removes the lock again (`keepsLockForRetry`), so the coordinator records no
@@ -660,7 +665,7 @@ final class ExternalSendExecutorTests: XCTestCase {
         XCTAssertFalse(ShieldedTransferCoordinator.keepsLockForRetry(after: rejected))
         let result = LiveCoreTwoStepSend.result(
             phase: .failed("x"), lastFailure: ShieldedTransferCoordinator.CoordinatorError.transferFailed(rejected),
-            lockKept: false)
+            heldLock: nil)
         guard case .failed(let error, let recorded) = result else { return XCTFail("expected failed, got \(result)") }
         XCTAssertFalse(recorded)
         guard case .notSent(.rejected) = SendOutcome(error: error) else {
@@ -669,7 +674,7 @@ final class ExternalSendExecutorTests: XCTestCase {
     }
 
     func testAFailureWithoutAnErrorIsStillAFailure() {
-        let result = LiveCoreTwoStepSend.result(phase: .idle, lastFailure: nil, lockKept: false)
+        let result = LiveCoreTwoStepSend.result(phase: .idle, lastFailure: nil, heldLock: nil)
         guard case .failed(_, let recorded) = result else { return XCTFail("expected failed, got \(result)") }
         XCTAssertFalse(recorded)
     }
@@ -1256,7 +1261,7 @@ final class ExternalSendExecutorTests: XCTestCase {
             standardSend: standard, paymentRequestSend: paymentRequest, twoStep: twoStep, creditsSend: credits,
             identityTopUp: identityTopUp, identityCredits: identityCredits, fees: fees, balances: balances,
             drainPreview: drainPreview, platformFunding: funding, prompt: prompt,
-            logOutcome: { [unowned self] in logged.append($0) })
+            logOutcome: { [unowned self] in logged.append($0); loggedLines.append($1) })
 
         do {
             _ = try await prepare(executor, .platformToPlatform, amount: amount)
@@ -1307,7 +1312,7 @@ final class ExternalSendExecutorTests: XCTestCase {
             standardSend: standard, paymentRequestSend: paymentRequest, twoStep: twoStep, creditsSend: credits,
             identityTopUp: identityTopUp, identityCredits: identityCredits, fees: fees, balances: balances,
             drainPreview: drainPreview, platformFunding: funding, prompt: prompt,
-            logOutcome: { [unowned self] in logged.append($0) })
+            logOutcome: { [unowned self] in logged.append($0); loggedLines.append($1) })
         func row(_ duffs: UInt64) -> [PlatformPaymentIdentityFundingPolicy.Candidate] {
             [.init(addressType: 0, hash: Data(repeating: 1, count: 20), balance: duffs * 1000)]
         }
@@ -1342,7 +1347,7 @@ final class ExternalSendExecutorTests: XCTestCase {
             standardSend: standard, paymentRequestSend: paymentRequest, twoStep: twoStep, creditsSend: credits,
             identityTopUp: identityTopUp, identityCredits: identityCredits, fees: fees, balances: balances,
             drainPreview: drainPreview, platformFunding: funding, prompt: prompt,
-            logOutcome: { [unowned self] in logged.append($0) })
+            logOutcome: { [unowned self] in logged.append($0); loggedLines.append($1) })
 
         do {
             _ = try await prepare(executor, .platformToCore, amount: amount)
@@ -1572,6 +1577,19 @@ final class ExternalSendExecutorTests: XCTestCase {
             let outcome = await executor.send(try await prepare(executor, route))
             XCTAssertTrue(isInFlight(outcome), "the money left; recovery finishes it. \(route): \(outcome)")
         }
+    }
+
+    /// A lock the coordinator recorded is reported with its outpoint, so the user can finish it; nothing else changes.
+    func testTwoStepFailureWithAHeldLockIsLockHeldWithThatLock() async throws {
+        twoStep.result = .lockHeld(Self.heldLock, after: PlatformWalletError.transactionBroadcastUnconfirmed("raw"))
+        let executor = makeExecutor()
+        for route in [SendRoute.coreToShielded, .coreToIdentity] {
+            let outcome = await executor.send(try await prepare(executor, route))
+            guard case .lockHeld(let lock) = outcome else { return XCTFail("\(route): \(outcome)") }
+            XCTAssertEqual(lock, Self.heldLock, "\(route)")
+        }
+        XCTAssertEqual(logged.count, 2)
+        XCTAssertTrue(logged.allSatisfy { if case .lockHeld = $0 { return true } else { return false } })
     }
 
     func testTwoStepFailureBeforeBroadcastIsNotSentWithTheMappedReason() async throws {
@@ -2569,7 +2587,7 @@ final class ExternalSendExecutorTests: XCTestCase {
             standardSend: standard, paymentRequestSend: paymentRequest, twoStep: LiveCoreTwoStepSend(),
             creditsSend: LiveShieldedPlatformSend(), identityTopUp: identityTopUp, identityCredits: identityCredits,
             fees: fees, balances: balances, drainPreview: drainPreview, prompt: prompt,
-            logOutcome: { [unowned self] in logged.append($0) })
+            logOutcome: { [unowned self] in logged.append($0); loggedLines.append($1) })
         let notShielded = Destination(type: .shieldedAddress, text: Self.coreAddress)
         let cases: [(SendRoute, Bool)] = [
             (.coreToShielded, false), (.coreToShielded, true), (.platformToShielded, false),
@@ -2718,6 +2736,126 @@ final class ExternalSendExecutorTests: XCTestCase {
             XCTAssertFalse(recorded)
         }
         XCTAssertEqual(coordinatorsBuilt, 0)
+    }
+
+    // MARK: - Outcome log line: every site names the route and the deciding error
+
+    private static let rawText = "RAW-PLATFORM-TEXT-91c2"
+
+    private func sendLine(_ executor: ExternalSendExecutor, _ route: SendRoute, isMax: Bool = false,
+                          amount: UInt64 = amount) async throws -> String {
+        let countBefore = loggedLines.count
+        _ = await executor.send(try await prepare(executor, route, amount: amount, isMax: isMax))
+        XCTAssertEqual(loggedLines.count, countBefore + 1, "one outcome line per send: \(route)")
+        return loggedLines.last ?? ""
+    }
+
+    func testTheOutcomeLineOfACoreBroadcastFailureNamesTheRouteAndTheError() async throws {
+        standard.broadcastOutcome = .rejected(txid: "t", reason: Self.rawText)
+        let line = try await sendLine(makeExecutor(), .coreToCore)
+        XCTAssertTrue(
+            line.hasPrefix("External send outcome: notSent(rejected) route=coreToCore max=false cause=NSError("), line)
+        XCTAssertFalse(line.contains(Self.rawText), line)
+    }
+
+    func testTheOutcomeLineOfAPaymentRequestFailureNamesTheError() async throws {
+        paymentRequest.sendError = BIP70Error.expired
+        let executor = makeExecutor()
+        _ = await executor.send(try await prepareRequest(executor, amount: verifiedRequest.confirmation.amount))
+        XCTAssertEqual(
+            loggedLines.last,
+            "External send outcome: notSent(expired) route=coreToCore max=false cause=BIP70Error.expired")
+    }
+
+    func testTheOutcomeLineOfAMinimumRefusalNamesTheRefusal() async throws {
+        let line = try await sendLine(makeExecutor(), .coreToIdentity, amount: 1)
+        XCTAssertEqual(
+            line,
+            "External send outcome: notSent(belowMinimum) route=coreToIdentity max=false cause=MinimumAmountRefusal")
+    }
+
+    func testTheOutcomeLinesOfTheTwoStepRoutesNameTheErrorAndWhatOverrodeIt() async throws {
+        var line: String
+        let executor = makeExecutor()
+        let error = CoordinatorError.transferFailed(PlatformWalletError.walletOperation(Self.rawText))
+        let errorName =
+            "ShieldedTransferCoordinator.CoordinatorError.transferFailed(PlatformWalletError.walletOperation)"
+
+        twoStep.result = .failed(error, assetLockRecorded: false)
+        line = try await sendLine(executor, .coreToShielded)
+        XCTAssertEqual(
+            line,
+            "External send outcome: inFlight route=coreToShielded max=false cause=\(errorName)")
+
+        twoStep.result = .failed(CoordinatorError.noWallet, assetLockRecorded: true)
+        line = try await sendLine(executor, .coreToIdentity)
+        XCTAssertEqual(
+            line,
+            "External send outcome: inFlight route=coreToIdentity max=false "
+                + "cause=ShieldedTransferCoordinator.CoordinatorError.noWallet after=assetLockRecorded")
+
+        twoStep.result = .lockHeld(Self.heldLock, after: error)
+        line = try await sendLine(executor, .coreToShielded)
+        XCTAssertEqual(
+            line,
+            "External send outcome: lockHeld(type=5) route=coreToShielded max=false cause=\(errorName) after=lockHeld")
+
+        twoStep.result = .unconfirmed
+        line = try await sendLine(executor, .coreToShielded)
+        XCTAssertEqual(
+            line,
+            "External send outcome: inFlight route=coreToShielded max=false cause=unconfirmed")
+        XCTAssertFalse(loggedLines.contains { $0.contains(Self.rawText) })
+    }
+
+    /// The Shielded to Core withdrawal of 2026-11-24: an untyped SDK error before any broadcast stays `inFlight`, and
+    /// the line says which error decided it.
+    func testTheOutcomeLinesOfTheCreditRoutesNameTheErrorAndTheHandOver() async throws {
+        var line: String
+        let executor = makeExecutor()
+        let error = PlatformWalletError.walletOperation(Self.rawText)
+        for route in creditRoutes {
+            credits.result = .failed(error, handedOver: false)
+            identityTopUp.result = .failed(error, handedOver: false)
+            line = try await sendLine(executor, route)
+            XCTAssertEqual(
+                line,
+                "External send outcome: inFlight route=\(route) max=false cause=PlatformWalletError.walletOperation")
+
+            credits.result = .failed(CoordinatorError.authCancelled, handedOver: true)
+            identityTopUp.result = .failed(CoordinatorError.authCancelled, handedOver: true)
+            line = try await sendLine(executor, route)
+            XCTAssertEqual(
+                line,
+                "External send outcome: inFlight route=\(route) max=false "
+                    + "cause=ShieldedTransferCoordinator.CoordinatorError.authCancelled after=handedOver")
+
+            credits.result = .notStarted
+            identityTopUp.result = .notStarted
+            line = try await sendLine(executor, route)
+            XCTAssertEqual(
+                line,
+                "External send outcome: notSent(failed) route=\(route) max=false cause=notStarted")
+        }
+        for route in identityRoutes {
+            identityCredits.result = .failed(error, handedOver: false)
+            line = try await sendLine(executor, route)
+            XCTAssertEqual(
+                line,
+                "External send outcome: inFlight route=\(route) max=false cause=PlatformWalletError.walletOperation")
+        }
+        XCTAssertFalse(loggedLines.contains { $0.contains(Self.rawText) })
+    }
+
+    func testTheOutcomeLineOfASecondSendOfTheSamePlanSaysThePlanWasAlreadySent() async throws {
+        let executor = makeExecutor()
+        let prepared = try await prepare(executor, .shieldedToCore)
+        _ = await executor.send(prepared)
+        _ = await executor.send(prepared)
+        XCTAssertEqual(loggedLines, [
+            "External send outcome: sent route=shieldedToCore max=false",
+            "External send outcome: inFlight route=shieldedToCore max=false cause=planAlreadySent"
+        ])
     }
 }
 
