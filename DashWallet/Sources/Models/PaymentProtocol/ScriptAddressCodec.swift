@@ -19,8 +19,8 @@
 //  handed in as a `PaymentNetwork` token.
 //
 
-import Foundation
 import CryptoKit
+import Foundation
 
 /// Foundation-only network token for the protocol core. Maps to the address version bytes.
 /// (`DWEnvironment...currentChain.isMainnet()` is resolved into this at the L5/L6 boundary.)
@@ -57,8 +57,25 @@ extension PaymentNetwork {
     }
 }
 
-enum ScriptAddressCodec {
+/// The two standard Base58Check address forms.
+enum AddressForm {
+    case pubkeyHash
+    case scriptHash
+}
 
+extension PaymentNetwork {
+    /// The form an address version byte stands for on this network, or `nil` when the byte belongs to none of
+    /// this network's forms.
+    func addressForm(forVersion version: UInt8) -> AddressForm? {
+        switch version {
+        case pubkeyHashVersion: return .pubkeyHash
+        case scriptHashVersion: return .scriptHash
+        default: return nil
+        }
+    }
+}
+
+enum ScriptAddressCodec {
     // MARK: - Script → address
 
     /// scriptPubKey → Base58Check address. Returns `nil` for any non-P2PKH/P2SH script.
@@ -81,17 +98,21 @@ enum ScriptAddressCodec {
     /// Base58Check address → P2PKH or P2SH scriptPubKey, chosen by the decoded version byte.
     /// Returns `nil` if the address can't be decoded or its version doesn't belong to `network`.
     static func scriptPubKey(forAddress address: String, network: PaymentNetwork) -> Data? {
-        guard let decoded = base58CheckDecode(address), decoded.count == 21 else { return nil }
-        let version = decoded[decoded.startIndex]
-        let hash160 = Array(decoded[decoded.index(after: decoded.startIndex)...]) // 20 bytes
+        guard let decoded = decodeAddress(address), let form = network.addressForm(forVersion: decoded.version) else {
+            return nil
+        }
+        let hash160 = [UInt8](decoded.hash160)
+        switch form {
+        case .pubkeyHash: return Data([0x76, 0xa9, 0x14] + hash160 + [0x88, 0xac])
+        case .scriptHash: return Data([0xa9, 0x14] + hash160 + [0x87])
+        }
+    }
 
-        if version == network.pubkeyHashVersion {
-            return Data([0x76, 0xa9, 0x14] + hash160 + [0x88, 0xac])
-        }
-        if version == network.scriptHashVersion {
-            return Data([0xa9, 0x14] + hash160 + [0x87])
-        }
-        return nil
+    /// Base58Check address → its version byte and 20-byte hash, whatever network the version belongs to.
+    /// Returns `nil` unless the checksum holds and the payload is a version byte plus a 20-byte hash.
+    static func decodeAddress(_ address: String) -> (version: UInt8, hash160: Data)? {
+        guard let decoded = base58CheckDecode(address), decoded.count == 21 else { return nil }
+        return (decoded[decoded.startIndex], decoded.dropFirst())
     }
 
     // MARK: - Output resolution
@@ -137,7 +158,7 @@ enum ScriptAddressCodec {
         return base58Encode(payload)
     }
 
-    private static func base58CheckDecode(_ string: String) -> Data? {
+    static func base58CheckDecode(_ string: String) -> Data? {
         guard let raw = base58Decode(string), raw.count >= 4 else { return nil }
         let payload = Data(raw.prefix(raw.count - 4))
         let checksum = Data(raw.suffix(4))
@@ -169,7 +190,7 @@ enum ScriptAddressCodec {
         result.reserveCapacity(leadingZeros + size - start)
         result.append(contentsOf: repeatElement(base58Alphabet[0], count: leadingZeros))
         for i in start ..< size { result.append(base58Alphabet[Int(buffer[i])]) }
-        return String(decoding: result, as: UTF8.self)
+        return String(result.map { Character(Unicode.Scalar($0)) }) // ASCII alphabet only
     }
 
     /// Inverse of `base58Encode`; returns `nil` on any non-alphabet character.

@@ -1932,22 +1932,13 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
     /// expects. Per rs-dpp's `address_funds/platform_address.rs`, only
     /// `0xb0` (P2PKH) and `0x80` (P2SH) are valid wire bytes — `0x00`/`0x01`
     /// are storage bytes and must never appear in a `tdash1…`/`dash1…`
-    /// string.
+    /// string. Decoded by `DashAddressClassifier.decodeBech32m`, the one decoder the Address screen uses too, so a
+    /// text it refuses (mixed case, another HRP) is refused here.
     static func parsePlatformRecipient(bech32m: String) -> PlatformRecipient? {
-        guard let decoded = Bech32m.decode(bech32m.lowercased()),
-              decoded.hrp == "dash" || decoded.hrp == "tdash",
-              decoded.data.count == 21
-        else { return nil }
-
-        let ffiType: UInt8
-        switch decoded.data[0] {
-        case 0xb0: ffiType = 0
-        case 0x80: ffiType = 1
-        default: return nil
+        guard case .platform(let isScript, let hash)? = DashAddressClassifier.decodeBech32m(bech32m)?.form else {
+            return nil
         }
-        return PlatformRecipient(
-            ffiAddressType: ffiType,
-            hash: decoded.data.subdata(in: 1..<21))
+        return PlatformRecipient(ffiAddressType: isScript ? 1 : 0, hash: hash)
     }
 
     static func resolveCoreToPlatformAddressPair(
