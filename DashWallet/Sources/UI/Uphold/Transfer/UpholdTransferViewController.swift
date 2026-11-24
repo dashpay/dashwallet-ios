@@ -31,7 +31,7 @@ protocol UpholdTransferViewControllerDelegate: AnyObject {
 final class UpholdTransferViewController: BaseAmountViewController {
     @objc weak var delegate: UpholdTransferViewControllerDelegate?
 
-    override var actionButtonTitle: String? { NSLocalizedString("Transfer", comment: "Uphold") }
+    override var actionButtonTitle: String? { String(localized: "Transfer", comment: "Uphold") }
 
     var upholdAmountModel: UpholdAmountModel { model as! UpholdAmountModel }
     override var isMaxButtonHidden: Bool { true }
@@ -73,11 +73,11 @@ final class UpholdTransferViewController: BaseAmountViewController {
                 self.hideActivityIndicator()
             case .fail:
                 self.view.isUserInteractionEnabled = true
-                self.showAlert(with: NSLocalizedString("Uphold", comment: "Uphold"), message: NSLocalizedString("Something went wrong", comment: "Uphold"))
+                self.showAlert(with: String(localized: "Uphold", comment: "Uphold"), message: String(localized: "Something went wrong", comment: "Uphold"))
 
             case .failInsufficientFunds:
                 self.view.isUserInteractionEnabled = true
-                self.showAlert(with: NSLocalizedString("Uphold", comment: "Uphold"), message: NSLocalizedString("Fee is greater than balance", comment: "Uphold"))
+                self.showAlert(with: String(localized: "Uphold", comment: "Uphold"), message: String(localized: "Fee is greater than balance", comment: "Uphold"))
             case .otp:
                 self.requestOTP { otpToken in
                     if let token = otpToken {
@@ -95,7 +95,7 @@ final class UpholdTransferViewController: BaseAmountViewController {
 
         view.backgroundColor = .dw_secondaryBackground()
 
-        navigationItem.title = NSLocalizedString("Transfer from Uphold", comment: "Coinbase")
+        navigationItem.title = String(localized: "Transfer from Uphold", comment: "Coinbase")
         navigationItem.backButtonDisplayMode = .minimal
         navigationItem.largeTitleDisplayMode = .never
 

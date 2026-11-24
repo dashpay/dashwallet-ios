@@ -688,7 +688,7 @@ struct CoreAddressDetailView: View {
             }
 
             if showCopiedToast {
-                ToastView(text: NSLocalizedString("Copied", comment: ""))
+                ToastView(text: String(localized: "Copied", comment: ""))
                     .padding(.bottom, 20)
             }
         }

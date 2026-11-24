@@ -194,11 +194,11 @@ extension IntegrationViewController {
         serviceNameLabel.text = model.service.title
         serviceNameIcon.image = UIImage(named: model.service.icon)
 
-        lastKnownBalanceLabel.text = NSLocalizedString("Last known balance", comment: "Integration Entry Point")
+        lastKnownBalanceLabel.text = String(localized: "Last known balance", comment: "Integration Entry Point")
         lastKnownBalanceLabel.isHidden = true
         networkUnavailableView.isHidden = true
-        networkUnavailableTitleLabel.text = NSLocalizedString("Network Unavailable", comment: "Integration Entry Point")
-        networkUnavailableSubtitleLabel.text = NSLocalizedString("Please check your network connection", comment: "Integration Entry Point")
+        networkUnavailableTitleLabel.text = String(localized: "Network Unavailable", comment: "Integration Entry Point")
+        networkUnavailableSubtitleLabel.text = String(localized: "Please check your network connection", comment: "Integration Entry Point")
 
         balanceTitleLabel.text = model.balanceTitle
 
@@ -228,7 +228,7 @@ extension IntegrationViewController {
             alert.addAction(confirmAction)
         }
 
-        let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel)
+        let cancelAction = UIAlertAction(title: String(localized: "Cancel", comment: ""), style: .cancel)
         alert.addAction(cancelAction)
         present(alert, animated: true)
     }
@@ -381,7 +381,7 @@ final class ItemCell: UITableViewCell {
         super.awakeFromNib()
 
         contentView.backgroundColor = .dw_background()
-        additionalInfoLabel.text = NSLocalizedString("Powered by Topper", comment: "Integration Entry Point")
+        additionalInfoLabel.text = String(localized: "Powered by Topper", comment: "Integration Entry Point")
     }
 }
 

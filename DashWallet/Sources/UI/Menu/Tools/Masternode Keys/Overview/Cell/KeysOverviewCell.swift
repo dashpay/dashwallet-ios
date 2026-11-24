@@ -33,8 +33,8 @@ final class KeysOverviewCell: UITableViewCell {
     }
 
     func update(with keyItem: MNKey, count: Int, used: Int) {
-        let keyCountText = String.localizedStringWithFormat(NSLocalizedString("%d key(s)", comment: "#bc-ignore!"), count)
-        let usedCountText = String.localizedStringWithFormat(NSLocalizedString("%ld used", comment: "#bc-ignore!"), used)
+        let keyCountText = String(localized: "\(count) key(s)", comment: "#bc-ignore!")
+        let usedCountText = String.localizedStringWithFormat(String(localized: "%ld used", comment: "#bc-ignore!"), used)
 
         keyNameLabel.text = keyItem.title
         keyCountLabel.text = keyCountText

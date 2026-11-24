@@ -36,7 +36,7 @@ extension ConnectionRequest {
     /// The app's name, trimmed, or "Unknown app" when the request names none.
     var resolvedAppLabel: String {
         let trimmed = appLabel.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed.isEmpty ? NSLocalizedString("Unknown app", comment: "DashConnect") : trimmed
+        return trimmed.isEmpty ? String(localized: "Unknown app", comment: "DashConnect") : trimmed
     }
 
     /// Whether the app is connected already: approving replaces that
@@ -56,16 +56,14 @@ extension ConnectionRequest {
 
     /// What the sheets say over `connectedSinceText`.
     static var alreadyConnectedText: String {
-        NSLocalizedString("This connection already exists.", comment: "DashConnect re-login")
+        String(localized: "This connection already exists.", comment: "DashConnect re-login")
     }
 
     /// Since when the connection this request replaces has been on, e.g.
     /// "Connected since 29 Oct 2026"; `nil` for a first connection.
     var connectedSinceText: String? {
         existingConnection.map {
-            String(
-                format: NSLocalizedString("Connected since %@", comment: "DashConnect re-login"),
-                Self.connectedSinceFormatter.string(from: $0.updatedAt))
+            String(localized: "Connected since \(Self.connectedSinceFormatter.string(from: $0.updatedAt))", comment: "DashConnect re-login")
         }
     }
 
@@ -123,7 +121,7 @@ struct ApproveConnectionSheet: View {
                             // in full and selectable, so it can be compared with
                             // the one the app publishes.
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(NSLocalizedString("App contract", comment: "DashConnect"))
+                                Text(String(localized: "App contract", comment: "DashConnect"))
                                     .font(.footnote)
                                     .foregroundColor(.secondaryText)
                                 Text(request.appContractId)
@@ -144,8 +142,8 @@ struct ApproveConnectionSheet: View {
                         // their own, so its terms are spelled out on a repeat
                         // sign-in too.
                         if request.login == .unresolved {
-                            Text(NSLocalizedString(
-                                "This wallet could not check what this sign-in would give the app.",
+                            Text(String(
+                                localized: "This wallet could not check what this sign-in would give the app.",
                                 comment: "DashConnect"))
                                 .font(.subhead)
                                 .foregroundColor(.primaryText)
@@ -155,8 +153,8 @@ struct ApproveConnectionSheet: View {
                                     .foregroundColor(.secondaryText)
                             }
                         } else if case .refused(let refusal) = request.login {
-                            Text(NSLocalizedString(
-                                "This wallet will not answer this sign-in request.",
+                            Text(String(
+                                localized: "This wallet will not answer this sign-in request.",
                                 comment: "DashConnect App Connect v2"))
                                 .font(.subhead)
                                 .foregroundColor(.primaryText)
@@ -169,13 +167,13 @@ struct ApproveConnectionSheet: View {
                             VStack(spacing: 4) {
                                 if let walletUsername = request.walletUsername {
                                     DashConnectDetailRow(
-                                        label: NSLocalizedString("Username", comment: "DashConnect"),
+                                        label: String(localized: "Username", comment: "DashConnect"),
                                         value: walletUsername
                                     )
                                 }
                                 if let walletIdentityId = request.walletIdentityId {
                                     DashConnectDetailRow(
-                                        label: NSLocalizedString("Identity", comment: "DashConnect"),
+                                        label: String(localized: "Identity", comment: "DashConnect"),
                                         value: DashConnectIdentifierFormatting.truncateMiddle(walletIdentityId)
                                     )
                                 }
@@ -209,8 +207,8 @@ struct ApproveConnectionSheet: View {
                         DashButton(
                             // With the login unresolved there is nothing to approve.
                             text: request.login == .unresolved
-                                ? NSLocalizedString("Try again", comment: "")
-                                : NSLocalizedString("Approve", comment: "DashConnect"),
+                                ? String(localized: "Try again", comment: "")
+                                : String(localized: "Approve", comment: "DashConnect"),
                             style: .filledBlue,
                             size: .large,
                             stretch: true,
@@ -221,7 +219,7 @@ struct ApproveConnectionSheet: View {
                     }
 
                     DashButton(
-                        text: NSLocalizedString("Deny", comment: "DashConnect"),
+                        text: String(localized: "Deny", comment: "DashConnect"),
                         style: .tintedBlue,
                         size: .large,
                         stretch: true,
@@ -245,15 +243,15 @@ struct ApproveConnectionSheet: View {
         let candidates = [
             request.appUrl.trimmingCharacters(in: .whitespacesAndNewlines),
             request.appLabel.trimmingCharacters(in: .whitespacesAndNewlines),
-            NSLocalizedString("Unknown app", comment: "DashConnect"),
+            String(localized: "Unknown app", comment: "DashConnect"),
         ]
-        return candidates.first(where: { !$0.isEmpty }) ?? NSLocalizedString("Unknown app", comment: "DashConnect")
+        return candidates.first(where: { !$0.isEmpty }) ?? String(localized: "Unknown app", comment: "DashConnect")
     }
 
     private func permissions(granted: [String], withheld: [String]) -> some View {
         VStack(alignment: .leading, spacing: 20) {
             VStack(alignment: .leading, spacing: 12) {
-                Text(NSLocalizedString("This app will be able to:", comment: "DashConnect"))
+                Text(String(localized: "This app will be able to:", comment: "DashConnect"))
                     .font(.subhead)
                     .foregroundColor(.primaryText)
 
@@ -264,7 +262,7 @@ struct ApproveConnectionSheet: View {
             }
 
             VStack(alignment: .leading, spacing: 12) {
-                Text(NSLocalizedString("This app will NOT have access to:", comment: "DashConnect"))
+                Text(String(localized: "This app will NOT have access to:", comment: "DashConnect"))
                     .font(.subhead)
                     .foregroundColor(.primaryText)
 

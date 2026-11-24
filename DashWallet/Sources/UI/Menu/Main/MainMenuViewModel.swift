@@ -150,7 +150,7 @@ class MainMenuViewModel: ObservableObject {
         
         // Explore
         allItems.append(MenuItemModel(
-            title: NSLocalizedString("Explore", comment: ""),
+            title: String(localized: "Explore", comment: ""),
             icon: .custom("image.explore", maxHeight: 30),
             action: { [weak self] in
                 self?.navigationDestination = .explore
@@ -159,7 +159,7 @@ class MainMenuViewModel: ObservableObject {
         
         // Sync Info
         allItems.append(MenuItemModel(
-            title: NSLocalizedString("Sync Info", comment: ""),
+            title: String(localized: "Sync Info", comment: ""),
             icon: .system("arrow.triangle.2.circlepath"),
             action: { [weak self] in
                 self?.navigationDestination = .syncInfo
@@ -169,7 +169,7 @@ class MainMenuViewModel: ObservableObject {
         if showsAdvancedRows {
             // Wallets
             allItems.append(MenuItemModel(
-                title: NSLocalizedString("Wallets", comment: ""),
+                title: String(localized: "Wallets", comment: ""),
                 icon: .custom(DashIcon.Menu.wallet.rawValue, bundle: .dashUIKit, maxHeight: 30),
                 action: { [weak self] in
                     self?.navigationDestination = .wallets
@@ -178,7 +178,7 @@ class MainMenuViewModel: ObservableObject {
 
             // Identities — the device's Dash Platform identities (under Wallets)
             allItems.append(MenuItemModel(
-                title: NSLocalizedString("Identities", comment: "Identities"),
+                title: String(localized: "Identities", comment: "Identities"),
                 icon: .custom(DashIcon.Menu.identities.rawValue, bundle: .dashUIKit, maxHeight: 30),
                 action: { [weak self] in
                     self?.navigationDestination = .identities
@@ -188,7 +188,7 @@ class MainMenuViewModel: ObservableObject {
 
         // Security
         allItems.append(MenuItemModel(
-            title: NSLocalizedString("Security", comment: ""),
+            title: String(localized: "Security", comment: ""),
             icon: .custom(DashIcon.Menu.security.rawValue, bundle: .dashUIKit, maxHeight: 30),
             action: { [weak self] in
                 self?.navigationDestination = .security
@@ -197,7 +197,7 @@ class MainMenuViewModel: ObservableObject {
         
         // Settings
         allItems.append(MenuItemModel(
-            title: NSLocalizedString("Settings", comment: ""),
+            title: String(localized: "Settings", comment: ""),
             icon: .custom(DashIcon.Menu.settings.rawValue, bundle: .dashUIKit, maxHeight: 30),
             action: { [weak self] in
                 self?.navigationDestination = .settings
@@ -206,7 +206,7 @@ class MainMenuViewModel: ObservableObject {
         
         // Tools
         allItems.append(MenuItemModel(
-            title: NSLocalizedString("Tools", comment: ""),
+            title: String(localized: "Tools", comment: ""),
             icon: .custom(DashIcon.Menu.tools.rawValue, bundle: .dashUIKit, maxHeight: 30),
             action: { [weak self] in
                 self?.navigationDestination = .tools
@@ -219,7 +219,7 @@ class MainMenuViewModel: ObservableObject {
         // wallet is in. Behind Settings → "Enable Voting".
         if VotingPrefs.shared.votingEnabled {
             allItems.append(MenuItemModel(
-                title: NSLocalizedString("Voting", comment: ""),
+                title: String(localized: "Voting", comment: ""),
                 icon: .custom(DashIcon.Menu.voting.rawValue, bundle: .dashUIKit, maxHeight: 30),
                 action: { [weak self] in
                     self?.navigationDestination = .voting
@@ -230,7 +230,7 @@ class MainMenuViewModel: ObservableObject {
 
         // Support
         allItems.append(MenuItemModel(
-            title: NSLocalizedString("Support", comment: ""),
+            title: String(localized: "Support", comment: ""),
             icon: .custom(DashIcon.Menu.support.rawValue, bundle: .dashUIKit, maxHeight: 30),
             action: { [weak self] in
                 self?.navigationDestination = .support
@@ -242,7 +242,7 @@ class MainMenuViewModel: ObservableObject {
         // Masternodes is a Core-side surface every build configuration has.
         if showsAdvancedRows {
             allItems.append(MenuItemModel(
-                title: NSLocalizedString("Governance", comment: "Governance"),
+                title: String(localized: "Governance", comment: "Governance"),
                 icon: .system("server.rack"),
                 action: { [weak self] in
                     self?.navigationDestination = .governance

@@ -44,7 +44,7 @@ struct SwapConvertView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             DashUIKit.NavigationBar(leading: { DashUIKit.NavigationBarElement.back.button { onBack?() } })
-            TopIntro(title: NSLocalizedString("Enter amount", comment: "Dash DEX"))
+            TopIntro(title: String(localized: "Enter amount", comment: "Dash DEX"))
                 .padding(.horizontal, Layout.hPadding)
                 .padding(.bottom, 6)
             amountSection
@@ -100,8 +100,8 @@ struct SwapConvertView: View {
         ConverterCard(
             fromItem: ConverterCardItem(
                 icon: .custom("dashCircleFilled", bundle: .main),
-                title: NSLocalizedString("Dash", comment: "Dash DEX"),
-                subtitle: NSLocalizedString("Dash Wallet", comment: "Dash DEX"),
+                title: String(localized: "Dash", comment: "Dash DEX"),
+                subtitle: String(localized: "Dash Wallet", comment: "Dash DEX"),
                 trailingView: AnyView(
                     DashBalanceView(
                         balance: viewModel.enteredDashFormatted,
@@ -135,7 +135,7 @@ struct SwapConvertView: View {
                         .foregroundColor(Color.dash.red)
                         .multilineTextAlignment(.center)
                 } else if let amount = viewModel.receiveAmount {
-                    Text(NSLocalizedString("Receive amount", comment: "Dash DEX"))
+                    Text(String(localized: "Receive amount", comment: "Dash DEX"))
                         .dashFont(.caption1)
                         .foregroundStyle(Color.dash.tertiaryText)
 
@@ -158,7 +158,7 @@ struct SwapConvertView: View {
                 set: { viewModel.setInput($0) }
             ),
             showDecimalSeparator: true,
-            actionButtonText: NSLocalizedString("Convert", comment: "Dash Dex"),
+            actionButtonText: String(localized: "Convert", comment: "Dash Dex"),
             actionEnabled: viewModel.canOpenOrderPreview,
             inProgress: viewModel.isLoading,
             actionHandler: onContinue

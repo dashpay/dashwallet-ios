@@ -208,23 +208,23 @@ final class VotingListViewModel: ObservableObject {
     /// vote to tell, so the types that read them have nothing to go on.
     var myVotesUnavailableReason: String? {
         if store.historyUnavailable {
-            return NSLocalizedString("Pull down to try again.", comment: "Voting")
+            return String(localized: "Pull down to try again.", comment: "Voting")
         }
         if store.nodeListMayBeIncomplete {
-            return NSLocalizedString(
-                "Some of your masternodes may be missing from this list — the wallet could not read your full voting-key pool. Finish syncing and reopen this screen.",
+            return String(
+                localized: "Some of your masternodes may be missing from this list — the wallet could not read your full voting-key pool. Finish syncing and reopen this screen.",
                 comment: "Voting")
         }
         if !store.nodeListSynced {
-            return NSLocalizedString("The masternode list is still syncing. Try again in a moment.", comment: "Voting")
+            return String(localized: "The masternode list is still syncing. Try again in a moment.", comment: "Voting")
         }
         if !store.canVote {
-            return NSLocalizedString(
-                "This wallet's masternode voting keys aren't available right now, so it has no votes to filter by.",
+            return String(
+                localized: "This wallet's masternode voting keys aren't available right now, so it has no votes to filter by.",
                 comment: "Voting")
         }
         if !store.isVotingSetUp {
-            return NSLocalizedString("Set up voting to filter by your votes.", comment: "Voting")
+            return String(localized: "Set up voting to filter by your votes.", comment: "Voting")
         }
         return nil
     }
@@ -405,16 +405,15 @@ final class VotingListViewModel: ObservableObject {
     func headerAccessibilityHint(for contest: DPNSContest) -> String? {
         guard !contest.contenders.isEmpty else { return nil }
         guard isExpandable(contest) else {
-            return NSLocalizedString("Opens the request details", comment: "Voting")
+            return String(localized: "Opens the request details", comment: "Voting")
         }
         return isExpanded(contest.normalizedLabel)
-            ? NSLocalizedString("Hides the requests for this name", comment: "Voting")
-            : NSLocalizedString("Opens the requests for this name", comment: "Voting")
+            ? String(localized: "Hides the requests for this name", comment: "Voting")
+            : String(localized: "Opens the requests for this name", comment: "Voting")
     }
 
     func requestCountText(for contest: DPNSContest) -> String {
-        String.localizedStringWithFormat(
-            NSLocalizedString("%d requests", comment: "Voting"), contest.contenders.count)
+        String(localized: "\(contest.contenders.count) requests", comment: "Voting")
     }
 
     func expandAccessibilityLabel(for contest: DPNSContest, isExpanded: Bool) -> String {
@@ -474,11 +473,11 @@ struct VotingRequestRow: Equatable {
     }
 
     var accessibilityLabel: String {
-        String(format: NSLocalizedString("Approve %@", comment: "Voting"), spokenIdentity)
+        String(localized: "Approve \(spokenIdentity)", comment: "Voting")
     }
 
     var accessibilityValue: String {
-        String.localizedStringWithFormat(NSLocalizedString("%d votes", comment: "Voting"), votes)
+        String(localized: "\(votes) votes", comment: "Voting")
     }
 }
 
@@ -510,22 +509,22 @@ enum VotingListMessage: Equatable {
     var title: String {
         switch self {
         case .historyUnavailable:
-            return NSLocalizedString("Couldn't read your vote history.", comment: "Voting")
+            return String(localized: "Couldn't read your vote history.", comment: "Voting")
         case .refreshFailed:
-            return NSLocalizedString("Couldn't refresh the list.", comment: "Voting")
+            return String(localized: "Couldn't refresh the list.", comment: "Voting")
         case .nodeListIncomplete:
-            return NSLocalizedString("Some masternodes may be missing.", comment: "Voting")
+            return String(localized: "Some masternodes may be missing.", comment: "Voting")
         }
     }
 
     var subtitle: String? {
         switch self {
         case .historyUnavailable:
-            return NSLocalizedString("Voting is paused.", comment: "Voting")
+            return String(localized: "Voting is paused.", comment: "Voting")
         case .refreshFailed:
             return nil
         case .nodeListIncomplete:
-            return NSLocalizedString("Finish syncing.", comment: "Voting")
+            return String(localized: "Finish syncing.", comment: "Voting")
         }
     }
 
@@ -573,12 +572,11 @@ struct VotingListSection: Identifiable, Equatable {
     var title: String {
         switch daysLeft {
         case nil:
-            return NSLocalizedString("Voting end unknown", comment: "Voting")
+            return String(localized: "Voting end unknown", comment: "Voting")
         case 0:
-            return NSLocalizedString("Voting ends today", comment: "Voting")
+            return String(localized: "Voting ends today", comment: "Voting")
         case let days?:
-            return String.localizedStringWithFormat(
-                NSLocalizedString("Voting ends in %d days", comment: "Voting"), days)
+            return String(localized: "Voting ends in \(days) days", comment: "Voting")
         }
     }
 
@@ -637,14 +635,14 @@ struct VotingToast: Identifiable, Equatable {
 
     static func voted(username: String) -> VotingToast {
         VotingToast(
-            message: String(format: NSLocalizedString("Voted %@ username", comment: "Voting"), username),
+            message: String(localized: "Voted \(username) username", comment: "Voting"),
             style: .success)
     }
 
     /// Every abstain of a cancel landed (AC-17).
     static func voteCancelled(username: String) -> VotingToast {
         VotingToast(
-            message: String(format: NSLocalizedString("Vote cancelled on %@", comment: "Voting"), username),
+            message: String(localized: "Vote cancelled on \(username)", comment: "Voting"),
             style: .success)
     }
 
@@ -662,14 +660,14 @@ struct VotingToast: Identifiable, Equatable {
     /// Every vote of a Quick voting run landed (AC-18).
     static func quickVotingDone() -> VotingToast {
         VotingToast(
-            message: NSLocalizedString("Quick voting done", comment: "Voting"),
+            message: String(localized: "Quick voting done", comment: "Voting"),
             style: .success)
     }
 
     /// A vote on a contest whose voting end has passed (AC-03).
     static func votingEnded(username: String) -> VotingToast {
         VotingToast(
-            message: String(format: NSLocalizedString("Voting on %@ has ended", comment: "Voting"), username),
+            message: String(localized: "Voting on \(username) has ended", comment: "Voting"),
             style: .error)
     }
 }

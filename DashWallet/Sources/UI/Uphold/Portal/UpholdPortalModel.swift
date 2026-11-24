@@ -36,9 +36,9 @@ struct UpholdEntryPointItem: IntegrationEntryPointItem {
     var description: String {
         switch type {
         case .buyDash:
-            return NSLocalizedString("Receive directly into Dash Wallet", comment: "Uphold Entry Point")
+            return String(localized: "Receive directly into Dash Wallet", comment: "Uphold Entry Point")
         case .transferDash:
-            return NSLocalizedString("From Uphold to Dash Wallet", comment: "Uphold Entry Point")
+            return String(localized: "From Uphold to Dash Wallet", comment: "Uphold Entry Point")
         default:
             return ""
         }
@@ -82,19 +82,19 @@ final class UpholdPortalModel: BaseIntegrationModel {
             }
         }
         
-        return NSLocalizedString("Syncing...", comment: "Balance")
+        return String(localized: "Syncing...", comment: "Balance")
     }
     
     override var balanceTitle: String {
-        NSLocalizedString("Dash balance on Uphold", comment: "Uphold Entry Point")
+        String(localized: "Dash balance on Uphold", comment: "Uphold Entry Point")
     }
     
     override var signInTitle: String {
-        NSLocalizedString("Link Uphold Account", comment: "Uphold Entry Point")
+        String(localized: "Link Uphold Account", comment: "Uphold Entry Point")
     }
     
     override var signOutTitle: String {
-        NSLocalizedString("Disconnect Uphold Account", comment: "Uphold Entry Point")
+        String(localized: "Disconnect Uphold Account", comment: "Uphold Entry Point")
     }
     
     override var authenticationUrl: URL? {

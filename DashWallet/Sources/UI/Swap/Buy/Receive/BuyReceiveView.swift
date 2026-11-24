@@ -64,14 +64,14 @@ struct BuyReceiveView: View {
                         contentCard
 
                         SystemMessageView(
-                            title: NSLocalizedString("This address expires in 10 minutes", comment: "Dash DEX"),
-                            subtitle: String(format: NSLocalizedString("Send your %@ before the timer runs out. If you send after the address expires, your funds will be refunded — not converted.", comment: "Dash DEX"), viewModel.coinCode)
+                            title: String(localized: "This address expires in 10 minutes", comment: "Dash DEX"),
+                            subtitle: String(localized: "Send your \(viewModel.coinCode) before the timer runs out. If you send after the address expires, your funds will be refunded — not converted.", comment: "Dash DEX")
                         )
 
                         Spacer(minLength: 0)
 
                         DashUIKit.DashButton(
-                            text: NSLocalizedString("Back home", comment: "Dash DEX"),
+                            text: String(localized: "Back home", comment: "Dash DEX"),
                             fillsWidth: true,
                             size: .large,
                             style: .tintedGray,
@@ -99,7 +99,7 @@ struct BuyReceiveView: View {
             Divider()
 
             copyableDetailRow(
-                title: NSLocalizedString("URI", comment: "Dash DEX"),
+                title: String(localized: "URI", comment: "Dash DEX"),
                 displayValue: addressDisplayValue,
                 copyValue: viewModel.copyText
             )
@@ -107,10 +107,10 @@ struct BuyReceiveView: View {
             if let memo = viewModel.memoText {
                 Divider()
                 copyableDetailRow(
-                    title: NSLocalizedString("Memo / Tag", comment: "Dash DEX"),
+                    title: String(localized: "Memo / Tag", comment: "Dash DEX"),
                     displayValue: memo,
                     copyValue: memo,
-                    helper: NSLocalizedString("Your transfer must include this memo. Funds sent without it cannot be matched to your swap and will be lost.", comment: "Dash DEX / dex_receive_memo_warning"),
+                    helper: String(localized: "Your transfer must include this memo. Funds sent without it cannot be matched to your swap and will be lost.", comment: "Dash DEX / dex_receive_memo_warning"),
                     helperColor: Color.dash.orange
                 )
             }

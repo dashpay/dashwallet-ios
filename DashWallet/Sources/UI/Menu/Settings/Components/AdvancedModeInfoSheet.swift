@@ -38,30 +38,30 @@ final class AdvancedModeInfoSheetViewModel: ObservableObject {
         let iconColor: Color?
     }
 
-    let title = NSLocalizedString("What is advanced mode?", comment: "Settings")
-    let subtitle = NSLocalizedString(
-        "It unlocks powerful features for managing your Dash across the network",
+    let title = String(localized: "What is advanced mode?", comment: "Settings")
+    let subtitle = String(
+        localized: "It unlocks powerful features for managing your Dash across the network",
         comment: "Settings")
 
     let features: [Feature] = [
         Feature(
-            title: NSLocalizedString("Shielded", comment: "Settings: advanced mode"),
-            description: NSLocalizedString(
-                "Move Dash into a private, encrypted balance that can't be traced.",
+            title: String(localized: "Shielded", comment: "Settings: advanced mode"),
+            description: String(
+                localized: "Move Dash into a private, encrypted balance that can't be traced.",
                 comment: "Settings: advanced mode"),
             icon: .custom("feature-shield-purple", bundle: .dashUIKit),
             iconColor: nil),
         Feature(
-            title: NSLocalizedString("Identity", comment: "Settings: advanced mode"),
-            description: NSLocalizedString(
-                "Fund your identity to create a username and use Dash Platform",
+            title: String(localized: "Identity", comment: "Settings: advanced mode"),
+            description: String(
+                localized: "Fund your identity to create a username and use Dash Platform",
                 comment: "Settings: advanced mode"),
             icon: .custom("feature-identity", bundle: .dashUIKit),
             iconColor: Color.dash.purple),
         Feature(
-            title: NSLocalizedString("Platform", comment: "Settings: advanced mode"),
-            description: NSLocalizedString(
-                "Keep credits to pay for on-chain actions and Platform apps",
+            title: String(localized: "Platform", comment: "Settings: advanced mode"),
+            description: String(
+                localized: "Keep credits to pay for on-chain actions and Platform apps",
                 comment: "Settings: advanced mode"),
             icon: .custom("feature-platform-purple", bundle: .dashUIKit),
             iconColor: nil),

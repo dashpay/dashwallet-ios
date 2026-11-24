@@ -77,8 +77,8 @@ struct ConnectionSheet: View {
                     if details == nil {
                         detailsPlaceholder
                     } else if detailsFailed {
-                        Text(NSLocalizedString(
-                            "The details of this connection could not be read again and may be out of date.",
+                        Text(String(
+                            localized: "The details of this connection could not be read again and may be out of date.",
                             comment: "DashConnect connection sheet: a refresh of details already shown failed"))
                             .dashFont(.footnote)
                             .foregroundColor(Color.dash.secondaryText)
@@ -120,18 +120,15 @@ struct ConnectionSheet: View {
         // On the whole sheet: a status change while it asks does not take
         // the question with it; confirming checks what holds then.
         .confirmationDialog(
-            String(
-                format: NSLocalizedString(
-                    "Disconnect %@?", comment: "DashConnect: confirm a disconnect; the app's name"),
-                item.name),
+            String(localized: "Disconnect \(item.name)?", comment: "DashConnect: confirm a disconnect; the app's name"),
             isPresented: $isConfirmingDisconnect,
             titleVisibility: .visible
         ) {
-            Button(NSLocalizedString("Disconnect", comment: "DashConnect"), role: .destructive, action: onDisconnect)
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {}
+            Button(String(localized: "Disconnect", comment: "DashConnect"), role: .destructive, action: onDisconnect)
+            Button(String(localized: "Cancel", comment: ""), role: .cancel) {}
         } message: {
-            Text(NSLocalizedString(
-                "Its keys are turned off on Platform for good. To connect again, the app asks with a new code.",
+            Text(String(
+                localized: "Its keys are turned off on Platform for good. To connect again, the app asks with a new code.",
                 comment: "DashConnect: what a disconnect does, in its confirmation"))
         }
         // After the sheet's own transition: a dialog asked for while it
@@ -167,7 +164,7 @@ struct ConnectionSheet: View {
 
     private var statusCard: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(NSLocalizedString("Status", comment: "DashConnect connection sheet"))
+            Text(String(localized: "Status", comment: "DashConnect connection sheet"))
                 .dashFont(.caption1)
                 .foregroundColor(Color.dash.tertiaryText)
             HStack(spacing: 6) {
@@ -190,13 +187,13 @@ struct ConnectionSheet: View {
 
     private var detailsCard: some View {
         VStack(spacing: 2) {
-            DashConnectDetailLine(title: NSLocalizedString("App ID", comment: "DashConnect connection sheet"), value: item.id)
+            DashConnectDetailLine(title: String(localized: "App ID", comment: "DashConnect connection sheet"), value: item.id)
             if let username = details?.username, !username.isEmpty {
-                DashConnectDetailLine(title: NSLocalizedString("Username", comment: "DashConnect connection sheet"), value: username)
+                DashConnectDetailLine(title: String(localized: "Username", comment: "DashConnect connection sheet"), value: username)
             }
             if let identityId = details?.identityId {
                 DashConnectDetailLine(
-                    title: NSLocalizedString("Identity", comment: "DashConnect connection sheet"),
+                    title: String(localized: "Identity", comment: "DashConnect connection sheet"),
                     value: DashConnectIdentifierFormatting.truncateMiddle(identityId))
             }
         }
@@ -209,8 +206,8 @@ struct ConnectionSheet: View {
     @ViewBuilder
     private var detailsPlaceholder: some View {
         if detailsFailed {
-            Text(NSLocalizedString(
-                "The details of this connection could not be read.", comment: "DashConnect connection sheet"))
+            Text(String(
+                localized: "The details of this connection could not be read.", comment: "DashConnect connection sheet"))
                 .dashFont(.footnote)
                 .foregroundColor(Color.dash.secondaryText)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -218,8 +215,8 @@ struct ConnectionSheet: View {
             // The app declares its own `ProgressView: UIView`.
             SwiftUI.ProgressView()
                 .frame(maxWidth: .infinity)
-                .accessibilityLabel(Text(NSLocalizedString(
-                    "Reading the details of this connection", comment: "DashConnect connection sheet")))
+                .accessibilityLabel(Text(String(
+                    localized: "Reading the details of this connection", comment: "DashConnect connection sheet")))
         }
     }
 
@@ -231,7 +228,7 @@ struct ConnectionSheet: View {
                 if let access {
                     VStack(alignment: .leading, spacing: 2) {
                         HStack(spacing: 4) {
-                            Text(NSLocalizedString("Identity funding limits", comment: "DashConnect connection sheet"))
+                            Text(String(localized: "Identity funding limits", comment: "DashConnect connection sheet"))
                                 .dashFont(.footnote)
                                 .foregroundColor(Color.dash.tertiaryText)
                             Button(action: onShowFundingLimitsInfo) {
@@ -240,8 +237,8 @@ struct ConnectionSheet: View {
                                     .contentShape(Rectangle())
                             }
                             .frame(width: 18, height: 18)
-                            .accessibilityLabel(Text(NSLocalizedString(
-                                "What are identity funding limits?", comment: "DashConnect connection sheet")))
+                            .accessibilityLabel(Text(String(
+                                localized: "What are identity funding limits?", comment: "DashConnect connection sheet")))
                         }
                         Text(fundingLimitText(access))
                             .dashFont(.subhead)
@@ -252,14 +249,11 @@ struct ConnectionSheet: View {
                 }
                 if let funding, !funding.isEmpty, item.connection != nil {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(NSLocalizedString("Funding left", comment: "DashConnect connection sheet"))
+                        Text(String(localized: "Funding left", comment: "DashConnect connection sheet"))
                             .dashFont(.footnote)
                             .foregroundColor(Color.dash.tertiaryText)
                         ForEach(Array(funding.enumerated()), id: \.offset) { _, line in
-                            Text(String(
-                                format: NSLocalizedString(
-                                    "%1$@: %2$@", comment: "DashConnect connection sheet: a key's name, then its budget"),
-                                line.title, line.value))
+                            Text(String(localized: "\(line.title): \(line.value)", comment: "DashConnect connection sheet: a key's name, then its budget"))
                                 .dashFont(.subhead)
                                 .foregroundColor(Color.dash.primaryText)
                         }
@@ -269,8 +263,8 @@ struct ConnectionSheet: View {
                     .padding(.vertical, 8)
                 }
                 if fundingFailed, item.connection != nil {
-                    Text(NSLocalizedString(
-                        "What is left of the keys' budgets could not be read.", comment: "DashConnect connection sheet"))
+                    Text(String(
+                        localized: "What is left of the keys' budgets could not be read.", comment: "DashConnect connection sheet"))
                         .dashFont(.footnote)
                         .foregroundColor(Color.dash.tertiaryText)
                         .padding(.leading, 14)
@@ -278,7 +272,7 @@ struct ConnectionSheet: View {
                 }
                 if let connectedAt {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(NSLocalizedString("Connected", comment: "DashConnect connection sheet: when the connection was made"))
+                        Text(String(localized: "Connected", comment: "DashConnect connection sheet: when the connection was made"))
                             .dashFont(.footnote)
                             .foregroundColor(Color.dash.tertiaryText)
                         Text(Self.dateFormatter.string(from: connectedAt))
@@ -325,7 +319,7 @@ struct ConnectionSheet: View {
             }
             if actions.contains(.remove) {
                 DashUIKit.DashButton(
-                    text: NSLocalizedString("Remove", comment: "DashConnect: takes a refused connection off the list"),
+                    text: String(localized: "Remove", comment: "DashConnect: takes a refused connection off the list"),
                     isEnabled: !isBusy, fillsWidth: true, size: .large, style: .tintedGray, action: onRemove)
             }
         }
@@ -333,13 +327,13 @@ struct ConnectionSheet: View {
 
     private var reconnectButton: some View {
         DashUIKit.DashButton(
-            text: NSLocalizedString("Reconnect", comment: "DashConnect connection sheet"),
+            text: String(localized: "Reconnect", comment: "DashConnect connection sheet"),
             isEnabled: !isBusy, fillsWidth: true, size: .large, style: .filledBlue, action: onScan)
     }
 
     private var disconnectButton: some View {
         DashUIKit.DashButton(
-            text: NSLocalizedString("Disconnect", comment: "DashConnect"),
+            text: String(localized: "Disconnect", comment: "DashConnect"),
             // Enabled even when what it does is not known: the tap reads it
             // again, or says why it cannot ask.
             isEnabled: !isBusy, isLoading: isBusy, fillsWidth: true, size: .large, style: .tintedRed,
@@ -395,27 +389,24 @@ struct ConnectionSheet: View {
 
     private func fundingLimitText(_ access: ConnectionAccess) -> String {
         if access.hasUnlimitedKey {
-            return NSLocalizedString("No limit", comment: "DashConnect connection sheet: a key with no spending limit")
+            return String(localized: "No limit", comment: "DashConnect connection sheet: a key with no spending limit")
         }
         guard let budget = access.budgetLimit else {
-            return NSLocalizedString("Not known", comment: "DashConnect connection sheet")
+            return String(localized: "Not known", comment: "DashConnect connection sheet")
         }
-        return String(
-            format: NSLocalizedString(
-                "Maximum of %@", comment: "DashConnect connection sheet: an amount with its unit, e.g. 0.5 DASH"),
-            PlatformCreditsFormatter.dashString(budget))
+        return String(localized: "Maximum of \(PlatformCreditsFormatter.dashString(budget))", comment: "DashConnect connection sheet: an amount with its unit, e.g. 0.5 DASH")
     }
 
     private var dateLine: (title: String, date: Date)? {
         if let disconnectedAt = item.disconnectedAt {
-            return (NSLocalizedString("Connection disconnected", comment: "DashConnect connection sheet"), disconnectedAt)
+            return (String(localized: "Connection disconnected", comment: "DashConnect connection sheet"), disconnectedAt)
         }
         guard let expiresAt = details?.access(shownAs: item.status)?.expiresAt else { return nil }
         // Expired once Platform's proved block time is past every key of
         // the connection the row follows.
         return item.status == .expired
-            ? (NSLocalizedString("Connection expired", comment: "DashConnect connection sheet"), expiresAt)
-            : (NSLocalizedString("Connection expiry", comment: "DashConnect connection sheet: the date its keys expire"), expiresAt)
+            ? (String(localized: "Connection expired", comment: "DashConnect connection sheet"), expiresAt)
+            : (String(localized: "Connection expiry", comment: "DashConnect connection sheet: the date its keys expire"), expiresAt)
     }
 
     private static let dateFormatter: DateFormatter = {

@@ -168,19 +168,17 @@ enum DashConnectMockError: LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .parseFailed:
-            return NSLocalizedString("Invalid QR payload", comment: "DashConnect error")
+            return String(localized: "Invalid QR payload", comment: "DashConnect error")
         case .approveFailed:
-            return NSLocalizedString("Approval failed", comment: "DashConnect error")
+            return String(localized: "Approval failed", comment: "DashConnect error")
         case .notDashConnectQrCode:
-            return NSLocalizedString("This QR code is not a DashConnect QR code.", comment: "DashConnect error")
+            return String(localized: "This QR code is not a DashConnect QR code.", comment: "DashConnect error")
         case .needsNewerWallet:
-            return NSLocalizedString("This link needs a newer version of the wallet.", comment: "DashConnect")
+            return String(localized: "This link needs a newer version of the wallet.", comment: "DashConnect")
         case let .unsupportedNetwork(expected, actual):
-            return String(format: NSLocalizedString("This DashConnect QR is for %1$@, but this wallet currently supports %2$@ only.",
-                                                    comment: "DashConnect error: the QR code's network name, then the wallet's"),
-                          actual.displayName, expected.displayName)
+            return String(localized: "This DashConnect QR is for \(actual.displayName), but this wallet currently supports \(expected.displayName) only.", comment: "DashConnect error: the QR code's network name, then the wallet's")
         case .stateTransitionNotSupported:
-            return NSLocalizedString("State transitions are not supported by the mock.", comment: "DashConnect error")
+            return String(localized: "State transitions are not supported by the mock.", comment: "DashConnect error")
         }
     }
 }
@@ -295,7 +293,7 @@ final class MockDashConnectDataSource: DashConnectDataSource {
         let connectionRequest = await makeConnectionRequest(from: request)
         let connection = DAppConnection(
             id: connectionRequest.appContractId,
-            name: connectionRequest.appLabel.isEmpty ? NSLocalizedString("Unknown app", comment: "DashConnect") : connectionRequest.appLabel,
+            name: connectionRequest.appLabel.isEmpty ? String(localized: "Unknown app", comment: "DashConnect") : connectionRequest.appLabel,
             url: connectionRequest.appUrl,
             status: .active,
             updatedAt: Date()

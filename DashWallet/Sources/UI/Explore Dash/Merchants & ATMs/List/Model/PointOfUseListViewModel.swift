@@ -178,7 +178,7 @@ final class PointOfUseListViewModel: ObservableObject {
     var searchRadius: Double { model.currentRadius }
 
     var appliedFiltersText: String {
-        model.appliedFiltersLocalizedString ?? NSLocalizedString("Default filters applied", comment: "Explore Dash")
+        model.appliedFiltersLocalizedString ?? String(localized: "Default filters applied", comment: "Explore Dash")
     }
 
     /// The filters the filter screen opens with: the current ones, with a sort

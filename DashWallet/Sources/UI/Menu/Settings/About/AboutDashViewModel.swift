@@ -157,13 +157,13 @@ final class AboutDashViewModel: ObservableObject {
 
         switch explore.syncState {
         case .inititialing, .fetchingInfo:
-            exploreStatus = NSLocalizedString("Fetching Info", comment: "Explore Dash")
+            exploreStatus = String(localized: "Fetching Info", comment: "Explore Dash")
         case .syncing:
-            exploreStatus = NSLocalizedString("Syncing...", comment: "Explore Dash")
+            exploreStatus = String(localized: "Syncing...", comment: "Explore Dash")
         case .synced:
-            exploreStatus = NSLocalizedString("Synced", comment: "Explore Dash")
+            exploreStatus = String(localized: "Synced", comment: "Explore Dash")
         case .error:
-            exploreStatus = NSLocalizedString("Sync failed", comment: "Explore Dash")
+            exploreStatus = String(localized: "Sync failed", comment: "Explore Dash")
         }
 
         if let syncDate = explore.lastSyncTryDate ?? explore.lastFailedSyncDate {

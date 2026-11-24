@@ -30,15 +30,15 @@ struct VerifyIdentityOfferSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text(NSLocalizedString(
-                "Verify your identity to enhance your chances of getting your requested username",
+            Text(String(
+                localized: "Verify your identity to enhance your chances of getting your requested username",
                 comment: "Usernames"))
                 .dashFont(.title1)
                 .foregroundStyle(Color.dash.primaryText)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text(NSLocalizedString(
-                "If somebody else requests the same username as you, we will let the network decide whom to give this username",
+            Text(String(
+                localized: "If somebody else requests the same username as you, we will let the network decide whom to give this username",
                 comment: "Usernames"))
                 .dashFont(.subhead)
                 .foregroundStyle(Color.dash.secondaryText)
@@ -46,7 +46,7 @@ struct VerifyIdentityOfferSheet: View {
                 .padding(.top, 6)
 
             DashUIKit.DashButton(
-                text: NSLocalizedString("Verify", comment: ""),
+                text: String(localized: "Verify", comment: ""),
                 fillsWidth: true,
                 size: .large,
                 style: .filledBlue,
@@ -55,7 +55,7 @@ struct VerifyIdentityOfferSheet: View {
             .padding(.top, 28)
 
             DashUIKit.DashButton(
-                text: NSLocalizedString("Skip", comment: ""),
+                text: String(localized: "Skip", comment: ""),
                 fillsWidth: true,
                 size: .large,
                 style: .tintedGray,

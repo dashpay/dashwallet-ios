@@ -94,21 +94,15 @@ final class SyncView: UIView {
                 let snapshot = SyncingActivityMonitor.shared.snapshot
                 switch snapshot.kind {
                 case .headers, .filterHeaders, .filters:
-                    descriptionLabel.text = String(format: NSLocalizedString("header #%d of %d", comment: ""),
-                        snapshot.lastTerminalBlockHeight,
-                        snapshot.estimatedBlockHeight)
+                    descriptionLabel.text = String(localized: "header #\(snapshot.lastTerminalBlockHeight) of \(snapshot.estimatedBlockHeight)", comment: "")
                 case .masternodes:
-                    descriptionLabel.text = String(format: NSLocalizedString("masternode list #%d of %d", comment: ""),
-                        snapshot.masternodeListsReceived,
-                        snapshot.masternodeListsTotal)
+                    descriptionLabel.text = String(localized: "masternode list #\(snapshot.masternodeListsReceived) of \(snapshot.masternodeListsTotal)", comment: "")
                 default:
-                    descriptionLabel.text = String(format: NSLocalizedString("block #%d of %d", comment: ""),
-                        snapshot.lastSyncBlockHeight,
-                        snapshot.estimatedBlockHeight)
+                    descriptionLabel.text = String(localized: "block #\(snapshot.lastSyncBlockHeight) of \(snapshot.estimatedBlockHeight)", comment: "")
                 }
             }
             else {
-                descriptionLabel.text = NSLocalizedString("with Dash blockchain", comment: "")
+                descriptionLabel.text = String(localized: "with Dash blockchain", comment: "")
             }
         }
     }
@@ -142,7 +136,7 @@ extension SyncView {
             percentLabel.isHidden = false
             retryButton.isHidden = true
             progressView.isHidden = false
-            titleLabel.text = NSLocalizedString("Syncing", comment: "")
+            titleLabel.text = String(localized: "Syncing", comment: "")
             updateUIForViewStateSeeingBlocks()
 
         case .syncFailed:
@@ -151,8 +145,8 @@ extension SyncView {
             retryButton.tintColor = UIColor.dw_red()
             retryButton.isHidden = false
             progressView.isHidden = false
-            titleLabel.text = NSLocalizedString("Sync Failed", comment: "")
-            descriptionLabel.text = NSLocalizedString("Please try again", comment: "")
+            titleLabel.text = String(localized: "Sync Failed", comment: "")
+            descriptionLabel.text = String(localized: "Please try again", comment: "")
         default:
             break
         }
@@ -169,8 +163,8 @@ extension SyncView {
             retryButton.tintColor = UIColor.dw_background()
             retryButton.isHidden = false
             progressView.isHidden = true
-            titleLabel.text = NSLocalizedString("Unable to connect", comment: "")
-            descriptionLabel.text = NSLocalizedString("Check your connection", comment: "")
+            titleLabel.text = String(localized: "Unable to connect", comment: "")
+            descriptionLabel.text = String(localized: "Check your connection", comment: "")
         }
     }
 }

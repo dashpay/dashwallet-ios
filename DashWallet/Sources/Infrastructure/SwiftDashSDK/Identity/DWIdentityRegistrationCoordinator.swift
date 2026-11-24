@@ -580,17 +580,17 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         var errorDescription: String? {
             switch self {
             case .noWallet:
-                return NSLocalizedString("Wallet is not ready for identity registration", comment: "DashPay")
+                return String(localized: "Wallet is not ready for identity registration", comment: "DashPay")
             case .noNetwork:
-                return NSLocalizedString("Network is not configured", comment: "DashPay")
+                return String(localized: "Network is not configured", comment: "DashPay")
             case .noModelContainer:
-                return NSLocalizedString("Storage is not configured", comment: "DashPay")
+                return String(localized: "Storage is not configured", comment: "DashPay")
             case .noSDK:
-                return NSLocalizedString("SDK is not initialized", comment: "DashPay")
+                return String(localized: "SDK is not initialized", comment: "DashPay")
             case .authCancelled:
-                return NSLocalizedString("Authentication cancelled", comment: "DashPay")
+                return String(localized: "Authentication cancelled", comment: "DashPay")
             case .authFailed:
-                return NSLocalizedString("Authentication failed", comment: "DashPay")
+                return String(localized: "Authentication failed", comment: "DashPay")
             case .keyDerivation(let underlying):
                 return underlying.localizedDescription
             case .identityRegistration(let underlying):
@@ -598,8 +598,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             case .dpnsRegistration(let underlying):
                 return underlying.localizedDescription
             case .purchaseCompletedInOriginalContext(let name, _):
-                return String.localizedStringWithFormat(
-                    NSLocalizedString("“%@” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again.", comment: "DashPay purchase context changed"), name)
+                return String(localized: "“\(name)” was purchased successfully. Switch back to the original wallet and network to see it. Do not purchase it again.", comment: "DashPay purchase context changed")
             case .purchase(let underlying):
                 // Marketplace-typed failures (price changed, delisted,
                 // insufficient credits) get their friendly wording.
@@ -612,71 +611,44 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                     / PlatformPaymentIdentityFundingPolicy.creditsPerDuff
                 let availableDuffs =
                     available / PlatformPaymentIdentityFundingPolicy.creditsPerDuff
-                return String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "Platform Payment needs at least %@ DASH available; you have %@ DASH. Add funds to Platform and try again.",
-                        comment: "DashPay Platform Payment funding shortfall"),
-                    requiredDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol,
-                    availableDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol)
+                return String(localized: "Platform Payment needs at least \(requiredDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH available; you have \(availableDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH. Add funds to Platform and try again.", comment: "DashPay Platform Payment funding shortfall")
             case .insufficientShieldedBalance:
-                return NSLocalizedString("Not enough shielded balance to register an identity", comment: "DashPay")
+                return String(localized: "Not enough shielded balance to register an identity", comment: "DashPay")
             case .shieldedBalanceImmature(let readyAt):
                 let time = DateFormatter.localizedString(from: readyAt, dateStyle: .none, timeStyle: .short)
-                return String.localizedStringWithFormat(
-                    NSLocalizedString("Your shielded balance is still maturing. It will be ready around %@.", comment: "DashPay"),
-                    time)
+                return String(localized: "Your shielded balance is still maturing. It will be ready around \(time).", comment: "DashPay")
             case .shieldedPoolTooSmall(let currentNotes):
-                return String.localizedStringWithFormat(
-                    NSLocalizedString("The shared privacy pool is still growing (%ld of %ld deposits). Try again once it reaches the minimum.", comment: "DashPay"),
-                    Int(currentNotes), Int(ShieldedIdentityFundingReadiness.minimumPoolNotes))
+                return String(localized: "The shared privacy pool is still growing (\(Int(currentNotes)) of \(Int(ShieldedIdentityFundingReadiness.minimumPoolNotes)) deposits). Try again once it reaches the minimum.", comment: "DashPay")
             case .noShieldedFallbackAddress:
-                return NSLocalizedString("No Platform address is available yet for the shielded registration fallback. Try again after the wallet finishes syncing.", comment: "DashPay")
+                return String(localized: "No Platform address is available yet for the shielded registration fallback. Try again after the wallet finishes syncing.", comment: "DashPay")
             case .shieldedCreateUnconfirmed:
-                return NSLocalizedString("The registration was submitted but its result couldn't be confirmed. Wait a minute for the wallet to sync, then try again — don't resubmit immediately.", comment: "DashPay")
+                return String(localized: "The registration was submitted but its result couldn't be confirmed. Wait a minute for the wallet to sync, then try again — don't resubmit immediately.", comment: "DashPay")
             case .platformWriteUnconfirmed:
-                return NSLocalizedString(
-                    "The operation may have been submitted, but its result could not be confirmed. Wait for the wallet to sync and check your identity and balances before continuing. Do not fund another identity or repeat the payment.",
+                return String(
+                    localized: "The operation may have been submitted, but its result could not be confirmed. Wait for the wallet to sync and check your identity and balances before continuing. Do not fund another identity or repeat the payment.",
                     comment: "DashPay registration or purchase result unknown")
             case .missingInvitation:
-                return NSLocalizedString("This invitation link is not valid.", comment: "DashPay Invitations")
+                return String(localized: "This invitation link is not valid.", comment: "DashPay Invitations")
             case .alreadyInFlight:
-                return NSLocalizedString("Identity registration already in progress", comment: "DashPay")
+                return String(localized: "Identity registration already in progress", comment: "DashPay")
             case .contextChanged:
-                return NSLocalizedString("The active wallet or identity changed. Please try again.", comment: "DashPay registration recovery")
+                return String(localized: "The active wallet or identity changed. Please try again.", comment: "DashPay registration recovery")
             case .usernameUnavailable:
-                return NSLocalizedString("This username is no longer available. Please choose another one.", comment: "DashPay registration recovery")
+                return String(localized: "This username is no longer available. Please choose another one.", comment: "DashPay registration recovery")
             case .invalidTemporaryUsername:
-                return NSLocalizedString("The temporary username must not itself require voting.", comment: "Usernames")
+                return String(localized: "The temporary username must not itself require voting.", comment: "Usernames")
             case .identityTopUp(let underlying):
                 return underlying.localizedDescription
             case .identityBalanceUnavailable:
-                return NSLocalizedString("Couldn’t check your identity balance. Check your connection and try again.", comment: "DashPay: existing identity top-up before a username")
+                return String(localized: "Couldn’t check your identity balance. Check your connection and try again.", comment: "DashPay: existing identity top-up before a username")
             case .insufficientCoreBalanceForTopUp(let neededDuffs, let availableDuffs):
-                return String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "Your identity needs %@ DASH more to register this name, but only %@ DASH can be sent from your wallet. Add funds and try again.",
-                        comment: "DashPay: existing identity top-up before a username"),
-                    neededDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol,
-                    availableDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol)
+                return String(localized: "Your identity needs \(neededDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH more to register this name, but only \(availableDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH can be sent from your wallet. Add funds and try again.", comment: "DashPay: existing identity top-up before a username")
             case .shieldedTopUpUnavailable(let neededDuffs):
-                return String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "Your identity needs %@ DASH more to register this name, and it can’t be added from your Shielded balance here. Use Top Up in My Profile, then try again.",
-                        comment: "DashPay: existing identity top-up before a username"),
-                    neededDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol)
+                return String(localized: "Your identity needs \(neededDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH more to register this name, and it can’t be added from your Shielded balance here. Use Top Up in My Profile, then try again.", comment: "DashPay: existing identity top-up before a username")
             case .topUpNotConfirmed(let neededDuffs):
-                return String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "Registering this name needs %@ DASH from your wallet to top up your identity, and that amount was not confirmed. Nothing was sent. Try again to confirm it.",
-                        comment: "DashPay: existing identity top-up before a username"),
-                    neededDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol)
+                return String(localized: "Registering this name needs \(neededDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH from your wallet to top up your identity, and that amount was not confirmed. Nothing was sent. Try again to confirm it.", comment: "DashPay: existing identity top-up before a username")
             case .topUpExceedsConfirmed(let neededDuffs, let confirmedDuffs):
-                return String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "Registering this name now needs %1$@ DASH from your wallet, more than the %2$@ DASH you confirmed. Nothing was sent. Try again to confirm the new amount.",
-                        comment: "DashPay: existing identity top-up before a username"),
-                    neededDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol,
-                    confirmedDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol)
+                return String(localized: "Registering this name now needs \(neededDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH from your wallet, more than the \(confirmedDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH you confirmed. Nothing was sent. Try again to confirm the new amount.", comment: "DashPay: existing identity top-up before a username")
             }
         }
     }
@@ -1131,8 +1103,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                         domain: "DWIdentityRegistrationCoordinator",
                         code: -2,
                         userInfo: [
-                            NSLocalizedDescriptionKey: NSLocalizedString(
-                                "The pending registration payment could not be restored.",
+                            NSLocalizedDescriptionKey: String(
+                                localized: "The pending registration payment could not be restored.",
                                 comment: "DashPay registration recovery")
                         ])
                 }
@@ -1340,8 +1312,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             case .unknown:
                 throw CoordinatorError.availabilityCheck(NSError(
                     domain: "DWIdentityRegistrationCoordinator", code: -1,
-                    userInfo: [NSLocalizedDescriptionKey: NSLocalizedString(
-                        "Could not check username availability. Please try again.", comment: "DashPay registration recovery")]))
+                    userInfo: [NSLocalizedDescriptionKey: String(
+                        localized: "Could not check username availability. Please try again.", comment: "DashPay registration recovery")]))
             case .fresh:
                 break
             }
@@ -1818,8 +1790,8 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             // Preserve the successful result and original scoped bookkeeping;
             // never mirror it into a newly selected wallet or report failure.
             resetState()
-            completedRegistrationContextMessage = NSLocalizedString(
-                "The name request succeeded for the original identity. Switch back to the original wallet and network to see its status.",
+            completedRegistrationContextMessage = String(
+                localized: "The name request succeeded for the original identity. Switch back to the original wallet and network to see its status.",
                 comment: "DashPay registration context changed")
             Self.logger.info("DPNS completed in original context; current UI reconciliation deferred")
             return identityId

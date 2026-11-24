@@ -37,15 +37,11 @@ enum SendAmountError: Error, Equatable, ColorizedText, LocalizedError {
         switch self {
         case .maxUnavailable(let message): return message
         case .fundsStillConfirming(let duffs):
-            return String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "%@ DASH is still confirming. Wait a few minutes or enter a smaller amount.",
-                    comment: "Send amount fits the balance once incoming funds confirm"),
-                duffs.formattedDashAmountWithoutCurrencySymbol)
-        case .insufficientFunds: return NSLocalizedString("Insufficient funds", comment: "Send screen")
-        case .syncingChain: return NSLocalizedString("Wait until wallet is synced to complete the transaction",
+            return String(localized: "\(duffs.formattedDashAmountWithoutCurrencySymbol) DASH is still confirming. Wait a few minutes or enter a smaller amount.", comment: "Send amount fits the balance once incoming funds confirm")
+        case .insufficientFunds: return String(localized: "Insufficient funds", comment: "Send screen")
+        case .syncingChain: return String(localized: "Wait until wallet is synced to complete the transaction",
                                                      comment: "Send screen")
-        case .networkUnavailable: return NSLocalizedString("Network Unavailable", comment: "Network Unavailable")
+        case .networkUnavailable: return String(localized: "Network Unavailable", comment: "Network Unavailable")
         }
     }
 

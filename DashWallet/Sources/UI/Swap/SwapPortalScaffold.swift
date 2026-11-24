@@ -71,8 +71,8 @@ struct SwapPortalScaffold: View {
                                 assetName: DashIcon.Menu.receiveDisabled.assetName,
                                 fallbackName: "menu-receive"
                             ),
-                            title: NSLocalizedString("Buy Dash", comment: "Dash DEX Portal"),
-                            helpText: NSLocalizedString("From any crypto to your Dash Wallet", comment: "Dash DEX Portal"),
+                            title: String(localized: "Buy Dash", comment: "Dash DEX Portal"),
+                            helpText: String(localized: "From any crypto to your Dash Wallet", comment: "Dash DEX Portal"),
                             accessory: .none
                         )
                         .contentShape(.rect)
@@ -93,8 +93,8 @@ struct SwapPortalScaffold: View {
                             assetName: DashIcon.Menu.sendDisabled.assetName,
                             fallbackName: "menu-send"
                         ),
-                        title: NSLocalizedString("Sell Dash", comment: "Dash DEX Portal"),
-                        helpText: NSLocalizedString("From Dash Wallet to any crypto", comment: "Dash DEX Portal"),
+                        title: String(localized: "Sell Dash", comment: "Dash DEX Portal"),
+                        helpText: String(localized: "From Dash Wallet to any crypto", comment: "Dash DEX Portal"),
                         accessory: .none
                     )
                     .contentShape(.rect)

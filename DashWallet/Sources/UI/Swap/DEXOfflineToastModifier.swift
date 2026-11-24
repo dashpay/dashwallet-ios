@@ -37,7 +37,7 @@ private struct DEXOfflineToastModifier: ViewModifier {
                 if !isOnline {
                     DashUIKit.Toast(
                         style: .noInternet,
-                        message: NSLocalizedString("No internet connection", comment: "No connection")
+                        message: String(localized: "No internet connection", comment: "No connection")
                     )
                     .padding(.horizontal, 20)
                     .padding(.bottom, 16)

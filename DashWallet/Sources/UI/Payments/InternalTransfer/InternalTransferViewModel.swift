@@ -302,8 +302,8 @@ enum TransferSpendAmountPolicy {
     /// converted figure occupies. Which balance fell short and by how much is
     /// already on screen — the From card carries both.
     private static func message(balanceName: String, spendableDuffs: UInt64) -> String {
-        NSLocalizedString(
-            "Insufficient balance",
+        String(
+            localized: "Insufficient balance",
             comment: "Transfer amount exceeds the source balance")
     }
 }
@@ -452,8 +452,8 @@ final class InternalTransferViewModel: ObservableObject {
             // An external drain started on Send can be found here too; it did
             // not land in this wallet's Shielded balance.
             recipient?.isExternal == false
-                ? NSLocalizedString("Transfer completed. Your funds are now in Shielded.", comment: "Core drain recovery success")
-                : NSLocalizedString("The pending Max transfer completed.", comment: "Send: Core drain recovery success")
+                ? String(localized: "Transfer completed. Your funds are now in Shielded.", comment: "Core drain recovery success")
+                : String(localized: "The pending Max transfer completed.", comment: "Send: Core drain recovery success")
         }))
     private var coreDrainMaxCancellable: AnyCancellable?
 
@@ -494,7 +494,7 @@ final class InternalTransferViewModel: ObservableObject {
     /// Core Max explanation, not the fees. Shared by both Max screens.
     static func coreDrainInsufficientFundsMessage(coreSpendableDuffs: UInt64, coreBalanceDuffs: UInt64) -> String {
         guard coreSpendableDuffs == 0 else {
-            return NSLocalizedString("Available funds do not cover the transfer fees.", comment: "Core drain insufficient funds")
+            return String(localized: "Available funds do not cover the transfer fees.", comment: "Core drain insufficient funds")
         }
         return coreZeroMaxMessage(
             totalDuffs: coreBalanceDuffs,
@@ -1602,7 +1602,7 @@ final class InternalTransferViewModel: ObservableObject {
         if let maxNotice { return maxNotice }
         guard dashDuffsUnsigned > 0 else { return nil }
         if hasUnavailableSourceBalance {
-            return NSLocalizedString("Balance unavailable", comment: "Selected source balance not restored")
+            return String(localized: "Balance unavailable", comment: "Selected source balance not restored")
         }
 
         if isIdentitySource { return identityWithdrawalValidationMessage }
@@ -1700,11 +1700,7 @@ final class InternalTransferViewModel: ObservableObject {
                     : nil
             }
             guard preflight.canWithdraw else {
-                return String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "Your %@ balance is too low to cover the withdrawal fee.",
-                        comment: "Platform withdrawal cannot fund its own fee"),
-                    balanceName)
+                return String(localized: "Your \(balanceName) balance is too low to cover the withdrawal fee.", comment: "Platform withdrawal cannot fund its own fee")
             }
             if isFullPlatformWithdrawal { return nil }
             guard creditsPreview > partialWithdrawCapCredits else { return nil }
@@ -1715,11 +1711,7 @@ final class InternalTransferViewModel: ObservableObject {
             let formattedCap =
                 "\((partialWithdrawCapCredits / 1000).formattedDashAmountWithoutCurrencySymbol) DASH"
             if let fullDuffs = platformWithdrawableDuffs, dashDuffsUnsigned <= fullDuffs {
-                return String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "A partial withdrawal is limited to %@. Tap Max to withdraw the full balance.",
-                        comment: "Platform partial withdrawal cap"),
-                    formattedCap)
+                return String(localized: "A partial withdrawal is limited to \(formattedCap). Tap Max to withdraw the full balance.", comment: "Platform partial withdrawal cap")
             }
             return TransferSpendAmountPolicy.insufficientBalanceMessage(
                 balanceName: balanceName,
@@ -1822,12 +1814,12 @@ final class InternalTransferViewModel: ObservableObject {
             spendableDuffs: spendable / 1000)
     }
 
-    private static let noIdentityMessage = NSLocalizedString(
-        "You need a DashPay identity before you can top up its balance.",
+    private static let noIdentityMessage = String(
+        localized: "You need a DashPay identity before you can top up its balance.",
         comment: "Identity transfer destination without a registered identity")
 
-    private static let noIdentityToWithdrawFromMessage = NSLocalizedString(
-        "You need a DashPay identity before you can move credits out of it.",
+    private static let noIdentityToWithdrawFromMessage = String(
+        localized: "You need a DashPay identity before you can move credits out of it.",
         comment: "Identity transfer source without a registered identity")
 
     /// The consensus floor, not a product choice: below it the withdrawal's
@@ -1841,7 +1833,7 @@ final class InternalTransferViewModel: ObservableObject {
 
     /// Card-length name for the identity's credit balance, matching how
     /// `ChainNetwork.balanceName` labels the other three.
-    static let identityBalanceName = NSLocalizedString("Identity", comment: "Payments")
+    static let identityBalanceName = String(localized: "Identity", comment: "Payments")
 
     /// Same floor (and nearly the same wording) as the top-up sheet's custom
     /// amount field — both feed `IdentityTopUpViewModel.topUp`.
@@ -1852,8 +1844,8 @@ final class InternalTransferViewModel: ObservableObject {
         IdentityTopUpViewModel.customMinimumDuffs.dashAmount
             .formattedDashAmountWithoutCurrencySymbol)
 
-    private static let feeEstimateUnavailableMessage = NSLocalizedString(
-        "There was an error, please try again later",
+    private static let feeEstimateUnavailableMessage = String(
+        localized: "There was an error, please try again later",
         comment: "Internal transfer fee estimate unavailable")
 
     var canContinue: Bool {
@@ -2216,7 +2208,7 @@ final class InternalTransferViewModel: ObservableObject {
         }
         if hasUnavailableSourceBalance {
             clearMaxSelection()
-            routeMaxNotice = NSLocalizedString("Balance unavailable", comment: "Max requires a known source balance")
+            routeMaxNotice = String(localized: "Balance unavailable", comment: "Max requires a known source balance")
             return
         }
         if isIdentitySource {
@@ -2277,8 +2269,8 @@ final class InternalTransferViewModel: ObservableObject {
                 routeMaxNotice = Self.shieldedConfirmingMessage(credits)
                 sourceDuffs = 0
             case .unavailable:
-                routeMaxNotice = NSLocalizedString(
-                    "Your Shielded balance is not ready to spend. Sync and try Max again.",
+                routeMaxNotice = String(
+                    localized: "Your Shielded balance is not ready to spend. Sync and try Max again.",
                     comment: "Shielded Max unavailable")
                 sourceDuffs = 0
             }
@@ -2292,8 +2284,8 @@ final class InternalTransferViewModel: ObservableObject {
                 if withdrawalPreflight?.canWithdraw == false {
                     routeMaxNotice = Self.feeReserveExceedsBalanceMessage(route.source)
                 } else {
-                    routeMaxNotice = NSLocalizedString(
-                        "Still calculating the withdrawable amount. Tap Max again in a moment.",
+                    routeMaxNotice = String(
+                        localized: "Still calculating the withdrawable amount. Tap Max again in a moment.",
                         comment: "Platform withdrawal preflight not resolved")
                     startWithdrawalPreflightIfNeeded()
                 }
@@ -2334,11 +2326,11 @@ final class InternalTransferViewModel: ObservableObject {
         applyMaxAmountText(spendableDuffs)
     }
 
-    private static let identityBalanceRefreshingMessage = NSLocalizedString(
-        "Refreshing balance…", comment: "Identity transfer waits for the network balance before Max or Continue")
+    private static let identityBalanceRefreshingMessage = String(
+        localized: "Refreshing balance…", comment: "Identity transfer waits for the network balance before Max or Continue")
 
-    private static let feeReserveExceedsIdentityBalanceMessage = NSLocalizedString(
-        "Your Identity balance is too low to cover the transfer fee.",
+    private static let feeReserveExceedsIdentityBalanceMessage = String(
+        localized: "Your Identity balance is too low to cover the transfer fee.",
         comment: "Identity withdrawal — balance below the fee reserve")
 
     /// Platform Max is asynchronous because only the Rust wallet knows which
@@ -2609,11 +2601,7 @@ final class InternalTransferViewModel: ObservableObject {
     ) -> String {
         guard totalDuffs > 0 else { return emptyBalanceMessage(.core) }
         guard confirmedSpendableDuffs > 0 else {
-            return String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "None of your %@ DASH is spendable yet — it is still confirming.",
-                    comment: "Core Max has nothing confirmed to spend"),
-                totalDuffs.formattedDashAmountWithoutCurrencySymbol)
+            return String(localized: "None of your \(totalDuffs.formattedDashAmountWithoutCurrencySymbol) DASH is spendable yet — it is still confirming.", comment: "Core Max has nothing confirmed to spend")
         }
         // Confirmed, but none of it in an account a send draws on — the
         // CoinJoin-only wallet. Saying the balance cannot cover the fee would
@@ -2622,42 +2610,38 @@ final class InternalTransferViewModel: ObservableObject {
         let poolable = confirmedSpendableDuffs
             - min(excludedFromPoolDuffs, confirmedSpendableDuffs)
         guard poolable > 0 else {
-            return String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "Your %@ DASH is in mixed coins, which a send cannot use — move them to your spendable balance first.",
-                    comment: "Core Max has only CoinJoin funds, which the send pool excludes"),
-                confirmedSpendableDuffs.formattedDashAmountWithoutCurrencySymbol)
+            return String(localized: "Your \(confirmedSpendableDuffs.formattedDashAmountWithoutCurrencySymbol) DASH is in mixed coins, which a send cannot use — move them to your spendable balance first.", comment: "Core Max has only CoinJoin funds, which the send pool excludes")
         }
         return feeReserveExceedsBalanceMessage(.core)
     }
 
     // Shared with `SendViewModel`'s Platform → external Shielded route,
     // which runs the same preflight — hence `internal`, not `private`.
-    static let platformShieldPreflightLoadingMessage = NSLocalizedString(
-        "Checking how much of your Platform balance can be moved…",
+    static let platformShieldPreflightLoadingMessage = String(
+        localized: "Checking how much of your Platform balance can be moved…",
         comment: "Platform to Shielded preflight in progress")
 
-    static let platformShieldPreflightUnavailableMessage = NSLocalizedString(
-        "Could not check the available Platform balance. Sync and try again.",
+    static let platformShieldPreflightUnavailableMessage = String(
+        localized: "Could not check the available Platform balance. Sync and try again.",
         comment: "Platform to Shielded preflight failed")
 
     /// The withdrawal preflight threw rather than returning a verdict. Shared
     /// with the external Send form, which runs the same route.
-    static let platformWithdrawalPreflightUnavailableMessage = NSLocalizedString(
-        "Could not check the withdrawable Platform balance. Sync and try again.",
+    static let platformWithdrawalPreflightUnavailableMessage = String(
+        localized: "Could not check the withdrawable Platform balance. Sync and try again.",
         comment: "Platform to Core withdrawal preflight failed")
 
-    private static let platformShieldCapacityRefreshRequiredMessage = NSLocalizedString(
-        "Your available Platform balance changed, but the new maximum could not be checked. The amount was not changed. Sync and try again.",
+    private static let platformShieldCapacityRefreshRequiredMessage = String(
+        localized: "Your available Platform balance changed, but the new maximum could not be checked. The amount was not changed. Sync and try again.",
         comment: "Platform Shield capacity changed but refresh failed")
 
-    private static let platformShieldResyncInProgressMessage = NSLocalizedString(
-        "Refreshing your Platform balance before checking the new maximum…",
+    private static let platformShieldResyncInProgressMessage = String(
+        localized: "Refreshing your Platform balance before checking the new maximum…",
         comment: "Platform Shield manual resync in progress")
 
     // Shared with `SendViewModel` — see the note above.
-    static let platformShieldHeadroomUnavailableMessage = NSLocalizedString(
-        "Your Platform balance cannot currently cover the Shield transfer selection headroom.",
+    static let platformShieldHeadroomUnavailableMessage = String(
+        localized: "Your Platform balance cannot currently cover the Shield transfer selection headroom.",
         comment: "Platform balance cannot fund shield selection headroom")
 
     private static func platformShieldCapacityChangedMessage(
@@ -2665,52 +2649,32 @@ final class InternalTransferViewModel: ObservableObject {
     ) -> String {
         let maxDuffs = maxShieldableCredits / 1000
         guard maxDuffs > 0 else {
-            return NSLocalizedString(
-                "Your available Platform balance changed and can no longer cover this Shield transfer. Review the amount and try again.",
+            return String(
+                localized: "Your available Platform balance changed and can no longer cover this Shield transfer. Review the amount and try again.",
                 comment: "Platform Shield capacity changed to zero")
         }
         let formatted = maxDuffs.formattedDashAmountWithoutCurrencySymbol
-        return String.localizedStringWithFormat(
-            NSLocalizedString(
-                "Your available Platform balance changed. The new maximum is %@ DASH. Review it and confirm again.",
-                comment: "Platform Shield capacity changed before confirmation"),
-            formatted)
+        return String(localized: "Your available Platform balance changed. The new maximum is \(formatted) DASH. Review it and confirm again.", comment: "Platform Shield capacity changed before confirmation")
     }
 
     /// Shared with `SendViewModel`'s Core → Shielded Max (same fee-on-top
     /// envelope) — keep `internal`.
     nonisolated static func feeReserveExceedsBalanceMessage(_ source: ChainNetwork) -> String {
-        String.localizedStringWithFormat(
-            NSLocalizedString(
-                "Your %@ balance is too low to cover the transfer fee.",
-                comment: "Max cannot fund the fee"),
-            source.balanceName)
+        String(localized: "Your \(source.balanceName) balance is too low to cover the transfer fee.", comment: "Max cannot fund the fee")
     }
 
     nonisolated private static func emptyBalanceMessage(_ source: ChainNetwork) -> String {
-        String.localizedStringWithFormat(
-            NSLocalizedString(
-                "Your %@ balance is empty.",
-                comment: "Max pressed with no funds"),
-            source.balanceName)
+        String(localized: "Your \(source.balanceName) balance is empty.", comment: "Max pressed with no funds")
     }
 
     private static func shieldedConfirmingMessage(_ credits: UInt64) -> String {
         let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
-        return String.localizedStringWithFormat(
-            NSLocalizedString(
-                "%@ DASH is still confirming. Use Max again once it settles.",
-                comment: "Shielded Max pending change"),
-            formatted)
+        return String(localized: "\(formatted) DASH is still confirming. Use Max again once it settles.", comment: "Shielded Max pending change")
     }
 
     private static func shieldedCeilingMessage(_ credits: UInt64) -> String {
         let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
-        return String.localizedStringWithFormat(
-            NSLocalizedString(
-                "Your Shielded balance is split across notes, and at most %@ DASH of it can be sent in one transaction. Send the rest afterwards.",
-                comment: "Shielded amount above the single-transaction ceiling"),
-            formatted)
+        return String(localized: "Your Shielded balance is split across notes, and at most \(formatted) DASH of it can be sent in one transaction. Send the rest afterwards.", comment: "Shielded amount above the single-transaction ceiling")
     }
 
     // MARK: - Conversion on unit toggle

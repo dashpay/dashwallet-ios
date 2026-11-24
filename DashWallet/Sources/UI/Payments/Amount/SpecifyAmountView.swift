@@ -54,7 +54,7 @@ struct SpecifyAmountView: View {
             })
 
             VStack(alignment: .leading, spacing: 20) {
-                Text(NSLocalizedString("Specify Amount", comment: "Specify Amount"))
+                Text(String(localized: "Specify Amount", comment: "Specify Amount"))
                     .dashFont(.title1)
                     .foregroundStyle(Color.dash.primaryText)
 
@@ -98,7 +98,7 @@ struct SpecifyAmountView: View {
                 ),
                 showDecimalSeparator: true,
                 locale: model.keyboardLocale,
-                actionButtonText: NSLocalizedString("Receive", comment: "Specify Amount"),
+                actionButtonText: String(localized: "Receive", comment: "Specify Amount"),
                 actionEnabled: model.isAllowedToContinue,
                 inProgress: false,
                 actionHandler: onReceive

@@ -76,18 +76,18 @@ final class DevnetSettingsViewModel: ObservableObject {
         initialDevnetName = trimmedName
 
         if !WalletEnvironment.isDevnet {
-            statusMessage = NSLocalizedString(
-                "Saved. The values apply when you switch to Devnet.",
+            statusMessage = String(
+                localized: "Saved. The values apply when you switch to Devnet.",
                 comment: "Devnet")
         } else if !willBeConfigured {
-            statusMessage = NSLocalizedString(
-                "Saved, but Devnet needs both a Quorum URL and a Devnet Name — syncing will fail until both are set.",
+            statusMessage = String(
+                localized: "Saved, but Devnet needs both a Quorum URL and a Devnet Name — syncing will fail until both are set.",
                 comment: "Devnet")
         } else if !networkValuesChanged {
-            statusMessage = NSLocalizedString("Saved.", comment: "Devnet")
+            statusMessage = String(localized: "Saved.", comment: "Devnet")
         } else {
-            statusMessage = NSLocalizedString(
-                "Saved. Devnet is reconnecting with the new settings.",
+            statusMessage = String(
+                localized: "Saved. Devnet is reconnecting with the new settings.",
                 comment: "Devnet")
         }
 
@@ -132,7 +132,7 @@ struct DevnetSettingsScreen: View {
                 }
             })
 
-            TopIntro(title: NSLocalizedString("Devnet Settings", comment: "Devnet"))
+            TopIntro(title: String(localized: "Devnet Settings", comment: "Devnet"))
                 .padding(.leading, 20)
                 .padding(.trailing, 60)
                 .padding(.top, 10)
@@ -141,26 +141,26 @@ struct DevnetSettingsScreen: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     field(
-                        title: NSLocalizedString("Quorum URL", comment: "Devnet"),
+                        title: String(localized: "Quorum URL", comment: "Devnet"),
                         placeholder: "https://quorums.<devnet>.networks.dash.org",
                         text: $viewModel.quorumURL,
                         keyboard: .URL,
-                        helper: NSLocalizedString(
-                            "Base URL of the devnet's quorum-list server. SPV peers and Platform (DAPI) nodes are both auto-discovered from {Quorum URL}/masternodes — no manual peer entry.",
+                        helper: String(
+                            localized: "Base URL of the devnet's quorum-list server. SPV peers and Platform (DAPI) nodes are both auto-discovered from {Quorum URL}/masternodes — no manual peer entry.",
                             comment: "Devnet"))
 
                     field(
-                        title: NSLocalizedString("Devnet Name", comment: "Devnet"),
-                        placeholder: NSLocalizedString("e.g. moutai (matches dashd -devnet=<name>)", comment: "Devnet"),
+                        title: String(localized: "Devnet Name", comment: "Devnet"),
+                        placeholder: String(localized: "e.g. moutai (matches dashd -devnet=<name>)", comment: "Devnet"),
                         text: $viewModel.devnetName,
                         keyboard: .default,
-                        helper: NSLocalizedString(
-                            "The devnet chain name. It is embedded in the sync user agent (devnet.devnet-<name>) — devnet nodes reject connections without it. Each devnet keeps its own chain state, so naming a different one does not reinterpret this one's history.",
+                        helper: String(
+                            localized: "The devnet chain name. It is embedded in the sync user agent (devnet.devnet-<name>) — devnet nodes reject connections without it. Each devnet keeps its own chain state, so naming a different one does not reinterpret this one's history.",
                             comment: "Devnet"),
                         error: viewModel.devnetNameError)
 
                     DashButton(
-                        text: NSLocalizedString("Save", comment: ""),
+                        text: String(localized: "Save", comment: ""),
                         style: .filled,
                         size: .large
                     ) {

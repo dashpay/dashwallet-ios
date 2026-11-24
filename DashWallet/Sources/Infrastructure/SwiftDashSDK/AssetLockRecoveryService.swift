@@ -64,11 +64,11 @@ struct AssetLockRecoveryService {
         var errorDescription: String? {
             switch self {
             case .notReady:
-                return NSLocalizedString("Wallet is not ready", comment: "DashPay")
+                return String(localized: "Wallet is not ready", comment: "DashPay")
             case .noIdentity:
-                return NSLocalizedString("This wallet has no identity to top up.", comment: "Asset-lock retry: identity top-up with no identity")
+                return String(localized: "This wallet has no identity to top up.", comment: "Asset-lock retry: identity top-up with no identity")
             case .unsupportedRoute:
-                return NSLocalizedString("This transfer can't be retried from here.", comment: "Asset-lock retry: unsupported funding route")
+                return String(localized: "This transfer can't be retried from here.", comment: "Asset-lock retry: unsupported funding route")
             case .inProgress(let message), .failed(let message, _):
                 return message
             }
@@ -289,45 +289,31 @@ struct AssetLockRecoveryService {
         var summary: String {
             var parts: [String] = []
             if completed > 0 {
-                parts.append(String.localizedStringWithFormat(
-                    NSLocalizedString("%d finished", comment: "SPV diagnostics"),
-                    completed))
+                parts.append(String(localized: "\(completed) finished", comment: "SPV diagnostics"))
             }
             if addedToOwnShielded > 0 {
-                parts.append(String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "%d transfers added to your Shielded balance",
-                        comment: "SPV diagnostics: transfers finished to the wallet's own Shielded balance because their recipient was not on record"),
-                    addedToOwnShielded))
+                parts.append(String(localized: "\(addedToOwnShielded) transfers added to your Shielded balance", comment: "SPV diagnostics: transfers finished to the wallet's own Shielded balance because their recipient was not on record"))
             }
             if alreadySpent > 0 {
-                parts.append(String.localizedStringWithFormat(
-                    NSLocalizedString("%d already spent", comment: "SPV diagnostics"),
-                    alreadySpent))
+                parts.append(String(localized: "\(alreadySpent) already spent", comment: "SPV diagnostics"))
             }
             if awaitingSync > 0 {
-                parts.append(String.localizedStringWithFormat(
-                    NSLocalizedString("%d waiting for the network", comment: "SPV diagnostics"),
-                    awaitingSync))
+                parts.append(String(localized: "\(awaitingSync) waiting for the network", comment: "SPV diagnostics"))
             }
             if inProgress > 0 {
-                parts.append(String(
-                    format: NSLocalizedString("%d still in progress", comment: "SPV diagnostics"),
-                    inProgress))
+                parts.append(String(localized: "\(inProgress) still in progress", comment: "SPV diagnostics"))
             }
             if failed > 0 {
-                parts.append(String.localizedStringWithFormat(
-                    NSLocalizedString("%d could not be reached", comment: "SPV diagnostics"),
-                    failed))
+                parts.append(String(localized: "\(failed) could not be reached", comment: "SPV diagnostics"))
             }
             if cancelled {
-                parts.append(NSLocalizedString("stopped early", comment: "SPV diagnostics"))
+                parts.append(String(localized: "stopped early", comment: "SPV diagnostics"))
             }
             if stoppedAfterRepeatedFailures {
-                parts.append(NSLocalizedString("stopped after repeated failures", comment: "SPV diagnostics"))
+                parts.append(String(localized: "stopped after repeated failures", comment: "SPV diagnostics"))
             }
             var summary = parts.isEmpty
-                ? NSLocalizedString("Nothing to finish.", comment: "SPV diagnostics")
+                ? String(localized: "Nothing to finish.", comment: "SPV diagnostics")
                 : parts.joined(separator: ", ")
             if let reason = firstFailureMessage {
                 summary += "\n\(reason)"

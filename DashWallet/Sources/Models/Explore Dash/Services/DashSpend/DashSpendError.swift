@@ -47,59 +47,59 @@ enum DashSpendError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .networkError:
-            return NSLocalizedString("Network error. Please check your connection and try again.", comment: "DashSpend")
+            return String(localized: "Network error. Please check your connection and try again.", comment: "DashSpend")
         case .parsingError:
-            return NSLocalizedString("Error processing server response. Please try again later.", comment: "DashSpend")
+            return String(localized: "Error processing server response. Please try again later.", comment: "DashSpend")
         case .invalidCode:
-            return NSLocalizedString("Invalid verification code. Please try again.", comment: "CTXSpend error")
+            return String(localized: "Invalid verification code. Please try again.", comment: "CTXSpend error")
         case .invalidCredentials:
-            return NSLocalizedString("Invalid email or password.", comment: "DashSpend")
+            return String(localized: "Invalid email or password.", comment: "DashSpend")
         case .unauthorized:
-            return NSLocalizedString("Please sign in to your DashSpend account.", comment: "DashSpend")
+            return String(localized: "Please sign in to your DashSpend account.", comment: "DashSpend")
         case .tokenRefreshFailed:
-            return NSLocalizedString("Your session expired", comment: "DashSpend")
+            return String(localized: "Your session expired", comment: "DashSpend")
         case .insufficientFunds:
-            return NSLocalizedString("You do not have sufficient funds to complete this transaction", comment: "DashSpend")
+            return String(localized: "You do not have sufficient funds to complete this transaction", comment: "DashSpend")
         case .invalidMerchant:
-            return NSLocalizedString("This merchant is currently unavailable.", comment: "DashSpend")
+            return String(localized: "This merchant is currently unavailable.", comment: "DashSpend")
         case .invalidAmount:
-            return NSLocalizedString("Invalid amount. Please check merchant limits.", comment: "DashSpend")
+            return String(localized: "Invalid amount. Please check merchant limits.", comment: "DashSpend")
         case .merchantUnavailable:
-            return NSLocalizedString("This merchant is currently unavailable. Please try again later or choose a different merchant.", comment: "DashSpend")
+            return String(localized: "This merchant is currently unavailable. Please try again later or choose a different merchant.", comment: "DashSpend")
         case .transactionRejected:
-            return NSLocalizedString("Your transaction was rejected. Please try again or contact support if the problem persists.", comment: "DashSpend")
+            return String(localized: "Your transaction was rejected. Please try again or contact support if the problem persists.", comment: "DashSpend")
         case .purchaseLimitExceeded:
-            return NSLocalizedString("The purchase limits for this merchant have changed. Please contact CTX Support for more information.", comment: "DashSpend")
+            return String(localized: "The purchase limits for this merchant have changed. Please contact CTX Support for more information.", comment: "DashSpend")
         case .serverError:
-            return NSLocalizedString("Server error occurred. Please try again later.", comment: "DashSpend")
+            return String(localized: "Server error occurred. Please try again later.", comment: "DashSpend")
         case .customError(let message):
             return message
         case .unknown:
-            return NSLocalizedString("An unknown error occurred. Please try again later.", comment: "DashSpend")
+            return String(localized: "An unknown error occurred. Please try again later.", comment: "DashSpend")
         case .paymentNotAcknowledged:
-            return NSLocalizedString(
-                "We could not confirm this purchase with CTX. If the payment went through, the gift card will appear in your transaction list shortly — please check there before buying again.",
+            return String(
+                localized: "We could not confirm this purchase with CTX. If the payment went through, the gift card will appear in your transaction list shortly — please check there before buying again.",
                 comment: "DashSpend"
             )
         case .paymentStatusUnknown:
-            return NSLocalizedString(
-                "Your payment was sent, but the network has not confirmed it yet. Your gift card will appear as soon as it is confirmed.",
+            return String(
+                localized: "Your payment was sent, but the network has not confirmed it yet. Your gift card will appear as soon as it is confirmed.",
                 comment: "DashSpend"
             )
         case .paymentProcessingError(let details):
-            return String(format: NSLocalizedString("Payment processing error: %@", comment: "DashSpend"), details)
+            return String(localized: "Payment processing error: \(details)", comment: "DashSpend")
         case .previousSwapPending:
-            return NSLocalizedString(
-                "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.",
+            return String(
+                localized: "A previous Dash conversion is still confirming. Please wait for it to confirm (about 2–5 minutes) before starting a new one.",
                 comment: "DashSpend/Maya"
             )
         case .swapAwaitingInstantLock:
-            return NSLocalizedString(
-                "Your previous swap is still locking in. Please wait a few seconds before starting another one.",
+            return String(
+                localized: "Your previous swap is still locking in. Please wait a few seconds before starting another one.",
                 comment: "Maya/SwapKit"
             )
         case .authenticationCancelled:
-            return NSLocalizedString("Authentication cancelled", comment: "DashSpend/Maya")
+            return String(localized: "Authentication cancelled", comment: "DashSpend/Maya")
         }
     }
 }

@@ -7,7 +7,7 @@ struct BlockExplorerSelectionView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            Text(NSLocalizedString("Select block explorer", comment: "Block explorer selection title"))
+            Text(String(localized: "Select block explorer", comment: "Block explorer selection title"))
                 .font(.calloutMedium)
                 .foregroundColor(.dash.primaryText)
                 .padding(.vertical, 16)

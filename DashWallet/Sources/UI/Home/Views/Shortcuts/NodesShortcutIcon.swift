@@ -130,19 +130,16 @@ struct NodesShortcutIcon: View {
 
     static func accessibilityLabel(day: Int?, blocks: UInt64?, health: EvonodeHealth) -> String {
         guard let day, let blocks else {
-            return NSLocalizedString("Nodes", comment: "Shortcut")
+            return String(localized: "Nodes", comment: "Shortcut")
         }
-        var label = String(
-            format: NSLocalizedString("Nodes, epoch day %d, %@ blocks proposed this epoch", comment: "Nodes shortcut accessibility"),
-            day,
-            blocksText(blocks))
+        var label = String(localized: "Nodes, epoch day \(day), \(blocksText(blocks)) blocks proposed this epoch", comment: "Nodes shortcut accessibility")
         switch health {
         case .healthy:
             break
         case .warning:
-            label += ", " + NSLocalizedString("an evonode has not proposed a block in 2 days", comment: "Nodes shortcut accessibility")
+            label += ", " + String(localized: "an evonode has not proposed a block in 2 days", comment: "Nodes shortcut accessibility")
         case .critical:
-            label += ", " + NSLocalizedString("an evonode has no blocks this epoch", comment: "Nodes shortcut accessibility")
+            label += ", " + String(localized: "an evonode has no blocks this epoch", comment: "Nodes shortcut accessibility")
         }
         return label
     }

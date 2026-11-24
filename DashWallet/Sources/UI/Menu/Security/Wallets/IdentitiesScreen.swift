@@ -78,23 +78,23 @@ struct IdentitiesScreen: View {
         .navigationBarHidden(true)
         .onAppear { viewModel.reload() }
         .alert(
-            NSLocalizedString("Error", comment: ""),
+            String(localized: "Error", comment: ""),
             isPresented: Binding(
                 get: { viewModel.errorMessage != nil },
                 set: { if !$0 { viewModel.errorMessage = nil } })
         ) {
-            Button(NSLocalizedString("OK", comment: ""), role: .cancel) {}
+            Button(String(localized: "OK", comment: ""), role: .cancel) {}
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
         // Find-identities outcome ("Found N new identities" / none found).
         .alert(
-            NSLocalizedString("Find identities", comment: "Identities"),
+            String(localized: "Find identities", comment: "Identities"),
             isPresented: Binding(
                 get: { viewModel.infoMessage != nil },
                 set: { if !$0 { viewModel.infoMessage = nil } })
         ) {
-            Button(NSLocalizedString("OK", comment: ""), role: .cancel) {}
+            Button(String(localized: "OK", comment: ""), role: .cancel) {}
         } message: {
             Text(viewModel.infoMessage ?? "")
         }
@@ -135,7 +135,7 @@ struct IdentitiesScreen: View {
                         }
                     }
                     .disabled(viewModel.isDiscovering || viewModel.isRefreshing)
-                    .accessibilityLabel(NSLocalizedString("Find identities", comment: "Identities"))
+                    .accessibilityLabel(String(localized: "Find identities", comment: "Identities"))
     
                     Button(action: { Task { await viewModel.refreshFromNetwork() } }) {
                         if viewModel.isRefreshing {
@@ -150,12 +150,12 @@ struct IdentitiesScreen: View {
                         }
                     }
                     .disabled(viewModel.isRefreshing || viewModel.isDiscovering)
-                    .accessibilityLabel(NSLocalizedString("Refresh", comment: ""))
+                    .accessibilityLabel(String(localized: "Refresh", comment: ""))
                 }
             })
 
             HStack {
-                Text(NSLocalizedString("Identities", comment: "Identities"))
+                Text(String(localized: "Identities", comment: "Identities"))
                     .font(.title)
                     .fontWeight(.bold)
                     .foregroundColor(.dash.primaryText)
@@ -174,12 +174,12 @@ struct IdentitiesScreen: View {
                 .font(.system(size: 40))
                 .foregroundColor(.dash.secondaryText)
 
-            Text(NSLocalizedString("No Identities", comment: "Identities"))
+            Text(String(localized: "No Identities", comment: "Identities"))
                 .font(.headline)
                 .foregroundColor(.dash.primaryText)
 
-            Text(NSLocalizedString(
-                "Your Dash Platform identity appears here once you register a username.",
+            Text(String(
+                localized: "Your Dash Platform identity appears here once you register a username.",
                 comment: "Identities"))
                 .font(.caption)
                 .foregroundColor(.dash.secondaryText)
@@ -195,7 +195,7 @@ struct IdentitiesScreen: View {
                     } else {
                         Image(systemName: "person.crop.circle.badge.questionmark")
                     }
-                    Text(NSLocalizedString("Find identities", comment: "Identities"))
+                    Text(String(localized: "Find identities", comment: "Identities"))
                 }
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundColor(.dash.blue)
@@ -232,7 +232,7 @@ private struct IdentityRowView: View {
                     }
                     if row.isMainIdentity {
                         IdentityBadge(
-                            text: NSLocalizedString("Main", comment: "Identities — the wallet's main identity"),
+                            text: String(localized: "Main", comment: "Identities — the wallet's main identity"),
                             icon: "checkmark.seal.fill",
                             color: .dash.blue)
                     }
@@ -267,12 +267,12 @@ private struct IdentityRowView: View {
         HStack(spacing: 6) {
             if row.type == .masternode {
                 IdentityBadge(
-                    text: NSLocalizedString("Masternode", comment: "Identities"),
+                    text: String(localized: "Masternode", comment: "Identities"),
                     icon: "server.rack",
                     color: .purple)
             } else if row.type == .evonode {
                 IdentityBadge(
-                    text: NSLocalizedString("Evonode", comment: "Identities"),
+                    text: String(localized: "Evonode", comment: "Identities"),
                     icon: "server.rack",
                     color: .indigo)
             }
@@ -281,13 +281,13 @@ private struct IdentityRowView: View {
             // incidental rows (observed identities nobody tracks).
             if !row.isLocal {
                 IdentityBadge(
-                    text: NSLocalizedString("Observed", comment: "Identities"),
+                    text: String(localized: "Observed", comment: "Identities"),
                     icon: "eye",
                     color: .gray)
             }
             if row.pendingContestedName != nil {
                 IdentityBadge(
-                    text: NSLocalizedString("Voting", comment: "Usernames"),
+                    text: String(localized: "Voting", comment: "Usernames"),
                     icon: "clock",
                     color: .orange)
             }
@@ -386,28 +386,28 @@ struct IdentityDetailScreen: View {
         // swipe-back gesture.
         .onAppear { viewModel.reload() }
         .alert(
-            NSLocalizedString("Set as Main Identity", comment: "Identities"),
+            String(localized: "Set as Main Identity", comment: "Identities"),
             isPresented: $confirmSetMain
         ) {
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {}
-            Button(NSLocalizedString("Set as Main", comment: "Identities")) {
+            Button(String(localized: "Cancel", comment: ""), role: .cancel) {}
+            Button(String(localized: "Set as Main", comment: "Identities")) {
                 viewModel.setMainIdentity(row)
                 if viewModel.errorMessage == nil {
                     isMain = true
                 }
             }
         } message: {
-            Text(NSLocalizedString(
-                "Your username, profile, and contacts will follow this identity.",
+            Text(String(
+                localized: "Your username, profile, and contacts will follow this identity.",
                 comment: "Identities"))
         }
         .alert(
-            NSLocalizedString("Error", comment: ""),
+            String(localized: "Error", comment: ""),
             isPresented: Binding(
                 get: { viewModel.errorMessage != nil },
                 set: { if !$0 { viewModel.errorMessage = nil } })
         ) {
-            Button(NSLocalizedString("OK", comment: ""), role: .cancel) {}
+            Button(String(localized: "OK", comment: ""), role: .cancel) {}
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
@@ -447,17 +447,17 @@ struct IdentityDetailScreen: View {
                 HStack(spacing: 8) {
                     Image(systemName: "checkmark.seal.fill")
                         .foregroundColor(.dash.blue)
-                    Text(NSLocalizedString("This is your main identity", comment: "Identities"))
+                    Text(String(localized: "This is your main identity", comment: "Identities"))
                         .font(.system(size: 15, weight: .medium))
                         .foregroundColor(.dash.primaryText)
                 }
                 Text(
                     row.pendingContestedName == nil
-                        ? NSLocalizedString(
-                            "Your username, profile, and contacts follow this identity.",
+                        ? String(
+                            localized: "Your username, profile, and contacts follow this identity.",
                             comment: "Identities")
-                        : NSLocalizedString(
-                            "This identity is being used for your pending username request.",
+                        : String(
+                            localized: "This identity is being used for your pending username request.",
                             comment: "Identities")
                 )
                     .font(.system(size: 13))
@@ -466,7 +466,7 @@ struct IdentityDetailScreen: View {
                 Button(action: { confirmSetMain = true }) {
                     HStack(spacing: 8) {
                         Image(systemName: "checkmark.seal")
-                        Text(NSLocalizedString("Set as Main Identity", comment: "Identities"))
+                        Text(String(localized: "Set as Main Identity", comment: "Identities"))
                     }
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(Color.dash.whiteText)
@@ -476,8 +476,8 @@ struct IdentityDetailScreen: View {
                     .cornerRadius(12)
                 }
             } else {
-                Text(NSLocalizedString(
-                    "The main identity can only be chosen from the active wallet",
+                Text(String(
+                    localized: "The main identity can only be chosen from the active wallet",
                     comment: "Identities"))
                     .font(.system(size: 13))
                     .foregroundColor(.dash.secondaryText)
@@ -491,7 +491,7 @@ struct IdentityDetailScreen: View {
 
     private var idCard: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(NSLocalizedString("Identity ID", comment: "Identities"))
+            Text(String(localized: "Identity ID", comment: "Identities"))
                 .font(.caption)
                 .foregroundColor(.dash.secondaryText)
             Text(row.idBase58)
@@ -503,8 +503,8 @@ struct IdentityDetailScreen: View {
                 HStack(spacing: 6) {
                     Image(systemName: copied ? "checkmark" : "doc.on.doc")
                     Text(copied
-                        ? NSLocalizedString("Copied", comment: "")
-                        : NSLocalizedString("Copy", comment: ""))
+                        ? String(localized: "Copied", comment: "")
+                        : String(localized: "Copy", comment: ""))
                 }
                 .font(.system(size: 14, weight: .medium))
                 .foregroundColor(.dash.blue)
@@ -519,11 +519,11 @@ struct IdentityDetailScreen: View {
     private var infoCard: some View {
         VStack(spacing: 0) {
             detailRow(
-                label: NSLocalizedString("Balance", comment: ""),
+                label: String(localized: "Balance", comment: ""),
                 value: row.balanceDetailText)
             divider
             detailRow(
-                label: NSLocalizedString("Type", comment: "Identities"),
+                label: String(localized: "Type", comment: "Identities"),
                 value: typeName)
             // A Status row only for the rare incidental case — every
             // wallet identity is local, so an always-on "Local" row
@@ -532,23 +532,23 @@ struct IdentityDetailScreen: View {
             if !row.isLocal {
                 divider
                 detailRow(
-                    label: NSLocalizedString("Status", comment: ""),
-                    value: NSLocalizedString("Observed", comment: "Identities"))
+                    label: String(localized: "Status", comment: ""),
+                    value: String(localized: "Observed", comment: "Identities"))
             }
             if let walletName = row.walletName {
                 divider
                 detailRow(
-                    label: NSLocalizedString("Wallet", comment: "Identities"),
+                    label: String(localized: "Wallet", comment: "Identities"),
                     value: walletName)
             }
             divider
             detailRow(
-                label: NSLocalizedString("Identity index", comment: "Identities"),
+                label: String(localized: "Identity index", comment: "Identities"),
                 value: "#\(row.identityIndex)")
             divider
             Button(action: showPublicKeys) {
                 HStack {
-                    Text(NSLocalizedString("Public keys", comment: "Identities"))
+                    Text(String(localized: "Public keys", comment: "Identities"))
                         .font(.system(size: 14))
                         .foregroundColor(.dash.secondaryText)
                     Spacer()
@@ -584,7 +584,7 @@ struct IdentityDetailScreen: View {
     /// persists it via `IdentitiesViewModel.setMainName`.
     private var namesCard: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(NSLocalizedString("Usernames", comment: "Identities"))
+            Text(String(localized: "Usernames", comment: "Identities"))
                 .font(.caption)
                 .foregroundColor(.dash.secondaryText)
             ForEach(currentRow.dpnsNames, id: \.self) { name in
@@ -608,8 +608,8 @@ struct IdentityDetailScreen: View {
                 .accessibilityAddTraits(isDisplayed ? [.isSelected] : [])
             }
             if currentRow.dpnsNames.count > 1 {
-                Text(NSLocalizedString(
-                    "Select the username to display for this identity.",
+                Text(String(
+                    localized: "Select the username to display for this identity.",
                     comment: "Identities"))
                     .font(.caption)
                     .foregroundColor(.dash.secondaryText)
@@ -623,12 +623,12 @@ struct IdentityDetailScreen: View {
                             .foregroundColor(.dash.blue)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(currentRow.dpnsNames.isEmpty
-                                ? NSLocalizedString("Get a username", comment: "Username marketplace: identity entry point")
-                                : NSLocalizedString("Get another username", comment: "Username marketplace: identity entry point"))
+                                ? String(localized: "Get a username", comment: "Username marketplace: identity entry point")
+                                : String(localized: "Get another username", comment: "Username marketplace: identity entry point"))
                                 .font(.system(size: 15, weight: .semibold))
                                 .foregroundColor(.dash.blue)
-                            Text(NSLocalizedString(
-                                "Buy a listed name or register an available one",
+                            Text(String(
+                                localized: "Buy a listed name or register an available one",
                                 comment: "Username marketplace: identity entry point subtitle"))
                                 .font(.caption)
                                 .foregroundColor(.dash.secondaryText)
@@ -658,7 +658,7 @@ struct IdentityDetailScreen: View {
 
     private var pendingNameCard: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(NSLocalizedString("Username request", comment: "Usernames"))
+            Text(String(localized: "Username request", comment: "Usernames"))
                 .font(.caption)
                 .foregroundColor(.dash.secondaryText)
             HStack {
@@ -667,7 +667,7 @@ struct IdentityDetailScreen: View {
                     .foregroundColor(.dash.primaryText)
                 Spacer()
                 IdentityBadge(
-                    text: NSLocalizedString("Voting", comment: "Usernames"),
+                    text: String(localized: "Voting", comment: "Usernames"),
                     icon: "clock",
                     color: .orange)
             }
@@ -676,9 +676,7 @@ struct IdentityDetailScreen: View {
             // estimate first, Platform's own `endTime` once it indexes the
             // contest — so show it here too.
             if let endTime = row.pendingVotingEndTime {
-                Text(String.localizedStringWithFormat(
-                    NSLocalizedString("Voting ends around %@", comment: "Usernames"),
-                    DWDateFormatter.sharedInstance.dateAndTime(from: endTime)))
+                Text(String(localized: "Voting ends around \(DWDateFormatter.sharedInstance.dateAndTime(from: endTime))", comment: "Usernames"))
                     .font(.caption)
                     .foregroundColor(.dash.secondaryText)
             }
@@ -691,9 +689,9 @@ struct IdentityDetailScreen: View {
 
     private var typeName: String {
         switch row.type {
-        case .user: return NSLocalizedString("User", comment: "Identities")
-        case .masternode: return NSLocalizedString("Masternode", comment: "Identities")
-        case .evonode: return NSLocalizedString("Evonode", comment: "Identities")
+        case .user: return String(localized: "User", comment: "Identities")
+        case .masternode: return String(localized: "Masternode", comment: "Identities")
+        case .evonode: return String(localized: "Evonode", comment: "Identities")
         }
     }
 
@@ -812,11 +810,11 @@ struct IdentityPublicKeysScreen: View {
                         .overlay(Circle().stroke(Color.dash.gray300.opacity(0.3), lineWidth: 1))
                     }
                     .disabled(isReloadingKeys)
-                    .accessibilityLabel(Text(NSLocalizedString("Refresh keys from Platform", comment: "Identities: re-fetch this identity's public keys")))
+                    .accessibilityLabel(Text(String(localized: "Refresh keys from Platform", comment: "Identities: re-fetch this identity's public keys")))
                 }
             })
 
-            Text(NSLocalizedString("Public keys", comment: "Identities"))
+            Text(String(localized: "Public keys", comment: "Identities"))
                 .font(.title)
                 .fontWeight(.bold)
                 .foregroundColor(.dash.primaryText)
@@ -835,20 +833,18 @@ struct IdentityPublicKeysScreen: View {
     private func keyCard(_ key: IdentityKeyRowModel) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
-                Text(String.localizedStringWithFormat(
-                    NSLocalizedString("Key #%d", comment: "Identities: one identity public key, by its DPP key id"),
-                    key.keyId))
+                Text(String(localized: "Key #\(key.keyId)", comment: "Identities: one identity public key, by its DPP key id"))
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(.dash.primaryText)
                 Spacer()
                 if key.isDisabled {
                     IdentityBadge(
-                        text: NSLocalizedString("Disabled", comment: "Identities: this identity key was disabled on Platform"),
+                        text: String(localized: "Disabled", comment: "Identities: this identity key was disabled on Platform"),
                         icon: "nosign",
                         color: .red)
                 } else if key.readOnly {
                     IdentityBadge(
-                        text: NSLocalizedString("Read-only", comment: "Identities: key visible to the wallet but not usable for signing"),
+                        text: String(localized: "Read-only", comment: "Identities: key visible to the wallet but not usable for signing"),
                         icon: "eye",
                         color: .orange)
                 }
@@ -856,17 +852,17 @@ struct IdentityPublicKeysScreen: View {
 
             VStack(spacing: 0) {
                 attributeRow(
-                    label: NSLocalizedString("Purpose", comment: "Identities: what a public key is used for"),
+                    label: String(localized: "Purpose", comment: "Identities: what a public key is used for"),
                     value: key.purposeText)
                 attributeRow(
-                    label: NSLocalizedString("Security level", comment: "Identities: DPP security level of a public key"),
+                    label: String(localized: "Security level", comment: "Identities: DPP security level of a public key"),
                     value: key.securityLevelText)
                 attributeRow(
-                    label: NSLocalizedString("Type", comment: "Identities"),
+                    label: String(localized: "Type", comment: "Identities"),
                     value: key.keyTypeText)
             }
 
-            Text(NSLocalizedString("Key data", comment: "Identities: the public key bytes"))
+            Text(String(localized: "Key data", comment: "Identities: the public key bytes"))
                 .font(.caption)
                 .foregroundColor(.dash.secondaryText)
             Text(key.publicKeyHex)
@@ -880,8 +876,8 @@ struct IdentityPublicKeysScreen: View {
                 HStack(spacing: 6) {
                     Image(systemName: copiedKeyId == key.keyId ? "checkmark" : "doc.on.doc")
                     Text(copiedKeyId == key.keyId
-                        ? NSLocalizedString("Copied", comment: "")
-                        : NSLocalizedString("Copy", comment: ""))
+                        ? String(localized: "Copied", comment: "")
+                        : String(localized: "Copy", comment: ""))
                 }
                 .font(.system(size: 14, weight: .medium))
                 .foregroundColor(.dash.blue)
@@ -889,10 +885,8 @@ struct IdentityPublicKeysScreen: View {
 
             if !key.contractBoundIds.isEmpty {
                 Text(key.contractBoundDocumentType == nil
-                    ? NSLocalizedString("Bound to contract", comment: "Identities: this key only signs for one data contract")
-                    : String.localizedStringWithFormat(
-                        NSLocalizedString("Bound to contract, document type “%@”", comment: "Identities: this key only signs one document type of one data contract"),
-                        key.contractBoundDocumentType ?? ""))
+                    ? String(localized: "Bound to contract", comment: "Identities: this key only signs for one data contract")
+                    : String(localized: "Bound to contract, document type “\(key.contractBoundDocumentType ?? "")”", comment: "Identities: this key only signs one document type of one data contract"))
                     .font(.caption)
                     .foregroundColor(.dash.secondaryText)
                 ForEach(key.contractBoundIds, id: \.self) { contractId in
@@ -904,7 +898,7 @@ struct IdentityPublicKeysScreen: View {
             }
 
             if let path = key.derivationPath {
-                Text(NSLocalizedString("Derivation path", comment: "Identities: BIP-32 style derivation path of this key"))
+                Text(String(localized: "Derivation path", comment: "Identities: BIP-32 style derivation path of this key"))
                     .font(.caption)
                     .foregroundColor(.dash.secondaryText)
                 Text(path)

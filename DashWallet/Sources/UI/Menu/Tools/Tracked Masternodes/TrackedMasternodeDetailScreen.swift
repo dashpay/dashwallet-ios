@@ -91,7 +91,7 @@ final class TrackedMasternodeDetailViewModel: ObservableObject {
     /// identity id IS the proTxHash in display (reversed) order.
     func fetchClaimableBalance() async {
         guard let sdk = SwiftDashSDKHost.shared.sdk else {
-            balanceError = NSLocalizedString("Platform SDK not ready", comment: "Masternodes")
+            balanceError = String(localized: "Platform SDK not ready", comment: "Masternodes")
             return
         }
         let identityId = Data(record.proTxHash.reversed())
@@ -108,12 +108,12 @@ final class TrackedMasternodeDetailViewModel: ObservableObject {
             case .noIdentity:
                 DWLogger.log("🧱 MASTERNODE :: claimable balance (tracked): no Platform identity")
                 claimableCredits = nil
-                balanceError = NSLocalizedString("This masternode has no Platform identity yet.", comment: "Masternodes")
+                balanceError = String(localized: "This masternode has no Platform identity yet.", comment: "Masternodes")
             }
         } catch {
             DWLogger.log("🧱 MASTERNODE :: claimable balance (tracked): read failed with \(type(of: error))")
             claimableCredits = nil
-            balanceError = NSLocalizedString("Couldn't fetch the balance (network error). Try Refresh.", comment: "Masternodes")
+            balanceError = String(localized: "Couldn't fetch the balance (network error). Try Refresh.", comment: "Masternodes")
         }
         balanceLoading = false
     }
@@ -217,8 +217,8 @@ final class TrackedMasternodeDetailViewModel: ObservableObject {
         guard outcome == .ok else { return false }
 
         guard let keyText = vault.key(for: record.proTxHash, role: role) else {
-            withdrawError = NSLocalizedString(
-                "The signing key is missing from the keychain — re-add it and try again.",
+            withdrawError = String(
+                localized: "The signing key is missing from the keychain — re-add it and try again.",
                 comment: "Tracked masternodes")
             return false
         }
@@ -241,8 +241,8 @@ final class TrackedMasternodeDetailViewModel: ObservableObject {
                 // stale figure and re-read before any retry is possible.
                 claimableCredits = nil
                 Task { await fetchClaimableBalance() }
-                withdrawError = NSLocalizedString(
-                    "The withdrawal was sent but its result couldn't be confirmed. The balance is being re-checked — don't retry until it settles.",
+                withdrawError = String(
+                    localized: "The withdrawal was sent but its result couldn't be confirmed. The balance is being re-checked — don't retry until it settles.",
                     comment: "Tracked masternodes")
             } else {
                 withdrawError = error.errorDescription
@@ -323,19 +323,19 @@ struct TrackedMasternodeDetailScreen: View {
                 .presentationDragIndicator(.hidden)
         }
         .confirmationDialog(
-            NSLocalizedString("Stop tracking this masternode?", comment: "Tracked masternodes"),
+            String(localized: "Stop tracking this masternode?", comment: "Tracked masternodes"),
             isPresented: $showStopConfirm,
             titleVisibility: .visible
         ) {
-            Button(NSLocalizedString("Stop tracking", comment: "Tracked masternodes"), role: .destructive) {
+            Button(String(localized: "Stop tracking", comment: "Tracked masternodes"), role: .destructive) {
                 if viewModel.stopTracking() {
                     onChanged()
                     vc?.popAfterPresentationEnds()
                 }
             }
         } message: {
-            Text(NSLocalizedString(
-                "Any keys you added for it are deleted from this device's keychain too.",
+            Text(String(
+                localized: "Any keys you added for it are deleted from this device's keychain too.",
                 comment: "Tracked masternodes"))
         }
     }
@@ -356,7 +356,7 @@ struct TrackedMasternodeDetailScreen: View {
                 Label(viewModel.record.typeName, systemImage: "server.rack")
                     .font(.headline)
                 Spacer()
-                Text(NSLocalizedString("Tracked", comment: "Tracked masternodes"))
+                Text(String(localized: "Tracked", comment: "Tracked masternodes"))
                     .font(.caption)
                     .fontWeight(.medium)
                     .padding(.horizontal, 6)
@@ -370,9 +370,9 @@ struct TrackedMasternodeDetailScreen: View {
                     .foregroundColor(viewModel.record.statusColor)
             }
             if let service = viewModel.record.serviceAddress {
-                MasternodeDetailRow(label: NSLocalizedString("Service", comment: "Masternodes"), value: service)
+                MasternodeDetailRow(label: String(localized: "Service", comment: "Masternodes"), value: service)
             }
-            TextField(NSLocalizedString("Label (optional)", comment: "Add masternode"), text: $labelDraft)
+            TextField(String(localized: "Label (optional)", comment: "Add masternode"), text: $labelDraft)
                 .onSubmit {
                     viewModel.setLabel(labelDraft)
                     onChanged()
@@ -385,32 +385,30 @@ struct TrackedMasternodeDetailScreen: View {
     }
 
     private var registrationSection: some View {
-        Section(NSLocalizedString("Registration", comment: "Masternodes")) {
+        Section(String(localized: "Registration", comment: "Masternodes")) {
             MasternodeCopyRow(label: "proTxHash", value: viewModel.record.proTxHashHex)
             if viewModel.record.hasRegistration {
                 MasternodeDetailRow(
-                    label: NSLocalizedString("Registered at", comment: "Masternodes"),
-                    value: String(
-                        format: NSLocalizedString("Height %u", comment: "Masternodes"),
-                        viewModel.record.registrationHeight))
+                    label: String(localized: "Registered at", comment: "Masternodes"),
+                    value: String(localized: "Height \(viewModel.record.registrationHeight)", comment: "Masternodes"))
             }
             if let collateral = viewModel.record.collateralDisplay {
-                MasternodeCopyRow(label: NSLocalizedString("Outpoint", comment: "Masternodes"), value: collateral)
+                MasternodeCopyRow(label: String(localized: "Outpoint", comment: "Masternodes"), value: collateral)
             }
             if let owner = viewModel.record.ownerAddress {
-                MasternodeCopyRow(label: NSLocalizedString("Owner address", comment: "Masternodes"), value: owner)
+                MasternodeCopyRow(label: String(localized: "Owner address", comment: "Masternodes"), value: owner)
             }
             if let voting = viewModel.record.votingAddress {
-                MasternodeCopyRow(label: NSLocalizedString("Voting address", comment: "Masternodes"), value: voting)
+                MasternodeCopyRow(label: String(localized: "Voting address", comment: "Masternodes"), value: voting)
             }
             if let operatorKey = viewModel.record.operatorPublicKeyHex {
-                MasternodeCopyRow(label: NSLocalizedString("Operator public key (BLS)", comment: "Masternodes"), value: operatorKey)
+                MasternodeCopyRow(label: String(localized: "Operator public key (BLS)", comment: "Masternodes"), value: operatorKey)
             }
             if let nodeId = viewModel.record.platformNodeIdHex {
-                MasternodeCopyRow(label: NSLocalizedString("Platform Node ID", comment: ""), value: nodeId)
+                MasternodeCopyRow(label: String(localized: "Platform Node ID", comment: ""), value: nodeId)
             }
             if let payout = viewModel.record.payoutAddress {
-                MasternodeCopyRow(label: NSLocalizedString("Payout address", comment: "Masternodes"), value: payout)
+                MasternodeCopyRow(label: String(localized: "Payout address", comment: "Masternodes"), value: payout)
             }
         }
     }
@@ -423,7 +421,7 @@ struct TrackedMasternodeDetailScreen: View {
                         .font(.subheadline)
                     Spacer()
                     if viewModel.attachedRoles.contains(role) {
-                        Label(NSLocalizedString("On this device", comment: "Tracked masternodes"), systemImage: "key.fill")
+                        Label(String(localized: "On this device", comment: "Tracked masternodes"), systemImage: "key.fill")
                             .font(.caption)
                             .foregroundColor(.green)
                         Button(role: .destructive) {
@@ -434,7 +432,7 @@ struct TrackedMasternodeDetailScreen: View {
                         }
                         .buttonStyle(.borderless)
                     } else {
-                        Text(NSLocalizedString("Not added", comment: "Tracked masternodes"))
+                        Text(String(localized: "Not added", comment: "Tracked masternodes"))
                             .font(.caption)
                             .foregroundColor(Color.dash.tertiaryText)
                     }
@@ -443,13 +441,13 @@ struct TrackedMasternodeDetailScreen: View {
             Button {
                 showKeysSheet = true
             } label: {
-                Label(NSLocalizedString("Add keys", comment: "Tracked masternodes"), systemImage: "plus")
+                Label(String(localized: "Add keys", comment: "Tracked masternodes"), systemImage: "plus")
             }
         } header: {
-            Text(NSLocalizedString("Keys on this device", comment: "Tracked masternodes"))
+            Text(String(localized: "Keys on this device", comment: "Tracked masternodes"))
         } footer: {
-            Text(NSLocalizedString(
-                "Keys are stored in this device's keychain and never leave it except to sign the action you request.",
+            Text(String(
+                localized: "Keys are stored in this device's keychain and never leave it except to sign the action you request.",
                 comment: "Tracked masternodes"))
         }
     }
@@ -457,16 +455,16 @@ struct TrackedMasternodeDetailScreen: View {
     @ViewBuilder
     private var balanceSection: some View {
         if viewModel.record.isEvonode {
-            Section(NSLocalizedString("Claimable balance", comment: "Masternodes")) {
+            Section(String(localized: "Claimable balance", comment: "Masternodes")) {
                 if viewModel.balanceLoading {
                     HStack(spacing: 8) {
                         SwiftUI.ProgressView().scaleEffect(0.8)
-                        Text(NSLocalizedString("Fetching…", comment: "Masternodes"))
+                        Text(String(localized: "Fetching…", comment: "Masternodes"))
                             .foregroundColor(Color.dash.secondaryText)
                     }
                 } else if let balance = viewModel.claimableBalanceText {
                     MasternodeDetailRow(
-                        label: NSLocalizedString("Balance", comment: "Masternodes"),
+                        label: String(localized: "Balance", comment: "Masternodes"),
                         value: balance)
                 } else if let error = viewModel.balanceError {
                     Text(error)
@@ -477,7 +475,7 @@ struct TrackedMasternodeDetailScreen: View {
                 Button {
                     Task { await viewModel.fetchClaimableBalance() }
                 } label: {
-                    Label(NSLocalizedString("Refresh", comment: ""), systemImage: "arrow.clockwise")
+                    Label(String(localized: "Refresh", comment: ""), systemImage: "arrow.clockwise")
                 }
                 .disabled(viewModel.balanceLoading)
 
@@ -486,12 +484,12 @@ struct TrackedMasternodeDetailScreen: View {
                         Button {
                             showWithdrawSheet = true
                         } label: {
-                            Label(NSLocalizedString("Withdraw", comment: "Evonode withdrawal"), systemImage: "arrow.down.circle")
+                            Label(String(localized: "Withdraw", comment: "Evonode withdrawal"), systemImage: "arrow.down.circle")
                                 .foregroundColor(Color.dash.blue)
                         }
                     } else {
-                        Text(NSLocalizedString(
-                            "Add this node's owner key or payout address key to withdraw from here.",
+                        Text(String(
+                            localized: "Add this node's owner key or payout address key to withdraw from here.",
                             comment: "Tracked masternodes"))
                             .font(.caption)
                             .foregroundColor(Color.dash.secondaryText)
@@ -516,10 +514,10 @@ struct TrackedMasternodeDetailScreen: View {
                 if viewModel.refreshing {
                     HStack(spacing: 8) {
                         SwiftUI.ProgressView().scaleEffect(0.8)
-                        Text(NSLocalizedString("Refreshing…", comment: "Tracked masternodes"))
+                        Text(String(localized: "Refreshing…", comment: "Tracked masternodes"))
                     }
                 } else {
-                    Label(NSLocalizedString("Refresh details", comment: "Tracked masternodes"), systemImage: "arrow.clockwise")
+                    Label(String(localized: "Refresh details", comment: "Tracked masternodes"), systemImage: "arrow.clockwise")
                 }
             }
             .disabled(viewModel.refreshing)
@@ -527,7 +525,7 @@ struct TrackedMasternodeDetailScreen: View {
             Button(role: .destructive) {
                 showStopConfirm = true
             } label: {
-                Label(NSLocalizedString("Stop tracking", comment: "Tracked masternodes"), systemImage: "eye.slash")
+                Label(String(localized: "Stop tracking", comment: "Tracked masternodes"), systemImage: "eye.slash")
                     .foregroundColor(.red)
             }
         }
@@ -541,8 +539,8 @@ struct TrackedMasternodeDetailScreen: View {
         let pending = PendingMasternodeUnbanStore.shared.pending(
             forProTxHash: viewModel.record.proTxHash) != nil
         if unbanSubmitted {
-            Text(NSLocalizedString(
-                "Unban submitted — the masternode list updates within a few blocks.",
+            Text(String(
+                localized: "Unban submitted — the masternode list updates within a few blocks.",
                 comment: "Masternode unban"))
                 .font(.caption)
                 .foregroundColor(Color.dash.secondaryText)
@@ -553,14 +551,14 @@ struct TrackedMasternodeDetailScreen: View {
                 } label: {
                     Label(
                         pending
-                            ? NSLocalizedString("Complete unban", comment: "Masternode unban")
-                            : NSLocalizedString("Unban masternode", comment: "Masternode unban"),
+                            ? String(localized: "Complete unban", comment: "Masternode unban")
+                            : String(localized: "Unban masternode", comment: "Masternode unban"),
                         systemImage: "arrow.up.heart")
                         .foregroundColor(Color.dash.blue)
                 }
             } else if viewModel.record.masternodeStatus == .inactive {
-                Text(NSLocalizedString(
-                    "Add this masternode's operator key to unban it from here.",
+                Text(String(
+                    localized: "Add this masternode's operator key to unban it from here.",
                     comment: "Masternode unban"))
                     .font(.caption)
                     .foregroundColor(Color.dash.secondaryText)
@@ -580,7 +578,7 @@ struct TrackedMasternodeDetailScreen: View {
                     animated: true)
             } label: {
                 ListDisclosureRow {
-                    Label(NSLocalizedString("Request status", comment: "Evonode status"), systemImage: "antenna.radiowaves.left.and.right")
+                    Label(String(localized: "Request status", comment: "Evonode status"), systemImage: "antenna.radiowaves.left.and.right")
                         .foregroundColor(Color.dash.blue)
                 }
             }
@@ -600,22 +598,22 @@ private struct TrackedWithdrawalSheet: View {
 
     var body: some View {
         DashUIKit.BottomSheet(
-            title: NSLocalizedString("Withdraw", comment: "Evonode withdrawal"),
+            title: String(localized: "Withdraw", comment: "Evonode withdrawal"),
             showBackButton: .constant(false),
             background: Color(UIColor.systemGroupedBackground)
         ) {
             List {
                 Section {
                     MasternodeDetailRow(
-                        label: NSLocalizedString("Available", comment: "Evonode withdrawal"),
+                        label: String(localized: "Available", comment: "Evonode withdrawal"),
                         value: viewModel.maxWithdrawText)
                     TextField(
-                        NSLocalizedString("Amount (DASH)", comment: "Evonode withdrawal"),
+                        String(localized: "Amount (DASH)", comment: "Evonode withdrawal"),
                         text: $viewModel.withdrawAmountText)
                         .keyboardType(.decimalPad)
                     if viewModel.withdrawalRole == .ownerPayout {
                         TextField(
-                            NSLocalizedString("Destination address (optional)", comment: "Tracked masternodes"),
+                            String(localized: "Destination address (optional)", comment: "Tracked masternodes"),
                             text: $viewModel.withdrawDestination)
                             .font(.system(.footnote, design: .monospaced))
                             .autocorrectionDisabled()
@@ -623,11 +621,11 @@ private struct TrackedWithdrawalSheet: View {
                     }
                 } footer: {
                     Text(viewModel.withdrawalRole == .owner
-                        ? NSLocalizedString(
-                            "Signing with the owner key — the withdrawal goes to the registered payout address.",
+                        ? String(
+                            localized: "Signing with the owner key — the withdrawal goes to the registered payout address.",
                             comment: "Tracked masternodes")
-                        : NSLocalizedString(
-                            "Signing with the payout address key. Leave the destination empty to withdraw to the payout address.",
+                        : String(
+                            localized: "Signing with the payout address key. Leave the destination empty to withdraw to the payout address.",
                             comment: "Tracked masternodes"))
                 }
 
@@ -642,11 +640,11 @@ private struct TrackedWithdrawalSheet: View {
                         if viewModel.withdrawing {
                             HStack(spacing: 8) {
                                 SwiftUI.ProgressView().scaleEffect(0.8)
-                                Text(NSLocalizedString("Withdrawing…", comment: "Tracked masternodes"))
+                                Text(String(localized: "Withdrawing…", comment: "Tracked masternodes"))
                             }
                             .frame(maxWidth: .infinity)
                         } else {
-                            Text(NSLocalizedString("Withdraw", comment: "Evonode withdrawal"))
+                            Text(String(localized: "Withdraw", comment: "Evonode withdrawal"))
                                 .fontWeight(.semibold)
                                 .frame(maxWidth: .infinity)
                         }
@@ -678,7 +676,7 @@ private struct TrackedKeyManagementSheet: View {
 
     var body: some View {
         DashUIKit.BottomSheet(
-            title: NSLocalizedString("Add keys", comment: "Tracked masternodes"),
+            title: String(localized: "Add keys", comment: "Tracked masternodes"),
             showBackButton: .constant(false),
             background: Color(UIColor.systemGroupedBackground)
         ) {
@@ -690,15 +688,15 @@ private struct TrackedKeyManagementSheet: View {
                             dismiss()
                         }
                     } label: {
-                        Text(NSLocalizedString("Save keys", comment: "Tracked masternodes"))
+                        Text(String(localized: "Save keys", comment: "Tracked masternodes"))
                             .fontWeight(.semibold)
                             .frame(maxWidth: .infinity)
                     }
                     .disabled(!viewModel.canSaveKeys)
                 } footer: {
                     if !viewModel.canSaveKeys {
-                        Text(NSLocalizedString(
-                            "A key doesn't match this masternode — fix or clear it to continue.",
+                        Text(String(
+                            localized: "A key doesn't match this masternode — fix or clear it to continue.",
                             comment: "Add masternode"))
                             .foregroundColor(.red)
                     }

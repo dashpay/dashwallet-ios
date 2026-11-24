@@ -145,7 +145,7 @@ final class VotingListSectionTests: XCTestCase {
     /// rules: «1 username», «Voting ends in 1 day».
     func testHeaderCountAndDayHeadingsUseEnglishPlurals() {
         let usernames = { (count: Int) in
-            String.localizedStringWithFormat(NSLocalizedString("%d usernames", comment: "Voting"), count)
+            String(localized: "\(count) usernames", comment: "Voting")
         }
         XCTAssertEqual(usernames(1), "1 username")
         XCTAssertEqual(usernames(2), "2 usernames")

@@ -38,8 +38,8 @@ enum InternalTransferSummaryFigures {
     /// out of its lock rather than an L1 network fee, and says so.
     static func feeRowLabel(route: InternalTransferRoute?) -> String {
         route == .coreToPlatform
-            ? NSLocalizedString("Platform fee", comment: "")
-            : NSLocalizedString("Network fee", comment: "")
+            ? String(localized: "Platform fee", comment: "")
+            : String(localized: "Network fee", comment: "")
     }
 
     private static func feeFiatString(credits: UInt64) -> String {
@@ -119,11 +119,11 @@ enum InternalTransferSummaryFigures {
     static func balanceName(_ network: ChainNetwork) -> String {
         switch network {
         case .core:
-            return NSLocalizedString("Transparent balance", comment: "The transparent (Core) balance of the Dash Wallet")
+            return String(localized: "Transparent balance", comment: "The transparent (Core) balance of the Dash Wallet")
         case .platform:
-            return NSLocalizedString("Platform balance", comment: "The Dash Platform credits balance")
+            return String(localized: "Platform balance", comment: "The Dash Platform credits balance")
         case .shielded:
-            return NSLocalizedString("Shielded balance", comment: "")
+            return String(localized: "Shielded balance", comment: "")
         }
     }
 }

@@ -159,7 +159,7 @@ private struct LocationsSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Layout.listSpacing) {
             HStack(spacing: 8) {
-                Text(NSLocalizedString("Select location", comment: "Explore Dash"))
+                Text(String(localized: "Select location", comment: "Explore Dash"))
                     .font(.footnoteMedium)
                     .foregroundStyle(Color.dash.primaryText)
 
@@ -220,7 +220,7 @@ private struct LocationsSection: View {
     private var emptyPlaceholder: some View {
         HStack {
             Spacer()
-            Text(NSLocalizedString("No locations found.", comment: "Explore Dash"))
+            Text(String(localized: "No locations found.", comment: "Explore Dash"))
                 .font(.subhead)
                 .foregroundColor(.dash.secondaryText)
                 .multilineTextAlignment(.center)
