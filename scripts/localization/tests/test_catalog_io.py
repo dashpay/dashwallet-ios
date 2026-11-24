@@ -231,6 +231,66 @@ class PublishWindowTest(unittest.TestCase):
         self.assertIn(os.path.join(self.tmp, aside[0]), str(cm.exception))
         self.assertEqual(self.read(os.path.join(self.tmp, aside[0])), b"as read")
 
+    def test_an_interrupt_sent_while_the_file_is_moved_aside_waits_for_the_publication(self):
+        # XX1: a signal at any point between the move and the link is delivered only after the link
+        import signal
+        real_read = catalog_io.read_bytes
+
+        def read_and_interrupt(path):
+            if path.endswith(".aside"):
+                os.kill(os.getpid(), signal.SIGINT)
+            return real_read(path)
+        with mock.patch.object(catalog_io, "read_bytes", read_and_interrupt):
+            with self.assertRaises(KeyboardInterrupt):
+                catalog_io.publish_text(self.path, "result", {self.path: b"as read"})
+        self.assertEqual(self.read(self.path), b"result")
+        self.assertEqual(self.others(), [])
+
+    def test_a_signal_sent_at_the_callee_s_entry_waits_too(self):
+        import signal
+        real = catalog_io._move_aside_and_link
+
+        def interrupted_at_entry(*args):
+            os.kill(os.getpid(), signal.SIGINT)
+            return real(*args)
+        with mock.patch.object(catalog_io, "_move_aside_and_link", interrupted_at_entry):
+            with self.assertRaises(KeyboardInterrupt):
+                catalog_io.publish_text(self.path, "result", {self.path: b"as read"})
+        self.assertEqual(self.read(self.path), b"result")
+        self.assertEqual(self.others(), [])
+
+    def test_a_conflict_file_that_cannot_be_renamed_names_the_moved_aside_file(self):
+        handle = open(self.path, "r+b")
+        self.addCleanup(handle.close)
+        real_link, real_rename = os.link, os.rename
+
+        def write_then_link(src, dst, **kw):
+            if dst == self.path:
+                handle.seek(0)
+                handle.write(b"written in the window")
+                handle.flush()
+            return real_link(src, dst, **kw)
+
+        def no_conflict_rename(src, dst):
+            if ".conflict-" in dst:
+                raise OSError(5, "Input/output error")
+            return real_rename(src, dst)
+        with mock.patch.object(catalog_io.os, "link", write_then_link), \
+                mock.patch.object(catalog_io.os, "rename", no_conflict_rename):
+            with self.assertRaises(catalog_io.CatalogIOError) as cm:
+                catalog_io.publish_text(self.path, "result", {self.path: b"as read"})
+        aside = [n for n in self.others() if n.endswith(".aside")]
+        self.assertEqual(len(aside), 1, self.others())
+        self.assertIn(os.path.join(self.tmp, aside[0]), str(cm.exception))
+        self.assertEqual(self.read(os.path.join(self.tmp, aside[0])), b"written in the window")
+
+    def test_an_empty_leftover_moved_aside_file_is_removed(self):
+        with open(os.path.join(self.tmp, ".Localizable.xcstrings.abc123.aside"), "wb"):
+            pass
+        catalog_io.publish_text(self.path, "result", {self.path: b"as read"})
+        self.assertEqual(self.read(self.path), b"result")
+        self.assertEqual(self.others(), [])
+
     def test_a_leftover_moved_aside_file_refuses_and_is_named(self):
         # Bytes of an interrupted publication may be in it; nobody may publish past them.
         leftover = os.path.join(self.tmp, ".Localizable.xcstrings.abc123.aside")

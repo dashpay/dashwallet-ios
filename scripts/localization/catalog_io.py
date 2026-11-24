@@ -4,8 +4,10 @@ The byte layout (key order by localizedStandardCompare, spacing, escaping, no tr
 newline) is produced by catalog_writer.swift, compiled once for the macOS host
 into a cache directory outside the repository (override with CATALOG_WRITER_CACHE).
 """
+import contextlib
 import json
 import os
+import signal
 import shutil
 import subprocess
 import tempfile
@@ -65,29 +67,32 @@ def publish_file(path, staged, want, watched=None):
     bytes `want` (None: `path` must not exist) and only while every file in `watched` ({path: bytes})
     still holds the bytes the caller read; otherwise raise CatalogIOError.
 
-    It never replaces bytes it did not verify. Every error or interrupt it survives leaves `path` holding
-    the old bytes, a newer save or the result, with any other bytes in a conflict file the error names;
-    when even the old file cannot be put back, the error names the moved-aside file that holds it. A
-    process killed between the move and the link leaves the old bytes only in the moved-aside file; the
-    next publication refuses and names it. The live file is
-    compared first (a mismatch never moves it), then moved aside and verified there, and the result is
-    put in place with link(), which fails when another program (an editor's atomic save) created the path
-    again in the meantime: that save stays. Bytes written into the moved-aside file through a handle
-    opened earlier are kept in a conflict file when they land before the final comparison; a write
-    through such a handle after it goes to the unlinked old file. While the moved-aside file is
-    verified (a read of its bytes) the path does not exist.
-    A moved-aside file left by an interrupted run refuses the publication, as it may hold the only copy."""
+    It never replaces bytes it did not verify. The live file is compared first (a mismatch never moves
+    it), then moved aside and verified there, and the result is put in place with link(), which fails
+    when another program (an editor's atomic save) created the path again in the meantime: that save
+    stays. SIGINT, SIGTERM and SIGHUP are held from the move to the end and delivered after it. Every
+    error leaves `path` holding the old bytes, a newer save or the result, with any other bytes in a
+    conflict file the error names; when even the old file cannot be put back or kept, the error names the
+    moved-aside file that holds it. Bytes written into the moved-aside file through a handle opened
+    earlier are kept in a conflict file when they land before the final comparison; a write through such
+    a handle after it goes to the unlinked old file. While the moved-aside file is verified the path does
+    not exist. A process killed (SIGKILL, a crash) while the file is moved aside leaves it only in the
+    moved-aside file; the next publication refuses and names it. A filesystem without hard links is
+    refused before anything moves."""
     directory = os.path.dirname(os.path.abspath(path))
+    prefix = "." + os.path.basename(path) + "."
     try:
         for other, held in (watched or {}).items():
             if read_bytes(other) != held:
                 raise _changed(other, "changed on disk since it was read, so %s was not written" % path)
-        prefix = "." + os.path.basename(path) + "."
-        leftover = sorted(n for n in os.listdir(directory) if n.startswith(prefix) and n.endswith(".aside"))
-        if leftover:
+        for name in sorted(n for n in os.listdir(directory) if n.startswith(prefix) and n.endswith(".aside")):
+            leftover = os.path.join(directory, name)
+            if os.path.getsize(leftover) == 0:  # an interrupted run made it but moved nothing into it
+                os.remove(leftover)
+                continue
             raise CatalogIOError("%s was left by an interrupted publication of %s and may hold its only copy; "
                                  "compare it with %s, keep what is needed, delete it, then run again"
-                                 % (os.path.join(directory, leftover[0]), path, path))
+                                 % (leftover, path, path))
         if want is None:
             try:
                 os.link(staged, path)
@@ -101,30 +106,43 @@ def publish_file(path, staged, want, watched=None):
             shutil.copymode(path, staged)
         except FileNotFoundError:
             raise _changed(path, "was removed since it was read")
-        _probe_hard_links(staged)
-        fd, aside = tempfile.mkstemp(prefix=prefix, suffix=".aside", dir=directory)
-        os.close(fd)
-        empty = os.stat(aside).st_ino
-        try:
-            os.rename(path, aside)
-        except BaseException:
-            if os.stat(aside).st_ino != empty:  # the rename happened before the interrupt
-                _put_back(path, aside, want)
-                raise
-            os.remove(aside)
-            if not os.path.exists(path):
-                raise _changed(path, "was removed since it was read")
-            raise
-        _move_back_unless_linked(path, staged, aside, want)
+        with _interrupts_held():
+            _move_aside_and_link(path, staged, want, prefix, directory)
     finally:
         if os.path.exists(staged):
             os.remove(staged)
 
 
-def _move_back_unless_linked(path, staged, aside, want):
-    """The steps after the move: until the result is linked in, any way out puts the old file back."""
+@contextlib.contextmanager
+def _interrupts_held():
+    """Hold SIGINT, SIGTERM and SIGHUP for the block; a signal sent meanwhile is delivered when it ends."""
+    held = {signal.SIGINT, signal.SIGTERM, signal.SIGHUP}
+    before = signal.pthread_sigmask(signal.SIG_BLOCK, held)
+    try:
+        yield
+    finally:
+        signal.pthread_sigmask(signal.SIG_SETMASK, before)
+
+
+def _move_aside_and_link(path, staged, want, prefix, directory):
+    probe = staged + ".link"
+    try:
+        os.link(staged, probe)
+    except OSError as e:
+        raise CatalogIOError("the folder of %s cannot hold a hard link (%s), which publishing needs to keep a "
+                             "save made meanwhile; nothing was written" % (path, e))
+    finally:
+        if os.path.lexists(probe):
+            os.remove(probe)
+    fd, aside = tempfile.mkstemp(prefix=prefix, suffix=".aside", dir=directory)
+    os.close(fd)
+    empty = os.stat(aside).st_ino
     linked = False
     try:
+        try:
+            os.rename(path, aside)
+        except FileNotFoundError:
+            raise _changed(path, "was removed since it was read")
         if read_bytes(aside) != want:
             raise _changed(path, "changed on disk since it was read")
         try:
@@ -134,25 +152,16 @@ def _move_back_unless_linked(path, staged, aside, want):
         linked = True
     except BaseException:
         if not linked:
-            _put_back(path, aside, want)
+            if os.stat(aside).st_ino != empty:  # the old file was moved aside
+                _put_back(path, aside, want)
+            else:
+                os.remove(aside)
         raise
     if read_bytes(aside) != want:
-        conflict = _conflict_name(path)
-        os.rename(aside, conflict)
+        conflict = _keep_as_conflict(path, aside)
         raise CatalogIOError("%s was written while it was published; that write is kept in %s and %s holds "
                              "the tool's result: merge the two, then run again" % (path, conflict, path))
     os.remove(aside)
-
-
-def _probe_hard_links(staged):
-    """Refuse, while the live file is still in place, on a filesystem that cannot make hard links."""
-    probe = staged + ".link"
-    try:
-        os.link(staged, probe)
-    except OSError as e:
-        raise CatalogIOError("the folder of %s cannot hold a hard link (%s), which publishing needs to keep a "
-                             "save made meanwhile; nothing was written" % (staged, e))
-    os.remove(probe)
 
 
 def _put_back(path, aside, want):
@@ -164,14 +173,23 @@ def _put_back(path, aside, want):
         if read_bytes(aside) == want:
             os.remove(aside)
             return
-        conflict = _conflict_name(path)
-        os.rename(aside, conflict)
+        conflict = _keep_as_conflict(path, aside)
         raise CatalogIOError("%s holds a newer file (a save made while it was published, or the result) and "
                              "a write into the old file is kept in %s: merge the two, then run again" % (path, conflict))
     except OSError as e:
         raise CatalogIOError("%s could not be put back (%s); its old bytes are in %s: move that file back to %s"
                              % (path, e, aside, path))
     os.remove(aside)
+
+
+def _keep_as_conflict(path, aside):
+    conflict = _conflict_name(path)
+    try:
+        os.rename(aside, conflict)
+    except OSError as e:
+        raise CatalogIOError("a write into %s made while it was published is in %s and could not be renamed (%s); "
+                             "merge it into %s, then delete it" % (path, aside, e, path))
+    return conflict
 
 
 def _conflict_name(path):
