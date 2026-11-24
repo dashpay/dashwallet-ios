@@ -262,6 +262,33 @@ class SyncCatalogTest(unittest.TestCase):
         self.assertEqual(self.read_bytes(), saved)
         self.assertFalse(os.path.exists(os.path.join(self.root, "obj", ".catalog-sync-stamp")))
 
+    def test_an_edit_saved_while_the_result_is_staged_is_not_overwritten(self):
+        # UU1: the 21 MB staging copy used to run after the check; a save during it was replaced.
+        import sync_catalog
+        from unittest import mock
+        cat = catalog_io.read_catalog(self.catalog)
+        cat["strings"]["Leftover key"] = {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "x"}}}}
+        catalog_io.write_catalog(self.catalog, cat)
+        real_copyfile = shutil.copyfile
+        saved = None
+
+        def copy_then_save(src, dst, **kw):
+            nonlocal saved
+            out = real_copyfile(src, dst, **kw)
+            if os.path.basename(dst).startswith(".Localizable.xcstrings.") and saved is None:
+                live = catalog_io.read_catalog(self.catalog)
+                live["strings"]["Leftover key"]["comment"] = "saved while the result was staged"
+                catalog_io.write_catalog(self.catalog, live)
+                saved = self.read_bytes()
+            return out
+        with mock.patch.dict(os.environ, self.env, clear=True), \
+                mock.patch.object(sync_catalog.shutil, "copyfile", copy_then_save):
+            self.assertEqual(sync_catalog.main(), 1)
+        self.assertIsNotNone(saved)
+        self.assertEqual(self.read_bytes(), saved)
+        self.assertFalse(os.path.exists(os.path.join(self.root, "obj", ".catalog-sync-stamp")))
+        self.assertEqual([n for n in os.listdir(os.path.dirname(self.catalog)) if n.startswith((".Localizable", "Localizable.xcstrings."))], [])
+
     def test_a_sync_with_no_change_of_its_own_leaves_a_saved_edit_and_syncs_again(self):
         self.assertEqual(self.run_sync().returncode, 0)
         os.remove(os.path.join(self.root, "obj", ".catalog-sync-stamp"))

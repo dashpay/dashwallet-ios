@@ -11,9 +11,9 @@ It collects the compiler's *.stringsdata, runs a legacy (NSLocalizedString-style
 extraction over the target's Swift files (<arch>/<TARGET_NAME>.SwiftFileList) and the
 Objective-C .m/.mm files under SRCROOT named in the <arch>/*.d dependency files, runs
 `xcstringstool sync` on a snapshot of the Catalog, re-serializes it with catalog_io (the
-format the Xcode app writes) and replaces the Catalog only when the bytes changed and the Catalog on
-disk still holds the snapshot's bytes; otherwise (an edit saved during the build) it stops with an
-error and leaves the edit. Builds of one checkout sync one at a time (a lock on the Catalog's folder).
+format the Xcode app writes) and, only when the bytes changed, puts the result in place over the
+snapshot's bytes with catalog_io.publish_file; an edit saved at any moment of the build stays, and the
+sync stops with an error (build again). Builds of one checkout sync one at a time (a lock on the Catalog's folder).
 
 Only a Debug build syncs: another configuration (Release, TestFlight, TestNet) does not compile
 `#if DEBUG` code, so its sync would mark the texts only that code looks up as stale, and the
@@ -215,29 +215,26 @@ def main(argv=None):
         try:
             fcntl.flock(lock, fcntl.LOCK_EX)
             with tempfile.TemporaryDirectory(prefix="sync-catalog-") as tmp:
-                # The sync works on a snapshot. A change is judged against the snapshot, and the
-                # result is published only while the Catalog on disk still holds those bytes, so an
-                # edit saved during the build (e.g. a translation in the Xcode editor) is never replaced.
+                # The sync works on a snapshot. A change is judged against the snapshot, and the result is
+                # put in place only over the snapshot's bytes (catalog_io.publish_file), so an edit saved
+                # during the build (e.g. a translation in the Xcode editor) is never replaced.
                 snapshot = os.path.join(tmp, "snapshot.xcstrings")
                 shutil.copyfile(catalog, snapshot)
                 legacy = extract(swift_files + objc_files, tmp, "--legacy-localizable-strings")
                 synced = sync(snapshot, stringsdata + legacy, tmp)
                 changed = not same_bytes(synced, snapshot)
                 if changed:
-                    if not same_bytes(catalog, snapshot):
-                        raise SyncError("%s changed on disk while the sync ran (an edit saved during the "
-                                        "build); it was left as saved, build again" % catalog)
-                    # Its own staging file in the Catalog's folder: the replace stays atomic.
+                    # Its own staging file in the Catalog's folder, written in full before anything is checked.
                     fd, staging = tempfile.mkstemp(prefix=".Localizable.xcstrings.", suffix=".sync",
                                                    dir=catalog_dir)
                     os.close(fd)
+                    shutil.copyfile(synced, staging)
+                    with open(snapshot, "rb") as f:
+                        read = f.read()
                     try:
-                        shutil.copyfile(synced, staging)
-                        shutil.copymode(catalog, staging)
-                        os.replace(staging, catalog)
-                    finally:
-                        if os.path.exists(staging):
-                            os.remove(staging)
+                        catalog_io.publish_file(catalog, staging, read)
+                    except catalog_io.CatalogIOError as e:
+                        raise SyncError("%s (an edit saved during the build): the sync stopped, build again" % e)
                 # The stamp records what this sync processed: the published result, or the snapshot
                 # when nothing changed (a newer Catalog on disk then differs and syncs next build).
                 processed = synced if changed else snapshot

@@ -6,8 +6,10 @@ into a cache directory outside the repository (override with CATALOG_WRITER_CACH
 """
 import json
 import os
+import shutil
 import subprocess
 import tempfile
+import time
 
 import swift_helper
 
@@ -42,23 +44,83 @@ def read_bytes(path):
 
 
 def publish_text(path, text, expect):
-    """Write `text` to `path` atomically, only while every file in `expect` ({path: the bytes the
-    caller read, or None for a file that did not exist}) still holds them, so a result derived from
-    an older read never replaces a newer save; otherwise raise CatalogIOError and write nothing."""
+    """Write `text` to `path` through publish_file, over the bytes expect[path] (the caller must have read
+    the target too), only while every other file in `expect` ({path: the bytes the caller read, or None
+    for a file that did not exist}) still holds them; otherwise raise CatalogIOError."""
+    want = expect[path]
     directory = os.path.dirname(os.path.abspath(path))
     os.makedirs(directory, exist_ok=True)
     with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=directory,
                                      prefix="." + os.path.basename(path) + ".", delete=False) as f:
         f.write(text)
+    publish_file(path, f.name, want, {p: b for p, b in expect.items() if p != path})
+
+
+def _changed(path, what):
+    return CatalogIOError("%s %s; it was left as it is and the result was not written, run again" % (path, what))
+
+
+def publish_file(path, staged, want, watched=None):
+    """Put the finished file `staged` (in the folder of `path`; always removed) at `path`, only over the
+    bytes `want` (None: `path` must not exist) and only while every file in `watched` ({path: bytes})
+    still holds the bytes the caller read; otherwise raise CatalogIOError.
+
+    It never replaces bytes it did not verify. The live file is moved aside first and verified there, and
+    the result is put in place with link(), which fails when another program (an editor's atomic save)
+    created the path again in the meantime: that save stays. Bytes written into the moved-aside file
+    after it was verified (by a program holding it open) are kept in a conflict file the error names."""
+    directory = os.path.dirname(os.path.abspath(path))
     try:
-        for watched, want in expect.items():
-            if read_bytes(watched) != want:
-                raise CatalogIOError("%s changed on disk since it was read; %s was not written, run again"
-                                     % (watched, path))
-        os.replace(f.name, path)
+        for other, held in (watched or {}).items():
+            if read_bytes(other) != held:
+                raise _changed(other, "changed on disk since it was read, so %s was not written" % path)
+        if want is None:
+            try:
+                os.link(staged, path)
+            except FileExistsError:
+                raise _changed(path, "was created since it was read as absent")
+            return
+        shutil.copymode(path, staged)
+        fd, aside = tempfile.mkstemp(prefix="." + os.path.basename(path) + ".", suffix=".aside", dir=directory)
+        os.close(fd)
+        try:
+            os.rename(path, aside)
+        except FileNotFoundError:
+            os.remove(aside)
+            raise _changed(path, "was removed since it was read")
+        if read_bytes(aside) != want:
+            _put_back(path, aside)
+            raise _changed(path, "changed on disk since it was read")
+        try:
+            os.link(staged, path)
+        except FileExistsError:
+            os.remove(aside)  # it holds the verified old bytes; the newer save at `path` stays
+            raise _changed(path, "was saved while it was published")
+        if read_bytes(aside) != want:
+            conflict = _conflict_name(path)
+            os.rename(aside, conflict)
+            raise CatalogIOError("%s was written while it was published; that write is kept in %s and %s holds "
+                                 "the tool's result: merge the two, then run again" % (path, conflict, path))
+        os.remove(aside)
     finally:
-        if os.path.exists(f.name):
-            os.remove(f.name)
+        if os.path.exists(staged):
+            os.remove(staged)
+
+
+def _put_back(path, aside):
+    """Return the moved-aside file to `path`, unless a newer file is there: then keep it as a conflict file."""
+    try:
+        os.link(aside, path)
+    except FileExistsError:
+        conflict = _conflict_name(path)
+        os.rename(aside, conflict)
+        raise CatalogIOError("%s was saved twice while it was published; the newer save stays and the "
+                             "earlier one is kept in %s; run again" % (path, conflict))
+    os.remove(aside)
+
+
+def _conflict_name(path):
+    return "%s.conflict-%s" % (path, time.strftime("%Y%m%d-%H%M%S"))
 
 
 def write_catalog(path, catalog):

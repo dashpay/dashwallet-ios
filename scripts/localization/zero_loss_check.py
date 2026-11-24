@@ -499,7 +499,7 @@ def render(baseline, how, rows, unused, unmapped, watch, findings, mode="pre-mer
 
 def write_key_map(repo, baseline, keys, expect):
     """Write the key map; `expect` ({path: bytes read}) holds the Catalog and key map as the run read
-    them, so a map derived from an older read never replaces a newer save (catalog_io.publish_text)."""
+    them; the map is put in place only over the key map bytes in `expect` (catalog_io.publish_text)."""
     text = json.dumps({"baseline": baseline, "keys": keys}, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
     catalog_io.publish_text(os.path.join(repo, KEY_MAP), text, expect)
 

@@ -66,15 +66,18 @@ def arg_types(baseline_key, key, args):
     return types
 
 
-def write_fixture(repo, fixture, key_map_bytes):
-    """Write the fixture atomically, only while the key map it was derived from is on disk unchanged."""
+def write_fixture(repo, fixture, key_map_bytes, fixture_bytes):
+    """Write the fixture over the bytes it held when the run started (`fixture_bytes`, None: absent), only
+    while the key map it was derived from is on disk unchanged (catalog_io.publish_text)."""
     text = json.dumps(fixture, ensure_ascii=False, indent=1, sort_keys=True) + "\n"
-    catalog_io.publish_text(os.path.join(repo, OUT), text, {os.path.join(repo, zl.KEY_MAP): key_map_bytes})
+    out = os.path.join(repo, OUT)
+    catalog_io.publish_text(out, text, {out: fixture_bytes, os.path.join(repo, zl.KEY_MAP): key_map_bytes})
 
 
 def main():
     repo = zl.repo_root()
     rev, key_map, key_map_bytes = zl.load_key_map(repo)
+    fixture_bytes = catalog_io.read_bytes(os.path.join(repo, OUT))
     locales = compiled_locales(repo)
     english = stringsdict(repo, rev, "en")
     specs = zl.counted_specs(repo, rev, locales)
@@ -117,7 +120,7 @@ def main():
 
     fixture = {"baseline": rev, "counts": list(zl.COUNTS), "defects": defects, "locales": locales,
                "phrases": phrases, "variant_keys": variants}
-    write_fixture(repo, fixture, key_map_bytes)
+    write_fixture(repo, fixture, key_map_bytes, fixture_bytes)
     print("%s: %d phrases x %d locales x %d counts, Baseline %s"
           % (OUT, len(phrases), len(locales), len(zl.COUNTS), rev[:12]))
 
