@@ -513,6 +513,15 @@ def render(baseline, how, rows, unused, unmapped, watch, findings, mode="pre-mer
     return "\n".join(lines) + "\n"
 
 
+def refuse_leftover(path):
+    """CannotRun naming a moved-aside file that an interrupted publication of `path` left
+    (catalog_io.refuse_leftover); it may hold the only copy. Called wherever `path` is found missing."""
+    try:
+        catalog_io.refuse_leftover(path)
+    except catalog_io.CatalogIOError as e:
+        raise CannotRun(str(e))
+
+
 def write_key_map(repo, baseline, keys, expect):
     """Write the key map; `expect` ({path: bytes read}) holds the Catalog and key map as the run read
     them; the map is put in place only over the key map bytes in `expect` (catalog_io.publish_text)."""
@@ -533,6 +542,9 @@ def load_key_map(repo):
         with open(path, "rb") as f:
             raw = f.read()
         data = json.loads(raw.decode("utf-8"))
+    except FileNotFoundError as e:
+        refuse_leftover(path)
+        raise CannotRun("key map %s is missing (%s); run the pre-merge check with --write-key-map" % (KEY_MAP, e))
     except (OSError, ValueError) as e:
         raise CannotRun("key map %s is missing or unreadable (%s); run the pre-merge check with --write-key-map"
                         % (KEY_MAP, e))
@@ -553,6 +565,7 @@ def check_release(args):
     check_formatter()
     catalog_path = os.path.join(repo, CATALOG)
     if not os.path.isfile(catalog_path):
+        refuse_leftover(catalog_path)
         raise CannotRun("no Catalog at %s" % CATALOG)
     cur_strings = catalog_io.read_catalog(catalog_path)["strings"]
     base_catalog = baseline_lists.build_catalog(repo, baseline)
@@ -582,11 +595,15 @@ def check(args):
     check_formatter()
     catalog_path = os.path.join(repo, CATALOG)
     if not os.path.isfile(catalog_path):
+        refuse_leftover(catalog_path)
         raise CannotRun("no Catalog at %s" % CATALOG)
     # Read once: the key map is derived from these bytes and is written only while they are on disk.
     read_before = {catalog_path: catalog_io.read_bytes(catalog_path),
                    os.path.join(repo, KEY_MAP): catalog_io.read_bytes(os.path.join(repo, KEY_MAP))}
+    if read_before[os.path.join(repo, KEY_MAP)] is None:
+        refuse_leftover(os.path.join(repo, KEY_MAP))
     if read_before[catalog_path] is None:
+        refuse_leftover(catalog_path)
         raise CannotRun("no Catalog at %s" % CATALOG)
     cur_strings = json.loads(read_before[catalog_path].decode("utf-8"))["strings"]
     base_catalog = baseline_lists.build_catalog(repo, baseline)

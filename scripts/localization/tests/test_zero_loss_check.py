@@ -670,6 +670,27 @@ class CannotRunTests(ZeroLossCase):
         self.assert_cannot_run(res, "older", "DashWallet/Sources/Send.swift")
         self.assertFalse(os.path.exists(os.path.join(self.repo, KEY_MAP)))
 
+    def moved_aside(self, rel):
+        """Move `rel` aside the way a publication killed in its window leaves it; return the aside path."""
+        path = os.path.join(self.repo, rel)
+        aside = os.path.join(os.path.dirname(path), "." + os.path.basename(path) + ".abc123.aside")
+        os.rename(path, aside)
+        return aside
+
+    def test_a_missing_catalog_with_a_moved_aside_file_names_it(self):
+        aside = self.moved_aside(CATALOG)
+        res = self.run_cli()
+        self.assert_cannot_run(res, aside)
+        self.assertTrue(os.path.exists(aside))
+
+    def test_a_missing_key_map_with_a_moved_aside_file_names_it(self):
+        res = self.run_cli("--write-key-map")
+        self.assertEqual(res.returncode, 0, res.stdout + res.stderr)
+        aside = self.moved_aside(KEY_MAP)
+        res = self.run_cli()  # a run that would not write the key map names it too
+        self.assert_cannot_run(res, aside)
+        self.assertFalse(os.path.exists(os.path.join(self.repo, KEY_MAP)))
+
     def test_formatter_self_test_failed(self):
         res = self.run_cli(extra_env={"FORMATTER_FORCE_ROUTE": "localizedStringWithFormat"})
         self.assert_cannot_run(res, "self-test", "plural")

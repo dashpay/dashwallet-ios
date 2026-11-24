@@ -14,7 +14,11 @@ Objective-C .m/.mm files under SRCROOT named in the <arch>/*.d dependency files,
 format the Xcode app writes) and, only when the bytes changed, puts the result in place over the
 snapshot's bytes with catalog_io.publish_file; an edit saved during the build stays (in place or in a
 conflict file the error names) and the sync stops with an error (build again). The one window left is a
-write through a handle opened before the publication and made after its last comparison (see publish_file). Builds of one checkout sync one at a time (a lock on the Catalog's folder).
+write through a handle opened before the publication and made after its last comparison (see publish_file). Builds of one checkout sync one at a time (a lock on the Catalog's folder,
+held from the first look at the Catalog). A missing Catalog skips the sync, unless an interrupted
+publication left it moved aside: then the error names that file. A reader that does not take the lock
+(the compile of the Catalog by another target) can find the path missing while the old file is verified
+in the moved-aside file; keeping the path in place there would let the link replace an editor's save.
 
 Only a Debug build syncs: another configuration (Release, TestFlight, TestNet) does not compile
 `#if DEBUG` code, so its sync would mark the texts only that code looks up as stale, and the
@@ -198,23 +202,30 @@ def main(argv=None):
                 raise SyncError("environment variable %s is not set" % name)
         srcroot = env["SRCROOT"]
         catalog = env.get("SYNC_CATALOG_PATH") or os.path.join(srcroot, "DashWallet", "Localizable.xcstrings")
-        if not os.path.isfile(catalog):
+        catalog_dir = os.path.dirname(os.path.abspath(catalog))
+        if not os.path.isdir(catalog_dir):
             print("note: %s not found; Catalog sync skipped" % catalog)
             return 0
-        stringsdata, swift_files, objc_files = collect(
-            srcroot, env["OBJECT_FILE_DIR_normal"], env["TARGET_NAME"], env.get("ARCHS", "").split())
-        # Read before the sync: an input changed while it runs is newer than the stamp and syncs next build.
-        states = input_states(stringsdata + swift_files + objc_files)
-        stamp = os.path.join(env["OBJECT_FILE_DIR_normal"], STAMP_NAME)
-        if read_stamp(stamp) == fingerprint(catalog, states):
-            print("Catalog sync: skipped, inputs unchanged since the last sync (%.1fs)" % (time.time() - started))
-            return 0
-        catalog_dir = os.path.dirname(os.path.abspath(catalog))
-        # Two builds of one checkout sync one at a time: the lock is on the Catalog's folder, so
-        # it adds no file to the checkout.
+        # Two builds of one checkout sync one at a time: the lock is on the Catalog's folder, so it adds
+        # no file to the checkout. It is held from the first look at the Catalog: another build's
+        # publication moves the Catalog aside for a moment, and only under the lock is a missing Catalog
+        # or a moved-aside file not that moment.
         lock = os.open(catalog_dir, os.O_RDONLY)
         try:
             fcntl.flock(lock, fcntl.LOCK_EX)
+            if not os.path.isfile(catalog):
+                # A moved-aside file here is an interrupted publication's and may hold the only copy.
+                catalog_io.refuse_leftover(catalog)
+                print("note: %s not found; Catalog sync skipped" % catalog)
+                return 0
+            stringsdata, swift_files, objc_files = collect(
+                srcroot, env["OBJECT_FILE_DIR_normal"], env["TARGET_NAME"], env.get("ARCHS", "").split())
+            # Read before the sync: an input changed while it runs is newer than the stamp and syncs next build.
+            states = input_states(stringsdata + swift_files + objc_files)
+            stamp = os.path.join(env["OBJECT_FILE_DIR_normal"], STAMP_NAME)
+            if read_stamp(stamp) == fingerprint(catalog, states):
+                print("Catalog sync: skipped, inputs unchanged since the last sync (%.1fs)" % (time.time() - started))
+                return 0
             with tempfile.TemporaryDirectory(prefix="sync-catalog-") as tmp:
                 # The sync works on a snapshot. A change is judged against the snapshot, and the result is
                 # put in place only over the snapshot's bytes (catalog_io.publish_file), so an edit saved

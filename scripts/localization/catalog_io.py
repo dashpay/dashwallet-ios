@@ -78,7 +78,8 @@ def publish_file(path, staged, want, watched=None):
     earlier are kept in a conflict file when they land before the final comparison; a write through such
     a handle after it goes to the unlinked old file. While the moved-aside file is verified the path does
     not exist. A process killed (SIGKILL, a crash) while the file is moved aside leaves it only in the
-    moved-aside file; the next publication refuses and names it. A filesystem without hard links is
+    moved-aside file; the next publication, and a reader that finds the path missing (refuse_leftover),
+    refuses and names it. A filesystem without hard links is
     refused before anything moves."""
     directory = os.path.dirname(os.path.abspath(path))
     prefix = "." + os.path.basename(path) + "."
@@ -86,11 +87,7 @@ def publish_file(path, staged, want, watched=None):
         for other, held in (watched or {}).items():
             if read_bytes(other) != held:
                 raise _changed(other, "changed on disk since it was read, so %s was not written" % path)
-        for name in sorted(n for n in os.listdir(directory) if n.startswith(prefix) and n.endswith(".aside")):
-            leftover = os.path.join(directory, name)
-            raise CatalogIOError("%s was left by an interrupted publication of %s and may hold its only copy; "
-                                 "compare it with %s, keep what is needed, delete it, then run again"
-                                 % (leftover, path, path))
+        refuse_leftover(path)
         if want is None:
             try:
                 os.link(staged, path)
@@ -109,6 +106,19 @@ def publish_file(path, staged, want, watched=None):
     finally:
         if os.path.exists(staged):
             os.remove(staged)
+
+
+def refuse_leftover(path):
+    """Raise CatalogIOError naming a moved-aside file that an interrupted publication of `path` left next
+    to it; it may hold the only copy of the file. publish_file calls it first, and a reader that finds
+    `path` missing calls it before it reports the file as absent."""
+    directory = os.path.dirname(os.path.abspath(path))
+    prefix = "." + os.path.basename(path) + "."
+    for name in sorted(n for n in os.listdir(directory) if n.startswith(prefix) and n.endswith(".aside")):
+        leftover = os.path.join(directory, name)
+        raise CatalogIOError("%s was left by an interrupted publication of %s and may hold its only copy; "
+                             "compare it with %s, keep what is needed, delete it, then run again"
+                             % (leftover, path, path))
 
 
 @contextlib.contextmanager

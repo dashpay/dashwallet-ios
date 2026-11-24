@@ -13,7 +13,7 @@ import unittest
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from test_zero_loss_check import (  # noqa: E402
-    KEY_MAP, ZeroLossCase, finding_fields, fixture)
+    CATALOG, KEY_MAP, ZeroLossCase, finding_fields, fixture)
 
 
 class ReleaseCase(ZeroLossCase):
@@ -165,6 +165,19 @@ class ReleaseCannotRunTests(ReleaseCase):
     def test_missing_key_map(self):
         os.remove(self.map_path)
         self.assert_cannot_run(self.release(), "key map")
+
+    def moved_aside(self, path):
+        aside = os.path.join(os.path.dirname(path), "." + os.path.basename(path) + ".abc123.aside")
+        os.rename(path, aside)
+        return aside
+
+    def test_a_missing_key_map_with_a_moved_aside_file_names_it(self):
+        aside = self.moved_aside(self.map_path)
+        self.assert_cannot_run(self.release(), aside)
+
+    def test_a_missing_catalog_with_a_moved_aside_file_names_it(self):
+        aside = self.moved_aside(os.path.join(self.repo, CATALOG))
+        self.assert_cannot_run(self.release(), aside)
 
     def test_unreadable_key_map(self):
         with open(self.map_path, "w") as f:

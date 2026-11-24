@@ -43,7 +43,7 @@ Release mode is decided by ADR-0072 (Proposed), which amends ADR-0069 for releas
 |---|---|
 | `0` | Pass: every check below held. |
 | `1` | Fail: at least one finding. Every finding is printed; no partial success is reported. |
-| `2` | Cannot run: bad flags, not a git repository, Baseline revision not found, `xcstringstool` or `swift` missing, no `.stringsdata` or a `.stringsdata` record older than its own working-tree Swift file (ADR-0069), no `dashpay` build of this checkout in DerivedData, a missing or empty Baseline build folder, a missing or mismatching `baseline-commit` record (rebuild with `build_baseline.sh`), key map missing or unreadable in release mode, or the formatter self-test failed (below). Nothing is compared. |
+| `2` | Cannot run: bad flags, not a git repository, Baseline revision not found, `xcstringstool` or `swift` missing, no `.stringsdata` or a `.stringsdata` record older than its own working-tree Swift file (ADR-0069), no `dashpay` build of this checkout in DerivedData, a missing or empty Baseline build folder, a missing or mismatching `baseline-commit` record (rebuild with `build_baseline.sh`), key map missing or unreadable in release mode, the Catalog or the key map missing while a moved-aside file of an interrupted write (`.<name>.<random>.aside`, possibly its only copy) is next to it (the error names that file), or the formatter self-test failed (below). Nothing is compared. |
 
 ## What it checks
 

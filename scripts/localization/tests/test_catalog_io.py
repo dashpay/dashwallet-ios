@@ -416,6 +416,33 @@ class WritersGoThroughPublishTextTest(unittest.TestCase):
         with open(fixture, "rb") as f:
             self.assertEqual(f.read(), b"saved later")
 
+    def test_the_fixture_writer_names_a_moved_aside_fixture_before_any_work(self):
+        import baseline_plural_forms
+        fixture = os.path.join(self.repo, baseline_plural_forms.OUT)
+        os.makedirs(os.path.dirname(fixture), exist_ok=True)
+        aside = os.path.join(os.path.dirname(fixture), "." + os.path.basename(fixture) + ".abc123.aside")
+        with open(aside, "wb") as f:
+            f.write(b"only copy")
+        with mock.patch.object(self.zl, "repo_root", return_value=self.repo), \
+                mock.patch.object(self.zl, "load_key_map", return_value=("0" * 40, {}, b"{}")), \
+                mock.patch.object(baseline_plural_forms, "compiled_locales",
+                                  side_effect=AssertionError("worked past the leftover")):
+            with self.assertRaises(self.zl.CannotRun) as cm:
+                baseline_plural_forms.main()
+        self.assertIn(aside, str(cm.exception))
+
+    def test_refuse_leftover_names_only_the_path_s_own_moved_aside_files(self):
+        other = os.path.join(os.path.dirname(self.catalog), ".Other.xcstrings.abc123.aside")
+        with open(other, "wb"):
+            pass
+        catalog_io.refuse_leftover(self.catalog)
+        own = os.path.join(os.path.dirname(self.catalog), ".Localizable.xcstrings.abc123.aside")
+        with open(own, "wb"):
+            pass
+        with self.assertRaises(catalog_io.CatalogIOError) as cm:
+            catalog_io.refuse_leftover(self.catalog)
+        self.assertIn(own, str(cm.exception))
+
     def test_every_writer_publishes_through_publish_file(self):
         # One choke point: no tool writes a checkout file by os.replace or an open() for writing.
         import re

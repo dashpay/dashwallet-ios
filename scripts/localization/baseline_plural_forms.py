@@ -78,6 +78,8 @@ def main():
     repo = zl.repo_root()
     rev, key_map, key_map_bytes = zl.load_key_map(repo)
     fixture_bytes = catalog_io.read_bytes(os.path.join(repo, OUT))
+    if fixture_bytes is None:
+        zl.refuse_leftover(os.path.join(repo, OUT))
     locales = compiled_locales(repo)
     english = stringsdict(repo, rev, "en")
     specs = zl.counted_specs(repo, rev, locales)

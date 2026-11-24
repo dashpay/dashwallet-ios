@@ -147,6 +147,42 @@ class SyncCatalogTest(unittest.TestCase):
         self.assertFalse(os.path.exists(self.catalog))
         self.assertTrue(res.stdout.strip(), "expected a note on stdout")
 
+    def test_a_missing_catalog_with_a_moved_aside_file_fails_and_names_it(self):
+        # A publication killed while the Catalog was moved aside: the moved-aside file is its only copy.
+        aside = os.path.join(os.path.dirname(self.catalog), ".Localizable.xcstrings.abc123.aside")
+        os.rename(self.catalog, aside)
+        res = self.run_sync()
+        self.assertEqual(res.returncode, 1, res.stdout + res.stderr)
+        self.assertIn(aside, res.stderr)
+        self.assertNotIn("Catalog sync skipped", res.stdout)
+        self.assertTrue(os.path.exists(aside))
+        self.assertFalse(os.path.exists(self.catalog))
+
+    def test_a_catalog_moved_aside_by_another_build_s_publication_is_waited_for(self):
+        # Another build holds the lock between moving the Catalog aside and linking it back.
+        import fcntl
+        import threading
+        import time
+        folder = os.path.dirname(self.catalog)
+        aside = os.path.join(folder, ".Localizable.xcstrings.abc123.aside")
+        lock = os.open(folder, os.O_RDONLY)
+        self.addCleanup(os.close, lock)
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        os.rename(self.catalog, aside)
+
+        def finish_publication():
+            time.sleep(1.0)
+            os.link(aside, self.catalog)
+            os.remove(aside)
+            fcntl.flock(lock, fcntl.LOCK_UN)
+        other = threading.Thread(target=finish_publication)
+        other.start()
+        res = self.run_sync()
+        other.join()
+        self.assertEqual(res.returncode, 0, res.stdout + res.stderr)
+        self.assertNotIn("not found", res.stdout)
+        self.assertIn("Catalog sync:", res.stdout)
+
     # --- The sync phase's edge cases: missing and leftover inputs ---
 
     def test_swift_files_without_any_stringsdata_fail_the_build(self):
