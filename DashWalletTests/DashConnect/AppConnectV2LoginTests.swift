@@ -1156,11 +1156,27 @@ final class AppConnectConnectionTermsTests: XCTestCase {
     // MARK: Balance
 
     func testAConsensusRefusalForTheBalanceOffersATopUp() {
-        let refusal = DashConnectPlatformError.networkRefused(code: AppConnect.identityInsufficientBalanceCode)
+        let refusal = DashConnectPlatformError.networkRefused(code: PlatformConsensusCode.identityInsufficientBalance)
 
         XCTAssertTrue(AppConnect.isInsufficientBalance(refusal))
         XCTAssertFalse(AppConnect.isInsufficientBalance(DashConnectPlatformError.networkRefused(code: 40_100)))
         XCTAssertEqual(PlatformDashConnectDataSource.approvalFailure(after: refusal) as? DashConnectPlatformError, refusal)
+    }
+
+    func testABalanceRefusalIsReadFromTheSDKErrorsConsensusCode() {
+        let balance = PlatformConsensusError(code: 40_210, kind: .state)
+
+        XCTAssertTrue(AppConnect.isInsufficientBalance(PlatformWalletError.consensusRejection(balance, "reworded by Platform")))
+        XCTAssertTrue(AppConnect.isInsufficientBalance(SDKError.consensusRejection(balance, "reworded by Platform")))
+        XCTAssertFalse(AppConnect.isInsufficientBalance(
+            PlatformWalletError.consensusRejection(PlatformConsensusError(code: 40_100, kind: .state), "reworded by Platform")))
+    }
+
+    func testAnUnconfirmedUpdateIsNoBalanceShortfallWhateverItsText() {
+        let unconfirmed = PlatformWalletError.transactionBroadcastUnconfirmed(
+            "Failed to broadcast identity update: Insufficient identity abc balance")
+
+        XCTAssertFalse(AppConnect.isInsufficientBalance(unconfirmed))
     }
 
     func testABalanceFailureAfterTheUpdateStaysABalanceFailure() {

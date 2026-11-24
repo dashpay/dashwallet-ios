@@ -12,11 +12,46 @@ class SchemaReleaseTest < Minitest::Test
 
   class GitHub
     attr_accessor :registry
-    attr_reader :dispatches, :retained_sources
+    attr_reader :dispatches, :retained_sources, :tags, :comparisons, :fast_forwards, :pulls, :branches
+    attr_accessor :open_pull, :closed_pull_commit, :uploaded_runs
     def initialize
       @registry = { "format_version" => 1, "schemas" => {}, "releases" => {} }
       @dispatches = []
       @retained_sources = []
+      # The release mirror: tags by name, and how a head stands against a base.
+      # By default the release branch is still the pre-mirror line.
+      @tags, @comparisons, @fast_forwards, @pulls, @open_pull = {}, { ["master", "a" * 40] => "identical", ["v9.1.4", "master"] => "diverged" }, [], [], false
+    end
+    def tag_commit(_repo, name)
+      @tags[name]
+    end
+    def create_tag(_repo, name, commit)
+      @tags[name] = commit
+    end
+    def compare(_repo, base, head)
+      # A merge-back branch holds the commit it was created at unless a test says otherwise.
+      @comparisons.fetch([base, head]) { head.start_with?("merge-back/") ? "identical" : raise(KeyError, "no comparison for #{base}...#{head}") }
+    end
+    UPLOAD_WINDOW = [Time.utc(2026, 11, 1, 10, 0, 0), Time.utc(2026, 11, 1, 10, 6, 0)].freeze
+    def successful_step_window(_repo, run_id, attempt, workflow:, step:)
+      UPLOAD_WINDOW if workflow == SchemaRelease::RELEASE_WORKFLOW && step == SchemaRelease::UPLOAD_STEP && Array(@uploaded_runs).include?([run_id, attempt])
+    end
+    def fast_forward(_repo, branch, commit)
+      @fast_forwards << [branch, commit]
+    end
+    def offered_pull(_repo, head:, base:)
+      return "open" if @open_pull
+      "closed" if @closed_pull_commit && head == "merge-back/#{@closed_pull_commit[0, 12]}"
+    end
+    def create_branch(_repo, name, commit)
+      (@branches ||= {})[name] = commit
+    end
+    def ref(_repo, _branch)
+      RELEASE_TIP
+    end
+    def create_pull(_repo, head:, base:, title:, body:)
+      @pulls << { head: head, base: base, title: title, body: body }
+      "https://example.test/pull/1"
     end
     def file(*_args)
       SchemaRelease.json(@registry)
@@ -91,6 +126,8 @@ class SchemaReleaseTest < Minitest::Test
                   "wallet_sha" => "a" * 40, "platform_sha" => "b" * 40, "schema" => SCHEMA,
                   "fixture_path" => "stores/#{@digest}.store", "fixture_sha256" => @digest }
     save_manifest
+    # The release workflow binds every build it uploads; the mirror needs it.
+    bind("apple21", @path)
     historical_fixture = "SQLite format 3\x00historical synthetic test"
     @historical_fixture = historical_fixture
     @store.github.registry["historical_schemas"] = { "2.0.0" => {
@@ -158,6 +195,320 @@ class SchemaReleaseTest < Minitest::Test
     assert_empty @store.github.dispatches
   end
 
+  # The release mirror. By default the fake has `master` at the published
+  # commit and not yet cut over, so the other tests see a mirror with nothing
+  # to move and nothing to offer.
+  WALLET = "a" * 40
+  RELEASE_TIP = "d" * 40
+
+  # `release`: the published commit against master. `development`: master (or
+  # the tip a dry run would give it) against develop. `cutover`: the same tip
+  # against the tag the mirror starts from.
+  def bind(build_id, path)
+    @store.files["apple-builds/#{build_id}.json"] = SchemaRelease.json(
+      { build_id: build_id, manifest_path: path, manifest_sha256: Digest::SHA256.hexdigest(@store.files.fetch(path)) })
+  end
+
+  def mirroring(release: "ahead", development: "behind", cutover: "ahead")
+    @store.files.delete("apple-builds/apple21.json") if @unbound
+    github = @store.github
+    github.comparisons[["master", WALLET]] = release
+    ["master", WALLET].each do |tip|
+      github.comparisons[["develop", tip]] = development
+      github.comparisons[["v9.1.4", tip]] = cutover
+    end
+    @output = StringIO.new
+    SchemaRelease::Pipeline.new(store: @store, apple: @apple, bundle_id: BUNDLE, output: @output)
+  end
+
+  def test_before_the_cutover_a_published_release_is_tagged_and_reported_and_nothing_else_is_written
+    error = assert_raises(SchemaRelease::Error) { mirroring(release: "diverged", development: "diverged", cutover: "diverged").sync }
+    assert_includes error.message, "do the cutover in ADR-0054"
+    github = @store.github
+    assert_equal({ "v9.1.0" => WALLET }, github.tags)
+    assert_empty github.fast_forwards
+    assert_empty github.pulls
+    assert_equal [["new", @store.head]], github.dispatches
+  end
+
+  def test_publication_is_tagged_and_the_release_branch_fast_forwarded
+    mirroring.sync
+    github = @store.github
+    assert_equal({ "v9.1.0" => WALLET }, github.tags)
+    assert_equal [["master", WALLET]], github.fast_forwards
+    assert_empty github.pulls
+    assert_equal [["new", @store.head]], github.dispatches
+  end
+
+  def test_mirror_runs_for_a_release_whose_freeze_is_already_merged
+    merge_release
+    mirroring.sync
+    assert_equal({ "v9.1.0" => WALLET }, @store.github.tags)
+    assert_equal [["master", WALLET]], @store.github.fast_forwards
+    assert_empty @store.github.dispatches
+  end
+
+  def test_mirrored_release_is_left_alone_on_later_runs
+    @store.github.tags["v9.1.0"] = WALLET
+    mirroring(release: "identical").sync
+    assert_equal({ "v9.1.0" => WALLET }, @store.github.tags)
+    assert_empty @store.github.fast_forwards
+  end
+
+  def test_tag_on_another_commit_is_reported_and_never_moved_but_the_branch_still_advances
+    @store.github.tags["v9.1.0"] = "c" * 40
+    error = assert_raises(SchemaRelease::Error) { mirroring.sync }
+    assert_includes error.message, "Tag v9.1.0 names #{'c' * 40}"
+    assert_equal({ "v9.1.0" => "c" * 40 }, @store.github.tags)
+    assert_equal [["master", WALLET]], @store.github.fast_forwards
+    assert_equal [["new", @store.head]], @store.github.dispatches
+  end
+
+  def test_diverged_publication_is_tagged_and_reported_without_moving_the_branch
+    error = assert_raises(SchemaRelease::Error) { mirroring(release: "diverged", development: "diverged").sync }
+    assert_includes error.message, "does not descend from master"
+    refute_includes error.message, "with a merge commit"
+    assert_equal({ "v9.1.0" => WALLET }, @store.github.tags)
+    assert_empty @store.github.fast_forwards
+    assert_equal [["new", @store.head]], @store.github.dispatches
+    # A publication that cannot be mirrored does not hide a published hotfix
+    # that develop still lacks.
+    assert_equal 1, @store.github.pulls.length
+  end
+
+  def test_release_branch_from_before_the_cutover_is_never_offered_to_develop
+    assert_raises(SchemaRelease::Error) { mirroring(release: "diverged", development: "diverged", cutover: "diverged").sync }
+    assert_empty @store.github.pulls
+    assert_empty @store.github.fast_forwards
+  end
+
+  def test_changed_publication_evidence_stops_before_any_tag_or_branch_write
+    mirroring.sync
+    github = @store.github
+    github.tags.clear
+    github.fast_forwards.clear
+    @apple.builds["new"] = { "id" => "apple22", "attributes" => { "version" => "22" } }
+    @store.files[SchemaRelease.manifest_path(BUNDLE, "9.1.0", "22")] =
+      SchemaRelease.json(@manifest.merge("build_number" => "22", "wallet_sha" => "f" * 40))
+    error = assert_raises(SchemaRelease::Error) { mirroring.sync }
+    assert_includes error.message, "Published release evidence changed"
+    assert_empty github.tags
+    assert_empty github.fast_forwards
+  end
+
+  def test_release_branch_past_the_newest_publication_is_an_error_and_is_not_offered_to_develop
+    @store.github.tags["v9.1.0"] = WALLET
+    pipeline = mirroring(release: "behind", development: "ahead")
+    error = assert_raises(SchemaRelease::Error) { pipeline.sync }
+    assert_includes error.message, "commits after it that the App Store has not published"
+    assert_empty @store.github.fast_forwards
+    assert_empty @store.github.pulls
+    assert_equal [["new", @store.head]], @store.github.dispatches
+
+    # The hold does not outlive the run that found it.
+    @store.github.comparisons[["master", WALLET]] = "identical"
+    pipeline.sync
+    assert_equal 1, @store.github.pulls.length
+  end
+
+  def test_published_hotfix_on_the_release_branch_is_offered_back_to_develop_once
+    mirroring(release: "identical", development: "ahead").sync
+    pull = @store.github.pulls.fetch(0)
+    # From a copy of master, never master itself: resolving conflicts in the
+    # pull request must not write to master.
+    assert_equal ["merge-back/#{RELEASE_TIP[0, 12]}", "develop"], pull.values_at(:head, :base)
+    assert_equal({ "merge-back/#{RELEASE_TIP[0, 12]}" => RELEASE_TIP }, @store.github.branches)
+    assert_match(/\Achore: /, pull[:title])
+    assert_includes pull[:title], "merge commit, do not squash"
+    assert_includes pull[:body], "merge commit, not a squash"
+    assert_includes pull[:body], "never by rebasing it"
+
+    @store.github.open_pull = true
+    mirroring(release: "identical", development: "diverged").sync
+    assert_equal 1, @store.github.pulls.length
+  end
+
+  def test_closed_merge_back_pull_request_is_not_opened_again_and_keeps_failing_the_run
+    @store.github.closed_pull_commit = RELEASE_TIP
+    error = assert_raises(SchemaRelease::Error) { mirroring(release: "identical", development: "diverged").sync }
+    assert_includes error.message, "was closed or squashed"
+    assert_empty @store.github.pulls
+
+    # A release branch that has moved since is a new offer.
+    @store.github.closed_pull_commit = "9" * 40
+    mirroring(release: "identical", development: "diverged").sync
+    assert_equal 1, @store.github.pulls.length
+  end
+
+  def test_mirror_dry_run_reports_and_changes_nothing
+    pipeline = mirroring(development: "ahead")
+    # Today's master has nothing develop lacks; the tip the run would give it does.
+    @store.github.comparisons[["develop", "master"]] = "behind"
+    pipeline.sync(dry_run: true)
+    github = @store.github
+    assert_empty github.tags
+    assert_empty github.fast_forwards
+    assert_empty github.pulls
+    assert_includes @output.string, "would tag #{WALLET} as v9.1.0"
+    assert_includes @output.string, "would fast-forward master"
+    assert_includes @output.string, "would open a pull request"
+  end
+
+  def add_older_publication(commit)
+    @apple.versions.insert(1, @apple.version("older", "9.0.5"))
+    @apple.builds["older"] = { "id" => "apple20", "attributes" => { "version" => "20" } }
+    @store.files[SchemaRelease.manifest_path(BUNDLE, "9.0.5", "20")] =
+      SchemaRelease.json(@manifest.merge("app_version" => "9.0.5", "build_number" => "20", "wallet_sha" => commit))
+    bind("apple20", SchemaRelease.manifest_path(BUNDLE, "9.0.5", "20"))
+  end
+
+  def test_unreadable_older_publication_does_not_hold_the_release_branch
+    pipeline = mirroring
+    add_publication_without_build("9.0.1")
+    assert_raises(SchemaRelease::Error) { pipeline.sync }
+    assert_equal [["master", WALLET]], @store.github.fast_forwards
+    refute_includes @output.string, "master is left where it is"
+  end
+
+  def test_unreadable_listed_publication_that_may_be_the_newest_keeps_the_release_branch_where_it_is
+    pipeline = mirroring
+    add_publication_without_build("9.1.1")
+    assert_raises(SchemaRelease::Error) { pipeline.sync }
+    # The readable publication is still tagged; it just cannot be taken for the newest.
+    assert_equal({ "v9.1.0" => WALLET }, @store.github.tags)
+    assert_empty @store.github.fast_forwards
+    assert_includes @output.string, "master is left where it is"
+  end
+
+  def test_publication_without_a_recorded_apple_build_binding_writes_no_tag_or_branch
+    @unbound = true
+    error = assert_raises(SchemaRelease::Error) { mirroring.sync }
+    assert_includes error.message, "no recorded binding"
+    assert_empty @store.github.tags
+    assert_empty @store.github.fast_forwards
+    assert_equal [["new", @store.head]], @store.github.dispatches
+  end
+
+  def test_publication_whose_release_run_uploaded_but_never_bound_is_bound_by_the_observer
+    @unbound = true
+    @manifest.merge!("workflow_run_id" => "4242", "workflow_run_attempt" => "2")
+    save_manifest
+    pipeline = mirroring
+    @store.github.uploaded_runs = [%w[4242 2]]
+    @apple.builds["new"]["attributes"]["uploadedDate"] = "2026-11-01T10:05:00Z"
+    pipeline.sync(dry_run: true)
+    refute @store.files.key?("apple-builds/apple21.json")
+    assert_includes @output.string, "would record the binding"
+    assert_includes @output.string, "would tag #{WALLET} as v9.1.0"
+
+    pipeline.sync
+    binding = @store.document("apple-builds/apple21.json")
+    assert_equal [@path, Digest::SHA256.hexdigest(@store.files.fetch(@path))], binding.values_at("manifest_path", "manifest_sha256")
+    assert_equal({ "v9.1.0" => WALLET }, @store.github.tags)
+    assert_equal [["master", WALLET]], @store.github.fast_forwards
+  end
+
+  def test_unbound_publication_is_not_bound_when_its_release_run_shows_no_upload
+    @unbound = true
+    @manifest.merge!("workflow_run_id" => "4242", "workflow_run_attempt" => "2")
+    save_manifest
+    pipeline = mirroring
+    @store.github.uploaded_runs = [%w[4242 1]]
+    @apple.builds["new"]["attributes"]["uploadedDate"] = "2026-11-01T10:05:00Z"
+    error = assert_raises(SchemaRelease::Error) { pipeline.sync }
+    assert_includes error.message, "does not show a successful upload"
+    refute @store.files.key?("apple-builds/apple21.json")
+    assert_empty @store.github.tags
+    assert_empty @store.github.fast_forwards
+  end
+
+  def test_unbound_publication_is_not_bound_when_apple_received_the_build_outside_the_upload_step
+    # A build number Apple freed after a failed processing, used again by an
+    # upload from elsewhere: same version and number, another archive.
+    @unbound = true
+    @manifest.merge!("workflow_run_id" => "4242", "workflow_run_attempt" => "2")
+    save_manifest
+    pipeline = mirroring
+    @store.github.uploaded_runs = [%w[4242 2]]
+    ["2026-11-01T11:30:00Z", nil, "yesterday"].each do |uploaded|
+      @apple.builds["new"]["attributes"]["uploadedDate"] = uploaded
+      error = assert_raises(SchemaRelease::Error) { pipeline.sync }
+      assert_includes error.message, "no recorded binding"
+      refute @store.files.key?("apple-builds/apple21.json")
+      assert_empty @store.github.tags
+      assert_empty @store.github.fast_forwards
+    end
+  end
+
+  def test_retry_of_one_release_leaves_no_mirror_state_for_the_next_run
+    @store.github.tags["v9.1.0"] = WALLET
+    pipeline = mirroring(release: "behind", development: "ahead")
+    assert_raises(SchemaRelease::Error) { pipeline.sync(release_id: "new") }
+    @store.github.comparisons[["master", WALLET]] = "identical"
+    pipeline.sync
+    assert_equal 1, @store.github.pulls.length
+  end
+
+  def test_release_workflow_still_has_the_upload_step_the_observer_reads
+    steps = File.read(File.expand_path("../workflows/release-dashpay-testflight.yml", __dir__), encoding: "UTF-8").scan(/^\s+- name: (.+)$/).flatten
+    upload = steps.index(SchemaRelease::UPLOAD_STEP)
+    refute_nil upload, "rename UPLOAD_STEP together with the workflow step"
+    # Evidence is written before the upload and the binding after it.
+    assert_operator steps.index("Persist candidate evidence before upload"), :<, upload
+    assert_operator upload, :<, steps.index("Bind the processed Apple build to its recorded sources")
+  end
+
+  def test_rewritten_merge_back_branch_is_reported
+    @store.github.open_pull = true
+    @store.github.comparisons[[RELEASE_TIP, "merge-back/#{RELEASE_TIP[0, 12]}"]] = "diverged"
+    error = assert_raises(SchemaRelease::Error) { mirroring(release: "identical", development: "diverged").sync }
+    assert_includes error.message, "it was rewritten"
+    assert_empty @store.github.pulls
+  end
+
+  def test_older_publication_is_tagged_but_only_the_newest_moves_the_release_branch
+    older = "c" * 40
+    pipeline = mirroring
+    add_older_publication(older)
+    # No comparison is registered for the older commit: asking for one fails.
+    pipeline.sync
+    assert_equal({ "v9.0.5" => older, "v9.1.0" => WALLET }, @store.github.tags)
+    assert_equal [["master", WALLET]], @store.github.fast_forwards
+  end
+
+  def test_manual_retry_of_an_older_publication_does_not_move_the_release_branch
+    older = "c" * 40
+    pipeline = mirroring(development: "ahead")
+    add_older_publication(older)
+    pipeline.sync(release_id: "older")
+    assert_equal({ "v9.0.5" => older }, @store.github.tags)
+    assert_empty @store.github.fast_forwards
+    # Nor does it offer the release branch to develop: it has not looked at
+    # the newest publication, so it cannot tell whether the branch is past it.
+    assert_empty @store.github.pulls
+  end
+
+  def test_publication_apple_no_longer_lists_is_not_mirrored_from_its_retained_proof
+    mirroring.sync
+    github = @store.github
+    github.tags.clear
+    github.fast_forwards.clear
+    @apple.versions.pop
+    mirroring.sync
+    assert_empty github.tags
+    assert_empty github.fast_forwards
+  end
+
+  def test_manifest_without_a_wallet_commit_is_reported_and_does_not_stop_the_freeze
+    @manifest.delete("wallet_sha")
+    save_manifest
+    bind("apple21", @path)
+    assert_raises(SchemaRelease::Error) { mirroring.sync }
+    assert_empty @store.github.tags
+    assert_empty @store.github.fast_forwards
+    assert_equal [["new", @store.head]], @store.github.dispatches
+  end
+
   def test_manual_id_must_be_a_published_post_baseline_version
     assert_raises(SchemaRelease::Error) { @pipeline.sync(release_id: "unpublished") }
     assert_raises(SchemaRelease::Error) { @pipeline.sync(release_id: "old") }
@@ -169,8 +520,8 @@ class SchemaReleaseTest < Minitest::Test
     assert_empty @store.github.dispatches
   end
 
-  def add_publication_without_build
-    @apple.versions.insert(1, @apple.version("missing-build", "9.0.1"))
+  def add_publication_without_build(version = "9.0.1")
+    @apple.versions.insert(1, @apple.version("missing-build", version))
     @apple.define_singleton_method(:version_build) do |id|
       raise AppStoreConnectRelease::Error, "Published App Store version #{id} has no associated build." if id == "missing-build"
       builds.fetch(id)
@@ -565,10 +916,13 @@ class SchemaReleaseTest < Minitest::Test
     SchemaRelease.bind_build(@store, env)
     SchemaRelease.bind_build(@store, env)
     assert_equal @path, @store.document("apple-builds/apple21.json")["manifest_path"]
-    # Publication also works when the workflow crashed before this index write.
+    # The freeze also works when the workflow crashed before this index write;
+    # only the release mirror waits for the binding, and says so.
     @store.files.delete("apple-builds/apple21.json")
-    @pipeline.sync
+    error = assert_raises(SchemaRelease::Error) { @pipeline.sync }
+    assert_includes error.message, "no recorded binding"
     assert_equal "apple21", @store.document("releases/new.json")["build_id"]
+    assert_equal [["new", @store.head]], @store.github.dispatches
   end
 
   def test_record_build_preserves_capture_and_refuses_reused_tuple
@@ -599,6 +953,16 @@ class SchemaReleaseTest < Minitest::Test
   def test_existing_apple_build_binding_cannot_point_elsewhere
     @store.files["apple-builds/apple21.json"] = SchemaRelease.json({ "manifest_path" => "different", "manifest_sha256" => "bad" })
     assert_raises(SchemaRelease::Error) { @pipeline.sync }
+  end
+
+  def test_apple_build_binding_that_is_not_an_object_is_refused
+    pipeline = mirroring
+    ["false", "0", "\"bound\"", "[]"].each do |document|
+      @store.files["apple-builds/apple21.json"] = document
+      assert_raises(SchemaRelease::Error) { pipeline.sync }
+    end
+    assert_empty @store.github.tags
+    assert_empty @store.github.fast_forwards
   end
 
   def test_rejects_path_injection_and_missing_fingerprint
@@ -768,6 +1132,106 @@ class SchemaGitHubRequestTest < Minitest::Test
       assert_includes error.message, "without moving or deleting"
     end
     assert_equal ["GET"], @calls
+  end
+
+  def release_tag(type, sha)
+    { "ref" => "refs/tags/v9.2.0", "object" => { "type" => type, "sha" => sha } }
+  end
+
+  def test_tag_commit_reads_through_an_annotated_tag_and_reports_a_missing_one
+    with_responses([Response.new("404", "")]) do
+      assert_nil @api.tag_commit("dashpay/dashwallet-ios", "v9.2.0")
+    end
+    @calls.clear
+    @requests.clear
+    with_responses([Response.new("200", JSON.generate(release_tag("tag", "e" * 40))),
+                    Response.new("200", JSON.generate({ "object" => { "type" => "commit", "sha" => "a" * 40 } }))]) do
+      assert_equal "a" * 40, @api.tag_commit("dashpay/dashwallet-ios", "v9.2.0")
+    end
+    assert_equal ["/repos/dashpay/dashwallet-ios/git/ref/tags/v9.2.0", "/repos/dashpay/dashwallet-ios/git/tags/#{'e' * 40}"],
+                 @requests.map(&:path)
+  end
+
+  def test_tag_commit_follows_a_tag_that_names_another_tag
+    inner = JSON.generate({ "object" => { "type" => "tag", "sha" => "f" * 40 } })
+    commit = JSON.generate({ "object" => { "type" => "commit", "sha" => "a" * 40 } })
+    with_responses([Response.new("200", JSON.generate(release_tag("tag", "e" * 40))),
+                    Response.new("200", inner), Response.new("200", commit)]) do
+      assert_equal "a" * 40, @api.tag_commit("dashpay/dashwallet-ios", "v9.2.0")
+    end
+  end
+
+  def test_malformed_json_is_an_error_that_does_not_carry_the_body
+    with_responses([Response.new("200", "<html>private-test-token</html>")]) do
+      error = assert_raises(SchemaRelease::Error) { @api.request("get", "repos/example/test") }
+      refute_kind_of JSON::ParserError, error
+      refute_includes error.message, "private-test-token"
+    end
+  end
+
+  def test_create_tag_race_returns_the_commit_the_tag_names_without_moving_it
+    with_responses([Response.new("422", "exists"), Response.new("200", JSON.generate(release_tag("commit", "c" * 40)))]) do
+      assert_equal "c" * 40, @api.create_tag("dashpay/dashwallet-ios", "v9.2.0", "a" * 40)
+    end
+    assert_equal %w[POST GET], @calls
+  end
+
+  def test_release_branch_update_is_never_forced
+    with_responses([Response.new("200", "{}")]) do
+      @api.fast_forward("dashpay/dashwallet-ios", "master", "a" * 40)
+    end
+    assert_equal "PATCH", @calls.fetch(0)
+    assert_equal "/repos/dashpay/dashwallet-ios/git/refs/heads/master", @requests.fetch(0).path
+    assert_equal({ "sha" => "a" * 40, "force" => false }, JSON.parse(@requests.fetch(0).body))
+  end
+
+  def test_compare_rejects_a_status_it_does_not_know
+    with_responses([Response.new("200", '{"status":"ahead"}')]) do
+      assert_equal "ahead", @api.compare("dashpay/dashwallet-ios", "master", "a" * 40)
+    end
+    assert_equal "/repos/dashpay/dashwallet-ios/compare/master...#{'a' * 40}?per_page=1", @requests.fetch(0).path
+    @calls.clear
+    with_responses([Response.new("200", "{}")]) do
+      assert_raises(SchemaRelease::Error) { @api.compare("dashpay/dashwallet-ios", "master", "a" * 40) }
+    end
+  end
+
+  def test_merge_back_branch_is_created_once_and_must_stay_at_its_commit
+    commit = "a" * 40
+    with_responses([Response.new("201", "{}")]) do
+      @api.create_branch("dashpay/dashwallet-ios", "merge-back/aaaaaaaaaaaa", commit)
+    end
+    assert_equal "/repos/dashpay/dashwallet-ios/git/refs", @requests.fetch(0).path
+    @calls.clear
+    with_responses([Response.new("422", ""), Response.new("200", %({"object":{"sha":"#{commit}"}}))]) do
+      @api.create_branch("dashpay/dashwallet-ios", "merge-back/aaaaaaaaaaaa", commit)
+    end
+    @calls.clear
+    with_responses([Response.new("422", ""), Response.new("200", %({"object":{"sha":"#{'b' * 40}"}}))]) do
+      assert_raises(SchemaRelease::Error) { @api.create_branch("dashpay/dashwallet-ios", "merge-back/aaaaaaaaaaaa", commit) }
+    end
+    @calls.clear
+  end
+
+  def test_offered_pull_lookup_and_a_token_that_cannot_open_one
+    lookup = lambda do |body|
+      @calls.clear
+      with_responses([Response.new("200", body)]) do
+        @api.offered_pull("dashpay/dashwallet-ios", head: "merge-back/aaaaaaaaaaaa", base: "develop")
+      end
+    end
+    assert_nil lookup.call("[]")
+    assert_equal "/repos/dashpay/dashwallet-ios/pulls?state=all&base=develop&head=dashpay:merge-back/aaaaaaaaaaaa&per_page=100", @requests.fetch(0).path
+    assert_equal "open", lookup.call(%([{"state":"closed"},{"state":"open"}]))
+    assert_equal "closed", lookup.call(%([{"state":"closed"}]))
+    assert_raises(SchemaRelease::Error) { lookup.call("{}") }
+    @calls.clear
+    with_responses([Response.new("403", "")]) do
+      error = assert_raises(SchemaRelease::Error) do
+        @api.create_pull("dashpay/dashwallet-ios", head: "master", base: "develop", title: "t", body: "b")
+      end
+      assert_includes error.message, "cannot open pull requests"
+    end
   end
 
   def test_source_tag_ambiguous_write_stops_until_a_later_run_can_reconcile

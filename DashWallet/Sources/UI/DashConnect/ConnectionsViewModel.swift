@@ -882,7 +882,7 @@ final class ConnectionsViewModel: ObservableObject {
                 self.pendingRequest = rebuilt
                 self.approveError = rebuilt.login == .unresolved
                     ? nil : DashConnectPlatformError.loginUnresolved.localizedDescription
-            } catch DashConnectPlatformError.networkRefused(let code) where code != AppConnect.identityInsufficientBalanceCode {
+            } catch DashConnectPlatformError.networkRefused(let code) where PlatformRefusal(code: code) != .identityBalanceTooLow {
                 Self.logApprovalStopped(DashConnectPlatformError.networkRefused(code: code))
                 // Platform refused the attempt for a reason a top-up does not
                 // fix. The attempt was recorded before it was sent, so the

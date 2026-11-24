@@ -1,6 +1,6 @@
 # 0016 — Turn off unrecorded keys on disconnect without asking
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-09
 - **Deciders:** romchornyi (ADR author), the product owner (disconnect is all or nothing)
 
