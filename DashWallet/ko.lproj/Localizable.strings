@@ -1576,6 +1576,9 @@
 /* Asset-lock retry failed */
 "Couldn't complete the transfer" = "이전을 완료하지 못했습니다";
 
+/* A Finish retry found the lock reported consumed without proof that the transfer finished */
+"Couldn't confirm the transfer finished. Check it in the original transaction's details." = "Couldn't confirm the transfer finished. Check it in the original transaction's details.";
+
 /* Masternodes */
 "Couldn't fetch the balance (network error). Try Refresh." = "잔액을 가져오지 못했습니다(네트워크 오류). 새로 고침을 시도해 보세요.";
 
@@ -2376,6 +2379,9 @@
 
 /* No comment provided by engineer. */
 "Finds owner and payout keys, which aren't in the masternode list. Sends the key's public fingerprint to a Platform node." = "마스터노드 목록에 없는 소유자 키와 지급 키를 찾습니다. 키의 공개 지문을 Platform 노드로 전송합니다.";
+
+/* External send */
+"Finish" = "Finish";
 
 /* InternalTransfer recovery */
 "Finish now" = "Finish now";
@@ -6239,6 +6245,9 @@
 /* Send: broadcast rejected; the argument is the SDK's reason */
 "The transaction wasn't sent. You can try again. %@" = "The transaction wasn't sent. You can try again. %@";
 
+/* External send */
+"The transfer could not be finished. Try again, or finish it later from the transaction details." = "The transfer could not be finished. Try again, or finish it later from the transaction details.";
+
 /* No comment provided by engineer. */
 "The transfer could take up to 10 minutes" = "The transfer could take up to 10 minutes";
 
@@ -6935,6 +6944,9 @@
 
 /* No comment provided by engineer. */
 "Transfer In" = "입금 거래";
+
+/* External send */
+"Transfer not finished" = "Transfer not finished";
 
 /* No comment provided by engineer. */
 "Transfer Out" = "출금 거래";
@@ -7969,6 +7981,9 @@
 
 /* DashConnect one-QR login */
 "Your Dash balance" = "Your Dash balance";
+
+/* External send */
+"Your Dash is held for this transfer. Finish it now, or later from the transaction details." = "Your Dash is held for this transfer. Finish it now, or later from the transaction details.";
 
 /* InternalTransfer recovery */
 "Your Dash is safe" = "Your Dash is safe";

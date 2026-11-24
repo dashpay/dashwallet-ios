@@ -105,7 +105,8 @@ final class ExternalSendFlowTests: XCTestCase {
 
     private func makeHarness(
         balances: [SendSource: UInt64]? = nil, fetchResult: Result<PaymentRequestDetails, Error>? = nil,
-        executor customExecutor: ExternalSendExecuting? = nil
+        executor customExecutor: ExternalSendExecuting? = nil, lockResumer: HeldAssetLockResuming? = nil,
+        proverWarmUp: ShieldedProverWarmUp? = nil
     ) -> Harness {
         let table = balances ?? [.core: 5 * oneDash, .shielded: 3 * oneDash, .platform: 2 * oneDash]
         let fakeBalances = FakeBalances(values: table)
@@ -122,13 +123,48 @@ final class ExternalSendFlowTests: XCTestCase {
             feeEstimator: estimator, maxPlanner: FakeMaxPlanner(), converter: FakeConverter(),
             currentIdentity: identity, paymentRequests: fetcher, clipboard: clipboard,
             initialRestoreSync: Just(false).eraseToAnyPublisher(),
-            initialRestoreSyncNow: { restoreSync.isRunning })
+            initialRestoreSyncNow: { restoreSync.isRunning }, lockResumer: lockResumer ?? FakeLockResumer(),
+            proverWarmUp: proverWarmUp ?? ShieldedProverWarmUp(
+                isHostReady: { false }, shieldedCredits: { nil }, isProverReady: { true }, build: {}, log: { _ in }))
         let log = FinishLog()
         flow.onFinish = { log.all.append($0) }
         flow.onRequestFailed = { log.requestFailures.append($0) }
         return Harness(flow: flow, executor: executor, estimator: estimator, lookup: lookup, fetcher: fetcher,
                        clipboard: clipboard, balances: fakeBalances, identity: identity, restoreSync: restoreSync,
                        finishes: log)
+    }
+
+    // MARK: - Shielded prover warm-up
+
+    func testOpeningTheFlowWithShieldedMoneyBuildsTheProverKeyOnceAcrossOpens() async {
+        let prover = ShieldedProverWarmUpTests.FakeProver()
+        var release: CheckedContinuation<Void, Never>?
+        prover.suspension = { await withCheckedContinuation { release = $0 } }
+        let warmUp = prover.warmUp()
+
+        makeHarness(proverWarmUp: warmUp).flow.start()
+        while release == nil { await Task.yield() }
+        makeHarness(proverWarmUp: warmUp).flow.start(pinned: .core)
+        XCTAssertEqual(prover.builds, 1, "a second open while the build runs starts none")
+
+        release?.resume()
+        while !prover.ready { await Task.yield() }
+        makeHarness(proverWarmUp: warmUp).flow.start()
+        XCTAssertEqual(prover.builds, 1, "an open after the build starts none")
+    }
+
+    func testOpeningTheFlowBuildsNothingWhenTheKeyIsBuiltOrShieldedIsEmpty() async {
+        let prover = ShieldedProverWarmUpTests.FakeProver()
+        prover.ready = true
+        makeHarness(proverWarmUp: prover.warmUp()).flow.start()
+
+        prover.ready = false
+        prover.shieldedCredits = 0
+        makeHarness(proverWarmUp: prover.warmUp()).flow.start()
+
+        await Task.yield()
+        XCTAssertEqual(prover.builds, 0)
+        XCTAssertTrue(prover.lines.isEmpty)
     }
 
     private func details(amount: UInt64? = nil, isSecure: Bool = false) -> PaymentRequestDetails {
@@ -140,7 +176,7 @@ final class ExternalSendFlowTests: XCTestCase {
     private func executor(paymentRequestSend: FakePaymentRequestSend) -> ExternalSendExecutor {
         ExternalSendExecutor(
             paymentRequestSend: paymentRequestSend,
-            balances: FakeBalances(values: [.core: 5 * oneDash]), logOutcome: { _ in },
+            balances: FakeBalances(values: [.core: 5 * oneDash]), logOutcome: { _, _ in },
             paymentNetwork: { .testnet })
     }
 
@@ -815,8 +851,8 @@ final class ExternalSendFlowTests: XCTestCase {
         let harness = makeHarness(
             fetchResult: .failure(FakeFetchError(message: "Request expired")),
             executor: ExternalSendExecutor(
-                standardSend: standardSend, balances: FakeBalances(values: [.core: 5 * oneDash]), logOutcome: { _ in },
-                paymentNetwork: { .testnet }))
+                standardSend: standardSend, balances: FakeBalances(values: [.core: 5 * oneDash]),
+                logOutcome: { _, _ in }, paymentNetwork: { .testnet }))
 
         await scan(
             harness, "dash:\(coreAddress)?amount=1&r=\(requestURL.absoluteString)&sender=merchantapp",
@@ -1170,6 +1206,74 @@ final class ExternalSendFlowTests: XCTestCase {
         XCTAssertEqual(harness.finishes.all, [.toast(
             title: "Send in progress",
             message: "Don't send it again. It can take a few minutes to finish.")])
+    }
+
+    func testLockHeldOpensTheLockHeldSheetAndKeepsTheFlowOpen() async throws {
+        let lock = HeldAssetLock(fundingTypeRaw: 5, txidWire: Data(repeating: 0x0C, count: 32), vout: 0)
+        let harness = makeHarness()
+        harness.executor.sendOutcome = .lockHeld(lock)
+        let confirm = try await openConfirm(harness)
+
+        await confirm.confirm()
+
+        XCTAssertEqual(harness.flow.step, .lockHeld)
+        XCTAssertEqual(harness.flow.lockHeldViewModel?.lock, lock)
+        XCTAssertTrue(harness.finishes.all.isEmpty, "the flow stays open for Finish or Close")
+    }
+
+    func testFinishOnALockHeldSendResumesTheLockAndShowsTheSentToast() async throws {
+        let lock = HeldAssetLock(fundingTypeRaw: 5, txidWire: Data(repeating: 0x0D, count: 32), vout: 3)
+        let resumer = FakeLockResumer()
+        let harness = makeHarness(lockResumer: resumer)
+        harness.executor.sendOutcome = .lockHeld(lock)
+        let confirm = try await openConfirm(harness)
+        await confirm.confirm()
+
+        await harness.flow.lockHeldViewModel?.finish()
+
+        XCTAssertEqual(resumer.resumed, [lock])
+        XCTAssertEqual(harness.finishes.all, [.success(.toast(message: "Sent"), txidWire: nil, callbackURL: nil)])
+    }
+
+    func testCloseOnALockHeldSendClosesWithoutResuming() async throws {
+        let lock = HeldAssetLock(fundingTypeRaw: 5, txidWire: Data(repeating: 0x0E, count: 32), vout: 0)
+        let resumer = FakeLockResumer()
+        let harness = makeHarness(lockResumer: resumer)
+        harness.executor.sendOutcome = .lockHeld(lock)
+        let confirm = try await openConfirm(harness)
+        await confirm.confirm()
+
+        harness.flow.closeFromLockHeld()
+
+        XCTAssertTrue(resumer.resumed.isEmpty)
+        XCTAssertEqual(harness.finishes.all, [.closed])
+    }
+
+    /// The resume can wait for a proof without a deadline, so Close stays available while Finish runs. Leaving neither
+    /// cancels the resume nor reports its later result: the transfer goes on, and the transaction details show it.
+    func testCloseWhileFinishRunsClosesTheFlowAndTheResumeRunsOn() async throws {
+        let lock = HeldAssetLock(fundingTypeRaw: 5, txidWire: Data(repeating: 0x0F, count: 32), vout: 0)
+        let resumer = FakeLockResumer()
+        let harness = makeHarness(lockResumer: resumer)
+        harness.executor.sendOutcome = .lockHeld(lock)
+        let confirm = try await openConfirm(harness)
+        await confirm.confirm()
+        let flow = harness.flow
+        let finishes = harness.finishes
+        let lockHeld = try XCTUnwrap(flow.lockHeldViewModel)
+        var cancelledAfterClose: Bool?
+        resumer.onResume = {
+            XCTAssertTrue(lockHeld.isFinishing)
+            flow.closeFromLockHeld()
+            XCTAssertEqual(finishes.all, [.closed])
+            cancelledAfterClose = Task.isCancelled
+        }
+
+        await lockHeld.finish()
+
+        XCTAssertFalse(try XCTUnwrap(cancelledAfterClose), "leaving does not cancel the resume")
+        XCTAssertEqual(resumer.resumed, [lock])
+        XCTAssertEqual(finishes.all, [.closed], "the result that arrives after leaving reports nothing")
     }
 
     func testNotSentOpensSendFailedWithTheReason() async throws {
@@ -1825,6 +1929,19 @@ private struct FakeConverter: SendAmountConverting {
 
 /// The executor at its protocol. A Core to Core prepare carries a standard plan with `coreTxHash`, as the live one
 /// does, so the flow can read the txid the success screen needs.
+@MainActor
+private final class FakeLockResumer: HeldAssetLockResuming {
+    private(set) var resumed: [HeldAssetLock] = []
+    /// Runs inside `resume`, before it answers.
+    var onResume: (() async -> Void)?
+
+    func resume(_ lock: HeldAssetLock) async throws -> AssetLockRecoveryService.Outcome {
+        resumed.append(lock)
+        await onResume?()
+        return .completed
+    }
+}
+
 @MainActor
 private final class FakeExecutor: ExternalSendExecuting {
     var prepareResults: [Result<UInt64, ExternalSendError>] = []

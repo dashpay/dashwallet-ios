@@ -36,10 +36,12 @@ this section describes the flow as it works once all three are in.
   estimate, because Platform meters it while it runs the transition.
   [ADR-0043](../../adr/0043-bind-the-fee-where-the-sdk-can-and-mark-the-rest-as-an-estimate.md),
   superseding [ADR-0039](../../adr/0039-estimate-the-fee-on-send-and-recompute-it-on-confirm.md).
-- **Three outcomes:** sent; not sent (nothing left the source, Retry returns to Send with the same
-  destination, source and amount); in progress (any doubt, no Retry, the sheet closes with a
-  "Send in progress" Toast telling the holder not to send it again; the existing recovery usually
-  finishes it).
+- **Four outcomes:** sent; not sent (nothing left the source, Retry returns to Send with the same
+  destination, source and amount); in progress (submitted, outcome unknown: no Retry, the sheet
+  closes with a "Send in progress" Toast telling the holder not to send it again; sync usually
+  settles it); lock held (a Core payment's asset lock is recorded but its Platform step did not
+  finish: the sheet offers Finish, which resumes that lock, never a new payment; Close leaves it
+  for Rebroadcast in the transaction details).
   [ADR-0040](../../adr/0040-report-three-send-outcomes-and-retry-only-when-nothing-left-the-source.md).
   Shielded → Identity is one top-up transition, so it has no half-done outcome of its own.
   [ADR-0044](../../adr/0044-top-up-an-identity-from-shielded-in-one-step.md), superseding ADR-0042.

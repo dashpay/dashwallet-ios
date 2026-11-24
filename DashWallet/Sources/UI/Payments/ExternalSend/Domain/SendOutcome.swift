@@ -23,11 +23,24 @@ struct MinimumAmountRefusal: Error {
     let minimumCredits: UInt64
 }
 
+/// A Core asset lock a send broadcast and recorded whose Platform step did not finish: the outpoint and route that
+/// `AssetLockRecoveryService.retry` resumes.
+struct HeldAssetLock: Equatable {
+    /// `PersistentAssetLock.fundingTypeRaw` of the lock: 5 for Core to Shielded, the two-step route External Send has.
+    let fundingTypeRaw: Int
+    let txidWire: Data
+    let vout: UInt32
+}
+
 /// What happened to a send. Only `notSent` offers Retry; any error not proven to be before the broadcast is
 /// `inFlight` (ADR-0040).
 enum SendOutcome {
     case sent
+    /// Submitted, its result unknown: it settles with sync.
     case inFlight
+    /// The money left the source into an asset lock that is recorded, and the Platform step did not finish: it stays
+    /// in the lock until the lock is resumed.
+    case lockHeld(HeldAssetLock)
     case notSent(NotSentReason)
 
     init(error: Error) {
@@ -50,19 +63,21 @@ enum SendOutcome {
         } else if error is AssetLockInputLimit.TooManyInputsError {
             // `AssetLockInputLimit.requireFits` refuses before authorizing and before any lock exists.
             self = .notSent(.failed)
+        } else if error is PlatformPaymentIdentityFundingPolicy.PlanningError {
+            // The identity top-up from Platform credits plans its inputs before any credits move.
+            self = .notSent(.failed)
         } else {
             self = Self.outcome(for: error as NSError)
         }
     }
 
-    func log() {
+    /// The outcome as its log line names it.
+    var logName: String {
         switch self {
-        case .sent:
-            DWLogger.log("External send outcome: sent")
-        case .inFlight:
-            DWLogger.log("External send outcome: inFlight")
-        case .notSent(let reason):
-            DWLogger.log("External send outcome: notSent(\(reason.category))")
+        case .sent: return "sent"
+        case .inFlight: return "inFlight"
+        case .lockHeld(let lock): return "lockHeld(type=\(lock.fundingTypeRaw))"
+        case .notSent(let reason): return "notSent(\(reason.category))"
         }
     }
 
@@ -166,6 +181,84 @@ enum SendOutcome {
         default:
             return .inFlight
         }
+    }
+}
+
+/// A send's outcome and what decided it, written as the send's one log line.
+struct SendDecision {
+    /// What makes an error's outcome known whatever the error says.
+    enum Fact {
+        /// The coordinator recorded the asset lock it built: the money left the source.
+        case assetLockRecorded
+        /// The seam handed the spend over: the money left the source.
+        case handedOver
+        /// The asset lock holding the money is known.
+        case lockHeld(HeldAssetLock)
+
+        var logName: String {
+            switch self {
+            case .assetLockRecorded: return "assetLockRecorded"
+            case .handedOver: return "handedOver"
+            case .lockHeld: return "lockHeld"
+            }
+        }
+    }
+
+    let outcome: SendOutcome
+    /// What decided `outcome`: the deciding error's `errorName`, with ` after=<Fact>` when a fact overrode it, or the
+    /// name of the step that decided it without an error. Nil for a send that went through.
+    let cause: String?
+
+    init(_ outcome: SendOutcome, cause: String? = nil) {
+        self.outcome = outcome
+        self.cause = cause
+    }
+
+    /// The one place an error becomes a send's outcome: `SendOutcome(error:)`, or what `fact` makes it.
+    static func decided(by error: Error, after fact: Fact? = nil) -> SendDecision {
+        let outcome: SendOutcome
+        switch fact {
+        case nil:
+            outcome = SendOutcome(error: error)
+        case .assetLockRecorded?, .handedOver?:
+            outcome = .inFlight
+        case .lockHeld(let lock)?:
+            outcome = .lockHeld(lock)
+        }
+        let cause = errorName(error) + (fact.map { " after=\($0.logName)" } ?? "")
+        return SendDecision(outcome, cause: cause)
+    }
+
+    /// `External send outcome: <outcome> route=<route> max=<isMax>[ cause=<cause>]`. It names no address, amount,
+    /// key or error text.
+    func logLine(route: SendRoute, isMax: Bool) -> String {
+        var line = "External send outcome: \(outcome.logName) route=\(route) max=\(isMax)"
+        if let cause { line += " cause=\(cause)" }
+        return line
+    }
+
+    /// The error's type and case, as `PlatformWalletError.walletOperation`, never its payload (Platform's raw text). A
+    /// case's associated error is named the same way in parentheses; an `NSError` is its domain and code.
+    static func errorName(_ error: Error) -> String {
+        if type(of: error) is NSError.Type {
+            let error = error as NSError
+            return "NSError(\(error.domain):\(error.code))"
+        }
+        // The module and any `(unknown context …)` of a private type are dropped.
+        let typeName = String(reflecting: type(of: error)).split(separator: ".").dropFirst()
+            .filter { !$0.hasPrefix("(") }.joined(separator: ".")
+        let mirror = Mirror(reflecting: error)
+        guard mirror.displayStyle == .enum else { return typeName }
+        if let payload = mirror.children.first, let caseName = payload.label {
+            if let inner = payload.value as? Error { return "\(typeName).\(caseName)(\(errorName(inner)))" }
+            return "\(typeName).\(caseName)"
+        }
+        // A case without a payload describes itself by its name, unless the type describes itself otherwise.
+        let caseName = String(describing: error)
+        guard !caseName.isEmpty, caseName.allSatisfy({ $0.isLetter || $0.isNumber || $0 == "_" }) else {
+            return typeName
+        }
+        return "\(typeName).\(caseName)"
     }
 }
 

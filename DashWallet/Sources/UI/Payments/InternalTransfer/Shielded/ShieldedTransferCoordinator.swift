@@ -292,7 +292,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// Matches `PersistentAssetLock.fundingTypeRaw` for
     /// `AssetLockShieldedAddressTopUp` (see
     /// `rs-platform-wallet-ffi/src/asset_lock_persistence.rs`).
-    private static let shieldedAssetLockFundingType: Int = 5
+    static let shieldedAssetLockFundingType: Int = 5
 
     /// `PersistentAssetLock.fundingTypeRaw` for `AssetLockAddressTopUp` —
     /// the Core → Platform address-funding lock (same Rust source).
