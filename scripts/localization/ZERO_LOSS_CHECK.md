@@ -54,9 +54,10 @@ Pre-merge mode, in order (ADR-0067):
 3. **Wording.** For each of the 43 locales and each place whose Baseline key had a Baseline translation in that locale, both sides are formatted by Foundation with the same sample arguments — a distinct value per argument position; counted phrases at counts 0, 1, 2, 5, 21, 101 — and must give equal text (exact match without placeholders). A difference is a `place` finding (AC-09). A Baseline translation whose format codes take a sample argument as another type — an object code for a number, an integer code for an object or a float, read by number (`%2$@`) or by order — formats undefined text on a phone, so it cannot be compared: it is a **baseline defect**, left out of both columns and printed, not a finding. The rule judges the codes, never the key, so it is no list of accepted changes; a text with a plural variable (`%#@name@`) or under substitutions is not judged (owner decision 2026-11-19).
 4. **Key set.** The Catalog's keys are the Baseline's keys, with each Moved key in place of its Baseline key (AC-06). A Baseline key with no entry and no Moved key is a `missing-key` finding, whether or not it had translations. The comparison runs both ways (owner decision 2026-11-19): the Catalog's keys must be exactly (Baseline keys − moved-from keys) ∪ moved-to keys, where a moved-from key is a Baseline key that some place now reads under a different current key. A Catalog key outside that set is an `extra-key` finding; a Catalog key that is a moved-from key (a leftover old copy of a Moved key) is an `old-copy` finding. Carve-out: a key that a current lookup place asks for is never a finding, so a text a Developer adds after the move is legitimate. Unused entries are Baseline keys that no place reads, so they are neither moved-from nor extra. An `old-copy` is reported only while a key that replaced it is in the Catalog too; when the replacement is missing, the wording findings already name the gap. Release mode has no places, so it cannot tell a text added after the move from a stray key: it reports `old-copy` from the key map but never `extra-key`. For the same reason a release-mode `old-copy` can be a legitimate text: a lookup added after the merge that uses a moved-from key again (for example an integer kept on `String(format:)` with its Baseline key, ADR-0066) brings that key back while the key map still maps it to its Moved key. The check has no way to accept it; the person preparing the release judges it by hand (see «Judging a release finding» below).
 5. **Unused entries.** Every Unused entry (`extractionState: stale`) still holds each Baseline translation of its key (AC-04, AC-10). A lost one is an `unused` finding.
+5b. **Unmapped entries.** Every other entry kept under its Baseline key that no wording row compares (pre-merge: no place reads it; release: not in the key map) still holds each Baseline translation of its key, whatever its `extractionState` — e.g. a `manual` key only the Today extension looks up, or an Unused entry a later lookup made live again (AC-10). A lost one is an `unmapped` finding.
 6. **Watch files.** Every `WatchApp/<lang>.lproj/Interface.strings` is byte-identical to the Baseline commit (AC-15). A difference is a `watch` finding.
 
-Release mode runs 1, 4, 5 and 6 as above, and in place of 2–3: for each Baseline key in the key map that had a Baseline translation, and each locale, the current key's Catalog wording formatted with the same sample arguments must equal the Baseline wording. A difference is a `key` finding; a baseline defect is left out as in 3. A deliberate wording change since the Baseline also fails as a `key` finding. The check has no list of accepted changes.
+Release mode runs 1, 4, 5, 5b and 6 as above, and in place of 2–3: for each Baseline key in the key map that had a Baseline translation, and each locale, the current key's Catalog wording formatted with the same sample arguments must equal the Baseline wording. A difference is a `key` finding; a baseline defect is left out as in 3. A deliberate wording change since the Baseline also fails as a `key` finding. The check has no list of accepted changes.
 
 ### Judging a release finding
 
@@ -80,6 +81,7 @@ locale       places   same
 baseline defects: <n> left out        (only when n > 0)
 <baseline defects, one per line>
 unused entries: <n> checked, <n> with lost translations
+unmapped entries: <n> checked, <n> with lost translations
 watch files: <n> identical, <n> differ
 <findings, one per line>
 RESULT: <PASS|FAIL> (<n> findings)
@@ -98,6 +100,7 @@ RESULT: <PASS|FAIL> (<n> findings)
 | `extra-key` | pre-merge | `FAIL extra-key key=<json>` |
 | `old-copy` | both | `FAIL old-copy key=<json>` |
 | `unused` | both | `FAIL unused key=<json> locale=<locale>` |
+| `unmapped` | both | `FAIL unmapped key=<json> locale=<locale>` |
 | `watch` | both | `FAIL watch <file>` |
 
 **Baseline defects** (not findings; sorted like findings):
@@ -147,6 +150,7 @@ ar           1200     1200
 …
 zh-Hant-TW   1200     1200
 unused entries: 4 checked, 0 with lost translations
+unmapped entries: 3 checked, 0 with lost translations
 watch files: 43 identical, 0 differ
 RESULT: PASS (0 findings)
 $ echo $?

@@ -5,5 +5,6 @@ de           5        5
 en           5        5
 uk           4        4
 unused entries: 2 checked, 0 with lost translations
+unmapped entries: 0 checked, 0 with lost translations
 watch files: 2 identical, 0 differ
 RESULT: PASS (0 findings)

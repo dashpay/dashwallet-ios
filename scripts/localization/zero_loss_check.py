@@ -436,6 +436,29 @@ def unused_check(base_strings, cur_strings):
     return checked, lost_entries, findings
 
 
+def unmapped_check(base_strings, cur_strings, compared):
+    """Check 5b: entries kept under their Baseline key that no wording row compares (`compared` are the
+    Baseline keys the wording check formats) and that are not Unused, whatever else their state: e.g. a
+    `manual` key only another target looks up, or an Unused entry a later lookup made live again.
+    Returns (entries checked, entries with lost translations, unmapped findings)."""
+    checked = lost_entries = 0
+    findings = []
+    for key in sorted(cur_strings):
+        entry = cur_strings[key]
+        if key not in base_strings or key in compared or entry.get("extractionState") == "stale":
+            continue
+        want_all = base_strings[key].get("localizations", {})
+        if not want_all:
+            continue
+        checked += 1
+        held = entry.get("localizations", {})
+        lost = [loc for loc, want in sorted(want_all.items())
+                if loc not in held or leaf_values(held[loc]) != leaf_values(want)]
+        lost_entries += bool(lost)
+        findings += [("unmapped", (key, loc), "FAIL unmapped key=%s locale=%s" % (dump(key), loc)) for loc in lost]
+    return checked, lost_entries, findings
+
+
 def watch_check(repo, rev):
     """Check 6: (identical, differing files, watch findings)."""
     listed = git(repo, "ls-tree", "-r", "--name-only", rev, "--", WATCH_DIR + "/").stdout.decode("utf-8")
@@ -456,7 +479,7 @@ def watch_check(repo, rev):
 
 # --- report -------------------------------------------------------------------------------------
 
-def render(baseline, how, rows, unused, watch, findings, mode="pre-merge", defects=()):
+def render(baseline, how, rows, unused, unmapped, watch, findings, mode="pre-merge", defects=()):
     lines = ["zero-loss check — mode: %s" % mode,
              "baseline: %s (%s)" % (baseline[:12], how),
              "%-13s%-9s%s" % ("locale", "keys" if mode == "release" else "places", "same")]
@@ -465,6 +488,7 @@ def render(baseline, how, rows, unused, watch, findings, mode="pre-merge", defec
         lines.append("baseline defects: %d left out" % len(defects))
         lines += list(defects)
     lines.append("unused entries: %d checked, %d with lost translations" % unused)
+    lines.append("unmapped entries: %d checked, %d with lost translations" % unmapped)
     lines.append("watch files: %d identical, %d differ" % watch)
     lines += [text for _, _, text in findings]
     lines.append("RESULT: %s (%d findings)" % ("FAIL" if findings else "PASS", len(findings)))
@@ -519,10 +543,12 @@ def check_release(args):
     rows, wording, defects = release_wording_check(repo, baseline, key_map, base_catalog, locales)
     missing, _ = key_set_check(base_catalog["strings"], cur_strings, {k: set(v) for k, v in key_map.items()})
     checked, lost, unused = unused_check(base_catalog["strings"], cur_strings)
+    u_checked, u_lost, unmapped = unmapped_check(base_catalog["strings"], cur_strings, set(key_map))
     identical, differ, watch = watch_check(repo, baseline)
-    findings = wording + missing + unused + watch
+    findings = wording + missing + unused + unmapped + watch
     findings.sort(key=lambda f: (f[0],) + tuple((0, x) if isinstance(x, int) else (1, x) for x in f[1]))
-    sys.stdout.write(render(baseline, "key map", rows, (checked, lost), (identical, differ), findings, "release", defects))
+    sys.stdout.write(render(baseline, "key map", rows, (checked, lost), (u_checked, u_lost), (identical, differ), findings,
+                            "release", defects))
     return 1 if findings else 0
 
 
@@ -556,11 +582,13 @@ def check(args):
         used.setdefault(b.key, set()).add(c.key)
     missing, key_map = key_set_check(base_catalog["strings"], cur_strings, used, {c.key for c in current})
     checked, lost, unused = unused_check(base_catalog["strings"], cur_strings)
+    u_checked, u_lost, unmapped = unmapped_check(base_catalog["strings"], cur_strings, set(used))
     identical, differ, watch = watch_check(repo, baseline)
-    findings += wording + missing + unused + watch
+    findings += wording + missing + unused + unmapped + watch
     findings.sort(key=lambda f: (f[0],) + tuple((0, x) if isinstance(x, int) else (1, x) for x in f[1]))
 
-    sys.stdout.write(render(baseline, how, rows, (checked, lost), (identical, differ), findings, defects=defects))
+    sys.stdout.write(render(baseline, how, rows, (checked, lost), (u_checked, u_lost), (identical, differ), findings,
+                            defects=defects))
     if findings:
         return 1
     if args.write_key_map:

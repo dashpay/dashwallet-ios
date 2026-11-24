@@ -112,6 +112,28 @@ class ReleaseFindingTests(ReleaseCase):
         self.assert_fails_with(res, 1)
         self.assertEqual(self.findings(res)[0], 'FAIL unused key="Unused thing" locale=de')
 
+    def unmapped_loses_de(self, state):
+        # PP4: a Baseline key kept as is but outside the key map, no longer `stale`
+        entry = self.cat["strings"]["Unused thing"]
+        if state:
+            entry["extractionState"] = state
+        else:
+            entry.pop("extractionState", None)
+        del entry["localizations"]["de"]
+        self.install_catalog()
+        return self.release()
+
+    def test_a_manual_entry_outside_the_key_map_that_lost_a_translation_is_found(self):
+        res = self.unmapped_loses_de("manual")
+        self.assert_fails_with(res, 1)
+        self.assertEqual(self.findings(res), ['FAIL unmapped key="Unused thing" locale=de'])
+        self.assertIn("unmapped entries: 1 checked, 1 with lost translations", res.stdout)
+
+    def test_a_reactivated_entry_outside_the_key_map_that_lost_a_translation_is_found(self):
+        res = self.unmapped_loses_de(None)
+        self.assert_fails_with(res, 1)
+        self.assertEqual(self.findings(res), ['FAIL unmapped key="Unused thing" locale=de'])
+
     def test_watch_file_change_is_found_in_release_mode(self):
         self.write("WatchApp/de.lproj/Interface.strings", '"title" = "Uhr 2";\n')
         res = self.release()

@@ -475,6 +475,16 @@ class FindingTests(ZeroLossCase):
         self.assertEqual(self.findings(res)[0], 'FAIL unused key="Unused thing" locale=de')
         self.assertIn("unused entries: 2 checked, 1 with lost translations", res.stdout)
 
+    def test_a_manual_entry_no_place_looks_up_that_lost_a_translation_is_found(self):
+        # PP4: e.g. a key only another target looks up, marked manual so the build keeps it
+        self.cat["strings"]["Unused thing"]["extractionState"] = "manual"
+        del self.cat["strings"]["Unused thing"]["localizations"]["de"]
+        self.install_catalog()
+        res = self.run_cli()
+        self.assert_fails_with(res, 1)
+        self.assertEqual(self.findings(res), ['FAIL unmapped key="Unused thing" locale=de'])
+        self.assertIn("unmapped entries: 1 checked, 1 with lost translations", res.stdout)
+
     def test_unused_entry_that_lost_every_translation_names_each_locale(self):
         self.cat["strings"]["Unused thing"]["localizations"] = {}
         self.install_catalog()
