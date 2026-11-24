@@ -17731,7 +17731,7 @@
       }
     },
     "%d ATM(s) in %@" : {
-      "comment" : "Explore: number of ATMs, then the area they are in",
+      "comment" : "Explore: number of ATMs, then the search radius (a distance, e.g. 20 mi)",
       "localizations" : {
         "ar" : {
           "variations" : {
@@ -19516,7 +19516,7 @@
       }
     },
     "%d merchant(s) in %@" : {
-      "comment" : "Explore: number of merchants, then the area they are in",
+      "comment" : "Explore: number of merchants, then the search radius (a distance, e.g. 20 mi)",
       "localizations" : {
         "ar" : {
           "variations" : {
