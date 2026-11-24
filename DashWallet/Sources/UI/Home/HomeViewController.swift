@@ -234,10 +234,10 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
     }
 
     private func showReclassifyTransaction(with transaction: Transaction?) {
-        let vc = TxReclassifyTransactionsInfoViewController.controller()
+        guard let transaction else { return }
+        let vc = TxReclassifyTransactionsInfoViewController(transaction: transaction)
         vc.delegate = self
-        vc.transaction = transaction
-        self.present(vc, animated: true, completion: nil)
+        present(vc, animated: true, completion: nil)
     }
 
     private func presentTransactionDetails(_ transaction: Transaction) {

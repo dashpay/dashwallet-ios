@@ -409,7 +409,6 @@
 		47A514602848F75B005A8E3E /* TxDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A5145F2848F75B005A8E3E /* TxDetailViewController.swift */; };
 		E6248A6924774E1DBE800CFE /* TxDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C15A615D2CEA45EEB52621F3 /* TxDetailViewModel.swift */; };
 		DACC279C702F4BD8B0F6AF71 /* TxDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDF88847EA734AD6AB29B9C6 /* TxDetailScreen.swift */; };
-		47A514622848FEAD005A8E3E /* Tx.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 47A514612848FEAD005A8E3E /* Tx.storyboard */; };
 		C017200000000000000AA2 /* RequestAmountScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000000AA1 /* RequestAmountScreen.swift */; };
 		C017200000000000000AA3 /* RequestAmountScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000000AA1 /* RequestAmountScreen.swift */; };
 		C017200000000000000BA2 /* RequestAmountHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C017200000000000000BA1 /* RequestAmountHostingController.swift */; };
@@ -485,9 +484,7 @@
 		47EEE243293F436200049E0B /* CoinbaseAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47EEE242293F436200049E0B /* CoinbaseAPIClient.swift */; };
 		47F005FF297164600029EB10 /* UITableView+DashWallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F005FE297164600029EB10 /* UITableView+DashWallet.swift */; };
 		47F006022971B1FF0029EB10 /* CurrencyExchanger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F006012971B1FE0029EB10 /* CurrencyExchanger.swift */; };
-		47F2C67D28602D4F00C2B774 /* BasePageSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C67C28602D4F00C2B774 /* BasePageSheetViewController.swift */; };
-		47F2C6822860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C6812860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift */; };
-		47F2C6842860513900C2B774 /* TxReclassifyTransactionsWhereToChangeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C6832860513900C2B774 /* TxReclassifyTransactionsWhereToChangeViewController.swift */; };
+		47F2C6822860319400C2B774 /* TxReclassifyTransactionsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C6812860319400C2B774 /* TxReclassifyTransactionsScreen.swift */; };
 		47F4B6C7294842DF00AED4C9 /* ConfirmOrderController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F4B6C6294842DF00AED4C9 /* ConfirmOrderController.swift */; };
 		47F4B6CA29484C9800AED4C9 /* ConfirmOrderModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F4B6C929484C9800AED4C9 /* ConfirmOrderModel.swift */; };
 		47F4B6CD29485A8B00AED4C9 /* ConfirmOrderCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F4B6CC29485A8B00AED4C9 /* ConfirmOrderCells.swift */; };
@@ -1435,7 +1432,6 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		C9D2C6F52A320AA000D15901 /* CoinbaseTransactionResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFA928C896BC000427E7 /* CoinbaseTransactionResponse.swift */; };
 		C9D2C6F72A320AA000D15901 /* TxDetailModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4709C31A288020DE00B4BD48 /* TxDetailModel.swift */; };
 		C9D2C6F92A320AA000D15901 /* PointOfUseListModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BD728C1305E00490F5E /* PointOfUseListModel.swift */; };
-		C9D2C6FB2A320AA000D15901 /* TxReclassifyTransactionsWhereToChangeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C6832860513900C2B774 /* TxReclassifyTransactionsWhereToChangeViewController.swift */; };
 		C9D2C6FD2A320AA000D15901 /* BadgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451FC2A0CC4A300825057 /* BadgeView.swift */; };
 		C9D2C6FE2A320AA000D15901 /* HomeHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451F42A0CAC9400825057 /* HomeHeaderView.swift */; };
 		C9D2C6FF2A320AA000D15901 /* ProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451F82A0CB08900825057 /* ProgressView.swift */; };
@@ -1507,7 +1503,6 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		C9D2C75D2A320AA000D15901 /* VerifiedSuccessfullyViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114573A32949B221009DCF27 /* VerifiedSuccessfullyViewController.swift */; };
 		C9D2C75F2A320AA000D15901 /* DWUpholdOTPViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A9FFE542230FF4600956D5F /* DWUpholdOTPViewController.m */; };
 		C9D2C7602A320AA000D15901 /* DWAppGroupOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A8B9E7C23034AC100FF8653 /* DWAppGroupOptions.m */; };
-		C9D2C7642A320AA000D15901 /* BasePageSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C67C28602D4F00C2B774 /* BasePageSheetViewController.swift */; };
 		C9D2C7672A320AA000D15901 /* CoinbaseExchangeRateResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F6EDFAF28C896BC000427E7 /* CoinbaseExchangeRateResponse.swift */; };
 		C9D2C7692A320AA000D15901 /* (null) in Sources */ = {isa = PBXBuildFile; };
 		C9D2C76B2A320AA000D15901 /* BaseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661B528FE75A700028A8D /* BaseViewController.swift */; };
@@ -1528,7 +1523,7 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		C9D2C7832A320AA000D15901 /* POIDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C1228C5F0A600490F5E /* POIDetailsViewController.swift */; };
 		C9D2C7842A320AA000D15901 /* PointOfUseLocationServicePopup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C1B28C6AA2400490F5E /* PointOfUseLocationServicePopup.swift */; };
 		C9D2C7852A320AA000D15901 /* BalanceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472D13E7299E4EE7006903F1 /* BalanceModel.swift */; };
-		C9D2C7862A320AA000D15901 /* TxReclassifyTransactionsInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C6812860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift */; };
+		C9D2C7862A320AA000D15901 /* TxReclassifyTransactionsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F2C6812860319400C2B774 /* TxReclassifyTransactionsScreen.swift */; };
 		C9D2C7882A320AA000D15901 /* DWModalPopupTransition.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A1B7DA72323AF4300BA8C6A /* DWModalPopupTransition.m */; };
 		C9D2C78B2A320AA000D15901 /* OrderPreviewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4751CAD2297022B300F63AC4 /* OrderPreviewModel.swift */; };
 		C9D2C78D2A320AA000D15901 /* UIView+DWFindConstraints.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A885FD5244DFEF100B9F679 /* UIView+DWFindConstraints.m */; };
@@ -1762,7 +1757,6 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		C9D2C9352A320AA000D15901 /* OperationStatus.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1193FF3D2962F1BE004EA8D7 /* OperationStatus.storyboard */; };
 		C9D2C9362A320AA000D15901 /* UpholdLogoutTutorialStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A9FFE662230FF4600956D5F /* UpholdLogoutTutorialStoryboard.storyboard */; };
 		C9D2C93B2A320AA000D15901 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB66977E212C0B940034BE4F /* LaunchScreen.storyboard */; };
-		C9D2C93E2A320AA000D15901 /* Tx.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 47A514612848FEAD005A8E3E /* Tx.storyboard */; };
 		C9D2C9412A320AA000D15901 /* VerifiedSuccessfully.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AD1CE9E22DFBA6C00C99324 /* VerifiedSuccessfully.storyboard */; };
 		C9D2C9422A320AA000D15901 /* Setup.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A4430EA22CBBA82009BAF7F /* Setup.storyboard */; };
 		C9D2C9432A320AA000D15901 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C94F5E8729D3E7E30034FD57 /* GoogleService-Info.plist */; };
@@ -2689,7 +2683,6 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		47A5145F2848F75B005A8E3E /* TxDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxDetailViewController.swift; sourceTree = "<group>"; };
 		C15A615D2CEA45EEB52621F3 /* TxDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxDetailViewModel.swift; sourceTree = "<group>"; };
 		CDF88847EA734AD6AB29B9C6 /* TxDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxDetailScreen.swift; sourceTree = "<group>"; };
-		47A514612848FEAD005A8E3E /* Tx.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Tx.storyboard; sourceTree = "<group>"; };
 		C017200000000000000AA1 /* RequestAmountScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestAmountScreen.swift; sourceTree = "<group>"; };
 		C017200000000000000BA1 /* RequestAmountHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestAmountHostingController.swift; sourceTree = "<group>"; };
 		C0172000000000000009A1 /* SpecifyAmountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpecifyAmountView.swift; sourceTree = "<group>"; };
@@ -2781,9 +2774,7 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		47EEE242293F436200049E0B /* CoinbaseAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseAPIClient.swift; sourceTree = "<group>"; };
 		47F005FE297164600029EB10 /* UITableView+DashWallet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITableView+DashWallet.swift"; sourceTree = "<group>"; };
 		47F006012971B1FE0029EB10 /* CurrencyExchanger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrencyExchanger.swift; sourceTree = "<group>"; };
-		47F2C67C28602D4F00C2B774 /* BasePageSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasePageSheetViewController.swift; sourceTree = "<group>"; };
-		47F2C6812860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxReclassifyTransactionsInfoViewController.swift; sourceTree = "<group>"; };
-		47F2C6832860513900C2B774 /* TxReclassifyTransactionsWhereToChangeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxReclassifyTransactionsWhereToChangeViewController.swift; sourceTree = "<group>"; };
+		47F2C6812860319400C2B774 /* TxReclassifyTransactionsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TxReclassifyTransactionsScreen.swift; sourceTree = "<group>"; };
 		47F4B6C6294842DF00AED4C9 /* ConfirmOrderController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmOrderController.swift; sourceTree = "<group>"; };
 		47F4B6C929484C9800AED4C9 /* ConfirmOrderModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmOrderModel.swift; sourceTree = "<group>"; };
 		47F4B6CC29485A8B00AED4C9 /* ConfirmOrderCells.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmOrderCells.swift; sourceTree = "<group>"; };
@@ -4308,7 +4299,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			children = (
 				47F2C6802860315D00C2B774 /* Reclassify Transactions */,
 				47F2C67E2860314A00C2B774 /* Details */,
-				47A514612848FEAD005A8E3E /* Tx.storyboard */,
 			);
 			path = Tx;
 			sourceTree = "<group>";
@@ -4451,7 +4441,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			isa = PBXGroup;
 			children = (
 				47838B8D2906D7280003E8AB /* BalanceView */,
-				47F2C67B28602D3800C2B774 /* PageSheet */,
 				2A913E9923A53AC6006A2A59 /* Containers */,
 				2A0C69D423143B17001B8C90 /* ModalController */,
 				2A0C69B62313EB4A001B8C90 /* Transitions */,
@@ -6465,14 +6454,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			path = "Currency Exchanger";
 			sourceTree = "<group>";
 		};
-		47F2C67B28602D3800C2B774 /* PageSheet */ = {
-			isa = PBXGroup;
-			children = (
-				47F2C67C28602D4F00C2B774 /* BasePageSheetViewController.swift */,
-			);
-			path = PageSheet;
-			sourceTree = "<group>";
-		};
 		47F2C67E2860314A00C2B774 /* Details */ = {
 			isa = PBXGroup;
 			children = (
@@ -6491,8 +6472,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		47F2C6802860315D00C2B774 /* Reclassify Transactions */ = {
 			isa = PBXGroup;
 			children = (
-				47F2C6812860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift */,
-				47F2C6832860513900C2B774 /* TxReclassifyTransactionsWhereToChangeViewController.swift */,
+				47F2C6812860319400C2B774 /* TxReclassifyTransactionsScreen.swift */,
 			);
 			path = "Reclassify Transactions";
 			sourceTree = "<group>";
@@ -8913,7 +8893,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				1193FF3E2962F1BE004EA8D7 /* OperationStatus.storyboard in Resources */,
 				2A9FFE9C2230FF4700956D5F /* UpholdLogoutTutorialStoryboard.storyboard in Resources */,
 				FB66977F212C0B940034BE4F /* LaunchScreen.storyboard in Resources */,
-				47A514622848FEAD005A8E3E /* Tx.storyboard in Resources */,
 				2AD1CE9F22DFBA6C00C99324 /* VerifiedSuccessfully.storyboard in Resources */,
 				2A4430EB22CBBA82009BAF7F /* Setup.storyboard in Resources */,
 				752772122AAA1CE30066557E /* Coinbase-Info.plist in Resources */,
@@ -8995,7 +8974,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C9D2C9352A320AA000D15901 /* OperationStatus.storyboard in Resources */,
 				C9D2C9362A320AA000D15901 /* UpholdLogoutTutorialStoryboard.storyboard in Resources */,
 				C9D2C93B2A320AA000D15901 /* LaunchScreen.storyboard in Resources */,
-				C9D2C93E2A320AA000D15901 /* Tx.storyboard in Resources */,
 				C9D2C9412A320AA000D15901 /* VerifiedSuccessfully.storyboard in Resources */,
 				C9D2C9422A320AA000D15901 /* Setup.storyboard in Resources */,
 				C9D2C9432A320AA000D15901 /* GoogleService-Info.plist in Resources */,
@@ -9498,7 +9476,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				0F6EDFCD28C896BD000427E7 /* CoinbaseTransactionResponse.swift in Sources */,
 				4709C31F28818BAE00B4BD48 /* TxDetailModel.swift in Sources */,
 				47AE8BFA28C1306000490F5E /* PointOfUseListModel.swift in Sources */,
-				47F2C6842860513900C2B774 /* TxReclassifyTransactionsWhereToChangeViewController.swift in Sources */,
 				A6DB8889C5594B1988BDE0CE /* SwapCoinIconLoader.swift in Sources */,
 				4A36341D70A94778AF408757 /* SwapCoinIconView.swift in Sources */,
 				752D03B22E2F7B3C00B88784 /* MainMenuViewControllerDelegate.swift in Sources */,
@@ -9606,7 +9583,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				114573A42949B221009DCF27 /* VerifiedSuccessfullyViewController.swift in Sources */,
 				2A9FFE932230FF4700956D5F /* DWUpholdOTPViewController.m in Sources */,
 				2A8B9E7D23034AC100FF8653 /* DWAppGroupOptions.m in Sources */,
-				47F2C67D28602D4F00C2B774 /* BasePageSheetViewController.swift in Sources */,
 				0F6EDFD228C896BD000427E7 /* CoinbaseExchangeRateResponse.swift in Sources */,
 				75EAFBB12B04C057005ABC6A /* CustomHUDView.swift in Sources */,
 				47C661B628FE75A700028A8D /* BaseViewController.swift in Sources */,
@@ -9634,7 +9610,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				519BAFD0CEA0510E4F35E973 /* HardwareNumericKeyboardView.swift in Sources */,
 				47AE8C1C28C6AA2500490F5E /* PointOfUseLocationServicePopup.swift in Sources */,
 				472D13E8299E4EE7006903F1 /* BalanceModel.swift in Sources */,
-				47F2C6822860319400C2B774 /* TxReclassifyTransactionsInfoViewController.swift in Sources */,
+				47F2C6822860319400C2B774 /* TxReclassifyTransactionsScreen.swift in Sources */,
 				2A1B7DA82323AF4300BA8C6A /* DWModalPopupTransition.m in Sources */,
 				754C27CC2CC3C15B00BA7B9F /* FeatureSingleItem.swift in Sources */,
 				4751CAD6297024ED00F63AC4 /* OrderPreviewModel.swift in Sources */,
@@ -10492,7 +10468,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C9D2C6F72A320AA000D15901 /* TxDetailModel.swift in Sources */,
 				757514E22B15DB510026AD8E /* ShadowView.swift in Sources */,
 				C9D2C6F92A320AA000D15901 /* PointOfUseListModel.swift in Sources */,
-				C9D2C6FB2A320AA000D15901 /* TxReclassifyTransactionsWhereToChangeViewController.swift in Sources */,
 				C9D2C6FD2A320AA000D15901 /* BadgeView.swift in Sources */,
 				753F75372DD0D76400D40DFE /* DashSpendPayViewModel.swift in Sources */,
 				C9D2C6FE2A320AA000D15901 /* HomeHeaderView.swift in Sources */,
@@ -10636,7 +10611,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C943B3362A408CED00AF23C5 /* DWEditProfileBaseCell.m in Sources */,
 				C930784A2A6AD52400906E4B /* UpholdConfirmTransferModel.swift in Sources */,
 				C943B3352A408CED00AF23C5 /* DWEditProfileTextViewCell.m in Sources */,
-				C9D2C7642A320AA000D15901 /* BasePageSheetViewController.swift in Sources */,
 				C943B54E2A40B6B500AF23C5 /* DWColoredButton.m in Sources */,
 				75EBAA0A2BB9791B004488E3 /* Icon.swift in Sources */,
 				AA0031032FD0000000000013 /* IconName+DashIconSource.swift in Sources */,
@@ -10673,7 +10647,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C9D2C7832A320AA000D15901 /* POIDetailsViewController.swift in Sources */,
 				C9D2C7842A320AA000D15901 /* PointOfUseLocationServicePopup.swift in Sources */,
 				C9D2C7852A320AA000D15901 /* BalanceModel.swift in Sources */,
-				C9D2C7862A320AA000D15901 /* TxReclassifyTransactionsInfoViewController.swift in Sources */,
+				C9D2C7862A320AA000D15901 /* TxReclassifyTransactionsScreen.swift in Sources */,
 				753130922B47EE920069C9B7 /* UpholdCapability.swift in Sources */,
 				754BEA132C0B6BD700E8C93C /* HomeViewModel.swift in Sources */,
 				C943B5902A40ED6F00AF23C5 /* DWFirstUsernameSymbolValidationRule.m in Sources */,
