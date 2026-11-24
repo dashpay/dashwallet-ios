@@ -4,32 +4,31 @@
 #
 # Usage: scripts/localization/prepare_baseline_folder.sh <derived data dir> <baseline commit>
 #
-# - A folder that holds a baseline-commit record of this commit keeps its build data (an
-#   incremental rebuild) and loses both records, so a build that fails now leaves none.
-# - A folder this script made for another commit (it holds a baseline-commit record), an empty
-#   folder, or one under the default cache root ~/Library/Caches/dashwallet-regenerate/ (a failed
-#   build of the script's own folder) is emptied.
-# - Any other existing folder was not made by the script (Xcode's DerivedData, a checkout): it is
-#   left untouched and the script stops with an error.
+# A folder is the script's own when it holds the mark .baseline-build-folder (written here, before
+# every build) or a baseline-commit record (written by build_baseline.sh after a finished build).
+# The decision reads only the folder's contents, never its path:
+# - the script's own folder with a record of this commit keeps its build data (an incremental
+#   rebuild) and loses both records, so a build that fails now leaves none;
+# - the script's own folder of another commit or of a failed build, or an empty folder, is emptied;
+# - any other non-empty folder (Xcode's DerivedData, a checkout, the cache root that holds the
+#   builds) is left untouched and the script stops with an error.
 set -euo pipefail
 
 DERIVED="$1"
 BASE="$2"
-CACHE_ROOT="$HOME/Library/Caches/dashwallet-regenerate"
+MARK=".baseline-build-folder"
 
 if [ -d "$DERIVED" ]; then
     recorded="$(cat "$DERIVED/baseline-commit" 2> /dev/null || true)"
+    if [ ! -e "$DERIVED/$MARK" ] && [ -z "$recorded" ] && [ -n "$(ls -A "$DERIVED")" ]; then
+        echo "error: $DERIVED is not a Baseline build folder (no $MARK, no baseline-commit record) and is" \
+             "not empty; pass an empty or new folder, or one build_baseline.sh made" >&2
+        exit 1
+    fi
     if [ "$recorded" != "$BASE" ]; then
-        case "$(cd "$DERIVED" && pwd -P)/" in
-            "$(mkdir -p "$CACHE_ROOT" && cd "$CACHE_ROOT" && pwd -P)"/*) ours=yes ;;
-            *) ours=no ;;
-        esac
-        if [ -z "$recorded" ] && [ "$ours" = no ] && [ -n "$(ls -A "$DERIVED")" ]; then
-            echo "error: $DERIVED is not a Baseline build folder (no baseline-commit record) and is not empty;" \
-                 "pass an empty or new folder, or one build_baseline.sh made" >&2
-            exit 1
-        fi
         rm -rf "$DERIVED"
     fi
 fi
 rm -f "$DERIVED/baseline-commit" "$DERIVED/baseline-root"
+mkdir -p "$DERIVED"
+: > "$DERIVED/$MARK"

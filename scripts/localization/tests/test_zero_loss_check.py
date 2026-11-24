@@ -787,13 +787,42 @@ class BaselineInputsTests(ZeroLossCase):
         self.assertFalse(os.path.exists(os.path.join(folder, BASELINE_COMMIT_FILE)))
         self.assertFalse(os.path.exists(os.path.join(folder, BASELINE_ROOT_FILE)))
 
-    def test_a_folder_without_a_record_under_the_default_cache_root_is_emptied(self):
-        # a failed build of the script's own default folder
-        folder = os.path.join(self.tmp, "Library", "Caches", "dashwallet-regenerate", "baseline-aaaaaaaaaaaa")
+    def test_a_marked_folder_of_a_failed_build_is_emptied(self):
+        # the script marks its folder before building; a failed build leaves the mark and no record
+        folder = os.path.join(self.tmp, "elsewhere", "baseline")
         self.fill(folder)
+        with open(os.path.join(folder, ".baseline-build-folder"), "w"):
+            pass
         res = self.prepare_folder(folder)
         self.assertEqual(res.returncode, 0, res.stderr)
         self.assertFalse(os.path.exists(os.path.join(folder, "Build")))
+
+    def test_a_prepared_folder_carries_the_mark(self):
+        folder = os.path.join(self.tmp, "new-folder")
+        self.assertEqual(self.prepare_folder(folder).returncode, 0)
+        self.assertTrue(os.path.isfile(os.path.join(folder, ".baseline-build-folder")))
+
+    def test_a_foreign_folder_survives_when_the_cache_root_cannot_be_made(self):
+        # RR1: the default cache root path is a regular file
+        os.makedirs(os.path.join(self.tmp, "Library", "Caches"))
+        with open(os.path.join(self.tmp, "Library", "Caches", "dashwallet-regenerate"), "w") as f:
+            f.write("not a folder")
+        folder = os.path.join(self.tmp, "Xcode", "DerivedData")
+        self.fill(folder)
+        res = self.prepare_folder(folder)
+        self.assertNotEqual(res.returncode, 0)
+        self.assertTrue(os.path.exists(os.path.join(folder, "Build", "Send.stringsdata")))
+
+    def test_the_cache_root_itself_survives(self):
+        # RR2: it holds other commits' builds, but is no build folder itself
+        root = os.path.join(self.tmp, "Library", "Caches", "dashwallet-regenerate")
+        self.fill(os.path.join(root, "baseline-bbbbbbbbbbbb"), record="b" * 40)
+        with open(os.path.join(root, "notes.txt"), "w") as f:
+            f.write("mine")
+        res = self.prepare_folder(root)
+        self.assertNotEqual(res.returncode, 0)
+        self.assertTrue(os.path.exists(os.path.join(root, "notes.txt")))
+        self.assertTrue(os.path.exists(os.path.join(root, "baseline-bbbbbbbbbbbb", BASELINE_COMMIT_FILE)))
 
     def test_an_empty_or_missing_folder_is_fine(self):
         empty = os.path.join(self.tmp, "empty-folder")
