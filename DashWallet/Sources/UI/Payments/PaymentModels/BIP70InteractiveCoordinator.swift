@@ -102,7 +102,7 @@ final class BIP70InteractiveCoordinator: NSObject {
         }
     }
 
-    private static func nsError(_ error: Error) -> NSError {
+    static func nsError(_ error: Error) -> NSError {
         if let bip = error as? BIP70Error {
             return NSError(domain: "org.dashfoundation.dash.bip70",
                            code: 1,

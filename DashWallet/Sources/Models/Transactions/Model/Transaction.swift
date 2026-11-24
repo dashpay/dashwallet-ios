@@ -225,6 +225,9 @@ class Transaction: TransactionDataItem, Identifiable {
         if let payment = dashPayPayment {
             return payment.isOutgoing ? .sent : .received
         }
+        // The net-change view reads an asset lock as a move of own funds; one
+        // that pays someone else's Shielded address is money leaving.
+        if isExternalShieldedSend { return .sent }
         return _direction
     }
     private lazy var _direction: TransactionDirection = {
@@ -299,8 +302,20 @@ class Transaction: TransactionDataItem, Identifiable {
 
     private var shieldedTransferAmountDuffs: UInt64? { shieldedLockInfo?.amountDuffs }
 
-    /// True when this is the funding tx of a "to Shielded" transfer.
+    /// True when this is the funding tx of a "to Shielded" asset lock: a
+    /// transfer to the wallet's own Shielded balance, or a send to someone
+    /// else's Shielded address (`externalShieldedRecipient`).
     var isShieldedTransfer: Bool { shieldedLockInfo != nil }
+
+    /// The recipient of a "to Shielded" asset lock that pays someone else's
+    /// Shielded address, in its display form; nil for a transfer to the
+    /// wallet's own Shielded balance (also when the lock recorded no recipient
+    /// or its owner could not be told) and for every other transaction. The
+    /// one read that decides "Sent" over "Internal Transfer" for such a lock
+    /// (`ShieldedTxLookup.resolvingRecipients`).
+    var externalShieldedRecipient: String? { shieldedLockInfo?.externalRecipientAddress }
+
+    var isExternalShieldedSend: Bool { externalShieldedRecipient != nil }
 
     /// Live info for this tx as a Core → Platform address funding (a Type-8
     /// asset lock with funding type 4). Same live-read rationale as
@@ -376,7 +391,7 @@ class Transaction: TransactionDataItem, Identifiable {
     }
 
     var internalTransferRoute: InternalTransferRoute? {
-        if isShieldedTransfer { return .coreToShielded }
+        if isShieldedTransfer { return isExternalShieldedSend ? nil : .coreToShielded }
         if isShieldedWithdrawalReceipt { return .shieldedToCore }
         if isPlatformFundingTransfer { return .coreToPlatform }
         if isIdentityFundingTransfer { return .coreToIdentity }

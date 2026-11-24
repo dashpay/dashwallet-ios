@@ -19,6 +19,13 @@ import Foundation
 
 public final class SendCoinsService: NSObject {
     private let walletSendService = WalletSendService.shared
+    private let makePaymentService: () -> BIP70PaymentService
+
+    /// - Parameter makePaymentService: builds the BIP70 service `payWithDashUrl` pays through.
+    init(makePaymentService: @escaping () -> BIP70PaymentService = BIP70PaymentService.makeForCurrentWallet) {
+        self.makePaymentService = makePaymentService
+        super.init()
+    }
 
     /// - Returns: the wire-order txid of the broadcast transaction
     ///   (`Transaction.txHashData` convention).
@@ -79,12 +86,16 @@ public final class SendCoinsService: NSObject {
     ///   window (30 s). The gift-card flow uses it: CTX fulfils the order from the bytes it just
     ///   acknowledged, so the verdict decides nothing the buyer is standing by for.
     func payWithDashUrl(url paymentUrlString: String, awaitAcceptance: Bool = true) async throws -> Data {
-        guard let uri = BIP70URI(paymentUrlString), let requestURL = uri.r else {
+        // A link naming two different apps to call back, giving a required label or message twice differently, carrying
+        // more than one payment request, or broken across lines or words, leaves what it asks open: it is refused like any
+        // invalid link.
+        guard let uri = BIP70URI(paymentUrlString), let requestURL = uri.r, !uri.hasConflictingCallback,
+              !uri.hasConflictingRequiredText, !uri.hasMalformedQuery, uri.paymentRequestFieldCount == 1 else {
             throw DashSpendError.paymentProcessingError(NSLocalizedString("Invalid payment request", comment: "DashSpend"))
         }
 
         let network = try PaymentNetworkResolver.current()
-        let service = BIP70PaymentService.makeForCurrentWallet()
+        let service = makePaymentService()
         let result: SendResult
         do {
             result = try await service.confirmAndSendHeadless(
@@ -99,6 +110,11 @@ public final class SendCoinsService: NSObject {
             // The coins are gone as far as the merchant is concerned — it already holds the
             // signed bytes and can broadcast them itself. Hand the caller the txid so the
             // purchase is recorded rather than dropped; the caller decides how to present it.
+            throw DashSpendError.paymentStatusUnknown(
+                txIdWire: Data(txHashDisplay.reversed()), reason: reason)
+        } catch BIP70Error.failedAfterAcknowledgement(let txHashDisplay, let reason) {
+            // The merchant acknowledged the Payment, so it holds the signed bytes and may fulfil the
+            // order although the broadcast failed or the request expired: the same in-progress state.
             throw DashSpendError.paymentStatusUnknown(
                 txIdWire: Data(txHashDisplay.reversed()), reason: reason)
         }

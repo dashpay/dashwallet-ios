@@ -789,41 +789,6 @@ struct HomeViewContent<Content: View>: View {
         return (.custom(txItem.iconName), nil)
     }
 
-    /// SF-symbol pair for an internal transfer's route: the source balance as
-    /// the main icon, the destination as the corner badge. Symbols match the
-    /// InternalTransferScreen cards (Core = d.circle, Shielded = shield).
-    /// Core → Core self-sends return nil and keep the generic internal icon.
-    private func transferRouteSymbols(txItem: Transaction) -> (source: String, destination: String)? {
-        switch txItem.internalTransferRoute {
-        case .coreToShielded: return ("d.circle.fill", "shield.fill")
-        case .shieldedToCore: return ("shield.fill", "d.circle.fill")
-        case .coreToPlatform: return ("d.circle.fill", "creditcard.fill")
-        case .coreToIdentity: return ("d.circle.fill", "person.crop.circle.fill")
-        case .coreToCore, nil: return nil
-        }
-    }
-
-    /// Route pill text for an internal transfer row ("Transparent →
-    /// Platform"), shown in the small badge next to the time. Nil for plain
-    /// self-sends and non-transfers.
-    private func transferRouteDetails(txItem: Transaction) -> String? {
-        switch txItem.internalTransferRoute {
-        case .coreToShielded:
-            if txItem.isCoinJoinFundedTransfer {
-                return NSLocalizedString("CoinJoin → Shielded", comment: "Transfer of own mixed funds into the private shielded balance")
-            }
-            return NSLocalizedString("Transparent → Shielded", comment: "Transfer of own funds into the private shielded balance")
-        case .shieldedToCore:
-            return NSLocalizedString("Shielded → Transparent", comment: "Transfer of own funds from the private shielded balance back to the transparent wallet")
-        case .coreToPlatform:
-            return NSLocalizedString("Transparent → Platform", comment: "Transfer of own funds into the Platform balance")
-        case .coreToIdentity, .coreToCore, nil:
-            // Identity fundings carry their purpose in the title
-            // ("Identity registration"), so no route pill.
-            return nil
-        }
-    }
-
     /// Blue glyph in a tinted circle — the InternalTransferScreen card icon
     /// treatment, scaled to the 30 pt tx-row icon slot.
     private func transferRouteIcon(_ systemName: String) -> AnyView {
@@ -872,7 +837,7 @@ struct HomeViewContent<Content: View>: View {
             let icons = transactionRowIcons(txItem: txItem, metadata: metadata)
             // Service/merchant metadata wins over the route pair — such rows
             // are external payments, not transfers of own funds.
-            let routeSymbols = metadata == nil ? transferRouteSymbols(txItem: txItem) : nil
+            let routeSymbols = metadata == nil ? HomeTransactionRoute.symbols(of: txItem) : nil
             // Same precedence for the amount treatment: only a metadata-less
             // internal move drops the +/- sign for the circulating-arrows glyph.
             let isInternalAmount = metadata == nil && txItem.internalTransferRoute != nil
@@ -920,7 +885,7 @@ struct HomeViewContent<Content: View>: View {
                             ? metadata?.details
                             // Alias-titled contact payments show the
                             // counterparty's actual name underneath.
-                            : transferRouteDetails(txItem: txItem) ?? txItem.dashPayPaymentDetailsName),
+                            : HomeTransactionRoute.details(of: txItem) ?? txItem.dashPayPaymentDetailsName),
                 dashAmount: txItem.signedDashAmount,
                 // Internal moves carry no direction: no +/- sign, a
                 // circulating-arrows glyph qualifies the amount instead.
@@ -1263,5 +1228,48 @@ struct TransactionDetailsSheet: View {
 extension Data: Identifiable {
     public var id: String {
         return self.base64EncodedString()
+    }
+}
+
+/// The route treatment of a Core transaction's History row: the icon pair and the pill.
+enum HomeTransactionRoute {
+    /// SF-symbol pair for an internal transfer's route: the source balance as
+    /// the main icon, the destination as the corner badge. Symbols match the
+    /// InternalTransferScreen cards (Core = d.circle, Shielded = shield).
+    /// Core → Core self-sends return nil and keep the generic internal icon.
+    static func symbols(of txItem: Transaction) -> (source: String, destination: String)? {
+        switch txItem.internalTransferRoute {
+        case .coreToShielded: return ("d.circle.fill", "shield.fill")
+        case .shieldedToCore: return ("shield.fill", "d.circle.fill")
+        case .coreToPlatform: return ("d.circle.fill", "creditcard.fill")
+        case .coreToIdentity: return ("d.circle.fill", "person.crop.circle.fill")
+        case .coreToCore, nil: return nil
+        }
+    }
+
+    /// Route pill text for an internal transfer row ("Transparent →
+    /// Platform"), shown in the small badge next to the time. Nil for plain
+    /// self-sends and non-transfers.
+    static func details(of txItem: Transaction) -> String? {
+        // A send to someone else's Shielded address names where the money went,
+        // as the Shielded history's Sent rows do.
+        if let recipient = txItem.externalShieldedRecipient {
+            return ShieldedActivityItem.shortAddress(recipient)
+        }
+        switch txItem.internalTransferRoute {
+        case .coreToShielded:
+            if txItem.isCoinJoinFundedTransfer {
+                return NSLocalizedString("CoinJoin → Shielded", comment: "Transfer of own mixed funds into the private shielded balance")
+            }
+            return NSLocalizedString("Transparent → Shielded", comment: "Transfer of own funds into the private shielded balance")
+        case .shieldedToCore:
+            return NSLocalizedString("Shielded → Transparent", comment: "Transfer of own funds from the private shielded balance back to the transparent wallet")
+        case .coreToPlatform:
+            return NSLocalizedString("Transparent → Platform", comment: "Transfer of own funds into the Platform balance")
+        case .coreToIdentity, .coreToCore, nil:
+            // Identity fundings carry their purpose in the title
+            // ("Identity registration"), so no route pill.
+            return nil
+        }
     }
 }

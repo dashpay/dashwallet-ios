@@ -6071,6 +6071,9 @@
 /* External send */
 "The payment request has expired. Your funds were not sent." = "The payment request has expired. Your funds were not sent.";
 
+/* External send */
+"The payment request has no address" = "The payment request has no address";
+
 /* BIP70 payment error */
 "The payment request is missing a payment URL." = "The payment request is missing a payment URL.";
 

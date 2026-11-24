@@ -694,6 +694,8 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
               let network = runningNetwork
         else { throw SendError.coordinatorNotReady }
 
+        // Another network's address is refused before anything is built.
+        try Self.requireExternalDestination(destination, on: network)
         guard let recipient = Self.parsePlatformRecipient(bech32m: destination)
         else { throw SendError.invalidDestination }
         // FFI's `PlatformAddressFFI → PlatformAddress` conversion in
@@ -728,6 +730,30 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         applyUpdatedBalances(updated, context: context)
 
         Task { await self.syncNow() }
+    }
+
+    /// The credits `transfer` can draw on: every funded row of the account
+    /// it selects (`highestBalanceAccountIndex`), not the wallet's aggregate.
+    public func transferAccountCredits() throws -> UInt64 {
+        guard isRunning, let container = modelContainer, let walletId = wallet?.walletId
+        else { throw SendError.coordinatorNotReady }
+        let context = container.mainContext
+        let accountIndex = try highestBalanceAccountIndex(context: context, walletId: walletId)
+        let rows = try context.fetch(FetchDescriptor<PersistentPlatformAddress>(
+            predicate: #Predicate<PersistentPlatformAddress> { $0.walletId == walletId }))
+        return rows.reduce(UInt64(0)) { total, row in
+            guard row.accountIndex == accountIndex else { return total }
+            let (sum, overflow) = total.addingReportingOverflow(row.balance)
+            return overflow ? .max : sum
+        }
+    }
+
+    /// The credits of the one row a partial `withdrawToCore` spends (the
+    /// highest-balance funded address), before the fee it holds back.
+    public func withdrawalRowCredits() throws -> UInt64 {
+        guard isRunning, let container = modelContainer, let walletId = wallet?.walletId
+        else { throw SendError.coordinatorNotReady }
+        return try highestBalanceRow(context: container.mainContext, walletId: walletId).balance
     }
 
     /// Account index holding the highest-balance Platform address — the
@@ -1953,6 +1979,14 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         return PlatformRecipient(ffiAddressType: isScript ? 1 : 0, hash: hash)
     }
 
+    /// Throws `invalidDestination` unless the bech32m HRP of `destination` names `network` (`dash` on mainnet,
+    /// `tdash` on any other network), so `transfer` never pays another network's address.
+    static func requireExternalDestination(_ destination: String, on network: Network) throws {
+        guard DashAddressClassifier.decodeBech32m(destination)?.isMainnet == (network == .mainnet) else {
+            throw SendError.invalidDestination
+        }
+    }
+
     static func resolveCoreToPlatformAddressPair(
         from addresses: [DerivedPlatformAddress]
     ) throws -> CoreToPlatformFundingAddressPair {
@@ -2116,6 +2150,16 @@ final class ShieldedTxLookup {
         /// `ShieldedAssetLocksInFlight` treat the lock of a drain that holds its claim as in
         /// flight before the drain's SDK call reports its outpoint.
         let drainOperation: UUID?
+        /// The 43-byte Orchard recipient a shielded funding (type 5) was built
+        /// to pay (`PersistentAssetLock.shieldedRecipientRaw43`); nil for other
+        /// types and for locks tracked before the SDK recorded it.
+        var recipientRaw43: Data? = nil
+        /// The recipient's display address when it is provably not the
+        /// wallet's own (`resolvingRecipients`): the lock is a send to someone
+        /// else's Shielded address, not a transfer of own funds. Nil for an own,
+        /// unrecorded or not yet decidable recipient, which keeps the
+        /// Internal Transfer reading.
+        var externalRecipientAddress: String? = nil
     }
 
     /// Value-only result crossing from the detached SwiftData reader back to
@@ -2141,12 +2185,19 @@ final class ShieldedTxLookup {
     /// Main-actor generation prevents a slow read from an old container (or
     /// an earlier refresh of the same container) from replacing newer state.
     @MainActor private var refreshGeneration: UInt64 = 0
+    /// Decided ownership answers by wallet id + recipient: an address's owner
+    /// never changes, so each costs one blocking SDK check, not one per refresh.
+    @MainActor private var ownRecipientAnswers: [Data: Bool] = [:]
 
     /// Where `refresh` reads from: the active model container, and the
     /// snapshot built from it off the main actor.
     struct RefreshSource: Sendable {
         let activeContainer: @MainActor @Sendable () -> ModelContainer?
         let buildSnapshot: @Sendable (ModelContainer) async -> SnapshotBuildResult
+        /// Whether a shielded lock's recorded recipient is one of the wallet's
+        /// own Orchard addresses; nil when that cannot be told now.
+        var isOwnShieldedRecipient: @MainActor @Sendable (_ walletId: Data, _ raw43: Data) -> Bool? = { _, _ in nil }
+        var isMainnet: @MainActor @Sendable () -> Bool = { WalletEnvironment.isMainnet }
 
         /// The running wallet's container, read through SwiftData in a
         /// detached task.
@@ -2156,6 +2207,10 @@ final class ShieldedTxLookup {
                 await Task.detached(priority: .utility) {
                     ShieldedTxLookup.buildSnapshot(in: container)
                 }.value
+            },
+            isOwnShieldedRecipient: { walletId, raw43 in
+                guard let manager = SwiftDashSDKHost.shared.manager else { return nil }
+                return (try? manager.isOwnShieldedAddress(walletId: walletId, raw43: raw43)) ?? nil
             })
     }
 
@@ -2228,7 +2283,9 @@ final class ShieldedTxLookup {
             vout: entry.vout,
             fundingTypeRaw: entry.fundingTypeRaw,
             walletId: entry.walletId,
-            drainOperation: entry.drainOperation)
+            drainOperation: entry.drainOperation,
+            recipientRaw43: entry.recipientRaw43,
+            externalRecipientAddress: entry.externalRecipientAddress)
     }
 
     /// Records that a transfer consumed the asset lock funded by `txidWire`,
@@ -2287,7 +2344,14 @@ final class ShieldedTxLookup {
             return
         }
 
-        guard let map = result.map else { return }
+        guard let built = result.map else { return }
+        let map = Self.resolvingRecipients(of: built, mainnet: source.isMainnet()) { walletId, raw43 in
+            let key = walletId + raw43
+            if let known = ownRecipientAnswers[key] { return known }
+            let answer = source.isOwnShieldedRecipient(walletId, raw43)
+            if let answer { ownRecipientAnswers[key] = answer }
+            return answer
+        }
         store(map)
         Self.logger.info(
             "🛡️ SHIELD-TX :: snapshot \(map.count, privacy: .public) funding tx(s) (shielded + platform)")
@@ -2333,7 +2397,8 @@ final class ShieldedTxLookup {
                     vout: vout,
                     fundingTypeRaw: row.fundingTypeRaw,
                     walletId: row.walletId,
-                    drainOperation: CoreShieldedDrainRowIdentity(operationIdBytes: row.operationId).operation)
+                    drainOperation: CoreShieldedDrainRowIdentity(operationIdBytes: row.operationId).operation,
+                    recipientRaw43: row.fundingTypeRaw == shieldedFundingType ? row.shieldedRecipientRaw43 : nil)
                 func rank(_ statusRaw: Int) -> Int {
                     statusRaw == AssetLockRecoveryService.consumedStatus ? .max : statusRaw
                 }
@@ -2370,6 +2435,26 @@ final class ShieldedTxLookup {
         }
     }
 
+    /// Sets `externalRecipientAddress` on every shielded lock whose recorded
+    /// recipient `isOwn` answers false for. An own recipient, one that
+    /// `isOwn` cannot decide (nil) and a lock without a recorded recipient
+    /// (tracked before the SDK recorded it) keep the Internal Transfer
+    /// reading: only a provable stranger makes the lock a send.
+    @MainActor
+    static func resolvingRecipients(
+        of map: [String: ShieldedLockInfo],
+        mainnet: Bool,
+        isOwn: (_ walletId: Data, _ raw43: Data) -> Bool?
+    ) -> [String: ShieldedLockInfo] {
+        map.mapValues { info in
+            guard info.fundingTypeRaw == shieldedFundingType, let raw43 = info.recipientRaw43,
+                  isOwn(info.walletId, raw43) == false else { return info }
+            var resolved = info
+            resolved.externalRecipientAddress = Bech32m.shieldedDisplayAddress(raw43: raw43, mainnet: mainnet)
+            return resolved
+        }
+    }
+
     /// Publishes `map` as the snapshot. `refresh` is its only production
     /// caller; tests publish snapshots through it directly.
     @MainActor
@@ -2387,6 +2472,17 @@ final class ShieldedTxLookup {
         if changed {
             NotificationCenter.default.post(name: .shieldedTxLookupDidChange, object: self)
         }
+    }
+}
+
+extension Bech32m {
+    /// A 43-byte raw Orchard address in its DIP-0018 display form: HRP
+    /// `dash` on mainnet and `tdash` elsewhere (devnet uses the testnet
+    /// encoding), payload = 0x10 type byte + the raw bytes. Nil for any other
+    /// length.
+    static func shieldedDisplayAddress(raw43: Data, mainnet: Bool) -> String? {
+        guard raw43.count == 43 else { return nil }
+        return encode(hrp: platformHrp(mainnet: mainnet), data: Data([0x10]) + raw43)
     }
 }
 

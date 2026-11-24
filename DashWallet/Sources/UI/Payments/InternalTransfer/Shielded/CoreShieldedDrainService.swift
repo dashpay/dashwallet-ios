@@ -25,6 +25,15 @@ struct CoreShieldedDrainConfirmation: Equatable {
     }
 }
 
+extension CoreShieldedDrainConfirmation {
+    init(context: CoreShieldedDrainContext, quote: WalletDrainPreview) {
+        self.init(
+            context: context, candidateBalanceDuffs: quote.candidateBalanceDuffs,
+            estimatedRecipientCredits: quote.estimatedRecipientCredits,
+            estimatedL1FeeDuffs: quote.estimatedL1FeeDuffs, poolFeeCredits: quote.poolFeeCredits)
+    }
+}
+
 /// How both amount screens draw an active Max selection: an estimate, or the
 /// intent while none is known. Digits only — the screens draw the symbol.
 @MainActor

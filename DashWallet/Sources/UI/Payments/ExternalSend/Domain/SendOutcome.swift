@@ -39,6 +39,9 @@ enum SendOutcome {
             self = Self.outcome(for: error)
         } else if let error = error as? PlatformAddressSyncCoordinator.SendError {
             self = Self.outcome(for: error)
+        } else if case BIP70Error.failedAfterAcknowledgement = error {
+            // The merchant acknowledged the Payment and holds the signed bytes.
+            self = .inFlight
         } else if case BIP70Error.expired = error {
             // Thrown before the claim is spent: nothing was POSTed or broadcast.
             self = .notSent(.expired)
@@ -170,6 +173,8 @@ enum NotSentReason {
     case identityNotFound
     case belowMinimum
     case expired
+    /// The balance a whole-balance send pays changed after Confirm showed it; nothing was sent, Send plans Max again.
+    case balanceChanged
     case failed
 
     var category: String {
@@ -181,6 +186,7 @@ enum NotSentReason {
         case .identityNotFound: return "identityNotFound"
         case .belowMinimum: return "belowMinimum"
         case .expired: return "expired"
+        case .balanceChanged: return "balanceChanged"
         case .failed: return "failed"
         }
     }
@@ -214,6 +220,10 @@ enum NotSentReason {
         case .expired:
             return NSLocalizedString(
                 "The payment request has expired. Your funds were not sent.",
+                comment: "External send")
+        case .balanceChanged:
+            return NSLocalizedString(
+                "Your balance changed. Check the amount and try again. Your funds were not sent.",
                 comment: "External send")
         case .failed:
             return NSLocalizedString(
