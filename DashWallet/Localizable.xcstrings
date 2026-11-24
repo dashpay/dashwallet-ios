@@ -17731,7 +17731,7 @@
       }
     },
     "%d ATM(s) in %@" : {
-      "comment" : "#bc-ignore!",
+      "comment" : "Explore: number of ATMs, then the area they are in",
       "localizations" : {
         "ar" : {
           "variations" : {
@@ -19516,7 +19516,7 @@
       }
     },
     "%d merchant(s) in %@" : {
-      "comment" : "#bc-ignore!",
+      "comment" : "Explore: number of merchants, then the area they are in",
       "localizations" : {
         "ar" : {
           "variations" : {
@@ -25969,7 +25969,7 @@
       }
     },
     "%ld used" : {
-      "comment" : "#bc-ignore!",
+      "comment" : "Masternode keys: number of keys in use",
       "localizations" : {
         "ar" : {
           "variations" : {
@@ -29240,7 +29240,7 @@
       }
     },
     "%lld key(s)" : {
-      "comment" : "#bc-ignore!",
+      "comment" : "Masternode keys: number of keys",
       "localizations" : {
         "ar" : {
           "variations" : {
@@ -32437,7 +32437,7 @@
       }
     },
     "%lld transaction(s)" : {
-      "comment" : "#bc-ignore!",
+      "comment" : "Number of transactions in a group of transactions",
       "localizations" : {
         "ar" : {
           "variations" : {

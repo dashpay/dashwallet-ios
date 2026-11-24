@@ -845,7 +845,7 @@ struct HomeViewContent<Content: View>: View {
             let firstTx = set.transactionMap.values.first
             DashUIKit.TransactionView(
                 icon: IconName.custom("tx.item.coinjoin.icon").dashIconSource,
-                topText: String(localized: "\(set.transactionMap.count) transaction(s)", comment: "#bc-ignore!"),
+                topText: String(localized: "\(set.transactionMap.count) transaction(s)", comment: "Number of transactions in a group of transactions"),
                 title: String(localized: "Mixing Transactions", comment: "CoinJoin"),
                 subtitle: firstTx?.shortTimeString ?? "",
                 dashAmount: set.amount,
@@ -860,7 +860,7 @@ struct HomeViewContent<Content: View>: View {
             TransactionPreview(
                 title: String(localized: "CoinJoin Withdrawals", comment: "CoinJoin"),
                 subtitle: firstTx?.shortTimeString ?? "",
-                topText: String(localized: "\(set.transactionMap.count) transaction(s)", comment: "#bc-ignore!"),
+                topText: String(localized: "\(set.transactionMap.count) transaction(s)", comment: "Number of transactions in a group of transactions"),
                 icon: .custom("tx.item.internal.icon"),
                 dashAmount: set.amount
             ) {

@@ -90,14 +90,14 @@ struct KeyItemButton: View {
                         .font(.subheadline)
                         .foregroundColor(Color(uiColor: .dw_label()))
 
-                    Text(String(localized: "\(item.keyCount) key(s)", comment: "#bc-ignore!"))
+                    Text(String(localized: "\(item.keyCount) key(s)", comment: "Masternode keys: number of keys"))
                         .font(.caption)
                         .foregroundColor(Color(uiColor: .dw_secondaryText()))
                 }
 
                 Spacer()
 
-                Text(String.localizedStringWithFormat(String(localized: "%ld used", comment: "#bc-ignore!"), item.usedCount))
+                Text(String.localizedStringWithFormat(String(localized: "%ld used", comment: "Masternode keys: number of keys in use"), item.usedCount))
                     .font(.footnote)
                     .foregroundColor(Color(uiColor: .dw_secondaryText()))
                     .padding(.trailing, 8)
