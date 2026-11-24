@@ -256,9 +256,9 @@ extension AppConnect {
         case failed
     }
 
-    /// Why a request dated ahead of the network's time is refused.
+    /// Why a request dated ahead of the wallet's clock is refused.
     static var futureRequestMessage: String {
-        String(localized: "This sign-in request is dated ahead of the network's time. Ask the app for a new code.",
+        String(localized: "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code.",
                           comment: "DashConnect App Connect v2")
     }
 

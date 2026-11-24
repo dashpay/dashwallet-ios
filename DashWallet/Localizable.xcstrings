@@ -583737,265 +583737,265 @@
         }
       }
     },
-    "This sign-in request is dated ahead of the network's time. Ask the app for a new code." : {
+    "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code." : {
       "comment" : "DashConnect App Connect v2",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "bg" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "et" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "fil" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "hr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "mk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "ro" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "sk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "sl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "sl_SI" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "sq" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "zh" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "zh_TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This sign-in request is dated ahead of the network's time. Ask the app for a new code."
+            "value" : "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code."
           }
         }
       }

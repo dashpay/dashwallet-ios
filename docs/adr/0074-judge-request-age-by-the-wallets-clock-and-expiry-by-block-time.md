@@ -22,17 +22,21 @@ ahead of the network's time, the risk ADR-0020 listed under its negative consequ
 
 ## Considered options
 
-1. **The later of the wallet's clock and the proved block time for a request's age; block time
-   alone for a key's expiry.** Block time can mark a request stale but never future.
-2. **The wallet's clock alone for a request's age.** As the DIP and Android do; a clock set back
-   keeps a stale request alive.
-3. **Block time alone, with a wider future bound** (ADR-0020's suggested widening). Still refuses
+1. **The wallet's clock for a request's age, with the block time also making it stale; block time
+   alone for a key's expiry.** A request is future when it is more than 2 minutes ahead of the
+   wallet's clock, and stale when it is more than 10 minutes behind the wallet's clock or the block
+   time, whichever is later.
+2. **The wallet's clock alone for a request's age.** As Android does; a clock set back keeps a
+   stale request alive.
+3. **The later of the wallet's clock and the block time for both bounds.** A phone clock more than
+   2 minutes slow then answers a request the DIP requires it to refuse.
+4. **Block time alone, with a wider future bound** (ADR-0020's suggested widening). Still refuses
    a fresh request whenever the block time lags more than the bound, and departs from the DIP.
 
 ## Decision outcome
 
-**Chosen:** option 1. A request's age follows the DIP's clock, never judged earlier than the
-block time; a key's expiry stays on the clock Platform enforces.
+**Chosen:** option 1. A request's age follows the DIP's clock, and block time only ever makes a
+request stale; a key's expiry stays on the clock Platform enforces.
 
 ## Consequences
 
@@ -41,10 +45,8 @@ block time; a key's expiry stays on the clock Platform enforces.
 - A phone clock set back still cannot answer a request more than 10 minutes past the block time.
 
 **Negative**
-- A phone clock more than 10 minutes fast refuses requests as stale, as the DIP requires.
-- While the phone's clock is behind the block time, the 2-minute "future" bound is judged against
-  the block time, which is looser than the DIP: a request more than 2 minutes ahead of a slow
-  phone clock but within 2 minutes of the block time is answered.
+- A phone clock more than 2 minutes slow refuses requests as future, and one more than 10 minutes
+  fast refuses them as stale, as the DIP requires. The future refusal names the device's clock.
 - A request is still not judged without a proved block time.
 
 **Neutral**

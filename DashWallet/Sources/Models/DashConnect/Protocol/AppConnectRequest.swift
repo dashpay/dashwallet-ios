@@ -65,7 +65,7 @@ struct AppConnectRequest: Equatable {
         /// Created more than `maxAge` before the wallet's clock or the proved
         /// block time, whichever is later.
         case stale
-        /// Created more than `maxClockSkew` after both.
+        /// Created more than `maxClockSkew` after the wallet's clock.
         case future
         /// No proved block time to judge by.
         case uncheckable
@@ -94,15 +94,15 @@ struct AppConnectRequest: Equatable {
     /// Milliseconds since the epoch.
     let createdAt: UInt64
 
-    /// The request's age, per the App Connect DIP, against the later of the
-    /// wallet's clock `deviceNowMs` and the proved block time `blockTimeMs`,
-    /// both in milliseconds since the epoch. Block time lags real time, so it
-    /// can mark a request stale but never future.
+    /// The request's age per the App Connect DIP, judged by the wallet's
+    /// clock `deviceNowMs`, in milliseconds since the epoch. The proved block
+    /// time `blockTimeMs` lags real time, so it is never what makes a request
+    /// future; it only keeps a clock set back from keeping a request fresh.
     func age(blockTimeMs: UInt64?, deviceNowMs: UInt64) -> Age {
         guard let blockTimeMs else { return .uncheckable }
-        let now = max(blockTimeMs, deviceNowMs)
-        if now > createdAt, now - createdAt > UInt64(Self.maxAge * 1000) { return .stale }
-        if createdAt > now, createdAt - now > UInt64(Self.maxClockSkew * 1000) { return .future }
+        let latest = max(blockTimeMs, deviceNowMs)
+        if latest > createdAt, latest - createdAt > UInt64(Self.maxAge * 1000) { return .stale }
+        if createdAt > deviceNowMs, createdAt - deviceNowMs > UInt64(Self.maxClockSkew * 1000) { return .future }
         return .fresh
     }
 }

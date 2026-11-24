@@ -774,7 +774,7 @@ final class DashConnectUriTests: XCTestCase {
     /// The wallet's clock decides, per the DIP; a lagging block time never
     /// makes a request future, and a block time later than the phone's clock
     /// still makes it stale.
-    func testAppConnectRequestAgeIsJudgedByTheLaterOfTheWalletClockAndBlockTime() throws {
+    func testAppConnectRequestAgeIsJudgedByTheWalletsClock() throws {
         let request = try AppConnectRequest.decode(AppConnectVector.requestBytes)
         let created = AppConnectVector.createdAt
         let minute: UInt64 = 60 * 1000
@@ -784,6 +784,7 @@ final class DashConnectUriTests: XCTestCase {
         XCTAssertEqual(request.age(blockTimeMs: lagging, deviceNowMs: created - 2 * minute - 1), .future)
         XCTAssertEqual(request.age(blockTimeMs: lagging, deviceNowMs: created + 10 * minute + 1), .stale)
         XCTAssertEqual(request.age(blockTimeMs: created + 10 * minute + 1, deviceNowMs: created), .stale)
+        XCTAssertEqual(request.age(blockTimeMs: created, deviceNowMs: created - 2 * minute - 1), .future)
     }
 
     /// Without a proved block time the age is not judged: not fresh, and not

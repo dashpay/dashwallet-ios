@@ -196,22 +196,19 @@ final class AppConnectV2LoginTests: XCTestCase {
         }
     }
 
-    /// R12a / AC-09: a future-dated request asks the app for a new code; it
-    /// does not blame the phone's clock: a request is future only when it is
-    /// ahead of both the phone's clock and the block time.
-    func testAFutureDatedRequestIsRefusedAskingForANewCodeWithoutBlamingTheClock() throws {
+    /// R12a / AC-09: a future-dated request asks the app for a new code and
+    /// names the device's clock, the one it is judged by.
+    func testAFutureDatedRequestIsRefusedAskingForANewCodeNamingTheDevicesClock() throws {
         let uri = try Self.vectorUri()
         XCTAssertThrowsError(try AppConnect.grantPlan(
             for: uri, blockTimeMs: Self.createdAt - 3 * 60_000)) {
             let refusal = $0 as? AppConnect.Refusal
             XCTAssertEqual(refusal?.status, .stale)
             let text = refusal?.reason.lowercased() ?? ""
-            XCTAssertFalse(text.contains("clock"), text)
-            XCTAssertFalse(text.contains("device"), text)
             XCTAssertTrue(text.contains("new"), "it asks the app for a new code: \(text)")
             XCTAssertFalse(text.contains("expired"), text)
             XCTAssertTrue(text.contains("ahead"), "it gives the reason, the request is dated ahead: \(text)")
-            XCTAssertTrue(text.contains("network"), "it names the network's time: \(text)")
+            XCTAssertTrue(text.contains("device's clock"), "it names the device's clock: \(text)")
         }
     }
 
@@ -270,6 +267,15 @@ final class AppConnectV2LoginTests: XCTestCase {
                 for: uri, blockTimeMs: lagging, deviceNowMs: deviceNowMs), "\(deviceNowMs)") {
                 XCTAssertEqual(($0 as? AppConnect.Refusal)?.status, .stale)
             }
+        }
+    }
+
+    /// A phone clock more than two minutes slow refuses a request made now,
+    /// as the DIP requires, however current the block time.
+    func testARequestAheadOfASlowPhoneClockIsRefused() throws {
+        XCTAssertThrowsError(try AppConnect.grantPlan(
+            for: try Self.vectorUri(), blockTimeMs: Self.createdAt, deviceNowMs: Self.createdAt - 3 * 60_000)) {
+            XCTAssertEqual(($0 as? AppConnect.Refusal)?.reason, AppConnect.futureRequestMessage)
         }
     }
 
