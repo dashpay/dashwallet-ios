@@ -259,10 +259,6 @@ enum InvitationClaimFailure: Equatable {
     /// chain-locked; the same invitation claims fine a few minutes later.
     case stillConfirming
 
-    /// `IdentityAssetLockTransactionOutPointAlreadyConsumedError`, as a node
-    /// reports it.
-    static let outPointAlreadyConsumedCode: UInt32 = 10504
-
     /// nil for a failure that says nothing about the invitation (network,
     /// PIN, DPNS) — the generic registration wording applies.
     static func classify(_ error: Error) -> InvitationClaimFailure? {
@@ -272,15 +268,23 @@ enum InvitationClaimFailure: Equatable {
              PlatformWalletError.invalidParameter,
              PlatformWalletError.invalidNetwork:
             return .refused
-        case let error as PlatformWalletError where error.consensusError?.code == outPointAlreadyConsumedCode:
-            return .refused
         default:
             break
         }
+        // A consensus code decides alone, on either SDK error type: the
+        // spent report is a refusal, any other code says nothing here.
+        if let refusal = PlatformRefusal.of(underlying) {
+            return refusal == .assetLockOutPointConsumed ? .refused : nil
+        }
         // An error without a typed case or a consensus code: only its text
-        // names the cause. "Not yet chain-locked" is decided wallet-side.
+        // names the cause.
+        // TODO(platform-error-codes): a spent report that reaches Swift with
+        // neither is matched by the consensus error's own wording, and the
+        // SDK's "not yet chain-locked" refusal has no result code of its own.
         let text = String(describing: underlying).lowercased()
-        if text.contains("already consumed") || text.contains("already completely used") {
+        // An unconfirmed result's text is one attempt's diagnostic: it does
+        // not report the invitation spent.
+        if PlatformRefusal.textMayNameRefusal(underlying), text.contains("already completely used") {
             return .refused
         }
         if text.contains("not yet chain-locked") {
