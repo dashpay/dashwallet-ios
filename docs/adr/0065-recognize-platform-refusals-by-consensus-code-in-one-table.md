@@ -1,4 +1,4 @@
-# 0054 — Recognize Platform refusals by consensus code in one table
+# 0065 — Recognize Platform refusals by consensus code in one table
 
 - **Status:** Proposed
 - **Date:** 2026-11-23
