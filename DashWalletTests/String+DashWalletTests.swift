@@ -135,6 +135,14 @@ final class String_DashWallet: XCTestCase {
         }
     }
 
+    /// The one sanitizing both Sends use on a payment request's merchant and memo and a link's label and message:
+    /// every non-ASCII character spelled out by its Unicode name, so no text can pass for the verified lock.
+    func testSpellingOutUnicodeNamesKeepsASCIIAndNamesEverythingElse() {
+        XCTAssertEqual("🔒 Amazon".spellingOutUnicodeNames, "\\N{LOCK} Amazon")
+        XCTAssertEqual("Merchant".spellingOutUnicodeNames, "Merchant")
+        XCTAssertEqual(("🔒 Amazon" as NSString).spellingOutUnicodeNames, "\\N{LOCK} Amazon")
+    }
+
     func testPerformanceExample() throws {
         // This is an example of a performance test case.
         measure {

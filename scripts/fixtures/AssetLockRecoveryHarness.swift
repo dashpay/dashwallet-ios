@@ -117,6 +117,19 @@ final class ShieldedTransferCoordinator {
     struct ResumeRow {
         let identity: CoreShieldedDrainRowIdentity
         let recordedRecipientRaw43: Data?
+
+        func recipient(
+            marker: () -> CoreShieldedDrainMarkerLookup,
+            callerRaw43: Data?,
+            ownRaw43: Data
+        ) -> ShieldedResumeRecipient {
+            ShieldedResumeRecipient.resolve(
+                recordedRaw43: recordedRecipientRaw43,
+                row: identity,
+                marker: marker,
+                callerRaw43: callerRaw43,
+                ownRaw43: ownRaw43)
+        }
     }
     static var rowLookup: (() -> CoreShieldedDrainRowIdentity?)?
     /// The recipient the SDK recorded on the row; `nil` for a row tracked

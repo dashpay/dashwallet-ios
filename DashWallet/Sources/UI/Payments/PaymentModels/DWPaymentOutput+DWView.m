@@ -25,13 +25,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-static NSString *sanitizeString(NSString *s) {
-    NSMutableString *sane = [NSMutableString stringWithString:(s) ? s : @""];
-    CFStringTransform((CFMutableStringRef)sane, NULL, kCFStringTransformToUnicodeName, NO);
-    return sane;
-}
-
-
 /// Longest note shown from an unsigned payment request.
 static const NSUInteger kUnverifiedNoteMaxLength = 140;
 
@@ -41,7 +34,7 @@ static const NSUInteger kUnverifiedNoteMaxLength = 140;
 static NSString *singleLineString(NSString *s, NSUInteger maxLength) {
     NSArray<NSString *> *parts = [s componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     NSArray<NSString *> *words = [parts filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"length > 0"]];
-    NSString *line = sanitizeString([words componentsJoinedByString:@" "]);
+    NSString *line = [words componentsJoinedByString:@" "].spellingOutUnicodeNames;
     if (line.length > maxLength) {
         NSUInteger cut = [line rangeOfComposedCharacterSequenceAtIndex:maxLength - 1].location;
         line = [[line substringToIndex:cut] stringByAppendingString:@"…"];
@@ -192,13 +185,13 @@ static NSString *singleLineString(NSString *s, NSUInteger maxLength) {
         // is labelled as unverified — and the label shows even when no name was sent.
         if (self.name.length > 0) {
             return [NSString stringWithFormat:NSLocalizedString(@"Unverified recipient: %@", @"Payment confirmation: name supplied by an unsigned payment request"),
-                                              sanitizeString(self.name)];
+                                              self.name.spellingOutUnicodeNames];
         }
         return NSLocalizedString(@"Unverified recipient", @"Payment confirmation: unsigned payment request without a name");
     }
 
     if (self.name.length > 0) {
-        NSString *sanitizedName = sanitizeString(self.name);
+        NSString *sanitizedName = self.name.spellingOutUnicodeNames;
         if (self.isSecure) {
             return [NSString stringWithFormat:@"🔒 %@", sanitizedName];
         }
@@ -229,7 +222,7 @@ static NSString *singleLineString(NSString *s, NSUInteger maxLength) {
             info = [NSString stringWithFormat:NSLocalizedString(@"Unverified note: %@", @"Payment confirmation: note supplied by an unsigned payment request"), note];
         }
         else {
-            info = sanitizeString(self.memo);
+            info = self.memo.spellingOutUnicodeNames;
         }
         hasInfo = YES;
     }

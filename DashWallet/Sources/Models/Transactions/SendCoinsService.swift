@@ -122,7 +122,11 @@ public final class SendCoinsService: NSObject {
     ///   acknowledged, so the verdict decides nothing the buyer is standing by for.
     func payWithDashUrl(url paymentUrlString: String, awaitAcceptance: Bool = true,
                         validate: @escaping (Confirmation) async throws -> Void) async throws -> Data {
-        guard let uri = BIP70URI(paymentUrlString), let requestURL = uri.r else {
+        // The link's terms are judged as every reader judges them (`BIP70URI.amountSource`): one that leaves what it
+        // asks open, a malformed or contradictory required amount among them, is refused like any invalid link. The
+        // invoice is paid as fetched, so a malformed optional amount is left to it.
+        guard let uri = BIP70URI(paymentUrlString), uri.amountSource != nil,
+              let requestURL = uri.fetchableRequestURL else {
             throw DashSpendError.paymentProcessingError(String(localized: "Invalid payment request", comment: "DashSpend"))
         }
 
@@ -143,6 +147,11 @@ public final class SendCoinsService: NSObject {
             // The coins are gone as far as the merchant is concerned — it already holds the
             // signed bytes and can broadcast them itself. Hand the caller the txid so the
             // purchase is recorded rather than dropped; the caller decides how to present it.
+            throw DashSpendError.paymentStatusUnknown(
+                txIdWire: Data(txHashDisplay.reversed()), reason: reason)
+        } catch BIP70Error.failedAfterAcknowledgement(let txHashDisplay, let reason) {
+            // The merchant acknowledged the Payment, so it holds the signed bytes and may fulfil the
+            // order although the broadcast failed or the request expired: the same in-progress state.
             throw DashSpendError.paymentStatusUnknown(
                 txIdWire: Data(txHashDisplay.reversed()), reason: reason)
         }
