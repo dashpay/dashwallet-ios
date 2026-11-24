@@ -310,11 +310,13 @@ jobs:
           wallet_sha=$(git rev-parse HEAD)
           platform_sha=$(git -C ../platform rev-parse HEAD)
 
-          # Set only when the wallet commit pins another Platform commit than
-          # the one built; the build evidence records it.
+          # Set when the wallet commit does not pin the Platform commit built:
+          # it pins another one, or has no `.platform-ref`. The build evidence
+          # records it.
           platform_override_sha=""
           if [[ -z "$PLATFORM_PIN" ]]; then
             pin_status="no .platform-ref"
+            platform_override_sha="$platform_sha"
           elif [[ "$platform_sha" == "$PLATFORM_PIN" ]]; then
             pin_status="on the .platform-ref pin"
           else

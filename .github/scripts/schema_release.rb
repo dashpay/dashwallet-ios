@@ -596,13 +596,15 @@ module SchemaRelease
       version = record.fetch("app_version")
       commit = SchemaRelease.sha(manifest.fetch("wallet_sha"))
       label = "App Store #{version} (#{record['build_number']})"
-      return if overridden_release_settled?(label, "v#{SchemaRelease.component(version)}", commit, manifest)
       # The manifest is found by version and build number, which an upload made
       # outside the release workflow could share. Only the binding the workflow
       # records after its own upload ties this Apple build to that manifest.
       # `bound` comes from the snapshot `evidence` validated, so a binding that
       # appears later is not accepted unchecked.
       recover_binding(label, record, manifest, evidence, dry_run) unless bound
+      # Only now is the manifest known to describe the published build, and
+      # with it what the manifest says about overrides.
+      return if overridden_release_settled?(label, "v#{SchemaRelease.component(version)}", commit, manifest)
       id = record["release_id"]
       mirror_step(failures, id) { tag_release(label, "v#{SchemaRelease.component(version)}", commit, dry_run) }
       mirror_step(failures, id) { advance_release_branch(label, commit, dry_run) } if newest
@@ -611,7 +613,8 @@ module SchemaRelease
     end
 
     # A build may use a DashUIKit or Platform commit that its wallet commit does
-    # not pin; the release workflow allows it and records it in the manifest.
+    # not pin, the Platform commit of a wallet commit without `.platform-ref`
+    # included; the release workflow allows it and records it in the manifest.
     # The recorded commit is then not the tree that shipped, so the observer
     # writes neither a tag nor the release branch for it, and reports it until
     # a person has placed the tag on a commit made from the recorded one, which

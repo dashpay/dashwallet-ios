@@ -541,7 +541,9 @@ class SchemaReleaseTest < Minitest::Test
     assert_equal "merged", @store.document("status/new.json")["state"]
   end
 
-  def test_overridden_publication_is_refused_before_a_missing_binding_is_recovered
+  # The manifest is found by version and build number. Until the Apple build
+  # is bound to it, what it says about overrides is not about that build.
+  def test_overridden_publication_whose_release_run_uploaded_late_is_bound_and_then_refused
     @unbound = true
     @manifest.merge!("workflow_run_id" => "4242", "workflow_run_attempt" => "2")
     override_dependencies
@@ -550,8 +552,27 @@ class SchemaReleaseTest < Minitest::Test
     @apple.builds["new"]["attributes"]["uploadedDate"] = "2026-11-01T10:05:00Z"
     error = assert_raises(SchemaRelease::Error) { pipeline.sync }
     assert_includes error.message, "dependency overrides"
-    refute @store.files.key?("apple-builds/apple21.json")
+    assert_equal @path, @store.document("apple-builds/apple21.json")["manifest_path"]
     assert_empty @store.github.tags
+    assert_empty @store.github.fast_forwards
+  end
+
+  def test_override_manifest_of_a_reused_build_number_is_not_taken_for_the_published_build
+    @unbound = true
+    @manifest.merge!("workflow_run_id" => "4242", "workflow_run_attempt" => "2")
+    override_dependencies
+    shipped = "c" * 40
+    pipeline = mirroring
+    @store.github.uploaded_runs = [%w[4242 2]]
+    @apple.builds["new"]["attributes"]["uploadedDate"] = "2026-11-01T11:30:00Z"
+    # Not even a tag that would settle an overridden build is looked at.
+    @store.github.tags["v9.1.0"] = shipped
+    @store.github.comparisons[[WALLET, shipped]] = "ahead"
+    error = assert_raises(SchemaRelease::Error) { pipeline.sync }
+    assert_includes error.message, "no recorded binding"
+    refute_includes error.message, "dependency overrides"
+    refute @store.files.key?("apple-builds/apple21.json")
+    assert_empty @store.github.fast_forwards
   end
 
   def test_overridden_publication_dry_run_reports_and_writes_nothing
@@ -1083,6 +1104,8 @@ class SchemaReleaseTest < Minitest::Test
     assert_includes workflow, "id: dashuikit\n"
     assert_includes workflow, 'handle.write(f"override_sha={sha}\\n")'
     assert_includes workflow, 'echo "platform_override_sha=$platform_override_sha"'
+    # Off the pin, and with no pin at all.
+    assert_equal 2, workflow.scan('platform_override_sha="$platform_sha"').length
   end
 
   def test_allocates_after_apple_builds_and_reserved_failed_uploads
