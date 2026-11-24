@@ -60,8 +60,9 @@ one-scan login possible, and with it DashConnect on mainnet once mainnet runs pr
   A connection is Active, Confirming, Not delivered, Refused, Expired or Disconnected, worked out
   from what Platform shows now and the wallet's record, and one state table decides what it shows
   and offers ([ADR-0019](../../adr/0019-let-one-state-table-decide-what-a-connection-shows-and-offers.md)).
-  A request's age and a connection's expiry are judged by Platform's proved block time
-  ([ADR-0020](../../adr/0020-judge-request-age-and-expiry-by-proved-platform-block-time.md)); a
+  A request's age is judged by the wallet's clock, never earlier than Platform's proved block
+  time, and a connection's expiry by the block time
+  ([ADR-0074](../../adr/0074-judge-request-age-by-the-wallets-clock-and-expiry-by-block-time.md)); a
   request is answered at most once
   ([ADR-0017](../../adr/0017-answer-an-app-connect-request-at-most-once.md)). A disconnect turns
   off everything that may give the app access without a further question

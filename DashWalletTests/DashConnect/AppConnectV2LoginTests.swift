@@ -197,7 +197,8 @@ final class AppConnectV2LoginTests: XCTestCase {
     }
 
     /// R12a / AC-09: a future-dated request asks the app for a new code; it
-    /// does not blame the phone's clock, which plays no part in the age.
+    /// does not blame the phone's clock: a request is future only when it is
+    /// ahead of both the phone's clock and the block time.
     func testAFutureDatedRequestIsRefusedAskingForANewCodeWithoutBlamingTheClock() throws {
         let uri = try Self.vectorUri()
         XCTAssertThrowsError(try AppConnect.grantPlan(
@@ -214,9 +215,10 @@ final class AppConnectV2LoginTests: XCTestCase {
         }
     }
 
-    /// The edges of the window, by block time: 10 minutes old and 2 minutes
-    /// ahead are answered, a millisecond more is refused.
-    func testTheAgeWindowIsJudgedByBlockTimeToTheMillisecond() throws {
+    /// The edges of the window, with the phone's clock at the block time: 10
+    /// minutes old and 2 minutes ahead are answered, a millisecond more is
+    /// refused.
+    func testTheAgeWindowIsJudgedToTheMillisecond() throws {
         let uri = try Self.vectorUri()
         let minute: UInt64 = 60_000
         for blockTimeMs in [Self.createdAt + 10 * minute, Self.createdAt - 2 * minute] {
@@ -231,11 +233,9 @@ final class AppConnectV2LoginTests: XCTestCase {
         }
     }
 
-    /// A phone clock a year off neither refuses a fresh request nor admits a
-    /// stale one: only the block time counts.
-    /// The phone's clock is not an input: the age and both expiries of a
-    /// granted key are told from the proved block time alone.
-    func testTheAgeAndTheExpiriesAreToldFromTheBlockTime() throws {
+    /// Both expiries of a granted key are told from the proved block time
+    /// alone.
+    func testTheExpiriesAreToldFromTheBlockTime() throws {
         let yearLater = Self.createdAt + 365 * Self.dayMilliseconds
         let later = Self.groupBinding(expiresAt: yearLater + 2 * 365 * Self.dayMilliseconds)
         let unlimited = AppConnectRequest.AuthBinding(
@@ -245,8 +245,39 @@ final class AppConnectV2LoginTests: XCTestCase {
             for: Self.uri(authBindings: [later, unlimited], createdAt: yearLater), blockTimeMs: yearLater)
         XCTAssertEqual(plan.auth[0].expiresAt, yearLater + 365 * Self.dayMilliseconds)
         XCTAssertEqual(plan.auth[1].expiresAt, yearLater + 90 * Self.dayMilliseconds)
+    }
+
+    /// DIP App Connect: the age is judged by the wallet's clock. Mainnet
+    /// block time lags real time by minutes, so a request made just now must
+    /// not read as dated ahead of it.
+    func testARequestMadeNowIsAnsweredWhileTheBlockTimeLags() throws {
+        let uri = try Self.vectorUri()
+        let minute: UInt64 = 60_000
+        XCTAssertNoThrow(try AppConnect.grantPlan(
+            for: uri, blockTimeMs: Self.createdAt - 5 * minute, deviceNowMs: Self.createdAt))
+    }
+
+    func testTheAgeWindowIsJudgedByTheWalletsClock() throws {
+        let uri = try Self.vectorUri()
+        let minute: UInt64 = 60_000
+        let lagging = Self.createdAt - 15 * minute
+        for deviceNowMs in [Self.createdAt + 10 * minute, Self.createdAt - 2 * minute] {
+            XCTAssertNoThrow(try AppConnect.grantPlan(
+                for: uri, blockTimeMs: lagging, deviceNowMs: deviceNowMs), "\(deviceNowMs)")
+        }
+        for deviceNowMs in [Self.createdAt + 10 * minute + 1, Self.createdAt - 2 * minute - 1] {
+            XCTAssertThrowsError(try AppConnect.grantPlan(
+                for: uri, blockTimeMs: lagging, deviceNowMs: deviceNowMs), "\(deviceNowMs)") {
+                XCTAssertEqual(($0 as? AppConnect.Refusal)?.status, .stale)
+            }
+        }
+    }
+
+    /// A phone clock set back does not keep a request alive past ten minutes
+    /// of block time.
+    func testAStaleRequestIsRefusedByBlockTimeWhenThePhoneClockIsBehind() throws {
         XCTAssertThrowsError(try AppConnect.grantPlan(
-            for: try Self.vectorUri(), blockTimeMs: Self.createdAt + 11 * 60_000)) {
+            for: try Self.vectorUri(), blockTimeMs: Self.createdAt + 11 * 60_000, deviceNowMs: Self.createdAt)) {
             XCTAssertEqual(($0 as? AppConnect.Refusal)?.status, .stale)
         }
     }
@@ -1188,5 +1219,13 @@ final class AppConnectConnectionTermsTests: XCTestCase {
 
         XCTAssertFalse(returned is AppConnect.Refusal, "a refusal would hide the top-up")
         XCTAssertTrue(AppConnect.isInsufficientBalance(returned))
+    }
+}
+
+private extension AppConnect {
+    /// The wallet's clock reading the block time, for tests about anything
+    /// but the clocks.
+    static func grantPlan(for uri: AppConnectUri, blockTimeMs: UInt64?) throws -> GrantPlan {
+        try grantPlan(for: uri, blockTimeMs: blockTimeMs, deviceNowMs: blockTimeMs ?? 0)
     }
 }

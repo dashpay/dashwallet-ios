@@ -25,7 +25,7 @@ where they disagree, ADR-0001 wins.
 | [0017](0017-answer-an-app-connect-request-at-most-once.md) | Answer an App Connect request at most once | platform | Accepted | |
 | [0018](0018-run-app-connect-platform-writes-through-one-executor.md) | Run App Connect Platform writes through one executor | platform | Accepted | |
 | [0019](0019-let-one-state-table-decide-what-a-connection-shows-and-offers.md) | Let one state table decide what a connection shows and offers | platform | Accepted | |
-| [0020](0020-judge-request-age-and-expiry-by-proved-platform-block-time.md) | Judge request age and expiry by proved Platform block time | platform | Accepted | |
+| [0020](0020-judge-request-age-and-expiry-by-proved-platform-block-time.md) | Judge request age and expiry by proved Platform block time | platform | Superseded | [0074](0074-judge-request-age-by-the-wallets-clock-and-expiry-by-block-time.md) |
 | [0021](0021-record-a-consensus-refusal-on-the-intent.md) | Record a consensus refusal on the intent and show it as Refused | platform | Accepted | |
 | [0022](0022-derive-disconnected-apps-from-the-intents-a-disconnect-marked.md) | Derive disconnected apps from the intents a disconnect marked | platform | Accepted | |
 | [0023](0023-remove-crowdnode-entirely-as-android-does.md) | Remove CrowdNode entirely, as Android does | ui | Proposed | |
@@ -60,6 +60,7 @@ where they disagree, ADR-0001 wins.
 | [0071](0071-rewrite-swift-lookups-with-a-swiftsyntax-codemod-rerun-on-every-baseline.md) | Rewrite Swift lookups with a SwiftSyntax codemod re-run on every Baseline | l10n | Accepted | |
 | [0072](0072-check-releases-through-the-key-map.md) | Check releases through the key map instead of pairing code places | l10n | Accepted | |
 | [0073](0073-make-the-sync-phase-write-the-same-catalog-as-the-xcode-app.md) | Make the sync phase write the same Catalog as the Xcode app, and compile only the shipped locales | l10n | Accepted | |
+| [0074](0074-judge-request-age-by-the-wallets-clock-and-expiry-by-block-time.md) | Judge request age by the wallet's clock and key expiry by block time | platform | Proposed | |
 
 Areas: `spv`, `platform`, `keys`, `storage`, `coinjoin`, `payments`, `swap`, `ui`, `l10n`, `build`, `process`. Each ADR takes one; a new
 Area is added to this list in the PR that first needs it.
