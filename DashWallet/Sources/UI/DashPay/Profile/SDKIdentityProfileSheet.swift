@@ -642,7 +642,8 @@ final class IdentityTopUpViewModel: ObservableObject {
                     identityId: identityId,
                     amountDuffs: amountDuffs,
                     wallet: wallet,
-                    modelContainer: modelContainer)
+                    modelContainer: modelContainer,
+                    anyIdentity: false)
 
             case .shielded:
                 return try await IdentityCreditsTopUp(stepChanged: { [weak self] in self?.stepLabel = $0 })
@@ -695,13 +696,13 @@ struct IdentityCreditsTopUp {
 
     /// `anyIdentity`: the top-up for any identity (`topUpIdentityFromAddresses`, dashpay/platform#5929), which reads
     /// the identity from Platform and answers one it does not show with `identityNotFound`, before signing. Otherwise
-    /// the managed top-up the Top Up sheet has always used.
+    /// the managed top-up the Top Up sheet has always used. No default, so each caller states which one it takes.
     func fromPlatform(
         identityId: Data,
         amountDuffs: UInt64,
         wallet: ManagedPlatformWallet,
         modelContainer: ModelContainer,
-        anyIdentity: Bool = false
+        anyIdentity: Bool
     ) async throws -> UInt64 {
         let credits = amountDuffs * PlatformPaymentIdentityFundingPolicy.creditsPerDuff
         let candidates = try PlatformPaymentIdentityFundingPolicy.candidates(

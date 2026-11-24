@@ -47,7 +47,8 @@ and fixes the freeze where it comes from, with the existing `nonisolated documen
 - Android can bind the same operation later.
 
 **Negative**
-- Two more platform PRs and a `.platform-ref` bump; until they merge the app PR cannot use them.
+- Two more platform PRs and a `.platform-ref` bump. They merged (dashpay/platform#5860, #5862, #5929), and
+  the app pins `v5.2-dev` at `59fd81f181`.
 - The external top-up fetches the identity on every send (one more Platform request).
 
 **Neutral**

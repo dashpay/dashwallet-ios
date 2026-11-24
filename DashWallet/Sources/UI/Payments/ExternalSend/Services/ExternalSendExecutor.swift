@@ -1229,6 +1229,10 @@ struct LiveIdentityTopUpFromCredits: IdentityTopUpFromCreditsSending {
             return .notStarted
         } catch is WalletNotOpen {
             return .notStarted
+        } catch PlatformWalletError.notFound {
+            // FFI 98 here is `WalletRemovedBeforeSend`: the wallet was removed or re-created before the top-up was
+            // broadcast (signing may already have run), so nothing was sent and the send starts over from preparation.
+            return .notStarted
         } catch {
             return .failed(error, handedOver: false)
         }
