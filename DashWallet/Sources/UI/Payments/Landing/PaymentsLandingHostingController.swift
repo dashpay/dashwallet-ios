@@ -115,6 +115,9 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     /// pins it as the From card (destination picked on the To rows). Without
     /// it, the Send tab still embeds the form, just un-pinned (full From
     /// picker).
+    ///
+    /// `viewModel` replaces the one built from the other arguments; the
+    /// controller tests pass a preview model.
     init(activeTab: PaymentsLandingTab,
          receiveNetwork: ChainNetwork = .core,
          visibleTabs: [PaymentsLandingTab] = PaymentsLandingTab.allCases,
@@ -122,8 +125,9 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
          sendNetwork: ChainNetwork? = nil,
          showsHeader: Bool = true,
          allowsTransactionDetails: Bool = true,
-         isQuickReceive: Bool = false) {
-        self.viewModel = PaymentsLandingViewModel(
+         isQuickReceive: Bool = false,
+         viewModel: PaymentsLandingViewModel? = nil) {
+        self.viewModel = viewModel ?? PaymentsLandingViewModel(
             activeTab: activeTab,
             network: ReceiveOption(receiveNetwork),
             visibleTabs: visibleTabs,
@@ -314,7 +318,7 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
             })
     }
 
-    private func pushSpecifyAmount() {
+    func pushSpecifyAmount() {
         specifyAmountDestination = viewModel.amountRequestDestination
         let specify = SpecifyAmountViewController.controller()
         specify.delegate = self

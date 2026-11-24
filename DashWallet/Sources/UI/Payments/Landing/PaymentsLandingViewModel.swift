@@ -1062,7 +1062,7 @@ final class PaymentsLandingViewModel: ObservableObject {
         }
     }
 
-    private func acceptReceipt(_ newReceipt: ReceiveReceipt) {
+    func acceptReceipt(_ newReceipt: ReceiveReceipt) {
         guard receipt == nil else { return }
         receipt = newReceipt
         isWatchingForReceipt = false

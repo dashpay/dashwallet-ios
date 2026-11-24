@@ -196,4 +196,111 @@ final class ReceiveAmountRequestTests: XCTestCase {
             activeTab: .receive, network: .shielded, shieldedAddress: nil)
         XCTAssertNil(withoutAddress.amountRequestDestination)
     }
+
+    // MARK: A receipt closes the request on every option
+
+    /// The landing on `option`, in a navigation controller on screen.
+    private func landing(on option: ReceiveOption) throws
+        -> (PaymentsLandingHostingController, UINavigationController, PaymentsLandingViewModel, UIWindow) {
+        let model = PaymentsLandingViewModel.makeForPreview(
+            activeTab: .receive,
+            platformAddress: Self.platformMainnet,
+            shieldedAddress: try Self.shielded(hrp: "dash"))
+        model.updateReceiveState(
+            isAdvancedMode: true,
+            identity: try XCTUnwrap(ReceiveIdentity(identityId: Self.identityId, username: "alice")))
+        model.network = option
+        XCTAssertNotNil(model.amountRequestDestination, "\(option)")
+
+        let landing = PaymentsLandingHostingController(activeTab: .receive, viewModel: model)
+        let navigation = UINavigationController(rootViewController: landing)
+        // A window outside the app's scene is never drawn, so its push and pop
+        // animations never finish and the next push is dropped.
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let previousKeyWindow = scene.keyWindow
+        let window = UIWindow(windowScene: scene)
+        window.rootViewController = navigation
+        window.makeKeyAndVisible()
+        addTeardownBlock { @MainActor in
+            window.isHidden = true
+            previousKeyWindow?.makeKey()
+        }
+        return (landing, navigation, model, window)
+    }
+
+    private func waitUntil(
+        _ message: String,
+        file: StaticString = #filePath,
+        line: UInt = #line,
+        _ condition: () -> Bool
+    ) async throws {
+        let deadline = Date().addingTimeInterval(5)
+        while !condition() {
+            if Date() > deadline {
+                XCTFail("timed out: \(message)", file: file, line: line)
+                throw CancellationError()
+            }
+            try await Task.sleep(nanoseconds: 20_000_000)
+        }
+    }
+
+    private func receipt(on option: ReceiveOption) -> ReceiveReceipt {
+        ReceiveReceipt(
+            id: "receipt-\(option)", rail: option, amountDuffs: 100_000_000,
+            receivedAt: Date(timeIntervalSince1970: 1_793_000_000), memo: nil, transactionId: nil)
+    }
+
+    /// Pushes the amount step and submits an amount: the request sheet opens.
+    private func openRequest(
+        _ landing: PaymentsLandingHostingController,
+        _ navigation: UINavigationController
+    ) async throws {
+        landing.pushSpecifyAmount()
+        try await waitUntil("amount step") {
+            navigation.topViewController is SpecifyAmountViewController && navigation.transitionCoordinator == nil
+        }
+        let step = try XCTUnwrap(navigation.topViewController as? SpecifyAmountViewController)
+        landing.specifyAmountViewController(step, didInput: 100_000_000)
+        // Fully on screen: a dismiss sent while the sheet is still being
+        // presented is dropped.
+        try await waitUntil("request sheet") {
+            guard let sheet = navigation.presentedViewController as? RequestAmountHostingController else { return false }
+            return !sheet.isBeingPresented && navigation.transitionCoordinator == nil
+        }
+    }
+
+    func testAReceiptClosesTheRequestSheetAndTheAmountStepOnEveryNewOption() async throws {
+        for option in [ReceiveOption.shielded, .platform, .identity] {
+            let (landing, navigation, model, window) = try landing(on: option)
+            try await openRequest(landing, navigation)
+
+            model.acceptReceipt(receipt(on: option))
+            try await waitUntil("sheet closed, \(option)") { navigation.presentedViewController == nil }
+            // The pop must also have finished: UIKit drops a push sent while
+            // a transition is still running.
+            try await waitUntil("back on the landing, \(option)") {
+                navigation.topViewController === landing && navigation.transitionCoordinator == nil
+            }
+
+            // With the receipt dealt with, the request opens again: the
+            // observers the receipt removed are armed anew.
+            model.finishReceiving()
+            try await openRequest(landing, navigation)
+            XCTAssertNil(model.receipt, "\(option)")
+            window.isHidden = true
+        }
+    }
+
+    func testAReceiptOnTheAmountStepReturnsToTheLandingOnEveryNewOption() async throws {
+        for option in [ReceiveOption.shielded, .platform, .identity] {
+            let (landing, navigation, model, window) = try landing(on: option)
+            landing.pushSpecifyAmount()
+            try await waitUntil("amount step, \(option)") { navigation.topViewController is SpecifyAmountViewController }
+
+            model.acceptReceipt(receipt(on: option))
+            try await waitUntil("back on the landing, \(option)") { navigation.topViewController === landing }
+            XCTAssertNil(navigation.presentedViewController, "\(option)")
+            window.isHidden = true
+        }
+    }
 }
