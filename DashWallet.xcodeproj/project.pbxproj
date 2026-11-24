@@ -1262,6 +1262,7 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		C0DE5A0126C7000000000001 /* SwiftDashSDKCoreLifecycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */; };
 		2523A5799AB8F025BBFA7BEF /* InvitationValidationPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1C04D04FBAFFE0998528F13 /* InvitationValidationPolicyTests.swift */; };
 		BABA10000000000000000044 /* MasternodeClaimableBalanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000043 /* MasternodeClaimableBalanceTests.swift */; };
+		BABA10000000000000000046 /* UsernameContestPrecheckTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000045 /* UsernameContestPrecheckTests.swift */; };
 		BABA1000000000000000003F /* ProfileWrongVerbTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000003E /* ProfileWrongVerbTests.swift */; };
 		BABA1000000000000000003D /* PlatformRefusalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000003C /* PlatformRefusalTests.swift */; };
 		BECA547342FBB4945119031B /* PendingInvitationStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D371B3F05242DD0F47028B8C /* PendingInvitationStoreTests.swift */; };
@@ -3296,6 +3297,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKCoreLifecycleTests.swift; sourceTree = "<group>"; };
 		F1C04D04FBAFFE0998528F13 /* InvitationValidationPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationValidationPolicyTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000043 /* MasternodeClaimableBalanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasternodeClaimableBalanceTests.swift; sourceTree = "<group>"; };
+		BABA10000000000000000045 /* UsernameContestPrecheckTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameContestPrecheckTests.swift; sourceTree = "<group>"; };
 		BABA1000000000000000003E /* ProfileWrongVerbTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileWrongVerbTests.swift; sourceTree = "<group>"; };
 		BABA1000000000000000003C /* PlatformRefusalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformRefusalTests.swift; sourceTree = "<group>"; };
 		D371B3F05242DD0F47028B8C /* PendingInvitationStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingInvitationStoreTests.swift; sourceTree = "<group>"; };
@@ -7166,6 +7168,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */,
 				F1C04D04FBAFFE0998528F13 /* InvitationValidationPolicyTests.swift */,
 				BABA10000000000000000043 /* MasternodeClaimableBalanceTests.swift */,
+				BABA10000000000000000045 /* UsernameContestPrecheckTests.swift */,
 				BABA1000000000000000003E /* ProfileWrongVerbTests.swift */,
 				BABA1000000000000000003C /* PlatformRefusalTests.swift */,
 				D371B3F05242DD0F47028B8C /* PendingInvitationStoreTests.swift */,
@@ -10305,6 +10308,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C0DE5A0126C7000000000001 /* SwiftDashSDKCoreLifecycleTests.swift in Sources */,
 				2523A5799AB8F025BBFA7BEF /* InvitationValidationPolicyTests.swift in Sources */,
 				BABA10000000000000000044 /* MasternodeClaimableBalanceTests.swift in Sources */,
+				BABA10000000000000000046 /* UsernameContestPrecheckTests.swift in Sources */,
 				BABA1000000000000000003F /* ProfileWrongVerbTests.swift in Sources */,
 				BABA1000000000000000003D /* PlatformRefusalTests.swift in Sources */,
 				BECA547342FBB4945119031B /* PendingInvitationStoreTests.swift in Sources */,

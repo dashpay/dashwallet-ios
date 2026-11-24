@@ -21,4 +21,30 @@ final class MasternodeClaimableBalanceTests: XCTestCase {
         let withoutBalance: [Data: UInt64?] = [identity: nil]
         XCTAssertEqual(MasternodeClaimableBalance.resolve(withoutBalance, identityId: identity), .noIdentity)
     }
+
+    // MARK: fetch
+
+    private struct ReadFailure: Error {}
+
+    func testFetchAsksForTheOneIdentityAndReportsTheCreditsItHolds() throws {
+        var asked: [[Data]] = []
+        let balance = try MasternodeClaimableBalance.fetch(identityId: identity) { ids in
+            asked.append(ids)
+            return [identity: 1_500]
+        }
+        XCTAssertEqual(balance, .credits(1_500))
+        XCTAssertEqual(asked, [[identity]])
+    }
+
+    func testFetchReportsNoIdentityWhenTheReadAnswersWithoutABalance() throws {
+        XCTAssertEqual(try MasternodeClaimableBalance.fetch(identityId: identity) { _ in [:] }, .noIdentity)
+        XCTAssertEqual(try MasternodeClaimableBalance.fetch(identityId: identity) { _ in [identity: nil] }, .noIdentity)
+        XCTAssertEqual(try MasternodeClaimableBalance.fetch(identityId: identity) { _ in [other: 1_500] }, .noIdentity)
+    }
+
+    func testFetchLetsAFailedReadThroughRatherThanReportingNoIdentity() {
+        XCTAssertThrowsError(try MasternodeClaimableBalance.fetch(identityId: identity) { _ in throw ReadFailure() }) { error in
+            XCTAssertTrue(error is ReadFailure, "\(error)")
+        }
+    }
 }
