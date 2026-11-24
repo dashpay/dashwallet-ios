@@ -20,8 +20,8 @@ Place(file, line, column, key) with `file` relative to the repo root:
                                         within a file ordered by (line, column);
                                         mismatched_files are (file, n_baseline,
                                         n_current), sorted by file, never re-paired.
-  build_is_stale(repo, stringsdata_dir) newest .stringsdata older than the newest
-                                        Swift file under DashWallet/.
+  stale_sources(repo, stringsdata_dir)  repo-relative Swift files (covered sources only) one
+                                        of whose own .stringsdata records is older than the file.
 """
 import json
 import os
@@ -444,49 +444,66 @@ class PairTests(PlacesCase):
                          [("B1a", "C1a"), ("B1b", "C1b"), ("B2", "C2")])
 
 
-class BuildIsStaleTests(PlacesCase):
+class StaleSourcesTests(PlacesCase):
+    """stale_sources(repo, dir): every working-tree Swift file one of whose own records is older than it.
+
+    Checked per record, not newest against newest: a build that rewrote one file's data and stopped
+    before another's (PP2), or a leftover record of another architecture, must not pass."""
+
     def setUp(self):
         super().setUp()
         self.derived = self.stringsdata("same")
         self.sd = os.path.join(self.derived, "same", "Send.stringsdata")
         self.swift = os.path.join(self.repo, SEND)
-
-    def test_stale_when_a_swift_file_is_newer_than_every_stringsdata(self):
-        os.utime(self.sd, (1000, 1000))
-        os.utime(self.swift, (2000, 2000))
-        self.assertTrue(places.build_is_stale(self.repo, self.derived))
-
-    def test_fresh_when_newest_stringsdata_is_newer_than_every_swift_file(self):
-        os.utime(self.swift, (1000, 1000))
+        self.other = "DashWallet/Sources/Other.swift"
+        self.write(self.other, 'let o = String(localized: "Other")\n')
+        self.write_stringsdata(os.path.join(self.derived, "same"), "Other.stringsdata", self.other,
+                               [("Other", 1, 9)])
+        self.other_sd = os.path.join(self.derived, "same", "Other.stringsdata")
         for root, _, files in os.walk(os.path.join(self.repo, "DashWallet")):
             for fn in files:
                 os.utime(os.path.join(root, fn), (1000, 1000))
-        os.utime(self.sd, (2000, 2000))
-        self.assertFalse(places.build_is_stale(self.repo, self.derived))
 
-    def test_newest_stringsdata_counts_not_the_oldest(self):
+    def test_every_record_newer_than_its_source_is_fresh(self):
+        os.utime(self.sd, (2000, 2000))
+        os.utime(self.other_sd, (2000, 2000))
+        self.assertEqual(places.stale_sources(self.repo, self.derived), [])
+
+    def test_a_source_newer_than_its_own_record_is_stale_though_another_record_is_newer(self):
+        # an incremental build refreshed Other.swift's data and stopped before Send.swift's
+        os.utime(self.swift, (3000, 3000))
+        os.utime(self.sd, (2000, 2000))
+        os.utime(self.other_sd, (4000, 4000))
+        self.assertEqual(places.stale_sources(self.repo, self.derived), [SEND])
+
+    def test_a_leftover_record_of_another_architecture_older_than_its_source_is_stale(self):
         self.stringsdata("same-x86")
-        old = os.path.join(self.derived, "same", "Send.stringsdata")
-        new = os.path.join(self.derived, "same-x86", "Send.stringsdata")
         os.utime(self.swift, (1500, 1500))
-        os.utime(old, (1000, 1000))
-        os.utime(new, (2000, 2000))
-        self.assertFalse(places.build_is_stale(self.repo, self.derived))
-
-    def test_swift_file_outside_app_folder_does_not_make_build_stale(self):
-        for root, _, files in os.walk(os.path.join(self.repo, "DashWallet")):
-            for fn in files:
-                os.utime(os.path.join(root, fn), (1000, 1000))
         os.utime(self.sd, (2000, 2000))
+        os.utime(self.other_sd, (2000, 2000))
+        os.utime(os.path.join(self.derived, "same-x86", "Send.stringsdata"), (1000, 1000))
+        self.assertEqual(places.stale_sources(self.repo, self.derived), [SEND])
+
+    def test_a_record_of_a_file_no_longer_in_the_tree_does_not_count(self):
+        os.utime(self.sd, (2000, 2000))
+        os.utime(self.other_sd, (2000, 2000))
+        self.write_stringsdata(os.path.join(self.derived, "same"), "Gone.stringsdata",
+                               "DashWallet/Sources/Gone.swift", [("Gone", 1, 1)])
+        os.utime(os.path.join(self.derived, "same", "Gone.stringsdata"), (500, 500))
+        self.assertEqual(places.stale_sources(self.repo, self.derived), [])
+
+    def test_swift_file_outside_the_covered_sources_does_not_count(self):
+        os.utime(self.sd, (2000, 2000))
+        os.utime(self.other_sd, (2000, 2000))
         self.write("DashWalletTests/T.swift", "let x = 1\n")
         os.utime(os.path.join(self.repo, "DashWalletTests/T.swift"), (3000, 3000))
-        self.assertFalse(places.build_is_stale(self.repo, self.derived))
+        self.assertEqual(places.stale_sources(self.repo, self.derived), [])
 
     def test_no_stringsdata_raises_specific_error(self):
         empty = os.path.join(self.tmp, "empty")
         os.makedirs(empty)
         with self.assertRaises(places.NoStringsdataError):
-            places.build_is_stale(self.repo, empty)
+            places.stale_sources(self.repo, empty)
 
 
 if __name__ == "__main__":

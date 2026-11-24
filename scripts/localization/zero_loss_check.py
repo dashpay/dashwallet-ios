@@ -143,12 +143,13 @@ def check_baseline_build(folder, baseline):
 
 def check_build(repo, derived):
     try:
-        stale = places.build_is_stale(repo, derived)
+        stale = places.stale_sources(repo, derived)
     except places.NoStringsdataError:
         raise CannotRun("no .stringsdata files under %s; build the dashpay target first" % derived)
     if stale:
-        raise CannotRun("the dashpay build's .stringsdata is older than the working tree; "
-                        "build the dashpay target first")
+        raise CannotRun("the dashpay build's .stringsdata is older than %d working-tree file(s), first %s; "
+                        "build the dashpay target first (delete %s if a record of another architecture "
+                        "or an interrupted build is left over)" % (len(stale), stale[0], derived))
 
 
 def check_formatter():

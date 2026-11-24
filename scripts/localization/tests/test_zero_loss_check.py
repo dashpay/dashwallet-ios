@@ -638,6 +638,14 @@ class CannotRunTests(ZeroLossCase):
         res = self.run_cli()
         self.assert_cannot_run(res, "older", "stringsdata")
 
+    def test_a_build_that_stopped_before_one_file_refuses_and_names_it(self):
+        # PP2: Greeting's data is fresh, Send's is older than its source; the newest record must not cover it.
+        past = time.time() - 3600
+        os.utime(os.path.join(self.derived, "Send.stringsdata"), (past, past))
+        res = self.run_cli("--write-key-map")
+        self.assert_cannot_run(res, "older", "DashWallet/Sources/Send.swift")
+        self.assertFalse(os.path.exists(os.path.join(self.repo, KEY_MAP)))
+
     def test_formatter_self_test_failed(self):
         res = self.run_cli(extra_env={"FORMATTER_FORCE_ROUTE": "localizedStringWithFormat"})
         self.assert_cannot_run(res, "self-test", "plural")
@@ -724,6 +732,16 @@ class BaselineInputsTests(ZeroLossCase):
         tail = script[build_at:]
         self.assertRegex(tail, r'\$BASE"?\s*>\s*"?\$DERIVED/' + BASELINE_COMMIT_FILE,
                          "the commit is recorded after the build succeeded")
+
+    def test_build_baseline_script_forgets_the_old_record_before_it_builds(self):
+        # PP2: a failed or partial rebuild must not keep a record that vouches for its new .stringsdata,
+        # and a folder built for another commit must not lend its records of files the Baseline keeps.
+        with open(os.path.join(LOCALIZATION_DIR, "build_baseline.sh"), encoding="utf-8") as f:
+            script = f.read()
+        head = script[:script.index("xcodebuild")]
+        self.assertRegex(head, r'rm -rf "\$DERIVED"', "a folder recorded for another commit is removed")
+        self.assertRegex(head, r'rm -f "\$DERIVED/' + BASELINE_COMMIT_FILE + r'" "\$DERIVED/' + BASELINE_ROOT_FILE + '"',
+                         "the records are removed before the build")
 
     # Baseline sources map to repository files through the recorded worktree root
     def test_baseline_sources_map_through_the_recorded_worktree_root(self):

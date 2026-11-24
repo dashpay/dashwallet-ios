@@ -20,6 +20,13 @@ DERIVED="${2:-$HOME/Library/Caches/dashwallet-regenerate/baseline-${BASE:0:12}}"
 WT="$(dirname "$top")/.baseline-${BASE:0:12}"
 LOG="$(dirname "$DERIVED")/baseline-${BASE:0:12}-build.log"
 mkdir -p "$(dirname "$DERIVED")"
+# The records vouch only for a finished build of $BASE. A folder that holds no such record (another
+# commit, or a build that failed) starts empty, so none of its .stringsdata is taken for $BASE's;
+# the records are removed before building, so a build that fails now leaves none.
+if [ -d "$DERIVED" ] && [ "$(cat "$DERIVED/baseline-commit" 2> /dev/null)" != "$BASE" ]; then
+    rm -rf "$DERIVED"
+fi
+rm -f "$DERIVED/baseline-commit" "$DERIVED/baseline-root"
 
 cleanup() { git worktree remove --force "$WT" > /dev/null 2>&1 || true; }
 trap cleanup EXIT

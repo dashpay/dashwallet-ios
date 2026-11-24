@@ -208,8 +208,22 @@ def pair(baseline, current):
     return pairs, mismatched
 
 
-def build_is_stale(repo, stringsdata_dir):
-    newest_data = max(os.path.getmtime(p) for p in _stringsdata_files(stringsdata_dir))
-    newest_swift = max((os.path.getmtime(os.path.join(repo, f))
-                        for f in _app_files(repo, (".swift",))), default=0)
-    return newest_data < newest_swift
+def stale_sources(repo, stringsdata_dir):
+    """Covered Swift files of the working tree one of whose own .stringsdata records is older than the
+    file. Each record is checked against its own source: a build that rewrote one file's data and
+    stopped before another's, or a leftover record of another architecture or target, would otherwise
+    hand current_places() an old lookup for a file it then treats as covered."""
+    roots = sorted({os.path.realpath(repo), os.path.abspath(repo)})
+    present = set(_app_files(repo, (".swift",)))
+    stale = set()
+    for path in _stringsdata_files(stringsdata_dir):
+        with open(path) as f:
+            src = json.load(f).get("source", "")
+        for root in roots:
+            prefix = root.rstrip(os.sep) + os.sep
+            if src.startswith(prefix):
+                rel = src[len(prefix):]
+                if rel in present and os.path.getmtime(path) < os.path.getmtime(os.path.join(repo, rel)):
+                    stale.add(rel)
+                break
+    return sorted(stale)
