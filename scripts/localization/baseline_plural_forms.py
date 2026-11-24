@@ -25,6 +25,7 @@ import tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
+import catalog_io  # noqa: E402
 import foundation_format  # noqa: E402
 import baseline_lists  # noqa: E402
 import zero_loss_check as zl  # noqa: E402
@@ -65,9 +66,15 @@ def arg_types(baseline_key, key, args):
     return types
 
 
+def write_fixture(repo, fixture, key_map_bytes):
+    """Write the fixture atomically, only while the key map it was derived from is on disk unchanged."""
+    text = json.dumps(fixture, ensure_ascii=False, indent=1, sort_keys=True) + "\n"
+    catalog_io.publish_text(os.path.join(repo, OUT), text, {os.path.join(repo, zl.KEY_MAP): key_map_bytes})
+
+
 def main():
     repo = zl.repo_root()
-    rev, key_map = zl.read_key_map(repo)
+    rev, key_map, key_map_bytes = zl.load_key_map(repo)
     locales = compiled_locales(repo)
     english = stringsdict(repo, rev, "en")
     specs = zl.counted_specs(repo, rev, locales)
@@ -110,9 +117,7 @@ def main():
 
     fixture = {"baseline": rev, "counts": list(zl.COUNTS), "defects": defects, "locales": locales,
                "phrases": phrases, "variant_keys": variants}
-    with open(os.path.join(repo, OUT), "w", encoding="utf-8") as f:
-        json.dump(fixture, f, ensure_ascii=False, indent=1, sort_keys=True)
-        f.write("\n")
+    write_fixture(repo, fixture, key_map_bytes)
     print("%s: %d phrases x %d locales x %d counts, Baseline %s"
           % (OUT, len(phrases), len(locales), len(zl.COUNTS), rev[:12]))
 

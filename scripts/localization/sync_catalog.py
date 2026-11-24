@@ -10,8 +10,10 @@ by hand) every <arch> directory under OBJECT_FILE_DIR_normal is scanned.
 It collects the compiler's *.stringsdata, runs a legacy (NSLocalizedString-style)
 extraction over the target's Swift files (<arch>/<TARGET_NAME>.SwiftFileList) and the
 Objective-C .m/.mm files under SRCROOT named in the <arch>/*.d dependency files, runs
-`xcstringstool sync` on a copy of the Catalog, re-serializes it with catalog_io (the
-format the Xcode app writes) and replaces the Catalog only when the bytes changed.
+`xcstringstool sync` on a snapshot of the Catalog, re-serializes it with catalog_io (the
+format the Xcode app writes) and replaces the Catalog only when the bytes changed and the Catalog on
+disk still holds the snapshot's bytes; otherwise (an edit saved during the build) it stops with an
+error and leaves the edit. Builds of one checkout sync one at a time (a lock on the Catalog's folder).
 
 Only a Debug build syncs: another configuration (Release, TestFlight, TestNet) does not compile
 `#if DEBUG` code, so its sync would mark the texts only that code looks up as stale, and the
@@ -21,6 +23,7 @@ Without CONFIGURATION (the script run by hand or by its tests) it syncs.
 SYNC_CATALOG_PATH (optional) overrides the Catalog path; used to try the script on a copy.
 Errors go to stderr as `error: ...` with a non-zero exit, so Xcode shows them.
 """
+import fcntl
 import hashlib
 import os
 import re
@@ -156,14 +159,21 @@ def count_stale(path):
 STAMP_NAME = ".catalog-sync-stamp"
 
 
-def fingerprint(catalog, inputs):
-    """Digest of the Catalog's bytes and every input file's path, size and mtime."""
+def input_states(inputs):
+    """Every input file's path, size and mtime, read once so the stamp describes what was synced."""
+    states = []
+    for path in sorted(inputs):
+        st = os.stat(path)
+        states.append("\0%s\0%d\0%d" % (path, st.st_size, st.st_mtime_ns))
+    return "".join(states)
+
+
+def fingerprint(catalog, states):
+    """Digest of the Catalog's bytes and the inputs' states from input_states()."""
     h = hashlib.sha256()
     with open(catalog, "rb") as f:
         h.update(f.read())
-    for path in sorted(inputs):
-        st = os.stat(path)
-        h.update(("\0%s\0%d\0%d" % (path, st.st_size, st.st_mtime_ns)).encode("utf-8"))
+    h.update(states.encode("utf-8"))
     return h.hexdigest()
 
 
@@ -192,31 +202,51 @@ def main(argv=None):
             return 0
         stringsdata, swift_files, objc_files = collect(
             srcroot, env["OBJECT_FILE_DIR_normal"], env["TARGET_NAME"], env.get("ARCHS", "").split())
-        inputs = stringsdata + swift_files + objc_files
+        # Read before the sync: an input changed while it runs is newer than the stamp and syncs next build.
+        states = input_states(stringsdata + swift_files + objc_files)
         stamp = os.path.join(env["OBJECT_FILE_DIR_normal"], STAMP_NAME)
-        if read_stamp(stamp) == fingerprint(catalog, inputs):
+        if read_stamp(stamp) == fingerprint(catalog, states):
             print("Catalog sync: skipped, inputs unchanged since the last sync (%.1fs)" % (time.time() - started))
             return 0
-        with tempfile.TemporaryDirectory(prefix="sync-catalog-") as tmp:
-            legacy = extract(swift_files + objc_files, tmp, "--legacy-localizable-strings")
-            synced = sync(catalog, stringsdata + legacy, tmp)
-            changed = not same_bytes(synced, catalog)
-            if changed:
-                # Its own staging file in the Catalog's folder: the replace stays atomic, and two
-                # builds of one checkout that sync at once do not share it.
-                fd, staging = tempfile.mkstemp(prefix=".Localizable.xcstrings.", suffix=".sync",
-                                               dir=os.path.dirname(os.path.abspath(catalog)))
-                os.close(fd)
-                try:
-                    shutil.copyfile(synced, staging)
-                    shutil.copymode(catalog, staging)
-                    os.replace(staging, catalog)
-                finally:
-                    if os.path.exists(staging):
-                        os.remove(staging)
-            stale = count_stale(catalog)
+        catalog_dir = os.path.dirname(os.path.abspath(catalog))
+        # Two builds of one checkout sync one at a time: the lock is on the Catalog's folder, so
+        # it adds no file to the checkout.
+        lock = os.open(catalog_dir, os.O_RDONLY)
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+            with tempfile.TemporaryDirectory(prefix="sync-catalog-") as tmp:
+                # The sync works on a snapshot. A change is judged against the snapshot, and the
+                # result is published only while the Catalog on disk still holds those bytes, so an
+                # edit saved during the build (e.g. a translation in the Xcode editor) is never replaced.
+                snapshot = os.path.join(tmp, "snapshot.xcstrings")
+                shutil.copyfile(catalog, snapshot)
+                legacy = extract(swift_files + objc_files, tmp, "--legacy-localizable-strings")
+                synced = sync(snapshot, stringsdata + legacy, tmp)
+                changed = not same_bytes(synced, snapshot)
+                if changed:
+                    if not same_bytes(catalog, snapshot):
+                        raise SyncError("%s changed on disk while the sync ran (an edit saved during the "
+                                        "build); it was left as saved, build again" % catalog)
+                    # Its own staging file in the Catalog's folder: the replace stays atomic.
+                    fd, staging = tempfile.mkstemp(prefix=".Localizable.xcstrings.", suffix=".sync",
+                                                   dir=catalog_dir)
+                    os.close(fd)
+                    try:
+                        shutil.copyfile(synced, staging)
+                        shutil.copymode(catalog, staging)
+                        os.replace(staging, catalog)
+                    finally:
+                        if os.path.exists(staging):
+                            os.remove(staging)
+                # The stamp records what this sync processed: the published result, or the snapshot
+                # when nothing changed (a newer Catalog on disk then differs and syncs next build).
+                processed = synced if changed else snapshot
+                stale = count_stale(processed)
+                done = fingerprint(processed, states)
+        finally:
+            os.close(lock)
         with open(stamp, "w", encoding="utf-8") as f:
-            f.write(fingerprint(catalog, inputs) + "\n")
+            f.write(done + "\n")
         print("Catalog sync: %d compiler + %d legacy .stringsdata (%d Swift, %d ObjC files), "
               "%d stale, %s, %.1fs" % (len(stringsdata), len(legacy), len(swift_files),
                                        len(objc_files), stale, "updated" if changed else "unchanged",

@@ -227,6 +227,70 @@ class SyncCatalogTest(unittest.TestCase):
                 if n.startswith(".Localizable.xcstrings") and n != ".Localizable.xcstrings.sync.tmp"]
         self.assertEqual(left, [])
 
+    def run_main_saving_during_sync(self, edit):
+        """Run main() in-process; `edit` changes the live Catalog after the sync read it."""
+        import sync_catalog
+        from unittest import mock
+        real_sync = sync_catalog.sync
+
+        def sync_then_save(catalog_path, stringsdata, tmp):
+            result = real_sync(catalog_path, stringsdata, tmp)
+            edit()
+            return result
+        with mock.patch.dict(os.environ, self.env, clear=True), \
+                mock.patch.object(sync_catalog, "sync", sync_then_save):
+            return sync_catalog.main()
+
+    def test_an_edit_saved_while_the_sync_runs_is_not_overwritten(self):
+        # PP1: a translation saved in Xcode after the sync read the Catalog must survive the build.
+        cat = catalog_io.read_catalog(self.catalog)
+        cat["strings"]["Leftover key"] = {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "x"}}}}
+        catalog_io.write_catalog(self.catalog, cat)
+
+        def save_translation():
+            live = catalog_io.read_catalog(self.catalog)
+            live["strings"]["Leftover key"]["localizations"]["uk"] = {
+                "stringUnit": {"state": "translated", "value": "saved during the build"}}
+            catalog_io.write_catalog(self.catalog, live)
+        saved = None
+
+        def edit():
+            nonlocal saved
+            save_translation()
+            saved = self.read_bytes()
+        self.assertEqual(self.run_main_saving_during_sync(edit), 1)
+        self.assertEqual(self.read_bytes(), saved)
+        self.assertFalse(os.path.exists(os.path.join(self.root, "obj", ".catalog-sync-stamp")))
+
+    def test_a_sync_with_no_change_of_its_own_leaves_a_saved_edit_and_syncs_again(self):
+        self.assertEqual(self.run_sync().returncode, 0)
+        os.remove(os.path.join(self.root, "obj", ".catalog-sync-stamp"))
+        saved = None
+
+        def edit():
+            nonlocal saved
+            live = catalog_io.read_catalog(self.catalog)
+            live["strings"][next(iter(live["strings"]))]["comment"] = "saved during the build"
+            catalog_io.write_catalog(self.catalog, live)
+            saved = self.read_bytes()
+        self.assertEqual(self.run_main_saving_during_sync(edit), 0)
+        self.assertEqual(self.read_bytes(), saved)
+        again = self.run_sync()
+        self.assertEqual(again.returncode, 0)
+        self.assertNotIn("skipped", again.stdout)
+
+    def test_an_input_changed_while_the_sync_runs_syncs_again_next_build(self):
+        # The stamp describes the inputs as the sync read them, not as they are after it.
+        swift = os.path.join(self.srcroot, "DashWallet", "Sources", "Legacy.swift")
+
+        def edit():
+            with open(swift, "a", encoding="utf-8") as f:
+                f.write("\n")
+        self.assertEqual(self.run_main_saving_during_sync(edit), 0)
+        again = self.run_sync()
+        self.assertEqual(again.returncode, 0)
+        self.assertNotIn("skipped", again.stdout)
+
     def test_inputs_whose_object_is_listed_in_the_link_file_list_still_count(self):
         self.write_link_list(["My View.o"])  # Legacy Objc.o dropped: its .d must be ignored
         res = self.run_sync()

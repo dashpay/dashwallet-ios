@@ -470,22 +470,26 @@ def render(baseline, how, rows, unused, watch, findings, mode="pre-merge", defec
     return "\n".join(lines) + "\n"
 
 
-def write_key_map(repo, baseline, keys):
-    path = os.path.join(repo, KEY_MAP)
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+def write_key_map(repo, baseline, keys, expect):
+    """Write the key map; `expect` ({path: bytes read}) holds the Catalog and key map as the run read
+    them, so a map derived from an older read never replaces a newer save (catalog_io.publish_text)."""
     text = json.dumps({"baseline": baseline, "keys": keys}, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
-    with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=os.path.dirname(path), prefix=".key-map-",
-                                     delete=False) as f:
-        f.write(text)
-    os.replace(f.name, path)
+    catalog_io.publish_text(os.path.join(repo, KEY_MAP), text, expect)
 
 
 def read_key_map(repo):
     """The committed key map's (Baseline commit, {Baseline key: [current keys]}); CannotRun when unusable."""
+    baseline, keys, _ = load_key_map(repo)
+    return baseline, keys
+
+
+def load_key_map(repo):
+    """read_key_map plus the bytes it parsed, for a writer that derives a file from them."""
     path = os.path.join(repo, KEY_MAP)
     try:
-        with open(path, encoding="utf-8") as f:
-            data = json.load(f)
+        with open(path, "rb") as f:
+            raw = f.read()
+        data = json.loads(raw.decode("utf-8"))
     except (OSError, ValueError) as e:
         raise CannotRun("key map %s is missing or unreadable (%s); run the pre-merge check with --write-key-map"
                         % (KEY_MAP, e))
@@ -494,7 +498,7 @@ def read_key_map(repo):
             or not isinstance(keys, dict)
             or not all(isinstance(cs, list) and cs and all(isinstance(c, str) for c in cs) for cs in keys.values())):
         raise CannotRun("key map %s has the wrong schema" % KEY_MAP)
-    return data["baseline"], keys
+    return data["baseline"], keys, raw
 
 
 def check_release(args):
@@ -534,7 +538,10 @@ def check(args):
     catalog_path = os.path.join(repo, CATALOG)
     if not os.path.isfile(catalog_path):
         raise CannotRun("no Catalog at %s" % CATALOG)
-    cur_strings = catalog_io.read_catalog(catalog_path)["strings"]
+    # Read once: the key map is derived from these bytes and is written only while they are on disk.
+    read_before = {catalog_path: catalog_io.read_bytes(catalog_path),
+                   os.path.join(repo, KEY_MAP): catalog_io.read_bytes(os.path.join(repo, KEY_MAP))}
+    cur_strings = json.loads(read_before[catalog_path].decode("utf-8"))["strings"]
     base_catalog = baseline_lists.build_catalog(repo, baseline)
     locales = sorted(baseline_lists.locale_files(repo, baseline))
 
@@ -556,7 +563,7 @@ def check(args):
     if findings:
         return 1
     if args.write_key_map:
-        write_key_map(repo, baseline, key_map)
+        write_key_map(repo, baseline, key_map, read_before)
     return 0
 
 

@@ -32,6 +32,35 @@ def read_catalog(path):
         return json.load(f)
 
 
+def read_bytes(path):
+    """The file's bytes, or None when it does not exist."""
+    try:
+        with open(path, "rb") as f:
+            return f.read()
+    except FileNotFoundError:
+        return None
+
+
+def publish_text(path, text, expect):
+    """Write `text` to `path` atomically, only while every file in `expect` ({path: the bytes the
+    caller read, or None for a file that did not exist}) still holds them, so a result derived from
+    an older read never replaces a newer save; otherwise raise CatalogIOError and write nothing."""
+    directory = os.path.dirname(os.path.abspath(path))
+    os.makedirs(directory, exist_ok=True)
+    with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=directory,
+                                     prefix="." + os.path.basename(path) + ".", delete=False) as f:
+        f.write(text)
+    try:
+        for watched, want in expect.items():
+            if read_bytes(watched) != want:
+                raise CatalogIOError("%s changed on disk since it was read; %s was not written, run again"
+                                     % (watched, path))
+        os.replace(f.name, path)
+    finally:
+        if os.path.exists(f.name):
+            os.remove(f.name)
+
+
 def write_catalog(path, catalog):
     """Write `catalog` to `path` atomically; an existing file stays untouched on failure."""
     directory = os.path.dirname(os.path.abspath(path))
