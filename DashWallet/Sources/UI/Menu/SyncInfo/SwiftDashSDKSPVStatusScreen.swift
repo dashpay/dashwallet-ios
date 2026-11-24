@@ -539,7 +539,8 @@ struct SwiftDashSDKSPVStatusScreen: View {
 
     private var recoveryButtonTitle: String {
         if let recoveryProgress, isRecoveringPending {
-            return String(localized: "Finishing \(recoveryProgress.done) of \(recoveryProgress.total)…", comment: "SPV diagnostics")
+            return String(format: String(localized: "Finishing %1$d of %2$d…", comment: "SPV diagnostics"),
+                          recoveryProgress.done, recoveryProgress.total)
         }
         return isRecoveringPending
             ? String(localized: "Finishing…", comment: "SPV diagnostics")

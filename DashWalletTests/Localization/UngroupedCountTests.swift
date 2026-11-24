@@ -32,7 +32,8 @@ final class UngroupedCountTests: XCTestCase {
     /// (file under DashWallet/Sources, the Baseline key at that site, read from `git show <Baseline commit>:<file>`, the Baseline commit being the merge-base with develop)
     /// of each `String(format:)` + integer site whose value can reach 1000: block and list heights,
     /// list counts, transaction input/output counts and indexes, address-pool counts, epoch day,
-    /// contact requests, system status codes.
+    /// contact requests, system status codes, pending asset-lock recoveries, Quick voting casts, special
+    /// transaction types.
     private let sites: [(file: String, key: String)] = [
         ("UI/Home/Syncing Views/Sync View/SyncView.swift", "header #%d of %d"),
         ("UI/Home/Syncing Views/Sync View/SyncView.swift", "masternode list #%d of %d"),
@@ -60,6 +61,10 @@ final class UngroupedCountTests: XCTestCase {
         ("UI/Home/Views/Shortcuts/NodesShortcutIcon.swift", "Nodes, epoch day %d, %@ blocks proposed this epoch"),
         ("UI/DashPay/Contacts/SwiftUI/ContactsScreen.swift", "Contact Requests (%d)"),
         ("Models/DashConnect/PlatformDashConnectDataSource.swift", "Failed to generate secure random bytes for DashConnect (%d)."),
+        ("Infrastructure/SwiftDashSDK/AssetLockRecoveryService.swift", "%d still in progress"),
+        ("UI/Menu/SyncInfo/SwiftDashSDKSPVStatusScreen.swift", "Finishing %1$d of %2$d\u{2026}"),
+        ("UI/DashPay/Voting/VotingViewModel.swift", "Quick voting\u{2026} %1$d of %2$d done"),
+        ("Models/Transactions/Model/RawTransactionInspector.swift", "Unknown special type %d"),
     ]
 
     /// Every site looks its Baseline key up as `String(format: String(localized: "<key>"`: the literal

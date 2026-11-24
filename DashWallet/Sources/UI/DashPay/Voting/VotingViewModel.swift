@@ -92,7 +92,7 @@ final class VotingViewModel: ObservableObject {
     /// list and what VoiceOver says as the run starts. `nil` when none runs.
     var quickVotingStatus: String? {
         store.quickVotingProgress.map {
-            String(localized: "Quick voting… \($0.done) of \($0.total) done", comment: "Voting")
+            String(format: String(localized: "Quick voting… %1$d of %2$d done", comment: "Voting"), $0.done, $0.total)
         }
     }
     var votableNodes: [VoterNode] { store.votableNodes }

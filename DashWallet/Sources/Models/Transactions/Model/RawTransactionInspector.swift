@@ -300,7 +300,7 @@ enum RawTransactionInspector {
         case 7: return "Masternode Hard Fork Signal (MnHfTx)"
         case 8: return "Asset Lock"
         case 9: return "Asset Unlock"
-        default: return String(localized: "Unknown special type \(type)", comment: "Raw transaction inspector")
+        default: return String(format: String(localized: "Unknown special type %d", comment: "Raw transaction inspector"), type)
         }
     }
 

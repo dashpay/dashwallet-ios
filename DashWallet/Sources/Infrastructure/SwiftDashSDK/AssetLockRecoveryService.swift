@@ -301,7 +301,7 @@ struct AssetLockRecoveryService {
                 parts.append(String(localized: "\(awaitingSync) waiting for the network", comment: "SPV diagnostics"))
             }
             if inProgress > 0 {
-                parts.append(String(localized: "\(inProgress) still in progress", comment: "SPV diagnostics"))
+                parts.append(String(format: String(localized: "%d still in progress", comment: "SPV diagnostics"), inProgress))
             }
             if failed > 0 {
                 parts.append(String(localized: "\(failed) could not be reached", comment: "SPV diagnostics"))

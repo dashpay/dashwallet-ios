@@ -182,7 +182,7 @@
       "%lld requests"
     ],
     "%d still in progress": [
-      "%lld still in progress"
+      "%d still in progress"
     ],
     "%d syncs": [
       "%lld syncs"
@@ -2297,7 +2297,7 @@
       "Finish your registration"
     ],
     "Finishing %1$d of %2$d…": [
-      "Finishing %lld of %lld…"
+      "Finishing %1$d of %2$d…"
     ],
     "Finishing…": [
       "Finishing…"
@@ -4409,7 +4409,7 @@
       "Quick voting stopped before this vote was sent."
     ],
     "Quick voting… %1$d of %2$d done": [
-      "Quick voting… %lld of %lld done"
+      "Quick voting… %1$d of %2$d done"
     ],
     "Quorum URL": [
       "Quorum URL"
@@ -6812,7 +6812,7 @@
       "Unknown app"
     ],
     "Unknown special type %d": [
-      "Unknown special type %u"
+      "Unknown special type %d"
     ],
     "Unlock with your wallet PIN to continue.": [
       "Unlock with your wallet PIN to continue."

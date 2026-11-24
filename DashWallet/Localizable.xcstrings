@@ -25430,6 +25430,269 @@
         }
       }
     },
+    "%d still in progress" : {
+      "comment" : "SPV diagnostics",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "bg" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "ca" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "el" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "eo" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "et" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "fa" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "fi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "fil" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "hr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "hu" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "mk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "nb" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "ro" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "sk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "sl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "sl_SI" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "sq" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "sr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "zh" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "zh_TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d still in progress"
+          }
+        }
+      }
+    },
     "%d used" : {
       "comment" : "Wallet accounts — address pool",
       "localizations" : {
@@ -31619,269 +31882,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld second(s)"
-          }
-        }
-      }
-    },
-    "%lld still in progress" : {
-      "comment" : "SPV diagnostics",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "bg" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "ca" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "el" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "eo" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "et" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "fa" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "fi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "fil" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "hr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "hu" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "mk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "nb" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "pt" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "ro" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "sk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "sl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "sl_SI" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "sq" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "sr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "uk" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "zh" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "zh_TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld still in progress"
           }
         }
       }
@@ -221877,265 +221877,265 @@
         }
       }
     },
-    "Finishing %lld of %lld…" : {
+    "Finishing %1$d of %2$d…" : {
       "comment" : "SPV diagnostics",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "bg" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "et" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "fil" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "hr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "mk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "ro" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "sk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "sl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "sl_SI" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "sq" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "zh" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "zh_TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finishing %1$lld of %2$lld…"
+            "value" : "Finishing %1$d of %2$d…"
           }
         }
       }
@@ -411429,265 +411429,265 @@
         }
       }
     },
-    "Quick voting… %lld of %lld done" : {
+    "Quick voting… %1$d of %2$d done" : {
       "comment" : "Voting",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "bg" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "et" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "fil" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "hr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "mk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "ro" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "sk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "sl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "sl_SI" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "sq" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "zh" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "zh_TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quick voting… %1$lld of %2$lld done"
+            "value" : "Quick voting… %1$d of %2$d done"
           }
         }
       }
@@ -627344,265 +627344,265 @@
         }
       }
     },
-    "Unknown special type %u" : {
+    "Unknown special type %d" : {
       "comment" : "Raw transaction inspector",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "نوع خاص غير معروف %u"
+            "value" : "نوع خاص غير معروف %d"
           }
         },
         "bg" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Неизвестен специален тип %u"
+            "value" : "Неизвестен специален тип %d"
           }
         },
         "ca" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tipus especial desconegut %u"
+            "value" : "Tipus especial desconegut %d"
           }
         },
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Neznámý speciální typ %u"
+            "value" : "Neznámý speciální typ %d"
           }
         },
         "da" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ukendt specialtype %u"
+            "value" : "Ukendt specialtype %d"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unbekannter Spezialtyp %u"
+            "value" : "Unbekannter Spezialtyp %d"
           }
         },
         "el" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Άγνωστος ειδικός τύπος %u"
+            "value" : "Άγνωστος ειδικός τύπος %d"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unknown special type %u"
+            "value" : "Unknown special type %d"
           }
         },
         "eo" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nekonata speciala tipo %u"
+            "value" : "Nekonata speciala tipo %d"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tipo especial desconocido %u"
+            "value" : "Tipo especial desconocido %d"
           }
         },
         "et" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tundmatu eritüüp %u"
+            "value" : "Tundmatu eritüüp %d"
           }
         },
         "fa" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "نوع ویژه ناشناخته %u"
+            "value" : "نوع ویژه ناشناخته %d"
           }
         },
         "fi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tuntematon erikoistyyppi %u"
+            "value" : "Tuntematon erikoistyyppi %d"
           }
         },
         "fil" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hindi kilalang espesyal na uri %u"
+            "value" : "Hindi kilalang espesyal na uri %d"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Type spécial inconnu %u"
+            "value" : "Type spécial inconnu %d"
           }
         },
         "hr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nepoznata posebna vrsta %u"
+            "value" : "Nepoznata posebna vrsta %d"
           }
         },
         "hu" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ismeretlen speciális típus: %u"
+            "value" : "Ismeretlen speciális típus: %d"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Jenis khusus tidak dikenal %u"
+            "value" : "Jenis khusus tidak dikenal %d"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tipo speciale sconosciuto %u"
+            "value" : "Tipo speciale sconosciuto %d"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "不明な特別タイプ %u"
+            "value" : "不明な特別タイプ %d"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "알 수 없는 특수 유형 %u"
+            "value" : "알 수 없는 특수 유형 %d"
           }
         },
         "mk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Непознат специјален тип %u"
+            "value" : "Непознат специјален тип %d"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Jenis khas tidak diketahui %u"
+            "value" : "Jenis khas tidak diketahui %d"
           }
         },
         "nb" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ukjent spesialtype %u"
+            "value" : "Ukjent spesialtype %d"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Onbekend speciaal type %u"
+            "value" : "Onbekend speciaal type %d"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nieznany typ specjalny %u"
+            "value" : "Nieznany typ specjalny %d"
           }
         },
         "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tipo especial desconhecido %u"
+            "value" : "Tipo especial desconhecido %d"
           }
         },
         "ro" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tip special necunoscut %u"
+            "value" : "Tip special necunoscut %d"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Неизвестный специальный тип %u"
+            "value" : "Неизвестный специальный тип %d"
           }
         },
         "sk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Neznámy špeciálny typ %u"
+            "value" : "Neznámy špeciálny typ %d"
           }
         },
         "sl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Neznana posebna vrsta %u"
+            "value" : "Neznana posebna vrsta %d"
           }
         },
         "sl_SI" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Neznana posebna vrsta %u"
+            "value" : "Neznana posebna vrsta %d"
           }
         },
         "sq" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lloj i veçantë i panjohur %u"
+            "value" : "Lloj i veçantë i panjohur %d"
           }
         },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nepoznat poseban tip %u"
+            "value" : "Nepoznat poseban tip %d"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Okänd specialtyp %u"
+            "value" : "Okänd specialtyp %d"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ประเภทพิเศษที่ไม่รู้จัก %u"
+            "value" : "ประเภทพิเศษที่ไม่รู้จัก %d"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bilinmeyen özel tür %u"
+            "value" : "Bilinmeyen özel tür %d"
           }
         },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Невідомий спеціальний тип %u"
+            "value" : "Невідомий спеціальний тип %d"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Loại đặc biệt không xác định %u"
+            "value" : "Loại đặc biệt không xác định %d"
           }
         },
         "zh" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "未知的特殊类型 %u"
+            "value" : "未知的特殊类型 %d"
           }
         },
         "zh_TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "未知的特殊類型 %u"
+            "value" : "未知的特殊類型 %d"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "未知的特殊类型 %u"
+            "value" : "未知的特殊类型 %d"
           }
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "未知的特殊類型 %u"
+            "value" : "未知的特殊類型 %d"
           }
         }
       }
