@@ -194,6 +194,43 @@ class PublishWindowTest(unittest.TestCase):
                 catalog_io.publish_text(self.path, "result", {self.path: b"as read"})
         self.assert_back_and_clean()
 
+    def test_an_interrupt_right_after_the_move_puts_the_file_back(self):
+        # WW1: the rename finished, then Ctrl-C arrived before the next statement
+        real_rename = os.rename
+
+        def rename_then_interrupt(src, dst):
+            real_rename(src, dst)
+            if src == self.path:
+                raise KeyboardInterrupt
+        with mock.patch.object(catalog_io.os, "rename", rename_then_interrupt):
+            with self.assertRaises(KeyboardInterrupt):
+                catalog_io.publish_text(self.path, "result", {self.path: b"as read"})
+        self.assert_back_and_clean()
+
+    def test_a_filesystem_without_hard_links_refuses_before_the_move(self):
+        # WW2: every link fails (exFAT, some network shares); the file must never be moved
+        with mock.patch.object(catalog_io.os, "link", side_effect=OSError(45, "Operation not supported")), \
+                mock.patch.object(catalog_io.os, "rename", side_effect=AssertionError("moved")):
+            with self.assertRaises(catalog_io.CatalogIOError) as cm:
+                catalog_io.publish_text(self.path, "result", {self.path: b"as read"})
+        self.assertIn("hard link", str(cm.exception))
+        self.assert_back_and_clean()
+
+    def test_a_put_back_that_cannot_link_names_the_moved_aside_file(self):
+        real_link = os.link
+
+        def links_fail_after_the_probe(src, dst, **kw):
+            if dst == self.path:
+                raise OSError(5, "Input/output error")
+            return real_link(src, dst, **kw)
+        with mock.patch.object(catalog_io.os, "link", links_fail_after_the_probe):
+            with self.assertRaises(catalog_io.CatalogIOError) as cm:
+                catalog_io.publish_text(self.path, "result", {self.path: b"as read"})
+        aside = [n for n in self.others() if n.endswith(".aside")]
+        self.assertEqual(len(aside), 1, self.others())
+        self.assertIn(os.path.join(self.tmp, aside[0]), str(cm.exception))
+        self.assertEqual(self.read(os.path.join(self.tmp, aside[0])), b"as read")
+
     def test_a_leftover_moved_aside_file_refuses_and_is_named(self):
         # Bytes of an interrupted publication may be in it; nobody may publish past them.
         leftover = os.path.join(self.tmp, ".Localizable.xcstrings.abc123.aside")
