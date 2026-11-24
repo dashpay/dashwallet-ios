@@ -223,7 +223,7 @@ struct PaymentsReceiveContent: View {
                     VStack(spacing: 12) {
                         // The same Username row as the Identity card, on every
                         // option, whenever the Current identity has a username.
-                        if let username = viewModel.receiveIdentity?.username {
+                        if let username = viewModel.shownUsername {
                             copyRow(
                                 label: NSLocalizedString("Username", comment: ""),
                                 value: username,
@@ -339,7 +339,7 @@ struct PaymentsReceiveContent: View {
                 VStack(spacing: 12) {
                     copyRow(
                         label: NSLocalizedString("Username", comment: ""),
-                        value: viewModel.receiveIdentity?.username,
+                        value: viewModel.shownUsername,
                         copyLabel: NSLocalizedString("Copy username", comment: "Receive, Identity option"),
                         action: onCopyUsername)
 

@@ -159,6 +159,12 @@ final class PaymentsLandingViewModel: ObservableObject {
     /// registration, wallet and network change; nil when it has no username.
     @Published private(set) var receiveIdentity: ReceiveIdentity?
 
+    /// The username every Receive card shows and copies, whichever option is
+    /// selected and whether Advanced Mode is on; nil without one (AC-15).
+    var shownUsername: String? {
+        receiveIdentity?.username
+    }
+
     /// The lock screen's Quick Receive, which never offers Identity.
     let isQuickReceive: Bool
 
@@ -489,7 +495,7 @@ final class PaymentsLandingViewModel: ObservableObject {
     }
 
     func copyUsernameToPasteboard() {
-        guard let username = receiveIdentity?.username else { return }
+        guard let username = shownUsername else { return }
         UIPasteboard.general.string = username
     }
 

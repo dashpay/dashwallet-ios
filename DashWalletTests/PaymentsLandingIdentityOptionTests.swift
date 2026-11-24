@@ -147,19 +147,38 @@ final class PaymentsLandingIdentityOptionTests: XCTestCase {
         XCTAssertEqual(UIPasteboard.general.string, "alice")
     }
 
-    /// Core, Shielded and Platform show the username too, so the model keeps it
-    /// with Advanced Mode off and without the Identity option (AC-15).
-    func testUsernameIsKeptAndCopiedOnEveryChainOptionWithAdvancedModeOff() throws {
-        let model = PaymentsLandingViewModel.makeForPreview(activeTab: .receive)
-        model.updateReceiveState(isAdvancedMode: false, identity: try identity)
-        XCTAssertEqual(model.receiveOptions, [.core, .shielded])
+    /// Every card shows and copies the same username: Core and Shielded with
+    /// Advanced Mode off, every option with it on (AC-15).
+    func testEveryReceiveOptionShowsAndCopiesTheUsername() throws {
+        for isAdvancedMode in [false, true] {
+            let model = PaymentsLandingViewModel.makeForPreview(activeTab: .receive)
+            model.updateReceiveState(isAdvancedMode: isAdvancedMode, identity: try identity)
+            XCTAssertEqual(
+                model.receiveOptions,
+                isAdvancedMode ? [.core, .shielded, .platform, .identity] : [.core, .shielded])
 
-        for option in model.receiveOptions {
-            model.network = option
-            XCTAssertEqual(model.receiveIdentity?.username, "alice", "\(option)")
-            UIPasteboard.general.string = nil
-            model.copyUsernameToPasteboard()
-            XCTAssertEqual(UIPasteboard.general.string, "alice", "\(option)")
+            for option in model.receiveOptions {
+                model.network = option
+                XCTAssertEqual(model.shownUsername, "alice", "\(option), advanced \(isAdvancedMode)")
+                UIPasteboard.general.string = nil
+                model.copyUsernameToPasteboard()
+                XCTAssertEqual(UIPasteboard.general.string, "alice", "\(option), advanced \(isAdvancedMode)")
+            }
+        }
+    }
+
+    /// Without a username no card shows the row and Copy leaves the pasteboard.
+    func testNoUsernameShowsNoRowOnAnyOption() {
+        for isAdvancedMode in [false, true] {
+            let model = PaymentsLandingViewModel.makeForPreview(activeTab: .receive)
+            model.updateReceiveState(isAdvancedMode: isAdvancedMode, identity: nil)
+            for option in model.receiveOptions {
+                model.network = option
+                XCTAssertNil(model.shownUsername, "\(option), advanced \(isAdvancedMode)")
+                UIPasteboard.general.string = "untouched"
+                model.copyUsernameToPasteboard()
+                XCTAssertEqual(UIPasteboard.general.string, "untouched")
+            }
         }
     }
 
