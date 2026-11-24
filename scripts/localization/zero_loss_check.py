@@ -605,13 +605,12 @@ def check(args):
     findings += wording + missing + unused + unmapped + watch
     findings.sort(key=lambda f: (f[0],) + tuple((0, x) if isinstance(x, int) else (1, x) for x in f[1]))
 
+    # Publish before the report: a refused publication is exit 2, which prints no report.
+    if args.write_key_map and not findings:
+        write_key_map(repo, baseline, key_map, read_before)
     sys.stdout.write(render(baseline, how, rows, (checked, lost), (u_checked, u_lost), (identical, differ), findings,
                             defects=defects))
-    if findings:
-        return 1
-    if args.write_key_map:
-        write_key_map(repo, baseline, key_map, read_before)
-    return 0
+    return 1 if findings else 0
 
 
 def parse_args(argv):

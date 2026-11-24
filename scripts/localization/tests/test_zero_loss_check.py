@@ -369,6 +369,17 @@ class KeyMapTests(ZeroLossCase):
         with open(path) as f:
             self.assertEqual(f.read(), "sentinel")
 
+    def test_a_refused_key_map_write_prints_no_report(self):
+        # UU4: exit 2 prints no report, also when only the publication of the key map failed
+        folder = os.path.dirname(os.path.join(self.repo, KEY_MAP))
+        os.makedirs(folder, exist_ok=True)
+        os.chmod(folder, 0o555)
+        self.addCleanup(os.chmod, folder, 0o755)
+        res = self.run_cli("--write-key-map")
+        os.chmod(folder, 0o755)
+        self.assert_cannot_run(res)
+        self.assertFalse(os.path.exists(os.path.join(self.repo, KEY_MAP)))
+
     def test_cannot_run_writes_no_key_map(self):
         res = self.run_cli("--write-key-map", "--baseline", "0" * 40)
         self.assertEqual(res.returncode, 2, res.stdout + res.stderr)
