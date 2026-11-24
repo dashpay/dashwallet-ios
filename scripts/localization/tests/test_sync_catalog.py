@@ -1,4 +1,4 @@
-"""Tests for the build's Catalog sync phase (ADR-0071).
+"""Tests for the build's Catalog sync phase (ADR-0073).
 
 Run from the repository root:
 

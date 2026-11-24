@@ -31,7 +31,7 @@ Comments, calls wrapped over lines, line continuations, `#elseif` and every dire
 the extractor reads them. The dashpay files are the target's own list in `project.pbxproj`; a file
 in no target is not read.
 
-Neither writer changes a `manual` entry (ADR-0071).
+Neither writer changes a `manual` entry (ADR-0073).
 """
 import functools
 import json

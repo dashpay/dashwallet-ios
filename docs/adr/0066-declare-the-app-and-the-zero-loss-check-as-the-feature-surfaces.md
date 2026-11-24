@@ -1,4 +1,4 @@
-# 0064 — Declare the app and the zero-loss check as the feature's surfaces
+# 0066 — Declare the app and the zero-loss check as the feature's surfaces
 
 - **Status:** Proposed
 - **Date:** 2026-11-18

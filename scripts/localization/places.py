@@ -1,4 +1,4 @@
-"""Lookup places at the Baseline and now, paired by file and ordinal (ADR-0067).
+"""Lookup places at the Baseline and now, paired by file and ordinal (ADR-0069).
 
 A place is Place(file, line, column, key); `file` is relative to the repo root.
 The sources covered are every file under DashWallet/ and every file the dashpay target compiles

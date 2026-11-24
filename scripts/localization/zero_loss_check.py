@@ -6,8 +6,8 @@
     python3 scripts/localization/zero_loss_check.py --release
 
 Pre-merge mode pairs each lookup place in the code with the key the same place used at the
-Baseline commit (ADR-0067) and proves the Catalog resolves it to the Baseline wording in every
-locale. Release mode re-checks the keys recorded in zero_loss_key_map.json (ADR-0070).
+Baseline commit (ADR-0069) and proves the Catalog resolves it to the Baseline wording in every
+locale. Release mode re-checks the keys recorded in zero_loss_key_map.json (ADR-0072).
 Exit 0 pass, 1 findings, 2 cannot run. It reads the Baseline from git alone and uses no network.
 """
 import argparse

@@ -9246,7 +9246,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Keeps DashWallet/Localizable.xcstrings in step with the code the way the Xcode app does\n# (ADR-0068, ADR-0071). A no-op while the Catalog does not exist.\n/usr/bin/python3 \"$SRCROOT/scripts/localization/sync_catalog.py\"\n";
+			shellScript = "# Keeps DashWallet/Localizable.xcstrings in step with the code the way the Xcode app does\n# (ADR-0070, ADR-0073). A no-op while the Catalog does not exist.\n/usr/bin/python3 \"$SRCROOT/scripts/localization/sync_catalog.py\"\n";
 		};
 		622C18F9EEFCADF772D1DBB5 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sync DashWallet/Localizable.xcstrings with the build's strings (ADR-0071).
+"""Sync DashWallet/Localizable.xcstrings with the build's strings (ADR-0073).
 
 Run by the "Sync String Catalog" build phase after compilation, with the Xcode build
 environment: SRCROOT, OBJECT_FILE_DIR_normal, TARGET_NAME, and ARCHS: only the <arch> directories of

@@ -1,4 +1,4 @@
-# 0065 — Generate the Catalog from the Baseline lists with a repository script
+# 0067 — Generate the Catalog from the Baseline lists with a repository script
 
 - **Status:** Proposed
 - **Date:** 2026-11-18
@@ -28,7 +28,7 @@ The main app's texts live in 43 `DashWallet/<lang>.lproj/Localizable.strings` + 
 ## Consequences
 
 **Positive**
-- Rebases are mechanical: re-run the script on the new merge-base, then the zero-loss check (ADR-0067) proves the result.
+- Rebases are mechanical: re-run the script on the new merge-base, then the zero-loss check (ADR-0069) proves the result.
 - The script is testable on small fixtures (one locale, one plural entry, one format-code key).
 
 **Negative**
@@ -42,4 +42,4 @@ The main app's texts live in 43 `DashWallet/<lang>.lproj/Localizable.strings` + 
 ## Links
 
 - Feature summary: [docs/features/string-catalogs-migration/README.md](../features/string-catalogs-migration/README.md)
-- Related ADR: [0067](0067-prove-zero-loss-by-pairing-each-code-place-with-its-baseline-key.md)
+- Related ADR: [0069](0069-prove-zero-loss-by-pairing-each-code-place-with-its-baseline-key.md)

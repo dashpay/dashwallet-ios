@@ -1,13 +1,13 @@
-# 0070 — Check releases through the key map instead of pairing code places
+# 0072 — Check releases through the key map instead of pairing code places
 
 - **Status:** Proposed
 - **Date:** 2026-11-19
 - **Deciders:** Roman Chornyi (owner; chose the key map during `api`, 2026-11-19), recorded with Claude during `implement`
-- **Amends:** [ADR-0067](0067-prove-zero-loss-by-pairing-each-code-place-with-its-baseline-key.md) — for release runs only; the pre-merge check keeps pairing code places.
+- **Amends:** [ADR-0069](0069-prove-zero-loss-by-pairing-each-code-place-with-its-baseline-key.md) — for release runs only; the pre-merge check keeps pairing code places.
 
 ## Context
 
-ADR-0067 proves zero loss by pairing each code place with the key that place used at the Baseline, by file and ordinal. That works before the merge, when the only change to the code is the move. Spec §7 asks for the same check at each of the next 3 releases. By then other pull requests have added, removed and moved lookups, so a file's ordinals shift and pairing fails on files the move never touched (sad §11, OQ-API-1). The owner chose during `api` that a passing pre-merge run writes a key map (Baseline key → current keys) and that release runs check the Catalog through it.
+ADR-0069 proves zero loss by pairing each code place with the key that place used at the Baseline, by file and ordinal. That works before the merge, when the only change to the code is the move. Spec §7 asks for the same check at each of the next 3 releases. By then other pull requests have added, removed and moved lookups, so a file's ordinals shift and pairing fails on files the move never touched (sad §11, OQ-API-1). The owner chose during `api` that a passing pre-merge run writes a key map (Baseline key → current keys) and that release runs check the Catalog through it.
 
 ## Decision drivers
 
@@ -18,7 +18,7 @@ ADR-0067 proves zero loss by pairing each code place with the key that place use
 ## Considered options
 
 1. **Key map** — a passing pre-merge run writes `scripts/localization/zero_loss_key_map.json` (Baseline commit, Baseline key → current keys); `--release` checks, for each Baseline key with a Baseline translation, that every mapped current key's Catalog wording equals the Baseline wording in every locale.
-2. **Pair code places again at each release** — ADR-0067 unchanged; release runs fail on every file with a new or removed lookup and are judged by hand.
+2. **Pair code places again at each release** — ADR-0069 unchanged; release runs fail on every file with a new or removed lookup and are judged by hand.
 3. **Compare the release Catalog with the merge-time Catalog** — checks drift, but no longer against the Baseline.
 
 ## Decision outcome
@@ -41,4 +41,4 @@ ADR-0067 proves zero loss by pairing each code place with the key that place use
 ## Links
 
 - Feature summary: [docs/features/string-catalogs-migration/README.md](../features/string-catalogs-migration/README.md)
-- Related ADR: [0067](0067-prove-zero-loss-by-pairing-each-code-place-with-its-baseline-key.md)
+- Related ADR: [0069](0069-prove-zero-loss-by-pairing-each-code-place-with-its-baseline-key.md)

@@ -1,4 +1,4 @@
-# 0069 — Rewrite Swift lookups with a SwiftSyntax codemod re-run on every Baseline
+# 0071 — Rewrite Swift lookups with a SwiftSyntax codemod re-run on every Baseline
 
 - **Status:** Proposed
 - **Date:** 2026-11-18
@@ -6,7 +6,7 @@
 
 ## Context
 
-3681 Swift places in 391 files move to `String(localized:)` in the form ADR-0066 sets: plain texts keep their literal key, texts with arguments become interpolations. 560 calls span several lines; many sit inside `String(format:)` or `String.localizedStringWithFormat` with their arguments, which must land in the interpolation in the order their format codes consume them (positional codes included). The pull request is rebased onto develop many times before merge (spec §1), and develop keeps changing the same Swift files.
+3681 Swift places in 391 files move to `String(localized:)` in the form ADR-0068 sets: plain texts keep their literal key, texts with arguments become interpolations. 560 calls span several lines; many sit inside `String(format:)` or `String.localizedStringWithFormat` with their arguments, which must land in the interpolation in the order their format codes consume them (positional codes included). The pull request is rebased onto develop many times before merge (spec §1), and develop keeps changing the same Swift files.
 
 ## Decision drivers
 
@@ -26,9 +26,9 @@
 **Chosen:** option 1, the SwiftSyntax codemod. A real Swift parser handles multi-line calls, escaped quotes, raw and multi-line strings and nested calls that a hand-written parser gets wrong (option 2), and a deterministic tool makes every rebase a re-run instead of a hand merge across the files develop touched (option 3).
 
 How the pull request is built (each rebase repeats steps 2–5 as described in step 4):
-1. Tool commits: the Catalog generator (ADR-0065), the codemod, the entry mover, the zero-loss check (ADR-0067), with their fixture tests; plus the build-setting, `.tx/config`, script and documentation changes.
+1. Tool commits: the Catalog generator (ADR-0067), the codemod, the entry mover, the zero-loss check (ADR-0069), with their fixture tests; plus the build-setting, `.tx/config`, script and documentation changes.
 2. On the merge-base: generate the Catalog, run the codemod, build the `dashpay` target.
-3. The entry mover pairs places as the zero-loss check does and moves each entry whose key changed to its derived key, rewriting format codes in all 43 locales (ADR-0066).
+3. The entry mover pairs places as the zero-loss check does and moves each entry whose key changed to its derived key, rewriting format codes in all 43 locales (ADR-0068).
 4. Build again, so the sync normalizes the Catalog (spec §6 Catalog stability); one generated commit holds this state of steps 2–3's output; hand fixes for what the codemod listed live in their own commits after it. A rebase moves only the commits before the generated one onto develop, regenerates, then re-applies every later commit in its old order and the tool-removal commit last.
 5. The zero-loss check must pass before the pull request leaves draft.
 
@@ -46,9 +46,9 @@ What the codemod leaves alone and lists for a hand fix: a key that is not a stri
 
 **Neutral**
 - The codemod, the Catalog generator and the entry mover leave the repository in the pull request's last commit (owner decision 2026-11-19); a rebase sets that commit aside, so the tools are present while it regenerates. The zero-loss check stays (spec §7).
-- Argument-order errors are caught by the zero-loss check, which uses a distinct sample value per argument position (ADR-0067).
+- Argument-order errors are caught by the zero-loss check, which uses a distinct sample value per argument position (ADR-0069).
 
 ## Links
 
 - Feature summary: [docs/features/string-catalogs-migration/README.md](../features/string-catalogs-migration/README.md)
-- Related ADR: [0065](0065-generate-the-catalog-from-the-baseline-lists-with-a-repository-script.md), [0066](0066-rewrite-formatted-lookups-as-interpolations-and-move-their-entries.md), [0067](0067-prove-zero-loss-by-pairing-each-code-place-with-its-baseline-key.md)
+- Related ADR: [0067](0067-generate-the-catalog-from-the-baseline-lists-with-a-repository-script.md), [0068](0068-rewrite-formatted-lookups-as-interpolations-and-move-their-entries.md), [0069](0069-prove-zero-loss-by-pairing-each-code-place-with-its-baseline-key.md)

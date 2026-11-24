@@ -1,4 +1,4 @@
-# 0068 — Keep the Catalog in step with Xcode's own string sync in every build
+# 0070 — Keep the Catalog in step with Xcode's own string sync in every build
 
 - **Status:** Proposed
 - **Date:** 2026-11-18
@@ -47,4 +47,4 @@ What the build does:
 ## Links
 
 - Feature summary: [docs/features/string-catalogs-migration/README.md](../features/string-catalogs-migration/README.md)
-- Related ADR: [0065](0065-generate-the-catalog-from-the-baseline-lists-with-a-repository-script.md)
+- Related ADR: [0067](0067-generate-the-catalog-from-the-baseline-lists-with-a-repository-script.md)

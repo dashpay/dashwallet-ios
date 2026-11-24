@@ -1,36 +1,36 @@
-# 0071 — Make the sync phase write the same Catalog as the Xcode app, and compile only the shipped locales
+# 0073 — Make the sync phase write the same Catalog as the Xcode app, and compile only the shipped locales
 
 - **Status:** Proposed
 - **Date:** 2026-11-19
 - **Deciders:** Roman Chornyi (owner), with Claude during the toolchain pilot
-- **Refines:** [ADR-0068](0068-keep-the-catalog-in-step-with-xcodes-own-string-sync-in-every-build.md) (what the "Sync String Catalog" phase does); ADR-0068's choice of option 1 stands.
+- **Refines:** [ADR-0070](0070-keep-the-catalog-in-step-with-xcodes-own-string-sync-in-every-build.md) (what the "Sync String Catalog" phase does); ADR-0070's choice of option 1 stands.
 
 ## Context
 
-ADR-0068 adds a phase that calls `xcstringstool sync <Catalog> --stringsdata <the target's .stringsdata>` if a command-line build does not sync. The pilot (pilot.md, Q-sync, Q-objc, Q-regions) found:
+ADR-0070 adds a phase that calls `xcstringstool sync <Catalog> --stringsdata <the target's .stringsdata>` if a command-line build does not sync. The pilot (pilot.md, Q-sync, Q-objc, Q-regions) found:
 
 - `xcodebuild` does not sync, so the phase is needed.
-- The Xcode app syncs too, after its build, and writes **different bytes** for the same code: it sorts every object's keys with `localizedStandardCompare` (the CLI sorts by code point), it also extracts `NSLocalizedString` from Swift and Objective-C and merges the comments of several places into one, and it drops new untranslated keys that occur only in `#if DEBUG` / `#Preview` code. A phase as ADR-0068 describes it and the Xcode app would rewrite each other's output, and CI's "Build must not modify the checkout" would fail after any build in the Xcode app (2681 entries, 138 599 lines differed in the pilot).
+- The Xcode app syncs too, after its build, and writes **different bytes** for the same code: it sorts every object's keys with `localizedStandardCompare` (the CLI sorts by code point), it also extracts `NSLocalizedString` from Swift and Objective-C and merges the comments of several places into one, and it drops new untranslated keys that occur only in `#if DEBUG` / `#Preview` code. A phase as ADR-0070 describes it and the Xcode app would rewrite each other's output, and CI's "Build must not modify the checkout" would fail after any build in the Xcode app (2681 entries, 138 599 lines differed in the pilot).
 - The Catalog compiles every locale it holds into the bundle, regardless of `knownRegions`. Today's app ships `Localizable` in 22 locales; the other 21 lists are on disk but not in the project.
 
 ## Decision drivers
 
 - AC-05 and spec §6 Catalog stability: 0 changed lines after a second build with no text change — for a build in the Xcode app and on the command line alike.
-- ADR-0068's drift guard: CI's existing "Build must not modify the checkout" step.
+- ADR-0070's drift guard: CI's existing "Build must not modify the checkout" step.
 - Spec §1 (amended 2026-11-19): the Catalog keeps 43 locales; the app keeps the 22 it ships (owner decision, «more than 50% translated»).
 - Spec §6 Build time: ≤ the old build + 5 s.
 
 ## Considered options
 
 1. **The phase reproduces the Xcode app's sync** — compiler `.stringsdata` plus a legacy extraction of the target's Swift and Objective-C sources, `xcstringstool sync`, then a re-serialization in the app's order and format.
-2. **No phase; only the Xcode app syncs; a CI step compares Catalog and code ignoring order** (ADR-0068 option 2) — command-line builds and coding agents never update the Catalog.
-3. **The phase as ADR-0068 states it, and the Xcode app's result is not committed** — relies on every Developer re-building on the command line before a commit.
+2. **No phase; only the Xcode app syncs; a CI step compares Catalog and code ignoring order** (ADR-0070 option 2) — command-line builds and coding agents never update the Catalog.
+3. **The phase as ADR-0070 states it, and the Xcode app's result is not committed** — relies on every Developer re-building on the command line before a commit.
 
 ## Decision outcome
 
 **Chosen:** option 1 (owner decision 2026-11-19). In the pilot the emulated phase produced a file byte-identical to the Xcode app's, apart from the 19 `#if DEBUG` / `#Preview` keys, so both ways of building converge and CI's existing step stays the drift guard.
 
-What the build does, in addition to ADR-0068's settings:
+What the build does, in addition to ADR-0070's settings:
 - The "Sync String Catalog" run-script phase on `dashpay` runs after compilation: it passes the target's compiler `.stringsdata` and the `.stringsdata` of `xcstringstool extract --legacy-localizable-strings` over the target's Swift sources (`<target>.SwiftFileList`, whose paths escape spaces as `\ `) and Objective-C sources to `xcstringstool sync`, then re-writes the Catalog with every object's keys in `localizedStandardCompare` order under one pinned locale, two-space indent, `" : "`, empty object as `{\n\n<indent>}`, no trailing newline.
 - `XCSTRINGS_LANGUAGES_TO_COMPILE` lists the 22 shipped locales (`bg cs de el en es fr id it ja ko nl pl pt ru sk th tr uk vi zh-Hans zh-Hant-TW`), so the bundle holds the same `Localizable` locales as today; the Catalog keeps all 43.
 - No new translatable literal stays only in `#if DEBUG` / `#Preview` code; such texts are written verbatim. A Baseline lookup there keeps its lookup, so the zero-loss pairing still finds its place, and its Catalog entry is marked `manual`: the Xcode app does not extract `#Preview` code and would otherwise mark the entry stale, while neither writer changes a `manual` entry (one today: `"Amount too low"` in the `TransferAmountView` preview).
@@ -56,4 +56,4 @@ What the build does, in addition to ADR-0068's settings:
 ## Links
 
 - Feature summary: [docs/features/string-catalogs-migration/README.md](../features/string-catalogs-migration/README.md)
-- Related ADR: [0068](0068-keep-the-catalog-in-step-with-xcodes-own-string-sync-in-every-build.md)
+- Related ADR: [0070](0070-keep-the-catalog-in-step-with-xcodes-own-string-sync-in-every-build.md)
