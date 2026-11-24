@@ -32,6 +32,7 @@ class NoBartyCrouchDirectiveTests(unittest.TestCase):
     def test_no_swift_lookup_comment_holds_a_directive(self):
         res = subprocess.run(["git", "-C", REPO, "grep", "-n", "-E", r'comment: *"#bc-', "--", "*.swift"],
                              capture_output=True, text=True)
+        self.assertIn(res.returncode, (0, 1), "git grep could not run: %s" % res.stderr)  # 1 = no match
         self.assertEqual(res.stdout, "")
 
 
