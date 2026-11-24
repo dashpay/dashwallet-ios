@@ -160,14 +160,33 @@ final class InvitationValidationPolicyTests: XCTestCase {
         let reported = InvitationClaimFailure.classify(wrapped(PlatformWalletError.consensusRejection(
             PlatformConsensusError(code: 10504, kind: .basic), "reworded by Platform")))
         XCTAssertEqual(reported, .refused)
+        // The same code on the SDK's own error type, and beside text that
+        // names another outcome: the code decides.
+        XCTAssertEqual(
+            InvitationClaimFailure.classify(wrapped(SDKError.consensusRejection(
+                PlatformConsensusError(code: 10504, kind: .basic), "reworded by Platform"))),
+            .refused)
+        XCTAssertNil(
+            InvitationClaimFailure.classify(wrapped(SDKError.consensusRejection(
+                PlatformConsensusError(code: 40722, kind: .state), "already completely used"))))
         XCTAssertNil(
             InvitationClaimFailure.classify(wrapped(PlatformWalletError.consensusRejection(
                 PlatformConsensusError(code: 40722, kind: .state), "some other rejection"))))
-        // No consensus code: text is only a fallback, never definitive.
-        XCTAssertEqual(
+        // No consensus code and not the consensus error's own wording: the
+        // text says nothing the claim can act on.
+        XCTAssertNil(
             InvitationClaimFailure.classify(wrapped(PlatformWalletError.walletOperation(
-                "IdentityAssetLockTransactionOutPointAlreadyConsumedError: asset lock outpoint already consumed"))),
-            .refused)
+                "IdentityAssetLockTransactionOutPointAlreadyConsumedError: asset lock outpoint already consumed"))))
+    }
+
+    func testAnUnconfirmedResultIsNotASpentReportWhateverItsText() {
+        let unconfirmed: [Error] = [
+            PlatformWalletError.transactionBroadcastUnconfirmed("asset lock already completely used"),
+            PlatformWalletError.shieldedBroadcastUnconfirmed("asset lock already completely used")
+        ]
+        for error in unconfirmed {
+            XCTAssertNil(InvitationClaimFailure.classify(wrapped(error)), "\(error)")
+        }
     }
 
     func testUntypedSpentTextNeverDeletesTheInvitation() {

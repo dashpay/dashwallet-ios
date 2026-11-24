@@ -59,7 +59,7 @@ extension AtmListSegmnets {
         case .buy:
             return BuyAtmsDataProvider()
         case .sell:
-            return BuyAndSellAtmsDataProvider()
+            return SellAtmsDataProvider()
         case .buyAndSell:
             return BuyAndSellAtmsDataProvider()
         }
@@ -78,44 +78,25 @@ extension AtmListSegmnets {
 
 @objc
 class AtmListViewController: ExplorePointOfUseListViewController {
-    override var locationServicePopupTitle: String {
-        NSLocalizedString("ATM search works better with Location Services turned on.", comment: "")
-    }
+    // `viewDidLoad` always sets `customNavBar`, but the navigation controller
+    // asks before the view loads.
+    override var usesCustomNavBar: Bool { true }
 
-    override var locationServicePopupDetails: String {
-        NSLocalizedString("Your location is used to show your position on the map, ATMs in the selected redius and improve search results.",
-                          comment: "")
-    }
-
-    override func subtitleForFilterCell() -> String? {
-        if DWLocationManager.shared.isAuthorized && currentSegment.showMap {
-            if Locale.current.usesMetricSystem {
-                return String.localizedStringWithFormat(
-                    NSLocalizedString("%d ATM(s) in %@", comment: "#bc-ignore!"),
-                    items.count,
-                    ExploreDash.distanceFormatter
-                        .string(from: Measurement(value: model.currentRadius, unit: UnitLength.meters))
-                )
-            } else {
-                return String.localizedStringWithFormat(
-                    NSLocalizedString("%d ATM(s) in %@", comment: "#bc-ignore!"),
-                    items.count,
-                    ExploreDash.distanceFormatter
-                        .string(from: Measurement(value: model.currentRadiusMiles, unit: UnitLength.miles))
-                )
-            }
-        } else {
-            return super.subtitleForFilterCell()
+    override func viewDidLoad() {
+        // Every entry point gets the DashUIKit bar: back when pushed from
+        // Explore, close when presented from the Home shortcut.
+        if customNavBar == nil {
+            customNavBar = CustomNavBarConfiguration(
+                title: NSLocalizedString("ATMs", comment: ""),
+                leading: defaultCustomNavBarLeading,
+                onBack: { [weak self] in self?.closeOrPop() },
+                onInfo: nil)
         }
+        super.viewDidLoad()
     }
 
-    override func configureModel() {
-        model = PointOfUseListModel(segments: [
-            AtmListSegmnets.all.pointOfUseListSegment,
-            AtmListSegmnets.buy.pointOfUseListSegment,
-            AtmListSegmnets.sell.pointOfUseListSegment,
-            AtmListSegmnets.buyAndSell.pointOfUseListSegment,
-        ])
+    override func makeConfiguration() -> PointOfUseListConfiguration {
+        .atms()
     }
 
     override func configureHierarchy() {

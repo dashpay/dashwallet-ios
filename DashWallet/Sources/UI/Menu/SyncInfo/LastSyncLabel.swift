@@ -31,7 +31,7 @@ struct LastSyncLabel: View {
                     comment: "Sync diagnostics - %@ is a relative time such as 2 hours ago"),
                 date.formatted(.relative(presentation: .numeric))))
         }
-        .font(.system(size: 14, weight: .semibold))
+        .scaledSystemFont(size: 14, weight: .semibold, relativeTo: .subheadline)
         .foregroundColor(.dash.primaryText)
     }
 }

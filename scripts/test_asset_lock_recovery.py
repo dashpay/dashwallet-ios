@@ -24,7 +24,9 @@ with tempfile.TemporaryDirectory(prefix="asset-lock-recovery-tests-") as directo
                    "    private func beginTransfer()", "    private func beginTransfer(\n",
                    "    private static func logGateRefusal(", "    private func releaseInFlightOutPoint()",
                    "    private func markInFlightLockConsumed(", "    func finishResumedAssetLock(",
-                   "    private static func releaseDrainClaim(", "    static func isRecipientMismatch("):
+                   "    private static func releaseDrainClaim(", "    static func isRecipientMismatch(",
+                   "    var resumePaidOwnBalanceWithoutRecord: Bool",
+                   "    nonisolated static func resumePaidOwnBalanceWithoutRecord("):
         start = production.index(marker)
         opening = production.index("{", start)
         depth, end = 1, opening + 1

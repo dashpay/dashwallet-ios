@@ -31,7 +31,6 @@ final class StorageExplorerNavigator {
         } else {
             hosting = UIHostingController(rootView: page)
         }
-        hosting.hidesBottomBarWhenPushed = true
         return hosting
     }
 
@@ -97,8 +96,6 @@ private struct StorageExplorerPage<Trailing: View>: ViewModifier {
                         Text(title)
                             .dashFont(.subheadMedium)
                             .foregroundColor(.dash.primaryText)
-                            .lineLimit(1)
-                            .padding(.horizontal, 64)
                     },
                     trailing: { trailing })
                     .background(Color(UIColor.systemGroupedBackground))

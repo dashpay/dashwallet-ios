@@ -92,7 +92,7 @@ struct AssetLockFailureRecord: Codable, Equatable, Sendable {
     /// an error that is not an enum: a struct's first child is a stored
     /// property (`URLError._nsError`), and an `NSError`'s description is its
     /// whole `Error Domain=… UserInfo={…}` dump, neither of which names a case.
-    private static func caseName(of error: Error) -> String? {
+    static func caseName(of error: Error) -> String? {
         let mirror = Mirror(reflecting: error)
         guard mirror.displayStyle == .enum else { return nil }
         if let label = mirror.children.first?.label {

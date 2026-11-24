@@ -37,6 +37,8 @@ class POIDetailsViewController: UIViewController {
     private weak var detailsSheetViewController: UIViewController?
     private var didPresentDetailsSheet = false
     private let defaultBottomSheetHeight: CGFloat = 450
+    /// DashUIKit's bar, in place of the system one; content sits below it.
+    private var navigationBarHost: UIViewController!
 
     init(
         pointOfUse: ExplorePointOfUse,
@@ -67,6 +69,11 @@ class POIDetailsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         title = pointOfUse.name
+        navigationBarHost = installExploreNavigationBar(
+            title: pointOfUse.name,
+            leading: .back,
+            onBack: { [weak self] in self?.navigationController?.popViewController(animated: true) },
+            onInfo: nil)
         configureHierarchy()
         refreshTokenAndMerchantInfo()
     }
@@ -109,7 +116,7 @@ extension POIDetailsViewController {
         view.addSubview(mapView)
 
         NSLayoutConstraint.activate([
-            mapView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            mapView.topAnchor.constraint(equalTo: navigationBarHost.view.bottomAnchor),
             mapView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             mapView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             mapView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -134,26 +141,35 @@ extension POIDetailsViewController {
         view.addSubview(contentView)
 
         NSLayoutConstraint.activate([
-            contentView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            contentView.topAnchor.constraint(equalTo: navigationBarHost.view.bottomAnchor),
             contentView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             contentView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         ])
     }
 
+    /// "Show all locations" for this merchant. It carries every handler this
+    /// screen got from its opener, so a payment or a gift card bought from a
+    /// location it opens completes the same way as one bought here.
+    func makeAllLocationsController(searchRadius: Double) -> AllMerchantLocationsViewController {
+        let vc = AllMerchantLocationsViewController(
+            pointOfUse: pointOfUse,
+            searchRadius: searchRadius,
+            searchCenterCoordinate: searchCenterCoordinate,
+            currentFilters: currentFilters
+        )
+        vc.payWithDashHandler = payWithDashHandler
+        vc.sellDashHandler = sellDashHandler
+        vc.onGiftCardPurchased = onGiftCardPurchased
+        return vc
+    }
+
     private func makeDetailsView() -> POIDetailsView? {
         if case .unknown = pointOfUse.category { return nil }
 
-        // Get current search radius from parent controller if available
-        let effectiveRadius: Double
-        if let searchRadius = searchRadius, searchRadius == Double.greatestFiniteMagnitude {
-            // If explicit infinite radius is passed (from All tab), use that
-            effectiveRadius = searchRadius
-        } else if let parentVC = navigationController?.viewControllers.dropLast().last as? ExplorePointOfUseListViewController {
-            effectiveRadius = parentVC.model.filters?.currentRadius ?? searchRadius ?? kDefaultRadius
-        } else {
-            effectiveRadius = searchRadius ?? kDefaultRadius
-        }
+        // The opener passes the list's current radius, or the infinite radius
+        // from the merchant list's All tab.
+        let effectiveRadius = searchRadius ?? kDefaultRadius
 
         var detailsView = POIDetailsView(merchant: pointOfUse, isShowAllHidden: isShowAllHidden, searchRadius: effectiveRadius, searchCenterCoordinate: searchCenterCoordinate)
         detailsView.payWithDashHandler = { [weak self] in
@@ -169,22 +185,10 @@ extension POIDetailsViewController {
         detailsView.showAllLocationsActionBlock = { [weak self] in
             guard let wSelf = self else { return }
 
-            // Check if we're coming from the "All" tab (tag = 2)
-            let isFromAllTab = (wSelf.navigationController?.viewControllers.dropLast().last as? ExplorePointOfUseListViewController)?.currentSegment.tag == 2
-
-            // For "All" tab, don't apply radius filtering - show all locations for the merchant
-            // For other tabs (Online, Nearby), use the current radius filtering
-            let searchRadiusToUse = isFromAllTab ? Double.greatestFiniteMagnitude : effectiveRadius
-
+            // From the All tab `effectiveRadius` is infinite, so every location
+            // of the merchant is shown; from Nearby it keeps the list's radius.
             wSelf.performAfterDismissingDetailsSheetIfNeeded {
-                let vc = AllMerchantLocationsViewController(
-                    pointOfUse: wSelf.pointOfUse,
-                    searchRadius: searchRadiusToUse,
-                    searchCenterCoordinate: wSelf.searchCenterCoordinate,
-                    currentFilters: wSelf.currentFilters
-                )
-                vc.payWithDashHandler = wSelf.payWithDashHandler
-                vc.sellDashHandler = wSelf.sellDashHandler
+                let vc = wSelf.makeAllLocationsController(searchRadius: effectiveRadius)
                 wSelf.navigationController?.pushViewController(vc, animated: true)
             }
         }
@@ -454,7 +458,9 @@ extension ExplorePointOfUse {
             if m.type == .online {
                 return NSLocalizedString("Online Merchant", comment: "Online Merchant")
             } else {
-                return m.type == .onlineAndPhysical ? "Physical Merchant, Online" : "Physical Merchant"
+                return m.type == .onlineAndPhysical
+                    ? NSLocalizedString("Physical Merchant, Online", comment: "Explore Dash")
+                    : NSLocalizedString("Physical Merchant", comment: "Explore Dash")
             }
         case .atm:
             return nil
@@ -462,6 +468,11 @@ extension ExplorePointOfUse {
             return nil
         }
     }
+}
+
+extension POIDetailsViewController: NavigationBarDisplayable {
+    var isBackButtonHidden: Bool { true }
+    var isNavigationBarHidden: Bool { true }
 }
 
 extension UIHostingController: NavigationBarDisplayable {

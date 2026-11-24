@@ -12,25 +12,48 @@ where they disagree, ADR-0001 wins.
 | [0003](0003-take-rust-toolchain-from-platform-pin.md) | Take the Rust toolchain version from platform's pin | build | Accepted | |
 | [0004](0004-read-xcode-version-file-via-composite-action.md) | Read the Xcode version from a file through a composite action | build | Accepted | |
 | [0005](0005-enforce-workflow-policy-with-in-repo-script.md) | Enforce workflow policy with an in-repo script beside actionlint | build | Accepted | |
-| [0006](0006-choose-the-app-connect-login-by-the-protocol-version-read-at-runtime.md) | Choose the App Connect login by the protocol version read at runtime | platform | Proposed | |
+| [0006](0006-choose-the-app-connect-login-by-the-protocol-version-read-at-runtime.md) | Choose the App Connect login by the protocol version read at runtime | platform | Superseded | [0053](0053-open-dashconnect-on-mainnet-and-gate-each-request-by-protocol-14.md) |
 | [0007](0007-call-a-payment-links-sender-back-only-when-another-app-opened-the-link.md) | Call a payment link's sender back only when another app opened the link | payments | Proposed | |
 | [0009](0009-answer-app-connect-request-v2-with-wallet-derived-keys-under-wallet-limits.md) | Answer App Connect request v2 with wallet-derived keys under wallet limits | platform | Proposed | |
 | [0010](0010-probe-live-swap-routes-with-address-free-forced-quotes.md) | Probe live routes with address-free quotes forced to one provider | swap | Proposed | |
 | [0011](0011-keep-live-swap-route-answers-in-one-shared-in-memory-store.md) | Keep live route answers in one shared in-memory store with two-step ageing | swap | Proposed | |
 | [0012](0012-detect-a-near-outage-from-sentinel-coins.md) | Detect a NEAR outage from sentinel coins before per-coin checks | swap | Proposed | |
+| [0013](0013-treat-dashuikit-and-swiftdashsdk-as-library-surfaces.md) | Treat DashUIKit and SwiftDashSDK as library surfaces of this feature | ui | Proposed | |
+| [0014](0014-split-voting-state-into-a-shared-store-and-per-screen-view-models.md) | Split voting state into a shared store and per-screen view models | ui | Proposed | |
+| [0015](0015-fence-a-pending-sign-in-on-disconnect.md) | Fence a pending sign-in on disconnect and recover forward only | platform | Accepted | |
+| [0016](0016-turn-off-unrecorded-keys-on-disconnect-without-asking.md) | Turn off unrecorded keys on disconnect without asking | platform | Accepted | |
+| [0017](0017-answer-an-app-connect-request-at-most-once.md) | Answer an App Connect request at most once | platform | Accepted | |
+| [0018](0018-run-app-connect-platform-writes-through-one-executor.md) | Run App Connect Platform writes through one executor | platform | Accepted | |
+| [0019](0019-let-one-state-table-decide-what-a-connection-shows-and-offers.md) | Let one state table decide what a connection shows and offers | platform | Accepted | |
+| [0020](0020-judge-request-age-and-expiry-by-proved-platform-block-time.md) | Judge request age and expiry by proved Platform block time | platform | Accepted | |
+| [0021](0021-record-a-consensus-refusal-on-the-intent.md) | Record a consensus refusal on the intent and show it as Refused | platform | Accepted | |
+| [0022](0022-derive-disconnected-apps-from-the-intents-a-disconnect-marked.md) | Derive disconnected apps from the intents a disconnect marked | platform | Accepted | |
 | [0023](0023-remove-crowdnode-entirely-as-android-does.md) | Remove CrowdNode entirely, as Android does | ui | Proposed | |
 | [0024](0024-pin-shortcut-raw-values-and-refill-the-retired-slot.md) | Pin shortcut raw values and refill the retired slot | ui | Proposed | |
 | [0025](0025-remove-crowdnode-defaults-by-exact-key-list-on-activation.md) | Remove CrowdNode defaults by exact key list on activation | storage | Proposed | |
 | [0026](0026-retire-the-crowdnode-topic-by-marking-events-seen.md) | Retire the CrowdNode topic by marking its events seen | storage | Proposed | |
-| [0027](0027-derive-app-connect-connections-from-the-identity-and-recorded-intents.md) | Derive App Connect connections from the identity and recorded intents | platform | Proposed | |
-| [0028](0028-answer-app-connect-v2-only-and-remove-the-two-scan-login.md) | Answer App Connect v2 only and remove the two-scan login | platform | Proposed | |
-| [0029](0029-allow-a-new-app-connect-approval-while-another-is-confirming.md) | Allow a new App Connect approval while another one is still confirming | platform | Proposed | |
-| [0030](0030-show-an-app-connect-connection-whose-response-was-not-published-as-not-delivered.md) | Show an App Connect connection whose response was not published as Not delivered | platform | Proposed | |
-| [0031](0031-turn-off-unattributed-dashpay-profile-keys-with-any-disconnect.md) | Turn off unattributed DashPay profile keys with any disconnect | keys | Proposed | |
-| [0032](0032-pass-owners-read-from-platform-into-the-pure-projection.md) | Pass the owners read from Platform into the pure App Connect projection | platform | Proposed | |
-| [0033](0033-turn-off-only-the-unrecorded-keys-the-question-listed.md) | Turn off only the unrecorded keys the question listed | keys | Proposed | |
+| [0027](0027-derive-app-connect-connections-from-the-identity-and-recorded-intents.md) | Derive App Connect connections from the identity and recorded intents | platform | Accepted | |
+| [0028](0028-answer-app-connect-v2-only-and-remove-the-two-scan-login.md) | Answer App Connect v2 only and remove the two-scan login | platform | Accepted | |
+| [0029](0029-allow-a-new-app-connect-approval-while-another-is-confirming.md) | Allow a new App Connect approval while another one is still confirming | platform | Accepted | |
+| [0030](0030-show-an-app-connect-connection-whose-response-was-not-published-as-not-delivered.md) | Show an App Connect connection whose response was not published as Not delivered | platform | Accepted | |
+| [0031](0031-turn-off-unattributed-dashpay-profile-keys-with-any-disconnect.md) | Turn off unattributed DashPay profile keys with any disconnect | keys | Accepted | |
+| [0032](0032-pass-owners-read-from-platform-into-the-pure-projection.md) | Pass the owners read from Platform into the pure App Connect projection | platform | Accepted | |
+| [0033](0033-turn-off-only-the-unrecorded-keys-the-question-listed.md) | Turn off only the unrecorded keys the question listed | keys | Superseded | [0016](0016-turn-off-unrecorded-keys-on-disconnect-without-asking.md) |
 | [0034](0034-subtract-own-top-ups-via-a-typed-top-up-event.md) | Subtract own top-ups via a typed top-up event | ui | Proposed | |
-| [0035](0035-model-receive-options-as-a-receive-only-enum.md) | Model Receive options as a Receive-only enum | ui | Proposed | |
+| [0035](0035-run-every-vote-through-a-pure-vote-attempt-state-machine.md) | Run every vote through a pure vote-attempt state machine | ui | Proposed | |
+| [0037](0037-cast-quick-voting-sequentially-under-one-authentication.md) | Cast Quick voting sequentially under one authentication | ui | Proposed | |
+| [0038](0038-let-only-the-voting-store-write-the-remembered-node-choice.md) | Let only the voting store write the remembered node choice | ui | Proposed | |
+| [0049](0049-record-the-publish-start-on-the-connection-intent.md) | Record the publish start on the connection intent | platform | Accepted | |
+| [0050](0050-bound-an-unresolved-publish-by-48-hours-of-proved-platform-block-time.md) | Bound an unresolved publish by 48 hours of proved Platform block time | platform | Accepted | |
+| [0052](0052-refuse-response-removed-at-its-one-write-point-while-the-publish-is-unresolved.md) | Refuse "response removed" at its one write point while the publish is unresolved | platform | Accepted | |
+| [0053](0053-open-dashconnect-on-mainnet-and-gate-each-request-by-protocol-14.md) | Open DashConnect on mainnet and gate each request by protocol 14 | platform | Accepted | |
+| [0054](0054-keep-master-as-a-mirror-of-app-store-publications.md) | Keep master as a mirror of App Store publications | process | Proposed | |
+| [0055](0055-keep-the-app-connect-rules-in-swift-until-android-shares-the-platform-wallet.md) | Keep the App Connect rules in Swift until Android shares the platform wallet | platform | Accepted | |
+| [0056](0056-know-no-app-and-ask-before-returning-to-one.md) | Know no app: show every app as unknown and ask before returning to it | ui | Accepted | |
+| [0057](0057-tell-a-connection-sheet-from-one-basis-and-placed-keys-only.md) | Tell a connection sheet from one basis, and claim access only from placed keys | ui | Accepted | |
+| [0058](0058-answer-a-login-without-a-username-with-the-pages-own-state.md) | Answer a login without a username with the page's own state, and open nothing | ui | Accepted | |
+| [0064](0064-model-receive-options-as-a-receive-only-enum.md) | Model Receive options as a Receive-only enum | ui | Proposed | |
+| [0065](0065-recognize-platform-refusals-by-consensus-code-in-one-table.md) | Recognize Platform refusals by consensus code in one table | platform | Proposed | |
 
 Areas: `spv`, `platform`, `keys`, `storage`, `coinjoin`, `payments`, `swap`, `ui`, `build`, `process`. Each ADR takes one; a new
 Area is added to this list in the PR that first needs it.

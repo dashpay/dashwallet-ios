@@ -26,7 +26,8 @@ import UIKit
 import SwiftDashSDK
 
 struct SwiftDashSDKSPVStatusScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
 
     @ObservedObject private var coordinator = SwiftDashSDKSPVCoordinator.shared
 
@@ -91,7 +92,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
     @State private var recoveryResultMessage: String?
     @State private var recoveryResultIsError = false
 
-    init(vc: UINavigationController) {
+    init(vc: UINavigationController?) {
         self.vc = vc
     }
 
@@ -99,7 +100,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             // Back button
             DashUIKit.NavigationBar(leading: {
-                DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
+                DashUIKit.NavigationBarElement.back.button { vc?.popViewController(animated: true) }
             })
 
             // Header
@@ -370,10 +371,10 @@ struct SwiftDashSDKSPVStatusScreen: View {
 
     private func peerBadgeLabel(_ nodeType: PlatformSpvPeerNodeType) -> String {
         switch nodeType {
-        case .evonode:    return "Evonode"
-        case .masternode: return "Masternode"
-        case .normal:     return "Node"
-        case .unknown:    return "Unclassified"
+        case .evonode:    return NSLocalizedString("Evonode", comment: "SPV sync peer type")
+        case .masternode: return NSLocalizedString("Masternode", comment: "SPV sync peer type")
+        case .normal:     return NSLocalizedString("Node", comment: "SPV sync peer type")
+        case .unknown:    return NSLocalizedString("Unclassified", comment: "SPV sync peer type")
         }
     }
 
@@ -590,13 +591,13 @@ struct SwiftDashSDKSPVStatusScreen: View {
                 Text(NSLocalizedString(
                     "Available only while SPV is running with a wallet bound.",
                     comment: "SPV diagnostics"))
-                    .font(.system(size: 12))
+                    .scaledSystemFont(size: 12, relativeTo: .caption)
                     .foregroundColor(Color.dash.secondaryText)
             }
 
             if let message = dropResultMessage {
                 Text(message)
-                    .font(.system(size: 12))
+                    .scaledSystemFont(size: 12, relativeTo: .caption)
                     .foregroundColor(dropResultIsError ? .red : .green)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -629,7 +630,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
                 SwiftDashSDKWalletRuntime.stopCoreSPV()
             }) {
                 Text(NSLocalizedString("Stop", comment: "SPV diagnostics"))
-                    .font(.system(size: 14, weight: .semibold))
+                    .scaledSystemFont(size: 14, weight: .semibold, relativeTo: .subheadline)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
                     .background(Color.dash.gray300.opacity(0.3))
@@ -646,7 +647,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
                             .controlSize(.small)
                     }
                     Text(coordinator.isRestarting ? "Restarting…" : "Restart")
-                        .font(.system(size: 14, weight: .semibold))
+                        .scaledSystemFont(size: 14, weight: .semibold, relativeTo: .subheadline)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
@@ -703,19 +704,21 @@ struct SwiftDashSDKSPVStatusScreen: View {
     private var stateLabel: String {
         switch coordinator.state {
         case .waitForEvents:
-            return "Waiting for events"
+            return NSLocalizedString("Waiting for events", comment: "SPV diagnostics")
         case .waitingForConnections:
-            return "Waiting for connections"
+            return NSLocalizedString("Waiting for connections", comment: "SPV diagnostics")
         case .syncing:
-            return "Syncing \(percentageText)"
+            return String(
+                format: NSLocalizedString("Syncing %@", comment: "SPV diagnostics: state with the percentage done"),
+                percentageText)
         case .synced:
-            return "Synced"
+            return NSLocalizedString("Synced", comment: "SPV diagnostics")
         case .error:
-            return "Error"
+            return NSLocalizedString("Error", comment: "SPV diagnostics")
         case .idle:
-            return "Idle"
+            return NSLocalizedString("Idle", comment: "SPV diagnostics")
         case .unknown:
-            return "Unknown"
+            return NSLocalizedString("Unknown", comment: "SPV diagnostics")
         }
     }
 
@@ -865,51 +868,8 @@ extension SwiftDashSDKSPVStatusScreen {
                 return
             }
 
-            // Report each bucket separately: "finished" and "was already spent"
-            // are different facts about the user's money, and only the first is
-            // a completion this pass witnessed.
-            var parts: [String] = []
-            if outcome.completed > 0 {
-                parts.append(String.localizedStringWithFormat(
-                    NSLocalizedString("%d finished", comment: "SPV diagnostics"),
-                    outcome.completed))
-            }
-            if outcome.alreadySpent > 0 {
-                parts.append(String.localizedStringWithFormat(
-                    NSLocalizedString("%d already spent", comment: "SPV diagnostics"),
-                    outcome.alreadySpent))
-            }
-            if outcome.awaitingSync > 0 {
-                parts.append(String.localizedStringWithFormat(
-                    NSLocalizedString("%d waiting for the network", comment: "SPV diagnostics"),
-                    outcome.awaitingSync))
-            }
-            if outcome.inProgress > 0 {
-                parts.append(String(
-                    format: NSLocalizedString("%d still in progress", comment: "SPV diagnostics"),
-                    outcome.inProgress))
-            }
-            if outcome.failed > 0 {
-                parts.append(String.localizedStringWithFormat(
-                    NSLocalizedString("%d could not be reached", comment: "SPV diagnostics"),
-                    outcome.failed))
-            }
-            if outcome.cancelled {
-                parts.append(NSLocalizedString("stopped early", comment: "SPV diagnostics"))
-            }
-            if outcome.stoppedAfterRepeatedFailures {
-                parts.append(NSLocalizedString("stopped after repeated failures", comment: "SPV diagnostics"))
-            }
             recoveryResultIsError = outcome.failed > 0
-            var summary = parts.isEmpty
-                ? NSLocalizedString("Nothing to finish.", comment: "SPV diagnostics")
-                : parts.joined(separator: ", ")
-            // A count of failures with no reason is undiagnosable; carry the
-            // first one's text so the screen says what actually went wrong.
-            if let reason = outcome.firstFailureMessage {
-                summary += "\n\(reason)"
-            }
-            recoveryResultMessage = summary
+            recoveryResultMessage = outcome.summary
         }
     }
 

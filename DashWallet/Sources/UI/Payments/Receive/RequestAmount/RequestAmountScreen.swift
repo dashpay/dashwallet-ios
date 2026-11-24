@@ -18,15 +18,11 @@
 import DashUIKit
 import SwiftUI
 
-/// SwiftUI port of `DWRequestAmountContentView`: the requested amount over the
-/// QR that encodes it, the address under that, and Share.
-///
-/// Same contents and same copy-on-tap behaviour as the original, dressed in the
-/// redesign: the amount is `SwapAmountView`, the same component the amount step
-/// enters it with, and the card below is `PaymentsReceiveContent`'s — same QR
-/// size, same address row, same pill actions — so the sheet reads as the
-/// Receive tab with an amount on it. The original is still in the tree; nothing
-/// routes here yet.
+/// The requested amount over the QR that encodes it, the address under that,
+/// and Share. The amount is `SwapAmountView`, the same component the amount
+/// step enters it with, and the card below is `PaymentsReceiveContent`'s —
+/// same QR size, same address row, same pill actions — so the sheet reads as
+/// the Receive tab with an amount on it.
 ///
 /// Values in, closures out: the model stays with the host, because
 /// `DWReceiveModelProtocol` is an ObjC protocol with a delegate that pushes
@@ -92,8 +88,7 @@ struct RequestAmountScreen: View {
     /// The same component the amount step draws with, so the number keeps its
     /// size and weight as the user crosses from "Specify amount" into this
     /// sheet. It renders the Dash glyph itself, and scales the whole group down
-    /// to fit rather than truncating the digits — which the fixed-size
-    /// `DWAmountPreviewView` this replaces could not do.
+    /// to fit rather than truncating the digits.
     ///
     /// Interaction is all opt-in and stays off here: no paste, no currency
     /// chevron, no swap. This amount is a result, not an input.

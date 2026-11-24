@@ -106,16 +106,18 @@ class MainMenuViewController: UIViewController {
             dashPayModel: dashPayModel,
             dashPayReady: dashPayReady,
             userProfileModel: userProfileModel
-        ) {
-            self.presentSupportEmailController()
+        ) { [weak self] in
+            // Weak: the screen this closure is stored in is hosted by `self`.
+            self?.presentSupportEmailController()
         }
         #else
         let swiftUIView = MainMenuScreen(
             vc: navigationController!,
             delegate: delegate as? MainMenuViewControllerDelegate,
             wipeDelegate: delegate
-        ) {
-            self.presentSupportEmailController()
+        ) { [weak self] in
+            // Weak: the screen this closure is stored in is hosted by `self`.
+            self?.presentSupportEmailController()
         }
         #endif
         
@@ -145,7 +147,9 @@ extension MainMenuViewController: MFMailComposeViewControllerDelegate {
 }
 
 struct MainMenuScreen: View {
-    private let vc: UINavigationController
+    /// Weak: the menu is the root of `vc`'s own stack, so a strong reference
+    /// would keep that stack alive after the tab bar drops it.
+    private weak var vc: UINavigationController?
     private let delegateInternal: DelegateInternal
     private let onContactSupport: () -> ()
     
@@ -165,7 +169,7 @@ struct MainMenuScreen: View {
     private let joinDPViewModel = JoinDashPayViewModel(initialState: .none)
     
     init(
-        vc: UINavigationController,
+        vc: UINavigationController?,
         delegate: MainMenuViewControllerDelegate? = nil,
         wipeDelegate: DWWipeDelegate? = nil,
         dashPayModel: DWDashPayProtocol? = nil,
@@ -189,7 +193,7 @@ struct MainMenuScreen: View {
     #else
     
     init(
-        vc: UINavigationController,
+        vc: UINavigationController?,
         delegate: MainMenuViewControllerDelegate? = nil,
         wipeDelegate: DWWipeDelegate? = nil,
         onContactSupport: @escaping () -> ()
@@ -204,6 +208,14 @@ struct MainMenuScreen: View {
         self.viewModel = viewModel
     }
     #endif
+
+    private var toolsMenuScreen: ToolsMenuScreen {
+        #if DASHPAY
+        return ToolsMenuScreen(vc: vc, dashPayModel: viewModel.dashPayModel)
+        #else
+        return ToolsMenuScreen(vc: vc)
+        #endif
+    }
     
     
     var body: some View {
@@ -302,7 +314,7 @@ struct MainMenuScreen: View {
             
             NavigationLink(
                 destination: SettingsScreen(vc: vc, onDidRescan: {
-                    self.vc.popToRootViewController(animated: false)
+                    self.vc?.popToRootViewController(animated: false)
                     self.delegateInternal.mainMenuViewControllerOpenHomeScreen()
                 }),
                 isActive: $openSettings
@@ -311,7 +323,7 @@ struct MainMenuScreen: View {
             }
             
             NavigationLink(
-                destination: ToolsMenuScreen(vc: vc),
+                destination: toolsMenuScreen,
                 isActive: $showTools
             ) {
                 EmptyView()
@@ -424,14 +436,12 @@ struct MainMenuScreen: View {
         else { return }
         let screen = UsernameRequestStatusScreen(
             viewModel: UsernameRequestStatusViewModel(label: label),
-            // `MainMenuScreen` is a struct and `vc` is the stack it lives in,
-            // so the pop is captured directly — there is no reference cycle
-            // for a `weak self` to break here.
-            onBack: { vc.popViewController(animated: true) },
+            // `MainMenuScreen` is a struct and `vc` is already weak, so the
+            // pop is captured directly — there is no `self` to weaken.
+            onBack: { vc?.popViewController(animated: true) },
             onRetryCompanion: { name in openCreateUsernameForRecovery(username: name) })
         let controller = UIHostingController(rootView: screen)
-        controller.hidesBottomBarWhenPushed = true
-        vc.pushViewController(controller, animated: true)
+        vc?.pushViewController(controller, animated: true)
     }
     
     /// Where a tap on the DashPay menu row goes. The row replaced a card with
@@ -547,19 +557,24 @@ struct MainMenuScreen: View {
             onShowGiftCard: { txId in delegateInternal.showGiftCard(txId) }
         )
         let controller = UIHostingController(rootView: screen)
-        controller.hidesBottomBarWhenPushed = true
-        vc.pushViewController(controller, animated: true)
+        vc?.pushViewController(controller, animated: true)
     }
 
     #if DASHPAY
     private func showVoting() {
+        // The voting list needs its own `NavigationStack`. A bare hosting
+        // controller inherits the menu's hidden navigation bar
+        // (`BaseNavigationController.willShow` only restores it for a
+        // `NavigationBarDisplayable`), which left the voting screens with no
+        // back button and no way out — and silently dropped the `.toolbar`
+        // and `.navigationTitle` as well, since neither renders outside a
+        // navigation container.
         let navController = vc
         let popRoot: () -> Void = { [weak navController] in
             _ = navController?.popViewController(animated: true)
         }
-        let hosting = UIHostingController(rootView: UsernameVotingScreen(vc: vc, onClose: popRoot))
-        hosting.hidesBottomBarWhenPushed = true
-        vc.pushViewController(hosting, animated: true)
+        let hosting = UsernameVotingHostingController(viewModel: VotingViewModel(), onClose: popRoot)
+        vc?.pushViewController(hosting, animated: true)
     }
     #endif
 
@@ -577,13 +592,14 @@ struct MainMenuScreen: View {
         controller.delegate = delegateInternal
         let navigation = BaseNavigationController(rootViewController: controller)
         navigation.modalPresentationStyle = .fullScreen
-        vc.present(navigation, animated: true)
+        vc?.present(navigation, animated: true)
     }
     
     #if DASHPAY
     /// "Scan invitation QR" on the Join DashPay sheet: a scanned invitation
     /// is stored and offered on Home's card, so that is where it leads.
     private func scanInvitation() {
+        guard let vc else { return }
         InvitationEntry.presentScanner(from: vc) { [weak navigation = vc] in
             (navigation?.tabBarController as? MainTabbarController)?.showHomeForInvitation()
         }
@@ -593,8 +609,7 @@ struct MainMenuScreen: View {
     /// Preselected, not pinned — the form still lets either endpoint change.
     private func shieldFunds() {
         let controller = InternalTransferHostingController(transferTo: .balance(.shielded))
-        controller.hidesBottomBarWhenPushed = true
-        vc.pushViewController(controller, animated: true)
+        vc?.pushViewController(controller, animated: true)
     }
     #endif
 
@@ -620,6 +635,7 @@ struct MainMenuScreen: View {
         // Not reached through the Join DashPay sheet, so no funding pick
         // belongs to this visit: the form pins a source the recovery can use.
         CreateUsernameViewModel.discardChosenFundingSource()
+        guard let vc else { return }
         let trimmed = username.trimmingCharacters(in: .whitespacesAndNewlines)
         Self.pushCreateUsernameForm(
             on: vc,
@@ -629,10 +645,13 @@ struct MainMenuScreen: View {
 
 
     private func pushCreateUsernameForm(dashPayModel: DWDashPayProtocol) {
+        guard let vc else { return }
         Self.pushCreateUsernameForm(on: vc, dashPayModel: dashPayModel)
     }
 
-    private static func pushCreateUsernameForm(
+    /// Pushes the username creation form, as More does for a returning
+    /// user; Connections reuses it for a wallet without a username.
+    static func pushCreateUsernameForm(
         on navigationController: UINavigationController,
         dashPayModel: DWDashPayProtocol,
         definedUsername: String? = nil
@@ -641,7 +660,6 @@ struct MainMenuScreen: View {
             dashPayModel: dashPayModel,
             definedUsername: definedUsername
         )
-        controller.hidesBottomBarWhenPushed = true
         controller.completionHandler = { [weak navigationController] result in
             let message = result 
                 ? NSLocalizedString("Username was successfully requested", comment: "Usernames")
@@ -693,9 +711,8 @@ extension MainMenuScreen {
             #if DASHPAY
             // The credit gate runs BEFORE the write, against the identity's
             // real balance — the warning used to fire after the update had
-            // already been broadcast, and against a mock counter
-            // (`BuyCreditsModel.currentCredits`) that had nothing to do with
-            // the identity.
+            // already been broadcast, and against a mock counter that had
+            // nothing to do with the identity.
             Task { @MainActor in
                 switch await controller.confirmAgainstIdentityCredits() {
                 case .proceed:

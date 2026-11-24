@@ -29,13 +29,14 @@ import DashUIKit
 import UIKit
 
 struct WalletAccountDetailScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
 
     @StateObject private var viewModel: WalletAccountDetailViewModel
     /// Address string just copied, for a transient "Copied" confirmation.
     @State private var copiedAddress: String? = nil
 
-    init(vc: UINavigationController, walletId: Data, account: WalletAccountRow) {
+    init(vc: UINavigationController?, walletId: Data, account: WalletAccountRow) {
         self.vc = vc
         _viewModel = StateObject(
             wrappedValue: WalletAccountDetailViewModel(walletId: walletId, account: account))
@@ -92,7 +93,7 @@ struct WalletAccountDetailScreen: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 0) {
             DashUIKit.NavigationBar(leading: {
-                DashUIKit.NavigationBarElement.back.button { vc.popViewController(animated: true) }
+                DashUIKit.NavigationBarElement.back.button { vc?.popViewController(animated: true) }
             })
 
             VStack(alignment: .leading, spacing: 4) {

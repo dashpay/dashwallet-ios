@@ -21,19 +21,15 @@ final class AppConnectV2LoginTests: XCTestCase {
     private static let appOwner = Data(repeating: 0x0A, count: 32)
     private static let dayMilliseconds: UInt64 = 24 * 60 * 60 * 1000
 
-    private static func date(milliseconds: UInt64) -> Date {
-        Date(timeIntervalSince1970: TimeInterval(milliseconds) / 1000)
-    }
-
-    /// One minute after the vector's request was made.
-    private static let now = date(milliseconds: createdAt + 60_000)
+    /// The proved block time one minute after the vector's request was made.
+    private static let blockTimeMs = createdAt + 60_000
 
     private static func vectorUri() throws -> AppConnectUri {
         try DashConnectUri.parseAppConnectRequest(requestUri)
     }
 
     private static func vectorPlan() throws -> AppConnect.GrantPlan {
-        try AppConnect.grantPlan(for: vectorUri(), now: now)
+        try AppConnect.grantPlan(for: vectorUri(), blockTimeMs: blockTimeMs)
     }
 
     /// The vector's request with its bindings replaced.
@@ -160,31 +156,28 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertEqual(plan.auth.map(\.binding.kind), [.contractGroup, .documentType])
         XCTAssertEqual(plan.encryption.map(\.binding.contractId), [Self.appId])
         XCTAssertEqual(plan.connectionId?.toHexString(), "a69b1b4f666681453dec3734667a5ab2")
-        XCTAssertEqual(plan.callbackHost, "yap.pr")
     }
 
     func testProposalsAboveTheCapsAreClampedAndNoLimitIsDropped() throws {
         let tooMuch = Self.groupBinding(
             budget: 10 * PlatformCreditsFormatter.creditsPerDash,
             expiresAt: Self.createdAt + 2 * 365 * Self.dayMilliseconds)
-        let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: [tooMuch]), now: Self.now)
+        let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: [tooMuch]), blockTimeMs: Self.blockTimeMs)
         XCTAssertEqual(plan.auth[0].totalBudget, AppConnect.v2BudgetCapCredits)
-        XCTAssertEqual(plan.auth[0].expiresAt, AppConnect.milliseconds(Self.now.addingTimeInterval(AppConnect.v2LifetimeCap)))
+        XCTAssertEqual(plan.auth[0].expiresAt, Self.blockTimeMs + UInt64(AppConnect.v2LifetimeCap * 1000))
     }
 
     func testABindingWithoutLimitsGetsTheDefaultLifetimeAndNoBudget() throws {
         let unlimited = AppConnectRequest.AuthBinding(
             kind: .singleContract, securityLevel: .high, id: Self.appId,
             totalBudget: nil, expiresAt: nil, documentTypeName: nil)
-        let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: [unlimited]), now: Self.now)
+        let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: [unlimited]), blockTimeMs: Self.blockTimeMs)
         XCTAssertNil(plan.auth[0].totalBudget, "a budget the app did not ask for is not added")
-        XCTAssertEqual(
-            plan.auth[0].expiresAt,
-            AppConnect.milliseconds(Self.now.addingTimeInterval(AppConnect.v2DefaultLifetime)))
+        XCTAssertEqual(plan.auth[0].expiresAt, Self.blockTimeMs + UInt64(AppConnect.v2DefaultLifetime * 1000))
     }
 
     func testAProposalBelowTheCapsIsKeptAsItIs() throws {
-        let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: [Self.groupBinding()]), now: Self.now)
+        let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: [Self.groupBinding()]), blockTimeMs: Self.blockTimeMs)
         XCTAssertEqual(plan.auth[0].totalBudget, 50_000_000_000)
         XCTAssertEqual(plan.auth[0].expiresAt, Self.expiresAt)
     }
@@ -193,19 +186,88 @@ final class AppConnectV2LoginTests: XCTestCase {
 
     func testAStaleOrFutureRequestIsRefusedAsStale() throws {
         let uri = try Self.vectorUri()
-        let late = Self.date(milliseconds: Self.createdAt + 11 * 60_000)
-        XCTAssertThrowsError(try AppConnect.grantPlan(for: uri, now: late)) {
+        XCTAssertThrowsError(try AppConnect.grantPlan(
+            for: uri, blockTimeMs: Self.createdAt + 11 * 60_000)) {
             XCTAssertEqual(($0 as? AppConnect.Refusal)?.status, .stale)
         }
-        let early = Self.date(milliseconds: Self.createdAt - 3 * 60_000)
-        XCTAssertThrowsError(try AppConnect.grantPlan(for: uri, now: early)) {
+        XCTAssertThrowsError(try AppConnect.grantPlan(
+            for: uri, blockTimeMs: Self.createdAt - 3 * 60_000)) {
             XCTAssertEqual(($0 as? AppConnect.Refusal)?.status, .stale)
+        }
+    }
+
+    /// R12a / AC-09: a future-dated request asks the app for a new code; it
+    /// does not blame the phone's clock, which plays no part in the age.
+    func testAFutureDatedRequestIsRefusedAskingForANewCodeWithoutBlamingTheClock() throws {
+        let uri = try Self.vectorUri()
+        XCTAssertThrowsError(try AppConnect.grantPlan(
+            for: uri, blockTimeMs: Self.createdAt - 3 * 60_000)) {
+            let refusal = $0 as? AppConnect.Refusal
+            XCTAssertEqual(refusal?.status, .stale)
+            let text = refusal?.reason.lowercased() ?? ""
+            XCTAssertFalse(text.contains("clock"), text)
+            XCTAssertFalse(text.contains("device"), text)
+            XCTAssertTrue(text.contains("new"), "it asks the app for a new code: \(text)")
+            XCTAssertFalse(text.contains("expired"), text)
+            XCTAssertTrue(text.contains("ahead"), "it gives the reason, the request is dated ahead: \(text)")
+            XCTAssertTrue(text.contains("network"), "it names the network's time: \(text)")
+        }
+    }
+
+    /// The edges of the window, by block time: 10 minutes old and 2 minutes
+    /// ahead are answered, a millisecond more is refused.
+    func testTheAgeWindowIsJudgedByBlockTimeToTheMillisecond() throws {
+        let uri = try Self.vectorUri()
+        let minute: UInt64 = 60_000
+        for blockTimeMs in [Self.createdAt + 10 * minute, Self.createdAt - 2 * minute] {
+            XCTAssertNoThrow(
+                try AppConnect.grantPlan(for: uri, blockTimeMs: blockTimeMs), "\(blockTimeMs)")
+        }
+        for blockTimeMs in [Self.createdAt + 10 * minute + 1, Self.createdAt - 2 * minute - 1] {
+            XCTAssertThrowsError(
+                try AppConnect.grantPlan(for: uri, blockTimeMs: blockTimeMs), "\(blockTimeMs)") {
+                XCTAssertEqual(($0 as? AppConnect.Refusal)?.status, .stale)
+            }
+        }
+    }
+
+    /// A phone clock a year off neither refuses a fresh request nor admits a
+    /// stale one: only the block time counts.
+    /// The phone's clock is not an input: the age and both expiries of a
+    /// granted key are told from the proved block time alone.
+    func testTheAgeAndTheExpiriesAreToldFromTheBlockTime() throws {
+        let yearLater = Self.createdAt + 365 * Self.dayMilliseconds
+        let later = Self.groupBinding(expiresAt: yearLater + 2 * 365 * Self.dayMilliseconds)
+        let unlimited = AppConnectRequest.AuthBinding(
+            kind: .singleContract, securityLevel: .high, id: Self.appId,
+            totalBudget: nil, expiresAt: nil, documentTypeName: nil)
+        let plan = try AppConnect.grantPlan(
+            for: Self.uri(authBindings: [later, unlimited], createdAt: yearLater), blockTimeMs: yearLater)
+        XCTAssertEqual(plan.auth[0].expiresAt, yearLater + 365 * Self.dayMilliseconds)
+        XCTAssertEqual(plan.auth[1].expiresAt, yearLater + 90 * Self.dayMilliseconds)
+        XCTAssertThrowsError(try AppConnect.grantPlan(
+            for: try Self.vectorUri(), blockTimeMs: Self.createdAt + 11 * 60_000)) {
+            XCTAssertEqual(($0 as? AppConnect.Refusal)?.status, .stale)
+        }
+    }
+
+    func testAnExpiryThatDoesNotFitIsTheLargestTime() {
+        XCTAssertEqual(AppConnect.expiry(after: AppConnect.v2DefaultLifetime, from: .max - 1), .max)
+    }
+
+    /// No proved block time: the wallet cannot judge the age. This is not a
+    /// refusal of the request, so the sheet offers to try again.
+    func testARequestIsNotJudgedWithoutABlockTime() throws {
+        let uri = try Self.vectorUri()
+        XCTAssertThrowsError(try AppConnect.grantPlan(for: uri, blockTimeMs: nil)) {
+            XCTAssertEqual($0 as? DashConnectPlatformError, .requestAgeUncheckable)
+            XCTAssertNil($0 as? AppConnect.Refusal)
         }
     }
 
     func testAKeyThatWouldAlreadyBeExpiredIsRefused() {
         let expired = Self.groupBinding(expiresAt: Self.createdAt)
-        XCTAssertThrowsError(try AppConnect.grantPlan(for: Self.uri(authBindings: [expired]), now: Self.now)) {
+        XCTAssertThrowsError(try AppConnect.grantPlan(for: Self.uri(authBindings: [expired]), blockTimeMs: Self.blockTimeMs)) {
             XCTAssertEqual(($0 as? AppConnect.Refusal)?.status, .invalid)
         }
     }
@@ -213,7 +275,7 @@ final class AppConnectV2LoginTests: XCTestCase {
     func testAnEncryptionKeyOnAnotherContractIsRefused() {
         let foreign = AppConnectRequest.EncryptionBinding(contractId: Self.groupId, purpose: .encryption)
         XCTAssertThrowsError(try AppConnect.grantPlan(
-            for: Self.uri(authBindings: [Self.groupBinding()], encryptionBindings: [foreign]), now: Self.now)) {
+            for: Self.uri(authBindings: [Self.groupBinding()], encryptionBindings: [foreign]), blockTimeMs: Self.blockTimeMs)) {
             XCTAssertEqual(($0 as? AppConnect.Refusal)?.status, .invalid)
         }
     }
@@ -251,7 +313,7 @@ final class AppConnectV2LoginTests: XCTestCase {
             try AppConnect.grantPlan(for: Self.uri(authBindings: [
                 .init(kind: .documentType, securityLevel: .high, id: Self.dashpayContractId,
                       totalBudget: nil, expiresAt: nil, documentTypeName: name),
-            ]), now: Self.now)
+            ]), blockTimeMs: Self.blockTimeMs)
         }
         func refusal(_ plan: AppConnect.GrantPlan) -> AppConnect.Refusal? {
             AppConnect.ownershipRefusal(
@@ -268,7 +330,7 @@ final class AppConnectV2LoginTests: XCTestCase {
         let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: [
             .init(kind: .singleContract, securityLevel: .high, id: other,
                   totalBudget: nil, expiresAt: nil, documentTypeName: nil),
-        ]), now: Self.now)
+        ]), blockTimeMs: Self.blockTimeMs)
         func refusal(owner: Data) -> AppConnect.Refusal? {
             AppConnect.ownershipRefusal(
                 for: plan, appOwnerId: Self.appOwner, groupOwners: [:],
@@ -300,7 +362,7 @@ final class AppConnectV2LoginTests: XCTestCase {
         let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: [
             .init(kind: .singleContract, securityLevel: .high, id: other,
                   totalBudget: nil, expiresAt: nil, documentTypeName: nil),
-        ]), now: Self.now)
+        ]), blockTimeMs: Self.blockTimeMs)
         func ownership(_ otherRead: @escaping () throws -> [String: Any]) async throws -> AppConnect.Refusal? {
             try await PlatformDashConnectDataSource.appConnectOwnership(
                 plan,
@@ -335,7 +397,7 @@ final class AppConnectV2LoginTests: XCTestCase {
             _ bindings: [AppConnectRequest.AuthBinding],
             other otherSchemas: [String: Any]? = ["note": [:] as [String: Any]]
         ) async throws -> AppConnect.Refusal? {
-            let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: bindings), now: Self.now)
+            let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: bindings), blockTimeMs: Self.blockTimeMs)
             return try await PlatformDashConnectDataSource.appConnectOwnership(
                 plan,
                 readContract: { id in
@@ -374,7 +436,7 @@ final class AppConnectV2LoginTests: XCTestCase {
                                      totalBudget: nil, expiresAt: nil, documentTypeName: nil)],
                 connectionId: nil, encryptionBindings: [], isRenewal: false, createdAt: Self.createdAt),
             network: .devnet, callback: nil)
-        let appPlan = try AppConnect.grantPlan(for: asApp, now: Self.now)
+        let appPlan = try AppConnect.grantPlan(for: asApp, blockTimeMs: Self.blockTimeMs)
         XCTAssertEqual(
             AppConnect.ownershipRefusal(
                 for: appPlan, appOwnerId: Self.appOwner, groupOwners: [:],
@@ -384,7 +446,7 @@ final class AppConnectV2LoginTests: XCTestCase {
         let bindingPlan = try AppConnect.grantPlan(for: Self.uri(authBindings: [
             .init(kind: .documentType, securityLevel: .high, id: dpns,
                   totalBudget: nil, expiresAt: nil, documentTypeName: "domain"),
-        ]), now: Self.now)
+        ]), blockTimeMs: Self.blockTimeMs)
         XCTAssertEqual(
             AppConnect.ownershipRefusal(
                 for: bindingPlan, appOwnerId: Self.appOwner, groupOwners: [:],
@@ -399,7 +461,7 @@ final class AppConnectV2LoginTests: XCTestCase {
         let plan = try AppConnect.grantPlan(for: Self.uri(authBindings: [
             .init(kind: .documentType, securityLevel: .high, id: Self.appId,
                   totalBudget: nil, expiresAt: nil, documentTypeName: "post"),
-        ]), now: Self.now)
+        ]), blockTimeMs: Self.blockTimeMs)
         XCTAssertFalse(AppConnect.systemContractIds.contains(Self.appId.toBase58String()))
         XCTAssertEqual(
             AppConnect.ownershipRefusal(
@@ -851,25 +913,6 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertFalse(DashConnectUri.isAppConnectUri("dash-key:abc?n=d&v"))
     }
 
-    /// The brand map only names an app: a known app's request that returns
-    /// to a host the app does not have is accepted with a warning, like one
-    /// without a callback or one for an app the wallet does not know.
-    func testAKnownAppsRequestThatReturnsElsewhereIsWarnedAbout() {
-        XCTAssertEqual(
-            AppConnect.originWarning(callbackHost: "yap.pr.example.com", brandHost: "yap.pr"),
-            .returnsElsewhere(callbackHost: "yap.pr.example.com"))
-        XCTAssertEqual(
-            AppConnect.originWarning(callbackHost: "notyap.pr", brandHost: "yap.pr"),
-            .returnsElsewhere(callbackHost: "notyap.pr"))
-        XCTAssertNil(AppConnect.originWarning(callbackHost: "yap.pr", brandHost: "yap.pr"))
-        XCTAssertNil(AppConnect.originWarning(callbackHost: "www.yap.pr", brandHost: "yap.pr"))
-        XCTAssertEqual(AppConnect.originWarning(callbackHost: nil, brandHost: "yap.pr"), .noCallback(website: "yap.pr"))
-        XCTAssertEqual(AppConnect.originWarning(callbackHost: "example.com", brandHost: nil), .unknownApp)
-        XCTAssertEqual(
-            DashConnectFallbackAppMetadata.brandHost(contractId: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F"), "yap.pr")
-        XCTAssertNil(DashConnectFallbackAppMetadata.brandHost(contractId: "GWRSAVFMjXx8HpQFaNJMqBV7MBgMK4br5UESsB4S31Ec"))
-    }
-
     func testTheCallbackKeepsItsQueryAndAddsTheStatus() throws {
         let callback = try XCTUnwrap(Self.vectorUri().callback)
         XCTAssertEqual(
@@ -890,6 +933,20 @@ final class AppConnectV2LoginTests: XCTestCase {
         XCTAssertFalse(AppConnect.Login.unresolved.isApprovable)
         XCTAssertFalse(AppConnect.Login.refused(.init(.stale, "old")).isApprovable)
     }
+
+    /// Before an approval the wallet does not know yet whether it can give
+    /// the app a key for messages (the current key may not be this
+    /// wallet's, or none is live): the approve sheet says it may.
+    func testTheApproveSheetSaysMessagesMayBeGivenNotThatTheyAre() throws {
+        let plan = try Self.vectorPlan()
+        XCTAssertFalse(plan.encryption.isEmpty)
+        let lines = DashConnectPermissionText.requested(plan, appLabel: "App")
+        XCTAssertTrue(lines.contains(DashConnectPermissionText.mayReceiveMessages(appLabel: "App")))
+        XCTAssertFalse(lines.contains(DashConnectPermissionText.receivesMessages(appLabel: "App")))
+        let noMessages = try AppConnect.grantPlan(for: Self.uri(authBindings: [Self.groupBinding()]), blockTimeMs: Self.blockTimeMs)
+        XCTAssertFalse(DashConnectPermissionText.requested(noMessages, appLabel: "App")
+            .contains(DashConnectPermissionText.mayReceiveMessages(appLabel: "App")))
+    }
 }
 
 private extension AppConnect.KeyBinding {
@@ -897,5 +954,239 @@ private extension AppConnect.KeyBinding {
         var binding = self
         binding.isDisabled = true
         return binding
+    }
+}
+
+/// What the approval checks of the terms the user set on the sheet: the
+/// expiry at Platform's time, a budget on every key, and a balance failure
+/// that a top-up would fix.
+final class AppConnectConnectionTermsTests: XCTestCase {
+    private static let app = Data(repeating: 0xA1, count: 32)
+    private static let platformTime: UInt64 = 1_791_676_800_000
+    private static let hour: UInt64 = 60 * 60 * 1000
+
+    private static func plan(budgets: [UInt64?], expiresAt: UInt64) -> AppConnect.GrantPlan {
+        let auth = budgets.enumerated().map { index, budget -> AppConnect.AuthGrant in
+            let binding = AppConnectRequest.AuthBinding(
+                kind: .singleContract, securityLevel: .high, id: app,
+                totalBudget: budget, expiresAt: expiresAt, documentTypeName: nil)
+            return AppConnect.AuthGrant(bindingIndex: index, binding: binding, totalBudget: budget, expiresAt: expiresAt)
+        }
+        return AppConnect.GrantPlan(
+            appId: app, appEphemeralPubKeyHash: Data(repeating: 0xEE, count: 20), auth: auth, encryption: [],
+            connectionId: nil, identityHint: nil, createdAt: 0)
+    }
+
+    // MARK: Expiry at Platform's time
+
+    func testAnExpiryPastAtPlatformTimeIsRefusedWhateverThePhoneClockSays() {
+        let expiry = Self.platformTime + Self.hour
+        let plan = Self.plan(budgets: [1000], expiresAt: expiry)
+
+        XCTAssertNil(AppConnect.termsFailure(of: plan, platformTimeMs: Self.platformTime))
+        XCTAssertEqual(AppConnect.termsFailure(of: plan, platformTimeMs: expiry), .approvalTermsExpired)
+        XCTAssertEqual(AppConnect.termsFailure(of: plan, platformTimeMs: expiry + 1), .approvalTermsExpired)
+    }
+
+    func testAnExpiryIsNotCheckedAgainstThePhoneClockWithoutPlatformTime() {
+        let plan = Self.plan(budgets: [1000], expiresAt: Self.platformTime + Self.hour)
+
+        XCTAssertEqual(AppConnect.termsFailure(of: plan, platformTimeMs: nil), .approvalTermsUncheckable)
+    }
+
+    // MARK: A budget on every key
+
+    func testEveryAppKeyGetsABudgetHoweverUnevenTheAsks() {
+        let cap = AppConnect.v2BudgetCapCredits
+        let shares = AppConnect.appKeyBudgets(of: cap, requested: [cap, 1])
+
+        XCTAssertEqual(shares.count, 2)
+        XCTAssertTrue(shares.allSatisfy { $0 > 0 }, "\(shares)")
+        XCTAssertEqual(shares.reduce(0, +), cap)
+    }
+
+    func testAPlanOfUnevenAsksCanBeApprovedFromTheSmallestLimit() {
+        let cap = AppConnect.v2BudgetCapCredits
+        let plan = Self.plan(budgets: [cap, 1], expiresAt: Self.platformTime + Self.hour)
+
+        XCTAssertNotNil(AppConnect.keyBudgets(for: plan, limit: cap))
+        XCTAssertEqual(AppConnect.smallestFundingLimit(for: plan), 2)
+        XCTAssertNil(AppConnect.keyBudgets(for: plan, limit: 1), "one credit cannot give two keys a budget")
+    }
+
+    func testTheSplitStillFollowsTheAsks() {
+        XCTAssertEqual(AppConnect.appKeyBudgets(of: 3002, requested: [2000, 1000]), [2001, 1001])
+        XCTAssertEqual(AppConnect.appKeyBudgets(of: 10, requested: [0, 0]), [5, 5])
+    }
+
+    func testTheSheetOpensAtALimitThatFundsEveryKey() {
+        let expiry = Self.platformTime + Self.hour
+        let profile = AppConnectRequest.AuthBinding(
+            kind: .documentType, securityLevel: .high, id: Data.identifier(fromBase58: AppConnect.dashPayContractId)!,
+            totalBudget: nil, expiresAt: expiry, documentTypeName: "profile")
+        var plan = Self.plan(budgets: [1], expiresAt: expiry)
+        plan.auth.insert(
+            AppConnect.AuthGrant(bindingIndex: 1, binding: profile, totalBudget: nil, expiresAt: expiry), at: 0)
+        XCTAssertNil(AppConnect.keyBudgets(for: plan, limit: 1), "one credit cannot fund two keys")
+
+        let terms = AppConnect.defaultTerms(for: plan, now: Date(timeIntervalSince1970: TimeInterval(Self.platformTime) / 1000))
+
+        XCTAssertEqual(terms.fundingLimit, AppConnect.smallestFundingLimit(for: plan))
+        XCTAssertNotNil(AppConnect.keyBudgets(for: plan, limit: terms.fundingLimit))
+    }
+
+    func testTheSheetOpensAtTheAskedLimitWhenItFundsEveryKey() {
+        let plan = Self.plan(budgets: [2000, 1000], expiresAt: Self.platformTime + Self.hour)
+
+        let terms = AppConnect.defaultTerms(for: plan, now: Date(timeIntervalSince1970: TimeInterval(Self.platformTime) / 1000))
+
+        XCTAssertEqual(terms.fundingLimit, 3000)
+    }
+
+    // MARK: The split Platform registers
+
+    private static let dash = PlatformCreditsFormatter.creditsPerDash
+    private static var now: Date { Date(timeIntervalSince1970: TimeInterval(platformTime) / 1000) }
+
+    private static func profileGrant(expiresAt: UInt64) -> AppConnect.AuthGrant {
+        let binding = AppConnectRequest.AuthBinding(
+            kind: .documentType, securityLevel: .high, id: Data.identifier(fromBase58: AppConnect.dashPayContractId)!,
+            totalBudget: nil, expiresAt: expiresAt, documentTypeName: "profile")
+        return AppConnect.AuthGrant(bindingIndex: 9, binding: binding, totalBudget: nil, expiresAt: expiresAt)
+    }
+
+    /// A DashPay profile key first, then app keys asking for `appBudgets`.
+    private static func profileAndAppPlan(appBudgets: [UInt64?]) -> AppConnect.GrantPlan {
+        let expiry = platformTime + hour
+        var plan = plan(budgets: appBudgets, expiresAt: expiry)
+        plan.auth.insert(profileGrant(expiresAt: expiry), at: 0)
+        return plan
+    }
+
+    func testTheLimitsAreTheOnesTheSheetShowsInDash() {
+        XCTAssertEqual(AppConnect.fundingPresets, [Self.dash / 10, Self.dash / 2, 2 * Self.dash, 5 * Self.dash])
+        XCTAssertEqual(AppConnect.defaultFundingLimit, Self.dash / 2)
+        XCTAssertEqual(AppConnect.profileKeyShare, Self.dash / 500, "0.002 DASH")
+        XCTAssertEqual(AppConnect.v2BudgetCapCredits, 5 * Self.dash)
+    }
+
+    func testAFundingLimitIsAboveZeroAndAtMostTheCap() {
+        XCTAssertFalse(AppConnect.isValidFundingLimit(0))
+        XCTAssertTrue(AppConnect.isValidFundingLimit(1))
+        XCTAssertTrue(AppConnect.isValidFundingLimit(AppConnect.v2BudgetCapCredits))
+        XCTAssertFalse(AppConnect.isValidFundingLimit(AppConnect.v2BudgetCapCredits + 1))
+    }
+
+    func testAProfileKeyBesideAnAppKeyTakesTheProfileShare() {
+        let plan = Self.profileAndAppPlan(appBudgets: [1000])
+
+        XCTAssertEqual(
+            AppConnect.keyBudgets(for: plan, limit: Self.dash),
+            [AppConnect.profileKeyShare, Self.dash - AppConnect.profileKeyShare])
+        XCTAssertEqual(
+            AppConnect.keyBudgets(for: plan, limit: 2 * AppConnect.profileKeyShare),
+            [AppConnect.profileKeyShare, AppConnect.profileKeyShare],
+            "at twice the share the profile still takes the whole share")
+    }
+
+    func testUnderTwiceTheProfileShareTheProfileKeyTakesHalf() {
+        let plan = Self.profileAndAppPlan(appBudgets: [1000])
+        let limit = 2 * AppConnect.profileKeyShare - 1
+
+        XCTAssertEqual(AppConnect.keyBudgets(for: plan, limit: limit), [limit / 2, limit - limit / 2])
+    }
+
+    func testAProfileOnlyPlanTakesTheProfileShareOrTheWholeSmallerLimit() {
+        var plan = Self.plan(budgets: [], expiresAt: Self.platformTime + Self.hour)
+        plan.auth = [Self.profileGrant(expiresAt: Self.platformTime + Self.hour)]
+
+        XCTAssertEqual(AppConnect.keyBudgets(for: plan, limit: Self.dash), [AppConnect.profileKeyShare])
+        XCTAssertEqual(AppConnect.keyBudgets(for: plan, limit: 1000), [1000])
+        XCTAssertEqual(AppConnect.defaultTerms(for: plan, now: Self.now).fundingLimit, AppConnect.profileKeyShare)
+    }
+
+    func testTheSheetOpensAtTheDefaultLimitWhenNoBudgetIsAsked() {
+        let plan = Self.plan(budgets: [nil], expiresAt: Self.platformTime + Self.hour)
+
+        XCTAssertEqual(AppConnect.defaultTerms(for: plan, now: Self.now).fundingLimit, AppConnect.defaultFundingLimit)
+    }
+
+    func testTheSheetOpensAtTheCapWhenTheAsksAddUpToMore() {
+        let cap = AppConnect.v2BudgetCapCredits
+        let plan = Self.plan(budgets: [cap, cap], expiresAt: Self.platformTime + Self.hour)
+
+        XCTAssertEqual(AppConnect.defaultTerms(for: plan, now: Self.now).fundingLimit, cap)
+    }
+
+    func testTheSheetOpensAtTheEarliestExpiryOfThePlan() {
+        var plan = Self.plan(budgets: [1000], expiresAt: Self.platformTime + 2 * Self.hour)
+        plan.auth += Self.plan(budgets: [1000], expiresAt: Self.platformTime + Self.hour).auth
+
+        XCTAssertEqual(AppConnect.defaultTerms(for: plan, now: Self.now).expiresAt, Self.platformTime + Self.hour)
+    }
+
+    func testAppliedTermsGiveEveryKeyItsShareAndTheOneExpiry() throws {
+        let plan = Self.profileAndAppPlan(appBudgets: [2000, 1000])
+        let expiry = Self.platformTime + 3 * Self.hour
+        let limit = Self.dash
+
+        let applied = try XCTUnwrap(
+            AppConnect.applying(AppConnect.ConnectionTerms(fundingLimit: limit, expiresAt: expiry), to: plan, now: Self.now))
+
+        XCTAssertEqual(applied.auth.compactMap(\.totalBudget), try XCTUnwrap(AppConnect.keyBudgets(for: plan, limit: limit)))
+        XCTAssertEqual(applied.auth.compactMap(\.totalBudget).reduce(0, +), limit)
+        XCTAssertEqual(applied.auth[0].totalBudget, AppConnect.profileKeyShare)
+        XCTAssertTrue(applied.auth.allSatisfy { $0.expiresAt == expiry })
+        XCTAssertEqual(applied.auth.map(\.bindingIndex), plan.auth.map(\.bindingIndex))
+    }
+
+    func testTermsOutOfBoundsAreNotApplied() {
+        let plan = Self.plan(budgets: [1000, 1000], expiresAt: Self.platformTime + Self.hour)
+        let expiry = Self.platformTime + Self.hour
+        let terms = { (limit: UInt64, expiresAt: UInt64) in AppConnect.ConnectionTerms(fundingLimit: limit, expiresAt: expiresAt) }
+
+        XCTAssertNil(AppConnect.applying(terms(0, expiry), to: plan, now: Self.now))
+        XCTAssertNil(AppConnect.applying(terms(AppConnect.v2BudgetCapCredits + 1, expiry), to: plan, now: Self.now))
+        XCTAssertNil(AppConnect.applying(terms(1, expiry), to: plan, now: Self.now), "one credit cannot fund two keys")
+        XCTAssertNil(AppConnect.applying(terms(1000, Self.platformTime), to: plan, now: Self.now), "an expiry already past")
+        XCTAssertNil(AppConnect.applying(
+            terms(1000, AppConnect.expiry(days: 366, from: Self.now)), to: plan, now: Self.now), "beyond a year")
+    }
+
+    // MARK: Balance
+
+    func testAConsensusRefusalForTheBalanceOffersATopUp() {
+        let refusal = DashConnectPlatformError.networkRefused(code: PlatformConsensusCode.identityInsufficientBalance)
+
+        XCTAssertTrue(AppConnect.isInsufficientBalance(refusal))
+        XCTAssertFalse(AppConnect.isInsufficientBalance(DashConnectPlatformError.networkRefused(code: 40_100)))
+        XCTAssertEqual(PlatformDashConnectDataSource.approvalFailure(after: refusal) as? DashConnectPlatformError, refusal)
+    }
+
+    func testABalanceRefusalIsReadFromTheSDKErrorsConsensusCode() {
+        let balance = PlatformConsensusError(code: 40_210, kind: .state)
+
+        XCTAssertTrue(AppConnect.isInsufficientBalance(PlatformWalletError.consensusRejection(balance, "reworded by Platform")))
+        XCTAssertTrue(AppConnect.isInsufficientBalance(SDKError.consensusRejection(balance, "reworded by Platform")))
+        XCTAssertFalse(AppConnect.isInsufficientBalance(
+            PlatformWalletError.consensusRejection(PlatformConsensusError(code: 40_100, kind: .state), "reworded by Platform")))
+    }
+
+    func testAnUnconfirmedUpdateIsNoBalanceShortfallWhateverItsText() {
+        let unconfirmed = PlatformWalletError.transactionBroadcastUnconfirmed(
+            "Failed to broadcast identity update: Insufficient identity abc balance")
+
+        XCTAssertFalse(AppConnect.isInsufficientBalance(unconfirmed))
+    }
+
+    func testABalanceFailureAfterTheUpdateStaysABalanceFailure() {
+        let failure = NSError(
+            domain: "test", code: 1, userInfo: [NSLocalizedDescriptionKey:
+                "Failed to broadcast identity update: Insufficient identity 4EfA9Jrvv3nnCFdSf7fad59851iiTRZ6Wcu6YVJ4iSeF balance 1000 required 2000"])
+
+        let returned = PlatformDashConnectDataSource.approvalFailure(after: failure)
+
+        XCTAssertFalse(returned is AppConnect.Refusal, "a refusal would hide the top-up")
+        XCTAssertTrue(AppConnect.isInsufficientBalance(returned))
     }
 }

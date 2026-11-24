@@ -513,6 +513,7 @@
                                                     </constraints>
                                                 </tableViewCellContentView>
                                                 <connections>
+                                                    <outlet property="additionalInfoLabel" destination="TUS-hl-0lK" id="aL1-bE-7xQ"/>
                                                     <outlet property="additionalInfoView" destination="Gum-Nf-URY" id="dmh-dk-y1x"/>
                                                     <outlet property="iconView" destination="Mz4-hC-wDh" id="5c9-5d-lX7"/>
                                                     <outlet property="nameLabel" destination="9ok-fQ-3XU" id="fl9-qb-d9h"/>
@@ -593,6 +594,8 @@
                         <outlet property="balanceView" destination="ufR-Iq-OaE" id="KYF-T2-gfA"/>
                         <outlet property="lastKnownBalanceLabel" destination="ygs-WO-WZc" id="v1x-I4-OXX"/>
                         <outlet property="mainContentView" destination="Qwx-pw-5ll" id="RxR-nc-Pqb"/>
+                        <outlet property="networkUnavailableSubtitleLabel" destination="nPD-2l-NFH" id="nS2-uB-tL4"/>
+                        <outlet property="networkUnavailableTitleLabel" destination="rl8-uQ-PVb" id="nT3-iT-lE5"/>
                         <outlet property="networkUnavailableView" destination="luS-Cc-Gdg" id="1ni-zc-MMC"/>
                         <outlet property="serviceNameIcon" destination="iWe-CJ-GGP" id="jR5-xO-YIQ"/>
                         <outlet property="serviceNameLabel" destination="QXV-dh-sFv" id="gzI-76-Ces"/>

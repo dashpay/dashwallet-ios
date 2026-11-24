@@ -44,8 +44,6 @@ struct AddMasternodeScreen: View {
                     Text(NSLocalizedString("Add masternode", comment: "Add masternode"))
                         .dashFont(.subheadMedium)
                         .foregroundColor(.dash.primaryText)
-                        .lineLimit(1)
-                        .padding(.horizontal, 60)
                 })
 
             list

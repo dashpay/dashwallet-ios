@@ -88,7 +88,7 @@ struct TransferSourceRow: View {
         AnyView(
             HStack(spacing: 2) {
                 Text(formatted)
-                    .font(.system(size: 14, weight: .semibold))
+                    .scaledSystemFont(size: 14, weight: .semibold, relativeTo: .subheadline)
                     .foregroundColor(.dash.primaryText)
                 Image("icon_dash_currency")
                     .resizable()
@@ -97,11 +97,14 @@ struct TransferSourceRow: View {
             })
     }
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
         Button(action: action) {
             HStack(spacing: 14) {
                 Image(systemName: iconSystemName)
-                    .font(.system(size: 18, weight: .semibold))
+                    .scaledSystemFont(size: 18, weight: .semibold, relativeTo: .body)
+                    .dynamicTypeSize(...DynamicTypeSize.xxxLarge) // drawn inside a fixed-size badge
                     .foregroundColor(.blue)
                     .frame(width: 36, height: 36)
                     .background(Color.dash.blue.opacity(0.08))
@@ -109,22 +112,29 @@ struct TransferSourceRow: View {
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(caption)
-                        .font(.system(size: 11))
+                        .scaledSystemFont(size: 11, relativeTo: .caption2)
                         .foregroundColor(Color.dash.secondaryText)
                     Text(title)
-                        .font(.system(size: 15, weight: .semibold))
+                        .scaledSystemFont(size: 15, weight: .semibold, relativeTo: .subheadline)
                         .foregroundColor(.dash.primaryText)
+                    // At accessibility text sizes there is no room for the
+                    // balance beside the title; it moves under it instead.
+                    if dynamicTypeSize.isAccessibilitySize {
+                        balanceTrailing
+                    }
                 }
 
                 Spacer()
 
-                balanceTrailing
+                if !dynamicTypeSize.isAccessibilitySize {
+                    balanceTrailing
+                }
 
                 if showsRadio {
                     radioIndicator
                 } else if showsChevron {
                     Image(systemName: "chevron.down")
-                        .font(.system(size: 13, weight: .semibold))
+                        .scaledSystemFont(size: 13, weight: .semibold, relativeTo: .footnote)
                         .foregroundColor(Color.dash.secondaryText)
                 }
             }

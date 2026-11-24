@@ -21,7 +21,8 @@ import DashUIKit
 import SafariServices
 
 struct ToolsMenuScreen: View {
-    private let vc: UINavigationController
+    /// Weak: this page sits in `vc`'s own stack.
+    private weak var vc: UINavigationController?
 
     @StateObject private var viewModel = ToolsMenuViewModel()
     @State private var showCSVExportSheet = false
@@ -29,15 +30,20 @@ struct ToolsMenuScreen: View {
     @State private var showZenLedgerSheet = false
     @State private var showExtendedPublicKeySheet = false
 
-    init(vc: UINavigationController) {
+    /// Connections asks it whether the wallet has a username, and starts
+    /// creating one from it.
+    private let dashPayModel: DWDashPayProtocol?
+
+    init(vc: UINavigationController?, dashPayModel: DWDashPayProtocol? = nil) {
         self.vc = vc
+        self.dashPayModel = dashPayModel
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             DashUIKit.NavigationBar(leading: {
                 DashUIKit.NavigationBarElement.back.button {
-                    vc.popViewController(animated: true)
+                    vc?.popViewController(animated: true)
                 }
             })
 
@@ -252,6 +258,7 @@ struct ToolsMenuScreen: View {
     }
 
     private func showStorageExplorer() {
+        guard let vc else { return }
         let container = PlatformAddressSyncCoordinator.shared.swiftDataContainer
         let navigator = StorageExplorerNavigator(navigationController: vc, container: container)
         if container != nil {
@@ -267,13 +274,12 @@ struct ToolsMenuScreen: View {
     
     private func showMasternodeKeys() {
         let controller = KeysOverviewViewController()
-        controller.hidesBottomBarWhenPushed = true
-        vc.pushViewController(controller, animated: true)
+        vc?.pushViewController(controller, animated: true)
     }
 
     private func showConnections() {
-        let controller = DashConnectHostingController(navigationController: vc)
-        controller.hidesBottomBarWhenPushed = true
+        guard let vc else { return }
+        let controller = DashConnectHostingController(navigationController: vc, dashPayModel: dashPayModel)
         vc.pushViewController(controller, animated: true)
     }
 
@@ -290,7 +296,7 @@ struct ToolsMenuScreen: View {
     private func openSafariLink(_ link: String) {
         if let url = URL(string: link) {
             let controller = SFSafariViewController(url: url)
-            vc.present(controller, animated: true, completion: nil)
+            vc?.present(controller, animated: true, completion: nil)
         }
     }
 

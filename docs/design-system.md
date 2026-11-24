@@ -18,11 +18,10 @@ updated_at: "2026-11-05"
 path relative to `Sources/DashUIKit/`. Plain paths are in this repo. Figma nodes are ids in
 `figma_file`.
 
-**Pin lag.** The app pins DashUIKit `master` at `2b15ef7`
-(`DashWallet.xcworkspace/xcshareddata/swiftpm/Package.resolved:10`). `SegmentedControl`,
-`FilterBar`, `NavigationBarCircle*`, `List1View` / `List8View`, `VotePill` and
-`MenuViewModifier` exist on DashUIKit `master` only — a feature that uses them bumps the pin
-first.
+**Pin.** The app pins DashUIKit `master` at `e8ae3e7`
+(`DashWallet.xcworkspace/xcshareddata/swiftpm/Package.resolved:10`), which is after the anchor
+revision, so every component below is available to the app. A component added to DashUIKit
+after the pin needs a pin bump before a feature uses it.
 
 ## Platform posture
 
@@ -67,17 +66,17 @@ are legacy — qualify `DashUIKit.` where names clash.
 |---|---|---|---|
 | DashButton | `UIK: Button/DashButton.swift:125`; Figma `60:214`, `I80:206;2554:977;80:199` | enabled / disabled / loading | sizes `:21`, 12 styles `:70`; leading/trailing icon |
 | NavigationBar | `UIK: Components/NavigationBar.swift:20`; Figma `60:211`, `81:286` | back / close / custom slots | elements enum `:88` |
-| NavigationBarCircleButton / Icon / Menu | `UIK: Components/NavigationBarCircleButton.swift:26`, `NavigationBarCircleIcon.swift:30`, `NavigationBarCircleMenu.swift:22` | default / disabled | master only (pin lag) |
+| NavigationBarCircleButton / Icon / Menu | `UIK: Components/NavigationBarCircleButton.swift:26`, `NavigationBarCircleIcon.swift:30`, `NavigationBarCircleMenu.swift:22` | default / disabled | |
 | BottomSheet | `UIK: Components/BottomSheet/BottomSheet.swift:7`; Figma `80:206`, `81:284` | back / close / dismissal locked | grabber Figma `81:404` |
 | SheetFeature | `UIK: Components/BottomSheet/SheetFeature.swift:30`; Figma `I80:206;2554:978;80:201` | default | icon + title + text row inside a sheet |
 | TopIntroView | `UIK: Components/TopIntro/TopIntroView.swift:23`; Figma `60:206` | default / with button | screen header block |
 | MenuItem | `UIK: Components/MenuItem.swift:49`; Figma `71:215`, `81:301` | accessories `:23` (toggle / text / button / balance / selection) | list row |
-| MenuViewModifier | `UIK: ViewModifiers/MenuViewModifier.swift:20`; Figma `71:212` | default | grouped-list container; master only |
-| List1View / List8View | `UIK: Table List/List1View.swift:20`, `Table List/List8View.swift:35` | default | table rows; master only |
+| MenuViewModifier | `UIK: ViewModifiers/MenuViewModifier.swift:20`; Figma `71:212` | default | grouped-list container |
+| List1View / List8View | `UIK: Table List/List1View.swift:20`, `Table List/List8View.swift:35` | default | table rows |
 | RadioButtonRow | `UIK: Components/RadioButtonRow.swift:30`; Figma `I81:301;8589:107;81:296` | selected / not selected | |
 | SimpleSelect | `UIK: Components/SimpleSelect.swift:32` | selected / not selected | |
-| SegmentedControl | `UIK: Components/SegmentedControl.swift:67`; Figma `71:208` | selected / not selected | master only (pin lag) |
-| FilterBar | `UIK: Components/FilterBar.swift:50` | default | master only |
+| SegmentedControl | `UIK: Components/SegmentedControl.swift:67`; Figma `71:208` | selected / not selected | |
+| FilterBar | `UIK: Components/FilterBar.swift:50` | default | |
 | DashSwitch / SwitchView | `UIK: Components/DashSwitch.swift:23`, `Components/Switch/SwitchView.swift:18` | on / off / disabled | |
 | SearchBar | `UIK: Components/SearchBar.swift:22` | empty / entered | |
 | AddressFieldView | `UIK: Components/AddressFieldView.swift:35`; Figma `60:207` | empty / entered / error | the only text-entry field in DashUIKit |
@@ -89,12 +88,12 @@ are legacy — qualify `DashUIKit.` where names clash.
 | TransactionView | `UIK: Components/Transaction/TransactionView.swift:29` | default | transaction row |
 | Criteria | `UIK: Components/Criteria.swift:107` | criterion states `:39` | validation checklist |
 | SystemMessageView | `UIK: Components/SystemMessageView.swift:20`; Figma `60:208` | with / without buttons, closable | inline notice |
-| ModalDialog | `UIK: Components/ModalDialog.swift:23`; Figma `Dialogue` (`110:3283` two buttons, `110:2968` one) | one / two buttons, destructive role, no icon, long text scrolls | dialog card the host presents over a dim; master only |
+| ModalDialog | `UIK: Components/ModalDialog.swift:23`; Figma `Dialogue` (`110:3283` two buttons, `110:2968` one) | one / two buttons, destructive role, no icon, long text scrolls | dialog card the host presents over a dim |
 | Toast | `UIK: Components/Toast.swift:53` | styles `:35` (warning / info / error / success / copied / loading / noInternet) | |
 | Error / Loading / Success illustrations | `UIK: Components/Illustrations/ErrorIllustration.swift:20`, `LoadingIllustration.swift:25`, `SuccessIllustration.swift:20` | — | result screens |
 | LoadingSpinner | `UIK: Components/Illustrations/LoadingIllustration.swift:54` | — | |
 | Icons | `UIK: Foundation/Icon_DashUI.swift:46` (`DashIcon`), `Foundation/Image+DashUI.swift:25` (`DashIconSource`) | — | plus `CheckmarkIcon` / `ChevronIcon` / `InfoRoundIcon` / `XmarkIcon` in `Components/Icons/` |
-| VotePill | `UIK: Components/VotePill.swift:42` | — | master only |
+| VotePill | `UIK: Components/VotePill.swift:42` | — | |
 
 ### Gaps
 

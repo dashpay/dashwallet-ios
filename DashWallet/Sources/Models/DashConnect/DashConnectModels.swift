@@ -151,6 +151,12 @@ enum ConnectionStatus: String, Codable, CaseIterable {
     /// The app's keys are live, but its response was never published: the
     /// app holds keys it cannot use. Only a disconnect or a new QR helps.
     case undelivered
+    /// Platform refused the identity update for good; the keys can never land.
+    case refused
+    /// The connection's keys have expired on the identity.
+    case expired
+    /// The user disconnected the app and no key of it is live.
+    case disconnected
 
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
@@ -187,6 +193,7 @@ struct DAppConnection: Identifiable, Equatable, Hashable {
             id: row.id, name: row.name, url: row.url, status: status ?? row.status,
             updatedAt: updatedAt ?? row.updatedAt, seenOn: seenOn)
         scope = row.scope
+        responseMayRemain = row.responseMayRemain
     }
 
     let id: String
@@ -203,20 +210,23 @@ struct DAppConnection: Identifiable, Equatable, Hashable {
     /// goes back with a disconnect or a remove, so a row picked from a list
     /// that has since changed wallets is not acted on in the new one.
     var scope: String? = nil
+    /// A Disconnected row whose app has a closed connection with a response
+    /// not removed: the response may still be on Platform.
+    var responseMayRemain = false
 }
 
 /// What a disconnect left on the active identity besides the app's keys it
 /// turned off.
 struct DashConnectDisconnectResult: Equatable {
-    /// How many of the app's keys it turned off.
+    /// How many of the app's keys it turned off. Each key id it fenced counts
+    /// too: the fence keeps the pending sign-in's key from ever landing,
+    /// which is access this disconnect took away.
     var keysTurnedOff = 0
-    /// Live keys no approval of this wallet names that a disconnect turns
-    /// off only when the user asks, offered by a disconnect without listed
-    /// keys: keys on the app's contracts or of its owner, given on another
-    /// device or before a restore, and DashPay profile keys no app can be
-    /// told to hold. The user's answer passes them back, with the identity
-    /// they are on. Nil when nothing is offered.
-    var offeredUnrecordedKeys: DashConnectOfferedKeys? = nil
+    /// Keys a disconnect meant to turn off that are still live: an update
+    /// that failed stopped it, or a read after it still shows them. A sign-in
+    /// that landed under an id the disconnect meant to fence counts here too.
+    /// The connection stays and Disconnect can run again.
+    var keysStillLive = 0
     /// Live App Connect keys that may be the app's but could not be checked:
     /// their bound is not in the key store yet, or an owner that decides
     /// whose they are could not be read. None of them was turned off.
@@ -224,25 +234,287 @@ struct DashConnectDisconnectResult: Equatable {
     /// Live keys of the app's owner that another app with an approval here
     /// has too: they may be that app's, and none was turned off.
     var keysNotAttributable = 0
-    /// Keys of the app still on after the user answered the question: found
-    /// since it, or listed but kept out of the update because whose they
-    /// are could not be read then. None was turned off.
-    var keysLeftAfterQuestion = 0
-    /// The row those keys now show under, when the app's own row is gone.
-    var keysLeftUnder: String? = nil
+    /// Fence keys of the wallet that a disconnect placed (the read after it
+    /// shows the wallet's own fence key live, or with no read the submission
+    /// reports it added) and did not turn off. The sign-in they guard can no
+    /// longer land; the next disconnect turns them off. Not an error.
+    var fencesLeftOn = 0
+    /// Fence keys of the wallet that a disconnect meant to add and the read
+    /// after it does not show (with no read: whose update was not placed):
+    /// they may not be placed yet, so the sign-in can still land. Disconnect
+    /// can run again.
+    var fencesNotPlaced = 0
+    /// Of `keysTurnedOff`, the keys no approval of this wallet names: keys
+    /// given on another device or before a restore, and DashPay profile
+    /// keys no record names.
+    var unrecordedKeysTurnedOff = 0
     /// A read of another identity of this wallet saw keys of the app no
     /// approval names. They can be turned off only while that identity is
     /// the active one.
     var keysOnAnotherIdentity = false
-
-    var unrecordedKeysLeft: Int { offeredUnrecordedKeys?.keyIds.count ?? 0 }
+    /// A response of this app's was kept, not recorded removed, because its
+    /// publish is unresolved: it may still appear on Platform.
+    var responsesMayAppear = false
 }
 
-/// Unrecorded keys a disconnect offered to turn off. A key id is unique only
-/// within its identity, so the ids go with the identity they were read on.
-struct DashConnectOfferedKeys: Equatable {
-    let identityId: Data
-    let keyIds: Set<UInt32>
+/// What a connection gives its app, from the intents of one identity that
+/// hold it, as the connection sheet shows it.
+struct ConnectionAccess: Equatable {
+    /// What each key can do.
+    let keys: [AppConnect.GrantedAccess.Key]
+    /// The most the keys can spend together, in credits: Platform counts
+    /// each key's budget apart, so it is their sum. `nil` when no key has a
+    /// budget (see `hasUnlimitedKey`).
+    let budgetLimit: UInt64?
+    /// A key with no spending limit.
+    let hasUnlimitedKey: Bool
+    /// When the last of the keys stops working.
+    let expiresAt: Date?
+    /// The connection can receive messages encrypted to this identity.
+    let receivesMessages: Bool
+
+    /// `nil` when no auth key of `intents` or `unrecorded` gives access on
+    /// `snapshot` (`GrantedAccess(intents:snapshot:unrecorded:)`). It needs a
+    /// read of the identity: without one, what the intents submitted is not
+    /// known to be the app's access.
+    init?(
+        intents: [AppConnect.ConnectionIntent], snapshot: AppConnect.IdentitySnapshot,
+        unrecorded: [AppConnect.PlatformKey] = [], administeredGroups: Set<Data> = []
+    ) {
+        let access = AppConnect.GrantedAccess(
+            intents: intents, snapshot: snapshot, unrecorded: unrecorded, administeredGroups: administeredGroups)
+        guard !access.keys.isEmpty else { return nil }
+        self.init(access)
+    }
+
+    /// What `intents` gave as the wallet recorded it, with no read of the
+    /// identity: for a connection that ended, whose keys are off, the sheet
+    /// tells what the user allowed the app to do. `nil` when they add no auth key.
+    init?(recorded intents: [AppConnect.ConnectionIntent]) {
+        let access = AppConnect.GrantedAccess(intents: intents)
+        guard !access.keys.isEmpty else { return nil }
+        self.init(access)
+    }
+
+    init(_ access: AppConnect.GrantedAccess) {
+        keys = access.keys
+        let budgets = access.keys.compactMap(\.totalBudget)
+        budgetLimit = budgets.isEmpty ? nil : budgets.reduce(0) { sum, budget in
+            let (total, overflow) = sum.addingReportingOverflow(budget)
+            return overflow ? .max : total
+        }
+        hasUnlimitedKey = access.keys.contains { $0.totalBudget == nil }
+        expiresAt = access.keys.map(\.expiresAt).max().map { Date(timeIntervalSince1970: TimeInterval($0) / 1000) }
+        receivesMessages = access.receivesMessages
+    }
+
+    var granted: AppConnect.GrantedAccess {
+        AppConnect.GrantedAccess(keys: keys, receivesMessages: receivesMessages)
+    }
+}
+
+/// What a connection sheet is told from: one read of the identity, the
+/// intents that hold the app on it, and the keys that read gives the app
+/// that no intent names. The sheet's access and what is left of its keys'
+/// budgets both come from one basis, so they tell of the same read. A newer
+/// read is another basis: funding read for an earlier one is never shown
+/// beside it (`ConnectionDetails.attaching(_:for:)`).
+struct ConnectionBasis: Equatable {
+    let snapshot: AppConnect.IdentitySnapshot
+    /// The open intents of the snapshot's identity that hold the app.
+    let intents: [AppConnect.ConnectionIntent]
+    /// The ids of the intents the app's row follows, the projection's
+    /// `followedIntents`; empty when only `unrecorded` keys show the app.
+    let followedIntentIds: Set<UUID>
+    /// Keys on `snapshot` the projection gives the app that no intent names.
+    let unrecorded: [AppConnect.PlatformKey]
+    /// The groups of `unrecorded` keys that may have administrators.
+    let administeredGroups: Set<Data>
+
+    /// What the app was given; `nil` when no auth key gives access.
+    var access: ConnectionAccess? {
+        ConnectionAccess(
+            intents: intents, snapshot: snapshot, unrecorded: unrecorded, administeredGroups: administeredGroups)
+    }
+
+    /// The basis the sheet of a row with `status` is told from. An Expired
+    /// row's status is told from the connection it follows, so its sheet
+    /// shows only that connection: its intents among `intents`, or the
+    /// `unrecorded` keys when none of them is held; access, expiry and
+    /// funding lines alike, not those of another install still held. Any
+    /// other row's sheet shows this whole basis.
+    func shown(as status: ConnectionStatus) -> ConnectionBasis {
+        guard status == .expired else { return self }
+        let followed = intents.filter { followedIntentIds.contains($0.id) }
+        return ConnectionBasis(
+            snapshot: snapshot, intents: followed, followedIntentIds: followedIntentIds,
+            unrecorded: followed.isEmpty ? unrecorded : [],
+            administeredGroups: followed.isEmpty ? administeredGroups : [])
+    }
+
+    /// The keys whose remaining budgets the sheet reads, by id.
+    var fundedKeyIds: [UInt32] {
+        KeyFunding.keyIds(of: intents, snapshot: snapshot, unrecorded: unrecorded)
+    }
+
+    /// The funding lines of `fundedKeyIds` with what `remaining` (by key id)
+    /// says is left. What is left is read after `snapshot`: when it is above
+    /// a total of this read, a limits update came between them, and the read
+    /// fails rather than show it against totals it outgrew; the next read of
+    /// the identity brings them together.
+    func funding(remaining: [UInt32: UInt64?]) -> ConnectionFundingRead {
+        let lines = KeyFunding.of(intents: intents, snapshot: snapshot, unrecorded: unrecorded, remaining: remaining)
+        return KeyFunding.agree(lines) ? .read(lines) : .failed
+    }
+}
+
+/// A connection as its sheet shows it: the app, the identity it is
+/// connected on, and what it was given.
+struct ConnectionDetails: Equatable {
+    let appId: String
+    let identityId: String?
+    let username: String?
+    /// What `access` and the funding lines are told from; `nil` without a
+    /// read of the identity, or when the connection is not the active
+    /// identity's.
+    let basis: ConnectionBasis?
+    /// What the app was given, from `basis`. Without one nothing is known to
+    /// be the app's access: the sheet shows none rather than what the
+    /// intents submitted, which may never have landed.
+    let access: ConnectionAccess?
+    /// When the connection was made: the latest of its approvals, so a
+    /// renewal from a new code counts as the connection it made.
+    let connectedAt: Date?
+    /// What is left of each key's budget, read from Platform for `basis`;
+    /// `nil` when it was not read or could not be (`fundingReadFailed`).
+    private(set) var keyFunding: [KeyFunding]?
+    private(set) var fundingReadFailed = false
+
+    init(
+        appId: String, identityId: String?, username: String?, basis: ConnectionBasis? = nil, connectedAt: Date? = nil
+    ) {
+        self.appId = appId
+        self.identityId = identityId
+        self.username = username
+        self.basis = basis
+        access = basis?.access
+        self.connectedAt = connectedAt
+    }
+
+    /// The details of a connection that ended, with what its intents
+    /// recorded (`ConnectionAccess(recorded:)`): no read of the identity
+    /// tells of it, so it has no basis and no funding.
+    init(appId: String, identityId: String?, username: String?, recorded access: ConnectionAccess?) {
+        self.appId = appId
+        self.identityId = identityId
+        self.username = username
+        basis = nil
+        self.access = access
+        connectedAt = nil
+    }
+
+    /// What the sheet of a row with `status` shows as the app's access:
+    /// that of `basis.shown(as: status)`, or `access` without a basis.
+    func access(shownAs status: ConnectionStatus) -> ConnectionAccess? {
+        guard let basis else { return access }
+        return basis.shown(as: status).access
+    }
+
+    /// These details with `read`, the funding read for `basis`; `nil` when
+    /// these details are not told from `basis`: what is left of the keys of
+    /// another read is not shown beside the access of this one.
+    func attaching(_ read: ConnectionFundingRead, for basis: ConnectionBasis) -> ConnectionDetails? {
+        guard basis == self.basis else { return nil }
+        var details = self
+        switch read {
+        case .notRead:
+            details.keyFunding = nil
+            details.fundingReadFailed = false
+        case .read(let lines):
+            details.keyFunding = lines
+            details.fundingReadFailed = false
+        case .failed:
+            details.keyFunding = nil
+            details.fundingReadFailed = true
+        }
+        return details
+    }
+
+    /// These details with the funding `previous` shows, when both are told
+    /// from the same basis; otherwise as they are, with none.
+    func keepingFunding(of previous: ConnectionDetails) -> ConnectionDetails {
+        guard previous.basis == basis else { return self }
+        var details = self
+        details.keyFunding = previous.keyFunding
+        details.fundingReadFailed = previous.fundingReadFailed
+        return details
+    }
+}
+
+/// What is left of a connection's keys' budgets, read apart from its details
+/// so the sheet does not wait on it.
+enum ConnectionFundingRead: Equatable {
+    /// Nothing to read: no landed key, or not the active identity's basis.
+    case notRead
+    case read([KeyFunding])
+    /// The read failed, or what it said is above the totals the identity
+    /// read gave (a limits update between the two).
+    case failed
+}
+
+/// One of a connection's keys, with what is left of its budget.
+struct KeyFunding: Equatable {
+    /// The key is bound to the DashPay profile, not to the app's data.
+    let isProfileKey: Bool
+    /// What the key may spend over its life; `nil` with no limit.
+    let totalBudget: UInt64?
+    /// What is left of it; `nil` with no limit, or when Platform did not say.
+    let remaining: UInt64?
+
+    /// The auth keys of `intents` that are on `snapshot` and not disabled,
+    /// then the `unrecorded` keys the projection gives the app, in their
+    /// order, each with its budget as Platform holds it now and what
+    /// `remaining` (by key id) says is left. A key is listed once.
+    static func of(
+        intents: [AppConnect.ConnectionIntent], snapshot: AppConnect.IdentitySnapshot,
+        unrecorded: [AppConnect.PlatformKey] = [], remaining: [UInt32: UInt64?]
+    ) -> [KeyFunding] {
+        landedKeys(of: intents, snapshot: snapshot, unrecorded: unrecorded).map { key in
+            KeyFunding(
+                isProfileKey: key.bound.map(AppConnect.isProfileBound) ?? false,
+                totalBudget: key.totalBudget,
+                remaining: remaining[key.id] ?? nil)
+        }
+    }
+
+    /// Whether `lines` hold together: nothing left above its key's total.
+    /// The totals come from an identity read and what is left from a later
+    /// one, so a limits update between them makes them disagree.
+    static func agree(_ lines: [KeyFunding]) -> Bool {
+        lines.allSatisfy { line in
+            guard let total = line.totalBudget, let remaining = line.remaining else { return true }
+            return remaining <= total
+        }
+    }
+
+    /// The ids `of(intents:snapshot:unrecorded:remaining:)` lists, whose
+    /// remaining budgets are read from Platform.
+    static func keyIds(
+        of intents: [AppConnect.ConnectionIntent], snapshot: AppConnect.IdentitySnapshot,
+        unrecorded: [AppConnect.PlatformKey] = []
+    ) -> [UInt32] {
+        landedKeys(of: intents, snapshot: snapshot, unrecorded: unrecorded).map(\.id).sorted()
+    }
+
+    private static func landedKeys(
+        of intents: [AppConnect.ConnectionIntent], snapshot: AppConnect.IdentitySnapshot,
+        unrecorded: [AppConnect.PlatformKey]
+    ) -> [AppConnect.PlatformKey] {
+        var listed = Set<UInt32>()
+        let recorded = intents.flatMap(\.authKeys).compactMap { AppConnect.accessKey(of: $0, in: snapshot) }
+        let placed = unrecorded.compactMap { AppConnect.placedKey(withId: $0.id, in: snapshot) }
+        return (recorded + placed).filter { listed.insert($0.id).inserted }
+    }
 }
 
 /// A pending request derived from a scanned login QR code.
@@ -268,13 +540,11 @@ extension ConnectionRequest {
     /// so this convenience lives in an extension.
     init(loginRequest: DashKeyRequest) {
         let contractId = loginRequest.contractId.toBase58String()
-        let branding = DashConnectFallbackAppMetadata.resolve(
-            contractId: contractId,
-            unauthenticatedLabel: loginRequest.label
-        )
+        // The label the request gives: the wallet knows no app's name or
+        // website of its own.
         self.init(
-            appLabel: branding.name,
-            appUrl: branding.url,
+            appLabel: loginRequest.label.trimmingCharacters(in: .whitespacesAndNewlines),
+            appUrl: "",
             appContractId: contractId,
             walletUsername: nil,
             walletIdentityId: nil,

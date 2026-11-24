@@ -108,7 +108,6 @@ extension BuyDashViewController {
                 guard let paymentMethod = buyDashModel.activePaymentMethod else { return }
 
                 let vc = ConfirmOrderController(paymentMethod: paymentMethod, plainAmount: UInt64(buyDashModel.amount.plainAmount))
-                vc.hidesBottomBarWhenPushed = true
                 navigationController?.pushViewController(vc, animated: true)
             default:
                 showError(error)

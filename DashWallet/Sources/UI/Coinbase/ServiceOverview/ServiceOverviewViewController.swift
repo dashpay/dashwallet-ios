@@ -113,7 +113,6 @@ extension ServiceOverviewViewController: ASWebAuthenticationPresentationContextP
 extension ServiceOverviewViewController: ServiceOverviewScreenModelDelegate {
     func didSignIn() {
         let vc = IntegrationViewController.controller(model: CoinbaseEntryPointModel())
-        vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
     }
 

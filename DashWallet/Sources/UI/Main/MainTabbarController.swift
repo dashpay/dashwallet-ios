@@ -140,7 +140,6 @@ class MainTabbarController: UITabBarController {
     private var moreTabIndex: Int?
 
     #if DASHPAY
-    weak var exploreNavigationController: ExploreViewController?
     private var pendingDashPayTabReconfiguration = false
     #endif
 
@@ -304,9 +303,9 @@ extension MainTabbarController {
         #endif
 
         // Payment. A real tab, not a modal: the landing is where the send /
-        // receive / transfer flows start, and the tab bar stays visible on it.
-        // The screens it pushes set `hidesBottomBarWhenPushed`, so the bar is
-        // gone from the first step that asks for an amount.
+        // receive / transfer flows start. The landing hides the tab bar while
+        // it is up, and `BaseNavigationController` hides it on every screen
+        // pushed above the landing.
         let paymentImage = Self.makePaymentTabImage()
         item = MainTabbarTabs.payment.tabBarItem(image: paymentImage, selectedImage: paymentImage)
 
@@ -564,8 +563,8 @@ extension MainTabbarController {
             return
         }
 
-        let controller = DashConnectHostingController(navigationController: menuNav, uri: uri)
-        controller.hidesBottomBarWhenPushed = true
+        let controller = DashConnectHostingController(
+            navigationController: menuNav, uri: uri, dashPayModel: homeModel?.dashPayModel)
         menuNav.pushViewController(controller, animated: true)
     }
 
@@ -623,28 +622,22 @@ extension MainTabbarController: DWWipeDelegate {
     }
 }
 
-// MARK: PaymentsViewControllerDelegate
+// MARK: - PaymentsViewControllerState
 
-extension MainTabbarController: PaymentsViewControllerDelegate {
-    func paymentsViewControllerDidFinishPayment(_ controller: PaymentsViewController, txidWire: Data) {
-        closePayments { [weak self] in
-            self?.presentTxDetails(for: txidWire)
-        }
-    }
+/// Which payments page a shortcut or Home action opens.
+@objc(DWPaymentsViewControllerIndex)
+enum PaymentsViewControllerState: Int {
+    @objc(DWPaymentsViewControllerIndex_None)
+    case none = -1
 
-    private func presentTxDetails(for txidWire: Data) {
-        // Resolves the txid to the SDK-backed row (or the recent-send
-        // registry entry) — see TxDetailModel.init(txidWire:).
-        let model = TxDetailModel(txidWire: txidWire)
-        let vc = SuccessTxDetailViewController(model: model)
-        vc.modalPresentationStyle = .fullScreen
-        vc.delegate = self
-        selectedViewController?.topController().present(vc, animated: true)
-    }
+    @objc(DWPaymentsViewControllerIndex_Receive)
+    case receive = 0
 
-    func paymentsViewControllerDidCancel(_ controller: PaymentsViewController) {
-        closePayments()
-    }
+    @objc(DWPaymentsViewControllerIndex_Pay)
+    case pay = 1
+
+    @objc(DWPaymentsViewControllerIndex_EnterAddress)
+    case enterAddress = 2
 }
 
 // MARK: HomeViewControllerDelegate
@@ -782,12 +775,6 @@ extension MainTabbarController: UITabBarControllerDelegate {
 // MARK: - EmptyController
 
 private final class EmptyController: UIViewController { }
-
-// MARK: - MainTabbarController + SuccessTxDetailViewControllerDelegate
-
-extension MainTabbarController: SuccessTxDetailViewControllerDelegate {
-    func txDetailViewControllerDidFinish(controller: SuccessTxDetailViewController) { }
-}
 
 // MARK: - Exchange Rates
 
