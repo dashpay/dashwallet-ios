@@ -419,6 +419,21 @@ final class ConfirmViewModelTests: XCTestCase {
         XCTAssertTrue(vm.warnings.contains("Table 4"), "\(vm.warnings)")
     }
 
+    /// An unsigned link never names an identity: without a username the To row shows the Identity ID alone, on
+    /// every route that pays one, and the link's message says where it came from.
+    func testAnIdentityLinksLabelNeverNamesTheRecipientAndItsMessageIsMarkedAsTheLinks() async {
+        let id = "7Zp3MqIdentityIDxxxxxxxxxxxxxxxxxxxxxxoVyBn"
+        let link = Destination(type: .identityID, text: id, label: "Your identity", message: "Top up mine")
+        let recipient = IdentityRecipient(id: id, username: nil, isOwnCurrentIdentity: false)
+        for route in [SendRoute.platformToIdentity, .shieldedToIdentity, .identityToIdentity, .coreToIdentity] {
+            let vm = await readyVM(route: route, destination: link, recipient: recipient)
+            XCTAssertFalse(vm.toText.contains("Your identity"), "\(route): \(vm.toText)")
+            XCTAssertTrue(vm.toText.hasPrefix("7Zp3Mq"), "\(route): \(vm.toText)")
+            XCTAssertTrue(vm.warnings.contains("Message in the link: Top up mine"), "\(route): \(vm.warnings)")
+            XCTAssertFalse(vm.warnings.contains("Top up mine"), "\(route): \(vm.warnings)")
+        }
+    }
+
     func testAVerifiedPaymentRequestShowsTheMerchantWithTheLock() async {
         let request = Destination(type: .coreAddress, text: coreDestination.text, label: "Merchant",
                                   message: "Order 7", paymentRequestURL: URL(string: "https://merchant.example/r/1"),
