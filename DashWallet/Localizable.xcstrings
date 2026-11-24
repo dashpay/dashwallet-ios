@@ -150929,6 +150929,9 @@
         }
       }
     },
+    "Couldn't confirm the transfer finished. Check it in the original transaction's details." : {
+      "comment" : "A Finish retry found the lock reported consumed without proof that the transfer finished"
+    },
     "Couldn’t Delete All Wallets" : {
       "localizations" : {
         "ar" : {
@@ -219847,6 +219850,9 @@
           }
         }
       }
+    },
+    "Finish" : {
+      "comment" : "External send"
     },
     "Finish now" : {
       "comment" : "InternalTransfer recovery",
@@ -550719,6 +550725,9 @@
         }
       }
     },
+    "The transfer could not be finished. Try again, or finish it later from the transaction details." : {
+      "comment" : "External send"
+    },
     "The transfer could take up to 10 minutes" : {
       "comment" : "Payments",
       "localizations" : {
@@ -611499,6 +611508,9 @@
           }
         }
       }
+    },
+    "Transfer not finished" : {
+      "comment" : "External send"
     },
     "Transfer Out" : {
       "localizations" : {
@@ -701929,6 +701941,9 @@
           }
         }
       }
+    },
+    "Your Dash is held for this transfer. Finish it now, or later from the transaction details." : {
+      "comment" : "External send"
     },
     "Your Dash is safe" : {
       "comment" : "InternalTransfer recovery",

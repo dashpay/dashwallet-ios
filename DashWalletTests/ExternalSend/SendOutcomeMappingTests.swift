@@ -357,4 +357,63 @@ final class SendOutcomeMappingTests: XCTestCase {
         XCTAssertEqual(reason.category, "belowMinimum")
         XCTAssertFalse(reason.localizedMessage.isEmpty)
     }
+
+    // MARK: - The outcome log line (SendDecision)
+
+    func testTheLineOfATypedErrorNamesTheRouteTheTypeTheCaseAndTheOutcome() {
+        let line = SendDecision.decided(by: CoordinatorError.noWallet).logLine(route: .shieldedToCore, isMax: false)
+        XCTAssertEqual(
+            line,
+            "External send outcome: notSent(failed) route=shieldedToCore max=false "
+                + "cause=ShieldedTransferCoordinator.CoordinatorError.noWallet")
+    }
+
+    func testTheLineOfAnUntypedNSErrorNamesItsDomainAndCodeOnly() {
+        let decision = SendDecision.decided(by: walletSend(.broadcastUnknown))
+        let line = decision.logLine(route: .coreToCore, isMax: true)
+        XCTAssertEqual(
+            line,
+            "External send outcome: inFlight route=coreToCore max=true "
+                + "cause=NSError(\(Self.walletSendDomain):\(WalletSendCode.broadcastUnknown.rawValue))")
+        XCTAssertFalse(line.contains(Self.rawSdkText), line)
+    }
+
+    func testTheLineOfACaseWithAStringPayloadLeavesThePayloadOut() {
+        let error = CoordinatorError.transferFailed(PlatformWalletError.walletOperation(Self.rawSdkText))
+        let line = SendDecision.decided(by: error).logLine(route: .shieldedToCore, isMax: false)
+        XCTAssertEqual(
+            line,
+            "External send outcome: inFlight route=shieldedToCore max=false "
+                + "cause=ShieldedTransferCoordinator.CoordinatorError.transferFailed("
+                + "PlatformWalletError.walletOperation)")
+        XCTAssertFalse(line.contains(Self.rawSdkText), line)
+        XCTAssertEqual(
+            SendDecision.errorName(SenderError.transactionRejected(txid: "t", reason: Self.rawSdkText)),
+            "SwiftDashSDKTransactionSender.SendError.transactionRejected")
+        XCTAssertEqual(SendDecision.errorName(MinimumAmountRefusal(minimumCredits: 123_456)), "MinimumAmountRefusal")
+    }
+
+    func testTheLineOfAHandedOverFailureIsInFlightAndSaysWhy() {
+        // Proven unsent on its own, but the seam handed the spend over.
+        let decision = SendDecision.decided(by: CoordinatorError.authCancelled, after: .handedOver)
+        guard case .inFlight = decision.outcome else { return XCTFail("\(decision.outcome)") }
+        XCTAssertEqual(
+            decision.logLine(route: .platformToCore, isMax: false),
+            "External send outcome: inFlight route=platformToCore max=false "
+                + "cause=ShieldedTransferCoordinator.CoordinatorError.authCancelled after=handedOver")
+    }
+
+    /// The identity top-up from Platform credits plans its inputs before any credits move.
+    func testATopUpPlanningRefusalIsNotSentAndNamedWithoutItsFigures() {
+        let error = PlatformPaymentIdentityFundingPolicy.PlanningError.insufficient(required: 7_654_321, available: 12)
+        guard case .failed? = assertNotSent(error) else { return XCTFail("expected reason .failed") }
+        XCTAssertEqual(
+            SendDecision.errorName(error), "PlatformPaymentIdentityFundingPolicy.PlanningError.insufficient")
+    }
+
+    func testTheLineOfAnOutcomeWithoutAnErrorHasNoCause() {
+        XCTAssertEqual(
+            SendDecision(.sent).logLine(route: .identityToIdentity, isMax: false),
+            "External send outcome: sent route=identityToIdentity max=false")
+    }
 }

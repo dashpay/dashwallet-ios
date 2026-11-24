@@ -44,7 +44,7 @@ where they disagree, ADR-0001 wins.
 | [0037](0037-cast-quick-voting-sequentially-under-one-authentication.md) | Cast Quick voting sequentially under one authentication | ui | Proposed | |
 | [0038](0038-let-only-the-voting-store-write-the-remembered-node-choice.md) | Let only the voting store write the remembered node choice | ui | Proposed | |
 | [0039](0039-estimate-the-fee-on-send-and-recompute-it-on-confirm.md) | Estimate the fee on Send and recompute it on Confirm | payments | Superseded | [0043](0043-bind-the-fee-where-the-sdk-can-and-mark-the-rest-as-an-estimate.md) |
-| [0040](0040-report-three-send-outcomes-and-retry-only-when-nothing-left-the-source.md) | Report three send outcomes and retry only when nothing left the source | payments | Proposed | |
+| [0040](0040-report-three-send-outcomes-and-retry-only-when-nothing-left-the-source.md) | Report send outcomes and retry only when nothing left the source | payments | Proposed | |
 | [0041](0041-keep-identity-to-shielded-off-in-this-release.md) | Keep Identity to Shielded off in this release | payments | Proposed | |
 | [0042](0042-report-moved-to-platform-when-a-shielded-to-identity-top-up-fails-after-the-unshield.md) | Report movedToPlatform when a Shielded to Identity top-up fails after the unshield | payments | Superseded | [0044](0044-top-up-an-identity-from-shielded-in-one-step.md) |
 | [0043](0043-bind-the-fee-where-the-sdk-can-and-mark-the-rest-as-an-estimate.md) | Bind the fee where the SDK can and mark the rest as an estimate | payments | Proposed | |
