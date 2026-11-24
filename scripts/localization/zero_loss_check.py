@@ -293,6 +293,17 @@ def leaf_values(node):
     return []
 
 
+def translation_structure(node, unit=False):
+    """A localization as it reads on a phone: every variation, substitution and text in its place, without
+    the workflow field `state` of a stringUnit. Compared whole, so a text moved to another plural
+    category is a change."""
+    if isinstance(node, dict):
+        return {k: translation_structure(v, k == "stringUnit") for k, v in node.items() if not (unit and k == "state")}
+    if isinstance(node, list):
+        return [translation_structure(v) for v in node]
+    return node
+
+
 # --- the checks -----------------------------------------------------------------------------
 
 def compile_catalog(catalog_path, out_dir):
@@ -437,7 +448,7 @@ def unused_check(base_strings, cur_strings):
         checked += 1
         held = entry.get("localizations", {})
         lost = [loc for loc, want in sorted(base_strings[key]["localizations"].items())
-                if loc not in held or leaf_values(held[loc]) != leaf_values(want)]
+                if loc not in held or translation_structure(held[loc]) != translation_structure(want)]
         lost_entries += bool(lost)
         findings += [("unused", (key, loc), "FAIL unused key=%s locale=%s" % (dump(key), loc)) for loc in lost]
     return checked, lost_entries, findings
@@ -460,7 +471,7 @@ def unmapped_check(base_strings, cur_strings, compared):
         checked += 1
         held = entry.get("localizations", {})
         lost = [loc for loc, want in sorted(want_all.items())
-                if loc not in held or leaf_values(held[loc]) != leaf_values(want)]
+                if loc not in held or translation_structure(held[loc]) != translation_structure(want)]
         lost_entries += bool(lost)
         findings += [("unmapped", (key, loc), "FAIL unmapped key=%s locale=%s" % (dump(key), loc)) for loc in lost]
     return checked, lost_entries, findings

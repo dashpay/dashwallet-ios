@@ -929,5 +929,54 @@ class OfflineTests(unittest.TestCase):
         self.assertNotRegex(source, r"\btx (push|pull)\b")
 
 
+class KeptTranslationStructureTests(unittest.TestCase):
+    """UU3: a kept translation is compared by structure (which category holds which text), ignoring state."""
+
+    @staticmethod
+    def plural(one, few, other, state="translated"):
+        unit = lambda v: {"stringUnit": {"state": state, "value": v}}
+        return {"variations": {"plural": {"one": unit(one), "few": unit(few), "other": unit(other)}}}
+
+    def entries(self, held, state=None):
+        base_sl = self.plural("%d trgovec", "%d trgovci", "%d trgovcev")
+        del base_sl["variations"]["plural"]["few"]
+        base = {"%d merchant(s)": {"localizations": {"sl": base_sl}}}
+        cur = {"%d merchant(s)": {"localizations": {"sl": held}}}
+        if state:
+            cur["%d merchant(s)"]["extractionState"] = state
+        return base, cur
+
+    def moved(self):
+        # The `one` text renamed to `few` (and `few` dropped): the values in key order stay the same.
+        held = self.plural("%d trgovec", "%d trgovci", "%d trgovcev")
+        forms = held["variations"]["plural"]
+        forms["few"] = forms.pop("one")
+        return held
+
+    def test_unused_check_finds_a_text_moved_between_plural_categories(self):
+        import zero_loss_check
+        base, cur = self.entries(self.moved(), "stale")
+        _, lost, findings = zero_loss_check.unused_check(base, cur)
+        self.assertEqual(lost, 1)
+        self.assertEqual([f[1] for f in findings], [("%d merchant(s)", "sl")])
+
+    def test_unmapped_check_finds_a_text_moved_between_plural_categories(self):
+        import zero_loss_check
+        base, cur = self.entries(self.moved(), "manual")
+        _, lost, findings = zero_loss_check.unmapped_check(base, cur, set())
+        self.assertEqual(lost, 1)
+        self.assertEqual([f[1] for f in findings], [("%d merchant(s)", "sl")])
+
+    def test_a_changed_translation_state_alone_is_no_loss(self):
+        import zero_loss_check
+        held = self.plural("%d trgovec", "%d trgovci", "%d trgovcev", state="needs_review")
+        del held["variations"]["plural"]["few"]
+        for state, check in (("stale", lambda b, c: zero_loss_check.unused_check(b, c)),
+                             ("manual", lambda b, c: zero_loss_check.unmapped_check(b, c, set()))):
+            with self.subTest(state=state):
+                base, cur = self.entries(held, state)
+                self.assertEqual(check(base, cur)[1:], (0, []))
+
+
 if __name__ == "__main__":
     unittest.main()
