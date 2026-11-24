@@ -1,5 +1,5 @@
 {
-  "baseline": "43e07f371cdb54c581ee5c9e3367bfda00864241",
+  "baseline": "f6e507b5bcf2a9cd3aacdcec7d6d0cf9763e7826",
   "keys": {
     " ": [
       " "
@@ -6270,9 +6270,6 @@
     ],
     "This masternode pays an operator reward, and the update replaces its payout address on-chain — confirm the address the operator reward should keep paying.": [
       "This masternode pays an operator reward, and the update replaces its payout address on-chain — confirm the address the operator reward should keep paying."
-    ],
-    "This masternode uses extended (v3) network info, which this wallet can't re-assert yet. Unban it with dash-cli instead.": [
-      "This masternode uses extended (v3) network info, which this wallet can't re-assert yet. Unban it with dash-cli instead."
     ],
     "This merchant is currently unavailable.": [
       "This merchant is currently unavailable."
