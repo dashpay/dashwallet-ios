@@ -80,7 +80,7 @@ final class DashConnectDataSourceTests: XCTestCase {
             try await dataSource.handleStateTransition(.init(
                 transitionBytes: Data([0x01, 0x02, 0x03, 0x04]),
                 network: .testnet
-            ))
+            ), refusesTokenPurchase: false)
         }) { error in
             XCTAssertEqual(error as? DashConnectMockError, .stateTransitionNotSupported)
         }
@@ -200,7 +200,7 @@ final class DashConnectDataSourceTests: XCTestCase {
     }
 }
 
-// MARK: - Branding is keyed on the contract id, not the spoofable label
+// MARK: - The name shown is the label the request gives, with no website
 
 extension DashConnectDataSourceTests {
     /// Yappr's data contract on testnet, taken from a real login QR.
@@ -220,35 +220,18 @@ extension DashConnectDataSourceTests {
         )
     }
 
-    /// A QR may claim any label it likes. Branding must follow the contract id, otherwise
-    /// an attacker's contract renders with Yappr's name and website.
-    func testBrandingIgnoresSpoofedLabelOnUnknownContract() throws {
-        let request = try makeLoginRequest(
-            contractId: Data(repeating: 0x11, count: 32),
-            label: "Login to Yappr"
-        )
-
-        let connectionRequest = ConnectionRequest(loginRequest: request)
-
-        XCTAssertEqual(connectionRequest.appLabel, "Login to Yappr")
-        XCTAssertEqual(
-            connectionRequest.appUrl,
-            "",
-            "An unknown contract must not borrow a known app's website."
-        )
-    }
-
-    /// The real Yappr contract resolves to its branding whatever the label says.
-    func testBrandingResolvesKnownContractRegardlessOfLabel() throws {
+    /// The wallet knows no app of its own: even Yappr's contract shows the
+    /// label its request gives, with no website.
+    func testEveryContractShowsTheLabelItsRequestGives() throws {
         let request = try makeLoginRequest(
             contractId: Self.yapprContractId,
-            label: "anything at all"
+            label: " anything at all "
         )
 
         let connectionRequest = ConnectionRequest(loginRequest: request)
 
         XCTAssertEqual(connectionRequest.appContractId, "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F")
-        XCTAssertEqual(connectionRequest.appLabel, "Yappr")
-        XCTAssertEqual(connectionRequest.appUrl, "yap.pr")
+        XCTAssertEqual(connectionRequest.appLabel, "anything at all")
+        XCTAssertEqual(connectionRequest.appUrl, "")
     }
 }

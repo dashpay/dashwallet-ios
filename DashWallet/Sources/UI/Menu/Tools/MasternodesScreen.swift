@@ -225,7 +225,6 @@ struct MasternodesScreen: View {
     /// `UIHostingController`s, each drawing its own `DashUIKit.NavigationBar`.
     static func hostingController(popFrom navigation: UINavigationController) -> UIViewController {
         let hosting = UIHostingController(rootView: MasternodesScreen(vc: navigation))
-        hosting.hidesBottomBarWhenPushed = true
         return hosting
     }
 
@@ -244,8 +243,6 @@ struct MasternodesScreen: View {
                     Text(NSLocalizedString("Masternodes", comment: "Masternodes"))
                         .dashFont(.subheadMedium)
                         .foregroundColor(.dash.primaryText)
-                        .lineLimit(1)
-                        .padding(.horizontal, 60)
                 },
                 trailing: {
                     DashUIKit.NavigationBarElement.plus.button {
@@ -509,21 +506,22 @@ final class MasternodeDetailViewModel: ObservableObject {
         balanceLoading = true
         balanceError = nil
         do {
-            let credits = try await Task.detached(priority: .userInitiated) {
-                try sdk.identities.getBalance(id: identityId)
+            let balance = try await Task.detached(priority: .userInitiated) {
+                try MasternodeClaimableBalance.fetch(sdk: sdk, identityId: identityId)
             }.value
-            claimableCredits = credits
-        } catch {
-            claimableCredits = nil
-            // Distinguish "no identity registered" from a transport failure
-            // so the copy isn't misleading on a transient network error.
-            let message = error.localizedDescription.lowercased()
-            if message.contains("not found") || message.contains("no identity")
-                || message.contains("does not exist") {
+            switch balance {
+            case .credits(let credits):
+                DWLogger.log("🧱 MASTERNODE :: claimable balance (wallet): credits")
+                claimableCredits = credits
+            case .noIdentity:
+                DWLogger.log("🧱 MASTERNODE :: claimable balance (wallet): no Platform identity")
+                claimableCredits = nil
                 balanceError = NSLocalizedString("This masternode has no Platform identity yet.", comment: "Masternodes")
-            } else {
-                balanceError = NSLocalizedString("Couldn't fetch the balance (network error). Try Refresh.", comment: "Masternodes")
             }
+        } catch {
+            DWLogger.log("🧱 MASTERNODE :: claimable balance (wallet): read failed with \(type(of: error))")
+            claimableCredits = nil
+            balanceError = NSLocalizedString("Couldn't fetch the balance (network error). Try Refresh.", comment: "Masternodes")
         }
         balanceLoading = false
     }
@@ -578,8 +576,6 @@ struct MasternodeDetailScreen: View {
                     Text(masternode.displayTitle)
                         .dashFont(.subheadMedium)
                         .foregroundColor(.dash.primaryText)
-                        .lineLimit(1)
-                        .padding(.horizontal, 60)
                 })
 
             list

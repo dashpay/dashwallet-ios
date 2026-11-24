@@ -100,6 +100,25 @@ final class ShieldedResumeRecipientTests: XCTestCase {
         XCTAssertEqual(resolve(recorded: nil, caller: other), .pay(other, source: .caller))
     }
 
+    /// Only a resume that finished on Platform and paid the own address for
+    /// want of a record is reported as funds added to the Shielded balance.
+    func testOnlyAFinishedOwnAddressResumeWithNoRecordIsReportedAsAddedToTheBalance() {
+        typealias Coordinator = ShieldedTransferCoordinator
+        XCTAssertTrue(Coordinator.resumePaidOwnBalanceWithoutRecord(phase: .success, source: .ownLegacy))
+        for source: Resolver.Source? in [.recorded, .marker, .caller, nil] {
+            XCTAssertFalse(
+                Coordinator.resumePaidOwnBalanceWithoutRecord(phase: .success, source: source),
+                "\(String(describing: source))")
+        }
+        let unfinished: [Coordinator.Phase] = [
+            .idle, .signing, .locking, .proving, .broadcasting, .submittedUnconfirmed, .failed("x"),
+        ]
+        for phase in unfinished {
+            XCTAssertFalse(
+                Coordinator.resumePaidOwnBalanceWithoutRecord(phase: phase, source: .ownLegacy), "\(phase)")
+        }
+    }
+
     func testLegacyRowNoDrainBuiltNeverReadsTheMarker() {
         var reads = 0
         _ = Resolver.resolve(

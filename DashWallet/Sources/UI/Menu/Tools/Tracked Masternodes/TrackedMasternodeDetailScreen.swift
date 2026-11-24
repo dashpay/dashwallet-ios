@@ -98,19 +98,22 @@ final class TrackedMasternodeDetailViewModel: ObservableObject {
         balanceLoading = true
         balanceError = nil
         do {
-            let credits = try await Task.detached(priority: .userInitiated) {
-                try sdk.identities.getBalance(id: identityId)
+            let balance = try await Task.detached(priority: .userInitiated) {
+                try MasternodeClaimableBalance.fetch(sdk: sdk, identityId: identityId)
             }.value
-            claimableCredits = credits
-        } catch {
-            claimableCredits = nil
-            let message = error.localizedDescription.lowercased()
-            if message.contains("not found") || message.contains("no identity")
-                || message.contains("does not exist") {
+            switch balance {
+            case .credits(let credits):
+                DWLogger.log("🧱 MASTERNODE :: claimable balance (tracked): credits")
+                claimableCredits = credits
+            case .noIdentity:
+                DWLogger.log("🧱 MASTERNODE :: claimable balance (tracked): no Platform identity")
+                claimableCredits = nil
                 balanceError = NSLocalizedString("This masternode has no Platform identity yet.", comment: "Masternodes")
-            } else {
-                balanceError = NSLocalizedString("Couldn't fetch the balance (network error). Try Refresh.", comment: "Masternodes")
             }
+        } catch {
+            DWLogger.log("🧱 MASTERNODE :: claimable balance (tracked): read failed with \(type(of: error))")
+            claimableCredits = nil
+            balanceError = NSLocalizedString("Couldn't fetch the balance (network error). Try Refresh.", comment: "Masternodes")
         }
         balanceLoading = false
     }
@@ -291,8 +294,6 @@ struct TrackedMasternodeDetailScreen: View {
                     Text(viewModel.record.label ?? viewModel.record.displayTitle)
                         .dashFont(.subheadMedium)
                         .foregroundColor(.dash.primaryText)
-                        .lineLimit(1)
-                        .padding(.horizontal, 60)
                 })
 
             list

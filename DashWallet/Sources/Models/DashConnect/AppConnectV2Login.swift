@@ -10,9 +10,8 @@ import SwiftDashSDK
 extension AppConnect {
     // MARK: Limits (profile wallet rule 5)
 
-    /// The most budget the wallet grants a key the app proposes a budget
-    /// for. A binding that asks for none gets none, and the sheet says the
-    /// key can spend without a limit.
+    /// The most a connection's funding limit can be; every key's budget comes
+    /// out of it (`AppConnect.keyBudgets`).
     static let v2BudgetCapCredits: UInt64 = 5 * PlatformCreditsFormatter.creditsPerDash
     /// The longest a key the wallet grants may live.
     static let v2LifetimeCap: TimeInterval = 365 * 24 * 60 * 60
@@ -61,7 +60,8 @@ extension AppConnect {
         /// derivation, so the key does not depend on what else is granted.
         let bindingIndex: Int
         let binding: AppConnectRequest.AuthBinding
-        /// Set exactly when the binding asked for a budget.
+        /// Set when the binding asked for a budget, and on every key once the
+        /// user's terms are applied (`AppConnect.applying(_:to:now:)`).
         let totalBudget: UInt64?
         /// Block time in milliseconds. Always set.
         let expiresAt: UInt64
@@ -106,24 +106,122 @@ extension AppConnect {
         }
     }
 
+    /// What an approval gives an app, as the approval sheet and the
+    /// connection sheet list it.
+    struct GrantedAccess: Equatable {
+        struct Key: Equatable {
+            let bound: StoredBound
+            let isCritical: Bool
+            /// `nil` for a key with no spending limit.
+            let totalBudget: UInt64?
+            /// Milliseconds since the epoch.
+            let expiresAt: UInt64
+            /// The key's group has administrators who can add contracts to it.
+            let isAdministered: Bool
+        }
+
+        let keys: [Key]
+        /// The response carries an encryption key for the app.
+        let receivesMessages: Bool
+
+        init(keys: [Key], receivesMessages: Bool) {
+            self.keys = keys
+            self.receivesMessages = receivesMessages
+        }
+
+        /// The auth keys of `plan`, with their terms. `receivesMessages`: the
+        /// response carries an encryption key, which a plan that asks for one
+        /// may still leave out.
+        init(plan: GrantPlan, receivesMessages: Bool) {
+            self.init(
+                keys: plan.auth.map {
+                    Key(bound: $0.storedBound, isCritical: $0.securityLevel == .critical, totalBudget: $0.totalBudget,
+                        expiresAt: $0.expiresAt, isAdministered: plan.administeredGroupIds.contains($0.binding.id))
+                },
+                receivesMessages: receivesMessages)
+        }
+
+        /// What `intents` gave, in their order: the auth keys each one adds,
+        /// with the terms it submitted them with, a key two intents name
+        /// once. An intent always names a bound and an expiry for an auth
+        /// key; one without is not listed.
+        init(intents: [ConnectionIntent]) {
+            self.init(intents: intents, snapshot: nil)
+        }
+
+        /// `init(intents:)` as the keys on Platform give it, when `snapshot`
+        /// read them: a key that landed gives the limits Platform holds now,
+        /// which an authorized limits update may have raised; a disabled key,
+        /// or one whose id another key holds, gives nothing; a key not there
+        /// yet gives its submitted terms while its intent may still land.
+        /// `unrecorded`: keys on `snapshot` the projection gives the app that
+        /// no intent names, with the limits Platform holds;
+        /// `administeredGroups`: the groups of those keys that may have
+        /// administrators. Message access, with `snapshot`, is what its
+        /// encryption keys still give.
+        init(
+            intents: [ConnectionIntent], snapshot: IdentitySnapshot?, unrecorded: [PlatformKey] = [],
+            administeredGroups: Set<Data> = []
+        ) {
+            var listed = Set<UInt32>()
+            self.init(
+                keys: intents.flatMap { intent in
+                    let mayLand = snapshot.map { AppConnect.status(of: intent, in: $0) == .confirming } ?? true
+                    return intent.authKeys.compactMap { key -> Key? in
+                        guard let bound = key.bound, let submittedExpiry = key.expiresAt else { return nil }
+                        var expiresAt = submittedExpiry
+                        var totalBudget = key.totalBudget
+                        if let snapshot {
+                            switch AppConnect.presence(of: key, in: snapshot) {
+                            case .live, .expired:
+                                // Its bound not read yet: not known to be access.
+                                guard let actual = AppConnect.accessKey(of: key, in: snapshot) else { return nil }
+                                totalBudget = actual.totalBudget
+                                expiresAt = actual.expiresAt ?? submittedExpiry
+                            case .missing:
+                                guard mayLand else { return nil }
+                            case .disabled, .conflicting:
+                                return nil
+                            }
+                        }
+                        guard listed.insert(key.id).inserted else { return nil }
+                        return Key(
+                            bound: bound, isCritical: key.securityLevel == .critical, totalBudget: totalBudget,
+                            expiresAt: expiresAt, isAdministered: intent.isAdministered(bound))
+                    }
+                } + unrecorded.compactMap { key -> Key? in
+                    // The projection lists only keys with an expiry.
+                    guard let bound = key.bound, let expiresAt = key.expiresAt, listed.insert(key.id).inserted else {
+                        return nil
+                    }
+                    var isAdministered = false
+                    if case .contractGroup(let id) = bound { isAdministered = administeredGroups.contains(id) }
+                    return Key(
+                        bound: bound, isCritical: key.securityLevel == .critical, totalBudget: key.totalBudget,
+                        expiresAt: expiresAt, isAdministered: isAdministered)
+                },
+                receivesMessages: intents.contains { intent in
+                    let hasMessageKey = !intent.sentEncryptionKeyIds.isEmpty || intent.keys.contains { !$0.isAuthentication }
+                    guard hasMessageKey else { return false }
+                    return snapshot.map { AppConnect.encryptionKeysGiveAccess(intent, in: $0) } ?? true
+                })
+        }
+    }
+
     /// What approving a v2 request gives the app, as the approval sheet
     /// shows it. The keys are registered with exactly these terms.
     struct GrantPlan: Equatable {
         let appId: Data
         /// `hash160(appEphPub)`: names the request the plan was made for.
         let appEphemeralPubKeyHash: Data
-        let auth: [AuthGrant]
+        /// Set from the request, then from what the user chose on the sheet
+        /// (`AppConnect.applying(_:to:now:)`).
+        var auth: [AuthGrant]
         let encryption: [EncryptionGrant]
         let connectionId: Data?
         let identityHint: Data?
         /// Milliseconds since the epoch.
         let createdAt: UInt64
-        /// Where the wallet returns when it is done; shown on the sheet.
-        let callbackHost: String?
-        /// The app's website in the wallet's brand map, or nil for an app the
-        /// wallet does not know: then the name on the sheet is the one the
-        /// request gives.
-        var brandHost: String? = nil
         /// The groups among the bindings that have administrators besides
         /// their owner, as Platform proves them. Each administrator can add
         /// contracts of its own to the group, and a group key acts in every
@@ -133,6 +231,9 @@ extension AppConnect {
         /// How the app's contract keeps the current key of each encryption
         /// purpose asked, as Platform proves the contract.
         var currentKeyRules: [KeyPurpose: CurrentKeyRule] = [:]
+        /// The proved Platform block time, in milliseconds, the plan was
+        /// made at: the clock its expiries are set from and checked by.
+        var platformTimeMs: UInt64? = nil
 
         /// The largest budget among the keys, for the summary line.
         var totalBudget: UInt64? {
@@ -153,6 +254,12 @@ extension AppConnect {
         case unsupported
         case invalid
         case failed
+    }
+
+    /// Why a request dated ahead of the network's time is refused.
+    static var futureRequestMessage: String {
+        NSLocalizedString("This sign-in request is dated ahead of the network's time. Ask the app for a new code.",
+                          comment: "DashConnect App Connect v2")
     }
 
     /// A v2 request the wallet does not answer, with the status its callback
@@ -176,27 +283,32 @@ extension AppConnect {
         }
     }
 
-    /// The plan for `uri` at `now`: every binding granted, the proposals
-    /// clamped to the caps. A wallet may lower a proposal but must never drop
+    /// The plan for `uri`: every binding granted, the proposals clamped to
+    /// the caps. The request's age, whether a key it asks for has already
+    /// expired, and the default and longest expiry of a granted key are all
+    /// told from `blockTimeMs`, the block time Platform proved, never from
+    /// the phone's clock; without a block time it throws
+    /// `requestAgeUncheckable`. A wallet may lower a proposal but must never drop
     /// a limit the app asked for, and every key gets an expiry.
     ///
     /// A renewal (`MODE = 1`) is answered as a new login carrying the same
     /// connection id, which supersedes the old keys (the profile's phase-1
     /// renewal); raising the limits of existing keys is not implemented.
-    static func grantPlan(for uri: AppConnectUri, now: Date) throws -> GrantPlan {
+    static func grantPlan(for uri: AppConnectUri, blockTimeMs: UInt64?) throws -> GrantPlan {
         let request = uri.request
-        switch request.age(now: now) {
+        switch request.age(blockTimeMs: blockTimeMs) {
         case .fresh: break
         case .stale: throw Refusal(.stale, NSLocalizedString(
                 "The sign-in request is more than 10 minutes old.",
                 comment: "DashConnect App Connect v2"))
-        case .future: throw Refusal(.stale, NSLocalizedString(
-                "The sign-in request is dated in the future. Check this device's clock.",
-                comment: "DashConnect App Connect v2"))
+        case .future: throw Refusal(.stale, futureRequestMessage)
+        case .uncheckable: throw DashConnectPlatformError.requestAgeUncheckable
         }
-        let nowMilliseconds = milliseconds(now)
+        guard let blockTimeMs else { throw DashConnectPlatformError.requestAgeUncheckable }
+        let longest = expiry(after: v2LifetimeCap, from: blockTimeMs)
+        let byDefault = expiry(after: v2DefaultLifetime, from: blockTimeMs)
         let auth = try request.authBindings.enumerated().map { index, binding -> AuthGrant in
-            if let expiresAt = binding.expiresAt, expiresAt <= nowMilliseconds {
+            if let expiresAt = binding.expiresAt, expiresAt <= blockTimeMs {
                 throw Refusal(.invalid, NSLocalizedString(
                 "The app asks for a key that has already expired.",
                 comment: "DashConnect App Connect v2"))
@@ -205,8 +317,7 @@ extension AppConnect {
                 bindingIndex: index,
                 binding: binding,
                 totalBudget: binding.totalBudget.map { min($0, v2BudgetCapCredits) },
-                expiresAt: binding.expiresAt.map { min($0, milliseconds(now.addingTimeInterval(v2LifetimeCap))) }
-                    ?? milliseconds(now.addingTimeInterval(v2DefaultLifetime))
+                expiresAt: binding.expiresAt.map { min($0, longest) } ?? byDefault
             )
         }
         let encryption = try request.encryptionBindings.enumerated().map { index, binding -> EncryptionGrant in
@@ -227,36 +338,8 @@ extension AppConnect {
             connectionId: request.connectionId,
             identityHint: request.identityHint,
             createdAt: request.createdAt,
-            callbackHost: uri.callback?.host
+            platformTimeMs: blockTimeMs
         )
-    }
-
-    /// What the sheet warns about where a request came from.
-    enum OriginWarning: Equatable {
-        /// The app is not in the wallet's brand map: its name comes from the
-        /// request alone.
-        case unknownApp
-        /// A known app's request carries no callback.
-        case noCallback(website: String)
-        /// A known app's request returns to a host that is not its website.
-        case returnsElsewhere(callbackHost: String)
-    }
-
-    /// The request itself proves nothing about where it came from: anyone
-    /// can put the app's id and the app's host in a QR code. The brand map
-    /// only names an app and never changes which requests are accepted
-    /// (dips#181, App Identity), so what does not agree with it is a
-    /// warning on the sheet, never a refusal.
-    static func originWarning(callbackHost: String?, brandHost: String?) -> OriginWarning? {
-        guard let brandHost else { return .unknownApp }
-        guard let callbackHost else { return .noCallback(website: brandHost) }
-        return isHost(callbackHost, of: brandHost) ? nil : .returnsElsewhere(callbackHost: callbackHost)
-    }
-
-    /// Whether `host` is `brandHost` or one of its subdomains. Both are
-    /// lowercase DNS names: the callback parser takes no other host.
-    static func isHost(_ host: String, of brandHost: String) -> Bool {
-        host == brandHost || host.hasSuffix("." + brandHost)
     }
 
     /// Wallet rule 3, owner consistency, from what the network says:
@@ -806,6 +889,13 @@ extension AppConnect {
         guard var components = URLComponents(url: callback, resolvingAgainstBaseURL: false) else { return nil }
         components.queryItems = (components.queryItems ?? []) + [URLQueryItem(name: "ac", value: status.rawValue)]
         return components.url
+    }
+
+    /// `lifetime` after the block time `blockTimeMs`, in milliseconds; the
+    /// largest time there is when the sum does not fit.
+    static func expiry(after lifetime: TimeInterval, from blockTimeMs: UInt64) -> UInt64 {
+        let (sum, overflow) = blockTimeMs.addingReportingOverflow(UInt64(lifetime * 1000))
+        return overflow ? .max : sum
     }
 
     static func milliseconds(_ date: Date) -> UInt64 {

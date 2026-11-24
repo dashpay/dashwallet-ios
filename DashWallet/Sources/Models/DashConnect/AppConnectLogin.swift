@@ -127,6 +127,51 @@ enum AppConnect {
         """
     }
 
+    /// Whether a request was answered before (AC-11).
+    enum AnsweredState: Equatable {
+        case notAnswered
+        case answered
+        /// Nothing says it was answered and the response lookup failed, so the
+        /// wallet cannot tell: never read as `notAnswered`.
+        case uncheckable
+    }
+
+    /// Whether a request was answered before, by this wallet's record
+    /// (`intents`), a key of the identity that is one of the request's own
+    /// auth keys (`requestAuthKeyHashes`: their hash160s; a key counts
+    /// whether it is on, off or expired, as it was added for this request),
+    /// or a response on Platform. Any sign of an answer settles it, even when
+    /// the response lookup failed.
+    static func answeredState(
+        responseLookup: Result<Bool, Error>,
+        requestAuthKeyHashes: [Data],
+        snapshot: IdentitySnapshot,
+        intents: [ConnectionIntent],
+        appId: Data,
+        requestHash: Data
+    ) -> AnsweredState {
+        if intents.contains(where: { $0.appId == appId && $0.requestHash == requestHash }) { return .answered }
+        let ownAuthKeyHashes = Set(requestAuthKeyHashes)
+        if snapshot.keys.contains(where: {
+            $0.purpose == .authentication && $0.keyType == .ecdsaHash160 && ownAuthKeyHashes.contains($0.data)
+        }) { return .answered }
+        switch responseLookup {
+        case .success(true): return .answered
+        case .success(false): return .notAnswered
+        case .failure: return .uncheckable
+        }
+    }
+
+    /// Whether a document list read from Platform holds a document. A list
+    /// that is not an array of documents throws, as it says nothing of
+    /// whether a response exists.
+    static func responseExists(inDocumentList list: [String: Any]) throws -> Bool {
+        guard let documents = list["documents"] as? [[String: Any]] else {
+            throw DashConnectPlatformError.existingDocumentLookupFailed
+        }
+        return !documents.isEmpty
+    }
+
     /// The values of a response read back from Platform, or `nil` when the
     /// document is not the response to `appEphemeralPubKeyHash` or cannot be
     /// read. A delete has to carry the values that are on Platform, and those
@@ -326,13 +371,16 @@ final class UserDefaultsAppConnectIntentStore: AppConnectIntentStore {
         self.decoder = decoder
     }
 
+    /// Ends the key of the intents, after the scope.
+    static let keySuffix = ".app-connect-intents.v1"
+
     private var storageKey: String? {
         let scopeKey: String?
         switch scope {
         case .connections(let connections): scopeKey = connections.storageKey
         case .key(let provider): scopeKey = provider()
         }
-        return scopeKey.map { "\($0).app-connect-intents.v1" }
+        return scopeKey.map { "\($0)\(Self.keySuffix)" }
     }
 
     func pinned(toWalletIdHex walletIdHex: String) -> any AppConnectIntentStore {
@@ -387,7 +435,7 @@ final class UserDefaultsAppConnectIntentStore: AppConnectIntentStore {
                 forKey: storageKey)
         } catch {
             Self.logger.error(
-                "AppConnectIntentStore: failed to encode intents: \(error.localizedDescription, privacy: .public)")
+                "AppConnectIntentStore: failed to encode intents: \(AppConnectWriteExecutor.logDescription(of: error), privacy: .public)")
         }
     }
 

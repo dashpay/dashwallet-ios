@@ -62,11 +62,13 @@ private final class FakeVault: TrackedMasternodeKeyVaulting {
 @MainActor
 private final class FakeTracker: VotingKeyMasternodeTracking {
     var located: [VotingKeyLocatedNode] = []
+    var locateError: Error?
     private(set) var tracked: Set<Data> = []
     private(set) var untrackCalls: [Data] = []
 
     func locateVotingKeyNodes(_ key: String) async throws -> [VotingKeyLocatedNode] {
-        located
+        if let locateError { throw locateError }
+        return located
     }
 
     func trackForVoting(proTxHash: Data) throws {
@@ -112,6 +114,108 @@ final class VotingKeyImportTests: XCTestCase {
             ? VotingKeyFormat.mainnetExample
             : VotingKeyFormat.testnetExample
     }
+
+    // MARK: AC-13 refusals
+
+    private var invalidKeyMessage: String {
+        NSLocalizedString("You have entered an invalid key", comment: "Voting")
+    }
+
+    private var noActiveMasternodeMessage: String {
+        NSLocalizedString("You have entered a key that is not associated to an active Masternode", comment: "Voting")
+    }
+
+    private func assertNothingStored(file: StaticString = #filePath, line: UInt = #line) {
+        XCTAssertTrue(vault.keys.isEmpty, "no key may be stored", file: file, line: line)
+        XCTAssertTrue(tracker.tracked.isEmpty, "no node may be tracked", file: file, line: line)
+    }
+
+    func testMalformedKeyIsRefusedAsInvalidAndNothingIsStored() async {
+        tracker.located = [node(1)]
+        viewModel.keyText += "1" // one character too many for any WIF
+
+        let outcome = await viewModel.verifyAndAdd()
+
+        XCTAssertEqual(outcome, .failed)
+        XCTAssertEqual(viewModel.error, invalidKeyMessage)
+        assertNothingStored()
+    }
+
+    /// AC-13: whatever is wrong with the key's shape, the refusal reads
+    /// "You have entered an invalid key".
+    func testEveryMalformedKeyShapeIsRefusedWithTheInvalidKeyCopy() async {
+        let isMainnet = WalletEnvironment.network == .mainnet
+        let own = isMainnet ? VotingKeyFormat.mainnetExample : VotingKeyFormat.testnetExample
+        let other = isMainnet ? VotingKeyFormat.testnetExample : VotingKeyFormat.mainnetExample
+        let shapes: [(String, String)] = [
+            ("other network", other),
+            ("address", "Xags3HEXJ4G4Uuf8va2eSxLCw2KCyEhiJ7"),
+            ("hex private key", String(repeating: "ab", count: 32)),
+            ("hex public key", "02" + String(repeating: "cd", count: 32)),
+            ("too short", "5T"),
+            ("mistyped", String(own.dropLast()) + (own.last == "y" ? "z" : "y")),
+            ("uncompressed", "7qbxVhSx957Z7NQFXgCMNX41jMpFkHWdnHeDizMetMcun7wmJEt"),
+            ("invalid character", "0" + own.dropFirst()),
+        ]
+        tracker.located = [node(1)]
+        for (shape, key) in shapes {
+            viewModel.keyText = key
+
+            let outcome = await viewModel.verifyAndAdd()
+
+            XCTAssertEqual(outcome, .failed, shape)
+            XCTAssertEqual(viewModel.error, invalidKeyMessage, shape)
+        }
+        assertNothingStored()
+    }
+
+    func testKeyTheSDKCannotReadIsRefusedAsInvalidAndNothingIsStored() async {
+        tracker.located = [node(1)]
+        tracker.locateError = PlatformWalletError.invalidParameter("bad key")
+
+        let outcome = await viewModel.verifyAndAdd()
+
+        XCTAssertEqual(outcome, .failed)
+        XCTAssertEqual(viewModel.error, invalidKeyMessage)
+        assertNothingStored()
+    }
+
+    func testKeyOfNoMasternodeIsRefusedAndNothingIsStored() async {
+        tracker.located = []
+
+        let outcome = await viewModel.verifyAndAdd()
+
+        XCTAssertEqual(outcome, .failed)
+        XCTAssertEqual(viewModel.error, noActiveMasternodeMessage)
+        assertNothingStored()
+    }
+
+    func testKeyOfOnlyABannedMasternodeIsRefusedAsNotActive() async {
+        tracker.located = [VotingKeyLocatedNode(
+            proTxHash: proTx(1),
+            isVotingKeyMatch: true,
+            isValid: false,
+            isInLoadedWallet: false,
+            alreadyTracked: false)]
+
+        let outcome = await viewModel.verifyAndAdd()
+
+        XCTAssertEqual(outcome, .failed)
+        XCTAssertEqual(viewModel.error, noActiveMasternodeMessage)
+        assertNothingStored()
+    }
+
+    func testEditingTheKeyClearsTheRefusal() async {
+        tracker.located = []
+        _ = await viewModel.verifyAndAdd()
+        XCTAssertNotNil(viewModel.error)
+
+        viewModel.keyText.removeLast()
+
+        XCTAssertNil(viewModel.error)
+    }
+
+    // MARK: Partial imports
 
     func testAllExternalNodesAddedIsComplete() async {
         tracker.located = [node(1), node(2)]

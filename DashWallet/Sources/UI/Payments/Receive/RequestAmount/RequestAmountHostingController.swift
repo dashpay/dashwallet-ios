@@ -29,8 +29,8 @@ protocol RequestAmountHostingControllerDelegate: AnyObject {
 
 // MARK: - RequestAmountHostingController
 
-/// SwiftUI port of `DWRequestAmountViewController`, kept as a copy beside it —
-/// the ObjC pair is still what the payments landing presents.
+/// The request-amount sheet the payments landing presents once an amount is
+/// specified.
 ///
 /// The chrome is `DashUIKit.BottomSheet` rather than the ObjC
 /// `DWBaseModalViewController`: grabber, title and background all come from the

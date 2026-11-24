@@ -17,9 +17,61 @@
 //  limitations under the License.
 //
 
+import Combine
 import DashUIKit
 import SwiftDashSDK
 import SwiftUI
+
+// MARK: - UsernameVotingHostingController
+
+/// Hosts Username Voting on the main menu's UIKit stack. Leaving it any way —
+/// the round back button, the edge swipe, VoiceOver's escape gesture — stops a
+/// Quick voting run (ADR-0037). Request details is pushed inside the screen's
+/// own `NavigationStack`, so opening it does not leave this controller.
+/// While a single vote runs the swipe-back is off, as the bar's back button
+/// is (see ``VotingViewModel/holdsScreen``).
+final class UsernameVotingHostingController: UIHostingController<AnyView> {
+    private let viewModel: VotingViewModel
+    private var busy: AnyCancellable?
+
+    init(viewModel: VotingViewModel, onClose: @escaping () -> Void) {
+        self.viewModel = viewModel
+        super.init(rootView: AnyView(
+            NavigationStack {
+                UsernameVotingScreen(onClose: onClose, viewModel: viewModel)
+            }
+        ))
+    }
+
+    @available(*, unavailable)
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) is not supported")
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        busy = viewModel.store.isVoteBusyPublisher
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                self.navigationController?.interactivePopGestureRecognizer?.isEnabled = !self.viewModel.holdsScreen
+            }
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        busy = nil
+        // The screen underneath gets its swipe-back as usual.
+        navigationController?.interactivePopGestureRecognizer?.isEnabled = true
+    }
+
+    /// Called once the pop is done, whatever started it; a swipe the user
+    /// takes back never gets here.
+    override func didMove(toParent parent: UIViewController?) {
+        super.didMove(toParent: parent)
+        if parent == nil { viewModel.stopQuickVoting() }
+    }
+}
 
 // MARK: - UsernameVotingScreen
 
@@ -28,376 +80,421 @@ import SwiftUI
 ///
 /// Browsing needs no masternode. Voting needs the voting key of at least one
 /// active masternode: derived by the wallet, or added through the voting-key
-/// flow this screen's header opens.
+/// flow a pill tap or the bar's menu opens.
 struct UsernameVotingScreen: View {
-    /// The UIKit stack this screen is pushed on; contest details are pushed
-    /// onto it.
-    /// Weak: this page sits in `vc`'s own stack.
-    weak var vc: UINavigationController?
-    /// Leaves the screen; the bar's back button calls it.
+    /// Pops the UIKit stack. The screen lives inside its own `NavigationStack`
+    /// (see `MainMenuScreen.showVoting`), so the back button has to be wired
+    /// explicitly — SwiftUI cannot see the UIKit stack underneath it.
     let onClose: () -> Void
 
-    @StateObject private var viewModel = VotingViewModel()
-    @State private var showingNodePicker = false
-    /// Where the voting-key flow opens, while it is shown.
-    @State private var keyFlowStart: VotingKeysFlow.Start?
+    @StateObject private var viewModel: VotingViewModel
+    @State private var showingFilters = false
+    /// The voting-key flow opened from the menu or the «Voting with» row.
+    @State private var showsKeyFlow = false
+    /// A vote started from a pill, handed to ``View/voteFlow(_:viewModel:)``.
+    @State private var voteRequest: VoteFlowRequest?
+    /// The request opened from a row.
+    @State private var openedRequest: OpenedRequest?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private struct OpenedRequest: Hashable {
+        let normalizedLabel: String
+        let identityId: String
+    }
+
+    init(onClose: @escaping () -> Void, viewModel: VotingViewModel? = nil) {
+        self.onClose = onClose
+        _viewModel = StateObject(wrappedValue: viewModel ?? VotingViewModel())
+    }
+
+    private var store: VotingStore { viewModel.store }
+    private var list: VotingListViewModel { viewModel.list }
+
+    private var screenTitle: String { NSLocalizedString("Username Voting", comment: "Voting") }
 
     var body: some View {
         VStack(spacing: 0) {
-            DashUIKit.NavigationBar(
-                leading: {
-                    DashUIKit.NavigationBarElement.back.button(action: onClose)
-                },
-                central: {
-                    Text(NSLocalizedString("Username voting", comment: "Voting"))
-                        .dashFont(.subheadMedium)
-                        .foregroundColor(.dash.primaryText)
-                        .lineLimit(1)
-                        .padding(.horizontal, 60)
-                },
-                trailing: { trailingBarItem })
-
-            DashUIKit.SearchBar(
-                text: $viewModel.searchQuery,
-                placeholder: NSLocalizedString("Search usernames", comment: "Voting"))
-                .padding(.horizontal, 20)
-
-            VoterCapacityHeader(
-                nodes: viewModel.votableNodes,
-                totalWeight: viewModel.totalVoteWeight,
-                effectiveSelection: viewModel.effectiveSelectedNodeIDs,
-                selectedNodeIDs: $viewModel.selectedNodeIDs,
-                onEditSelection: { showingNodePicker = true },
-                onAddKey: { keyFlowStart = .addKey },
-                onShowKeys: { keyFlowStart = .keyList })
-
-            if viewModel.nodeListMayBeIncomplete {
-                VotingBanner(
-                    text: NSLocalizedString(
-                        "Some of your masternodes may be missing from this list — the wallet could not read your full voting-key pool. Finish syncing and reopen this screen.",
-                        comment: "Voting"),
-                    tone: .warning)
-            }
-
-            if let loadError = viewModel.loadError {
-                VotingBanner(text: loadError, tone: .error)
-            }
-
-            contestList
+            navigationBar
+            scrollingContent
+                // Just above the "Filtered by" bar, so a long message wraps
+                // instead of being cut to the bar's one line. An inset, not an
+                // overlay: the list scrolls clear of it, so the last card's
+                // pills stay reachable while a toast shows.
+                .safeAreaInset(edge: .bottom, spacing: 0) {
+                    toastView
+                        .animation(.easeInOut(duration: 0.2), value: toastID)
+                }
         }
-        .navigationBarHidden(true)
-        .safeAreaInset(edge: .bottom) {
-            if viewModel.isSelecting {
-                BulkSelectionBar(viewModel: viewModel)
+        .background(Color.dash.primaryBackground)
+        // The DashUIKit bar replaces the system one; the title stays for
+        // VoiceOver's screen title and the long-press back menu.
+        .navigationTitle(screenTitle)
+        .toolbar(.hidden, for: .navigationBar)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            DashUIKit.FilterBar(
+                value: list.filter.sort.title,
+                title: NSLocalizedString("Filtered by", comment: "Voting"),
+                filterAccessibilityLabel: NSLocalizedString("Filter", comment: "Voting")) {
+                showingFilters = true
             }
         }
-        .sheet(isPresented: $showingNodePicker) {
-            VotingNodeSelectionSheet(
-                nodes: viewModel.votableNodes,
-                selectedNodeIDs: $viewModel.selectedNodeIDs)
-                .presentationDragIndicator(.hidden)
+        .sheet(isPresented: $showingFilters) {
+            VotingFiltersSheet(filter: list.filter) { list.filter = $0 }
         }
-        .sheet(item: $keyFlowStart) { start in
-            // Not opened from a vote, so the list's button only closes.
+        .navigationDestination(item: $openedRequest) { opened in
+            RequestDetailsScreen(
+                voting: viewModel, normalizedLabel: opened.normalizedLabel, identityId: opened.identityId)
+        }
+        .voteFlow($voteRequest, viewModel: viewModel)
+        .quickVotingFlow(viewModel.quickVoting, viewModel: viewModel)
+        .sheet(isPresented: $showsKeyFlow) {
+            // Not opened from a vote: manage mode, with no vote button.
             VotingKeysFlow(
-                start: start,
-                continuesToVote: false,
+                mode: .manage,
                 viewModel: viewModel,
-                onFinish: { _ in keyFlowStart = nil })
+                onFinish: { _ in showsKeyFlow = false })
         }
-        .task { await viewModel.refreshIfNeeded() }
-        .refreshable { await viewModel.refresh() }
-    }
-
-    /// "Done" ends selection mode; otherwise the sort / vote-on-several menu.
-    @ViewBuilder
-    private var trailingBarItem: some View {
-        if viewModel.isSelecting {
-            DashUIKit.DashButton(
-                text: NSLocalizedString("Done", comment: ""),
-                size: .small,
-                style: .plainBlue) {
-                    viewModel.endSelecting()
-                }
-        } else {
-            DashUIKit.NavigationBarCircleMenu(
-                .system("ellipsis"),
-                accessibilityLabel: Text(NSLocalizedString("More", comment: "Voting"))
-            ) {
-                Picker(NSLocalizedString("Sort by", comment: "Voting"), selection: $viewModel.sort) {
-                    ForEach(ContestSort.allCases) { option in
-                        Text(option.title).tag(option)
-                    }
-                }
-                // Voting on many contests at once replaces the old
-                // "Quick Voting" screen. Only offered when this wallet
-                // can actually vote.
-                if viewModel.canVote && !viewModel.visibleContests.isEmpty {
-                    Divider()
-                    Button {
-                        viewModel.isSelecting = true
-                    } label: {
-                        Label(NSLocalizedString("Vote on several", comment: "Voting"),
-                              systemImage: "checklist")
-                    }
-                }
+        .task { await store.refreshIfNeeded() }
+        // "Voting ends today / in N days" is relative to today.
+        // Midnight and time-zone changes, delivered on return if they happened
+        // while the app was suspended.
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
+            list.recomputeVisible()
+        }
+        // The toast and the message appear where VoiceOver is not looking; say them.
+        .onChange(of: list.toast?.id) {
+            if let message = list.toast?.message {
+                AccessibilityNotification.Announcement(message).post()
+            }
+        }
+        // Once as a run starts, not per name: its progress toast stays over the list for minutes.
+        .onChange(of: store.quickVotingProgress != nil) {
+            if let status = viewModel.quickVotingStatus {
+                AccessibilityNotification.Announcement(status).post()
+            }
+        }
+        .onChange(of: list.message) {
+            if let message = list.message {
+                AccessibilityNotification.Announcement(
+                    [message.title, message.subtitle].compactMap { $0 }.joined(separator: " ")).post()
             }
         }
     }
 
-    private func showContest(_ contest: DPNSContest) {
-        let screen = ContestDetailScreen(vc: vc, contest: contest, viewModel: viewModel)
-        vc?.pushViewController(UIHostingController(rootView: screen), animated: true)
+    // MARK: Bar
+
+    /// Round back and the «…» menu with «Quick voting» and «Voting keys»:
+    /// manage mode has no other entry. Leaving stops a Quick voting run
+    /// (ADR-0037). Back is off while a single vote runs: that vote outlives
+    /// the screen, and a reopened screen would not know it is still sending.
+    private var navigationBar: some View {
+        DashUIKit.NavigationBar(
+            leading: {
+                DashUIKit.NavigationBarElement.back.button(action: {
+                    viewModel.stopQuickVoting()
+                    onClose()
+                })
+                .disabled(viewModel.holdsScreen)
+            },
+            trailing: { votingMenu })
+    }
+
+    /// Names are on screen, no masternode of this wallet is known to be
+    /// missing (one missing may have blocked a name), and no vote is paused,
+    /// being sent, or reading its history. A sync still running is told at
+    /// the tap, on the nodes read then.
+    private var canVoteForAll: Bool {
+        !list.visibleContests.isEmpty && !store.historyUnavailable && !store.isVoteBusy
+            && !store.nodeListMayBeIncomplete
+    }
+
+    /// The toast over the list: a running Quick voting run, else the last vote's toast.
+    @ViewBuilder
+    private var toastView: some View {
+        if let status = viewModel.quickVotingStatus {
+            DashUIKit.Toast(style: .loading, message: status)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 8)
+                .transition(.opacity)
+        } else if let toast = list.toast {
+            toast.view(onClose: list.clearToast(id:))
+                .padding(.horizontal, 20)
+                .padding(.bottom, 8)
+                .transition(.opacity)
+        }
+    }
+
+    /// Changes whenever a toast appears, goes or is replaced, to animate it.
+    private var toastID: String {
+        viewModel.quickVotingStatus.map { _ in "run" } ?? list.toast?.id.uuidString ?? "none"
+    }
+
+    private var scrollingContent: some View {
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: 0) {
+                DashUIKit.TopIntroView(
+                    title: screenTitle,
+                    mainDescription: NSLocalizedString(
+                        "As a masternode owner you can vote to approve requested usernames before users will be able to create it.",
+                        comment: "Voting"),
+                    secondaryDescription: NSLocalizedString(
+                        "You can block the creation of the usernames that you feel inappropriate.",
+                        comment: "Voting"),
+                    descriptionColor: Color.dash.secondaryText)
+                    .padding(.top, 10)
+
+                header
+                    .padding(.top, 20)
+
+                DashUIKit.SearchBar(
+                    text: Binding(get: { list.searchQuery }, set: { list.searchQuery = $0 }),
+                    placeholder: NSLocalizedString("Search by username", comment: "Voting"))
+                    .padding(.top, 20)
+
+                lastingMessage
+
+                votingWithRow
+
+                contestList
+                    .padding(.top, 8)
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 20)
+        }
+        .refreshable { await store.refresh() }
+    }
+
+    // MARK: Header
+
+    private var header: some View {
+        HStack(alignment: .center, spacing: 20) {
+            VStack(alignment: .leading, spacing: 1) {
+                // The filter's type and how many open contests it keeps,
+                // whatever the search narrows the list to.
+                Text(list.filter.title)
+                    .dashFont(.headline)
+                    .foregroundStyle(Color.dash.primaryText)
+                // No count while the type reads this wallet's votes and they
+                // are not known for every contest: it would not be a count.
+                if !list.filter.type.readsMyVotes || list.myVotesKnownForList {
+                    Text(String.localizedStringWithFormat(
+                        NSLocalizedString("%d usernames", comment: "Voting"),
+                        list.filterMatchCount))
+                        .dashFont(.footnote)
+                        .foregroundStyle(Color.dash.tertiaryText)
+                }
+            }
+            .accessibilityElement(children: .combine)
+            Spacer(minLength: 0)
+            DashUIKit.DashButton(
+                text: NSLocalizedString("Filter", comment: "Voting"),
+                leadingIcon: DashUIKit.DashIcon.Common.filterS.source,
+                size: .small,
+                style: .plainBlack,
+                action: { showingFilters = true })
+        }
+    }
+
+    /// Voting keys (manage mode: which masternodes vote), which the design
+    /// keeps behind this menu. Labelled, so it does not hide behind a bare icon.
+    private var votingMenu: some View {
+        DashUIKit.NavigationBarCircleMenu(
+            .system("ellipsis"),
+            accessibilityLabel: Text(NSLocalizedString("Voting options", comment: "Voting"))) {
+            // Named as on Android; it opens the Quick voting sheet (AC-18).
+            Button {
+                Task { await viewModel.quickVoting.start() }
+            } label: {
+                Label(NSLocalizedString("Quick voting", comment: "Voting"), systemImage: "checkmark.circle")
+            }
+            .disabled(!canVoteForAll)
+            Button {
+                viewModel.refreshVotableNodes()
+                showsKeyFlow = true
+            } label: {
+                Label(NSLocalizedString("Voting keys", comment: "Voting"), systemImage: "key")
+            }
+            // A vote reads the ticked nodes after its history read; a change
+            // made meanwhile would slip into it.
+            .disabled(store.isVoteBusy)
+        }
+    }
+
+    // MARK: States
+
+    /// The one lasting state, the first item under the search field: above
+    /// the rows and above the empty, no-match and cannot-filter states, which
+    /// stay. No close button; it goes when its state ends. While a list read
+    /// runs, Try again takes no tap and dims.
+    @ViewBuilder
+    private var lastingMessage: some View {
+        if let message = list.message {
+            DashUIKit.SystemMessageView(
+                title: message.title,
+                subtitle: message.subtitle,
+                buttonName: message.offersTryAgain ? NSLocalizedString("Try again", comment: "Voting") : nil,
+                onAction: message.offersTryAgain ? { Task { await list.tryAgain() } } : nil)
+                .disabled(list.isTryingAgain)
+                .padding(.top, 12)
+        }
+    }
+
+    /// Which nodes a tap votes with, when there is a choice to make: voting
+    /// with several masternodes links them to each other publicly, so the
+    /// current choice stays visible without opening the picker.
+    @ViewBuilder
+    private var votingWithRow: some View {
+        if viewModel.votableNodes.count > 1 {
+            Button {
+                viewModel.refreshVotableNodes()
+                showsKeyFlow = true
+            } label: {
+                HStack(spacing: 8) {
+                    Text(NSLocalizedString("Voting with", comment: "Voting"))
+                        .dashFont(.footnote)
+                        .foregroundStyle(Color.dash.tertiaryText)
+                    Text(viewModel.votingWithSummary)
+                        .dashFont(.footnoteMedium)
+                        .foregroundStyle(Color.dash.primaryText)
+                        .lineLimit(1)
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(Color.dash.tertiaryText)
+                        .accessibilityHidden(true)
+                }
+                .padding(.top, 12)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityElement(children: .combine)
+            .disabled(store.isVoteBusy)
+        }
+    }
+
+    private func retryLoad() {
+        Task { await store.retry() }
     }
 
     @ViewBuilder
     private var contestList: some View {
-        if !viewModel.hasLoadedOnce {
-            Spacer()
+        switch list.emptyState {
+        case .loading:
             SwiftUI.ProgressView()
-            Spacer()
-        } else if viewModel.visibleContests.isEmpty {
-            Spacer()
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 40)
+        case .couldNotLoad:
+            // No list read has succeeded yet: say so, rather than that
+            // nothing is being contested — that was never checked.
+            VotingEmptyState(
+                icon: "exclamationmark.triangle",
+                title: NSLocalizedString("Couldn't load the contests", comment: "Voting"),
+                message: NSLocalizedString("Pull down to try again.", comment: "Voting"),
+                action: (
+                    title: NSLocalizedString("Try again", comment: "Voting"),
+                    perform: { retryLoad() }))
+                .padding(.vertical, 40)
+        case .cannotFilterByMyVotes(let reason):
+            VotingEmptyState(
+                icon: "exclamationmark.triangle",
+                title: NSLocalizedString("Can't filter by your votes right now", comment: "Voting"),
+                message: reason,
+                action: (
+                    title: NSLocalizedString("Reset filters", comment: "Voting"),
+                    perform: { list.filter = .default }))
+                .padding(.vertical, 40)
+        case .noVotingKeys:
+            VotingEmptyState(
+                icon: "line.3.horizontal.decrease.circle",
+                title: NSLocalizedString("No votes to filter by", comment: "Voting"),
+                message: NSLocalizedString(
+                    "This wallet has no masternode voting keys, so it has no votes to filter by.",
+                    comment: "Voting"),
+                action: (
+                    title: NSLocalizedString("Reset filters", comment: "Voting"),
+                    perform: { list.filter = .default }))
+                .padding(.vertical, 40)
+        case .cannotFilterByLinks:
+            VotingEmptyState(
+                icon: "exclamationmark.triangle",
+                title: NSLocalizedString("Can't filter by links right now", comment: "Voting"),
+                message: NSLocalizedString(
+                    "Some links couldn't be checked. Apply the filter again to retry, or reset it.",
+                    comment: "Voting"),
+                action: (
+                    title: NSLocalizedString("Reset filters", comment: "Voting"),
+                    perform: { list.filter = .default }))
+                .padding(.vertical, 40)
+        case .filterMatchesNothing:
+            VotingEmptyState(
+                icon: "line.3.horizontal.decrease.circle",
+                title: NSLocalizedString("No usernames match this filter", comment: "Voting"),
+                message: NSLocalizedString("Change the filter or reset it to see every open contest.", comment: "Voting"),
+                action: (
+                    title: NSLocalizedString("Reset filters", comment: "Voting"),
+                    perform: { list.filter = .default }))
+                .padding(.vertical, 40)
+        case .noContests:
             VotingEmptyState(
                 icon: "checkmark.seal",
-                title: viewModel.searchQuery.isEmpty
-                    ? NSLocalizedString("No open contests", comment: "Voting")
-                    : NSLocalizedString("No matching contests", comment: "Voting"),
-                message: viewModel.searchQuery.isEmpty
-                    ? NSLocalizedString(
-                        "No usernames are being contested right now. Contests open when two or more people request the same name.",
-                        comment: "Voting")
-                    : NSLocalizedString(
-                        "No open contest matches that search.",
-                        comment: "Voting"))
-            Spacer()
-        } else {
-            List(viewModel.visibleContests) { contest in
-                if viewModel.isSelecting {
-                    let eligible = viewModel.isBulkEligible(contest)
-                    Button {
-                        viewModel.toggleSelection(contest)
-                    } label: {
-                        HStack(spacing: 10) {
-                            // Contested names are shown but not selectable:
-                            // hiding them would make the list silently differ
-                            // from the browsing list, so say why instead.
-                            Image(systemName: !eligible
-                                  ? "minus.circle"
-                                  : (viewModel.isSelected(contest)
-                                     ? "checkmark.circle.fill" : "circle"))
-                                .foregroundColor(!eligible
-                                                 ? Color.dash.tertiaryText
-                                                 : (viewModel.isSelected(contest)
-                                                    ? .accentColor : Color.dash.tertiaryText))
-                            VStack(alignment: .leading, spacing: 2) {
-                                ContestRow(contest: contest)
-                                if !eligible {
-                                    Text(NSLocalizedString(
-                                        "Several people requested this name — open it to choose between them.",
-                                        comment: "Voting"))
-                                        .font(.caption2)
-                                        .foregroundColor(Color.dash.tertiaryText)
-                                }
-                            }
-                        }
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(!eligible)
-                } else {
-                    Button {
-                        showContest(contest)
-                    } label: {
-                        ListDisclosureRow {
-                            ContestRow(contest: contest)
-                        }
-                    }
-                    .buttonStyle(.plain)
+                title: NSLocalizedString("No open contests", comment: "Voting"),
+                message: NSLocalizedString(
+                    "No usernames are being contested right now. Contests open when two or more people request the same name.",
+                    comment: "Voting"))
+                .padding(.vertical, 40)
+        case .searchMatchesNothing:
+            VotingEmptyState(
+                icon: "checkmark.seal",
+                title: NSLocalizedString("No matching contests", comment: "Voting"),
+                message: NSLocalizedString("No open contest matches that search.", comment: "Voting"))
+                .padding(.vertical, 40)
+        case nil:
+            ForEach(list.sections) { section in
+                Text(section.title)
+                    .dashFont(.footnote)
+                    .foregroundStyle(Color.dash.tertiaryText)
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 12)
+                    .padding(.bottom, 8)
+                    .accessibilityAddTraits(.isHeader)
+                // Rows straight in the lazy stack, so only those on screen are built.
+                ForEach(section.contests) { contest in
+                    card(for: contest)
+                        .padding(.bottom, 10)
                 }
             }
-            .listStyle(.plain)
-        }
-    }
-}
-
-// MARK: - VoterCapacityHeader
-
-/// States plainly how much voting power this wallet actually has. When it has
-/// none, it says so and offers to add a masternode voting key — it never
-/// implies a check passed that did not.
-private struct VoterCapacityHeader: View {
-    let nodes: [VoterNode]
-    let totalWeight: UInt32
-    /// proTxHashes the next vote will use. Tapping the row edits it.
-    /// The selection a vote will ACTUALLY use — the effective set, not the raw
-    /// persisted one. They differ when the stored set is empty or stale, and
-    /// describing the raw set would show "Select nodes" while a tap votes with
-    /// the fallback node.
-    let effectiveSelection: Set<Data>
-    @Binding var selectedNodeIDs: Set<Data>
-    /// Opens the node picker.
-    let onEditSelection: () -> Void
-    /// Opens the voting-key input — offered when there is no node.
-    let onAddKey: () -> Void
-    /// Opens the list of nodes this wallet votes with.
-    let onShowKeys: () -> Void
-
-    var body: some View {
-        HStack(spacing: 10) {
-            Image(systemName: nodes.isEmpty ? "person.crop.circle.badge.questionmark" : "server.rack")
-                .foregroundColor(nodes.isEmpty ? Color.dash.secondaryText : .accentColor)
-
-            VStack(alignment: .leading, spacing: 2) {
-                if nodes.isEmpty {
-                    Text(NSLocalizedString("Browsing only", comment: "Voting"))
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                    Text(NSLocalizedString(
-                        "This wallet holds no active masternode voting keys, so it cannot vote.",
-                        comment: "Voting"))
-                        .font(.caption)
-                        .foregroundColor(Color.dash.secondaryText)
-                    // The only way to a voting key outside advanced mode, where
-                    // Governance → Masternodes is not shown.
-                    Button(NSLocalizedString("Add masternode voting key", comment: "Voting"), action: onAddKey)
-                        .font(.caption.weight(.semibold))
-                        .buttonStyle(.borderless)
-                        .padding(.top, 4)
-                } else {
-                    Text(nodeSummary)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                    Text(weightSummary)
-                        .font(.caption)
-                        .foregroundColor(Color.dash.secondaryText)
-                }
-            }
-
-            Spacer(minLength: 0)
-
-            if !nodes.isEmpty {
-                Button(action: onShowKeys) {
-                    Label(NSLocalizedString("Voting keys", comment: "Voting"), systemImage: "key")
-                        .font(.caption.weight(.semibold))
-                }
-                .buttonStyle(.borderless)
-            }
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.dash.secondaryBackground)
-
-        // With more than one node the user needs to see WHICH nodes a tap
-        // will vote with, because that choice links those masternodes to each
-        // other publicly. With one node there is nothing to choose.
-        if nodes.count > 1 {
-            Button(action: onEditSelection) {
-                HStack(spacing: 8) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(NSLocalizedString("Voting with", comment: "Voting"))
-                            .font(.caption)
-                            .foregroundColor(Color.dash.secondaryText)
-                        Text(selectionSummary)
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .foregroundColor(Color.dash.primaryText)
-                            .multilineTextAlignment(.leading)
-                    }
-                    Spacer(minLength: 0)
-                    Image(systemName: "chevron.right")
-                        .font(.caption.weight(.semibold))
-                        .foregroundColor(Color.dash.secondaryText)
-                }
-            }
-            .buttonStyle(.plain)
-            .padding(.horizontal, 16)
-            .padding(.bottom, 12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.dash.secondaryBackground)
         }
     }
 
-    /// Names the nodes a vote will use, so the privacy consequence of the
-    /// current selection is legible without opening the picker.
-    private var selectionSummary: String {
-        let chosen = nodes.filter { effectiveSelection.contains($0.proTxHash) }
-        guard !chosen.isEmpty else {
-            return NSLocalizedString("Select nodes", comment: "Voting")
-        }
-        if chosen.count == nodes.count {
-            return String.localizedStringWithFormat(NSLocalizedString(
-                "All %d nodes", comment: "Voting"), chosen.count)
-        }
-        return chosen.map(\.displayName).joined(separator: ", ")
+    private func card(for contest: DPNSContest) -> some View {
+        let label = contest.normalizedLabel
+        return VotingContestCard(
+            contest: contest,
+            myChoices: store.myChoices(on: label),
+            isCasting: store.isSending(normalizedLabel: label),
+            sendingPill: list.sendingPill(on: label),
+            canTapPill: { list.canTapPill($0, on: label) },
+            onVote: { voteRequest = list.voteRequest(for: $0, on: contest) },
+            onOpenRequest: { openedRequest = OpenedRequest(normalizedLabel: label, identityId: $0) },
+            headerHint: list.headerAccessibilityHint(for: contest),
+            expansion: list.isExpandable(contest) ? expansion(for: contest) : nil)
     }
 
-    private var nodeSummary: String {
-        let evonodes = nodes.filter(\.isEvonode).count
-        let regularNodes = nodes.count - evonodes
-        var parts: [String] = []
-        if evonodes > 0 {
-            parts.append(String.localizedStringWithFormat(NSLocalizedString("%d evonodes", comment: "Voting"), evonodes))
-        }
-        if regularNodes > 0 {
-            parts.append(String.localizedStringWithFormat(NSLocalizedString("%d masternodes", comment: "Voting"), regularNodes))
-        }
-        return parts.joined(separator: ", ")
-    }
-
-    private var weightSummary: String {
-        String.localizedStringWithFormat(
-            NSLocalizedString(
-                "%u votes per contest — evonodes count as 4, masternodes as 1",
-                comment: "Voting"),
-            totalWeight)
-    }
-}
-
-// MARK: - ContestRow
-
-struct ContestRow: View {
-    let contest: DPNSContest
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(alignment: .firstTextBaseline) {
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(contest.displayTitle)
-                        .font(.headline)
-                    // Platform keys the contest by the homograph-normalized
-                    // form; keep it visible so the name being voted on is
-                    // never ambiguous, but behind the spelling people typed.
-                    if contest.displayTitleDiffersFromNormalized {
-                        Text(contest.normalizedLabel)
-                            .font(.caption2)
-                            .monospaced()
-                            .foregroundColor(Color.dash.tertiaryText)
-                    }
-                }
-                Spacer()
-                ContestDeadlineLabel(endTime: contest.endTime)
-            }
-
-            HStack(spacing: 12) {
-                Label(
-                    String.localizedStringWithFormat(NSLocalizedString("%d requests", comment: "Voting"),
-                           contest.contenders.count),
-                    systemImage: "person.2")
-                if contest.lockVotes > 0 {
-                    Label("\(contest.lockVotes)", systemImage: "lock")
-                }
-                if contest.abstainVotes > 0 {
-                    Label("\(contest.abstainVotes)", systemImage: "minus.circle")
-                }
-                Spacer()
-                Text(String.localizedStringWithFormat(NSLocalizedString("%u votes", comment: "Voting"),
-                            contest.totalVotes))
-            }
-            .font(.caption)
-            .foregroundColor(Color.dash.secondaryText)
-        }
-        .padding(.vertical, 4)
+    private func expansion(for contest: DPNSContest) -> VotingContestCard.Expansion {
+        let label = contest.normalizedLabel
+        let isExpanded = list.isExpanded(label)
+        return VotingContestCard.Expansion(
+            isExpanded: isExpanded,
+            countText: list.requestCountText(for: contest),
+            pillLabel: list.expandAccessibilityLabel(for: contest, isExpanded: isExpanded),
+            pillValue: list.expandAccessibilityValue(for: contest),
+            requests: list.requestRows(for: contest),
+            // The card grows or shrinks while the requests fade, in one
+            // transaction with the chevron and «You voted»; under Reduce
+            // Motion the row opens and closes at once.
+            onToggle: {
+                withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.25)) { list.toggleExpanded(label) }
+            })
     }
 }
 
@@ -435,6 +532,8 @@ struct VotingEmptyState: View {
     let icon: String
     let title: String
     let message: String
+    /// A button under the message.
+    var action: (title: String, perform: () -> Void)? = nil
 
     var body: some View {
         VStack(spacing: 12) {
@@ -443,10 +542,18 @@ struct VotingEmptyState: View {
                 .foregroundColor(Color.dash.tertiaryText)
             Text(title)
                 .font(.headline)
+                .multilineTextAlignment(.center)
             Text(message)
                 .font(.caption)
                 .foregroundColor(Color.dash.secondaryText)
                 .multilineTextAlignment(.center)
+            if let action {
+                DashUIKit.DashButton(
+                    text: action.title,
+                    size: .small,
+                    style: .plainBlack,
+                    action: action.perform)
+            }
         }
         .padding(.horizontal, 32)
         .frame(maxWidth: .infinity)
@@ -458,20 +565,35 @@ struct VotingBanner: View {
 
     let text: String
     let tone: Tone
+    /// A button under the text, inside the banner.
+    var action: (title: String, perform: () -> Void)? = nil
+    /// Rounded corners, for a banner set in a list's margins rather than
+    /// running edge to edge.
+    var isRounded = false
 
     var body: some View {
-        HStack(alignment: .top, spacing: 8) {
-            Image(systemName: iconName)
-            Text(text)
-                .font(.caption)
-                .fixedSize(horizontal: false, vertical: true)
-            Spacer(minLength: 0)
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .top, spacing: 8) {
+                Image(systemName: iconName)
+                    .accessibilityHidden(true)
+                Text(text)
+                    .font(.caption)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
+            }
+            if let action {
+                Button(action.title, action: action.perform)
+                    .font(.caption.weight(.semibold))
+                    .buttonStyle(.borderless)
+                    .padding(.leading, 24)
+            }
         }
         .foregroundColor(color)
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(color.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: isRounded ? 12 : 0, style: .continuous))
     }
 
     private var iconName: String {
@@ -490,3 +612,203 @@ struct VotingBanner: View {
         }
     }
 }
+
+// MARK: - Previews
+
+#if DEBUG
+// Shared by the voting screens' previews.
+struct PreviewContests: VotingContestReading {
+    let contests: [DPNSContest]
+    var failure: Error?
+    /// Answers the first load, then fails every later one.
+    var failAfterFirstLoad = false
+    private let loaded = PreviewLoadCounter()
+
+    init(contests: [DPNSContest], failure: Error? = nil, failAfterFirstLoad: Bool = false) {
+        self.contests = contests
+        self.failure = failure
+        self.failAfterFirstLoad = failAfterFirstLoad
+    }
+
+    func activeContests() async throws -> [DPNSContest] {
+        if let failure { throw failure }
+        if failAfterFirstLoad, loaded.next() > 1 { throw VotingPreviewError.unavailable }
+        return contests
+    }
+
+    func voteState(normalizedLabel: String) async throws -> DPNSContestVoteState? { nil }
+}
+
+private final class PreviewLoadCounter {
+    private var count = 0
+    func next() -> Int { count += 1; return count }
+}
+
+struct PreviewNodes: VotableMasternodeResolving {
+    var nodes: [VoterNode] = []
+    var mayBeIncomplete = false
+    var isNodeListSynced = true
+
+    func votableNodes() -> MasternodeVoterRegistry.Resolution {
+        .init(nodes: nodes, mayBeIncomplete: mayBeIncomplete)
+    }
+}
+
+struct PreviewCaster: VoteCasting {
+    func cast(choice: VoteChoice, onNormalizedLabel normalizedLabel: String, with nodes: [VoterNode]) async throws
+        -> VoteCastReport {
+        throw VotingPreviewError.unavailable
+    }
+
+    func castRun(_ casts: [QuickVoteCast], progress: @escaping @MainActor (Int) -> Void) async throws
+        -> [VoteCastReport] {
+        throw VotingPreviewError.unavailable
+    }
+}
+
+final class PreviewHistory: VoteHistoryDAO {
+    /// `nil`: the history cannot be read.
+    private let records: [CastVoteRecord]?
+
+    init(records: [CastVoteRecord]? = []) {
+        self.records = records
+    }
+
+    func record(_ record: CastVoteRecord, network: String) async throws {}
+    func votes(forContest normalizedLabel: String, network: String) async -> [CastVoteRecord]? {
+        records?.filter { $0.normalizedLabel == normalizedLabel }
+    }
+    func votes(forContests normalizedLabels: Set<String>, network: String) async -> [CastVoteRecord]? {
+        records?.filter { normalizedLabels.contains($0.normalizedLabel) }
+    }
+    func deleteAll() {}
+}
+
+final class PreviewPrefs: VotingSelectionStoring {
+    var votingNodeSelection: Set<Data>
+    var isVotingSetUp: Bool
+
+    init(selection: Set<Data> = [], isVotingSetUp: Bool = false) {
+        votingNodeSelection = selection
+        self.isVotingSetUp = isVotingSetUp
+    }
+}
+
+private enum VotingPreviewError: LocalizedError {
+    case unavailable
+
+    var errorDescription: String? { "Dash Platform is not connected yet." }
+}
+
+@MainActor
+private func previewScreen(
+    contests: [DPNSContest],
+    nodes: [VoterNode] = [],
+    mayBeIncomplete: Bool = false,
+    nodeListSynced: Bool = true,
+    failure: Error? = nil,
+    failAfterFirstLoad: Bool = false,
+    historyUnreadable: Bool = false,
+    filterType: VotingTypeFilter = .all,
+    onlyWithLinks: Bool = false,
+    links: @escaping @MainActor (String, String) async throws -> URL? = { _, _ in nil },
+    toast: VotingToast? = nil
+) -> some View {
+    let store = VotingStore(
+        contests: PreviewContests(contests: contests, failure: failure, failAfterFirstLoad: failAfterFirstLoad),
+        nodes: PreviewNodes(nodes: nodes, mayBeIncomplete: mayBeIncomplete, isNodeListSynced: nodeListSynced),
+        caster: PreviewCaster(),
+        history: PreviewHistory(records: historyUnreadable ? nil : []),
+        prefs: PreviewPrefs(),
+        linkLookup: VotingStore.lookingUpEachRequest(links))
+    let viewModel = VotingViewModel(store: store)
+    viewModel.list.filter.type = filterType
+    viewModel.list.filter.onlyWithLinks = onlyWithLinks
+    if let toast { viewModel.list.showToast(toast) }
+    return NavigationStack {
+        UsernameVotingScreen(onClose: {}, viewModel: viewModel)
+    }
+    // A second load, queued behind the screen's own first one, which fails.
+    .task { if failAfterFirstLoad { await store.refresh() } }
+}
+
+private let previewEnd = Date(timeIntervalSince1970: 1_800_000_000)
+
+private let previewContests: [DPNSContest] = [
+    DPNSContest(normalizedLabel: "johndoe", endTime: previewEnd, hasWinner: false,
+                abstainVotes: 0, lockVotes: 2, contenders: []),
+    DPNSContest(normalizedLabel: "a11ce", endTime: previewEnd.addingTimeInterval(3 * 86_400), hasWinner: false,
+                abstainVotes: 1, lockVotes: 0, contenders: []),
+    DPNSContest(normalizedLabel: "somelongusernamethatkeepsgoingandgoing", endTime: nil, hasWinner: false,
+                abstainVotes: 0, lockVotes: 0, contenders: []),
+]
+
+private let previewNode = VoterNode(
+    proTxHash: Data([1]), isEvonode: false, typeIndex: 1, serviceAddress: nil, keySource: .walletIndex(0))
+
+#Preview("Loaded") {
+    previewScreen(contests: previewContests, nodes: [previewNode])
+}
+
+#Preview("No open contests") {
+    previewScreen(contests: [], nodes: [previewNode])
+}
+
+#Preview("Node list may be incomplete") {
+    previewScreen(contests: previewContests, mayBeIncomplete: true)
+}
+
+#Preview("Load failed") {
+    previewScreen(contests: [], failure: VotingPreviewError.unavailable)
+}
+
+#Preview("Refresh failed with rows") {
+    previewScreen(contests: previewContests, nodes: [previewNode], failAfterFirstLoad: true)
+}
+
+#Preview("Vote history unreadable") {
+    previewScreen(contests: previewContests, nodes: [previewNode], failAfterFirstLoad: true, historyUnreadable: true)
+}
+
+#Preview("Vote failed toast") {
+    previewScreen(
+        contests: previewContests, nodes: [previewNode],
+        toast: .failed("Couldn't reach the network. Your vote was not cast."))
+}
+
+#Preview("Voted toast") {
+    previewScreen(contests: previewContests, nodes: [previewNode], toast: .voted(username: "johndoe"))
+}
+
+#Preview("Filter matches nothing") {
+    previewScreen(contests: previewContests, nodes: [previewNode], filterType: .approved)
+}
+
+#Preview("Can't filter by your votes") {
+    previewScreen(contests: previewContests, nodeListSynced: false, filterType: .notVoted)
+}
+
+#Preview("No votes to filter by") {
+    previewScreen(contests: previewContests, filterType: .notVoted)
+}
+
+/// johndoe with three requests, the second linked; alice with two, neither.
+private let previewLinkContests: [DPNSContest] = [
+    DPNSContest(normalizedLabel: "johndoe", endTime: previewEnd, hasWinner: false, abstainVotes: 0, lockVotes: 1,
+                contenders: (1...3).map { DPNSContender(identityId: "johndoe-request-\($0)", voteTally: UInt32($0)) }),
+    DPNSContest(normalizedLabel: "alice", endTime: previewEnd, hasWinner: false, abstainVotes: 0, lockVotes: 0,
+                contenders: (1...2).map { DPNSContender(identityId: "alice-request-\($0)", voteTally: 0) }),
+]
+
+#Preview("Only requests with links") {
+    previewScreen(
+        contests: previewLinkContests, nodes: [previewNode], onlyWithLinks: true,
+        links: { _, identity in identity == "johndoe-request-2" ? URL(string: "https://example.com/proof") : nil })
+}
+
+#Preview("Can't filter by links") {
+    previewScreen(
+        contests: previewLinkContests, nodes: [previewNode], onlyWithLinks: true,
+        links: { _, _ in throw VotingPreviewError.unavailable })
+}
+#endif
