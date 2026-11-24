@@ -852,13 +852,13 @@ final class SendViewModel: ObservableObject {
 
     /// Which balances can pay a contact. Transparent pays through
     /// `prepareDashPayPayment`, which derives the contact's address and signs
-    /// in one SDK call. Platform and Shielded pay through a withdrawal to an
+    /// in one SDK call. Platform pays through a withdrawal to an
     /// address reserved with `reserveContactPaymentAddress` once the payment
     /// is confirmed; without the captured wallet context there is nothing to
     /// check that reservation against, so only Transparent remains — as it
     /// does for a host that offers only Transparent.
     static func contactValidSources(hasWalletContext: Bool, transparentOnly: Bool = false) -> [ChainNetwork] {
-        hasWalletContext && !transparentOnly ? [.core, .platform, .shielded] : [.core]
+        hasWalletContext && !transparentOnly ? [.core, .platform] : [.core]
     }
 
     /// What the contact intro offers as the balance to spend: the envelope

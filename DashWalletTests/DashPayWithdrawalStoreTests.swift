@@ -776,6 +776,24 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
     }
 
     @MainActor
+    func testShieldedContactWithdrawalIsRefusedBeforeWalletResolutionOrReservation() async throws {
+        let coordinator = ShieldedTransferCoordinator(contactWithdrawalStore: store)
+        let recipient = ContactPaymentRecipient(
+            identityId: contact, displayName: "Contact", walletId: scope.walletId,
+            ownerIdentityId: scope.ownerIdentityId, network: .testnet)
+
+        await coordinator.performWithdraw(amountCredits: 2_000_000_000, contactRecipient: recipient)
+
+        guard case ShieldedTransferCoordinator.CoordinatorError.shieldedContactPaymentsUnavailable? = coordinator.lastFailure else {
+            return XCTFail("A contact withdrawal must be refused before resolving the active wallet")
+        }
+        XCTAssertEqual(coordinator.phase, .failed(
+            ShieldedTransferCoordinator.CoordinatorError.shieldedContactPaymentsUnavailable.localizedDescription))
+        XCTAssertTrue(try store.entries(scope: scope, contactIdentityId: contact).isEmpty)
+        XCTAssertFalse(coordinator.contactWithdrawalOutcomeUnknown)
+    }
+
+    @MainActor
     func testProvenNonSubmissionDropsTheAttemptAndAllowsRetry() throws {
         let (coordinator, attempt) = try coordinatorAndAttempt()
         let concluded = coordinator.concludeUncertainContactWithdrawal(
@@ -910,9 +928,10 @@ final class ContactPaymentSourceTests: XCTestCase {
         XCTAssertFalse(result.offersChoice)
     }
 
-    func testOnlyShieldedFundedOpensOnShieldedWithoutChoice() {
+    func testOnlyShieldedFundedDoesNotOfferShieldedContactPayments() {
         let result = plan([.shielded: 2_000_000])
-        XCTAssertEqual(result.initialSource, .shielded)
+        XCTAssertEqual(result.sources, [.core])
+        XCTAssertEqual(result.initialSource, .core)
         XCTAssertFalse(result.offersChoice)
     }
 
@@ -920,6 +939,7 @@ final class ContactPaymentSourceTests: XCTestCase {
         let result = plan([.core: 1, .platform: 2_000_000, .shielded: 3_000_000])
         XCTAssertEqual(result.initialSource, .core)
         XCTAssertTrue(result.offersChoice)
+        XCTAssertEqual(result.sources, [.core, .platform])
     }
 
     /// The caller passes Transparent's fee-aware spendable amount, which is
@@ -1046,7 +1066,10 @@ final class ContactPaymentSourceTests: XCTestCase {
 
         let picker = SendViewModel(contactLookup: { _ in contact }, contactPayableDuffs: { _ in 1_000 })
         picker.setContactRecipient(contact, paymentRecipient: captured)
-        XCTAssertEqual(picker.validSources, [.core, .platform, .shielded])
+        XCTAssertEqual(picker.validSources, [.core, .platform])
+        picker.source = .shielded
+        XCTAssertNil(picker.route)
+        XCTAssertFalse(picker.canContinue)
     }
 
     /// The From step lists only the balances one contact payment can be
@@ -1057,8 +1080,8 @@ final class ContactPaymentSourceTests: XCTestCase {
         let payable: [ChainNetwork: UInt64] = [.core: 5_000, .platform: 0, .shielded: 2_000]
         let viewModel = SendViewModel(contactLookup: { _ in contact }, contactPayableDuffs: { payable[$0] ?? 0 })
         viewModel.setContactRecipient(contact, paymentRecipient: capturedRecipient(for: contact))
-        XCTAssertEqual(viewModel.validSources, [.core, .shielded])
-        XCTAssertTrue(viewModel.contactOffersSourceChoice)
+        XCTAssertEqual(viewModel.validSources, [.core])
+        XCTAssertFalse(viewModel.contactOffersSourceChoice)
         XCTAssertEqual(viewModel.source, .core)
         viewModel.source = .platform
         XCTAssertNil(viewModel.route)

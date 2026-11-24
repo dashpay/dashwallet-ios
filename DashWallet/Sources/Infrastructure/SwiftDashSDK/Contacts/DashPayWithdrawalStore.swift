@@ -91,16 +91,13 @@ final class DashPayWithdrawalStore {
         case corePayment
     }
 
-    /// What the SDK's Shielded activity says about a Shielded withdrawal. The
-    /// SDK records its Pending row just before the spend is dispatched, and
-    /// can re-broadcast the spend while that row stays Pending; a stranded
-    /// spend it releases is flipped to Failed.
+    /// Activity projection for records from earlier builds, not the SDK's
+    /// durable recovery authority. New Shielded contact sends are disabled.
     enum ShieldedSpendState {
         case pending
         case confirmed
         case failed
-        /// No row, or one the user stopped recovering (Unknown): nothing is
-        /// re-broadcast, but the row is written best-effort.
+        /// No row, or an Unknown row; neither proves non-submission.
         case unrecorded
     }
 

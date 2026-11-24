@@ -380,6 +380,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         /// A contact payment's fee was not known, so neither the
         /// confirmation nor the PIN could have covered all it spends.
         case contactPaymentNotPriced
+        case shieldedContactPaymentsUnavailable
         /// A contact payment, priced again, would now be charged more than
         /// the fee it was confirmed and authorized with.
         case contactFeeChanged
@@ -409,7 +410,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
         var errorDescription: String? {
             switch self {
             case .noWallet:
-                return String(localized: "Wallet is not ready for transfer", comment: "InternalTransfer")
+                return NSLocalizedString("Wallet is not ready for transfer", comment: "InternalTransfer")
+            case .shieldedContactPaymentsUnavailable:
+                return NSLocalizedString("Shielded payments to contacts are not available yet. Use your Transparent or Platform balance.", comment: "Send to contact: Shielded funding is deferred")
             case .noNetwork:
                 return String(localized: "Network is not configured", comment: "InternalTransfer")
             case .noModelContainer:
@@ -1508,8 +1511,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// transfer); an external Send passes the recipient's address. The
     /// withdrawal-store tag (which classifies the incoming L1 tx as
     /// "Shielded received") only applies to the own-wallet payout.
-    /// `contactRecipient` pays a DashPay contact instead: a fresh address of
-    /// theirs is reserved once the user has authorized the payment.
+    /// Contact payments are refused until SDK withdrawal recovery is available.
     func performWithdraw(
         amountCredits: UInt64,
         sweepAll: Bool = false,
@@ -1518,6 +1520,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
         contactNetworkFeeCredits: UInt64? = nil
     ) async {
         guard beginTransfer() else { return }
+        guard contactRecipient == nil else {
+            handleFailure(CoordinatorError.shieldedContactPaymentsUnavailable)
+            return
+        }
         Self.logger.info("🛡️ SHIELD-TX :: withdraw route amount=\(amountCredits) credits external=\(destinationOverride != nil)")
 
         let env: Environment
@@ -2386,6 +2392,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         source: DashPayWithdrawalStore.Source
     ) async throws -> ContactWithdrawal? {
         guard let recipient else { return nil }
+        guard source != .shielded else { throw CoordinatorError.shieldedContactPaymentsUnavailable }
         #if DASHPAY
         return try await WalletSendService.shared.reserveContactPaymentAddress(
             for: recipient,

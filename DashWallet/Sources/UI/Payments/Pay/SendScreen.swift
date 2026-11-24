@@ -483,6 +483,12 @@ struct ExternalSendAmountScreen: View {
                             .padding(.horizontal, 20)
                     }
                     #if DASHPAY
+                    if isContactSend {
+                        Text(ShieldedTransferCoordinator.CoordinatorError.shieldedContactPaymentsUnavailable.localizedDescription)
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 20)
+                    }
                     if viewModel.contactPriorPaymentAwaitsDecision {
                         Button(NSLocalizedString("Pay again", comment: "Send to contact: pay despite an earlier payment whose outcome is unknown")) {
                             showPayAgainConfirm = true
