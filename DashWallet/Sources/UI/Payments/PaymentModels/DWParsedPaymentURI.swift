@@ -30,10 +30,63 @@ enum DashAddressClassifier {
         case shielded(raw43: Data)
     }
 
+    /// What a bech32m string (HRP `dash`/`tdash`) holds on the wire, with the network its HRP names.
+    struct Bech32mAddress: Equatable {
+        enum Form: Equatable {
+            /// `isScript`: 0x80 (P2SH) rather than 0xb0 (P2PKH); `hash`: the 20-byte key or script hash.
+            case platform(isScript: Bool, hash: Data)
+            case shielded(raw43: Data)
+        }
+
+        let isMainnet: Bool
+        let form: Form
+    }
+
+    /// The longest bech32m text a destination can have: a testnet Shielded address, the `tdash` HRP, the `1`
+    /// separator, the 44-byte payload as 5-bit characters (71) and the 6-character checksum, 83 in all.
+    static let maxBech32mLength = Bech32m.platformHrpTestnet.utf8.count + 1 + (44 * 8 + 4) / 5 + 6
+
+    /// Decode a DIP-0018 bech32m string without reading the global network:
+    /// - 21-byte payload with a wire type byte (0xb0 P2PKH / 0x80 P2SH) → `.platform`
+    /// - 44-byte payload `0x10` + 43 raw Orchard bytes → `.shielded`
+    /// Anything else (a broken checksum, another HRP, another payload) → nil. A text longer than
+    /// `maxBech32mLength` or with a non-ASCII character is refused before `decode` reads it, so a long pasted or
+    /// linked text is never decoded and `Bech32m.decode` never sees a character without an ASCII value. Bech32m is
+    /// all lowercase or all uppercase (BIP-173), so a text with both is refused before it is lowercased.
+    static func decodeBech32m(_ text: String,
+                              decode: (String) -> Bech32m.DecodeResult? = Bech32m.decode) -> Bech32mAddress? {
+        guard text.utf8.count <= maxBech32mLength, text.utf8.allSatisfy({ $0 < 128 }),
+              !isMixedCase(text),
+              let decoded = decode(text.lowercased()) else { return nil }
+        let isMainnet: Bool
+        switch decoded.hrp {
+        case Bech32m.platformHrp(mainnet: true): isMainnet = true
+        case Bech32m.platformHrp(mainnet: false): isMainnet = false
+        default: return nil
+        }
+
+        if decoded.data.count == 21,
+           decoded.data[0] == 0xb0 || decoded.data[0] == 0x80 {
+            return Bech32mAddress(isMainnet: isMainnet, form: .platform(isScript: decoded.data[0] == 0x80,
+                                                                        hash: decoded.data.subdata(in: 1..<21)))
+        }
+        // DIP-0018 shielded display form: 0x10 type byte + 43 raw Orchard
+        // bytes (the encoding `PaymentsLandingViewModel.reloadShieldedAddress`
+        // produces for our own address).
+        if decoded.data.count == 44, decoded.data[0] == 0x10 {
+            return Bech32mAddress(isMainnet: isMainnet, form: .shielded(raw43: decoded.data.subdata(in: 1..<44)))
+        }
+        return nil
+    }
+
+    /// True when an ASCII text has both an uppercase and a lowercase letter.
+    private static func isMixedCase(_ text: String) -> Bool {
+        text.utf8.contains { (UInt8(ascii: "A")...UInt8(ascii: "Z")).contains($0) }
+            && text.utf8.contains { (UInt8(ascii: "a")...UInt8(ascii: "z")).contains($0) }
+    }
+
     /// - Base58Check L1 address (network-checked) → `.core`
-    /// - bech32m HRP `dash`/`tdash` (current network), 21-byte payload with a
-    ///   DIP-0018 wire type byte (0xb0 P2PKH / 0x80 P2SH) → `.platform`
-    /// - bech32m, 44-byte payload `0x10` + 43 raw Orchard bytes → `.shielded`
+    /// - bech32m Platform / Shielded form (`decodeBech32m`) on the current network
     /// Anything else (wrong-network HRP included) → nil.
     static func classify(_ text: String) -> Kind? {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -43,22 +96,12 @@ enum DashAddressClassifier {
             return .core
         }
 
-        guard let decoded = Bech32m.decode(trimmed.lowercased()) else { return nil }
         // Mainnet HRP only on mainnet — devnet parses with the testnet HRP.
-        let expectedHrp = Bech32m.platformHrp(mainnet: WalletEnvironment.isMainnet)
-        guard decoded.hrp == expectedHrp else { return nil }
-
-        if decoded.data.count == 21,
-           decoded.data[0] == 0xb0 || decoded.data[0] == 0x80 {
-            return .platform
+        guard let decoded = decodeBech32m(trimmed), decoded.isMainnet == WalletEnvironment.isMainnet else { return nil }
+        switch decoded.form {
+        case .platform: return .platform
+        case .shielded(let raw43): return .shielded(raw43: raw43)
         }
-        // DIP-0018 shielded display form: 0x10 type byte + 43 raw Orchard
-        // bytes (the encoding `PaymentsLandingViewModel.reloadShieldedAddress`
-        // produces for our own address).
-        if decoded.data.count == 44, decoded.data[0] == 0x10 {
-            return .shielded(raw43: decoded.data.subdata(in: 1..<44))
-        }
-        return nil
     }
 }
 
@@ -142,11 +185,22 @@ final class ParsedPaymentURI: NSObject {
 
     /// Parse any interactive payment string. **Total** — an unparseable input yields a
     /// rawString-only box with false verdicts (mirroring `DSPaymentRequest requestWithString:`,
-    /// which always returns an object), so ObjC nil-messaging needs no special cases.
+    /// which always returns an object), so ObjC nil-messaging needs no special cases. A link whose
+    /// amount or callback is invalid or given twice with different values, whose required label or
+    /// message is given twice with different values, or whose query is broken across lines or words
+    /// gets the same box: paying it would pay something other than what it asks. A malformed optional
+    /// amount beside an http(s) payment request leaves the amount to the merchant's request: the box
+    /// keeps the request and drops the address, so a failed fetch never pays the address instead.
     @objc(parsePaymentString:)
     static func parse(paymentString raw: String) -> ParsedPaymentURI {
         let paymentString = deepLinkPaymentString(for: raw) ?? raw
-        guard let uri = BIP70URI(paymentString: paymentString) else {
+        let parsedURI = BIP70URI(paymentString: paymentString)
+        let amountFromRequest = parsedURI.map {
+            $0.hasInvalidAmount && $0.r.flatMap(DestinationParser.paymentRequestURL) != nil
+                && !$0.requiredFields.contains("amount")
+        } ?? false
+        guard let uri = parsedURI, !uri.hasInvalidAmount || amountFromRequest, !uri.hasConflictingCallback,
+              !uri.hasConflictingRequiredText, !uri.hasMalformedQuery else {
             return ParsedPaymentURI(rawString: raw, scheme: nil, address: nil, amount: 0,
                                     label: nil, message: nil, rURL: nil, callbackScheme: nil,
                                     dashpayUsername: nil, fiatCurrencyCode: nil, fiatAmount: 0,
@@ -155,13 +209,14 @@ final class ParsedPaymentURI: NSObject {
                                     requiresSendScreenRouting: false)
         }
 
-        let addressValid = uri.address?.isValidDashAddressForCurrentNetwork ?? false
-        let classified = uri.address.flatMap(DashAddressClassifier.classify)
+        let address = amountFromRequest ? nil : uri.address
+        let addressValid = address?.isValidDashAddressForCurrentNetwork ?? false
+        let classified = address.flatMap(DashAddressClassifier.classify)
         let isBech32Destination = !addressValid && classified != nil
 
         return ParsedPaymentURI(rawString: raw,
                                 scheme: uri.scheme,
-                                address: uri.address,
+                                address: address,
                                 amount: uri.amount ?? 0,
                                 label: uri.label,
                                 message: uri.message,

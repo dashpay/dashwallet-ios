@@ -36,12 +36,30 @@ struct BIP70URI {
     /// `?amount=` parsed from decimal DASH to duffs. Authoritative amount for a BIP70 send still
     /// comes from the signed `PaymentDetails`; this is for the plain-send fallback / UI hints.
     let amount: UInt64?
+    /// true when `amount=` (or `req-amount=`) is present but empty, not a plain decimal as a whole, beyond `UInt64`
+    /// duffs, or given more than once with different values: `amount` is nil then too, and a reader that rejects such
+    /// a link tells the two apart here. The same amount given twice is that amount.
+    let hasInvalidAmount: Bool
     let label: String?
     let message: String?
     /// `?r=` BIP72 payment-request URL — the BIP70 trigger. For `.bip73URL` it's the input itself.
     let r: URL?
-    /// `?sender=` x-callback-url scheme to open after a successful send.
+    /// How many `r=` / `req-r=` fields the link carries, whether or not their value parsed as a URL: a reader that
+    /// refuses a link with a payment request, or with more than one, counts the fields here, not `r`.
+    let paymentRequestFieldCount: Int
+    /// `?sender=` x-callback-url scheme to open after a successful send. nil when `sender` and `req-sender` differ.
     let callbackScheme: String?
+    /// true when `sender=` / `req-sender=` are given more than once with different values (compared without regard
+    /// to case, as URL schemes are): which app to call back is open, so a reader that honors the callback rejects the
+    /// link.
+    let hasConflictingCallback: Bool
+    /// true when `label=` / `req-label=` or `message=` / `req-message=` give different values and one of them is
+    /// required: which text the link requires is open, so a reader rejects the link.
+    let hasConflictingRequiredText: Bool
+    /// true when the query cannot be read whole: a line break or tab sits in it, or a field name holds a space. The
+    /// link was broken across lines or words, and a field after the break (`req-r=` among them) would be read as part
+    /// of another or dropped, so a reader rejects the link.
+    let hasMalformedQuery: Bool
     /// `?user=` DashPay username. Parse-side value carry only — DashPay flows are deferred (C10).
     let dashpayUsername: String?
     /// `?currency=` requested fiat code (our own receive screen emits it alongside `local=`).
@@ -92,10 +110,17 @@ struct BIP70URI {
 
         // Parse the query string.
         var amount: UInt64?
+        var hasInvalidAmount = false
+        var hasAmount = false
         var label: String?
         var message: String?
         var r: URL?
-        var callbackScheme: String?
+        var paymentRequestFieldCount = 0
+        var callbackValue: String?
+        var hasConflictingCallback = false
+        var textValues: [String: Set<String>] = [:]
+        var requiredTextFields: Set<String> = []
+        var hasMalformedQuery = queryPart?.contains(where: { $0.isNewline || $0 == "\t" }) ?? false
         var dashpayUsername: String?
         var fiatCurrencyCode: String?
         var fiatAmount: Float?
@@ -106,16 +131,34 @@ struct BIP70URI {
             guard let rawKey = kv.first else { continue }
             let key = String(rawKey).removingPercentEncoding ?? String(rawKey)
             let value = kv.count > 1 ? (String(kv[1]).removingPercentEncoding ?? String(kv[1])) : ""
+            if rawKey.contains(where: \.isWhitespace) { hasMalformedQuery = true }
 
             if key.hasPrefix("req-") { requiredFields.insert(String(key.dropFirst(4))) }
 
             switch key {
-            case "amount", "req-amount": amount = Self.duffs(fromDecimalDash: value)
-            case "label", "req-label": label = value
-            case "message", "req-message": message = value
-            case "r", "req-r": r = URL(string: value)
-            // Not a scheme an app can own → no callback; the rest of the link still stands.
-            case "sender", "req-sender": callbackScheme = CallbackScheme.validated(value)
+            case "amount", "req-amount":
+                // A second, different amount, either spelling, leaves which one the link means open; a payment page
+                // that repeats the link's own amount still means that amount.
+                let parsed = Self.duffs(fromDecimalDash: value)
+                if !hasAmount {
+                    amount = parsed
+                    hasInvalidAmount = parsed == nil
+                } else if parsed == nil || parsed != amount {
+                    amount = nil
+                    hasInvalidAmount = true
+                }
+                hasAmount = true
+            case "label", "req-label", "message", "req-message":
+                let name = key.hasPrefix("req-") ? String(key.dropFirst(4)) : key
+                if key.hasPrefix("req-") { requiredTextFields.insert(name) }
+                textValues[name, default: []].insert(value)
+                if name == "label" { label = value } else { message = value }
+            case "r", "req-r":
+                r = URL(string: value)
+                paymentRequestFieldCount += 1
+            case "sender", "req-sender":
+                if let callbackValue, callbackValue.lowercased() != value.lowercased() { hasConflictingCallback = true }
+                callbackValue = callbackValue ?? value
             case "user", "req-user": dashpayUsername = value
             case "currency", "req-currency": fiatCurrencyCode = value
             case "local", "req-local": fiatAmount = (value as NSString).floatValue
@@ -124,10 +167,17 @@ struct BIP70URI {
         }
 
         self.amount = amount
+        self.hasInvalidAmount = hasInvalidAmount
         self.label = label
         self.message = message
         self.r = r
-        self.callbackScheme = callbackScheme
+        self.paymentRequestFieldCount = paymentRequestFieldCount
+        // Not a scheme an app can own → no callback; the rest of the link still stands.
+        self.callbackScheme = hasConflictingCallback ? nil : CallbackScheme.validated(callbackValue)
+        self.hasConflictingCallback = hasConflictingCallback
+        // Any two different values of a field one of whose spellings is required, in whatever order they came.
+        self.hasConflictingRequiredText = requiredTextFields.contains { (textValues[$0]?.count ?? 0) > 1 }
+        self.hasMalformedQuery = hasMalformedQuery
         self.dashpayUsername = dashpayUsername
         self.fiatCurrencyCode = fiatCurrencyCode
         self.fiatAmount = fiatAmount
@@ -164,10 +214,15 @@ struct BIP70URI {
         scheme = "dash"
         address = bareAddressCandidate
         amount = nil
+        hasInvalidAmount = false
         label = nil
         message = nil
         r = nil
+        paymentRequestFieldCount = 0
         callbackScheme = nil
+        hasConflictingCallback = false
+        hasConflictingRequiredText = false
+        hasMalformedQuery = false
         dashpayUsername = nil
         fiatCurrencyCode = nil
         fiatAmount = nil
@@ -179,10 +234,15 @@ struct BIP70URI {
         self.scheme = scheme
         address = nil
         amount = nil
+        hasInvalidAmount = false
         label = nil
         message = nil
         r = url
+        paymentRequestFieldCount = 1
         callbackScheme = nil
+        hasConflictingCallback = false
+        hasConflictingRequiredText = false
+        hasMalformedQuery = false
         dashpayUsername = nil
         fiatCurrencyCode = nil
         fiatAmount = nil
@@ -191,12 +251,24 @@ struct BIP70URI {
 
     /// Decimal DASH string → duffs (1 DASH = 100_000_000 duffs), via `Decimal` to avoid binary
     /// floating-point error, rounding **up** to the next duff for sub-duff remainders
-    /// (`DSPaymentRequest.m:146` `NSRoundUp` parity). nil for an unparseable or negative amount.
+    /// (`DSPaymentRequest.m:146` `NSRoundUp` parity). nil unless the whole value is a decimal number (digits with at
+    /// most one `.`, optionally an exponent as `DSPaymentRequest` took it; `Decimal(string:)` alone takes a numeric
+    /// prefix of `1abc` or `1.2.3`), and for one whose duffs do not fit `UInt64` (`uint64Value` would return an
+    /// arbitrary value for it, and a product past `Decimal`'s range is NaN, which compares below any bound). The value
+    /// is bounded in length and its pattern has no overlapping repetitions, so a crafted amount is refused in linear
+    /// time.
     private static func duffs(fromDecimalDash value: String) -> UInt64? {
-        guard !value.isEmpty, let dash = Decimal(string: value), dash >= 0 else { return nil }
-        return NSDecimalNumber(decimal: dash * Decimal(100_000_000))
-            .rounding(accordingToBehavior: roundUpToDuff).uint64Value
+        guard value.utf8.count <= maxAmountLength,
+              value.wholeMatch(of: /(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?/) != nil,
+              let dash = Decimal(string: value, locale: Locale(identifier: "en_US_POSIX")) else { return nil }
+        let duffs = NSDecimalNumber(decimal: dash * Decimal(100_000_000)).rounding(accordingToBehavior: roundUpToDuff)
+        guard !duffs.decimalValue.isNaN,
+              duffs.compare(NSDecimalNumber(value: UInt64.max)) != .orderedDescending else { return nil }
+        return duffs.uint64Value
     }
+
+    /// Longer than any amount a wallet writes: `UInt64.max` duffs is 21 characters as DASH.
+    private static let maxAmountLength = 64
 
     private static let roundUpToDuff = NSDecimalNumberHandler(roundingMode: .up,
                                                               scale: 0,

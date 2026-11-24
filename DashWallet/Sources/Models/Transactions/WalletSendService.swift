@@ -1008,7 +1008,7 @@ private final class SendAuthorizer {
     }
 }
 
-private extension WalletSendService {
+extension WalletSendService {
     enum ErrorCode: Int {
         case authenticationCancelled = 1
         case authenticationFailed = 2
@@ -1024,7 +1024,9 @@ private extension WalletSendService {
     }
 
     static let errorDomain = "org.dashfoundation.dash.wallet-send-service"
+}
 
+private extension WalletSendService {
     /// Translate the SDK's contact-payment errors into ones the app acts on.
     ///
     /// A broadcast outcome the SDK could not confirm becomes this service's
