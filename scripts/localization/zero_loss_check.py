@@ -136,8 +136,8 @@ def check_baseline_build(folder, baseline):
     built = read_record(folder, BASELINE_COMMIT_FILE)
     if built != baseline:
         raise CannotRun("the baseline derived data %s was not built from baseline commit %s (record: %s); "
-                        "rebuild it with scripts/localization/build_baseline.sh %s"
-                        % (folder, baseline, built or "missing", baseline))
+                        "delete it (rm -rf \"%s\") and rebuild it with scripts/localization/build_baseline.sh %s"
+                        % (folder, baseline, built or "missing", folder, baseline))
     return read_record(folder, BASELINE_ROOT_FILE) or None
 
 
