@@ -2,7 +2,7 @@ name: Freeze published App Store schema
 
 on:
   schedule:
-    - cron: '17 5,17 * * *'
+    - cron: '17 */4 * * *'
   workflow_dispatch:
     inputs:
       mode:
