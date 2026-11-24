@@ -24,8 +24,6 @@ extension IntegrationViewController {
             return BuyDashViewController()
         case .sellDash:
             return BuyDashViewController()
-//        case .convertCrypto:
-//            return CustodialSwapsViewController()
         case .transferDash:
             return TransferAmountHostingController()
         }

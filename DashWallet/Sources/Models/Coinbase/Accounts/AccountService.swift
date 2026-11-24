@@ -42,10 +42,6 @@ class AccountService {
         try await accountRepository.account(by: name)
     }
 
-    public func allAccounts() async throws -> [CBAccount] {
-        try await accountRepository.all()
-    }
-
     /// Returns all crypto accounts regardless of balance.
     /// Used by Maya to find accounts for currencies with zero balance.
     public func allAccountsIncludingEmpty() async throws -> [CBAccount] {
@@ -78,15 +74,6 @@ class AccountService {
         if result.status != "created" {
             throw Coinbase.Error.general(.depositFailed)
         }
-    }
-
-    func placeTradeOrder(from origin: CBAccount, to destination: CBAccount, amount: String) async throws -> CoinbaseSwapeTrade {
-        try await origin.convert(amount: amount, to: destination)
-    }
-
-    public func commitTradeOrder(origin: CBAccount, orderID: String) async throws -> CoinbaseSwapeTrade {
-        let order = try await origin.commitTradeOrder(orderID: orderID)
-        return order
     }
 
     func removeStoredAccount() {

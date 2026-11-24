@@ -61,13 +61,6 @@ protocol ConverterViewDataSource: AnyObject {
     var toItem: SourceViewDataProvider? { get }
 }
 
-// MARK: - ConverterViewDelegate
-
-protocol ConverterViewDelegate: AnyObject {
-    func didChangeDirection()
-    func didTapOnFromView()
-}
-
 // MARK: - ConverterView
 
 class ConverterView: UIView {
@@ -89,7 +82,6 @@ class ConverterView: UIView {
         }
     }
 
-    public weak var delegate: ConverterViewDelegate?
     public weak var dataSource: ConverterViewDataSource? {
         didSet {
             updateView()
@@ -116,13 +108,10 @@ class ConverterView: UIView {
     }
 
     @objc
-    func fromViewTapAction() {
-        delegate?.didTapOnFromView()
-    }
+    func fromViewTapAction() { }
 
     @objc
     func swapAction() {
-        delegate?.didChangeDirection()
         updateView()
 
         UIView.animate(withDuration: 0.2) {

@@ -57,38 +57,6 @@ class AccountRepository {
         accountManager.store(account: account)
     }
 
-    /// Fetch all accounts with positive balance
-    ///
-    /// - Returns: Array of `CBAccount`
-    ///
-    /// - Throws: `Coinbase.Error`
-    ///
-    /// - Note: Only crypto accounts
-    ///
-    func all() async throws -> [CBAccount] {
-        var items: [CBAccount] = []
-        items.reserveCapacity(300)
-
-        var endpoint: CoinbaseEndpoint? = .accounts
-        while endpoint != nil {
-            let response: BasePaginationResponse<CoinbaseUserAccountData> = try await CoinbaseAPI.shared.request(endpoint!)
-            items += response.data
-                // `balance.amount` is a string straight out of the Coinbase
-                // response; anything Decimal can't parse is treated as no
-                // balance rather than force-unwrapped into a crash.
-                .filter { $0.currency.type == .crypto && ($0.balance.amount.decimal() ?? 0) > 0 }
-                .map { .init(info: $0, authInterop: authInterop) }
-
-            if let nextUri = response.pagination.nextURI, !nextUri.isEmpty {
-                endpoint = .path(nextUri)
-            } else {
-                endpoint = nil
-            }
-        }
-
-        return items
-    }
-
     /// Fetch all crypto accounts regardless of balance.
     /// Used by Maya to find accounts for currencies with zero balance.
     func allIncludingEmpty() async throws -> [CBAccount] {
