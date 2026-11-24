@@ -25,24 +25,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// Longest note shown from an unsigned payment request.
-static const NSUInteger kUnverifiedNoteMaxLength = 140;
-
-/// One line, capped: line breaks and runs of whitespace become a single space before the
-/// text is sanitized, then the result is cut to `maxLength` UTF-16 units, the ellipsis included,
-/// without splitting a composed character.
-static NSString *singleLineString(NSString *s, NSUInteger maxLength) {
-    NSArray<NSString *> *parts = [s componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-    NSArray<NSString *> *words = [parts filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"length > 0"]];
-    NSString *line = [words componentsJoinedByString:@" "].spellingOutUnicodeNames;
-    if (line.length > maxLength) {
-        NSUInteger cut = [line rangeOfComposedCharacterSequenceAtIndex:maxLength - 1].location;
-        line = [[line substringToIndex:cut] stringByAppendingString:@"…"];
-    }
-    return line;
-}
-
-
 @implementation DWPaymentOutput (DWView)
 
 //- (id<DWTitleDetailItem> _Nullable)addressWith:(UIFont * _Nonnull)font tintColor:(UIColor * _Nonnull)tintColor {
@@ -180,14 +162,10 @@ static NSString *singleLineString(NSString *s, NSUInteger maxLength) {
 #pragma mark - Private
 
 - (nullable NSString *)nameString {
-    if (self.isMerchantRequest && !self.isSecure) {
-        // Unsigned BIP70 request: the name is whatever the issuer typed into `pki_data`, so it
-        // is labelled as unverified — and the label shows even when no name was sent.
-        if (self.name.length > 0) {
-            return [NSString stringWithFormat:NSLocalizedString(@"Unverified recipient: %@", @"Payment confirmation: name supplied by an unsigned payment request"),
-                                              self.name.spellingOutUnicodeNames];
-        }
-        return NSLocalizedString(@"Unverified recipient", @"Payment confirmation: unsigned payment request without a name");
+    DWBIP70ConfirmationBox *request = [self merchantRequest];
+    if (request) {
+        // The rules every confirm screen of a fetched request shares (BIP70InteractivePolicy).
+        return [DWBIP70ConfirmationBox recipientNameForMerchantName:self.name isSecure:self.isSecure];
     }
 
     if (self.name.length > 0) {
@@ -203,44 +181,38 @@ static NSString *singleLineString(NSString *s, NSUInteger maxLength) {
     return nil;
 }
 
+/// The fetched BIP70 request this output pays; nil for a non-BIP70 output.
+- (nullable DWBIP70ConfirmationBox *)merchantRequest {
+    if (!self.isMerchantRequest || ![self.bip70Confirmation isKindOfClass:[DWBIP70ConfirmationBox class]]) {
+        return nil;
+    }
+    return (DWBIP70ConfirmationBox *)self.bip70Confirmation;
+}
+
 /// Number of different addresses a BIP70 request pays; 0 for a non-BIP70 output.
 - (NSInteger)merchantRecipientCount {
-    if (![self.bip70Confirmation isKindOfClass:[DWBIP70ConfirmationBox class]]) {
-        return 0;
-    }
-    return ((DWBIP70ConfirmationBox *)self.bip70Confirmation).recipientCount;
+    return [self merchantRequest].recipientCount;
 }
 
 - (nullable NSString *)generalInfoString {
     BOOL hasInfo = NO;
     NSString *info = @"";
-    if (self.memo.length > 0) {
-        if (self.isMerchantRequest && !self.isSecure) {
-            // The note of an unsigned request is the issuer's own text: shown on one line,
-            // capped, and labelled, so it cannot pass for the app's wording.
-            NSString *note = singleLineString(self.memo, kUnverifiedNoteMaxLength);
-            info = [NSString stringWithFormat:NSLocalizedString(@"Unverified note: %@", @"Payment confirmation: note supplied by an unsigned payment request"), note];
-        }
-        else {
-            info = self.memo.spellingOutUnicodeNames;
-        }
+    DWBIP70ConfirmationBox *request = [self merchantRequest];
+    // A fetched request's note and its several addresses follow the rules every confirm screen
+    // of a fetched request shares (BIP70InteractivePolicy).
+    NSString *note = request ? [DWBIP70ConfirmationBox noteForMemo:self.memo isSecure:self.isSecure]
+                             : (self.memo.length > 0 ? self.memo.spellingOutUnicodeNames : nil);
+    if (note.length > 0) {
+        info = note;
         hasInfo = YES;
     }
 
-    const NSInteger recipientCount = [self merchantRecipientCount];
-    if (recipientCount > 1) {
-        // The confirm screen names one recipient, but the request pays every address it lists.
+    NSString *recipientsNotice = [request recipientsNoticeIsSecure:self.isSecure];
+    if (recipientsNotice.length > 0) {
         if (info.length > 0) {
             info = [info stringByAppendingString:@"\n"];
         }
-        info = [info stringByAppendingString:[NSString localizedStringWithFormat:NSLocalizedString(@"This payment goes to %ld addresses.", @"Payment confirmation: a payment request with several outputs"), (long)recipientCount]];
-        if (!self.isSecure) {
-            // No signer answers for an unsigned request's outputs, so each address is listed
-            // with the amount it receives.
-            for (NSString *line in ((DWBIP70ConfirmationBox *)self.bip70Confirmation).recipientLines) {
-                info = [info stringByAppendingFormat:@"\n%@", line];
-            }
-        }
+        info = [info stringByAppendingString:recipientsNotice];
         hasInfo = YES;
     }
 

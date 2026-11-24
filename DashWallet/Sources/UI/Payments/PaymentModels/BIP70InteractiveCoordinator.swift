@@ -35,6 +35,35 @@ final class BIP70ConfirmationBox: NSObject {
             "\($0.amount.formattedDashAmountWithoutCurrencySymbol) DASH: \($0.address)"
         }
     }
+    /// The request's name as every confirm screen shows it (`BIP70InteractivePolicy.recipientName`).
+    var recipientName: String? {
+        BIP70InteractivePolicy.recipientName(merchantName: confirmation.merchantName, isSecure: confirmation.isSecure)
+    }
+    /// The request's note as every confirm screen shows it (`BIP70InteractivePolicy.note`).
+    var note: String? { BIP70InteractivePolicy.note(memo: confirmation.memo, isSecure: confirmation.isSecure) }
+    /// The request's addresses as every confirm screen states them (`BIP70InteractivePolicy.recipientsNotice`).
+    var recipientsNotice: String? {
+        BIP70InteractivePolicy.recipientsNotice(of: confirmation, isSecure: confirmation.isSecure)
+    }
+
+    /// `BIP70InteractivePolicy.recipientName`, for the old confirm screen's output, which carries its own name and
+    /// lock.
+    @objc(recipientNameForMerchantName:isSecure:)
+    static func recipientName(merchantName: String?, isSecure: Bool) -> String? {
+        BIP70InteractivePolicy.recipientName(merchantName: merchantName, isSecure: isSecure)
+    }
+
+    /// `BIP70InteractivePolicy.note`, for the old confirm screen's output.
+    @objc(noteForMemo:isSecure:)
+    static func note(memo: String?, isSecure: Bool) -> String? {
+        BIP70InteractivePolicy.note(memo: memo, isSecure: isSecure)
+    }
+
+    /// `BIP70InteractivePolicy.recipientsNotice`, for the old confirm screen's output.
+    @objc(recipientsNoticeIsSecure:)
+    func recipientsNotice(isSecure: Bool) -> String? {
+        BIP70InteractivePolicy.recipientsNotice(of: confirmation, isSecure: isSecure)
+    }
 }
 
 /// What the interactive (scan / link / paste / NFC) flow refuses on top of the protocol rules
@@ -55,6 +84,63 @@ enum BIP70InteractivePolicy {
     /// "spending confirmation" setting; an unsigned one always asks.
     static func requiresAuthentication(isSecure: Bool, spendingConfirmationDisabled: Bool) -> Bool {
         !(isSecure && spendingConfirmationDisabled)
+    }
+
+    /// The longest note of an unsigned request a confirm screen shows, the ellipsis included, in UTF-16 units.
+    static let unverifiedNoteMaxLength = 140
+
+    /// The recipient's name every confirm screen of a fetched request shows (the old confirm screen and the new
+    /// Send and Confirm). An unsigned request's name is whatever its issuer typed, so it is labelled unverified, and
+    /// the label shows when no name was sent; a signed request's verified name carries 🔒, and a signed request
+    /// without one has none. Every non-ASCII character is spelled out, so no name can pass for the lock.
+    static func recipientName(merchantName: String?, isSecure: Bool) -> String? {
+        let trimmed = merchantName?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let name = trimmed.isEmpty ? nil : trimmed.spellingOutUnicodeNames
+        guard isSecure else {
+            guard let name else {
+                return String(localized: "Unverified recipient",
+                              comment: "Payment confirmation: unsigned payment request without a name")
+            }
+            return String(localized: "Unverified recipient: \(name)",
+                          comment: "Payment confirmation: name supplied by an unsigned payment request")
+        }
+        return name.map { "🔒 " + $0 }
+    }
+
+    /// The request's note as every confirm screen shows it. An unsigned request's note is its issuer's own text: on
+    /// one line, capped at `unverifiedNoteMaxLength` and labelled, so it cannot pass for the app's wording.
+    static func note(memo: String?, isSecure: Bool) -> String? {
+        guard let memo, !memo.isEmpty else { return nil }
+        guard !isSecure else { return memo.spellingOutUnicodeNames }
+        let note = singleLine(memo, maxLength: unverifiedNoteMaxLength)
+        return String(localized: "Unverified note: \(note)",
+                      comment: "Payment confirmation: note supplied by an unsigned payment request")
+    }
+
+    /// What every confirm screen says when the request pays more than one address, which it shows only one of: how
+    /// many, and for an unsigned request, which no signer answers for, each address with the amount it receives. nil
+    /// for a request that pays one address.
+    static func recipientsNotice(of confirmation: Confirmation, isSecure: Bool) -> String? {
+        let count = addressCount(of: confirmation)
+        guard count > 1 else { return nil }
+        let format = String(localized: "This payment goes to %ld addresses.",
+                            comment: "Payment confirmation: a payment request with several outputs")
+        var lines = [String.localizedStringWithFormat(format, count)]
+        if !isSecure {
+            lines += BIP70ConfirmationBox(confirmation).recipientLines
+        }
+        return lines.joined(separator: "\n")
+    }
+
+    /// One line, capped: line breaks and runs of whitespace become a single space before the text is sanitized, then
+    /// the result is cut to `maxLength` UTF-16 units, the ellipsis included, without splitting a composed character.
+    static func singleLine(_ text: String, maxLength: Int) -> String {
+        let line = text.split(whereSeparator: { $0.isWhitespace || $0.isNewline }).joined(separator: " ")
+            .spellingOutUnicodeNames
+        let utf16 = line as NSString
+        guard utf16.length > maxLength else { return line }
+        let cut = utf16.rangeOfComposedCharacterSequence(at: maxLength - 1).location
+        return utf16.substring(to: cut) + "…"
     }
 
     /// Different addresses among the request's outputs.

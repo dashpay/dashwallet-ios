@@ -351,6 +351,21 @@ static CGFloat ActionButtonsHeight(void) {
 
 #pragma mark - DWLockScreenModelDelegate
 
+/// The app is still locked here: the new Send flow shows the source balances, so the wallet is unlocked first and
+/// Send opens over the unlocked app. Opening Send on the lock window would leave it there after the app locks again.
+/// No merchant is contacted while the app is locked: a scanned payment request is fetched by Send after the unlock.
+- (BOOL)defersPaymentRequests {
+    return YES;
+}
+
+/// The root holds the scan before anything is asked, and the lock screen's own unlock opens it: the keypad on screen,
+/// or biometrics when the holder left them enabled (offered right away, as the login button does). A separate PIN
+/// prompt is not started: it would sit under the lock window while the keypad above it unlocks without the scan.
+- (void)presentScannedPaymentInput:(DWPaymentInput *)paymentInput {
+    [self.delegate lockScreenViewController:self didHoldScannedInputForUnlock:paymentInput];
+    [self performBiometricAuthentication];
+}
+
 - (void)lockScreenModel:(DWLockScreenModel *)model
     shouldContinueAuthentication:(BOOL)shouldContinueAuthentication
                    authenticated:(BOOL)authenticated
