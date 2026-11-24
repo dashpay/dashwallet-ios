@@ -509,6 +509,115 @@ class SchemaReleaseTest < Minitest::Test
     assert_equal [["new", @store.head]], @store.github.dispatches
   end
 
+  UIKIT = "7" * 40
+  PLATFORM_BUILT = "9" * 40
+
+  def override_dependencies(value = { "dashuikit" => UIKIT, "platform" => PLATFORM_BUILT })
+    @manifest["dependency_overrides"] = value
+    save_manifest
+    bind("apple21", @path)
+  end
+
+  def test_publication_built_with_dependency_overrides_is_frozen_but_not_mirrored
+    override_dependencies
+    error = assert_raises(SchemaRelease::Error) { mirroring.sync }
+    assert_includes error.message, "App Store 9.1.0 (21) was built with dependency overrides (dashuikit #{UIKIT}, platform #{PLATFORM_BUILT})"
+    assert_includes error.message, "the recorded commit #{WALLET} is not the tree that shipped"
+    github = @store.github
+    assert_empty github.tags
+    assert_empty github.fast_forwards
+    assert_empty github.pulls
+    assert_equal [["new", @store.head]], github.dispatches
+    assert_equal "apple21", @store.document("releases/new.json")["build_id"]
+  end
+
+  def test_overridden_publication_whose_freeze_is_merged_is_still_not_mirrored
+    override_dependencies("platform" => PLATFORM_BUILT)
+    merge_release
+    error = assert_raises(SchemaRelease::Error) { mirroring.sync }
+    assert_includes error.message, "dependency overrides (platform #{PLATFORM_BUILT})"
+    assert_empty @store.github.tags
+    assert_empty @store.github.fast_forwards
+    assert_equal "merged", @store.document("status/new.json")["state"]
+  end
+
+  def test_overridden_publication_is_refused_before_a_missing_binding_is_recovered
+    @unbound = true
+    @manifest.merge!("workflow_run_id" => "4242", "workflow_run_attempt" => "2")
+    override_dependencies
+    pipeline = mirroring
+    @store.github.uploaded_runs = [%w[4242 2]]
+    @apple.builds["new"]["attributes"]["uploadedDate"] = "2026-11-01T10:05:00Z"
+    error = assert_raises(SchemaRelease::Error) { pipeline.sync }
+    assert_includes error.message, "dependency overrides"
+    refute @store.files.key?("apple-builds/apple21.json")
+    assert_empty @store.github.tags
+  end
+
+  def test_overridden_publication_dry_run_reports_and_writes_nothing
+    override_dependencies
+    error = assert_raises(SchemaRelease::Error) { mirroring.sync(dry_run: true) }
+    assert_includes error.message, "dependency overrides"
+    refute_includes @output.string, "would tag"
+    assert_empty @store.writes
+    assert_empty @store.github.tags
+    assert_empty @store.github.fast_forwards
+  end
+
+  def test_overridden_publication_is_settled_by_a_tag_placed_by_hand_on_a_commit_made_from_the_recorded_one
+    override_dependencies
+    shipped = "c" * 40
+    pipeline = mirroring
+    @store.github.tags["v9.1.0"] = shipped
+    @store.github.comparisons[[WALLET, shipped]] = "ahead"
+    pipeline.sync
+    assert_includes @output.string, "v9.1.0 was placed by hand at #{shipped}"
+    assert_equal({ "v9.1.0" => shipped }, @store.github.tags)
+    # The release branch is left to a person or to the next release as well.
+    assert_empty @store.github.fast_forwards
+    assert_equal [["new", @store.head]], @store.github.dispatches
+  end
+
+  def test_overridden_publication_is_not_settled_by_a_tag_on_the_recorded_commit_or_on_an_unrelated_one
+    override_dependencies
+    pipeline = mirroring
+    @store.github.comparisons[[WALLET, "c" * 40]] = "diverged"
+    [WALLET, "c" * 40].each do |tagged|
+      @store.github.tags["v9.1.0"] = tagged
+      error = assert_raises(SchemaRelease::Error) { pipeline.sync }
+      assert_includes error.message, "v9.1.0 names #{tagged}, which is not a commit made from the recorded one"
+      assert_equal({ "v9.1.0" => tagged }, @store.github.tags)
+      assert_empty @store.github.fast_forwards
+    end
+  end
+
+  def test_malformed_dependency_overrides_refuse_to_mirror_and_do_not_stop_the_freeze
+    pipeline = mirroring
+    [nil, false, "dashuikit", [], {}, [UIKIT], { "dashuikit" => "main" }, { "dashuikit" => nil }, { "pods" => UIKIT }].each do |value|
+      override_dependencies(value)
+      @store.github.dispatches.clear
+      error = assert_raises(SchemaRelease::Error) { pipeline.sync }
+      assert_includes error.message, "malformed dependency_overrides record"
+      assert_empty @store.github.tags
+      assert_empty @store.github.fast_forwards
+      assert_equal [["new", @store.head]], @store.github.dispatches
+      @store.files.delete("releases/new.json")
+    end
+  end
+
+  def test_older_overridden_publication_does_not_hold_the_newest_one
+    older = "c" * 40
+    pipeline = mirroring
+    add_older_publication(older)
+    path = SchemaRelease.manifest_path(BUNDLE, "9.0.5", "20")
+    @store.files[path] = SchemaRelease.json(JSON.parse(@store.files.fetch(path)).merge("dependency_overrides" => { "dashuikit" => UIKIT }))
+    bind("apple20", path)
+    error = assert_raises(SchemaRelease::Error) { pipeline.sync }
+    assert_includes error.message, "App Store 9.0.5 (20) was built with dependency overrides"
+    assert_equal({ "v9.1.0" => WALLET }, @store.github.tags)
+    assert_equal [["master", WALLET]], @store.github.fast_forwards
+  end
+
   def test_manual_id_must_be_a_published_post_baseline_version
     assert_raises(SchemaRelease::Error) { @pipeline.sync(release_id: "unpublished") }
     assert_raises(SchemaRelease::Error) { @pipeline.sync(release_id: "old") }
@@ -938,6 +1047,42 @@ class SchemaReleaseTest < Minitest::Test
       env["PLATFORM_SHA"] = "c" * 40
       assert_raises(SchemaRelease::Error) { SchemaRelease.record_build(@store, dir, env) }
     end
+  end
+
+  def record(env)
+    Dir.mktmpdir do |dir|
+      File.write(File.join(dir, "schema.json"), SchemaRelease.json(SCHEMA))
+      File.binwrite(File.join(dir, "fixture.store"), @fixture)
+      File.write(File.join(dir, "toolchain.json"), '{"xcode":"26.6","simulator_runtime":"iOS-26"}')
+      base = { "BUNDLE_ID" => BUNDLE, "EFFECTIVE_VERSION" => "9.2.0", "WALLET_SHA" => "a" * 40,
+               "PLATFORM_SHA" => "b" * 40, "GITHUB_RUN_ID" => "1", "GITHUB_RUN_ATTEMPT" => "1" }
+      SchemaRelease.record_build(@store, dir, base.merge(env))
+    end
+    @store.document(SchemaRelease.manifest_path(BUNDLE, "9.2.0", env.fetch("BUILD_NUMBER")), optional: true)
+  end
+
+  def test_record_build_writes_dependency_overrides_only_for_a_build_that_had_one
+    # The workflow passes both variables on every run, blank when unused.
+    refute record("BUILD_NUMBER" => "1").key?("dependency_overrides")
+    refute record("BUILD_NUMBER" => "2", "DASHUIKIT_OVERRIDE_SHA" => "", "PLATFORM_OVERRIDE_SHA" => "").key?("dependency_overrides")
+    assert_equal({ "dashuikit" => UIKIT },
+                 record("BUILD_NUMBER" => "3", "DASHUIKIT_OVERRIDE_SHA" => UIKIT, "PLATFORM_OVERRIDE_SHA" => "")["dependency_overrides"])
+    both = record("BUILD_NUMBER" => "4", "DASHUIKIT_OVERRIDE_SHA" => UIKIT, "PLATFORM_OVERRIDE_SHA" => "b" * 40)
+    assert_equal({ "dashuikit" => UIKIT, "platform" => "b" * 40 }, both["dependency_overrides"])
+    assert_equal 1, both["format_version"]
+    assert_raises(SchemaRelease::Error) { record("BUILD_NUMBER" => "5", "DASHUIKIT_OVERRIDE_SHA" => "main") }
+    assert_nil @store.document(SchemaRelease.manifest_path(BUNDLE, "9.2.0", "5"), optional: true)
+  end
+
+  def test_release_workflow_passes_the_overrides_record_build_reads
+    workflow = File.read(File.expand_path("../workflows/release-dashpay-testflight.yml", __dir__), encoding: "UTF-8")
+    step = workflow[/- name: Persist candidate evidence before upload\n.*?\n\n/m]
+    SchemaRelease::DEPENDENCY_OVERRIDES.each { |name| assert_includes step, "#{name.upcase}_OVERRIDE_SHA: ${{ steps." }
+    assert_includes step, "steps.dashuikit.outputs.override_sha"
+    assert_includes step, "steps.release-info.outputs.platform_override_sha"
+    assert_includes workflow, "id: dashuikit\n"
+    assert_includes workflow, 'handle.write(f"override_sha={sha}\\n")'
+    assert_includes workflow, 'echo "platform_override_sha=$platform_override_sha"'
   end
 
   def test_allocates_after_apple_builds_and_reserved_failed_uploads

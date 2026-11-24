@@ -149,6 +149,15 @@ evidence under a reserved version/build tuple, the next run automatically skips
 that number; do not delete or rewrite the evidence to reuse it. Concurrent writers retry a
 non-fast-forward conflict without force pushing.
 
+The manifest records `wallet_sha` and `platform_sha`. A build dispatched with
+`dashuikit_ref`, or with a `platform_ref` that is not the commit in the wallet's
+`.platform-ref`, used a dependency commit that `wallet_sha` does not pin. The
+workflow allows that, and the manifest then also carries
+`dependency_overrides`, with the DashUIKit and Platform commits that replaced a
+pin (`{"dashuikit": "<sha>", "platform": "<sha>"}`, each only when it applies).
+A build without overrides has no such key. The schema freeze does not read it;
+the release mirror does (below).
+
 ## Freeze and review
 
 The observer confirms publication through App Store Connect, obtains that
@@ -237,6 +246,8 @@ lists the release, until someone acts:
 |---|---|---|
 | `Tag vX.Y.Z names …, but … was built from …` | Someone placed the tag by hand on another commit. The observer never moves a tag. | Confirm which commit shipped (the build's `manifest.json` on `schema-release-data` records `wallet_sha`), then move the tag by hand. |
 | `has no recorded binding …` | The release run did not bind the Apple build, and the observer could not tie the build to that run: its upload step did not succeed, the run cannot be read, or Apple received the build at another time than that step ran (a build number Apple freed after a failed processing can be used again by another upload). The build may come from outside the workflow. | Find out where the build came from. If it is the workflow's, run `bind-build` from `.github/scripts/schema_release.rb` with `BUNDLE_ID`, `EFFECTIVE_VERSION`, `BUILD_NUMBER`, `ASC_BUILD_ID` and the token. |
+| `was built with dependency overrides (…)` | The published build was dispatched with `dashuikit_ref`, or with a `platform_ref` off the wallet's `.platform-ref`, so its `wallet_sha` pins other dependency commits than the ones that shipped. The observer writes no tag and does not move `master` for it; the schema freeze goes on as usual. | Cut a branch from the recorded commit and commit the pins that shipped there (the error and the manifest's `dependency_overrides` name them: DashUIKit in `Package.resolved` and the project's package requirement, Platform in `.platform-ref`). An admin then places `vX.Y.Z` on that commit by hand; the error stops once the tag names a commit made from the recorded one. `master` is not moved for this release: an admin moves it to the same commit by hand (the observer then offers it back to `develop`), or the next release from `develop` moves it. |
+| `has a malformed dependency_overrides record` | The manifest's `dependency_overrides` is not an object of `dashuikit` / `platform` commit SHAs. The release workflow does not write such a value. | Find out who wrote the manifest. Nothing is mirrored for this release until that is settled; treat it as built with overrides. |
 | `does not descend from master` | The release was cut from a line that does not contain `master`: `master` was not merged back into `develop` with a merge commit, or the cutover in ADR-0054 has not been done. | Before the cutover, do it. After it, merge `master` into `develop` with a merge commit; the next release from `develop` then moves `master`. |
 | `master holds commits after it that the App Store has not published` | Someone wrote to `master` by hand, or the newest version was cut from an older commit. | Find out which. The observer never moves `master` back; an admin resets it to the published commit. |
 | `the pull request from merge-back/… was closed or squashed` | `develop` still lacks what `master` holds. | Check that the `merge-back/…` branch still contains the commit the error names, and recreate it from that commit if it was rebased. Then merge it into `develop` with a merge commit. |

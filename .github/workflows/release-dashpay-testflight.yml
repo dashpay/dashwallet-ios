@@ -95,7 +95,13 @@ jobs:
       # requirement, which must agree) at another ref is what selects it.
       #
       # Left blank, nothing is touched and the committed pin is used.
+      #
+      # The edit is not committed, so the wallet commit the build evidence
+      # records still names the old pin. When the ref resolves to another
+      # commit than that pin, the step outputs it as `override_sha` for the
+      # evidence.
       - name: Override the DashUIKit pin
+        id: dashuikit
         if: inputs.dashuikit_ref != ''
         working-directory: ${{ github.workspace }}/dashwallet-ios
         env:
@@ -133,7 +139,7 @@ jobs:
           echo "DashUIKit → $DASHUIKIT_REF ($kind $sha)"
 
           python3 - "$DASHUIKIT_REF" "$sha" "$kind" <<'PY'
-          import json, re, sys
+          import json, os, re, sys
 
           ref, sha, kind = sys.argv[1], sys.argv[2], sys.argv[3]
 
@@ -143,6 +149,7 @@ jobs:
           pins = [p for p in document["pins"] if p["identity"].lower() == "dashuikit"]
           if not pins:
               sys.exit("no DashUIKit pin in Package.resolved")
+          committed = pins[0].get("state", {}).get("revision")
           pins[0]["state"] = {"branch": ref, "revision": sha} if kind == "branch" else {"revision": sha}
           with open(resolved, "w") as handle:
               json.dump(document, handle, indent=2)
@@ -171,6 +178,11 @@ jobs:
               sys.exit("could not rewrite the DashUIKit requirement")
           with open(project, "w") as handle:
               handle.write(text)
+
+          if committed != sha:
+              print(f"DashUIKit {sha} replaces the committed pin {committed}")
+              with open(os.environ["GITHUB_OUTPUT"], "a") as handle:
+                  handle.write(f"override_sha={sha}\n")
           PY
 
       # The release scripts come from the ref this workflow was dispatched
@@ -298,12 +310,16 @@ jobs:
           wallet_sha=$(git rev-parse HEAD)
           platform_sha=$(git -C ../platform rev-parse HEAD)
 
+          # Set only when the wallet commit pins another Platform commit than
+          # the one built; the build evidence records it.
+          platform_override_sha=""
           if [[ -z "$PLATFORM_PIN" ]]; then
             pin_status="no .platform-ref"
           elif [[ "$platform_sha" == "$PLATFORM_PIN" ]]; then
             pin_status="on the .platform-ref pin"
           else
             pin_status="off the .platform-ref pin ${PLATFORM_PIN}"
+            platform_override_sha="$platform_sha"
             echo "::warning::building against platform $platform_sha, not the .platform-ref pin $PLATFORM_PIN that unit-tests.yml uses"
           fi
 
@@ -311,6 +327,7 @@ jobs:
             echo "wallet_sha=$wallet_sha"
             echo "platform_sha=$platform_sha"
             echo "pin_status=$pin_status"
+            echo "platform_override_sha=$platform_override_sha"
           } >> "$GITHUB_OUTPUT"
           # The SDK cache key and the Rust steps read it, as in unit-tests.yml.
           echo "PLATFORM_SHA=$platform_sha" >> "$GITHUB_ENV"
@@ -815,6 +832,11 @@ jobs:
           BUILD_NUMBER: ${{ steps.app-version.outputs.build }}
           WALLET_SHA: ${{ steps.release-info.outputs.wallet_sha }}
           PLATFORM_SHA: ${{ steps.release-info.outputs.platform_sha }}
+          # Blank unless the build used a dependency the wallet commit does not
+          # pin. A build that did is recorded as such, and the release mirror
+          # then leaves its tag and `master` to a person.
+          DASHUIKIT_OVERRIDE_SHA: ${{ steps.dashuikit.outputs.override_sha }}
+          PLATFORM_OVERRIDE_SHA: ${{ steps.release-info.outputs.platform_override_sha }}
         run: ruby "$SCHEMA_RELEASE_SCRIPT" record-build --capture-dir "$RUNNER_TEMP/schema-capture"
 
       - name: Ensure fastlane is available

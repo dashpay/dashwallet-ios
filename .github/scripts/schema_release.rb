@@ -40,6 +40,9 @@ module SchemaRelease
     packages/swift-sdk/SwiftTests/SwiftDashSDKTests/DashReleasedSchemaTests.swift
     packages/swift-sdk/SwiftTests/SwiftDashSDKTests/DashLegacySchemaMigrationTests.swift
   ].freeze
+  # The dependencies a release build can take from another commit than the one
+  # its wallet commit pins, as named under `dependency_overrides` in a manifest.
+  DEPENDENCY_OVERRIDES = %w[dashuikit platform].freeze
   TRANSPORT_ERRORS = [Timeout::Error, IOError, SystemCallError, SocketError, OpenSSL::SSL::SSLError].freeze
 
   def self.json(value)
@@ -593,6 +596,7 @@ module SchemaRelease
       version = record.fetch("app_version")
       commit = SchemaRelease.sha(manifest.fetch("wallet_sha"))
       label = "App Store #{version} (#{record['build_number']})"
+      return if overridden_release_settled?(label, "v#{SchemaRelease.component(version)}", commit, manifest)
       # The manifest is found by version and build number, which an upload made
       # outside the release workflow could share. Only the binding the workflow
       # records after its own upload ties this Apple build to that manifest.
@@ -604,6 +608,34 @@ module SchemaRelease
       mirror_step(failures, id) { advance_release_branch(label, commit, dry_run) } if newest
     rescue Error, KeyError => error
       report_release_failure(failures, record["release_id"], error)
+    end
+
+    # A build may use a DashUIKit or Platform commit that its wallet commit does
+    # not pin; the release workflow allows it and records it in the manifest.
+    # The recorded commit is then not the tree that shipped, so the observer
+    # writes neither a tag nor the release branch for it, and reports it until
+    # a person has placed the tag on a commit made from the recorded one, which
+    # is where the pins that shipped get committed. The observer does not check
+    # what that commit holds. Returns true once that tag exists, and false for a
+    # build without overrides.
+    def overridden_release_settled?(label, tag, commit, manifest)
+      return false unless manifest.key?("dependency_overrides")
+      overrides = manifest["dependency_overrides"]
+      unless overrides.is_a?(Hash) && !overrides.empty? &&
+             overrides.all? { |name, sha| DEPENDENCY_OVERRIDES.include?(name) && sha.is_a?(String) && sha.match?(/\A[0-9a-f]{40}\z/) }
+        raise Error, "#{label} has a malformed dependency_overrides record in its build evidence, " \
+                     "so it is not established that the recorded commit #{commit} is the tree that shipped. " \
+                     "No tag or branch was written. See SCHEMA_RELEASES.md, \"When the mirror reports an error\"."
+      end
+      used = overrides.sort.map { |name, sha| "#{name} #{sha}" }.join(", ")
+      tagged = @store.github.tag_commit(IOS_REPO, tag)
+      if tagged && tagged != commit && @store.github.compare(IOS_REPO, commit, tagged) == "ahead"
+        @out.puts "#{label}: built with dependency overrides (#{used}); #{tag} was placed by hand at #{tagged}. Nothing is written for it."
+        return true
+      end
+      placed = tagged ? " #{tag} names #{tagged}, which is not a commit made from the recorded one." : ""
+      raise Error, "#{label} was built with dependency overrides (#{used}), so the recorded commit #{commit} is not the tree that shipped." \
+                   "#{placed} No tag or branch was written. See SCHEMA_RELEASES.md, \"When the mirror reports an error\"."
     end
 
     # The release workflow records the binding only after Apple has processed
@@ -836,6 +868,10 @@ module SchemaRelease
       "schema" => schema, "fixture_sha256" => digest, "fixture_path" => "stores/#{digest}.store",
       "toolchain" => JSON.parse(File.read(File.join(capture_dir, "toolchain.json")))
     }
+    # Present only for a build that used a dependency commit its wallet commit
+    # does not pin: `wallet_sha` alone does not reproduce such a build.
+    overrides = DEPENDENCY_OVERRIDES.to_h { |name| [name, env["#{name.upcase}_OVERRIDE_SHA"].to_s.strip] }.reject { |_name, value| value.empty? }
+    manifest["dependency_overrides"] = overrides.transform_values { |value| sha(value) } unless overrides.empty?
     path = manifest_path(manifest["bundle_id"], manifest["app_version"], manifest["build_number"])
     store.github.retain_platform_source(manifest.fetch("platform_sha"))
     store.write({ path => json(manifest), manifest["fixture_path"] => fixture }, message: "Record schema evidence for #{manifest['app_version']} (#{manifest['build_number']})")
