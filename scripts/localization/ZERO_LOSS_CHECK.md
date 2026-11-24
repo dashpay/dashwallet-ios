@@ -63,9 +63,11 @@ Release mode runs 1, 4, 5, 5b and 6 as above, and in place of 2–3: for each Ba
 
 Every release finding is judged by hand by the person preparing the release (owner: Roman), from the printed texts and the history of the file it names (`git log <Baseline>.. -- <file>`). A deliberate change after the merge, made in its own reviewed pull request, is not a loss; anything else is:
 
-- `key`: acceptable when a later pull request changed that wording on purpose (its English text or a translation) and the printed texts differ only by that change. A translation that is gone, or that reads as another text, is a loss.
+A **reviewed deletion** is a later pull request that deleted a text on purpose: it removed the text's last lookup and deleted its entry (or that locale's translation) in the same change. One deletion can produce several findings — a mapped entry gone yields a `missing-key` finding and a `key` finding in each locale where the fallback text differs from the Baseline translation — and they are judged together: every finding a reviewed deletion caused is acceptable.
+
+- `key`: acceptable when a later pull request changed that wording on purpose (its English text or a translation) and the printed texts differ only by that change, or when a reviewed deletion removed that key's entry or translation. Any other translation that is gone, or that reads as another text, is a loss.
 - `old-copy`: acceptable when a current lookup asks for that key (for example an integer kept on `String(format:)` with its Baseline key, ADR-0068).
-- `missing-key`, `unused`, `unmapped`: acceptable when a later pull request deleted that text on purpose — it removed the text's last lookup and deleted its entry (or that locale's translation) in the same change. An entry or translation that disappeared in any other change is a loss.
+- `missing-key`, `unused`, `unmapped`: acceptable when a reviewed deletion caused it. An entry or translation that disappeared in any other change is a loss.
 - `watch`: acceptable when every change to that `Interface.strings` since the Baseline came from a reviewed Watch translation update (the Watch texts still sync with the translation service, `.tx/config` `watch-interface-strings`) in a commit of its own, and the file keeps its encoding and its keys: only translated values changed. A changed key, encoding or line order, or a change made inside another commit, is a loss.
 
 Every other finding is a loss to fix before the release. The pre-merge run accepts no finding: it must pass with 0 findings.
