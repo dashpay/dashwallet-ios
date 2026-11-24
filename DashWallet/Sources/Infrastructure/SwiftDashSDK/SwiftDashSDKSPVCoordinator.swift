@@ -231,6 +231,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     private var peersCancellable: AnyCancellable?
     private var balanceRefreshCancellable: AnyCancellable?
     private var backgroundCancellable: AnyCancellable?
+    private var paymentTipLifetime = ContactPaymentTipLifetime()
 
     /// Network whose CoinJoin gap was widened for a one-time recovery scan
     /// during the current run, so a subsequent full sync can mark recovery
@@ -1186,13 +1187,14 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     private func subscribeToManagerProgress(manager: PlatformWalletManager) {
         subscriptionsDetached = false
         progressCancellable = manager.$spvProgress
+            .map { ($0, ProcessInfo.processInfo.systemUptime) }
             .receive(on: RunLoop.main)
-            .sink { [weak self] platformProgress in
+            .sink { [weak self] platformProgress, observedAt in
                 // `.receive(on: RunLoop.main)` puts us on the main thread,
                 // so we can hop into MainActor isolation synchronously to
                 // touch the host's `@MainActor` wallet inside applyProgress.
                 MainActor.assumeIsolated {
-                    self?.applyProgress(platformProgress)
+                    self?.applyProgress(platformProgress, observedAt: observedAt)
                 }
             }
         peersCancellable = manager.$spvPeers
@@ -1203,13 +1205,14 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
                     if peers.isEmpty { self?.liveSyncedTipHeight = nil }
                 }
             }
-        // Once synced, ticks stop until something changes, so a tip from
-        // before a suspension would stand until the next block or peer loss.
         backgroundCancellable = NotificationCenter.default
             .publisher(for: UIApplication.didEnterBackgroundNotification)
-            .receive(on: RunLoop.main)
+            .merge(with: NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification))
             .sink { [weak self] _ in
-                MainActor.assumeIsolated { self?.liveSyncedTipHeight = nil }
+                MainActor.assumeIsolated {
+                    self?.paymentTipLifetime.invalidate(at: ProcessInfo.processInfo.systemUptime)
+                    self?.liveSyncedTipHeight = nil
+                }
             }
 
         // Refresh the published balance whenever Rust's persister commits a
@@ -1233,7 +1236,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     }
 
     @MainActor
-    private func applyProgress(_ p: PlatformSpvSyncProgress) {
+    private func applyProgress(_ p: PlatformSpvSyncProgress, observedAt: TimeInterval) {
         // Everything below runs on the main actor, once per progress tick
         // (~1Hz for as long as any sync phase advances), and reaches
         // synchronous FFI and a main-context SwiftData fetch. Nothing here has
@@ -1278,9 +1281,11 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         state = mappedState
         tipHeight = headersCurrent
         bestPeerHeight = max(headersTarget, headersCurrent)
-        liveSyncedTipHeight = Self.liveSyncedTip(
-            state: mappedState, progress: p.overallPercentage, hasConnectedPeer: !connectedPeers.isEmpty,
-            headersCurrent: headersCurrent, headersTarget: headersTarget)
+        liveSyncedTipHeight = paymentTipLifetime.tip(
+            Self.liveSyncedTip(
+                state: mappedState, progress: p.overallPercentage, hasConnectedPeer: !connectedPeers.isEmpty,
+                headersCurrent: headersCurrent, headersTarget: headersTarget),
+            observedAt: observedAt, isActive: UIApplication.shared.applicationState == .active)
         if mappedState != .error {
             setLastError(nil, log: nil)
         }
@@ -1610,5 +1615,18 @@ enum SPVChainResyncMarker {
     /// Wallet wipe: same as `clearAll`, named for the wiper's call site.
     static func resetForWipe() {
         clearAll()
+    }
+}
+
+struct ContactPaymentTipLifetime {
+    private var invalidatedAt: TimeInterval = 0
+
+    mutating func invalidate(at uptime: TimeInterval) {
+        invalidatedAt = uptime
+    }
+
+    func tip(_ height: UInt32?, observedAt: TimeInterval, isActive: Bool) -> UInt32? {
+        guard isActive, observedAt > invalidatedAt else { return nil }
+        return height
     }
 }

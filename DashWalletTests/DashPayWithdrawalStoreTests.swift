@@ -434,6 +434,34 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
             coreHeight: live(.waitForEvents, Self.agedTip + DashPayWithdrawalStore.lockBlocks)), .awaitingDecision)
     }
 
+    func testBackgroundTickCannotAgeANewPlatformPaymentOnResume() throws {
+        var lifetime = ContactPaymentTipLifetime()
+        XCTAssertEqual(lifetime.tip(Self.recordedTip, observedAt: 1, isActive: true), Self.recordedTip)
+        lifetime.invalidate(at: 2)
+        XCTAssertNil(lifetime.tip(Self.recordedTip, observedAt: 3, isActive: false))
+        lifetime.invalidate(at: 4)
+        let queuedBackgroundTip = lifetime.tip(Self.recordedTip, observedAt: 3, isActive: true)
+        XCTAssertNil(queuedBackgroundTip)
+
+        _ = try begin(source: .platform, coreHeight: queuedBackgroundTip)
+        let reopened = DashPayWithdrawalStore(directory: directory)
+        let clockJump = Date().addingTimeInterval(60)
+        XCTAssertEqual(try reopened.lockState(
+            scope: scope, contactIdentityId: contact, since: clockJump,
+            coreHeight: queuedBackgroundTip), .locked)
+        XCTAssertEqual(try reopened.entries(scope: scope, contactIdentityId: contact).map(\.coreHeight), [nil])
+
+        let freshTip = lifetime.tip(Self.agedTip, observedAt: 5, isActive: true)
+        XCTAssertEqual(freshTip, Self.agedTip)
+        XCTAssertEqual(try reopened.lockState(
+            scope: scope, contactIdentityId: contact, since: clockJump, coreHeight: freshTip), .locked)
+        XCTAssertEqual(try reopened.entries(scope: scope, contactIdentityId: contact).map(\.coreHeight), [Self.agedTip])
+        XCTAssertEqual(try reopened.lockState(
+            scope: scope, contactIdentityId: contact, since: clockJump,
+            coreHeight: lifetime.tip(Self.agedTip + DashPayWithdrawalStore.lockBlocks,
+                                     observedAt: 6, isActive: true)), .awaitingDecision)
+    }
+
     /// A device clock moved forward does not move the chain: until the Core
     /// tip has advanced too, or while it is unknown, the lock holds.
     func testAClockJumpAloneDoesNotExpireAPlatformLock() throws {
