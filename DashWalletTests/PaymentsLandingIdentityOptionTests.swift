@@ -23,7 +23,7 @@ import XCTest
 @testable import dashpay
 
 /// When Receive offers the Identity option, what its card shows, and where
-/// the selection goes when the option disappears (AC-03, AC-09 – AC-14).
+/// the selection goes when the option disappears (AC-03, AC-09 – AC-15).
 @MainActor
 final class PaymentsLandingIdentityOptionTests: XCTestCase {
     private let identityId = Data((1...32).map { UInt8($0) })
@@ -145,6 +145,22 @@ final class PaymentsLandingIdentityOptionTests: XCTestCase {
         UIPasteboard.general.string = nil
         model.copyUsernameToPasteboard()
         XCTAssertEqual(UIPasteboard.general.string, "alice")
+    }
+
+    /// Core, Shielded and Platform show the username too, so the model keeps it
+    /// with Advanced Mode off and without the Identity option (AC-15).
+    func testUsernameIsKeptAndCopiedOnEveryChainOptionWithAdvancedModeOff() throws {
+        let model = PaymentsLandingViewModel.makeForPreview(activeTab: .receive)
+        model.updateReceiveState(isAdvancedMode: false, identity: try identity)
+        XCTAssertEqual(model.receiveOptions, [.core, .shielded])
+
+        for option in model.receiveOptions {
+            model.network = option
+            XCTAssertEqual(model.receiveIdentity?.username, "alice", "\(option)")
+            UIPasteboard.general.string = nil
+            model.copyUsernameToPasteboard()
+            XCTAssertEqual(UIPasteboard.general.string, "alice", "\(option)")
+        }
     }
 
     func testIdentityWithoutUsernameHasNothingToEncode() {
