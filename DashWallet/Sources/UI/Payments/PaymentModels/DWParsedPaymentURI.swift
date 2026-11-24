@@ -231,6 +231,34 @@ final class ParsedPaymentURI: NSObject {
                                 requiresSendScreenRouting: isBech32Destination)
     }
 
+    /// Whether the scanner fetches this code's payment request as soon as it is scanned: only a request the new Send
+    /// keeps, a BIP73 http(s) URL scanned whole or a request `DestinationParser` keeps from a scanned link (a Core
+    /// address or `dash:?r=`, under the link's rules). Anything else (a Platform, Shielded or Identity destination,
+    /// a `bitcoin:` link, a link the new Send rejects) is not fetched, so its merchant is never contacted.
+    @objc var prefetchesPaymentRequest: Bool {
+        guard let rURL, DestinationParser.paymentRequestURL(rURL) != nil else { return false }
+        if scheme == "http" || scheme == "https" { return true }
+        guard case .success(let destination) = DestinationParser.parse(
+            Self.paymentString(for: rawString), network: WalletEnvironment.networkKind) else { return false }
+        return destination.paymentRequestURL != nil
+    }
+
+    /// True when `string` is an Identity ID, bare, in a `dash:` link or in a `dashwallet://pay=` link, which the QR
+    /// scanner accepts for the external send. The link is read the way `parse(paymentString:)` reads it.
+    @objc(isIdentityIDString:)
+    static func isIdentityID(string: String) -> Bool {
+        let network = WalletEnvironment.networkKind
+        guard case .success(let destination) = DestinationParser.parse(paymentString(for: string), network: network)
+        else { return false }
+        return destination.type == .identityID
+    }
+
+    /// `raw` as the deep-link router reads it: a `dashwallet://pay=…` link rewritten to its `dash:` URI, anything
+    /// else unchanged.
+    static func paymentString(for raw: String) -> String {
+        deepLinkPaymentString(for: raw) ?? raw
+    }
+
     /// The `dash:` URI that `DWURLParser`, the deep-link router, rewrites a `dashwallet://pay=…`
     /// link to. Read raw, `pay=<address>` would be taken for the address. A deep link is rewritten
     /// before it gets here, so this is a link the wallet read itself (a scan, a paste, an NFC tag):

@@ -41,7 +41,7 @@ public final class WalletEnvironment: NSObject {
         case devnet = 2
     }
 
-    private static let currentChainTypeKey = "CURRENT_CHAIN_TYPE_KEY"
+    static let currentChainTypeKey = "CURRENT_CHAIN_TYPE_KEY"
 
     /// Whether this build offers devnet at all.
     ///

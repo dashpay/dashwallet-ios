@@ -45,6 +45,8 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 @property (nullable, nonatomic, weak) UIViewController *displayedLockNavigationController;
 
 @property (nullable, nonatomic, strong) NSURL *deferredURLToProcess;
+/// A code scanned on the lock screen, opened in Send once the unlock it asked for is done.
+@property (nullable, nonatomic, strong) DWPaymentInput *deferredScannedInput;
 /// An invitation arrived while locked: it is already stored; after unlock
 /// only Home is brought forward. The link itself (a voucher key) is never
 /// kept for replay.
@@ -113,10 +115,11 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 - (void)handleURL:(NSURL *)url {
     NSAssert([NSThread isMainThread], @"Main thread is assumed here");
 
-    // Defer URL until unlocked.
+    // Defer URL until unlocked, whether or not one is deferred already: a link opens Send, which shows the source
+    // balances and may contact a merchant, so nothing of it runs while locked. The newest link is the one opened.
     // This also prevents an issue with too fast unlocking via Face ID.
     BOOL isLocked = [self.model shouldShowLockScreen] || self.lockController;
-    if (isLocked && self.deferredURLToProcess == nil) {
+    if (isLocked) {
         self.deferredURLToProcess = url;
         return;
     }
@@ -348,6 +351,8 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
 - (void)didWipeWallet {
     // Nothing received before the wipe may be acted on after it.
     self.showsInvitationAfterUnlock = NO;
+    self.deferredURLToProcess = nil;
+    self.deferredScannedInput = nil;
 #if DASHPAY
     [DWInvitationEntry discardHeldNotice];
 #endif
@@ -474,6 +479,10 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
             self.lockWindow.rootViewController = nil;
             self.lockWindow.hidden = YES;
             self.lockWindow.alpha = 1.0;
+            // The lock is gone: a link replayed below is routed as one in the unlocked app, and one the router
+            // defers again (the session ended meanwhile) is kept for the next unlock.
+            self.lockController = nil;
+            self.displayedLockNavigationController = nil;
             [DWWalletLifecycleOverlayBridge setLockScreenVisible:NO];
 
             BOOL showsInvitation = NO;
@@ -487,14 +496,29 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
             // another invitation pending, could not be saved).
             [DWInvitationEntry presentHeldNoticeFrom:self];
 #endif
-            if (!showsInvitation && self.deferredURLToProcess) {
-                [self handleURL:self.deferredURLToProcess];
+            // A scan or link held for the unlock opens only while the session that unlocked is still current: if
+            // the app went to the background past the auto-lock meanwhile, both stay held for the next unlock.
+            if (![self.model shouldShowLockScreen]) {
+                DWPaymentInput *scannedInput = self.deferredScannedInput;
+                NSURL *deferredURL = self.deferredURLToProcess;
+                self.deferredScannedInput = nil;
+                self.deferredURLToProcess = nil;
+                if (scannedInput) {
+                    [DWExternalSendLauncher presentScanned:scannedInput from:self.mainController];
+                }
+                else if (!showsInvitation && deferredURL) {
+                    [self handleURL:deferredURL];
+                }
             }
-            self.deferredURLToProcess = nil;
 
             [[NSNotificationCenter defaultCenter] postNotificationName:DWAppDidUnlockNotification
                                                                 object:nil];
         }];
+}
+
+- (void)lockScreenViewController:(DWLockScreenViewController *)controller
+    didHoldScannedInputForUnlock:(DWPaymentInput *)paymentInput {
+    self.deferredScannedInput = paymentInput;
 }
 
 - (void)lockScreenViewControllerDidWipe:(DWLockScreenViewController *)controller {

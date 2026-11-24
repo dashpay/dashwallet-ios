@@ -139,6 +139,9 @@
 /* No comment provided by engineer. */
 "%@ · Platform balance" = "%@ · Saldo de Platform";
 
+/* External send */
+"%@, so the source was changed to %@." = "%1$@, so the source was changed to %2$@.";
+
 /* SPV diagnostics */
 "%d already spent" = "%d already spent";
 
@@ -348,6 +351,9 @@
 
 /* No comment provided by engineer. */
 "About" = "Acerca de";
+
+/* External send */
+"about %@" = "about %@";
 
 /* DashPay FAQ title */
 "About DashPay" = "Acerca de DashPay";
@@ -630,6 +636,9 @@
 /* No comment provided by engineer. */
 "Any keys you added for it are deleted from this device's keychain too." = "Todas las claves que hayas añadido para él también se eliminan del llavero de este dispositivo.";
 
+/* External send */
+"Any unused part of the Platform fee goes to the identity." = "Any unused part of the Platform fee goes to the identity.";
+
 /* Usernames */
 "Any username that has a number 2–9 or 20 or more characters will be automatically approved" = "Any username that has a number 2–9 or 20 or more characters will be automatically approved";
 
@@ -819,6 +828,9 @@
 /* Platform address payment detail */
 "Balance after" = "Saldo después";
 
+/* External send */
+"Balance not enough" = "Balance not enough";
+
 /* Balance not restored
    Max requires a known source balance
    Selected source balance not restored */
@@ -993,6 +1005,9 @@
 
 /* Buy/Sell */
 "Buy/Sell" = "Comprar/Vender";
+
+/* External send */
+"Calculating…" = "Calculating…";
 
 /* Reclassify transactions info screen */
 "by default all transactions to or from your linked accounts (exchanges, staking, etc) will be marked as a transfer." = "by default all transactions to or from your linked accounts (exchanges, staking, etc) will be marked as a transfer.";
@@ -1281,6 +1296,9 @@
 /* SPV diagnostics */
 "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. Fully close and relaunch the app to start; the in-app Restart button does not apply this reset." = "Confirming saves birth height %u and clears this network's chain data at the next app launch, re-downloading it and rescanning filters from that height. Fully close and relaunch the app to start; the in-app Restart button does not apply this reset.";
 
+/* External send */
+"Confirming this send can take a few minutes. You can close this screen. Don't send it again." = "Confirming this send can take a few minutes. You can close this screen. Don't send it again.";
+
 /* DashConnect */
 "Connect an app" = "Connect an app";
 
@@ -1434,6 +1452,9 @@
 "Core" = "Core";
 
 /* External send */
+"Core address" = "Core address";
+
+/* External send */
 "Core can't pay a Platform address yet" = "Core can't pay a Platform address yet";
 
 /* External send */
@@ -1536,8 +1557,15 @@
 /* SPV diagnostics */
 "Couldn't authenticate: %@" = "Couldn't authenticate: %@";
 
+/* External send */
+"Couldn't calculate the network fee" = "Couldn't calculate the network fee";
+"Check your connection and try again." = "Check your connection and try again.";
+
 /* Voting */
 "Couldn't check for a link" = "Couldn't check for a link";
+
+/* External send */
+"Couldn't check the identity. Check your connection and try again." = "Couldn't check the identity. Check your connection and try again.";
 
 /* No comment provided by engineer. */
 "Couldn't check which keys of this evonode are in the wallet." = "No se pudo comprobar qué claves de este evonode están en la cartera.";
@@ -1706,6 +1734,9 @@
 
 /* No comment provided by engineer. */
 "Dash address" = "Dirección de dash";
+
+/* External send */
+"DASH address" = "DASH address";
 
 /* No comment provided by engineer. */
 "Dash balance" = "Saldo en Dash";
@@ -1967,6 +1998,9 @@
 /* Inactivity reminder */
 "Don't remind me again" = "Don't remind me again";
 
+/* External send */
+"Don't send it again. It can take a few minutes to finish." = "Don't send it again. It can take a few minutes to finish.";
+
 /* No comment provided by engineer. */
 "Done" = "Hecho";
 
@@ -2168,6 +2202,9 @@
 
 /* DashPay: fee line of the Enable DashPay confirmation */
 "Estimated network fee" = "Comisión de red estimada";
+
+/* External send */
+"Everything above the DashPay reserve is already spent, so Max is off. You can still type an amount." = "Everything above the DashPay reserve is already spent, so Max is off. You can still type an amount.";
 
 /* SPV sync peer type */
 "Evonode" = "Evonode";
@@ -2696,6 +2733,9 @@
 /* Identity recovery */
 "Identity is still loading" = "Identity is still loading";
 
+/* External send */
+"Identity not found" = "Identity not found";
+
 /* Asset lock funding a DashPay identity registration */
 "Identity registration" = "Registro de identidad";
 
@@ -3138,6 +3178,9 @@
 /* Username marketplace: set price fee note */
 "Listing is a network transaction with a small fee, paid from your identity balance." = "Publicar a la venta es una transacción de red con una pequeña comisión, pagada desde tu saldo de identidad.";
 
+/* External send */
+"Loading" = "Loading";
+
 /* Username marketplace: browse feed loading */
 "Loading activity…" = "Cargando actividad…";
 
@@ -3568,6 +3611,9 @@
 /* No comment provided by engineer. */
 "No address available" = "No address available";
 
+/* External send */
+"No address, Identity ID or dash: link on the clipboard" = "No address, Identity ID or dash: link on the clipboard";
+
 /* Sync diagnostics */
 "No addresses derived yet" = "No addresses derived yet";
 
@@ -3802,6 +3848,9 @@
 /* No comment provided by engineer. */
 "Not a Dash URL" = "No es una dirección de Dash";
 
+/* External send */
+"Not a valid address for this network" = "Not a valid address for this network";
+
 /* No comment provided by engineer. */
 "Not a valid Dash address" = "No es una dirección válida de Dash";
 
@@ -3915,6 +3964,9 @@
 
 /* Usernames: confirm the funding source */
 "Nothing was sent" = "Nothing was sent";
+
+/* External send */
+"Nothing was sent. Your money is still in your %@ balance." = "Nothing was sent. Your money is still in your %@ balance.";
 
 /* No comment provided by engineer. */
 "Notifications" = "Notificaciones";
@@ -4069,6 +4121,9 @@
 /* DashSpend */
 "Password" = "Contraseña";
 
+/* External send */
+"Paste %@" = "Paste %@";
+
 /* Maya */
 "Paste address from" = "Paste address from";
 
@@ -4149,6 +4204,9 @@
 
 /* DashSpend */
 "Payment URI unavailable" = "Payment URI unavailable";
+
+/* External send */
+"Payment request" = "Payment request";
 
 /* DashPay Contacts */
 "Payments" = "Payments";
@@ -5151,6 +5209,9 @@
 /* No comment provided by engineer. */
 "Select option" = "Elija una opción";
 
+/* External send */
+"Select source" = "Select source";
+
 /* Coinbase */
 "Select the coin" = "Selecciona la moneda";
 
@@ -5183,6 +5244,12 @@
 
 /* No comment provided by engineer. */
 "Send Contact Request" = "Enviar solicitud de contacto";
+
+/* External send */
+"Send failed" = "Send failed";
+
+/* External send */
+"Send in progress" = "Send in progress";
 
 /* Username marketplace: transfer sheet body */
 "Send this name to another identity for free. The transfer also removes any sale listing. This can't be undone — the new owner would have to transfer it back." = "Envía este nombre a otra identidad gratis. La transferencia también retira cualquier publicación de venta. Esto no se puede deshacer — el nuevo propietario tendría que transferírtelo de vuelta.";
@@ -5226,6 +5293,9 @@
 /* 1 out of 4 in the Sending Animation */
 "Sending" = "Enviando";
 
+/* External send */
+"Sending from Shielded to an address that is not Shielded makes the amount and the destination public." = "Sending from Shielded to an address that is not Shielded makes the amount and the destination public.";
+
 /* Buy Dash */
 "Sending to:" = "Enviando a:";
 
@@ -5237,6 +5307,8 @@
 
 /* 4 out of 4 in the Sending Animation */
 "Sending..." = "Enviando...";
+
+/* External send */
 
 /* Voting */
 "Sending…" = "Sending…";
@@ -5370,6 +5442,9 @@
 
 /* Send screen: reveal the funding balance */
 "Show balance" = "Show balance";
+
+/* External send */
+"Show clipboard" = "Show clipboard";
 
 /* Enter Address Screen */
 "Show content in the clipboard" = "Mostrar contenido en el portapapeles";
@@ -5794,6 +5869,9 @@
 
 /* Dash DEX / dex_error_insufficient_balance */
 "The amount is more than what you're sending." = "The amount is more than what you're sending.";
+
+/* External send */
+"The amount is set by the payment request." = "The amount is set by the payment request.";
 
 /* InternalTransfer */
 "The amount is too large to transfer." = "The amount is too large to transfer.";
@@ -6451,6 +6529,9 @@
 /* DashConnect */
 "This kind of code is not accepted on mainnet. Ask the app for a DashPay connect link or code." = "This kind of code is not accepted on mainnet. Ask the app for a DashPay connect link or code.";
 
+/* External send */
+"This leaves less than the DashPay reserve. DashPay actions, like contact requests and profile updates, may stop working." = "This leaves less than the DashPay reserve. DashPay actions, like contact requests and profile updates, may stop working.";
+
 /* DashConnect funding limit keypad */
 "This limit cannot be shared between the app's keys." = "This limit cannot be shared between the app's keys.";
 
@@ -6546,6 +6627,9 @@
 
 /* Dash DEX / dex_error_allowance */
 "This token needs approval before it can be swapped." = "This token needs approval before it can be swapped.";
+
+/* External send */
+"This tops up your own Identity credits." = "This tops up your own Identity credits.";
 
 /* Remove never-accepted transaction: local state says it's on-chain */
 "This transaction is confirmed and can't be removed." = "Esta transacción está confirmada y no se puede eliminar.";
@@ -7379,6 +7463,9 @@
 /* SPV diagnostics */
 "Waiting for events" = "Waiting for events";
 
+/* External send */
+"Waiting for the network" = "Waiting for the network";
+
 /* Dash DEX */
 "Waiting for the provider" = "Waiting for the provider";
 
@@ -7534,6 +7621,12 @@
 
 /* DashPay FAQ */
 "What's coming next?" = "¿Qué viene a continuación?";
+
+/* External send */
+"When sending from Shielded balance to Core the amount and destination becomes public" = "When sending from Shielded balance to Core the amount and destination becomes public";
+
+/* External send */
+"When sending from Shielded balance, the transaction is not instant and takes some time" = "When sending from Shielded balance, the transaction is not instant and takes some time";
 
 /* DashPay FAQ */
 "When will contact requests become private?" = "¿Cuándo serán privadas las solicitudes de contacto?";
@@ -7850,6 +7943,9 @@
 /* Platform Shield capacity changed before confirmation */
 "Your available Platform balance changed. The new maximum is %@ DASH. Review it and confirm again." = "Your available Platform balance changed. The new maximum is %@ DASH. Review it and confirm again.";
 
+/* External send */
+"Your balance changed. Check the amount and try again. Your funds were not sent." = "Your balance changed. Check the amount and try again. Your funds were not sent.";
+
 /* Asset-lock input limit */
 "Your coins are combined, but the network fee leaves too little for this amount. Try a smaller amount." = "Your coins are combined, but the network fee leaves too little for this amount. Try a smaller amount.";
 
@@ -7909,6 +8005,9 @@
 
 /* DashPay intro: feature title */
 "Your history, organized" = "Tu historial, organizado";
+
+/* External send */
+"Your identity" = "Your identity";
 
 /* Identity withdrawal — Platform refused the amount as more than the balance can cover */
 "Your Identity balance can't cover this amount plus the network fee. Enter a smaller amount and try again." = "Your Identity balance can't cover this amount plus the network fee. Enter a smaller amount and try again.";
