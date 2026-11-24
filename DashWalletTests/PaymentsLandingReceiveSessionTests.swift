@@ -95,17 +95,22 @@ final class PaymentsLandingReceiveSessionTests: XCTestCase {
             shieldedRunning: shieldedRunning)
     }
 
-    /// Spins the main run loop until `condition` holds or 2 s pass.
+    private struct WaitTimedOut: Error {}
+
+    /// Spins the main run loop until `condition` holds or 2 s pass. A timeout
+    /// fails and throws, so the test stops before it completes a request
+    /// that was never made.
     private func waitUntil(
         _ message: String,
         file: StaticString = #filePath,
         line: UInt = #line,
         _ condition: () -> Bool
-    ) async {
+    ) async throws {
         let deadline = Date().addingTimeInterval(2)
         while !condition() {
             if Date() > deadline {
-                return XCTFail("timed out: \(message)", file: file, line: line)
+                XCTFail("timed out: \(message)", file: file, line: line)
+                throw WaitTimedOut()
             }
             try? await Task.sleep(nanoseconds: 5_000_000)
         }
@@ -116,7 +121,7 @@ final class PaymentsLandingReceiveSessionTests: XCTestCase {
         for _ in 0..<20 { try? await Task.sleep(nanoseconds: 5_000_000) }
     }
 
-    func testSessionShowsNoAddressWhileDerivingThenTheFreshOne() async {
+    func testSessionShowsNoAddressWhileDerivingThenTheFreshOne() async throws {
         let source = ControlledShieldedAddressSource()
         let viewModel = makeViewModel(source: source)
 
@@ -124,52 +129,52 @@ final class PaymentsLandingReceiveSessionTests: XCTestCase {
         XCTAssertEqual(viewModel.shieldedReceiveState, .deriving)
         XCTAssertNil(viewModel.currentAddress, "no address while deriving; Copy and Share disabled")
 
-        await waitUntil("request sent") { source.callCount == 1 }
+        try await waitUntil("request sent") { source.callCount == 1 }
         source.complete(0, with: .fresh("tdash1fresh-a"))
-        await waitUntil("fresh applied") { viewModel.currentAddress == "tdash1fresh-a" }
+        try await waitUntil("fresh applied") { viewModel.currentAddress == "tdash1fresh-a" }
         XCTAssertEqual(viewModel.shieldedReceiveState, .ready(.fresh("tdash1fresh-a")))
         XCTAssertFalse(viewModel.isShowingShieldedFallback)
     }
 
-    func testEachSessionShowsItsOwnAddress() async {
+    func testEachSessionShowsItsOwnAddress() async throws {
         let source = ControlledShieldedAddressSource()
         let viewModel = makeViewModel(source: source)
 
         viewModel.beginReceiveSession()
-        await waitUntil("first request") { source.callCount == 1 }
+        try await waitUntil("first request") { source.callCount == 1 }
         source.complete(0, with: .fresh("tdash1fresh-a"))
-        await waitUntil("first applied") { viewModel.currentAddress == "tdash1fresh-a" }
+        try await waitUntil("first applied") { viewModel.currentAddress == "tdash1fresh-a" }
 
         viewModel.beginReceiveSession()
         XCTAssertNil(viewModel.currentAddress, "a new session never shows the previous address")
-        await waitUntil("second request") { source.callCount == 2 }
+        try await waitUntil("second request") { source.callCount == 2 }
         source.complete(1, with: .fresh("tdash1fresh-b"))
-        await waitUntil("second applied") { viewModel.currentAddress == "tdash1fresh-b" }
+        try await waitUntil("second applied") { viewModel.currentAddress == "tdash1fresh-b" }
     }
 
-    func testLateResultOfAnEndedSessionIsDropped() async {
+    func testLateResultOfAnEndedSessionIsDropped() async throws {
         let source = ControlledShieldedAddressSource()
         let viewModel = makeViewModel(source: source)
 
         viewModel.beginReceiveSession()
-        await waitUntil("first request") { source.callCount == 1 }
+        try await waitUntil("first request") { source.callCount == 1 }
         viewModel.beginReceiveSession()
-        await waitUntil("second request") { source.callCount == 2 }
+        try await waitUntil("second request") { source.callCount == 2 }
 
         source.complete(1, with: .fresh("tdash1fresh-new"))
-        await waitUntil("new applied") { viewModel.currentAddress == "tdash1fresh-new" }
+        try await waitUntil("new applied") { viewModel.currentAddress == "tdash1fresh-new" }
         source.complete(0, with: .fresh("tdash1fresh-old"))
         await settle()
         XCTAssertEqual(viewModel.currentAddress, "tdash1fresh-new", "the ended session's result never replaces it")
     }
 
-    func testAppAndSettingsTicksNeverReplaceTheAddress() async {
+    func testAppAndSettingsTicksNeverReplaceTheAddress() async throws {
         let source = ControlledShieldedAddressSource()
         let viewModel = makeViewModel(source: source)
         viewModel.beginReceiveSession()
-        await waitUntil("request") { source.callCount == 1 }
+        try await waitUntil("request") { source.callCount == 1 }
         source.complete(0, with: .fresh("tdash1fresh-a"))
-        await waitUntil("applied") { viewModel.currentAddress == "tdash1fresh-a" }
+        try await waitUntil("applied") { viewModel.currentAddress == "tdash1fresh-a" }
 
         NotificationCenter.default.post(name: UIApplication.didBecomeActiveNotification, object: nil)
         NotificationCenter.default.post(name: .advancedModeDidChange, object: nil)
@@ -181,36 +186,36 @@ final class PaymentsLandingReceiveSessionTests: XCTestCase {
         XCTAssertEqual(viewModel.currentAddress, "tdash1fresh-a")
     }
 
-    func testFallbackIsOnlyEverShownWithTheWarning() async {
+    func testFallbackIsOnlyEverShownWithTheWarning() async throws {
         let source = ControlledShieldedAddressSource()
         let viewModel = makeViewModel(source: source)
         viewModel.beginReceiveSession()
-        await waitUntil("request") { source.callCount == 1 }
+        try await waitUntil("request") { source.callCount == 1 }
         source.complete(0, with: .fallback("tdash1default"))
-        await waitUntil("fallback applied") { viewModel.currentAddress == "tdash1default" }
+        try await waitUntil("fallback applied") { viewModel.currentAddress == "tdash1default" }
         XCTAssertTrue(viewModel.isShowingShieldedFallback, "the default address is never shown without the warning")
 
         // The next session tries for a fresh address again and drops the warning.
         viewModel.beginReceiveSession()
         XCTAssertFalse(viewModel.isShowingShieldedFallback)
-        await waitUntil("retry request") { source.callCount == 2 }
+        try await waitUntil("retry request") { source.callCount == 2 }
         source.complete(1, with: .fresh("tdash1fresh-a"))
-        await waitUntil("fresh applied") { viewModel.currentAddress == "tdash1fresh-a" }
+        try await waitUntil("fresh applied") { viewModel.currentAddress == "tdash1fresh-a" }
         XCTAssertFalse(viewModel.isShowingShieldedFallback)
     }
 
-    func testUnavailableShowsNoAddress() async {
+    func testUnavailableShowsNoAddress() async throws {
         let source = ControlledShieldedAddressSource()
         let viewModel = makeViewModel(source: source)
         viewModel.beginReceiveSession()
-        await waitUntil("request") { source.callCount == 1 }
+        try await waitUntil("request") { source.callCount == 1 }
         source.complete(0, with: .unavailable)
-        await waitUntil("unavailable applied") { viewModel.shieldedReceiveState == .ready(.unavailable) }
+        try await waitUntil("unavailable applied") { viewModel.shieldedReceiveState == .ready(.unavailable) }
         XCTAssertNil(viewModel.currentAddress)
         XCTAssertFalse(viewModel.isShowingShieldedFallback)
     }
 
-    func testNoWalletMeansUnavailableWithoutAskingTheSource() async {
+    func testNoWalletMeansUnavailableWithoutAskingTheSource() async throws {
         let source = ControlledShieldedAddressSource()
         let viewModel = makeViewModel(source: source, walletId: nil)
         viewModel.beginReceiveSession()
@@ -219,7 +224,7 @@ final class PaymentsLandingReceiveSessionTests: XCTestCase {
         XCTAssertEqual(source.callCount, 0)
     }
 
-    func testCoreSelectedDerivesNoShieldedAddress() async {
+    func testCoreSelectedDerivesNoShieldedAddress() async throws {
         let source = ControlledShieldedAddressSource()
         let viewModel = makeViewModel(network: .core, source: source)
         viewModel.beginReceiveSession()
@@ -254,25 +259,25 @@ final class PaymentsLandingReceiveSessionTests: XCTestCase {
         XCTAssertEqual(source.calls, 1)
     }
 
-    func testSwitchingToShieldedBeginsASession() async {
+    func testSwitchingToShieldedBeginsASession() async throws {
         let source = ControlledShieldedAddressSource()
         let viewModel = makeViewModel(network: .core, source: source)
         viewModel.network = .shielded
-        await waitUntil("switch began a session") { source.callCount == 1 }
+        try await waitUntil("switch began a session") { source.callCount == 1 }
         XCTAssertEqual(viewModel.shieldedReceiveState, .deriving)
     }
 
-    func testWalletOrNetworkChangeBeginsANewSession() async {
+    func testWalletOrNetworkChangeBeginsANewSession() async throws {
         let source = ControlledShieldedAddressSource()
         let viewModel = makeViewModel(source: source)
         viewModel.beginReceiveSession()
-        await waitUntil("request") { source.callCount == 1 }
+        try await waitUntil("request") { source.callCount == 1 }
         source.complete(0, with: .fresh("tdash1fresh-a"))
-        await waitUntil("applied") { viewModel.currentAddress == "tdash1fresh-a" }
+        try await waitUntil("applied") { viewModel.currentAddress == "tdash1fresh-a" }
 
         viewModel.handleWalletOrEnvironmentChange()
         XCTAssertNil(viewModel.currentAddress, "the old network's address is gone")
-        await waitUntil("new session") { source.callCount == 2 }
+        try await waitUntil("new session") { source.callCount == 2 }
     }
 
     // MARK: - Receipt window (AC-01 paragraph 2, AC-10)
@@ -283,18 +288,18 @@ final class PaymentsLandingReceiveSessionTests: XCTestCase {
 
     private func viewModelShowingAddress(
         _ source: ControlledShieldedAddressSource
-    ) async -> PaymentsLandingViewModel {
+    ) async throws -> PaymentsLandingViewModel {
         let viewModel = makeViewModel(source: source)
         viewModel.beginReceiveSession()
-        await waitUntil("request") { source.callCount == 1 }
+        try await waitUntil("request") { source.callCount == 1 }
         source.complete(0, with: .fresh("tdash1fresh-a"))
-        await waitUntil("applied") { viewModel.currentAddress == "tdash1fresh-a" }
+        try await waitUntil("applied") { viewModel.currentAddress == "tdash1fresh-a" }
         return viewModel
     }
 
-    func testGainOfFocusWhileAReceiptIsShownChangesNothing() async {
+    func testGainOfFocusWhileAReceiptIsShownChangesNothing() async throws {
         let source = ControlledShieldedAddressSource()
-        let viewModel = await viewModelShowingAddress(source)
+        let viewModel = try await viewModelShowingAddress(source)
         viewModel.acceptReceipt(Self.receipt)
 
         viewModel.beginReceiveSession()
@@ -305,21 +310,21 @@ final class PaymentsLandingReceiveSessionTests: XCTestCase {
         XCTAssertEqual(viewModel.shieldedReceiveState, .ready(.fresh("tdash1fresh-a")))
     }
 
-    func testReceiveAnotherClearsTheReceiptAndBeginsASession() async {
+    func testReceiveAnotherClearsTheReceiptAndBeginsASession() async throws {
         let source = ControlledShieldedAddressSource()
-        let viewModel = await viewModelShowingAddress(source)
+        let viewModel = try await viewModelShowingAddress(source)
         viewModel.acceptReceipt(Self.receipt)
 
         viewModel.receiveAnother()
 
         XCTAssertNil(viewModel.receipt)
         XCTAssertEqual(viewModel.shieldedReceiveState, .deriving)
-        await waitUntil("new session") { source.callCount == 2 }
+        try await waitUntil("new session") { source.callCount == 2 }
     }
 
-    func testDoneEndsTheReceiptWithoutANewSession() async {
+    func testDoneEndsTheReceiptWithoutANewSession() async throws {
         let source = ControlledShieldedAddressSource()
-        let viewModel = await viewModelShowingAddress(source)
+        let viewModel = try await viewModelShowingAddress(source)
         viewModel.acceptReceipt(Self.receipt)
 
         viewModel.finishReceiving()
@@ -329,9 +334,65 @@ final class PaymentsLandingReceiveSessionTests: XCTestCase {
         XCTAssertEqual(source.callCount, 1, "Done begins no session; returning to Receive does")
     }
 
+    func testLateResultAfterLeavingReceiveIsDropped() async throws {
+        let source = ControlledShieldedAddressSource()
+        let viewModel = makeViewModel(source: source)
+        viewModel.beginReceiveSession()
+        try await waitUntil("request") { source.callCount == 1 }
+
+        viewModel.receiveDidDisappear(pushingReceiveStep: false)
+        source.complete(0, with: .fresh("tdash1fresh-late"))
+        await settle()
+
+        XCTAssertEqual(viewModel.shieldedReceiveState, .idle, "an ended session's result is never applied")
+        XCTAssertNil(viewModel.currentAddress)
+    }
+
+    func testPushingAReceiveStepKeepsTheDerivation() async throws {
+        let source = ControlledShieldedAddressSource()
+        let viewModel = makeViewModel(source: source)
+        viewModel.beginReceiveSession()
+        try await waitUntil("request") { source.callCount == 1 }
+
+        viewModel.receiveDidDisappear(pushingReceiveStep: true)
+        source.complete(0, with: .fresh("tdash1fresh-a"))
+        try await waitUntil("applied") { viewModel.currentAddress == "tdash1fresh-a" }
+    }
+
+    func testLateResultAfterDoneIsDropped() async throws {
+        let source = ControlledShieldedAddressSource()
+        let viewModel = try await viewModelShowingAddress(source)
+        // A derivation started before the receipt, still in flight at Done.
+        viewModel.beginReceiveSession()
+        try await waitUntil("second request") { source.callCount == 2 }
+        viewModel.acceptReceipt(Self.receipt)
+        viewModel.finishReceiving()
+        source.complete(1, with: .fresh("tdash1fresh-late"))
+        await settle()
+
+        XCTAssertEqual(viewModel.shieldedReceiveState, .deriving, "Done drops a result still in flight")
+        XCTAssertNotEqual(viewModel.currentAddress, "tdash1fresh-late")
+    }
+
+    func testShieldedWalletStartingAfterLeavingDerivesNothing() async throws {
+        let source = ControlledShieldedAddressSource()
+        let running = PassthroughSubject<Bool, Never>()
+        let viewModel = makeViewModel(source: source, shieldedRunning: running.eraseToAnyPublisher())
+        viewModel.beginReceiveSession()
+        try await waitUntil("request") { source.callCount == 1 }
+        source.complete(0, with: .notReady)
+        try await waitUntil("placeholder") { viewModel.shieldedReceiveState == .ready(.notReady) }
+
+        viewModel.receiveDidDisappear(pushingReceiveStep: false)
+        running.send(true)
+        await settle()
+
+        XCTAssertEqual(source.callCount, 1, "no address is derived while Receive is away")
+    }
+
     // MARK: - Gains of focus inside the landing
 
-    func testNoShieldedDerivationOffTheReceiveTab() async {
+    func testNoShieldedDerivationOffTheReceiveTab() async throws {
         let source = ControlledShieldedAddressSource()
         let viewModel = makeViewModel(activeTab: .send, source: source)
         viewModel.beginReceiveSession()
@@ -339,11 +400,11 @@ final class PaymentsLandingReceiveSessionTests: XCTestCase {
         XCTAssertEqual(source.callCount, 0)
     }
 
-    func testOpeningTheReceiveTabBeginsASession() async {
+    func testOpeningTheReceiveTabBeginsASession() async throws {
         let source = ControlledShieldedAddressSource()
         let viewModel = makeViewModel(activeTab: .send, source: source)
         viewModel.activeTab = .receive
-        await waitUntil("opening Receive began a session") { source.callCount == 1 }
+        try await waitUntil("opening Receive began a session") { source.callCount == 1 }
     }
 
     // MARK: - Receipt window (AC-10)
@@ -353,14 +414,14 @@ final class PaymentsLandingReceiveSessionTests: XCTestCase {
     private func watchingViewModel(
         _ source: ControlledShieldedAddressSource,
         _ wallet: FakeReceiptSources
-    ) async -> PaymentsLandingViewModel {
+    ) async throws -> PaymentsLandingViewModel {
         let viewModel = makeViewModel(source: source, receiptSources: wallet.sources(walletId: Self.walletId))
         NotificationCenter.default.post(name: UIApplication.didBecomeActiveNotification, object: nil)
         viewModel.setReceiveSurfaceVisible(true)
         viewModel.beginReceiveSession()
-        await waitUntil("request") { source.callCount == 1 }
+        try await waitUntil("request") { source.callCount == 1 }
         source.complete(0, with: .fresh("tdash1fresh-a"))
-        await waitUntil("watching") { viewModel.isWatchingForReceipt }
+        try await waitUntil("watching") { viewModel.isWatchingForReceipt }
         return viewModel
     }
 
@@ -370,61 +431,61 @@ final class PaymentsLandingReceiveSessionTests: XCTestCase {
         _ source: ControlledShieldedAddressSource,
         _ wallet: FakeReceiptSources,
         leaving: Bool
-    ) async {
+    ) async throws {
         viewModel.setReceiveSurfaceVisible(false)
         if leaving { viewModel.receiveDidDisappear(pushingReceiveStep: false) }
         wallet.receive(FakeReceiptSources.receivedItem(2))
         viewModel.beginReceiveSession()
-        await waitUntil("second request") { source.callCount == 2 }
+        try await waitUntil("second request") { source.callCount == 2 }
         source.complete(1, with: .fresh("tdash1fresh-b"))
-        await waitUntil("new address") { viewModel.currentAddress == "tdash1fresh-b" }
+        try await waitUntil("new address") { viewModel.currentAddress == "tdash1fresh-b" }
         viewModel.setReceiveSurfaceVisible(true)
     }
 
-    func testPaymentWhileUnfocusedRaisesItsReceiptWhenFocusReturns() async {
+    func testPaymentWhileUnfocusedRaisesItsReceiptWhenFocusReturns() async throws {
         let source = ControlledShieldedAddressSource()
         let wallet = FakeReceiptSources()
         wallet.receive(FakeReceiptSources.receivedItem(1))
-        let viewModel = await watchingViewModel(source, wallet)
+        let viewModel = try await watchingViewModel(source, wallet)
         await settle()
         XCTAssertNil(viewModel.receipt, "a row that existed when Receive opened is not new")
 
-        await paymentWhileUnfocused(viewModel, source, wallet, leaving: false)
+        try await paymentWhileUnfocused(viewModel, source, wallet, leaving: false)
 
-        await waitUntil("receipt raised") { viewModel.receipt != nil }
+        try await waitUntil("receipt raised") { viewModel.receipt != nil }
         XCTAssertEqual(viewModel.receipt?.id, FakeReceiptSources.receivedItem(2).id)
         XCTAssertEqual(viewModel.currentAddress, "tdash1fresh-b", "the address changed")
     }
 
-    func testGainOfFocusDoesNotMoveTheReceiptWindowStart() async {
+    func testGainOfFocusDoesNotMoveTheReceiptWindowStart() async throws {
         let source = ControlledShieldedAddressSource()
         let wallet = FakeReceiptSources()
-        let viewModel = await watchingViewModel(source, wallet)
+        let viewModel = try await watchingViewModel(source, wallet)
         XCTAssertEqual(wallet.baselineReads, 1)
 
-        await paymentWhileUnfocused(viewModel, source, wallet, leaving: false)
-        await waitUntil("receipt raised") { viewModel.receipt != nil }
+        try await paymentWhileUnfocused(viewModel, source, wallet, leaving: false)
+        try await waitUntil("receipt raised") { viewModel.receipt != nil }
 
         XCTAssertEqual(wallet.baselineReads, 1, "the window kept the baseline read when Receive opened")
     }
 
-    func testLeavingReceiveEndsTheReceiptWindow() async {
+    func testLeavingReceiveEndsTheReceiptWindow() async throws {
         let source = ControlledShieldedAddressSource()
         let wallet = FakeReceiptSources()
-        let viewModel = await watchingViewModel(source, wallet)
+        let viewModel = try await watchingViewModel(source, wallet)
 
-        await paymentWhileUnfocused(viewModel, source, wallet, leaving: true)
-        await waitUntil("a new window is watching") { viewModel.isWatchingForReceipt }
+        try await paymentWhileUnfocused(viewModel, source, wallet, leaving: true)
+        try await waitUntil("a new window is watching") { viewModel.isWatchingForReceipt }
         await settle()
 
         XCTAssertNil(viewModel.receipt, "a payment that landed while the owner was away is not new")
         XCTAssertEqual(wallet.baselineReads, 2, "returning opened a new window")
     }
 
-    func testLeavingReceiveClearsAShownReceipt() async {
+    func testLeavingReceiveClearsAShownReceipt() async throws {
         let source = ControlledShieldedAddressSource()
         let wallet = FakeReceiptSources()
-        let viewModel = await watchingViewModel(source, wallet)
+        let viewModel = try await watchingViewModel(source, wallet)
         viewModel.acceptReceipt(Self.receipt)
 
         viewModel.setReceiveSurfaceVisible(false)
@@ -433,10 +494,10 @@ final class PaymentsLandingReceiveSessionTests: XCTestCase {
         XCTAssertNil(viewModel.receipt)
     }
 
-    func testPushingAReceiveStepKeepsTheReceiptAndTheWindow() async {
+    func testPushingAReceiveStepKeepsTheReceiptAndTheWindow() async throws {
         let source = ControlledShieldedAddressSource()
         let wallet = FakeReceiptSources()
-        let viewModel = await watchingViewModel(source, wallet)
+        let viewModel = try await watchingViewModel(source, wallet)
         viewModel.acceptReceipt(Self.receipt)
 
         viewModel.setReceiveSurfaceVisible(false)
@@ -450,64 +511,64 @@ final class PaymentsLandingReceiveSessionTests: XCTestCase {
 
     // MARK: - Placeholder retry
 
-    func testNotReadyPlaceholderRetriesWhenShieldedStartsRunning() async {
+    func testNotReadyPlaceholderRetriesWhenShieldedStartsRunning() async throws {
         let source = ControlledShieldedAddressSource()
         let running = PassthroughSubject<Bool, Never>()
         let viewModel = makeViewModel(source: source, shieldedRunning: running.eraseToAnyPublisher())
         viewModel.beginReceiveSession()
-        await waitUntil("request") { source.callCount == 1 }
+        try await waitUntil("request") { source.callCount == 1 }
         source.complete(0, with: .notReady)
-        await waitUntil("placeholder") { viewModel.shieldedReceiveState == .ready(.notReady) }
+        try await waitUntil("placeholder") { viewModel.shieldedReceiveState == .ready(.notReady) }
 
         running.send(true)
 
-        await waitUntil("retried") { source.callCount == 2 }
+        try await waitUntil("retried") { source.callCount == 2 }
         source.complete(1, with: .fresh("tdash1fresh-a"))
-        await waitUntil("address") { viewModel.currentAddress == "tdash1fresh-a" }
+        try await waitUntil("address") { viewModel.currentAddress == "tdash1fresh-a" }
     }
 
-    func testUnavailablePlaceholderRetriesWhenShieldedStartsRunning() async {
+    func testUnavailablePlaceholderRetriesWhenShieldedStartsRunning() async throws {
         let source = ControlledShieldedAddressSource()
         let running = PassthroughSubject<Bool, Never>()
         let viewModel = makeViewModel(source: source, shieldedRunning: running.eraseToAnyPublisher())
         viewModel.beginReceiveSession()
-        await waitUntil("request") { source.callCount == 1 }
+        try await waitUntil("request") { source.callCount == 1 }
         source.complete(0, with: .unavailable)
-        await waitUntil("placeholder") { viewModel.shieldedReceiveState == .ready(.unavailable) }
+        try await waitUntil("placeholder") { viewModel.shieldedReceiveState == .ready(.unavailable) }
 
         running.send(true)
 
-        await waitUntil("retried") { source.callCount == 2 }
+        try await waitUntil("retried") { source.callCount == 2 }
     }
 
     /// Shielded sync starts after the source answered «not ready» but before
     /// that answer is applied: the session must not stay on the placeholder.
-    func testShieldedStartingWhileDerivingRetries() async {
+    func testShieldedStartingWhileDerivingRetries() async throws {
         let source = ControlledShieldedAddressSource()
         let running = PassthroughSubject<Bool, Never>()
         let viewModel = makeViewModel(source: source, shieldedRunning: running.eraseToAnyPublisher())
         viewModel.beginReceiveSession()
-        await waitUntil("request") { source.callCount == 1 }
+        try await waitUntil("request") { source.callCount == 1 }
         XCTAssertEqual(viewModel.shieldedReceiveState, .deriving)
 
         running.send(true)
-        await waitUntil("retried") { source.callCount == 2 }
+        try await waitUntil("retried") { source.callCount == 2 }
         source.complete(0, with: .notReady)
         source.complete(1, with: .fresh("tdash1fresh-a"))
 
-        await waitUntil("address") { viewModel.currentAddress == "tdash1fresh-a" }
+        try await waitUntil("address") { viewModel.currentAddress == "tdash1fresh-a" }
         await settle()
         XCTAssertEqual(viewModel.shieldedReceiveState, .ready(.fresh("tdash1fresh-a")), "the stale answer is dropped")
     }
 
-    func testShieldedStartingNeverReplacesAShownAddress() async {
+    func testShieldedStartingNeverReplacesAShownAddress() async throws {
         let source = ControlledShieldedAddressSource()
         let running = PassthroughSubject<Bool, Never>()
         let viewModel = makeViewModel(source: source, shieldedRunning: running.eraseToAnyPublisher())
         viewModel.beginReceiveSession()
-        await waitUntil("request") { source.callCount == 1 }
+        try await waitUntil("request") { source.callCount == 1 }
         source.complete(0, with: .fallback("tdash1default"))
-        await waitUntil("address") { viewModel.currentAddress == "tdash1default" }
+        try await waitUntil("address") { viewModel.currentAddress == "tdash1default" }
 
         running.send(true)
         await settle()
@@ -516,14 +577,14 @@ final class PaymentsLandingReceiveSessionTests: XCTestCase {
         XCTAssertEqual(viewModel.currentAddress, "tdash1default")
     }
 
-    func testShieldedStoppingDoesNotRetry() async {
+    func testShieldedStoppingDoesNotRetry() async throws {
         let source = ControlledShieldedAddressSource()
         let running = PassthroughSubject<Bool, Never>()
         let viewModel = makeViewModel(source: source, shieldedRunning: running.eraseToAnyPublisher())
         viewModel.beginReceiveSession()
-        await waitUntil("request") { source.callCount == 1 }
+        try await waitUntil("request") { source.callCount == 1 }
         source.complete(0, with: .notReady)
-        await waitUntil("placeholder") { viewModel.shieldedReceiveState == .ready(.notReady) }
+        try await waitUntil("placeholder") { viewModel.shieldedReceiveState == .ready(.notReady) }
 
         running.send(false)
         await settle()

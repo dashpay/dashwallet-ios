@@ -303,8 +303,9 @@ final class PaymentsLandingViewModel: ObservableObject {
     private let shieldedAddressSource: ShieldedReceiveAddressSource
     private let activeWalletId: @MainActor () -> Data?
     private let receiptSources: ReceiptWatchingSources
-    /// Bumped by every `beginReceiveSession`; a derivation applies its
-    /// result only while its token is still the current one.
+    /// Bumped by every `beginReceiveSession` and when a session ends (Done,
+    /// leaving Receive); a derivation applies its result only while its token
+    /// is still the current one.
     private var shieldedSessionToken: UInt64 = 0
 
     init(activeTab: PaymentsLandingTab,
@@ -570,6 +571,12 @@ final class PaymentsLandingViewModel: ObservableObject {
         }
     }
 
+    /// A derivation still in flight belongs to a session that has ended; its
+    /// result is dropped when it arrives.
+    private func invalidateShieldedDerivation() {
+        shieldedSessionToken &+= 1
+    }
+
     private func applyShieldedAddress(_ result: ShieldedReceiveAddress, token: UInt64) {
         guard token == shieldedSessionToken else { return }
         shieldedReceiveState = .ready(result)
@@ -613,6 +620,7 @@ final class PaymentsLandingViewModel: ObservableObject {
         // stops the watcher, and returning is what starts the next session.
         receipt = nil
         invalidateReceiptSession()
+        invalidateShieldedDerivation()
     }
 
     /// Receive is no longer on screen. Pushing a step of the receive flow is
@@ -625,6 +633,10 @@ final class PaymentsLandingViewModel: ObservableObject {
         guard !pushingReceiveStep else { return }
         receipt = nil
         invalidateReceiptSession()
+        // Idle, not the last state: a placeholder left behind would make the
+        // shielded wallet starting derive an address while Receive is away.
+        invalidateShieldedDerivation()
+        shieldedReceiveState = .idle
     }
 
     func receiveAnother() {
