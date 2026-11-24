@@ -3429,6 +3429,9 @@
 /* No comment provided by engineer. */
 "Merchant search works better with Location Services turned on." = "位置情報サービスをオンにすると、加盟店検索がより機能します。";
 
+/* External send */
+"Message in the link: %@" = "Message in the link: %@";
+
 /* DashConnect funding limit keypad: the smallest limit with its unit */
 "Min limit is %@" = "Min limit is %@";
 

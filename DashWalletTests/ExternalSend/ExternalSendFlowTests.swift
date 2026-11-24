@@ -397,6 +397,19 @@ final class ExternalSendFlowTests: XCTestCase {
         }
     }
 
+    /// The amount screen's title never takes an identity link's label: an unnamed identity shows its type.
+    func testAnIdentityLinksLabelIsNotTheRecipientsTitle() async throws {
+        let harness = makeHarness()
+        harness.lookup.results = [.found(IdentityRecipient(id: identityID, username: nil, isOwnCurrentIdentity: false))]
+
+        _ = await scan(harness, "dash:\(identityID)?label=Your%20identity&message=Mine", openedByApp: false)
+        let send = try XCTUnwrap(harness.flow.sendViewModel)
+        await send.load()
+
+        XCTAssertNil(send.destinationLabel)
+        XCTAssertEqual(send.destinationNote, "Message in the link: Mine")
+    }
+
     func testAnIdentityLinkWithoutAnAmountOpensSendWithNoAmount() async throws {
         let harness = makeHarness()
         harness.lookup.results = [.found(foundRecipient)]

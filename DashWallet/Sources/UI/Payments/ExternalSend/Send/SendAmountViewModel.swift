@@ -654,13 +654,18 @@ final class SendAmountViewModel: ObservableObject {
     }
 
     /// The label, sanitized and prefixed with 🔒 when a payment request's merchant verified, as the old Send does.
+    /// Never an Identity ID's: an identity is named only by Platform (its username) or by the wallet ("Your
+    /// identity"), so an unsigned link cannot name someone else's identity as the holder's own.
     static func label(of destination: Destination) -> String? {
-        guard let label = sanitized(destination.label) else { return nil }
+        guard destination.type != .identityID, let label = sanitized(destination.label) else { return nil }
         return destination.isVerifiedMerchant ? "🔒 " + label : label
     }
 
+    /// The message, sanitized; an Identity ID's says it came from the link, apart from the wallet's own notices.
     static func note(of destination: Destination) -> String? {
-        sanitized(destination.message)
+        guard let message = sanitized(destination.message) else { return nil }
+        guard destination.type == .identityID else { return message }
+        return String(format: NSLocalizedString("Message in the link: %@", comment: "External send"), message)
     }
 
     /// The text the sender wrote, with every non-ASCII character spelled out by its Unicode name (a 🔒 reads
