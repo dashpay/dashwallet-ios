@@ -284,12 +284,34 @@ class PublishWindowTest(unittest.TestCase):
         self.assertIn(os.path.join(self.tmp, aside[0]), str(cm.exception))
         self.assertEqual(self.read(os.path.join(self.tmp, aside[0])), b"written in the window")
 
-    def test_an_empty_leftover_moved_aside_file_is_removed(self):
-        with open(os.path.join(self.tmp, ".Localizable.xcstrings.abc123.aside"), "wb"):
+    def test_an_empty_leftover_moved_aside_file_refuses_too(self):
+        # It may be another run's, about to receive the old file; never remove it.
+        leftover = os.path.join(self.tmp, ".Localizable.xcstrings.abc123.aside")
+        with open(leftover, "wb"):
             pass
-        catalog_io.publish_text(self.path, "result", {self.path: b"as read"})
-        self.assertEqual(self.read(self.path), b"result")
-        self.assertEqual(self.others(), [])
+        with self.assertRaises(catalog_io.CatalogIOError) as cm:
+            catalog_io.publish_text(self.path, "result", {self.path: b"as read"})
+        self.assertIn(leftover, str(cm.exception))
+        self.assertTrue(os.path.exists(leftover))
+        self.assertEqual(self.read(self.path), b"as read")
+
+    def test_an_interrupt_while_the_hold_starts_restores_the_mask(self):
+        import signal
+        before = signal.pthread_sigmask(signal.SIG_BLOCK, [])
+        real = signal.pthread_sigmask
+        calls = []
+
+        def interrupted(how, mask):
+            calls.append(how)
+            result = real(how, mask)
+            if how == signal.SIG_BLOCK and mask:
+                raise KeyboardInterrupt
+            return result
+        with mock.patch.object(catalog_io.signal, "pthread_sigmask", interrupted):
+            with self.assertRaises(KeyboardInterrupt):
+                catalog_io.publish_text(self.path, "result", {self.path: b"as read"})
+        self.assertEqual(signal.pthread_sigmask(signal.SIG_BLOCK, []), before)
+        self.assert_back_and_clean()
 
     def test_a_leftover_moved_aside_file_refuses_and_is_named(self):
         # Bytes of an interrupted publication may be in it; nobody may publish past them.

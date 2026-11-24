@@ -70,7 +70,8 @@ def publish_file(path, staged, want, watched=None):
     It never replaces bytes it did not verify. The live file is compared first (a mismatch never moves
     it), then moved aside and verified there, and the result is put in place with link(), which fails
     when another program (an editor's atomic save) created the path again in the meantime: that save
-    stays. SIGINT, SIGTERM and SIGHUP are held from the move to the end and delivered after it. Every
+    stays. SIGINT, SIGTERM and SIGHUP are held from the move to the end and delivered after it (in a
+    process with one thread, as every caller is). Every
     error leaves `path` holding the old bytes, a newer save or the result, with any other bytes in a
     conflict file the error names; when even the old file cannot be put back or kept, the error names the
     moved-aside file that holds it. Bytes written into the moved-aside file through a handle opened
@@ -87,9 +88,6 @@ def publish_file(path, staged, want, watched=None):
                 raise _changed(other, "changed on disk since it was read, so %s was not written" % path)
         for name in sorted(n for n in os.listdir(directory) if n.startswith(prefix) and n.endswith(".aside")):
             leftover = os.path.join(directory, name)
-            if os.path.getsize(leftover) == 0:  # an interrupted run made it but moved nothing into it
-                os.remove(leftover)
-                continue
             raise CatalogIOError("%s was left by an interrupted publication of %s and may hold its only copy; "
                                  "compare it with %s, keep what is needed, delete it, then run again"
                                  % (leftover, path, path))
@@ -115,10 +113,12 @@ def publish_file(path, staged, want, watched=None):
 
 @contextlib.contextmanager
 def _interrupts_held():
-    """Hold SIGINT, SIGTERM and SIGHUP for the block; a signal sent meanwhile is delivered when it ends."""
+    """Hold SIGINT, SIGTERM and SIGHUP for the block; a signal sent meanwhile is delivered when it ends.
+    The mask is the calling thread's: the hold assumes a process with one thread, as every caller is."""
     held = {signal.SIGINT, signal.SIGTERM, signal.SIGHUP}
-    before = signal.pthread_sigmask(signal.SIG_BLOCK, held)
+    before = signal.pthread_sigmask(signal.SIG_BLOCK, [])  # reads the mask, blocks nothing
     try:
+        signal.pthread_sigmask(signal.SIG_BLOCK, held)  # inside the try: an interrupt here still restores
         yield
     finally:
         signal.pthread_sigmask(signal.SIG_SETMASK, before)
