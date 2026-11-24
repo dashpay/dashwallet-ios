@@ -148,8 +148,10 @@ def check_build(repo, derived):
         raise CannotRun("no .stringsdata files under %s; build the dashpay target first" % derived)
     if stale:
         raise CannotRun("the dashpay build's .stringsdata is older than %d working-tree file(s), first %s; "
-                        "build the dashpay target first (delete %s if a record of another architecture "
-                        "or an interrupted build is left over)" % (len(stale), stale[0], derived))
+                        "build the dashpay target first. If a build does not clear it, delete %s and build "
+                        "again: a branch switch or rebase can rewrite a file without changing it, and Xcode then "
+                        "keeps its old data; so can an interrupted build or another architecture's folder"
+                        % (len(stale), stale[0], derived))
 
 
 def check_formatter():
