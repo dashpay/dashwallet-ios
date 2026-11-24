@@ -19,7 +19,8 @@ import XCTest
     /// The Top Up sheet keeps the managed top-up; the external send asks for the top-up for any identity.
     func testFromPlatformTakesTheManagedOrTheAnyIdentityTopUp() async throws {
         let managed = try await IdentityCreditsTopUp().fromPlatform(
-            identityId: Data([2]), amountDuffs: 100, wallet: host.wallet!, modelContainer: ModelContainer())
+            identityId: Data([2]), amountDuffs: 100, wallet: host.wallet!, modelContainer: ModelContainer(),
+            anyIdentity: false)
         XCTAssertEqual(managed, 97)
         XCTAssertEqual(host.wallet!.topUpCalls, 1)
         XCTAssertEqual(host.wallet!.anyIdentityTopUpCalls, 0)

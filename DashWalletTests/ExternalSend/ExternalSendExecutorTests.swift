@@ -2764,6 +2764,8 @@ extension ExternalSendExecutorTests {
                         amount: 50_000, bindingFeeDuffs: 100)
     }
 
+    /// The route hands every identity, the holder's own too, to the top-up; which SDK call that top-up takes is
+    /// checked over the SDK's fake in `scripts/test_identity_top_up_compatibility.py`.
     func testEveryIdentityTakesTheTopUpForAnyIdentity() async {
         for identityId in [Self.ownIdentityId, Self.otherIdentityId] {
             let recorder = TopUpCalls()
@@ -2772,6 +2774,15 @@ extension ExternalSendExecutorTests {
             XCTAssertEqual(recorder.calls, [TopUpCall(identityId: identityId, amountDuffs: 50_000)])
             guard case .completed = result else { return XCTFail("\(result)") }
         }
+    }
+
+    /// The SDK's `WalletRemovedBeforeSend` (FFI 98) comes before the broadcast, even when signing already ran: nothing
+    /// was sent, and the send starts over.
+    func testAWalletRemovedBeforeTheBroadcastIsNotStarted() async {
+        let result = await run(makeTopUp(TopUpCalls(), error: PlatformWalletError.notFound("removed")),
+                               to: Self.otherIdentityId)
+
+        guard case .notStarted = result else { return XCTFail("\(result)") }
     }
 
     func testIdentityPlatformDoesNotKnowIsNotSentAsNotFound() async {
