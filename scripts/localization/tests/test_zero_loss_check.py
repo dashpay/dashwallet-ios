@@ -647,6 +647,9 @@ class CannotRunTests(ZeroLossCase):
             os.utime(os.path.join(self.derived, fn), (past, past))
         res = self.run_cli()
         self.assert_cannot_run(res, "older", "stringsdata")
+        # UU2: --derived-data can be any folder (a shared DerivedData parent): never advise deleting it
+        self.assertNotRegex(res.stderr, r"rm -rf|delete")
+        self.assertIn("new empty folder", res.stderr)
 
     def test_a_build_that_stopped_before_one_file_refuses_and_names_it(self):
         # PP2: Greeting's data is fresh, Send's is older than its source; the newest record must not cover it.
@@ -719,11 +722,15 @@ class BaselineInputsTests(ZeroLossCase):
         self.write_baseline_record("0" * 40)
         res = self.run_cli()
         self.assert_cannot_run(res, "build_baseline.sh")
+        self.assertIn("rm -rf", res.stderr)  # it holds a Baseline build record: disposable
 
     def test_baseline_build_without_a_commit_record_cannot_run_and_hints_to_rebuild(self):
         os.remove(os.path.join(self.baseline_derived, BASELINE_COMMIT_FILE))
         res = self.run_cli()
         self.assert_cannot_run(res, "build_baseline.sh")
+        # UU2: a folder with no record may be anything (the checkout); never advise deleting it
+        self.assertNotRegex(res.stderr, r"rm -rf|delete")
+        self.assertIn("new empty folder", res.stderr)
 
     def test_baseline_build_of_the_used_commit_runs(self):
         res = self.run_cli()
@@ -777,7 +784,14 @@ class BaselineInputsTests(ZeroLossCase):
     def test_a_foreign_folder_is_refused_and_kept(self):
         folder = os.path.join(self.tmp, "Xcode", "Derived Data")
         self.fill(folder)
-        self.assert_refused_and_kept(folder, self.prepare_folder(folder))
+        res = self.prepare_folder(folder)
+        self.assert_refused_and_kept(folder, res)
+        self.assert_no_deletion_advised(res)
+
+    def assert_no_deletion_advised(self, res):
+        # UU2: a folder with no Baseline record may be the checkout or a shared DerivedData parent
+        self.assertNotRegex(res.stderr, r"rm -rf|delete")
+        self.assertIn("new empty folder", res.stderr)
 
     def test_a_folder_built_for_another_commit_is_refused_and_kept(self):
         folder = os.path.join(self.tmp, "elsewhere", "baseline")
@@ -789,7 +803,9 @@ class BaselineInputsTests(ZeroLossCase):
     def test_a_failed_build_without_a_record_is_refused_and_kept(self):
         folder = os.path.join(self.tmp, "Library", "Caches", "dashwallet-regenerate", "baseline-aaaaaaaaaaaa")
         self.fill(folder)
-        self.assert_refused_and_kept(folder, self.prepare_folder(folder))
+        res = self.prepare_folder(folder)
+        self.assert_refused_and_kept(folder, res)
+        self.assert_no_deletion_advised(res)
 
     def test_an_unlistable_folder_is_refused(self):
         folder = os.path.join(self.tmp, "locked")

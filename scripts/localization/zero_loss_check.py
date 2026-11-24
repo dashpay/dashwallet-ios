@@ -135,9 +135,12 @@ def check_baseline_build(folder, baseline):
                         "scripts/localization/build_baseline.sh" % folder)
     built = read_record(folder, BASELINE_COMMIT_FILE)
     if built != baseline:
+        # Only a folder with a record is known to be a Baseline build; one without may be anything.
+        fix = ("delete it (rm -rf \"%s\") and rebuild it" % folder if built else
+               "build into a new empty folder")
         raise CannotRun("the baseline derived data %s was not built from baseline commit %s (record: %s); "
-                        "delete it (rm -rf \"%s\") and rebuild it with scripts/localization/build_baseline.sh %s"
-                        % (folder, baseline, built or "missing", folder, baseline))
+                        "%s with scripts/localization/build_baseline.sh %s"
+                        % (folder, baseline, built or "missing", fix, baseline))
     return read_record(folder, BASELINE_ROOT_FILE) or None
 
 
@@ -148,9 +151,11 @@ def check_build(repo, derived):
         raise CannotRun("no .stringsdata files under %s; build the dashpay target first" % derived)
     if stale:
         raise CannotRun("the dashpay build's .stringsdata is older than %d working-tree file(s), first %s; "
-                        "build the dashpay target first. If a build does not clear it, delete %s and build "
-                        "again: a branch switch or rebase can rewrite a file without changing it, and Xcode then "
-                        "keeps its old data; so can an interrupted build or another architecture's folder"
+                        "build the dashpay target first. If a build does not clear it, clean the build "
+                        "(Xcode: Product > Clean Build Folder) and build again, or build into a new empty folder "
+                        "(xcodebuild -derivedDataPath) and pass it with --derived-data: a branch switch or rebase "
+                        "can rewrite a file without changing it, and Xcode then keeps its old data of %s; so can "
+                        "an interrupted build or another architecture's folder"
                         % (len(stale), stale[0], derived))
 
 
