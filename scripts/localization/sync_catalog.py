@@ -12,8 +12,9 @@ extraction over the target's Swift files (<arch>/<TARGET_NAME>.SwiftFileList) an
 Objective-C .m/.mm files under SRCROOT named in the <arch>/*.d dependency files, runs
 `xcstringstool sync` on a snapshot of the Catalog, re-serializes it with catalog_io (the
 format the Xcode app writes) and, only when the bytes changed, puts the result in place over the
-snapshot's bytes with catalog_io.publish_file; an edit saved at any moment of the build stays, and the
-sync stops with an error (build again). Builds of one checkout sync one at a time (a lock on the Catalog's folder).
+snapshot's bytes with catalog_io.publish_file; an edit saved during the build stays (in place or in a
+conflict file the error names) and the sync stops with an error (build again). The one window left is a
+write through a handle opened before the publication and made after its last comparison (see publish_file). Builds of one checkout sync one at a time (a lock on the Catalog's folder).
 
 Only a Debug build syncs: another configuration (Release, TestFlight, TestNet) does not compile
 `#if DEBUG` code, so its sync would mark the texts only that code looks up as stale, and the
@@ -228,13 +229,16 @@ def main(argv=None):
                     fd, staging = tempfile.mkstemp(prefix=".Localizable.xcstrings.", suffix=".sync",
                                                    dir=catalog_dir)
                     os.close(fd)
-                    shutil.copyfile(synced, staging)
-                    with open(snapshot, "rb") as f:
-                        read = f.read()
                     try:
+                        shutil.copyfile(synced, staging)
+                        with open(snapshot, "rb") as f:
+                            read = f.read()
                         catalog_io.publish_file(catalog, staging, read)
                     except catalog_io.CatalogIOError as e:
                         raise SyncError("%s (an edit saved during the build): the sync stopped, build again" % e)
+                    finally:
+                        if os.path.exists(staging):
+                            os.remove(staging)
                 # The stamp records what this sync processed: the published result, or the snapshot
                 # when nothing changed (a newer Catalog on disk then differs and syncs next build).
                 processed = synced if changed else snapshot

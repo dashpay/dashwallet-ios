@@ -586,6 +586,8 @@ def check(args):
     # Read once: the key map is derived from these bytes and is written only while they are on disk.
     read_before = {catalog_path: catalog_io.read_bytes(catalog_path),
                    os.path.join(repo, KEY_MAP): catalog_io.read_bytes(os.path.join(repo, KEY_MAP))}
+    if read_before[catalog_path] is None:
+        raise CannotRun("no Catalog at %s" % CATALOG)
     cur_strings = json.loads(read_before[catalog_path].decode("utf-8"))["strings"]
     base_catalog = baseline_lists.build_catalog(repo, baseline)
     locales = sorted(baseline_lists.locale_files(repo, baseline))

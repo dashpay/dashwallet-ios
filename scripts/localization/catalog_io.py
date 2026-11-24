@@ -65,57 +65,90 @@ def publish_file(path, staged, want, watched=None):
     bytes `want` (None: `path` must not exist) and only while every file in `watched` ({path: bytes})
     still holds the bytes the caller read; otherwise raise CatalogIOError.
 
-    It never replaces bytes it did not verify. The live file is moved aside first and verified there, and
-    the result is put in place with link(), which fails when another program (an editor's atomic save)
-    created the path again in the meantime: that save stays. Bytes written into the moved-aside file
-    after it was verified (by a program holding it open) are kept in a conflict file the error names."""
+    It never replaces bytes it did not verify, and every way out leaves `path` holding the old bytes, a
+    newer save or the result, with any other bytes in a conflict file the error names. The live file is
+    compared first (a mismatch never moves it), then moved aside and verified there, and the result is
+    put in place with link(), which fails when another program (an editor's atomic save) created the path
+    again in the meantime: that save stays. Bytes written into the moved-aside file through a handle
+    opened earlier are kept in a conflict file when they land before the final comparison; a write
+    through such a handle after it goes to the unlinked old file. While the moved-aside file is
+    verified (a read of its bytes) the path does not exist.
+    A moved-aside file left by an interrupted run refuses the publication, as it may hold the only copy."""
     directory = os.path.dirname(os.path.abspath(path))
     try:
         for other, held in (watched or {}).items():
             if read_bytes(other) != held:
                 raise _changed(other, "changed on disk since it was read, so %s was not written" % path)
+        prefix = "." + os.path.basename(path) + "."
+        leftover = sorted(n for n in os.listdir(directory) if n.startswith(prefix) and n.endswith(".aside"))
+        if leftover:
+            raise CatalogIOError("%s was left by an interrupted publication of %s and may hold its only copy; "
+                                 "compare it with %s, keep what is needed, delete it, then run again"
+                                 % (os.path.join(directory, leftover[0]), path, path))
         if want is None:
             try:
                 os.link(staged, path)
             except FileExistsError:
                 raise _changed(path, "was created since it was read as absent")
             return
-        shutil.copymode(path, staged)
-        fd, aside = tempfile.mkstemp(prefix="." + os.path.basename(path) + ".", suffix=".aside", dir=directory)
+        if read_bytes(path) != want:
+            raise _changed(path, "changed on disk since it was read" if os.path.exists(path) else
+                           "was removed since it was read")
+        try:
+            shutil.copymode(path, staged)
+        except FileNotFoundError:
+            raise _changed(path, "was removed since it was read")
+        fd, aside = tempfile.mkstemp(prefix=prefix, suffix=".aside", dir=directory)
         os.close(fd)
         try:
             os.rename(path, aside)
-        except FileNotFoundError:
+        except BaseException:
             os.remove(aside)
-            raise _changed(path, "was removed since it was read")
-        if read_bytes(aside) != want:
-            _put_back(path, aside)
-            raise _changed(path, "changed on disk since it was read")
-        try:
-            os.link(staged, path)
-        except FileExistsError:
-            os.remove(aside)  # it holds the verified old bytes; the newer save at `path` stays
-            raise _changed(path, "was saved while it was published")
-        if read_bytes(aside) != want:
-            conflict = _conflict_name(path)
-            os.rename(aside, conflict)
-            raise CatalogIOError("%s was written while it was published; that write is kept in %s and %s holds "
-                                 "the tool's result: merge the two, then run again" % (path, conflict, path))
-        os.remove(aside)
+            if not os.path.exists(path):
+                raise _changed(path, "was removed since it was read")
+            raise
+        _move_back_unless_linked(path, staged, aside, want)
     finally:
         if os.path.exists(staged):
             os.remove(staged)
 
 
-def _put_back(path, aside):
-    """Return the moved-aside file to `path`, unless a newer file is there: then keep it as a conflict file."""
+def _move_back_unless_linked(path, staged, aside, want):
+    """The steps after the move: until the result is linked in, any way out puts the old file back."""
+    linked = False
+    try:
+        if read_bytes(aside) != want:
+            raise _changed(path, "changed on disk since it was read")
+        try:
+            os.link(staged, path)
+        except FileExistsError:
+            raise _changed(path, "was saved while it was published")
+        linked = True
+    except BaseException:
+        if not linked:
+            _put_back(path, aside, want)
+        raise
+    if read_bytes(aside) != want:
+        conflict = _conflict_name(path)
+        os.rename(aside, conflict)
+        raise CatalogIOError("%s was written while it was published; that write is kept in %s and %s holds "
+                             "the tool's result: merge the two, then run again" % (path, conflict, path))
+    os.remove(aside)
+
+
+def _put_back(path, aside, want):
+    """Return the moved-aside file to `path`. When a newer file is there, it stays, and the moved-aside file
+    is dropped only if it still holds the verified bytes `want`; otherwise it is kept as a conflict file."""
     try:
         os.link(aside, path)
     except FileExistsError:
+        if read_bytes(aside) == want:
+            os.remove(aside)
+            return
         conflict = _conflict_name(path)
         os.rename(aside, conflict)
-        raise CatalogIOError("%s was saved twice while it was published; the newer save stays and the "
-                             "earlier one is kept in %s; run again" % (path, conflict))
+        raise CatalogIOError("%s was written twice while it was published; the newer save stays and the "
+                             "other write is kept in %s: merge the two, then run again" % (path, conflict))
     os.remove(aside)
 
 

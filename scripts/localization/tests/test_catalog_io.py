@@ -164,6 +164,85 @@ class PublishWindowTest(unittest.TestCase):
                 catalog_io.publish_text(fresh, "mine", {fresh: None})
         self.assertEqual(self.read(fresh), b"someone else's")
 
+    def assert_back_and_clean(self):
+        self.assertEqual(self.read(self.path), b"as read")
+        self.assertEqual(os.stat(self.path).st_mode & 0o777, 0o640)
+        self.assertEqual(self.others(), [])
+
+    def test_a_failing_link_puts_the_file_back(self):
+        # VV1: a filesystem error after the move must not leave the path missing
+        real_link = os.link
+
+        def failing_link(src, dst, **kw):
+            if dst == self.path and not src.endswith(".aside"):
+                raise PermissionError(1, "Operation not permitted")
+            return real_link(src, dst, **kw)
+        with mock.patch.object(catalog_io.os, "link", failing_link):
+            with self.assertRaises(PermissionError):
+                catalog_io.publish_text(self.path, "result", {self.path: b"as read"})
+        self.assert_back_and_clean()
+
+    def test_an_interrupt_during_the_check_puts_the_file_back(self):
+        real_read = catalog_io.read_bytes
+
+        def interrupted(path):
+            if path.endswith(".aside"):
+                raise KeyboardInterrupt
+            return real_read(path)
+        with mock.patch.object(catalog_io, "read_bytes", interrupted):
+            with self.assertRaises(KeyboardInterrupt):
+                catalog_io.publish_text(self.path, "result", {self.path: b"as read"})
+        self.assert_back_and_clean()
+
+    def test_a_leftover_moved_aside_file_refuses_and_is_named(self):
+        # Bytes of an interrupted publication may be in it; nobody may publish past them.
+        leftover = os.path.join(self.tmp, ".Localizable.xcstrings.abc123.aside")
+        with open(leftover, "wb") as f:
+            f.write(b"only copy")
+        with self.assertRaises(catalog_io.CatalogIOError) as cm:
+            catalog_io.publish_text(self.path, "result", {self.path: b"as read"})
+        self.assertIn(leftover, str(cm.exception))
+        self.assertEqual(self.read(self.path), b"as read")
+        self.assertEqual(self.read(leftover), b"only copy")
+
+    def test_a_changed_live_file_is_never_moved(self):
+        # VV6: a mismatch found before the move leaves the path in place the whole time
+        with open(self.path, "wb") as f:
+            f.write(b"saved before")
+        with mock.patch.object(catalog_io.os, "rename", side_effect=AssertionError("moved")):
+            with self.assertRaises(catalog_io.CatalogIOError):
+                catalog_io.publish_text(self.path, "result", {self.path: b"as read"})
+        self.assertEqual(self.read(self.path), b"saved before")
+
+    def test_a_path_removed_before_publication_is_the_tool_s_own_error(self):
+        os.remove(self.path)
+        with self.assertRaises(catalog_io.CatalogIOError):
+            catalog_io.publish_text(self.path, "result", {self.path: b"as read"})
+        self.assertEqual(self.others(), [])
+
+    def test_a_write_into_the_aside_file_survives_an_editor_save_in_the_same_window(self):
+        # VV3: both land between the move and the link; neither may be dropped
+        handle = open(self.path, "r+b")
+        self.addCleanup(handle.close)
+        real_link = os.link
+
+        def both_then_link(src, dst, **kw):
+            if dst == self.path and not src.endswith(".aside"):
+                handle.seek(0)
+                handle.write(b"written in the window")
+                handle.flush()
+                with open(self.path, "wb") as f:
+                    f.write(b"saved in the window")
+            return real_link(src, dst, **kw)
+        with mock.patch.object(catalog_io.os, "link", both_then_link):
+            with self.assertRaises(catalog_io.CatalogIOError) as cm:
+                catalog_io.publish_text(self.path, "result", {self.path: b"as read"})
+        self.assertEqual(self.read(self.path), b"saved in the window")
+        conflicts = [n for n in self.others() if ".conflict-" in n]
+        self.assertEqual(len(conflicts), 1, self.others())
+        self.assertIn(conflicts[0], str(cm.exception))
+        self.assertEqual(self.read(os.path.join(self.tmp, conflicts[0])), b"written in the window")
+
     def test_the_target_must_be_among_the_verified_files(self):
         with self.assertRaises(KeyError):
             catalog_io.publish_text(self.path, "result", {})

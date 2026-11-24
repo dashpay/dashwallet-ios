@@ -289,6 +289,27 @@ class SyncCatalogTest(unittest.TestCase):
         self.assertFalse(os.path.exists(os.path.join(self.root, "obj", ".catalog-sync-stamp")))
         self.assertEqual([n for n in os.listdir(os.path.dirname(self.catalog)) if n.startswith((".Localizable", "Localizable.xcstrings."))], [])
 
+    def test_a_failed_staging_copy_leaves_no_file_in_the_checkout(self):
+        # VV2: e.g. a full disk while the 21 MB result is copied next to the Catalog
+        import sync_catalog
+        from unittest import mock
+        cat = catalog_io.read_catalog(self.catalog)
+        cat["strings"]["Leftover key"] = {"localizations": {"en": {"stringUnit": {"state": "translated", "value": "x"}}}}
+        catalog_io.write_catalog(self.catalog, cat)
+        before = self.read_bytes()
+        real_copyfile = shutil.copyfile
+
+        def full_disk(src, dst, **kw):
+            if os.path.basename(dst).startswith(".Localizable.xcstrings."):
+                raise OSError(28, "No space left on device")
+            return real_copyfile(src, dst, **kw)
+        with mock.patch.dict(os.environ, self.env, clear=True), \
+                mock.patch.object(sync_catalog.shutil, "copyfile", full_disk):
+            self.assertEqual(sync_catalog.main(), 1)
+        self.assertEqual(self.read_bytes(), before)
+        self.assertEqual([n for n in os.listdir(os.path.dirname(self.catalog))
+                          if n.startswith((".Localizable", "Localizable.xcstrings."))], [])
+
     def test_a_sync_with_no_change_of_its_own_leaves_a_saved_edit_and_syncs_again(self):
         self.assertEqual(self.run_sync().returncode, 0)
         os.remove(os.path.join(self.root, "obj", ".catalog-sync-stamp"))
