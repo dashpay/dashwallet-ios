@@ -321,8 +321,16 @@ class AppStoreConnectReleaseTest < Minitest::Test
                { "id" => "valid", "attributes" => { "versionString" => "9.2.0", "appVersionState" => "READY_FOR_DISTRIBUTION" } }]
     client.define_singleton_method(:app_store_versions) { |_app| records }
     failures = []
-    rows = client.published_versions("app", after_version: "9.0.0") { |id, error| failures << [id, error] }
+    versions = {}
+    rows = client.published_versions("app", after_version: "9.0.0") do |id, error, version|
+      failures << [id, error]
+      versions[id] = version
+    end
     assert_equal ["valid"], rows.map { |row| row["id"] }
+    # A row's version reaches the collector only when it is a valid one.
+    assert_equal "9.1.0", versions["unknown"]
+    assert_nil versions["bad-version"]
+    assert_nil versions["missing-version"]
     assert_equal records.length - 1, failures.length
     assert failures.all? { |_, error| error.is_a?(AppStoreConnectRelease::Error) }
     assert_equal "nil-attributes", failures[2].first
