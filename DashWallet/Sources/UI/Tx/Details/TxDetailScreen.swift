@@ -384,10 +384,16 @@ private struct TxDetailValuesRow: View {
 
 /// A `UILabel` for attributed text with image attachments (the Dash
 /// symbol), which SwiftUI's `Text` does not draw.
+///
+/// The symbol is a bitmap tinted when the string is built, so it keeps the
+/// colour of whichever theme was current then (a white symbol in light mode).
+/// The label tints it again with the text colour at that spot, resolved for
+/// the screen's own theme, and again whenever the theme changes.
 private struct AttributedLabel: UIViewRepresentable {
     let text: NSAttributedString
     var alignment: NSTextAlignment = .natural
     var font: UIFont?
+    @Environment(\.colorScheme) private var colorScheme
 
     func makeUIView(context: Context) -> UILabel {
         let label = UILabel()
@@ -399,9 +405,26 @@ private struct AttributedLabel: UIViewRepresentable {
     }
 
     func updateUIView(_ label: UILabel, context: Context) {
-        label.attributedText = text
+        let traits = UITraitCollection(userInterfaceStyle: colorScheme == .dark ? .dark : .light)
+        label.attributedText = Self.retintingAttachments(of: text, for: traits)
         if let font { label.font = font }
         label.textAlignment = alignment
+    }
+
+    private static func retintingAttachments(of text: NSAttributedString,
+                                             for traits: UITraitCollection) -> NSAttributedString {
+        let result = NSMutableAttributedString(attributedString: text)
+        let fullRange = NSRange(location: 0, length: result.length)
+        result.enumerateAttribute(.attachment, in: fullRange) { value, range, _ in
+            guard let attachment = value as? NSTextAttachment,
+                  let image = attachment.image,
+                  let color = result.attribute(.foregroundColor, at: range.location, effectiveRange: nil) as? UIColor,
+                  let tinted = image.sd_tintedImage(with: color.resolvedColor(with: traits)) else { return }
+            // In place, so a subclass's own layout (DashTextAttachment's
+            // offset) is kept; every label of this screen shares one theme.
+            attachment.image = tinted
+        }
+        return result
     }
 
     func sizeThatFits(_ proposal: ProposedViewSize, uiView: UILabel, context: Context) -> CGSize? {
