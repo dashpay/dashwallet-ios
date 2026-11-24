@@ -341,19 +341,14 @@ final class MasternodeUnbanViewModel: ObservableObject {
                 comment: "Masternode unban")
             phase = .ready
         case .invalidParameter(let message) where message.contains("operator reward"):
+            // TODO(platform-error-codes): the payout-address confirmation
+            // is a generic invalid-parameter failure with no result code of
+            // its own, so its text is matched.
             // D2: the node pays an operator reward, so the payout address
             // must be confirmed explicitly. Reveal the field; the Rust
             // message carries the reward percentage.
             payoutAddressRequired = true
             errorText = message
-            phase = .ready
-        case .invalidParameter(let message) where message.contains("extended network info"):
-            // v3 extended entries can't be re-asserted by a v2 payload —
-            // fail closed rather than downgrade the node's endpoint map.
-            errorText = NSLocalizedString(
-                "This masternode uses extended (v3) network info, which this wallet can't re-assert yet. Unban it with dash-cli instead.",
-                comment: "Masternode unban")
-            terminal = true
             phase = .ready
         default:
             errorText = error.errorDescription

@@ -866,8 +866,12 @@ final class AppLoggerTests: XCTestCase {
     // the rejection case by hand.
     func testConsensusRejectionIsExtractedInOnePlace() throws {
         let dataSource = try sourceText("DashWallet/Sources/Models/DashConnect/PlatformDashConnectDataSource.swift")
-        XCTAssertTrue(dataSource.contains("SwiftDashSDKErrorDetail.consensusRejection(in: error)"))
-        XCTAssertFalse(dataSource.contains("case let error as SDKError: error.consensusError"))
+        XCTAssertTrue(dataSource.contains("PlatformRefusal.consensusError(in: error)"))
+        // The one top-level switch lives in PlatformRefusal (PR review r13).
+        for (path, text) in try appSources() where !path.hasSuffix("/PlatformRefusal.swift") {
+            XCTAssertFalse(text.contains("case let error as SDKError: error.consensusError"), path)
+            XCTAssertFalse(text.contains("SwiftDashSDKErrorDetail.consensusRejection"), path)
+        }
         let store = try sourceText("DashWallet/Sources/Infrastructure/SwiftDashSDK/AssetLockFailureStore.swift")
         XCTAssertFalse(store.contains("case .consensusRejection(let consensus"))
         let logger = try sourceText("DashWallet/Sources/Infrastructure/AppLogger.swift")
@@ -925,8 +929,8 @@ final class AppLoggerTests: XCTestCase {
     // AC-03, AC-04 (PR review r12): the recovery harness compiles the
     // production logger without SwiftDashSDK, so AppLogger names no SDK type;
     // SDK error detail comes through `AppLogErrorDetail`. A write decision
-    // reads the consensus extractor of the SwiftDashSDK adapter, never the
-    // log formatter.
+    // reads `PlatformRefusal`'s consensus extractor (the one switch, PR
+    // review r13), never the log formatter.
     func testAppLoggerNamesNoSDKTypeAndNoCallerReadsItsConsensusExtractor() throws {
         let logger = try sourceText("DashWallet/Sources/Infrastructure/AppLogger.swift")
         for name in ["import SwiftDashSDK", "PlatformConsensusError", "SDKError", "PlatformWalletError",
@@ -942,7 +946,7 @@ final class AppLoggerTests: XCTestCase {
             "DashWallet/Sources/Infrastructure/SwiftDashSDK/AssetLockFailureStore.swift",
         ]
         for path in callers {
-            XCTAssertTrue(try sourceText(path).contains("SwiftDashSDKErrorDetail.consensusRejection(in:"), path)
+            XCTAssertTrue(try sourceText(path).contains("PlatformRefusal.consensusError(in:"), path)
         }
     }
 

@@ -18,32 +18,20 @@
 import Foundation
 import SwiftDashSDK
 
-/// What the SDK's errors carry beyond their case: the consensus rejection a
-/// write decision reads, and the codes an error summary writes.
+/// The codes an error summary writes for the SDK's errors. Which errors carry
+/// a consensus rejection is decided by `PlatformRefusal.consensusError(in:)`.
 enum SwiftDashSDKErrorDetail {
-    /// The consensus rejection `error` itself carries, from the SDK or from
-    /// the wallet layer; `nil` for any other error. Not the errors it wraps:
-    /// a caller that decides on a write reads the top level only, and
-    /// `AppLogMessage.errorSummary` walks wrapped errors level by level.
-    static func consensusRejection(in error: Error) -> PlatformConsensusError? {
-        switch error {
-        case let error as SDKError: error.consensusError
-        case let error as PlatformWalletError: error.consensusError
-        default: nil
-        }
-    }
-
     fileprivate static func logDetail(of consensus: PlatformConsensusError?) -> String? {
         consensus.map { "consensus code=\($0.code) kind=\($0.kind)" }
     }
 }
 
 extension SDKError: AppLogErrorDetail {
-    var logDetail: String? { SwiftDashSDKErrorDetail.logDetail(of: consensusError) }
+    var logDetail: String? { SwiftDashSDKErrorDetail.logDetail(of: PlatformRefusal.consensusError(in: self)) }
 }
 
 extension PlatformWalletError: AppLogErrorDetail {
-    var logDetail: String? { SwiftDashSDKErrorDetail.logDetail(of: consensusError) }
+    var logDetail: String? { SwiftDashSDKErrorDetail.logDetail(of: PlatformRefusal.consensusError(in: self)) }
 }
 
 /// The keychain status a recovery-phrase keychain failure carries; the

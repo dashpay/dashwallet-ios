@@ -504,12 +504,9 @@ struct UsernameMarketplaceService {
                 .map { Date(timeIntervalSince1970: Double($0) / 1000) }
             return .activeContest(contenders: contenders.count, endsAt: endsAt)
         } catch {
-            // rs-sdk reports "no contest" as an error rather than an
-            // empty result; a missing contest is the normal fresh case.
-            let text = String(describing: error).lowercased()
-            if text.contains("not found") || text.contains("no contest") {
-                return .fresh
-            }
+            // A label with no contest is not an error: the query answers
+            // it with no contenders, handled above. A failure says nothing
+            // about the label.
             Self.logger.info("🏷️ MARKET :: contest precheck unavailable: \(error)")
             return .unknown
         }

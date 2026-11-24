@@ -137,7 +137,7 @@ struct AppConnectWriteExecutor {
         if let caseName = AppLogMessage.caseName(of: error) {
             parts.append(caseName)
         }
-        if let consensus = SwiftDashSDKErrorDetail.consensusRejection(in: error) {
+        if let consensus = PlatformRefusal.consensusError(in: error) {
             parts.append("code=\(consensus.code) kind=\(consensus.kind)")
         }
         return parts.joined(separator: " ")

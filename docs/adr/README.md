@@ -46,6 +46,7 @@ where they disagree, ADR-0001 wins.
 | [0050](0050-bound-an-unresolved-publish-by-48-hours-of-proved-platform-block-time.md) | Bound an unresolved publish by 48 hours of proved Platform block time | platform | Accepted | |
 | [0052](0052-refuse-response-removed-at-its-one-write-point-while-the-publish-is-unresolved.md) | Refuse "response removed" at its one write point while the publish is unresolved | platform | Accepted | |
 | [0053](0053-open-dashconnect-on-mainnet-and-gate-each-request-by-protocol-14.md) | Open DashConnect on mainnet and gate each request by protocol 14 | platform | Accepted | |
+| [0054](0054-keep-master-as-a-mirror-of-app-store-publications.md) | Keep master as a mirror of App Store publications | process | Proposed | |
 | [0055](0055-keep-the-app-connect-rules-in-swift-until-android-shares-the-platform-wallet.md) | Keep the App Connect rules in Swift until Android shares the platform wallet | platform | Accepted | |
 | [0056](0056-know-no-app-and-ask-before-returning-to-one.md) | Know no app: show every app as unknown and ask before returning to it | ui | Accepted | |
 | [0057](0057-tell-a-connection-sheet-from-one-basis-and-placed-keys-only.md) | Tell a connection sheet from one basis, and claim access only from placed keys | ui | Accepted | |
@@ -53,6 +54,7 @@ where they disagree, ADR-0001 wins.
 | [0059](0059-route-every-app-log-line-through-dwlogger-with-an-os-logger-shaped-applogger.md) | Route every app log line through DWLogger with an os.Logger-shaped AppLogger | logging | Proposed | |
 | [0060](0060-redact-log-values-at-interpolation-with-os-logger-privacy-defaults.md) | Redact log values at interpolation with os.Logger's privacy defaults | logging | Proposed | |
 | [0061](0061-write-every-logged-error-as-a-type-case-and-code-summary.md) | Write every logged error as a type, case and code summary | logging | Proposed | |
+| [0065](0065-recognize-platform-refusals-by-consensus-code-in-one-table.md) | Recognize Platform refusals by consensus code in one table | platform | Proposed | |
 
 Areas: `spv`, `platform`, `keys`, `storage`, `coinjoin`, `payments`, `swap`, `ui`, `build`, `process`, `logging`. Each ADR takes one; a new
 Area is added to this list in the PR that first needs it.
