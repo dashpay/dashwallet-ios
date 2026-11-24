@@ -282,7 +282,9 @@ enum InvitationClaimFailure: Equatable {
         // neither is matched by the consensus error's own wording, and the
         // SDK's "not yet chain-locked" refusal has no result code of its own.
         let text = String(describing: underlying).lowercased()
-        if text.contains("already completely used") {
+        // An unconfirmed result's text is one attempt's diagnostic: it does
+        // not report the invitation spent.
+        if PlatformRefusal.textMayNameRefusal(underlying), text.contains("already completely used") {
             return .refused
         }
         if text.contains("not yet chain-locked") {

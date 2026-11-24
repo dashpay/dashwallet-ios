@@ -179,6 +179,16 @@ final class InvitationValidationPolicyTests: XCTestCase {
                 "IdentityAssetLockTransactionOutPointAlreadyConsumedError: asset lock outpoint already consumed"))))
     }
 
+    func testAnUnconfirmedResultIsNotASpentReportWhateverItsText() {
+        let unconfirmed: [Error] = [
+            PlatformWalletError.transactionBroadcastUnconfirmed("asset lock already completely used"),
+            PlatformWalletError.shieldedBroadcastUnconfirmed("asset lock already completely used")
+        ]
+        for error in unconfirmed {
+            XCTAssertNil(InvitationClaimFailure.classify(wrapped(error)), "\(error)")
+        }
+    }
+
     func testUntypedSpentTextNeverDeletesTheInvitation() {
         let failure = InvitationClaimFailure.classify(wrapped(PlatformWalletError.walletOperation(
             "asset lock outpoint already completely used")))
