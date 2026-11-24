@@ -31,7 +31,7 @@ import places  # noqa: E402
 
 CATALOG = "DashWallet/Localizable.xcstrings"
 KEY_MAP = "scripts/localization/zero_loss_key_map.json"
-COUNTS = (0, 1, 2, 5, 21, 101)
+COUNTS = (0, 1, 2, 4, 5, 21, 101, 1000000)  # every category an integer selects in the 43 locales (PP5)
 # compare_wording marks a Baseline translation that takes an argument as the wrong type with this.
 DEFECT = object()
 WATCH_DIR = "WatchApp"

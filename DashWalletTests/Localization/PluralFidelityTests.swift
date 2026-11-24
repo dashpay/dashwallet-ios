@@ -20,7 +20,7 @@
 import XCTest
 
 /// Every counted phrase of the Baseline, formatted from the app's compiled String Catalog in each
-/// locale the app ships, for the counts 0, 1, 2, 5, 21 and 101, gives the Baseline form; and no
+/// locale the app ships, for the fixture's counts (0, 1, 2, 4, 5, 21, 101, 1000000), gives the Baseline form; and no
 /// counted phrase of the Baseline has plural variants in a locale whose Baseline lacked them.
 /// Counted phrases added since the Baseline are not held to it.
 ///

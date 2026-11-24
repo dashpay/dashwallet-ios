@@ -2,7 +2,7 @@
 """Write the Baseline forms fixture of the plural-fidelity test (DashWalletTests/Localization/PluralFidelityTests.swift).
 
 For every counted phrase of the Baseline (the keys of en.lproj/Localizable.stringsdict), every locale
-the app compiles (XCSTRINGS_LANGUAGES_TO_COMPILE) and the counts 0, 1, 2, 5, 21, 101, it formats the
+the app compiles (XCSTRINGS_LANGUAGES_TO_COMPILE) and the counts of zero_loss_check.COUNTS (0, 1, 2, 4, 5, 21, 101, 1000000), it formats the
 Baseline lists with the zero-loss check's formatter and records the text, the key the code looks the
 phrase up by now (from the key map) and the arguments it used. A Baseline translation that takes an
 argument as the wrong type formats undefined text; like the zero-loss check, the fixture leaves it out
