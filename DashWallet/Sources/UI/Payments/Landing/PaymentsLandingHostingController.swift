@@ -83,6 +83,12 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     /// (e.g. it is the initial tab) — present the timing sheet from
     /// `viewDidAppear` instead of against a view that isn't on screen yet.
     private var timingSheetPendingAppearance = false
+    /// Whether this appearance already began its Receive session, so a
+    /// repeated `viewWillAppear` within one arrival begins only one.
+    private var hasBegunSessionForAppearance = false
+    /// Set by `didEnterBackground`: only a return from the background is a
+    /// gain of focus, not `willResignActive` (Control Center, banners).
+    private var wentToBackground = false
 
     @objc
     init(activeTab: Int) {
@@ -197,6 +203,8 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         ])
         hostingController.didMove(toParent: self)
 
+        observeReturnFromBackground()
+
         // Receive sheet: keep the pinned transfer route in lockstep with
         // the receive toggle, so the fixed To card and the executed
         // transfer can never disagree. (`$network` republishes the current
@@ -248,6 +256,41 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         // Also on the way back from a pushed step, which restored the bar on
         // its own way out.
         applyTabBarVisibility()
+        // Arriving — from another tab, from Home, from the lock screen, or
+        // back from a pushed step — is a gain of focus for Receive.
+        if !hasBegunSessionForAppearance {
+            hasBegunSessionForAppearance = true
+            viewModel.beginReceiveSession()
+        }
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        hasBegunSessionForAppearance = false
+        // Another tab, a pop, a dismissal, or a pushed step of the receive
+        // flow; a sheet this screen presents leaves it in place and never
+        // gets here. Did-, not will-disappear: a cancelled swipe back or
+        // sheet drag never gets here either.
+        viewModel.receiveDidDisappear(pushingReceiveStep: isPushingReceiveStep)
+    }
+
+    /// A return from the background while Receive is on screen with nothing
+    /// over it is a gain of focus. `didBecomeActive` alone is not: Control
+    /// Center, the notification shade and system prompts only resign active.
+    private func observeReturnFromBackground() {
+        NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.wentToBackground = true }
+            .store(in: &cancellables)
+        NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self, self.wentToBackground else { return }
+                self.wentToBackground = false
+                guard self.isSurfaceOnScreen, self.presentedViewController == nil else { return }
+                self.viewModel.beginReceiveSession()
+            }
+            .store(in: &cancellables)
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -304,6 +347,8 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
             activityItems: [address],
             dismissal: { [weak self] in
                 self?.viewModel.setReceiptWatchingObscured(false)
+                // Closing the Share sheet, shared or not, is a gain of focus.
+                self?.viewModel.beginReceiveSession()
             })
     }
 

@@ -101,11 +101,91 @@ enum AttendedReceiveRefreshPolicy {
     static let shieldedInterval: TimeInterval = 5
 }
 
+/// The shielded address of the current Receive session.
+enum ShieldedReceiveSessionState: Equatable {
+    /// No session asked for a shielded address yet.
+    case idle
+    /// A session began and its address is being derived; nothing is shown.
+    case deriving
+    /// The session's address — it stays until the next session begins.
+    case ready(ShieldedReceiveAddress)
+}
+
+/// The active wallet as the receipt watchers see it.
+struct ReceiptWalletContext {
+    let walletId: Data
+    /// The network the app is set to.
+    let environment: Network
+    /// Whether the SDK is running `environment`.
+    let isRunning: Bool
+}
+
+/// What the receipt watchers read from the wallet for the session context
+/// and the shielded rail. `live` reads the running wallet; tests inject
+/// their own.
+struct ReceiptWatchingSources {
+    /// The active wallet; nil while there is none or no network is set.
+    var walletContext: @MainActor () -> ReceiptWalletContext?
+    /// Ids of the shielded activity rows persisted now; nil when they could
+    /// not be read.
+    var persistedShieldedActivityIds: () -> Set<String>?
+    /// The shielded activity as the history projects it.
+    var projectedShieldedActivity: @Sendable () -> [ShieldedActivityItem]
+    /// Fires when a shielded sync of the wallet has results to project; nil
+    /// while shielded sync is not running.
+    var shieldedSyncResults: @MainActor (_ walletId: Data) -> AnyPublisher<Void, Never>?
+    /// Asks for a shielded sync now.
+    var requestShieldedRefresh: @MainActor () -> Void
+
+    static let live = ReceiptWatchingSources(
+        walletContext: {
+            guard let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
+                  let environment = WalletEnvironment.network
+            else { return nil }
+            return ReceiptWalletContext(
+                walletId: walletId,
+                environment: environment,
+                isRunning: SwiftDashSDKHost.shared.runningNetwork == environment)
+        },
+        persistedShieldedActivityIds: { SwiftDashSDKWalletSource.persistedShieldedActivityIds() },
+        projectedShieldedActivity: {
+            let coreTransactions = SwiftDashSDKWalletSource
+                .fetchCurrentWalletSnapshot()?.transactions ?? []
+            return SwiftDashSDKWalletSource.fetchShieldedActivity(
+                coreTransactions: coreTransactions)
+        },
+        shieldedSyncResults: { walletId in
+            guard PlatformAddressSyncCoordinator.shared.isShieldedRunning,
+                  let manager = PlatformAddressSyncCoordinator.shared.platformWalletManager
+            else { return nil }
+            return manager.$lastShieldedSyncEvent
+                .compactMap { event -> Void? in
+                    guard let result = event?.result(for: walletId),
+                          ReceiveReceiptPolicy.shouldProjectShieldedResult(
+                              success: result.success,
+                              cooldownSkip: result.cooldownSkip)
+                    else { return nil }
+                    return ()
+                }
+                .eraseToAnyPublisher()
+        },
+        requestShieldedRefresh: {
+            guard let manager = PlatformAddressSyncCoordinator.shared.platformWalletManager else { return }
+            PlatformAddressSyncCoordinator.shared.requestShieldedRefresh(
+                using: manager,
+                reason: "attended receive")
+        })
+}
+
 @MainActor
 final class PaymentsLandingViewModel: ObservableObject {
 
     @Published var activeTab: PaymentsLandingTab
-    @Published var network: ChainNetwork = .core
+    /// Synchronous on purpose: the switch to Shielded begins its session in
+    /// the same transaction, so the card slides in with the fresh QR.
+    @Published var network: ChainNetwork = .core {
+        didSet { networkDidChange() }
+    }
     /// Which hero tabs this presentation offers. The full landing shows all
     /// three; the balance-row receive sheet narrows to Receive + Internal.
     let visibleTabs: [PaymentsLandingTab]
@@ -145,7 +225,9 @@ final class PaymentsLandingViewModel: ObservableObject {
 
     @Published private(set) var coreAddress: String? = nil
     @Published private(set) var platformAddress: String? = nil
-    @Published private(set) var shieldedAddress: String? = nil
+    /// One shielded address per Receive session: set when a session begins
+    /// (`beginReceiveSession`), never replaced while the session lasts.
+    @Published private(set) var shieldedReceiveState: ShieldedReceiveSessionState = .idle
     @Published private(set) var displayedAddress: String? = nil
     @Published private(set) var receipt: ReceiveReceipt? = nil
     @Published private(set) var isWatchingForReceipt = false
@@ -218,18 +300,31 @@ final class PaymentsLandingViewModel: ObservableObject {
     private var surfaceIsVisible = false
     private var presentationIsObscuring = false
     private var appIsActive = UIApplication.shared.applicationState == .active
+    private let shieldedAddressSource: ShieldedReceiveAddressSource
+    private let activeWalletId: @MainActor () -> Data?
+    private let receiptSources: ReceiptWatchingSources
+    /// Bumped by every `beginReceiveSession` and when a session ends (Done,
+    /// leaving Receive); a derivation applies its result only while its token
+    /// is still the current one.
+    private var shieldedSessionToken: UInt64 = 0
 
     init(activeTab: PaymentsLandingTab,
          network: ChainNetwork = .core,
          visibleTabs: [PaymentsLandingTab] = PaymentsLandingTab.allCases,
-         allowsTransactionDetails: Bool = true) {
+         allowsTransactionDetails: Bool = true,
+         shieldedAddressSource: ShieldedReceiveAddressSource = SDKShieldedReceiveAddressSource(),
+         activeWalletId: @escaping @MainActor () -> Data? = { SwiftDashSDKHost.shared.wallet?.walletId },
+         receiptSources: ReceiptWatchingSources = .live,
+         shieldedRunning: AnyPublisher<Bool, Never>? = nil) {
         self.activeTab = activeTab
         self.network = network
         self.visibleTabs = visibleTabs
         self.allowsTransactionDetails = allowsTransactionDetails
+        self.shieldedAddressSource = shieldedAddressSource
+        self.activeWalletId = activeWalletId
+        self.receiptSources = receiptSources
 
         reloadCoreAddress()
-        reloadShieldedAddress()
 
         NotificationCenter.default.publisher(for: .advancedModeDidChange)
             .receive(on: RunLoop.main)
@@ -264,10 +359,6 @@ final class PaymentsLandingViewModel: ObservableObject {
             .sink { [weak self] addresses in
                 guard let self else { return }
                 self.platformAddress = addresses.nextReceiveAddress?.address
-                // The shielded sub-wallet is bound by the same coordinator's
-                // startup, so a derived-addresses tick is also the retry
-                // signal for a shielded address that wasn't ready at init.
-                self.reloadShieldedAddress()
                 self.reconcileReceiptWatching()
             }
             .store(in: &cancellables)
@@ -279,7 +370,8 @@ final class PaymentsLandingViewModel: ObservableObject {
             .sink { [weak self] _, _ in self?.reconcileReceiptWatching() }
             .store(in: &cancellables)
 
-        PlatformAddressSyncCoordinator.shared.$isShieldedRunning.removeDuplicates()
+        (shieldedRunning ?? PlatformAddressSyncCoordinator.shared.$isShieldedRunning.eraseToAnyPublisher())
+            .removeDuplicates()
             .receive(on: RunLoop.main)
             .sink { [weak self] running in
                 guard let self else { return }
@@ -289,6 +381,15 @@ final class PaymentsLandingViewModel: ObservableObject {
                     self.suspendReceiptWatching()
                 } else {
                     self.reconcileReceiptWatching()
+                }
+                // A session that found the shielded wallet not ready shows a
+                // placeholder; the wallet starting is what it waits for. A
+                // session still deriving begins again too: its answer may be
+                // a «not ready» read before the start. Only a placeholder or
+                // a pending derivation is replaced — never a shown address
+                // (AC-03).
+                if running, self.isWaitingForShieldedAddress {
+                    self.beginReceiveSession()
                 }
             }
             .store(in: &cancellables)
@@ -325,14 +426,22 @@ final class PaymentsLandingViewModel: ObservableObject {
         $activeTab
             .dropFirst()
             .receive(on: RunLoop.main)
-            .sink { [weak self] _ in self?.resetForRouteChange() }
+            .sink { [weak self] _ in
+                self?.resetForRouteChange()
+                // Opening the Receive tab is a gain of focus; leaving it ends
+                // the shielded session.
+                self?.beginReceiveSession()
+            }
             .store(in: &cancellables)
 
-        $network
-            .dropFirst()
-            .receive(on: RunLoop.main)
-            .sink { [weak self] _ in self?.resetForRouteChange() }
-            .store(in: &cancellables)
+    }
+
+    private func networkDidChange() {
+        resetForRouteChange()
+        // Switching back to Shielded is a gain of focus for its address — the
+        // one that originates inside the view model. Switching away ends the
+        // shielded session.
+        beginReceiveSession()
     }
 
     #if DEBUG
@@ -345,14 +454,17 @@ final class PaymentsLandingViewModel: ObservableObject {
         previewVisibleTabs: [PaymentsLandingTab],
         previewCoreAddress: String?,
         previewPlatformAddress: String?,
-        previewShieldedAddress: String?
+        previewShieldedState: ShieldedReceiveSessionState
     ) {
         activeTab = previewActiveTab
         network = previewNetwork
         visibleTabs = previewVisibleTabs
         coreAddress = previewCoreAddress
         platformAddress = previewPlatformAddress
-        shieldedAddress = previewShieldedAddress
+        shieldedReceiveState = previewShieldedState
+        shieldedAddressSource = SDKShieldedReceiveAddressSource()
+        activeWalletId = { nil }
+        receiptSources = .live
         // A preview has no host to route to and no transaction to route with,
         // so the receipt's "View transaction" stays hidden rather than drawing
         // a control that could not do anything.
@@ -367,7 +479,7 @@ final class PaymentsLandingViewModel: ObservableObject {
         visibleTabs: [PaymentsLandingTab] = PaymentsLandingTab.allCases,
         coreAddress: String? = "XyZ8kFqW3nR5tHmB2vJcL7pQaS4dEuG9wN",
         platformAddress: String? = "XmQ4rT7bN2vK9sD5xF8jH3kL6pW1aZcYuE",
-        shieldedAddress: String? = nil
+        shieldedState: ShieldedReceiveSessionState = .ready(.notReady)
     ) -> PaymentsLandingViewModel {
         PaymentsLandingViewModel(
             previewActiveTab: activeTab,
@@ -375,11 +487,17 @@ final class PaymentsLandingViewModel: ObservableObject {
             previewVisibleTabs: visibleTabs,
             previewCoreAddress: coreAddress,
             previewPlatformAddress: platformAddress,
-            previewShieldedAddress: shieldedAddress)
+            previewShieldedState: shieldedState)
     }
     #endif
 
     var currentAddress: String? {
+        // The shielded address belongs to the Receive session, not to the
+        // receipt session: a gain of focus replaces it even while a receipt
+        // window started under an earlier address stays open.
+        if network == .shielded {
+            return shieldedSessionAddress
+        }
         if session?.rail == network, let displayedAddress {
             return displayedAddress
         }
@@ -394,8 +512,75 @@ final class PaymentsLandingViewModel: ObservableObject {
         switch rail {
         case .core: return coreAddress
         case .platform: return platformAddress
-        case .shielded: return shieldedAddress
+        case .shielded: return shieldedSessionAddress
         }
+    }
+
+    /// The address of the current Receive session, when it has one to show.
+    private var shieldedSessionAddress: String? {
+        switch shieldedReceiveState {
+        case .ready(.fresh(let address)), .ready(.fallback(let address)): return address
+        case .idle, .deriving, .ready(.notReady), .ready(.unavailable): return nil
+        }
+    }
+
+    private var isWaitingForShieldedAddress: Bool {
+        switch shieldedReceiveState {
+        case .deriving, .ready(.notReady), .ready(.unavailable): return true
+        case .idle, .ready(.fresh), .ready(.fallback): return false
+        }
+    }
+
+    /// True while the session shows the default shielded address because a
+    /// fresh one could not be derived; the screen shows the linkability
+    /// warning for exactly as long as this holds (AC-07).
+    var isShowingShieldedFallback: Bool {
+        if case .ready(.fallback) = shieldedReceiveState { return true }
+        return false
+    }
+
+    /// Begins a Receive session: with Shielded selected, derives one fresh
+    /// shielded address for it. Called on every gain of focus and by
+    /// «Receive another»; nothing else replaces the session's address.
+    ///
+    /// Ignored while a payment receipt is shown: the receipt stays and no new
+    /// address is derived. It never touches the receipt window either — only
+    /// opening Receive, «Receive another», a route change and Done do.
+    func beginReceiveSession() {
+        guard receipt == nil else { return }
+        shieldedSessionToken &+= 1
+        guard activeTab == .receive, network == .shielded else {
+            shieldedReceiveState = .idle
+            return
+        }
+        guard let walletId = activeWalletId() else {
+            shieldedReceiveState = .ready(.unavailable)
+            return
+        }
+        if let immediate = shieldedAddressSource as? ImmediateShieldedReceiveAddressSource {
+            shieldedReceiveState = .ready(immediate.receiveAddressNow(walletId: walletId))
+            reconcileReceiptWatching()
+            return
+        }
+        shieldedReceiveState = .deriving
+        let token = shieldedSessionToken
+        let source = shieldedAddressSource
+        Task.detached(priority: .userInitiated) { [weak self] in
+            let result = await source.receiveAddress(walletId: walletId)
+            await self?.applyShieldedAddress(result, token: token)
+        }
+    }
+
+    /// A derivation still in flight belongs to a session that has ended; its
+    /// result is dropped when it arrives.
+    private func invalidateShieldedDerivation() {
+        shieldedSessionToken &+= 1
+    }
+
+    private func applyShieldedAddress(_ result: ShieldedReceiveAddress, token: UInt64) {
+        guard token == shieldedSessionToken else { return }
+        shieldedReceiveState = .ready(result)
+        reconcileReceiptWatching()
     }
 
     var platformIsReady: Bool {
@@ -435,6 +620,23 @@ final class PaymentsLandingViewModel: ObservableObject {
         // stops the watcher, and returning is what starts the next session.
         receipt = nil
         invalidateReceiptSession()
+        invalidateShieldedDerivation()
+    }
+
+    /// Receive is no longer on screen. Pushing a step of the receive flow is
+    /// not a leave: the receipt and its window stay. Otherwise the owner left
+    /// for another tab or screen and the receipt window ends with it (AC-10),
+    /// shown receipt included, so a payment that lands while they are away is
+    /// not raised as new when they come back. Returning opens a new window and
+    /// a new Receive session.
+    func receiveDidDisappear(pushingReceiveStep: Bool) {
+        guard !pushingReceiveStep else { return }
+        receipt = nil
+        invalidateReceiptSession()
+        // Idle, not the last state: a placeholder left behind would make the
+        // shielded wallet starting derive an address while Receive is away.
+        invalidateShieldedDerivation()
+        shieldedReceiveState = .idle
     }
 
     func receiveAnother() {
@@ -443,8 +645,7 @@ final class PaymentsLandingViewModel: ObservableObject {
         reloadCoreAddress()
         platformAddress = PlatformAddressSyncCoordinator.shared
             .derivedAddresses.nextReceiveAddress?.address
-        shieldedAddress = nil
-        reloadShieldedAddress()
+        beginReceiveSession()
         reconcileReceiptWatching()
     }
 
@@ -462,26 +663,6 @@ final class PaymentsLandingViewModel: ObservableObject {
         canSendToUsername = identity.hasIdentity && identity.username?.isEmpty == false
     }
     #endif
-
-    /// Resolves the wallet's default Orchard payment address and encodes it
-    /// for display. `shieldedDefaultAddress` returns nil until the shielded
-    /// sub-wallet is bound (PlatformAddressSyncCoordinator does that at
-    /// startup), so this is retried from the derived-addresses sink until it
-    /// resolves; the address is deterministic, so no reset on later ticks.
-    private func reloadShieldedAddress() {
-        guard shieldedAddress == nil,
-              let manager = SwiftDashSDKHost.shared.manager,
-              let wallet = SwiftDashSDKHost.shared.wallet,
-              let network = SwiftDashSDKHost.shared.runningNetwork,
-              let raw = ((try? manager.shieldedDefaultAddress(walletId: wallet.walletId)) ?? nil)
-        else { return }
-        // DIP-0018 display form: HRP `dash`/`tdash`, payload = 0x10 type
-        // byte + the 43 raw Orchard address bytes (see the SDK doc on
-        // `shieldedDefaultAddress`).
-        shieldedAddress = Bech32m.encode(
-            hrp: Bech32m.platformHrp(mainnet: network == .mainnet),
-            data: Data([0x10]) + raw)
-    }
 
     private var canActivelyWatch: Bool {
         surfaceIsVisible &&
@@ -513,14 +694,15 @@ final class PaymentsLandingViewModel: ObservableObject {
 
     private func startReceiptSession() {
         guard let address = candidateAddress(for: network),
-              let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
-              let environment = WalletEnvironment.network,
-              SwiftDashSDKHost.shared.runningNetwork == environment
+              let context = receiptSources.walletContext(),
+              context.isRunning
         else {
             displayedAddress = nil
             isWatchingForReceipt = false
             return
         }
+        let walletId = context.walletId
+        let environment = context.environment
 
         // Stamped once, above the baseline read rather than below it. Both
         // the Core snapshot's floor and the subscription's own floor derive
@@ -581,7 +763,7 @@ final class PaymentsLandingViewModel: ObservableObject {
             // reconcile against. A row that exists now is not a new payment
             // whatever the projection later makes of it, so the unprojected
             // superset is the right thing to exclude.
-            return SwiftDashSDKWalletSource.persistedShieldedActivityIds()
+            return receiptSources.persistedShieldedActivityIds()
                 .map { .shielded(activityIds: $0) }
         }
     }
@@ -608,13 +790,12 @@ final class PaymentsLandingViewModel: ObservableObject {
             isWatchingForReceipt = true
             attachPlatformObserverIfNeeded(session: session)
         case .shielded:
-            guard PlatformAddressSyncCoordinator.shared.isShieldedRunning,
-                  PlatformAddressSyncCoordinator.shared.platformWalletManager != nil else {
+            guard let syncResults = receiptSources.shieldedSyncResults(session.walletId) else {
                 suspendReceiptWatching()
                 return
             }
             isWatchingForReceipt = true
-            attachShieldedObserverIfNeeded(session: session)
+            attachShieldedObserverIfNeeded(session: session, syncResults: syncResults)
         }
     }
 
@@ -714,32 +895,25 @@ final class PaymentsLandingViewModel: ObservableObject {
         }
     }
 
-    private func attachShieldedObserverIfNeeded(session: ReceiptSession) {
-        guard let manager = PlatformAddressSyncCoordinator.shared.platformWalletManager else { return }
+    private func attachShieldedObserverIfNeeded(
+        session: ReceiptSession,
+        syncResults: AnyPublisher<Void, Never>
+    ) {
         guard shieldedReceiptCancellable == nil else { return }
-        shieldedReceiptCancellable = manager.$lastShieldedSyncEvent
+        shieldedReceiptCancellable = syncResults
             .receive(on: RunLoop.main)
-            .sink { [weak self] event in
-                guard let result = event?.result(for: session.walletId),
-                      ReceiveReceiptPolicy.shouldProjectShieldedResult(
-                          success: result.success,
-                          cooldownSkip: result.cooldownSkip)
-                else { return }
+            .sink { [weak self] in
                 self?.requestShieldedProjectionRefresh(session: session)
             }
         requestShieldedProjectionRefresh(session: session)
-        PlatformAddressSyncCoordinator.shared.requestShieldedRefresh(
-            using: manager,
-            reason: "attended receive")
+        receiptSources.requestShieldedRefresh()
         startAttendedRefreshLoop(interval: AttendedReceiveRefreshPolicy.shieldedInterval) {
-            [weak self, weak manager] in
-            guard let self, let manager,
+            [weak self] in
+            guard let self,
                   self.receipt == nil,
                   self.isSessionCurrent(session)
             else { return }
-            PlatformAddressSyncCoordinator.shared.requestShieldedRefresh(
-                using: manager,
-                reason: "attended receive")
+            self.receiptSources.requestShieldedRefresh()
         }
     }
 
@@ -752,9 +926,10 @@ final class PaymentsLandingViewModel: ObservableObject {
 
         shieldedProjectionGeneration &+= 1
         let projectionGeneration = shieldedProjectionGeneration
+        let project = receiptSources.projectedShieldedActivity
         shieldedProjectionTask = Task { [weak self] in
             let items = await Task.detached(priority: .userInitiated) {
-                Self.projectedShieldedActivity()
+                project()
             }.value
             guard let self else { return }
             guard self.shieldedProjectionGeneration == projectionGeneration else { return }
@@ -793,13 +968,6 @@ final class PaymentsLandingViewModel: ObservableObject {
         }
     }
 
-    nonisolated private static func projectedShieldedActivity() -> [ShieldedActivityItem] {
-        let coreTransactions = SwiftDashSDKWalletSource
-            .fetchCurrentWalletSnapshot()?.transactions ?? []
-        return SwiftDashSDKWalletSource.fetchShieldedActivity(
-            coreTransactions: coreTransactions)
-    }
-
     private func startAttendedRefreshLoop(
         interval: TimeInterval,
         refresh: @escaping @MainActor () -> Void
@@ -819,7 +987,9 @@ final class PaymentsLandingViewModel: ObservableObject {
         }
     }
 
-    private func acceptReceipt(_ newReceipt: ReceiveReceipt) {
+    /// Shows `newReceipt` unless one is already shown. Called by the rail
+    /// watchers; internal so tests can raise a receipt.
+    func acceptReceipt(_ newReceipt: ReceiveReceipt) {
         guard receipt == nil else { return }
         receipt = newReceipt
         isWatchingForReceipt = false
@@ -864,16 +1034,17 @@ final class PaymentsLandingViewModel: ObservableObject {
         reconcileReceiptWatching()
     }
 
-    private func handleWalletOrEnvironmentChange() {
+    /// A wallet or network change ends the Receive session: the next
+    /// address must belong to the new wallet and network.
+    func handleWalletOrEnvironmentChange() {
         receipt = nil
         invalidateReceiptSession()
         coreAddress = nil
         platformAddress = nil
-        shieldedAddress = nil
         reloadCoreAddress()
         platformAddress = PlatformAddressSyncCoordinator.shared
             .derivedAddresses.nextReceiveAddress?.address
-        reloadShieldedAddress()
+        beginReceiveSession()
         #if DASHPAY
         // The identity is network-scoped, so a network switch can invalidate
         // the Send tab's username row exactly as a registration change does.
@@ -883,11 +1054,12 @@ final class PaymentsLandingViewModel: ObservableObject {
     }
 
     private func isSessionCurrent(_ candidate: ReceiptSession) -> Bool {
-        session?.generation == candidate.generation &&
+        let context = receiptSources.walletContext()
+        return session?.generation == candidate.generation &&
             generation == candidate.generation &&
             network == candidate.rail &&
-            SwiftDashSDKHost.shared.wallet?.walletId == candidate.walletId &&
-            WalletEnvironment.network == candidate.environment
+            context?.walletId == candidate.walletId &&
+            context?.environment == candidate.environment
     }
 
 }

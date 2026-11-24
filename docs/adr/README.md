@@ -42,6 +42,9 @@ where they disagree, ADR-0001 wins.
 | [0035](0035-run-every-vote-through-a-pure-vote-attempt-state-machine.md) | Run every vote through a pure vote-attempt state machine | ui | Proposed | |
 | [0037](0037-cast-quick-voting-sequentially-under-one-authentication.md) | Cast Quick voting sequentially under one authentication | ui | Proposed | |
 | [0038](0038-let-only-the-voting-store-write-the-remembered-node-choice.md) | Let only the voting store write the remembered node choice | ui | Proposed | |
+| [0046](0046-build-fresh-shielded-addresses-across-the-app-and-swiftdashsdk.md) | Build fresh shielded addresses across the app and SwiftDashSDK | platform | Proposed | |
+| [0047](0047-draw-the-random-diversifier-index-inside-the-sdk.md) | Draw the random diversifier index inside the SDK | keys | Proposed | |
+| [0048](0048-recognise-own-shielded-recipients-through-an-sdk-predicate.md) | Recognise own shielded recipients through an SDK predicate | payments | Proposed | |
 | [0049](0049-record-the-publish-start-on-the-connection-intent.md) | Record the publish start on the connection intent | platform | Accepted | |
 | [0050](0050-bound-an-unresolved-publish-by-48-hours-of-proved-platform-block-time.md) | Bound an unresolved publish by 48 hours of proved Platform block time | platform | Accepted | |
 | [0052](0052-refuse-response-removed-at-its-one-write-point-while-the-publish-is-unresolved.md) | Refuse "response removed" at its one write point while the publish is unresolved | platform | Accepted | |
