@@ -16,7 +16,6 @@
 //
 
 import Foundation
-import SwiftDashSDK
 
 /// The app's Swift logger. Shaped like `os.Logger` so call sites read the same,
 /// but every line goes through `DWLogger`: into the rolling file log that
@@ -75,6 +74,14 @@ enum AppLogPrivacy: Sendable {
     case `private`
 }
 
+/// An error that carries a code its summary needs and `NSError` drops: a
+/// consensus rejection's code and kind, a keychain status. The SwiftDashSDK
+/// adapter conforms the SDK's errors, so this file names no SDK type.
+protocol AppLogErrorDetail: Error {
+    /// Codes only, never the error's text; `nil` when this case has none.
+    var logDetail: String? { get }
+}
+
 struct AppLogMessage: ExpressibleByStringInterpolation {
     static let redacted = "<private>"
 
@@ -88,36 +95,12 @@ struct AppLogMessage: ExpressibleByStringInterpolation {
 
     private static let maxWrappedErrors = 3
 
-    /// The keychain status a recovery-phrase keychain failure carries; the
-    /// bridged error drops it. `nil` for any other error.
-    private static func keychainStatus(in error: Error) -> OSStatus? {
-        switch error {
-        case WalletStorageError.keychainError(let status): status
-        case SwiftDashSDKKeyMigrator.LegacyMnemonicCleanupError.keychainRead(let status): status
-        default: nil
-        }
-    }
-
-    /// The consensus rejection `error` itself carries, from the SDK or from
-    /// the wallet layer; `nil` for any other error. Not the errors it wraps:
-    /// `errorSummary` walks those level by level.
-    static func consensusError(in error: Error) -> PlatformConsensusError? {
-        switch error {
-        case let error as SDKError: error.consensusError
-        case let error as PlatformWalletError: error.consensusError
-        default: nil
-        }
-    }
-
     private static func errorSummary(_ error: Error, depth: Int) -> String {
         let nsError = error as NSError
         let caseSuffix = caseName(of: error).map { ".\($0)" } ?? ""
         var summary = "\(type(of: error))\(caseSuffix) \(nsError.domain) #\(nsError.code)"
-        if let consensus = consensusError(in: error) {
-            summary += " consensus code=\(consensus.code) kind=\(consensus.kind)"
-        }
-        if let status = keychainStatus(in: error) {
-            summary += " status=\(status)"
+        if let detail = (error as? AppLogErrorDetail)?.logDetail {
+            summary += " " + detail
         }
         if depth < maxWrappedErrors, let wrapped = wrappedError(of: error) {
             summary += " ← " + errorSummary(wrapped, depth: depth + 1)

@@ -448,16 +448,29 @@ final class SwiftDashSDKHost {
     /// Consumers: reinstall recovery (`start`'s `walletNotFound` retry),
     /// switchable-wallet discovery, and non-destructive phrase checks. A
     /// keychain error reads as empty (logged); an entry whose mnemonic can't
-    /// be retrieved is skipped. Destructive authorization uses the strict
-    /// variant below.
+    /// be retrieved is skipped and logged with its error summary. Destructive
+    /// authorization uses the strict variant below.
     nonisolated static func persistedMnemonics() -> [(walletId: Data, mnemonic: String)] {
         do {
             let storage = WalletStorage()
-            return try storage.listWalletIdsWithMnemonic().compactMap { walletId in
-                guard let mnemonic = try? storage.retrieveMnemonic(for: walletId),
-                      !mnemonic.isEmpty else { return nil }
+            var skipped: [Error] = []
+            let walletIds = try storage.listWalletIdsWithMnemonic()
+            let entries: [(walletId: Data, mnemonic: String)] = walletIds.compactMap { walletId in
+                let mnemonic: String
+                do {
+                    mnemonic = try storage.retrieveMnemonic(for: walletId)
+                } catch {
+                    skipped.append(error)
+                    return nil
+                }
+                guard !mnemonic.isEmpty else { return nil }
                 return (walletId: walletId, mnemonic: mnemonic)
             }
+            if !skipped.isEmpty {
+                let reasons = skipped.map(AppLogMessage.errorSummary).joined(separator: "; ")
+                DWLogger.log("HOST skipped \(skipped.count) unreadable mnemonic entry/entries: \(reasons)")
+            }
+            return entries
         } catch {
             DWLogger.log("HOST mnemonic keychain enumeration failed: \(AppLogMessage.errorSummary(error))")
             return []

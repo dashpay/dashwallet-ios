@@ -15,6 +15,14 @@ enum PlatformWalletError: Error {
     case walletOperation(String)
     case assetLockRecipientMismatch(String)
 }
+/// Stands in for the SwiftDashSDK adapter's extractor the copied
+/// `AssetLockFailureStore` calls.
+enum SwiftDashSDKErrorDetail {
+    static func consensusRejection(in error: Error) -> PlatformWalletError.Consensus? {
+        guard case PlatformWalletError.consensusRejection(let consensus, _)? = error as? PlatformWalletError else { return nil }
+        return consensus
+    }
+}
 struct WalletDrainOutpoint: Sendable {
     let txidWire: Data
     let vout: UInt32

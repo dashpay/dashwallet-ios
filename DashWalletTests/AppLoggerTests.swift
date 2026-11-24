@@ -15,11 +15,12 @@ private enum SampleError: Error {
     case failed(path: String)
 }
 
-/// Records the flag of every log message that holds `marker`, in order.
+/// Records the flag and text of every log message that holds `marker`, in order.
 private final class CapturingLogger: DDAbstractLogger, @unchecked Sendable {
     private let marker: String
     private let lock = NSLock()
     private var captured: [DDLogFlag] = []
+    private var capturedTexts: [String] = []
 
     init(marker: String) {
         self.marker = marker
@@ -32,11 +33,18 @@ private final class CapturingLogger: DDAbstractLogger, @unchecked Sendable {
         return captured
     }
 
+    var texts: [String] {
+        lock.lock()
+        defer { lock.unlock() }
+        return capturedTexts
+    }
+
     @objc(logMessage:)
     func log(message logMessage: DDLogMessage) {
         guard logMessage.message.contains(marker) else { return }
         lock.lock()
         captured.append(logMessage.flag)
+        capturedTexts.append(logMessage.message)
         lock.unlock()
     }
 }
@@ -308,7 +316,7 @@ final class AppLoggerTests: XCTestCase {
             XCTAssertTrue(line.contains("AppLogMessage.errorSummary(error)"), line)
         }
         let skip = try sourceText("DashWallet/Sources/UI/Menu/Security/RecoveryPhraseFlow.swift")
-        XCTAssertTrue(skip.contains("result.skippedErrors.map(AppLogMessage.errorSummary)"))
+        XCTAssertTrue(skip.contains("skippedErrors.map(AppLogMessage.errorSummary)"))
         for path in [host, "DashWallet/Sources/UI/Menu/Security/Wallets/WalletsViewModel.swift",
                      "DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKKeyMigrator.swift"] {
             XCTAssertFalse(try sourceText(path).contains("keychainStatus(of:"), path)
@@ -858,12 +866,84 @@ final class AppLoggerTests: XCTestCase {
     // the rejection case by hand.
     func testConsensusRejectionIsExtractedInOnePlace() throws {
         let dataSource = try sourceText("DashWallet/Sources/Models/DashConnect/PlatformDashConnectDataSource.swift")
-        XCTAssertTrue(dataSource.contains("AppLogMessage.consensusError(in: error)"))
+        XCTAssertTrue(dataSource.contains("SwiftDashSDKErrorDetail.consensusRejection(in: error)"))
         XCTAssertFalse(dataSource.contains("case let error as SDKError: error.consensusError"))
         let store = try sourceText("DashWallet/Sources/Infrastructure/SwiftDashSDK/AssetLockFailureStore.swift")
         XCTAssertFalse(store.contains("case .consensusRejection(let consensus"))
         let logger = try sourceText("DashWallet/Sources/Infrastructure/AppLogger.swift")
         XCTAssertFalse(logger.contains("case .consensusRejection(let consensus"))
+    }
+
+    // AC-04 (PR review r12): every unreadable recovery phrase reaches the
+    // log with its summary, also when none is readable and the screen ends
+    // with the generic error.
+    func testUnreadableRecoveryPhrasesWriteTheirStatusEvenWhenNoneIsReadable() throws {
+        let unreadable = Data((0..<32).map { _ in UInt8.random(in: 0...255) })
+        let readable = Data(repeating: 0x5A, count: 32)
+        let marker = unreadable.prefix(4).map { String(format: "%02x", $0) }.joined()
+        let capture = CapturingLogger(marker: marker)
+        DDLog.add(capture, with: .all)
+        defer { DDLog.remove(capture) }
+
+        XCTAssertThrowsError(try RecoveryPhraseInventory.collectReadableEntries(
+            walletIds: [unreadable],
+            loadEntry: { _ in throw WalletStorageError.keychainError(-25308) }))
+        _ = try RecoveryPhraseInventory.collectReadableEntries(
+            walletIds: [readable, unreadable],
+            loadEntry: { walletId in
+                guard walletId == readable else { throw WalletStorageError.keychainError(-25293) }
+                return RecoveryPhraseInventoryEntry(
+                    walletId: readable, canonicalWalletId: readable, normalizedMnemonic: "", network: .mainnet)
+            })
+        DDLog.flushLog()
+
+        XCTAssertEqual(capture.texts.count, 2, "\(capture.texts)")
+        XCTAssertTrue(capture.texts.first.map { $0.contains("status=-25308") } ?? false, "\(capture.texts)")
+        XCTAssertTrue(capture.texts.last.map { $0.contains("status=-25293") } ?? false, "\(capture.texts)")
+        let flow = try sourceText("DashWallet/Sources/UI/Menu/Security/RecoveryPhraseFlow.swift")
+        XCTAssertEqual(flow.components(separatedBy: "unreadable recovery-phrase").count - 1, 1)
+    }
+
+    // AC-04 (PR review r12): the other readers of every stored recovery
+    // phrase write the summary of each one they cannot read.
+    func testOtherRecoveryPhraseInventoryReadersWriteTheReadFailure() throws {
+        let coordinator = try sourceText(
+            "DashWallet/Sources/UI/Setup/WalletRecovery/KeychainWalletRecoveryCoordinator.swift")
+        let catchBlock = try XCTUnwrap(coordinator.components(separatedBy: "} catch {").dropFirst().first {
+            $0.contains("presentInventoryReadFailure(from: host")
+        })
+        let beforeAlert = try XCTUnwrap(catchBlock.components(separatedBy: "presentInventoryReadFailure").first)
+        XCTAssertTrue(beforeAlert.contains("logger.error(") && beforeAlert.contains("\\(error)"), beforeAlert)
+
+        let host = try sourceText("DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKHost.swift")
+        let start = try XCTUnwrap(host.range(of: "static func persistedMnemonics()"))
+        let body = String(host[start.lowerBound...].prefix(1500))
+        XCTAssertFalse(body.contains("try? storage.retrieveMnemonic"), body)
+        XCTAssertTrue(body.contains("AppLogMessage.errorSummary"), body)
+    }
+
+    // AC-03, AC-04 (PR review r12): the recovery harness compiles the
+    // production logger without SwiftDashSDK, so AppLogger names no SDK type;
+    // SDK error detail comes through `AppLogErrorDetail`. A write decision
+    // reads the consensus extractor of the SwiftDashSDK adapter, never the
+    // log formatter.
+    func testAppLoggerNamesNoSDKTypeAndNoCallerReadsItsConsensusExtractor() throws {
+        let logger = try sourceText("DashWallet/Sources/Infrastructure/AppLogger.swift")
+        for name in ["import SwiftDashSDK", "PlatformConsensusError", "SDKError", "PlatformWalletError",
+                     "WalletStorageError", "SwiftDashSDKKeyMigrator"] {
+            XCTAssertFalse(logger.contains(name), name)
+        }
+        for (path, text) in try appSources() {
+            XCTAssertFalse(text.contains("AppLogMessage.consensusError"), path)
+        }
+        let callers = [
+            "DashWallet/Sources/Models/DashConnect/PlatformDashConnectDataSource.swift",
+            "DashWallet/Sources/Models/DashConnect/AppConnectWriteExecutor.swift",
+            "DashWallet/Sources/Infrastructure/SwiftDashSDK/AssetLockFailureStore.swift",
+        ]
+        for path in callers {
+            XCTAssertTrue(try sourceText(path).contains("SwiftDashSDKErrorDetail.consensusRejection(in:"), path)
+        }
     }
 
     // AC-05 (PR review r11): App Connect preview lines, written before the

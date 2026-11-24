@@ -129,18 +129,6 @@ enum RecoveryPhraseInventory {
             let mnemonic = try SwiftDashSDKHost.strictlyPersistedMnemonic(for: walletId)
             return try classify((walletId: walletId, mnemonic: mnemonic))
         }
-        if !result.skippedWalletIds.isEmpty {
-            let labels = result.skippedWalletIds.map {
-                $0.prefix(4).map { String(format: "%02x", $0) }.joined()
-            }.joined(separator: ",")
-            let reasons = result.skippedErrors.map(AppLogMessage.errorSummary).joined(separator: "; ")
-            logger.error(
-                """
-                Skipping \(result.skippedWalletIds.count, privacy: .public) unreadable recovery-phrase \
-                entry/entries ids=\(labels, privacy: .public) errors=\(reasons, privacy: .public)
-                """)
-        }
-
         let entries = selectableEntries(result.entries)
         let displayNames = Dictionary(uniqueKeysWithValues: entries.map {
             ($0.walletId, WalletsViewModel.displayName(for: $0.walletId))
@@ -174,6 +162,20 @@ enum RecoveryPhraseInventory {
                 skippedWalletIds.append(walletId)
                 skippedErrors.append(error)
             }
+        }
+
+        // Written before the guard: when none is readable, the generic error
+        // the screen ends with carries none of these.
+        if !skippedWalletIds.isEmpty {
+            let labels = skippedWalletIds.map {
+                $0.prefix(4).map { String(format: "%02x", $0) }.joined()
+            }.joined(separator: ",")
+            let reasons = skippedErrors.map(AppLogMessage.errorSummary).joined(separator: "; ")
+            logger.error(
+                """
+                Skipping \(skippedWalletIds.count, privacy: .public) unreadable recovery-phrase \
+                entry/entries ids=\(labels, privacy: .public) errors=\(reasons, privacy: .public)
+                """)
         }
 
         guard walletIds.isEmpty || !entries.isEmpty else {

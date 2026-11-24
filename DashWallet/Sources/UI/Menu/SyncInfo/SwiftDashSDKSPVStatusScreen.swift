@@ -590,13 +590,13 @@ struct SwiftDashSDKSPVStatusScreen: View {
                 Text(NSLocalizedString(
                     "Available only while SPV is running with a wallet bound.",
                     comment: "SPV diagnostics"))
-                    .font(.system(size: 12))
+                    .scaledSystemFont(size: 12, relativeTo: .caption)
                     .foregroundColor(Color.dash.secondaryText)
             }
 
             if let message = dropResultMessage {
                 Text(message)
-                    .font(.system(size: 12))
+                    .scaledSystemFont(size: 12, relativeTo: .caption)
                     .foregroundColor(dropResultIsError ? .red : .green)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -629,7 +629,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
                 SwiftDashSDKWalletRuntime.stopCoreSPV()
             }) {
                 Text(NSLocalizedString("Stop", comment: "SPV diagnostics"))
-                    .font(.system(size: 14, weight: .semibold))
+                    .scaledSystemFont(size: 14, weight: .semibold, relativeTo: .subheadline)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
                     .background(Color.dash.gray300.opacity(0.3))
@@ -646,7 +646,7 @@ struct SwiftDashSDKSPVStatusScreen: View {
                             .controlSize(.small)
                     }
                     Text(coordinator.isRestarting ? "Restarting…" : "Restart")
-                        .font(.system(size: 14, weight: .semibold))
+                        .scaledSystemFont(size: 14, weight: .semibold, relativeTo: .subheadline)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)

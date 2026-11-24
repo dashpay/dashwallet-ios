@@ -66,6 +66,7 @@ final class KeychainWalletRecoveryCoordinator: NSObject {
                 storedNetworks: storedNetworks,
                 completion: completion)
         } catch {
+            Self.logger.error("Stored wallet inventory read failed: \(error)")
             presentInventoryReadFailure(from: host, completion: completion)
         }
     }

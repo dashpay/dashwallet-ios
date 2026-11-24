@@ -58,7 +58,7 @@ struct CoreCoinConsolidationSheet: View {
 
             if let combineFeeDuffs {
                 Text(CoreCoinConsolidationViewModel.feeLine(duffs: combineFeeDuffs))
-                    .font(.system(size: 14, weight: .medium))
+                    .scaledSystemFont(size: 14, weight: .medium, relativeTo: .subheadline)
                     .foregroundColor(.dash.primaryText)
                     .padding(.horizontal, 24)
                     .padding(.top, 12)
@@ -146,7 +146,7 @@ struct CoreCoinConsolidationSheet: View {
 
     private func message(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 14))
+            .scaledSystemFont(size: 14, relativeTo: .subheadline)
             .foregroundColor(.dash.primaryText)
             .multilineTextAlignment(.center)
             .fixedSize(horizontal: false, vertical: true)

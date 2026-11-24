@@ -18,16 +18,18 @@
 import SwiftUI
 import DashUIKit
 
-// NOTE: `ShortcutsActionDelegate` is still declared in the legacy `ShortcutsView.swift` (same
-// module), so this bar reuses it for now. When `ShortcutsView.swift` is deleted, move the
-// protocol declaration here.
+// MARK: - ShortcutsActionDelegate
+
+protocol ShortcutsActionDelegate: AnyObject {
+    func shortcutsView(didSelectAction action: ShortcutAction, sender: UIView?)
+    func shortcutsView(didLongPressPosition position: Int, currentAction: ShortcutAction)
+}
 
 // MARK: - ShortcutsBarView
 
-/// Home-screen shortcut bar — a pure-SwiftUI replacement for the UIKit `ShortcutsView`
-/// (`ShortcutsView.swift` + `ShortcutsView.xib`). Always shows one row of 4 shortcut buttons.
+/// Home-screen shortcut bar. Always shows one row of 4 shortcut buttons.
 ///
-/// Layered back-to-front, matching the old xib:
+/// Layered back-to-front:
 ///   1. grey content background  (`Color.dash.primaryBackground`, #F7F7F7),
 ///   2. a 30pt blue strip at the top (`Color.navigationBarColor`) so the navigation-bar blue
 ///      continues down behind the top of the card and merges with the balance view above,
@@ -42,11 +44,10 @@ struct ShortcutsBarView: View {
     let onSelect: (ShortcutAction) -> Void
     let onLongPress: (_ position: Int, _ action: ShortcutAction) -> Void
 
-    // Layout values taken 1:1 from ShortcutsView.xib / ShortcutsView.swift.
-    private let cardCornerRadius: CGFloat = 20     // ShortcutsView.commonInit
-    private let cardHorizontalInset: CGFloat = 20  // xib leading/trailing 20
-    private let cardVerticalInset: CGFloat = 4     // xib top/bottom 4
-    private let itemSpacing: CGFloat = 4           // xib flow layout spacing
+    private let cardCornerRadius: CGFloat = 20
+    private let cardHorizontalInset: CGFloat = 20
+    private let cardVerticalInset: CGFloat = 4
+    private let itemSpacing: CGFloat = 4
 
     var body: some View {
         ZStack(alignment: .top) {

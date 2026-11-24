@@ -78,8 +78,6 @@ struct EvonodeWithdrawalScreen: View {
                     Text(NSLocalizedString("Withdraw", comment: "Evonode withdrawal"))
                         .dashFont(.subheadMedium)
                         .foregroundColor(.dash.primaryText)
-                        .lineLimit(1)
-                        .padding(.horizontal, 60)
                 })
 
             ScrollView {

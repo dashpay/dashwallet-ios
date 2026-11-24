@@ -243,8 +243,6 @@ struct MasternodesScreen: View {
                     Text(NSLocalizedString("Masternodes", comment: "Masternodes"))
                         .dashFont(.subheadMedium)
                         .foregroundColor(.dash.primaryText)
-                        .lineLimit(1)
-                        .padding(.horizontal, 60)
                 },
                 trailing: {
                     DashUIKit.NavigationBarElement.plus.button {
@@ -577,8 +575,6 @@ struct MasternodeDetailScreen: View {
                     Text(masternode.displayTitle)
                         .dashFont(.subheadMedium)
                         .foregroundColor(.dash.primaryText)
-                        .lineLimit(1)
-                        .padding(.horizontal, 60)
                 })
 
             list
