@@ -1186,9 +1186,10 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     @MainActor
     private func subscribeToManagerProgress(manager: PlatformWalletManager) {
         subscriptionsDetached = false
-        // The first value is the manager's current one, read before this
-        // subscription and through any app transition while it was detached.
-        paymentTipLifetime.invalidate(at: ProcessInfo.processInfo.systemUptime)
+        // The first value is the manager's cached one, replayed on attaching,
+        // and the next may come from a poll already in flight: either can
+        // be a read from before this subscription.
+        paymentTipLifetime.invalidate(at: ProcessInfo.processInfo.systemUptime, refusing: 2)
         progressCancellable = manager.$spvProgress
             .map { ($0, ProcessInfo.processInfo.systemUptime) }
             .receive(on: RunLoop.main)
@@ -1628,17 +1629,19 @@ enum SPVChainResyncMarker {
 /// after that one was published.
 struct ContactPaymentTipLifetime {
     private var invalidatedAt: TimeInterval = 0
-    private var awaitsFreshRead = false
+    private var ticksToRefuse = 0
 
-    mutating func invalidate(at uptime: TimeInterval) {
+    /// - Parameter refusing: how many ticks after `uptime` may still carry a
+    ///   read from before it.
+    mutating func invalidate(at uptime: TimeInterval, refusing: Int = 1) {
         invalidatedAt = uptime
-        awaitsFreshRead = true
+        ticksToRefuse = refusing
     }
 
     mutating func tip(_ height: UInt32?, observedAt: TimeInterval, isActive: Bool) -> UInt32? {
         guard observedAt > invalidatedAt else { return nil }
-        guard !awaitsFreshRead else {
-            awaitsFreshRead = false
+        guard ticksToRefuse == 0 else {
+            ticksToRefuse -= 1
             return nil
         }
         return isActive ? height : nil

@@ -434,6 +434,16 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
             coreHeight: live(.waitForEvents, Self.agedTip + DashPayWithdrawalStore.lockBlocks)), .awaitingDecision)
     }
 
+    /// Attaching replays the manager's cached value, and a poll already in flight may publish a
+    /// read from before the attachment next: neither stamps a payment.
+    func testResubscribingRefusesTheReplayAndTheInFlightPoll() {
+        var lifetime = ContactPaymentTipLifetime()
+        lifetime.invalidate(at: 1, refusing: 2)
+        XCTAssertNil(lifetime.tip(Self.recordedTip, observedAt: 2, isActive: true))
+        XCTAssertNil(lifetime.tip(Self.recordedTip, observedAt: 3, isActive: true))
+        XCTAssertEqual(lifetime.tip(Self.agedTip, observedAt: 4, isActive: true), Self.agedTip)
+    }
+
     func testBackgroundTickCannotAgeANewPlatformPaymentOnResume() throws {
         var lifetime = ContactPaymentTipLifetime()
         XCTAssertEqual(lifetime.tip(Self.recordedTip, observedAt: 1, isActive: true), Self.recordedTip)
