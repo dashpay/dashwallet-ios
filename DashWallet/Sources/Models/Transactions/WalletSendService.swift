@@ -463,8 +463,8 @@ final class WalletSendService: NSObject {
     static func contactPaymentUnavailableError() -> NSError {
         makeError(
             code: .dashPayPaymentUnavailable,
-            description: NSLocalizedString(
-                "Wallet or DashPay identity is not ready",
+            description: String(
+                localized: "Wallet or DashPay identity is not ready",
                 comment: "Send to contact: wallet or identity not available"))
     }
 
@@ -495,8 +495,8 @@ final class WalletSendService: NSObject {
     /// Boundary backstop for programmatic callers. This runs before
     /// authentication and before inputs are selected or reserved.
     private static func ensureInitialRestoreSyncCompleted(
-        description: String = NSLocalizedString(
-            "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes.",
+        description: String = String(
+            localized: "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes.",
             comment: "Core send blocked during a restored wallet's initial sync")
     ) throws {
         guard !isBlockedByInitialRestoreSync(
@@ -510,8 +510,8 @@ final class WalletSendService: NSObject {
     /// The SDK reserves a contact's next address by the payments this wallet
     /// has seen, so until a restored wallet's first sync has found them all it
     /// could reuse an address already paid, linking the two payments.
-    static let contactPaymentRestoreSyncMessage = NSLocalizedString(
-        "Your restored wallet is completing its initial sync. Paying contacts will be available once it finishes.",
+    static let contactPaymentRestoreSyncMessage = String(
+        localized: "Your restored wallet is completing its initial sync. Paying contacts will be available once it finishes.",
         comment: "Contact payment blocked during a restored wallet's initial sync")
 
     static func ensureContactAddressesSynced() throws {
@@ -1103,8 +1103,8 @@ final class WalletSendService: NSObject {
         guard contactPaymentOutcomeIsUnknown(contactIdentityId: contactIdentityId, recipient: recipient) else { return }
         throw Self.makeError(
             code: .broadcastUnknown,
-            description: NSLocalizedString(
-                "A previous payment to this contact could not be confirmed. Don't send it again; wait for wallet synchronization.",
+            description: String(
+                localized: "A previous payment to this contact could not be confirmed. Don't send it again; wait for wallet synchronization.",
                 comment: "Send to contact: an earlier payment's broadcast outcome is unknown")
         )
     }
@@ -1150,8 +1150,8 @@ final class WalletSendService: NSObject {
         guard streak >= maxUnpaidContactReservations else { return }
         throw makeError(
             code: .dashPayPaymentUnavailable,
-            description: NSLocalizedString(
-                "No more payment addresses can be reserved for this contact from Platform or Shielded. If a recent payment's status is unknown, check that your contact received it before paying again.",
+            description: String(
+                localized: "No more payment addresses can be reserved for this contact from Platform or Shielded. If a recent payment's status is unknown, check that your contact received it before paying again.",
                 comment: "DashPay: too many contact addresses were reserved for payments that may not have arrived"))
     }
 
@@ -1164,8 +1164,8 @@ final class WalletSendService: NSObject {
         guard contactPaymentClaims.claim(contactIdentityId: contactIdentityId) else {
             throw Self.makeError(
                 code: .dashPayPaymentUnavailable,
-                description: NSLocalizedString(
-                    "A payment to this contact is already in progress.",
+                description: String(
+                    localized: "A payment to this contact is already in progress.",
                     comment: "DashPay: a second payment to a contact started while one was still being sent"))
         }
     }
@@ -1209,8 +1209,8 @@ final class WalletSendService: NSObject {
         }
     }
 
-    static let contactContextChangedMessage = NSLocalizedString(
-        "Your wallet or DashPay identity changed. Reopen the payment and try again.",
+    static let contactContextChangedMessage = String(
+        localized: "Your wallet or DashPay identity changed. Reopen the payment and try again.",
         comment: "DashPay: the wallet or identity changed while a contact payment was open")
 
     /// The spend gate a Platform- or Shielded-funded contact payment passes

@@ -652,7 +652,7 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
         let attempt = try begin(source: .shielded)
         try store.update(attempt, status: .unconfirmed)
         let unconfirmed = try XCTUnwrap(store.entries(scope: scope, contactIdentityId: contact).first)
-        let unknown = NSLocalizedString("Status unknown", comment: "DashPay payment history: outcome not confirmed")
+        let unknown = String(localized: "Status unknown", comment: "DashPay payment history: outcome not confirmed")
         func shown(_ state: DashPayWithdrawalStore.ShieldedSpendState, _ entry: DashPayWithdrawalStore.Entry) -> [String?] {
             SwiftDashSDKContactsService.shownWithdrawals([entry], shieldedSpendState: { _ in state }).map(\.1)
         }

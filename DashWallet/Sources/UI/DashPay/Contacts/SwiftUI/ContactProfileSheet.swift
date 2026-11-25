@@ -534,15 +534,15 @@ struct ContactProfileSheet: View {
                 .font(.system(size: 12))
                 .foregroundColor(.dash.tertiaryText)
             if historyIsIncomplete {
-                Text(NSLocalizedString(
-                    "Some payments with this contact could not be loaded, so this list may be incomplete.",
+                Text(String(
+                    localized: "Some payments with this contact could not be loaded, so this list may be incomplete.",
                     comment: "DashPay Contacts: the payment history could not be read in full"))
                     .font(.system(size: 13))
                     .foregroundColor(.dash.red)
                     .padding(.top, 2)
             }
             if activityEntries.isEmpty, !historyIsIncomplete {
-                Text(NSLocalizedString("No payments with this contact yet", comment: "DashPay Contacts"))
+                Text(String(localized: "No payments with this contact yet", comment: "DashPay Contacts"))
                     .font(.system(size: 14))
                     .foregroundColor(.dash.secondaryText)
                     .padding(.top, 2)

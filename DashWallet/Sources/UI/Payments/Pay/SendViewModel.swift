@@ -1121,8 +1121,8 @@ final class SendViewModel: ObservableObject {
     /// be paid out: the user may choose to pay again once told so.
     @Published private(set) var contactPriorPaymentAwaitsDecision = false
 
-    static let contactPriorPaymentMayArriveMessage = NSLocalizedString(
-        "An earlier payment to this contact could not be confirmed and may still arrive. Check with your contact before paying again.",
+    static let contactPriorPaymentMayArriveMessage = String(
+        localized: "An earlier payment to this contact could not be confirmed and may still arrive. Check with your contact before paying again.",
         comment: "Send to contact: an earlier payment's outcome is still unknown after the lock window")
 
     private func refreshContactPaymentLock() {
@@ -1748,7 +1748,7 @@ final class SendViewModel: ObservableObject {
         guard dashDuffsUnsigned > 0, let route else { return nil }
         if isBelowContactWithdrawalMinimum {
             return String.localizedStringWithFormat(
-                NSLocalizedString("Enter at least %@ DASH", comment: "Identity top-up sheet — custom amount below the floor"),
+                String(localized: "Enter at least %@ DASH", comment: "Identity top-up sheet — custom amount below the floor"),
                 (ShieldedTransferCoordinator.contactWithdrawalMinimumCredits / 1000).dashAmount
                     .formattedDashAmountWithoutCurrencySymbol)
         }
@@ -1912,8 +1912,8 @@ final class SendViewModel: ObservableObject {
                 let largest = PlatformAddressSyncCoordinator.shared.derivedAddresses.map(\.balance).max() ?? 0
                 if creditsPreview <= largest {
                     return String.localizedStringWithFormat(
-                        NSLocalizedString(
-                            "You can send up to %@ to a contact from your Platform balance in one payment.",
+                        String(
+                            localized: "You can send up to %@ to a contact from your Platform balance in one payment.",
                             comment: "DashPay contact payment from Platform: single-payment cap"),
                         "\((platformToCoreCapCredits / 1000).formattedDashAmountWithoutCurrencySymbol) DASH")
                 }
@@ -2122,8 +2122,8 @@ final class SendViewModel: ObservableObject {
                 shieldedMaxNotice = Self.shieldedConfirmingMessage(credits)
                 sourceDuffs = 0
             case .unavailable:
-                shieldedMaxNotice = NSLocalizedString(
-                    "Your Shielded balance is not ready to spend. Sync and try Max again.",
+                shieldedMaxNotice = String(
+                    localized: "Your Shielded balance is not ready to spend. Sync and try Max again.",
                     comment: "Shielded Max unavailable")
                 sourceDuffs = 0
             }

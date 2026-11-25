@@ -8,9 +8,9 @@ import DashUIKit
 
 /// sync.
 struct ShieldedSubmittedUnconfirmedView: View {
-    var title = NSLocalizedString("Submitted — confirming", comment: "InternalTransfer")
-    var message = NSLocalizedString(
-        "Your transfer may have reached the network, but its result is not confirmed yet. Don't resend it. Wait for the wallet to sync and check its status.",
+    var title = String(localized: "Submitted — confirming", comment: "InternalTransfer")
+    var message = String(
+        localized: "Your transfer may have reached the network, but its result is not confirmed yet. Don't resend it. Wait for the wallet to sync and check its status.",
         comment: "InternalTransfer")
     var onDone: () -> Void
     /// Where this transfer's status can be checked later, when the surface

@@ -749,7 +749,7 @@ final class SwiftDashSDKContactsService: ObservableObject {
                 entry.source == .shielded ? shieldedSpendState(entry) : nil
             if state == .failed { return nil }
             if entry.status == .submitted || state == .confirmed { return (entry, nil) }
-            return (entry, NSLocalizedString("Status unknown", comment: "DashPay payment history: outcome not confirmed"))
+            return (entry, String(localized: "Status unknown", comment: "DashPay payment history: outcome not confirmed"))
         }
     }
 

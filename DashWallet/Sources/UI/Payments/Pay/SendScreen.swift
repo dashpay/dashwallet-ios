@@ -490,20 +490,20 @@ struct ExternalSendAmountScreen: View {
                             .padding(.horizontal, 20)
                     }
                     if viewModel.contactPriorPaymentAwaitsDecision {
-                        Button(NSLocalizedString("Pay again", comment: "Send to contact: pay despite an earlier payment whose outcome is unknown")) {
+                        Button(String(localized: "Pay again", comment: "Send to contact: pay despite an earlier payment whose outcome is unknown")) {
                             showPayAgainConfirm = true
                         }
                         .alert(
-                            NSLocalizedString("Pay this contact again?", comment: "Send to contact: confirm paying despite an earlier unconfirmed payment"),
+                            String(localized: "Pay this contact again?", comment: "Send to contact: confirm paying despite an earlier unconfirmed payment"),
                             isPresented: $showPayAgainConfirm
                         ) {
-                            Button(NSLocalizedString("Pay again", comment: "Send to contact: pay despite an earlier payment whose outcome is unknown"), role: .destructive) {
+                            Button(String(localized: "Pay again", comment: "Send to contact: pay despite an earlier payment whose outcome is unknown"), role: .destructive) {
                                 viewModel.payAgainDespiteUnconfirmedPayment()
                             }
-                            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {}
+                            Button(String(localized: "Cancel", comment: ""), role: .cancel) {}
                         } message: {
-                            Text(NSLocalizedString(
-                                "The earlier payment may still arrive, and your contact could be paid twice.",
+                            Text(String(
+                                localized: "The earlier payment may still arrive, and your contact could be paid twice.",
                                 comment: "Send to contact: risk of paying again despite an earlier unconfirmed payment"))
                         }
                     }
@@ -657,8 +657,8 @@ struct ExternalSendAmountScreen: View {
             // to a flow of its own (the L1 payment processor or
             // `SendConfirmSheet`).
             actionButtonText: isContactCoreSend
-                ? NSLocalizedString("Send", comment: "")
-                : NSLocalizedString("Continue", comment: ""),
+                ? String(localized: "Send", comment: "")
+                : String(localized: "Continue", comment: ""),
             actionEnabled: viewModel.canContinue,
             inProgress: isContactSendInFlight || viewModel.isCoreDrainLoading,
             actionHandler: continueAction
@@ -1327,9 +1327,9 @@ struct SendConfirmSheet: View {
             case .submittedUnconfirmed:
                 if coordinator.contactWithdrawalOutcomeUnknown {
                     ShieldedSubmittedUnconfirmedView(
-                        title: NSLocalizedString("Payment status unknown", comment: "DashPay contact payment"),
-                        message: NSLocalizedString(
-                            "We couldn't confirm whether this payment went through. Don't send it again — check your balance and this contact's activity first.",
+                        title: String(localized: "Payment status unknown", comment: "DashPay contact payment"),
+                        message: String(
+                            localized: "We couldn't confirm whether this payment went through. Don't send it again — check your balance and this contact's activity first.",
                             comment: "DashPay contact payment"),
                         onDone: onCompleted)
                 } else {
@@ -1452,7 +1452,7 @@ struct SendConfirmSheet: View {
                     orientation: .horizontal,
                     size: .large,
                     positiveActionEnabled: contactBlockMessage == nil,
-                    positiveButtonText: NSLocalizedString("Confirm", comment: ""),
+                    positiveButtonText: String(localized: "Confirm", comment: ""),
                     positiveButtonAction: confirm,
                     negativeButtonText: String(localized: "Cancel", comment: ""),
                     negativeButtonAction: onCancel)
@@ -1475,7 +1475,7 @@ struct SendConfirmSheet: View {
                         orientation: .horizontal,
                         size: .large,
                         positiveActionEnabled: contactBlockMessage == nil,
-                        positiveButtonText: NSLocalizedString("Try again", comment: ""),
+                        positiveButtonText: String(localized: "Try again", comment: ""),
                         positiveButtonAction: tryAgain,
                         negativeButtonText: String(localized: "Close", comment: ""),
                         negativeButtonAction: onCancel)
@@ -1507,8 +1507,8 @@ struct SendConfirmSheet: View {
             // lands a few minutes later: say so.
             if let contactRecipient {
                 Text(String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "%@ will receive it in a few minutes, once the network processes the payment.",
+                    String(
+                        localized: "%@ will receive it in a few minutes, once the network processes the payment.",
                         comment: "DashPay contact payment sent from Platform or Shielded"),
                     contactRecipient.displayName))
                     .font(.callout)
@@ -1771,8 +1771,8 @@ struct SendConfirmSheet: View {
         // how the payment reaches their address.
         if let contactRecipient {
             return String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "%@ receives it once the network processes the payment — this can take up to 10 minutes.",
+                String(
+                    localized: "%@ receives it once the network processes the payment — this can take up to 10 minutes.",
                     comment: "Send confirm sheet: DashPay contact payment from Platform or Shielded"),
                 contactRecipient.displayName)
         }
@@ -1933,8 +1933,8 @@ struct SyncGateNote: View {
                 .foregroundColor(.orange)
             Text(paysContact
                 ? WalletSendService.contactPaymentRestoreSyncMessage
-                : NSLocalizedString(
-                    "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes.",
+                : String(
+                    localized: "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes.",
                     comment: "Core send blocked during a restored wallet's initial sync"))
                 .font(.caption)
                 .foregroundColor(.dash.secondaryText)

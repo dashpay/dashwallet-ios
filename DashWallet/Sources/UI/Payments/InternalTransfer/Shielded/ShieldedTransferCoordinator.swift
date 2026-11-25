@@ -410,9 +410,9 @@ final class ShieldedTransferCoordinator: ObservableObject {
         var errorDescription: String? {
             switch self {
             case .noWallet:
-                return NSLocalizedString("Wallet is not ready for transfer", comment: "InternalTransfer")
+                return String(localized: "Wallet is not ready for transfer", comment: "InternalTransfer")
             case .shieldedContactPaymentsUnavailable:
-                return NSLocalizedString("Shielded payments to contacts are not available yet. Use your Transparent or Platform balance.", comment: "Send to contact: Shielded funding is deferred")
+                return String(localized: "Shielded payments to contacts are not available yet. Use your Transparent or Platform balance.", comment: "Send to contact: Shielded funding is deferred")
             case .noNetwork:
                 return String(localized: "Network is not configured", comment: "InternalTransfer")
             case .noModelContainer:
@@ -457,23 +457,23 @@ final class ShieldedTransferCoordinator: ObservableObject {
                     comment: "Shielded sweep changed before submit")
             case .belowWithdrawalMinimum:
                 return String.localizedStringWithFormat(
-                    NSLocalizedString("Enter at least %@ DASH", comment: "Identity top-up sheet — custom amount below the floor"),
+                    String(localized: "Enter at least %@ DASH", comment: "Identity top-up sheet — custom amount below the floor"),
                     (ShieldedTransferCoordinator.contactWithdrawalMinimumCredits / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol)
             case .contactPaymentNotPriced:
-                return NSLocalizedString(
-                    "The fee for this payment could not be worked out. Go back and try again.",
+                return String(
+                    localized: "The fee for this payment could not be worked out. Go back and try again.",
                     comment: "DashPay contact payment from Platform or Shielded: its network fee was unknown at confirmation")
             case .contactAboveShieldedWithdrawalMaximum:
                 return ShieldedTransferCoordinator.contactShieldedMaximumMessage
             case .contactAbovePlatformWithdrawalMaximum:
                 return ShieldedTransferCoordinator.contactPlatformMaximumMessage
             case .contactFeeChanged:
-                return NSLocalizedString(
-                    "The network fee for this payment changed. Close this confirmation and review it again.",
+                return String(
+                    localized: "The network fee for this payment changed. Close this confirmation and review it again.",
                     comment: "DashPay contact payment from Platform or Shielded: priced again, it would now cost more than the confirmed fee")
             case .platformBalanceChanged:
-                return NSLocalizedString(
-                    "Your Platform balance changed. Close this confirmation and tap Max again.",
+                return String(
+                    localized: "Your Platform balance changed. Close this confirmation and tap Max again.",
                     comment: "Full-balance Platform payment: the balance grew after it was authorized")
             case .shieldedAmountExceedsBundle(let ceiling):
                 let formatted = (ceiling / 1000).formattedDashAmountWithoutCurrencySymbol
@@ -2300,16 +2300,16 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
     nonisolated static var contactPlatformMaximumMessage: String {
         String.localizedStringWithFormat(
-            NSLocalizedString(
-                "You can send up to %@ to a contact from your Platform balance in one payment.",
+            String(
+                localized: "You can send up to %@ to a contact from your Platform balance in one payment.",
                 comment: "DashPay contact payment from Platform: single-payment cap"),
             "\((contactWithdrawalMaximumCredits / 1000).formattedDashAmountWithoutCurrencySymbol) DASH")
     }
 
     nonisolated static var contactShieldedMaximumMessage: String {
         String.localizedStringWithFormat(
-            NSLocalizedString(
-                "You can send up to %@ to a contact from your Shielded balance in one payment.",
+            String(
+                localized: "You can send up to %@ to a contact from your Shielded balance in one payment.",
                 comment: "DashPay contact payment from Shielded: the protocol's single-withdrawal maximum"),
             "\((contactWithdrawalMaximumCredits / 1000).formattedDashAmountWithoutCurrencySymbol) DASH")
     }

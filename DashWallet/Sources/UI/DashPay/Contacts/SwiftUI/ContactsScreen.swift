@@ -806,9 +806,9 @@ private struct DashPayFAQSheet: View {
                     localized: "Your identity needs an encryption and a decryption key so contact requests can be encrypted between you and other users. Enabling adds whichever of them are missing with a single network transaction. This is a one time event.",
                     comment: "DashPay FAQ")),
             Item(
-                question: NSLocalizedString("How private is DashPay?", comment: "DashPay FAQ"),
-                answer: NSLocalizedString(
-                    "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read. A payment still shows its address on the chain like any other, but nothing published links that address to your username. You can pay from your Transparent or Platform balance. Shielded payments to contacts are not available yet. However you pay, your contact receives it as a regular transparent-chain payment, so the payment itself is public. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform.",
+                question: String(localized: "How private is DashPay?", comment: "DashPay FAQ"),
+                answer: String(
+                    localized: "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read. A payment still shows its address on the chain like any other, but nothing published links that address to your username. You can pay from your Transparent or Platform balance. Shielded payments to contacts are not available yet. However you pay, your contact receives it as a regular transparent-chain payment, so the payment itself is public. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform.",
                     comment: "DashPay FAQ")),
             Item(
                 question: String(localized: "When will contact requests become private?", comment: "DashPay FAQ"),
@@ -836,9 +836,9 @@ private struct DashPayFAQSheet: View {
                     localized: "Enabling DashPay costs a small one-time network fee, paid from your identity's credit balance. The exact estimate is shown before you confirm. Sending contact requests and payments costs the usual network fees.",
                     comment: "DashPay FAQ")),
             Item(
-                question: NSLocalizedString("What's coming next?", comment: "DashPay FAQ"),
-                answer: NSLocalizedString(
-                    "Private contact requests (so who you connect with stays private), payments that remain Shielded for the recipient, and paying users who aren't in your contacts yet are all coming soon.",
+                question: String(localized: "What's coming next?", comment: "DashPay FAQ"),
+                answer: String(
+                    localized: "Private contact requests (so who you connect with stays private), payments that remain Shielded for the recipient, and paying users who aren't in your contacts yet are all coming soon.",
                     comment: "DashPay FAQ")),
         ]
     }

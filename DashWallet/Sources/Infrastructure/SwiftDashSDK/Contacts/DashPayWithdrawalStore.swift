@@ -132,9 +132,9 @@ final class DashPayWithdrawalStore {
         var errorDescription: String? {
             switch self {
             case .invalidPayment:
-                return NSLocalizedString("Unable to save this DashPay payment.", comment: "DashPay: the payment record could not be written, so nothing was sent")
+                return String(localized: "Unable to save this DashPay payment.", comment: "DashPay: the payment record could not be written, so nothing was sent")
             case .missingEntry:
-                return NSLocalizedString("The DashPay payment record is unavailable.", comment: "DashPay: the payment record to update is missing")
+                return String(localized: "The DashPay payment record is unavailable.", comment: "DashPay: the payment record to update is missing")
             }
         }
     }
