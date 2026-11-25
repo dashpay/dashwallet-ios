@@ -89,6 +89,12 @@ class TxDetailModel: NSObject {
         if let route = transaction.internalTransferRoute, route != .coreToCore {
             return String(localized: "Internal Transfer", comment: "Transaction within the wallet, transfer of own funds")
         }
+        // The amount is the Core lock, which also carries the Shielded pool
+        // fee Platform takes before it credits the recipient: it is what was
+        // locked, not what the recipient received.
+        if transaction.shieldedRecipientAddress != nil {
+            return String(localized: "Amount locked", comment: "Transaction details: the Core asset lock of a send to a Shielded address, pool fee included")
+        }
         // A DashPay contact payment keeps the plain "Amount Sent" heading: the
         // counterparty is carried by the header avatar and named in full by
         // the Sent to / Received from row, so repeating it here would say the
@@ -698,9 +704,13 @@ extension TxDetailModel {
             let source = transaction.isCoinJoinFundedTransfer
                 ? String(localized: "CoinJoin balance", comment: "The wallet's mixed (CoinJoin) funds as the source of an internal transfer")
                 : transparent
+            // A lock paying a Shielded address that is not provably the
+            // wallet's own names the recorded recipient, not the wallet's own
+            // Shielded balance.
             var rows: [DWTitleDetailItem] = [
                 DWTitleDetailCellModel(style: .default, title: String(localized: "From", comment: ""), plainDetail: source),
-                DWTitleDetailCellModel(style: .default, title: String(localized: "To", comment: ""), plainDetail: shielded),
+                DWTitleDetailCellModel(style: .default, title: String(localized: "To", comment: ""),
+                                       plainDetail: transaction.shieldedRecipientAddress ?? shielded),
             ]
             if let status = shieldedStatusText {
                 rows.append(DWTitleDetailCellModel(
@@ -713,6 +723,15 @@ extension TxDetailModel {
         if transaction.isShieldedWithdrawalReceipt {
             return [
                 DWTitleDetailCellModel(style: .default, title: String(localized: "From", comment: ""), plainDetail: shielded),
+                DWTitleDetailCellModel(style: .default, title: String(localized: "To", comment: ""), plainDetail: transparent),
+            ]
+        }
+        if let source = transaction.creditWithdrawalSource {
+            let from = source == .platform
+                ? String(localized: "Platform balance", comment: "The Dash Platform credits balance")
+                : String(localized: "Identity credits", comment: "Destination of an identity funding asset lock")
+            return [
+                DWTitleDetailCellModel(style: .default, title: String(localized: "From", comment: ""), plainDetail: from),
                 DWTitleDetailCellModel(style: .default, title: String(localized: "To", comment: ""), plainDetail: transparent),
             ]
         }

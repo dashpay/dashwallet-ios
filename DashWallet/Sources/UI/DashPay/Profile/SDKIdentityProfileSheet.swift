@@ -710,16 +710,21 @@ struct IdentityCreditsTopUp {
         // The SDK wrapper hands the FFI a non-owning handle to the signer, so
         // it must outlive the awaited call (dashpay/platform#5939).
         defer { withExtendedLifetime(signer) {} }
-        if anyIdentity {
-            return try await wallet.topUpIdentityFromAddresses(
+        let send = CreditSend(
+            source: .platform, destinationKind: .identity, destination: identityId.toBase58String(),
+            amountDuffs: amountDuffs)
+        return try await CreditSendLedger.recording(send) {
+            if anyIdentity {
+                return try await wallet.topUpIdentityFromAddresses(
+                    identityId: identityId,
+                    inputs: inputs,
+                    addressSigner: signer)
+            }
+            return try await wallet.topUpFromAddresses(
                 identityId: identityId,
                 inputs: inputs,
                 addressSigner: signer)
         }
-        return try await wallet.topUpFromAddresses(
-            identityId: identityId,
-            inputs: inputs,
-            addressSigner: signer)
     }
 
     /// The privacy-default two-step: Shielded → own Platform address →
