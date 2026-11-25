@@ -2364,6 +2364,9 @@
 /* Explore Dash: Filters */
 "Fixed denominated amounts" = "Montos fijos denominados";
 
+/* QR scanner */
+"Flashlight" = "Flashlight";
+
 /* Explore Dash: Filters */
 "Flexible amounts" = "Montos flexibles";
 

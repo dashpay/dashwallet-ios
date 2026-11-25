@@ -2364,6 +2364,9 @@
 /* Explore Dash: Filters */
 "Fixed denominated amounts" = "固定面额";
 
+/* QR scanner */
+"Flashlight" = "Flashlight";
+
 /* Explore Dash: Filters */
 "Flexible amounts" = "可调面额";
 

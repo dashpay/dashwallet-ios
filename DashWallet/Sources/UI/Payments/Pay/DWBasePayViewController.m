@@ -21,7 +21,6 @@
 #import "DWPaymentInputBuilder.h"
 #import "DWPaymentProcessor.h"
 #import "DWQRScanModel.h"
-#import "DWQRScanViewController.h"
 #import "DWUIKit.h"
 #import "UIView+DWHUD.h"
 #import "UIViewController+DWEmbedding.h"

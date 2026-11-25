@@ -2364,6 +2364,9 @@
 /* Explore Dash: Filters */
 "Fixed denominated amounts" = "Фиксированная сумма";
 
+/* QR scanner */
+"Flashlight" = "Flashlight";
+
 /* Explore Dash: Filters */
 "Flexible amounts" = "Настраиваемая сумма";
 
