@@ -111,6 +111,12 @@ static NSString *singleLineString(NSString *s, NSUInteger maxLength) {
     }
     else {
         NSString *title = NSLocalizedString(@"Send to", nil);
+        const NSInteger recipientCount = [self merchantRecipientCount];
+        if (recipientCount > 1) {
+            // This row shows the request's first address only. Its title says so, because the
+            // row stays in place while the list of all the addresses scrolls above it.
+            title = [NSString localizedStringWithFormat:NSLocalizedString(@"Send to (1 of %ld)", @"Payment confirmation: title of the address row when a payment request pays several addresses; the row shows the first one"), (long)recipientCount];
+        }
         {
             NSString *address = self.address;
             NSAttributedString *detail = [NSAttributedString dw_dashAddressAttributedString:address withFont:font];

@@ -1234,7 +1234,10 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertEqual(BIP70ConfirmationBox(confirmation).recipientCount, 2)
 
         let output = try await paymentOutput(for: unsignedNamed(nil, outputs: twoAddresses))
-        XCTAssertNotNil(try addressRow(of: output))
+        // The address row shows the first address, and its title says there are more.
+        XCTAssertEqual(try addressRow(of: output)?.title, "Send to (1 of 2)")
+        let single = try await paymentOutput(for: unsignedNamed(nil))
+        XCTAssertEqual(try addressRow(of: single)?.title, "Send to")
         let info = try XCTUnwrap(try rows(of: output).generalInfo?.plainDetail)
         XCTAssertTrue(info.contains("This payment goes to 2 addresses."))
         // Each address is listed with the amount it receives.

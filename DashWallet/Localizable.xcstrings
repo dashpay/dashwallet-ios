@@ -467440,6 +467440,9 @@
         }
       }
     },
+    "Send to (1 of %ld)" : {
+      "comment" : "Payment confirmation: title of the address row when a payment request pays several addresses; the row shows the first one"
+    },
     "Send to a username you can actually remember and verify." : {
       "comment" : "DashPay intro: feature body",
       "localizations" : {
