@@ -735,7 +735,9 @@ final class QRScannerTests: XCTestCase {
 
     private func assertDashSpendRefuses(_ url: String, line: UInt = #line) async {
         do {
-            _ = try await SendCoinsService().payWithDashUrl(url: url)
+            _ = try await SendCoinsService().payWithDashUrl(
+                url: url,
+                validate: { _ in XCTFail("checked a refused link", line: line) })
             XCTFail("paid", line: line)
         } catch DashSpendError.paymentProcessingError {
         } catch {
