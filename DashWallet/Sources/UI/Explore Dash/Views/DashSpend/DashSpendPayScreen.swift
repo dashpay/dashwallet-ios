@@ -170,9 +170,9 @@ struct DashSpendPayScreen: View {
             LegacyModalDialog(
                 style: .warning,
                 icon: .system("exclamationmark.triangle.fill"),
-                heading: NSLocalizedString("Confirmation pending", comment: "DashSpend"),
+                heading: String(localized: "Confirmation pending", comment: "Gift card payment result unknown"),
                 textBlock1: pendingPurchase.notice,
-                positiveButtonText: NSLocalizedString("OK", comment: ""),
+                positiveButtonText: String(localized: "OK", comment: ""),
                 positiveButtonAction: {
                     self.pendingPurchase = nil
                     presentationMode.wrappedValue.dismiss()
