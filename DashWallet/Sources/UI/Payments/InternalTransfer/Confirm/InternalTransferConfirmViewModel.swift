@@ -135,7 +135,7 @@ final class InternalTransferConfirmViewModel: ObservableObject {
     /// than taking a symbol inside the string.
     var dashAmountText: String {
         if let drain = request?.coreShieldedDrain {
-            guard let credits = drain.estimatedRecipientCredits else { return NSLocalizedString("Max", comment: "Whole wallet intent") }
+            guard let credits = drain.estimatedRecipientCredits else { return String(localized: "Max", comment: "Whole wallet intent") }
             return credits < 1000 ? "<0.00000001" : "≈ " + (credits / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol
         }
         return (request?.amountDuffsUnsigned ?? 0).dashAmount.formattedDashAmountWithoutCurrencySymbol
@@ -147,8 +147,8 @@ final class InternalTransferConfirmViewModel: ObservableObject {
 
     var coreDrainExplanation: String? {
         guard request?.coreShieldedDrain != nil else { return nil }
-        return NSLocalizedString(
-            "All eligible Core funds available when you confirm will be moved to Shielded. The amount, total and fees shown are estimates. CoinJoin funds are excluded.",
+        return String(
+            localized: "All eligible Core funds available when you confirm will be moved to Shielded. The amount, total and fees shown are estimates. CoinJoin funds are excluded.",
             comment: "Core drain confirmation")
     }
 

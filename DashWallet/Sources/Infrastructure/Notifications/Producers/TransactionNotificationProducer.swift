@@ -368,7 +368,7 @@ final class TransactionNotificationProducer {
                 id: "platform-activity.\(record.id)",
                 topic: .transactions,
                 title: nil,
-                body: String(format: NSLocalizedString("Received %@ (%@)", comment: ""), amountText, fiatText),
+                body: String(format: String(localized: "Received %@ (%@)", comment: ""), amountText, fiatText),
                 sound: UNNotificationSound(named: UNNotificationSoundName(rawValue: "coinflip.aiff")),
                 // No txid to open: a Platform-address receive has no Core
                 // transaction of its own, so this lands on the feed.
@@ -489,7 +489,7 @@ final class TransactionNotificationProducer {
             id: id,
             topic: .transactions,
             title: nil,
-            body: String(format: NSLocalizedString("Received %@ (%@)", comment: ""), amountText, fiatText),
+            body: String(format: String(localized: "Received %@ (%@)", comment: ""), amountText, fiatText),
             // The bundled resource is "coinflip.aiff" — without the
             // extension the sound name does not resolve and iOS delivers
             // the notification silently.

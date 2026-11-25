@@ -217,6 +217,6 @@ private class MaxButton: UIButton {
 
         backgroundColor = color.withAlphaComponent(0.1)
 
-        setTitle(NSLocalizedString("Max", comment: "Contracted variant of 'Maximum' word"), for: .normal)
+        setTitle(String(localized: "Max", comment: "Contracted variant of 'Maximum' word"), for: .normal)
     }
 }

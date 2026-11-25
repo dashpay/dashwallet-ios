@@ -174,8 +174,8 @@ struct InternalTransferScreen: View {
         .conditionToast(
             isVisible: viewModel.isBlockedBySync,
             style: .loading,
-            message: NSLocalizedString(
-                "Wait until the chain is fully synced to make transfers",
+            message: String(
+                localized: "Wait until the chain is fully synced to make transfers",
                 comment: "Transfer blocked during a restored wallet's initial sync"))
         .sheet(item: $confirmation, onDismiss: {
             guard leavesAfterConfirmation else { return }
@@ -218,7 +218,7 @@ struct InternalTransferScreen: View {
     // MARK: - Header
 
     private var header: some View {
-        Text(NSLocalizedString("Internal transfer", comment: ""))
+        Text(String(localized: "Internal transfer", comment: ""))
             .font(.system(size: 24, weight: .bold))
             .foregroundColor(.dash.primaryText)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -259,7 +259,7 @@ struct InternalTransferScreen: View {
         HardwareNumericKeyboardView(
             value: keypadBinding,
             showDecimalSeparator: true,
-            actionButtonText: NSLocalizedString("Continue", comment: ""),
+            actionButtonText: String(localized: "Continue", comment: ""),
             actionEnabled: viewModel.canContinue,
             inProgress: viewModel.isCoreDrainLoading,
             actionHandler: presentConfirmation

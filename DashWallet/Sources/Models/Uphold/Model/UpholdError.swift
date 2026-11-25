@@ -24,22 +24,22 @@ enum UpholdError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .dueDiligence:
-            NSLocalizedString("Please go to your Uphold account to answer some questions about yourself.", comment: "Uphold")
+            String(localized: "Please go to your Uphold account to answer some questions about yourself.", comment: "Uphold")
         case .submitIdentity:
-            NSLocalizedString("Please go to your Uphold account to verify your identity.", comment: "Uphold")
+            String(localized: "Please go to your Uphold account to verify your identity.", comment: "Uphold")
         case .proofOfAddress:
-            NSLocalizedString("Please contact Uphold to update your proof of address.", comment: "Uphold")
+            String(localized: "Please contact Uphold to update your proof of address.", comment: "Uphold")
         default:
             ""
         }
     }
     
     var failureReason: String? {
-        NSLocalizedString("Uphold error", comment: "Uphold")
+        String(localized: "Uphold error", comment: "Uphold")
     }
     
     var recoverySuggestion: String? {
-        NSLocalizedString("Go to Website", comment: "Uphold")
+        String(localized: "Go to Website", comment: "Uphold")
     }
     
     static func errorCodeToError(code: String) -> UpholdError {

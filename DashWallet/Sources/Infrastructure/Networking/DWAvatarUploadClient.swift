@@ -197,8 +197,8 @@ final class DWAvatarUploadClient: NSObject {
                 link: nil,
                 deleteHash: nil,
                 error: Self.error(
-                    NSLocalizedString(
-                        "Picture upload is not available in this build.",
+                    String(
+                        localized: "Picture upload is not available in this build.",
                         comment: "Avatar upload has no configured credentials"),
                     code: Self.errorCodeNotConfigured),
                 completion: completion)
@@ -376,8 +376,8 @@ final class DWAvatarUploadClient: NSObject {
             return error as NSError
         }
         return self.error(
-            NSLocalizedString(
-                "Imgur refused the upload, so picture upload is unavailable right now.",
+            String(
+                localized: "Imgur refused the upload, so picture upload is unavailable right now.",
                 comment: "Avatar upload rejected by the image host"),
             code: errorCodeRefused)
     }

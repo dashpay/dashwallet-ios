@@ -64,7 +64,7 @@ struct SDKIdentityProfileSheet: View {
 
     var body: some View {
         DashUIKit.BottomSheet(
-            title: NSLocalizedString("My Profile", comment: "SDK identity profile sheet — title"),
+            title: String(localized: "My Profile", comment: "SDK identity profile sheet — title"),
             showBackButton: .constant(false)
         ) {
             ScrollView {
@@ -75,7 +75,7 @@ struct SDKIdentityProfileSheet: View {
                     infoSection
                     if identityIsLoading {
                         if identityLoadTimedOut {
-                            Button(NSLocalizedString("Retry loading identity", comment: "Identity recovery")) {
+                            Button(String(localized: "Retry loading identity", comment: "Identity recovery")) {
                                 DWCurrentUserIdentityInfo.shared.retryNameRefresh()
                                 identityLoadTimedOut = false
                                 identityLoadAttempt += 1
@@ -86,7 +86,7 @@ struct SDKIdentityProfileSheet: View {
                         }
                     } else if hasIdentity {
                         if dpnsNames.isEmpty && loadedUsername == nil && pendingContestedName == nil {
-                            Button(NSLocalizedString("Finish username registration", comment: "DashPay registration recovery")) {
+                            Button(String(localized: "Finish username registration", comment: "DashPay registration recovery")) {
                                 showingUsernameRecovery = true
                             }
                             .buttonStyle(.borderedProminent)
@@ -220,7 +220,7 @@ struct SDKIdentityProfileSheet: View {
             dismiss()
             onEditTapped?()
         } label: {
-            Text(NSLocalizedString("Edit Profile", comment: "SDK identity profile sheet — edit button"))
+            Text(String(localized: "Edit Profile", comment: "SDK identity profile sheet — edit button"))
                 .font(.body)
                 .fontWeight(.semibold)
                 .foregroundColor(Color.dash.whiteText)
@@ -252,14 +252,12 @@ struct SDKIdentityProfileSheet: View {
             if pendingContestedName != nil {
                 VStack(spacing: 2) {
                     Label(
-                        NSLocalizedString("Voting in progress", comment: "Usernames"),
+                        String(localized: "Voting in progress", comment: "Usernames"),
                         systemImage: "clock")
                         .font(.caption)
                         .foregroundColor(.orange)
                     if let pendingVotingEndTime {
-                        Text(String.localizedStringWithFormat(
-                            NSLocalizedString("Ends around %@", comment: "Usernames"),
-                            DWDateFormatter.sharedInstance.dateAndTime(from: pendingVotingEndTime)))
+                        Text(String(localized: "Ends around \(DWDateFormatter.sharedInstance.dateAndTime(from: pendingVotingEndTime))", comment: "Usernames"))
                             .font(.caption2)
                             .foregroundColor(.dash.secondaryText)
                     }
@@ -274,8 +272,8 @@ struct SDKIdentityProfileSheet: View {
     private var infoSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             infoRow(
-                title: NSLocalizedString("Identity ID", comment: "SDK identity profile sheet"),
-                value: identityIdHex ?? NSLocalizedString("Loading…", comment: ""),
+                title: String(localized: "Identity ID", comment: "SDK identity profile sheet"),
+                value: identityIdHex ?? String(localized: "Loading…", comment: ""),
                 monospaced: true,
                 copyable: identityIdHex != nil
             )
@@ -292,7 +290,7 @@ struct SDKIdentityProfileSheet: View {
     private var identityBalanceRow: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 5) {
-                Text(NSLocalizedString("Identity Account Balance", comment: "SDK identity profile sheet — the identity's credit balance"))
+                Text(String(localized: "Identity Account Balance", comment: "SDK identity profile sheet — the identity's credit balance"))
                     .font(.caption)
                     .foregroundColor(.dash.secondaryText)
                 Button {
@@ -303,7 +301,7 @@ struct SDKIdentityProfileSheet: View {
                         .foregroundColor(.dash.blue)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(NSLocalizedString("About the identity account balance", comment: "SDK identity profile sheet — info button"))
+                .accessibilityLabel(String(localized: "About the identity account balance", comment: "SDK identity profile sheet — info button"))
             }
             HStack(alignment: .center, spacing: 8) {
                 Text(identityBalanceFormatted)
@@ -314,7 +312,7 @@ struct SDKIdentityProfileSheet: View {
                     Button {
                         showingTopUp = true
                     } label: {
-                        Text(NSLocalizedString("Top Up", comment: "SDK identity profile sheet — add credits to the identity"))
+                        Text(String(localized: "Top Up", comment: "SDK identity profile sheet — add credits to the identity"))
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundColor(.dash.blue)
                             .padding(.horizontal, 12)
@@ -326,13 +324,13 @@ struct SDKIdentityProfileSheet: View {
             }
         }
         .alert(
-            NSLocalizedString("Identity Account Balance", comment: "SDK identity profile sheet — the identity's credit balance"),
+            String(localized: "Identity Account Balance", comment: "SDK identity profile sheet — the identity's credit balance"),
             isPresented: $showingBalanceInfo
         ) {
-            Button(NSLocalizedString("OK", comment: ""), role: .cancel) {}
+            Button(String(localized: "OK", comment: ""), role: .cancel) {}
         } message: {
-            Text(NSLocalizedString(
-                "This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits.",
+            Text(String(
+                localized: "This balance pays Dash Platform network fees — usernames, contact requests, profile updates. It belongs to your identity, not your wallet: unlike your Transparent, Platform, and Shielded balances it can't be spent as regular Dash. Topping up converts Dash from a balance you choose — Shielded by default — into identity credits.",
                 comment: "SDK identity profile sheet — explains the identity credit balance"))
         }
         .sheet(isPresented: $showingTopUp) {
@@ -359,7 +357,7 @@ struct SDKIdentityProfileSheet: View {
     /// with an explicit voting status, never in this owned-names list.
     private var namesSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(NSLocalizedString("DPNS Names", comment: "SDK identity profile sheet — usernames list"))
+            Text(String(localized: "DPNS Names", comment: "SDK identity profile sheet — usernames list"))
                 .font(.caption)
                 .foregroundColor(.dash.secondaryText)
             VStack(alignment: .leading, spacing: 0) {
@@ -395,12 +393,12 @@ struct SDKIdentityProfileSheet: View {
                             .foregroundColor(.dash.blue)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(dpnsNames.isEmpty
-                                ? NSLocalizedString("Get a username", comment: "Username marketplace: profile entry point")
-                                : NSLocalizedString("Get another username", comment: "Username marketplace: profile entry point"))
+                                ? String(localized: "Get a username", comment: "Username marketplace: profile entry point")
+                                : String(localized: "Get another username", comment: "Username marketplace: profile entry point"))
                                 .font(.system(size: 15, weight: .semibold))
                                 .foregroundColor(.dash.blue)
-                            Text(NSLocalizedString(
-                                "Buy a listed name or register an available one",
+                            Text(String(
+                                localized: "Buy a listed name or register an available one",
                                 comment: "Username marketplace: profile entry point subtitle"))
                                 .font(.caption)
                                 .foregroundColor(.dash.secondaryText)
@@ -456,11 +454,11 @@ struct SDKIdentityProfileSheet: View {
 
     private var identityBalanceFormatted: String {
         guard let credits = identityBalanceCredits else {
-            return NSLocalizedString("Loading…", comment: "")
+            return String(localized: "Loading…", comment: "")
         }
         let duffs = credits / 1000
         if duffs == 0 {
-            return NSLocalizedString("0 DASH", comment: "SDK identity profile sheet — zero Platform credits")
+            return String(localized: "0 DASH", comment: "SDK identity profile sheet — zero Platform credits")
         }
         return "\(duffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH"
     }
@@ -468,7 +466,7 @@ struct SDKIdentityProfileSheet: View {
     // MARK: - Side effects
 
     private func showCopyToast() {
-        copyToast = NSLocalizedString("Copied", comment: "SDK identity profile sheet — copy confirmation")
+        copyToast = String(localized: "Copied", comment: "SDK identity profile sheet — copy confirmation")
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             withAnimation { copyToast = nil }
         }
@@ -517,9 +515,9 @@ final class IdentityTopUpViewModel: ObservableObject {
 
         var title: String {
             switch self {
-            case .shielded: return NSLocalizedString("Shielded", comment: "Shielded activity: funds moved into the private shielded balance")
-            case .platform: return NSLocalizedString("Platform", comment: "Identity top-up sheet — the DIP-17 Platform address balance")
-            case .transparent: return NSLocalizedString("Transparent", comment: "Identity top-up sheet — the Core wallet balance")
+            case .shielded: return String(localized: "Shielded", comment: "Shielded activity: funds moved into the private shielded balance")
+            case .platform: return String(localized: "Platform", comment: "Identity top-up sheet — the DIP-17 Platform address balance")
+            case .transparent: return String(localized: "Transparent", comment: "Identity top-up sheet — the Core wallet balance")
             }
         }
     }
@@ -544,12 +542,12 @@ final class IdentityTopUpViewModel: ObservableObject {
         var errorDescription: String? {
             switch self {
             case .noPlatformReceiveAddress:
-                return NSLocalizedString("No Platform receive address is available yet — wait for the Platform sync to finish and try again.", comment: "Identity top-up sheet — missing unshield destination")
+                return String(localized: "No Platform receive address is available yet — wait for the Platform sync to finish and try again.", comment: "Identity top-up sheet — missing unshield destination")
             case .secondLegCancelled:
-                return NSLocalizedString("The identity top-up result could not be confirmed. Check your balances before continuing.", comment: "Identity top-up second leg cancelled")
+                return String(localized: "The identity top-up result could not be confirmed. Check your balances before continuing.", comment: "Identity top-up second leg cancelled")
             case .movedToPlatform(let error):
-                return NSLocalizedString(
-                    "Dash was moved to your Platform balance. Finish the top-up from Platform after reviewing the amount again.",
+                return String(
+                    localized: "Dash was moved to your Platform balance. Finish the top-up from Platform after reviewing the amount again.",
                     comment: "Identity top-up stopped after successful unshield") + " " + error.localizedDescription
             }
         }
@@ -605,7 +603,7 @@ final class IdentityTopUpViewModel: ObservableObject {
         guard canTopUp(from: source) else { return nil }
         guard let wallet = SwiftDashSDKHost.shared.wallet,
               let modelContainer = SwiftDashSDKHost.shared.modelContainer else {
-            errorMessage = NSLocalizedString("Wallet is not ready", comment: "DashPay")
+            errorMessage = String(localized: "Wallet is not ready", comment: "DashPay")
             return nil
         }
         isProcessing = true
@@ -661,8 +659,8 @@ final class IdentityTopUpViewModel: ObservableObject {
         } catch SDKError.stateTransitionResultUnconfirmed, PlatformWalletError.transactionBroadcastUnconfirmed,
                 PlatformWalletError.shieldedSpendUnconfirmed, TopUpError.secondLegCancelled {
             submittedUnconfirmed = true
-            errorMessage = NSLocalizedString(
-                "The transfer may have been submitted, but its result could not be confirmed. Wait for the wallet to sync and check your balances and history before making another transfer.",
+            errorMessage = String(
+                localized: "The transfer may have been submitted, but its result could not be confirmed. Wait for the wallet to sync and check your balances and history before making another transfer.",
                 comment: "Identity transfer result unknown")
             return nil
         } catch let error as TopUpError {
@@ -671,10 +669,7 @@ final class IdentityTopUpViewModel: ObservableObject {
             return nil
         } catch let error as PlatformPaymentIdentityFundingPolicy.PlanningError {
             if case .insufficient(let required, let available) = error {
-                errorMessage = String.localizedStringWithFormat(
-                    NSLocalizedString("Not enough funds in this balance: %@ DASH needed, %@ DASH available.", comment: "Identity top-up sheet — insufficient funding source"),
-                    (required / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol,
-                    (available / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol)
+                errorMessage = String(localized: "Not enough funds in this balance: \((required / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH needed, \((available / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH available.", comment: "Identity top-up sheet — insufficient funding source")
             } else {
                 errorMessage = error.localizedDescription
             }
@@ -715,7 +710,7 @@ final class IdentityTopUpViewModel: ObservableObject {
         // waits for proven execution, so the credits are on-chain at the
         // destination when it returns; the unshield's own fee comes from
         // the shielded side on top of `credits`.
-        stepLabel = NSLocalizedString("Step 1 of 2 — moving Dash out of your Shielded balance…", comment: "Identity top-up sheet — shielded route progress")
+        stepLabel = String(localized: "Step 1 of 2 — moving Dash out of your Shielded balance…", comment: "Identity top-up sheet — shielded route progress")
         try await manager.shieldedUnshield(
             walletId: wallet.walletId,
             resolver: MnemonicResolver(),
@@ -730,7 +725,7 @@ final class IdentityTopUpViewModel: ObservableObject {
         // into the identity. The transition's fee is deducted from the
         // supplied credits; the unclaimed headroom stays at the address
         // (it is the wallet's own Platform balance, not lost).
-        stepLabel = NSLocalizedString("Step 2 of 2 — topping up your identity…", comment: "Identity top-up sheet — shielded route progress")
+        stepLabel = String(localized: "Step 2 of 2 — topping up your identity…", comment: "Identity top-up sheet — shielded route progress")
         let claim = credits > PlatformPaymentIdentityFundingPolicy.feeHeadroomCredits
             ? credits - PlatformPaymentIdentityFundingPolicy.feeHeadroomCredits
             : credits
@@ -791,13 +786,13 @@ struct IdentityTopUpSheet: View {
                     .background(Circle().fill(Color.dash.blue.opacity(0.08)))
                     .padding(.top, 28)
 
-                Text(NSLocalizedString("Top Up Identity Balance", comment: "Identity top-up sheet — title"))
+                Text(String(localized: "Top Up Identity Balance", comment: "Identity top-up sheet — title"))
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.dash.primaryText)
                     .padding(.top, 16)
 
-                Text(NSLocalizedString(
-                    "Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates.",
+                Text(String(
+                    localized: "Convert Dash into identity credits to pay for Platform actions like contact requests and profile updates.",
                     comment: "Identity top-up sheet — body"))
                     .font(.system(size: 14))
                     .foregroundColor(.dash.secondaryText)
@@ -807,26 +802,26 @@ struct IdentityTopUpSheet: View {
                     .padding(.top, 8)
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(NSLocalizedString("Pay from", comment: "Identity top-up sheet — funding source picker label"))
+                    Text(String(localized: "Pay from", comment: "Identity top-up sheet — funding source picker label"))
                         .font(.caption)
                         .foregroundColor(.dash.secondaryText)
-                    Picker(NSLocalizedString("Pay from", comment: "Identity top-up sheet — funding source picker label"), selection: $source) {
+                    Picker(String(localized: "Pay from", comment: "Identity top-up sheet — funding source picker label"), selection: $source) {
                         ForEach(IdentityTopUpViewModel.FundingSource.allCases, id: \.self) { candidate in
                             Text(candidate.title).tag(candidate)
                         }
                     }
                     .pickerStyle(.segmented)
                     if source == .shielded {
-                        Text(NSLocalizedString(
-                            "Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins.",
+                        Text(String(
+                            localized: "Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins.",
                             comment: "Identity top-up sheet — shielded source note"))
                             .font(.system(size: 12))
                             .foregroundColor(.dash.secondaryText)
                             .fixedSize(horizontal: false, vertical: true)
                     } else {
                         Label {
-                            Text(NSLocalizedString(
-                                "Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance.",
+                            Text(String(
+                                localized: "Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance.",
                                 comment: "Identity top-up sheet — linkability warning for transparent-side sources"))
                                 .font(.system(size: 12))
                                 .fixedSize(horizontal: false, vertical: true)
@@ -847,7 +842,7 @@ struct IdentityTopUpSheet: View {
                             customFieldFocused = false
                         } content: {
                             VStack(spacing: 2) {
-                                Text("\(duffs.dashAmount.formattedDashAmountWithoutCurrencySymbol)")
+                                Text(verbatim: "\(duffs.dashAmount.formattedDashAmountWithoutCurrencySymbol)")
                                     .font(.system(size: 15, weight: .semibold))
                                 Text(CurrencyExchanger.shared.fiatAmountString(for: duffs.dashAmount))
                                     .font(.system(size: 11))
@@ -860,7 +855,7 @@ struct IdentityTopUpSheet: View {
                         customFieldFocused = true
                     } content: {
                         VStack(spacing: 2) {
-                            Text(NSLocalizedString("Custom", comment: "Identity top-up sheet — free amount chip"))
+                            Text(String(localized: "Custom", comment: "Identity top-up sheet — free amount chip"))
                                 .font(.system(size: 15, weight: .semibold))
                             Text(verbatim: "···")
                                 .font(.system(size: 11))
@@ -874,7 +869,7 @@ struct IdentityTopUpSheet: View {
                 if selectedPresetDuffs == nil {
                     VStack(alignment: .leading, spacing: 4) {
                         TextField(
-                            NSLocalizedString("Amount in DASH", comment: "Identity top-up sheet — custom amount placeholder"),
+                            String(localized: "Amount in DASH", comment: "Identity top-up sheet — custom amount placeholder"),
                             text: $customText)
                             .keyboardType(.decimalPad)
                             .focused($customFieldFocused)
@@ -888,9 +883,7 @@ struct IdentityTopUpSheet: View {
                                 .font(.system(size: 12))
                                 .foregroundColor(.dash.secondaryText)
                         } else if !customText.isEmpty {
-                            Text(String.localizedStringWithFormat(
-                                NSLocalizedString("Enter at least %@ DASH", comment: "Identity top-up sheet — custom amount below the floor"),
-                                IdentityTopUpViewModel.customMinimumDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol))
+                            Text(String(localized: "Enter at least \(IdentityTopUpViewModel.customMinimumDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH", comment: "Identity top-up sheet — custom amount below the floor"))
                                 .font(.system(size: 12))
                                 .foregroundColor(.orange)
                         }
@@ -900,7 +893,7 @@ struct IdentityTopUpSheet: View {
                 }
 
                 HStack {
-                    Text(NSLocalizedString("Estimated fees", comment: "Identity top-up sheet — fee estimate line"))
+                    Text(String(localized: "Estimated fees", comment: "Identity top-up sheet — fee estimate line"))
                         .font(.system(size: 13))
                         .foregroundColor(.dash.secondaryText)
                     Spacer()
@@ -911,7 +904,7 @@ struct IdentityTopUpSheet: View {
                 .padding(.horizontal, 24)
                 .padding(.top, 14)
 
-                Text(NSLocalizedString("Fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance.", comment: "Identity top-up sheet — fee note"))
+                Text(String(localized: "Fees are taken from the amount; from Shielded, a small remainder may stay in your Platform balance.", comment: "Identity top-up sheet — fee note"))
                     .font(.system(size: 12))
                     .foregroundColor(.dash.tertiaryText)
                     .multilineTextAlignment(.center)
@@ -934,7 +927,7 @@ struct IdentityTopUpSheet: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
                     } else {
-                        Text(NSLocalizedString("Top Up", comment: "SDK identity profile sheet — add credits to the identity"))
+                        Text(String(localized: "Top Up", comment: "SDK identity profile sheet — add credits to the identity"))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(Color.dash.whiteText)
                             .frame(maxWidth: .infinity)
@@ -951,7 +944,7 @@ struct IdentityTopUpSheet: View {
                 Button {
                     dismiss()
                 } label: {
-                    Text(NSLocalizedString("Cancel", comment: ""))
+                    Text(String(localized: "Cancel", comment: ""))
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(.dash.blue)
                         .frame(maxWidth: .infinity)
@@ -966,13 +959,13 @@ struct IdentityTopUpSheet: View {
         .interactiveDismissDisabled(viewModel.isProcessing)
         .alert(
             viewModel.submittedUnconfirmed
-                ? NSLocalizedString("Confirmation pending", comment: "Identity transfer result unknown")
-                : NSLocalizedString("Error", comment: ""),
+                ? String(localized: "Confirmation pending", comment: "Identity transfer result unknown")
+                : String(localized: "Error", comment: ""),
             isPresented: Binding(
                 get: { viewModel.errorMessage != nil },
                 set: { if !$0 { viewModel.errorMessage = nil } })
         ) {
-            Button(NSLocalizedString("OK", comment: ""), role: .cancel) {}
+            Button(String(localized: "OK", comment: ""), role: .cancel) {}
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
@@ -1024,10 +1017,7 @@ struct IdentityTopUpSheet: View {
             return "—"
         }
         let duffs = credits / 1000
-        return String.localizedStringWithFormat(
-            NSLocalizedString("~%@ DASH (≈ %@)", comment: "DashPay: estimated network fee — DASH amount, then its local-currency equivalent"),
-            duffs.dashAmount.formattedDashAmountWithoutCurrencySymbol,
-            CurrencyExchanger.shared.fiatAmountString(for: duffs.dashAmount))
+        return String(localized: "~\(duffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH (≈ \(CurrencyExchanger.shared.fiatAmountString(for: duffs.dashAmount)))", comment: "DashPay: estimated network fee — DASH amount, then its local-currency equivalent")
     }
 
     private func confirm() {
@@ -1066,9 +1056,9 @@ final class DWUsernameRecoveryUITestFixture: NSObject {
             })
             .overlay(alignment: .bottom) {
                 HStack {
-                    Button("Load identity fixture") { loading = false }
+                    Button("Load identity fixture" as String) { loading = false }
                         .accessibilityIdentifier("loadIdentityFixture")
-                    Button("Switch identity fixture") {
+                    Button("Switch identity fixture" as String) {
                         loading = true
                         NotificationCenter.default.post(name: .DWCurrentNetworkDidChange, object: nil)
                     }

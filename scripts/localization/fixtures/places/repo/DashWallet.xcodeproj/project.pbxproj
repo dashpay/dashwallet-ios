@@ -1,0 +1,17 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	objectVersion = 77;
+	objects = {
+		ROOT = {isa = PBXGroup; children = (APP); sourceTree = "<group>"; };
+		APP = {isa = PBXGroup; children = (SRC); path = DashWallet; sourceTree = "<group>"; };
+		SRC = {isa = PBXGroup; children = (SEND, LEGACY); path = Sources; sourceTree = "<group>"; };
+		SEND = {isa = PBXFileReference; path = Send.swift; sourceTree = "<group>"; };
+		LEGACY = {isa = PBXFileReference; path = Legacy.m; sourceTree = "<group>"; };
+		BSEND = {isa = PBXBuildFile; fileRef = SEND; };
+		BLEGACY = {isa = PBXBuildFile; fileRef = LEGACY; };
+		PHASE = {isa = PBXSourcesBuildPhase; files = (BSEND, BLEGACY); };
+		TGT = {isa = PBXNativeTarget; name = dashpay; buildPhases = (PHASE); };
+	};
+	rootObject = ROOT;
+}

@@ -51,19 +51,19 @@ extension DerivationPathInfo {
     var title: String {
         switch self {
         case .address:
-            return NSLocalizedString("Address", comment: "")
+            return String(localized: "Address", comment: "")
         case .privateKey:
-            return NSLocalizedString("Private key", comment: "")
+            return String(localized: "Private key", comment: "")
         case .wifPrivateKey:
-            return NSLocalizedString("WIF Private key", comment: "")
+            return String(localized: "WIF Private key", comment: "")
         case .publicKey:
-            return NSLocalizedString("Public key", comment: "")
+            return String(localized: "Public key", comment: "")
         case .publicKeyLegacy:
-            return NSLocalizedString("Public key (legacy)", comment: "")
+            return String(localized: "Public key (legacy)", comment: "")
         case .platformNodeId:
-            return NSLocalizedString("Platform Node ID", comment: "")
+            return String(localized: "Platform Node ID", comment: "")
         case .tenderdashNodeKey:
-            return NSLocalizedString("Tenderdash node key (base64)", comment: "")
+            return String(localized: "Tenderdash node key (base64)", comment: "")
         }
     }
 }
@@ -140,19 +140,19 @@ extension DerivationPathKeysModel {
 
     func usageInfoForKey(at index: Int) -> String {
         guard let use = usage.use(for: key, at: index) else {
-            return NSLocalizedString("Not yet used", comment: "")
+            return String(localized: "Not yet used", comment: "")
         }
         guard let service = use.serviceAddress, !service.isEmpty else {
-            return NSLocalizedString("Used", comment: "")
+            return String(localized: "Used", comment: "")
         }
         if use.revoked {
-            return NSLocalizedString("Previously used at: ", comment: "") + service
+            return String(localized: "Previously used at: ", comment: "") + service
         }
-        return NSLocalizedString("Used at: ", comment: "") + service
+        return String(localized: "Used at: ", comment: "") + service
     }
 
     func itemForInfo(_ info: DerivationPathInfo, atIndex index: Int) -> DerivationPathKeysItem {
-        let unavailable = NSLocalizedString("Not available", comment: "")
+        let unavailable = String(localized: "Not available", comment: "")
         let index = UInt32(index)
         let value: String?
         switch info {

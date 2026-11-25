@@ -114,7 +114,7 @@ struct StorageExplorerView: View {
             HStack {
                 Label(name, systemImage: icon)
                 Spacer()
-                Text("\(counts[String(describing: type)] ?? 0)")
+                Text(verbatim: "\((counts[String(describing: type)] ?? 0).formatted())")
                     .foregroundColor(Color.dash.secondaryText)
                     .font(.callout)
             }
@@ -135,7 +135,7 @@ struct StorageExplorerView: View {
             HStack {
                 Label(name, systemImage: icon)
                 Spacer()
-                Text("\(counts[countKey] ?? 0)")
+                Text(verbatim: "\((counts[countKey] ?? 0).formatted())")
                     .foregroundColor(Color.dash.secondaryText)
                     .font(.callout)
             }

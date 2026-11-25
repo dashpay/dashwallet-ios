@@ -43,9 +43,7 @@ enum RecoveryPhraseLength: Int, CaseIterable, Identifiable {
 
     /// Segment label: "12 words" / "24 words".
     var title: String {
-        String.localizedStringWithFormat(
-            NSLocalizedString("%d words", comment: "Recovery phrase length (plural-aware)"),
-            rawValue)
+        String(localized: "\(rawValue) words", comment: "Recovery phrase length (plural-aware)")
     }
 }
 
@@ -59,12 +57,12 @@ struct RecoveryPhraseLengthPicker: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(NSLocalizedString("Recovery phrase length", comment: "Recovery phrase length"))
+            Text(String(localized: "Recovery phrase length", comment: "Recovery phrase length"))
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundColor(.dash.secondaryText)
 
             Picker(
-                NSLocalizedString("Recovery phrase length", comment: "Recovery phrase length"),
+                String(localized: "Recovery phrase length", comment: "Recovery phrase length"),
                 selection: $selection
             ) {
                 ForEach(RecoveryPhraseLength.allCases) { length in
@@ -73,8 +71,8 @@ struct RecoveryPhraseLengthPicker: View {
             }
             .pickerStyle(.segmented)
 
-            Text(NSLocalizedString(
-                "12 words is the standard. 24 words is longer to write down and restore, but significantly harder for advanced computer systems in the distant future to break.",
+            Text(String(
+                localized: "12 words is the standard. 24 words is longer to write down and restore, but significantly harder for advanced computer systems in the distant future to break.",
                 comment: "Recovery phrase length"))
                 .font(.system(size: 12))
                 .foregroundColor(.dash.tertiaryText)
@@ -115,7 +113,7 @@ struct RecoveryPhraseLengthPickerHost: View {
                     withAnimation(.easeInOut(duration: 0.2)) { showsAdvanced.toggle() }
                 }) {
                     HStack(spacing: 5) {
-                        Text(NSLocalizedString("Advanced", comment: ""))
+                        Text(String(localized: "Advanced", comment: ""))
                             .font(.system(size: 14, weight: .semibold))
                         Image(systemName: "chevron.down")
                             .font(.system(size: 11, weight: .semibold))

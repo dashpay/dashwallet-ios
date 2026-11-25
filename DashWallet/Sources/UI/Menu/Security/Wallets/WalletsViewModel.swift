@@ -233,7 +233,7 @@ final class WalletsViewModel: ObservableObject {
             return try Mnemonic.generate(wordCount: length.wordCount)
         } catch {
             Self.logger.error("mnemonic generation failed: \(String(describing: error), privacy: .public)")
-            errorMessage = NSLocalizedString("Could not generate a recovery phrase.", comment: "Wallets")
+            errorMessage = String(localized: "Could not generate a recovery phrase.", comment: "Wallets")
             return nil
         }
     }
@@ -356,7 +356,7 @@ final class WalletsViewModel: ObservableObject {
         guard let context = SwiftDashSDKHost.shared.modelContainer?.mainContext,
               let persisted = Self.fetchPersistentWallet(walletId: walletId, in: context) else {
             Self.logger.error("rename: no PersistentWallet row for target")
-            errorMessage = NSLocalizedString("Could not rename this wallet.", comment: "Wallets")
+            errorMessage = String(localized: "Could not rename this wallet.", comment: "Wallets")
             return
         }
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -430,7 +430,7 @@ final class WalletsViewModel: ObservableObject {
             // a wallet to switch to. The screen refuses this case up front
             // (`beginRemove`); this bail is defense in depth.
             Self.logger.error("removeWallet: refusing to remove the only wallet on this network")
-            errorMessage = NSLocalizedString("Cannot remove the last wallet here.", comment: "Wallets")
+            errorMessage = String(localized: "Cannot remove the last wallet here.", comment: "Wallets")
             return
         }
 
@@ -544,9 +544,7 @@ final class WalletsViewModel: ObservableObject {
     }
 
     nonisolated static func fallbackName(for walletId: Data) -> String {
-        String(
-            format: NSLocalizedString("Wallet %@…", comment: "Wallets — placeholder name with short id"),
-            shortId(walletId))
+        String(localized: "Wallet \(shortId(walletId))…", comment: "Wallets — placeholder name with short id")
     }
 
     /// First-4-bytes hex label of a walletId — display fallbacks and log

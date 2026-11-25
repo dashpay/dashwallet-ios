@@ -166,7 +166,7 @@ final class ContestedUsernameFee: ObservableObject {
     /// about to be signed on, so there is no fund to state.
     struct UnresolvedProtocolVersion: LocalizedError {
         var errorDescription: String? {
-            NSLocalizedString("Network error. Please check your connection and try again.", comment: "DashPay")
+            String(localized: "Network error. Please check your connection and try again.", comment: "DashPay")
         }
     }
 

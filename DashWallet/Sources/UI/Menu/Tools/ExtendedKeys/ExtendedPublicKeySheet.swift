@@ -97,7 +97,7 @@ struct ExtendedPublicKeySheet: View {
 
             // Title + tappable key text
             VStack(alignment: .leading, spacing: 6) {
-                Text(NSLocalizedString("Extended public key (BIP44)", comment: ""))
+                Text(String(localized: "Extended public key (BIP44)", comment: ""))
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.dash.primaryText)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -111,7 +111,7 @@ struct ExtendedPublicKeySheet: View {
                     }
                 }) {
                     Text(viewModel.keyValue.isEmpty
-                         ? NSLocalizedString("Not available", comment: "")
+                         ? String(localized: "Not available", comment: "")
                          : viewModel.keyValue)
                         .font(.system(size: 15))
                         .foregroundColor(.dash.secondaryText)
@@ -122,7 +122,7 @@ struct ExtendedPublicKeySheet: View {
                 .overlay(
                     Group {
                         if isCopied {
-                            Text(NSLocalizedString("Copied", comment: ""))
+                            Text(String(localized: "Copied", comment: ""))
                                 .font(.caption)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
@@ -141,7 +141,7 @@ struct ExtendedPublicKeySheet: View {
 
             // Share key button
             DashButton(
-                text: NSLocalizedString("Share key", comment: ""),
+                text: String(localized: "Share key", comment: ""),
                 style: .tintedBlue,
                 action: { showShareSheet = true }
             )
