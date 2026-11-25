@@ -56,24 +56,46 @@ enum GiftCardPurchaseSheet: Equatable {
 class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHandling {
     private var cancellableBag = Set<AnyCancellable>()
     private let fiatFormatter = NumberFormatter.fiatFormatter(currencyCode: defaultCurrency)
-    private let ctxSpendRepository = CTXSpendRepository.shared
     private let provider: GiftCardProvider
-    private lazy var customIconProvider = CustomIconMetadataProvider.shared
-    private lazy var txMetadataDao = TransactionMetadataDAOImpl.shared
-    private lazy var sendCoinsService = SendCoinsService()
+    private let dependencies: Dependencies
     private let exchangeRate: () -> GiftCardPaymentGuard.ExchangeRate
     private let now: () -> Date
-    
-    private let repository: [GiftCardProvider: any DashSpendRepository] = {
-        var dict: [GiftCardProvider: any DashSpendRepository] = [
-            .ctx: CTXSpendRepository.shared
-        ]
+
+    /// What a purchase goes through: the provider repositories, the send service and the
+    /// stores the purchase is written to.
+    struct Dependencies {
+        var ctx: any CTXGiftCardOrdering
         #if PIGGYCARDS_ENABLED
-        dict[.piggyCards] = PiggyCardsRepository.shared
+        var piggyCards: any PiggyCardsGiftCardOrdering
         #endif
-        return dict
-    }()
-    
+        var payments: any GiftCardPaying
+        var purchases: any GiftCardPurchaseRecording
+
+        /// The app's shared repositories, a send service of its own and the app's stores.
+        @MainActor
+        static func live() -> Dependencies {
+            #if PIGGYCARDS_ENABLED
+            return Dependencies(ctx: CTXSpendRepository.shared, piggyCards: PiggyCardsRepository.shared,
+                                payments: SendCoinsService(), purchases: GiftCardPurchaseStore())
+            #else
+            return Dependencies(ctx: CTXSpendRepository.shared,
+                                payments: SendCoinsService(), purchases: GiftCardPurchaseStore())
+            #endif
+        }
+    }
+
+    /// The sign-in state of the provider this screen buys from.
+    private var session: any GiftCardProviderSession {
+        switch provider {
+        case .ctx:
+            return dependencies.ctx
+        #if PIGGYCARDS_ENABLED
+        case .piggyCards:
+            return dependencies.piggyCards
+        #endif
+        }
+    }
+
     // Network monitoring properties
     var networkStatusDidChange: ((NetworkStatus) -> ())?
     var reachabilityObserver: Any!
@@ -231,10 +253,13 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     ///   - exchangeRate: reads the wallet's USD rate and when it was retrieved. It is read
     ///     when the Confirm sheet opens; the purchase uses that value.
     ///   - now: the clock the rate's age is judged by, when the sheet opens and again on Confirm.
+    ///   - dependencies: what a purchase goes through; `nil` for `Dependencies.live()`.
     init(merchant: ExplorePointOfUse, provider: GiftCardProvider = .ctx,
          exchangeRate: @escaping () -> GiftCardPaymentGuard.ExchangeRate = DashSpendPayViewModel.walletExchangeRate,
-         now: @escaping () -> Date = { Date() }) {
+         now: @escaping () -> Date = { Date() },
+         dependencies: Dependencies? = nil) {
         self.provider = provider
+        self.dependencies = dependencies ?? .live()
         self.exchangeRate = exchangeRate
         self.now = now
 
@@ -348,7 +373,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             }
             .store(in: &cancellableBag)
 
-        repository[provider]?.isUserSignedInPublisher
+        session.isUserSignedInPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] isSignedIn in
                 self?.isUserSignedIn = isSignedIn
@@ -533,7 +558,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             // blocking the buyer for the SDK's 30 s acceptance window only delays the card that
             // is already being issued (the email routinely arrived before the screen moved on).
             do {
-                txidWire = try await sendCoinsService.payWithDashUrl(
+                txidWire = try await dependencies.payments.payWithDashUrl(
                     url: url, awaitAcceptance: false,
                     validate: { confirmation in
                         try await self.confirmQuote(
@@ -563,13 +588,9 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         case .piggyCards:
 
             // PiggyCards uses orderGiftCard which returns GiftCardInfo
-            guard let piggyCardsRepo = repository[provider] as? PiggyCardsRepository else {
-                throw DashSpendError.unauthorized
-            }
-
             let lineItems = buildPiggyOrderLineItems(
                 selectedQuantities: snapshot.quantities, cardValue: confirmedPrice)
-            let giftCardInfo = try await piggyCardsRepo.orderGiftCards(
+            let giftCardInfo = try await dependencies.piggyCards.orderGiftCards(
                 merchantId: merchantId,
                 lineItems: lineItems,
                 fiatCurrency: "USD",
@@ -592,9 +613,10 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             // Use sendCoins directly with address and amount
             // This will properly trigger PIN authorization
 
-            txidWire = try await sendCoinsService.sendCoins(
+            txidWire = try await dependencies.payments.sendCoins(
                 address: giftCardInfo.paymentAddress,
-                amount: dashAmountInSatoshis
+                amount: dashAmountInSatoshis,
+                sessionAuthSufficient: false
             )
 
 
@@ -622,9 +644,9 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     ///
     /// - Parameter price: the card value the buyer confirmed, stored as the card's price.
     private func recordPurchase(txidWire: Data, giftCardNote: String, price: Decimal) {
-        markGiftCardTransaction(txId: txidWire, provider: provider.displayName)
-        customIconProvider.updateIcon(txId: txidWire, iconUrl: merchantIconUrl)
-        saveGiftCardDummy(txHashData: txidWire, giftCardNote: giftCardNote, price: price)
+        dependencies.purchases.record(GiftCardPurchaseRecord(
+            txidWire: txidWire, provider: provider, merchantName: merchantTitle, merchantUrl: merchantUrl,
+            merchantIconUrl: merchantIconUrl, price: price, note: giftCardNote))
     }
 
     var contactSupportButtonText: String {
@@ -747,7 +769,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         #else
         requiresAuth = false
         #endif
-        if requiresAuth && repository[provider]?.isUserSignedIn != true { return }
+        if requiresAuth && !session.isUserSignedIn { return }
 
 
         // Set loading state
@@ -758,7 +780,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         do {
             switch provider {
             case .ctx:
-                let merchantInfo = try await ctxSpendRepository.getMerchant(merchantId: merchantId)
+                let merchantInfo = try await dependencies.ctx.getMerchant(merchantId: merchantId)
 
                 let newSavings = Decimal(merchantInfo.discount) / Decimal(10000)
                 let isRange = merchantInfo.denominationType == .Range
@@ -786,13 +808,6 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
             #if PIGGYCARDS_ENABLED
             case .piggyCards:
                 // For PiggyCards, we need to fetch gift cards for this merchant using the sourceId from the database
-                guard let piggyCardsRepo = repository[provider] as? PiggyCardsRepository else {
-                    await MainActor.run {
-                        self.isLoading = false
-                    }
-                    return
-                }
-
                 guard let sourceId = sourceId else {
                     await MainActor.run {
                         self.isLoading = false
@@ -800,7 +815,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                     return
                 }
 
-                let giftCards = try await piggyCardsRepo.getGiftCards(
+                let giftCards = try await dependencies.piggyCards.getGiftCards(
                     country: "US",
                     sourceId: sourceId,
                     merchantId: merchantId
@@ -947,7 +962,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     
     /// - Parameter cardValue: the card value the buyer confirmed; the order is created for it.
     private func purchaseGiftCardAPI(cardValue: Decimal) async throws -> GiftCardResponse {
-        guard !merchantId.isEmpty, repository[provider]?.isUserSignedIn == true else {
+        guard !merchantId.isEmpty, session.isUserSignedIn else {
             throw DashSpendError.unauthorized
         }
 
@@ -967,7 +982,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         DWLogger.log("Attempting to purchase gift card for merchant \(merchantId) with amount \(cardValue)")
 
         do {
-            let response = try await ctxSpendRepository.purchaseGiftCard(
+            let response = try await dependencies.ctx.purchaseGiftCard(
                 merchantId: merchantId,
                 fiatAmount: fiatAmountString,
                 fiatCurrency: "USD",
@@ -977,40 +992,6 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         } catch {
             throw error
         }
-    }
-    
-    private func saveGiftCardDummy(txHashData: Data, giftCardNote: String, price: Decimal) {
-        DWLogger.log("Gift card saved - txId: \(txHashData.hexEncodedString()), note: \(giftCardNote)")
-
-        let giftCard = GiftCard(
-            txId: txHashData,
-            merchantName: merchantTitle,
-            merchantUrl: merchantUrl,
-            price: price,
-            note: giftCardNote, // Store payment/order metadata in note field temporarily
-            provider: provider.displayName  // Store provider (CTX or PiggyCards)
-        )
-
-        Task {
-            await GiftCardsDAOImpl.shared.create(dto: giftCard)
-        }
-    }
-    
-    private func markGiftCardTransaction(txId: Data, provider providerName: String) {
-        var txMetadata = TransactionMetadata(txHash: txId)
-        txMetadata.taxCategory = TxMetadataTaxCategory.expense
-
-        // Set the service name based on the provider
-        switch provider {
-        case .ctx:
-            txMetadata.service = ServiceName.ctxSpend.rawValue
-        #if PIGGYCARDS_ENABLED
-        case .piggyCards:
-            txMetadata.service = ServiceName.piggyCards.rawValue
-        #endif
-        }
-
-        txMetadataDao.update(dto: txMetadata)
     }
     
     private func handleNetworkStatusChange(_ status: NetworkStatus) {
