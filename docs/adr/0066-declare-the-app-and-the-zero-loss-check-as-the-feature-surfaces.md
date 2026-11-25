@@ -1,6 +1,6 @@
 # 0066 — Declare the app and the zero-loss check as the feature's surfaces
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-18
 - **Deciders:** Roman Chornyi (owner), with Claude during the design walk
 
