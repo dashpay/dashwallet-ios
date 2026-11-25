@@ -48,9 +48,19 @@ struct AssetLockFailureRecord: Codable, Equatable, Sendable {
     /// whose code and kind are in the summary, and for any other error.
     var writtenDetail: String?
 
-    /// One log-line form: `case=<errorCase> error=<summary> detail=<writtenDetail>`.
+    /// One log-line form: `case=<errorCase> error=<summary> detail=<writtenDetail>`,
+    /// with every number in the detail masked.
     var logDescription: String {
-        "case=\(errorCase)" + (summary.map { " error=\($0)" } ?? "") + (writtenDetail.map { " detail=\($0)" } ?? "")
+        "case=\(errorCase)" + (summary.map { " error=\($0)" } ?? "")
+            + (writtenDetail.map { " detail=\(Self.maskingNumbers(in: $0))" } ?? "")
+    }
+
+    /// The SDK's text can carry a lock value or a fee (a shielded build's
+    /// shortfall names both), so every word holding a digit becomes `<n>`;
+    /// the words around it still tell one cause from another.
+    static func maskingNumbers(in text: String) -> String {
+        text.replacingOccurrences(
+            of: #"[A-Za-z0-9_]*[0-9](?:[A-Za-z0-9_.,]*[A-Za-z0-9_])?"#, with: "<n>", options: .regularExpression)
     }
 
     /// The detail recorded for `PlatformWalletError.assetLockRecipientMismatch`

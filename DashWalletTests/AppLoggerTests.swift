@@ -928,8 +928,7 @@ final class AppLoggerTests: XCTestCase {
     // The recovery harness compiles the
     // production logger without SwiftDashSDK, so AppLogger names no SDK type;
     // SDK error detail comes through `AppLogErrorDetail`. A write decision
-    // reads `PlatformRefusal`'s consensus extractor (the one switch, PR
-    // review r13), never the log formatter.
+    // reads `PlatformRefusal`'s consensus extractor, never the log formatter.
     func testAppLoggerNamesNoSDKTypeAndNoCallerReadsItsConsensusExtractor() throws {
         let logger = try sourceText("DashWallet/Sources/Infrastructure/AppLogger.swift")
         for name in ["import SwiftDashSDK", "PlatformConsensusError", "SDKError", "PlatformWalletError",
@@ -974,16 +973,26 @@ final class AppLoggerTests: XCTestCase {
     }
 
     // Comments say what a test protects; a review-round or acceptance-
-    // criterion tag names a list outside the repository.
+    // criterion tag names a list outside the repository. A tag can wrap, so
+    // contiguous comment lines are checked as one text.
     func testLoggingTestsCarryNoReviewDiaryTags() throws {
         let pattern = try NSRegularExpression(pattern: #"PR review r\d|\bAC-\d{2}\b|\(owner, 20\d\d"#)
         for path in ["DashWalletTests/AppLoggerTests.swift", "DashWalletTests/AssetLockDiagnosticsTests.swift",
                      "DashWalletTests/HostRecoveryTests.swift"] {
-            for line in try sourceText(path).split(separator: "\n") where line.contains("//") {
-                guard let start = line.range(of: "//")?.lowerBound else { continue }
-                let comment = String(line[start...])
+            var comments: [String] = []
+            var run = ""
+            for line in try sourceText(path).split(separator: "\n", omittingEmptySubsequences: false) {
+                if let start = line.range(of: "//")?.lowerBound {
+                    run += " " + String(line[start...].drop { $0 == "/" || $0 == " " })
+                } else if !run.isEmpty {
+                    comments.append(run)
+                    run = ""
+                }
+            }
+            comments.append(run)
+            for comment in comments {
                 let range = NSRange(comment.startIndex..., in: comment)
-                XCTAssertNil(pattern.firstMatch(in: comment, range: range), "\(path): \(line)")
+                XCTAssertNil(pattern.firstMatch(in: comment, range: range), "\(path): \(comment)")
             }
         }
     }

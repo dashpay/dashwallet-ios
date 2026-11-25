@@ -36,7 +36,8 @@ registration with a local helper; this change fixes it for the whole app.
   rejection reason as returned, so support can follow a payment and see why it was refused. An
   asset-lock retry failure keeps the wallet error's detail (`detail=`, from #1276), because the SDK's
   catch-all wallet error has one summary for every cause; a recipient mismatch writes a fixed
-  sentence instead of the SDK's text, and a consensus rejection writes its code and kind only.
+  sentence instead of the SDK's text, a consensus rejection writes its code and kind only, and every
+  number in the detail is written as `<n>`, since the SDK's text can name a lock value or a fee.
 - **Marker lines kept.** The lines support searches by tag (`IDENT-COORD`, `TXSEND`, `KEYMIG`,
   chain sync) keep their tags and wording; `CoordinatorLog` from #1155 is replaced by `AppLogger`. Lines written
   before the PIN prompt of a username registration or purchase, and lines about a name that may not have been

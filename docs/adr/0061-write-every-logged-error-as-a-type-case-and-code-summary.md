@@ -50,7 +50,8 @@ the diagnostics bundle's `summary.txt`, as #1276 added it. The SDK's catch-all w
 error has one summary for every cause, so without it two stuck locks look the same. The detail is
 curated: a recipient mismatch writes a fixed sentence instead of the SDK's text, which names
 addresses; a consensus rejection writes no detail, since its code and kind are in the summary; any
-other error writes none. The bundle already lists each lock's outpoint.
+other error writes none. Every word of the detail holding a digit is written as `<n>`, since the
+SDK's text can name a lock value or a fee. The bundle already lists each lock's outpoint.
 
 ## Consequences
 
