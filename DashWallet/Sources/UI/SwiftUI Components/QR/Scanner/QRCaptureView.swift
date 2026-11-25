@@ -18,6 +18,7 @@
 //
 
 import AVFoundation
+import os
 import SwiftUI
 
 /// UIView whose backing layer is an AVCaptureVideoPreviewLayer.
@@ -70,9 +71,11 @@ struct QRCaptureView: UIViewRepresentable {
         private var captureSession: AVCaptureSession?
         private var metadataOutput: AVCaptureMetadataOutput?
         private let sessionQueue = DispatchQueue(label: "org.dash.wallet.qr-capture")
-        /// Set by `stopSession()`, read only on `sessionQueue`: a setup still
-        /// queued when the scanner is dismissed must not start the camera.
-        private var isStopped = false
+        /// Set by `stopSession()` before it returns, read on `sessionQueue`: a
+        /// setup or start still queued when the scanner is dismissed must not
+        /// turn the camera on, even for the moment before the stop runs.
+        private let stopped = OSAllocatedUnfairLock(initialState: false)
+        private var isStopped: Bool { stopped.withLock { $0 } }
         /// Set by `stopSession()` on the main thread: a camera failure that
         /// lands after the scanner is gone (a permission denied while the
         /// prompt was up) must not show an alert over whatever is left.
@@ -123,8 +126,8 @@ struct QRCaptureView: UIViewRepresentable {
             // the coordinator until the delegate is cleared, and `isDismissed`
             // drops metadata already queued on main.
             isDismissed = true
+            stopped.withLock { $0 = true }
             sessionQueue.async {
-                self.isStopped = true
                 self.metadataOutput?.setMetadataObjectsDelegate(nil, queue: nil)
                 self.metadataOutput = nil
                 self.captureSession?.stopRunning()
@@ -222,6 +225,7 @@ struct QRCaptureView: UIViewRepresentable {
                 // Serialize them: assign the preview session on main, then hop
                 // back to `sessionQueue` to start, so they never overlap.
                 DispatchQueue.main.async {
+                    guard !self.isDismissed else { return }
                     previewLayer.session = session
                     self.sessionQueue.async {
                         guard !self.isStopped else { return }
