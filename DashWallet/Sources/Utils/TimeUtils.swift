@@ -12,7 +12,7 @@ final class DWDurationFormatter: NSObject {
 
         let wholeSeconds = max(0, floor(timeInterval))
         return formatter.string(from: wholeSeconds)
-            ?? String.localizedStringWithFormat(NSLocalizedString("%ld second(s)", comment: ""), Int(wholeSeconds))
+            ?? String(localized: "\(Int(wholeSeconds)) second(s)", comment: "")
     }
 }
 
@@ -150,7 +150,7 @@ class TimeUtils {
             
             guard networkTime != nil else {
                 throw NSError(domain: "TimeUtils", code: 1, userInfo: [
-                    NSLocalizedDescriptionKey: NSLocalizedString("Failed to get network time", comment: "Device time check error"),
+                    NSLocalizedDescriptionKey: String(localized: "Failed to get network time", comment: "Device time check error"),
                 ])
             }
         }

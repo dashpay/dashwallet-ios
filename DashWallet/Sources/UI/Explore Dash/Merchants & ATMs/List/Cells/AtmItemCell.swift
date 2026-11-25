@@ -83,8 +83,8 @@ private class AtmOperationTagView: UIView {
 
         var title: String {
             switch self {
-            case .buy: return NSLocalizedString("Buy", comment: "Buy")
-            case .sell: return NSLocalizedString("Sell", comment: "Sell")
+            case .buy: return String(localized: "Buy", comment: "Buy")
+            case .sell: return String(localized: "Sell", comment: "Sell")
             }
         }
 

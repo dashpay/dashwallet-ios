@@ -660,9 +660,7 @@ extension PaymentsLandingHostingController: NavigationBarDisplayable {
 
 extension PaymentsLandingHostingController: SpecifyAmountViewControllerDelegate {
     func specifyAmountViewController(_ vc: SpecifyAmountViewController, didInput amount: UInt64) {
-        // The SwiftUI sheet, not `DWRequestAmountViewController`: this landing
-        // is the redesigned path, and it sizes its own detent. The ObjC pair is
-        // still what the legacy `ReceiveViewController` presents.
+        // A SwiftUI sheet that sizes its own detent.
         //
         // The session keeps running behind THIS sheet, unlike every other one
         // the landing presents.

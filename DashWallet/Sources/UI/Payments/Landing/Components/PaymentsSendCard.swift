@@ -49,20 +49,20 @@ struct PaymentsSendCard: View {
                 if showsSendToUsername {
                     PaymentsActionRow(
                         iconSystemName: DashIcon.Menu.sendAccount.rawValue,
-                        title: NSLocalizedString("Send to username", comment: "Payments"),
+                        title: String(localized: "Send to username", comment: "Payments"),
                         action: onSendToUsername
                     )
                 }
 
                 PaymentsActionRow(
                     iconSystemName: DashIcon.Menu.sendAddress.rawValue,
-                    title: NSLocalizedString("Send to Dash address", comment: "Payments"),
+                    title: String(localized: "Send to Dash address", comment: "Payments"),
                     action: onSendToAddress
                 )
 
                 PaymentsActionRow(
                     iconSystemName: DashIcon.Menu.scanQR.rawValue,
-                    title: NSLocalizedString("Scan Dash QR", comment: "Payments"),
+                    title: String(localized: "Scan Dash QR", comment: "Payments"),
                     action: onScanQR
                 )
             }
@@ -71,7 +71,7 @@ struct PaymentsSendCard: View {
                 PaymentsActionCard {
                     PaymentsActionRow(
                         iconSystemName: DashIcon.Menu.swapDashCoin.rawValue,
-                        title: NSLocalizedString("Swap to other crypto", comment: "Payments"),
+                        title: String(localized: "Swap to other crypto", comment: "Payments"),
                         action: onSwapToCrypto
                     )
                 }

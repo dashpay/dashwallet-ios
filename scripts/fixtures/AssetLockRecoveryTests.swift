@@ -82,6 +82,48 @@ final class AssetLockRecoveryTests: XCTestCase {
         XCTAssertEqual(coordinator.phase, .success)
     }
 
+    func testResumeWithNoRecordedRecipientPaysTheOwnAddressAndSaysSo() async {
+        let wallet = Data(repeating: 0x53, count: 32)
+        let own = Data(repeating: 1, count: 43)
+        let manager = TestManager()
+        let coordinator = ShieldedTransferCoordinator(environment: .init(
+            manager: manager, walletId: wallet, shieldedRecipient: own))
+        // No recorded recipient, no drain operation, no caller recipient: a
+        // lock rebuilt from chain, or one from before the SDK recorded them.
+        await coordinator.resumeAssetLock(outPointTxidWire: Data(repeating: 0x83, count: 32), outPointVout: 0)
+        XCTAssertEqual(manager.receivedRecipients.map(\.recipientRaw43), [own])
+        XCTAssertEqual(coordinator.phase, .success)
+        XCTAssertEqual(coordinator.lastResumeRecipientSource, .ownLegacy)
+        XCTAssertTrue(coordinator.resumePaidOwnBalanceWithoutRecord)
+
+        coordinator.reset()
+        XCTAssertNil(coordinator.lastResumeRecipientSource)
+        XCTAssertFalse(coordinator.resumePaidOwnBalanceWithoutRecord)
+    }
+
+    func testResumeToARecordedOrCallerRecipientIsAnOrdinaryCompletion() async {
+        let wallet = Data(repeating: 0x54, count: 32)
+        let own = Data(repeating: 1, count: 43)
+        let recorded = ShieldedTransferCoordinator(environment: .init(
+            manager: TestManager(), walletId: wallet, shieldedRecipient: own))
+        // Recorded as the wallet's own address: an internal transfer on record.
+        ShieldedTransferCoordinator.recordedRecipient = own
+        await recorded.resumeAssetLock(outPointTxidWire: Data(repeating: 0x84, count: 32), outPointVout: 0)
+        XCTAssertEqual(recorded.phase, .success)
+        XCTAssertEqual(recorded.lastResumeRecipientSource, .recorded)
+        XCTAssertFalse(recorded.resumePaidOwnBalanceWithoutRecord)
+
+        ShieldedTransferCoordinator.recordedRecipient = nil
+        let caller = ShieldedTransferCoordinator(environment: .init(
+            manager: TestManager(), walletId: wallet, shieldedRecipient: own))
+        await caller.resumeAssetLock(
+            outPointTxidWire: Data(repeating: 0x85, count: 32), outPointVout: 0,
+            recipientRaw43: Data(repeating: 8, count: 43))
+        XCTAssertEqual(caller.phase, .success)
+        XCTAssertEqual(caller.lastResumeRecipientSource, .caller)
+        XCTAssertFalse(caller.resumePaidOwnBalanceWithoutRecord)
+    }
+
     func testResumeRefusesACallerRecipientThatDiffersFromTheRecordedOne() async {
         let wallet = Data(repeating: 0x52, count: 32)
         let manager = TestManager()

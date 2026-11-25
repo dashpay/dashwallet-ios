@@ -136,7 +136,7 @@ struct DashSpendPayScreen: View {
     private var overlays: some View {
         if justAuthenticated {
             ToastView(
-                text: NSLocalizedString("Logged in to DashSpend account", comment: "DashSpend"),
+                text: String(localized: "Logged in to DashSpend account", comment: "DashSpend"),
                 icon: .system("checkmark.circle")
             )
             .frame(height: 20)
@@ -144,7 +144,7 @@ struct DashSpendPayScreen: View {
         }
 
         if showConfirmToast {
-            ToastView(text: NSLocalizedString("Gift card purchase successful", comment: "DashSpend"))
+            ToastView(text: String(localized: "Gift card purchase successful", comment: "DashSpend"))
                 .frame(height: 20)
                 .padding(.bottom, 30)
         }
@@ -155,7 +155,7 @@ struct DashSpendPayScreen: View {
                 icon: .system("exclamationmark.triangle.fill"),
                 heading: errorTitle,
                 textBlock1: errorMessage,
-                positiveButtonText: NSLocalizedString("OK", comment: ""),
+                positiveButtonText: String(localized: "OK", comment: ""),
                 positiveButtonAction: { showErrorDialog = false }
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -169,7 +169,7 @@ struct DashSpendPayScreen: View {
                 icon: .system("exclamationmark.triangle.fill"),
                 heading: errorTitle,
                 textBlock1: errorMessage,
-                positiveButtonText: NSLocalizedString("Close", comment: ""),
+                positiveButtonText: String(localized: "Close", comment: ""),
                 positiveButtonAction: { showCustomErrorDialog = false },
                 negativeButtonText: viewModel.contactSupportButtonText,
                 negativeButtonAction: {
@@ -237,8 +237,8 @@ struct DashSpendPayScreen: View {
 
     private func showPurchaseError(_ error: Error) {
         if let error = error as? DashSpendError {
-            errorTitle = NSLocalizedString("Purchase Failed", comment: "DashSpend")
-            errorMessage = error.errorDescription ?? NSLocalizedString("Error", comment: "")
+            errorTitle = String(localized: "Purchase Failed", comment: "DashSpend")
+            errorMessage = error.errorDescription ?? String(localized: "Error", comment: "")
 
             if case .customError = error {
                 showCustomErrorDialog = true
@@ -246,7 +246,7 @@ struct DashSpendPayScreen: View {
                 showErrorDialog = true
             }
         } else {
-            errorTitle = !error.localizedDescription.isEmpty ? error.localizedDescription : NSLocalizedString("Error", comment: "")
+            errorTitle = !error.localizedDescription.isEmpty ? error.localizedDescription : String(localized: "Error", comment: "")
             errorMessage = error.localizedDescription
             showErrorDialog = true
 
@@ -255,8 +255,8 @@ struct DashSpendPayScreen: View {
     }
 
     private func showSignInError() {
-        errorTitle = NSLocalizedString("Sign in required", comment: "Alert title")
-        errorMessage = NSLocalizedString("You need to sign in to DashSpend to purchase gift cards.", comment: "DashSpend")
+        errorTitle = String(localized: "Sign in required", comment: "Alert title")
+        errorMessage = String(localized: "You need to sign in to DashSpend to purchase gift cards.", comment: "DashSpend")
         showErrorDialog = true
     }
 }
@@ -280,9 +280,9 @@ private struct DashSpendPurchaseSheet: View {
     private var title: String {
         switch sheet {
         case .confirm, .waitingForProvider:
-            return NSLocalizedString("Confirm", comment: "DashSpend")
+            return String(localized: "Confirm", comment: "DashSpend")
         case .priceUpdated:
-            return NSLocalizedString("Price updated", comment: "DashSpend")
+            return String(localized: "Price updated", comment: "DashSpend")
         case nil:
             return ""
         }

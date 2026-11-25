@@ -53,57 +53,41 @@ enum DashConnectPermissionText {
             isGroup = true
             action = String(
                 format: isCritical
-                    ? NSLocalizedString(
-                        "Act as you in all of %@'s contracts, including claiming and spending its tokens",
+                    ? String(
+                        localized: "Act as you in all of %@'s contracts, including claiming and spending its tokens",
                         comment: "DashConnect App Connect v2: the placeholder is the app's name")
-                    : NSLocalizedString(
-                        "Act as you in all of %@'s contracts",
+                    : String(
+                        localized: "Act as you in all of %@'s contracts",
                         comment: "DashConnect App Connect v2: the placeholder is the app's name"),
                 appLabel)
         case .singleContract:
-            action = String(
-                format: NSLocalizedString(
-                    "Act as you in one of %@'s contracts",
-                    comment: "DashConnect App Connect v2: the placeholder is the app's name"),
-                appLabel)
+            action = String(localized: "Act as you in one of \(appLabel)'s contracts", comment: "DashConnect App Connect v2: the placeholder is the app's name")
         case let .documentType(contractId, name):
             if contractId.toBase58String() == AppConnect.dashPayContractId, name == "profile" {
-                action = NSLocalizedString("Edit your DashPay profile", comment: "DashConnect App Connect v2")
+                action = String(localized: "Edit your DashPay profile", comment: "DashConnect App Connect v2")
             } else {
-                action = String(
-                    format: NSLocalizedString(
-                        "Write \"%@\" documents as you",
-                        comment: "DashConnect App Connect v2: the placeholder is a document type name"),
-                    name)
+                action = String(localized: "Write \"\(name)\" documents as you", comment: "DashConnect App Connect v2: the placeholder is a document type name")
             }
         }
         var text: String
         if let totalBudget {
-            text = String(
-                format: NSLocalizedString(
-                    "%1$@, spending up to %2$@ of your identity's credits until %3$@",
-                    comment: "DashConnect App Connect v2: what a key can do, an amount with its unit (0.5 DASH), a date"),
-                action, PlatformCreditsFormatter.dashString(totalBudget), expiry)
+            text = String(localized: "\(action), spending up to \(PlatformCreditsFormatter.dashString(totalBudget)) of your identity's credits until \(expiry)", comment: "DashConnect App Connect v2: what a key can do, an amount with its unit (0.5 DASH), a date")
         } else {
             // No budget was asked for, and the wallet adds none: the key can
             // spend the identity's credits without a cap.
-            text = String(
-                format: NSLocalizedString(
-                    "%1$@, with no limit on spending your identity's credits, until %2$@",
-                    comment: "DashConnect App Connect v2: what a key can do, a date"),
-                action, expiry)
+            text = String(localized: "\(action), with no limit on spending your identity's credits, until \(expiry)", comment: "DashConnect App Connect v2: what a key can do, a date")
         }
         // A budget is in credits: Platform checks a token transfer against
         // the token balance, not against the key's credit budget.
         if isGroup, isCritical {
-            text += " " + NSLocalizedString(
-                "The credit limit does not limit how many of your tokens it can move.",
+            text += " " + String(
+                localized: "The credit limit does not limit how many of your tokens it can move.",
                 comment: "DashConnect App Connect v2")
         }
         // Group membership is read when the key signs, not when it is granted.
         if isGroup, isAdministered {
-            text += " " + NSLocalizedString(
-                "Other identities can add their own contracts to this group, and the key will act as you in those too.",
+            text += " " + String(
+                localized: "Other identities can add their own contracts to this group, and the key will act as you in those too.",
                 comment: "DashConnect App Connect v2")
         }
         return text
@@ -124,21 +108,21 @@ enum DashConnectPermissionText {
         switch tense {
         case .present:
             text = String(
-                format: NSLocalizedString(
-                    "Act as you in %1$@ until %2$@, including buying and sending its tokens. It can spend up to %3$@ of your identity balance on fees and token purchases, but can send any amount of your %1$@ tokens.",
+                format: String(
+                    localized: "Act as you in %1$@ until %2$@, including buying and sending its tokens. It can spend up to %3$@ of your identity balance on fees and token purchases, but can send any amount of your %1$@ tokens.",
                     comment: "DashConnect App Connect v2: the app's name, a date (29 Oct 2027), an amount with its unit (0.5 DASH); the app's name again"),
                 appLabel, expiry, budget)
         case .past:
             text = String(
-                format: NSLocalizedString(
-                    "Could act as you in %1$@ until %2$@, including buying and sending its tokens. It could spend up to %3$@ of your identity balance on fees and token purchases, but could send any amount of your %1$@ tokens.",
+                format: String(
+                    localized: "Could act as you in %1$@ until %2$@, including buying and sending its tokens. It could spend up to %3$@ of your identity balance on fees and token purchases, but could send any amount of your %1$@ tokens.",
                     comment: "DashConnect connection sheet, a connection that ended: the app's name, a date, an amount with its unit; the app's name again"),
                 appLabel, expiry, budget)
         }
         // Group membership is read when the key signs, not when it is granted.
         if isAdministered {
-            text += " " + NSLocalizedString(
-                "Other identities can add their own contracts to this group, and the key will act as you in those too.",
+            text += " " + String(
+                localized: "Other identities can add their own contracts to this group, and the key will act as you in those too.",
                 comment: "DashConnect App Connect v2")
         }
         return text
@@ -146,7 +130,7 @@ enum DashConnectPermissionText {
 
     /// What an approval gave the app, one line each, as its sheet listed it.
     static func granted(_ access: AppConnect.GrantedAccess, appLabel: String, tense: Tense = .present) -> [String] {
-        [NSLocalizedString("See your username", comment: "DashConnect")]
+        [String(localized: "See your username", comment: "DashConnect")]
             + access.keys.map {
                 key(bound: $0.bound, isCritical: $0.isCritical, totalBudget: $0.totalBudget, expiresAt: $0.expiresAt,
                     isAdministered: $0.isAdministered, appLabel: appLabel, tense: tense)
@@ -164,27 +148,19 @@ enum DashConnectPermissionText {
     }
 
     static func mayReceiveMessages(appLabel: String) -> String {
-        String(
-            format: NSLocalizedString(
-                "May receive messages encrypted to you in %@",
-                comment: "DashConnect App Connect v2: before approval, whether the app gets a key for messages is not known yet; the placeholder is the app's name"),
-            appLabel)
+        String(localized: "May receive messages encrypted to you in \(appLabel)", comment: "DashConnect App Connect v2: before approval, whether the app gets a key for messages is not known yet; the placeholder is the app's name")
     }
 
     static func receivesMessages(appLabel: String) -> String {
-        String(
-            format: NSLocalizedString(
-                "Receive messages encrypted to you in %@",
-                comment: "DashConnect App Connect v2: the placeholder is the app's name"),
-            appLabel)
+        String(localized: "Receive messages encrypted to you in \(appLabel)", comment: "DashConnect App Connect v2: the placeholder is the app's name")
     }
 
     /// What an App Connect v2 key never gives an app.
     static var withheld: [String] {
         [
-            NSLocalizedString("Your recovery phrase or wallet keys", comment: "DashConnect App Connect"),
-            NSLocalizedString("Your Dash balance", comment: "DashConnect App Connect"),
-            NSLocalizedString("Registering names or changing your keys", comment: "DashConnect App Connect v2"),
+            String(localized: "Your recovery phrase or wallet keys", comment: "DashConnect App Connect"),
+            String(localized: "Your Dash balance", comment: "DashConnect App Connect"),
+            String(localized: "Registering names or changing your keys", comment: "DashConnect App Connect v2"),
         ]
     }
 

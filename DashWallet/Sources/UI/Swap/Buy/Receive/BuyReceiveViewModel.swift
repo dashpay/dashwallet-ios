@@ -61,13 +61,13 @@ final class BuyReceiveViewModel: ObservableObject {
     var title: String {
         let network = SwapCryptoCurrency.chainDisplayName(coin.chain)
         guard !network.isEmpty else {
-            return String(format: NSLocalizedString("Send %@ to this address", comment: "Dash DEX"), coinCode)
+            return String(localized: "Send \(coinCode) to this address", comment: "Dash DEX")
         }
-        return String(format: NSLocalizedString("Send %@ (%@) to this address", comment: "Dash DEX"), coinCode, network)
+        return String(localized: "Send \(coinCode) (\(network)) to this address", comment: "Dash DEX")
     }
 
     var subtitle: String {
-        NSLocalizedString("Once the network confirms your transfer, we'll convert it to Dash and deposit it in your DashPay wallet", comment: "Dash DEX / dex_receive_description")
+        String(localized: "Once the network confirms your transfer, we'll convert it to Dash and deposit it in your DashPay wallet", comment: "Dash DEX / dex_receive_description")
     }
 
     var copyText: String {

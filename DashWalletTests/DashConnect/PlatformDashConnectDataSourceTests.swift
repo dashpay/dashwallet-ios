@@ -6928,8 +6928,8 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
         XCTAssertNil(viewModel.termsAppliedPlan)
         XCTAssertEqual(
             viewModel.approveDisabledReason,
-            NSLocalizedString(
-                "This expiry has passed. Pick another one, then approve.",
+            String(
+                localized: "This expiry has passed. Pick another one, then approve.",
                 comment: "DashConnect approve sheet: the chosen expiry is in the past"))
     }
 
@@ -7026,8 +7026,8 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
         XCTAssertNil(viewModel.termsAppliedPlan)
         XCTAssertEqual(
             viewModel.approveDisabledReason,
-            NSLocalizedString(
-                "This expiry has passed. Pick another one, then approve.",
+            String(
+                localized: "This expiry has passed. Pick another one, then approve.",
                 comment: "DashConnect approve sheet: the chosen expiry is in the past"))
         XCTAssertNotNil(viewModel.pendingRequest)
     }
@@ -7036,7 +7036,7 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
 
     func testABalanceRefusalOffersATopUpAndNoSecondApproval() async {
         let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
-        spy.approveFailures = [DashConnectPlatformError.networkRefused(code: AppConnect.identityInsufficientBalanceCode)]
+        spy.approveFailures = [DashConnectPlatformError.networkRefused(code: PlatformConsensusCode.identityInsufficientBalance)]
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, now: { Self.phone })
         viewModel.onQRScanned("login")
         await waitUntil { viewModel.pendingRequest != nil }

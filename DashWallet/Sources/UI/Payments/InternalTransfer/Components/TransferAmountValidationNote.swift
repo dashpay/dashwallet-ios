@@ -26,10 +26,10 @@ struct TransferAmountValidationNote: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 13))
+                .scaledSystemFont(size: 13, relativeTo: .footnote)
                 .foregroundColor(.orange)
             Text(message)
-                .font(.system(size: 13))
+                .scaledSystemFont(size: 13, relativeTo: .footnote)
                 .foregroundColor(.dash.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)

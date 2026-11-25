@@ -53,7 +53,7 @@ struct ApproveTokenPurchaseSheet: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
                         VStack(alignment: .leading, spacing: 6) {
-                            Text(NSLocalizedString("Approve token purchase?", comment: "DashConnect token purchase"))
+                            Text(String(localized: "Approve token purchase?", comment: "DashConnect token purchase"))
                                 .font(.title2)
                                 .foregroundColor(.primaryText)
 
@@ -68,11 +68,11 @@ struct ApproveTokenPurchaseSheet: View {
                                 value: request.tokenQuantity.text
                             )
                             DashConnectDetailRow(
-                                label: NSLocalizedString("Token ID", comment: "DashConnect token purchase"),
+                                label: String(localized: "Token ID", comment: "DashConnect token purchase"),
                                 value: DashConnectIdentifierFormatting.truncateMiddle(request.tokenId.toBase58String())
                             )
                             DashConnectDetailRow(
-                                label: NSLocalizedString("Maximum price", comment: "DashConnect token purchase"),
+                                label: String(localized: "Maximum price", comment: "DashConnect token purchase"),
                                 value: request.totalPriceDashText
                             )
                         }
@@ -82,8 +82,8 @@ struct ApproveTokenPurchaseSheet: View {
                         // settles at the price in force when the purchase lands,
                         // which can be lower. Saying "Total price" would promise an
                         // exactness the protocol does not give.
-                        Text(NSLocalizedString(
-                            "You pay up to this amount. The final price may be lower.",
+                        Text(String(
+                            localized: "You pay up to this amount. The final price may be lower.",
                             comment: "DashConnect token purchase"))
                             .font(.footnote)
                             .foregroundStyle(.secondary)
@@ -92,18 +92,18 @@ struct ApproveTokenPurchaseSheet: View {
                         detailBox {
                             if let walletUsername = request.walletUsername {
                                 DashConnectDetailRow(
-                                    label: NSLocalizedString("Username", comment: "DashConnect"),
+                                    label: String(localized: "Username", comment: "DashConnect"),
                                     value: walletUsername
                                 )
                             }
                             DashConnectDetailRow(
-                                label: NSLocalizedString("Identity", comment: "DashConnect"),
+                                label: String(localized: "Identity", comment: "DashConnect"),
                                 value: DashConnectIdentifierFormatting.truncateMiddle(request.walletIdentityId)
                             )
                         }
 
-                        Text(NSLocalizedString(
-                            "Approving pays the total price from this identity's Platform credits.",
+                        Text(String(
+                            localized: "Approving pays the total price from this identity's Platform credits.",
                             comment: "DashConnect token purchase"
                         ))
                         .font(.footnote)
@@ -124,7 +124,7 @@ struct ApproveTokenPurchaseSheet: View {
                     }
 
                     DashButton(
-                        text: NSLocalizedString("Approve", comment: "DashConnect"),
+                        text: String(localized: "Approve", comment: "DashConnect"),
                         style: .filledBlue,
                         size: .large,
                         stretch: true,
@@ -134,7 +134,7 @@ struct ApproveTokenPurchaseSheet: View {
                     )
 
                     DashButton(
-                        text: NSLocalizedString("Deny", comment: "DashConnect"),
+                        text: String(localized: "Deny", comment: "DashConnect"),
                         style: .tintedBlue,
                         size: .large,
                         stretch: true,
@@ -156,10 +156,7 @@ struct ApproveTokenPurchaseSheet: View {
         if let appName = request.appName?.trimmingCharacters(in: .whitespacesAndNewlines), !appName.isEmpty {
             return appName
         }
-        return String(
-            format: NSLocalizedString("Contract %@", comment: "DashConnect token purchase"),
-            DashConnectIdentifierFormatting.truncateMiddle(request.dataContractId.toBase58String())
-        )
+        return String(localized: "Contract \(DashConnectIdentifierFormatting.truncateMiddle(request.dataContractId.toBase58String()))", comment: "DashConnect token purchase")
     }
 
     /// Names the row for what the number actually is. A token's contract
@@ -168,7 +165,7 @@ struct ApproveTokenPurchaseSheet: View {
     /// overstate the quantity by up to the token's full denomination.
     private var tokenQuantityLabel: String {
         if request.tokenQuantity.isBaseUnits {
-            return NSLocalizedString("Tokens (base units)", comment: "DashConnect token purchase")
+            return String(localized: "Tokens (base units)", comment: "DashConnect token purchase")
         }
         // Trimmed first: a name of only whitespace is not a label, and using
         // it verbatim leaves the quantity row visually unlabelled.
@@ -176,7 +173,7 @@ struct ApproveTokenPurchaseSheet: View {
            !name.isEmpty {
             return name
         }
-        return NSLocalizedString("Tokens", comment: "DashConnect token purchase")
+        return String(localized: "Tokens", comment: "DashConnect token purchase")
     }
 
     private func detailBox(@ViewBuilder content: () -> some View) -> some View {

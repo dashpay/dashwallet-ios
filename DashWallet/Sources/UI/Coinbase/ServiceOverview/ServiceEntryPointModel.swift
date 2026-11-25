@@ -45,7 +45,7 @@ extension Service {
     var supportedFeatures: [SupportedFeature] {
         switch self {
         case .coinbase: return [
-                SupportedFeature(serviceName:NSLocalizedString("Buy Dash with fiat", comment: "Dash Service Overview"),
+                SupportedFeature(serviceName:String(localized: "Buy Dash with fiat", comment: "Dash Service Overview"),
                                  imageName:"service.BuyDashwithfiat"),
 
 // Disable per MO-103
@@ -53,16 +53,16 @@ extension Service {
 //                                                               comment: "Dash Service Overview"),
 //                                 imageName:"service.BuyAndConvertDash"),
 
-                SupportedFeature(serviceName:NSLocalizedString("Transfer Dash", comment: "Dash Service Overview"),
+                SupportedFeature(serviceName:String(localized: "Transfer Dash", comment: "Dash Service Overview"),
                                  imageName:"service.TransferDash",
-                                 serviceSubtitle: NSLocalizedString("Between Dash Wallet and your Coinbase account",
+                                 serviceSubtitle: String(localized: "Between Dash Wallet and your Coinbase account",
                                                                     comment: "Dash Service Overview")),
             ]
 
         case .uphold: return [
-                SupportedFeature(serviceName:NSLocalizedString("Transfer Dash", comment: "Dash Service Overview"),
+                SupportedFeature(serviceName:String(localized: "Transfer Dash", comment: "Dash Service Overview"),
                                  imageName:"service.TransferDash",
-                                 serviceSubtitle: NSLocalizedString("From Uphold to your Dash Wallet",
+                                 serviceSubtitle: String(localized: "From Uphold to your Dash Wallet",
                                                                     comment: "Dash Service Overview")),
             ]
             
@@ -74,8 +74,8 @@ extension Service {
 
     var entryTitle: String {
         switch self {
-        case .coinbase: return NSLocalizedString("Link your Coinbase account", comment: "Dash Service Overview")
-        case .uphold: return NSLocalizedString("Link your Uphold account", comment: "Dash Service Overview")
+        case .coinbase: return String(localized: "Link your Coinbase account", comment: "Dash Service Overview")
+        case .uphold: return String(localized: "Link your Uphold account", comment: "Dash Service Overview")
         case .topper: return ""
         case .maya: return ""
         case .swapKit: return ""
@@ -94,8 +94,8 @@ extension Service {
 
     var serviceButtonTitle: String {
         switch self {
-        case .coinbase: return NSLocalizedString("Link Coinbase Account", comment: "Dash Service Overview")
-        case .uphold: return NSLocalizedString("Link Uphold account", comment: "Dash Service Overview")
+        case .coinbase: return String(localized: "Link Coinbase Account", comment: "Dash Service Overview")
+        case .uphold: return String(localized: "Link Uphold account", comment: "Dash Service Overview")
         case .topper: return ""
         case .maya: return ""
         case .swapKit: return ""

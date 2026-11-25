@@ -267,6 +267,24 @@ final class ShieldedTransferCoordinator: ObservableObject {
         case alreadyConsumed
     }
 
+    /// Which record decided the recipient of the resume this coordinator ran
+    /// (`ShieldedResumeRecipient.Source`); nil before the recipient is decided
+    /// and for a resume refused before that. Cleared when a transfer starts
+    /// and on `reset()`.
+    private(set) var lastResumeRecipientSource: ShieldedResumeRecipient.Source?
+
+    /// The resume finished on Platform and paid the wallet's own Shielded
+    /// address because nothing recorded where its lock was going. A surface
+    /// that cannot know what the interrupted transfer was for reports this as
+    /// funds added to the Shielded balance, not as a completed transfer.
+    var resumePaidOwnBalanceWithoutRecord: Bool {
+        Self.resumePaidOwnBalanceWithoutRecord(phase: phase, source: lastResumeRecipientSource)
+    }
+
+    nonisolated static func resumePaidOwnBalanceWithoutRecord(phase: Phase, source: ShieldedResumeRecipient.Source?) -> Bool {
+        phase == .success && source == .ownLegacy
+    }
+
     private static let logger = Logger(
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.shielded-transfer")
@@ -354,87 +372,75 @@ final class ShieldedTransferCoordinator: ObservableObject {
         var errorDescription: String? {
             switch self {
             case .noWallet:
-                return NSLocalizedString("Wallet is not ready for transfer", comment: "InternalTransfer")
+                return String(localized: "Wallet is not ready for transfer", comment: "InternalTransfer")
             case .noNetwork:
-                return NSLocalizedString("Network is not configured", comment: "InternalTransfer")
+                return String(localized: "Network is not configured", comment: "InternalTransfer")
             case .noModelContainer:
-                return NSLocalizedString("Storage is not configured", comment: "InternalTransfer")
+                return String(localized: "Storage is not configured", comment: "InternalTransfer")
             case .noManager:
-                return NSLocalizedString("Platform wallet manager unavailable", comment: "InternalTransfer")
+                return String(localized: "Platform wallet manager unavailable", comment: "InternalTransfer")
             case .noShieldedAddress:
-                return NSLocalizedString("Shielded address is not bound for this wallet", comment: "InternalTransfer")
+                return String(localized: "Shielded address is not bound for this wallet", comment: "InternalTransfer")
             case .noReceiveAddress:
-                return NSLocalizedString("Could not resolve a destination wallet address", comment: "InternalTransfer")
+                return String(localized: "Could not resolve a destination wallet address", comment: "InternalTransfer")
             case .noPlatformAddress:
-                return NSLocalizedString("Could not resolve a destination Platform Payment address", comment: "InternalTransfer")
+                return String(localized: "Could not resolve a destination Platform Payment address", comment: "InternalTransfer")
             case .authCancelled:
-                return NSLocalizedString("Authentication cancelled", comment: "InternalTransfer")
+                return String(localized: "Authentication cancelled", comment: "InternalTransfer")
             case .authFailed:
-                return NSLocalizedString("Authentication failed", comment: "InternalTransfer")
+                return String(localized: "Authentication failed", comment: "InternalTransfer")
             case .shieldedBalanceUnavailable:
-                return NSLocalizedString("Shielded balance is unavailable. Try again after syncing.", comment: "Shielded transfer requires a known balance")
+                return String(localized: "Shielded balance is unavailable. Try again after syncing.", comment: "Shielded transfer requires a known balance")
             case .shieldedPoolFeeUnavailable:
-                return NSLocalizedString(
-                    "There was an error, please try again later",
+                return String(
+                    localized: "There was an error, please try again later",
                     comment: "Core to Shielded pool fee estimate unavailable")
             case .addressFundingFeeUnavailable:
-                return NSLocalizedString(
-                    "There was an error, please try again later",
+                return String(
+                    localized: "There was an error, please try again later",
                     comment: "Core to Platform funding fee estimate unavailable")
             case .platformShieldCapacityChanged(let maxShieldableCredits):
                 guard let maxShieldableCredits else {
-                    return NSLocalizedString(
-                        "Your available Platform balance changed, but the new maximum could not be checked. Return to the amount and try again.",
+                    return String(
+                        localized: "Your available Platform balance changed, but the new maximum could not be checked. Return to the amount and try again.",
                         comment: "Platform Shield capacity changed but refresh failed")
                 }
                 let maximum = (maxShieldableCredits / 1000)
                     .formattedDashAmountWithoutCurrencySymbol
-                return String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "Your available Platform balance changed. The new maximum is %@ DASH. Review and confirm the transfer again.",
-                        comment: "Platform Shield capacity changed before authorization"),
-                    maximum)
+                return String(localized: "Your available Platform balance changed. The new maximum is \(maximum) DASH. Review and confirm the transfer again.", comment: "Platform Shield capacity changed before authorization")
             case .shieldedSweepWaiting(let credits):
                 let formatted = (credits / 1000).formattedDashAmountWithoutCurrencySymbol
-                return String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "%@ DASH is still confirming. Try again once it settles.",
-                        comment: "Shielded sweep pending change"),
-                    formatted)
+                return String(localized: "\(formatted) DASH is still confirming. Try again once it settles.", comment: "Shielded sweep pending change")
             case .shieldedSweepChanged:
-                return NSLocalizedString(
-                    "Your Shielded balance changed. Close this confirmation and tap Max again.",
+                return String(
+                    localized: "Your Shielded balance changed. Close this confirmation and tap Max again.",
                     comment: "Shielded sweep changed before submit")
             case .shieldedAmountExceedsBundle(let ceiling):
                 let formatted = (ceiling / 1000).formattedDashAmountWithoutCurrencySymbol
-                return String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "Your Shielded balance is split across notes, and at most %@ DASH of it can be sent in one transaction.",
-                        comment: "Shielded amount above the single-transaction ceiling"),
-                    formatted)
+                return String(localized: "Your Shielded balance is split across notes, and at most \(formatted) DASH of it can be sent in one transaction.", comment: "Shielded amount above the single-transaction ceiling")
             case .coinJoinDrainRequiresSync:
-                return NSLocalizedString(
-                    "Your wallet is still syncing. Moving your mixed coins to Shielded will be available once it finishes.",
+                return String(
+                    localized: "Your wallet is still syncing. Moving your mixed coins to Shielded will be available once it finishes.",
                     comment: "CoinJoin drain blocked while the chain is syncing")
             case .assetLockInFlight:
-                return NSLocalizedString(
-                    "This transfer is still in progress. Check its status again in a few minutes.",
+                return String(
+                    localized: "This transfer is still in progress. Check its status again in a few minutes.",
                     comment: "A resume was refused because the same transfer is still running")
             case .walletReloading:
                 return ShieldedAssetLocksInFlight.walletReloadingMessage
             case .drainRecipientUnknown:
-                return NSLocalizedString(
-                    "This transfer was started by a Max operation this app can no longer identify, so it cannot be finished from here. Your funds remain locked and safe.",
+                return String(
+                    localized: "This transfer was started by a Max operation this app can no longer identify, so it cannot be finished from here. Your funds remain locked and safe.",
                     comment: "InternalTransfer recovery: drain recipient unknown")
             case .drainRecipientUnavailable:
-                return NSLocalizedString("Wallet unavailable. Try again.", comment: "Core drain")
+                return String(localized: "Wallet unavailable. Try again.", comment: "Core drain")
             case .resumeRecipientMismatch:
-                return NSLocalizedString(
-                    "This transfer can only be finished to the recipient it was started with. Nothing was sent. Your funds remain locked and safe.",
+                return String(
+                    localized: "This transfer can only be finished to the recipient it was started with. Nothing was sent. Your funds remain locked and safe.",
                     comment: "InternalTransfer recovery: resume recipient differs from the recorded one")
             case .drainBalanceChanged:
-                return NSLocalizedString(
-                    "Your Transparent balance changed after you reviewed this transfer. Go back and tap Max again.",
+                return String(
+                    localized: "Your Transparent balance changed after you reviewed this transfer. Go back and tap Max again.",
                     comment: "Send: external Max drain, balance grew before confirm")
             case .transferFailed(let underlying):
                 return underlying.localizedDescription
@@ -876,9 +882,10 @@ final class ShieldedTransferCoordinator: ObservableObject {
     /// asset lock (which is what a fresh `performAssetLock` would do, stranding
     /// the first). The recipient is the one the original attempt was built
     /// for, resolved by `ShieldedResumeRecipient`: the recipient the SDK
-    /// recorded on the lock's row, or — for a row tracked before the SDK
-    /// recorded recipients — the Max drain marker's, the caller's
-    /// `recipientRaw43`, or the wallet's own default shielded address. The
+    /// recorded on the lock's row, or — for a row with no recorded recipient
+    /// — the Max drain marker's, the caller's `recipientRaw43`, or the
+    /// wallet's own default shielded address
+    /// (`lastResumeRecipientSource` says which). The
     /// SDK re-derives an identical `shield_amount` from the on-chain lock
     /// value, so a resume cannot desync funds and is safe to retry.
     /// Re-authorizes — this moves real funds.
@@ -981,8 +988,8 @@ final class ShieldedTransferCoordinator: ObservableObject {
 
         // Every resume's recipient is decided here, whichever surface asked,
         // before the PIN prompt so a refusal asks for nothing. The SDK pays
-        // only the recipient it recorded on the row; a row tracked before it
-        // recorded one falls back to the Max drain marker, the caller's
+        // only the recipient it recorded on the row; a row with no recorded
+        // recipient falls back to the Max drain marker, the caller's
         // recipient, then the wallet's own address (`ShieldedResumeRecipient`).
         guard let row = Self.resumeRow(
             outPointTxidWire: outPointTxidWire, vout: outPointVout,
@@ -1028,6 +1035,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         switch resolution {
         case .pay(let raw43, let source):
             Self.logger.info("🛡️ SHIELD-TX :: resume recipient=\(source.rawValue, privacy: .public)")
+            lastResumeRecipientSource = source
             recipientRaw43 = raw43
         case .refuse(let refusal):
             Self.logger.error("🛡️ SHIELD-TX :: resume refused — recipient \(String(describing: refusal), privacy: .public)")
@@ -1979,6 +1987,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
         lastAssetLockOutPoint = nil
         lastAssetLockContext = nil
         lastFailure = nil
+        lastResumeRecipientSource = nil
         lastResumeReport = nil
         phase = .idle
     }
@@ -2065,6 +2074,7 @@ final class ShieldedTransferCoordinator: ObservableObject {
             return false
         }
         lastFailure = nil
+        lastResumeRecipientSource = nil
         lastResumeReport = nil
         phase = .signing
         return true

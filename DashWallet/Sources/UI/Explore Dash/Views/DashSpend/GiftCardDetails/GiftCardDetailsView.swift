@@ -131,7 +131,7 @@ struct GiftCardDetailsView: View {
             onOpenTransaction?(transaction)
         }) {
             HStack {
-                Text(NSLocalizedString("View transaction details", comment: "DashSpend"))
+                Text(String(localized: "View transaction details", comment: "DashSpend"))
                     .font(.subheadMedium)
                     .foregroundColor(.dash.primaryText)
 
@@ -159,7 +159,7 @@ struct GiftCardDetailsView: View {
                         showHowToUse = true
                     }
                 }) {
-                    Text(NSLocalizedString("See how to use this gift card", comment: "DashSpend"))
+                    Text(String(localized: "See how to use this gift card", comment: "DashSpend"))
                         .font(.subheadMedium)
                         .foregroundColor(.dash.blue)
                 }
@@ -197,7 +197,7 @@ struct GiftCardDetailsView: View {
             .first
         let keyWindow = windowScene?.windows.first(where: { $0.isKeyWindow }) ?? windowScene?.windows.first
         keyWindow?.rootViewController?.topController().view
-            .dw_showInfoHUD(withText: NSLocalizedString("Copied", comment: ""))
+            .dw_showInfoHUD(withText: String(localized: "Copied", comment: ""))
     }
     
     private func setMaxBrightness(_ enable: Bool) {

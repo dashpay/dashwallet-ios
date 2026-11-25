@@ -81,13 +81,13 @@ struct DashSpendConfirmationDialog: View {
         } buttons: {
             VStack(spacing: 10) {
                 DashButton(
-                    text: NSLocalizedString("Confirm", comment: "DashSpend"),
+                    text: String(localized: "Confirm", comment: "DashSpend"),
                     isLoading: isWaiting,
                     action: onConfirm
                 )
 
                 DashButton(
-                    text: NSLocalizedString("Cancel", comment: "DashSpend"),
+                    text: String(localized: "Cancel", comment: "DashSpend"),
                     isEnabled: !isWaiting,
                     action: onCancel
                 )
@@ -99,19 +99,19 @@ struct DashSpendConfirmationDialog: View {
 
     private var details: some View {
         VStack(alignment: .leading, spacing: 2) {
-            detailsRow(title: NSLocalizedString("From", comment: "DashSpend")) {
+            detailsRow(title: String(localized: "From", comment: "DashSpend")) {
                 HStack(spacing: 8) {
                     Image("image.explore.dash.wts.dash")
                         .resizable()
                         .frame(width: 20, height: 20)
                         .clipShape(RoundedRectangle(cornerRadius: 7))
-                    Text(NSLocalizedString("Dash Wallet", comment: "DashSpend"))
+                    Text(String(localized: "Dash Wallet", comment: "DashSpend"))
                         .font(.subhead)
                         .foregroundColor(.dash.primaryText)
                 }
             }
 
-            detailsRow(title: NSLocalizedString("To", comment: "DashSpend")) {
+            detailsRow(title: String(localized: "To", comment: "DashSpend")) {
                 HStack(spacing: 8) {
                     // The placeholder stands in while loading and on failure, so a
                     // missing or broken icon URL still shows the merchant's initials.
@@ -136,14 +136,14 @@ struct DashSpendConfirmationDialog: View {
                 }
             }
 
-            detailsRow(title: NSLocalizedString("Gift card total", comment: "DashSpend")) {
+            detailsRow(title: String(localized: "Gift card total", comment: "DashSpend")) {
                 Text(fiatFormatter.string(from: NSDecimalNumber(decimal: originalPrice)) ?? "")
                     .font(.subhead)
                     .foregroundColor(.dash.primaryText)
             }
 
             if !quantityLines.isEmpty {
-                detailsRow(title: NSLocalizedString("Quantity", comment: "DashSpend")) {
+                detailsRow(title: String(localized: "Quantity", comment: "DashSpend")) {
                     VStack(alignment: .trailing, spacing: 2) {
                         ForEach(quantityLines, id: \.self) { line in
                             Text(line)
@@ -154,13 +154,13 @@ struct DashSpendConfirmationDialog: View {
                 }
             }
 
-            detailsRow(title: NSLocalizedString("Discount", comment: "DashSpend")) {
+            detailsRow(title: String(localized: "Discount", comment: "DashSpend")) {
                 Text(PercentageFormatter.format(percent: NSDecimalNumber(decimal: discount * 100).doubleValue))
                     .font(.subhead)
                     .foregroundColor(.dash.primaryText)
             }
 
-            detailsRow(title: NSLocalizedString("You pay", comment: "DashSpend")) {
+            detailsRow(title: String(localized: "You pay", comment: "DashSpend")) {
                 VStack(alignment: .trailing, spacing: 2) {
                     Text(fiatFormatter.string(from: NSDecimalNumber(decimal: youPayAmount)) ?? "")
                         .font(.subhead)
@@ -258,7 +258,7 @@ struct DashSpendDashFigure: View {
         }
         .foregroundColor(color)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(String(format: NSLocalizedString("%@ DASH", comment: "DashSpend: a Dash amount read by VoiceOver"), text))
+        .accessibilityLabel(String(localized: "\(text) DASH", comment: "DashSpend: a Dash amount read by VoiceOver"))
     }
 }
 
@@ -304,12 +304,12 @@ private struct DashSpendConfirmationDialogPreview: View {
 
     var body: some View {
         VStack {
-            Text("Tap to open")
+            Text(verbatim: "Tap to open")
                 .onTapGesture { isPresented = true }
         }
         .sheet(isPresented: $isPresented) {
             DashUIKit.BottomSheet.selfSizing(
-                title: NSLocalizedString("Confirm", comment: "DashSpend"),
+                title: String(localized: "Confirm", comment: "DashSpend"),
                 showBackButton: .constant(false),
                 fallback: DashSpendConfirmationDialog.sheetFallbackHeight,
                 cornerRadius: 32

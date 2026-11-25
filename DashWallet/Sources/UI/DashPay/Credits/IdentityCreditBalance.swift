@@ -85,11 +85,11 @@ extension UIViewController {
             _ = await showModalDialog(
                 style: .warning,
                 icon: .system("exclamationmark.triangle.fill"),
-                heading: NSLocalizedString("Platform credits error", comment: "Credits"),
-                textBlock1: NSLocalizedString(
-                    "Your credit balance could not be read. Check your connection and try again.",
+                heading: String(localized: "Platform credits error", comment: "Credits"),
+                textBlock1: String(
+                    localized: "Your credit balance could not be read. Check your connection and try again.",
                     comment: "Credits"),
-                positiveButtonText: NSLocalizedString("OK", comment: ""))
+                positiveButtonText: String(localized: "OK", comment: ""))
             return .stop
         }
 
@@ -99,17 +99,17 @@ extension UIViewController {
             style: .warning,
             icon: .system("exclamationmark.triangle.fill"),
             heading: balance.isEmpty
-                ? NSLocalizedString("Your credit balance has been fully depleted", comment: "Credits")
-                : NSLocalizedString("Your credit balance is low", comment: "Credits"),
+                ? String(localized: "Your credit balance has been fully depleted", comment: "Credits")
+                : String(localized: "Your credit balance is low", comment: "Credits"),
             textBlock1: balance.isEmpty
-                ? NSLocalizedString(
-                    "You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance",
+                ? String(
+                    localized: "You can continue to use DashPay for payments but you cannot update your profile or add more contacts until you top up your credit balance",
                     comment: "Credits")
-                : NSLocalizedString(
-                    "Top-up your credits to continue making changes to your profile and adding contacts",
+                : String(
+                    localized: "Top-up your credits to continue making changes to your profile and adding contacts",
                     comment: "Credits"),
-            positiveButtonText: NSLocalizedString("Buy credits", comment: ""),
-            negativeButtonText: NSLocalizedString("Maybe later", comment: ""))
+            positiveButtonText: String(localized: "Buy credits", comment: ""),
+            negativeButtonText: String(localized: "Maybe later", comment: ""))
 
         if buysCredits {
             // Answered here, presented by the caller. This screen is dismissed

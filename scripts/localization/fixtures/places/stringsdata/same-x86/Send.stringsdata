@@ -1,0 +1,37 @@
+{
+  "source": "__REPO__/DashWallet/Sources/Send.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "key": "Cancel",
+        "location": {
+          "startingColumn": 37,
+          "startingLine": 4
+        }
+      },
+      {
+        "key": "Send",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 4
+        }
+      },
+      {
+        "comment": "greeting",
+        "key": "Hello",
+        "location": {
+          "startingColumn": 48,
+          "startingLine": 6
+        }
+      },
+      {
+        "key": "%d coins",
+        "location": {
+          "startingColumn": 71,
+          "startingLine": 7
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -175,7 +175,7 @@ struct TransferEndpointCards: View {
             icon: display.icon,
             title: display.title,
             dashBalance: display.dashBalance ?? 0,
-            trailingView: display.dashBalance == nil ? AnyView(Text("—")) : nil,
+            trailingView: display.dashBalance == nil ? AnyView(Text(verbatim: "—")) : nil,
             onTap: onTap)
     }
 
@@ -195,7 +195,7 @@ struct TransferEndpointCards: View {
             icon: display.icon,
             title: display.title,
             dashBalance: display.dashBalance ?? 0,
-            trailingView: display.dashBalance == nil ? AnyView(Text("—")) : nil,
+            trailingView: display.dashBalance == nil ? AnyView(Text(verbatim: "—")) : nil,
             onTap: onTap)
     }
 

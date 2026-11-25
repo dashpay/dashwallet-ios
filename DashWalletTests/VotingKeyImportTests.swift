@@ -118,11 +118,11 @@ final class VotingKeyImportTests: XCTestCase {
     // MARK: AC-13 refusals
 
     private var invalidKeyMessage: String {
-        NSLocalizedString("You have entered an invalid key", comment: "Voting")
+        String(localized: "You have entered an invalid key", comment: "Voting")
     }
 
     private var noActiveMasternodeMessage: String {
-        NSLocalizedString("You have entered a key that is not associated to an active Masternode", comment: "Voting")
+        String(localized: "You have entered a key that is not associated to an active Masternode", comment: "Voting")
     }
 
     private func assertNothingStored(file: StaticString = #filePath, line: UInt = #line) {
