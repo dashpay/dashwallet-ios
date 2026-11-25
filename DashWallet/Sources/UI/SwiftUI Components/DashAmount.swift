@@ -25,7 +25,7 @@ struct DashAmount: View {
     
     var body: some View {
         if amount == Int64.max || amount == Int64.min {
-            Text(NSLocalizedString("Not available", comment: ""))
+            Text(String(localized: "Not available", comment: ""))
                 .font(font)
                 .fontWeight(.medium)
         } else {

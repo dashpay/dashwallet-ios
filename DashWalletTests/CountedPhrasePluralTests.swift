@@ -26,8 +26,8 @@ import XCTest
 /// runs on a fixture entry under the same key.
 final class CountedPhrasePluralTests: XCTestCase {
     private let continueKey = "Continue with %1$d vote(s) across %2$d username(s)?"
-    private let attemptsLeftKey = "%ld attempt(s) left before your wallet is disabled"
-    private let attemptsRemainingKey = "%ld attempt(s) remaining"
+    private let attemptsLeftKey = "%lld attempt(s) left before your wallet is disabled"
+    private let attemptsRemainingKey = "%lld attempt(s) remaining"
 
     // MARK: English, real catalog
 
@@ -60,10 +60,10 @@ final class CountedPhrasePluralTests: XCTestCase {
     func testCoinJoinWithdrawalCountsInEnglish() throws {
         let bundle = try appLocalization("en")
 
-        XCTAssertEqual(format("%d transaction(s)", in: bundle, locale: "en", 1), "1 transaction")
-        XCTAssertEqual(format("%d transaction(s)", in: bundle, locale: "en", 2), "2 transactions")
-        XCTAssertEqual(format("%d UTXOs", in: bundle, locale: "en", 1), "1 UTXO")
-        XCTAssertEqual(format("%d UTXOs", in: bundle, locale: "en", 22), "22 UTXOs")
+        XCTAssertEqual(format("%lld transaction(s)", in: bundle, locale: "en", 1), "1 transaction")
+        XCTAssertEqual(format("%lld transaction(s)", in: bundle, locale: "en", 2), "2 transactions")
+        XCTAssertEqual(format("%lld UTXOs", in: bundle, locale: "en", 1), "1 UTXO")
+        XCTAssertEqual(format("%lld UTXOs", in: bundle, locale: "en", 22), "22 UTXOs")
     }
 
     func testVotingSummariesPickTheNounByTheTotalInEnglish() throws {
@@ -93,17 +93,17 @@ final class CountedPhrasePluralTests: XCTestCase {
         let path = try XCTUnwrap(bundle.path(forResource: "Localizable", ofType: "stringsdict"))
         let entries = try XCTUnwrap(NSDictionary(contentsOfFile: path) as? [String: Any])
 
-        for key in ["%d votes will be cast", "The other %d votes were not cast.", "%ld days"] {
+        for key in ["%lld votes will be cast", "The other %lld votes were not cast.", "%lld days"] {
             XCTAssertNotNil(entries[key], "\(key) is not on the plural list")
         }
-        XCTAssertEqual(format("%d votes will be cast", in: bundle, locale: "en", 1), "1 vote will be cast")
-        XCTAssertEqual(format("%d votes will be cast", in: bundle, locale: "en", 22), "22 votes will be cast")
-        XCTAssertEqual(format("The other %d votes were not cast.", in: bundle, locale: "en", 1),
+        XCTAssertEqual(format("%lld votes will be cast", in: bundle, locale: "en", 1), "1 vote will be cast")
+        XCTAssertEqual(format("%lld votes will be cast", in: bundle, locale: "en", 22), "22 votes will be cast")
+        XCTAssertEqual(format("The other %lld votes were not cast.", in: bundle, locale: "en", 1),
                        "The other vote was not cast.")
-        XCTAssertEqual(format("The other %d votes were not cast.", in: bundle, locale: "en", 5),
+        XCTAssertEqual(format("The other %lld votes were not cast.", in: bundle, locale: "en", 5),
                        "The other 5 votes were not cast.")
-        XCTAssertEqual(format("%ld days", in: bundle, locale: "en", arguments: [1]), "1 day")
-        XCTAssertEqual(format("%ld days", in: bundle, locale: "en", arguments: [30]), "30 days")
+        XCTAssertEqual(format("%lld days", in: bundle, locale: "en", arguments: [1]), "1 day")
+        XCTAssertEqual(format("%lld days", in: bundle, locale: "en", arguments: [30]), "30 days")
     }
 
     /// Every English plural entry, formatted with 1 and with 2, fills all its
@@ -148,8 +148,8 @@ final class CountedPhrasePluralTests: XCTestCase {
 
     // MARK: Helpers
 
-    /// The same lookup and formatting the app does with `NSLocalizedString` and
-    /// `String.localizedStringWithFormat`, with the language pinned.
+    /// The compiled table text formatted the way `String(localized:)` formats an
+    /// interpolation, with the language pinned.
     private func format(_ key: String, in bundle: Bundle, locale: String, _ args: CVarArg...) -> String {
         format(key, in: bundle, locale: locale, arguments: args)
     }
@@ -162,7 +162,7 @@ final class CountedPhrasePluralTests: XCTestCase {
     /// One argument per marker of the key, in argument order: `count` for
     /// numbers, a word for `%@`.
     private func arguments(for key: String, count: Int) -> [CVarArg] {
-        let regex = try! NSRegularExpression(pattern: "%(?:(\\d+)\\$)?(l?[du]|@)")
+        let regex = try! NSRegularExpression(pattern: "%(?:(\\d+)\\$)?(l{0,2}[du]|@)")
         let matches = regex.matches(in: key, range: NSRange(key.startIndex..., in: key))
         let markers = matches.enumerated().map { offset, match -> (position: Int, type: String) in
             let position = Range(match.range(at: 1), in: key).flatMap { Int(key[$0]) } ?? offset + 1
@@ -171,7 +171,7 @@ final class CountedPhrasePluralTests: XCTestCase {
         let args = markers.sorted { $0.position < $1.position }.map { marker -> CVarArg in
             switch marker.type {
             case "@": return "word"
-            case "u", "lu": return UInt(count)
+            case "u", "lu", "llu": return UInt(count)
             default: return count
             }
         }

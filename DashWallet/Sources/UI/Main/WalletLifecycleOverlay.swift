@@ -355,10 +355,10 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
     /// export; with no PIN on record the export fails closed.
     func exportDiagnosticLogs(authenticated: Bool = false) {
         guard !isBusy else { return }
-        let title = NSLocalizedString("Export Logs", comment: "Log export")
+        let title = String(localized: "Export Logs", comment: "Log export")
         if authenticated,
-           !requirePin(for: title, message: NSLocalizedString(
-               "Unlock with your wallet PIN to export logs.", comment: "Log export")) {
+           !requirePin(for: title, message: String(
+               localized: "Unlock with your wallet PIN to export logs.", comment: "Log export")) {
             return
         }
         isExportingLogs = true
@@ -370,7 +370,7 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
                     self.isExportingLogs = false
                     if outcome != .cancelled {
                         self.actionFailure = ActionFailure(
-                            title: title, message: NSLocalizedString("Authentication failed", comment: ""))
+                            title: title, message: String(localized: "Authentication failed", comment: ""))
                     }
                     return
                 }
@@ -398,8 +398,8 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
     func backupRecoveryPhrase() {
         guard !isBusy,
               requirePin(
-                  for: NSLocalizedString("Backup recovery phrase", comment: "Wallet preparation"),
-                  message: NSLocalizedString("Unlock with your wallet PIN to continue.", comment: "Wallet preparation"))
+                  for: String(localized: "Backup recovery phrase", comment: "Wallet preparation"),
+                  message: String(localized: "Unlock with your wallet PIN to continue.", comment: "Wallet preparation"))
         else { return }
         recoveryPhraseFlow.beginGlobal()
     }
@@ -430,10 +430,10 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
     /// or a failure card with the current diagnostic.
     func resetWalletData() {
         guard !isBusy, canResetWalletData else { return }
-        let title = NSLocalizedString("Reset wallet data and rescan", comment: "Wallet preparation")
+        let title = String(localized: "Reset wallet data and rescan", comment: "Wallet preparation")
         guard requirePin(
             for: title,
-            message: NSLocalizedString("Unlock with your wallet PIN to continue.", comment: "Wallet preparation"))
+            message: String(localized: "Unlock with your wallet PIN to continue.", comment: "Wallet preparation"))
         else { return }
         Task { [weak self] in
             guard let self else { return }
@@ -441,7 +441,7 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
             guard outcome == .ok else {
                 if outcome != .cancelled {
                     self.actionFailure = ActionFailure(
-                        title: title, message: NSLocalizedString("Authentication failed", comment: ""))
+                        title: title, message: String(localized: "Authentication failed", comment: ""))
                 }
                 return
             }
@@ -454,16 +454,16 @@ final class WalletLifecycleOverlayViewModel: ObservableObject {
             } catch WalletLocalStoreResetError.restartRequired, WalletLocalStoreResetError.storesStillInUse {
                 self.actionFailure = ActionFailure(
                     title: title,
-                    message: NSLocalizedString(
-                        "Close and reopen the app, then try resetting wallet data again. This session may still have background tasks using the wallet files. No wallet data was deleted.",
+                    message: String(
+                        localized: "Close and reopen the app, then try resetting wallet data again. This session may still have background tasks using the wallet files. No wallet data was deleted.",
                         comment: "Wallet preparation: reset requires a fresh process"))
             } catch {
                 // Deletion stopped at an item; nothing was reopened and the
                 // card is unchanged, so Reset and Try Again stay available.
                 self.actionFailure = ActionFailure(
                     title: title,
-                    message: NSLocalizedString(
-                        "The wallet data on this device could not be reset. Try again or contact support for help.",
+                    message: String(
+                        localized: "The wallet data on this device could not be reset. Try again or contact support for help.",
                         comment: "Wallet preparation"))
             }
             self.resetPending = false
@@ -534,16 +534,16 @@ struct WalletLifecycleOverlayView: View {
                 EmptyView()
             case .resettingLocalStores:
                 progressCard(
-                    title: NSLocalizedString("Resetting wallet data…", comment: "Wallet preparation"),
-                    subtitle: NSLocalizedString("Please keep the app open.", comment: "Wallet preparation"))
+                    title: String(localized: "Resetting wallet data…", comment: "Wallet preparation"),
+                    subtitle: String(localized: "Please keep the app open.", comment: "Wallet preparation"))
             case .openingWallet, .migratingLegacyWallet:
                 progressCard(
-                    title: NSLocalizedString("Preparing your wallet…", comment: "Wallet preparation"),
-                    subtitle: NSLocalizedString("Please keep the app open.", comment: "Wallet preparation"))
+                    title: String(localized: "Preparing your wallet…", comment: "Wallet preparation"),
+                    subtitle: String(localized: "Please keep the app open.", comment: "Wallet preparation"))
             case let .failedWalletOpen(failure):
                 card {
                     failureHeader(title: failure.title, message: failure.message)
-                    actionButton(NSLocalizedString("Try Again", comment: ""), prominent: true) {
+                    actionButton(String(localized: "Try Again", comment: ""), prominent: true) {
                         viewModel.retryWalletOpen()
                     }
                     .disabled(viewModel.isBusy)
@@ -554,7 +554,7 @@ struct WalletLifecycleOverlayView: View {
                 // No Create/Recover here: the wallet is still in the keychain.
                 card {
                     failureHeader(title: failure.title, message: failure.message)
-                    actionButton(NSLocalizedString("Try Again", comment: ""), prominent: true) {
+                    actionButton(String(localized: "Try Again", comment: ""), prominent: true) {
                         viewModel.retryLegacyMigration()
                     }
                     .disabled(viewModel.isExportingLogs)
@@ -562,42 +562,38 @@ struct WalletLifecycleOverlayView: View {
                 }
             case let .switchingNetwork(_, to):
                 progressCard(
-                    title: String(
-                        format: NSLocalizedString("Switching to %@…", comment: "Network switch overlay"),
-                        WalletEnvironment.displayName(of: to)),
-                    subtitle: NSLocalizedString(
-                        "Preparing the wallet on the selected network…",
+                    title: String(localized: "Switching to \(WalletEnvironment.displayName(of: to))…", comment: "Network switch overlay"),
+                    subtitle: String(
+                        localized: "Preparing the wallet on the selected network…",
                         comment: "Network switch overlay"))
             case let .switchingWallet(targetName):
                 progressCard(
-                    title: NSLocalizedString("Switching wallet…", comment: "Wallets"),
+                    title: String(localized: "Switching wallet…", comment: "Wallets"),
                     subtitle: targetName)
             case .removingWallet:
                 progressCard(
-                    title: NSLocalizedString("Removing wallet…", comment: "Wallets"),
+                    title: String(localized: "Removing wallet…", comment: "Wallets"),
                     subtitle: nil)
             case let .addingWallet(isImport):
                 progressCard(
                     title: isImport
-                        ? NSLocalizedString("Importing wallet…", comment: "Wallets")
-                        : NSLocalizedString("Creating wallet…", comment: "Wallets"),
-                    subtitle: NSLocalizedString(
-                        "Preparing your wallet. This may take a few seconds.",
+                        ? String(localized: "Importing wallet…", comment: "Wallets")
+                        : String(localized: "Creating wallet…", comment: "Wallets"),
+                    subtitle: String(
+                        localized: "Preparing your wallet. This may take a few seconds.",
                         comment: "Wallets"))
             case let .wiping(title):
                 // Falls back to the Delete All copy — the same key the root
                 // controller's HUD used, so translations carry over.
                 progressCard(
-                    title: title ?? NSLocalizedString("Deleting All Wallets…", comment: ""),
+                    title: title ?? String(localized: "Deleting All Wallets…", comment: ""),
                     subtitle: nil)
             case let .failedNetworkSwitch(from, target, message):
                 card {
                     preparationFailureHeader(
-                        title: String(
-                            format: NSLocalizedString("Switching to %@ failed", comment: "Network switch overlay"),
-                            WalletEnvironment.displayName(of: target)),
+                        title: String(localized: "Switching to \(WalletEnvironment.displayName(of: target)) failed", comment: "Network switch overlay"),
                         message: message)
-                    actionButton(NSLocalizedString("Retry", comment: ""), prominent: true) {
+                    actionButton(String(localized: "Retry", comment: ""), prominent: true) {
                         viewModel.retryNetworkSwitch(to: target)
                     }
                     .disabled(viewModel.isBusy)
@@ -605,7 +601,7 @@ struct WalletLifecycleOverlayView: View {
                     // switch began, so a way back must exist even when the
                     // destination keeps failing.
                     if from != target {
-                        actionButton(NSLocalizedString("Switch Back", comment: "Wallets"), prominent: false) {
+                        actionButton(String(localized: "Switch Back", comment: "Wallets"), prominent: false) {
                             viewModel.retryNetworkSwitch(to: from)
                         }
                         .disabled(viewModel.isBusy)
@@ -616,14 +612,14 @@ struct WalletLifecycleOverlayView: View {
             case let .failedWalletSwitch(targetId, targetName, previousId, message):
                 card {
                     preparationFailureHeader(
-                        title: NSLocalizedString("Switching wallet failed", comment: "Wallets"),
+                        title: String(localized: "Switching wallet failed", comment: "Wallets"),
                         message: message)
-                    actionButton(NSLocalizedString("Retry", comment: ""), prominent: true) {
+                    actionButton(String(localized: "Retry", comment: ""), prominent: true) {
                         viewModel.retryWalletSwitch(to: targetId, targetName: targetName)
                     }
                     .disabled(viewModel.isExportingLogs)
                     if let previousId {
-                        actionButton(NSLocalizedString("Switch Back", comment: "Wallets"), prominent: false) {
+                        actionButton(String(localized: "Switch Back", comment: "Wallets"), prominent: false) {
                             viewModel.switchBack(to: previousId)
                         }
                         .disabled(viewModel.isExportingLogs)
@@ -633,9 +629,9 @@ struct WalletLifecycleOverlayView: View {
             case let .failedWalletRemoval(message):
                 card {
                     failureHeader(
-                        title: NSLocalizedString("Removing wallet failed", comment: "Wallets"),
+                        title: String(localized: "Removing wallet failed", comment: "Wallets"),
                         message: message)
-                    actionButton(NSLocalizedString("OK", comment: ""), prominent: true) {
+                    actionButton(String(localized: "OK", comment: ""), prominent: true) {
                         viewModel.dismissRemovalFailure()
                     }
                 }
@@ -656,21 +652,21 @@ struct WalletLifecycleOverlayView: View {
             get: { viewModel.actionFailure != nil },
             set: { if !$0 { viewModel.actionFailure = nil } }
         )) {
-            Button(NSLocalizedString("OK", comment: "")) { viewModel.actionFailure = nil }
+            Button(String(localized: "OK", comment: "")) { viewModel.actionFailure = nil }
         } message: {
             Text(viewModel.actionFailure?.message ?? "")
         }
         .alert(
-            NSLocalizedString("Reset wallet data and rescan?", comment: "Wallet preparation"),
+            String(localized: "Reset wallet data and rescan?", comment: "Wallet preparation"),
             isPresented: $viewModel.isConfirmingReset
         ) {
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {}
-            Button(NSLocalizedString("Reset and Rescan", comment: "Wallet preparation"), role: .destructive) {
+            Button(String(localized: "Cancel", comment: ""), role: .cancel) {}
+            Button(String(localized: "Reset and Rescan", comment: "Wallet preparation"), role: .destructive) {
                 viewModel.resetWalletData()
             }
         } message: {
-            Text(NSLocalizedString(
-                "Resets local wallet data for every network. Your wallet keys stay on this device, and a full rescan restores your funds and transaction history. Custom wallet names and manually tracked masternodes and their labels must be recreated; a recovery phrase backup does not preserve them. The rescan can take a while.",
+            Text(String(
+                localized: "Resets local wallet data for every network. Your wallet keys stay on this device, and a full rescan restores your funds and transaction history. Custom wallet names and manually tracked masternodes and their labels must be recreated; a recovery phrase backup does not preserve them. The rescan can take a while.",
                 comment: "Wallet preparation"))
         }
         .recoveryPhraseFlowAlert(viewModel.recoveryPhraseFlow)
@@ -681,13 +677,13 @@ struct WalletLifecycleOverlayView: View {
     /// only when the record and the keychain inventory allow it.
     @ViewBuilder
     private var walletRecoveryActions: some View {
-        actionButton(NSLocalizedString("Backup recovery phrase", comment: "Wallet preparation"), prominent: false) {
+        actionButton(String(localized: "Backup recovery phrase", comment: "Wallet preparation"), prominent: false) {
             viewModel.backupRecoveryPhrase()
         }
         .disabled(viewModel.isBusy)
         if viewModel.canResetWalletData {
             actionButton(
-                NSLocalizedString("Reset wallet data and rescan", comment: "Wallet preparation"),
+                String(localized: "Reset wallet data and rescan", comment: "Wallet preparation"),
                 prominent: false, role: .destructive
             ) {
                 viewModel.requestResetWalletData()
@@ -704,14 +700,14 @@ struct WalletLifecycleOverlayView: View {
     private func preparationHelp(authenticatedExport: Bool) -> some View {
         if viewModel.preparationFailure != nil {
             if viewModel.isExportingLogs {
-                SwiftUI.ProgressView(NSLocalizedString("Preparing logs…", comment: "Log export progress"))
+                SwiftUI.ProgressView(String(localized: "Preparing logs…", comment: "Log export progress"))
             } else {
-                actionButton(NSLocalizedString("Export Logs", comment: "Log export"), prominent: false) {
+                actionButton(String(localized: "Export Logs", comment: "Log export"), prominent: false) {
                     viewModel.exportDiagnosticLogs(authenticated: authenticatedExport)
                 }
                 .disabled(viewModel.isBusy)
             }
-            actionButton(NSLocalizedString("Help", comment: ""), prominent: false) {
+            actionButton(String(localized: "Help", comment: ""), prominent: false) {
                 viewModel.showPreparationHelp()
             }
             .disabled(viewModel.isBusy)

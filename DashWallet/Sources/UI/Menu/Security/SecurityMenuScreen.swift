@@ -48,7 +48,7 @@ struct SecurityMenuScreen: View {
                 }
             })
 
-            TopIntro(title: NSLocalizedString("Security", comment: ""))
+            TopIntro(title: String(localized: "Security", comment: ""))
                 .padding(.leading, 20)
                 .padding(.trailing, 60)
                 .padding(.top, 10)
@@ -93,57 +93,57 @@ struct SecurityMenuScreen: View {
         .onReceive(recoveryPhraseFlow.$navigationEvent.compactMap { $0 }) { event in
             handleRecoveryPhraseNavigation(event)
         }
-        .alert(NSLocalizedString("Biometrics Access Required", comment: ""), isPresented: $showBiometricsAlert) {
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
-            Button(NSLocalizedString("Settings", comment: "")) {
+        .alert(String(localized: "Biometrics Access Required", comment: ""), isPresented: $showBiometricsAlert) {
+            Button(String(localized: "Cancel", comment: ""), role: .cancel) { }
+            Button(String(localized: "Settings", comment: "")) {
                 openAppSettings()
             }
         } message: {
             Text(biometricsAlertMessage)
         }
         .alert(
-            NSLocalizedString("Multiple Wallets Found", comment: "Security — reset wallet"),
+            String(localized: "Multiple Wallets Found", comment: "Security — reset wallet"),
             isPresented: $showMultipleWalletsResetAlert
         ) {
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
-            Button(NSLocalizedString("Open Wallets", comment: "Security — reset wallet")) {
+            Button(String(localized: "Cancel", comment: ""), role: .cancel) { }
+            Button(String(localized: "Open Wallets", comment: "Security — reset wallet")) {
                 openWallets()
             }
         } message: {
-            Text(NSLocalizedString(
-                "Reset Wallet is unavailable while multiple wallets are stored. Open Wallets and remove each wallet individually using its recovery phrase.",
+            Text(String(
+                localized: "Reset Wallet is unavailable while multiple wallets are stored. Open Wallets and remove each wallet individually using its recovery phrase.",
                 comment: "Security — reset wallet"))
         }
         .alert(
-            NSLocalizedString("No Wallet Found", comment: "Security — reset wallet"),
+            String(localized: "No Wallet Found", comment: "Security — reset wallet"),
             isPresented: $showNoWalletResetAlert
         ) {
-            Button(NSLocalizedString("OK", comment: ""), role: .cancel) { }
+            Button(String(localized: "OK", comment: ""), role: .cancel) { }
         } message: {
-            Text(NSLocalizedString(
-                "There are no wallets stored on this device to reset.",
+            Text(String(
+                localized: "There are no wallets stored on this device to reset.",
                 comment: "Security — reset wallet"))
         }
         .alert(
-            NSLocalizedString("Could Not Read Wallets", comment: "Security — reset wallet"),
+            String(localized: "Could Not Read Wallets", comment: "Security — reset wallet"),
             isPresented: $showResetWalletInventoryError
         ) {
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
-            Button(NSLocalizedString("Retry", comment: "")) {
+            Button(String(localized: "Cancel", comment: ""), role: .cancel) { }
+            Button(String(localized: "Retry", comment: "")) {
                 viewModel.beginResetWallet()
             }
         } message: {
-            Text(NSLocalizedString(
-                "The wallets stored on this device could not be verified. Nothing was deleted. Please try again.",
+            Text(String(
+                localized: "The wallets stored on this device could not be verified. Nothing was deleted. Please try again.",
                 comment: "Security — reset wallet"))
         }
-        .alert("Reset All Wallets (Debug)", isPresented: $showResetWalletDebugAlert) {
+        .alert("Reset All Wallets (Debug)" as String, isPresented: $showResetWalletDebugAlert) {
             Button("Cancel", role: .cancel) { }
             Button("Delete All", role: .destructive) {
                 delegateInternal.beginDebugWipeWallet()
             }
         } message: {
-            Text("Deletes all SDK wallets without asking for their recovery phrases. Legacy DashSync seed fixtures are preserved.")
+            Text(verbatim: "Deletes all SDK wallets without asking for their recovery phrases. Legacy DashSync seed fixtures are preserved.")
         }
         .recoveryPhraseFlowAlert(recoveryPhraseFlow)
     }
@@ -209,11 +209,11 @@ struct SecurityMenuScreen: View {
     private var biometricsAlertMessage: String {
         let displayName = Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String ?? ""
         if viewModel.hasTouchID {
-            return String(format: NSLocalizedString("%@ is not allowed to access Touch ID. Allow Touch ID access in Settings", comment: ""), displayName)
+            return String(localized: "\(displayName) is not allowed to access Touch ID. Allow Touch ID access in Settings", comment: "")
         } else if viewModel.hasFaceID {
-            return String(format: NSLocalizedString("%@ is not allowed to access Face ID. Allow Face ID access in Settings", comment: ""), displayName)
+            return String(localized: "\(displayName) is not allowed to access Face ID. Allow Face ID access in Settings", comment: "")
         } else {
-            return NSLocalizedString("Biometrics Access Required", comment: "")
+            return String(localized: "Biometrics Access Required", comment: "")
         }
     }
     

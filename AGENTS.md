@@ -34,7 +34,7 @@ open DashWallet.xcworkspace   # Always open the workspace, not the .xcodeproj
 - Rust toolchain (builds the SwiftDashSDK FFI)
 
 ### Optional tools
-- `swiftformat`, `swiftlint`, `clang-format` (Objective-C), `bartycrouch` (localization)
+- `swiftformat`, `swiftlint`, `clang-format` (Objective-C)
 
 ### External repo dependencies (expected as sibling directories)
 ```
@@ -181,13 +181,13 @@ post_install do |installer|
 end
 ```
 
-### Localization file encoding differs by target — check before converting
-Encoding is **not** uniform across the repo, so never assume:
+### Localization — the String Catalog, the build's sync phase, and file encodings
+The main app's texts live in one String Catalog, `DashWallet/Localizable.xcstrings` (43 locales; the app ships 22 of them, chosen by `XCSTRINGS_LANGUAGES_TO_COMPILE`). The old per-locale `DashWallet/*.lproj/Localizable.strings` / `Localizable.stringsdict` lists no longer exist, and BartyCrouch is gone.
 
-- **`DashWallet/*.lproj/Localizable.strings` and `Localizable.stringsdict` (main app) — UTF-8, no BOM.** All 43 locales, both file types. Plain `grep` works. Do **not** run `iconv` on these and do **not** "restore" them to UTF-16 — that would break the plain-text tooling (bartycrouch, `plutil`, review diffs) the repo relies on.
-  ```bash
-  grep '"Spend"' DashWallet/de.lproj/Localizable.strings
-  ```
+- **Swift** localizes with `String(localized:)` (SwiftUI literals extract on their own). **Objective-C keeps `NSLocalizedString`.** CI fails if Swift code uses `NSLocalizedString` (`scripts/ci/check_no_old_swift_lookup.py`).
+- **The regular build keeps the Catalog in step** with the code through the dashpay "Sync String Catalog" build phase (`scripts/localization/sync_catalog.py`), in Xcode and with `xcodebuild` alike. Only Debug builds sync; Release, TestFlight and TestNet builds compile the Catalog as committed. Commit the changed Catalog together with the code. CI fails if a build changes the checkout.
+- **Translation sync pause:** the main-app texts are not pushed to or pulled from the translation service until the owner decides how the Catalog travels. `.tx/config` lists only the Watch (`watch-interface-strings`) and App Store (`appstore-*`) resources, so `tx push` / `tx pull` leave the app texts alone. Do not add the app resources back, and do not run `tx` against the service for testing.
+- **Encoding:** the Catalog is UTF-8 JSON, no BOM; plain `grep` works. Do not convert it.
 - **`WatchApp/*.lproj/Interface.strings` — UTF-16LE with BOM** for 40 of 43 locales (`en`, `zh-Hans`, `zh-Hant-TW` are UTF-8). These are the files where `grep` reports "Binary file matches". They are storyboard-derived, so the keys are ObjectIDs rather than English text:
   ```bash
   iconv -f UTF-16LE -t UTF-8 WatchApp/de.lproj/Interface.strings | grep '.title'
@@ -195,10 +195,7 @@ Encoding is **not** uniform across the repo, so never assume:
 
 Check first rather than trusting this list — and note `file` reports pure-ASCII UTF-8 as `us-ascii`, which is still UTF-8:
 ```bash
-head -c 4 DashWallet/de.lproj/Localizable.strings | xxd   # 2f2a 204e -> "/* N" = UTF-8
-head -c 4 WatchApp/de.lproj/Interface.strings     | xxd   # fffe ...  = UTF-16LE BOM
+head -c 4 WatchApp/de.lproj/Interface.strings | xxd   # fffe ... = UTF-16LE BOM
 ```
 
-Translations sync via Transifex: `tx push -s` (push source) / `tx pull -a` (pull all). Let Xcode and BartyCrouch manage the files, and keep each file in whatever encoding it already has.
-
-A Transifex pull can hand back UTF-16 or BOM-prefixed catalogs. `./scripts/convert_strings_to_utf8.sh` normalises them back — it is scoped to `DashWallet/*.lproj` on purpose and is idempotent, so it leaves already-correct files byte-identical. Keep that scope: a bare `find . -name '*.strings'` would also rewrite the UTF-16LE WatchApp catalogs and anything under `Pods/`.
+Watch and App Store texts still sync through Transifex (`tx push -s` / `tx pull`, scoped to those resources). Keep each file in whatever encoding it already has. `./scripts/convert_strings_to_utf8.sh` checks only `DashWallet/Localizable.xcstrings`: it strips a UTF-8 BOM and refuses UTF-16. Never run a bare `find . -name '*.strings'` rewrite — it would also touch the UTF-16LE WatchApp catalogs and anything under `Pods/`.

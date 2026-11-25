@@ -22,7 +22,7 @@ class ExploreSyncBannerView: UIView {
     private let label: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = NSLocalizedString("Sync in progress… Results may not be complete.", comment: "Explore Dash")
+        label.text = String(localized: "Sync in progress… Results may not be complete.", comment: "Explore Dash")
         label.textColor = .white
         label.font = .dw_font(forTextStyle: .footnote)
         label.textAlignment = .center

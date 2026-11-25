@@ -1,6 +1,6 @@
 # 0031 — Turn off unattributed DashPay profile keys with any disconnect
 
-- **Status:** Superseded by ADR-0069
+- **Status:** Superseded by ADR-0075
 - **Date:** 2026-11-09
 - **Deciders:** romchornyi (ADR author), the product owner (no profile key left on that no connection accounts for)
 

@@ -342,7 +342,7 @@ class GiftCardDetailsViewModel: ObservableObject {
             case "rejected":
                 await MainActor.run {
                     self.uiState.loadingError = DashSpendError.customError(
-                        NSLocalizedString("Gift card purchase was rejected", comment: "")
+                        String(localized: "Gift card purchase was rejected", comment: "")
                     )
                 }
                 stopTicker()
@@ -394,7 +394,7 @@ class GiftCardDetailsViewModel: ObservableObject {
                 guard !payload.isEmpty else {
                     await MainActor.run {
                         self.uiState.loadingError = DashSpendError.customError(
-                            NSLocalizedString("Gift card details are unavailable. Please contact support.", comment: "")
+                            String(localized: "Gift card details are unavailable. Please contact support.", comment: "")
                         )
                     }
                     stopTicker()
@@ -429,7 +429,7 @@ class GiftCardDetailsViewModel: ObservableObject {
             case "failed", "rejected", "cancelled":
                 await MainActor.run {
                     self.uiState.loadingError = DashSpendError.customError(
-                        NSLocalizedString("Gift card purchase was rejected", comment: "")
+                        String(localized: "Gift card purchase was rejected", comment: "")
                     )
                 }
                 stopTicker()

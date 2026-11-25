@@ -116,19 +116,19 @@ struct RequestDetailsContent: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     DashUIKit.TopIntroView(
-                        title: NSLocalizedString("Request details", comment: "Voting"),
-                        mainDescription: NSLocalizedString(
-                            "Review the posting below to verify the ownership of this username",
+                        title: String(localized: "Request details", comment: "Voting"),
+                        mainDescription: String(
+                            localized: "Review the posting below to verify the ownership of this username",
                             comment: "Voting"),
                         descriptionColor: Color.dash.secondaryText)
                         .padding(.horizontal, 20)
 
                     VStack(spacing: 10) {
-                        RequestDetailField(label: NSLocalizedString("Username", comment: "Voting"), text: username)
-                        RequestDetailField(label: NSLocalizedString("Link", comment: "Voting")) { linkValue }
-                        RequestDetailField(label: NSLocalizedString("Identity", comment: "Voting"), text: identityId)
+                        RequestDetailField(label: String(localized: "Username", comment: "Voting"), text: username)
+                        RequestDetailField(label: String(localized: "Link", comment: "Voting")) { linkValue }
+                        RequestDetailField(label: String(localized: "Identity", comment: "Voting"), text: identityId)
                         RequestDetailField(
-                            label: NSLocalizedString("Voting period", comment: "Voting"),
+                            label: String(localized: "Voting period", comment: "Voting"),
                             text: votingPeriodText)
                     }
                     .padding(.horizontal, 20)
@@ -157,7 +157,7 @@ struct RequestDetailsContent: View {
         switch linkState {
         case .reading:
             SwiftUI.ProgressView()
-                .accessibilityLabel(NSLocalizedString("Checking…", comment: "Voting"))
+                .accessibilityLabel(String(localized: "Checking…", comment: "Voting"))
         case .none:
             Text(linkText ?? "").foregroundStyle(Color.dash.secondaryText)
         case .failed:
@@ -165,7 +165,7 @@ struct RequestDetailsContent: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text(linkText ?? "").foregroundStyle(Color.dash.secondaryText)
                 DashUIKit.DashButton(
-                    text: NSLocalizedString("Try again", comment: ""),
+                    text: String(localized: "Try again", comment: ""),
                     size: .small,
                     style: .plainBlue,
                     action: onRetry)

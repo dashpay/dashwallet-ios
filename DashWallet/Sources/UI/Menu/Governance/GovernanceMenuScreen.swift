@@ -39,7 +39,7 @@ struct GovernanceMenuScreen: View {
                 }
             })
 
-            TopIntro(title: NSLocalizedString("Governance", comment: "Governance"))
+            TopIntro(title: String(localized: "Governance", comment: "Governance"))
                 .padding(.leading, 20)
                 .padding(.trailing, 60)
                 .padding(.top, 10)

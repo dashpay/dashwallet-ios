@@ -12,10 +12,10 @@ struct StorageExplorerUnavailableView: View {
             Image(systemName: "cylinder.split.1x2")
                 .font(.largeTitle)
                 .foregroundColor(Color.dash.secondaryText)
-            Text("Storage Explorer requires the Platform sync runtime.")
+            Text(verbatim: "Storage Explorer requires the Platform sync runtime.")
                 .multilineTextAlignment(.center)
                 .foregroundColor(Color.dash.secondaryText)
-            Button("Start Platform Sync") {
+            Button("Start Platform Sync" as String) {
                 PlatformAddressSyncCoordinator.startForCurrentNetwork()
             }
             .buttonStyle(.bordered)

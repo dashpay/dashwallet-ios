@@ -61,7 +61,7 @@ final class PinPromptViewModel: ObservableObject {
          completion: @escaping (PinPromptResult) -> Void) {
         self.service = service
         self.completion = completion
-        self.titleMessage = NSLocalizedString("Enter PIN", comment: "PIN prompt")
+        self.titleMessage = String(localized: "Enter PIN", comment: "PIN prompt")
         applyPrecheck()
     }
 
@@ -153,7 +153,7 @@ final class PinPromptViewModel: ObservableObject {
 
     private func refreshLockoutMessage() {
         if service.failCount >= LockoutPolicy.maxFailCount {
-            lockoutMessage = NSLocalizedString("Wallet disabled. Recover with your recovery phrase.", comment: "PIN permanent lockout")
+            lockoutMessage = String(localized: "Wallet disabled. Recover with your recovery phrase.", comment: "PIN permanent lockout")
             return
         }
         let wait = service.lockoutWaitTime
@@ -164,7 +164,7 @@ final class PinPromptViewModel: ObservableObject {
             return
         }
         let formatted = Self.durationFormatter.string(from: wait) ?? "\(Int(wait))s"
-        lockoutMessage = String(format: NSLocalizedString("Try again in %@", comment: "PIN lockout"), formatted)
+        lockoutMessage = String(localized: "Try again in \(formatted)", comment: "PIN lockout")
     }
 
     private func finish(_ result: PinPromptResult) {
@@ -254,7 +254,7 @@ struct PinPromptView: View {
             Divider()
 
             Button(action: viewModel.cancel) {
-                Text(NSLocalizedString("Cancel", comment: ""))
+                Text(String(localized: "Cancel", comment: ""))
                     .font(.system(size: 17))
                     .foregroundColor(.dash.blue)
                     .frame(maxWidth: .infinity)
@@ -266,7 +266,7 @@ struct PinPromptView: View {
             // pod's pinField.becomeFirstResponder did. `.id(fieldGeneration)`
             // recreates it empty after each rejected entry — see
             // `fieldGeneration` for why a programmatic clear isn't enough.
-            TextField("", text: Binding(
+            TextField("" as String, text: Binding(
                 get: { viewModel.enteredPin },
                 set: { viewModel.inputChanged($0) }))
                 .keyboardType(.numberPad)

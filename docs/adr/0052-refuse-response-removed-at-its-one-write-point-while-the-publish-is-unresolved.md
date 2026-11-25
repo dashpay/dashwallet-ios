@@ -1,6 +1,6 @@
 # 0052 — Refuse "response removed" at its one write point while the publish is unresolved
 
-- **Status:** Superseded by ADR-0067
+- **Status:** Superseded by ADR-0074
 - **Date:** 2026-11-13
 - **Deciders:** romchornyi, with Claude during the design pass. Approved in #1414 by HashEngineering.
 

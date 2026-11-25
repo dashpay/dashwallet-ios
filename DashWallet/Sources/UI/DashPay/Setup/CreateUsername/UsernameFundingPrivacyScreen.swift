@@ -89,7 +89,7 @@ struct UsernameFundingPrivacyScreen: View {
 
             VStack(spacing: 20) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(NSLocalizedString("Make your username private", comment: "Usernames"))
+                    Text(String(localized: "Make your username private", comment: "Usernames"))
                         .dashFont(.title1)
                         .foregroundStyle(Color.dash.primaryText)
                         // Both lines wrap rather than truncate: the sheet that
@@ -98,7 +98,7 @@ struct UsernameFundingPrivacyScreen: View {
                         // wider than the sheet on one line.
                         .fixedSize(horizontal: false, vertical: true)
 
-                    Text(NSLocalizedString("To help keep your payment activity private, we recommend paying for the username from your shielded balance", comment: "Usernames"))
+                    Text(String(localized: "To help keep your payment activity private, we recommend paying for the username from your shielded balance", comment: "Usernames"))
                         .dashFont(.body)
                         .foregroundStyle(Color.dash.secondaryText)
                         .fixedSize(horizontal: false, vertical: true)
@@ -146,28 +146,26 @@ struct UsernameFundingPrivacyScreen: View {
             // Absent when privacy was declined: an option that cannot be taken.
             if canPayFromShielded {
                 DashUIKit.SimpleSelect(
-                    title: NSLocalizedString("Shielded balance", comment: "Usernames"),
-                    description: NSLocalizedString("Keeps your username private", comment: "Usernames"),
+                    title: String(localized: "Shielded balance", comment: "Usernames"),
+                    description: String(localized: "Keeps your username private", comment: "Usernames"),
                     isSelected: selection == .shielded,
                     action: { selection = .shielded })
             }
 
             DashUIKit.SimpleSelect(
-                title: NSLocalizedString("Dash balance", comment: "Usernames"),
-                description: NSLocalizedString("Funds will be traceable to your username", comment: "Usernames"),
+                title: String(localized: "Dash balance", comment: "Usernames"),
+                description: String(localized: "Funds will be traceable to your username", comment: "Usernames"),
                 isSelected: selection == .core,
                 action: { selection = .core })
 
             if offersPlatformBalance {
                 DashUIKit.SimpleSelect(
-                    title: NSLocalizedString("Platform balance", comment: "Usernames"),
+                    title: String(localized: "Platform balance", comment: "Usernames"),
                     // With the amount: this is the one balance the user cannot
                     // see anywhere but the advanced-mode breakdown, so "is
                     // there enough in it" is not a question the row can leave
                     // open.
-                    description: String.localizedStringWithFormat(
-                        NSLocalizedString("Pays from your %@ Dash already on Platform", comment: "Usernames"),
-                        viewModel.platformPaymentBalance),
+                    description: String(localized: "Pays from your \(viewModel.platformPaymentBalance) Dash already on Platform", comment: "Usernames"),
                     isSelected: selection == .platformPayment,
                     action: { selection = .platformPayment })
             }
@@ -194,7 +192,7 @@ struct UsernameFundingPrivacyScreen: View {
 
     private var continueButton: some View {
         DashUIKit.DashButton(
-            text: NSLocalizedString("Continue", comment: ""),
+            text: String(localized: "Continue", comment: ""),
             isEnabled: selection != nil,
             fillsWidth: true,
             size: .large,
@@ -246,15 +244,15 @@ struct UsernameFundingPrivacyScreen: View {
     private var tipTitle: String {
         switch readinessState {
         case .maturing:
-            return NSLocalizedString("Funds are resting", comment: "Usernames")
+            return String(localized: "Funds are resting", comment: "Usernames")
         case .poolTooSmall:
-            return NSLocalizedString("Privacy pool too small", comment: "Usernames")
+            return String(localized: "Privacy pool too small", comment: "Usernames")
         case .needsFunding where shieldedCredits > 0:
             // Something IS shielded, just not enough: a generic privacy tip
             // reads as "nothing happened" to someone who just shielded funds.
-            return NSLocalizedString("Not enough shielded funds", comment: "Usernames")
+            return String(localized: "Not enough shielded funds", comment: "Usernames")
         default:
-            return NSLocalizedString("Privacy tip", comment: "Usernames")
+            return String(localized: "Privacy tip", comment: "Usernames")
         }
     }
 
@@ -312,9 +310,7 @@ struct UsernameFundingPrivacyScreen: View {
         switch readinessState {
         case .maturing(let readyAt):
             let time = DateFormatter.localizedString(from: readyAt, dateStyle: .none, timeStyle: .short)
-            return String.localizedStringWithFormat(
-                NSLocalizedString("Your shielded funds are resting. They will be ready around %@ — creating your username before then links it to where the funds came from.", comment: "Usernames"),
-                time)
+            return String(localized: "Your shielded funds are resting. They will be ready around \(time) — creating your username before then links it to where the funds came from.", comment: "Usernames")
 
         case .poolTooSmall(let current):
             // Shielding more of your own funds does not move this number, so
@@ -325,18 +321,12 @@ struct UsernameFundingPrivacyScreen: View {
             // The case this screen used to answer with silence: funds were
             // shielded, the screen looked identical, and nothing said how
             // much was still missing.
-            return String.localizedStringWithFormat(
-                NSLocalizedString("Your shielded balance holds %@ of the %@ Dash a private registration needs. Add %@ Dash more, then let it rest a few hours.", comment: "Usernames"),
-                Self.dashText(shieldedCredits),
-                Self.dashText(requiredCredits),
-                CreateUsernameViewModel.shieldedShortfallDuffs(shortfallCredits).dashAmount.formattedDashAmountWithoutCurrencySymbol)
+            return String(localized: "Your shielded balance holds \(Self.dashText(shieldedCredits)) of the \(Self.dashText(requiredCredits)) Dash a private registration needs. Add \(CreateUsernameViewModel.shieldedShortfallDuffs(shortfallCredits).dashAmount.formattedDashAmountWithoutCurrencySymbol) Dash more, then let it rest a few hours.", comment: "Usernames")
 
         default:
             // Nothing shielded yet (or no snapshot at all): name the amount
             // rather than only the wait.
-            return String.localizedStringWithFormat(
-                NSLocalizedString("Paying privately takes at least %@ Dash in your shielded balance. Funds move there in seconds, then rest a few hours before they can pay for a username.", comment: "Usernames"),
-                Self.dashText(requiredCredits))
+            return String(localized: "Paying privately takes at least \(Self.dashText(requiredCredits)) Dash in your shielded balance. Funds move there in seconds, then rest a few hours before they can pay for a username.", comment: "Usernames")
         }
     }
 
@@ -359,7 +349,7 @@ struct UsernameFundingPrivacyScreen: View {
     private var shieldFirstButtons: some View {
         VStack(spacing: 20) {
             DashUIKit.DashButton(
-                text: NSLocalizedString("Shield your funds first", comment: "Usernames"),
+                text: String(localized: "Shield your funds first", comment: "Usernames"),
                 isEnabled: canShieldFundsNow,
                 fillsWidth: true,
                 size: .large,
@@ -373,7 +363,7 @@ struct UsernameFundingPrivacyScreen: View {
             // would stick. With Core the only transparent balance, there is
             // nothing to ask.
             DashUIKit.DashButton(
-                text: NSLocalizedString("Continue without privacy", comment: "Usernames"),
+                text: String(localized: "Continue without privacy", comment: "Usernames"),
                 fillsWidth: true,
                 size: .large,
                 style: .tintedBlue,

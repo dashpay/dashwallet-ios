@@ -89,7 +89,7 @@ class GiftCardMetadataProvider: MetadataProvider, @unchecked Sendable {
 
     private func updateMetadataForGiftCards(_ giftCards: [GiftCard]) async {
         for giftCard in giftCards {
-            let title = String.localizedStringWithFormat(NSLocalizedString("Gift card · %@", comment: "DashSpend"), giftCard.merchantName)
+            let title = String(localized: "Gift card · \(giftCard.merchantName)", comment: "DashSpend")
             // Capture txId before async block to avoid race condition with Data object
             let txId = giftCard.txId
 
@@ -120,7 +120,7 @@ class GiftCardMetadataProvider: MetadataProvider, @unchecked Sendable {
     private func onMetadataUpdated(metadata: TransactionMetadata) async {
         guard let service = metadata.service, service == ServiceName.ctxSpend.rawValue else { return }
         guard let giftCard = await giftCardDao.get(byTxId: metadata.txHash) else { return }
-        let title = String.localizedStringWithFormat(NSLocalizedString("Gift card · %@", comment: "DashSpend"), giftCard.merchantName)
+        let title = String(localized: "Gift card · \(giftCard.merchantName)", comment: "DashSpend")
         
         metadataQueue.async { [weak self] in
             guard let self = self else { return }

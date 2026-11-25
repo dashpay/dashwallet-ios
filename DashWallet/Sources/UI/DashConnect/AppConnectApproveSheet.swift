@@ -78,10 +78,7 @@ struct AppConnectApproveSheet: View {
                         }
                         if let granted = viewModel.approvalGrantedLines {
                             DashConnectCollapsibleCard(
-                                title: String(
-                                    format: NSLocalizedString(
-                                        "See what %@ will be able to do", comment: "DashConnect: the app's name"),
-                                    request.resolvedAppLabel),
+                                title: String(localized: "See what \(request.resolvedAppLabel) will be able to do", comment: "DashConnect: the app's name"),
                                 isExpanded: $showsGranted) {
                                     ForEach(Array(granted.enumerated()), id: \.offset) {
                                         PermissionRow(icon: .custom("dashconnect.check.circle", maxHeight: 18), text: $0.element)
@@ -89,10 +86,7 @@ struct AppConnectApproveSheet: View {
                                 }
                         }
                         DashConnectCollapsibleCard(
-                            title: String(
-                                format: NSLocalizedString(
-                                    "See what %@ will NOT have access to", comment: "DashConnect: the app's name"),
-                                request.resolvedAppLabel),
+                            title: String(localized: "See what \(request.resolvedAppLabel) will NOT have access to", comment: "DashConnect: the app's name"),
                             isExpanded: $showsWithheld) {
                                 ForEach(DashConnectPermissionText.withheld, id: \.self) {
                                     PermissionRow(icon: .custom("dashconnect.xmark.circle", maxHeight: 18), text: $0)
@@ -164,16 +158,16 @@ struct AppConnectApproveSheet: View {
 
     private var detailsCard: some View {
         VStack(spacing: 2) {
-            DashConnectDetailLine(title: NSLocalizedString("App ID", comment: "DashConnect connection sheet"), value: request.appContractId)
+            DashConnectDetailLine(title: String(localized: "App ID", comment: "DashConnect connection sheet"), value: request.appContractId)
             DashConnectDetailLine(
-                title: NSLocalizedString("Requested", comment: "DashConnect approve sheet: when the app asked"),
+                title: String(localized: "Requested", comment: "DashConnect approve sheet: when the app asked"),
                 value: viewModel.approvalRequestAge ?? "")
             if let username = request.walletUsername {
-                DashConnectDetailLine(title: NSLocalizedString("Username", comment: "DashConnect"), value: username)
+                DashConnectDetailLine(title: String(localized: "Username", comment: "DashConnect"), value: username)
             }
             if let identityId = request.walletIdentityId {
                 DashConnectDetailLine(
-                    title: NSLocalizedString("Identity", comment: "DashConnect"),
+                    title: String(localized: "Identity", comment: "DashConnect"),
                     value: DashConnectIdentifierFormatting.truncateMiddle(identityId))
             }
         }
@@ -186,18 +180,18 @@ struct AppConnectApproveSheet: View {
     private var termsCard: some View {
         VStack(alignment: .leading, spacing: 2) {
             termRow(
-                title: NSLocalizedString("Identity funding limit", comment: "DashConnect approve sheet"),
+                title: String(localized: "Identity funding limit", comment: "DashConnect approve sheet"),
                 value: viewModel.approvalFundingText ?? "",
                 showsInfo: true,
-                changeLabel: NSLocalizedString(
-                    "Change the identity funding limit", comment: "DashConnect approve sheet: accessibility"),
+                changeLabel: String(
+                    localized: "Change the identity funding limit", comment: "DashConnect approve sheet: accessibility"),
                 canChange: viewModel.canChangeFundingLimit,
                 onChange: { termsSheet = .funding })
             termRow(
-                title: NSLocalizedString("Connection will expire", comment: "DashConnect approve sheet"),
+                title: String(localized: "Connection will expire", comment: "DashConnect approve sheet"),
                 value: viewModel.approvalExpiryText ?? "",
                 showsInfo: false,
-                changeLabel: NSLocalizedString("Change when the connection expires", comment: "DashConnect approve sheet: accessibility"),
+                changeLabel: String(localized: "Change when the connection expires", comment: "DashConnect approve sheet: accessibility"),
                 canChange: true,
                 onChange: { termsSheet = .expiry })
         }
@@ -229,8 +223,8 @@ struct AppConnectApproveSheet: View {
                                 .contentShape(Rectangle())
                         }
                         .frame(width: 18, height: 18)
-                        .accessibilityLabel(Text(NSLocalizedString(
-                            "What are identity funding limits?", comment: "DashConnect connection sheet")))
+                        .accessibilityLabel(Text(String(
+                            localized: "What are identity funding limits?", comment: "DashConnect connection sheet")))
                     }
                 }
                 Text(value)
@@ -240,7 +234,7 @@ struct AppConnectApproveSheet: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             if canChange {
                 DashUIKit.DashButton(
-                    text: NSLocalizedString("Change", comment: "DashConnect approve sheet"),
+                    text: String(localized: "Change", comment: "DashConnect approve sheet"),
                     isEnabled: !viewModel.isApproving,
                     size: .small, style: .plainBlue, action: onChange)
                     .accessibilityLabel(Text(changeLabel))
@@ -254,7 +248,7 @@ struct AppConnectApproveSheet: View {
         HStack(alignment: .top, spacing: 6) {
             PermissionRow(
                 icon: .custom("dashconnect.xmark.circle", maxHeight: 18),
-                text: NSLocalizedString("Your spendable Dash balance", comment: "DashConnect approve sheet"))
+                text: String(localized: "Your spendable Dash balance", comment: "DashConnect approve sheet"))
             Spacer(minLength: 0)
             Button(action: { termsSheet = .spendableInfo }) {
                 InfoRoundIcon(size: 16, color: Color.dash.gray300Alpha90)
@@ -262,7 +256,7 @@ struct AppConnectApproveSheet: View {
                     .contentShape(Rectangle())
             }
             .frame(width: 20, height: 20)
-            .accessibilityLabel(Text(NSLocalizedString("What is spendable Dash?", comment: "DashConnect approve sheet")))
+            .accessibilityLabel(Text(String(localized: "What is spendable Dash?", comment: "DashConnect approve sheet")))
         }
     }
 
@@ -270,17 +264,17 @@ struct AppConnectApproveSheet: View {
         VStack(spacing: 10) {
             if viewModel.approveNeedsTopUp, let onTopUp {
                 DashUIKit.DashButton(
-                    text: NSLocalizedString("Top up identity", comment: "DashConnect approve sheet"),
+                    text: String(localized: "Top up identity", comment: "DashConnect approve sheet"),
                     fillsWidth: true, size: .large, style: .tintedBlue, action: onTopUp)
             }
             DashUIKit.DashButton(
-                text: NSLocalizedString("Approve", comment: "DashConnect"),
+                text: String(localized: "Approve", comment: "DashConnect"),
                 isEnabled: !viewModel.isApproving && !viewModel.approveNeedsTopUp && viewModel.termsAppliedPlan != nil,
                 isLoading: viewModel.isApproving,
                 fillsWidth: true, size: .large, style: .filledBlue,
                 action: viewModel.approvePendingRequest)
             DashUIKit.DashButton(
-                text: NSLocalizedString("Deny", comment: "DashConnect"),
+                text: String(localized: "Deny", comment: "DashConnect"),
                 isEnabled: !viewModel.isApproving,
                 fillsWidth: true, size: .large, style: .tintedGray,
                 action: { viewModel.denyPendingRequest(asksToReturn: true) })
@@ -313,15 +307,11 @@ struct DashConnectReturnStep: View {
             VStack(spacing: 0) {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(String(
-                            format: NSLocalizedString(
-                                "Return to %@?",
-                                comment: "DashConnect: asks before returning to an app the wallet does not know; the placeholder is a website, e.g. yap.pr"),
-                            host))
+                        Text(String(localized: "Return to \(host)?", comment: "DashConnect: asks before returning to an app the wallet does not know; the placeholder is a website, e.g. yap.pr"))
                             .dashFont(.title1)
                             .foregroundColor(Color.dash.primaryText)
-                        Text(NSLocalizedString(
-                            "This wallet does not know this app, so it cannot confirm where this address leads. Open it only if you started this on that website.",
+                        Text(String(
+                            localized: "This wallet does not know this app, so it cannot confirm where this address leads. Open it only if you started this on that website.",
                             comment: "DashConnect: asks before returning to an app the wallet does not know"))
                             .dashFont(.subhead)
                             .foregroundColor(Color.dash.secondaryText)
@@ -333,15 +323,11 @@ struct DashConnectReturnStep: View {
                 VStack(spacing: 10) {
                     DashConnectInlineErrorToast(message: note)
                     DashUIKit.DashButton(
-                        text: String(
-                            format: NSLocalizedString(
-                                "Open %@",
-                                comment: "DashConnect: return to an app the wallet does not know; the placeholder is a website, e.g. yap.pr"),
-                            host),
+                        text: String(localized: "Open \(host)", comment: "DashConnect: return to an app the wallet does not know; the placeholder is a website, e.g. yap.pr"),
                         fillsWidth: true, size: .large, style: .filledBlue, action: onOpen)
                     DashUIKit.DashButton(
-                        text: NSLocalizedString(
-                            "Stay in the wallet", comment: "DashConnect: do not return to an app the wallet does not know"),
+                        text: String(
+                            localized: "Stay in the wallet", comment: "DashConnect: do not return to an app the wallet does not know"),
                         fillsWidth: true, size: .large, style: .tintedGray, action: onStay)
                 }
                 .padding(.horizontal, 20)
@@ -366,8 +352,8 @@ struct FundingLimitSheet: View {
     var body: some View {
         BottomSheet(
             title: isTyping
-                ? NSLocalizedString("Funding limit", comment: "DashConnect funding limit keypad")
-                : NSLocalizedString("Identity funding limits", comment: "DashConnect funding limit presets"),
+                ? String(localized: "Funding limit", comment: "DashConnect funding limit keypad")
+                : String(localized: "Identity funding limits", comment: "DashConnect funding limit presets"),
             showBackButton: .constant(isTyping),
             onBackButtonPressed: { withAnimation(.smooth(duration: 0.3)) { isTyping = false } },
             onClose: onClose,
@@ -398,7 +384,7 @@ struct FundingLimitSheet: View {
             // A limit that is none of the presets (the app's own ask, or a
             // typed amount) is this row's, selected with its amount.
             RadioButtonRow(
-                title: NSLocalizedString("Set limit", comment: "DashConnect funding limit presets"),
+                title: String(localized: "Set limit", comment: "DashConnect funding limit presets"),
                 trailingText: viewModel.customFundingLimitText,
                 isSelected: viewModel.customFundingLimitText != nil,
                 action: {
@@ -433,9 +419,7 @@ struct FundingLimitSheet: View {
                 }
                 .foregroundColor(color)
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel(Text(String(
-                    format: NSLocalizedString("%@ DASH", comment: "DashConnect funding limit keypad: a typed amount"),
-                    typed.isEmpty ? "0" : typed)))
+                .accessibilityLabel(Text(String(localized: "\(typed.isEmpty ? "0" : typed) DASH", comment: "DashConnect funding limit keypad: a typed amount")))
                 DashConnectInlineErrorToast(message: error)
             }
             .frame(maxWidth: .infinity, minHeight: 92, alignment: .top)
@@ -445,7 +429,7 @@ struct FundingLimitSheet: View {
             NumericKeyboardView(
                 value: $typed,
                 showDecimalSeparator: true,
-                actionButtonText: NSLocalizedString("Submit", comment: "DashConnect funding limit keypad"),
+                actionButtonText: String(localized: "Submit", comment: "DashConnect funding limit keypad"),
                 actionEnabled: error == nil && (credits ?? 0) > 0,
                 inProgress: false,
                 actionHandler: {
@@ -469,8 +453,8 @@ struct ExpirySheet: View {
     var body: some View {
         BottomSheet(
             title: isPickingDate
-                ? NSLocalizedString("Set date", comment: "DashConnect expiry date picker")
-                : NSLocalizedString("Connection expiration period", comment: "DashConnect expiry presets"),
+                ? String(localized: "Set date", comment: "DashConnect expiry date picker")
+                : String(localized: "Connection expiration period", comment: "DashConnect expiry presets"),
             showBackButton: .constant(isPickingDate),
             onBackButtonPressed: { withAnimation(.smooth(duration: 0.3)) { isPickingDate = false } },
             onClose: onClose,
@@ -488,9 +472,7 @@ struct ExpirySheet: View {
             VStack(spacing: 2) {
                 ForEach(viewModel.expiryPresets, id: \.days) { preset in
                     RadioButtonRow(
-                        title: String.localizedStringWithFormat(
-                            NSLocalizedString("%ld days", comment: "DashConnect expiry presets: a number of days"),
-                            preset.days),
+                        title: String(localized: "\(preset.days) days", comment: "DashConnect expiry presets: a number of days"),
                         isSelected: preset.isSelected,
                         action: {
                             // A preset already past at Platform's time is
@@ -503,7 +485,7 @@ struct ExpirySheet: View {
             // An expiry that is none of the presets (the app's own ask, or a
             // picked date) is this row's, selected with its date.
             RadioButtonRow(
-                title: NSLocalizedString("Set date", comment: "DashConnect expiry presets"),
+                title: String(localized: "Set date", comment: "DashConnect expiry presets"),
                 trailingText: viewModel.customExpiryText,
                 isSelected: viewModel.customExpiryText != nil,
                 action: {
@@ -521,21 +503,21 @@ struct ExpirySheet: View {
     private var picker: some View {
         VStack(spacing: 20) {
             DatePicker(
-                NSLocalizedString("Connection will expire", comment: "DashConnect approve sheet"),
+                String(localized: "Connection will expire", comment: "DashConnect approve sheet"),
                 selection: $date,
                 in: viewModel.expiryDateRange,
                 displayedComponents: .date)
                 .datePickerStyle(.graphical)
             DashConnectInlineErrorToast(message: dateError)
             DashUIKit.DashButton(
-                text: NSLocalizedString("Submit", comment: "DashConnect funding limit keypad"),
+                text: String(localized: "Submit", comment: "DashConnect funding limit keypad"),
                 fillsWidth: true, size: .large, style: .filledBlue,
                 action: {
                     if viewModel.setExpiry(date: date) {
                         onClose()
                     } else {
-                        dateError = NSLocalizedString(
-                            "This date has passed or is too far away. Pick another one.",
+                        dateError = String(
+                            localized: "This date has passed or is too far away. Pick another one.",
                             comment: "DashConnect expiry date picker: the picked date was refused")
                     }
                 })
@@ -560,16 +542,16 @@ struct SpendableDashInfoSheet: View {
         VStack(alignment: .leading, spacing: 0) {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(NSLocalizedString("What is spendable Dash?", comment: "DashConnect approve sheet"))
+                    Text(String(localized: "What is spendable Dash?", comment: "DashConnect approve sheet"))
                         .dashFont(.title2)
                         .foregroundColor(Color.dash.primaryText)
-                    Text(NSLocalizedString(
-                        "This is the Dash on your wallet's home screen – the balance you can send to anyone.",
+                    Text(String(
+                        localized: "This is the Dash on your wallet's home screen – the balance you can send to anyone.",
                         comment: "DashConnect: what spendable Dash is"))
                         .dashFont(.subhead)
                         .foregroundColor(Color.dash.primaryText)
-                    Text(NSLocalizedString(
-                        "It's separate from your identity's balance, which only pays for network actions.",
+                    Text(String(
+                        localized: "It's separate from your identity's balance, which only pays for network actions.",
                         comment: "DashConnect: what spendable Dash is"))
                         .dashFont(.subhead)
                         .foregroundColor(Color.dash.primaryText)
@@ -584,7 +566,7 @@ struct SpendableDashInfoSheet: View {
             .frame(maxHeight: textHeight)
 
             DashUIKit.DashButton(
-                text: NSLocalizedString("Got it", comment: "DashConnect"),
+                text: String(localized: "Got it", comment: "DashConnect"),
                 fillsWidth: true, size: .large, style: .tintedGray, action: onClose)
                 .padding(.horizontal, 40)
                 .padding(.vertical, 30)

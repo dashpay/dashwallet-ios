@@ -53,11 +53,9 @@ final class DWInvitationService: DWInvitationServicing {
         var errorDescription: String? {
             switch self {
             case .noWallet:
-                return NSLocalizedString("Wallet is not ready for identity registration", comment: "DashPay")
+                return String(localized: "Wallet is not ready for identity registration", comment: "DashPay")
             case .inviterNotFound(let username):
-                return String.localizedStringWithFormat(
-                    NSLocalizedString("%@ couldn't be found on the Dash network to send them a contact request.", comment: "DashPay Invitations"),
-                    username)
+                return String(localized: "\(username) couldn't be found on the Dash network to send them a contact request.", comment: "DashPay Invitations")
             }
         }
     }

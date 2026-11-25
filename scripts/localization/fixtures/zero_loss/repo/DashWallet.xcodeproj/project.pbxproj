@@ -1,0 +1,11 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	objectVersion = 77;
+	objects = {
+		ROOT = {isa = PBXGroup; children = (); sourceTree = "<group>"; };
+		PHASE = {isa = PBXSourcesBuildPhase; files = (); };
+		TGT = {isa = PBXNativeTarget; name = dashpay; buildPhases = (PHASE); };
+	};
+	rootObject = ROOT;
+}

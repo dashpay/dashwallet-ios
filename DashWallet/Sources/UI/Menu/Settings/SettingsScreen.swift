@@ -46,7 +46,7 @@ struct SettingsScreen: View {
                 }
             })
 
-            TopIntro(title: NSLocalizedString("Settings", comment: ""))
+            TopIntro(title: String(localized: "Settings", comment: ""))
                 .padding(.leading, 20)
                 .padding(.trailing, 60)
                 .padding(.top, 10)

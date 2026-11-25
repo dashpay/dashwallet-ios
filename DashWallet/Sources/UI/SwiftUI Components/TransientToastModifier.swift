@@ -135,7 +135,7 @@ private struct TransientToastPreview: View {
         .transientToast(
             isPresented: $copied,
             style: .copied,
-            message: NSLocalizedString("Copied", comment: ""))
+            message: String(localized: "Copied", comment: ""))
     }
 }
 

@@ -62,7 +62,7 @@ class SecurityMenuViewModel: ObservableObject {
         var menuItems: [MenuItemModel] = []
         
         menuItems.append(MenuItemModel(
-            title: NSLocalizedString("View Recovery Phrase", comment: ""),
+            title: String(localized: "View Recovery Phrase", comment: ""),
             icon: .custom("image-menu-recovery_phrase", maxHeight: 30),
             action: { [weak self] in
                 self?.navigationDestination = .viewRecoveryPhrase
@@ -70,7 +70,7 @@ class SecurityMenuViewModel: ObservableObject {
         ))
         
         menuItems.append(MenuItemModel(
-            title: NSLocalizedString("Change PIN", comment: ""),
+            title: String(localized: "Change PIN", comment: ""),
             icon: .custom("image-menu-change_pin", maxHeight: 30),
             action: { [weak self] in
                 self?.navigationDestination = .changePin
@@ -79,7 +79,7 @@ class SecurityMenuViewModel: ObservableObject {
         
         if hasTouchID {
             menuItems.append(MenuItemModel(
-                title: NSLocalizedString("Enable Touch ID", comment: ""),
+                title: String(localized: "Enable Touch ID", comment: ""),
                 icon: .custom("image-menu-enable_touch_id", maxHeight: 30),
                 showToggle: true,
                 isToggled: self.biometricsEnabled,
@@ -93,7 +93,7 @@ class SecurityMenuViewModel: ObservableObject {
 
         if hasFaceID {
             menuItems.append(MenuItemModel(
-                title: NSLocalizedString("Enable Face ID", comment: ""),
+                title: String(localized: "Enable Face ID", comment: ""),
                 icon: .custom("image-menu-face_id", maxHeight: 30),
                 showToggle: true,
                 isToggled: self.biometricsEnabled,
@@ -106,7 +106,7 @@ class SecurityMenuViewModel: ObservableObject {
         }
         
         menuItems.append(MenuItemModel(
-            title: NSLocalizedString("Autohide Balance", comment: ""),
+            title: String(localized: "Autohide Balance", comment: ""),
             icon: .custom("image-menu-autohide_balance", maxHeight: 30),
             showToggle: true,
             isToggled: self.balanceHidden,
@@ -119,7 +119,7 @@ class SecurityMenuViewModel: ObservableObject {
         ))
         
         menuItems.append(MenuItemModel(
-            title: NSLocalizedString("Advanced Security", comment: ""),
+            title: String(localized: "Advanced Security", comment: ""),
             icon: .custom("image-menu-advanced_security", maxHeight: 30),
             action: { [weak self] in
                 self?.navigationDestination = .advancedSecurity
@@ -127,7 +127,7 @@ class SecurityMenuViewModel: ObservableObject {
         ))
 
         menuItems.append(MenuItemModel(
-            title: NSLocalizedString("Reset Wallet", comment: ""),
+            title: String(localized: "Reset Wallet", comment: ""),
             icon: .custom("image-menu-reset_wallet", maxHeight: 22),
             action: { [weak self] in
                 self?.beginResetWallet()

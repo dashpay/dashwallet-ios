@@ -160,8 +160,8 @@ final class VotingKeysViewModel: ObservableObject {
         let count = source.votesToCast(choice, from: ticked) ?? ticked.count
         guard count > 0 else { return nil }
         return count == 1
-            ? NSLocalizedString("1 vote will be cast", comment: "Voting")
-            : String.localizedStringWithFormat(NSLocalizedString("%d votes will be cast", comment: "Voting"), count)
+            ? String(localized: "1 vote will be cast", comment: "Voting")
+            : String(localized: "\(count) votes will be cast", comment: "Voting")
     }
 
     /// The vote button's choice; `nil` in manage mode, which has none.

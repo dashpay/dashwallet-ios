@@ -75,19 +75,19 @@ struct UsernameMarketplaceService {
         var errorDescription: String? {
             switch self {
             case .noIdentity:
-                return NSLocalizedString("No DashPay identity is registered", comment: "DashPay")
+                return String(localized: "No DashPay identity is registered", comment: "DashPay")
             case .noNetwork:
-                return NSLocalizedString("Network is not configured", comment: "DashPay")
+                return String(localized: "Network is not configured", comment: "DashPay")
             case .contestedName:
-                return NSLocalizedString("Short names are decided by a network vote — use Request Username instead.", comment: "Username marketplace")
+                return String(localized: "Short names are decided by a network vote — use Request Username instead.", comment: "Username marketplace")
             case .invalidRecipient:
-                return NSLocalizedString("The recipient identity couldn't be resolved.", comment: "Username marketplace")
+                return String(localized: "The recipient identity couldn't be resolved.", comment: "Username marketplace")
             case .invalidPrice:
-                return NSLocalizedString("This price is too high to list.", comment: "Username marketplace: listing price exceeds the representable maximum")
+                return String(localized: "This price is too high to list.", comment: "Username marketplace: listing price exceeds the representable maximum")
             case .authCancelled:
-                return NSLocalizedString("Authentication cancelled", comment: "DashPay")
+                return String(localized: "Authentication cancelled", comment: "DashPay")
             case .authFailed:
-                return NSLocalizedString("Authentication failed", comment: "DashPay")
+                return String(localized: "Authentication failed", comment: "DashPay")
             }
         }
     }
@@ -572,16 +572,13 @@ struct UsernameMarketplaceService {
         if let walletError = error as? PlatformWalletError {
             switch walletError {
             case .notForSale:
-                return NSLocalizedString("This username is not for sale.", comment: "Username marketplace")
+                return String(localized: "This username is not for sale.", comment: "Username marketplace")
             case .priceChanged:
-                return NSLocalizedString("The seller changed the price before your purchase was accepted. Review the new price and try again.", comment: "Username marketplace")
+                return String(localized: "The seller changed the price before your purchase was accepted. Review the new price and try again.", comment: "Username marketplace")
             case let .insufficientIdentityCredits(_, required, available):
-                return String.localizedStringWithFormat(
-                    NSLocalizedString("Your identity balance can't cover this purchase: %@ DASH needed (including a fee reserve), %@ DASH available. Top up your identity balance and try again.", comment: "Username marketplace"),
-                    (required / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol,
-                    (available / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol)
+                return String(localized: "Your identity balance can't cover this purchase: \((required / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH needed (including a fee reserve), \((available / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH available. Top up your identity balance and try again.", comment: "Username marketplace")
             case .contestedNameNotTradable:
-                return NSLocalizedString("This name is in an active network vote and can't be traded until the contest ends.", comment: "Username marketplace")
+                return String(localized: "This name is in an active network vote and can't be traded until the contest ends.", comment: "Username marketplace")
             default:
                 break
             }

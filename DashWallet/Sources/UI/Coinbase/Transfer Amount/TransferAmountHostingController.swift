@@ -24,8 +24,8 @@ final class TransferAmountHostingController: BaseViewController, NavigationBarDi
 
     var isNavigationBarHidden: Bool { true }
 
-    private static let transferSuccessText = NSLocalizedString(
-        "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device",
+    private static let transferSuccessText = String(
+        localized: "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device",
         comment: "Coinbase"
     )
 

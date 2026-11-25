@@ -1,0 +1,15 @@
+{
+  "source": "/Users/ci/baseline-checkout/DashWallet/Sources/Send.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "key": "Send",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 3
+        }
+      }
+    ]
+  },
+  "version": 1
+}
