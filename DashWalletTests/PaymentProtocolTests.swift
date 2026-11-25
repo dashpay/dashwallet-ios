@@ -1242,8 +1242,13 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertEqual(lines.count, 2)
         for (line, recipient) in zip(lines, confirmation.recipients) {
             XCTAssertTrue(line.hasSuffix(" DASH: " + recipient.address))
+            XCTAssertEqual(line, "\(recipient.amount.formattedDashAmountWithoutCurrencySymbol) DASH: \(recipient.address)")
             XCTAssertTrue(info.contains(line))
         }
+
+        // 0.001 and 0.002 DASH, each next to its own address (digits only: the separator follows the locale).
+        XCTAssertEqual(confirmation.recipients.map(\.amount), [100_000, 200_000])
+        XCTAssertEqual(lines.map { $0.prefix { $0 != " " }.filter(\.isNumber) }, ["0001", "0002"])
 
         // A signed request keeps the count line only: its signer answers for the outputs.
         let signed = try await paymentOutput(for: unsignedNamed(nil, outputs: twoAddresses), isSecure: true)
