@@ -68,8 +68,9 @@ it gives is decided by the same pure predicate with the same block time the writ
 
 **Neutral**
 - A response whose lookups failed stays not removed; once its intent is closed, the next approval
-  on the identity looks it up again (`AppConnect.responsesLeft`), and so does the next disconnect
-  there that has something to sign and whose key updates do not stop.
+  on the identity whose read of the identity after it succeeds looks it up again
+  (`AppConnect.responsesLeft`; when that read fails, the approval ends without looking), and so
+  does the next disconnect there that has something to sign and whose key updates do not stop.
 
 ## Links
 

@@ -86,8 +86,8 @@ one-scan login possible, and with it DashConnect on mainnet once mainnet runs pr
   keeps it unresolved. A submit that ends late is only logged; the next read decides.
   A disconnect in that window still turns the keys off at once and says the response may still
   appear; the Disconnected row shows "Response may still be on Platform". Opening Connections
-  finds a late response without the PIN, and the next approval or disconnect on the identity
-  deletes it.
+  finds a late response without the PIN, and the next disconnect on the identity, or the next
+  approval whose read of the identity after it succeeds, deletes it.
 
 ## What it guarantees
 
