@@ -41,8 +41,9 @@ enum DashSpendError: Error, LocalizedError {
     /// already cancelled.
     case purchaseCancelled
     /// The Dash payment was broadcast but the network returned no acceptance verdict in time.
-    /// The order is NOT lost: the merchant holds the signed transaction and the gift card is
-    /// recorded against `txIdWire` so the details poller can pick it up once it fulfils.
+    /// The order is NOT lost: the gift card is recorded against `txIdWire` so the details
+    /// poller can pick it up once the provider fulfils it. CTX also holds the signed
+    /// transaction; for PiggyCards the wallet keeps trying to broadcast while it is open.
     case paymentStatusUnknown(txIdWire: Data, reason: String)
     /// CTX never acknowledged the payment, so it is unknown whether the order was received at
     /// all. The purchase is still recorded against `txIdWire`: if CTX did receive the signed

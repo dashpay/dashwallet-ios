@@ -126366,7 +126366,7 @@
       }
     },
     "Confirmation pending" : {
-      "comment" : "Identity transfer result unknown\nUsername purchase result unknown",
+      "comment" : "Gift card payment result unknown\nIdentity transfer result unknown\nUsername purchase result unknown",
       "localizations" : {
         "ar" : {
           "stringUnit" : {

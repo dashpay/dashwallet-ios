@@ -20,23 +20,51 @@ import Foundation
 public final class SendCoinsService: NSObject {
     private let walletSendService = WalletSendService.shared
     private let makeBIP70Service: () -> BIP70PaymentService
+    private let sendToAddress: AddressSend
 
-    /// - Parameter makeBIP70Service: builds the service `payWithDashUrl` pays through.
-    init(makeBIP70Service: @escaping () -> BIP70PaymentService = BIP70PaymentService.makeForCurrentWallet) {
+    /// A send to a plain address. `sessionAuthSufficient` is `WalletSendService`'s flag:
+    /// `false` asks for the PIN or biometrics even when the app was just unlocked.
+    typealias AddressSend = (_ address: String, _ amount: UInt64, _ sessionAuthSufficient: Bool) async throws -> Data
+
+    /// - Parameters:
+    ///   - makeBIP70Service: builds the service `payWithDashUrl` pays through.
+    ///   - sendToAddress: the send `payGiftCardOrder` pays through; `nil` for
+    ///     `WalletSendService.sendCarryingUnknownOutcome`.
+    init(makeBIP70Service: @escaping () -> BIP70PaymentService = BIP70PaymentService.makeForCurrentWallet,
+         sendToAddress: AddressSend? = nil) {
         self.makeBIP70Service = makeBIP70Service
+        self.sendToAddress = sendToAddress ?? { address, amount, sessionAuthSufficient in
+            try await WalletSendService.shared.sendCarryingUnknownOutcome(
+                address: address, amount: amount, sessionAuthSufficient: sessionAuthSufficient)
+        }
         super.init()
     }
 
+    /// Pays a gift card order that names a plain address and an amount (PiggyCards). The send
+    /// is asked with `sessionAuthSufficient: false`, so `WalletSendService` prompts for the
+    /// PIN or biometrics even when the app was just unlocked.
+    ///
+    /// An unknown broadcast outcome is thrown as `DashSpendError.paymentStatusUnknown` with
+    /// the txid, as `payWithDashUrl` does, so the caller can record the order against the
+    /// transaction it just handed to the network. Every other failure is thrown as
+    /// `WalletSendService.send` throws it.
+    ///
     /// - Returns: the wire-order txid of the broadcast transaction
     ///   (`Transaction.txHashData` convention).
-    func sendCoins(address: String, amount: UInt64,
-                   sessionAuthSufficient: Bool = false) async throws
-        -> Data {
-        return try await walletSendService.send(
-            address: address,
-            amount: amount,
-            sessionAuthSufficient: sessionAuthSufficient
-        )
+    func payGiftCardOrder(address: String, amount: UInt64) async throws -> Data {
+        do {
+            return try await sendToAddress(address, amount, false)
+        } catch let unknown as WalletSendService.BroadcastOutcomeUnknown {
+            throw Self.paymentStatusUnknown(from: unknown)
+        }
+    }
+
+    /// The gift card error for a payment whose broadcast outcome is unknown. The reason is the
+    /// SDK's diagnostic when the send error carries one; it is logged, never shown.
+    static func paymentStatusUnknown(from unknown: WalletSendService.BroadcastOutcomeUnknown) -> DashSpendError {
+        let reason = unknown.underlying.userInfo[WalletSendService.diagnosticKey] as? String
+        return .paymentStatusUnknown(
+            txIdWire: unknown.txidWire, reason: reason ?? unknown.underlying.localizedDescription)
     }
 
     /// Submits a DashDEX (SwapKit) deposit. Memo-less routes remain a plain send to the
