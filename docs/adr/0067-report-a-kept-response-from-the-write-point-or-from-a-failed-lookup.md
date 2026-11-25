@@ -60,14 +60,16 @@ it gives is decided by the same pure predicate with the same block time the writ
 **Negative**
 - The note has two sources. They share the predicate and the block time, but a change to one
   path must be checked against the other.
-- Not every disconnect can give the note. One whose key update failed part way does not look
-  responses up. One that ends with `identityKeysOutOfDate` or `grantOnAnotherIdentity` has looked
-  them up, but the error replaces its result and the note with it.
+- Not every disconnect can give the note. One whose key updates stopped (an update to add fences
+  or turn keys off that is not known to have landed), or one with nothing to sign, does not look
+  responses up; a fence that fails to turn off afterwards does not stop it. One that ends with
+  `identityKeysOutOfDate` or `grantOnAnotherIdentity` may or may not have looked them up, and
+  either error replaces its result and any note with it.
 
 **Neutral**
 - A response whose lookups failed stays not removed; once its intent is closed, the next approval
   on the identity looks it up again (`AppConnect.responsesLeft`), and so does the next disconnect
-  there that has something to sign and whose key updates all go through.
+  there that has something to sign and whose key updates do not stop.
 
 ## Links
 

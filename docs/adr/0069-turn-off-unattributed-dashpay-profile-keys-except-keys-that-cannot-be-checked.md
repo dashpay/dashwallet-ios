@@ -52,8 +52,9 @@ accounts for is access nobody can see or end otherwise.
   A profile-bound key of another shape is not one App Connect gave: it is left on and not
   reported.
 - An open intent of the app on another identity of the wallet does not hold the profile keys
-  back: once the writes are done, the disconnect ends with `grantOnAnotherIdentity` instead of
-  its result.
+  back. Once the writes are done and the read after them leaves nothing to retry (no key
+  still live, no fence missing), the disconnect ends with `grantOnAnotherIdentity` instead of its result; with
+  either left, it returns its result, which asks for a retry.
 - When the store holds an intent this build cannot read and that names the active identity, or
   whose identity cannot be read, or when the stored value is not a list of intents, the whole
   disconnect stops before any write, the app's own keys included, and the user is asked to update
