@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import Combine
 import DashUIKit
 import SwiftUI
 import UIKit
@@ -31,51 +32,56 @@ protocol ConfirmPaymentViewControllerDelegate: AnyObject {
 
 /// The last step of an L1 send: the amount, what it costs, and the two buttons.
 ///
-/// Drawn with `DashUIKit.BottomSheet` rather than the hand-built stack of
-/// `BalanceView` + `UITableView` + `ActionButton` it used to be, so it matches
-/// the confirmation the internal transfer and the non-Core send routes present.
-/// Everything around the drawing is unchanged: it is still a `SheetViewController`
-/// (same presentation, same content-measured detent), still reports through
-/// `ConfirmPaymentViewControllerDelegate`, and `ConfirmPaymentModel` still owns
-/// what the rows say and when the button turns into "Sending…".
-///
-/// The model predates `ObservableObject` and pushes updates through two
-/// closures, so `State` below is the thin adapter between them and SwiftUI.
+/// `ConfirmPaymentSheet` draws it with the design system's parts, as the
+/// contact-payment and internal-transfer confirmations do, and observes
+/// `ConfirmPaymentModel` directly: the model owns what the rows say and when the
+/// button turns into "Sending…". This controller only presents the sheet (a
+/// `SheetViewController`, with the detent measured from the content), and
+/// reports the two buttons through `ConfirmPaymentViewControllerDelegate`.
 class ConfirmPaymentViewController: SheetViewController {
     public var delegate: ConfirmPaymentViewControllerDelegate?
-    public var isSendingEnabled = true {
-        didSet {
-            if !oldValue && isSendingEnabled {
+
+    public var isSendingEnabled: Bool {
+        get { model.isSendingEnabled }
+        set {
+            if !model.isSendingEnabled && newValue {
                 model.stopPayment()
             }
-
-            state.isSendingEnabled = isSendingEnabled
-            isModalInPresentation = !isSendingEnabled
+            model.isSendingEnabled = newValue
+            isModalInPresentation = !newValue
         }
     }
 
     internal let model: ConfirmPaymentModel
 
-    private let state = State()
+    private var itemsObserver: AnyCancellable?
 
-    /// Rebuilt from the model, so the detent can be re-resolved against it.
+    /// Kept so the detent can be measured against it.
     private lazy var hostingController: UIHostingController<AnyView> = {
         // `BottomSheet` stores its content closure, and this controller owns
         // the hosting controller that owns the sheet — so the closure holds
-        // the state object and a weak controller, never `self`. A strong
-        // capture kept every confirmation alive, and with it the model's
-        // exchange-rate observer and its "Sending…" timer.
-        let state = self.state
+        // the model and a weak controller, never `self`. A strong capture kept
+        // every confirmation alive, and with it the model's exchange-rate
+        // observer and its "Sending…" timer.
+        let model = self.model
         let sheet = DashUIKit.BottomSheet.selfSizing(
             title: String(localized: "Confirm", comment: "Payment confirmation"),
             showBackButton: .constant(false)
         ) { [weak self] in
             ConfirmPaymentSheet(
-                state: state,
+                model: model,
                 onCancel: { self?.cancel() },
                 onConfirm: { self?.confirm() })
         }
-        return UIHostingController(rootView: AnyView(sheet))
+        let hosting = UIHostingController(rootView: AnyView(sheet))
+        // Left on, the sheet's safe areas are counted into `sizeThatFits`, so
+        // the detent came out taller than the content.
+        hosting.safeAreaRegions = []
+        // Its own height, pinned to the top (see `configureHierarchy`):
+        // stretched to the sheet, a fixed-height `BottomSheet` centres in any
+        // slack, which put ~40pt of empty space above the grabber.
+        hosting.sizingOptions = .intrinsicContentSize
+        return hosting
     }()
 
     convenience init(dataSource: ConfirmPaymentDataSource, fiatCurrency: String) {
@@ -85,7 +91,6 @@ class ConfirmPaymentViewController: SheetViewController {
 
     init(model: ConfirmPaymentModel) {
         self.model = model
-
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -103,11 +108,11 @@ class ConfirmPaymentViewController: SheetViewController {
     /// height — a wrapped address or Dynamic Type does too.
     override func contentViewHeight() -> CGFloat {
         let width = view.bounds.width > 0 ? view.bounds.width : UIScreen.main.bounds.width
-        let bottomInset = view.window?.safeAreaInsets.bottom ?? 0
-        let measured = hostingController
+        // No home-indicator inset added: a custom detent's height already
+        // excludes the bottom safe area, and UIKit adds it on top.
+        return hostingController
             .sizeThatFits(in: CGSize(width: width, height: .greatestFiniteMagnitude))
             .height
-        return measured + bottomInset
     }
 
     override func viewDidLoad() {
@@ -118,51 +123,27 @@ class ConfirmPaymentViewController: SheetViewController {
         sheetPresentationController?.prefersGrabberVisible = false
         presentationController?.delegate = self
 
-        configureModel()
+        observeRows()
         configureHierarchy()
     }
 }
 
 extension ConfirmPaymentViewController {
-    private func configureModel() {
-        reloadState()
-
-        model.actionButtonTitleDidChange = { [weak self] in
-            self?.state.actionTitle = self?.model.actionButtonTitle ?? ""
-        }
-
-        model.dataSourceDidChange = { [weak self] in
-            self?.reloadState()
-        }
-    }
-
-    /// Pull everything the sheet draws off the model in one pass, and re-resolve
-    /// the detent when the rows changed — an updated payment output can add or
-    /// drop one.
-    ///
-    /// Only then: the model also calls this on every exchange-rate tick, which
-    /// moves the fiat text but never the row set, and re-resolving the detent
-    /// measures the whole SwiftUI tree for a height that did not change.
-    private func reloadState() {
-        let items = model.items ?? []
-        let rowsChanged = !items.elementsEqual(state.items) { $0 === $1 }
-        state.feeItem = model.feeItem
-        state.totalItem = model.totalItem
-        state.items = items
-        state.actionTitle = model.actionButtonTitle
-        // Digits only. `mainAmountString` is `formattedDashAmount`, which spells
-        // the currency out — "DASH 0.02" — and the component draws the symbol.
-        state.mainAmount = model.dataSource.amountToDisplay.dashAmount
-            .formattedDashAmountWithoutCurrencySymbol
-        state.feeDuffs = model.dataSource.feeDuffs
-        state.totalDuffs = model.dataSource.totalDuffs
-        state.supplementaryAmount = model.supplementaryAmountString
-
-        if rowsChanged, #available(iOS 16.0, *) {
-            sheetPresentationController?.animateChanges {
-                sheetPresentationController?.invalidateDetents()
+    /// Re-resolve the detent when the rows change: an updated payment output
+    /// can add or drop one. Only then — the model also changes on every
+    /// exchange-rate tick, which moves the fiat line but never the height, and
+    /// re-resolving the detent measures the whole SwiftUI tree.
+    private func observeRows() {
+        itemsObserver = model.$items
+            .dropFirst()
+            .removeDuplicates { $0.elementsEqual($1) { $0 === $1 } }
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let sheet = self?.sheetPresentationController else { return }
+                if #available(iOS 16.0, *) {
+                    sheet.animateChanges { sheet.invalidateDetents() }
+                }
             }
-        }
     }
 
     private func configureHierarchy() {
@@ -172,12 +153,14 @@ extension ConfirmPaymentViewController {
         hostingController.view.translatesAutoresizingMaskIntoConstraints = false
         hostingController.view.backgroundColor = .clear
         view.addSubview(hostingController.view)
+
         NSLayoutConstraint.activate([
             hostingController.view.topAnchor.constraint(equalTo: view.topAnchor),
-            hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            hostingController.view.bottomAnchor.constraint(lessThanOrEqualTo: view.safeAreaLayoutGuide.bottomAnchor),
             hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         ])
+
         hostingController.didMove(toParent: self)
     }
 
@@ -191,26 +174,6 @@ extension ConfirmPaymentViewController {
         isSendingEnabled = false
         model.confirmPayment()
         delegate?.confirmPaymentViewControllerDidConfirm(self)
-    }
-}
-
-// MARK: - ConfirmPaymentViewController.State
-
-extension ConfirmPaymentViewController {
-    /// What the sheet draws, republished from `ConfirmPaymentModel`'s callbacks.
-    @MainActor
-    fileprivate final class State: ObservableObject {
-        @Published var items: [DWTitleDetailItem] = []
-        /// The members of `items` that carry the fee and the total, by identity.
-        @Published var feeItem: DWTitleDetailItem?
-        @Published var totalItem: DWTitleDetailItem?
-        /// Absent when the data source has no duff figures; see `ConfirmPaymentDataSource`.
-        @Published var feeDuffs: UInt64?
-        @Published var totalDuffs: UInt64?
-        @Published var actionTitle = ""
-        @Published var mainAmount = ""
-        @Published var supplementaryAmount = ""
-        @Published var isSendingEnabled = true
     }
 }
 
@@ -233,8 +196,8 @@ extension ConfirmPaymentViewController: UIAdaptivePresentationControllerDelegate
 /// Nothing below decides anything: the rows arrive as `DWTitleDetailItem`s the
 /// model already assembled, and the confirm title is whatever the model says it
 /// is right now — including its "Sending. / .. / ..." animation.
-private struct ConfirmPaymentSheet: View {
-    @ObservedObject var state: ConfirmPaymentViewController.State
+struct ConfirmPaymentSheet: View {
+    @ObservedObject var model: ConfirmPaymentModel
 
     /// Every place a duff can occupy. A Core fee is a few hundred of them, and
     /// the component's five-place default renders that as "0" — a confirmation
@@ -246,17 +209,16 @@ private struct ConfirmPaymentSheet: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // `mainAmount` is digits only (see `reloadState`), so the Dash
-            // symbol is the component's own logo.
+            // Digits only, so the Dash symbol is the component's own logo.
             DashUIKit.SwapAmountView(
-                amount: state.mainAmount,
-                secondaryText: state.supplementaryAmount,
+                amount: mainAmount,
+                secondaryText: model.supplementaryAmountString,
                 showDashLogo: true)
                 .frame(maxWidth: .infinity)
                 .padding(.top, 14)
 
             VStack(spacing: 0) {
-                ForEach(Array(state.items.enumerated()), id: \.offset) { _, item in
+                ForEach(Array(model.items.enumerated()), id: \.offset) { _, item in
                     if let title = item.title, !title.isEmpty {
                         DashUIKit.MenuItem(
                             title: title,
@@ -272,7 +234,7 @@ private struct ConfirmPaymentSheet: View {
             HStack(spacing: 20) {
                 DashUIKit.DashButton(
                     text: String(localized: "Cancel", comment: "Payment confirmation"),
-                    // Deliberately not `state.isSendingEnabled`: confirming
+                    // Deliberately not `model.isSendingEnabled`: confirming
                     // also sets `isModalInPresentation`, so disabling Cancel
                     // too would leave a send that never resolves with no way
                     // off the sheet. Only the confirm button locks, as before.
@@ -284,8 +246,8 @@ private struct ConfirmPaymentSheet: View {
                 )
 
                 DashUIKit.DashButton(
-                    text: state.actionTitle,
-                    isEnabled: state.isSendingEnabled,
+                    text: model.actionButtonTitle,
+                    isEnabled: model.isSendingEnabled,
                     fillsWidth: true,
                     size: .large,
                     style: .filledBlue,
@@ -298,23 +260,29 @@ private struct ConfirmPaymentSheet: View {
         .padding(.bottom, 20)
     }
 
+    /// Digits only: `mainAmountString` is `formattedDashAmount`, which spells
+    /// the currency out — "DASH 0.02" — and the component draws the symbol.
+    private var mainAmount: String {
+        model.dataSource.amountToDisplay.dashAmount.formattedDashAmountWithoutCurrencySymbol
+    }
+
     /// How a row's value is drawn.
     ///
     /// The two money rows go through `.balance`, which renders the amount with
     /// the library's own Dash symbol. Their `attributedDetail` carries one too,
     /// but as an image attachment — read back as plain text it disappears and
-    /// the row shows a bare number, which is what it did.
+    /// the row shows a bare number.
     ///
     /// Matched by identity against the items `ConfirmPaymentModel` handed over
     /// as the fee and the total, not by title: data sources title those rows
     /// differently ("Network fee" on the L1 path, "Fee" on Uphold), and a
     /// title match that misses degrades silently into the plain-text row.
     private func accessory(for item: DWTitleDetailItem) -> DashUIKit.MenuItemAccessory {
-        if let fee = state.feeDuffs, item === state.feeItem {
+        if let fee = model.dataSource.feeDuffs, item === model.feeItem {
             return .balance(dash: Int64(clamping: fee), sign: .none,
                             maximumFractionDigits: Self.dashFractionDigits)
         }
-        if let total = state.totalDuffs, item === state.totalItem {
+        if let total = model.dataSource.totalDuffs, item === model.totalItem {
             return .balance(dash: Int64(clamping: total), sign: .none,
                             maximumFractionDigits: Self.dashFractionDigits)
         }
