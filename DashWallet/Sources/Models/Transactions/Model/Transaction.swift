@@ -522,7 +522,7 @@ class Transaction: TransactionDataItem, Identifiable {
         // `dashAmount`), so compute its fiat live too; other rows keep the
         // lazily-cached value.
         if dashPayPayment != nil || shieldedTransferAmountDuffs != nil || platformFundingAmountDuffs != nil || identityFundingAmountDuffs != nil {
-            return userInfo?.fiatAmountString(from: dashAmount) ?? NSLocalizedString("Not available", comment: "")
+            return userInfo?.fiatAmountString(from: dashAmount) ?? String(localized: "Not available", comment: "")
         }
         return storedFiatAmount
     }
@@ -531,7 +531,7 @@ class Transaction: TransactionDataItem, Identifiable {
         state == .invalid ? "tx.invalid.icon" : direction.iconName
     }
 
-    private lazy var storedFiatAmount = userInfo?.fiatAmountString(from: _dashAmount) ?? NSLocalizedString("Not available", comment: "");
+    private lazy var storedFiatAmount = userInfo?.fiatAmountString(from: _dashAmount) ?? String(localized: "Not available", comment: "");
 
     lazy var userInfo: TransactionMetadata? = TransactionMetadataDAOImpl.shared.get(by: txHashData)
 
@@ -623,11 +623,11 @@ class Transaction: TransactionDataItem, Identifiable {
         if let identityType = identityFundingLockInfo?.fundingTypeRaw {
             switch identityType {
             case 0:
-                return NSLocalizedString("Identity registration", comment: "Asset lock funding a DashPay identity registration")
+                return String(localized: "Identity registration", comment: "Asset lock funding a DashPay identity registration")
             case 3:
-                return NSLocalizedString("Invitation", comment: "")
+                return String(localized: "Invitation", comment: "")
             default:
-                return NSLocalizedString("Identity top-up", comment: "Asset lock topping up a DashPay identity's credits")
+                return String(localized: "Identity top-up", comment: "Asset lock topping up a DashPay identity's credits")
             }
         }
         // A DashPay contact payment names the counterparty — the owner-set
@@ -637,8 +637,8 @@ class Transaction: TransactionDataItem, Identifiable {
         // overlaid `direction` already points the right way).
         if let payment = dashPayPayment, let name = payment.titleName {
             return payment.isOutgoing
-                ? String(format: NSLocalizedString("Sent to %@", comment: "DashPay payment row — recipient's display name"), name)
-                : String(format: NSLocalizedString("Received from %@", comment: "DashPay payment row — sender's display name"), name)
+                ? String(localized: "Sent to \(name)", comment: "DashPay payment row — recipient's display name")
+                : String(localized: "Received from \(name)", comment: "DashPay payment row — sender's display name")
         }
         // Every balance-to-balance transfer reads "Internal Transfer"; the
         // route is carried visually (source icon → destination badge), by
@@ -647,34 +647,34 @@ class Transaction: TransactionDataItem, Identifiable {
         // would also label "Internal Transfer", but with a 0 amount) and the
         // Shielded → Transparent payout (which would read "Received").
         if let route = internalTransferRoute, route != .coreToCore {
-            return NSLocalizedString("Internal Transfer", comment: "Transaction within the wallet, transfer of own funds")
+            return String(localized: "Internal Transfer", comment: "Transaction within the wallet, transfer of own funds")
         }
         switch transactionType {
         case .classic:
             switch direction {
             case .sent:
                 if state == .processing {
-                    return NSLocalizedString("Sending", comment: "")
+                    return String(localized: "Sending", comment: "")
                 } else if state == .invalid {
-                    return NSLocalizedString("Invalid", comment: "")
+                    return String(localized: "Invalid", comment: "")
                 } else {
-                    return NSLocalizedString("Sent", comment: "")
+                    return String(localized: "Sent", comment: "")
                 }
             case .received, .notAccountFunds:
-                return NSLocalizedString("Received", comment: "")
+                return String(localized: "Received", comment: "")
             case .moved:
-                return NSLocalizedString("Internal Transfer", comment:"Transaction within the wallet, transfer of own funds");
+                return String(localized: "Internal Transfer", comment:"Transaction within the wallet, transfer of own funds");
             }
         case .reward:
-            return NSLocalizedString("Mining Reward", comment: "Transaction type: coinbase/masternode mining reward")
+            return String(localized: "Mining Reward", comment: "Transaction type: coinbase/masternode mining reward")
         case .masternodeRegistration:
-            return NSLocalizedString("Masternode Registration", comment: "")
+            return String(localized: "Masternode Registration", comment: "")
         case .masternodeUpdate:
-            return NSLocalizedString("Masternode Update", comment: "")
+            return String(localized: "Masternode Update", comment: "")
         case .masternodeRevoke:
-            return NSLocalizedString("Masternode Revocation", comment: "")
+            return String(localized: "Masternode Revocation", comment: "")
         case .blockchainIdentityRegistration:
-            return NSLocalizedString("DashPay Upgrade Fee", comment: "")
+            return String(localized: "DashPay Upgrade Fee", comment: "")
         }
     }
 

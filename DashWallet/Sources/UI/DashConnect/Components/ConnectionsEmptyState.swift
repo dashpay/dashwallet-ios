@@ -72,21 +72,21 @@ struct ConnectionsEmptyState: View {
     private var title: String {
         switch kind {
         case .noApps:
-            return NSLocalizedString("No apps connected yet", comment: "DashConnect")
+            return String(localized: "No apps connected yet", comment: "DashConnect")
         case .noUsername:
-            return NSLocalizedString("Sign in to apps without passwords", comment: "DashConnect: no username")
+            return String(localized: "Sign in to apps without passwords", comment: "DashConnect: no username")
         }
     }
 
     private var message: String {
         switch kind {
         case .noApps:
-            return NSLocalizedString(
-                "Connect your DashPay username to apps on the Dash network to sign in without passwords or accounts",
+            return String(
+                localized: "Connect your DashPay username to apps on the Dash network to sign in without passwords or accounts",
                 comment: "DashConnect")
         case .noUsername:
-            return NSLocalizedString(
-                "Apps on the Dash network use your Platform identity instead of accounts and passwords",
+            return String(
+                localized: "Apps on the Dash network use your Platform identity instead of accounts and passwords",
                 comment: "DashConnect: no username")
         }
     }
@@ -100,7 +100,7 @@ struct ConnectionsEmptyState: View {
         case let .noUsername(onCreateUsername):
             if let onCreateUsername {
                 DashUIKit.DashButton(
-                    text: NSLocalizedString("Create username", comment: "Usernames"),
+                    text: String(localized: "Create username", comment: "Usernames"),
                     fillsWidth: true, size: .large, style: .filledBlue, action: onCreateUsername)
                     .frame(maxWidth: 200)
             }

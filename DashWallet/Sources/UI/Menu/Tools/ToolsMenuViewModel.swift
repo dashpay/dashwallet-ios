@@ -111,29 +111,29 @@ class ToolsMenuViewModel: ObservableObject {
     private func setupMenuItems() {
         items = [
             MenuItemModel(
-                title: NSLocalizedString("Extended public key (BIP44)", comment: ""),
+                title: String(localized: "Extended public key (BIP44)", comment: ""),
                 icon: .custom("image.extend.public.key", maxHeight: 30),
                 action: { [weak self] in
                     self?.navigationDestination = .extendedPublicKeys
                 }
             ),
             MenuItemModel(
-                title: NSLocalizedString("Masternode Keychain", comment: ""),
+                title: String(localized: "Masternode Keychain", comment: ""),
                 icon: .custom("image.masternode.keys", maxHeight: 30),
                 action: { [weak self] in
                     self?.navigationDestination = .masternodeKeys
                 }
             ),
             MenuItemModel(
-                title: NSLocalizedString("CSV Export", comment: ""),
+                title: String(localized: "CSV Export", comment: ""),
                 icon: .custom("image.csv.export", maxHeight: 30),
                 action: { [weak self] in
                     self?.navigationDestination = .csvExport
                 }
             ),
             MenuItemModel(
-                title: NSLocalizedString("Export Logs", comment: "Log export"),
-                subtitle: NSLocalizedString("Bundle recent diagnostic logs into a zip to AirDrop, mail, or save to Files", comment: "Log export"),
+                title: String(localized: "Export Logs", comment: "Log export"),
+                subtitle: String(localized: "Bundle recent diagnostic logs into a zip to AirDrop, mail, or save to Files", comment: "Log export"),
                 icon: .system("square.and.arrow.up"),
                 action: { [weak self] in
                     self?.exportDiagnosticLogs()
@@ -147,15 +147,15 @@ class ToolsMenuViewModel: ObservableObject {
                 }
             ),
             MenuItemModel(
-                title: NSLocalizedString("Connections", comment: "DashConnect"),
+                title: String(localized: "Connections", comment: "DashConnect"),
                 icon: .custom("menu-connections", maxHeight: 30),
                 action: { [weak self] in
                     self?.navigationDestination = .connections
                 }
             ),
             MenuItemModel(
-                title: NSLocalizedString("ZenLedger", comment: ""),
-                subtitle: NSLocalizedString("Simplify your crypto taxes", comment: ""),
+                title: String(localized: "ZenLedger", comment: ""),
+                subtitle: String(localized: "Simplify your crypto taxes", comment: ""),
                 icon: .custom("zenledger", maxHeight: 30),
                 action: { [weak self] in
                     self?.navigationDestination = .zenLedger
@@ -171,8 +171,8 @@ class ToolsMenuViewModel: ObservableObject {
            let storageIdx = items.firstIndex(where: { $0.title == "Storage Explorer" }) {
             items.insert(
                 MenuItemModel(
-                    title: NSLocalizedString("Move CoinJoin Funds", comment: "CoinJoin"),
-                    subtitle: NSLocalizedString("CoinJoin is no longer supported", comment: "CoinJoin"),
+                    title: String(localized: "Move CoinJoin Funds", comment: "CoinJoin"),
+                    subtitle: String(localized: "CoinJoin is no longer supported", comment: "CoinJoin"),
                     icon: .custom("image.coinjoin.menu", maxHeight: 22),
                     action: { [weak self] in
                         guard let self else { return }

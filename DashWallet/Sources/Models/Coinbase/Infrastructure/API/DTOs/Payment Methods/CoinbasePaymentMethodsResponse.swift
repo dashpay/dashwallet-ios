@@ -94,23 +94,23 @@ public enum PaymentMethodType: String, Codable {
     var displayString: String {
         switch self {
         case .achBankAccount, .sepaBankAccount, .idealBankAccount, .eftBankAccount:
-            return NSLocalizedString("Bank Account", comment: "Coinbase/Payment Methods")
+            return String(localized: "Bank Account", comment: "Coinbase/Payment Methods")
         case .fiatAccount:
-            return NSLocalizedString("Fiat Account", comment: "Coinbase/Payment Methods")
+            return String(localized: "Fiat Account", comment: "Coinbase/Payment Methods")
         case .bankWire:
-            return NSLocalizedString("Bank Wire", comment: "Coinbase/Payment Methods")
+            return String(localized: "Bank Wire", comment: "Coinbase/Payment Methods")
         case .creditCard:
-            return NSLocalizedString("Credit Card", comment: "Coinbase/Payment Methods")
+            return String(localized: "Credit Card", comment: "Coinbase/Payment Methods")
         case .secure3dCard:
-            return NSLocalizedString("Credit Card", comment: "Coinbase/Payment Methods")
+            return String(localized: "Credit Card", comment: "Coinbase/Payment Methods")
         case .interac:
-            return NSLocalizedString("Interac", comment: "Coinbase/Payment Methods")
+            return String(localized: "Interac", comment: "Coinbase/Payment Methods")
         case .applePay:
-            return NSLocalizedString("Apple Pay", comment: "Coinbase/Payment Methods")
+            return String(localized: "Apple Pay", comment: "Coinbase/Payment Methods")
         case .googlePay:
-            return NSLocalizedString("Google Pay", comment: "Coinbase/Payment Methods")
+            return String(localized: "Google Pay", comment: "Coinbase/Payment Methods")
         case .payPal:
-            return NSLocalizedString("PayPal", comment: "Coinbase/Payment Methods")
+            return String(localized: "PayPal", comment: "Coinbase/Payment Methods")
         }
     }
 

@@ -251,9 +251,7 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
 
     /// "Converted · USDT/DASH" — the row title of a swap whose Dash transaction exists.
     static func convertedTitle(for order: SwapOrder) -> String {
-        String(
-            format: NSLocalizedString("Converted · %@", comment: "Dash DEX / tx history row title"),
-            pairLabel(for: order))
+        String(localized: "Converted · \(pairLabel(for: order))", comment: "Dash DEX / tx history row title")
     }
 
     /// "USDT/DASH" — the order's pair in short tickers.
@@ -277,11 +275,11 @@ class SwapOrderMetadataProvider: MetadataProvider, @unchecked Sendable {
     static func statusLabel(for status: SwapOrderStatus) -> String? {
         switch status {
         case .notStarted, .pending:
-            return NSLocalizedString("Pending", comment: "Dash DEX")
+            return String(localized: "Pending", comment: "Dash DEX")
         case .swapping:
-            return NSLocalizedString("Swapping", comment: "Dash DEX")
+            return String(localized: "Swapping", comment: "Dash DEX")
         case .unknown:
-            return NSLocalizedString("In progress", comment: "Dash DEX")
+            return String(localized: "In progress", comment: "Dash DEX")
         case .completed, .refunded, .failed, .expired:
             return nil
         }
@@ -312,11 +310,9 @@ struct BuySwapOrderItem: Identifiable {
         case .completed:
             return SwapOrderMetadataProvider.convertedTitle(for: order)
         case .refunded, .failed, .expired:
-            return String(
-                format: NSLocalizedString("Not converted · %@", comment: "Dash DEX / tx history row title"), pair)
+            return String(localized: "Not converted · \(pair)", comment: "Dash DEX / tx history row title")
         case .notStarted, .pending, .swapping, .unknown:
-            return String(
-                format: NSLocalizedString("Converting · %@", comment: "Dash DEX / tx history row title"), pair)
+            return String(localized: "Converting · \(pair)", comment: "Dash DEX / tx history row title")
         }
     }
 
@@ -355,17 +351,17 @@ struct BuySwapOrderItem: Identifiable {
     var statusText: String {
         switch order.buyPhase {
         // Never shown: an unpaid order has no row. Present only to keep the switch total.
-        case .awaitingPayment: return NSLocalizedString("Pending", comment: "Dash DEX")
-        case .waitingForProvider: return NSLocalizedString("Waiting for the provider", comment: "Dash DEX")
+        case .awaitingPayment: return String(localized: "Pending", comment: "Dash DEX")
+        case .waitingForProvider: return String(localized: "Waiting for the provider", comment: "Dash DEX")
         // The provider's own in-progress states, worded as on the finished swap's row.
         case .processing:
             return SwapOrderMetadataProvider.statusLabel(for: order.status)
-                ?? NSLocalizedString("In progress", comment: "Dash DEX")
-        case .stuck: return NSLocalizedString("Stuck", comment: "Dash DEX")
-        case .completed: return NSLocalizedString("Completed", comment: "Dash DEX")
-        case .refunded: return NSLocalizedString("Refunded", comment: "Dash DEX")
-        case .failed: return NSLocalizedString("Failed", comment: "Dash DEX")
-        case .expired: return NSLocalizedString("Not confirmed", comment: "Dash DEX")
+                ?? String(localized: "In progress", comment: "Dash DEX")
+        case .stuck: return String(localized: "Stuck", comment: "Dash DEX")
+        case .completed: return String(localized: "Completed", comment: "Dash DEX")
+        case .refunded: return String(localized: "Refunded", comment: "Dash DEX")
+        case .failed: return String(localized: "Failed", comment: "Dash DEX")
+        case .expired: return String(localized: "Not confirmed", comment: "Dash DEX")
         }
     }
 }

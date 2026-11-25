@@ -54,7 +54,7 @@ final class ContactsViewModel: ObservableObject {
             return displayName
         }
         return ownUsername
-            ?? NSLocalizedString("My identity", comment: "DashPay: banner fallback when the identity has no name yet")
+            ?? String(localized: "My identity", comment: "DashPay: banner fallback when the identity has no name yet")
     }
 
     /// Network (DPNS) matches for the tab's search text — the discovery
@@ -154,10 +154,7 @@ final class ContactsViewModel: ObservableObject {
     var enableDashPayEstimatedCostText: String {
         let duffs = SwiftDashSDKContactsService.enableDashPayEstimatedFeeDuffs(
             missingKeyCount: missingDashPayKeyCount)
-        return String.localizedStringWithFormat(
-            NSLocalizedString("~%@ DASH (≈ %@)", comment: "DashPay: estimated network fee — DASH amount, then its local-currency equivalent"),
-            duffs.formattedDashAmountWithoutCurrencySymbol,
-            CurrencyExchanger.shared.fiatAmountString(for: duffs.dashAmount))
+        return String(localized: "~\(duffs.formattedDashAmountWithoutCurrencySymbol) DASH (≈ \(CurrencyExchanger.shared.fiatAmountString(for: duffs.dashAmount)))", comment: "DashPay: estimated network fee — DASH amount, then its local-currency equivalent")
     }
 
     /// True right after a successful enable — drives the one-off success
@@ -319,12 +316,12 @@ struct ContactsScreen: View {
                 ContactProfileSheet(contact: contact)
             }
             .alert(
-                NSLocalizedString("Error", comment: ""),
+                String(localized: "Error", comment: ""),
                 isPresented: Binding(
                     get: { viewModel.errorMessage != nil },
                     set: { if !$0 { viewModel.errorMessage = nil } })
             ) {
-                Button(NSLocalizedString("OK", comment: ""), role: .cancel) {}
+                Button(String(localized: "OK", comment: ""), role: .cancel) {}
             } message: {
                 Text(viewModel.errorMessage ?? "")
             }
@@ -341,7 +338,7 @@ struct ContactsScreen: View {
             // requests can actually be exchanged.
             VStack(spacing: 0) {
                 DashUIKit.NavigationBar(central: {
-                    Text(NSLocalizedString("DashPay", comment: "DashPay"))
+                    Text(String(localized: "DashPay", comment: "DashPay"))
                         .dashFont(.subheadMedium)
                         .foregroundColor(.dash.primaryText)
                 })
@@ -379,7 +376,7 @@ struct ContactsScreen: View {
     private var dashPayBanner: some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack {
-                Text(NSLocalizedString("Contacts", comment: "DashPay Contacts"))
+                Text(String(localized: "Contacts", comment: "DashPay Contacts"))
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.white)
                 Spacer()
@@ -392,7 +389,7 @@ struct ContactsScreen: View {
                         .frame(width: 34, height: 34)
                         .background(Circle().fill(Color.white.opacity(0.18)))
                 }
-                .accessibilityLabel(NSLocalizedString("Add a New Contact", comment: "DashPay Contacts"))
+                .accessibilityLabel(String(localized: "Add a New Contact", comment: "DashPay Contacts"))
             }
             .padding(.bottom, 8)
 
@@ -412,7 +409,7 @@ struct ContactsScreen: View {
                             .foregroundColor(.white)
                             .lineLimit(1)
                         if let username = viewModel.ownUsername {
-                            Text("@\(username) · " + NSLocalizedString("View profile", comment: "DashPay: banner identity row subtitle"))
+                            Text("@\(username) · " + String(localized: "View profile", comment: "DashPay: banner identity row subtitle"))
                                 .font(.system(size: 12.5))
                                 .foregroundColor(.white.opacity(0.82))
                                 .lineLimit(1)
@@ -450,16 +447,14 @@ struct ContactsScreen: View {
         ScrollView {
             LazyVStack(spacing: 0) {
                 ContactsSearchField(
-                    placeholder: NSLocalizedString("Search Contacts", comment: "DashPay Contacts"),
+                    placeholder: String(localized: "Search Contacts", comment: "DashPay Contacts"),
                     text: $filterText)
                     .padding(.horizontal, 15)
                     .padding(.top, 12)
 
                 if !filteredIncoming.isEmpty {
                     sectionHeader(
-                        String(
-                            format: NSLocalizedString("Contact Requests (%d)", comment: "DashPay Contacts"),
-                            filteredIncoming.count),
+                        String(format: String(localized: "Contact Requests (%d)", comment: "DashPay Contacts"), filteredIncoming.count),
                         size: 15)
                     ForEach(entries(filteredIncoming, section: .incoming)) { entry in
                         let item = entry.item
@@ -476,7 +471,7 @@ struct ContactsScreen: View {
                 }
 
                 if !filteredContacts.isEmpty {
-                    sectionHeader(NSLocalizedString("My Contacts", comment: "DashPay Contacts"), size: 17)
+                    sectionHeader(String(localized: "My Contacts", comment: "DashPay Contacts"), size: 17)
                     ForEach(entries(filteredContacts, section: .established)) { entry in
                         let item = entry.item
                         cardRow {
@@ -487,7 +482,7 @@ struct ContactsScreen: View {
                 }
 
                 if !filteredOutgoing.isEmpty {
-                    sectionHeader(NSLocalizedString("Pending Requests", comment: "DashPay Contacts"), size: 15)
+                    sectionHeader(String(localized: "Pending Requests", comment: "DashPay Contacts"), size: 15)
                     ForEach(entries(filteredOutgoing, section: .outgoing)) { entry in
                         let item = entry.item
                         cardRow {
@@ -499,7 +494,7 @@ struct ContactsScreen: View {
                 }
 
                 if !filteredHidden.isEmpty {
-                    sectionHeader(NSLocalizedString("Hidden", comment: "DashPay Contacts"), size: 15)
+                    sectionHeader(String(localized: "Hidden", comment: "DashPay Contacts"), size: 15)
                     ForEach(entries(filteredHidden, section: .hidden)) { entry in
                         let item = entry.item
                         cardRow {
@@ -529,13 +524,13 @@ struct ContactsScreen: View {
     @ViewBuilder
     private var networkResultsSection: some View {
         if trimmedFilter.count >= 2 {
-            sectionHeader(NSLocalizedString("On the Dash network", comment: "DashPay Contacts: search results from DPNS, not the local contact list"), size: 15)
+            sectionHeader(String(localized: "On the Dash network", comment: "DashPay Contacts: search results from DPNS, not the local contact list"), size: 15)
             if viewModel.isSearchingNetwork && viewModel.networkSearchResults.isEmpty {
                 SwiftUI.ProgressView()
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
             } else if viewModel.networkSearchResults.isEmpty {
-                Text(NSLocalizedString("No usernames found", comment: "DashPay Contacts"))
+                Text(String(localized: "No usernames found", comment: "DashPay Contacts"))
                     .font(.system(size: 13))
                     .foregroundColor(.dash.secondaryText)
                     .frame(maxWidth: .infinity)
@@ -566,7 +561,7 @@ struct ContactsScreen: View {
                     Button {
                         openAddContact(query: trimmedFilter)
                     } label: {
-                        Text(NSLocalizedString("Show more results", comment: "DashPay Contacts: expands the network search into the full add-contact flow"))
+                        Text(String(localized: "Show more results", comment: "DashPay Contacts: expands the network search into the full add-contact flow"))
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(.dash.blue)
                             .frame(maxWidth: .infinity)
@@ -613,10 +608,10 @@ struct ContactsScreen: View {
                 .font(.system(size: 72, weight: .light))
                 .foregroundColor(.dash.blue)
                 .padding(.bottom, 12)
-            Text(NSLocalizedString("Add a New Contact", comment: "DashPay Contacts"))
+            Text(String(localized: "Add a New Contact", comment: "DashPay Contacts"))
                 .font(.system(size: 20, weight: .bold))
                 .foregroundColor(.dash.primaryText)
-            Text(NSLocalizedString("Find a user and add them to your contacts.", comment: "DashPay Contacts"))
+            Text(String(localized: "Find a user and add them to your contacts.", comment: "DashPay Contacts"))
                 .font(.system(size: 16))
                 .foregroundColor(.dash.secondaryText)
                 .multilineTextAlignment(.center)
@@ -625,7 +620,7 @@ struct ContactsScreen: View {
                 showingAddContact = true
             } label: {
                 Label(
-                    NSLocalizedString("Search for a User", comment: "DashPay Contacts"),
+                    String(localized: "Search for a User", comment: "DashPay Contacts"),
                     systemImage: "magnifyingglass")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(Color.dash.whiteText)
@@ -686,14 +681,14 @@ private struct DashPayIntroView: View {
                         .background(Circle().fill(Color.dash.blue.opacity(0.08)))
                         .padding(.top, 12)
 
-                    Text(NSLocalizedString("Pay people, not addresses", comment: "DashPay intro: headline"))
+                    Text(String(localized: "Pay people, not addresses", comment: "DashPay intro: headline"))
                         .font(.system(size: 22, weight: .bold))
                         .foregroundColor(.dash.primaryText)
                         .multilineTextAlignment(.center)
                         .padding(.top, 16)
 
-                    Text(NSLocalizedString(
-                        "DashPay replaces long cryptic addresses with usernames. Add friends as contacts, send money to a name, and keep every payment organized by person.",
+                    Text(String(
+                        localized: "DashPay replaces long cryptic addresses with usernames. Add friends as contacts, send money to a name, and keep every payment organized by person.",
                         comment: "DashPay intro: pitch paragraph"))
                         .font(.system(size: 15))
                         .foregroundColor(.dash.secondaryText)
@@ -705,20 +700,20 @@ private struct DashPayIntroView: View {
                     VStack(spacing: 14) {
                         featureRow(
                             icon: "at",
-                            title: NSLocalizedString("Usernames, not addresses", comment: "DashPay intro: feature title"),
-                            body: NSLocalizedString("Send to a username you can actually remember and verify.", comment: "DashPay intro: feature body"))
+                            title: String(localized: "Usernames, not addresses", comment: "DashPay intro: feature title"),
+                            body: String(localized: "Send to a username you can actually remember and verify.", comment: "DashPay intro: feature body"))
                         featureRow(
                             icon: "lock.shield.fill",
-                            title: NSLocalizedString("Private payments", comment: "DashPay intro: feature title"),
-                            body: NSLocalizedString("Private payment addresses are exchanged between you and your contacts. Only you and your contact know the recipient and sender of payments between yourselves.", comment: "DashPay intro: feature body"))
+                            title: String(localized: "Private payments", comment: "DashPay intro: feature title"),
+                            body: String(localized: "Private payment addresses are exchanged between you and your contacts. Only you and your contact know the recipient and sender of payments between yourselves.", comment: "DashPay intro: feature body"))
                         featureRow(
                             icon: "clock.arrow.circlepath",
-                            title: NSLocalizedString("Your history, organized", comment: "DashPay intro: feature title"),
-                            body: NSLocalizedString("Payments with each contact are grouped in one place, with names and profiles instead of raw transactions.", comment: "DashPay intro: feature body"))
+                            title: String(localized: "Your history, organized", comment: "DashPay intro: feature title"),
+                            body: String(localized: "Payments with each contact are grouped in one place, with names and profiles instead of raw transactions.", comment: "DashPay intro: feature body"))
                         featureRow(
                             icon: "sparkles",
-                            title: NSLocalizedString("Coming soon", comment: "DashPay intro: feature title"),
-                            body: NSLocalizedString("Private contact requests, Shielded DashPay, and paying people who aren't contacts yet.", comment: "DashPay intro: coming-soon body"))
+                            title: String(localized: "Coming soon", comment: "DashPay intro: feature title"),
+                            body: String(localized: "Private contact requests, Shielded DashPay, and paying people who aren't contacts yet.", comment: "DashPay intro: coming-soon body"))
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 20)
@@ -726,7 +721,7 @@ private struct DashPayIntroView: View {
                     Button {
                         showingFAQ = true
                     } label: {
-                        Text(NSLocalizedString("Learn More", comment: "DashPay intro: opens the FAQ"))
+                        Text(String(localized: "Learn More", comment: "DashPay intro: opens the FAQ"))
                             .font(.system(size: 15, weight: .medium))
                             .foregroundColor(.dash.blue)
                     }
@@ -738,7 +733,7 @@ private struct DashPayIntroView: View {
             Button {
                 showingEnableDashPay = true
             } label: {
-                Text(NSLocalizedString("Enable DashPay", comment: "DashPay: add the identity keys other users need to send contact requests"))
+                Text(String(localized: "Enable DashPay", comment: "DashPay: add the identity keys other users need to send contact requests"))
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(Color.dash.whiteText)
                     .frame(maxWidth: .infinity)
@@ -801,56 +796,56 @@ private struct DashPayFAQSheet: View {
     private var items: [Item] {
         [
             Item(
-                question: NSLocalizedString("What is DashPay?", comment: "DashPay FAQ"),
-                answer: NSLocalizedString(
-                    "DashPay is Dash's social payments experience, built on Dash Platform. You register a username, add other users as contacts, and pay them by name — no more copying addresses.",
+                question: String(localized: "What is DashPay?", comment: "DashPay FAQ"),
+                answer: String(
+                    localized: "DashPay is Dash's social payments experience, built on Dash Platform. You register a username, add other users as contacts, and pay them by name — no more copying addresses.",
                     comment: "DashPay FAQ")),
             Item(
-                question: NSLocalizedString("Why do I need to enable it?", comment: "DashPay FAQ"),
-                answer: NSLocalizedString(
-                    "Your identity needs an encryption and a decryption key so contact requests can be encrypted between you and other users. Enabling adds whichever of them are missing with a single network transaction. This is a one time event.",
+                question: String(localized: "Why do I need to enable it?", comment: "DashPay FAQ"),
+                answer: String(
+                    localized: "Your identity needs an encryption and a decryption key so contact requests can be encrypted between you and other users. Enabling adds whichever of them are missing with a single network transaction. This is a one time event.",
                     comment: "DashPay FAQ")),
             Item(
-                question: NSLocalizedString("How private is DashPay?", comment: "DashPay FAQ"),
-                answer: NSLocalizedString(
-                    "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform.",
+                question: String(localized: "How private is DashPay?", comment: "DashPay FAQ"),
+                answer: String(
+                    localized: "Payments are private: the addresses you exchange with a contact travel inside an encrypted payload only the two of you can read, and are never published — so your payments aren't trivially linkable to your username. They are still regular transparent-chain payments, though: sophisticated chain analysis might leak information. Shielded DashPay (coming soon) will close that gap. Contact requests themselves are currently NOT private: anyone can see that two identities are connected. Private contact requests are a feature coming soon. Your username and profile are also public on Dash Platform.",
                     comment: "DashPay FAQ")),
             Item(
-                question: NSLocalizedString("When will contact requests become private?", comment: "DashPay FAQ"),
-                answer: NSLocalizedString(
-                    "Private contact requests are in development and expected around September–October 2026. Today the request itself is public — anyone can see that two identities are connected, even though the payment details inside it are encrypted. Once private contact requests ship, you will have the choice of having your friendship be public or private.",
+                question: String(localized: "When will contact requests become private?", comment: "DashPay FAQ"),
+                answer: String(
+                    localized: "Private contact requests are in development and expected around September–October 2026. Today the request itself is public — anyone can see that two identities are connected, even though the payment details inside it are encrypted. Once private contact requests ship, you will have the choice of having your friendship be public or private.",
                     comment: "DashPay FAQ")),
             Item(
-                question: NSLocalizedString("How does this compare to Bitcoin in terms of privacy?", comment: "DashPay FAQ"),
-                answer: NSLocalizedString(
-                    "On Bitcoin there is no name layer, so people share and reuse addresses out in the open — once an address is known, everything it ever received is linkable to its owner. With DashPay your username is public, but it never points at a payment address: addresses are exchanged privately per contact and rotate, so paying by name doesn't publish where your money goes. Both are transparent chains, so chain analysis still applies to the coins themselves.",
+                question: String(localized: "How does this compare to Bitcoin in terms of privacy?", comment: "DashPay FAQ"),
+                answer: String(
+                    localized: "On Bitcoin there is no name layer, so people share and reuse addresses out in the open — once an address is known, everything it ever received is linkable to its owner. With DashPay your username is public, but it never points at a payment address: addresses are exchanged privately per contact and rotate, so paying by name doesn't publish where your money goes. Both are transparent chains, so chain analysis still applies to the coins themselves.",
                     comment: "DashPay FAQ")),
             Item(
-                question: NSLocalizedString("How does this compare to Ethereum Accounts in terms of privacy?", comment: "DashPay FAQ"),
-                answer: NSLocalizedString(
-                    "An Ethereum account is one reusable address: your entire balance and payment history sit publicly under it, and a name (like an ENS domain) typically points straight at that address for anyone to resolve. DashPay is the opposite shape — the name resolves to an identity, not a payment address, and actual payment addresses stay inside encrypted contact exchanges, fresh for each contact.",
+                question: String(localized: "How does this compare to Ethereum Accounts in terms of privacy?", comment: "DashPay FAQ"),
+                answer: String(
+                    localized: "An Ethereum account is one reusable address: your entire balance and payment history sit publicly under it, and a name (like an ENS domain) typically points straight at that address for anyone to resolve. DashPay is the opposite shape — the name resolves to an identity, not a payment address, and actual payment addresses stay inside encrypted contact exchanges, fresh for each contact.",
                     comment: "DashPay FAQ")),
             Item(
-                question: NSLocalizedString("What about Unstoppable Domains and similar name services?", comment: "DashPay FAQ"),
-                answer: NSLocalizedString(
-                    "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers.",
+                question: String(localized: "What about Unstoppable Domains and similar name services?", comment: "DashPay FAQ"),
+                answer: String(
+                    localized: "Name services like Unstoppable Domains map a human-readable name to a fixed public address on-chain. Anyone can resolve the name and see every payment ever made to it. A DashPay username never publicly resolves to a payment address — addresses are revealed only inside the encrypted exchange with each contact, so your name and your money stay unlinked to outside observers.",
                     comment: "DashPay FAQ")),
             Item(
-                question: NSLocalizedString("What does it cost?", comment: "DashPay FAQ"),
-                answer: NSLocalizedString(
-                    "Enabling DashPay costs a small one-time network fee, paid from your identity's credit balance. The exact estimate is shown before you confirm. Sending contact requests and payments costs the usual network fees.",
+                question: String(localized: "What does it cost?", comment: "DashPay FAQ"),
+                answer: String(
+                    localized: "Enabling DashPay costs a small one-time network fee, paid from your identity's credit balance. The exact estimate is shown before you confirm. Sending contact requests and payments costs the usual network fees.",
                     comment: "DashPay FAQ")),
             Item(
-                question: NSLocalizedString("What's coming next?", comment: "DashPay FAQ"),
-                answer: NSLocalizedString(
-                    "Private contact requests (so who you connect with stays private), Shielded DashPay — contact payments from your private Shielded balance — and paying users who aren't in your contacts yet are all coming soon.",
+                question: String(localized: "What's coming next?", comment: "DashPay FAQ"),
+                answer: String(
+                    localized: "Private contact requests (so who you connect with stays private), Shielded DashPay — contact payments from your private Shielded balance — and paying users who aren't in your contacts yet are all coming soon.",
                     comment: "DashPay FAQ")),
         ]
     }
 
     var body: some View {
         DashUIKit.BottomSheet(
-            title: NSLocalizedString("About DashPay", comment: "DashPay FAQ title"),
+            title: String(localized: "About DashPay", comment: "DashPay FAQ title"),
             showBackButton: .constant(false)
         ) {
             ScrollView {
@@ -912,13 +907,13 @@ private struct EnableDashPaySuccessSheet: View {
                 .background(Circle().fill(Color.dash.green.opacity(0.1)))
                 .padding(.top, 28)
 
-            Text(NSLocalizedString("DashPay enabled", comment: "DashPay: title of the enable success sheet"))
+            Text(String(localized: "DashPay enabled", comment: "DashPay: title of the enable success sheet"))
                 .font(.system(size: 20, weight: .bold))
                 .foregroundColor(.dash.primaryText)
                 .padding(.top, 16)
 
-            Text(NSLocalizedString(
-                "You're all set. Other users can now send you contact requests — and you can send yours.",
+            Text(String(
+                localized: "You're all set. Other users can now send you contact requests — and you can send yours.",
                 comment: "DashPay: body of the enable success sheet"))
                 .font(.system(size: 14))
                 .foregroundColor(.dash.secondaryText)
@@ -928,7 +923,7 @@ private struct EnableDashPaySuccessSheet: View {
                 .padding(.top, 8)
 
             Button(action: onSendFirstRequest) {
-                Text(NSLocalizedString("Send your first contact request", comment: "DashPay: CTA of the enable success sheet"))
+                Text(String(localized: "Send your first contact request", comment: "DashPay: CTA of the enable success sheet"))
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(Color.dash.whiteText)
                     .frame(maxWidth: .infinity)
@@ -942,7 +937,7 @@ private struct EnableDashPaySuccessSheet: View {
             Button {
                 dismiss()
             } label: {
-                Text(NSLocalizedString("Not now", comment: "DashPay: dismiss button of the enable success sheet"))
+                Text(String(localized: "Not now", comment: "DashPay: dismiss button of the enable success sheet"))
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(.dash.blue)
                     .frame(maxWidth: .infinity)
@@ -983,13 +978,13 @@ private struct EnableDashPayConfirmSheet: View {
                 .background(Circle().fill(Color.dash.blue.opacity(0.08)))
                 .padding(.top, 28)
 
-            Text(NSLocalizedString("Enable DashPay", comment: "DashPay: add the identity keys other users need to send contact requests"))
+            Text(String(localized: "Enable DashPay", comment: "DashPay: add the identity keys other users need to send contact requests"))
                 .font(.system(size: 20, weight: .bold))
                 .foregroundColor(.dash.primaryText)
                 .padding(.top, 16)
 
-            Text(NSLocalizedString(
-                "This adds the missing keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event.",
+            Text(String(
+                localized: "This adds the missing keys to your identity so other users can send you contact requests, and so you can accept theirs. This is a one time event.",
                 comment: "DashPay: body of the Enable DashPay confirmation"))
                 .font(.system(size: 14))
                 .foregroundColor(.dash.secondaryText)
@@ -999,7 +994,7 @@ private struct EnableDashPayConfirmSheet: View {
                 .padding(.top, 8)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(NSLocalizedString("Estimated network fee", comment: "DashPay: fee line of the Enable DashPay confirmation"))
+                Text(String(localized: "Estimated network fee", comment: "DashPay: fee line of the Enable DashPay confirmation"))
                     .font(.caption)
                     .foregroundColor(.dash.secondaryText)
                 Text(viewModel.enableDashPayEstimatedCostText)
@@ -1015,7 +1010,7 @@ private struct EnableDashPayConfirmSheet: View {
             .padding(.horizontal, 20)
             .padding(.top, 16)
 
-            Text(NSLocalizedString("Paid from your identity's credit balance.", comment: "DashPay: fee source note of the Enable DashPay confirmation"))
+            Text(String(localized: "Paid from your identity's credit balance.", comment: "DashPay: fee source note of the Enable DashPay confirmation"))
                 .font(.system(size: 12))
                 .foregroundColor(.dash.tertiaryText)
                 .padding(.top, 6)
@@ -1024,7 +1019,7 @@ private struct EnableDashPayConfirmSheet: View {
                 dismiss()
                 viewModel.enableDashPay()
             } label: {
-                Text(NSLocalizedString("Enable", comment: "DashPay: confirm button of the Enable DashPay sheet"))
+                Text(String(localized: "Enable", comment: "DashPay: confirm button of the Enable DashPay sheet"))
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(Color.dash.whiteText)
                     .frame(maxWidth: .infinity)
@@ -1039,7 +1034,7 @@ private struct EnableDashPayConfirmSheet: View {
             Button {
                 dismiss()
             } label: {
-                Text(NSLocalizedString("Cancel", comment: ""))
+                Text(String(localized: "Cancel", comment: ""))
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(.dash.blue)
                     .frame(maxWidth: .infinity)
@@ -1078,7 +1073,7 @@ struct ContactRow: View {
             }
             Spacer()
             if showPendingBadge {
-                Text(NSLocalizedString("Contact Request Pending", comment: "DashPay Contacts"))
+                Text(String(localized: "Contact Request Pending", comment: "DashPay Contacts"))
                     .font(.system(size: 11, weight: .medium))
                     .foregroundColor(.dashGolden)
                     .padding(.trailing, 12)
@@ -1128,7 +1123,7 @@ struct IncomingRequestRow: View {
                 HStack(spacing: 4) {
                     Image(systemName: "hourglass")
                         .font(.system(size: 12))
-                    Text(NSLocalizedString("Accepting", comment: "DashPay Contacts"))
+                    Text(String(localized: "Accepting", comment: "DashPay Contacts"))
                         .font(.system(size: 11, weight: .medium))
                 }
                 .foregroundColor(.dashGolden)

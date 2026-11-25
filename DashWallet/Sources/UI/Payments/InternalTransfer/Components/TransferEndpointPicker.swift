@@ -30,9 +30,9 @@ enum TransferEndpointSide: Int, Identifiable {
     var title: String {
         switch self {
         case .source:
-            return NSLocalizedString("Transfer from", comment: "Internal transfer source picker title")
+            return String(localized: "Transfer from", comment: "Internal transfer source picker title")
         case .destination:
-            return NSLocalizedString("Transfer to", comment: "Internal transfer destination picker title")
+            return String(localized: "Transfer to", comment: "Internal transfer destination picker title")
         }
     }
 }

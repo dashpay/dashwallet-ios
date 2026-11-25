@@ -47,7 +47,7 @@ struct PlatformAddressActivityItem: Identifiable {
     var id: String { "platform-activity-\(recordId)" }
 
     var title: String {
-        NSLocalizedString("Received", comment: "")
+        String(localized: "Received", comment: "")
     }
 
     /// Row pill: the receiving address, shortened — mirrors the external
@@ -108,11 +108,11 @@ struct PlatformAddressActivityDetailsView: View {
 
             VStack(spacing: 0) {
                 infoRow(
-                    NSLocalizedString("Type", comment: ""),
-                    NSLocalizedString("Platform", comment: ""))
-                copyableRow(NSLocalizedString("To", comment: ""), item.address)
+                    String(localized: "Type", comment: ""),
+                    String(localized: "Platform", comment: ""))
+                copyableRow(String(localized: "To", comment: ""), item.address)
                 HStack(alignment: .firstTextBaseline) {
-                    Text(NSLocalizedString("Balance after", comment: "Platform address payment detail"))
+                    Text(String(localized: "Balance after", comment: "Platform address payment detail"))
                         .font(.footnote)
                         .foregroundColor(.dash.tertiaryText)
                     Spacer()
@@ -120,7 +120,7 @@ struct PlatformAddressActivityDetailsView: View {
                 }
                 .padding(.vertical, 10)
                 infoRow(
-                    NSLocalizedString("Date", comment: ""),
+                    String(localized: "Date", comment: ""),
                     DWDateFormatter.sharedInstance.longString(from: item.date))
             }
             .padding(.horizontal, 16)
@@ -130,7 +130,7 @@ struct PlatformAddressActivityDetailsView: View {
             .padding(.horizontal, 20)
             .padding(.top, 24)
 
-            Text(NSLocalizedString("Platform payments don't identify the sender. This payment was recorded when the wallet noticed the balance change — it may have arrived earlier.", comment: "Platform address payment detail"))
+            Text(String(localized: "Platform payments don't identify the sender. This payment was recorded when the wallet noticed the balance change — it may have arrived earlier.", comment: "Platform address payment detail"))
                 .font(.caption)
                 .foregroundColor(.dash.tertiaryText)
                 .multilineTextAlignment(.center)

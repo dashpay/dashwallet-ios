@@ -21,11 +21,11 @@ extension PointOfUseListFilters.SortBy {
     var filterLocalizedString: String {
         switch self {
         case .distance:
-            return NSLocalizedString("Sorted by distance", comment: "Explore Dash/Filters")
+            return String(localized: "Sorted by distance", comment: "Explore Dash/Filters")
         case .name:
-            return NSLocalizedString("Sorted by name", comment: "Explore Dash/Filters")
+            return String(localized: "Sorted by name", comment: "Explore Dash/Filters")
         case .discount:
-            return NSLocalizedString("Sorted by discount", comment: "Explore Dash/Filters")
+            return String(localized: "Sorted by discount", comment: "Explore Dash/Filters")
         }
     }
 }
@@ -44,12 +44,12 @@ struct PointOfUseListFilters: Equatable {
         var filterLocalizedString: String {
             switch self {
             case .dash:
-                return NSLocalizedString("Pay with Dash", comment: "Explore Dash/Filters")
+                return String(localized: "Pay with Dash", comment: "Explore Dash/Filters")
             case .ctx:
-                return NSLocalizedString("CTX gift card", comment: "Explore Dash/Filters")
+                return String(localized: "CTX gift card", comment: "Explore Dash/Filters")
             #if PIGGYCARDS_ENABLED
             case .piggyCards:
-                return NSLocalizedString("PiggyCards gift card", comment: "Explore Dash/Filters")
+                return String(localized: "PiggyCards gift card", comment: "Explore Dash/Filters")
             #endif
             }
         }
@@ -85,17 +85,17 @@ struct PointOfUseListFilters: Equatable {
         var displayText: String {
             if Locale.usesMetricMeasurementSystem {
                 switch self {
-                case .one: return NSLocalizedString("2 km", comment: "Explore Dash: Filters")
-                case .five: return NSLocalizedString("8 km", comment: "Explore Dash: Filters")
-                case .twenty: return NSLocalizedString("32 km", comment: "Explore Dash: Filters")
-                case .fifty: return NSLocalizedString("80 km", comment: "Explore Dash: Filters")
+                case .one: return String(localized: "2 km", comment: "Explore Dash: Filters")
+                case .five: return String(localized: "8 km", comment: "Explore Dash: Filters")
+                case .twenty: return String(localized: "32 km", comment: "Explore Dash: Filters")
+                case .fifty: return String(localized: "80 km", comment: "Explore Dash: Filters")
                 }
             } else {
                 switch self {
-                case .one: return NSLocalizedString("1 mile", comment: "Explore Dash: Filters")
-                case .five: return NSLocalizedString("5 miles", comment: "Explore Dash: Filters")
-                case .twenty: return NSLocalizedString("20 miles", comment: "Explore Dash: Filters")
-                case .fifty: return NSLocalizedString("50 miles", comment: "Explore Dash: Filters")
+                case .one: return String(localized: "1 mile", comment: "Explore Dash: Filters")
+                case .five: return String(localized: "5 miles", comment: "Explore Dash: Filters")
+                case .twenty: return String(localized: "20 miles", comment: "Explore Dash: Filters")
+                case .fifty: return String(localized: "50 miles", comment: "Explore Dash: Filters")
                 }
             }
         }

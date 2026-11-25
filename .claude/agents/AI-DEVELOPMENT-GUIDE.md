@@ -486,10 +486,11 @@ func testUserFlow() {
 4. **Input validation** - Validate all user inputs and API responses
 
 ### Localization Requirements
-1. **All user-facing text** - Must use NSLocalizedString
+1. **All user-facing text** - Swift uses `String(localized:)` (Objective-C keeps `NSLocalizedString`); texts live in `DashWallet/Localizable.xcstrings`, which the build's "Sync String Catalog" phase keeps in step (commit it with the code)
 2. **String formatting** - Use localized string formats
 3. **Date/number formatting** - Use locale-appropriate formatting
 4. **RTL support** - Consider right-to-left language support
+5. **Translation sync pause** - Main-app texts are not pushed to or pulled from the translation service until the owner decides how the Catalog travels; do not run `tx` for them
 
 ## Debugging Tools and Techniques
 

@@ -107,7 +107,7 @@ final class TransactionDirectionTests: XCTestCase {
     ) {
         XCTAssertEqual(
             direction.title,
-            NSLocalizedString(titleKey, comment: ""),
+            String(localized: String.LocalizationValue(titleKey)),
             file: file,
             line: line)
         XCTAssertEqual(direction.directionSymbol, symbol, file: file, line: line)

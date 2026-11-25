@@ -26,7 +26,7 @@ public struct MerchantTypesDialog: View {
         DashUIKit.BottomSheet(showBackButton: .constant(false)) {
             TextIntro(
                 icon: .custom("image.merchant"),
-                buttonLabel: NSLocalizedString("Ok", comment: ""),
+                buttonLabel: String(localized: "Ok", comment: ""),
                 action: {
                     presentationMode.wrappedValue.dismiss()
                     action?()
@@ -34,13 +34,13 @@ public struct MerchantTypesDialog: View {
                 inProgress: .constant(false),
                 topText: {
                     FeatureTopText(
-                        title: NSLocalizedString("We have two types of merchants", comment: "Explore"),
-                        text: NSLocalizedString("The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps.", comment: "Explore")
+                        title: String(localized: "We have two types of merchants", comment: "Explore"),
+                        text: String(localized: "The first one accepts Dash directly. The other ones accept gift cards that you can buy with Dash for the exact amount of your purchase in two taps.", comment: "Explore")
                     )
                 },
                 features: {[
-                    FeatureSingleItem(iconName: .custom("image.explore.dash.wts.payment.dash"), title: NSLocalizedString("Accept Dash directly", comment: "Explore"), description: NSLocalizedString("You can pay with Dash at the cashier.", comment: "Explore")),
-                    FeatureSingleItem(iconName: .custom("image.explore.dash.wts.card.orange"), title: NSLocalizedString("Buy gift cards with your Dash", comment: "Explore"), description: NSLocalizedString("Buy gift cards with your Dash for the exact amount of your purchase.", comment: "Explore")),
+                    FeatureSingleItem(iconName: .custom("image.explore.dash.wts.payment.dash"), title: String(localized: "Accept Dash directly", comment: "Explore"), description: String(localized: "You can pay with Dash at the cashier.", comment: "Explore")),
+                    FeatureSingleItem(iconName: .custom("image.explore.dash.wts.card.orange"), title: String(localized: "Buy gift cards with your Dash", comment: "Explore"), description: String(localized: "Buy gift cards with your Dash for the exact amount of your purchase.", comment: "Explore")),
                 ]}
             )
         }

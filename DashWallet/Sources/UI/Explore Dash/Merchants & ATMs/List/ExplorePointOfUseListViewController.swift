@@ -387,7 +387,7 @@ extension ExplorePointOfUseListViewController {
 
         let titleLabel = UILabel()
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.text = NSLocalizedString("Filtered by:", comment: "Explore Dash/Merchants/Filters")
+        titleLabel.text = String(localized: "Filtered by:", comment: "Explore Dash/Merchants/Filters")
         titleLabel.font = .dw_font(forTextStyle: .footnote)
         appliedFiltersStackView.addArrangedSubview(titleLabel)
 
@@ -492,7 +492,7 @@ extension ExplorePointOfUseListViewController {
         showMapButton.imageEdgeInsets = .init(top: 0, left: -10, bottom: 0, right: 0)
         showMapButton.addTarget(self, action: #selector(showMapAction), for: .touchUpInside)
         showMapButton.setImage(UIImage(systemName: "map.fill"), for: .normal)
-        showMapButton.setTitle(NSLocalizedString("Map", comment: ""), for: .normal)
+        showMapButton.setTitle(String(localized: "Map", comment: ""), for: .normal)
         showMapButton.layer.masksToBounds = true
         showMapButton.layer.cornerRadius = 20
         showMapButton.layer.backgroundColor = UIColor.black.cgColor

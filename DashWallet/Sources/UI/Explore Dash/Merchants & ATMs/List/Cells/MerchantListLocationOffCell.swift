@@ -47,11 +47,11 @@ class MerchantListLocationOffCell: UITableViewCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.numberOfLines = 0
         label.textAlignment = .center
-        label.text = NSLocalizedString("Grant GPS permissions so we can show you locations near you.", comment: "")
+        label.text = String(localized: "Grant GPS permissions so we can show you locations near you.", comment: "")
         stackView.addArrangedSubview(label)
 
         let button = UIButton(type: .custom)
-        button.setTitle(NSLocalizedString("Manage GPS Permission", comment: ""), for: .normal)
+        button.setTitle(String(localized: "Manage GPS Permission", comment: ""), for: .normal)
         button.setTitleColor(UIColor.dw_dashBlue(), for: .normal)
         button.addTarget(self, action: #selector(openSettingsAction), for: .touchUpInside)
         stackView.addArrangedSubview(button)

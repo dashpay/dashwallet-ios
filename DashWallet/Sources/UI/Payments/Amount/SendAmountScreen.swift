@@ -117,7 +117,7 @@ private struct SendAmountHeader<AvatarView: View>: View {
 
     var body: some View {
         SendIntro(
-            title: NSLocalizedString("Send", comment: "Send Screen"),
+            title: String(localized: "Send", comment: "Send Screen"),
             destination: destination,
             dashBalance: dashBalance,
             balanceLabel: balanceLabel + ":",
@@ -239,7 +239,7 @@ private struct SendAmountKeyboardSection: View {
                 value: $value,
                 showDecimalSeparator: true,
                 locale: locale,
-                actionButtonText: NSLocalizedString("Send", comment: "Send Dash"),
+                actionButtonText: String(localized: "Send", comment: "Send Dash"),
                 actionEnabled: isEnabled,
                 inProgress: isLoading,
                 actionHandler: onSend
@@ -286,7 +286,7 @@ private struct SendAmountScreenPreviewContainer: View {
             onBack: {},
             destination: "Xw3zExampleDashAddressOrUsername",
             dashBalance: model.walletBalance,
-            balanceLabel: NSLocalizedString("Dash balance", comment: ""),
+            balanceLabel: String(localized: "Dash balance", comment: ""),
             balanceAuthCallback: nil,
             isLoading: state == .loading,
             onMax: { model.selectAllFundsWithoutAuth() },

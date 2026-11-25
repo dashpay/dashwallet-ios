@@ -40,7 +40,7 @@ struct EnterAddressView: View {
                 DashUIKit.NavigationBar(
                     leading: { DashUIKit.NavigationBarElement.back.button { onBack?() } },
                     central: {
-                        Text(NSLocalizedString("Enter address", comment: "Dash DEX"))
+                        Text(String(localized: "Enter address", comment: "Dash DEX"))
                             .dashFont(.subheadMedium)
                             .foregroundColor(Color.dash.primaryText)
                     }
@@ -111,7 +111,7 @@ struct EnterAddressView: View {
 
     private var addressSourcesMenu: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(NSLocalizedString("Paste address from", comment: "Dash DEX"))
+            Text(String(localized: "Paste address from", comment: "Dash DEX"))
                 .dashFont(.footnote)
                 .foregroundColor(Color.dash.tertiaryText)
                 .padding(.vertical, 10)
@@ -135,8 +135,8 @@ struct EnterAddressView: View {
         Button(action: { viewModel.pasteFromClipboard() }) {
             DashUIKit.MenuItem(
                 leadingIcon: .custom("masternode-keys"),
-                title: NSLocalizedString("Clipboard", comment: "Dash DEX"),
-                helpText: NSLocalizedString("Show content in the clipboard", comment: "Dash DEX"),
+                title: String(localized: "Clipboard", comment: "Dash DEX"),
+                helpText: String(localized: "Show content in the clipboard", comment: "Dash DEX"),
                 accessory: .none
             )
         }
@@ -186,8 +186,8 @@ struct EnterAddressView: View {
         case .available(let address):
             guard address.count > 20 else { return address }
             return "\(address.prefix(10))…\(address.suffix(8))"
-        case .notAvailable: return NSLocalizedString("Not available", comment: "Dash DEX")
-        case .loading:      return NSLocalizedString("Loading...", comment: "Dash DEX")
+        case .notAvailable: return String(localized: "Not available", comment: "Dash DEX")
+        case .loading:      return String(localized: "Loading...", comment: "Dash DEX")
         case .loggedOut:    return nil
         }
     }
@@ -199,7 +199,7 @@ struct EnterAddressView: View {
         switch state {
         case .loggedOut:
             return .button(DashUIKit.DashButton(
-                text: NSLocalizedString("Log In", comment: "Dash DEX"),
+                text: String(localized: "Log In", comment: "Dash DEX"),
                 size: .small,
                 style: .plainBlue,
                 action: onTap
@@ -213,7 +213,7 @@ struct EnterAddressView: View {
 
     private var continueButton: some View {
         DashUIKit.DashButton(
-            text: NSLocalizedString("Continue", comment: ""),
+            text: String(localized: "Continue", comment: ""),
             isEnabled: viewModel.isContinueEnabled && viewModel.isOnline,
             fillsWidth: true,
             size: .large,

@@ -41,13 +41,13 @@ struct ZenLedgerInfoSheet: View {
 
                 // Text content
                 VStack(alignment: .center, spacing: 6) {
-                    Text(NSLocalizedString("Simplify your crypto taxes", comment: "ZenLedger"))
+                    Text(String(localized: "Simplify your crypto taxes", comment: "ZenLedger"))
                         .font(.system(size: 28, weight: .bold))
                         .foregroundColor(Color.dash.primaryText)
                         .multilineTextAlignment(.center)
                         .fixedSize(horizontal: false, vertical: true)
 
-                    Text(NSLocalizedString("Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions.", comment: "ZenLedger"))
+                    Text(String(localized: "Connect your crypto wallets to the ZenLedger platform. Learn more and get started with your Dash Wallet transactions.", comment: "ZenLedger"))
                         .font(.system(size: 15))
                         .foregroundColor(Color.dash.secondaryText)
                         .multilineTextAlignment(.center)
@@ -59,7 +59,7 @@ struct ZenLedgerInfoSheet: View {
                         safariLink = "https://app.zenledger.io/new_sign_up/"
                         presentationMode.wrappedValue.dismiss()
                     }) {
-                        Text("zenledger.io")
+                        Text(verbatim: "zenledger.io")
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundColor(.blue)
                     }
@@ -75,7 +75,7 @@ struct ZenLedgerInfoSheet: View {
             // Button
             VStack(spacing: 0) {
                 DashButton(
-                    text: NSLocalizedString("Export all transactions", comment: "ZenLedger"),
+                    text: String(localized: "Export all transactions", comment: "ZenLedger"),
                     style: .filledBlue,
                     size: .large,
                     stretch: true,
@@ -96,22 +96,22 @@ struct ZenLedgerInfoSheet: View {
     private func resolveAlert() -> Alert {
         if errorAlert {
             Alert(
-                title: Text(NSLocalizedString("Error", comment: "")),
-                message: Text(NSLocalizedString("There was an error when exporting your transaction history to ZenLedger", comment: "ZenLedger")),
-                dismissButton: .cancel(Text(NSLocalizedString("Close", comment: "ZenLedger"))) {
+                title: Text(String(localized: "Error", comment: "")),
+                message: Text(String(localized: "There was an error when exporting your transaction history to ZenLedger", comment: "ZenLedger")),
+                dismissButton: .cancel(Text(String(localized: "Close", comment: "ZenLedger"))) {
                     errorAlert = false
                 }
             )
         } else if !viewModel.isSynced {
             Alert(
-                title: Text(NSLocalizedString("The chain is syncing…", comment: "ZenLedger")),
-                message: Text(NSLocalizedString("Wait until the chain is fully synced, so we can review your transaction history.", comment: "ZenLedger")),
-                dismissButton: .cancel(Text(NSLocalizedString("Close", comment: "ZenLedger")))
+                title: Text(String(localized: "The chain is syncing…", comment: "ZenLedger")),
+                message: Text(String(localized: "Wait until the chain is fully synced, so we can review your transaction history.", comment: "ZenLedger")),
+                dismissButton: .cancel(Text(String(localized: "Close", comment: "ZenLedger")))
             )
         } else {
             Alert(
-                title: Text(NSLocalizedString("Allow sending all transactions from Dash Wallet to Zenledger?", comment: "ZenLedger")),
-                primaryButton: .default(Text(NSLocalizedString("Allow", comment: "ZenLedger"))) {
+                title: Text(String(localized: "Allow sending all transactions from Dash Wallet to Zenledger?", comment: "ZenLedger")),
+                primaryButton: .default(Text(String(localized: "Allow", comment: "ZenLedger"))) {
                     export()
                 },
                 secondaryButton: .cancel()

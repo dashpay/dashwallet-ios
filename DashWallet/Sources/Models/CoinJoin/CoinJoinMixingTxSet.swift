@@ -17,7 +17,7 @@
 
 final class CoinJoinMixingTxSet: GroupedTransactions {
     var title: String {
-        NSLocalizedString("Mixing Transactions", comment: "CoinJoin")
+        String(localized: "Mixing Transactions", comment: "CoinJoin")
     }
     
     var iconName: String {
@@ -25,12 +25,12 @@ final class CoinJoinMixingTxSet: GroupedTransactions {
     }
     
     var infoText: String {
-        NSLocalizedString("Your Dash was mixed using these transactions.", comment: "CoinJoin") // MO-720 BEF
+        String(localized: "Your Dash was mixed using these transactions.", comment: "CoinJoin") // MO-720 BEF
     }
     
     var fiatAmount: String {
         (try? CurrencyExchanger.shared.convertDash(amount: (UInt64(abs(amount))).dashAmount, to: App.fiatCurrency).formattedFiatAmount) ??
-            NSLocalizedString("Updating Price", comment: "Updating Price")
+            String(localized: "Updating Price", comment: "Updating Price")
     }
     
     private let amountQueue = DispatchQueue(label: "CoinJoinMixingSet.amount", qos: .utility)

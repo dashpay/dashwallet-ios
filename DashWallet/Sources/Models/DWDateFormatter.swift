@@ -55,11 +55,11 @@ class DWDateFormatter: NSObject {
         
         if useRelative {
             if calendar.isDateInToday(date) {
-                return NSLocalizedString("Today", comment: "")
+                return String(localized: "Today", comment: "")
             }
             
             if calendar.isDateInYesterday(date) {
-                return NSLocalizedString("Yesterday", comment: "")
+                return String(localized: "Yesterday", comment: "")
             }
         }
         
@@ -78,10 +78,7 @@ class DWDateFormatter: NSObject {
     /// contested-name vote closes ~90 minutes after submission on testnet, so
     /// a bare date tells the user nothing about when to look again.
     func dateAndTime(from date: Date) -> String {
-        String.localizedStringWithFormat(
-            NSLocalizedString("%1$@ at %2$@", comment: "A date followed by a time of day"),
-            dateOnly(from: date),
-            timeOnly(from: date))
+        String(localized: "\(dateOnly(from: date)) at \(timeOnly(from: date))", comment: "A date followed by a time of day")
     }
 
     func iso8601String(from date: Date) -> String {
