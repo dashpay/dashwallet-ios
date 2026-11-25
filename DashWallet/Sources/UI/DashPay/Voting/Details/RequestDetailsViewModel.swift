@@ -91,11 +91,11 @@ final class RequestDetailsViewModel: ObservableObject {
     /// «<start> – <end>». Without every request's date the start reads «Not
     /// provided»; without a voting end either, the whole field does.
     var votingPeriodText: String {
-        let notProvided = NSLocalizedString("Not provided", comment: "Voting")
+        let notProvided = String(localized: "Not provided", comment: "Voting")
         guard let votingEnd else { return notProvided }
         let end = dateFormatter.string(from: votingEnd)
         guard let votingPeriodStart else {
-            return String(format: NSLocalizedString("Not provided – %@", comment: "Voting"), end)
+            return String(localized: "Not provided – \(end)", comment: "Voting")
         }
         return "\(dateFormatter.string(from: votingPeriodStart)) – \(end)"
     }
@@ -111,8 +111,8 @@ final class RequestDetailsViewModel: ObservableObject {
     var linkText: String? {
         switch linkState {
         case .reading: return nil
-        case .none: return NSLocalizedString("Not provided", comment: "Voting")
-        case .failed: return NSLocalizedString("Couldn't check for a link", comment: "Voting")
+        case .none: return String(localized: "Not provided", comment: "Voting")
+        case .failed: return String(localized: "Couldn't check for a link", comment: "Voting")
         case .published(let url): return url.absoluteString
         }
     }
@@ -198,8 +198,8 @@ final class RequestDetailsViewModel: ObservableObject {
 
     var approveTitle: String {
         switch approveAction {
-        case .voteToApprove: return NSLocalizedString("Vote to approve", comment: "Voting")
-        case .cancelApproval: return NSLocalizedString("Cancel approval", comment: "Voting")
+        case .voteToApprove: return String(localized: "Vote to approve", comment: "Voting")
+        case .cancelApproval: return String(localized: "Cancel approval", comment: "Voting")
         }
     }
 }

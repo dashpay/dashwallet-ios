@@ -22,6 +22,9 @@ import DashUIKit
 /// prices, the difference, and the choice to pay the new price or cancel.
 struct DashSpendPriceUpdatedDialog: View {
     let change: GiftCardPaymentGuard.PriceChange
+    /// The most height the dialog may take; `nil` for its natural height. When the content
+    /// is taller, the prices and the warning scroll and the buttons stay in place below them.
+    var maxHeight: CGFloat? = nil
     let onPay: () -> Void
     let onCancel: () -> Void
 
@@ -48,12 +51,12 @@ struct DashSpendPriceUpdatedDialog: View {
     }
 
     private var payButtonText: String {
-        String(format: NSLocalizedString("Pay %@", comment: "DashSpend: pay the Dash amount that follows"),
-               GiftCardAmountText.exactDash(change.requestedAmount))
+        let amount = GiftCardAmountText.exactDash(change.requestedAmount)
+        return String(localized: "Pay \(amount)", comment: "DashSpend: pay the Dash amount that follows")
     }
 
     var body: some View {
-        VStack(spacing: 20) {
+        DashSpendSheetBody(maxHeight: maxHeight) {
             VStack(spacing: 4) {
                 Text(fiat(change.requestedFiat))
                     .font(.largeTitle.weight(.semibold))
@@ -65,45 +68,43 @@ struct DashSpendPriceUpdatedDialog: View {
             .foregroundColor(.dash.blue)
             .padding(.horizontal, 20)
 
-            VStack(alignment: .leading, spacing: 2) {
-                DashSpendDetailsRow(title: NSLocalizedString("You confirmed", comment: "DashSpend")) {
-                    figures(fiat(change.confirmedFiat),
-                            dash: GiftCardAmountText.approximateDash(change.confirmedAmount))
-                }
-
-                DashSpendDetailsRow(title: NSLocalizedString("Provider asks", comment: "DashSpend")) {
-                    figures(approximateRequestedFiat,
-                            dash: GiftCardAmountText.exactDash(change.requestedAmount))
-                }
-
-                DashSpendDetailsRow(title: NSLocalizedString("Difference", comment: "DashSpend")) {
-                    figures("+\(increasePercent) · \(fiat(change.differenceFiat))",
-                            dash: "+" + GiftCardAmountText.exactDash(change.differenceAmount))
-                }
-
-                if change.needsWarning {
-                    DashSpendDetailsRow(title: NSLocalizedString("Final price", comment: "DashSpend")) {
-                        Text(approximateRequestedFiat)
-                            .font(.subhead)
-                            .foregroundColor(.dash.primaryText)
-                    }
-
-                    warning
-                }
-            }
-            .padding(6)
-            .background(Color.dash.secondaryBackground)
-            .cornerRadius(20)
-            .shadow(color: Color.dash.shadow, radius: 20, x: 0, y: 5)
-
+            details
+        } buttons: {
             buttons
-                .padding(.horizontal, 10)
         }
-        .padding(.horizontal, 20)
-        .padding(.bottom, 20)
-        // Keep the natural height independent of the offered detent so DashUIKit's
-        // `.selfSizingSheet()` can measure a stable intrinsic height.
-        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var details: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            DashSpendDetailsRow(title: String(localized: "You confirmed", comment: "DashSpend")) {
+                figures(fiat(change.confirmedFiat),
+                        dash: GiftCardAmountText.approximateDash(change.confirmedAmount))
+            }
+
+            DashSpendDetailsRow(title: String(localized: "Provider asks", comment: "DashSpend")) {
+                figures(approximateRequestedFiat,
+                        dash: GiftCardAmountText.exactDash(change.requestedAmount))
+            }
+
+            DashSpendDetailsRow(title: String(localized: "Difference", comment: "DashSpend")) {
+                figures("+\(increasePercent) · \(fiat(change.differenceFiat))",
+                        dash: "+" + GiftCardAmountText.exactDash(change.differenceAmount))
+            }
+
+            if change.needsWarning {
+                DashSpendDetailsRow(title: String(localized: "Final price", comment: "DashSpend")) {
+                    Text(approximateRequestedFiat)
+                        .font(.subhead)
+                        .foregroundColor(.dash.primaryText)
+                }
+
+                warning
+            }
+        }
+        .padding(6)
+        .background(Color.dash.secondaryBackground)
+        .cornerRadius(20)
+        .shadow(color: Color.dash.shadow, radius: 20, x: 0, y: 5)
     }
 
     private func figures(_ fiat: String, dash: String) -> some View {
@@ -118,10 +119,10 @@ struct DashSpendPriceUpdatedDialog: View {
     /// The app's standard caution box, on the same yellow as its other cautions.
     private var warning: some View {
         DashUIKit.SystemMessageView(
-            title: String(format: NSLocalizedString("The price is %@ higher than expected", comment: "DashSpend: %@ is a percentage"),
-                          increasePercent),
-            subtitle: NSLocalizedString(
-                "This can mean the market moved fast or the provider's price is wrong. If you're not sure, cancel and try again in a few minutes.",
+            title: String(localized: "The price is \(increasePercent) higher than expected",
+                          comment: "DashSpend: the value is a percentage"),
+            subtitle: String(
+                localized: "This can mean the market moved fast or the provider's price is wrong. If you're not sure, cancel and try again in a few minutes.",
                 comment: "DashSpend"),
             backgroundColor: Color.dash.yellowAlpha10)
             .padding(8)
@@ -133,7 +134,7 @@ struct DashSpendPriceUpdatedDialog: View {
     private var buttons: some View {
         VStack(spacing: 10) {
             if change.needsWarning {
-                DashButton(text: NSLocalizedString("Cancel purchase", comment: "DashSpend"), action: onCancel)
+                DashButton(text: String(localized: "Cancel purchase", comment: "DashSpend"), action: onCancel)
 
                 DashButton(text: payButtonText,
                            trailingIcon: .custom("icon_dash_currency", maxHeight: 13),
@@ -146,7 +147,7 @@ struct DashSpendPriceUpdatedDialog: View {
                            action: onPay)
                     .accessibilityLabel(payAccessibilityLabel)
 
-                DashButton(text: NSLocalizedString("Cancel", comment: "DashSpend"), action: onCancel)
+                DashButton(text: String(localized: "Cancel", comment: "DashSpend"), action: onCancel)
                     .overrideForegroundColor(.dash.primaryText)
                     .overrideBackgroundColor(.dash.gray300Alpha10)
             }
@@ -154,7 +155,7 @@ struct DashSpendPriceUpdatedDialog: View {
     }
 
     private var payAccessibilityLabel: String {
-        String(format: NSLocalizedString("%@ DASH", comment: "DashSpend: a Dash amount read by VoiceOver"), payButtonText)
+        String(localized: "\(payButtonText) DASH", comment: "DashSpend: a Dash amount read by VoiceOver")
     }
 }
 

@@ -99,6 +99,37 @@ final class ShieldedRecoveryViewModel: ObservableObject {
         }
     }
 
+    /// What the success screen says.
+    struct SuccessCopy: Equatable {
+        let title: String
+        /// A line under the amount, when the title alone would mislead.
+        let detail: String?
+    }
+
+    /// The success copy for a resume that did, or did not, pay the wallet's
+    /// own Shielded address for want of a recorded recipient
+    /// (`ShieldedTransferCoordinator.resumePaidOwnBalanceWithoutRecord`). The
+    /// sheet cannot know what that transfer was for, so it says where the
+    /// funds went and nothing about a payee.
+    nonisolated static func successCopy(paidOwnBalanceWithoutRecord: Bool) -> SuccessCopy {
+        guard paidOwnBalanceWithoutRecord else {
+            return SuccessCopy(title: String(localized: "Transfer complete", comment: ""), detail: nil)
+        }
+        return SuccessCopy(
+            title: String(
+                localized: "Funds added to your Shielded balance",
+                comment: "A transfer whose recipient was not on record was finished to the wallet's own Shielded balance"),
+            detail: String(
+                localized: "This wallet has no record of the address this transfer was going to, so it was finished to your own Shielded balance.",
+                comment: "InternalTransfer recovery"))
+    }
+
+    /// The copy for the success the sheet is showing. A lock found already
+    /// consumed ran no resume here, so it reads as an ordinary completion.
+    var successCopy: SuccessCopy {
+        Self.successCopy(paidOwnBalanceWithoutRecord: coordinator.resumePaidOwnBalanceWithoutRecord)
+    }
+
     private static let logger = Logger(subsystem: "org.dashfoundation.dash", category: "ShieldedRecovery")
 
     private let outPoint: (txidWire: Data, vout: UInt32)?
@@ -218,7 +249,7 @@ struct ShieldedRecoverySheet: View {
 
     var body: some View {
         DashUIKit.BottomSheet(
-            title: NSLocalizedString("Finish shielded transfer", comment: "InternalTransfer recovery"),
+            title: String(localized: "Finish shielded transfer", comment: "InternalTransfer recovery"),
             showBackButton: .constant(false),
             isDismissalEnabled: .constant(!viewModel.isInFlight),
             // Supplying `onClose` makes the close button live regardless of
@@ -260,7 +291,7 @@ struct ShieldedRecoverySheet: View {
 
             if case let .failed(message) = viewModel.phase {
                 Text(message)
-                    .font(.system(size: 13))
+                    .scaledSystemFont(size: 13, relativeTo: .footnote)
                     .foregroundColor(.red)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 24)
@@ -272,9 +303,9 @@ struct ShieldedRecoverySheet: View {
             ButtonsGroup(
                 orientation: .horizontal,
                 size: .large,
-                positiveButtonText: NSLocalizedString("Finish now", comment: "InternalTransfer recovery"),
+                positiveButtonText: String(localized: "Finish now", comment: "InternalTransfer recovery"),
                 positiveButtonAction: finish,
-                negativeButtonText: NSLocalizedString("Close", comment: ""),
+                negativeButtonText: String(localized: "Close", comment: ""),
                 negativeButtonAction: onDismiss)
                 .padding(.horizontal, 16)
                 .padding(.bottom, 16)
@@ -290,17 +321,17 @@ struct ShieldedRecoverySheet: View {
             ShieldedTransferStepList(
                 currentPhase: viewModel.phase,
                 steps: [
-                    .init(label: NSLocalizedString("Authorizing", comment: ""), phase: .signing),
-                    .init(label: NSLocalizedString("Generating proof", comment: ""), phase: .proving),
-                    .init(label: NSLocalizedString("Broadcasting", comment: ""), phase: .broadcasting),
+                    .init(label: String(localized: "Authorizing", comment: ""), phase: .signing),
+                    .init(label: String(localized: "Generating proof", comment: ""), phase: .proving),
+                    .init(label: String(localized: "Broadcasting", comment: ""), phase: .broadcasting),
                 ])
 
             Text(viewModel.isLongProofWait
-                ? NSLocalizedString(
-                    "Still waiting for the network to confirm the transfer. This can take several minutes. Keep the app open.",
+                ? String(
+                    localized: "Still waiting for the network to confirm the transfer. This can take several minutes. Keep the app open.",
                     comment: "InternalTransfer recovery")
-                : NSLocalizedString(
-                    "Building the privacy proof can take up to a minute. Keep the app open.",
+                : String(
+                    localized: "Building the privacy proof can take up to a minute. Keep the app open.",
                     comment: "InternalTransfer recovery"))
                 .font(.caption)
                 .foregroundColor(.dash.secondaryText)
@@ -323,10 +354,12 @@ struct ShieldedRecoverySheet: View {
                 .foregroundColor(.green)
                 .padding(.top, 24)
 
-            Text(NSLocalizedString("Transfer complete", comment: ""))
+            Text(viewModel.successCopy.title)
                 .font(.title3)
                 .fontWeight(.semibold)
                 .foregroundColor(.dash.primaryText)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
 
             DashAmount(
                 amount: Int64(transaction.dashAmount),
@@ -334,10 +367,19 @@ struct ShieldedRecoverySheet: View {
                 dashSymbolFactor: 0.7,
                 showDirection: false)
 
+            if let detail = viewModel.successCopy.detail {
+                Text(detail)
+                    .font(.caption)
+                    .foregroundColor(.dash.secondaryText)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 24)
+            }
+
             Spacer(minLength: 12)
 
             DashButton(
-                text: NSLocalizedString("Done", comment: ""),
+                text: String(localized: "Done", comment: ""),
                 style: .filled,
                 stretch: true,
                 action: onDismiss)
@@ -355,18 +397,19 @@ struct ShieldedRecoverySheet: View {
                     .fill(Color.dash.blue)
                     .frame(width: 30, height: 30)
                 Image(systemName: "shield.fill")
-                    .font(.system(size: 14, weight: .semibold))
+                    .scaledSystemFont(size: 14, weight: .semibold, relativeTo: .subheadline)
+                    .dynamicTypeSize(...DynamicTypeSize.xxxLarge) // drawn inside a fixed-size badge
                     .foregroundColor(Color.dash.whiteText)
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(NSLocalizedString("Your Dash is safe", comment: "InternalTransfer recovery"))
-                    .font(.system(size: 14, weight: .semibold))
+                Text(String(localized: "Your Dash is safe", comment: "InternalTransfer recovery"))
+                    .scaledSystemFont(size: 14, weight: .semibold, relativeTo: .subheadline)
                     .foregroundColor(.dash.primaryText)
-                Text(NSLocalizedString(
-                    "This transfer's funds were locked on-chain but the private transfer didn't finish. Tap Finish now to complete it.",
+                Text(String(
+                    localized: "This transfer's funds were locked on-chain but the private transfer didn't finish. Tap Finish now to complete it.",
                     comment: "InternalTransfer recovery"))
-                    .font(.system(size: 13))
+                    .scaledSystemFont(size: 13, relativeTo: .footnote)
                     .foregroundColor(.dash.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
             }

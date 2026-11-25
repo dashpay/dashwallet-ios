@@ -90,7 +90,7 @@ class PointOfUseListFiltersCell: UITableViewCell {
         filterButton.titleEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 10)
         filterButton.imageEdgeInsets = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 0)
         filterButton.setTitleColor(.label, for: .normal)
-        filterButton.setTitle(NSLocalizedString(" ", comment: ""), for: .normal)
+        filterButton.setTitle(String(localized: " ", comment: ""), for: .normal)
         filterButton.setImage(UIImage(systemName: "slider.horizontal.3"), for: .normal)
         filterButton.tintColor = .dw_label()
         filterButton.addTarget(self, action: #selector(filterButtonAction), for: .touchUpInside)

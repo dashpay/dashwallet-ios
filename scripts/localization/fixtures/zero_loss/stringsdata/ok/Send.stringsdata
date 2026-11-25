@@ -1,0 +1,29 @@
+{
+  "source": "__REPO__/DashWallet/Sources/Send.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "key": "Send",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 3
+        }
+      },
+      {
+        "key": "%lld coins",
+        "location": {
+          "startingColumn": 59,
+          "startingLine": 4
+        }
+      },
+      {
+        "key": "Sample %lld items",
+        "location": {
+          "startingColumn": 59,
+          "startingLine": 5
+        }
+      }
+    ]
+  },
+  "version": 1
+}

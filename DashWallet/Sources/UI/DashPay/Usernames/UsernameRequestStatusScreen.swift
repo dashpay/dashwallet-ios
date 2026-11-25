@@ -263,13 +263,13 @@ struct UsernameRequestStatusScreen: View {
                             .frame(width: 30, height: 30)
                             .contentShape(Rectangle())
                     }
-                    .accessibilityLabel(NSLocalizedString("What is username voting?", comment: "Usernames"))
+                    .accessibilityLabel(String(localized: "What is username voting?", comment: "Usernames"))
                 })
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     DashUIKit.TopIntroView(
-                        title: NSLocalizedString("Request details", comment: "Usernames"),
+                        title: String(localized: "Request details", comment: "Usernames"),
                         mainDescription: votingPeriodStatus)
                         .padding(.horizontal, 20)
 
@@ -291,7 +291,7 @@ struct UsernameRequestStatusScreen: View {
                     // and the tallies answer a question this screen does not
                     // ask.
                     if !viewModel.hasLoadedOnce, viewModel.loadError == nil {
-                        caption(NSLocalizedString("Checking the contest…", comment: "Usernames"))
+                        caption(String(localized: "Checking the contest…", comment: "Usernames"))
                     }
                 }
                 .padding(.vertical, 20)
@@ -312,7 +312,7 @@ struct UsernameRequestStatusScreen: View {
             ) {
                 VotingInfoScreen(
                     action: { showVotingInfo = false },
-                    buttonLabel: NSLocalizedString("Close", comment: ""))
+                    buttonLabel: String(localized: "Close", comment: ""))
             }
         }
         .task {
@@ -343,12 +343,12 @@ struct UsernameRequestStatusScreen: View {
             }
         }
         .alert(
-            NSLocalizedString("Could not publish the link", comment: "Usernames"),
+            String(localized: "Could not publish the link", comment: "Usernames"),
             isPresented: Binding(
                 get: { viewModel.verificationError != nil },
                 set: { if !$0 { viewModel.verificationError = nil } })
         ) {
-            Button(NSLocalizedString("OK", comment: "")) { viewModel.verificationError = nil }
+            Button(String(localized: "OK", comment: "")) { viewModel.verificationError = nil }
         } message: {
             Text(viewModel.verificationError ?? "")
         }
@@ -362,11 +362,7 @@ struct UsernameRequestStatusScreen: View {
         // individually rather than from the stack.
         VStack(alignment: .leading, spacing: 12) {
             VotingBanner(
-                text: String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "The instant username “%@” could not be registered, so you have no username to use while the vote runs.",
-                        comment: "Usernames: request details, failed instant username"),
-                    failed.username),
+                text: String(localized: "The instant username “\(failed.username)” could not be registered, so you have no username to use while the vote runs.", comment: "Usernames: request details, failed instant username"),
                 tone: .error)
                 .padding(.horizontal, 20)
             // Only a recognised cause is worth a line; an unrecognised one
@@ -377,7 +373,7 @@ struct UsernameRequestStatusScreen: View {
             }
             if let onRetryCompanion {
                 DashUIKit.DashButton(
-                    text: NSLocalizedString("Try again", comment: ""),
+                    text: String(localized: "Try again", comment: ""),
                     fillsWidth: true,
                     size: .medium,
                     style: .tintedBlue,
@@ -404,21 +400,21 @@ struct UsernameRequestStatusScreen: View {
     /// due.
     private var detailsCard: some View {
         card {
-            detailRow(NSLocalizedString("Username", comment: "Usernames")) {
+            detailRow(String(localized: "Username", comment: "Usernames")) {
                 Text(viewModel.label)
             }
 
-            detailRow(NSLocalizedString("Link", comment: "Usernames")) {
+            detailRow(String(localized: "Link", comment: "Usernames")) {
                 linkValue
             }
 
-            detailRow(NSLocalizedString("Identity", comment: "Usernames")) {
+            detailRow(String(localized: "Identity", comment: "Usernames")) {
                 Text(identityText)
                     .lineLimit(1)
                     .truncationMode(.middle)
             }
 
-            detailRow(NSLocalizedString("Results", comment: "Usernames")) {
+            detailRow(String(localized: "Results", comment: "Usernames")) {
                 Text(resultsText)
             }
         }
@@ -444,7 +440,7 @@ struct UsernameRequestStatusScreen: View {
             // offering work the user may have already done.
             HStack(spacing: 6) {
                 SwiftUI.ProgressView()
-                Text(NSLocalizedString("Checking…", comment: "Usernames"))
+                Text(String(localized: "Checking…", comment: "Usernames"))
             }
             .foregroundStyle(Color.dash.secondaryText)
         } else if viewModel.didVerificationLookupFail {
@@ -454,7 +450,7 @@ struct UsernameRequestStatusScreen: View {
                 Task { await viewModel.refreshVerificationURL() }
             } label: {
                 HStack(spacing: 6) {
-                    Text(NSLocalizedString("Could not check — retry", comment: "Voting"))
+                    Text(String(localized: "Could not check — retry", comment: "Voting"))
                     Image(systemName: "arrow.clockwise")
                 }
                 .foregroundStyle(Color.dash.blue)
@@ -470,13 +466,13 @@ struct UsernameRequestStatusScreen: View {
                         // resolves to it.
                         SwiftUI.ProgressView()
                     }
-                    Text(NSLocalizedString("Verify Now", comment: "Usernames"))
+                    Text(String(localized: "Verify Now", comment: "Usernames"))
                 }
                 .foregroundStyle(Color.dash.blue)
             }
             .disabled(viewModel.isPublishingVerification)
         } else {
-            Text(NSLocalizedString("None", comment: "Usernames"))
+            Text(String(localized: "None", comment: "Usernames"))
                 .foregroundStyle(Color.dash.tertiaryText)
         }
     }
@@ -485,7 +481,7 @@ struct UsernameRequestStatusScreen: View {
     /// contenders in. Truncated in the middle by the row, never shortened here
     /// — a partial id that looks complete is worse than an elided one.
     private var identityText: String {
-        viewModel.identityIdBase58 ?? NSLocalizedString("Not available yet", comment: "Usernames")
+        viewModel.identityIdBase58 ?? String(localized: "Not available yet", comment: "Usernames")
     }
 
     /// When the result is due, or what it was once the vote is over. Android
@@ -503,7 +499,7 @@ struct UsernameRequestStatusScreen: View {
 
     private var votingEndText: String {
         guard let endTime = viewModel.votingEndTime else {
-            return NSLocalizedString("Not available yet", comment: "Usernames")
+            return String(localized: "Not available yet", comment: "Usernames")
         }
         return DWDateFormatter.sharedInstance.dateAndTime(from: endTime)
     }
@@ -512,12 +508,12 @@ struct UsernameRequestStatusScreen: View {
     /// past-tense twin once voting is over.
     private var votingPeriodStatus: String {
         if let voteState = viewModel.voteState, case .ongoing = voteState.outcome {
-            return NSLocalizedString("After the voting ends we will notify you about its results", comment: "Usernames")
+            return String(localized: "After the voting ends we will notify you about its results", comment: "Usernames")
         }
         if viewModel.voteState != nil {
-            return NSLocalizedString("Voting has ended", comment: "Usernames")
+            return String(localized: "Voting has ended", comment: "Usernames")
         }
-        return NSLocalizedString("After the voting ends we will notify you about its results", comment: "Usernames")
+        return String(localized: "After the voting ends we will notify you about its results", comment: "Usernames")
     }
 
     /// One labelled row, with the metrics of `OrderPreviewTableRow`. A
@@ -579,26 +575,26 @@ struct UsernameRequestStatusScreen: View {
     private var statusText: String {
         guard let voteState = viewModel.voteState else {
             return viewModel.hasLoadedOnce
-                ? NSLocalizedString("Waiting for Dash Platform", comment: "Usernames")
-                : NSLocalizedString("Checking…", comment: "Usernames")
+                ? String(localized: "Waiting for Dash Platform", comment: "Usernames")
+                : String(localized: "Checking…", comment: "Usernames")
         }
         switch voteState.outcome {
         case .ongoing:
             if viewModel.lockIsLeading {
-                return NSLocalizedString("Voting in progress — lock votes are ahead", comment: "Usernames")
+                return String(localized: "Voting in progress — lock votes are ahead", comment: "Usernames")
             }
             if let mine = viewModel.myContender, mine.id == viewModel.leadingContender?.id {
-                return NSLocalizedString("Voting in progress — you are ahead", comment: "Usernames")
+                return String(localized: "Voting in progress — you are ahead", comment: "Usernames")
             }
-            return NSLocalizedString("Voting in progress", comment: "Usernames")
+            return String(localized: "Voting in progress", comment: "Usernames")
         case .wonBy(let identityId):
             return identityId == viewModel.myContender?.identityId
-                ? NSLocalizedString("You won this username", comment: "Usernames")
-                : NSLocalizedString("This username went to someone else", comment: "Usernames")
+                ? String(localized: "You won this username", comment: "Usernames")
+                : String(localized: "This username went to someone else", comment: "Usernames")
         case .locked:
-            return NSLocalizedString("Locked — nobody receives this username", comment: "Usernames")
+            return String(localized: "Locked — nobody receives this username", comment: "Usernames")
         case .noWinner:
-            return NSLocalizedString("Voting ended with no winner", comment: "Usernames")
+            return String(localized: "Voting ended with no winner", comment: "Usernames")
         }
     }
 

@@ -55,7 +55,7 @@ struct SendToContactPickerScreen: View {
         ScrollView {
             LazyVStack(spacing: 0) {
                 ContactsSearchField(
-                    placeholder: NSLocalizedString("Search Contacts", comment: "DashPay Contacts"),
+                    placeholder: String(localized: "Search Contacts", comment: "DashPay Contacts"),
                     text: $viewModel.searchText)
                     .padding(.horizontal, 15)
                     .padding(.top, 12)
@@ -111,9 +111,7 @@ struct SendToContactPickerScreen: View {
     }
 
     private var noMatchesNote: some View {
-        Text(String.localizedStringWithFormat(
-            NSLocalizedString("No contacts match “%@”", comment: "DashPay: contact picker search found nothing"),
-            viewModel.trimmedSearchText))
+        Text(String(localized: "No contacts match “\(viewModel.trimmedSearchText)”", comment: "DashPay: contact picker search found nothing"))
             .font(.system(size: secondarySize)) // a11y-ignore: A11Y007 size is @ScaledMetric
             .foregroundColor(.dash.secondaryText)
             .multilineTextAlignment(.center)
@@ -133,11 +131,11 @@ struct SendToContactPickerScreen: View {
                 .font(.system(size: emptyStateIconSize, weight: .light)) // a11y-ignore: A11Y007 size is @ScaledMetric
                 .foregroundColor(.dash.blue)
                 .padding(.bottom, 12)
-            Text(NSLocalizedString("No contacts yet", comment: "DashPay: contact picker empty state headline"))
+            Text(String(localized: "No contacts yet", comment: "DashPay: contact picker empty state headline"))
                 .font(.system(size: headlineSize, weight: .bold)) // a11y-ignore: A11Y007 size is @ScaledMetric
                 .foregroundColor(.dash.primaryText)
-            Text(NSLocalizedString(
-                "Add someone as a contact and you can pay them by username instead of an address.",
+            Text(String(
+                localized: "Add someone as a contact and you can pay them by username instead of an address.",
                 comment: "DashPay: contact picker empty state body"))
                 .font(.system(size: bodySize)) // a11y-ignore: A11Y007 size is @ScaledMetric
                 .foregroundColor(.dash.secondaryText)
@@ -148,7 +146,7 @@ struct SendToContactPickerScreen: View {
                 showingAddContact = true
             } label: {
                 Label(
-                    NSLocalizedString("Search for a User", comment: "DashPay Contacts"),
+                    String(localized: "Search for a User", comment: "DashPay Contacts"),
                     systemImage: "magnifyingglass")
                     .font(.system(size: secondarySize, weight: .semibold)) // a11y-ignore: A11Y007 size is @ScaledMetric
                     .foregroundColor(Color.dash.whiteText)
@@ -181,7 +179,7 @@ private struct SendToContactHeader: View {
                 DashUIKit.NavigationBarElement.back.button(action: onBack)
             },
             central: {
-                Text(NSLocalizedString("Send", comment: ""))
+                Text(String(localized: "Send", comment: ""))
                     .dashFont(.subheadMedium)
                     .foregroundColor(Color.dash.primaryText)
             })

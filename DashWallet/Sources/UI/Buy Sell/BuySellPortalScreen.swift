@@ -65,16 +65,16 @@ struct BuySellPortalScreen: View {
             })
 
             TopIntro(
-                title: NSLocalizedString("Buy & Sell Dash", comment: "Buy Sell Dash"),
-                subtitle: NSLocalizedString("Select a service to buy, sell, convert and transfer Dash", comment: "Buy Sell Dash")
+                title: String(localized: "Buy & Sell Dash", comment: "Buy Sell Dash"),
+                subtitle: String(localized: "Select a service to buy, sell, convert and transfer Dash", comment: "Buy Sell Dash")
             )
 
             VStack(spacing: 20) {
                 // Topper
                 VStack(spacing: 0) {
                     MenuItem(
-                        title: NSLocalizedString("Topper", comment: "Buy Sell Dash"),
-                        subtitle: NSLocalizedString("Buy Dash · No account needed", comment: "Buy Sell Dash"),
+                        title: String(localized: "Topper", comment: "Buy Sell Dash"),
+                        subtitle: String(localized: "Buy Dash · No account needed", comment: "Buy Sell Dash"),
                         icon: .custom("service-topper", maxHeight: 30),
                         action: onTopper
                     )
@@ -85,7 +85,7 @@ struct BuySellPortalScreen: View {
                             .resizable()
                             .scaledToFit()
                             .frame(width: 18, height: 18)
-                        Text(NSLocalizedString("Powered by Uphold", comment: "Buy Sell Dash"))
+                        Text(String(localized: "Powered by Uphold", comment: "Buy Sell Dash"))
                             .font(.caption)
                             .foregroundColor(.dash.secondaryText)
                     }
@@ -99,7 +99,7 @@ struct BuySellPortalScreen: View {
                 // Coinbase
                 VStack(spacing: 0) {
                     MenuItem(
-                        title: NSLocalizedString("Coinbase", comment: "Buy Sell Dash"),
+                        title: String(localized: "Coinbase", comment: "Buy Sell Dash"),
                         subtitle: coinbaseSubtitle,
                         icon: .custom("service-coinbase", maxHeight: 30),
                         trailingView: serviceBalanceView(item: coinbaseItem),
@@ -112,7 +112,7 @@ struct BuySellPortalScreen: View {
                 // Uphold
                 VStack(spacing: 0) {
                     MenuItem(
-                        title: NSLocalizedString("Uphold", comment: "Buy Sell Dash"),
+                        title: String(localized: "Uphold", comment: "Buy Sell Dash"),
                         subtitle: upholdSubtitle,
                         icon: .custom("service-uphold", maxHeight: 30),
                         trailingView: serviceBalanceView(item: upholdItem),
@@ -133,15 +133,15 @@ struct BuySellPortalScreen: View {
 
     private func serviceSubtitle(for item: ServiceItem?) -> String? {
         guard let item else {
-            return NSLocalizedString("Link your account", comment: "Buy Sell Dash")
+            return String(localized: "Link your account", comment: "Buy Sell Dash")
         }
         switch item.status {
         case .syncing:
-            return NSLocalizedString("Syncing...", comment: "Buy Sell Dash")
+            return String(localized: "Syncing...", comment: "Buy Sell Dash")
         case .authorized:
             return nil
         default:
-            return NSLocalizedString("Link your account", comment: "Buy Sell Dash")
+            return String(localized: "Link your account", comment: "Buy Sell Dash")
         }
     }
 

@@ -33,7 +33,7 @@ struct SwapTransactionPendingView: View {
 
 
             VStack(spacing: 6) {
-                Text(NSLocalizedString("Conversion in progress", comment: "Dash DEX"))
+                Text(String(localized: "Conversion in progress", comment: "Dash DEX"))
                     .dashFont(.title1)
                     .foregroundColor(Color.dash.primaryText)
                     .multilineTextAlignment(.center)
@@ -51,7 +51,7 @@ struct SwapTransactionPendingView: View {
 
             VStack(spacing: 16) {
                 DashUIKit.DashButton(
-                    text: NSLocalizedString("Close and notify me", comment: "Dash DEX"),
+                    text: String(localized: "Close and notify me", comment: "Dash DEX"),
                     fillsWidth: true,
                     size: .large,
                     style: .filledBlue
@@ -68,8 +68,8 @@ struct SwapTransactionPendingView: View {
 #if DEBUG
 #Preview {
     SwapTransactionPendingView(
-        message: NSLocalizedString(
-            "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds.",
+        message: String(
+            localized: "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds.",
             comment: "Dash DEX"
         ),
         executionNetwork: "NEAR",

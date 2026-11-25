@@ -42,13 +42,13 @@ extension AtmListSegmnets {
     var title: String {
         switch self {
         case .all:
-            return NSLocalizedString("All", comment: "all")
+            return String(localized: "All", comment: "all")
         case .buy:
-            return NSLocalizedString("Buy", comment: "buy")
+            return String(localized: "Buy", comment: "buy")
         case .sell:
-            return NSLocalizedString("Sell", comment: "Sell")
+            return String(localized: "Sell", comment: "Sell")
         case .buyAndSell:
-            return NSLocalizedString("Buy/Sell", comment: "Buy/Sell")
+            return String(localized: "Buy/Sell", comment: "Buy/Sell")
         }
     }
 
@@ -78,37 +78,6 @@ extension AtmListSegmnets {
 
 @objc
 class AtmListViewController: ExplorePointOfUseListViewController {
-    override var locationServicePopupTitle: String {
-        NSLocalizedString("ATM search works better with Location Services turned on.", comment: "")
-    }
-
-    override var locationServicePopupDetails: String {
-        NSLocalizedString("Your location is used to show your position on the map, ATMs in the selected redius and improve search results.",
-                          comment: "")
-    }
-
-    override func subtitleForFilterCell() -> String? {
-        if DWLocationManager.shared.isAuthorized && currentSegment.showMap {
-            if Locale.current.usesMetricSystem {
-                return String.localizedStringWithFormat(
-                    NSLocalizedString("%d ATM(s) in %@", comment: "#bc-ignore!"),
-                    items.count,
-                    ExploreDash.distanceFormatter
-                        .string(from: Measurement(value: model.currentRadius, unit: UnitLength.meters))
-                )
-            } else {
-                return String.localizedStringWithFormat(
-                    NSLocalizedString("%d ATM(s) in %@", comment: "#bc-ignore!"),
-                    items.count,
-                    ExploreDash.distanceFormatter
-                        .string(from: Measurement(value: model.currentRadiusMiles, unit: UnitLength.miles))
-                )
-            }
-        } else {
-            return super.subtitleForFilterCell()
-        }
-    }
-
     // `viewDidLoad` always sets `customNavBar`, but the navigation controller
     // asks before the view loads.
     override var usesCustomNavBar: Bool { true }
@@ -118,7 +87,7 @@ class AtmListViewController: ExplorePointOfUseListViewController {
         // Explore, close when presented from the Home shortcut.
         if customNavBar == nil {
             customNavBar = CustomNavBarConfiguration(
-                title: NSLocalizedString("ATMs", comment: ""),
+                title: String(localized: "ATMs", comment: ""),
                 leading: defaultCustomNavBarLeading,
                 onBack: { [weak self] in self?.closeOrPop() },
                 onInfo: nil)
@@ -126,17 +95,12 @@ class AtmListViewController: ExplorePointOfUseListViewController {
         super.viewDidLoad()
     }
 
-    override func configureModel() {
-        model = PointOfUseListModel(segments: [
-            AtmListSegmnets.all.pointOfUseListSegment,
-            AtmListSegmnets.buy.pointOfUseListSegment,
-            AtmListSegmnets.sell.pointOfUseListSegment,
-            AtmListSegmnets.buyAndSell.pointOfUseListSegment,
-        ])
+    override func makeConfiguration() -> PointOfUseListConfiguration {
+        .atms()
     }
 
     override func configureHierarchy() {
-        title = NSLocalizedString("ATMs", comment: "");
+        title = String(localized: "ATMs", comment: "");
 
         super.configureHierarchy()
         tableView.register(AtmItemCell.self, forCellReuseIdentifier: AtmItemCell.reuseIdentifier)

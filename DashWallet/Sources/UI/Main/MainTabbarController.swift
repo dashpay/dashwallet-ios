@@ -33,15 +33,15 @@ extension MainTabbarTabs {
     var accessibilityLabel: String {
         switch self {
         case .home:
-            return NSLocalizedString("Dash Wallet", comment: "Main tab bar: Home")
+            return String(localized: "Dash Wallet", comment: "Main tab bar: Home")
         case .contacts:
-            return NSLocalizedString("Contacts", comment: "Main tab bar")
+            return String(localized: "Contacts", comment: "Main tab bar")
         case .payment:
-            return NSLocalizedString("Payments", comment: "Main tab bar")
+            return String(localized: "Payments", comment: "Main tab bar")
         case .explore:
-            return NSLocalizedString("Explore", comment: "Main tab bar")
+            return String(localized: "Explore", comment: "Main tab bar")
         case .more:
-            return NSLocalizedString("More", comment: "Main tab bar")
+            return String(localized: "More", comment: "Main tab bar")
         }
     }
 
@@ -622,28 +622,22 @@ extension MainTabbarController: DWWipeDelegate {
     }
 }
 
-// MARK: PaymentsViewControllerDelegate
+// MARK: - PaymentsViewControllerState
 
-extension MainTabbarController: PaymentsViewControllerDelegate {
-    func paymentsViewControllerDidFinishPayment(_ controller: PaymentsViewController, txidWire: Data) {
-        closePayments { [weak self] in
-            self?.presentTxDetails(for: txidWire)
-        }
-    }
+/// Which payments page a shortcut or Home action opens.
+@objc(DWPaymentsViewControllerIndex)
+enum PaymentsViewControllerState: Int {
+    @objc(DWPaymentsViewControllerIndex_None)
+    case none = -1
 
-    private func presentTxDetails(for txidWire: Data) {
-        // Resolves the txid to the SDK-backed row (or the recent-send
-        // registry entry) — see TxDetailModel.init(txidWire:).
-        let model = TxDetailModel(txidWire: txidWire)
-        let vc = SuccessTxDetailViewController(model: model)
-        vc.modalPresentationStyle = .fullScreen
-        vc.delegate = self
-        selectedViewController?.topController().present(vc, animated: true)
-    }
+    @objc(DWPaymentsViewControllerIndex_Receive)
+    case receive = 0
 
-    func paymentsViewControllerDidCancel(_ controller: PaymentsViewController) {
-        closePayments()
-    }
+    @objc(DWPaymentsViewControllerIndex_Pay)
+    case pay = 1
+
+    @objc(DWPaymentsViewControllerIndex_EnterAddress)
+    case enterAddress = 2
 }
 
 // MARK: HomeViewControllerDelegate
@@ -782,12 +776,6 @@ extension MainTabbarController: UITabBarControllerDelegate {
 
 private final class EmptyController: UIViewController { }
 
-// MARK: - MainTabbarController + SuccessTxDetailViewControllerDelegate
-
-extension MainTabbarController: SuccessTxDetailViewControllerDelegate {
-    func txDetailViewControllerDidFinish(controller: SuccessTxDetailViewController) { }
-}
-
 // MARK: - Exchange Rates
 
 extension MainTabbarController {
@@ -823,15 +811,15 @@ extension MainTabbarController {
         let text: String
         
         if lastUpdated != 0 && Double(lastUpdated) + kStaleRatesDuration < now {
-            text = NSLocalizedString("Prices are at least 30 minutes old. Fiat values may be incorrect.", comment: "Stale rates")
+            text = String(localized: "Prices are at least 30 minutes old. Fiat values may be incorrect.", comment: "Stale rates")
         } else {
-            text = NSLocalizedString("Prices weren't retrieved. Fiat values may be incorrect.", comment: "Stale rates")
+            text = String(localized: "Prices weren't retrieved. Fiat values may be incorrect.", comment: "Stale rates")
         }
         
         self.showToast(
             text: text,
             icon: .system("exclamationmark.triangle.fill"),
-            actionText: NSLocalizedString("OK", comment: "Stale rates"),
+            actionText: String(localized: "OK", comment: "Stale rates"),
             action: { toastView in
                 self.hideToast(toastView: toastView)
             }
@@ -840,9 +828,9 @@ extension MainTabbarController {
     
     private func showVolatileWarning() {
         self.showToast(
-            text: NSLocalizedString("Prices have fluctuated more than 50% since the last update.", comment: "Stale rates"),
+            text: String(localized: "Prices have fluctuated more than 50% since the last update.", comment: "Stale rates"),
             icon: .system("exclamationmark.triangle.fill"),
-            actionText: NSLocalizedString("OK", comment: "Stale rates"),
+            actionText: String(localized: "OK", comment: "Stale rates"),
             action: { toastView in
                 self.hideToast(toastView: toastView)
             }

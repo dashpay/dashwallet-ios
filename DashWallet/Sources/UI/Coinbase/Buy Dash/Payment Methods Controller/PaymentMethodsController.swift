@@ -56,7 +56,7 @@ final class PaymentMethodsController: BaseViewController {
         view.layer.cornerRadius = 15
         view.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
 
-        titleLabel.text = NSLocalizedString("Choose Payment Method", comment: "Coinbase/Payment Methods")
+        titleLabel.text = String(localized: "Choose Payment Method", comment: "Coinbase/Payment Methods")
 
         tableView.rowHeight = 62
     }

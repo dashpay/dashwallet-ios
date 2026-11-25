@@ -40,15 +40,15 @@ struct RefundAddressView: View {
 
                 VStack(spacing: 20) {
                     TopIntroView(
-                        title: NSLocalizedString("Enter refund address", comment: "Dash DEX"),
+                        title: String(localized: "Enter refund address", comment: "Dash DEX"),
                         mainDescription: viewModel.subtitle
                     )
 
                     addressContent
 
                     SystemMessageView(
-                        title: NSLocalizedString("The refund address is required", comment: "Dash DEX"),
-                        subtitle: NSLocalizedString("Your swap can NOT be processed without a refund address", comment: "Dash DEX"),
+                        title: String(localized: "The refund address is required", comment: "Dash DEX"),
+                        subtitle: String(localized: "Your swap can NOT be processed without a refund address", comment: "Dash DEX"),
                         icon: DashIcon.SystemMessage.infoRectSmall.source,
                         backgroundColor: colorScheme == .dark ? Color.dash.blueAlpha10 : Color.dash.blueAlpha5,
                         onClose: {}
@@ -101,7 +101,7 @@ struct RefundAddressView: View {
 
     private var continueButton: some View {
         DashUIKit.DashButton(
-            text: NSLocalizedString("Continue", comment: ""),
+            text: String(localized: "Continue", comment: ""),
             isEnabled: viewModel.isContinueEnabled && viewModel.isOnline && !viewModel.isSubmitting,
             isLoading: viewModel.isSubmitting,
             fillsWidth: true,

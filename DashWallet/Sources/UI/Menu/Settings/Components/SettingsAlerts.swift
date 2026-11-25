@@ -33,7 +33,7 @@ private struct NetworkChoiceAlert: ViewModifier {
 
     func body(content: Content) -> some View {
         content.alert(
-            NSLocalizedString("Network", comment: ""),
+            String(localized: "Network", comment: ""),
             isPresented: $isPresented
         ) {
             Button(WalletEnvironment.displayName(of: WalletEnvironment.NetworkKind.mainnet), action: onMainnet)
@@ -41,7 +41,7 @@ private struct NetworkChoiceAlert: ViewModifier {
             if let onDevnet {
                 Button(WalletEnvironment.displayName(of: WalletEnvironment.NetworkKind.devnet), action: onDevnet)
             }
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
+            Button(String(localized: "Cancel", comment: ""), role: .cancel) { }
         }
     }
 }
@@ -58,14 +58,14 @@ private struct NetworkSwitchErrorAlert: ViewModifier {
 
     func body(content: Content) -> some View {
         content.alert(
-            NSLocalizedString("Network", comment: ""),
+            String(localized: "Network", comment: ""),
             isPresented: Binding(
                 get: { message != nil },
                 set: { if !$0 { message = nil } }
             ),
             presenting: message
         ) { _ in
-            Button(NSLocalizedString("OK", comment: "")) { message = nil }
+            Button(String(localized: "OK", comment: "")) { message = nil }
         } message: { text in
             Text(text)
         }
@@ -90,27 +90,23 @@ private struct CoinJoinSweepAlerts: ViewModifier {
     func body(content: Content) -> some View {
         content
             .alert(
-                NSLocalizedString("Move CoinJoin Funds", comment: "CoinJoin"),
+                String(localized: "Move CoinJoin Funds", comment: "CoinJoin"),
                 isPresented: $isConfirming
             ) {
-                Button(NSLocalizedString("Move funds", comment: "CoinJoin"), action: onConfirm)
-                Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
+                Button(String(localized: "Move funds", comment: "CoinJoin"), action: onConfirm)
+                Button(String(localized: "Cancel", comment: ""), role: .cancel) { }
             } message: {
-                Text(String(
-                    format: NSLocalizedString(
-                        "Move your %@ in mixed coins to your spendable balance? CoinJoin is no longer supported.",
-                        comment: "CoinJoin"),
-                    amount))
+                Text(String(localized: "Move your \(amount) in mixed coins to your spendable balance? CoinJoin is no longer supported.", comment: "CoinJoin"))
             }
             .alert(
-                NSLocalizedString("Move CoinJoin Funds", comment: "CoinJoin"),
+                String(localized: "Move CoinJoin Funds", comment: "CoinJoin"),
                 isPresented: Binding(
                     get: { errorMessage != nil },
                     set: { if !$0 { errorMessage = nil } }
                 ),
                 presenting: errorMessage
             ) { _ in
-                Button(NSLocalizedString("OK", comment: "")) { errorMessage = nil }
+                Button(String(localized: "OK", comment: "")) { errorMessage = nil }
             } message: { message in
                 Text(message)
             }

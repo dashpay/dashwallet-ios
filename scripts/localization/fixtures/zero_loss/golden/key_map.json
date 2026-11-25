@@ -1,0 +1,20 @@
+{
+  "baseline": "{BASELINE40}",
+  "keys": {
+    "%d coins": [
+      "%lld coins"
+    ],
+    "Hello": [
+      "Hello"
+    ],
+    "Obj title": [
+      "Obj title"
+    ],
+    "Sample %d items": [
+      "Sample %lld items"
+    ],
+    "Send": [
+      "Send"
+    ]
+  }
+}

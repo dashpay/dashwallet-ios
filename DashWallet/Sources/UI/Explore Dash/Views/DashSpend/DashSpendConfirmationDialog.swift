@@ -22,7 +22,7 @@ import SDWebImageSwiftUI
 struct DashSpendConfirmationDialog: View {
     /// Detent used before `selfSizingSheet` has measured the sheet, so it doesn't
     /// present short and then jump. Covers this dialog's own natural height plus
-    /// `DashUIKit.BottomSheet`'s chrome — an 18pt grabber and a 64pt navigation bar.
+    /// `DashUIKit.BottomSheet`'s chrome — an 18pt grabber and a 74pt header.
     /// Both presenters share this value; keep it here so they can't drift apart.
     static let sheetFallbackHeight: CGFloat = 690
 
@@ -35,6 +35,9 @@ struct DashSpendConfirmationDialog: View {
     let quantities: [Decimal: Int]?
     /// `true` once the buyer confirmed and the provider's answer is awaited.
     let isWaiting: Bool
+    /// The most height the dialog may take; `nil` for its natural height. When the content
+    /// is taller, the details scroll and the buttons stay in place below them.
+    var maxHeight: CGFloat? = nil
     let onConfirm: () -> Void
     let onCancel: () -> Void
 
@@ -63,122 +66,149 @@ struct DashSpendConfirmationDialog: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            VStack(spacing: 20) {
-                VStack(spacing: 0) {
-                    DashSpendAmountView(
-                        currencySymbol: fiatFormatter.currencySymbol,
-                        amount: formattedPayAmount
-                    )
-                    .frame(height: 70)
+        DashSpendSheetBody(maxHeight: maxHeight) {
+            VStack(spacing: 0) {
+                DashSpendAmountView(
+                    currencySymbol: fiatFormatter.currencySymbol,
+                    amount: formattedPayAmount
+                )
+                .frame(height: 70)
 
-                    DashSpendDashFigure(text: GiftCardAmountText.approximateDash(dashAmount))
-                }
-
-                VStack(alignment: .leading, spacing: 2) {
-                    detailsRow(title: NSLocalizedString("From", comment: "DashSpend")) {
-                        HStack(spacing: 8) {
-                            Image("image.explore.dash.wts.dash")
-                                .resizable()
-                                .frame(width: 20, height: 20)
-                                .clipShape(RoundedRectangle(cornerRadius: 7))
-                            Text(NSLocalizedString("Dash Wallet", comment: "DashSpend"))
-                                .font(.subhead)
-                                .foregroundColor(.dash.primaryText)
-                        }
-                    }
-
-                    detailsRow(title: NSLocalizedString("To", comment: "DashSpend")) {
-                        HStack(spacing: 8) {
-                            // The placeholder stands in while loading and on failure, so a
-                            // missing or broken icon URL still shows the merchant's initials.
-                            WebImage(url: URL(string: merchantIconUrl)) { image in
-                                image
-                                    .resizable()
-                                    .scaledToFit()
-                            } placeholder: {
-                                // Rounded-rect clip (below), so the text may fill almost the
-                                // whole box. Initials rather than the full name — at 20pt the
-                                // name style hits the 6pt font floor and clips.
-                                MerchantLogoPlaceholder(merchantName: merchantName,
-                                                        style: .initials,
-                                                        usableFraction: 0.84)
-                            }
-                            .transition(.fade(duration: 0.3))
-                            .frame(width: 20, height: 20)
-                            .clipShape(RoundedRectangle(cornerRadius: 7))
-                            Text(merchantName)
-                                .font(.subhead)
-                                .foregroundColor(.dash.primaryText)
-                        }
-                    }
-
-                    detailsRow(title: NSLocalizedString("Gift card total", comment: "DashSpend")) {
-                        Text(fiatFormatter.string(from: NSDecimalNumber(decimal: originalPrice)) ?? "")
-                            .font(.subhead)
-                            .foregroundColor(.dash.primaryText)
-                    }
-
-                    if !quantityLines.isEmpty {
-                        detailsRow(title: NSLocalizedString("Quantity", comment: "DashSpend")) {
-                            VStack(alignment: .trailing, spacing: 2) {
-                                ForEach(quantityLines, id: \.self) { line in
-                                    Text(line)
-                                        .font(.subhead)
-                                        .foregroundColor(.dash.primaryText)
-                                }
-                            }
-                        }
-                    }
-
-                    detailsRow(title: NSLocalizedString("Discount", comment: "DashSpend")) {
-                        Text(PercentageFormatter.format(percent: NSDecimalNumber(decimal: discount * 100).doubleValue))
-                            .font(.subhead)
-                            .foregroundColor(.dash.primaryText)
-                    }
-
-                    detailsRow(title: NSLocalizedString("You pay", comment: "DashSpend")) {
-                        VStack(alignment: .trailing, spacing: 2) {
-                            Text(fiatFormatter.string(from: NSDecimalNumber(decimal: youPayAmount)) ?? "")
-                                .font(.subhead)
-                                .foregroundColor(.dash.primaryText)
-                            DashSpendDashFigure(text: GiftCardAmountText.approximateDash(dashAmount),
-                                                font: .footnote, symbolSize: 10, color: .dash.secondaryText)
-                        }
-                    }
-                }
-                .padding(6)
-                .background(Color.dash.secondaryBackground)
-                .cornerRadius(20)
-                .shadow(color: Color.dash.shadow, radius: 20, x: 0, y: 5)
-
-                VStack(spacing: 10) {
-                    DashButton(
-                        text: NSLocalizedString("Confirm", comment: "DashSpend"),
-                        isLoading: isWaiting,
-                        action: onConfirm
-                    )
-
-                    DashButton(
-                        text: NSLocalizedString("Cancel", comment: "DashSpend"),
-                        isEnabled: !isWaiting,
-                        action: onCancel
-                    )
-                    .overrideForegroundColor(.dash.primaryText)
-                    .overrideBackgroundColor(.dash.gray300Alpha10)
-                }
-                .padding(.horizontal, 10)
+                DashSpendDashFigure(text: GiftCardAmountText.approximateDash(dashAmount))
             }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 20)
+
+            details
+        } buttons: {
+            VStack(spacing: 10) {
+                DashButton(
+                    text: String(localized: "Confirm", comment: "DashSpend"),
+                    isLoading: isWaiting,
+                    action: onConfirm
+                )
+
+                DashButton(
+                    text: String(localized: "Cancel", comment: "DashSpend"),
+                    isEnabled: !isWaiting,
+                    action: onCancel
+                )
+                .overrideForegroundColor(.dash.primaryText)
+                .overrideBackgroundColor(.dash.gray300Alpha10)
+            }
         }
-        // Keep the natural height independent of the offered detent so DashUIKit's
-        // `.selfSizingSheet()` can measure a stable intrinsic height.
-        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var details: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            detailsRow(title: String(localized: "From", comment: "DashSpend")) {
+                HStack(spacing: 8) {
+                    Image("image.explore.dash.wts.dash")
+                        .resizable()
+                        .frame(width: 20, height: 20)
+                        .clipShape(RoundedRectangle(cornerRadius: 7))
+                    Text(String(localized: "Dash Wallet", comment: "DashSpend"))
+                        .font(.subhead)
+                        .foregroundColor(.dash.primaryText)
+                }
+            }
+
+            detailsRow(title: String(localized: "To", comment: "DashSpend")) {
+                HStack(spacing: 8) {
+                    // The placeholder stands in while loading and on failure, so a
+                    // missing or broken icon URL still shows the merchant's initials.
+                    WebImage(url: URL(string: merchantIconUrl)) { image in
+                        image
+                            .resizable()
+                            .scaledToFit()
+                    } placeholder: {
+                        // Rounded-rect clip (below), so the text may fill almost the
+                        // whole box. Initials rather than the full name — at 20pt the
+                        // name style hits the 6pt font floor and clips.
+                        MerchantLogoPlaceholder(merchantName: merchantName,
+                                                style: .initials,
+                                                usableFraction: 0.84)
+                    }
+                    .transition(.fade(duration: 0.3))
+                    .frame(width: 20, height: 20)
+                    .clipShape(RoundedRectangle(cornerRadius: 7))
+                    Text(merchantName)
+                        .font(.subhead)
+                        .foregroundColor(.dash.primaryText)
+                }
+            }
+
+            detailsRow(title: String(localized: "Gift card total", comment: "DashSpend")) {
+                Text(fiatFormatter.string(from: NSDecimalNumber(decimal: originalPrice)) ?? "")
+                    .font(.subhead)
+                    .foregroundColor(.dash.primaryText)
+            }
+
+            if !quantityLines.isEmpty {
+                detailsRow(title: String(localized: "Quantity", comment: "DashSpend")) {
+                    VStack(alignment: .trailing, spacing: 2) {
+                        ForEach(quantityLines, id: \.self) { line in
+                            Text(line)
+                                .font(.subhead)
+                                .foregroundColor(.dash.primaryText)
+                        }
+                    }
+                }
+            }
+
+            detailsRow(title: String(localized: "Discount", comment: "DashSpend")) {
+                Text(PercentageFormatter.format(percent: NSDecimalNumber(decimal: discount * 100).doubleValue))
+                    .font(.subhead)
+                    .foregroundColor(.dash.primaryText)
+            }
+
+            detailsRow(title: String(localized: "You pay", comment: "DashSpend")) {
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text(fiatFormatter.string(from: NSDecimalNumber(decimal: youPayAmount)) ?? "")
+                        .font(.subhead)
+                        .foregroundColor(.dash.primaryText)
+                    DashSpendDashFigure(text: GiftCardAmountText.approximateDash(dashAmount),
+                                        font: .footnote, symbolSize: 10, color: .dash.secondaryText)
+                }
+            }
+        }
+        .padding(6)
+        .background(Color.dash.secondaryBackground)
+        .cornerRadius(20)
+        .shadow(color: Color.dash.shadow, radius: 20, x: 0, y: 5)
     }
 
     private func detailsRow(title: String, @ViewBuilder value: () -> some View) -> some View {
         DashSpendDetailsRow(title: title, value: value)
+    }
+}
+
+/// The body of a DashSpend purchase sheet: content that scrolls when the sheet cannot be made
+/// tall enough for it, above buttons that stay in place.
+struct DashSpendSheetBody<Content: View, Buttons: View>: View {
+    /// The most height the body may take; `nil` for its natural height.
+    let maxHeight: CGFloat?
+    @ViewBuilder let content: () -> Content
+    @ViewBuilder let buttons: () -> Buttons
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(spacing: 20, content: content)
+                    .padding(.horizontal, 20)
+                    // Room for the details card's shadow, which the scroll view would
+                    // otherwise cut off.
+                    .padding(.bottom, 20)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+
+            buttons()
+                .padding(.horizontal, 30)
+        }
+        .padding(.bottom, 20)
+        .frame(maxHeight: maxHeight)
+        // Keep the height independent of the offered detent so DashUIKit's
+        // `.selfSizingSheet()` can measure a stable one: the natural height, or `maxHeight`
+        // when that is less.
+        .fixedSize(horizontal: false, vertical: true)
     }
 }
 
@@ -228,7 +258,7 @@ struct DashSpendDashFigure: View {
         }
         .foregroundColor(color)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(String(format: NSLocalizedString("%@ DASH", comment: "DashSpend: a Dash amount read by VoiceOver"), text))
+        .accessibilityLabel(String(localized: "\(text) DASH", comment: "DashSpend: a Dash amount read by VoiceOver"))
     }
 }
 
@@ -274,12 +304,12 @@ private struct DashSpendConfirmationDialogPreview: View {
 
     var body: some View {
         VStack {
-            Text("Tap to open")
+            Text(verbatim: "Tap to open")
                 .onTapGesture { isPresented = true }
         }
         .sheet(isPresented: $isPresented) {
             DashUIKit.BottomSheet.selfSizing(
-                title: NSLocalizedString("Confirm", comment: "DashSpend"),
+                title: String(localized: "Confirm", comment: "DashSpend"),
                 showBackButton: .constant(false),
                 fallback: DashSpendConfirmationDialog.sheetFallbackHeight,
                 cornerRadius: 32

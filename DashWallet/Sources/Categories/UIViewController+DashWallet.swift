@@ -121,7 +121,7 @@ extension UIViewController {
             let email = Bundle.main.infoDictionary?["SupportEmail"] as? String ?? ""
             let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
             mailComposer.setToRecipients([email])
-            mailComposer.setSubject(String(format: NSLocalizedString("iOS Dash Wallet: %@ Reported issue", comment: ""), version))
+            mailComposer.setSubject(String(localized: "iOS Dash Wallet: \(version) Reported issue", comment: ""))
 
             var totalSize: Int64 = 0
             let maxSize: Int64 = 25 * 1024 * 1024 // 25MB in bytes
@@ -171,7 +171,7 @@ extension UIViewController {
             // only, which is why reports arrived with an empty "To" field.
             let email = Bundle.main.infoDictionary?["SupportEmail"] as? String ?? ""
             let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
-            let subject = String(format: NSLocalizedString("iOS Dash Wallet: %@ Reported issue", comment: ""), version)
+            let subject = String(localized: "iOS Dash Wallet: \(version) Reported issue", comment: "")
 
             var activityItems: [Any] = []
             if !email.isEmpty {

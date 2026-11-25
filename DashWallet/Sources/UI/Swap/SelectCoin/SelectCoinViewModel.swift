@@ -80,8 +80,8 @@ class SelectCoinViewModel: ObservableObject {
     }
 
     /// What the picker shows when the coin list fails to load; the cause goes to the log.
-    static let loadFailedMessage = NSLocalizedString(
-        "Couldn't load the coin list. Please try again, or try a different network.",
+    static let loadFailedMessage = String(
+        localized: "Couldn't load the coin list. Please try again, or try a different network.",
         comment: "Swap: Select coin, the coin list failed to load"
     )
 

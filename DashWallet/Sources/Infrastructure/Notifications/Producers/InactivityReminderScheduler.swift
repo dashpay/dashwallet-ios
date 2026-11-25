@@ -179,7 +179,7 @@ final class InactivityReminderScheduler {
         // read the wallet's total holdings without unlocking anything. The
         // user can also have "Autohide Balance" on, which every in-app
         // surface honours and a scheduled notification cannot.
-        content.body = NSLocalizedString("It's been a while since you opened Dash Wallet.",
+        content.body = String(localized: "It's been a while since you opened Dash Wallet.",
                                          comment: "Inactivity reminder")
         content.sound = .default
         content.threadIdentifier = NotificationTopic.system.rawValue

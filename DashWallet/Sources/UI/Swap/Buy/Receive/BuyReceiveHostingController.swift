@@ -57,7 +57,7 @@ final class BuyReceiveHostingController: UIViewController, NavigationBarDisplaya
             onCopy: { [weak self] text in
                 guard let self else { return }
                 UIPasteboard.general.string = text
-                self.showToast(text: NSLocalizedString("Copied", comment: "Dash DEX"), icon: .system("checkmark.circle.fill"), duration: 1.5)
+                self.showToast(text: String(localized: "Copied", comment: "Dash DEX"), icon: .system("checkmark.circle.fill"), duration: 1.5)
             }
         )
 

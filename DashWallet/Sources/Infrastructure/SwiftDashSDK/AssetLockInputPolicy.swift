@@ -179,12 +179,12 @@ enum AssetLockInputLimit {
     }
 
     static var title: String {
-        NSLocalizedString("Too many coins for one transfer", comment: "Asset-lock input limit")
+        String(localized: "Too many coins for one transfer", comment: "Asset-lock input limit")
     }
 
     static var message: String {
-        NSLocalizedString(
-            "This transfer needs more separate coins than the network accepts in one transfer. Combine your coins first (a small network fee applies), then try again.",
+        String(
+            localized: "This transfer needs more separate coins than the network accepts in one transfer. Combine your coins first (a small network fee applies), then try again.",
             comment: "Asset-lock input limit")
     }
 

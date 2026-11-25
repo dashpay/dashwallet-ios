@@ -73,7 +73,7 @@ struct SendScreen: View {
             .scrollDismissesKeyboard(.interactively)
 
             DashButton(
-                text: NSLocalizedString("Continue", comment: ""),
+                text: String(localized: "Continue", comment: ""),
                 style: .filled,
                 stretch: true,
                 isEnabled: viewModel.canAdvanceToAmount,
@@ -114,7 +114,7 @@ struct SendScreen: View {
                 }
             },
             central: {
-                Text(NSLocalizedString("Send", comment: ""))
+                Text(String(localized: "Send", comment: ""))
                     .dashFont(.subheadMedium)
                     .foregroundColor(Color.dash.primaryText)
             })
@@ -125,7 +125,7 @@ struct SendScreen: View {
     private var addressField: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Text(NSLocalizedString("Address", comment: ""))
+                Text(String(localized: "Address", comment: ""))
                     .font(.caption)
                     .foregroundColor(Color.dash.secondaryText)
                 Spacer()
@@ -137,7 +137,7 @@ struct SendScreen: View {
                 lockedAddressCard
             } else {
                 TextField(
-                    NSLocalizedString("Dash address", comment: "Send screen address placeholder"),
+                    String(localized: "Dash address", comment: "Send screen address placeholder"),
                     text: $viewModel.addressText,
                     axis: .vertical)
                     .font(.system(.footnote, design: .monospaced))
@@ -178,13 +178,11 @@ struct SendScreen: View {
             }
 
             if viewModel.showsInvalidAddress {
-                Text(NSLocalizedString("This is not a valid Dash address for this network", comment: "Send screen"))
+                Text(String(localized: "This is not a valid Dash address for this network", comment: "Send screen"))
                     .font(.caption)
                     .foregroundColor(.red)
             } else if viewModel.pinnedSourceMismatch {
-                Text(String(
-                    format: NSLocalizedString("This address can't be paid from your %@ balance", comment: "Send sheet source/destination mismatch"),
-                    viewModel.pinnedSourceTitle))
+                Text(String(localized: "This address can't be paid from your \(viewModel.pinnedSourceTitle) balance", comment: "Send sheet source/destination mismatch"))
                     .font(.caption)
                     .foregroundColor(.red)
             }
@@ -239,9 +237,9 @@ struct SendScreen: View {
 
     private func destinationTitle(_ destination: SendViewModel.DestinationKind) -> String {
         switch destination {
-        case .core: return NSLocalizedString("Transparent address", comment: "Send screen destination type")
-        case .platform: return NSLocalizedString("Platform address", comment: "Send screen destination type")
-        case .shielded: return NSLocalizedString("Shielded address", comment: "Send screen destination type")
+        case .core: return String(localized: "Transparent address", comment: "Send screen destination type")
+        case .platform: return String(localized: "Platform address", comment: "Send screen destination type")
+        case .shielded: return String(localized: "Shielded address", comment: "Send screen destination type")
         }
     }
 
@@ -251,7 +249,7 @@ struct SendScreen: View {
                 Image(systemName: "doc.on.doc.fill")
                     .foregroundColor(.blue)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(NSLocalizedString("Send to copied address", comment: ""))
+                    Text(String(localized: "Send to copied address", comment: ""))
                         .font(.caption)
                         .foregroundColor(Color.dash.secondaryText)
                     Text(truncateMiddle(suggestion.address))
@@ -280,7 +278,7 @@ struct SendScreen: View {
         Button(action: onScanQR) {
             HStack(spacing: 6) {
                 Image(systemName: "qrcode.viewfinder")
-                Text(NSLocalizedString("Scan QR", comment: ""))
+                Text(String(localized: "Scan QR", comment: ""))
             }
             .font(.system(size: 14, weight: .medium))
             .foregroundColor(.blue)
@@ -329,7 +327,7 @@ struct SendSourceScreen: View {
             .scrollBounceBehavior(.basedOnSize)
 
             DashButton(
-                text: NSLocalizedString("Continue", comment: ""),
+                text: String(localized: "Continue", comment: ""),
                 style: .filled,
                 stretch: true,
                 isEnabled: viewModel.route != nil && !viewModel.isBlockedBySync,
@@ -369,7 +367,7 @@ struct SendSourceScreen: View {
         }
         return TransferSourceRow(
             iconSystemName: sourceIconName(network),
-            caption: NSLocalizedString("From", comment: ""),
+            caption: String(localized: "From", comment: ""),
             title: sourceTitle(network),
             balanceTrailing: TransferSourceRow.dashBalanceTrailing(balance),
             selected: viewModel.source == network,
@@ -608,8 +606,8 @@ struct ExternalSendAmountScreen: View {
             // step before the broadcast; every other route continues to a
             // flow of its own (the L1 payment processor or `SendConfirmSheet`).
             actionButtonText: isContactSend
-                ? NSLocalizedString("Send", comment: "")
-                : NSLocalizedString("Continue", comment: ""),
+                ? String(localized: "Send", comment: "")
+                : String(localized: "Continue", comment: ""),
             actionEnabled: viewModel.canContinue,
             inProgress: isContactSendInFlight || viewModel.isCoreDrainLoading,
             actionHandler: continueAction
@@ -679,7 +677,7 @@ struct ExternalSendAmountScreen: View {
                     .foregroundColor(.dashBlue)
                     .frame(width: 24)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(NSLocalizedString("From", comment: ""))
+                    Text(String(localized: "From", comment: ""))
                         .font(.caption)
                         .foregroundColor(.secondary)
                     Text(sourceTitle(viewModel.source))
@@ -784,7 +782,7 @@ private struct SendStepHeader: View {
         DashUIKit.NavigationBar(
             leading: { DashUIKit.NavigationBarElement.back.button(action: onBack) },
             central: {
-                Text(NSLocalizedString("Send", comment: ""))
+                Text(String(localized: "Send", comment: ""))
                     .dashFont(.subheadMedium)
                     .foregroundColor(Color.dash.primaryText)
             })
@@ -823,10 +821,10 @@ private struct SendContactIntro: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             VStack(alignment: .leading, spacing: 4) {
-                DashUIKit.TopIntroView(title: NSLocalizedString("Send", comment: ""))
+                DashUIKit.TopIntroView(title: String(localized: "Send", comment: ""))
 
                 HStack(spacing: 6) {
-                    Text(NSLocalizedString("to", comment: "Send screen: precedes the recipient"))
+                    Text(String(localized: "to", comment: "Send screen: precedes the recipient"))
                         .dashFont(.subhead)
                         .foregroundColor(Color.dash.primaryText)
                     ContactAvatarView(
@@ -846,13 +844,13 @@ private struct SendContactIntro: View {
                 // until asked for, with the eye control and the hidden-first
                 // default `DashSpendPayIntro` established for this same row.
                 HStack(spacing: 4) {
-                    Text(NSLocalizedString("Balance:", comment: "Send screen: the funding balance"))
+                    Text(String(localized: "Balance:", comment: "Send screen: the funding balance"))
 
                     if balanceHidden {
-                        Text("***********")
+                        Text(verbatim: "***********")
                     } else {
                         DashAmount(amount: Int64(balanceDuffs), font: .subheadline, showDirection: false)
-                        Text("~").font(.subheadline)
+                        Text(verbatim: "~").font(.subheadline)
                         fiatText
                     }
 
@@ -865,8 +863,8 @@ private struct SendContactIntro: View {
                     // `eyeIcon` is two icons in a ZStack and carries no text,
                     // so VoiceOver would announce this control unnamed.
                     .accessibilityLabel(Text(balanceHidden
-                        ? NSLocalizedString("Show balance", comment: "Send screen: reveal the funding balance")
-                        : NSLocalizedString("Hide balance", comment: "Send screen: mask the funding balance")))
+                        ? String(localized: "Show balance", comment: "Send screen: reveal the funding balance")
+                        : String(localized: "Hide balance", comment: "Send screen: mask the funding balance")))
                 }
                 .font(.subheadline)
                 .foregroundColor(Color.dash.secondaryText)
@@ -898,7 +896,7 @@ private struct SendContactIntro: View {
             .convertDash(amount: balanceDuffs.dashAmount, to: App.fiatCurrency)
             .formattedFiatAmount
 
-        Text(text ?? NSLocalizedString("Not available", comment: ""))
+        Text(text ?? String(localized: "Not available", comment: ""))
             .font(.subheadline)
             .foregroundColor(Color.dash.secondaryText)
     }
@@ -929,8 +927,8 @@ private struct SendAddressSummary: View {
     private var caption: some View {
         HStack {
             Text(isContactRecipient
-                ? NSLocalizedString("To", comment: "")
-                : NSLocalizedString("Address", comment: ""))
+                ? String(localized: "To", comment: "")
+                : String(localized: "Address", comment: ""))
                 .font(.caption)
                 .foregroundColor(.secondary)
             Spacer()
@@ -981,7 +979,7 @@ private struct SendAddressSummary: View {
                 identitySeed: contact.contactIdentityId)
             VStack(alignment: .leading, spacing: 2) {
                 Text(contact.displayTitle)
-                    .font(.system(size: 15, weight: .medium))
+                    .scaledSystemFont(size: 15, weight: .medium, relativeTo: .subheadline)
                     .foregroundColor(.primaryText)
                     .lineLimit(1)
                 // Only when it adds something: the title is already the alias
@@ -990,14 +988,14 @@ private struct SendAddressSummary: View {
                    !username.isEmpty,
                    username != contact.displayTitle {
                     Text(username)
-                        .font(.system(size: 12))
+                        .scaledSystemFont(size: 12, relativeTo: .caption)
                         .foregroundColor(Color.dash.tertiaryText)
                         .lineLimit(1)
                 }
             }
             Spacer()
             Image(systemName: "chevron.right")
-                .font(.system(size: 13, weight: .medium))
+                .scaledSystemFont(size: 13, weight: .medium, relativeTo: .footnote)
                 .foregroundColor(.secondary)
         }
         .padding(12)
@@ -1055,9 +1053,9 @@ private func destinationIconName(_ destination: SendViewModel.DestinationKind) -
 
 private func destinationTitle(_ destination: SendViewModel.DestinationKind) -> String {
     switch destination {
-    case .core: return NSLocalizedString("Transparent address", comment: "Send screen destination type")
-    case .platform: return NSLocalizedString("Platform address", comment: "Send screen destination type")
-    case .shielded: return NSLocalizedString("Shielded address", comment: "Send screen destination type")
+    case .core: return String(localized: "Transparent address", comment: "Send screen destination type")
+    case .platform: return String(localized: "Platform address", comment: "Send screen destination type")
+    case .shielded: return String(localized: "Shielded address", comment: "Send screen destination type")
     }
 }
 
@@ -1087,7 +1085,7 @@ private struct ConfirmContactSendSheet: View {
         // with the contact's avatar. `selfSizing` measures the content, so nothing below may
         // grow greedily — no `Spacer`, no `maxHeight: .infinity`.
         DashUIKit.BottomSheet.selfSizing(
-            title: NSLocalizedString("Confirm", comment: "Payment confirmation"),
+            title: String(localized: "Confirm", comment: "Payment confirmation"),
             showBackButton: .constant(false),
             onClose: onCancel
         ) {
@@ -1106,7 +1104,7 @@ private struct ConfirmContactSendSheet: View {
 
                 VStack(spacing: 0) {
                     DashUIKit.List8View(
-                        label: NSLocalizedString("To", comment: "Payment confirmation"),
+                        label: String(localized: "To", comment: "Payment confirmation"),
                         value: contact.displayTitle,
                         truncationMode: contact.displayTitleIsName ? .tail : .middle
                     ) {
@@ -1119,12 +1117,12 @@ private struct ConfirmContactSendSheet: View {
                     // Every place a duff can occupy, as on the L1 confirmation:
                     // the component's default rounds a Core fee to "0".
                     DashUIKit.MenuItem(
-                        title: NSLocalizedString("Network fee", comment: "Payment confirmation"),
+                        title: String(localized: "Network fee", comment: "Payment confirmation"),
                         accessory: .balance(
                             dash: Int64(clamping: feeDuffs), sign: .none,
                             maximumFractionDigits: Self.dashFractionDigits))
                     DashUIKit.MenuItem(
-                        title: NSLocalizedString("Total", comment: ""),
+                        title: String(localized: "Total", comment: ""),
                         accessory: .balance(
                             dash: Int64(clamping: totalDuffs), sign: .none,
                             maximumFractionDigits: Self.dashFractionDigits))
@@ -1140,13 +1138,13 @@ private struct ConfirmContactSendSheet: View {
 
                 HStack(spacing: 20) {
                     DashUIKit.DashButton(
-                        text: NSLocalizedString("Cancel", comment: ""),
+                        text: String(localized: "Cancel", comment: ""),
                         fillsWidth: true,
                         size: .large,
                         style: .tintedGray,
                         action: onCancel)
                     DashUIKit.DashButton(
-                        text: NSLocalizedString("Send", comment: ""),
+                        text: String(localized: "Send", comment: ""),
                         isEnabled: unavailableMessage == nil,
                         fillsWidth: true,
                         size: .large,
@@ -1213,7 +1211,7 @@ struct SendConfirmSheet: View {
 
     var body: some View {
         DashUIKit.BottomSheet(
-            title: NSLocalizedString("Confirm", comment: ""),
+            title: String(localized: "Confirm", comment: ""),
             showBackButton: .constant(false),
             isDismissalEnabled: .constant(!isInFlight),
             // Supplying `onClose` makes the close button live regardless of
@@ -1238,12 +1236,12 @@ struct SendConfirmSheet: View {
         .coreCoinConsolidationSheet(check: $coinConsolidationCheck) { coordinator.reset() }
     }
 
-    private static let drainPendingDetail = NSLocalizedString(
-        "Check the Max transfer's status from the pending transaction in History, or by tapping Max again.",
+    private static let drainPendingDetail = String(
+        localized: "Check the Max transfer's status from the pending transaction in History, or by tapping Max again.",
         comment: "Send confirm sheet: drain outcome pending")
 
-    private static let resumeDetail = NSLocalizedString(
-        "If it does not arrive, Resume continues this same transfer to the same recipient. It cannot pay twice.",
+    private static let resumeDetail = String(
+        localized: "If it does not arrive, Resume continues this same transfer to the same recipient. It cannot pay twice.",
         comment: "Send confirm sheet: an unconfirmed Core to Shielded send can be resumed")
 
     private var unconfirmedDetail: String? {
@@ -1288,7 +1286,7 @@ struct SendConfirmSheet: View {
         VStack(spacing: 0) {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 if isCoreDrain {
-                    Text("≈")
+                    Text(verbatim: "≈")
                         .font(.largeTitle)
                         .foregroundColor(.dash.primaryText)
                 }
@@ -1329,9 +1327,9 @@ struct SendConfirmSheet: View {
                 ButtonsGroup(
                     orientation: .horizontal,
                     size: .large,
-                    positiveButtonText: NSLocalizedString("Confirm", comment: ""),
+                    positiveButtonText: String(localized: "Confirm", comment: ""),
                     positiveButtonAction: confirm,
-                    negativeButtonText: NSLocalizedString("Cancel", comment: ""),
+                    negativeButtonText: String(localized: "Cancel", comment: ""),
                     negativeButtonAction: onCancel)
                     .padding(.horizontal, 16)
                     .padding(.bottom, 16)
@@ -1343,7 +1341,7 @@ struct SendConfirmSheet: View {
                         size: .large,
                         positiveButtonText: CoreCoinConsolidationViewModel.combineButtonTitle,
                         positiveButtonAction: { coinConsolidationCheck = check },
-                        negativeButtonText: NSLocalizedString("Close", comment: ""),
+                        negativeButtonText: String(localized: "Close", comment: ""),
                         negativeButtonAction: onCancel)
                         .padding(.horizontal, 16)
                         .padding(.bottom, 16)
@@ -1351,9 +1349,9 @@ struct SendConfirmSheet: View {
                     ButtonsGroup(
                         orientation: .horizontal,
                         size: .large,
-                        positiveButtonText: NSLocalizedString("Try again", comment: ""),
+                        positiveButtonText: String(localized: "Try again", comment: ""),
                         positiveButtonAction: tryAgain,
-                        negativeButtonText: NSLocalizedString("Close", comment: ""),
+                        negativeButtonText: String(localized: "Close", comment: ""),
                         negativeButtonAction: onCancel)
                         .padding(.horizontal, 16)
                         .padding(.bottom, 16)
@@ -1375,14 +1373,14 @@ struct SendConfirmSheet: View {
     private var successBody: some View {
         VStack(spacing: 16) {
             PaymentSuccessHeader(
-                title: NSLocalizedString("Sent", comment: "Send confirm sheet"),
+                title: String(localized: "Sent", comment: "Send confirm sheet"),
                 amountDuffs: dashDuffs,
                 fiatText: displayedFiatText)
 
             Spacer(minLength: 12)
 
             DashButton(
-                text: NSLocalizedString("Done", comment: ""),
+                text: String(localized: "Done", comment: ""),
                 style: .filled,
                 stretch: true,
                 action: onCompleted)
@@ -1396,11 +1394,11 @@ struct SendConfirmSheet: View {
     private var summaryCard: some View {
         VStack(spacing: 0) {
             summaryRow(
-                label: NSLocalizedString("From", comment: ""),
+                label: String(localized: "From", comment: ""),
                 value: fromLabel)
             divider
             HStack {
-                Text(NSLocalizedString("To", comment: ""))
+                Text(String(localized: "To", comment: ""))
                     .font(.system(size: 14))
                     .foregroundColor(.dash.secondaryText)
                 Spacer()
@@ -1413,7 +1411,7 @@ struct SendConfirmSheet: View {
             .padding(.vertical, 14)
             divider
             summaryRow(
-                label: NSLocalizedString("Network fee", comment: ""),
+                label: String(localized: "Network fee", comment: ""),
                 value: networkFeeString)
             if let breakdown = coreShieldedDrain?.feeBreakdownText {
                 Text(breakdown)
@@ -1425,7 +1423,7 @@ struct SendConfirmSheet: View {
             }
             divider
             summaryRow(
-                label: NSLocalizedString("Total", comment: ""),
+                label: String(localized: "Total", comment: ""),
                 value: totalString)
         }
         .background(Color.dash.secondaryBackground)
@@ -1435,11 +1433,11 @@ struct SendConfirmSheet: View {
     private var fromLabel: String {
         switch route {
         case .platformToPlatform, .platformToCore, .platformToShielded:
-            return NSLocalizedString("Platform balance", comment: "The Dash Platform credits balance")
+            return String(localized: "Platform balance", comment: "The Dash Platform credits balance")
         case .shieldedToCore, .shieldedToPlatform, .shieldedToShielded:
-            return NSLocalizedString("Shielded balance", comment: "")
+            return String(localized: "Shielded balance", comment: "")
         case .coreToCore, .coreToShielded:
-            return NSLocalizedString("Transparent balance", comment: "The transparent (Core) balance of the Dash Wallet")
+            return String(localized: "Transparent balance", comment: "The transparent (Core) balance of the Dash Wallet")
         }
     }
 
@@ -1571,38 +1569,38 @@ struct SendConfirmSheet: View {
 
     private var infoTitle: String {
         if isCoreDrain {
-            return NSLocalizedString("Sends all eligible Transparent funds", comment: "Send confirm sheet: Core drain")
+            return String(localized: "Sends all eligible Transparent funds", comment: "Send confirm sheet: Core drain")
         }
         switch route {
         case .platformToCore, .shieldedToCore:
-            return NSLocalizedString("Processing time", comment: "")
+            return String(localized: "Processing time", comment: "")
         default:
-            return NSLocalizedString("Double-check the address", comment: "Send confirm sheet")
+            return String(localized: "Double-check the address", comment: "Send confirm sheet")
         }
     }
 
     private var infoBody: String {
         if isCoreDrain {
-            return NSLocalizedString(
-                "All eligible funds in your Transparent balance will be sent to this address when you confirm. Nothing is kept as change. The amount and fees are estimates. CoinJoin funds are excluded. Dash sent to a wrong address can't be recovered.",
+            return String(
+                localized: "All eligible funds in your Transparent balance will be sent to this address when you confirm. Nothing is kept as change. The amount and fees are estimates. CoinJoin funds are excluded. Dash sent to a wrong address can't be recovered.",
                 comment: "Send confirm sheet: Core drain")
         }
         switch route {
         case .shieldedToCore:
-            return NSLocalizedString(
-                "The Dash arrives at the recipient's address after the network processes the withdrawal — this can take up to 10 minutes.",
+            return String(
+                localized: "The Dash arrives at the recipient's address after the network processes the withdrawal — this can take up to 10 minutes.",
                 comment: "Send confirm sheet")
         case .platformToCore:
             return isFullPlatformWithdrawal
-                ? NSLocalizedString(
-                    "This withdraws your entire Platform balance in one transfer. The Dash arrives at the recipient's address once the network processes the withdrawal.",
+                ? String(
+                    localized: "This withdraws your entire Platform balance in one transfer. The Dash arrives at the recipient's address once the network processes the withdrawal.",
                     comment: "Send confirm sheet")
-                : NSLocalizedString(
-                    "The Dash arrives at the recipient's address once the network processes the withdrawal.",
+                : String(
+                    localized: "The Dash arrives at the recipient's address once the network processes the withdrawal.",
                     comment: "Send confirm sheet")
         default:
-            return NSLocalizedString(
-                "Dash sent to a wrong address can't be recovered. Make sure the address is exactly the one you intend to pay.",
+            return String(
+                localized: "Dash sent to a wrong address can't be recovered. Make sure the address is exactly the one you intend to pay.",
                 comment: "Send confirm sheet")
         }
     }
@@ -1611,27 +1609,27 @@ struct SendConfirmSheet: View {
 
     private var progressSteps: [ShieldedTransferStepList.Step] {
         var steps: [ShieldedTransferStepList.Step] = [
-            .init(label: NSLocalizedString("Authorizing", comment: ""), phase: .signing)
+            .init(label: String(localized: "Authorizing", comment: ""), phase: .signing)
         ]
         // The wallet drain is one opaque SDK call that locks, proves and
         // broadcasts; the coordinator reports it as a single stage.
         if isCoreDrain {
-            steps.append(.init(label: NSLocalizedString("Sending", comment: "Send confirm sheet: drain in progress"), phase: .locking))
+            steps.append(.init(label: String(localized: "Sending", comment: "Send confirm sheet: drain in progress"), phase: .locking))
             return steps
         }
         // Only the asset-lock route has the on-chain locking stage.
         if route == .coreToShielded {
-            steps.append(.init(label: NSLocalizedString("Locking funds", comment: ""), phase: .locking))
+            steps.append(.init(label: String(localized: "Locking funds", comment: ""), phase: .locking))
         }
         // Only shielded legs build an Orchard proof.
         switch route {
         case .coreToShielded, .platformToShielded, .shieldedToCore, .shieldedToPlatform,
              .shieldedToShielded:
-            steps.append(.init(label: NSLocalizedString("Generating proof", comment: ""), phase: .proving))
+            steps.append(.init(label: String(localized: "Generating proof", comment: ""), phase: .proving))
         case .platformToPlatform, .platformToCore, .coreToCore:
             break
         }
-        steps.append(.init(label: NSLocalizedString("Broadcasting", comment: ""), phase: .broadcasting))
+        steps.append(.init(label: String(localized: "Broadcasting", comment: ""), phase: .broadcasting))
         return steps
     }
 
@@ -1735,8 +1733,8 @@ struct SyncGateNote: View {
             Image(systemName: "clock.arrow.circlepath")
                 .font(.system(size: 13))
                 .foregroundColor(.orange)
-            Text(NSLocalizedString(
-                "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes.",
+            Text(String(
+                localized: "Your restored wallet is completing its initial sync. Sending from your Transparent balance will be available once it finishes.",
                 comment: "Core send blocked during a restored wallet's initial sync"))
                 .font(.caption)
                 .foregroundColor(.dash.secondaryText)

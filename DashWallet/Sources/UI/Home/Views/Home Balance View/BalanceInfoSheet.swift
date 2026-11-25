@@ -29,13 +29,13 @@ struct BalanceInfoSheet: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
 
                     pointsCard(
-                        title: NSLocalizedString("Pros", comment: "Balance info sheet section"),
+                        title: String(localized: "Pros", comment: "Balance info sheet section"),
                         points: info.pros,
                         symbol: "checkmark.circle.fill",
                         tint: .green)
 
                     pointsCard(
-                        title: NSLocalizedString("Cons", comment: "Balance info sheet section"),
+                        title: String(localized: "Cons", comment: "Balance info sheet section"),
                         points: info.cons,
                         symbol: "minus.circle.fill",
                         tint: .orange)
@@ -46,7 +46,7 @@ struct BalanceInfoSheet: View {
             .scrollBounceBehavior(.basedOnSize)
 
             DashButton(
-                text: NSLocalizedString("Got it", comment: ""),
+                text: String(localized: "Got it", comment: ""),
                 style: .filled,
                 stretch: true,
                 action: onDone)
@@ -114,51 +114,51 @@ struct BalanceInfoSheet: View {
             return BalanceInfo(
                 iconSystemName: "d.circle.fill",
                 title: ChainNetwork.core.balanceName,
-                summary: NSLocalizedString(
-                    "Your main Dash balance on the Core blockchain — what you send and receive with other wallets, exchanges, and merchants.",
+                summary: String(
+                    localized: "Your main Dash balance on the Core blockchain — what you send and receive with other wallets, exchanges, and merchants.",
                     comment: "Balance info sheet"),
                 pros: [
-                    NSLocalizedString("Works with every Dash wallet, exchange, and merchant", comment: "Balance info sheet"),
-                    NSLocalizedString("Payments confirm in seconds with InstantSend", comment: "Balance info sheet"),
-                    NSLocalizedString("Low fees for everyday spending", comment: "Balance info sheet"),
+                    String(localized: "Works with every Dash wallet, exchange, and merchant", comment: "Balance info sheet"),
+                    String(localized: "Payments confirm in seconds with InstantSend", comment: "Balance info sheet"),
+                    String(localized: "Low fees for everyday spending", comment: "Balance info sheet"),
                 ],
                 cons: [
-                    NSLocalizedString("Amounts and addresses are public on the blockchain", comment: "Balance info sheet"),
-                    NSLocalizedString("Anyone who knows an address can view its history", comment: "Balance info sheet"),
+                    String(localized: "Amounts and addresses are public on the blockchain", comment: "Balance info sheet"),
+                    String(localized: "Anyone who knows an address can view its history", comment: "Balance info sheet"),
                 ])
         case .platform:
             return BalanceInfo(
                 iconSystemName: "creditcard.fill",
-                title: NSLocalizedString("Platform", comment: "Dash Platform chain"),
-                summary: NSLocalizedString(
-                    "A credit balance on Dash Platform used for instant payments between Platform addresses and for features like usernames.",
+                title: String(localized: "Platform", comment: "Dash Platform chain"),
+                summary: String(
+                    localized: "A credit balance on Dash Platform used for instant payments between Platform addresses and for features like usernames.",
                     comment: "Balance info sheet"),
                 pros: [
-                    NSLocalizedString("Transfers to other platform addresses and shielded addresses are instant and final", comment: "Balance info sheet"),
-                    NSLocalizedString("Very efficient with low fees", comment: "Balance info sheet"),
-                    NSLocalizedString("Almost instantaneous to sync balances", comment: "Balance info sheet"),
+                    String(localized: "Transfers to other platform addresses and shielded addresses are instant and final", comment: "Balance info sheet"),
+                    String(localized: "Very efficient with low fees", comment: "Balance info sheet"),
+                    String(localized: "Almost instantaneous to sync balances", comment: "Balance info sheet"),
                 ],
                 cons: [
-                    NSLocalizedString("Not widely accepted by merchants yet", comment: "Balance info sheet"),
-                    NSLocalizedString("Activity is public but not easy to trace", comment: "Balance info sheet"),
-                    NSLocalizedString("Transaction history isn't available", comment: "Balance info sheet"),
+                    String(localized: "Not widely accepted by merchants yet", comment: "Balance info sheet"),
+                    String(localized: "Activity is public but not easy to trace", comment: "Balance info sheet"),
+                    String(localized: "Transaction history isn't available", comment: "Balance info sheet"),
                 ])
         case .shielded:
             return BalanceInfo(
                 iconSystemName: "shield.fill",
-                title: NSLocalizedString("Shielded", comment: ""),
-                summary: NSLocalizedString(
-                    "Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential.",
+                title: String(localized: "Shielded", comment: ""),
+                summary: String(
+                    localized: "Your private balance. Amounts and addresses are encrypted on-chain, so your holdings and history stay confidential.",
                     comment: "Balance info sheet"),
                 pros: [
-                    NSLocalizedString("Balances and transfers are not publicly visible", comment: "Balance info sheet"),
-                    NSLocalizedString("The most private place to hold your Dash", comment: "Balance info sheet"),
-                    NSLocalizedString("Uses one of the most audited and tested zero-knowledge libraries (Orchard)", comment: "Balance info sheet"),
+                    String(localized: "Balances and transfers are not publicly visible", comment: "Balance info sheet"),
+                    String(localized: "The most private place to hold your Dash", comment: "Balance info sheet"),
+                    String(localized: "Uses one of the most audited and tested zero-knowledge libraries (Orchard)", comment: "Balance info sheet"),
                 ],
                 cons: [
-                    NSLocalizedString("Transfers take longer — privacy proofs take time to build", comment: "Balance info sheet"),
-                    NSLocalizedString("Not widely accepted by merchants", comment: "Balance info sheet"),
-                    NSLocalizedString("Higher fees around 7 cents (still lower than other blockchains offering similar privacy)", comment: "Balance info sheet"),
+                    String(localized: "Transfers take longer — privacy proofs take time to build", comment: "Balance info sheet"),
+                    String(localized: "Not widely accepted by merchants", comment: "Balance info sheet"),
+                    String(localized: "Higher fees around 7 cents (still lower than other blockchains offering similar privacy)", comment: "Balance info sheet"),
                 ])
         }
     }

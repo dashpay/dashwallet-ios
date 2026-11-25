@@ -9,6 +9,7 @@
 //  needed.
 //
 
+import SwiftDashSDK
 import XCTest
 @testable import dashpay
 
@@ -442,6 +443,30 @@ final class PlatformPaymentIdentityFundingPolicyTests: XCTestCase {
         XCTAssertTrue(
             DWIdentityRegistrationCoordinator
                 .isPlatformAddressInsufficientFunds(error))
+    }
+
+    func test_combinedAddressShortfallCodeIsRecognizedWhateverTheText() {
+        let combined = PlatformWalletError.consensusRejection(
+            PlatformConsensusError(code: PlatformConsensusCode.addressesNotEnoughFunds, kind: .state),
+            "reworded by Platform")
+
+        XCTAssertTrue(DWIdentityRegistrationCoordinator.isPlatformAddressInsufficientFunds(combined))
+
+        // One short address is not a shortfall of the wallet's total.
+        for code in [PlatformConsensusCode.addressNotEnoughFunds, 40603] {
+            let other = PlatformWalletError.consensusRejection(
+                PlatformConsensusError(code: code, kind: .state), "reworded by Platform")
+
+            XCTAssertFalse(
+                DWIdentityRegistrationCoordinator.isPlatformAddressInsufficientFunds(other), "\(code)")
+        }
+    }
+
+    func test_unconfirmedRegistrationIsNotAFundingShortfallWhateverItsText() {
+        let error = PlatformWalletError.transactionBroadcastUnconfirmed(
+            "AddressesNotEnoughFundsError: Insufficient combined address balances")
+
+        XCTAssertFalse(DWIdentityRegistrationCoordinator.isPlatformAddressInsufficientFunds(error))
     }
 
     func test_unrelatedSDKErrorIsNotMisclassifiedAsFundingShortfall() {
