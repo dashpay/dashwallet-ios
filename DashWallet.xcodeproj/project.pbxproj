@@ -595,6 +595,8 @@
 		5AEDE0012F9B000000000006 /* EvonodeWithdrawalScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AEDE0012F9B000000000002 /* EvonodeWithdrawalScreen.swift */; };
 		5AFDE1012FA1000000000011 /* TrackedMasternodeKeyVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFDE1012FA1000000000001 /* TrackedMasternodeKeyVault.swift */; };
 		5AFDE1012FA1000000000012 /* TrackedMasternodeKeyVault.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFDE1012FA1000000000001 /* TrackedMasternodeKeyVault.swift */; };
+		BABA10000000000000000041 /* MasternodeClaimableBalance.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000040 /* MasternodeClaimableBalance.swift */; };
+		BABA10000000000000000042 /* MasternodeClaimableBalance.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000040 /* MasternodeClaimableBalance.swift */; };
 		5AFDE1012FA1000000000013 /* AddMasternodeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFDE1012FA1000000000002 /* AddMasternodeViewModel.swift */; };
 		5AFDE1012FA1000000000014 /* AddMasternodeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFDE1012FA1000000000002 /* AddMasternodeViewModel.swift */; };
 		5AFDE1012FA1000000000015 /* AddMasternodeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AFDE1012FA1000000000003 /* AddMasternodeScreen.swift */; };
@@ -1023,6 +1025,7 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		973AD0F3986AFFDBA78ED560 /* CoinJoinWithdrawalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B208A9A34D0FFEEC796752C /* CoinJoinWithdrawalStore.swift */; };
 		7A30002230A1000000000022 /* AssetLockProbeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30002130A1000000000021 /* AssetLockProbeStore.swift */; };
 		BABA1000000000000000001C /* AssetLockFailureStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000001B /* AssetLockFailureStore.swift */; };
+		BABA1000000000000000003A /* PlatformRefusal.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000039 /* PlatformRefusal.swift */; };
 		97C1167F9600BF7E489A8545 /* SwapTransactionStatusHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B5469F5588395FA0668C4B /* SwapTransactionStatusHostingController.swift */; };
 		97E0FFBBAFFB7394F6841B61 /* DWPreviewSeedPhraseModel+Mnemonic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48D8BC6623C81DD3F008A668 /* DWPreviewSeedPhraseModel+Mnemonic.swift */; };
 		926525A3134D15BF737BC355 /* RecoveryPhraseLength.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210C818A8AAC76F91676AFF9 /* RecoveryPhraseLength.swift */; };
@@ -1258,6 +1261,10 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		C05FA6CE3DDE2D0327D334E5 /* CoinJoinRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = B478AD92C1F1C11D09645DF4 /* CoinJoinRecovery.swift */; };
 		C0DE5A0126C7000000000001 /* SwiftDashSDKCoreLifecycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */; };
 		2523A5799AB8F025BBFA7BEF /* InvitationValidationPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1C04D04FBAFFE0998528F13 /* InvitationValidationPolicyTests.swift */; };
+		BABA10000000000000000044 /* MasternodeClaimableBalanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000043 /* MasternodeClaimableBalanceTests.swift */; };
+		BABA10000000000000000046 /* UsernameContestPrecheckTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000045 /* UsernameContestPrecheckTests.swift */; };
+		BABA1000000000000000003F /* ProfileWrongVerbTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000003E /* ProfileWrongVerbTests.swift */; };
+		BABA1000000000000000003D /* PlatformRefusalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000003C /* PlatformRefusalTests.swift */; };
 		BECA547342FBB4945119031B /* PendingInvitationStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D371B3F05242DD0F47028B8C /* PendingInvitationStoreTests.swift */; };
 		A1C0DE0142FBB4945119F001 /* PendingInvitationViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE0242FBB4945119F002 /* PendingInvitationViewModelTests.swift */; };
 		C124DF94278D4238FAE0975D /* OrderPreviewFeeRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D1A08496F925D17031493E /* OrderPreviewFeeRow.swift */; };
@@ -1836,6 +1843,7 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		D60828F846490A6462E351E9 /* CoinJoinWithdrawalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B208A9A34D0FFEEC796752C /* CoinJoinWithdrawalStore.swift */; };
 		7A30002330A1000000000023 /* AssetLockProbeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30002130A1000000000021 /* AssetLockProbeStore.swift */; };
 		BABA1000000000000000001D /* AssetLockFailureStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000001B /* AssetLockFailureStore.swift */; };
+		BABA1000000000000000003B /* PlatformRefusal.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000039 /* PlatformRefusal.swift */; };
 		D6C0C001D6C0C001D6C0C001 /* GiftCardDetailsInfoCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C0B001D6C0B001D6C0B001 /* GiftCardDetailsInfoCard.swift */; };
 		D6C0C002D6C0C002D6C0C002 /* GiftCardDetailsMerchantHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C0B002D6C0B002D6C0B002 /* GiftCardDetailsMerchantHeader.swift */; };
 		D6C0C003D6C0C003D6C0C003 /* GiftCardPurchaseSelectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C0B003D6C0B003D6C0B003 /* GiftCardPurchaseSelectionSheet.swift */; };
@@ -2144,6 +2152,7 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		0B208A9A34D0FFEEC796752C /* CoinJoinWithdrawalStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoinJoinWithdrawalStore.swift; sourceTree = "<group>"; };
 		7A30002130A1000000000021 /* AssetLockProbeStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AssetLockProbeStore.swift; sourceTree = "<group>"; };
 		BABA1000000000000000001B /* AssetLockFailureStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AssetLockFailureStore.swift; sourceTree = "<group>"; };
+		BABA10000000000000000039 /* PlatformRefusal.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlatformRefusal.swift; sourceTree = "<group>"; };
 		0C1D2D397047E72188C90FAE /* DWAboutModel+MasternodeSync.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "DWAboutModel+MasternodeSync.swift"; sourceTree = "<group>"; };
 		0CE6B29178211061196A0936 /* Pods-WatchApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp.debug.xcconfig"; path = "Target Support Files/Pods-WatchApp/Pods-WatchApp.debug.xcconfig"; sourceTree = "<group>"; };
 		0D2C8F8102C5C603DB63569F /* ShieldedTransferCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedTransferCoordinator.swift; sourceTree = "<group>"; };
@@ -2848,6 +2857,7 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		5AEDE0012F9B000000000001 /* EvonodeWithdrawalViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvonodeWithdrawalViewModel.swift; sourceTree = "<group>"; };
 		5AEDE0012F9B000000000002 /* EvonodeWithdrawalScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvonodeWithdrawalScreen.swift; sourceTree = "<group>"; };
 		5AFDE1012FA1000000000001 /* TrackedMasternodeKeyVault.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TrackedMasternodeKeyVault.swift; sourceTree = "<group>"; };
+		BABA10000000000000000040 /* MasternodeClaimableBalance.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MasternodeClaimableBalance.swift; sourceTree = "<group>"; };
 		5AFDE1012FA1000000000002 /* AddMasternodeViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AddMasternodeViewModel.swift; sourceTree = "<group>"; };
 		5AFDE1012FA1000000000003 /* AddMasternodeScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AddMasternodeScreen.swift; sourceTree = "<group>"; };
 		5AFDE1012FA1000000000004 /* TrackedMasternodeDetailScreen.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TrackedMasternodeDetailScreen.swift; sourceTree = "<group>"; };
@@ -3286,6 +3296,10 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		C0D1A08496F925D17031493E /* OrderPreviewFeeRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OrderPreviewFeeRow.swift; sourceTree = "<group>"; };
 		C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKCoreLifecycleTests.swift; sourceTree = "<group>"; };
 		F1C04D04FBAFFE0998528F13 /* InvitationValidationPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationValidationPolicyTests.swift; sourceTree = "<group>"; };
+		BABA10000000000000000043 /* MasternodeClaimableBalanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasternodeClaimableBalanceTests.swift; sourceTree = "<group>"; };
+		BABA10000000000000000045 /* UsernameContestPrecheckTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameContestPrecheckTests.swift; sourceTree = "<group>"; };
+		BABA1000000000000000003E /* ProfileWrongVerbTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileWrongVerbTests.swift; sourceTree = "<group>"; };
+		BABA1000000000000000003C /* PlatformRefusalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformRefusalTests.swift; sourceTree = "<group>"; };
 		D371B3F05242DD0F47028B8C /* PendingInvitationStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingInvitationStoreTests.swift; sourceTree = "<group>"; };
 		A1C0DE0242FBB4945119F002 /* PendingInvitationViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingInvitationViewModelTests.swift; sourceTree = "<group>"; };
 		C1A0B2C3D4E5F60718293A01 /* ShortcutsBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsBarView.swift; sourceTree = "<group>"; };
@@ -3980,6 +3994,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				5AEEB0012F9C000000000005 /* EvonodeEpochBlocksMonitor.swift */,
 				5AEEB0012F9C00000000000B /* EvonodeProposalActivity.swift */,
 				5AFDE1012FA1000000000001 /* TrackedMasternodeKeyVault.swift */,
+				BABA10000000000000000040 /* MasternodeClaimableBalance.swift */,
 			);
 			path = Masternodes;
 			sourceTree = "<group>";
@@ -7152,6 +7167,10 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				5798C63088F44013AEC5D85B /* ShieldedRecoveryControllerTests.swift */,
 				C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */,
 				F1C04D04FBAFFE0998528F13 /* InvitationValidationPolicyTests.swift */,
+				BABA10000000000000000043 /* MasternodeClaimableBalanceTests.swift */,
+				BABA10000000000000000045 /* UsernameContestPrecheckTests.swift */,
+				BABA1000000000000000003E /* ProfileWrongVerbTests.swift */,
+				BABA1000000000000000003C /* PlatformRefusalTests.swift */,
 				D371B3F05242DD0F47028B8C /* PendingInvitationStoreTests.swift */,
 				A1C0DE0242FBB4945119F002 /* PendingInvitationViewModelTests.swift */,
 				CB9000012FE1000000000001 /* CoinbaseTransactionMetadataTests.swift */,
@@ -7245,6 +7264,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				A1FA10C10000000000000001 /* ShieldedAssetLocksInFlight.swift */,
 				7A30002130A1000000000021 /* AssetLockProbeStore.swift */,
 				BABA1000000000000000001B /* AssetLockFailureStore.swift */,
+				BABA10000000000000000039 /* PlatformRefusal.swift */,
 				UTR0B0002FA0000000000001 /* UnconfirmedTransactionRemover.swift */,
 				INSGT0001000000000000001 /* InsightExplorerAPI.swift */,
 				9F5A428A4E24408592C674A0 /* ShieldedBalanceController.swift */,
@@ -10091,6 +10111,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				5AEDE0012F9B000000000004 /* EvonodeWithdrawalViewModel.swift in Sources */,
 				5AEDE0012F9B000000000006 /* EvonodeWithdrawalScreen.swift in Sources */,
 				5AFDE1012FA1000000000012 /* TrackedMasternodeKeyVault.swift in Sources */,
+				BABA10000000000000000042 /* MasternodeClaimableBalance.swift in Sources */,
 				5AFDE1012FA1000000000014 /* AddMasternodeViewModel.swift in Sources */,
 				5AFDE1012FA1000000000016 /* AddMasternodeScreen.swift in Sources */,
 				5AFDE1012FA1000000000018 /* TrackedMasternodeDetailScreen.swift in Sources */,
@@ -10194,6 +10215,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				D60828F846490A6462E351E9 /* CoinJoinWithdrawalStore.swift in Sources */,
 				7A30002330A1000000000023 /* AssetLockProbeStore.swift in Sources */,
 				BABA1000000000000000001D /* AssetLockFailureStore.swift in Sources */,
+				BABA1000000000000000003B /* PlatformRefusal.swift in Sources */,
 				950A3F8FA0D89530F227FE25 /* CoinJoinWithdrawalTxSet.swift in Sources */,
 				99FAE80A3A63E073A2EB5209 /* PaymentProtocolWireFormat.swift in Sources */,
 				4539AA3FC5C209480BA279AA /* PaymentProtocolMessages.swift in Sources */,
@@ -10285,6 +10307,10 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				F0CAB696BC154E7EB3EC221D /* ShieldedRecoveryControllerTests.swift in Sources */,
 				C0DE5A0126C7000000000001 /* SwiftDashSDKCoreLifecycleTests.swift in Sources */,
 				2523A5799AB8F025BBFA7BEF /* InvitationValidationPolicyTests.swift in Sources */,
+				BABA10000000000000000044 /* MasternodeClaimableBalanceTests.swift in Sources */,
+				BABA10000000000000000046 /* UsernameContestPrecheckTests.swift in Sources */,
+				BABA1000000000000000003F /* ProfileWrongVerbTests.swift in Sources */,
+				BABA1000000000000000003D /* PlatformRefusalTests.swift in Sources */,
 				BECA547342FBB4945119031B /* PendingInvitationStoreTests.swift in Sources */,
 				A1C0DE0142FBB4945119F001 /* PendingInvitationViewModelTests.swift in Sources */,
 				CB9000022FE1000000000002 /* CoinbaseTransactionMetadataTests.swift in Sources */,
@@ -11188,6 +11214,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				5AEDE0012F9B000000000003 /* EvonodeWithdrawalViewModel.swift in Sources */,
 				5AEDE0012F9B000000000005 /* EvonodeWithdrawalScreen.swift in Sources */,
 				5AFDE1012FA1000000000011 /* TrackedMasternodeKeyVault.swift in Sources */,
+				BABA10000000000000000041 /* MasternodeClaimableBalance.swift in Sources */,
 				5AFDE1012FA1000000000013 /* AddMasternodeViewModel.swift in Sources */,
 				5AFDE1012FA1000000000015 /* AddMasternodeScreen.swift in Sources */,
 				5AFDE1012FA1000000000017 /* TrackedMasternodeDetailScreen.swift in Sources */,
@@ -11282,6 +11309,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				973AD0F3986AFFDBA78ED560 /* CoinJoinWithdrawalStore.swift in Sources */,
 				7A30002230A1000000000022 /* AssetLockProbeStore.swift in Sources */,
 				BABA1000000000000000001C /* AssetLockFailureStore.swift in Sources */,
+				BABA1000000000000000003A /* PlatformRefusal.swift in Sources */,
 				931B18EAFD7F2563BFAAF21E /* CoinJoinWithdrawalTxSet.swift in Sources */,
 				2556F3C5C72D70A771C6C61A /* PaymentProtocolWireFormat.swift in Sources */,
 				C1B995F0556113706D9CDA9A /* PaymentProtocolMessages.swift in Sources */,

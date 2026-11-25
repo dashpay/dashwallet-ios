@@ -7036,7 +7036,7 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
 
     func testABalanceRefusalOffersATopUpAndNoSecondApproval() async {
         let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
-        spy.approveFailures = [DashConnectPlatformError.networkRefused(code: AppConnect.identityInsufficientBalanceCode)]
+        spy.approveFailures = [DashConnectPlatformError.networkRefused(code: PlatformConsensusCode.identityInsufficientBalance)]
         let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, now: { Self.phone })
         viewModel.onQRScanned("login")
         await waitUntil { viewModel.pendingRequest != nil }
