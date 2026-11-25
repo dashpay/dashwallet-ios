@@ -1,6 +1,6 @@
 # 0068 — Rewrite formatted lookups as interpolations and move their Catalog entries
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-18
 - **Deciders:** Roman Chornyi (owner), with Claude during the design walk
 

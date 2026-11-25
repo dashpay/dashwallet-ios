@@ -1,6 +1,6 @@
 # 0073 — Make the sync phase write the same Catalog as the Xcode app, and compile only the shipped locales
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-19
 - **Deciders:** Roman Chornyi (owner), with Claude during the toolchain pilot
 - **Refines:** [ADR-0070](0070-keep-the-catalog-in-step-with-xcodes-own-string-sync-in-every-build.md) (what the "Sync String Catalog" phase does); ADR-0070's choice of option 1 stands.

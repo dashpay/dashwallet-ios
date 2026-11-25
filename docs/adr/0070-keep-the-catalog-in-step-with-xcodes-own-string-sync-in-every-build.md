@@ -1,6 +1,6 @@
 # 0070 — Keep the Catalog in step with Xcode's own string sync in every build
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-18
 - **Deciders:** Roman Chornyi (owner), with Claude during the design walk
 
