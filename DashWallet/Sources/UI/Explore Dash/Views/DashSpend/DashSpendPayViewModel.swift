@@ -604,7 +604,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 throw GiftCardPaymentGuard.invalidAmountError
             }
 
-            // Compared here, before sendCoins prompts for the PIN: a declined quote shows no
+            // Compared here, before the payment asks for the PIN: a declined quote shows no
             // prompt. The payment address was validated when the order response was parsed.
             // The order states no expiry, so a higher price has to be accepted in limited time.
             try await confirmQuote(requested: dashAmountInSatoshis, approval: approval,
@@ -651,6 +651,19 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         dependencies.purchases.record(GiftCardPurchaseRecord(
             txidWire: txidWire, provider: provider, merchantName: merchantTitle, merchantUrl: merchantUrl,
             merchantIconUrl: merchantIconUrl, price: price, note: giftCardNote))
+    }
+
+    /// What the buyer is told, before the gift card details, when the payment was handed to
+    /// the network and its outcome is unknown; `nil` when nothing is shown.
+    ///
+    /// For PiggyCards this wallet is the only one that can broadcast the payment, and it
+    /// keeps trying only while the app is open, so the buyer is told what every other send
+    /// with this outcome tells them. CTX holds the signed transaction itself.
+    var unknownOutcomeNotice: String? {
+        #if PIGGYCARDS_ENABLED
+        if provider == .piggyCards { return WalletSendService.unknownBroadcastOutcomeNotice }
+        #endif
+        return nil
     }
 
     var contactSupportButtonText: String {

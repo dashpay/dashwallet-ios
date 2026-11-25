@@ -20,23 +20,19 @@ import Foundation
 public final class SendCoinsService: NSObject {
     private let walletSendService = WalletSendService.shared
     private let makeBIP70Service: () -> BIP70PaymentService
+    private let sendToAddress: (_ address: String, _ amount: UInt64) async throws -> Data
 
-    /// - Parameter makeBIP70Service: builds the service `payWithDashUrl` pays through.
-    init(makeBIP70Service: @escaping () -> BIP70PaymentService = BIP70PaymentService.makeForCurrentWallet) {
+    /// - Parameters:
+    ///   - makeBIP70Service: builds the service `payWithDashUrl` pays through.
+    ///   - sendToAddress: the send `payGiftCardOrder` pays through; `nil` for
+    ///     `WalletSendService.sendCarryingUnknownOutcome`, which asks for the PIN.
+    init(makeBIP70Service: @escaping () -> BIP70PaymentService = BIP70PaymentService.makeForCurrentWallet,
+         sendToAddress: ((_ address: String, _ amount: UInt64) async throws -> Data)? = nil) {
         self.makeBIP70Service = makeBIP70Service
+        self.sendToAddress = sendToAddress ?? { address, amount in
+            try await WalletSendService.shared.sendCarryingUnknownOutcome(address: address, amount: amount)
+        }
         super.init()
-    }
-
-    /// - Returns: the wire-order txid of the broadcast transaction
-    ///   (`Transaction.txHashData` convention).
-    func sendCoins(address: String, amount: UInt64,
-                   sessionAuthSufficient: Bool = false) async throws
-        -> Data {
-        return try await walletSendService.send(
-            address: address,
-            amount: amount,
-            sessionAuthSufficient: sessionAuthSufficient
-        )
     }
 
     /// Pays a gift card order that names a plain address and an amount (PiggyCards).
@@ -44,13 +40,13 @@ public final class SendCoinsService: NSObject {
     /// An unknown broadcast outcome is thrown as `DashSpendError.paymentStatusUnknown` with
     /// the txid, as `payWithDashUrl` does, so the caller can record the order against the
     /// transaction it just handed to the network. Every other failure is thrown as
-    /// `sendCoins` throws it.
+    /// `WalletSendService.send` throws it.
     ///
     /// - Returns: the wire-order txid of the broadcast transaction
     ///   (`Transaction.txHashData` convention).
     func payGiftCardOrder(address: String, amount: UInt64) async throws -> Data {
         do {
-            return try await walletSendService.sendCarryingUnknownOutcome(address: address, amount: amount)
+            return try await sendToAddress(address, amount)
         } catch let unknown as WalletSendService.BroadcastOutcomeUnknown {
             throw Self.paymentStatusUnknown(from: unknown)
         }

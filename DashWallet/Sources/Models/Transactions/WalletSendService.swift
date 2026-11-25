@@ -283,6 +283,11 @@ final class WalletSendService: NSObject {
     /// tests in other files can read it back.
     static let diagnosticKey = "org.dashfoundation.dash.send.diagnostic"
 
+    /// What the user is told when a send's broadcast outcome is unknown
+    /// (`BroadcastOutcomeCopy.unknown`): the description of the error `send` throws for
+    /// it, for a caller that shows it without that error in hand.
+    static var unknownBroadcastOutcomeNotice: String { BroadcastOutcomeCopy.unknown }
+
     /// See `RecentSendsRegistry` — the send-success screen's fallback source.
     let recentSends = RecentSendsRegistry()
     #if DASHPAY
