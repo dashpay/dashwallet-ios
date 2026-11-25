@@ -35,6 +35,11 @@ enum DashSpendError: Error, LocalizedError {
     case previousSwapPending
     case swapAwaitingInstantLock
     case authenticationCancelled
+    /// A gift card purchase that ended with nothing sent and nothing to tell the buyer: a
+    /// higher price was declined, the purchase screen went away before the payment was
+    /// authorized, or the start was a repeat of a purchase already running or of a sheet
+    /// already cancelled.
+    case purchaseCancelled
     /// The Dash payment was broadcast but the network returned no acceptance verdict in time.
     /// The order is NOT lost: the merchant holds the signed transaction and the gift card is
     /// recorded against `txIdWire` so the details poller can pick it up once it fulfils.
@@ -100,6 +105,9 @@ enum DashSpendError: Error, LocalizedError {
             )
         case .authenticationCancelled:
             return String(localized: "Authentication cancelled", comment: "DashSpend/Maya")
+        case .purchaseCancelled:
+            // Never shown: the buyer declined, left the screen, or tapped Confirm twice.
+            return nil
         }
     }
 }
