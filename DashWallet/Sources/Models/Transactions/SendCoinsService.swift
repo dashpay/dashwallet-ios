@@ -20,22 +20,29 @@ import Foundation
 public final class SendCoinsService: NSObject {
     private let walletSendService = WalletSendService.shared
     private let makeBIP70Service: () -> BIP70PaymentService
-    private let sendToAddress: (_ address: String, _ amount: UInt64) async throws -> Data
+    private let sendToAddress: AddressSend
+
+    /// A send to a plain address. `sessionAuthSufficient` is `WalletSendService`'s flag:
+    /// `false` asks for the PIN or biometrics even when the app was just unlocked.
+    typealias AddressSend = (_ address: String, _ amount: UInt64, _ sessionAuthSufficient: Bool) async throws -> Data
 
     /// - Parameters:
     ///   - makeBIP70Service: builds the service `payWithDashUrl` pays through.
     ///   - sendToAddress: the send `payGiftCardOrder` pays through; `nil` for
-    ///     `WalletSendService.sendCarryingUnknownOutcome`, which asks for the PIN.
+    ///     `WalletSendService.sendCarryingUnknownOutcome`.
     init(makeBIP70Service: @escaping () -> BIP70PaymentService = BIP70PaymentService.makeForCurrentWallet,
-         sendToAddress: ((_ address: String, _ amount: UInt64) async throws -> Data)? = nil) {
+         sendToAddress: AddressSend? = nil) {
         self.makeBIP70Service = makeBIP70Service
-        self.sendToAddress = sendToAddress ?? { address, amount in
-            try await WalletSendService.shared.sendCarryingUnknownOutcome(address: address, amount: amount)
+        self.sendToAddress = sendToAddress ?? { address, amount, sessionAuthSufficient in
+            try await WalletSendService.shared.sendCarryingUnknownOutcome(
+                address: address, amount: amount, sessionAuthSufficient: sessionAuthSufficient)
         }
         super.init()
     }
 
-    /// Pays a gift card order that names a plain address and an amount (PiggyCards).
+    /// Pays a gift card order that names a plain address and an amount (PiggyCards). The send
+    /// is asked with `sessionAuthSufficient: false`, so `WalletSendService` prompts for the
+    /// PIN or biometrics even when the app was just unlocked.
     ///
     /// An unknown broadcast outcome is thrown as `DashSpendError.paymentStatusUnknown` with
     /// the txid, as `payWithDashUrl` does, so the caller can record the order against the
@@ -46,7 +53,7 @@ public final class SendCoinsService: NSObject {
     ///   (`Transaction.txHashData` convention).
     func payGiftCardOrder(address: String, amount: UInt64) async throws -> Data {
         do {
-            return try await sendToAddress(address, amount)
+            return try await sendToAddress(address, amount, false)
         } catch let unknown as WalletSendService.BroadcastOutcomeUnknown {
             throw Self.paymentStatusUnknown(from: unknown)
         }

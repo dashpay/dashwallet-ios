@@ -100,6 +100,8 @@ struct DashSpendPayScreen: View {
                     )
                 }
             }
+            // The notice covers the form on screen; VoiceOver must not reach Pay behind it.
+            .accessibilityHidden(pendingPurchase != nil)
             overlays
         }
         .background(Color.dash.primaryBackground)
@@ -205,6 +207,9 @@ struct DashSpendPayScreen: View {
     }
 
     private func handlePayAction() {
+        // A purchase whose payment outcome is unknown is waiting for its notice to be read:
+        // no second order from this screen.
+        guard pendingPurchase == nil else { return }
         if !viewModel.isUserSignedIn { showSignInError(); return }
         let snapshotQuantities = quantities.filter { $0.value > 0 }
         let snapshotTotal = snapshotQuantities.reduce(Decimal(0)) { $0 + $1.key * Decimal($1.value) }

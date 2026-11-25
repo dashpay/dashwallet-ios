@@ -565,9 +565,9 @@ final class GiftCardUnknownOutcomeTests: XCTestCase {
         let send = prepared(hashByte: 0xd5) {
             .unknown(txid: String(repeating: "d5", count: 32), reason: "no acceptance signal")
         }
-        var paid: [(address: String, amount: UInt64)] = []
-        let service = SendCoinsService(sendToAddress: { address, amount in
-            paid.append((address, amount))
+        var paid: [(address: String, amount: UInt64, sessionAuthSufficient: Bool)] = []
+        let service = SendCoinsService(sendToAddress: { address, amount, sessionAuthSufficient in
+            paid.append((address, amount, sessionAuthSufficient))
             return try WalletSendService.broadcastCarryingUnknownOutcome(send)
         })
 
@@ -584,11 +584,26 @@ final class GiftCardUnknownOutcomeTests: XCTestCase {
         XCTAssertEqual(paid.map(\.amount), [100_000])
     }
 
+    /// An unlocked app is not enough to pay for a gift card: the send is asked to prompt.
+    func testGiftCardPaymentAsksForThePIN() async throws {
+        let send = prepared(hashByte: 0xd7) { .accepted(txid: String(repeating: "d7", count: 32)) }
+        var sessionAuthSufficient: [Bool] = []
+        let service = SendCoinsService(sendToAddress: { _, _, flag in
+            sessionAuthSufficient.append(flag)
+            return try WalletSendService.broadcastCarryingUnknownOutcome(send)
+        })
+
+        let txid = try await service.payGiftCardOrder(address: "yTestPaymentAddress", amount: 100_000)
+
+        XCTAssertEqual(txid, send.txidWire)
+        XCTAssertEqual(sessionAuthSufficient, [false])
+    }
+
     func testGiftCardPaymentThrowsARejectedSendAsItIs() async {
         let send = prepared(hashByte: 0xd6) {
             .rejected(txid: String(repeating: "d6", count: 32), reason: "not started")
         }
-        let service = SendCoinsService(sendToAddress: { _, _ in
+        let service = SendCoinsService(sendToAddress: { _, _, _ in
             try WalletSendService.broadcastCarryingUnknownOutcome(send)
         })
 
