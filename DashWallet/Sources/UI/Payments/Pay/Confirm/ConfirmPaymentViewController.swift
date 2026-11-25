@@ -241,6 +241,10 @@ private struct ConfirmPaymentSheet: View {
     /// that names the wrong fee is worse than one that names a long number.
     private static let dashFractionDigits = 8
 
+    /// The tallest the rows are drawn before they scroll: a share of the screen that
+    /// leaves room for the amount above them and the buttons below.
+    private static let maxRowsHeight = UIScreen.main.bounds.height * 0.4
+
     var onCancel: () -> Void
     var onConfirm: () -> Void
 
@@ -255,17 +259,24 @@ private struct ConfirmPaymentSheet: View {
                 .frame(maxWidth: .infinity)
                 .padding(.top, 14)
 
-            VStack(spacing: 0) {
-                ForEach(Array(state.items.enumerated()), id: \.offset) { _, item in
-                    if let title = item.title, !title.isEmpty {
-                        DashUIKit.MenuItem(
-                            title: title,
-                            accessory: accessory(for: item))
-                    } else {
-                        untitledRow(item)
+            // The rows scroll once they are taller than `maxRowsHeight`, so a long
+            // untitled row (a payment request that lists many addresses) cannot push
+            // the buttons off the sheet. Shorter rows keep their own height.
+            ScrollView {
+                VStack(spacing: 0) {
+                    ForEach(Array(state.items.enumerated()), id: \.offset) { _, item in
+                        if let title = item.title, !title.isEmpty {
+                            DashUIKit.MenuItem(
+                                title: title,
+                                accessory: accessory(for: item))
+                        } else {
+                            untitledRow(item)
+                        }
                     }
                 }
             }
+            .scrollBounceBehavior(.basedOnSize)
+            .frame(maxHeight: Self.maxRowsHeight)
             .modifier(MenuViewModifier())
             .padding(.top, 20)
 
