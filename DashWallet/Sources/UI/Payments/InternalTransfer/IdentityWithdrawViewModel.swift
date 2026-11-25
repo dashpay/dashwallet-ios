@@ -157,10 +157,8 @@ final class IdentityWithdrawViewModel: ObservableObject {
                       !address.isEmpty else {
                     throw WithdrawError.noCoreReceiveAddress
                 }
-                try await wallet.withdrawCredits(
-                    identityId: identityId,
-                    amount: amountCredits,
-                    toAddress: address,
+                try await IdentityCreditSpend.withdraw(
+                    wallet: wallet, identityId: identityId, amountCredits: amountCredits, toCoreAddress: address,
                     signer: signer)
 
             case .platform:
@@ -214,11 +212,55 @@ final class IdentityWithdrawViewModel: ObservableObject {
             // overwriting it with an unrelated one.
             throw WithdrawError.noPlatformReceiveAddress
         }
-        try await wallet.transferCreditsToAddresses(
-            fromIdentityId: identityId,
-            recipients: [recipient],
-            signer: signer)
+        try await IdentityCreditSpend.transfer(
+            wallet: wallet, identityId: identityId, to: recipient, platformAddress: destination, signer: signer)
         Task { await PlatformAddressSyncCoordinator.shared.syncNow() }
+    }
+}
+
+/// The identity credit spends: each runs the SDK call and records the send for History (`CreditSendLedger`). The one
+/// place the app spends identity credits, for the Internal transfer's withdrawal and for the new Send.
+@MainActor
+enum IdentityCreditSpend {
+    /// Credits → a Core address.
+    static func withdraw(
+        wallet: ManagedPlatformWallet, identityId: Data, amountCredits: UInt64, toCoreAddress address: String,
+        signer: KeychainSigner
+    ) async throws {
+        try await CreditSendLedger.recording(send(.core, address, amountCredits)) {
+            try await wallet.withdrawCredits(
+                identityId: identityId, amount: amountCredits, toAddress: address, signer: signer)
+        }
+    }
+
+    /// Credits → one Platform address, `platformAddress` being `recipient` in its bech32m form.
+    static func transfer(
+        wallet: ManagedPlatformWallet, identityId: Data, to recipient: PlatformAddressCreditOutput,
+        platformAddress: String, signer: KeychainSigner
+    ) async throws {
+        try await CreditSendLedger.recording(send(.platform, platformAddress, recipient.credits)) {
+            _ = try await wallet.transferCreditsToAddresses(
+                fromIdentityId: identityId, recipients: [recipient], signer: signer)
+        }
+    }
+
+    /// Credits → another identity.
+    static func transfer(
+        wallet: ManagedPlatformWallet, identityId: Data, toIdentityId: Data, amountCredits: UInt64,
+        signer: KeychainSigner
+    ) async throws {
+        try await CreditSendLedger.recording(send(.identity, toIdentityId.toBase58String(), amountCredits)) {
+            try await wallet.transferCredits(
+                fromIdentityId: identityId, toIdentityId: toIdentityId, amount: amountCredits, signer: signer)
+        }
+    }
+
+    private static func send(
+        _ kind: CreditSendDestinationKind, _ destination: String, _ credits: UInt64
+    ) -> CreditSend {
+        CreditSend(
+            source: .identity, destinationKind: kind, destination: destination,
+            amountDuffs: credits / PlatformAddressActivityUnitPolicy.creditsPerDuff)
     }
 }
 

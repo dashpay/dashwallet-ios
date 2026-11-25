@@ -491,6 +491,14 @@ class HomeViewModel: ObservableObject {
             }
             .store(in: &cancellableBag)
 
+        // Same for the record of a Platform or identity send.
+        NotificationCenter.default.publisher(for: .creditSendActivityRecorded)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.txReloadRequests.send()
+            }
+            .store(in: &cancellableBag)
+
         // Balance changes can precede or arrive without a SwiftData save (for
         // example seed/clear transitions), so retain an independent trigger.
         // Equal snapshots are filtered and the initial current-value emission
@@ -854,6 +862,8 @@ class HomeViewModel: ObservableObject {
         // row that resolves once that day is paged in.
         let shieldedItems = SwiftDashSDKWalletSource.fetchShieldedActivity(
             coreTransactions: transactions)
+        // An own withdrawal's row gives way to its Core payout in the same loaded window.
+        let creditSendItems = SwiftDashSDKWalletSource.fetchCreditSendActivity(coreTransactions: transactions)
         self.coinJoinTxSets = [:]
         self.coinJoinWithdrawalSet = CoinJoinWithdrawalTxSet()
 
@@ -901,6 +911,7 @@ class HomeViewModel: ObservableObject {
         appendInterleavedActivity(
             to: &items,
             shieldedItems: shieldedItems,
+            creditSendItems: creditSendItems,
             selectedFilters: selectedFilters,
             hasRewards: hasRewards,
             hasMasternodes: hasMasternodes)
@@ -989,6 +1000,7 @@ class HomeViewModel: ObservableObject {
     private func appendInterleavedActivity(
         to items: inout [TransactionListDataItem],
         shieldedItems: [ShieldedActivityItem],
+        creditSendItems: [CreditSendActivityItem],
         selectedFilters: Set<TransactionFilterCategory>,
         hasRewards: Bool,
         hasMasternodes: Bool
@@ -1014,6 +1026,18 @@ class HomeViewModel: ObservableObject {
                 hasMasternodes: hasMasternodes)
             else { continue }
             items.append(.platformActivity(platform))
+        }
+
+        // Platform and identity sends: a send is Sent; an own transfer, like a Core `.moved` one, has no category.
+        for creditSend in creditSendItems {
+            guard windowCovers(date: creditSend.date) else { continue }
+            guard self.passesCategoryFilter(
+                categories: creditSend.isOwnDestination ? [] : [.sent],
+                selected: selectedFilters,
+                hasRewards: hasRewards,
+                hasMasternodes: hasMasternodes)
+            else { continue }
+            items.append(.creditSend(creditSend))
         }
 
         // Buy swap orders made in this wallet whose deposit is on record but whose Dash is
@@ -1588,7 +1612,8 @@ extension HomeViewModel {
         case .sent:
             categories.insert(.sent)
         case .received:
-            if !isShieldedReceipt {
+            // A Platform or identity withdrawal's payout is an own transfer, like a `.moved` transaction.
+            if !isShieldedReceipt && transaction.creditWithdrawalSource == nil {
                 categories.insert(.received)
             }
         case .moved, .notAccountFunds:
@@ -2531,6 +2556,58 @@ class SwiftDashSDKWalletSource: TransactionSource {
         return PlatformAddressActivityDAO.shared
             .activities(walletId: handles.walletId, networkRaw: handles.networkRaw)
             .map { PlatformAddressActivityItem(record: $0) }
+    }
+
+    /// The active wallet's recorded Platform and identity sends (`CreditSendActivityStore`), each decided own or
+    /// someone else's against the wallet's addresses and identities.
+    static func fetchCreditSendActivity(coreTransactions: [Transaction]) -> [CreditSendActivityItem] {
+        let handles: (container: ModelContainer, walletId: Data, networkRaw: Int64)? = onMain {
+            guard let container = SwiftDashSDKHost.shared.modelContainer,
+                  let walletId = SwiftDashSDKHost.shared.wallet?.walletId,
+                  let network = SwiftDashSDKHost.shared.runningNetwork else { return nil }
+            return (container, walletId, Int64(network.rawValue))
+        }
+        guard let handles else { return [] }
+        let context = ModelContext(handles.container)
+        let records = CreditSendActivityDAO.shared.records(walletId: handles.walletId, networkRaw: handles.networkRaw)
+        return creditSendItems(records: records, coreTransactions: coreTransactions) { send in
+            isActiveWalletDestination(send, walletId: handles.walletId, in: context)
+        }
+    }
+
+    /// History's rows for `records`. A withdrawal to an own Core address whose payout is among `coreTransactions`
+    /// has no row of its own: the payout is the row (`Transaction.creditWithdrawalSource`), so a send keeps one row.
+    static func creditSendItems(
+        records: [CreditSendRecord],
+        coreTransactions: [Transaction],
+        isOwn: (CreditSend) -> Bool
+    ) -> [CreditSendActivityItem] {
+        records.compactMap { record in
+            let own = isOwn(record.send)
+            if own, record.send.destinationKind == .core,
+               matchingCoreReceipt(
+                   amountDuffs: record.send.amountDuffs, address: record.send.destination, around: record.sentAt,
+                   in: coreTransactions) != nil {
+                return nil
+            }
+            return CreditSendActivityItem(record: record, isOwnDestination: own)
+        }
+    }
+
+    /// Whether a send's destination is one of the active wallet's own Core or Platform addresses or identities.
+    private static func isActiveWalletDestination(_ send: CreditSend, walletId: Data, in context: ModelContext) -> Bool {
+        switch send.destinationKind {
+        case .core:
+            return isActiveWalletCoreAddress(send.destination, walletId: walletId, in: context)
+        case .platform:
+            return isActiveWalletPlatformAddress(send.destination, walletId: walletId, in: context)
+        case .identity:
+            guard let identityId = ScriptAddressCodec.base58Decode(send.destination) else { return false }
+            var descriptor = FetchDescriptor<PersistentIdentity>(
+                predicate: #Predicate { $0.identityId == identityId })
+            descriptor.fetchLimit = 1
+            return (try? context.fetch(descriptor))?.first?.wallet?.walletId == walletId
+        }
     }
 
     /// Decode a withdrawal entry's counterparty (a Core scriptPubKey)

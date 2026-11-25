@@ -150,7 +150,9 @@ final class TransactionNotificationProducer {
          watchBridge: @escaping (String) -> Void = TransactionNotificationProducer.defaultWatchBridge,
          fiatFormatter: @escaping (Decimal) async -> String = TransactionNotificationProducer.defaultFiatFormatter,
          catchUpBoundary: @escaping () -> Date? = TransactionNotificationProducer.defaultCatchUpBoundary,
-         isShieldedWithdrawalPayout: @escaping (ObservedTransaction) -> Bool = { $0.wrapped.isShieldedWithdrawalReceipt },
+         isShieldedWithdrawalPayout: @escaping (ObservedTransaction) -> Bool = {
+             $0.wrapped.isShieldedWithdrawalReceipt || $0.wrapped.creditWithdrawalSource != nil
+         },
          now: @escaping () -> Date = Date.init) {
         self.dispatcher = dispatcher
         self.store = store

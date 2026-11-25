@@ -101,7 +101,8 @@ extension DatabaseConnection {
             AddNotifiedEventsTable(),
             AddBuyTrackingColumnsToSwapOrders(),
             AddPayoutIdentityColumnsToSwapOrders(),
-            MarkRetiredNotificationTopicsSeen()
+            MarkRetiredNotificationTopicsSeen(),
+            AddCreditSendActivityTable()
         ]
     }
 

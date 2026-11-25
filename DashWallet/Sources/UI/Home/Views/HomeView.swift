@@ -933,6 +933,24 @@ struct HomeViewContent<Content: View>: View {
             }
             .frame(minHeight: 66)
 
+        case .creditSend(let item):
+            DashUIKit.TransactionView(
+                iconView: transferRouteIcon(item.sourceSymbol),
+                secondaryIcon: DashIconSource.system(item.secondarySymbol),
+                title: item.title,
+                subtitle: item.shortTimeString,
+                details: item.detailsText,
+                dashAmount: item.signedDashAmount,
+                // An own transfer carries no direction, as the Core internal transfers.
+                amountSign: item.isOwnDestination ? .none : .always,
+                amountAccessorySystemImage: item.isOwnDestination ? "arrow.triangle.2.circlepath" : nil,
+                fiat: item.fiatAmount,
+                trailingStatusText: item.trailingStatusText
+            ) {
+                self.selectedTxDataItem = txDataItem
+            }
+            .frame(minHeight: 66)
+
         case .swapOrder(let item):
             DashUIKit.TransactionView(
                 icon: DashIcon.Transaction.convert.source,
@@ -1163,6 +1181,8 @@ struct TransactionDetailsSheet: View {
             ShieldedActivityDetailsView(item: item)
         case .platformActivity(let item):
             PlatformAddressActivityDetailsView(item: item)
+        case .creditSend(let item):
+            CreditSendActivityDetailsView(item: item)
         case .swapOrder(let item):
             // No Dash transaction yet: the standard screen, with what the order knows.
             TXDetailVCWrapper(swapOrder: item, navigateBack: .constant(false))
@@ -1243,6 +1263,8 @@ enum HomeTransactionRoute {
         case .shieldedToCore: return ("shield.fill", "d.circle.fill")
         case .coreToPlatform: return ("d.circle.fill", "creditcard.fill")
         case .coreToIdentity: return ("d.circle.fill", "person.crop.circle.fill")
+        case .platformToCore: return ("creditcard.fill", "d.circle.fill")
+        case .identityToCore: return ("person.crop.circle.fill", "d.circle.fill")
         case .coreToCore, nil: return nil
         }
     }
@@ -1269,6 +1291,9 @@ enum HomeTransactionRoute {
         case .coreToIdentity, .coreToCore, nil:
             // Identity fundings carry their purpose in the title
             // ("Identity registration"), so no route pill.
+            return nil
+        case .platformToCore, .identityToCore:
+            // The icon pair carries the route.
             return nil
         }
     }

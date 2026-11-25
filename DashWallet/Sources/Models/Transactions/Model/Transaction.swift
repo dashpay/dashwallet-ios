@@ -370,6 +370,20 @@ class Transaction: TransactionDataItem, Identifiable {
             && snapshot.outputAddresses.contains { ShieldedWithdrawalStore.shared.contains($0) }
     }
 
+    /// The source of the Platform or identity withdrawal this incoming tx is the Core payout of: it pays an address
+    /// the app recorded a withdrawal to (`CreditSendActivityDAO`; the SDK's withdrawal returns no txid). Nil for
+    /// every other tx. A withdrawal to someone else's address never pays this wallet, so a payout is an own transfer.
+    var creditWithdrawalSource: CreditSendSource? {
+        guard direction == .received,
+              let walletId = WalletEnvironment.activeWalletId(for: WalletEnvironment.networkKind) else { return nil }
+        for address in snapshot.outputAddresses {
+            if let source = CreditSendActivityDAO.shared.withdrawalSource(toCoreAddress: address, walletId: walletId) {
+                return source
+            }
+        }
+        return nil
+    }
+
     /// The balance-to-balance route of an internal transfer, driving the
     /// route-specific icon pair on the tx row (source icon + destination
     /// badge). `nil` for anything that isn't a transfer of own funds.
@@ -386,6 +400,10 @@ class Transaction: TransactionDataItem, Identifiable {
         case coreToPlatform
         /// Identity registration / top-up / invitation asset lock.
         case coreToIdentity
+        /// L1 payout of a Platform-address withdrawal (Platform → Core).
+        case platformToCore
+        /// L1 payout of an identity credit withdrawal (Identity → Core).
+        case identityToCore
         /// Self-send within the transparent wallet.
         case coreToCore
     }
@@ -393,6 +411,11 @@ class Transaction: TransactionDataItem, Identifiable {
     var internalTransferRoute: InternalTransferRoute? {
         if isShieldedTransfer { return isExternalShieldedSend ? nil : .coreToShielded }
         if isShieldedWithdrawalReceipt { return .shieldedToCore }
+        switch creditWithdrawalSource {
+        case .platform?: return .platformToCore
+        case .identity?: return .identityToCore
+        case nil: break
+        }
         if isPlatformFundingTransfer { return .coreToPlatform }
         if isIdentityFundingTransfer { return .coreToIdentity }
         if direction == .moved { return .coreToCore }

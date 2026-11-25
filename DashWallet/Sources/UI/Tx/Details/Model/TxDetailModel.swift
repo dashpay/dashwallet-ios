@@ -719,6 +719,15 @@ extension TxDetailModel {
                 DWTitleDetailCellModel(style: .default, title: NSLocalizedString("To", comment: ""), plainDetail: transparent),
             ]
         }
+        if let source = transaction.creditWithdrawalSource {
+            let from = source == .platform
+                ? NSLocalizedString("Platform balance", comment: "The Dash Platform credits balance")
+                : NSLocalizedString("Identity credits", comment: "Destination of an identity funding asset lock")
+            return [
+                DWTitleDetailCellModel(style: .default, title: NSLocalizedString("From", comment: ""), plainDetail: from),
+                DWTitleDetailCellModel(style: .default, title: NSLocalizedString("To", comment: ""), plainDetail: transparent),
+            ]
+        }
         if transaction.isPlatformFundingTransfer {
             var rows: [DWTitleDetailItem] = [
                 DWTitleDetailCellModel(style: .default, title: NSLocalizedString("From", comment: ""), plainDetail: transparent),
