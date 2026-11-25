@@ -68,6 +68,8 @@ final class SendViewModel: ObservableObject {
     /// The balances this contact payment may be paid from, fixed with the
     /// source when the contact is chosen (`contactSourcePlan`).
     private var contactSources: [ChainNetwork] = [.core]
+    /// The host offers only the Transparent balance (the contact profile's Pay).
+    private(set) var contactIsTransparentOnly = false
     #if DASHPAY
     /// The DashPay contact this send pays, when the flow was opened from the
     /// contact picker instead of the address field.
@@ -734,6 +736,7 @@ final class SendViewModel: ObservableObject {
         transparentOnly: Bool = false
     ) {
         contactRecipient = contact
+        contactIsTransparentOnly = transparentOnly
         // Every host of the amount step gets the newer snapshots, not just one:
         // `paymentChannelBroken` can change while the step is open. Only
         // `contactRecipient` is replaced — the destination and source stay as

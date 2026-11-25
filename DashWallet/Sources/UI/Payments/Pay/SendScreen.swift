@@ -483,7 +483,9 @@ struct ExternalSendAmountScreen: View {
                             .padding(.horizontal, 20)
                     }
                     #if DASHPAY
-                    if isContactSend {
+                    // Not on a host that offers only Transparent: the
+                    // note points to Platform, which it can't pay from.
+                    if isContactSend && !viewModel.contactIsTransparentOnly {
                         Text(ShieldedTransferCoordinator.CoordinatorError.shieldedContactPaymentsUnavailable.localizedDescription)
                             .font(.footnote)
                             .foregroundStyle(.secondary)
