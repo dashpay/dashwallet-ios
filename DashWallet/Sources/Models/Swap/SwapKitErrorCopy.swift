@@ -60,8 +60,8 @@ enum SwapKitErrorCopy {
         // small (`sellAssetAmountTooSmall` today). Both forms carry "amount", so an unrelated
         // below-threshold code — a too-low fee, say — stays out.
         if isBelowMinimumCode(code) {
-            return NSLocalizedString(
-                "This amount is below the minimum for this swap. Please enter a larger amount.",
+            return String(
+                localized: "This amount is below the minimum for this swap. Please enter a larger amount.",
                 comment: "Dash DEX / dex_error_amount_too_small"
             )
         }
@@ -81,69 +81,63 @@ enum SwapKitErrorCopy {
             // one ARB.YUM route to a fixed address ran 79 / 80 / 79 / 79 bytes at 0.1 / 1 / 10 /
             // 50 DASH — so blaming the address alone would send the user to the wrong fix.
             let chainLabel = SwapCryptoCurrency.chainDisplayName(coin.chain)
-            return String(format: NSLocalizedString(
-                "This swap's Maya instruction doesn't fit in a Dash transaction. Try a different amount, or a shorter %@ address.",
-                comment: "Dash DEX / dex_error_maya_memo_too_long"
-            ), chainLabel)
+            return String(localized: "This swap's Maya instruction doesn't fit in a Dash transaction. Try a different amount, or a shorter \(chainLabel) address.", comment: "Dash DEX / dex_error_maya_memo_too_long")
         case noRoutesFoundCode:
-            return NSLocalizedString(
-                "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.",
+            return String(
+                localized: "This amount can't be swapped right now. Routes can be briefly unavailable — try again shortly, or try a different amount.",
                 comment: "Dash DEX / dex_error_no_route"
             )
         case "blacklistasset", "invalidasset":
             return unavailableNowMessage(coin: coin)
         case "invalidrequest", "validation_error":
-            return NSLocalizedString(
-                "We couldn't set up your swap. Please check the amount and address, then try again.",
+            return String(
+                localized: "We couldn't set up your swap. Please check the amount and address, then try again.",
                 comment: "Dash DEX / dex_error_validation"
             )
         // `apiRequestFailed` is SwapKit failing to reach the provider it quotes through — an
         // upstream outage from the user's side, same as an unavailable swap desk.
         case "apikeyinvalid", "unauthorized", "apirequestfailed":
-            return NSLocalizedString(
-                "Swaps are temporarily unavailable. Please try again later.",
+            return String(
+                localized: "Swaps are temporarily unavailable. Please try again later.",
                 comment: "Dash DEX / dex_error_unavailable"
             )
         case "swaproutenotfound":
-            return NSLocalizedString(
-                "This quote expired. Please go back and try again.",
+            return String(
+                localized: "This quote expired. Please go back and try again.",
                 comment: "Dash DEX / dex_error_quote_expired"
             )
         case "issanctionedaddress":
-            return NSLocalizedString(
-                "This address can't be used for swaps.",
+            return String(
+                localized: "This address can't be used for swaps.",
                 comment: "Dash DEX / dex_error_sanctioned"
             )
         case "insufficientbalance":
-            return NSLocalizedString(
-                "The amount is more than what you're sending.",
+            return String(
+                localized: "The amount is more than what you're sending.",
                 comment: "Dash DEX / dex_error_insufficient_balance"
             )
         case "insufficientallowance":
-            return NSLocalizedString(
-                "This token needs approval before it can be swapped.",
+            return String(
+                localized: "This token needs approval before it can be swapped.",
                 comment: "Dash DEX / dex_error_allowance"
             )
         // `invalidRoute` is a quoted route SwapKit then refuses to execute — nothing the user can
         // correct, and retrying re-quotes, so it takes the same copy as a failed build.
         case "unabletobuildtransaction", "invalidroute":
-            return NSLocalizedString(
-                "We couldn't prepare this swap. Please try again.",
+            return String(
+                localized: "We couldn't prepare this swap. Please try again.",
                 comment: "Dash DEX / dex_error_build_failed"
             )
         case "invalidsourceaddress":
-            return String(format: NSLocalizedString(
-                "That refund address isn't a valid %@ address.",
-                comment: "Dash DEX / dex_error_invalid_refund_address"
-            ), coin.code)
+            return String(localized: "That refund address isn't a valid \(coin.code) address.", comment: "Dash DEX / dex_error_invalid_refund_address")
         case "invaliddestinationaddress":
-            return NSLocalizedString(
-                "We couldn't set up your deposit. Please try again.",
+            return String(
+                localized: "We couldn't set up your deposit. Please try again.",
                 comment: "Dash DEX / dex_error_invalid_destination"
             )
         case "outputamountdeviationtoohigh":
-            return NSLocalizedString(
-                "The price moved too much. Please go back and try again.",
+            return String(
+                localized: "The price moved too much. Please go back and try again.",
                 comment: "Dash DEX / dex_error_price_moved"
             )
         default:
@@ -152,8 +146,8 @@ enum SwapKitErrorCopy {
             // trace of what actually failed. Record it — an unmapped code is either a new
             // SwapKit error worth adding above, or a real defect.
             DWLogger.log("SwapKit: unmapped swap error for \(coin.code) — raw: \(rawError ?? "<nil>")")
-            return NSLocalizedString(
-                "Something went wrong setting up your swap. Please try again.",
+            return String(
+                localized: "Something went wrong setting up your swap. Please try again.",
                 comment: "Dash DEX / dex_error_generic"
             )
         }
@@ -184,10 +178,7 @@ enum SwapKitErrorCopy {
     /// "<coin> can't be swapped at the moment." — for a coin no provider can carry right now, where
     /// neither the amount nor the address is the user's to change.
     static func unavailableNowMessage(coin: SwapCryptoCurrency) -> String {
-        String(format: NSLocalizedString(
-            "%@ can't be swapped at the moment.",
-            comment: "Dash DEX / dex_error_blacklisted"
-        ), coin.code)
+        String(localized: "\(coin.code) can't be swapped at the moment.", comment: "Dash DEX / dex_error_blacklisted")
     }
 
     /// True when a provider reported a trading halt for the pair (`swapHalted`, as Maya does while a

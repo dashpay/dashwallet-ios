@@ -17,9 +17,9 @@ enum ChainNetwork: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .core: return NSLocalizedString("Core", comment: "Dash Core chain")
-        case .platform: return NSLocalizedString("Platform", comment: "Dash Platform chain")
-        case .shielded: return NSLocalizedString("Shielded", comment: "")
+        case .core: return String(localized: "Core", comment: "Dash Core chain")
+        case .platform: return String(localized: "Platform", comment: "Dash Platform chain")
+        case .shielded: return String(localized: "Shielded", comment: "")
         }
     }
 
@@ -41,10 +41,10 @@ enum ChainNetwork: String, CaseIterable, Identifiable {
             // can forget — which would put the word back on a screen that must
             // not carry it.
             return DWGlobalOptions.sharedInstance().advancedModeEnabled
-                ? NSLocalizedString("Transparent", comment: "Balance breakdown")
-                : NSLocalizedString("Dash Wallet", comment: "Balance breakdown, simple mode")
-        case .platform: return NSLocalizedString("Platform", comment: "Dash Platform chain")
-        case .shielded: return NSLocalizedString("Shielded", comment: "")
+                ? String(localized: "Transparent", comment: "Balance breakdown")
+                : String(localized: "Dash Wallet", comment: "Balance breakdown, simple mode")
+        case .platform: return String(localized: "Platform", comment: "Dash Platform chain")
+        case .shielded: return String(localized: "Shielded", comment: "")
         }
     }
 }
@@ -56,7 +56,7 @@ struct ChainNetworkToggle: View {
     var options: [ChainNetwork] = [.core, .platform]
 
     var body: some View {
-        Picker("", selection: $selection) {
+        Picker("" as String, selection: $selection) {
             ForEach(options) { network in
                 Text(network.title).tag(network)
             }

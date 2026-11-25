@@ -94,7 +94,7 @@ struct SegmentedControl<T: Hashable>: View {
                     .buttonStyle(.plain)
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel(Text(label(option)))
-                    .accessibilityHint(Text(NSLocalizedString("Double tap to select", comment: "SegmentedControl")))
+                    .accessibilityHint(Text(String(localized: "Double tap to select", comment: "SegmentedControl")))
                     .accessibilityAddTraits(selection == option ? [.isButton, .isSelected] : .isButton)
                 }
             }

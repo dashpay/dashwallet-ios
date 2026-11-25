@@ -183,7 +183,7 @@ class SettingsMenuViewModel: ObservableObject {
     private func refreshMenuItems() {
         self.items = [
             MenuItemModel(
-                title: NSLocalizedString("Local Currency", comment: ""),
+                title: String(localized: "Local Currency", comment: ""),
                 subtitle: localCurrencyCode,
                 icon: .custom("image.currency", maxHeight: 30),
                 action: { [weak self] in
@@ -192,7 +192,7 @@ class SettingsMenuViewModel: ObservableObject {
             ),
             notificationsMenuItem(),
             MenuItemModel(
-                title: NSLocalizedString("Network", comment: ""),
+                title: String(localized: "Network", comment: ""),
                 subtitle: networkName,
                 icon: .custom("image.network.monitor", maxHeight: 30),
                 action: { [weak self] in
@@ -206,8 +206,8 @@ class SettingsMenuViewModel: ObservableObject {
         if WalletEnvironment.isDevnetAvailable {
             items.append(
                 MenuItemModel(
-                    title: NSLocalizedString("Devnet Settings", comment: "Devnet"),
-                    subtitle: NSLocalizedString("Quorum URL, name and contract ids", comment: "Devnet"),
+                    title: String(localized: "Devnet Settings", comment: "Devnet"),
+                    subtitle: String(localized: "Quorum URL, name and contract ids", comment: "Devnet"),
                     icon: .custom("image.network.monitor", maxHeight: 30),
                     action: { [weak self] in
                         self?.navigationDestination = .devnetSettings
@@ -218,7 +218,7 @@ class SettingsMenuViewModel: ObservableObject {
 
         items.append(
             MenuItemModel(
-                title: NSLocalizedString("About", comment: ""),
+                title: String(localized: "About", comment: ""),
                 icon: .custom("image.about", maxHeight: 30),
                 action: { [weak self] in
                     self?.navigationDestination = .about
@@ -230,8 +230,8 @@ class SettingsMenuViewModel: ObservableObject {
         if hasCoinJoinLeftover {
             items.append(
                 MenuItemModel(
-                    title: NSLocalizedString("Move CoinJoin Funds", comment: "CoinJoin"),
-                    subtitle: NSLocalizedString("CoinJoin is no longer supported", comment: "CoinJoin"),
+                    title: String(localized: "Move CoinJoin Funds", comment: "CoinJoin"),
+                    subtitle: String(localized: "CoinJoin is no longer supported", comment: "CoinJoin"),
                     icon: .custom("image.coinjoin.menu", maxHeight: 22),
                     action: { [weak self] in
                         guard let self else { return }
@@ -244,7 +244,7 @@ class SettingsMenuViewModel: ObservableObject {
         #if DASHPAY
         items.append(contentsOf: [
             MenuItemModel(
-                title: NSLocalizedString("Enable Voting", comment: "Voting"),
+                title: String(localized: "Enable Voting", comment: "Voting"),
                 showToggle: true,
                 isToggled: VotingPrefs.shared.votingEnabled,
                 action: { [weak self] in
@@ -261,7 +261,7 @@ class SettingsMenuViewModel: ObservableObject {
         // one of them.
         items.append(
             MenuItemModel(
-                title: NSLocalizedString("Advanced mode", comment: "Settings"),
+                title: String(localized: "Advanced mode", comment: "Settings"),
                 icon: .custom("image.about", maxHeight: 30),
                 showInfo: true,
                 showToggle: true,
@@ -286,9 +286,9 @@ class SettingsMenuViewModel: ObservableObject {
     private func notificationsMenuItem() -> MenuItemModel {
         if notificationPermissionState == .blockedBySystem {
             return MenuItemModel(
-                title: NSLocalizedString("Notifications", comment: ""),
-                subtitle: NSLocalizedString("Turned off in iOS Settings", comment: "Notifications"),
-                details: NSLocalizedString("Open Settings", comment: "Notifications"),
+                title: String(localized: "Notifications", comment: ""),
+                subtitle: String(localized: "Turned off in iOS Settings", comment: "Notifications"),
+                details: String(localized: "Open Settings", comment: "Notifications"),
                 icon: .custom("image.notifications", maxHeight: 30),
                 action: {
                     if let url = URL(string: UIApplication.openSettingsURLString) {
@@ -298,7 +298,7 @@ class SettingsMenuViewModel: ObservableObject {
             )
         }
         return MenuItemModel(
-            title: NSLocalizedString("Notifications", comment: ""),
+            title: String(localized: "Notifications", comment: ""),
             icon: .custom("image.notifications", maxHeight: 30),
             showToggle: true,
             // `.awaitingAuthorization` renders like `.on`: the user's

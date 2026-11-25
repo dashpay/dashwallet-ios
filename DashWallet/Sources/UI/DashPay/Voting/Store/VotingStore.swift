@@ -851,7 +851,7 @@ final class VotingStore: ObservableObject {
                 return .success(successToast(for: choice, on: contest))
             } else if report.succeeded.isEmpty {
                 return .failure(report.failed.first?.failure
-                    ?? NSLocalizedString("The vote was not cast. Please try again.", comment: "Voting"))
+                    ?? String(localized: "The vote was not cast. Please try again.", comment: "Voting"))
             } else {
                 return .mixed(report)
             }
@@ -971,11 +971,11 @@ final class VotingStore: ObservableObject {
         // Not this run's outcome, so ``outcome`` is left to the attempt that has it.
         guard !isVoteBusy else {
             DWLogger.log("Voting: Quick voting not started: another vote is being sent")
-            return .failure(NSLocalizedString("Quick voting did not start: another vote is still being sent.", comment: "Voting"))
+            return .failure(String(localized: "Quick voting did not start: another vote is still being sent.", comment: "Voting"))
         }
         guard !nodeListMayMissNodes else {
             DWLogger.log("Voting: Quick voting not started: the node list may be incomplete or not synced")
-            return .failure(NSLocalizedString("Some of your masternodes may be missing from this list.", comment: "Voting"))
+            return .failure(String(localized: "Some of your masternodes may be missing from this list.", comment: "Voting"))
         }
         let casts = plan.votes.map { vote in
             QuickVoteCast(
@@ -991,14 +991,14 @@ final class VotingStore: ObservableObject {
         // run does not start and the sheet is opened again.
         guard zip(plan.votes, casts).allSatisfy({ $0.nodes.count == $1.nodes.count }) else {
             DWLogger.log("Voting: Quick voting not started: a planned masternode is no longer votable")
-            return .failure(NSLocalizedString("The vote was not cast. Please try again.", comment: "Voting"))
+            return .failure(String(localized: "The vote was not cast. Please try again.", comment: "Voting"))
         }
         beginQuickVoting()
         DWLogger.log("Voting: Quick voting started: \(casts.count) names, \(casts.reduce(0) { $0 + $1.nodes.count }) votes")
         let result: VoteAttemptOutcome
         if casts.isEmpty {
             // A plan with no vote: the sheet offers Close only, so this is not reached from it.
-            result = .failure(NSLocalizedString("The vote was not cast. Please try again.", comment: "Voting"))
+            result = .failure(String(localized: "The vote was not cast. Please try again.", comment: "Voting"))
         } else {
             switch await castRun(casts) {
             case .success(let reports):
@@ -1081,7 +1081,7 @@ final class VotingStore: ObservableObject {
         }
         if run.reports.allSatisfy({ $0.succeeded.isEmpty }) {
             return .failure(run.reports.lazy.flatMap(\.failed).first?.failure
-                ?? NSLocalizedString("The vote was not cast. Please try again.", comment: "Voting"))
+                ?? String(localized: "The vote was not cast. Please try again.", comment: "Voting"))
         }
         return .mixedRun(run)
     }
@@ -1155,10 +1155,10 @@ final class VotingStore: ObservableObject {
               let contest = contests.first(where: { $0.normalizedLabel == label }),
               let request = contest.contenders.first(where: { $0.identityId == identityId }),
               !isClosed(normalizedLabel: label), (contest.endTime ?? .distantFuture) > now()
-        else { return (all(NSLocalizedString("Voting has ended", comment: "Voting")), nil, true) }
+        else { return (all(String(localized: "Voting has ended", comment: "Voting")), nil, true) }
         // As the first run: a block by a missing masternode would go unseen.
         guard !nodeListMayMissNodes else {
-            return (all(NSLocalizedString("Some of your masternodes may be missing from this list.", comment: "Voting")), nil, false)
+            return (all(String(localized: "Some of your masternodes may be missing from this list.", comment: "Voting")), nil, false)
         }
         let history = await loadVotedNodes(for: label) ? voteHistoryByContest[label] ?? VoteLimit(nil) : VoteLimit(nil)
         // Only this request, so the plan sends towards it again.
@@ -1189,15 +1189,15 @@ final class VotingStore: ObservableObject {
     private static func retryReason(_ reason: QuickVotePlan.SkipReason) -> String {
         switch reason {
         case .blocked:
-            return NSLocalizedString("A masternode of this wallet blocked this name.", comment: "Voting")
+            return String(localized: "A masternode of this wallet blocked this name.", comment: "Voting")
         case .historyUnknown:
-            return NSLocalizedString("Couldn't read your vote history.", comment: "Voting")
+            return String(localized: "Couldn't read your vote history.", comment: "Voting")
         case .unknownVotingEnd:
-            return NSLocalizedString("Voting end unknown", comment: "Voting")
+            return String(localized: "Voting end unknown", comment: "Voting")
         case .undatedRequest, .tiedFirstRequests, .requestsMayBeCut:
-            return NSLocalizedString("Couldn't tell which request came first.", comment: "Voting")
+            return String(localized: "Couldn't tell which request came first.", comment: "Voting")
         case .votingEnded, .nothingToSend:
-            return NSLocalizedString("Voting has ended", comment: "Voting")
+            return String(localized: "Voting has ended", comment: "Voting")
         }
     }
 
@@ -1264,9 +1264,9 @@ final class VotingStore: ObservableObject {
         }
         switch step {
         case .votingEnded:
-            return all(NSLocalizedString("Voting has ended", comment: "Voting"))
+            return all(String(localized: "Voting has ended", comment: "Voting"))
         case .historyUnavailable:
-            return all(NSLocalizedString("Couldn't read your vote history.", comment: "Voting"))
+            return all(String(localized: "Couldn't read your vote history.", comment: "Voting"))
         case .noVotesLeft:
             // A failed masternode that holds the choice by now has it.
             let holders = history.nodes(holding: choice, among: Set(failed.map(\.proTxHash))) ?? []

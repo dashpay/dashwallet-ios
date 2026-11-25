@@ -46,7 +46,7 @@ struct BuyEnterAmountView: View {
         VStack(alignment: .leading, spacing: 0) {
             DashUIKit.NavigationBar(leading: { DashUIKit.NavigationBarElement.back.button { onBack?() } })
             TopIntro(
-                title: NSLocalizedString("Enter Amount", comment: "Dash DEX")
+                title: String(localized: "Enter Amount", comment: "Dash DEX")
             )
             .padding(.horizontal, Layout.hPadding)
             .padding(.bottom, 6)
@@ -111,7 +111,7 @@ struct BuyEnterAmountView: View {
         } else if viewModel.isValidating {
             HStack(spacing: 8) {
                 SwiftUI.ProgressView()
-                Text(NSLocalizedString("Checking amount…", comment: "Dash DEX"))
+                Text(String(localized: "Checking amount…", comment: "Dash DEX"))
                     .dashFont(.caption1)
                     .foregroundStyle(Color.dash.tertiaryText)
             }
@@ -135,7 +135,7 @@ struct BuyEnterAmountView: View {
                 set: { viewModel.setInput($0) }
             ),
             showDecimalSeparator: true,
-            actionButtonText: NSLocalizedString("Continue", comment: ""),
+            actionButtonText: String(localized: "Continue", comment: ""),
             actionEnabled: viewModel.isActionEnabled,
             inProgress: viewModel.isLoading || viewModel.isValidating,
             actionHandler: {

@@ -26,9 +26,9 @@ final class DWIdentityAuthorizer {
         var errorDescription: String? {
             switch self {
             case .cancelled:
-                return NSLocalizedString("Authentication cancelled", comment: "DashPay identity registration")
+                return String(localized: "Authentication cancelled", comment: "DashPay identity registration")
             case .failed:
-                return NSLocalizedString("Authentication failed", comment: "DashPay identity registration")
+                return String(localized: "Authentication failed", comment: "DashPay identity registration")
             }
         }
     }

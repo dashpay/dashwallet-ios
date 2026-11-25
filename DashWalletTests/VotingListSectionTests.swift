@@ -145,7 +145,7 @@ final class VotingListSectionTests: XCTestCase {
     /// rules: «1 username», «Voting ends in 1 day».
     func testHeaderCountAndDayHeadingsUseEnglishPlurals() {
         let usernames = { (count: Int) in
-            String.localizedStringWithFormat(NSLocalizedString("%d usernames", comment: "Voting"), count)
+            String(localized: "\(count) usernames", comment: "Voting")
         }
         XCTAssertEqual(usernames(1), "1 username")
         XCTAssertEqual(usernames(2), "2 usernames")
@@ -157,20 +157,23 @@ final class VotingListSectionTests: XCTestCase {
         XCTAssertEqual(sections.map(\.title), ["Voting ends in 1 day", "Voting ends in 3 days"])
     }
 
-    /// Every app locale carries a plural entry for each counted voting phrase,
-    /// so no language falls back to an invariant «%d …» text.
+    /// Every app locale carries an entry for each counted voting phrase in the
+    /// compiled String Catalog, so no language falls back to an invariant «%lld …»
+    /// text. The entry is in the plural table, or in the text table where the
+    /// locale's Baseline gave the phrase a single form (pilot.md, «Single-form plurals»).
     func testCountedVotingPhrasesHaveAPluralEntryInEveryLocale() throws {
-        let keys = ["%d votes", "All %d nodes", "%d usernames", "Voting ends in %d days"]
+        let keys = ["%lld votes", "All %lld nodes", "%lld usernames", "Voting ends in %lld days"]
         let root = URL(fileURLWithPath: Bundle.main.bundlePath)
-        let paths = try FileManager.default.contentsOfDirectory(atPath: root.path)
+        let lprojs = try FileManager.default.contentsOfDirectory(atPath: root.path)
             .filter { $0.hasSuffix(".lproj") }
-            .map { root.appendingPathComponent($0).appendingPathComponent("Localizable.stringsdict").path }
-            .filter { FileManager.default.fileExists(atPath: $0) }
-        XCTAssertFalse(paths.isEmpty)
-        for path in paths {
-            let dict = try XCTUnwrap(NSDictionary(contentsOfFile: path))
+            .map { root.appendingPathComponent($0) }
+            .filter { FileManager.default.fileExists(atPath: $0.appendingPathComponent("Localizable.strings").path) }
+        XCTAssertFalse(lprojs.isEmpty)
+        for lproj in lprojs {
+            let plurals = NSDictionary(contentsOf: lproj.appendingPathComponent("Localizable.stringsdict")) ?? [:]
+            let texts = try XCTUnwrap(NSDictionary(contentsOf: lproj.appendingPathComponent("Localizable.strings")))
             for key in keys {
-                XCTAssertNotNil(dict[key], "\(key) missing in \(path)")
+                XCTAssertTrue(plurals[key] != nil || texts[key] != nil, "\(key) missing in \(lproj.lastPathComponent)")
             }
         }
     }

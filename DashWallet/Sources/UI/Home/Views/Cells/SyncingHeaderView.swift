@@ -36,7 +36,7 @@ struct SyncingHeaderView: View {
     
     var body: some View {
         HStack {
-            Text(NSLocalizedString("History", comment: ""))
+            Text(String(localized: "History", comment: ""))
                 .font(.subheadline)
                 .foregroundColor(.dash.secondaryText)
             
@@ -45,7 +45,7 @@ struct SyncingHeaderView: View {
             if model.state == .syncing {
                 Button(action: onSyncTap) {
                     HStack(spacing: 4) {
-                        Text(NSLocalizedString("Syncing", comment: ""))
+                        Text(String(localized: "Syncing", comment: ""))
                             .font(.subheadline)
                         
                         if model.progress > 0 {
@@ -59,7 +59,7 @@ struct SyncingHeaderView: View {
             }
             
             DashButton(
-                text: NSLocalizedString("Filter", comment: ""),
+                text: String(localized: "Filter", comment: ""),
                 trailingIcon: .custom("icon_filter_button"),
                 style: .plain,
                 size: .small,

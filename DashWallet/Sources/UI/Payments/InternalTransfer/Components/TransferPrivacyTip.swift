@@ -77,23 +77,23 @@ struct TransferPrivacyTip: View {
     private var title: String {
         switch context {
         case .identityWithdrawal(.transparent):
-            return NSLocalizedString("Processing time", comment: "Platform → Transparent withdrawal")
+            return String(localized: "Processing time", comment: "Platform → Transparent withdrawal")
         case .identityWithdrawal(.platform):
-            return NSLocalizedString("Ready right away", comment: "Identity → Platform credit transfer")
+            return String(localized: "Ready right away", comment: "Identity → Platform credit transfer")
         case .route(.shieldedToCore, _):
-            return NSLocalizedString("Up to 10 minutes to spend", comment: "")
+            return String(localized: "Up to 10 minutes to spend", comment: "")
         case .route(.platformToCore, let isFullWithdrawal):
             return isFullWithdrawal
-                ? NSLocalizedString("Withdraws the entire balance", comment: "Full-balance Platform → Transparent withdrawal")
-                : NSLocalizedString("Processing time", comment: "Platform → Transparent withdrawal")
+                ? String(localized: "Withdraws the entire balance", comment: "Full-balance Platform → Transparent withdrawal")
+                : String(localized: "Processing time", comment: "Platform → Transparent withdrawal")
         case .route(.shieldedToPlatform, _), .route(.coreToPlatform, _):
             // Both messages say the funds are spendable immediately — the same
             // statement the identity → Platform transfer already titles this
             // way. "Privacy tip" over a sentence about timing reads as a
             // heading for a different card.
-            return NSLocalizedString("Ready right away", comment: "Identity → Platform credit transfer")
+            return String(localized: "Ready right away", comment: "Identity → Platform credit transfer")
         default:
-            return NSLocalizedString("Privacy tip", comment: "")
+            return String(localized: "Privacy tip", comment: "")
         }
     }
 
@@ -106,12 +106,12 @@ struct TransferPrivacyTip: View {
             case .transparent:
                 // Same asynchronous asset-unlock payout the Platform → Core
                 // withdrawal describes, so it borrows that route's wording.
-                return NSLocalizedString(
-                    "The Dash arrives in your Transparent balance once the network processes the withdrawal.",
+                return String(
+                    localized: "The Dash arrives in your Transparent balance once the network processes the withdrawal.",
                     comment: "")
             case .platform:
-                return NSLocalizedString(
-                    "These credits move to your Platform balance and are ready to spend right away.",
+                return String(
+                    localized: "These credits move to your Platform balance and are ready to spend right away.",
                     comment: "Identity → Platform credit transfer")
             }
         case .identityTopUp(let source):
@@ -119,12 +119,12 @@ struct TransferPrivacyTip: View {
             // top-up source picker — both describe the same funding paths.
             switch source {
             case .shielded:
-                return NSLocalizedString(
-                    "Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins.",
+                return String(
+                    localized: "Recommended: a two-step transfer through your own Platform address keeps your identity unlinked from your transparent coins.",
                     comment: "Identity top-up sheet — shielded source note")
             case .core, .platform:
-                return NSLocalizedString(
-                    "Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance.",
+                return String(
+                    localized: "Funding from a transparent balance publicly links those coins to your identity on the Dash chain. For privacy, pay from your Shielded balance.",
                     comment: "Identity top-up sheet — linkability warning for transparent-side sources")
             }
         }
@@ -133,29 +133,29 @@ struct TransferPrivacyTip: View {
     private static func routeMessage(_ route: InternalTransferRoute, isFullWithdrawal: Bool) -> String {
         switch route {
         case .coreToShielded, .platformToShielded:
-            return NSLocalizedString(
-                "For best privacy, wait at least 2 hours before using these funds.",
+            return String(
+                localized: "For best privacy, wait at least 2 hours before using these funds.",
                 comment: "")
         case .shieldedToCore:
-            return NSLocalizedString(
-                "After this transfer, it can take up to 10 minutes before you can use your Dash. This delay is part of how your privacy is protected.",
+            return String(
+                localized: "After this transfer, it can take up to 10 minutes before you can use your Dash. This delay is part of how your privacy is protected.",
                 comment: "")
         case .shieldedToPlatform:
             // Unshield to Platform Payment settles quickly.
-            return NSLocalizedString(
-                "These funds move to your Platform Payment balance and are ready to spend right away.",
+            return String(
+                localized: "These funds move to your Platform Payment balance and are ready to spend right away.",
                 comment: "")
         case .coreToPlatform:
-            return NSLocalizedString(
-                "These funds move to your Platform balance and are ready to spend as soon as the transfer completes.",
+            return String(
+                localized: "These funds move to your Platform balance and are ready to spend as soon as the transfer completes.",
                 comment: "")
         case .platformToCore:
             return isFullWithdrawal
-                ? NSLocalizedString(
-                    "This withdraws your entire Platform balance in one transfer. The Dash arrives in your Transparent balance once the network processes the withdrawal.",
+                ? String(
+                    localized: "This withdraws your entire Platform balance in one transfer. The Dash arrives in your Transparent balance once the network processes the withdrawal.",
                     comment: "")
-                : NSLocalizedString(
-                    "The Dash arrives in your Transparent balance once the network processes the withdrawal.",
+                : String(
+                    localized: "The Dash arrives in your Transparent balance once the network processes the withdrawal.",
                     comment: "")
         }
     }

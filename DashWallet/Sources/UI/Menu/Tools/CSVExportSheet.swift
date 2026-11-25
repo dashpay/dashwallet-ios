@@ -38,13 +38,13 @@ struct CSVExportSheet: View {
 
                 // Text content
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(NSLocalizedString("The full transaction history will be exported as a CSV file", comment: ""))
+                    Text(String(localized: "The full transaction history will be exported as a CSV file", comment: ""))
                         .font(.system(size: 28, weight: .bold))
                         .foregroundColor(Color.dash.primaryText)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
 
-                    Text(NSLocalizedString("All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.", comment: ""))
+                    Text(String(localized: "All payments will be considered as an expense and all incoming transactions will be income.\nThe owner of this wallet is responsible for making any cost basis adjustments in their chosen tax reporting system.", comment: ""))
                         .font(.system(size: 15))
                         .foregroundColor(Color.dash.secondaryText)
                         .multilineTextAlignment(.leading)
@@ -61,7 +61,7 @@ struct CSVExportSheet: View {
             // Button
             VStack(spacing: 0) {
                 DashButton(
-                    text: NSLocalizedString("Export CSV", comment: ""),
+                    text: String(localized: "Export CSV", comment: ""),
                     style: .filledBlue,
                     size: .large,
                     stretch: true,

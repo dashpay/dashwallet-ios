@@ -24,8 +24,8 @@ enum DashSpendMode: CaseIterable, Hashable {
 
     var localizedTitle: String {
         switch self {
-        case .single: return NSLocalizedString("Single", comment: "DashSpend")
-        case .multiple: return NSLocalizedString("Multiple", comment: "DashSpend")
+        case .single: return String(localized: "Single", comment: "DashSpend")
+        case .multiple: return String(localized: "Multiple", comment: "DashSpend")
         }
     }
 }

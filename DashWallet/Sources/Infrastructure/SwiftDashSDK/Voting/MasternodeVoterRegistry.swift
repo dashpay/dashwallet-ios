@@ -60,8 +60,8 @@ struct VoterNode: Identifiable, Hashable {
 
     var displayName: String {
         let type = isEvonode
-            ? NSLocalizedString("Evonode", comment: "Voting")
-            : NSLocalizedString("Masternode", comment: "Voting")
+            ? String(localized: "Evonode", comment: "Voting")
+            : String(localized: "Masternode", comment: "Voting")
         return "\(type) \(typeIndex)"
     }
 

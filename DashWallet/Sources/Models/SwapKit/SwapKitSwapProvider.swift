@@ -158,8 +158,8 @@ final class SwapKitSwapProvider: SwapProvider {
             throw NSError(
                 domain: "SwapKit",
                 code: 1,
-                userInfo: [NSLocalizedDescriptionKey: NSLocalizedString(
-                    "Could not load Buy Dash options — please check your connection and try again",
+                userInfo: [NSLocalizedDescriptionKey: String(
+                    localized: "Could not load Buy Dash options — please check your connection and try again",
                     comment: "SwapKit"
                 )]
             )
@@ -407,7 +407,7 @@ final class SwapKitSwapProvider: SwapProvider {
             }
             return SwapKitErrorCopy.message(for: code, coin: coin)
         case .unavailable:
-            guard let coin else { return NSLocalizedString("No route available", comment: "SwapKit") }
+            guard let coin else { return String(localized: "No route available", comment: "SwapKit") }
             return SwapKitErrorCopy.unavailableNowMessage(coin: coin)
         case .confirmNoRoute(let noRouteProviders):
             let reAsked = await Self.reCheckNoRoute(noRouteProviders, asset: toAsset, store: routeAvailability)
@@ -496,7 +496,7 @@ final class SwapKitSwapProvider: SwapProvider {
         if reAsked.contains(.unknown) {
             return nil
         }
-        guard let coin else { return NSLocalizedString("No route available", comment: "SwapKit") }
+        guard let coin else { return String(localized: "No route available", comment: "SwapKit") }
         return SwapKitErrorCopy.unavailableNowMessage(coin: coin)
     }
 
@@ -541,7 +541,7 @@ final class SwapKitSwapProvider: SwapProvider {
             throw NSError(
                 domain: "SwapKit",
                 code: 1,
-                userInfo: [NSLocalizedDescriptionKey: NSLocalizedString("No deposit address returned by SwapKit", comment: "SwapKit")]
+                userInfo: [NSLocalizedDescriptionKey: String(localized: "No deposit address returned by SwapKit", comment: "SwapKit")]
             )
         }
 
@@ -594,7 +594,7 @@ final class SwapKitSwapProvider: SwapProvider {
         guard let best = bestRoute(from: quoteResponse.routes ?? []) else {
             let providerError = quoteResponse.providerErrors?.first
             let msg = SwapKitErrorCopy.providerErrorMessage(providerError)
-                ?? NSLocalizedString("No route available", comment: "SwapKit")
+                ?? String(localized: "No route available", comment: "SwapKit")
             return errorResult(msg)
         }
 
@@ -624,7 +624,7 @@ final class SwapKitSwapProvider: SwapProvider {
         guard let best = bestRoute(from: quoteResponse.routes ?? []) else {
             let providerError = quoteResponse.providerErrors?.first
             let msg = SwapKitErrorCopy.providerErrorMessage(providerError)
-                ?? NSLocalizedString("No route available", comment: "SwapKit")
+                ?? String(localized: "No route available", comment: "SwapKit")
             return errorResult(msg)
         }
 
@@ -658,7 +658,7 @@ final class SwapKitSwapProvider: SwapProvider {
         }
 
         guard let vaultAddress = swapResponse.targetAddress ?? swapResponse.inboundAddress else {
-            return errorResult(NSLocalizedString("No vault address returned by SwapKit", comment: "SwapKit"))
+            return errorResult(String(localized: "No vault address returned by SwapKit", comment: "SwapKit"))
         }
 
         let memo = swapResponse.memo?.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -874,7 +874,7 @@ final class SwapKitSwapProvider: SwapProvider {
             let message = SwapKitErrorCopy.providerErrorMessage(providerError)
                 ?? quoteResponse.message
                 ?? quoteResponse.error
-                ?? NSLocalizedString("No route available", comment: "SwapKit")
+                ?? String(localized: "No route available", comment: "SwapKit")
             throw NSError(domain: "SwapKit", code: 1, userInfo: [NSLocalizedDescriptionKey: message])
         }
 
@@ -1022,9 +1022,9 @@ final class SwapKitSwapProvider: SwapProvider {
     static func addressCheckFailureMessage(for error: Error) -> String {
         switch error {
         case HTTPClientError.statusCode, HTTPClientError.mapping, HTTPClientError.decoder:
-            return NSLocalizedString("The swap service isn't responding. Please try again later.", comment: "SwapKit")
+            return String(localized: "The swap service isn't responding. Please try again later.", comment: "SwapKit")
         default:
-            return NSLocalizedString("Address validation unavailable — please check your connection", comment: "SwapKit")
+            return String(localized: "Address validation unavailable — please check your connection", comment: "SwapKit")
         }
     }
 
@@ -1286,7 +1286,7 @@ final class SwapKitSwapProvider: SwapProvider {
     }
 
     private static var walletUnavailableMessage: String {
-        NSLocalizedString("Your wallet isn’t ready yet. Please try again in a moment.", comment: "SwapKit")
+        String(localized: "Your wallet isn’t ready yet. Please try again in a moment.", comment: "SwapKit")
     }
 
     private static func walletUnavailableError() -> Error {

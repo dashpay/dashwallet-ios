@@ -1374,26 +1374,25 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
         var errorDescription: String? {
             switch self {
             case .dataDirectory(let error):
-                return String(format: NSLocalizedString("Failed to create SPV data directory: %@", comment: "Core sync (SPV) error"), error.localizedDescription)
+                return String(localized: "Failed to create SPV data directory: \(error.localizedDescription)", comment: "Core sync (SPV) error")
             case .spvClient(let error):
-                return String(format: NSLocalizedString("Failed to start SPV client: %@", comment: "Core sync (SPV) error"), error.localizedDescription)
+                return String(localized: "Failed to start SPV client: \(error.localizedDescription)", comment: "Core sync (SPV) error")
             case .stopSpv(let error):
-                return String(format: NSLocalizedString("Failed to stop SPV client: %@", comment: "Core sync (SPV) error"), error.localizedDescription)
+                return String(localized: "Failed to stop SPV client: \(error.localizedDescription)", comment: "Core sync (SPV) error")
             case .walletImport(let error):
-                return String(format: NSLocalizedString("Failed to import wallet: %@", comment: "Core sync (SPV) error"), error.localizedDescription)
+                return String(localized: "Failed to import wallet: \(error.localizedDescription)", comment: "Core sync (SPV) error")
             case .walletIdMismatch:
-                return NSLocalizedString("Imported wallet ID mismatch", comment: "Core sync (SPV) error")
+                return String(localized: "Imported wallet ID mismatch", comment: "Core sync (SPV) error")
             case .runtimeNotRunning:
-                return NSLocalizedString("Core SPV cannot restart because the wallet runtime is not running", comment: "Core sync (SPV) error")
+                return String(localized: "Core SPV cannot restart because the wallet runtime is not running", comment: "Core sync (SPV) error")
             case .devnetNotConfigured:
-                return NSLocalizedString("Devnet is not configured. Set the Quorum URL and Devnet Name in Settings → Devnet Settings.", comment: "Core sync (SPV) error")
+                return String(localized: "Devnet is not configured. Set the Quorum URL and Devnet Name in Settings → Devnet Settings.", comment: "Core sync (SPV) error")
             case .devnetPeerDiscoveryFailed(let quorumURL):
-                return String(format: NSLocalizedString("No devnet peers could be discovered from %@/masternodes. Check the Quorum URL and that the devnet is reachable.",
-                                                        comment: "Core sync (SPV) error: the devnet Quorum URL"), quorumURL)
+                return String(localized: "No devnet peers could be discovered from \(quorumURL)/masternodes. Check the Quorum URL and that the devnet is reachable.", comment: "Core sync (SPV) error: the devnet Quorum URL")
             case .superseded:
-                return NSLocalizedString("The network changed while Core SPV was starting.", comment: "Core sync (SPV) error")
+                return String(localized: "The network changed while Core SPV was starting.", comment: "Core sync (SPV) error")
             case .networkSwitchPending:
-                return NSLocalizedString("Core SPV was not restarted because a network switch is in progress.", comment: "Core sync (SPV) error")
+                return String(localized: "Core SPV was not restarted because a network switch is in progress.", comment: "Core sync (SPV) error")
             }
         }
     }
@@ -1401,7 +1400,7 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     private struct HostUnsupportedNetwork: LocalizedError {
         let network: Network
         var errorDescription: String? {
-            String(format: NSLocalizedString("Platform SDK does not support %@", comment: "Wallet setup error"), WalletEnvironment.displayName(of: network))
+            String(localized: "Platform SDK does not support \(WalletEnvironment.displayName(of: network))", comment: "Wallet setup error")
         }
     }
 }

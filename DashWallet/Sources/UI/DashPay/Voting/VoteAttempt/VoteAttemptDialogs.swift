@@ -43,37 +43,37 @@ struct VoteAttemptDialog: View {
         case .oneVoteLeft:
             LegacyModalDialog(
                 style: .warning,
-                heading: NSLocalizedString("One vote left", comment: "Voting"),
-                textBlock1: NSLocalizedString(
-                    "You have already voted for this username 4 times. You can only cast one more vote for this username.",
+                heading: String(localized: "One vote left", comment: "Voting"),
+                textBlock1: String(
+                    localized: "You have already voted for this username 4 times. You can only cast one more vote for this username.",
                     comment: "Voting"),
-                positiveButtonText: NSLocalizedString("Vote", comment: "Voting"),
+                positiveButtonText: String(localized: "Vote", comment: "Voting"),
                 positiveButtonAction: onConfirm,
-                negativeButtonText: NSLocalizedString("Cancel", comment: ""),
+                negativeButtonText: String(localized: "Cancel", comment: ""),
                 negativeButtonAction: onDismiss)
         case .noVotesLeft:
             LegacyModalDialog(
                 style: .warning,
-                heading: NSLocalizedString("No votes left", comment: "Voting"),
-                textBlock1: NSLocalizedString(
-                    "You have already voted for this username 5 times. You cannot vote on it any more.",
+                heading: String(localized: "No votes left", comment: "Voting"),
+                textBlock1: String(
+                    localized: "You have already voted for this username 5 times. You cannot vote on it any more.",
                     comment: "Voting"),
-                positiveButtonText: NSLocalizedString("OK", comment: ""),
+                positiveButtonText: String(localized: "OK", comment: ""),
                 positiveButtonAction: onDismiss)
         case .confirmBlock(let username, let isLastVote):
             LegacyModalDialog(
                 style: .error,
-                heading: String(format: NSLocalizedString("Block %@?", comment: "Voting"), username),
+                heading: String(localized: "Block \(username)?", comment: "Voting"),
                 textBlock1: isLastVote
-                    ? NSLocalizedString(
-                        "If block wins when voting ends, nobody can ever request this username again.",
+                    ? String(
+                        localized: "If block wins when voting ends, nobody can ever request this username again.",
                         comment: "Voting")
-                    : NSLocalizedString(
-                        "If block wins when voting ends, nobody can ever request this username again. You can cancel your vote until voting ends.",
+                    : String(
+                        localized: "If block wins when voting ends, nobody can ever request this username again. You can cancel your vote until voting ends.",
                         comment: "Voting"),
-                positiveButtonText: NSLocalizedString("Block", comment: "Voting"),
+                positiveButtonText: String(localized: "Block", comment: "Voting"),
                 positiveButtonAction: onConfirm,
-                negativeButtonText: NSLocalizedString("Cancel", comment: ""),
+                negativeButtonText: String(localized: "Cancel", comment: ""),
                 negativeButtonAction: onDismiss,
                 buttonsStyle: .danger)
         case .lastVotes(let usernames):
@@ -103,17 +103,17 @@ private struct LastVotesDialog: View {
     private var dialog: some View {
         LegacyModalDialog(
             style: .warning,
-            heading: NSLocalizedString("One vote left", comment: "Voting"),
-            textBlock1: NSLocalizedString(
-                "This is your last vote for some of these usernames. After it, you cannot vote on them again.",
+            heading: String(localized: "One vote left", comment: "Voting"),
+            textBlock1: String(
+                localized: "This is your last vote for some of these usernames. After it, you cannot vote on them again.",
                 comment: "Voting: Quick voting"),
             textBlock2: showsUsernames ? usernames.joined(separator: ", ") : nil,
-            smallButtonText: showsUsernames ? nil : NSLocalizedString("Show all usernames", comment: "Voting"),
+            smallButtonText: showsUsernames ? nil : String(localized: "Show all usernames", comment: "Voting"),
             smallButtonIcon: .system("plus"),
             smallButtonAction: { showsUsernames = true },
-            positiveButtonText: NSLocalizedString("Vote", comment: "Voting"),
+            positiveButtonText: String(localized: "Vote", comment: "Voting"),
             positiveButtonAction: onConfirm,
-            negativeButtonText: NSLocalizedString("Cancel", comment: ""),
+            negativeButtonText: String(localized: "Cancel", comment: ""),
             negativeButtonAction: onDismiss)
     }
 }

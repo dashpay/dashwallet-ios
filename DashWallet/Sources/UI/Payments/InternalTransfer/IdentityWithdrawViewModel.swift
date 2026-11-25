@@ -48,12 +48,12 @@ final class IdentityWithdrawViewModel: ObservableObject {
         var errorDescription: String? {
             switch self {
             case .noCoreReceiveAddress:
-                return NSLocalizedString(
-                    "No receive address is available yet — reopen the wallet and try again.",
+                return String(
+                    localized: "No receive address is available yet — reopen the wallet and try again.",
                     comment: "Identity withdrawal — missing Core payout address")
             case .noPlatformReceiveAddress:
-                return NSLocalizedString(
-                    "No Platform receive address is available yet — wait for the Platform sync to finish and try again.",
+                return String(
+                    localized: "No Platform receive address is available yet — wait for the Platform sync to finish and try again.",
                     comment: "Identity top-up sheet — missing unshield destination")
             }
         }
@@ -132,7 +132,7 @@ final class IdentityWithdrawViewModel: ObservableObject {
         guard !isProcessing else { return false }
         guard let wallet = SwiftDashSDKHost.shared.wallet,
               let modelContainer = SwiftDashSDKHost.shared.modelContainer else {
-            errorMessage = NSLocalizedString("Wallet is not ready", comment: "DashPay")
+            errorMessage = String(localized: "Wallet is not ready", comment: "DashPay")
             return false
         }
         isProcessing = true
@@ -185,8 +185,8 @@ final class IdentityWithdrawViewModel: ObservableObject {
     /// takes effect once the SDK ships dashpay/platform#5206, which types it.
     static func userFacingMessage(for error: Error) -> String {
         if case .insufficientIdentityCredits? = error as? PlatformWalletError {
-            return NSLocalizedString(
-                "Your Identity balance can't cover this amount plus the network fee. Enter a smaller amount and try again.",
+            return String(
+                localized: "Your Identity balance can't cover this amount plus the network fee. Enter a smaller amount and try again.",
                 comment: "Identity withdrawal — Platform refused the amount as more than the balance can cover")
         }
         return error.localizedDescription

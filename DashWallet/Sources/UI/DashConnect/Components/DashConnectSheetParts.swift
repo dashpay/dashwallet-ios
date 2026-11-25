@@ -69,8 +69,8 @@ struct DashConnectCollapsibleCard<Content: View>: View {
             .buttonStyle(.plain)
             .accessibilityAddTraits(.isButton)
             .accessibilityValue(Text(isExpanded
-                ? NSLocalizedString("Expanded", comment: "Accessibility: a section that is open")
-                : NSLocalizedString("Collapsed", comment: "Accessibility: a section that is closed")))
+                ? String(localized: "Expanded", comment: "Accessibility: a section that is open")
+                : String(localized: "Collapsed", comment: "Accessibility: a section that is closed")))
 
             if isExpanded {
                 VStack(alignment: .leading, spacing: 12) { content() }

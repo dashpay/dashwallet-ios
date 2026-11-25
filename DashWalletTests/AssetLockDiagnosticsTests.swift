@@ -201,6 +201,16 @@ final class AssetLockDiagnosticsTests: XCTestCase {
         }
     }
 
+    /// The retry writes its line before the UI shows the failure, so a long
+    /// SDK text is cut to the limit and a digit after a non-ASCII letter is
+    /// still masked.
+    func testWrittenDetailIsBoundedAndMasksEveryDigit() {
+        let long = AssetLockFailureRecord.maskingNumbers(in: String(repeating: "a", count: 1_000_000))
+        XCTAssertEqual(long.count, AssetLockFailureRecord.writtenDetailLimit + 1)
+        XCTAssertTrue(long.hasSuffix("…"))
+        XCTAssertEqual(AssetLockFailureRecord.maskingNumbers(in: "naïve42 and 7"), "naï<n> and <n>")
+    }
+
     func testFailureStoredBeforeTheSummaryExistedIsWrittenByItsCaseAlone() throws {
         let stored = Data(
             #"{"errorCase":"assetLockTooManyInputs","detail":"too many inputs: 121 (max 100)","recordedAt":0}"#.utf8)

@@ -480,8 +480,8 @@ final class RecoveryPhraseFlowViewModel: ObservableObject {
             case .failed, .timedOut:
                 retryRequest = request
                 alertState = AlertState(
-                    title: NSLocalizedString("Authentication failed", comment: ""),
-                    message: NSLocalizedString("Please try again", comment: ""))
+                    title: String(localized: "Authentication failed", comment: ""),
+                    message: String(localized: "Please try again", comment: ""))
             }
         }
     }
@@ -542,15 +542,15 @@ final class RecoveryPhraseFlowViewModel: ObservableObject {
     private static func readErrorAlert(for error: Error) -> AlertState {
         if case RecoveryPhraseInventoryError.noRecoveryPhrase = error {
             return AlertState(
-                title: NSLocalizedString("No Recovery Phrase Found", comment: "Recovery phrase"),
-                message: NSLocalizedString(
-                    "No recovery phrase is stored on this device.",
+                title: String(localized: "No Recovery Phrase Found", comment: "Recovery phrase"),
+                message: String(
+                    localized: "No recovery phrase is stored on this device.",
                     comment: "Recovery phrase"))
         } else {
             return AlertState(
-                title: NSLocalizedString("Couldn’t Read Recovery Phrases", comment: "Recovery phrase"),
-                message: NSLocalizedString(
-                    "The recovery phrases stored on this device could not be read. Please try again.",
+                title: String(localized: "Couldn’t Read Recovery Phrases", comment: "Recovery phrase"),
+                message: String(
+                    localized: "The recovery phrases stored on this device could not be read. Please try again.",
                     comment: "Recovery phrase"))
         }
     }
@@ -612,15 +612,15 @@ struct RecoveryPhrasePickerScreen: View {
                     DashUIKit.NavigationBarElement.back.button { viewModel.cancel() }
                 })
 
-                Text(NSLocalizedString("Choose Wallet", comment: "Recovery phrase"))
+                Text(String(localized: "Choose Wallet", comment: "Recovery phrase"))
                     .font(.title)
                     .fontWeight(.bold)
                     .foregroundColor(.dash.primaryText)
                     .padding(.horizontal, 20)
                     .padding(.top, 30)
 
-                Text(NSLocalizedString(
-                    "Select the wallet whose recovery phrase you want to view.",
+                Text(String(
+                    localized: "Select the wallet whose recovery phrase you want to view.",
                     comment: "Recovery phrase"))
                     .font(.subheadline)
                     .foregroundColor(.dash.secondaryText)
@@ -686,10 +686,10 @@ struct RecoveryPhrasePickerScreen: View {
                 get: { flowModel.pickerAlertState != nil },
                 set: { if !$0 { flowModel.dismissPickerAlert() } })
         ) {
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
+            Button(String(localized: "Cancel", comment: ""), role: .cancel) {
                 flowModel.dismissPickerAlert()
             }
-            Button(NSLocalizedString("Retry", comment: "")) {
+            Button(String(localized: "Retry", comment: "")) {
                 flowModel.retryPickerSelection()
             }
         } message: {
@@ -842,10 +842,10 @@ struct RecoveryPhraseFlowAlert: ViewModifier {
                 get: { flowModel.alertState != nil },
                 set: { if !$0 { flowModel.dismissAlert() } })
         ) {
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) {
+            Button(String(localized: "Cancel", comment: ""), role: .cancel) {
                 flowModel.dismissAlert()
             }
-            Button(NSLocalizedString("Retry", comment: "")) {
+            Button(String(localized: "Retry", comment: "")) {
                 flowModel.retry()
             }
         } message: {

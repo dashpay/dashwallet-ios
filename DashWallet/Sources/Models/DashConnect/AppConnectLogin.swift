@@ -53,8 +53,8 @@ enum AppConnect {
 
     /// The answer to a `dash-key:` v1 request: only a v2 request says what
     /// it asks for, and the wallet answers no other.
-    static var v1Refusal: Refusal { Refusal(.unsupported, NSLocalizedString(
-        "This app uses an older sign-in that this wallet no longer supports. Ask the app for a new code.",
+    static var v1Refusal: Refusal { Refusal(.unsupported, String(
+        localized: "This app uses an older sign-in that this wallet no longer supports. Ask the app for a new code.",
         comment: "DashConnect App Connect v1")) }
 
     /// What the wallet's store of identity keys says about one key: its

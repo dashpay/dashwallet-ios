@@ -52,9 +52,9 @@ extension CoinbaseInfoViewController {
         contentView.layer.masksToBounds = true
         contentView.backgroundColor = .white
 
-        authorizationLimitLabel.text = NSLocalizedString("Make sure you set up the right authorization limit on Coinbase", comment: "Coinbase authorization limit info screen")
-        changeLimitHintLabel.text = NSLocalizedString("You can change it anytime by logging out of your Coinbase account in Dash Wallet and logging back in.",
+        authorizationLimitLabel.text = String(localized: "Make sure you set up the right authorization limit on Coinbase", comment: "Coinbase authorization limit info screen")
+        changeLimitHintLabel.text = String(localized: "You can change it anytime by logging out of your Coinbase account in Dash Wallet and logging back in.",
                                                       comment: "Coinbase authorization limit info screen")
-        actionButton.configuration?.title = NSLocalizedString("I got it", comment: "Coinbase authorization limit info screen")
+        actionButton.configuration?.title = String(localized: "I got it", comment: "Coinbase authorization limit info screen")
     }
 }

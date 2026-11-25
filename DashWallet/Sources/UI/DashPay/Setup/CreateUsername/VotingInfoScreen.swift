@@ -31,7 +31,7 @@ public struct VotingInfoScreen: View {
     var action: () -> Void
     /// Button label, so the explainer can say "Close" where the flow says
     /// "Continue".
-    var buttonLabel: String = NSLocalizedString("Continue", comment: "")
+    var buttonLabel: String = String(localized: "Continue", comment: "")
 
     public var body: some View {
         VStack(spacing: 0) {
@@ -39,7 +39,7 @@ public struct VotingInfoScreen: View {
                 .frame(maxHeight: 20)
 
             VStack(alignment: .leading, spacing: 6) {
-                Text(NSLocalizedString("What is username voting?", comment: "Usernames"))
+                Text(String(localized: "What is username voting?", comment: "Usernames"))
                     .dashFont(.title1)
                     .foregroundStyle(Color.dash.primaryText)
                     // The sheet cross-fades its pages inside a ZStack, which
@@ -47,7 +47,7 @@ public struct VotingInfoScreen: View {
                     // truncates instead of wrapping.
                     .fixedSize(horizontal: false, vertical: true)
 
-                Text(NSLocalizedString("The Dash network has to vote to approve some usernames before they are created", comment: "Usernames"))
+                Text(String(localized: "The Dash network has to vote to approve some usernames before they are created", comment: "Usernames"))
                     .dashFont(.body)
                     .foregroundStyle(Color.dash.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
@@ -58,18 +58,18 @@ public struct VotingInfoScreen: View {
 
             VStack(alignment: .leading, spacing: 16) {
                 SheetFeature(
-                    title: NSLocalizedString("Voting is only required in some cases", comment: "Usernames"),
-                    description: NSLocalizedString("Any username that has a number 2–9 or 20 or more characters will be automatically approved", comment: "Usernames"),
+                    title: String(localized: "Voting is only required in some cases", comment: "Usernames"),
+                    description: String(localized: "Any username that has a number 2–9 or 20 or more characters will be automatically approved", comment: "Usernames"),
                     icon: DashIcon.Features.selectedList.source
                 )
                 SheetFeature(
-                    title: NSLocalizedString("Some usernames can be blocked", comment: "Usernames"),
-                    description: NSLocalizedString("If enough of the network determines that a username is inappropriate, they can block it", comment: "Usernames"),
+                    title: String(localized: "Some usernames can be blocked", comment: "Usernames"),
+                    description: String(localized: "If enough of the network determines that a username is inappropriate, they can block it", comment: "Usernames"),
                     icon: DashIcon.Features.usernameBlock.source
                 )
                 SheetFeature(
-                    title: NSLocalizedString("Keep your passphrase safe", comment: "Usernames"),
-                    description: NSLocalizedString("In case you lose your passphrase you will lose your right to your requested username", comment: "Usernames"),
+                    title: String(localized: "Keep your passphrase safe", comment: "Usernames"),
+                    description: String(localized: "In case you lose your passphrase you will lose your right to your requested username", comment: "Usernames"),
                     icon: DashIcon.Features.recovery.source
                 )
             }
@@ -108,7 +108,7 @@ public struct VotingInfoScreen: View {
 #Preview("Voting info — explainer") {
     VotingInfoScreen(
         action: {},
-        buttonLabel: NSLocalizedString("Close", comment: ""))
+        buttonLabel: String(localized: "Close", comment: ""))
         .background(Color.dash.primaryBackground)
 }
 

@@ -64,7 +64,7 @@ struct CoinbaseUserAccountData: Codable, Identifiable {
         guard let fiatAmount = try? Coinbase.shared.currencyExchanger.convert(to: App.fiatCurrency,
                                                                               amount: amount,
                                                                               amountCurrency: balance.currency) else {
-            return NSLocalizedString("Updating Price", comment: "Exchange")
+            return String(localized: "Updating Price", comment: "Exchange")
         }
 
         let nf = NumberFormatter.fiatFormatter(currencyCode: App.fiatCurrency)

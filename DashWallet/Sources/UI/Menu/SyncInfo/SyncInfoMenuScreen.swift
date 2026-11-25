@@ -43,7 +43,7 @@ struct SyncInfoMenuScreen: View {
                 }
             })
 
-            TopIntro(title: NSLocalizedString("Sync Info", comment: ""))
+            TopIntro(title: String(localized: "Sync Info", comment: ""))
                 .padding(.leading, 20)
                 .padding(.trailing, 60)
                 .padding(.top, 10)

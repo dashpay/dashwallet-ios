@@ -402,8 +402,8 @@ final class SwiftDashSDKKeyMigrator: NSObject {
         case verificationFailed
 
         var errorDescription: String? {
-            NSLocalizedString(
-                "The old wallet data could not be removed. Please try again.",
+            String(
+                localized: "The old wallet data could not be removed. Please try again.",
                 comment: "Wallets")
         }
     }

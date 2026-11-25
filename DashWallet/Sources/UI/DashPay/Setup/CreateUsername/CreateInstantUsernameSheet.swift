@@ -33,11 +33,11 @@ struct CreateInstantUsernameSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 6) {
-                Text(NSLocalizedString("Create an instant username", comment: "Usernames"))
+                Text(String(localized: "Create an instant username", comment: "Usernames"))
                     .dashFont(.title1)
                     .foregroundStyle(Color.dash.primaryText)
 
-                Text(NSLocalizedString("""
+                Text(String(localized: """
                     Your requested username will be voted on for 2 weeks. For immediate contacts and payments, you can create a similar instant username.
                     If your original request is approved, it replaces the instant one, preserving contacts and history. If not, continue using the instant one uninterrupted.
                     """, comment: "Usernames"))
@@ -51,7 +51,7 @@ struct CreateInstantUsernameSheet: View {
 
             VStack(spacing: 20) {
                 DashUIKit.DashButton(
-                    text: NSLocalizedString("Create instant username", comment: "Usernames"),
+                    text: String(localized: "Create instant username", comment: "Usernames"),
                     fillsWidth: true,
                     size: .large,
                     style: .filledBlue,
@@ -59,7 +59,7 @@ struct CreateInstantUsernameSheet: View {
                 )
 
                 DashUIKit.DashButton(
-                    text: NSLocalizedString("No, thanks", comment: "Usernames"),
+                    text: String(localized: "No, thanks", comment: "Usernames"),
                     fillsWidth: true,
                     size: .large,
                     style: .tintedGray,

@@ -276,42 +276,42 @@ final class CoreCoinConsolidationViewModel: ObservableObject {
     // MARK: Strings
 
     static var combineButtonTitle: String {
-        NSLocalizedString("Combine coins", comment: "Asset-lock input limit")
+        String(localized: "Combine coins", comment: "Asset-lock input limit")
     }
 
     static var combiningLabel: String {
-        NSLocalizedString("Combining coins…", comment: "Asset-lock input limit")
+        String(localized: "Combining coins…", comment: "Asset-lock input limit")
     }
 
     static var doneMessage: String {
-        NSLocalizedString("Your coins are combined. You can try again now.", comment: "Asset-lock input limit")
+        String(localized: "Your coins are combined. You can try again now.", comment: "Asset-lock input limit")
     }
 
     static var doneShortMessage: String {
-        NSLocalizedString(
-            "Your coins are combined, but the network fee leaves too little for this amount. Try a smaller amount.",
+        String(
+            localized: "Your coins are combined, but the network fee leaves too little for this amount. Try a smaller amount.",
             comment: "Asset-lock input limit")
     }
 
     /// The estimated fee of combining, shown before the PIN prompt.
     static func feeLine(duffs: UInt64) -> String {
-        String(format: NSLocalizedString("Network fee: %@ DASH", comment: ""), duffs.formattedDashAmountWithoutCurrencySymbol)
+        String(localized: "Network fee: \(duffs.formattedDashAmountWithoutCurrencySymbol) DASH", comment: "")
     }
 
     static var cannotCombineMessage: String {
-        NSLocalizedString(
-            "Combining the coins in this wallet won't make this transfer fit. Try a smaller amount.",
+        String(
+            localized: "Combining the coins in this wallet won't make this transfer fit. Try a smaller amount.",
             comment: "Asset-lock input limit")
     }
 
     private static var stillCombiningMessage: String {
-        NSLocalizedString(
-            "Your coins are still being combined. Please try again in a few minutes.",
+        String(
+            localized: "Your coins are still being combined. Please try again in a few minutes.",
             comment: "Asset-lock input limit")
     }
 
     private static var genericFailureMessage: String {
-        NSLocalizedString("Couldn't combine your coins. Please try again.", comment: "Asset-lock input limit")
+        String(localized: "Couldn't combine your coins. Please try again.", comment: "Asset-lock input limit")
     }
 
     /// Exported-log line.

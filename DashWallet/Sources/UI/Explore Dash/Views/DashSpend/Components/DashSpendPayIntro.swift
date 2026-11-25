@@ -38,7 +38,7 @@ struct DashSpendPayIntro: View {
     }
 
     private var balanceLabel: String {
-        (isMixing ? NSLocalizedString("Mixed balance", comment: "") : NSLocalizedString("Balance", comment: "")) + ":"
+        (isMixing ? String(localized: "Mixed balance", comment: "") : String(localized: "Balance", comment: "")) + ":"
     }
 
     private var merchantIcon: some View {
@@ -76,12 +76,12 @@ struct DashSpendPayIntro: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Layout.vStackSpacing) {
-            Text(NSLocalizedString("Buy gift card", comment: "DashSpend"))
+            Text(String(localized: "Buy gift card", comment: "DashSpend"))
                 .font(.title1)
                 .fontWeight(.bold)
 
             HStack(alignment: .center, spacing: Layout.merchantHStackSpacing) {
-                Text(NSLocalizedString("at", comment: "DashSpend"))
+                Text(String(localized: "at", comment: "DashSpend"))
                 merchantIcon
                 Text(merchantTitle)
             }
@@ -91,10 +91,10 @@ struct DashSpendPayIntro: View {
                 Text(balanceLabel)
 
                 if balanceHidden {
-                    Text("***********")
+                    Text(verbatim: "***********")
                 } else {
                     DashAmount(amount: Int64(dashBalance), font: .subheadline, showDirection: false)
-                    Text("~").font(.subheadline)
+                    Text(verbatim: "~").font(.subheadline)
                     formattedFiatText(from: dashBalance)
                 }
 
@@ -112,7 +112,7 @@ struct DashSpendPayIntro: View {
     private func formattedFiatText(from dashAmount: UInt64) -> some View {
         let text = try? CurrencyExchanger.shared.convertDash(amount: dashAmount.dashAmount, to: App.fiatCurrency).formattedFiatAmount
 
-        Text(text ?? NSLocalizedString("Not available", comment: ""))
+        Text(text ?? String(localized: "Not available", comment: ""))
             .font(.subheadline)
             .foregroundColor(.dash.secondaryText)
     }
@@ -120,7 +120,7 @@ struct DashSpendPayIntro: View {
 
 #Preview("DashSpendPayIntro") {
     VStack(spacing: 20) {
-        Text("DashSpendPayIntro").font(.caption).foregroundColor(Color.dash.secondaryText)
+        Text(verbatim: "DashSpendPayIntro").font(.caption).foregroundColor(Color.dash.secondaryText)
         DashSpendPayIntro(
             merchantIconUrl: "",
             merchantTitle: "Amazon",
@@ -128,7 +128,7 @@ struct DashSpendPayIntro: View {
             dashBalance: 555566
         )
         Divider()
-        Text("SendIntro (reference)").font(.caption).foregroundColor(Color.dash.secondaryText)
+        Text(verbatim: "SendIntro (reference)").font(.caption).foregroundColor(Color.dash.secondaryText)
         SendIntro(
             title: "Buy gift card",
             preposition: "at",

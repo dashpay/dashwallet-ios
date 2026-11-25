@@ -133,7 +133,7 @@ struct VotingContestCard: View {
                     // collapsed several-request name): say it, so the name
                     // does not read as still to vote on.
                     if hasVoteWithoutPill {
-                        Text(NSLocalizedString("You voted", comment: "Voting"))
+                        Text(String(localized: "You voted", comment: "Voting"))
                             .dashFont(.footnoteMedium)
                             .foregroundStyle(Color.dash.blueText)
                             .transition(.opacity)
@@ -189,7 +189,7 @@ struct VotingContestCard: View {
                             .accessibilityLabel(Text(request.spokenIdentity))
                     }
                     if request.hasLink {
-                        Text(NSLocalizedString("Link included", comment: "Voting"))
+                        Text(String(localized: "Link included", comment: "Voting"))
                             .dashFont(.footnote)
                             .foregroundStyle(Color.dash.tertiaryText)
                     }
@@ -200,7 +200,7 @@ struct VotingContestCard: View {
             }
             .buttonStyle(.plain)
             .accessibilityElement(children: .combine)
-            .accessibilityHint(NSLocalizedString("Opens the request details", comment: "Voting"))
+            .accessibilityHint(String(localized: "Opens the request details", comment: "Voting"))
 
             VotePill(
                 kind: .approve,
@@ -209,7 +209,7 @@ struct VotingContestCard: View {
                 status: status,
                 accessibilityLabel: request.accessibilityLabel,
                 accessibilityValue: status == .busy
-                    ? request.accessibilityValue + ", " + NSLocalizedString("Sending", comment: "Voting")
+                    ? request.accessibilityValue + ", " + String(localized: "Sending", comment: "Voting")
                     : request.accessibilityValue,
                 action: { onVote(choice) })
                 .accessibilityHint(Self.pillAccessibilityHint(isSelected: request.isMine, status: status) ?? "")
@@ -236,18 +236,18 @@ struct VotingContestCard: View {
     /// not say.
     static func pillAccessibilityHint(isSelected: Bool, status: VotePill.Status) -> String? {
         guard isSelected, status == .enabled else { return nil }
-        return NSLocalizedString("Takes your vote back", comment: "Voting")
+        return String(localized: "Takes your vote back", comment: "Voting")
     }
 
     /// The pill's spoken vote count, by the locale's plural rules: «1 vote», «3 votes».
     static func votesValue(count: UInt32) -> String {
-        String.localizedStringWithFormat(NSLocalizedString("%d votes", comment: "Voting"), Int(count))
+        String(localized: "\(Int(count)) votes", comment: "Voting")
     }
 
     private func pill(_ kind: VotePill.Kind, count: UInt32, choice: VoteChoice) -> some View {
         let label = kind == .block
-            ? String(format: NSLocalizedString("Block %@", comment: "Voting"), contest.displayTitle)
-            : String(format: NSLocalizedString("Approve %@", comment: "Voting"), contest.displayTitle)
+            ? String(localized: "Block \(contest.displayTitle)", comment: "Voting")
+            : String(localized: "Approve \(contest.displayTitle)", comment: "Voting")
         let votes = Self.votesValue(count: count)
         let isSelected = myChoices.contains(choice)
         let status = Self.pillStatus(
@@ -259,7 +259,7 @@ struct VotingContestCard: View {
             status: status,
             accessibilityLabel: label,
             accessibilityValue: status == .busy
-                ? votes + ", " + NSLocalizedString("Sending", comment: "Voting")
+                ? votes + ", " + String(localized: "Sending", comment: "Voting")
                 : votes,
             action: { onVote(choice) })
             .accessibilityHint(Self.pillAccessibilityHint(isSelected: isSelected, status: status) ?? "")

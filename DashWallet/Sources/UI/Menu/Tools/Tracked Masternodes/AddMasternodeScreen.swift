@@ -41,7 +41,7 @@ struct AddMasternodeScreen: View {
                     }
                 },
                 central: {
-                    Text(NSLocalizedString("Add masternode", comment: "Add masternode"))
+                    Text(String(localized: "Add masternode", comment: "Add masternode"))
                         .dashFont(.subheadMedium)
                         .foregroundColor(.dash.primaryText)
                 })
@@ -79,7 +79,7 @@ struct AddMasternodeScreen: View {
         Section {
             HStack(spacing: 8) {
                 TextField(
-                    NSLocalizedString("IP address, proTxHash or private key", comment: "Add masternode"),
+                    String(localized: "IP address, proTxHash or private key", comment: "Add masternode"),
                     text: $viewModel.query,
                     axis: .vertical)
                     .font(.system(.footnote, design: .monospaced))
@@ -107,10 +107,10 @@ struct AddMasternodeScreen: View {
 
             Toggle(isOn: $viewModel.searchPlatform) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(NSLocalizedString("Search Platform too", comment: "Add masternode"))
+                    Text(String(localized: "Search Platform too", comment: "Add masternode"))
                         .font(.subheadline)
-                    Text(NSLocalizedString(
-                        "Finds owner and payout keys, which aren't in the masternode list. Sends the key's public fingerprint to a Platform node.",
+                    Text(String(
+                        localized: "Finds owner and payout keys, which aren't in the masternode list. Sends the key's public fingerprint to a Platform node.",
                         comment: "Add masternode"))
                         .font(.caption)
                         .foregroundColor(Color.dash.secondaryText)
@@ -123,10 +123,10 @@ struct AddMasternodeScreen: View {
                 if viewModel.searching {
                     HStack(spacing: 8) {
                         SwiftUI.ProgressView().scaleEffect(0.8)
-                        Text(NSLocalizedString("Searching…", comment: "Add masternode"))
+                        Text(String(localized: "Searching…", comment: "Add masternode"))
                     }
                 } else {
-                    Label(NSLocalizedString("Find", comment: "Add masternode"), systemImage: "magnifyingglass")
+                    Label(String(localized: "Find", comment: "Add masternode"), systemImage: "magnifyingglass")
                 }
             }
             .disabled(viewModel.searching
@@ -135,8 +135,8 @@ struct AddMasternodeScreen: View {
             if let error = viewModel.searchError {
                 Text(error).foregroundColor(.red)
             } else {
-                Text(NSLocalizedString(
-                    "Track any masternode or evonode on the network — it doesn't have to belong to this wallet.",
+                Text(String(
+                    localized: "Track any masternode or evonode on the network — it doesn't have to belong to this wallet.",
                     comment: "Add masternode"))
             }
         }
@@ -145,9 +145,9 @@ struct AddMasternodeScreen: View {
     @ViewBuilder
     private var resultsSection: some View {
         if let matches = viewModel.matches {
-            Section(NSLocalizedString("Matches", comment: "Add masternode")) {
+            Section(String(localized: "Matches", comment: "Add masternode")) {
                 if matches.isEmpty {
-                    Text(NSLocalizedString("No masternode on the list matches that.", comment: "Add masternode"))
+                    Text(String(localized: "No masternode on the list matches that.", comment: "Add masternode"))
                         .font(.subheadline)
                         .foregroundColor(Color.dash.secondaryText)
                 }
@@ -171,15 +171,15 @@ struct AddMasternodeScreen: View {
             HStack {
                 Label(
                     match.isEvonode
-                        ? NSLocalizedString("Evonode", comment: "")
-                        : NSLocalizedString("Masternode", comment: "Masternodes"),
+                        ? String(localized: "Evonode", comment: "")
+                        : String(localized: "Masternode", comment: "Masternodes"),
                     systemImage: "server.rack")
                     .font(.subheadline)
                     .fontWeight(.medium)
                 Spacer()
                 Text(match.isValid
-                    ? NSLocalizedString("Active", comment: "Masternode status")
-                    : NSLocalizedString("PoSe banned", comment: "Masternode status"))
+                    ? String(localized: "Active", comment: "Masternode status")
+                    : String(localized: "PoSe banned", comment: "Masternode status"))
                     .font(.caption)
                     .foregroundColor(match.isValid ? .green : .orange)
             }
@@ -199,13 +199,13 @@ struct AddMasternodeScreen: View {
             }
 
             if match.inWalletId != nil {
-                Text(NSLocalizedString(
-                    "Already one of this wallet's masternodes — it's in the list above.",
+                Text(String(
+                    localized: "Already one of this wallet's masternodes — it's in the list above.",
                     comment: "Add masternode"))
                     .font(.caption)
                     .foregroundColor(Color.dash.secondaryText)
             } else if match.alreadyTracked {
-                Text(NSLocalizedString("Already tracked.", comment: "Add masternode"))
+                Text(String(localized: "Already tracked.", comment: "Add masternode"))
                     .font(.caption)
                     .foregroundColor(Color.dash.secondaryText)
             } else {
@@ -215,7 +215,7 @@ struct AddMasternodeScreen: View {
                     if viewModel.tracking {
                         SwiftUI.ProgressView().scaleEffect(0.8)
                     } else {
-                        Text(NSLocalizedString("Track this masternode", comment: "Add masternode"))
+                        Text(String(localized: "Track this masternode", comment: "Add masternode"))
                             .fontWeight(.medium)
                     }
                 }
@@ -228,9 +228,7 @@ struct AddMasternodeScreen: View {
 
     private func matchedKeyCaption(_ roles: [MasternodeKeyRole]) -> String {
         let names = roles.map { $0.displayName }.joined(separator: ", ")
-        return String(
-            format: NSLocalizedString("Matches this node's %@ key", comment: "Add masternode"),
-            names)
+        return String(localized: "Matches this node's \(names) key", comment: "Add masternode")
     }
 
     // MARK: Keys
@@ -249,11 +247,11 @@ struct AddMasternodeScreen: View {
                             .foregroundColor(Color.dash.secondaryText)
                     }
                 }
-                TextField(NSLocalizedString("Label (optional)", comment: "Add masternode"), text: $viewModel.label)
+                TextField(String(localized: "Label (optional)", comment: "Add masternode"), text: $viewModel.label)
                     .onSubmit { viewModel.saveLabelIfChanged() }
             } footer: {
-                Text(NSLocalizedString(
-                    "Tracked. Add this node's keys below to enable actions like withdrawing and voting, or finish now and add them later.",
+                Text(String(
+                    localized: "Tracked. Add this node's keys below to enable actions like withdrawing and voting, or finish now and add them later.",
                     comment: "Add masternode"))
             }
 
@@ -267,15 +265,15 @@ struct AddMasternodeScreen: View {
                         vc?.popViewController(animated: true)
                     }
                 } label: {
-                    Text(NSLocalizedString("Done", comment: ""))
+                    Text(String(localized: "Done", comment: ""))
                         .fontWeight(.semibold)
                         .frame(maxWidth: .infinity)
                 }
                 .disabled(!viewModel.canSaveKeys)
             } footer: {
                 if !viewModel.canSaveKeys {
-                    Text(NSLocalizedString(
-                        "A key doesn't match this masternode — fix or clear it to continue.",
+                    Text(String(
+                        localized: "A key doesn't match this masternode — fix or clear it to continue.",
                         comment: "Add masternode"))
                         .foregroundColor(.red)
                 } else if let error = viewModel.trackError {
@@ -296,11 +294,11 @@ struct TrackedKeyFieldsSection: View {
     @ObservedObject var viewModel: AddMasternodeViewModel
 
     var body: some View {
-        Section(NSLocalizedString("Keys", comment: "Masternodes")) {
+        Section(String(localized: "Keys", comment: "Masternodes")) {
             if viewModel.refreshing {
                 HStack(spacing: 8) {
                     SwiftUI.ProgressView().scaleEffect(0.8)
-                    Text(NSLocalizedString("Loading registration details…", comment: "Add masternode"))
+                    Text(String(localized: "Loading registration details…", comment: "Add masternode"))
                         .font(.caption)
                         .foregroundColor(Color.dash.secondaryText)
                 }
@@ -355,15 +353,15 @@ struct TrackedKeyFieldsSection: View {
         case .empty:
             EmptyView()
         case .matches:
-            Label(NSLocalizedString("Matches", comment: "Add masternode"), systemImage: "checkmark.circle.fill")
+            Label(String(localized: "Matches", comment: "Add masternode"), systemImage: "checkmark.circle.fill")
                 .font(.caption)
                 .foregroundColor(.green)
         case .doesNotMatch:
-            Label(NSLocalizedString("Doesn't match", comment: "Add masternode"), systemImage: "xmark.circle.fill")
+            Label(String(localized: "Doesn't match", comment: "Add masternode"), systemImage: "xmark.circle.fill")
                 .font(.caption)
                 .foregroundColor(.red)
         case .unverifiable:
-            Label(NSLocalizedString("Can't verify yet", comment: "Add masternode"), systemImage: "questionmark.circle")
+            Label(String(localized: "Can't verify yet", comment: "Add masternode"), systemImage: "questionmark.circle")
                 .font(.caption)
                 .foregroundColor(.orange)
         case .invalid(let message):
@@ -380,12 +378,12 @@ extension MasternodeKeyRole {
     /// Short human name for a key role.
     var displayName: String {
         switch self {
-        case .owner: return NSLocalizedString("Owner", comment: "Masternodes")
-        case .voting: return NSLocalizedString("Voting", comment: "Masternodes")
-        case .operator: return NSLocalizedString("Operator", comment: "Masternodes")
-        case .platformNode: return NSLocalizedString("Platform node", comment: "Masternodes")
-        case .ownerPayout: return NSLocalizedString("Payout", comment: "Masternodes")
-        case .operatorPayout: return NSLocalizedString("Operator payout", comment: "Masternodes")
+        case .owner: return String(localized: "Owner", comment: "Masternodes")
+        case .voting: return String(localized: "Voting", comment: "Masternodes")
+        case .operator: return String(localized: "Operator", comment: "Masternodes")
+        case .platformNode: return String(localized: "Platform node", comment: "Masternodes")
+        case .ownerPayout: return String(localized: "Payout", comment: "Masternodes")
+        case .operatorPayout: return String(localized: "Operator payout", comment: "Masternodes")
         }
     }
 
@@ -393,11 +391,11 @@ extension MasternodeKeyRole {
     var inputPlaceholder: String {
         switch self {
         case .operator:
-            return NSLocalizedString("BLS private key (hex)", comment: "Add masternode")
+            return String(localized: "BLS private key (hex)", comment: "Add masternode")
         case .platformNode:
-            return NSLocalizedString("Node key (base64 or hex)", comment: "Add masternode")
+            return String(localized: "Node key (base64 or hex)", comment: "Add masternode")
         default:
-            return NSLocalizedString("Private key (WIF or hex)", comment: "Add masternode")
+            return String(localized: "Private key (WIF or hex)", comment: "Add masternode")
         }
     }
 }

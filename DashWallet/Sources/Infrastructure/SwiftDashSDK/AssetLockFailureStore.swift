@@ -55,12 +55,19 @@ struct AssetLockFailureRecord: Codable, Equatable, Sendable {
             + (writtenDetail.map { " detail=\(Self.maskingNumbers(in: $0))" } ?? "")
     }
 
+    /// The longest detail written; the rest is cut before masking, since the
+    /// retry writes its line on the main actor before the UI shows the failure.
+    static let writtenDetailLimit = 512
+
     /// The SDK's text can carry a lock value or a fee (a shielded build's
     /// shortfall names both), so every word holding a digit becomes `<n>`;
-    /// the words around it still tell one cause from another.
+    /// the words around it still tell one cause from another. A match starts
+    /// only where a word starts, so each word is scanned once.
     static func maskingNumbers(in text: String) -> String {
-        text.replacingOccurrences(
-            of: #"[A-Za-z0-9_]*[0-9](?:[A-Za-z0-9_.,]*[A-Za-z0-9_])?"#, with: "<n>", options: .regularExpression)
+        let bounded = text.count > writtenDetailLimit ? text.prefix(writtenDetailLimit) + "…" : text
+        return bounded.replacingOccurrences(
+            of: #"(?<![A-Za-z0-9_])[A-Za-z0-9_]*[0-9](?:[A-Za-z0-9_.,]*[A-Za-z0-9_])?"#,
+            with: "<n>", options: .regularExpression)
     }
 
     /// The detail recorded for `PlatformWalletError.assetLockRecipientMismatch`

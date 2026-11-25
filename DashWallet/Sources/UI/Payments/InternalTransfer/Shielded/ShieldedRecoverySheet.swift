@@ -112,14 +112,14 @@ final class ShieldedRecoveryViewModel: ObservableObject {
     /// funds went and nothing about a payee.
     nonisolated static func successCopy(paidOwnBalanceWithoutRecord: Bool) -> SuccessCopy {
         guard paidOwnBalanceWithoutRecord else {
-            return SuccessCopy(title: NSLocalizedString("Transfer complete", comment: ""), detail: nil)
+            return SuccessCopy(title: String(localized: "Transfer complete", comment: ""), detail: nil)
         }
         return SuccessCopy(
-            title: NSLocalizedString(
-                "Funds added to your Shielded balance",
+            title: String(
+                localized: "Funds added to your Shielded balance",
                 comment: "A transfer whose recipient was not on record was finished to the wallet's own Shielded balance"),
-            detail: NSLocalizedString(
-                "This wallet has no record of the address this transfer was going to, so it was finished to your own Shielded balance.",
+            detail: String(
+                localized: "This wallet has no record of the address this transfer was going to, so it was finished to your own Shielded balance.",
                 comment: "InternalTransfer recovery"))
     }
 
@@ -248,7 +248,7 @@ struct ShieldedRecoverySheet: View {
 
     var body: some View {
         DashUIKit.BottomSheet(
-            title: NSLocalizedString("Finish shielded transfer", comment: "InternalTransfer recovery"),
+            title: String(localized: "Finish shielded transfer", comment: "InternalTransfer recovery"),
             showBackButton: .constant(false),
             isDismissalEnabled: .constant(!viewModel.isInFlight),
             // Supplying `onClose` makes the close button live regardless of
@@ -302,9 +302,9 @@ struct ShieldedRecoverySheet: View {
             ButtonsGroup(
                 orientation: .horizontal,
                 size: .large,
-                positiveButtonText: NSLocalizedString("Finish now", comment: "InternalTransfer recovery"),
+                positiveButtonText: String(localized: "Finish now", comment: "InternalTransfer recovery"),
                 positiveButtonAction: finish,
-                negativeButtonText: NSLocalizedString("Close", comment: ""),
+                negativeButtonText: String(localized: "Close", comment: ""),
                 negativeButtonAction: onDismiss)
                 .padding(.horizontal, 16)
                 .padding(.bottom, 16)
@@ -320,17 +320,17 @@ struct ShieldedRecoverySheet: View {
             ShieldedTransferStepList(
                 currentPhase: viewModel.phase,
                 steps: [
-                    .init(label: NSLocalizedString("Authorizing", comment: ""), phase: .signing),
-                    .init(label: NSLocalizedString("Generating proof", comment: ""), phase: .proving),
-                    .init(label: NSLocalizedString("Broadcasting", comment: ""), phase: .broadcasting),
+                    .init(label: String(localized: "Authorizing", comment: ""), phase: .signing),
+                    .init(label: String(localized: "Generating proof", comment: ""), phase: .proving),
+                    .init(label: String(localized: "Broadcasting", comment: ""), phase: .broadcasting),
                 ])
 
             Text(viewModel.isLongProofWait
-                ? NSLocalizedString(
-                    "Still waiting for the network to confirm the transfer. This can take several minutes. Keep the app open.",
+                ? String(
+                    localized: "Still waiting for the network to confirm the transfer. This can take several minutes. Keep the app open.",
                     comment: "InternalTransfer recovery")
-                : NSLocalizedString(
-                    "Building the privacy proof can take up to a minute. Keep the app open.",
+                : String(
+                    localized: "Building the privacy proof can take up to a minute. Keep the app open.",
                     comment: "InternalTransfer recovery"))
                 .font(.caption)
                 .foregroundColor(.dash.secondaryText)
@@ -378,7 +378,7 @@ struct ShieldedRecoverySheet: View {
             Spacer(minLength: 12)
 
             DashButton(
-                text: NSLocalizedString("Done", comment: ""),
+                text: String(localized: "Done", comment: ""),
                 style: .filled,
                 stretch: true,
                 action: onDismiss)
@@ -402,11 +402,11 @@ struct ShieldedRecoverySheet: View {
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(NSLocalizedString("Your Dash is safe", comment: "InternalTransfer recovery"))
+                Text(String(localized: "Your Dash is safe", comment: "InternalTransfer recovery"))
                     .scaledSystemFont(size: 14, weight: .semibold, relativeTo: .subheadline)
                     .foregroundColor(.dash.primaryText)
-                Text(NSLocalizedString(
-                    "This transfer's funds were locked on-chain but the private transfer didn't finish. Tap Finish now to complete it.",
+                Text(String(
+                    localized: "This transfer's funds were locked on-chain but the private transfer didn't finish. Tap Finish now to complete it.",
                     comment: "InternalTransfer recovery"))
                     .scaledSystemFont(size: 13, relativeTo: .footnote)
                     .foregroundColor(.dash.secondaryText)

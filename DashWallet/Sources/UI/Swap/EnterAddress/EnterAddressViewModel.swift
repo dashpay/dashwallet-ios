@@ -43,11 +43,11 @@ class EnterAddressViewModel: ObservableObject {
     // MARK: - Computed Properties
 
     var addressLabel: String {
-        String(format: NSLocalizedString("%@ address", comment: "Dash DEX"), coin.code)
+        String(localized: "\(coin.code) address", comment: "Dash DEX")
     }
 
     var placeholderText: String {
-        String(format: NSLocalizedString("Long press to paste", comment: "Dash DEX"))
+        String(localized: "Long press to paste", comment: "Dash DEX")
     }
 
     var isContinueEnabled: Bool {
@@ -62,15 +62,7 @@ class EnterAddressViewModel: ObservableObject {
     var addressValidationErrorMessage: String? {
         guard showAddressError else { return nil }
         let chainLabel = SwapCryptoCurrency.chainDisplayName(coin.chain)
-        return String(
-            format: NSLocalizedString(
-                "Enter a valid %@ address. %@ here is on %@, so an Ethereum (0x…) address won’t work.",
-                comment: "Swap"
-            ),
-            chainLabel,
-            coin.code,
-            chainLabel
-        )
+        return String(localized: "Enter a valid \(chainLabel) address. \(coin.code) here is on \(chainLabel), so an Ethereum (0x…) address won’t work.", comment: "Swap")
     }
 
     // MARK: - Private

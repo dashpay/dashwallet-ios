@@ -86,17 +86,17 @@ struct UnconfirmedTransactionRemover {
         var errorDescription: String? {
             switch self {
             case .notReady:
-                return NSLocalizedString("Wallet is not ready", comment: "DashPay")
+                return String(localized: "Wallet is not ready", comment: "DashPay")
             case .transactionNotFound:
-                return NSLocalizedString("This transaction is not in the local wallet.", comment: "Remove never-accepted transaction: no local row")
+                return String(localized: "This transaction is not in the local wallet.", comment: "Remove never-accepted transaction: no local row")
             case .confirmedLocally:
-                return NSLocalizedString("This transaction is confirmed and can't be removed.", comment: "Remove never-accepted transaction: local state says it's on-chain")
+                return String(localized: "This transaction is confirmed and can't be removed.", comment: "Remove never-accepted transaction: local state says it's on-chain")
             case .transactionOnChain:
-                return NSLocalizedString("Transaction is known to the network", comment: "Remove never-accepted transaction: refused because the explorer found it")
+                return String(localized: "Transaction is known to the network", comment: "Remove never-accepted transaction: refused because the explorer found it")
             case .verificationUnavailable:
-                return NSLocalizedString("Couldn't reach a block explorer to verify the transaction isn't on the blockchain. Check your connection and try again.", comment: "Remove never-accepted transaction: explorer unreachable")
+                return String(localized: "Couldn't reach a block explorer to verify the transaction isn't on the blockchain. Check your connection and try again.", comment: "Remove never-accepted transaction: explorer unreachable")
             case .transferInProgress:
-                return NSLocalizedString("A transfer is still in progress. Try again when it has finished, or restart the app if it never does.", comment: "Remove never-accepted transaction: refused while a transfer is running")
+                return String(localized: "A transfer is still in progress. Try again when it has finished, or restart the app if it never does.", comment: "Remove never-accepted transaction: refused while a transfer is running")
             case .removalInProgress:
                 return ShieldedAssetLocksInFlight.walletReloadingMessage
             }

@@ -39,24 +39,24 @@ extension BuySellPortalModel {
 extension Service {
     var title: String {
         switch self {
-        case .coinbase: return NSLocalizedString("Coinbase", comment: "Dash Portal")
-        case .uphold: return NSLocalizedString("Uphold", comment: "Dash Portal")
-        case .topper: return NSLocalizedString("Topper", comment: "Dash Portal")
-        case .maya: return NSLocalizedString("Maya", comment: "Dash Portal")
+        case .coinbase: return String(localized: "Coinbase", comment: "Dash Portal")
+        case .uphold: return String(localized: "Uphold", comment: "Dash Portal")
+        case .topper: return String(localized: "Topper", comment: "Dash Portal")
+        case .maya: return String(localized: "Maya", comment: "Dash Portal")
         // The product's name, not the provider's. "Dash DEX" is what the Home
         // shortcut and the portal's own title already call it; SwapKit is the
         // service behind it and stays in `SwapKitSwapProvider.displayName`.
-        case .swapKit: return NSLocalizedString("Dash DEX", comment: "Dash Portal")
+        case .swapKit: return String(localized: "Dash DEX", comment: "Dash Portal")
         }
     }
 
     var subtitle: String {
         switch self {
-        case .coinbase: return NSLocalizedString("Link your account", comment: "Dash Portal")
-        case .uphold: return NSLocalizedString("Link your account", comment: "Dash Portal")
-        case .topper: return NSLocalizedString("Buy Dash · No account needed", comment: "Dash Portal")
-        case .maya: return NSLocalizedString("Swap Dash · No account needed", comment: "Dash Portal")
-        case .swapKit: return NSLocalizedString("Sell Dash · Best price across networks", comment: "Dash Portal")
+        case .coinbase: return String(localized: "Link your account", comment: "Dash Portal")
+        case .uphold: return String(localized: "Link your account", comment: "Dash Portal")
+        case .topper: return String(localized: "Buy Dash · No account needed", comment: "Dash Portal")
+        case .maya: return String(localized: "Swap Dash · No account needed", comment: "Dash Portal")
+        case .swapKit: return String(localized: "Sell Dash · Best price across networks", comment: "Dash Portal")
         }
     }
 

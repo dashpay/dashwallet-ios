@@ -141,7 +141,7 @@ final class DWShieldedHistoryUITestFixture: NSObject {
                 withdrawalStore: ShieldedWithdrawalStore(defaults: defaults))
             return UIHostingController(rootView: ShieldedHistoryFixtureView(fixture: fixture))
         } catch {
-            return UIHostingController(rootView: Text("Fixture setup failed: \(error)"))
+            return UIHostingController(rootView: Text(verbatim: "Fixture setup failed: \(error)"))
         }
     }
 }
@@ -154,32 +154,36 @@ private struct ShieldedHistoryFixtureView: View {
         NavigationStack {
             ScrollView {
                 VStack {
-                    Text("Shielded credits: \(fixture.balance)").accessibilityIdentifier("fixtureBalance")
-                    Text("Core receipts: \(fixture.receiptCount)").accessibilityIdentifier("fixtureReceipts")
-                    Text("Destination tagged: \(fixture.destinationTagged ? "yes" : "no")")
+                    Text(verbatim: "Shielded credits: \(fixture.balance.formatted())")
+                        .accessibilityIdentifier("fixtureBalance")
+                    Text(verbatim: "Core receipts: \(fixture.receiptCount.formatted())")
+                        .accessibilityIdentifier("fixtureReceipts")
+                    Text(verbatim: "Destination tagged: \(fixture.destinationTagged ? "yes" : "no")")
                         .accessibilityIdentifier("fixtureDestinationTagged")
                     ForEach(fixture.items) { item in
                         ShieldedActivityHistoryRow(item: item, icon: AnyView(Image(systemName: "shield.fill"))) { selected = item }
                     }
-                    Button("Record pending withdrawal") { fixture.perform { try fixture.insertActivity(id: 1) } }
+                    Button("Record pending withdrawal" as String) {
+                        fixture.perform { try fixture.insertActivity(id: 1) }
+                    }
                         .accessibilityIdentifier("recordPending")
-                    Button("Inject definitive rejection") { fixture.perform { try fixture.setStatus(2) } }
+                    Button("Inject definitive rejection" as String) { fixture.perform { try fixture.setStatus(2) } }
                         .accessibilityIdentifier("injectFailure")
                     Button("Confirm withdrawal") { fixture.perform { try fixture.setStatus(1) } }
                         .accessibilityIdentifier("confirmWithdrawal")
-                    Button("Record restored failed withdrawal") { fixture.perform { try fixture.insertActivity(id: 3, kind: 7, status: 2) } }
+                    Button("Record restored failed withdrawal" as String) { fixture.perform { try fixture.insertActivity(id: 3, kind: 7, status: 2) } }
                         .accessibilityIdentifier("recordRestoredFailure")
-                    Button("Record smaller confirmed withdrawal") {
+                    Button("Record smaller confirmed withdrawal" as String) {
                         fixture.perform { try fixture.insertActivity(id: 2, status: 1, amount: 5_000_000_000) }
                     }.accessibilityIdentifier("recordSmaller")
-                    Button("Persist Core receipt") { fixture.perform { try fixture.insertReceipt() } }
+                    Button("Persist Core receipt" as String) { fixture.perform { try fixture.insertReceipt() } }
                         .accessibilityIdentifier("recordReceipt")
-                    Button("Reload history") { fixture.perform { try fixture.reload() } }
+                    Button("Reload history" as String) { fixture.perform { try fixture.reload() } }
                         .accessibilityIdentifier("reloadHistory")
                     if let error = fixture.error { Text(error).accessibilityIdentifier("fixtureError") }
                 }.padding()
             }
-            .navigationTitle("History regression")
+            .navigationTitle("History regression" as String)
             .sheet(item: $selected) { item in
                 NavigationStack {
                     ScrollView { ShieldedActivityDetailsView(item: item) }

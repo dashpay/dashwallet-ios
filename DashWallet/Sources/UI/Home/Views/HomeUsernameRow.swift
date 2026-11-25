@@ -28,7 +28,7 @@ struct HomeUsernameRow: View {
             }
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(Text(String(format: NSLocalizedString("My profile, %@", comment: "Home — persistent username row accessibility label"), username)))
+        .accessibilityLabel(Text(String(localized: "My profile, \(username)", comment: "Home — persistent username row accessibility label")))
     }
 }
 

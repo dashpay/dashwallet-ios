@@ -175,18 +175,12 @@ private struct SwapTransactionStatusView: View {
     private var content: some View {
         switch viewModel.swapStatus {
         case .idle, .pendingConfirmation:
-            pending(message: NSLocalizedString(
-                "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds.",
+            pending(message: String(
+                localized: "Your Dash transaction has been sent. Waiting for InstantSend lock — this usually takes a few seconds.",
                 comment: "Dash DEX"
             ))
         case .processingSwap:
-            pending(message: String(
-                format: NSLocalizedString(
-                    "%@ has received your transaction and is processing the swap.",
-                    comment: "Dash DEX"
-                ),
-                viewModel.resolvedExecutionNetwork
-            ))
+            pending(message: String(localized: "\(viewModel.resolvedExecutionNetwork) has received your transaction and is processing the swap.", comment: "Dash DEX"))
         case .completed:
             SwapTransactionSuccessView(
                 coinCode: viewModel.coin.code,

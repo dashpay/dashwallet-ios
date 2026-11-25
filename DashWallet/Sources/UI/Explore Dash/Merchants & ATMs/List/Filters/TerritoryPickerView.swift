@@ -44,7 +44,7 @@ struct TerritoryPickerView: View {
         VStack(spacing: 0) {
                 DashUIKit.NavigationBar(
                     central: {
-                        Text(NSLocalizedString("Location", comment: ""))
+                        Text(String(localized: "Location", comment: ""))
                             .dashFont(.subheadMedium)
                             .foregroundColor(.dash.primaryText)
                     },
@@ -59,7 +59,7 @@ struct TerritoryPickerView: View {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(Color.dash.tertiaryText)
                     
-                    TextField(NSLocalizedString("Search territories", comment: ""), text: $searchText)
+                    TextField(String(localized: "Search territories", comment: ""), text: $searchText)
                         .textFieldStyle(PlainTextFieldStyle())
                 }
                 .padding(.horizontal, 16)
@@ -80,7 +80,7 @@ struct TerritoryPickerView: View {
                             VStack(spacing: 0) {
                                 // Current Location Option
                                 RadioButtonRow(
-                                    title: NSLocalizedString("Current location", comment: "Explore Dash: Filters"),
+                                    title: String(localized: "Current location", comment: "Explore Dash: Filters"),
                                     icon: .system("location.circle"),
                                     isSelected: selectedTerritory == nil
                                 ) {

@@ -298,12 +298,12 @@ enum InvitationClaimFailure: Equatable {
         case .refused:
             // Not proven either way (see the case): the Home card's check
             // names the outcome, so this does not.
-            return NSLocalizedString(
-                "This invitation couldn't be used. Check it on the Home screen.",
+            return String(
+                localized: "This invitation couldn't be used. Check it on the Home screen.",
                 comment: "DashPay Invitations")
         case .stillConfirming:
-            return NSLocalizedString(
-                "The invitation is still confirming on the network. Try again in a few minutes.",
+            return String(
+                localized: "The invitation is still confirming on the network. Try again in a few minutes.",
                 comment: "DashPay Invitations")
         }
     }

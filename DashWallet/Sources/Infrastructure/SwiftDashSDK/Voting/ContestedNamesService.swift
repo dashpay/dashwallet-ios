@@ -52,13 +52,11 @@ final class ContestedNamesService {
         var errorDescription: String? {
             switch self {
             case .sdkUnavailable:
-                return NSLocalizedString(
-                    "Dash Platform is not connected yet. Wait for syncing to finish and try again.",
+                return String(
+                    localized: "Dash Platform is not connected yet. Wait for syncing to finish and try again.",
                     comment: "Voting")
             case .labelNotNormalizable(let label):
-                return String(format: NSLocalizedString(
-                    "“%@” could not be read as a Dash username.",
-                    comment: "Voting"), label)
+                return String(localized: "“\(label)” could not be read as a Dash username.", comment: "Voting")
             }
         }
     }
@@ -181,7 +179,7 @@ extension DPNSContest {
     var displayTitle: String {
         let labels = requestedLabels
         guard !labels.isEmpty else { return normalizedLabel }
-        return labels.joined(separator: NSLocalizedString(" or ", comment: "Voting"))
+        return labels.joined(separator: String(localized: " or ", comment: "Voting"))
     }
 
     /// `true` when ``displayTitle`` differs from ``normalizedLabel``, so the
