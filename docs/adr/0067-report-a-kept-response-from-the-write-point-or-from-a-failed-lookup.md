@@ -1,4 +1,4 @@
-# 0065 — Report a kept response from the write point, or from the same predicate when the lookup fails
+# 0067 — Report a kept response from the write point, or from the same predicate when the lookup fails
 
 - **Status:** Proposed
 - **Date:** 2026-11-23
@@ -14,7 +14,7 @@ from a second evaluation.
 
 That holds when a lookup answers. It does not when the lookup fails: `deleteResponses` tries the
 lookup twice, and when both throw it writes nothing, asks `AppConnect.isPublishUnresolved` itself
-and reports the intent as kept. The write point is never asked, because there is nothing to
+and reports the intent as kept when the publish is unresolved. The write point is never asked, because there is nothing to
 write. The guard of ADR-0052 still holds on every path; only its account of where the note comes
 from is wrong. The review of #1447 found it.
 
@@ -53,16 +53,21 @@ it gives is decided by the same pure predicate with the same block time the writ
 **Positive**
 - The guard of ADR-0052 is unchanged: a new path still cannot record a response removed while
   its publish is unresolved.
-- A disconnect that could not reach Platform for the lookup still warns that the response may
-  appear.
+- When both lookups fail and the publish is still unresolved, a disconnect that returns its
+  result still warns that the response may appear. Once the publish is resolved (48 hours of
+  proved Platform block time, ADR-0050), the failed lookups give no warning.
 
 **Negative**
 - The note has two sources. They share the predicate and the block time, but a change to one
   path must be checked against the other.
+- Not every disconnect can give the note. One whose key update failed part way does not look
+  responses up. One that ends with `identityKeysOutOfDate` or `grantOnAnotherIdentity` has looked
+  them up, but the error replaces its result and the note with it.
 
 **Neutral**
-- A response whose lookups failed stays not removed; once its intent is closed, the next
-  disconnect or approval on the identity looks it up again (`AppConnect.responsesLeft`).
+- A response whose lookups failed stays not removed; once its intent is closed, the next approval
+  on the identity looks it up again (`AppConnect.responsesLeft`), and so does the next disconnect
+  there that has something to sign and whose key updates all go through.
 
 ## Links
 

@@ -1,4 +1,4 @@
-# 0066 — Turn off unattributed DashPay profile keys with any disconnect, except keys that cannot be checked
+# 0069 — Turn off unattributed DashPay profile keys with any disconnect, except keys that cannot be checked
 
 - **Status:** Proposed
 - **Date:** 2026-11-23
@@ -17,8 +17,9 @@ it.
 [ADR-0031](0031-turn-off-unattributed-dashpay-profile-keys-with-any-disconnect.md) made this decision.
 Its Positive consequence promised that no such key is left on once any app is disconnected, while
 its own decision leaves a key whose bound the store cannot read on, and that key may be a profile
-key. This ADR restates the decision with that exception; nothing in the code changes. The review
-of #1447 found it.
+key. This ADR restates the decision with that exception and with the key shape the decision is
+applied to; nothing in the code changes. The review of #1447 found it, and the review of #1494
+found the shape and the cases where the disconnect ends in an error.
 
 The first version of #1263 left such keys on and showed them as a separate "Shared profile access"
 row with Revoke and Keep. Keep wrote exemptions that later disconnects honoured.
@@ -46,26 +47,36 @@ row with Revoke and Keep. Keep wrote exemptions that later disconnects honoured.
 accounts for is access nobody can see or end otherwise.
 
 - A disconnect of an app on the active identity also disables the live DashPay profile keys of
-  that identity that no recorded intent names. An open intent of the app on another identity of
-  the wallet does not hold them back: it is reported after the writes.
-- When the store holds an intent this build cannot read, the whole disconnect stops before any
-  write, the app's own keys included, and the user is asked to update the wallet
-  (`intentsUnreadable`).
-- A live key in the fetched view whose bound the store cannot read does not stop the disconnect:
-  it is left on, and the result counts it as a key that could not be checked
-  ([ADR-0032](0032-pass-owners-read-from-platform-into-the-pure-projection.md)). The wallet cannot
-  tell whether it is a profile key, so it is not turned off as one.
-- The profile keys are disabled before the app's own keys, so a disconnect that fails part way
-  leaves an app key live and its retry reaches the profile keys left.
+  that identity that no recorded intent names, in the shape App Connect registers
+  (`AppConnect.isAppConnectAuthKey`: HASH160 authentication at HIGH or CRITICAL, with an expiry).
+  A profile-bound key of another shape is not one App Connect gave: it is left on and not
+  reported.
+- An open intent of the app on another identity of the wallet does not hold the profile keys
+  back: once the writes are done, the disconnect ends with `grantOnAnotherIdentity` instead of
+  its result.
+- When the store holds an intent this build cannot read and that names the active identity, or
+  whose identity cannot be read, or when the stored value is not a list of intents, the whole
+  disconnect stops before any write, the app's own keys included, and the user is asked to update
+  the wallet (`intentsUnreadable`).
+- A live key in App Connect's shape that no recorded intent names and whose bound the store cannot
+  read does not stop the disconnect: it is left on, and the result counts it as a key that could
+  not be checked ([ADR-0032](0032-pass-owners-read-from-platform-into-the-pure-projection.md)).
+  The wallet cannot tell whether it is a profile key, so it is not turned off as one. A key that a
+  recorded intent of the app names is disabled with the app's keys, whatever its bound.
+- The profile keys are disabled before the app's own keys, so when the app has keys of its own, a
+  disconnect that fails part way leaves an app key live and its retry reaches the profile keys
+  left.
 - Keep, its stored exemptions and the separate row are removed; the data source deletes the
   exemptions an earlier build wrote, once.
 
 ## Consequences
 
 **Positive**
-- Once any app on the active identity is disconnected, no profile key is left on that no
-  connection accounts for, except a key whose bound the wallet cannot read yet: that one is left
-  on, counted as not checked, and the alert says some keys were left on.
+- Once any app on the active identity is disconnected, no profile key in App Connect's shape is
+  left on that no connection accounts for, except a key whose bound the wallet cannot read yet:
+  that one is left on and counted as not checked. When the disconnect returns its result, the
+  alert says some keys were left on; when it ends with `grantOnAnotherIdentity`, the user sees
+  that error instead and not the count.
 - No second question: the disconnect the user confirmed is the whole decision.
 
 **Negative**
@@ -78,8 +89,8 @@ accounts for is access nobody can see or end otherwise.
 **Neutral**
 - An approval records its intent before it sends the update, so a profile key whose approval
   ended with an unknown outcome is named by that intent and is not one of these keys.
-- A key of another app or wallet with a bound this build cannot read is left on and reported as
-  not checked; the profile keys still go.
+- A key in App Connect's shape that no intent names, of another app or wallet, with a bound this
+  build cannot read is left on and counted as not checked; the profile keys still go.
 - Letting the user keep such keys can come back in a later release as a new decision.
 
 ## Links
