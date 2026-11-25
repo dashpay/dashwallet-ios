@@ -161,9 +161,8 @@ extension DWBasePayViewController {
         // A plain-address input, not a `dash:` URI through `performPay(to:)`.
         // That route classifies a URI carrying a valid address as a DEEP LINK,
         // and `DWPaymentProcessor` answers a deep link by asking for an amount
-        // — pushing the legacy `ProvideAmountViewController` on top of the
-        // amount step the user has just filled in, prefilled with the same
-        // number. Two amount screens, and the second one in the old design.
+        // — opening the Send flow again on top of the amount step the user
+        // has just filled in.
         //
         // Nothing here is a deep link: this flow already holds the address and
         // the amount. `payToAddress:amount:` puts both on a `PlainAddress`

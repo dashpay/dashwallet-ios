@@ -23,7 +23,7 @@ private let kDescKeyboardPadding: CGFloat = 8.0
 
 // MARK: - BaseAmountViewController
 
-class BaseAmountViewController: ActionButtonViewController, AmountProviding {
+class BaseAmountViewController: ActionButtonViewController {
     internal var cancellableBag = Set<AnyCancellable>()
     public var topKeyboardView: UIView? {
         didSet {
