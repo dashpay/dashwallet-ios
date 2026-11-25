@@ -205,23 +205,23 @@ enum GiftCardPaymentGuard {
 
     /// A provider amount that is zero or cannot be read as a duff count.
     static var invalidAmountError: DashSpendError {
-        .paymentProcessingError(NSLocalizedString("Invalid gift card amount", comment: "DashSpend"))
+        .paymentProcessingError(String(localized: "Invalid gift card amount", comment: "DashSpend"))
     }
 
     static var invalidPaymentAddressError: DashSpendError {
-        .customError(NSLocalizedString(
-            "The gift card provider returned an invalid payment address. Nothing was sent. Please try again or contact support.",
+        .customError(String(
+            localized: "The gift card provider returned an invalid payment address. Nothing was sent. Please try again or contact support.",
             comment: "DashSpend"))
     }
 
     /// A higher price that was accepted after `priceAnswerLimit`.
     static var quoteExpiredError: DashSpendError {
-        .customError(NSLocalizedString("This quote expired. Please go back and try again.", comment: "DashSpend"))
+        .customError(String(localized: "This quote expired. Please go back and try again.", comment: "DashSpend"))
     }
 
     static var rateUnavailableError: DashSpendError {
-        .customError(NSLocalizedString(
-            "The exchange rate is unavailable, so this payment could not be checked. Nothing was sent. Please try again in a moment.",
+        .customError(String(
+            localized: "The exchange rate is unavailable, so this payment could not be checked. Nothing was sent. Please try again in a moment.",
             comment: "DashSpend"))
     }
 }

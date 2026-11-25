@@ -36,7 +36,7 @@ final class ActivePaymentMethodView: UIView {
 
     public func update(with paymentMethod: CoinbasePaymentMethod?) {
         guard let paymentMethod else {
-            paymentMethodTitleLabel.text = NSLocalizedString("No payment methods", comment: "Coinbase/Buy Dash")
+            paymentMethodTitleLabel.text = String(localized: "No payment methods", comment: "Coinbase/Buy Dash")
             paymentMethodValueLabel.text = nil
             return
         }
@@ -56,7 +56,7 @@ final class ActivePaymentMethodView: UIView {
         let titleLabel = UILabel()
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.textColor = .dw_label()
-        titleLabel.text = NSLocalizedString("Pay with", comment: "Coinbase/Buy Dash")
+        titleLabel.text = String(localized: "Pay with", comment: "Coinbase/Buy Dash")
         addSubview(titleLabel)
 
         let trailingStackView = UIStackView()

@@ -29,7 +29,7 @@ struct AdvancedSecurityScreen: View {
                     DashUIKit.NavigationBarElement.back.button(action: onBack)
                 },
                 central: {
-                    Text(NSLocalizedString("Advanced Security", comment: ""))
+                    Text(String(localized: "Advanced Security", comment: ""))
                         .dashFont(.subheadMedium)
                         .foregroundColor(.dash.primaryText)
                         .accessibilityAddTraits(.isHeader)
@@ -42,7 +42,7 @@ struct AdvancedSecurityScreen: View {
                     autoLogoutCard
                     spendingConfirmationCard
                     DashUIKit.DashButton(
-                        text: NSLocalizedString("Reset to Default", comment: ""),
+                        text: String(localized: "Reset to Default", comment: ""),
                         size: .medium,
                         style: .plainBlue,
                         action: { withAnimation { viewModel.resetToDefault() } })
@@ -62,7 +62,7 @@ struct AdvancedSecurityScreen: View {
     private var autoLogoutCard: some View {
         VStack(spacing: 0) {
             DashUIKit.MenuItem(
-                title: NSLocalizedString("Auto Logout", comment: ""),
+                title: String(localized: "Auto Logout", comment: ""),
                 accessory: .toggle(isOn: Binding(
                     get: { viewModel.autoLogout },
                     set: { isOn in withAnimation { viewModel.setAutoLogout(isOn) } })))
@@ -96,7 +96,7 @@ struct AdvancedSecurityScreen: View {
     private var spendingConfirmationCard: some View {
         VStack(spacing: 0) {
             DashUIKit.MenuItem(
-                title: NSLocalizedString("Spending Confirmation", comment: ""),
+                title: String(localized: "Spending Confirmation", comment: ""),
                 accessory: .toggle(isOn: Binding(
                     get: { viewModel.spendingConfirmationEnabled },
                     set: { isOn in withAnimation { viewModel.setSpendingConfirmation(isOn) } })))
@@ -151,7 +151,7 @@ private struct SecurityLevelHeader: View {
                 .renderingMode(.template)
                 .foregroundColor(color)
                 .accessibilityHidden(true)
-            Text(NSLocalizedString("Security Level", comment: ""))
+            Text(String(localized: "Security Level", comment: ""))
                 .font(.system(.footnote))
                 .foregroundColor(.dash.secondaryText)
             Text(title)
@@ -164,11 +164,11 @@ private struct SecurityLevelHeader: View {
 
     private var title: String {
         switch level {
-        case .none: return NSLocalizedString("None", comment: "adjective, security level")
-        case .low: return NSLocalizedString("Low", comment: "adjective, security level")
-        case .medium: return NSLocalizedString("Medium", comment: "adjective, security level")
-        case .high: return NSLocalizedString("High", comment: "adjective, security level")
-        case .veryHigh: return NSLocalizedString("Very High", comment: "adjective, security level")
+        case .none: return String(localized: "None", comment: "adjective, security level")
+        case .low: return String(localized: "Low", comment: "adjective, security level")
+        case .medium: return String(localized: "Medium", comment: "adjective, security level")
+        case .high: return String(localized: "High", comment: "adjective, security level")
+        case .veryHigh: return String(localized: "Very High", comment: "adjective, security level")
         }
     }
 

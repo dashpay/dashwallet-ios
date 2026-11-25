@@ -24,7 +24,7 @@ struct WalletSwitchDialog: View {
 
     var body: some View {
         DashUIKit.BottomSheet(
-            title: NSLocalizedString("Switch Wallet", comment: "Wallets"),
+            title: String(localized: "Switch Wallet", comment: "Wallets"),
             showBackButton: .constant(false)
         ) {
             VStack(spacing: 4) {
@@ -38,7 +38,7 @@ struct WalletSwitchDialog: View {
                                     .foregroundColor(.dash.primaryText)
                                     .lineLimit(1)
                                 if let username = row.username {
-                                    Text("@\(username)")
+                                    Text(verbatim: "@\(username)")
                                         .font(.caption)
                                         .foregroundColor(.dash.blue)
                                         .lineLimit(1)

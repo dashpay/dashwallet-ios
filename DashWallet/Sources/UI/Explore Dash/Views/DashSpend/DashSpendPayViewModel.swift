@@ -209,9 +209,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         let discountPercent = NSDecimalNumber(decimal: savingsToDisplay * 100).doubleValue
         let discountText = PercentageFormatter.format(percent: discountPercent, includePercent: false)
 
-        return String(format:
-            NSLocalizedString("You are buying a %@ gift card for %@ (%@%% discount)", comment: "DashSpend"),
-            originalPrice, formattedDiscountedPrice, discountText)
+        return String(localized: "You are buying a \(originalPrice) gift card for \(formattedDiscountedPrice) (\(discountText)% discount)", comment: "DashSpend")
     }
     var showCost: Bool {
         if error != nil { return false }
@@ -226,8 +224,8 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     }
     var showLimits: Bool { error == nil && !showCost && hasValidLimits }
     var hasValidLimits: Bool { minimumAmount > 0 || maximumAmount > 0 }
-    var minimumLimitMessage: String { String.localizedStringWithFormat(NSLocalizedString("Min: %@", comment: "DashSpend"), fiatFormatter.string(for: minimumAmount) ?? "0.0" ) }
-    var maximumLimitMessage: String { String.localizedStringWithFormat(NSLocalizedString("Max: %@", comment: "DashSpend"), fiatFormatter.string(for: maximumAmount) ?? "0.0" ) }
+    var minimumLimitMessage: String { String(localized: "Min: \(fiatFormatter.string(for: minimumAmount) ?? "0.0")", comment: "DashSpend") }
+    var maximumLimitMessage: String { String(localized: "Max: \(fiatFormatter.string(for: maximumAmount) ?? "0.0")", comment: "DashSpend") }
     /// Always false: legacy DashSync mixing was removed with `CoinJoinService`
     /// (only the SDK sweep survives), so no mix is ever in progress here.
     var isMixing: Bool { false }
@@ -244,7 +242,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         #if PIGGYCARDS_ENABLED
         if provider == .piggyCards {
             let formatted = fiatFormatter.string(for: PiggyCardsConstants.maxOrderAmount) ?? "$2,500"
-            return String(format: NSLocalizedString("You can buy up to %@ in gift cards per order", comment: "DashSpend"), formatted)
+            return String(localized: "You can buy up to \(formatted) in gift cards per order", comment: "DashSpend")
         }
         #endif
         return nil
@@ -550,7 +548,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
 
             // Process the payment using the payment URL
             guard let url = response.paymentUrls?.first?.value else {
-                throw DashSpendError.paymentProcessingError(NSLocalizedString("No payment URL received", comment: "DashSpend"))
+                throw DashSpendError.paymentProcessingError(String(localized: "No payment URL received", comment: "DashSpend"))
             }
 
             giftCardNote = response.id
@@ -656,7 +654,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
     }
 
     var contactSupportButtonText: String {
-        String(format: NSLocalizedString("Contact %@ Support", comment: "DashSpend"), provider.displayName)
+        String(localized: "Contact \(provider.displayName) Support", comment: "DashSpend")
     }
 
     func contactSupport() {
@@ -959,7 +957,7 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                     self.error = dashError
                 } else {
                     self.error = DashSpendError.customError(
-                        NSLocalizedString("Unable to load merchant details. Please try again.", comment: "DashSpend")
+                        String(localized: "Unable to load merchant details. Please try again.", comment: "DashSpend")
                     )
                 }
             }

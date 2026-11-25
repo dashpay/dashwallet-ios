@@ -7,6 +7,7 @@
 //  question carries a warning, and the exact conversion of a quoted Dash amount to duffs.
 //
 
+import SwiftUI
 import XCTest
 @testable import dashpay
 
@@ -418,7 +419,9 @@ final class DashSpendPayApprovalTests: XCTestCase {
     private func makeViewModel(provider: GiftCardProvider = .ctx,
                                rate: GiftCardPaymentGuard.ExchangeRate? = nil,
                                now: @escaping () -> Date = { Date() }) -> DashSpendPayViewModel {
-        let rate = rate ?? usableRate
+        // Retrieved at the view model's own clock: a rate stamped by the real clock can be a
+        // second ahead of a clock the test froze earlier, and a rate from the future is stale.
+        let rate = rate ?? GiftCardPaymentGuard.ExchangeRate(price: 40, retrievedAt: Int(now().timeIntervalSince1970))
         let viewModel = DashSpendPayViewModel(merchant: merchant, provider: provider, exchangeRate: { rate }, now: now)
         // No sheet is on screen in these tests, so nothing reports its dismissal.
         viewModel.sheetDismissalWait = 0.01
@@ -951,5 +954,58 @@ final class PiggyCardsPaymentURITests: XCTestCase {
         assertRefused("bitcoin:\(Self.testnetAddress)?amount=1")
         assertRefused("\(Self.testnetAddress)?amount=1")
         assertRefused("")
+    }
+}
+
+/// The purchase sheet's dialogs on a screen too short for all of them.
+@MainActor
+final class DashSpendPurchaseSheetLayoutTests: XCTestCase {
+    /// What an iPhone SE leaves for a dialog: 95% of its 667 pt, less the sheet's 92 pt of
+    /// grabber and header.
+    private static let shortScreenLimit: CGFloat = 541
+
+    private func height(of view: some View) -> CGFloat {
+        UIHostingController(rootView: view).sizeThatFits(in: CGSize(width: 375, height: 10_000)).height
+    }
+
+    private func priceUpdated(maxHeight: CGFloat?, warning: Bool) -> CGFloat {
+        let change = GiftCardPaymentGuard.PriceChange(
+            confirmedAmount: 493_700_000, confirmedFiat: 192.50,
+            requestedAmount: warning ? 552_940_000 : 513_440_000,
+            requestedFiat: warning ? 215.60 : 200.20, needsWarning: warning)
+        return height(of: DashSpendPriceUpdatedDialog(change: change, maxHeight: maxHeight, onPay: {}, onCancel: {}))
+    }
+
+    private func confirm(maxHeight: CGFloat?, quantities: [Decimal: Int]?) -> CGFloat {
+        height(of: DashSpendConfirmationDialog(
+            merchantName: "Merchant", merchantIconUrl: "", originalPrice: 200, discount: 0.0375,
+            dashAmount: 493_700_000, quantities: quantities, isWaiting: false, maxHeight: maxHeight,
+            onConfirm: {}, onCancel: {}))
+    }
+
+    /// The warning variant is taller than a short screen allows, and takes no more than it
+    /// is given: the part above the buttons scrolls instead.
+    func testPriceWarningIsHeldToItsHeightLimit() {
+        XCTAssertGreaterThan(priceUpdated(maxHeight: nil, warning: true), Self.shortScreenLimit)
+        XCTAssertEqual(priceUpdated(maxHeight: Self.shortScreenLimit, warning: true), Self.shortScreenLimit, accuracy: 0.5)
+    }
+
+    func testPriceChangeShorterThanItsLimitKeepsItsNaturalHeight() {
+        XCTAssertLessThan(priceUpdated(maxHeight: nil, warning: false), Self.shortScreenLimit)
+        XCTAssertEqual(priceUpdated(maxHeight: Self.shortScreenLimit, warning: false),
+                       priceUpdated(maxHeight: nil, warning: false), accuracy: 0.5)
+    }
+
+    /// Several card values add lines to the Confirm dialog and take it past a short screen.
+    func testConfirmWithSeveralCardValuesIsHeldToItsHeightLimit() {
+        let quantities: [Decimal: Int] = [25: 2, 50: 1, 100: 1]
+        XCTAssertGreaterThan(confirm(maxHeight: nil, quantities: quantities), Self.shortScreenLimit)
+        XCTAssertEqual(confirm(maxHeight: Self.shortScreenLimit, quantities: quantities), Self.shortScreenLimit, accuracy: 0.5)
+    }
+
+    func testConfirmShorterThanItsLimitKeepsItsNaturalHeight() {
+        XCTAssertLessThan(confirm(maxHeight: nil, quantities: nil), Self.shortScreenLimit)
+        XCTAssertEqual(confirm(maxHeight: Self.shortScreenLimit, quantities: nil),
+                       confirm(maxHeight: nil, quantities: nil), accuracy: 0.5)
     }
 }

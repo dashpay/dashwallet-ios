@@ -39,7 +39,7 @@ class RootEditProfileViewController: ActionButtonViewController, DWEditProfileVi
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.title = NSLocalizedString("Edit Profile", comment: "")
+        self.title = String(localized: "Edit Profile", comment: "")
         
         let contentView = UIView()
         contentView.translatesAutoresizingMaskIntoConstraints = false
@@ -54,7 +54,7 @@ class RootEditProfileViewController: ActionButtonViewController, DWEditProfileVi
     }
     
     override var actionButtonTitle: String {
-        return NSLocalizedString("Save", comment: "")
+        return String(localized: "Save", comment: "")
     }
     
     @objc private func cancelButtonAction() {
@@ -110,7 +110,7 @@ class RootEditProfileViewController: ActionButtonViewController, DWEditProfileVi
                 }
             },
             central: {
-                Text(NSLocalizedString("Edit Profile", comment: ""))
+                Text(String(localized: "Edit Profile", comment: ""))
                     .dashFont(.subheadMedium)
                     .foregroundColor(.dash.primaryText)
             })

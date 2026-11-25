@@ -589,7 +589,7 @@ extension MerchantDAO {
             guard let self else { return }
             guard let db = self.connection.db else {
                 completion(.failure(NSError(domain: "MerchantDAO", code: 1, userInfo: [
-                    NSLocalizedDescriptionKey: NSLocalizedString("Database connection is unavailable.", comment: "Explore: merchant list error"),
+                    NSLocalizedDescriptionKey: String(localized: "Database connection is unavailable.", comment: "Explore: merchant list error"),
                 ])))
                 return
             }

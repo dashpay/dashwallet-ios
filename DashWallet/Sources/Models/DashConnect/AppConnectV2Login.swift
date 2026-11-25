@@ -258,7 +258,7 @@ extension AppConnect {
 
     /// Why a request dated ahead of the network's time is refused.
     static var futureRequestMessage: String {
-        NSLocalizedString("This sign-in request is dated ahead of the network's time. Ask the app for a new code.",
+        String(localized: "This sign-in request is dated ahead of the network's time. Ask the app for a new code.",
                           comment: "DashConnect App Connect v2")
     }
 
@@ -298,8 +298,8 @@ extension AppConnect {
         let request = uri.request
         switch request.age(blockTimeMs: blockTimeMs) {
         case .fresh: break
-        case .stale: throw Refusal(.stale, NSLocalizedString(
-                "The sign-in request is more than 10 minutes old.",
+        case .stale: throw Refusal(.stale, String(
+                localized: "The sign-in request is more than 10 minutes old.",
                 comment: "DashConnect App Connect v2"))
         case .future: throw Refusal(.stale, futureRequestMessage)
         case .uncheckable: throw DashConnectPlatformError.requestAgeUncheckable
@@ -309,8 +309,8 @@ extension AppConnect {
         let byDefault = expiry(after: v2DefaultLifetime, from: blockTimeMs)
         let auth = try request.authBindings.enumerated().map { index, binding -> AuthGrant in
             if let expiresAt = binding.expiresAt, expiresAt <= blockTimeMs {
-                throw Refusal(.invalid, NSLocalizedString(
-                "The app asks for a key that has already expired.",
+                throw Refusal(.invalid, String(
+                localized: "The app asks for a key that has already expired.",
                 comment: "DashConnect App Connect v2"))
             }
             return AuthGrant(
@@ -324,8 +324,8 @@ extension AppConnect {
             // Wallet rule 3: the identity's encryption key for the app lives
             // on the app's own contract.
             guard binding.contractId == request.appId else {
-                throw Refusal(.invalid, NSLocalizedString(
-                "The app asks for an encryption key on a contract other than its own.",
+                throw Refusal(.invalid, String(
+                localized: "The app asks for an encryption key on a contract other than its own.",
                 comment: "DashConnect App Connect v2"))
             }
             return EncryptionGrant(bindingIndex: index, binding: binding)
@@ -360,8 +360,8 @@ extension AppConnect {
         appUnreadableKeyPurposes: Set<KeyPurpose> = []
     ) -> Refusal? {
         if systemContractIds.contains(plan.appId.toBase58String()) || appOwnerId == systemContractOwnerId {
-            return Refusal(.invalid, NSLocalizedString(
-                "The request names a Dash Platform system contract as the app.",
+            return Refusal(.invalid, String(
+                localized: "The request names a Dash Platform system contract as the app.",
                 comment: "DashConnect App Connect v2"))
         }
         for grant in plan.auth {
@@ -369,8 +369,8 @@ extension AppConnect {
             switch binding.kind {
             case .contractGroup:
                 guard groupOwners[binding.id] == appOwnerId else {
-                    return Refusal(.invalid, NSLocalizedString(
-                "The app asks for a key on a contract group it does not own.",
+                    return Refusal(.invalid, String(
+                localized: "The app asks for a key on a contract group it does not own.",
                 comment: "DashConnect App Connect v2"))
                 }
             case .singleContract, .documentType:
@@ -380,20 +380,20 @@ extension AppConnect {
                 }
                 guard !systemContractIds.contains(binding.id.toBase58String()),
                       contractOwners[binding.id] == appOwnerId else {
-                    return Refusal(.invalid, NSLocalizedString(
-                "The app asks for a key on a contract it does not own.",
+                    return Refusal(.invalid, String(
+                localized: "The app asks for a key on a contract it does not own.",
                 comment: "DashConnect App Connect v2"))
                 }
             }
         }
         for grant in plan.encryption where appUnreadableKeyPurposes.contains(grant.keyPurpose) {
-            return Refusal(.unsupported, NSLocalizedString(
-                "This version of the wallet cannot read how the app's contract keeps its keys. Update the wallet.",
+            return Refusal(.unsupported, String(
+                localized: "This version of the wallet cannot read how the app's contract keeps its keys. Update the wallet.",
                 comment: "DashConnect App Connect v2"))
         }
         for grant in plan.encryption where !appBoundedKeyPurposes.contains(grant.keyPurpose) {
-            return Refusal(.invalid, NSLocalizedString(
-                "The app's contract keeps no current key bound to it for the encryption it asks for.",
+            return Refusal(.invalid, String(
+                localized: "The app's contract keeps no current key bound to it for the encryption it asks for.",
                 comment: "DashConnect App Connect v2"))
         }
         return nil
@@ -409,13 +409,13 @@ extension AppConnect {
         for grant in plan.auth where grant.binding.kind == .documentType {
             guard let contract = contracts[grant.binding.id] else { continue }
             guard let schemas = contract["documentSchemas"] as? [String: Any] else {
-                return Refusal(.unsupported, NSLocalizedString(
-                    "This version of the wallet cannot read the document types of the app's contract. Update the wallet.",
+                return Refusal(.unsupported, String(
+                    localized: "This version of the wallet cannot read the document types of the app's contract. Update the wallet.",
                     comment: "DashConnect App Connect v2"))
             }
             guard schemas[grant.binding.documentTypeName ?? ""] != nil else {
-                return Refusal(.invalid, NSLocalizedString(
-                    "The app asks for a key on a document type its contract does not define.",
+                return Refusal(.invalid, String(
+                    localized: "The app asks for a key on a document type its contract does not define.",
                     comment: "DashConnect App Connect v2"))
             }
         }

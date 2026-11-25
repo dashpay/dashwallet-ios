@@ -46,7 +46,7 @@ struct TransferSummaryCard: View {
     init(
         from: String,
         to: String,
-        networkFeeLabel: String = NSLocalizedString("Network fee", comment: ""),
+        networkFeeLabel: String = String(localized: "Network fee", comment: ""),
         networkFee: String,
         total: String
     ) {
@@ -59,10 +59,10 @@ struct TransferSummaryCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            row(label: NSLocalizedString("From", comment: ""), value: from)
-            row(label: NSLocalizedString("To", comment: ""), value: to)
+            row(label: String(localized: "From", comment: ""), value: from)
+            row(label: String(localized: "To", comment: ""), value: to)
             row(label: networkFeeLabel, value: networkFee)
-            row(label: NSLocalizedString("Total", comment: ""), value: total)
+            row(label: String(localized: "Total", comment: ""), value: total)
         }
         .modifier(MenuViewModifier())
     }

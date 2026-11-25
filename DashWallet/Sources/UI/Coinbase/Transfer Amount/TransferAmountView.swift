@@ -37,7 +37,7 @@ struct TransferAmountView<ViewModel: TransferAmountViewModelProtocol>: View {
             )
 
             VStack(alignment: .leading, spacing: 20) {
-                TopIntro(title: NSLocalizedString("Transfer DASH", comment: "Coinbase"))
+                TopIntro(title: String(localized: "Transfer DASH", comment: "Coinbase"))
 
                 DashUIKit.EnterAmountView(
                     value: $viewModel.inputValue,
@@ -58,7 +58,7 @@ struct TransferAmountView<ViewModel: TransferAmountViewModelProtocol>: View {
                 // does not reduce this. An error (e.g. insufficient balance) supersedes it.
                 ReceiveEstimateView(
                     isVisible: !viewModel.inputValue.isEmpty,
-                    title: NSLocalizedString("You will receive", comment: "Coinbase"),
+                    title: String(localized: "You will receive", comment: "Coinbase"),
                     amount: viewModel.receiveAmount,
                     fiat: viewModel.receiveFiat,
                     errorMessage: viewModel.errorMessage,
@@ -109,7 +109,7 @@ struct TransferAmountView<ViewModel: TransferAmountViewModelProtocol>: View {
                 set: { viewModel.setInput($0) }
             ),
             showDecimalSeparator: true,
-            actionButtonText: NSLocalizedString("Transfer", comment: "Coinbase"),
+            actionButtonText: String(localized: "Transfer", comment: "Coinbase"),
             actionEnabled: viewModel.canContinue,
             inProgress: viewModel.isProcessing,
             actionHandler: { viewModel.transfer() }
@@ -206,7 +206,7 @@ final class MockTransferAmountViewModel: TransferAmountViewModelProtocol {
     TransferAmountView(
         viewModel: MockTransferAmountViewModel(
             canContinue: false,
-            errorMessage: NSLocalizedString("Amount too low", comment: "")
+            errorMessage: String(localized: "Amount too low", comment: "")
         )
     )
     .background(Color.dash.primaryBackground)

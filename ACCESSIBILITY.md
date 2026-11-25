@@ -37,10 +37,10 @@ scripts/a11y_audit.py --path "DashWallet/Sources/UI/Payments"
 | A11Y004 | P1 | SwiftUI `Button` whose label is only an image/shape |
 | A11Y005 | P1 | `Toggle` with an empty label |
 | A11Y006 | P1 | Custom back button replacing UIKit's automatically labeled one |
-| A11Y007 | P2 | `.system(size:)` with no `relativeTo:` — ignores Dynamic Type |
+| A11Y007 | P2 | `.system(size:)` with a fixed size — ignores Dynamic Type. SwiftUI has no `.system(size:relativeTo:)`: use `.scaledSystemFont(size:relativeTo:)` (`Font+DWStyle.swift`) or an `@ScaledMetric` size |
 | A11Y008 | P0 | `extension Font` shadowing an Apple text style |
 | A11Y009 | P1 | `accessibilityLabel` with a bare, unlocalized string |
-| A11Y010 | P1 | `accessibilityLabel` key missing from `en.lproj` |
+| A11Y010 | P1 | `accessibilityLabel` key missing from `DashWallet/Localizable.xcstrings` |
 | A11Y011 | P1 | Image-only control in a xib/storyboard with no label |
 | A11Y012 | P1 | `.onTapGesture` on a view with no accessibility treatment |
 
@@ -170,7 +170,7 @@ value, a hint, and custom actions. Copy its shape.
 Button(action: onClose) {
     Icon(name: .custom("icon_close"))
 }
-.accessibilityLabel(Text(NSLocalizedString("Close", comment: "Accessibility")))
+.accessibilityLabel(Text(String(localized: "Close", comment: "Accessibility")))
 ```
 
 - A control with visible text needs nothing — VoiceOver reads the title.
@@ -180,5 +180,8 @@ Button(action: onClose) {
 - A composite row (icon + title + value + chevron) should be one element:
   `.accessibilityElement(children: .combine)`, or `.ignore` plus an explicit
   label.
-- Every label is a user-visible string: wrap it in `NSLocalizedString` and let it
-  reach Transifex, or it ships English-only across 43 locales.
+- Every label is a user-visible string: use `String(localized:)` (Objective-C:
+  `NSLocalizedString`) so it lands in `DashWallet/Localizable.xcstrings`, or it ships
+  English-only. The build's "Sync String Catalog" phase adds the entry; commit the
+  Catalog with the code. Translation sync pause: app texts are not pushed to or
+  pulled from the translation service until the owner decides how the Catalog travels.

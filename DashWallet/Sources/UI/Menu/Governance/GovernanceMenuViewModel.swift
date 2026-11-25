@@ -37,9 +37,9 @@ final class GovernanceMenuViewModel: ObservableObject {
         // concern and this screen is reachable in every build configuration
         // (it previously lived under Tools with no gate).
         allItems.append(MenuItemModel(
-            title: NSLocalizedString("Masternodes", comment: "Masternodes"),
-            subtitle: NSLocalizedString(
-                "Masternodes and evonodes using this wallet's keys", comment: "Masternodes"),
+            title: String(localized: "Masternodes", comment: "Masternodes"),
+            subtitle: String(
+                localized: "Masternodes and evonodes using this wallet's keys", comment: "Masternodes"),
             icon: .system("server.rack"),
             action: { [weak self] in
                 self?.navigationDestination = .masternodes

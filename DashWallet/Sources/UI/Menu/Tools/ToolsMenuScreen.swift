@@ -47,7 +47,7 @@ struct ToolsMenuScreen: View {
                 }
             })
 
-            TopIntro(title: NSLocalizedString("Tools", comment: ""))
+            TopIntro(title: String(localized: "Tools", comment: ""))
                 .padding(.leading, 20)
                 .padding(.trailing, 60)
                 .padding(.top, 10)
@@ -133,23 +133,23 @@ struct ToolsMenuScreen: View {
             }
             .presentationDetents([.medium, .large])
         }
-        .alert(NSLocalizedString("Move CoinJoin Funds", comment: "CoinJoin"), isPresented: $viewModel.showCoinJoinSweepConfirmation) {
-            Button(NSLocalizedString("Move funds", comment: "CoinJoin")) {
+        .alert(String(localized: "Move CoinJoin Funds", comment: "CoinJoin"), isPresented: $viewModel.showCoinJoinSweepConfirmation) {
+            Button(String(localized: "Move funds", comment: "CoinJoin")) {
                 Task { await viewModel.performCoinJoinSweep() }
             }
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
+            Button(String(localized: "Cancel", comment: ""), role: .cancel) { }
         } message: {
-            Text(String(format: NSLocalizedString("Move your %@ in mixed coins to your spendable balance? CoinJoin is no longer supported.", comment: "CoinJoin"), viewModel.coinJoinLeftoverFormatted))
+            Text(String(localized: "Move your \(viewModel.coinJoinLeftoverFormatted) in mixed coins to your spendable balance? CoinJoin is no longer supported.", comment: "CoinJoin"))
         }
         .alert(
-            NSLocalizedString("Move CoinJoin Funds", comment: "CoinJoin"),
+            String(localized: "Move CoinJoin Funds", comment: "CoinJoin"),
             isPresented: Binding(
                 get: { viewModel.coinJoinSweepErrorMessage != nil },
                 set: { if !$0 { viewModel.coinJoinSweepErrorMessage = nil } }
             ),
             presenting: viewModel.coinJoinSweepErrorMessage
         ) { _ in
-            Button(NSLocalizedString("OK", comment: "")) { viewModel.coinJoinSweepErrorMessage = nil }
+            Button(String(localized: "OK", comment: "")) { viewModel.coinJoinSweepErrorMessage = nil }
         } message: { message in
             Text(message)
         }
@@ -169,14 +169,14 @@ struct ToolsMenuScreen: View {
             }
         }
         .alert(
-            NSLocalizedString("Export Logs", comment: "Log export"),
+            String(localized: "Export Logs", comment: "Log export"),
             isPresented: Binding(
                 get: { viewModel.logExportErrorMessage != nil },
                 set: { if !$0 { viewModel.logExportErrorMessage = nil } }
             ),
             presenting: viewModel.logExportErrorMessage
         ) { _ in
-            Button(NSLocalizedString("OK", comment: "")) { viewModel.logExportErrorMessage = nil }
+            Button(String(localized: "OK", comment: "")) { viewModel.logExportErrorMessage = nil }
         } message: { message in
             Text(message)
         }

@@ -67,7 +67,7 @@ extension UpholdConfirmViewController: UpholdConfirmTransferModelStateNotifier {
             }
         case .fail:
             isSendingEnabled = true
-            showError(with: NSLocalizedString("Something went wrong", comment: ""))
+            showError(with: String(localized: "Something went wrong", comment: ""))
         case .otp:
             otpProvider?.requestOTP { [weak self] otpToken in
                 guard let strongSelf = self else { return }
@@ -100,8 +100,8 @@ extension UpholdConfirmViewController: ConfirmPaymentViewControllerDelegate {
 
 extension UpholdConfirmViewController {
     private func showError(with message: String) {
-        let alert = UIAlertController(title: NSLocalizedString("Uphold", comment: ""), message: message, preferredStyle: .alert)
-        let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel, handler: nil)
+        let alert = UIAlertController(title: String(localized: "Uphold", comment: ""), message: message, preferredStyle: .alert)
+        let okAction = UIAlertAction(title: String(localized: "OK", comment: ""), style: .cancel, handler: nil)
         alert.addAction(okAction)
         present(alert, animated: true, completion: nil)
     }

@@ -158,13 +158,13 @@ final class ShieldedSyncMonitor: ObservableObject {
     /// failure, so a coordinator error cannot hide an offline button response.
     func syncNow() -> String? {
         guard NetworkStatusService.shared.isOnline else {
-            return NSLocalizedString(
-                "You are offline. Connect to the internet and try again.",
+            return String(
+                localized: "You are offline. Connect to the internet and try again.",
                 comment: "Shielded manual sync requires an internet connection")
         }
         guard PlatformAddressSyncCoordinator.shared.recoverShieldedNow() else {
-            return NSLocalizedString(
-                "Wallet sync is not ready. Start wallet sync and try again.",
+            return String(
+                localized: "Wallet sync is not ready. Start wallet sync and try again.",
                 comment: "Shielded manual sync requires Core runtime readiness")
         }
         lastError = nil
@@ -229,7 +229,7 @@ final class ShieldedSyncMonitor: ObservableObject {
                 refreshNotesSynced()
             }
         } else {
-            lastError = result.errorMessage ?? NSLocalizedString("Shielded sync failed", comment: "Sync diagnostics")
+            lastError = result.errorMessage ?? String(localized: "Shielded sync failed", comment: "Sync diagnostics")
         }
     }
 

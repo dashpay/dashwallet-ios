@@ -99,7 +99,7 @@ class PointOfUseLocationServicePopup: UIView {
         textStackView.addArrangedSubview(label)
         let continueButton = ActionButton()
         continueButton.translatesAutoresizingMaskIntoConstraints = false
-        continueButton.setTitle(NSLocalizedString("Continue", comment: ""), for: .normal)
+        continueButton.setTitle(String(localized: "Continue", comment: ""), for: .normal)
         continueButton.addTarget(self, action: #selector(continueButtonAction), for: .touchUpInside)
         stackView.addArrangedSubview(continueButton)
         NSLayoutConstraint.activate([

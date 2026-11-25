@@ -36,7 +36,7 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
     private var numberKeyboard: NumberKeyboard!
     internal var contentView: UIView!
 
-    let contactCoinbaseString = NSLocalizedString("Contact Coinbase Support", comment: "Coinbase Two Factor Auth")
+    let contactCoinbaseString = String(localized: "Contact Coinbase Support", comment: "Coinbase Two Factor Auth")
 
     internal var isErrorShown = false
 
@@ -90,7 +90,7 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
     }
 
     override var actionButtonTitle: String? {
-        NSLocalizedString("Verify", comment: "Coinbase")
+        String(localized: "Verify", comment: "Coinbase")
     }
 
     override func actionButtonAction(sender: UIView) {
@@ -99,14 +99,14 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
     }
 
     func styleTitle() {
-        screenLabel.text = NSLocalizedString("Enter Coinbase 2FA code", comment: "Coinbase Two Factor Auth")
+        screenLabel.text = String(localized: "Enter Coinbase 2FA code", comment: "Coinbase Two Factor Auth")
         screenLabel.font = UIFont.dw_font(forTextStyle: .headline).withWeight(UIFont.Weight.semibold.rawValue).withSize(20)
         screenLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(screenLabel)
     }
 
     func styleSubTitle() {
-        subTitle.text = NSLocalizedString("This extra step shows it’s really you trying to make a transaction.",
+        subTitle.text = String(localized: "This extra step shows it’s really you trying to make a transaction.",
                                           comment: "Coinbase Two Factor Auth")
         subTitle.font = UIFont.dw_font(forTextStyle: .body)
         subTitle.numberOfLines = 0
@@ -122,7 +122,7 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
         contactCoinbase.isUserInteractionEnabled = true
 
         let needHelpAttributedString =
-            NSMutableAttributedString(string: NSLocalizedString("Need help? ", comment: "Coinbase Two Factor Auth"),
+            NSMutableAttributedString(string: String(localized: "Need help? ", comment: "Coinbase Two Factor Auth"),
                                       attributes: nil)
         let contactCoinbasnAttributedLinkString = NSMutableAttributedString(string: contactCoinbaseString,
                                                                             attributes: [
@@ -159,7 +159,7 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
         twoFactorAuthField.autocorrectionType = .no
         twoFactorAuthField.autocapitalizationType = .none
         twoFactorAuthField.spellCheckingType = .no
-        twoFactorAuthField.placeholder = NSLocalizedString("Coinbase 2FA code", comment: "Coinbase Two Factor Auth")
+        twoFactorAuthField.placeholder = String(localized: "Coinbase 2FA code", comment: "Coinbase Two Factor Auth")
         contentView.addSubview(twoFactorAuthField)
     }
 
@@ -172,7 +172,7 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
     func styleHintFieldDefaultState() {
         hintLabel
             .text =
-            NSLocalizedString("It could be the code from the SMS on your phone. If not, enter the code from the authentication app.",
+            String(localized: "It could be the code from the SMS on your phone. If not, enter the code from the authentication app.",
                               comment: "Coinbase Two Factor Auth")
         hintLabel.font = UIFont.dw_font(forTextStyle: .caption1)
         hintLabel.numberOfLines = 0
@@ -198,7 +198,7 @@ final class TwoFactorAuthViewController: ActionButtonViewController {
         attributedText.append(NSAttributedString(attachment: textAttachment))
         attributedText.append(NSAttributedString(string: " "))
         attributedText
-            .append(NSAttributedString(string: NSLocalizedString("The code is incorrect. Please check and try again!",
+            .append(NSAttributedString(string: String(localized: "The code is incorrect. Please check and try again!",
                                                                  comment: "Coinbase Two Factor Auth")))
 
         hintLabel.attributedText = attributedText
@@ -253,13 +253,13 @@ extension TwoFactorAuthViewController: UITextFieldDelegate {
 extension TwoFactorAuthViewController: NavigationStackControllable {
     func shouldPopViewController() -> Bool {
         if isCancelingToFail {
-            let title = NSLocalizedString("Are you sure you want to cancel this transaction?", comment: "Coinbase/Buy Dash/Cancel Order")
-            let message = NSLocalizedString("Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly.",
+            let title = String(localized: "Are you sure you want to cancel this transaction?", comment: "Coinbase/Buy Dash/Cancel Order")
+            let message = String(localized: "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly.",
                                             comment: "Coinbase/Buy Dash/Cancel Order")
             let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-            let noAction = UIAlertAction(title: NSLocalizedString("No", comment: ""), style: .cancel)
+            let noAction = UIAlertAction(title: String(localized: "No", comment: ""), style: .cancel)
             alert.addAction(noAction)
-            let yesAction = UIAlertAction(title: NSLocalizedString("Yes", comment: ""), style: .default) { [weak self] _ in
+            let yesAction = UIAlertAction(title: String(localized: "Yes", comment: ""), style: .default) { [weak self] _ in
                 self?.cancelHandler?()
             }
             alert.addAction(yesAction)

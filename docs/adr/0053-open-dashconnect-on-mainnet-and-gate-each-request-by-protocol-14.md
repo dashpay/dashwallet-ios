@@ -1,6 +1,6 @@
 # 0053 — Open DashConnect on mainnet and gate each request by protocol 14
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-13
 - **Deciders:** romchornyi (owner)
 
@@ -46,6 +46,8 @@ The App Connect DIP defines the `dash-key:` version 2 code for testnet and devne
 - The Connections page's "Available on test networks only" state is left for previews and tests.
 
 ## Links
+
+- Supersedes [ADR-0006](0006-choose-the-app-connect-login-by-the-protocol-version-read-at-runtime.md): its runtime protocol-version rule lives on here as the gate of each request; its two-scan login below protocol 14 was removed by [ADR-0028](0028-answer-app-connect-v2-only-and-remove-the-two-scan-login.md), and its "off on mainnet" note is replaced above.
 
 - Feature summary: [docs/features/app-connect/README.md](../features/app-connect/README.md)
 - [ADR-0006](0006-choose-the-app-connect-login-by-the-protocol-version-read-at-runtime.md): the login is chosen by the protocol version read at runtime.

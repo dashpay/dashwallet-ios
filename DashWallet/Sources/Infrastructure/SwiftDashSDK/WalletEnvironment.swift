@@ -95,9 +95,9 @@ public final class WalletEnvironment: NSObject {
     /// Every screen that names a network uses this, so the names stay one set of keys.
     public static func displayName(of kind: NetworkKind) -> String {
         switch kind {
-        case .mainnet: return NSLocalizedString("Mainnet", comment: "Wallet network")
-        case .testnet: return NSLocalizedString("Testnet", comment: "Wallet network")
-        case .devnet: return NSLocalizedString("Devnet", comment: "Wallet network")
+        case .mainnet: return String(localized: "Mainnet", comment: "Wallet network")
+        case .testnet: return String(localized: "Testnet", comment: "Wallet network")
+        case .devnet: return String(localized: "Devnet", comment: "Wallet network")
         }
     }
 
@@ -108,7 +108,7 @@ public final class WalletEnvironment: NSObject {
         case .mainnet: return displayName(of: NetworkKind.mainnet)
         case .testnet: return displayName(of: NetworkKind.testnet)
         case .devnet: return displayName(of: NetworkKind.devnet)
-        case .regtest: return NSLocalizedString("Regtest", comment: "Wallet network")
+        case .regtest: return String(localized: "Regtest", comment: "Wallet network")
         }
     }
 

@@ -398,7 +398,7 @@ extension POIDetailsViewController {
             try await CTXSpendRepository.shared.refreshToken()
             return true
         } catch DashSpendError.tokenRefreshFailed {
-            await showModalDialog(style: .warning, icon: .system("exclamationmark.triangle.fill"), heading: NSLocalizedString("Your session expired", comment: "DashSpend"), textBlock1: NSLocalizedString("It looks like you haven't used DashSpend in a while. For security reasons, you've been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash.", comment: "DashSpend"), positiveButtonText: NSLocalizedString("Dismiss", comment: ""))
+            await showModalDialog(style: .warning, icon: .system("exclamationmark.triangle.fill"), heading: String(localized: "Your session expired", comment: "DashSpend"), textBlock1: String(localized: "It looks like you haven't used DashSpend in a while. For security reasons, you've been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash.", comment: "DashSpend"), positiveButtonText: String(localized: "Dismiss", comment: ""))
             return false
         }
     }
@@ -414,19 +414,19 @@ extension POIDetailsViewController {
             await MainActor.run {
                 PiggyCardsRepository.shared.logout()
             }
-            await showModalDialog(style: .warning, icon: .system("exclamationmark.triangle.fill"), heading: NSLocalizedString("Your session expired", comment: "DashSpend"), textBlock1: NSLocalizedString("It looks like you haven't used DashSpend in a while. For security reasons, you've been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash.", comment: "DashSpend"), positiveButtonText: NSLocalizedString("Dismiss", comment: ""))
+            await showModalDialog(style: .warning, icon: .system("exclamationmark.triangle.fill"), heading: String(localized: "Your session expired", comment: "DashSpend"), textBlock1: String(localized: "It looks like you haven't used DashSpend in a while. For security reasons, you've been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash.", comment: "DashSpend"), positiveButtonText: String(localized: "Dismiss", comment: ""))
             return false
         } catch DashSpendError.unauthorized {
             // Unauthorized error - log out and show session expired message
             await MainActor.run {
                 PiggyCardsRepository.shared.logout()
             }
-            await showModalDialog(style: .warning, icon: .system("exclamationmark.triangle.fill"), heading: NSLocalizedString("Your session expired", comment: "DashSpend"), textBlock1: NSLocalizedString("It looks like you haven't used DashSpend in a while. For security reasons, you've been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash.", comment: "DashSpend"), positiveButtonText: NSLocalizedString("Dismiss", comment: ""))
+            await showModalDialog(style: .warning, icon: .system("exclamationmark.triangle.fill"), heading: String(localized: "Your session expired", comment: "DashSpend"), textBlock1: String(localized: "It looks like you haven't used DashSpend in a while. For security reasons, you've been logged out.\n\nPlease sign in again to continue exploring where to spend your Dash.", comment: "DashSpend"), positiveButtonText: String(localized: "Dismiss", comment: ""))
             return false
         } catch {
             // Network or other transient error - show error but don't log out
             DWLogger.log("PiggyCards: Token refresh failed with error: \(error.localizedDescription)")
-            await showModalDialog(style: .warning, icon: .system("exclamationmark.triangle.fill"), heading: NSLocalizedString("Connection Error", comment: "DashSpend"), textBlock1: NSLocalizedString("Unable to verify your session. Please check your internet connection and try again.", comment: "DashSpend"), positiveButtonText: NSLocalizedString("Dismiss", comment: ""))
+            await showModalDialog(style: .warning, icon: .system("exclamationmark.triangle.fill"), heading: String(localized: "Connection Error", comment: "DashSpend"), textBlock1: String(localized: "Unable to verify your session. Please check your internet connection and try again.", comment: "DashSpend"), positiveButtonText: String(localized: "Dismiss", comment: ""))
             return false
         }
     }
@@ -456,11 +456,11 @@ extension ExplorePointOfUse {
         switch category {
         case .merchant(let m):
             if m.type == .online {
-                return NSLocalizedString("Online Merchant", comment: "Online Merchant")
+                return String(localized: "Online Merchant", comment: "Online Merchant")
             } else {
                 return m.type == .onlineAndPhysical
-                    ? NSLocalizedString("Physical Merchant, Online", comment: "Explore Dash")
-                    : NSLocalizedString("Physical Merchant", comment: "Explore Dash")
+                    ? String(localized: "Physical Merchant, Online", comment: "Explore Dash")
+                    : String(localized: "Physical Merchant", comment: "Explore Dash")
             }
         case .atm:
             return nil
