@@ -75,16 +75,16 @@ extension IntegrationViewController: UpholdTransferViewControllerDelegate {
         navigationController?.popViewController(animated: true)
 
         let model = self.model as! UpholdPortalModel
-        let alert = UIAlertController(title: NSLocalizedString("Uphold", comment: ""),
+        let alert = UIAlertController(title: String(localized: "Uphold", comment: ""),
                                       message: model.successMessageText(for: transaction),
                                       preferredStyle: .alert)
 
-        let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""),
+        let okAction = UIAlertAction(title: String(localized: "OK", comment: ""),
                                      style: .cancel,
                                      handler: nil)
         alert.addAction(okAction)
 
-        let openAction = UIAlertAction(title: NSLocalizedString("See on Uphold", comment: ""),
+        let openAction = UIAlertAction(title: String(localized: "See on Uphold", comment: ""),
                                        style: .default) { _ in
             if let url = model.transactionURL(for: transaction) {
                 UIApplication.shared.open(url)

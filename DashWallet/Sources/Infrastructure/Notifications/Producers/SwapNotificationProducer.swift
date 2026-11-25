@@ -150,15 +150,15 @@ final class SwapNotificationProducer {
         let pair = "\(SwapOrderMetadataProvider.shortSymbol(from: order.fromAsset))/\(SwapOrderMetadataProvider.shortSymbol(from: order.toAsset))"
         switch order.status {
         case .completed:
-            return String(format: NSLocalizedString("Your %@ swap is complete", comment: "Dash DEX"), pair)
+            return String(localized: "Your \(pair) swap is complete", comment: "Dash DEX")
         case .refunded:
-            return String(format: NSLocalizedString("Your %@ swap was refunded", comment: "Dash DEX"), pair)
+            return String(localized: "Your \(pair) swap was refunded", comment: "Dash DEX")
         case .failed:
-            return String(format: NSLocalizedString("Your %@ swap failed", comment: "Dash DEX"), pair)
+            return String(localized: "Your \(pair) swap failed", comment: "Dash DEX")
         case .expired:
             // Neutral by design: the 24 h age-out is "we stopped tracking",
             // not a failure — funds may well have arrived.
-            return String(format: NSLocalizedString("The status of your %@ swap could not be confirmed", comment: "Dash DEX"), pair)
+            return String(localized: "The status of your \(pair) swap could not be confirmed", comment: "Dash DEX")
         case .notStarted, .pending, .swapping, .unknown:
             return nil
         }

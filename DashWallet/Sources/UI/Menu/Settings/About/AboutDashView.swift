@@ -43,25 +43,25 @@ struct AboutDashView: View {
                         .frame(maxWidth: .infinity, alignment: .center)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    List1View(label: NSLocalizedString("App version", comment: "AboutDash"), value: viewModel.appVersion)
+                    List1View(label: String(localized: "App version", comment: "AboutDash"), value: viewModel.appVersion)
                 }
                 .modifier(MenuViewModifier())
 
                 VStack(alignment: .leading, spacing: 2) {
-                    List1View(label: NSLocalizedString("Explore Dash", comment: "AboutDash"), value: viewModel.exploreStatus)
-                    List1View(label: NSLocalizedString("Last device sync", comment: "AboutDash"), value: viewModel.lastDeviceSync)
-                    List1View(label: NSLocalizedString("Last device update", comment: "AboutDash"), value: viewModel.lastDeviceUpdate)
+                    List1View(label: String(localized: "Explore Dash", comment: "AboutDash"), value: viewModel.exploreStatus)
+                    List1View(label: String(localized: "Last device sync", comment: "AboutDash"), value: viewModel.lastDeviceSync)
+                    List1View(label: String(localized: "Last device update", comment: "AboutDash"), value: viewModel.lastDeviceUpdate)
                 }
                 .modifier(MenuViewModifier())
 
                 VStack(alignment: .leading, spacing: 2) {
                     MenuItem(
-                        title: NSLocalizedString("Review app", comment: "AboutDash"),
+                        title: String(localized: "Review app", comment: "AboutDash"),
                         icon: .custom("app-review"),
                         action: { viewModel.reviewApp() }
                     )
                     MenuItem(
-                        title: NSLocalizedString("Contact support", comment: "AboutDash"),
+                        title: String(localized: "Contact support", comment: "AboutDash"),
                         icon: .custom("support"),
                         action: { onContactSupport?() }
                     )
@@ -70,7 +70,7 @@ struct AboutDashView: View {
 
                 VStack(alignment: .center, spacing: 2) {
                     VStack(alignment: .center, spacing: 2) {
-                        Text(NSLocalizedString("Dash Wallet is an open sourced app forked from Bitcoin Wallet", comment: "AboutDash"))
+                        Text(String(localized: "Dash Wallet is an open sourced app forked from Bitcoin Wallet", comment: "AboutDash"))
                             .dashFont(.footnote)
                             .foregroundStyle(Color.dash.tertiaryText)
                             .multilineTextAlignment(.center)
@@ -80,7 +80,7 @@ struct AboutDashView: View {
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
 
-                    Text(NSLocalizedString("Copyright © 2026 Dash Core Group", comment: "AboutDash"))
+                    Text(String(localized: "Copyright © 2026 Dash Core Group", comment: "AboutDash"))
                         .dashFont(.footnote)
                         .foregroundStyle(Color.dash.tertiaryText)
                         .multilineTextAlignment(.center)
@@ -96,22 +96,22 @@ struct AboutDashView: View {
         }
         .background(Color.dash.primaryBackground)
         .alert(
-            "",
+            "" as String,
             isPresented: Binding(
                 get: { viewModel.techInfo != nil },
                 set: { if !$0 { viewModel.techInfo = nil } }
             ),
             presenting: viewModel.techInfo
         ) { _ in
-            Button(NSLocalizedString("Copy", comment: "")) {
+            Button(String(localized: "Copy", comment: "")) {
                 viewModel.copyTechInfo()
                 viewModel.techInfo = nil
             }
-            Button(NSLocalizedString("Copy Logs", comment: "Log export")) {
+            Button(String(localized: "Copy Logs", comment: "Log export")) {
                 viewModel.techInfo = nil
                 viewModel.exportLogs()
             }
-            Button(NSLocalizedString("OK", comment: ""), role: .cancel) {
+            Button(String(localized: "OK", comment: ""), role: .cancel) {
                 viewModel.techInfo = nil
             }
         } message: { techInfo in
@@ -128,14 +128,14 @@ struct AboutDashView: View {
             }
         }
         .alert(
-            NSLocalizedString("Export Logs", comment: "Log export"),
+            String(localized: "Export Logs", comment: "Log export"),
             isPresented: Binding(
                 get: { viewModel.logExportErrorMessage != nil },
                 set: { if !$0 { viewModel.logExportErrorMessage = nil } }
             ),
             presenting: viewModel.logExportErrorMessage
         ) { _ in
-            Button(NSLocalizedString("OK", comment: "")) { viewModel.logExportErrorMessage = nil }
+            Button(String(localized: "OK", comment: "")) { viewModel.logExportErrorMessage = nil }
         } message: { message in
             Text(message)
         }

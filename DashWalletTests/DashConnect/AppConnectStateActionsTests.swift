@@ -131,8 +131,8 @@ final class ConnectionRowStatusTests: XCTestCase {
     }
 
     func testTheBadgeNamesRefusedAndExpiredWithTheLocalizedTable() {
-        XCTAssertEqual(ConnectionStatusBadge.label(for: .refused), NSLocalizedString("Refused", comment: ""))
-        XCTAssertEqual(ConnectionStatusBadge.label(for: .expired), NSLocalizedString("Expired", comment: ""))
+        XCTAssertEqual(ConnectionStatusBadge.label(for: .refused), String(localized: "Refused", comment: ""))
+        XCTAssertEqual(ConnectionStatusBadge.label(for: .expired), String(localized: "Expired", comment: ""))
         // Not the raw enum value.
         XCTAssertNotEqual(ConnectionStatusBadge.label(for: .refused), ConnectionStatus.refused.rawValue)
         XCTAssertNotEqual(ConnectionStatusBadge.label(for: .expired), ConnectionStatus.expired.rawValue)

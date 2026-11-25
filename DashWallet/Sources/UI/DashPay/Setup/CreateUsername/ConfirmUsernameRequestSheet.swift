@@ -87,11 +87,7 @@ struct ConfirmUsernameRequestSheet: View {
             }
 
             if let identityPaidContestFeeDuffs {
-                Text(String.localizedStringWithFormat(
-                    NSLocalizedString(
-                        "Added to your identity’s credits, which pay the %@ DASH contest fee.",
-                        comment: "Usernames: confirmation of a top-up for an existing identity"),
-                    identityPaidContestFeeDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol))
+                Text(String(localized: "Added to your identity’s credits, which pay the \(identityPaidContestFeeDuffs.dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH contest fee.", comment: "Usernames: confirmation of a top-up for an existing identity"))
                     .dashFont(.footnote)
                     .foregroundStyle(Color.dash.secondaryText)
                     .multilineTextAlignment(.center)
@@ -101,8 +97,8 @@ struct ConfirmUsernameRequestSheet: View {
             }
 
             if showsContestFeeNote {
-                Text(NSLocalizedString(
-                    "The contest fee is spent when you submit and is not returned, even if you do not win the name.",
+                Text(String(
+                    localized: "The contest fee is spent when you submit and is not returned, even if you do not win the name.",
                     comment: "Usernames"))
                     .dashFont(.footnote)
                     .foregroundStyle(Color.dash.secondaryText)
@@ -117,7 +113,7 @@ struct ConfirmUsernameRequestSheet: View {
                 .frame(maxWidth: .infinity)
 
             DashUIKit.DashButton(
-                text: NSLocalizedString("Confirm", comment: ""),
+                text: String(localized: "Confirm", comment: ""),
                 isEnabled: hasAccepted,
                 fillsWidth: true,
                 size: .large,
@@ -133,26 +129,18 @@ struct ConfirmUsernameRequestSheet: View {
     private var title: String {
         switch kind {
         case .requested:
-            return NSLocalizedString("Confirm username request", comment: "Usernames")
+            return String(localized: "Confirm username request", comment: "Usernames")
         case .instant:
-            return NSLocalizedString("Confirm instant username", comment: "Usernames")
+            return String(localized: "Confirm instant username", comment: "Usernames")
         }
     }
 
     private var message: String {
         switch kind {
         case .requested:
-            return String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "You have chosen “%@” as your username. Please note that the username can NOT be changed once it is registered.",
-                    comment: "Usernames"),
-                username)
+            return String(localized: "You have chosen “\(username)” as your username. Please note that the username can NOT be changed once it is registered.", comment: "Usernames")
         case .instant:
-            return String.localizedStringWithFormat(
-                NSLocalizedString(
-                    "You chose %@ as an instant username. Please note that the username can NOT be changed once it is registered.",
-                    comment: "Usernames"),
-                username)
+            return String(localized: "You chose \(username) as an instant username. Please note that the username can NOT be changed once it is registered.", comment: "Usernames")
         }
     }
 
@@ -189,7 +177,7 @@ struct ConfirmUsernameRequestSheet: View {
                     .scaledToFit()
                     .frame(width: 20, height: 20)
 
-                Text(NSLocalizedString("I accept", comment: "Usernames"))
+                Text(String(localized: "I accept", comment: "Usernames"))
                     .dashFont(.subheadMedium)
                     .foregroundStyle(Color.dash.primaryText)
             }

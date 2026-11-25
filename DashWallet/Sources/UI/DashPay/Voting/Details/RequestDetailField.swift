@@ -69,7 +69,8 @@ extension RequestDetailField where Value == Text {
 }
 #Preview("Link") {
     RequestDetailField(label: "Link") {
-        Link("https://x.com/johndoe/status/1234567890123456789", destination: URL(string: "https://x.com/johndoe")!)
+        Link("https://x.com/johndoe/status/1234567890123456789" as String,
+             destination: URL(string: "https://x.com/johndoe")!)
     }
     .padding(20)
 }

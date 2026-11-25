@@ -43,7 +43,7 @@ extension BaseViewController {
                 nav?.dismiss(animated: true) ?? wSelf.dismiss(animated: true)
             }
         }
-        vc.headerText = NSLocalizedString("Transfer successful", comment: "Coinbase")
+        vc.headerText = String(localized: "Transfer successful", comment: "Coinbase")
         vc.descriptionText = text
 
         navigationController?.pushViewController(vc, animated: true)
@@ -51,9 +51,9 @@ extension BaseViewController {
 
     public func showFailedTransactionStatus(text: String) {
         let vc = FailedOperationStatusViewController.initiate(from: sb("OperationStatus"))
-        vc.headerText = NSLocalizedString("Transfer Failed", comment: "Coinbase")
+        vc.headerText = String(localized: "Transfer Failed", comment: "Coinbase")
         vc.descriptionText = text
-        vc.supportButtonText = NSLocalizedString("Contact Coinbase Support", comment: "Coinbase")
+        vc.supportButtonText = String(localized: "Contact Coinbase Support", comment: "Coinbase")
         vc.retryHandler = { [weak self] in
             guard let wSelf = self else { return }
             wSelf.navigationController?.popToViewController(wSelf, animated: true)
@@ -131,8 +131,8 @@ extension CoinbaseTransactionHandling where Self: BaseViewController {
     }
 
     func transferFromCoinbaseToWalletDidSucceed() {
-        let successText = NSLocalizedString(
-            "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device",
+        let successText = String(
+            localized: "It could take up to 10 minutes to transfer Dash from Coinbase to Dash Wallet on this device",
             comment: "Coinbase"
         )
 

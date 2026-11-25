@@ -69,17 +69,17 @@ struct ConnectionStatusBadge: View {
     static func label(for status: ConnectionStatus) -> String {
         switch status {
         case .confirming:
-            return NSLocalizedString("Confirming", comment: "DashConnect: an approval whose identity update may still land")
+            return String(localized: "Confirming", comment: "DashConnect: an approval whose identity update may still land")
         case .active:
-            return NSLocalizedString("Active", comment: "DashConnect")
+            return String(localized: "Active", comment: "DashConnect")
         case .undelivered:
-            return NSLocalizedString("Not delivered", comment: "DashConnect: keys are on the identity, but the app never got its response")
+            return String(localized: "Not delivered", comment: "DashConnect: keys are on the identity, but the app never got its response")
         case .refused:
-            return NSLocalizedString("Refused", comment: "DashConnect: status of a request the wallet turned down")
+            return String(localized: "Refused", comment: "DashConnect: status of a request the wallet turned down")
         case .expired:
-            return NSLocalizedString("Expired", comment: "DashConnect: status of a connection whose access time ended")
+            return String(localized: "Expired", comment: "DashConnect: status of a connection whose access time ended")
         case .disconnected:
-            return NSLocalizedString("Disconnected (connection status)", comment: "DashConnect: the status badge of a connection whose keys are all turned off")
+            return String(localized: "Disconnected (connection status)", comment: "DashConnect: the status badge of a connection whose keys are all turned off")
         }
     }
 }

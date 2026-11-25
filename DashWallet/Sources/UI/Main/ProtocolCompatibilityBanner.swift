@@ -14,7 +14,7 @@ final class ProtocolCompatibilityBannerViewModel: ObservableObject {
 
     var message: String? {
         guard snapshot?.newerProtocolAvailable == true else { return nil }
-        return NSLocalizedString("The network uses a newer protocol than this version of the app. Check for available updates.", comment: "Protocol version advisory")
+        return String(localized: "The network uses a newer protocol than this version of the app. Check for available updates.", comment: "Protocol version advisory")
     }
 
     var updateURL: URL? {
@@ -39,7 +39,7 @@ struct ProtocolCompatibilityBanner: View {
                         .font(.footnote)
                         .fixedSize(horizontal: false, vertical: true)
                     if let url = model.updateURL {
-                        Button(NSLocalizedString("Check for available updates", comment: "Protocol version update")) {
+                        Button(String(localized: "Check for available updates", comment: "Protocol version update")) {
                             openURL(url)
                         }
                     }

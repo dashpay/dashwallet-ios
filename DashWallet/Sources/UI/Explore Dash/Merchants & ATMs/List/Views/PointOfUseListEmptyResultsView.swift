@@ -49,14 +49,14 @@ class PointOfUseListEmptyResultsView: UIView {
 
         let noResultsLabel = UILabel()
         noResultsLabel.translatesAutoresizingMaskIntoConstraints = false
-        noResultsLabel.text = NSLocalizedString("No Results Found", comment: "Explore Dash/Merchants/Filters")
+        noResultsLabel.text = String(localized: "No Results Found", comment: "Explore Dash/Merchants/Filters")
         noResultsLabel.font = .dw_font(forTextStyle: .headline).withWeight(500)
         stackView.addArrangedSubview(noResultsLabel)
 
         let resetFiltersButton = UIButton()
         resetFiltersButton.addTarget(self, action: #selector(resetButtonAction), for: .touchUpInside)
         resetFiltersButton.translatesAutoresizingMaskIntoConstraints = false
-        resetFiltersButton.setTitle(NSLocalizedString("Reset Filters", comment: "Explore Dash/Merchants/Filters"), for: .normal)
+        resetFiltersButton.setTitle(String(localized: "Reset Filters", comment: "Explore Dash/Merchants/Filters"), for: .normal)
         resetFiltersButton.tintColor = .dw_red()
         resetFiltersButton.titleLabel?.font = .dw_mediumFont(ofSize: 15)
         resetFiltersButton.setTitleColor(.dw_red(), for: .normal)

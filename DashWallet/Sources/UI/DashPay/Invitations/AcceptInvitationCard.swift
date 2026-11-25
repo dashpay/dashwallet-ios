@@ -36,10 +36,10 @@ struct AcceptInvitationCard: View {
                     .frame(width: 30, height: 30)
 
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(NSLocalizedString("Join DashPay", comment: ""))
+                    Text(String(localized: "Join DashPay", comment: ""))
                         .dashFont(.subheadMedium)
                         .foregroundColor(isGreyedOut ? Color.dash.secondaryText : Color.dash.primaryText)
-                    Text(NSLocalizedString("Create a username and say goodbye to numerical addresses", comment: "DashPay Invitations"))
+                    Text(String(localized: "Create a username and say goodbye to numerical addresses", comment: "DashPay Invitations"))
                         .dashFont(.footnote)
                         .foregroundColor(isGreyedOut ? Color.dash.tertiaryText : Color.dash.secondaryText)
                         .fixedSize(horizontal: false, vertical: true)
@@ -51,14 +51,14 @@ struct AcceptInvitationCard: View {
 
             HStack(spacing: 10) {
                 DashUIKit.DashButton(
-                    text: NSLocalizedString("Hide", comment: ""),
+                    text: String(localized: "Hide", comment: ""),
                     fillsWidth: true,
                     size: .small,
                     style: .tintedGray,
                     action: { viewModel.hide() })
 
                 DashUIKit.DashButton(
-                    text: NSLocalizedString("Create", comment: "DashPay Invitations"),
+                    text: String(localized: "Create", comment: "DashPay Invitations"),
                     isEnabled: isCreateEnabled,
                     isLoading: viewModel.cardState == .verifying && !isSyncing,
                     fillsWidth: true,
@@ -76,15 +76,15 @@ struct AcceptInvitationCard: View {
     @ViewBuilder
     private var hint: some View {
         if isSyncing || viewModel.cardState == .syncing {
-            hintText(NSLocalizedString("Wait until syncing is finished to create a username", comment: "DashPay Invitations"))
+            hintText(String(localized: "Wait until syncing is finished to create a username", comment: "DashPay Invitations"))
         } else {
             switch viewModel.cardState {
             case .verifying:
-                hintText(NSLocalizedString("Verifying invitation", comment: "DashPay Invitations"))
+                hintText(String(localized: "Verifying invitation", comment: "DashPay Invitations"))
             case .undetermined:
-                hintWithRetry(NSLocalizedString("Couldn't verify the invitation. Check your connection and try again.", comment: "DashPay Invitations"))
+                hintWithRetry(String(localized: "Couldn't verify the invitation. Check your connection and try again.", comment: "DashPay Invitations"))
             case .awaitingChainLock:
-                hintWithRetry(NSLocalizedString("The invitation is still confirming on the network. Try again in a few minutes.", comment: "DashPay Invitations"))
+                hintWithRetry(String(localized: "The invitation is still confirming on the network. Try again in a few minutes.", comment: "DashPay Invitations"))
             case .syncing, .valid:
                 EmptyView()
             }
@@ -95,7 +95,7 @@ struct AcceptInvitationCard: View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             hintText(text)
             DashUIKit.DashButton(
-                text: NSLocalizedString("Retry", comment: ""),
+                text: String(localized: "Retry", comment: ""),
                 size: .extraSmall,
                 style: .tintedBlue,
                 action: { viewModel.retry() })

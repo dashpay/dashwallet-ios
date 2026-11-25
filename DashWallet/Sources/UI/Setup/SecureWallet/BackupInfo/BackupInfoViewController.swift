@@ -30,10 +30,10 @@ extension BackupInfoItem {
     var title: String {
         switch self {
         case .notStoredByDash:
-            return NSLocalizedString("Dash Core Group does NOT store this recovery phrase",
+            return String(localized: "Dash Core Group does NOT store this recovery phrase",
                                      comment: "Recovery phrase backup: security warning title — Dash Core Group does not store the phrase")
         case .unableToRestore:
-            return NSLocalizedString("You will NOT be able to restore the wallet without a recovery phrase",
+            return String(localized: "You will NOT be able to restore the wallet without a recovery phrase",
                                      comment: "Recovery phrase backup: security warning title — the phrase is required to restore the wallet")
         }
     }
@@ -41,10 +41,10 @@ extension BackupInfoItem {
     var description: String {
         switch self {
         case .notStoredByDash:
-            return NSLocalizedString("Anyone that has your recovery phrase can access your funds.",
+            return String(localized: "Anyone that has your recovery phrase can access your funds.",
                                      comment: "Recovery phrase backup: security warning body — anyone with the phrase can spend the funds")
         case .unableToRestore:
-            return NSLocalizedString("Write it in a safe place and don’t show it to anyone.",
+            return String(localized: "Write it in a safe place and don’t show it to anyone.",
                                      comment: "Recovery phrase backup: security warning body — keep the phrase written down and private")
         }
     }
@@ -198,12 +198,12 @@ final class BackupInfoViewController: BaseViewController {
 
 extension BackupInfoViewController {
     private func configureHierarchy() {
-        titleLabel.text = NSLocalizedString("Backup your recovery phrase", comment: "Back up wallet")
+        titleLabel.text = String(localized: "Backup your recovery phrase", comment: "Back up wallet")
         subtitleLabel
-            .text = NSLocalizedString("You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device.",
+            .text = String(localized: "You will need this recovery phrase to access your funds if this device is lost, damaged or if Dash Wallet is uninstalled from this device.",
                                       comment: "Back up wallet")
-        showRecoveryPhraseButton.setTitle(NSLocalizedString("Show Recovery Phrase", comment: "Back up wallet"), for: .normal)
-        skipButton.setTitle(NSLocalizedString("Skip", comment: "Back up wallet"), for: .normal)
+        showRecoveryPhraseButton.setTitle(String(localized: "Show Recovery Phrase", comment: "Back up wallet"), for: .normal)
+        skipButton.setTitle(String(localized: "Skip", comment: "Back up wallet"), for: .normal)
 
         show(item: .notStoredByDash)
         show(item: .unableToRestore)

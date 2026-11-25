@@ -42,8 +42,8 @@ struct DashSpendTermsScreen: View {
                     inProgress: Binding.constant(false)
                 ) {
                     FeatureTopText(
-                        title: NSLocalizedString("Accept terms and\nconditions", comment: "DashSpend"),
-                        label: NSLocalizedString("Terms & conditions", comment: "Terms & conditions"),
+                        title: String(localized: "Accept terms and\nconditions", comment: "DashSpend"),
+                        label: String(localized: "Terms & conditions", comment: "Terms & conditions"),
                         labelIcon: .custom("external.link"),
                         linkAction: {
                             guard let url = URL(string: provider.termsUrl),
@@ -83,7 +83,7 @@ struct DashSpendTermsScreen: View {
                             }
                         }
                         
-                        Text(String(format: NSLocalizedString("I accept %@ terms and conditions", comment: "Accept terms checkbox"), provider.displayName))
+                        Text(String(localized: "I accept \(provider.displayName) terms and conditions", comment: "Accept terms checkbox"))
                             .font(.system(size: 14))
                             .foregroundColor(.dash.primaryText)
                             
@@ -102,7 +102,7 @@ struct DashSpendTermsScreen: View {
                     }
                     
                     DashButton(
-                        text: NSLocalizedString("Create account", comment: "Create account"),
+                        text: String(localized: "Create account", comment: "Create account"),
                         isEnabled: isTermsAccepted,
                         action: {
                             navigateToCreateAccount = true

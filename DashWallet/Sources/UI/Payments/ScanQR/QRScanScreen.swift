@@ -142,21 +142,21 @@ struct QRScanScreen: View {
         }
         .background(Color.black.ignoresSafeArea())
         .alert(cameraDeniedTitle, isPresented: $viewModel.showsCameraDeniedAlert) {
-            Button(NSLocalizedString("Cancel", comment: ""), role: .cancel) { }
-            Button(NSLocalizedString("Settings", comment: "")) {
+            Button(String(localized: "Cancel", comment: ""), role: .cancel) { }
+            Button(String(localized: "Settings", comment: "")) {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
                 }
             }
             .keyboardShortcut(.defaultAction)
         } message: {
-            Text(NSLocalizedString("Allow camera access in Settings", comment: ""))
+            Text(String(localized: "Allow camera access in Settings", comment: ""))
         }
     }
 
     private var cameraDeniedTitle: String {
-        String(format: NSLocalizedString("%@ is not allowed to access the camera", comment: ""),
-               Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String ?? "")
+        let appName = Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String ?? ""
+        return String(localized: "\(appName) is not allowed to access the camera", comment: "")
     }
 
     /// Cancel, and the torch where the device has one — then the two sit at
@@ -168,7 +168,7 @@ struct QRScanScreen: View {
                 cancelButton
                 Spacer()
                 toolbarButton(image: "icon_qr_flash",
-                              label: NSLocalizedString("Flashlight", comment: "QR scanner"),
+                              label: String(localized: "Flashlight", comment: "QR scanner"),
                               action: viewModel.switchTorch)
             } else {
                 cancelButton
@@ -179,7 +179,7 @@ struct QRScanScreen: View {
 
     private var cancelButton: some View {
         toolbarButton(image: "icon_qr_cancel",
-                      label: NSLocalizedString("Cancel", comment: ""),
+                      label: String(localized: "Cancel", comment: ""),
                       action: viewModel.cancel)
     }
 
@@ -245,17 +245,17 @@ private struct QRScanStatusCard: View {
 
     private var title: String {
         switch status {
-        case .connecting: return NSLocalizedString("Please Wait", comment: "")
-        case .invalidPaymentRequest: return NSLocalizedString("Invalid Payment Request", comment: "")
-        case .invalidQR: return NSLocalizedString("Invalid QR Code", comment: "")
+        case .connecting: return String(localized: "Please Wait", comment: "")
+        case .invalidPaymentRequest: return String(localized: "Invalid Payment Request", comment: "")
+        case .invalidQR: return String(localized: "Invalid QR Code", comment: "")
         case .none: return ""
         }
     }
 
     private var message: String {
-        let retry = NSLocalizedString("Please try scanning again", comment: "")
+        let retry = String(localized: "Please try scanning again", comment: "")
         switch status {
-        case .connecting: return NSLocalizedString("Connecting to payment server", comment: "")
+        case .connecting: return String(localized: "Connecting to payment server", comment: "")
         case let .invalidPaymentRequest(message): return message ?? retry
         case let .invalidQR(message): return message ?? retry
         case .none: return ""

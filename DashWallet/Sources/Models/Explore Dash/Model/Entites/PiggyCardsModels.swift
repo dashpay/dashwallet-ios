@@ -285,7 +285,7 @@ struct PiggyCardsMerchantResponse: Codable {
 struct GiftCardInfo {
     let orderId: String
     let paymentAddress: String
-    let amount: Double // Amount in DASH
+    let amount: Decimal // Amount in DASH
     let merchantName: String
     let discountPercentage: Double // After service fee
     let exchangeRate: Double

@@ -55,8 +55,8 @@ struct ConnectionRow: View {
 
                     // Only a Disconnected row carries the mark (ADR-0019 badge unchanged).
                     if item.status == .disconnected, item.entry?.responseMayRemain == true {
-                        Text(NSLocalizedString(
-                            "Response may still be on Platform",
+                        Text(String(
+                            localized: "Response may still be on Platform",
                             comment: "DashConnect: on a disconnected app's row whose response the wallet has not seen deleted yet"))
                             .dashFont(.caption1)
                             .foregroundStyle(Color.dash.orange)
@@ -84,13 +84,10 @@ struct ConnectionRow: View {
         let actions = Self.actions(for: item.status)
         if actions.contains(.reconnect) {
             DashUIKit.DashButton(
-                text: NSLocalizedString("Reconnect", comment: "DashConnect connection sheet"),
+                text: String(localized: "Reconnect", comment: "DashConnect connection sheet"),
                 size: .small, style: .tintedBlue, action: onReconnect)
                 .fixedSize()
-                .accessibilityLabel(Text(String(
-                    format: NSLocalizedString(
-                        "Reconnect %@", comment: "DashConnect: accessibility, a row's button; the app's name"),
-                    item.name)))
+                .accessibilityLabel(Text(String(localized: "Reconnect \(item.name)", comment: "DashConnect: accessibility, a row's button; the app's name")))
         } else if actions.contains(.disconnect) {
             disconnectButton
         } else if actions.contains(.remove) {
@@ -100,21 +97,18 @@ struct ConnectionRow: View {
 
     private var disconnectButton: some View {
         DashUIKit.DashButton(
-            text: NSLocalizedString("Disconnect", comment: "DashConnect"),
+            text: String(localized: "Disconnect", comment: "DashConnect"),
             size: .small, style: .tintedGray, action: onDisconnect)
             .fixedSize()
-            .accessibilityLabel(Text(String(
-                format: NSLocalizedString(
-                    "Disconnect %@", comment: "DashConnect: accessibility, a row's button; the app's name"),
-                item.name)))
+            .accessibilityLabel(Text(String(localized: "Disconnect \(item.name)", comment: "DashConnect: accessibility, a row's button; the app's name")))
     }
 
     private var removeButton: some View {
         DashUIKit.DashButton(
-            text: NSLocalizedString("Remove", comment: "DashConnect: takes a refused connection off the list"),
+            text: String(localized: "Remove", comment: "DashConnect: takes a refused connection off the list"),
             size: .small, style: .tintedGray, action: onRemove)
             .fixedSize()
-            .accessibilityLabel(Text(NSLocalizedString("Remove", comment: "DashConnect: takes a refused connection off the list")))
+            .accessibilityLabel(Text(String(localized: "Remove", comment: "DashConnect: takes a refused connection off the list")))
     }
 }
 

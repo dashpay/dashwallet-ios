@@ -50,9 +50,9 @@ extension PointOfUseListConfiguration {
             ],
             initialSegmentIndex: AtmListSegmnets.all.rawValue,
             initialFilters: nil,
-            locationServicePopupTitle: NSLocalizedString("ATM search works better with Location Services turned on.", comment: ""),
-            locationServicePopupDetails: NSLocalizedString(
-                "Your location is used to show your position on the map, ATMs in the selected redius and improve search results.",
+            locationServicePopupTitle: String(localized: "ATM search works better with Location Services turned on.", comment: ""),
+            locationServicePopupDetails: String(
+                localized: "Your location is used to show your position on the map, ATMs in the selected redius and improve search results.",
                 comment: ""))
     }
 
@@ -72,9 +72,9 @@ extension PointOfUseListConfiguration {
             // Set before the model's first fetch, so the opening segment never
             // races an unfiltered request against the filtered one.
             initialFilters: .defaults(sortBy: segment == .nearby ? .distance : .name),
-            locationServicePopupTitle: NSLocalizedString("Merchant search works better with Location Services turned on.", comment: ""),
-            locationServicePopupDetails: NSLocalizedString(
-                "Your location is used to show your position on the map, merchants in the selected redius and improve search results.",
+            locationServicePopupTitle: String(localized: "Merchant search works better with Location Services turned on.", comment: ""),
+            locationServicePopupDetails: String(
+                localized: "Your location is used to show your position on the map, merchants in the selected redius and improve search results.",
                 comment: ""))
     }
 }

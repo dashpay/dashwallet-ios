@@ -285,7 +285,7 @@ struct MenuItem: View {
     
     @ViewBuilder
     private func FormattedFiatText(from dashAmount: Int64) -> some View {
-        let text = (try? CurrencyExchanger.shared.convertDash(amount: abs(dashAmount.dashAmount), to: App.fiatCurrency).formattedFiatAmount) ?? NSLocalizedString("Not available", comment: "")
+        let text = (try? CurrencyExchanger.shared.convertDash(amount: abs(dashAmount.dashAmount), to: App.fiatCurrency).formattedFiatAmount) ?? String(localized: "Not available", comment: "")
             
         Text(text)
             .font(.caption)

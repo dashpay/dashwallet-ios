@@ -41,24 +41,24 @@ enum ConvertCryptoOrderItem: PreviewOrderItem {
     var localizedTitle: String {
         switch self {
         case .origin:
-            return NSLocalizedString("You send", comment: "Coinbase")
+            return String(localized: "You send", comment: "Coinbase")
         case .destination:
-            return NSLocalizedString("You receive", comment: "Coinbase")
+            return String(localized: "You receive", comment: "Coinbase")
         case .purchaseAmount:
-            return NSLocalizedString("Purchase", comment: "Coinbase/Buy Dash")
+            return String(localized: "Purchase", comment: "Coinbase/Buy Dash")
         case .feeAmount:
-            return NSLocalizedString("Coinbase Fee", comment: "Coinbase/Buy Dash")
+            return String(localized: "Coinbase Fee", comment: "Coinbase/Buy Dash")
         case .totalAmount:
-            return NSLocalizedString("Total", comment: "Coinbase/Buy Dash")
+            return String(localized: "Total", comment: "Coinbase/Buy Dash")
         }
     }
 
     var localizedDescription: String? {
         switch self {
         case .origin:
-            return NSLocalizedString("from your Coinbase account", comment: "Coinbase")
+            return String(localized: "from your Coinbase account", comment: "Coinbase")
         case .destination:
-            return NSLocalizedString("to Dash Wallet on this device", comment: "Coinbase")
+            return String(localized: "to Dash Wallet on this device", comment: "Coinbase")
         default:
             return nil
         }

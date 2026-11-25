@@ -67,7 +67,7 @@ class ConfirmPaymentViewController: SheetViewController {
         // exchange-rate observer and its "Sending…" timer.
         let state = self.state
         let sheet = DashUIKit.BottomSheet.selfSizing(
-            title: NSLocalizedString("Confirm", comment: "Payment confirmation"),
+            title: String(localized: "Confirm", comment: "Payment confirmation"),
             showBackButton: .constant(false)
         ) { [weak self] in
             ConfirmPaymentSheet(
@@ -271,7 +271,7 @@ private struct ConfirmPaymentSheet: View {
 
             HStack(spacing: 20) {
                 DashUIKit.DashButton(
-                    text: NSLocalizedString("Cancel", comment: "Payment confirmation"),
+                    text: String(localized: "Cancel", comment: "Payment confirmation"),
                     // Deliberately not `state.isSendingEnabled`: confirming
                     // also sets `isModalInPresentation`, so disabling Cancel
                     // too would leave a send that never resolves with no way
