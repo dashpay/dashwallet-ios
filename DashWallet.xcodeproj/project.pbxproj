@@ -11,6 +11,12 @@
 		731D8FAD8E979EA9648F9B28 /* SetupFlowModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6DCA16BEE4C8BE4470C010C /* SetupFlowModelTests.swift */; };
 		7BEEE829C66286C1640FE677 /* SetupFlowModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2E3CBE65116C7ACDAB73E17 /* SetupFlowModel.swift */; };
 		2F0C172A2ADDCA4C922DC782 /* SetupFlowModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2E3CBE65116C7ACDAB73E17 /* SetupFlowModel.swift */; };
+		C36E2F8ADC9EE30C33C13084 /* RecoveryPhraseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46103FC922047931B9C7A8A2 /* RecoveryPhraseViewController.swift */; };
+		3B51A3FC2772B66398838A92 /* RecoveryPhraseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46103FC922047931B9C7A8A2 /* RecoveryPhraseViewController.swift */; };
+		6BD770555F8B78341CBFB10C /* RecoveryPhraseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34BE44BA541810BF542702AC /* RecoveryPhraseView.swift */; };
+		5886F54E4E32219B731F5D4A /* RecoveryPhraseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34BE44BA541810BF542702AC /* RecoveryPhraseView.swift */; };
+		F53DD45A204D871BCCD78E2C /* BackupInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33280B627411566DBE2DE5D1 /* BackupInfoView.swift */; };
+		E6A36FF058A764E881D9DB98 /* BackupInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33280B627411566DBE2DE5D1 /* BackupInfoView.swift */; };
 		453241B2C2ADAA94676338D2 /* BiometricAuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C563BA28FF43DA2621F9651 /* BiometricAuthView.swift */; };
 		7D340EFC13A61D6D8EC4ADE5 /* BiometricAuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C563BA28FF43DA2621F9651 /* BiometricAuthView.swift */; };
 		7170180A5362B8E156BE6E42 /* SetPinViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C4EEC31AAA2FEDF008DC3 /* SetPinViewController.swift */; };
@@ -162,9 +168,7 @@
 		2A44312122CCA2A0009BAF7F /* UIColor+DWStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44312022CCA2A0009BAF7F /* UIColor+DWStyle.m */; };
 		2A44314022CF642C009BAF7F /* DWRootModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44313F22CF642C009BAF7F /* DWRootModel.m */; };
 		2A44314C22CF8801009BAF7F /* DWBiometricAuthModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A44314B22CF8801009BAF7F /* DWBiometricAuthModel.m */; };
-		2A4431C522D4CAFA009BAF7F /* BackupInfo.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A4431C422D4CAFA009BAF7F /* BackupInfo.storyboard */; };
 		2A4431C822D4D92A009BAF7F /* DWCenteredTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431C722D4D92A009BAF7F /* DWCenteredTableView.m */; };
-		2A4431DB22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431DA22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m */; };
 		2A4431E222D7219E009BAF7F /* DWSeedWordView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431E022D7219E009BAF7F /* DWSeedWordView.m */; };
 		2A4431E622D73617009BAF7F /* DWSeedPhraseTitledView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431E522D73617009BAF7F /* DWSeedPhraseTitledView.m */; };
 		2A4431E922D738C0009BAF7F /* DWSeedPhraseModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431E822D738C0009BAF7F /* DWSeedPhraseModel.m */; };
@@ -264,8 +268,6 @@
 		2AD1CE6022D8E9D900C99324 /* DWSeedPhraseView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE5F22D8E9D900C99324 /* DWSeedPhraseView.m */; };
 		2AD1CE6422D9127600C99324 /* DWSeedWordModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE6322D9127600C99324 /* DWSeedWordModel.m */; };
 		2AD1CE6E22DA357D00C99324 /* DWBaseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE6D22DA357D00C99324 /* DWBaseViewController.m */; };
-		2AD1CE7722DB51B500C99324 /* DWCheckbox.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE7622DB51B500C99324 /* DWCheckbox.m */; };
-		2AD1CE7A22DB5F5200C99324 /* DWPreviewSeedPhraseContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE7922DB5F5200C99324 /* DWPreviewSeedPhraseContentView.m */; };
 		2AD1CE8022DC92BF00C99324 /* NSString+DWTextSize.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE7F22DC92BF00C99324 /* NSString+DWTextSize.m */; };
 		2AD1CE8422DC9B5D00C99324 /* DWVerifySeedPhraseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE8322DC9B5D00C99324 /* DWVerifySeedPhraseViewController.m */; };
 		2AD1CE8622DC9B7300C99324 /* VerifySeedPhrase.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2AD1CE8522DC9B7300C99324 /* VerifySeedPhrase.storyboard */; };
@@ -802,8 +804,6 @@
 		C0FFEE012E0A000100A10003 /* ExploreNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE012E0A000100A10001 /* ExploreNavigationBar.swift */; };
 		755B4B222B0C903500B844F0 /* DWDateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755B4B212B0C903500B844F0 /* DWDateFormatter.swift */; };
 		755B4B232B0C903500B844F0 /* DWDateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755B4B212B0C903500B844F0 /* DWDateFormatter.swift */; };
-		755C32382C358FC0007DA721 /* BackupSeedPhraseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755C32372C358FBD007DA721 /* BackupSeedPhraseViewController.swift */; };
-		755C32392C358FC0007DA721 /* BackupSeedPhraseViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755C32372C358FBD007DA721 /* BackupSeedPhraseViewController.swift */; };
 		7566F4832BB6949E005238D2 /* ToolsMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4822BB69498005238D2 /* ToolsMenuScreen.swift */; };
 		7566F4842BB6949E005238D2 /* ToolsMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7566F4822BB69498005238D2 /* ToolsMenuScreen.swift */; };
 		5AGOV0002F9A0000000000S2 /* GovernanceMenuScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AGOV0002F9A0000000000S1 /* GovernanceMenuScreen.swift */; };
@@ -1282,7 +1282,6 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		C1A0B2C3D4E5F60718293A03 /* ShortcutsBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A0B2C3D4E5F60718293A01 /* ShortcutsBarView.swift */; };
 		C1B995F0556113706D9CDA9A /* PaymentProtocolMessages.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C4833BE986D59F69A555C5F /* PaymentProtocolMessages.swift */; };
 		C393DD0A89617D8BF270CE27 /* SwiftDashSDKKeyMigrator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33FB75FCD21FC8C62840E6FD /* SwiftDashSDKKeyMigrator.swift */; };
-		C3DAD268246AA6F10001624F /* DWScreenshotWarningViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD267246AA6F10001624F /* DWScreenshotWarningViewController.m */; };
 		C5745FA476F615D2C1E378F3 /* SwiftDashSDKReceiveAddressReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A876A874736D422F781F797F /* SwiftDashSDKReceiveAddressReader.swift */; };
 		C5906424C3D379AF0CB83370 /* SendScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1F21A7592E99814A800518 /* SendScreen.swift */; };
 		C6138156317BAF449AA76861 /* PaymentsLandingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE64C10DA9C338D408982EBE /* PaymentsLandingViewModel.swift */; };
@@ -1436,11 +1435,9 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		C9D2C6D82A320AA000D15901 /* AtmListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BDD28C1305E00490F5E /* AtmListViewController.swift */; };
 		C9D2C6D92A320AA000D15901 /* TxDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47A5145F2848F75B005A8E3E /* TxDetailViewController.swift */; };
 		C9D2C6DA2A320AA000D15901 /* NSAttributedString+Builder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 472D13E9299E5396006903F1 /* NSAttributedString+Builder.swift */; };
-		C9D2C6DB2A320AA000D15901 /* DWPreviewSeedPhraseContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE7922DB5F5200C99324 /* DWPreviewSeedPhraseContentView.m */; };
 		C9D2C6DC2A320AA000D15901 /* DWPhoneWCSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A858A0C237EE89B0097A7B5 /* DWPhoneWCSessionManager.m */; };
 		C9D2C6DD2A320AA000D15901 /* NumberKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47C661AA28F9707A00028A8D /* NumberKeyboard.swift */; };
 		C9D2C6DE2A320AA000D15901 /* DWSeedPhraseTitledView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431E522D73617009BAF7F /* DWSeedPhraseTitledView.m */; };
-		C9D2C6E12A320AA000D15901 /* BackupInfoItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FB329DD86FB001BC549 /* BackupInfoItemView.swift */; };
 		C9D2C6E42A320AA000D15901 /* UIView+DWReuseHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4E534322F02BC300E5168A /* UIView+DWReuseHelper.m */; };
 		C9D2C6E72A320AA000D15901 /* ServiceEntryPointModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F71317428F4365C0072F454 /* ServiceEntryPointModel.swift */; };
 		C9D2C6E82A320AA000D15901 /* ExploreDash.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8B9428BFACA100490F5E /* ExploreDash.swift */; };
@@ -1478,7 +1475,6 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		C9D2C71F2A320AA000D15901 /* PointOfUseListSearchCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8C0628C2274200490F5E /* PointOfUseListSearchCell.swift */; };
 		C9D2C7202A320AA000D15901 /* ServiceDataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4774DCE028F44BA3008CF87D /* ServiceDataProvider.swift */; };
 		C9D2C7212A320AA000D15901 /* PaymentButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451E62A0BA16400825057 /* PaymentButton.swift */; };
-		C9D2C7222A320AA000D15901 /* DWPreviewSeedPhraseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431DA22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m */; };
 		C9D2C7252A320AA000D15901 /* SyncingActivityMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FA3AFE29350929008D58DC /* SyncingActivityMonitor.swift */; };
 		C9D2C7262A320AA000D15901 /* EmptyUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FAF29DC27F4001BC549 /* EmptyUIView.swift */; };
 		C9D2C7272A320AA000D15901 /* (null) in Sources */ = {isa = PBXBuildFile; };
@@ -1532,7 +1528,6 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		C9D2C7712A320AA000D15901 /* UIDevice+Compatibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4730586D295AB3BD004641DA /* UIDevice+Compatibility.swift */; };
 		C9D2C7722A320AA000D15901 /* DWSeedWordView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A4431E022D7219E009BAF7F /* DWSeedWordView.m */; };
 		C9D2C7752A320AA000D15901 /* DWAnimatedShapeLayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 2ACCD8D0231D33EA00A96B62 /* DWAnimatedShapeLayer.m */; };
-		C9D2C7782A320AA000D15901 /* DWScreenshotWarningViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DAD267246AA6F10001624F /* DWScreenshotWarningViewController.m */; };
 		C9D2C7792A320AA000D15901 /* ConvertCryptoOrderPreviewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4751CACC297021EE00F63AC4 /* ConvertCryptoOrderPreviewController.swift */; };
 		C9D2C77A2A320AA000D15901 /* TransactionDataItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4708119E2990F56F003FCA3D /* TransactionDataItem.swift */; };
 		C9D2C77C2A320AA000D15901 /* DWVerifySeedPhraseModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE8C22DCB3B600C99324 /* DWVerifySeedPhraseModel.m */; };
@@ -1641,7 +1636,6 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		C9D2C82E2A320AA000D15901 /* DWLockActionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A6300482328EA8900827825 /* DWLockActionButton.m */; };
 		C9D2C82F2A320AA000D15901 /* PointOfUseDAO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AE8BA028BFADB600490F5E /* PointOfUseDAO.swift */; };
 		C9D2C8302A320AA000D15901 /* ProvideAmountViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4759D51629300212002F20DC /* ProvideAmountViewController.swift */; };
-		C9D2C8312A320AA000D15901 /* DWCheckbox.m in Sources */ = {isa = PBXBuildFile; fileRef = 2AD1CE7622DB51B500C99324 /* DWCheckbox.m */; };
 		C9D2C8332A320AA000D15901 /* DerivationPathKeysModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C909615229F28E3700002D82 /* DerivationPathKeysModel.swift */; };
 		C9D2C8342A320AA000D15901 /* DWSeedUIConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A74EFF42305333000C475EB /* DWSeedUIConstants.m */; };
 		C9D2C8352A320AA000D15901 /* DWWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 2A0C69B22312E8A0001B8C90 /* DWWindow.m */; };
@@ -1764,9 +1758,7 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		C9D2C9222A320AA000D15901 /* AppAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2A4430F122CBD57A009BAF7F /* AppAssets.xcassets */; };
 		C9D2C9242A320AA000D15901 /* coinflip.aiff in Resources */ = {isa = PBXBuildFile; fileRef = 75E83CF51B5F997A0038FB70 /* coinflip.aiff */; };
 		C9D2C9252A320AA000D15901 /* SharedAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2ADF83FE23633116008459A7 /* SharedAssets.xcassets */; };
-		C9D2C9262A320AA000D15901 /* BackupInfo.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2A4431C422D4CAFA009BAF7F /* BackupInfo.storyboard */; };
 		C9D2C9272A320AA000D15901 /* SyncView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A4E531922EA382B00E5168A /* SyncView.xib */; };
-		C9D2C9292A320AA000D15901 /* BackupInfoItemView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C9F42FB529DD8702001BC549 /* BackupInfoItemView.xib */; };
 		C9D2C92A2A320AA000D15901 /* explore.db in Resources */ = {isa = PBXBuildFile; fileRef = 47AE8BAF28BFF28400490F5E /* explore.db */; };
 		C9D2C92B2A320AA000D15901 /* (null) in Resources */ = {isa = PBXBuildFile; };
 		C9D2C92C2A320AA000D15901 /* Coinbase.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0F3693812919A70B007F4E91 /* Coinbase.storyboard */; };
@@ -1787,8 +1779,6 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		C9F42FA929DC09CF001BC549 /* Style.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FA829DC09CF001BC549 /* Style.swift */; };
 		C9F42FB029DC27F4001BC549 /* EmptyUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FAF29DC27F4001BC549 /* EmptyUIView.swift */; };
 		C9F42FB229DD5141001BC549 /* BackupInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FB129DD5141001BC549 /* BackupInfoViewController.swift */; };
-		C9F42FB429DD86FB001BC549 /* BackupInfoItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F42FB329DD86FB001BC549 /* BackupInfoItemView.swift */; };
-		C9F42FB629DD8702001BC549 /* BackupInfoItemView.xib in Resources */ = {isa = PBXBuildFile; fileRef = C9F42FB529DD8702001BC549 /* BackupInfoItemView.xib */; };
 		C9F451E52A0B986E00825057 /* MainTabbarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F451E42A0B986E00825057 /* MainTabbarController.swift */; };
 		3354559950624DC6877867BF /* WalletLifecycleOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9D803992EA742E0A34208A6 /* WalletLifecycleOverlay.swift */; };
 		7A7749C57DDA4E57A7320B3B /* WalletPreparationSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05C514918D19469F88ED9DF6 /* WalletPreparationSupport.swift */; };
@@ -2116,6 +2106,9 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		1478DF69237649F246F8071A /* SetPinViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetPinViewModelTests.swift; sourceTree = "<group>"; };
 		A6DCA16BEE4C8BE4470C010C /* SetupFlowModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupFlowModelTests.swift; sourceTree = "<group>"; };
 		D2E3CBE65116C7ACDAB73E17 /* SetupFlowModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupFlowModel.swift; sourceTree = "<group>"; };
+		46103FC922047931B9C7A8A2 /* RecoveryPhraseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryPhraseViewController.swift; sourceTree = "<group>"; };
+		34BE44BA541810BF542702AC /* RecoveryPhraseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryPhraseView.swift; sourceTree = "<group>"; };
+		33280B627411566DBE2DE5D1 /* BackupInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupInfoView.swift; sourceTree = "<group>"; };
 		5C563BA28FF43DA2621F9651 /* BiometricAuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometricAuthView.swift; sourceTree = "<group>"; };
 		2D4C4EEC31AAA2FEDF008DC3 /* SetPinViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetPinViewController.swift; sourceTree = "<group>"; };
 		06363C84C583CD27370ADA0A /* SetPinView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetPinView.swift; sourceTree = "<group>"; };
@@ -2280,7 +2273,6 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		2A2CD72022F9B571008C7BC9 /* DWIntrinsicCollectionView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWIntrinsicCollectionView.h; sourceTree = "<group>"; };
 		2A2CD72122F9B571008C7BC9 /* DWIntrinsicCollectionView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWIntrinsicCollectionView.m; sourceTree = "<group>"; };
 		2A36A887234F3F400014DC60 /* DWSelectorFormItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSelectorFormItem.h; sourceTree = "<group>"; };
-		2A36A88C2350A18A0014DC60 /* DWPreviewSeedPhraseViewController+DWProtected.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DWPreviewSeedPhraseViewController+DWProtected.h"; sourceTree = "<group>"; };
 		2A3DC86C239717C2004B3DBA /* DWRecoverWalletCommand.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWRecoverWalletCommand.h; sourceTree = "<group>"; };
 		2A3DC86D239717C2004B3DBA /* DWRecoverWalletCommand.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRecoverWalletCommand.m; sourceTree = "<group>"; };
 		2A4430E522CBB6EC009BAF7F /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -2296,11 +2288,8 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		2A44313F22CF642C009BAF7F /* DWRootModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWRootModel.m; sourceTree = "<group>"; };
 		2A44314A22CF8801009BAF7F /* DWBiometricAuthModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBiometricAuthModel.h; sourceTree = "<group>"; };
 		2A44314B22CF8801009BAF7F /* DWBiometricAuthModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBiometricAuthModel.m; sourceTree = "<group>"; };
-		2A4431C422D4CAFA009BAF7F /* BackupInfo.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = BackupInfo.storyboard; sourceTree = "<group>"; };
 		2A4431C622D4D92A009BAF7F /* DWCenteredTableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCenteredTableView.h; sourceTree = "<group>"; };
 		2A4431C722D4D92A009BAF7F /* DWCenteredTableView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCenteredTableView.m; sourceTree = "<group>"; };
-		2A4431D922D675CD009BAF7F /* DWPreviewSeedPhraseViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPreviewSeedPhraseViewController.h; sourceTree = "<group>"; };
-		2A4431DA22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPreviewSeedPhraseViewController.m; sourceTree = "<group>"; };
 		2A4431DF22D7219E009BAF7F /* DWSeedWordView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSeedWordView.h; sourceTree = "<group>"; };
 		2A4431E022D7219E009BAF7F /* DWSeedWordView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWSeedWordView.m; sourceTree = "<group>"; };
 		2A4431E422D73617009BAF7F /* DWSeedPhraseTitledView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWSeedPhraseTitledView.h; sourceTree = "<group>"; };
@@ -2526,10 +2515,6 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		2AD1CE6B22DA33F900C99324 /* DWDeviceAdaptableController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWDeviceAdaptableController.h; sourceTree = "<group>"; };
 		2AD1CE6C22DA357D00C99324 /* DWBaseViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWBaseViewController.h; sourceTree = "<group>"; };
 		2AD1CE6D22DA357D00C99324 /* DWBaseViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWBaseViewController.m; sourceTree = "<group>"; };
-		2AD1CE7522DB51B500C99324 /* DWCheckbox.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWCheckbox.h; sourceTree = "<group>"; };
-		2AD1CE7622DB51B500C99324 /* DWCheckbox.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWCheckbox.m; sourceTree = "<group>"; };
-		2AD1CE7822DB5F5200C99324 /* DWPreviewSeedPhraseContentView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWPreviewSeedPhraseContentView.h; sourceTree = "<group>"; };
-		2AD1CE7922DB5F5200C99324 /* DWPreviewSeedPhraseContentView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWPreviewSeedPhraseContentView.m; sourceTree = "<group>"; };
 		2AD1CE7E22DC92BF00C99324 /* NSString+DWTextSize.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSString+DWTextSize.h"; sourceTree = "<group>"; };
 		2AD1CE7F22DC92BF00C99324 /* NSString+DWTextSize.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSString+DWTextSize.m"; sourceTree = "<group>"; };
 		2AD1CE8222DC9B5D00C99324 /* DWVerifySeedPhraseViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWVerifySeedPhraseViewController.h; sourceTree = "<group>"; };
@@ -2938,7 +2923,6 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		7556EE402DF9876B004E8093 /* ExploreSyncBannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreSyncBannerView.swift; sourceTree = "<group>"; };
 		C0FFEE012E0A000100A10001 /* ExploreNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreNavigationBar.swift; sourceTree = "<group>"; };
 		755B4B212B0C903500B844F0 /* DWDateFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DWDateFormatter.swift; sourceTree = "<group>"; };
-		755C32372C358FBD007DA721 /* BackupSeedPhraseViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupSeedPhraseViewController.swift; sourceTree = "<group>"; };
 		7566F4822BB69498005238D2 /* ToolsMenuScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolsMenuScreen.swift; sourceTree = "<group>"; };
 		5AGOV0002F9A0000000000S1 /* GovernanceMenuScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GovernanceMenuScreen.swift; sourceTree = "<group>"; };
 		5AGOV0002F9A0000000000V1 /* GovernanceMenuViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GovernanceMenuViewModel.swift; sourceTree = "<group>"; };
@@ -3265,8 +3249,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		A1C0DE0242FBB4945119F002 /* PendingInvitationViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingInvitationViewModelTests.swift; sourceTree = "<group>"; };
 		C1A0B2C3D4E5F60718293A01 /* ShortcutsBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsBarView.swift; sourceTree = "<group>"; };
 		C1D2E3F4A5B6C7D8E9F01234 /* TransferAmountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferAmountView.swift; sourceTree = "<group>"; };
-		C3DAD266246AA6F10001624F /* DWScreenshotWarningViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DWScreenshotWarningViewController.h; sourceTree = "<group>"; };
-		C3DAD267246AA6F10001624F /* DWScreenshotWarningViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DWScreenshotWarningViewController.m; sourceTree = "<group>"; };
 		C4CE60A95629A2883710A75C /* DamerauLevenshtein.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DamerauLevenshtein.swift; sourceTree = "<group>"; };
 		C909614C29EFF7D600002D82 /* WalletKeysOverviewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletKeysOverviewModel.swift; sourceTree = "<group>"; };
 		C909615029F158D700002D82 /* DerivationPathKeysViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DerivationPathKeysViewController.swift; sourceTree = "<group>"; };
@@ -3580,8 +3562,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		C9F42FA829DC09CF001BC549 /* Style.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Style.swift; sourceTree = "<group>"; };
 		C9F42FAF29DC27F4001BC549 /* EmptyUIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyUIView.swift; sourceTree = "<group>"; };
 		C9F42FB129DD5141001BC549 /* BackupInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupInfoViewController.swift; sourceTree = "<group>"; };
-		C9F42FB329DD86FB001BC549 /* BackupInfoItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupInfoItemView.swift; sourceTree = "<group>"; };
-		C9F42FB529DD8702001BC549 /* BackupInfoItemView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = BackupInfoItemView.xib; sourceTree = "<group>"; };
 		C9F451E42A0B986E00825057 /* MainTabbarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabbarController.swift; sourceTree = "<group>"; };
 		A9D803992EA742E0A34208A6 /* WalletLifecycleOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletLifecycleOverlay.swift; sourceTree = "<group>"; };
 		05C514918D19469F88ED9DF6 /* WalletPreparationSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletPreparationSupport.swift; sourceTree = "<group>"; };
@@ -4428,7 +4408,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				DA40F4639073CBBA115CE494 /* SetupComponents.swift */,
 				A2ADCE57B337C00995F78FEE /* SetupViewController.swift */,
 				3A5FDAEEFBC4B8C788E5ABDB /* SetupView.swift */,
-				C3DAD265246AA6CF0001624F /* ScreenshotWarning */,
 				2A74EFEA2305316A00C475EB /* RecoverWallet */,
 				2A9CEBA322E1C25700A50237 /* SecureWallet */,
 				2A44314422CF828E009BAF7F /* BiometricAuth */,
@@ -4651,33 +4630,21 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		2A4431C022D4CAC6009BAF7F /* BackupInfo */ = {
 			isa = PBXGroup;
 			children = (
-				2A4431C922D52776009BAF7F /* Views */,
+				33280B627411566DBE2DE5D1 /* BackupInfoView.swift */,
 				C9F42FB129DD5141001BC549 /* BackupInfoViewController.swift */,
-				2A4431C422D4CAFA009BAF7F /* BackupInfo.storyboard */,
 			);
 			path = BackupInfo;
-			sourceTree = "<group>";
-		};
-		2A4431C922D52776009BAF7F /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				C9F42FB329DD86FB001BC549 /* BackupInfoItemView.swift */,
-				C9F42FB529DD8702001BC549 /* BackupInfoItemView.xib */,
-			);
-			path = Views;
 			sourceTree = "<group>";
 		};
 		2A4431D822D67592009BAF7F /* Seed */ = {
 			isa = PBXGroup;
 			children = (
+				46103FC922047931B9C7A8A2 /* RecoveryPhraseViewController.swift */,
+				34BE44BA541810BF542702AC /* RecoveryPhraseView.swift */,
 				2A74EFF22305330B00C475EB /* Base */,
 				2A4431DE22D72156009BAF7F /* Views */,
 				2AD1CEA622E0C8C800C99324 /* DWPreviewSeedPhraseModel.h */,
 				2AD1CEA722E0C8C800C99324 /* DWPreviewSeedPhraseModel.m */,
-				2A4431D922D675CD009BAF7F /* DWPreviewSeedPhraseViewController.h */,
-				2A4431DA22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m */,
-				2A36A88C2350A18A0014DC60 /* DWPreviewSeedPhraseViewController+DWProtected.h */,
-				755C32372C358FBD007DA721 /* BackupSeedPhraseViewController.swift */,
 				48D8BC6623C81DD3F008A668 /* DWPreviewSeedPhraseModel+Mnemonic.swift */,
 				210C818A8AAC76F91676AFF9 /* RecoveryPhraseLength.swift */,
 			);
@@ -4690,10 +4657,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				2AD1CE6122D9125000C99324 /* SeedPhrase */,
 				2A4431E422D73617009BAF7F /* DWSeedPhraseTitledView.h */,
 				2A4431E522D73617009BAF7F /* DWSeedPhraseTitledView.m */,
-				2AD1CE7522DB51B500C99324 /* DWCheckbox.h */,
-				2AD1CE7622DB51B500C99324 /* DWCheckbox.m */,
-				2AD1CE7822DB5F5200C99324 /* DWPreviewSeedPhraseContentView.h */,
-				2AD1CE7922DB5F5200C99324 /* DWPreviewSeedPhraseContentView.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -7575,15 +7538,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			path = TodayExtension;
 			sourceTree = "<group>";
 		};
-		C3DAD265246AA6CF0001624F /* ScreenshotWarning */ = {
-			isa = PBXGroup;
-			children = (
-				C3DAD266246AA6F10001624F /* DWScreenshotWarningViewController.h */,
-				C3DAD267246AA6F10001624F /* DWScreenshotWarningViewController.m */,
-			);
-			path = ScreenshotWarning;
-			sourceTree = "<group>";
-		};
 		C909615629F29C7500002D82 /* Cell */ = {
 			isa = PBXGroup;
 			children = (
@@ -8893,9 +8847,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				51733DB22FCF04B300CF8713 /* SwapKit-Info.plist in Resources */,
 				75E83CF61B5F997A0038FB70 /* coinflip.aiff in Resources */,
 				2ADF83FF23633116008459A7 /* SharedAssets.xcassets in Resources */,
-				2A4431C522D4CAFA009BAF7F /* BackupInfo.storyboard in Resources */,
 				2A4E531A22EA382B00E5168A /* SyncView.xib in Resources */,
-				C9F42FB629DD8702001BC549 /* BackupInfoItemView.xib in Resources */,
 				47AE8BB028BFF28700490F5E /* explore.db in Resources */,
 				0F36937F2919A70B007F4E91 /* Coinbase.storyboard in Resources */,
 				758CE59C2BC566DE0062AF53 /* PrivacyInfo.xcprivacy in Resources */,
@@ -8971,9 +8923,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C9D2C9222A320AA000D15901 /* AppAssets.xcassets in Resources */,
 				C9D2C9242A320AA000D15901 /* coinflip.aiff in Resources */,
 				C9D2C9252A320AA000D15901 /* SharedAssets.xcassets in Resources */,
-				C9D2C9262A320AA000D15901 /* BackupInfo.storyboard in Resources */,
 				C9D2C9272A320AA000D15901 /* SyncView.xib in Resources */,
-				C9D2C9292A320AA000D15901 /* BackupInfoItemView.xib in Resources */,
 				C9D2C92A2A320AA000D15901 /* explore.db in Resources */,
 				C9D2C92B2A320AA000D15901 /* (null) in Resources */,
 				C9D2C92C2A320AA000D15901 /* Coinbase.storyboard in Resources */,
@@ -9352,6 +9302,9 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			buildActionMask = 2147483647;
 			files = (
 				7BEEE829C66286C1640FE677 /* SetupFlowModel.swift in Sources */,
+				C36E2F8ADC9EE30C33C13084 /* RecoveryPhraseViewController.swift in Sources */,
+				6BD770555F8B78341CBFB10C /* RecoveryPhraseView.swift in Sources */,
+				F53DD45A204D871BCCD78E2C /* BackupInfoView.swift in Sources */,
 				7D340EFC13A61D6D8EC4ADE5 /* BiometricAuthView.swift in Sources */,
 				8E78990E60B40715C5B03971 /* SetPinViewController.swift in Sources */,
 				93AACF242CB32B5D8807DB43 /* SetPinView.swift in Sources */,
@@ -9464,12 +9417,10 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				BA1B0012C0FFEE00B15B0012 /* RawTransactionView.swift in Sources */,
 				47A514602848F75B005A8E3E /* TxDetailViewController.swift in Sources */,
 				472D13EA299E5396006903F1 /* NSAttributedString+Builder.swift in Sources */,
-				2AD1CE7A22DB5F5200C99324 /* DWPreviewSeedPhraseContentView.m in Sources */,
 				2A858A11237EE89C0097A7B5 /* DWPhoneWCSessionManager.m in Sources */,
 				47C661AB28F9707A00028A8D /* NumberKeyboard.swift in Sources */,
 				75F51AAD2ABD8C800057B499 /* IntegrationViewController+Uphold.swift in Sources */,
 				2A4431E622D73617009BAF7F /* DWSeedPhraseTitledView.m in Sources */,
-				C9F42FB429DD86FB001BC549 /* BackupInfoItemView.swift in Sources */,
 				7527720D2AA9B2630066557E /* SupportedTopperAssets.swift in Sources */,
 				2A4E534422F02BC300E5168A /* UIView+DWReuseHelper.m in Sources */,
 				0F71317528F4365C0072F454 /* ServiceEntryPointModel.swift in Sources */,
@@ -9516,7 +9467,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				47AE8C0728C2274200490F5E /* PointOfUseListSearchCell.swift in Sources */,
 				4774DCE128F44BA4008CF87D /* ServiceDataProvider.swift in Sources */,
 				C9F451E72A0BA16400825057 /* PaymentButton.swift in Sources */,
-				2A4431DB22D675CD009BAF7F /* DWPreviewSeedPhraseViewController.m in Sources */,
 				C956AF2F2A5D5F6B002FAB75 /* UpholdConfirmViewController.swift in Sources */,
 				47FA3AFF29350929008D58DC /* SyncingActivityMonitor.swift in Sources */,
 				C9F42FB029DC27F4001BC549 /* EmptyUIView.swift in Sources */,
@@ -9604,9 +9554,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				753F75382DD0D76400D40DFE /* DashSpendPayViewModel.swift in Sources */,
 				2ACCD8D1231D33EA00A96B62 /* DWAnimatedShapeLayer.m in Sources */,
 				C9FAABB72AB799AE00878224 /* UpholdPortalModel.swift in Sources */,
-				C3DAD268246AA6F10001624F /* DWScreenshotWarningViewController.m in Sources */,
 				4751CACD297021EE00F63AC4 /* ConvertCryptoOrderPreviewController.swift in Sources */,
-				755C32382C358FC0007DA721 /* BackupSeedPhraseViewController.swift in Sources */,
 				4708119F2990F56F003FCA3D /* TransactionDataItem.swift in Sources */,
 				2AD1CE8D22DCB3B600C99324 /* DWVerifySeedPhraseModel.m in Sources */,
 				75FFD6C72BF495800032879E /* HomeViewController+Shortcuts.swift in Sources */,
@@ -9793,7 +9741,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C94D98252A4CC8FD00F3BEE1 /* UIControl+Dash.swift in Sources */,
 				75D9EBBD2DE5CD8B009416A2 /* GiftCard.swift in Sources */,
 				47A1B00130B5A10000D15A01 /* SendAmountScreen.swift in Sources */,
-				2AD1CE7722DB51B500C99324 /* DWCheckbox.m in Sources */,
 				C909615329F28E3700002D82 /* DerivationPathKeysModel.swift in Sources */,
 				2A74EFF52305333000C475EB /* DWSeedUIConstants.m in Sources */,
 				2A0C69B32312E8A0001B8C90 /* DWWindow.m in Sources */,
@@ -10347,6 +10294,9 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			buildActionMask = 2147483647;
 			files = (
 				2F0C172A2ADDCA4C922DC782 /* SetupFlowModel.swift in Sources */,
+				3B51A3FC2772B66398838A92 /* RecoveryPhraseViewController.swift in Sources */,
+				5886F54E4E32219B731F5D4A /* RecoveryPhraseView.swift in Sources */,
+				E6A36FF058A764E881D9DB98 /* BackupInfoView.swift in Sources */,
 				453241B2C2ADAA94676338D2 /* BiometricAuthView.swift in Sources */,
 				7170180A5362B8E156BE6E42 /* SetPinViewController.swift in Sources */,
 				B56DBAE02F71F8E530A2A760 /* SetPinView.swift in Sources */,
@@ -10444,7 +10394,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C9D2C6D92A320AA000D15901 /* TxDetailViewController.swift in Sources */,
 				C9D2C6DA2A320AA000D15901 /* NSAttributedString+Builder.swift in Sources */,
 				75D9EBB92DE5CC3A009416A2 /* AddGiftCardsTable.swift in Sources */,
-				C9D2C6DB2A320AA000D15901 /* DWPreviewSeedPhraseContentView.m in Sources */,
 				C9D2C6DC2A320AA000D15901 /* DWPhoneWCSessionManager.m in Sources */,
 				C943B5232A40A54600AF23C5 /* DWNetworkUnavailableView.m in Sources */,
 				C943B3222A408CED00AF23C5 /* DWImgurInfoViewController.m in Sources */,
@@ -10452,7 +10401,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C9D2C6DE2A320AA000D15901 /* DWSeedPhraseTitledView.m in Sources */,
 				759ADD582BF3447400767ACD /* Button.swift in Sources */,
 				C943B3302A408CED00AF23C5 /* DWSaveAlertChildView.m in Sources */,
-				C9D2C6E12A320AA000D15901 /* BackupInfoItemView.swift in Sources */,
 				C9D2C6E42A320AA000D15901 /* UIView+DWReuseHelper.m in Sources */,
 				75FFD6BF2BF491FC0032879E /* HomeViewController+BackupReminder.swift in Sources */,
 				C9D2C6E72A320AA000D15901 /* ServiceEntryPointModel.swift in Sources */,
@@ -10542,7 +10490,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C9D2C71F2A320AA000D15901 /* PointOfUseListSearchCell.swift in Sources */,
 				C9D2C7202A320AA000D15901 /* ServiceDataProvider.swift in Sources */,
 				C9D2C7212A320AA000D15901 /* PaymentButton.swift in Sources */,
-				C9D2C7222A320AA000D15901 /* DWPreviewSeedPhraseViewController.m in Sources */,
 				C9D2C7252A320AA000D15901 /* SyncingActivityMonitor.swift in Sources */,
 				C9D2C7262A320AA000D15901 /* EmptyUIView.swift in Sources */,
 				C9D2C7272A320AA000D15901 /* (null) in Sources */,
@@ -10657,7 +10604,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C9D2C7712A320AA000D15901 /* UIDevice+Compatibility.swift in Sources */,
 				C9D2C7722A320AA000D15901 /* DWSeedWordView.m in Sources */,
 				C9D2C7752A320AA000D15901 /* DWAnimatedShapeLayer.m in Sources */,
-				C9D2C7782A320AA000D15901 /* DWScreenshotWarningViewController.m in Sources */,
 				C9D2C7792A320AA000D15901 /* ConvertCryptoOrderPreviewController.swift in Sources */,
 				C9D2C77A2A320AA000D15901 /* TransactionDataItem.swift in Sources */,
 				C9D2C77C2A320AA000D15901 /* DWVerifySeedPhraseModel.m in Sources */,
@@ -10864,7 +10810,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C9D2C82F2A320AA000D15901 /* PointOfUseDAO.swift in Sources */,
 				C943B5292A40A54600AF23C5 /* DWDashPayConstants.m in Sources */,
 				C9D2C8302A320AA000D15901 /* ProvideAmountViewController.swift in Sources */,
-				C9D2C8312A320AA000D15901 /* DWCheckbox.m in Sources */,
 				C9D2C8332A320AA000D15901 /* DerivationPathKeysModel.swift in Sources */,
 				C9D2C8342A320AA000D15901 /* DWSeedUIConstants.m in Sources */,
 				C9D2C8352A320AA000D15901 /* DWWindow.m in Sources */,
@@ -10921,7 +10866,6 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				C9D2C85D2A320AA000D15901 /* DWLockPinInputView.m in Sources */,
 				C9D2C85E2A320AA000D15901 /* UIView+DWHUD.m in Sources */,
 				C9D2C85F2A320AA000D15901 /* DWPayOptionModel.m in Sources */,
-				755C32392C358FC0007DA721 /* BackupSeedPhraseViewController.swift in Sources */,
 				C9D2C8612A320AA000D15901 /* CoinbaseTokenResponse.swift in Sources */,
 				C9D2C8622A320AA000D15901 /* BackupInfoViewController.swift in Sources */,
 				C9D2C8652A320AA000D15901 /* DWCaptureSessionManager.m in Sources */,

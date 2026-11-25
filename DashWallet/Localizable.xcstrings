@@ -453266,6 +453266,7 @@
       }
     },
     "Screenshot detected. New recovery phrase:" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
