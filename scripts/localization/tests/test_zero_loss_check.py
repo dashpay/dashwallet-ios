@@ -207,7 +207,9 @@ class ZeroLossCase(unittest.TestCase):
     @contextlib.contextmanager
     def publication_in_progress(self, rel):
         """Another process publishing `rel`: it holds the folder lock with the file moved aside and puts
-        it back a second later."""
+        it back a second later. End to end only: the CLI may reach its read after that second, so these
+        tests do not prove the wait; test_catalog_io pins it at read_published and publish_text, and that
+        the tools read only through read_published."""
         path = os.path.join(self.repo, rel)
         lock = os.open(os.path.dirname(path), os.O_RDONLY)
         fcntl.flock(lock, fcntl.LOCK_EX)

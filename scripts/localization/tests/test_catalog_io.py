@@ -444,27 +444,57 @@ class WritersGoThroughPublishTextTest(unittest.TestCase):
             catalog_io.refuse_leftover(self.catalog)
         self.assertIn(own, str(cm.exception))
 
+    def while_a_publication_holds_the_lock(self, path, call):
+        """Run `call` in a thread while this test, as another process publishing `path`, holds its folder
+        lock with the file moved aside. Once `call` reaches that lock (no timing guess), put the file back,
+        release the lock and return what `call` returned."""
+        import fcntl
+        import threading
+        folder = os.path.dirname(path)
+        lock = os.open(folder, os.O_RDONLY)
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        aside = os.path.join(folder, "." + os.path.basename(path) + ".abc123.aside")
+        os.rename(path, aside)
+        folder_ino = os.stat(folder).st_ino
+        reached = threading.Event()
+        real_flock = fcntl.flock
+
+        def flock(fd, operation):
+            if os.fstat(fd).st_ino == folder_ino:
+                reached.set()
+            return real_flock(fd, operation)
+        outcome = {}
+
+        def run():
+            try:
+                outcome["value"] = call()
+            except BaseException as e:  # reported below, on the test's thread
+                outcome["error"] = e
+        caller = threading.Thread(target=run)
+        try:
+            with mock.patch.object(catalog_io.fcntl, "flock", flock):
+                caller.start()
+                reached_lock = reached.wait(10)
+                os.rename(aside, path)
+                os.close(lock)
+                caller.join(10)
+        finally:
+            if os.path.exists(aside):
+                os.rename(aside, path)
+        self.assertTrue(reached_lock, "the caller never took the folder lock: %r" % outcome)
+        self.assertNotIn("error", outcome)
+        return outcome.get("value")
+
+    def test_read_published_waits_for_a_publication_in_progress(self):
+        got = self.while_a_publication_holds_the_lock(self.catalog,
+                                                      lambda: catalog_io.read_published(self.catalog))
+        self.assertEqual(got, b'{"strings": {}}')
+
     def test_the_key_map_is_published_after_a_catalog_publication_in_progress_ends(self):
         # publish_text holds the lock of each folder it watches: the Catalog, missing for a moment while
         # another process publishes it, is compared once that publication is done.
-        import fcntl
-        import threading
-        import time
-        lock = os.open(os.path.dirname(self.catalog), os.O_RDONLY)
-        fcntl.flock(lock, fcntl.LOCK_EX)
-        aside = self.catalog + ".moving"
-        os.rename(self.catalog, aside)
-
-        def finish():
-            time.sleep(1.0)
-            os.rename(aside, self.catalog)
-            os.close(lock)
-        other = threading.Thread(target=finish)
-        other.start()
-        try:
-            self.zl.write_key_map(self.repo, "0" * 40, {"a": ["a"]}, self.read_before)
-        finally:
-            other.join()
+        self.while_a_publication_holds_the_lock(
+            self.catalog, lambda: self.zl.write_key_map(self.repo, "0" * 40, {"a": ["a"]}, self.read_before))
         with open(self.key_map, encoding="utf-8") as f:
             self.assertEqual(json.load(f)["keys"], {"a": ["a"]})
 
