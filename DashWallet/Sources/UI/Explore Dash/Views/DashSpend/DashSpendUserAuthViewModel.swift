@@ -65,9 +65,9 @@ class DashSpendUserAuthViewModel: ObservableObject {
                 showError = true
                 
                 if let dashSpendError = error as? DashSpendError {
-                    errorMessage = dashSpendError.errorDescription ?? NSLocalizedString("An error occurred", comment: "")
+                    errorMessage = dashSpendError.errorDescription ?? String(localized: "An error occurred", comment: "")
                 } else {
-                    errorMessage = error.localizedDescription.isEmpty ? NSLocalizedString("An error occurred", comment: "") : error.localizedDescription
+                    errorMessage = error.localizedDescription.isEmpty ? String(localized: "An error occurred", comment: "") : error.localizedDescription
                 }
             }
             

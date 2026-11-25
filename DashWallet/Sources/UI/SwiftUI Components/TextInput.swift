@@ -42,7 +42,7 @@ struct TextInput: View {
                     .scaleEffect(labelScale, anchor: .leading)
                     .animation(.spring(response: 0.2, dampingFraction: 0.8), value: hasFocus || !text.isEmpty)
                 
-                TextField("", text: $text)
+                TextField("" as String, text: $text)
                     .keyboardType(keyboardType)
                     .textInputAutocapitalization(autocapitalization)
                     .focused(focusBinding)

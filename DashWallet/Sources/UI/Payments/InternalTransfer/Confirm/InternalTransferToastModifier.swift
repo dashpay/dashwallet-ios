@@ -54,7 +54,7 @@ private struct InternalTransferToastModifier: ViewModifier {
                         // other notices cannot be closed, so they offer no action.
                         .accessibilityActions {
                             if notice.isFailure {
-                                Button(NSLocalizedString("Close", comment: "")) { dismiss(notice) }
+                                Button(String(localized: "Close", comment: "")) { dismiss(notice) }
                             }
                         }
                         .padding(.horizontal, 20)
@@ -106,24 +106,24 @@ private struct InternalTransferToastModifier: ViewModifier {
     private func message(for notice: InternalTransferRunner.Notice) -> String {
         switch notice {
         case .started:
-            return NSLocalizedString(
-                "Transfer started",
+            return String(
+                localized: "Transfer started",
                 comment: "Internal transfer handed to the background runner")
         case .busy:
-            return NSLocalizedString(
-                "Another transfer is still in progress",
+            return String(
+                localized: "Another transfer is still in progress",
                 comment: "A second internal transfer was started before the first finished")
         case .succeeded:
-            return NSLocalizedString(
-                "Transfer complete",
+            return String(
+                localized: "Transfer complete",
                 comment: "")
         case .submitted:
-            return NSLocalizedString(
-                "Transfer result unconfirmed. Don't resend it; wait for the wallet to sync and check its status.",
+            return String(
+                localized: "Transfer result unconfirmed. Don't resend it; wait for the wallet to sync and check its status.",
                 comment: "The transfer may have reached the network; avoid sending twice")
         case .drainPending:
-            return NSLocalizedString(
-                "Max transfer status is pending. Open the pending transaction in History, or tap Max again, to check or resume it.",
+            return String(
+                localized: "Max transfer status is pending. Open the pending transaction in History, or tap Max again, to check or resume it.",
                 comment: "A wallet drain has an unresolved outcome")
         case .failed(let reason):
             return reason

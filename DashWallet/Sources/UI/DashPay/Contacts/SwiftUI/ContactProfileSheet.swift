@@ -68,7 +68,7 @@ struct ContactProfileSheet: View {
         // "Transaction" title and a back button that returns to the profile.
         DashUIKit.BottomSheet(
             title: selectedPaymentId == nil
-                ? "" : NSLocalizedString("Transaction", comment: "DashPay Contacts"),
+                ? "" : String(localized: "Transaction", comment: "DashPay Contacts"),
             showBackButton: Binding(
                 get: { selectedPaymentId != nil },
                 set: { _ in }),
@@ -95,12 +95,12 @@ struct ContactProfileSheet: View {
             }
             .animation(.easeInOut(duration: 0.3), value: selectedPaymentId)
             .alert(
-                NSLocalizedString("Error", comment: ""),
+                String(localized: "Error", comment: ""),
                 isPresented: Binding(
                     get: { errorMessage != nil },
                     set: { if !$0 { errorMessage = nil } })
             ) {
-                Button(NSLocalizedString("OK", comment: ""), role: .cancel) {}
+                Button(String(localized: "OK", comment: ""), role: .cancel) {}
             } message: {
                 Text(errorMessage ?? "")
             }
@@ -185,7 +185,7 @@ struct ContactProfileSheet: View {
                 // this row's tap copies.
                 ContactIdentityIdView(
                     identityId: contact.contactIdentityId,
-                    onCopy: { showToast(NSLocalizedString("Copied", comment: "")) })
+                    onCopy: { showToast(String(localized: "Copied", comment: "")) })
                 if let message = contact.publicMessage, !message.isEmpty {
                     Text(message)
                         .font(.system(size: 14))
@@ -246,9 +246,7 @@ struct ContactProfileSheet: View {
             // Android "contact request received" pane: caption title +
             // green Accept / tertiary Ignore pair (120×39, radius 8).
             VStack(spacing: 14) {
-                Text(String(
-                    format: NSLocalizedString("%@ has requested to be your contact", comment: "DashPay Contacts"),
-                    contact.displayTitle))
+                Text(String(localized: "\(contact.displayTitle) has requested to be your contact", comment: "DashPay Contacts"))
                     .font(.system(size: 13))
                     .foregroundColor(.dash.secondaryText)
                     .multilineTextAlignment(.center)
@@ -259,7 +257,7 @@ struct ContactProfileSheet: View {
                         Button {
                             run { try await service.acceptContactRequest(from: contact.contactIdentityId) }
                         } label: {
-                            Text(NSLocalizedString("Accept", comment: "DashPay Contacts"))
+                            Text(String(localized: "Accept", comment: "DashPay Contacts"))
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundColor(Color.dash.whiteText)
                                 .frame(width: 120, height: 39)
@@ -272,7 +270,7 @@ struct ContactProfileSheet: View {
                         Button {
                             run { try await service.ignoreSender(contact.contactIdentityId) }
                         } label: {
-                            Text(NSLocalizedString("Ignore", comment: "DashPay Contacts"))
+                            Text(String(localized: "Ignore", comment: "DashPay Contacts"))
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundColor(.dash.primaryText)
                                 .frame(width: 120, height: 39)
@@ -289,7 +287,7 @@ struct ContactProfileSheet: View {
             HStack(spacing: 6) {
                 Image(systemName: "hourglass")
                     .font(.system(size: 12))
-                Text(NSLocalizedString("Contact Request Pending", comment: "DashPay Contacts"))
+                Text(String(localized: "Contact Request Pending", comment: "DashPay Contacts"))
                     .font(.system(size: 13, weight: .medium))
             }
             .foregroundColor(.dashGolden)
@@ -320,7 +318,7 @@ struct ContactProfileSheet: View {
                         showingPaySheet = true
                     } label: {
                         Label(
-                            NSLocalizedString("Pay", comment: "DashPay Contacts"),
+                            String(localized: "Pay", comment: "DashPay Contacts"),
                             systemImage: "arrow.up.circle.fill")
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(Color.dash.whiteText)
@@ -341,8 +339,8 @@ struct ContactProfileSheet: View {
                 } label: {
                     Label(
                         isHidden
-                            ? NSLocalizedString("Unhide Contact", comment: "DashPay Contacts")
-                            : NSLocalizedString("Hide Contact", comment: "DashPay Contacts"),
+                            ? String(localized: "Unhide Contact", comment: "DashPay Contacts")
+                            : String(localized: "Hide Contact", comment: "DashPay Contacts"),
                         systemImage: isHidden ? "eye" : "eye.slash")
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.dash.primaryText)
@@ -362,14 +360,14 @@ struct ContactProfileSheet: View {
 
     private var metaSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(NSLocalizedString("Contact settings", comment: "DashPay Contacts"))
+            Text(String(localized: "Contact settings", comment: "DashPay Contacts"))
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundColor(.dash.primaryText)
-            Text(NSLocalizedString("Only visible to you", comment: "DashPay Contacts"))
+            Text(String(localized: "Only visible to you", comment: "DashPay Contacts"))
                 .font(.system(size: 12))
                 .foregroundColor(.dash.tertiaryText)
             TextField(
-                NSLocalizedString("Alias", comment: "DashPay Contacts"),
+                String(localized: "Alias", comment: "DashPay Contacts"),
                 text: $aliasText)
                 .font(.system(size: 15))
                 .padding(.horizontal, 12)
@@ -379,7 +377,7 @@ struct ContactProfileSheet: View {
                         .fill(Color.dash.primaryBackground))
                 .onSubmit { saveMeta() }
             TextField(
-                NSLocalizedString("Note", comment: "DashPay Contacts"),
+                String(localized: "Note", comment: "DashPay Contacts"),
                 text: $noteText,
                 axis: .vertical)
                 .font(.system(size: 15))
@@ -394,7 +392,7 @@ struct ContactProfileSheet: View {
                 Button {
                     saveMeta()
                 } label: {
-                    Text(NSLocalizedString("Save", comment: ""))
+                    Text(String(localized: "Save", comment: ""))
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(.dash.blue)
                         .frame(height: 30)
@@ -451,7 +449,7 @@ struct ContactProfileSheet: View {
                     note: noteText.trimmingCharacters(in: .whitespaces),
                     hidden: isHidden,
                     for: contact.contactIdentityId)
-                showToast(NSLocalizedString("Saved", comment: ""))
+                showToast(String(localized: "Saved", comment: ""))
             } catch {
                 errorMessage = errorMessageIfNotCancelled(error)
             }
@@ -493,12 +491,12 @@ struct ContactProfileSheet: View {
     private var paymentChannelBrokenNotice: some View {
         VStack(spacing: 6) {
             Label(
-                NSLocalizedString("Payments unavailable", comment: "DashPay Contacts"),
+                String(localized: "Payments unavailable", comment: "DashPay Contacts"),
                 systemImage: "exclamationmark.triangle.fill")
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(.dashGolden)
-            Text(NSLocalizedString(
-                "This contact's payment details couldn't be set up. Ask them to send you a new contact request.",
+            Text(String(
+                localized: "This contact's payment details couldn't be set up. Ask them to send you a new contact request.",
                 comment: "DashPay Contacts"))
                 .font(.system(size: 13))
                 .foregroundColor(.dash.secondaryText)
@@ -517,17 +515,17 @@ struct ContactProfileSheet: View {
 
     private var paymentsSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(NSLocalizedString("Activity", comment: "DashPay Contacts"))
+            Text(String(localized: "Activity", comment: "DashPay Contacts"))
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundColor(.dash.primaryText)
             // Legacy profile's info tooltip, inlined: only payments
             // that flowed through the DashPay contact channel appear
             // here — direct-to-address sends are not retained.
-            Text(NSLocalizedString("Payments made directly to an address aren't retained here.", comment: "DashPay Contacts"))
+            Text(String(localized: "Payments made directly to an address aren't retained here.", comment: "DashPay Contacts"))
                 .font(.system(size: 12))
                 .foregroundColor(.dash.tertiaryText)
             if activityEntries.isEmpty {
-                Text(NSLocalizedString("No payments with this contact yet", comment: "DashPay Contacts"))
+                Text(String(localized: "No payments with this contact yet", comment: "DashPay Contacts"))
                     .font(.system(size: 14))
                     .foregroundColor(.dash.secondaryText)
                     .padding(.top, 2)
@@ -626,21 +624,13 @@ struct ContactProfileSheet: View {
     private func requestText(_ event: RequestEvent) -> String {
         switch event.kind {
         case .theyAsked:
-            String(
-                format: NSLocalizedString("%@ has sent you a contact request", comment: "DashPay Notifications"),
-                contact.displayTitle)
+            String(localized: "\(contact.displayTitle) has sent you a contact request", comment: "DashPay Notifications")
         case .weAsked:
-            String(
-                format: NSLocalizedString("You sent a contact request to %@", comment: "DashPay Notifications"),
-                contact.displayTitle)
+            String(localized: "You sent a contact request to \(contact.displayTitle)", comment: "DashPay Notifications")
         case .theyAccepted:
-            String(
-                format: NSLocalizedString("%@ accepted your contact request", comment: "DashPay Notifications"),
-                contact.displayTitle)
+            String(localized: "\(contact.displayTitle) accepted your contact request", comment: "DashPay Notifications")
         case .weAccepted:
-            String(
-                format: NSLocalizedString("You added %@ as a contact", comment: "DashPay Notifications"),
-                contact.displayTitle)
+            String(localized: "You added \(contact.displayTitle) as a contact", comment: "DashPay Notifications")
         }
     }
 
@@ -680,7 +670,8 @@ struct ContactProfileSheet: View {
                 ? "arrow.up.circle.fill" : "arrow.down.circle.fill")
                 .foregroundColor(payment.direction == .sent ? .dash.blue : .dashGreen)
             VStack(alignment: .leading, spacing: 2) {
-                Text("\(payment.direction == .sent ? "-" : "+")\(Self.dashString(duffs: payment.amountDuffs)) DASH")
+                Text(verbatim: "\(payment.direction == .sent ? "-" : "+")"
+                    + "\(Self.dashString(duffs: payment.amountDuffs)) DASH")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.dash.primaryText)
                 if let fiat = payment.fiatString {

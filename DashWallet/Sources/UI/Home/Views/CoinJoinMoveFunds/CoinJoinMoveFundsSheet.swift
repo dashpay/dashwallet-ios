@@ -27,7 +27,7 @@ struct CoinJoinMoveFundsSheet: View {
 
     var body: some View {
         DashUIKit.BottomSheet(
-            title: NSLocalizedString("Move your mixed coins", comment: "CoinJoin"),
+            title: String(localized: "Move your mixed coins", comment: "CoinJoin"),
             showBackButton: .constant(false),
             isDismissalEnabled: .constant(!viewModel.isInFlight),
             // Supplying `onClose` makes the close button live regardless of
@@ -69,8 +69,8 @@ struct CoinJoinMoveFundsSheet: View {
                         showDirection: false)
                         .padding(.top, 14)
 
-                    Text(NSLocalizedString(
-                        "CoinJoin is no longer supported — choose where to move your mixed coins.",
+                    Text(String(
+                        localized: "CoinJoin is no longer supported — choose where to move your mixed coins.",
                         comment: "CoinJoin"))
                         .scaledSystemFont(size: 14, relativeTo: .subheadline)
                         .foregroundColor(.dash.secondaryText)
@@ -81,15 +81,15 @@ struct CoinJoinMoveFundsSheet: View {
                     VStack(spacing: 10) {
                         destinationCard(
                             icon: "wallet.pass.fill",
-                            title: NSLocalizedString("Dash Wallet balance", comment: "CoinJoin"),
-                            subtitle: NSLocalizedString(
-                                "Move to your regular spendable balance.", comment: "CoinJoin"),
+                            title: String(localized: "Dash Wallet balance", comment: "CoinJoin"),
+                            subtitle: String(
+                                localized: "Move to your regular spendable balance.", comment: "CoinJoin"),
                             action: { Task { await viewModel.moveToWallet() } })
                         destinationCard(
                             icon: "shield.fill",
-                            title: NSLocalizedString("Shielded balance", comment: "CoinJoin"),
-                            subtitle: NSLocalizedString(
-                                "Keep these coins private. Network and privacy fees apply.",
+                            title: String(localized: "Shielded balance", comment: "CoinJoin"),
+                            subtitle: String(
+                                localized: "Keep these coins private. Network and privacy fees apply.",
                                 comment: "CoinJoin"),
                             action: { Task { await viewModel.moveToShielded() } })
                     }
@@ -101,7 +101,7 @@ struct CoinJoinMoveFundsSheet: View {
             .scrollBounceBehavior(.basedOnSize)
 
             DashButton(
-                text: NSLocalizedString("Later", comment: "CoinJoin"),
+                text: String(localized: "Later", comment: "CoinJoin"),
                 style: .plain,
                 stretch: true,
                 action: onDismiss)
@@ -154,7 +154,7 @@ struct CoinJoinMoveFundsSheet: View {
     private var walletInFlightBody: some View {
         VStack(alignment: .leading, spacing: 16) {
             ShieldedTransferStepList(
-                labels: [NSLocalizedString("Moving funds", comment: "CoinJoin")],
+                labels: [String(localized: "Moving funds", comment: "CoinJoin")],
                 currentIndex: 0)
             Spacer(minLength: 12)
         }
@@ -170,11 +170,11 @@ struct CoinJoinMoveFundsSheet: View {
                 // consolidated first, which adds a step ahead of the lock.
                 ShieldedTransferStepList(
                     labels: [
-                        NSLocalizedString("Authorizing", comment: ""),
-                        NSLocalizedString("Preparing your coins", comment: "CoinJoin"),
-                        NSLocalizedString("Locking funds", comment: ""),
-                        NSLocalizedString("Generating proof", comment: ""),
-                        NSLocalizedString("Broadcasting", comment: ""),
+                        String(localized: "Authorizing", comment: ""),
+                        String(localized: "Preparing your coins", comment: "CoinJoin"),
+                        String(localized: "Locking funds", comment: ""),
+                        String(localized: "Generating proof", comment: ""),
+                        String(localized: "Broadcasting", comment: ""),
                     ],
                     currentIndex: viewModel.preparedChecklistIndex)
             } else {
@@ -183,15 +183,15 @@ struct CoinJoinMoveFundsSheet: View {
                 ShieldedTransferStepList(
                     currentPhase: viewModel.coordinator.phase,
                     steps: [
-                        .init(label: NSLocalizedString("Authorizing", comment: ""), phase: .signing),
-                        .init(label: NSLocalizedString("Locking funds", comment: ""), phase: .locking),
-                        .init(label: NSLocalizedString("Generating proof", comment: ""), phase: .proving),
-                        .init(label: NSLocalizedString("Broadcasting", comment: ""), phase: .broadcasting),
+                        .init(label: String(localized: "Authorizing", comment: ""), phase: .signing),
+                        .init(label: String(localized: "Locking funds", comment: ""), phase: .locking),
+                        .init(label: String(localized: "Generating proof", comment: ""), phase: .proving),
+                        .init(label: String(localized: "Broadcasting", comment: ""), phase: .broadcasting),
                     ])
             }
 
-            Text(NSLocalizedString(
-                "Building the privacy proof can take up to a minute. Keep the app open.",
+            Text(String(
+                localized: "Building the privacy proof can take up to a minute. Keep the app open.",
                 comment: "InternalTransfer recovery"))
                 .font(.caption)
                 .foregroundColor(.dash.secondaryText)
@@ -215,17 +215,17 @@ struct CoinJoinMoveFundsSheet: View {
                 .foregroundColor(.green)
                 .padding(.top, 24)
 
-            Text(NSLocalizedString("Funds moved", comment: "CoinJoin"))
+            Text(String(localized: "Funds moved", comment: "CoinJoin"))
                 .font(.title3)
                 .fontWeight(.semibold)
                 .foregroundColor(.dash.primaryText)
 
             Text(destination == .shielded
-                ? NSLocalizedString(
-                    "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds.",
+                ? String(
+                    localized: "Your mixed coins were moved to your Shielded balance. For best privacy, wait at least 2 hours before using these funds.",
                     comment: "CoinJoin")
-                : NSLocalizedString(
-                    "Your mixed coins were moved to your Dash Wallet balance.",
+                : String(
+                    localized: "Your mixed coins were moved to your Dash Wallet balance.",
                     comment: "CoinJoin"))
                 .scaledSystemFont(size: 14, relativeTo: .subheadline)
                 .foregroundColor(.dash.secondaryText)
@@ -235,7 +235,7 @@ struct CoinJoinMoveFundsSheet: View {
             Spacer(minLength: 12)
 
             DashButton(
-                text: NSLocalizedString("Done", comment: ""),
+                text: String(localized: "Done", comment: ""),
                 style: .filled,
                 stretch: true,
                 action: onDismiss)
@@ -278,15 +278,15 @@ struct CoinJoinMoveFundsSheet: View {
                 ButtonsGroup(
                     orientation: .horizontal,
                     size: .large,
-                    positiveButtonText: NSLocalizedString("Try again", comment: ""),
+                    positiveButtonText: String(localized: "Try again", comment: ""),
                     positiveButtonAction: { retry(destination) },
-                    negativeButtonText: NSLocalizedString("Close", comment: ""),
+                    negativeButtonText: String(localized: "Close", comment: ""),
                     negativeButtonAction: onDismiss)
                     .padding(.horizontal, 16)
                     .padding(.bottom, 16)
             } else {
                 DashButton(
-                    text: NSLocalizedString("Close", comment: ""),
+                    text: String(localized: "Close", comment: ""),
                     style: .filled,
                     stretch: true,
                     action: onDismiss)

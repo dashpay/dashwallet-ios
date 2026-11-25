@@ -58,7 +58,7 @@ struct GiftCardDetailsInfoCard: View {
 
                 if isLoadingCardDetails {
                     if hasBeenPollingForLongTime {
-                        Text(NSLocalizedString("As soon as your code is generated, it will be displayed here", comment: "DashSpend"))
+                        Text(String(localized: "As soon as your code is generated, it will be displayed here", comment: "DashSpend"))
                             .font(.footnote)
                             .foregroundColor(.dash.tertiaryText)
                             .multilineTextAlignment(.center)
@@ -70,13 +70,13 @@ struct GiftCardDetailsInfoCard: View {
                     }
                 } else if loadingError != nil {
                     VStack(spacing: 6) {
-                        Text(NSLocalizedString("Failed to load barcode", comment: "DashSpend"))
+                        Text(String(localized: "Failed to load barcode", comment: "DashSpend"))
                             .font(.footnote)
                             .foregroundColor(.dash.red)
 
                         if let onRetryLoading {
                             Button(action: onRetryLoading) {
-                                Text(NSLocalizedString("Retry", comment: "DashSpend"))
+                                Text(String(localized: "Retry", comment: "DashSpend"))
                                     .font(.footnote.weight(.medium))
                                     .foregroundColor(.dash.blue)
                             }
@@ -96,21 +96,21 @@ struct GiftCardDetailsInfoCard: View {
                 guard let claimLink = card?.cardNumber else { return nil }
 
                 return (
-                    actionName: NSLocalizedString("See card details", comment: "DashSpend"),
+                    actionName: String(localized: "See card details", comment: "DashSpend"),
                     action: { onOpenClaimLink(claimLink) }
                 )
             }()
 
             VStack(spacing: 20) {
                 textValueRow(
-                    title: NSLocalizedString("Original Price", comment: "DashSpend"),
+                    title: String(localized: "Original Price", comment: "DashSpend"),
                     value: formattedPrice,
                     actionConfig: actionConfig
                 )
 
                 if let redeemUrlChallenge = card?.redeemUrlChallenge, !redeemUrlChallenge.isEmpty {
                     cardValueRow(
-                        title: NSLocalizedString("Challenge", comment: "DashSpend"),
+                        title: String(localized: "Challenge", comment: "DashSpend"),
                         value: redeemUrlChallenge,
                         onCopy: {
                             onCopy(redeemUrlChallenge)
@@ -124,13 +124,13 @@ struct GiftCardDetailsInfoCard: View {
         } else {
             VStack(spacing: 2) {
                 textValueRow(
-                    title: NSLocalizedString("Original Price", comment: "DashSpend"),
+                    title: String(localized: "Original Price", comment: "DashSpend"),
                     value: formattedPrice
                 )
 
                 if let cardNumber = card?.cardNumber {
                     cardValueRow(
-                        title: NSLocalizedString("Card number", comment: "DashSpend"),
+                        title: String(localized: "Card number", comment: "DashSpend"),
                         value: cardNumber,
                         onCopy: {
                             onCopy(cardNumber)
@@ -140,7 +140,7 @@ struct GiftCardDetailsInfoCard: View {
 
                 if let cardPin = card?.cardPin {
                     cardValueRow(
-                        title: NSLocalizedString("Card PIN", comment: "DashSpend"),
+                        title: String(localized: "Card PIN", comment: "DashSpend"),
                         value: cardPin,
                         onCopy: {
                             onCopy(cardPin)
@@ -149,9 +149,9 @@ struct GiftCardDetailsInfoCard: View {
                 }
 
                 multilineValueRow(
-                    title: NSLocalizedString("Cashier instructions", comment: "DashSpend"),
-                    value: NSLocalizedString(
-                        "Tell the cashier that you'd like to pay with a gift card and share the card number and pin.",
+                    title: String(localized: "Cashier instructions", comment: "DashSpend"),
+                    value: String(
+                        localized: "Tell the cashier that you'd like to pay with a gift card and share the card number and pin.",
                         comment: "DashSpend"
                     )
                 )

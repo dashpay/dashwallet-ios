@@ -32,7 +32,7 @@ struct ResetWalletInfoScreen: View {
                     DashUIKit.NavigationBarElement.back.button(action: onCancel)
                 },
                 central: {
-                    Text(NSLocalizedString("Wipe Wallet", comment: ""))
+                    Text(String(localized: "Wipe Wallet", comment: ""))
                         .dashFont(.subheadMedium)
                         .foregroundColor(.dash.primaryText)
                         .accessibilityAddTraits(.isHeader)
@@ -44,12 +44,12 @@ struct ResetWalletInfoScreen: View {
                 Image("icon_warning")
                     .accessibilityHidden(true)
 
-                Text(NSLocalizedString("Warning", comment: ""))
+                Text(String(localized: "Warning", comment: ""))
                     .dashFont(.title3)
                     .foregroundColor(.dash.primaryText)
 
-                Text(NSLocalizedString(
-                    "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase.",
+                Text(String(
+                    localized: "You are about to wipe this wallet from this device. Funds associated with this wallet can only be retrieved if you have your recovery phrase.",
                     comment: ""))
                     .dashFont(.callout)
                     .foregroundColor(.dash.secondaryText)
@@ -61,14 +61,14 @@ struct ResetWalletInfoScreen: View {
 
             VStack(spacing: 8) {
                 DashUIKit.DashButton(
-                    text: NSLocalizedString("Continue", comment: ""),
+                    text: String(localized: "Continue", comment: ""),
                     fillsWidth: true,
                     size: .large,
                     style: .filledBlue,
                     action: onContinue)
 
                 DashUIKit.DashButton(
-                    text: NSLocalizedString("Cancel", comment: ""),
+                    text: String(localized: "Cancel", comment: ""),
                     fillsWidth: true,
                     size: .large,
                     style: .plainBlue,

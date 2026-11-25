@@ -207,7 +207,7 @@ struct CoreShieldedDrainFileStore: CoreShieldedDrainStoring {
     enum StoreError: LocalizedError {
         case contextMismatch, pendingOperation
         var errorDescription: String? {
-            NSLocalizedString("Check the pending Max transfer before starting another.", comment: "Core drain persistence guard")
+            String(localized: "Check the pending Max transfer before starting another.", comment: "Core drain persistence guard")
         }
     }
 }

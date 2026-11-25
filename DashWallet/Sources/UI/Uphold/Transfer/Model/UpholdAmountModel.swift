@@ -166,7 +166,7 @@ extension DWUpholdCardObject {
         let amount = available.decimalValue
 
         guard let fiatAmount = try? CurrencyExchanger.shared.convertDash(amount: amount, to: currency) else {
-            return NSLocalizedString("Updating Price", comment: "Exchange")
+            return String(localized: "Updating Price", comment: "Exchange")
         }
 
         let nf = NumberFormatter.fiatFormatter(currencyCode: currency)

@@ -328,6 +328,7 @@ class ModernService: ServiceProtocol {
 ```
 
 ### Error Handling Patterns
+User-facing texts use `String(localized:)` and live in `DashWallet/Localizable.xcstrings` (the build's "Sync String Catalog" phase keeps it in step). Translation sync pause: app texts are not pushed to or pulled from the translation service until the owner decides how the Catalog travels.
 ```swift
 enum ServiceError: Error, LocalizedError {
     case networkError(underlying: Error)
@@ -340,20 +341,20 @@ enum ServiceError: Error, LocalizedError {
         case .networkError(let error):
             return "Network error: \(error.localizedDescription)"
         case .authenticationRequired:
-            return NSLocalizedString("Authentication required", comment: "")
+            return String(localized: "Authentication required")
         case .invalidResponse:
-            return NSLocalizedString("Invalid response from server", comment: "")
+            return String(localized: "Invalid response from server")
         case .serviceUnavailable:
-            return NSLocalizedString("Service temporarily unavailable", comment: "")
+            return String(localized: "Service temporarily unavailable")
         }
     }
     
     var recoverySuggestion: String? {
         switch self {
         case .authenticationRequired:
-            return NSLocalizedString("Please sign in to continue", comment: "")
+            return String(localized: "Please sign in to continue")
         case .serviceUnavailable:
-            return NSLocalizedString("Please try again later", comment: "")
+            return String(localized: "Please try again later")
         default:
             return nil
         }

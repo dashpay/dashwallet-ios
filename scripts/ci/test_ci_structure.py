@@ -116,6 +116,26 @@ def check_guard_after_tests(unit_tests):
     return problems
 
 
+def check_localization_tool_tests(unit_tests):
+    """The test job runs the localization tool tests with Xcode selected and caches in the runner temp dir."""
+    job, steps = job_with_step(unit_tests, TEST_STEP)
+    at = next((i for i, step in enumerate(steps)
+               if "unittest discover -s scripts/localization/tests" in (step.get("run") or "")), None)
+    if at is None:
+        return ["no step runs scripts/localization/tests"]
+    problems = []
+    xcode = index(steps, name="Select Xcode from .xcode-version")
+    if xcode is None or at < xcode:
+        problems.append("the localization tool tests run before Xcode is selected")
+    if "continue-on-error" in steps[at] or "if" in steps[at]:
+        problems.append("the localization tool tests can be skipped or fail without failing the job")
+    env = steps[at].get("env") or {}
+    for name in ("FORMATTER_CACHE", "CATALOG_WRITER_CACHE"):
+        if not str(env.get(name, "")).startswith("${{ runner.temp }}"):
+            problems.append("{} is not set under the runner temp dir".format(name))
+    return problems
+
+
 def check_lint_on_every_pr(workflow_lint):
     pull_request = triggers(workflow_lint).get("pull_request", False)
     if pull_request is False:
@@ -282,6 +302,13 @@ class StaticChecks(unittest.TestCase):
         broken = copy.deepcopy(unit)
         job_with_step(broken, GUARD_STEP)[0]["continue-on-error"] = True
         self.assertNotEqual(check_guard_after_tests(broken), [])
+
+    def test_localization_tool_tests_run_on_every_pr(self):
+        unit = load(UNIT_TESTS)
+        self.assertEqual(check_localization_tool_tests(unit), [])
+        gone = with_steps(unit, TEST_STEP, lambda s: [x for x in s
+                                                     if "scripts/localization/tests" not in (x.get("run") or "")])
+        self.assertNotEqual(check_localization_tool_tests(gone), [])
 
     def test_workflow_lint_runs_on_every_pull_request(self):
         lint = load(WORKFLOW_LINT)

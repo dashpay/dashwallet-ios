@@ -25,19 +25,19 @@ final class WalletDeleteAllConfirmationCoordinator: NSObject {
         deleteAllHandler: @escaping () -> Void
     ) {
         let alert = UIAlertController(
-            title: NSLocalizedString("Delete All Wallets?", comment: ""),
-            message: NSLocalizedString(
-                "This permanently removes all wallets, private keys, and recovery phrases stored by this app on this device. They can only be restored from backups. This cannot be undone.",
+            title: String(localized: "Delete All Wallets?", comment: ""),
+            message: String(
+                localized: "This permanently removes all wallets, private keys, and recovery phrases stored by this app on this device. They can only be restored from backups. This cannot be undone.",
                 comment: ""),
             preferredStyle: .alert)
         alert.addAction(
             UIAlertAction(
-                title: NSLocalizedString("Cancel", comment: ""),
+                title: String(localized: "Cancel", comment: ""),
                 style: .cancel,
                 handler: { _ in cancelHandler() }))
         alert.addAction(
             UIAlertAction(
-                title: NSLocalizedString("Delete All", comment: ""),
+                title: String(localized: "Delete All", comment: ""),
                 style: .destructive,
                 handler: { _ in deleteAllHandler() }))
         host.present(alert, animated: true)
@@ -79,15 +79,15 @@ final class KeychainWalletRecoveryCoordinator: NSObject {
         completion: @escaping (Bool) -> Void
     ) {
         let alert = UIAlertController(
-            title: NSLocalizedString("Wallets found on this device", comment: ""),
-            message: NSLocalizedString(
-                "Wallet data from a previous installation is still stored on this device. Keep using these wallets, or delete all wallet data and start fresh? Make sure every recovery phrase is backed up before deleting.",
+            title: String(localized: "Wallets found on this device", comment: ""),
+            message: String(
+                localized: "Wallet data from a previous installation is still stored on this device. Keep using these wallets, or delete all wallet data and start fresh? Make sure every recovery phrase is backed up before deleting.",
                 comment: ""),
             preferredStyle: .alert)
 
         alert.addAction(
             UIAlertAction(
-                title: NSLocalizedString("Delete All", comment: ""),
+                title: String(localized: "Delete All", comment: ""),
                 style: .destructive,
                 handler: { _ in
                     WalletDeleteAllConfirmationCoordinator.present(
@@ -103,7 +103,7 @@ final class KeychainWalletRecoveryCoordinator: NSObject {
 
         alert.addAction(
             UIAlertAction(
-                title: NSLocalizedString("Keep Wallets", comment: ""),
+                title: String(localized: "Keep Wallets", comment: ""),
                 style: .default,
                 handler: { _ in
                     keepWallets(
@@ -153,21 +153,21 @@ final class KeychainWalletRecoveryCoordinator: NSObject {
         completion: @escaping (Bool) -> Void
     ) {
         let alert = UIAlertController(
-            title: NSLocalizedString("Couldn’t Read Wallets", comment: ""),
-            message: NSLocalizedString(
-                "The wallets stored on this device could not be verified. Nothing was deleted. Please try again.",
+            title: String(localized: "Couldn’t Read Wallets", comment: ""),
+            message: String(
+                localized: "The wallets stored on this device could not be verified. Nothing was deleted. Please try again.",
                 comment: ""),
             preferredStyle: .alert)
 
         alert.addAction(
             UIAlertAction(
-                title: NSLocalizedString("Keep Wallets", comment: ""),
+                title: String(localized: "Keep Wallets", comment: ""),
                 style: .cancel,
                 handler: { _ in completion(true) }))
 
         alert.addAction(
             UIAlertAction(
-                title: NSLocalizedString("Retry", comment: ""),
+                title: String(localized: "Retry", comment: ""),
                 style: .default,
                 handler: { _ in
                     presentReinstallKeepOrDeleteChoice(

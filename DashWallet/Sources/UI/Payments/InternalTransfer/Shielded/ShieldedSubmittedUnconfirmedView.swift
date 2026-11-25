@@ -25,13 +25,13 @@ struct ShieldedSubmittedUnconfirmedView: View {
                 .foregroundColor(.dash.blue)
                 .padding(.top, 24)
 
-            Text(NSLocalizedString("Submitted — confirming", comment: "InternalTransfer"))
+            Text(String(localized: "Submitted — confirming", comment: "InternalTransfer"))
                 .font(.title3)
                 .fontWeight(.semibold)
                 .foregroundColor(.dash.primaryText)
 
-            Text(NSLocalizedString(
-                "Your transfer may have reached the network, but its result is not confirmed yet. Don't resend it. Wait for the wallet to sync and check its status.",
+            Text(String(
+                localized: "Your transfer may have reached the network, but its result is not confirmed yet. Don't resend it. Wait for the wallet to sync and check its status.",
                 comment: "InternalTransfer"))
                 .font(.callout)
                 .foregroundColor(.dash.secondaryText)
@@ -54,15 +54,15 @@ struct ShieldedSubmittedUnconfirmedView: View {
                 ButtonsGroup(
                     orientation: .horizontal,
                     size: .large,
-                    positiveButtonText: NSLocalizedString("Resume", comment: "InternalTransfer"),
+                    positiveButtonText: String(localized: "Resume", comment: "InternalTransfer"),
                     positiveButtonAction: onResume,
-                    negativeButtonText: NSLocalizedString("Done", comment: ""),
+                    negativeButtonText: String(localized: "Done", comment: ""),
                     negativeButtonAction: onDone)
                     .padding(.horizontal, 16)
                     .padding(.bottom, 16)
             } else {
                 DashButton(
-                    text: NSLocalizedString("Done", comment: ""),
+                    text: String(localized: "Done", comment: ""),
                     style: .filled,
                     stretch: true,
                     action: onDone)

@@ -91,7 +91,7 @@ final class ProvideAmountViewController: SendAmountViewController {
         stackView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(stackView)
         
-        let balanceLabel = NSLocalizedString("Dash balance", comment: "")
+        let balanceLabel = String(localized: "Dash balance", comment: "")
 
         let intro = ProvideAmountIntro(
             destination: address,
@@ -187,7 +187,7 @@ struct ProvideAmountIntro<Content: View>: View {
     
     var body: some View {
         SendIntro(
-            title: NSLocalizedString("Send", comment: "Send Screen"),
+            title: String(localized: "Send", comment: "Send Screen"),
             destination: destination,
             dashBalance: model.walletBalance,
             balanceLabel: balanceLabel + ":",

@@ -33,10 +33,7 @@ struct DashSpendMultiplePanel: View {
     private var inventoryWarning: String? {
         for (denomination, count) in quantities where count > 0 {
             if let limit = inventoryLimits[denomination], count >= limit {
-                return String.localizedStringWithFormat(
-                    NSLocalizedString("Merchant has only %d cards available", comment: "DashSpend"),
-                    limit
-                )
+                return String(localized: "Merchant has only \(limit) cards available", comment: "DashSpend")
             }
         }
         return nil
@@ -85,7 +82,7 @@ struct DashSpendMultiplePanel: View {
                 }
 
                 DashButton(
-                    text: NSLocalizedString("Continue", comment: "DashSpend"),
+                    text: String(localized: "Continue", comment: "DashSpend"),
                     isEnabled: actionEnabled,
                     isLoading: inProgress,
                     action: onContinue
@@ -126,7 +123,7 @@ private struct DenominationCard: View {
                 HStack {
                     Spacer()
                     DashButton(
-                        text: NSLocalizedString("Reset", comment: "DashSpend"),
+                        text: String(localized: "Reset", comment: "DashSpend"),
                         size: .extraSmall,
                         action: onReset
                     )

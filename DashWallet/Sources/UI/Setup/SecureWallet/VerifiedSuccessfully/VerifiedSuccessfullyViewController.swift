@@ -56,9 +56,9 @@ final class VerifiedSuccessfullyViewController : UIViewController, NavigationFul
 extension VerifiedSuccessfullyViewController {
     private func setupView() {
         securityImageView.tintColor = UIColor.dw_dashBlue()
-        titleLabel.text = NSLocalizedString("Verified Successfully", comment: "");
-        descriptionLabel.text = NSLocalizedString("Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device.", comment: "")
-        continueButton.setTitle(NSLocalizedString("Continue", comment: ""), for: .normal)
+        titleLabel.text = String(localized: "Verified Successfully", comment: "");
+        descriptionLabel.text = String(localized: "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device.", comment: "")
+        continueButton.setTitle(String(localized: "Continue", comment: ""), for: .normal)
 
         titleLabel.font = UIFont.dw_font(forTextStyle: UIFont.TextStyle.title3)
         descriptionLabel.font = UIFont.dw_font(forTextStyle: UIFont.TextStyle.callout)

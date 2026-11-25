@@ -150,28 +150,28 @@ extension ConfirmPaymentModel {
             if dataSource.hasCommonName {
                 switch period {
                 case 1:
-                    return NSLocalizedString("Paying.", comment: "2 out of 4 in the Paying Animation")
+                    return String(localized: "Paying.", comment: "2 out of 4 in the Paying Animation")
                 case 2:
-                    return NSLocalizedString("Paying..", comment: "3 out of 4 in the Paying Animation")
+                    return String(localized: "Paying..", comment: "3 out of 4 in the Paying Animation")
                 case 3:
-                    return NSLocalizedString("Paying...", comment: "4 out of 4 in the Paying Animation")
+                    return String(localized: "Paying...", comment: "4 out of 4 in the Paying Animation")
                 default:
-                    return NSLocalizedString("Paying", comment: "1 out of 4 in the Paying Animation")
+                    return String(localized: "Paying", comment: "1 out of 4 in the Paying Animation")
                 }
             } else {
                 switch period {
                 case 1:
-                    return NSLocalizedString("Sending.", comment: "2 out of 4 in the Sending Animation")
+                    return String(localized: "Sending.", comment: "2 out of 4 in the Sending Animation")
                 case 2:
-                    return NSLocalizedString("Sending..", comment: "3 out of 4 in the Sending Animation")
+                    return String(localized: "Sending..", comment: "3 out of 4 in the Sending Animation")
                 case 3:
-                    return NSLocalizedString("Sending...", comment: "4 out of 4 in the Sending Animation")
+                    return String(localized: "Sending...", comment: "4 out of 4 in the Sending Animation")
                 default:
-                    return NSLocalizedString("Sending", comment: "1 out of 4 in the Sending Animation")
+                    return String(localized: "Sending", comment: "1 out of 4 in the Sending Animation")
                 }
             }
         } else {
-            return NSLocalizedString("Confirm", comment: "Payment confirmation")
+            return String(localized: "Confirm", comment: "Payment confirmation")
         }
     }
 }
@@ -190,7 +190,7 @@ extension ConfirmPaymentModel: BalanceViewDataSource {
             let nf = NumberFormatter.fiatFormatter(currencyCode: fiatCurrency)
             fiat = nf.string(from: fiatAmount as NSNumber)!
         } else {
-            fiat = NSLocalizedString("Syncing...", comment: "Balance")
+            fiat = String(localized: "Syncing...", comment: "Balance")
         }
 
         return fiat

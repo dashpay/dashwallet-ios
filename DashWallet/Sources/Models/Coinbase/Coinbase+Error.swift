@@ -34,24 +34,24 @@ extension Coinbase {
             var errorDescription: String? {
                 switch self {
                 case .noActiveUser:
-                    return NSLocalizedString("No active user", comment: "Coinbase")
+                    return String(localized: "No active user", comment: "Coinbase")
                 case .revokedToken:
-                    return NSLocalizedString("For your security, you have been signed out.", comment: "Coinbase")
+                    return String(localized: "For your security, you have been signed out.", comment: "Coinbase")
                 case .noPaymentMethods:
-                    return NSLocalizedString("Please add a payment method on Coinbase", comment: "Coinbase/Buy Dash")
+                    return String(localized: "Please add a payment method on Coinbase", comment: "Coinbase/Buy Dash")
                 case .noCashAccount:
-                    return NSLocalizedString("No cash account found", comment: "Coinbase")
+                    return String(localized: "No cash account found", comment: "Coinbase")
                 case .rateNotFound:
-                    return NSLocalizedString("Could not find exchange rate.", comment: "")
+                    return String(localized: "Could not find exchange rate.", comment: "")
                 case .depositFailed:
-                    return NSLocalizedString("Couldn't complete the transfer", comment: "Coinbase")
+                    return String(localized: "Couldn't complete the transfer", comment: "Coinbase")
                 }
             }
             
             var failureReason: String? {
                 switch self {
                 case .noPaymentMethods:
-                    return NSLocalizedString("No payment methods found", comment: "Coinbase/Buy Dash")
+                    return String(localized: "No payment methods found", comment: "Coinbase/Buy Dash")
                 default:
                     return ""
                 }
@@ -60,7 +60,7 @@ extension Coinbase {
             var recoverySuggestion: String? {
                 switch self {
                 case .noPaymentMethods:
-                    return NSLocalizedString("Add", comment: "Coinbase/Buy Dash")
+                    return String(localized: "Add", comment: "Coinbase/Buy Dash")
                 default:
                     return ""
                 }
@@ -74,9 +74,9 @@ extension Coinbase {
             var errorDescription: String? {
                 switch self {
                 case .failedToStartAuthSession:
-                    return NSLocalizedString("Failed to start auth session", comment: "Coinbase")
+                    return String(localized: "Failed to start auth session", comment: "Coinbase")
                 case .failedToRetrieveCode:
-                    return NSLocalizedString("oAuth failed", comment: "Coinbase")
+                    return String(localized: "oAuth failed", comment: "Coinbase")
                 }
             }
         }
@@ -123,21 +123,21 @@ extension Coinbase {
                 switch self {
                 case .invalidAmount:
                     let amountString = CoreTxConstants.minOutputAmount.formattedDashAmount
-                    return String(format: NSLocalizedString("Dash payments can't be less than %@", comment: "Coinbase"), amountString)
+                    return String(localized: "Dash payments can't be less than \(amountString)", comment: "Coinbase")
                 case .failedToObtainNewAddress:
-                    return NSLocalizedString("There was an error while obtaining new address", comment: "Coinbase")
+                    return String(localized: "There was an error while obtaining new address", comment: "Coinbase")
                 case .twoFactorRequired:
-                    return NSLocalizedString("Two factor auth required", comment: "Coinbase")
+                    return String(localized: "Two factor auth required", comment: "Coinbase")
                 case .invalidVerificationCode:
-                    return NSLocalizedString("The code is incorrect. Please check and try again!", comment: "Coinbase")
+                    return String(localized: "The code is incorrect. Please check and try again!", comment: "Coinbase")
                 case .notEnoughFunds:
-                    return NSLocalizedString("Insufficient funds", comment: "Coinbase")
+                    return String(localized: "Insufficient funds", comment: "Coinbase")
                 case .enteredAmountTooLow(let minAmount):
-                    return String(format: NSLocalizedString("The minimum amount you can send is %@", comment: "Coinbase"), minAmount)
+                    return String(localized: "The minimum amount you can send is \(minAmount)", comment: "Coinbase")
                 case .limitExceded:
-                    return NSLocalizedString("You exceeded the authorization limit on Coinbase.", comment: "Coinbase")
+                    return String(localized: "You exceeded the authorization limit on Coinbase.", comment: "Coinbase")
                 case .unknown:
-                    return NSLocalizedString("There was an error, please try again later", comment: "Coinbase")
+                    return String(localized: "There was an error, please try again later", comment: "Coinbase")
                 case .message(let msg):
                     return msg
                 }
@@ -153,7 +153,7 @@ extension Coinbase {
         var errorDescription: String? {
             switch self {
             case .userSessionRevoked:
-                return NSLocalizedString("For your security, you have been signed out.", comment: "Coinbase")
+                return String(localized: "For your security, you have been signed out.", comment: "Coinbase")
             case .general(let r):
                 return r.localizedDescription
             case .authFailed(let r):
@@ -161,7 +161,7 @@ extension Coinbase {
             case .transactionFailed(let r):
                 return r.localizedDescription
             case .unknownError:
-                return NSLocalizedString("Unknown", comment: "Coinbase")
+                return String(localized: "Unknown", comment: "Coinbase")
             }
         }
     }

@@ -72,7 +72,7 @@ final class FailedOperationStatusViewController: BaseViewController, NavigationB
         contactSupportButton.configuration?.buttonSize = .small
         contactSupportButton.setTitle(supportButtonText, for: .normal)
 
-        cancelButton.setTitle(NSLocalizedString("Cancel", comment: "Coinbase"), for: .normal)
-        retryButton.setTitle(NSLocalizedString("Retry", comment: "Coinbase"), for: .normal)
+        cancelButton.setTitle(String(localized: "Cancel", comment: "Coinbase"), for: .normal)
+        retryButton.setTitle(String(localized: "Retry", comment: "Coinbase"), for: .normal)
     }
 }

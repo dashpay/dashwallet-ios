@@ -10,18 +10,26 @@
 
 ## Managing localized files
 
-### Requirements
+The main app's texts live in `DashWallet/Localizable.xcstrings` (a String Catalog with 43 locales; the app ships 22, set by `XCSTRINGS_LANGUAGES_TO_COMPILE`).
+
+- Swift code uses `String(localized:)`; Objective-C keeps `NSLocalizedString`. CI fails if Swift uses `NSLocalizedString`.
+- The regular Debug build (Xcode or `xcodebuild`) keeps the Catalog in step with the code through the dashpay "Sync String Catalog" phase; other configurations compile the Catalog as committed. Commit the Catalog with the code; CI fails if a build changes the checkout.
+
+### Translation sync pause
+
+The main-app texts are **not** pushed to or pulled from the translation service until the owner decides how the Catalog travels. `.tx/config` lists only the Watch and App Store resources.
+
+### Requirements (Watch and App Store texts)
 
 - [Transifex client](https://docs.transifex.com/client/installing-the-client)
 
-#### Updating strings on transifex
+#### Updating Watch / App Store strings on transifex
 
-1.  Build project (BartyCrouch build phase will add/update/remove localized strings)
-2.  Run  `tx push -s`  to update base localization (en) strings on transifex
+1.  Run  `tx push -s`  to update the source (en) texts of the listed resources
 
-#### Getting translations from transifex
+#### Getting Watch / App Store translations from transifex
 
-1.  Just run  `tx pull`
+1.  Run  `tx pull`
 
 ## In-house crash reporting
 

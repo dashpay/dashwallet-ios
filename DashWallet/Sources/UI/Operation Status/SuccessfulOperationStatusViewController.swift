@@ -39,7 +39,7 @@ final class SuccessfulOperationStatusViewController: ActionButtonViewController,
     }
 
     override var actionButtonTitle: String? {
-        NSLocalizedString("Close", comment: "Action Button")
+        String(localized: "Close", comment: "Action Button")
     }
 
     override func actionButtonAction(sender: UIView) {
