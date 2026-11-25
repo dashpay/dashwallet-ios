@@ -51,17 +51,20 @@ public protocol ConfirmPaymentDataSource {
 
 // MARK: - ConfirmPaymentModel
 
-class ConfirmPaymentModel {
+/// What the confirmation sheet shows, and the "Sending…" animation of its
+/// confirm button. `ConfirmPaymentSheet` observes it directly.
+class ConfirmPaymentModel: ObservableObject {
     private(set) var dataSource: ConfirmPaymentDataSource!
-    private(set) var items: [DWTitleDetailItem]!
+    @Published private(set) var items: [DWTitleDetailItem] = []
     /// The members of `items` that carry the fee and the total — handed out so
     /// a renderer can tell those rows apart without matching their titles.
     private(set) var feeItem: DWTitleDetailItem?
     private(set) var totalItem: DWTitleDetailItem?
 
-    public var actionButtonTitleDidChange: (() -> ())?
-    public var dataSourceDidChange: (() -> ())?
-    public var period: UInt8 = 0
+    /// Off while a payment is in flight: the confirm button locks, Cancel
+    /// does not (see `ConfirmPaymentSheet`).
+    @Published var isSendingEnabled = true
+    @Published public private(set) var period: UInt8 = 0
 
     private var isSendingNow = false
     private var sendingTimer: Timer?
@@ -73,20 +76,20 @@ class ConfirmPaymentModel {
         self.fiatCurrency = fiatCurrency
         update(with: dataSource)
 
+        // The fiat line follows the exchange rate.
         currencyExchangeToken = CurrencyExchanger.shared.addObserver { [weak self] _ in
-            self?.dataSourceDidChange?()
+            self?.objectWillChange.send()
         }
     }
 
     public func confirmPayment() {
+        objectWillChange.send()
         isSendingNow = true
 
         sendingTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             guard let self else { return }
 
-            self.period += 1
-            self.period %= 4
-            self.actionButtonTitleDidChange?()
+            self.period = (self.period + 1) % 4
         }
     }
 
@@ -96,14 +99,11 @@ class ConfirmPaymentModel {
 
         sendingTimer?.invalidate()
         sendingTimer = nil
-
-        actionButtonTitleDidChange?()
     }
 
     public func update(with dataSource: ConfirmPaymentDataSource) {
         self.dataSource = dataSource
         items = items(from: dataSource)
-        dataSourceDidChange?()
     }
 
     @inline(__always)
