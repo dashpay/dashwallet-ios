@@ -1,6 +1,6 @@
 # 0072 — Check releases through the key map instead of pairing code places
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-19
 - **Deciders:** Roman Chornyi (owner; chose the key map during `api`, 2026-11-19), recorded with Claude during `implement`
 - **Amends:** [ADR-0069](0069-prove-zero-loss-by-pairing-each-code-place-with-its-baseline-key.md) — for release runs only; the pre-merge check keeps pairing code places.

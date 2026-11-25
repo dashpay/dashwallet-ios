@@ -52,14 +52,14 @@ where they disagree, ADR-0001 wins.
 | [0057](0057-tell-a-connection-sheet-from-one-basis-and-placed-keys-only.md) | Tell a connection sheet from one basis, and claim access only from placed keys | ui | Accepted | |
 | [0058](0058-answer-a-login-without-a-username-with-the-pages-own-state.md) | Answer a login without a username with the page's own state, and open nothing | ui | Accepted | |
 | [0065](0065-recognize-platform-refusals-by-consensus-code-in-one-table.md) | Recognize Platform refusals by consensus code in one table | platform | Proposed | |
-| [0066](0066-declare-the-app-and-the-zero-loss-check-as-the-feature-surfaces.md) | Declare the app and the zero-loss check as the feature's surfaces | l10n | Proposed | |
-| [0067](0067-generate-the-catalog-from-the-baseline-lists-with-a-repository-script.md) | Generate the Catalog from the Baseline lists with a repository script | l10n | Proposed | |
-| [0068](0068-rewrite-formatted-lookups-as-interpolations-and-move-their-entries.md) | Rewrite formatted lookups as interpolations and move their Catalog entries | l10n | Proposed | |
-| [0069](0069-prove-zero-loss-by-pairing-each-code-place-with-its-baseline-key.md) | Prove zero loss by pairing each code place with its Baseline key | l10n | Proposed | |
-| [0070](0070-keep-the-catalog-in-step-with-xcodes-own-string-sync-in-every-build.md) | Keep the Catalog in step with Xcode's own string sync in every build | l10n | Proposed | |
-| [0071](0071-rewrite-swift-lookups-with-a-swiftsyntax-codemod-rerun-on-every-baseline.md) | Rewrite Swift lookups with a SwiftSyntax codemod re-run on every Baseline | l10n | Proposed | |
-| [0072](0072-check-releases-through-the-key-map.md) | Check releases through the key map instead of pairing code places | l10n | Proposed | |
-| [0073](0073-make-the-sync-phase-write-the-same-catalog-as-the-xcode-app.md) | Make the sync phase write the same Catalog as the Xcode app, and compile only the shipped locales | l10n | Proposed | |
+| [0066](0066-declare-the-app-and-the-zero-loss-check-as-the-feature-surfaces.md) | Declare the app and the zero-loss check as the feature's surfaces | l10n | Accepted | |
+| [0067](0067-generate-the-catalog-from-the-baseline-lists-with-a-repository-script.md) | Generate the Catalog from the Baseline lists with a repository script | l10n | Accepted | |
+| [0068](0068-rewrite-formatted-lookups-as-interpolations-and-move-their-entries.md) | Rewrite formatted lookups as interpolations and move their Catalog entries | l10n | Accepted | |
+| [0069](0069-prove-zero-loss-by-pairing-each-code-place-with-its-baseline-key.md) | Prove zero loss by pairing each code place with its Baseline key | l10n | Accepted | |
+| [0070](0070-keep-the-catalog-in-step-with-xcodes-own-string-sync-in-every-build.md) | Keep the Catalog in step with Xcode's own string sync in every build | l10n | Accepted | |
+| [0071](0071-rewrite-swift-lookups-with-a-swiftsyntax-codemod-rerun-on-every-baseline.md) | Rewrite Swift lookups with a SwiftSyntax codemod re-run on every Baseline | l10n | Accepted | |
+| [0072](0072-check-releases-through-the-key-map.md) | Check releases through the key map instead of pairing code places | l10n | Accepted | |
+| [0073](0073-make-the-sync-phase-write-the-same-catalog-as-the-xcode-app.md) | Make the sync phase write the same Catalog as the Xcode app, and compile only the shipped locales | l10n | Accepted | |
 
 Areas: `spv`, `platform`, `keys`, `storage`, `coinjoin`, `payments`, `swap`, `ui`, `l10n`, `build`, `process`. Each ADR takes one; a new
 Area is added to this list in the PR that first needs it.

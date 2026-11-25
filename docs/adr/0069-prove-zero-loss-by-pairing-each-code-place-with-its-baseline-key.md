@@ -1,6 +1,6 @@
 # 0069 — Prove zero loss by pairing each code place with its Baseline key
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-18
 - **Deciders:** Roman Chornyi (owner), with Claude during the design walk
 
