@@ -2136,6 +2136,23 @@ final class ShieldedTxLookup {
         /// `ShieldedAssetLocksInFlight` treat the lock of a drain that holds its claim as in
         /// flight before the drain's SDK call reports its outpoint.
         let drainOperation: UUID?
+        /// The 43-byte Orchard recipient a shielded funding (type 5) was built
+        /// to pay (`PersistentAssetLock.shieldedRecipientRaw43`); nil for other
+        /// types and for locks tracked before the SDK recorded it.
+        var recipientRaw43: Data? = nil
+        /// Whose the recorded recipient is (`resolvingRecipients`). Nil for a
+        /// lock without a recorded recipient (tracked before the SDK recorded
+        /// it) and for other types, which keep the Internal Transfer reading.
+        var recipient: Recipient? = nil
+
+        /// Own, someone else's, or not decidable now: the three are told apart,
+        /// so an undecided owner is never shown as either. The address is the
+        /// recipient's display form.
+        enum Recipient: Equatable, Sendable {
+            case own
+            case external(address: String)
+            case undecided(address: String)
+        }
     }
 
     /// Value-only result crossing from the detached SwiftData reader back to
@@ -2161,12 +2178,19 @@ final class ShieldedTxLookup {
     /// Main-actor generation prevents a slow read from an old container (or
     /// an earlier refresh of the same container) from replacing newer state.
     @MainActor private var refreshGeneration: UInt64 = 0
+    /// Decided ownership answers by wallet id + recipient: an address's owner
+    /// never changes, so each costs one blocking SDK check, not one per refresh.
+    @MainActor private var ownRecipientAnswers: [Data: Bool] = [:]
 
     /// Where `refresh` reads from: the active model container, and the
     /// snapshot built from it off the main actor.
     struct RefreshSource: Sendable {
         let activeContainer: @MainActor @Sendable () -> ModelContainer?
         let buildSnapshot: @Sendable (ModelContainer) async -> SnapshotBuildResult
+        /// Whether a shielded lock's recorded recipient is one of the wallet's
+        /// own Orchard addresses; nil when that cannot be told now.
+        var isOwnShieldedRecipient: @MainActor @Sendable (_ walletId: Data, _ raw43: Data) -> Bool? = { _, _ in nil }
+        var isMainnet: @MainActor @Sendable () -> Bool = { WalletEnvironment.isMainnet }
 
         /// The running wallet's container, read through SwiftData in a
         /// detached task.
@@ -2176,6 +2200,10 @@ final class ShieldedTxLookup {
                 await Task.detached(priority: .utility) {
                     ShieldedTxLookup.buildSnapshot(in: container)
                 }.value
+            },
+            isOwnShieldedRecipient: { walletId, raw43 in
+                guard let manager = SwiftDashSDKHost.shared.manager else { return nil }
+                return (try? manager.isOwnShieldedAddress(walletId: walletId, raw43: raw43)) ?? nil
             })
     }
 
@@ -2248,7 +2276,9 @@ final class ShieldedTxLookup {
             vout: entry.vout,
             fundingTypeRaw: entry.fundingTypeRaw,
             walletId: entry.walletId,
-            drainOperation: entry.drainOperation)
+            drainOperation: entry.drainOperation,
+            recipientRaw43: entry.recipientRaw43,
+            recipient: entry.recipient)
     }
 
     /// Records that a transfer consumed the asset lock funded by `txidWire`,
@@ -2307,7 +2337,14 @@ final class ShieldedTxLookup {
             return
         }
 
-        guard let map = result.map else { return }
+        guard let built = result.map else { return }
+        let map = Self.resolvingRecipients(of: built, mainnet: source.isMainnet()) { walletId, raw43 in
+            let key = walletId + raw43
+            if let known = ownRecipientAnswers[key] { return known }
+            let answer = source.isOwnShieldedRecipient(walletId, raw43)
+            if let answer { ownRecipientAnswers[key] = answer }
+            return answer
+        }
         store(map)
         Self.logger.info(
             "🛡️ SHIELD-TX :: snapshot \(map.count, privacy: .public) funding tx(s) (shielded + platform)")
@@ -2353,7 +2390,8 @@ final class ShieldedTxLookup {
                     vout: vout,
                     fundingTypeRaw: row.fundingTypeRaw,
                     walletId: row.walletId,
-                    drainOperation: CoreShieldedDrainRowIdentity(operationIdBytes: row.operationId).operation)
+                    drainOperation: CoreShieldedDrainRowIdentity(operationIdBytes: row.operationId).operation,
+                    recipientRaw43: row.fundingTypeRaw == shieldedFundingType ? row.shieldedRecipientRaw43 : nil)
                 func rank(_ statusRaw: Int) -> Int {
                     statusRaw == AssetLockRecoveryService.consumedStatus ? .max : statusRaw
                 }
@@ -2390,6 +2428,29 @@ final class ShieldedTxLookup {
         }
     }
 
+    /// Sets `recipient` on every shielded lock with a recorded recipient from
+    /// what `isOwn` answers: own (true), someone else's (false) or undecided
+    /// (nil). A lock without a recorded recipient (tracked before the SDK
+    /// recorded it) keeps no answer and the Internal Transfer reading.
+    @MainActor
+    static func resolvingRecipients(
+        of map: [String: ShieldedLockInfo],
+        mainnet: Bool,
+        isOwn: (_ walletId: Data, _ raw43: Data) -> Bool?
+    ) -> [String: ShieldedLockInfo] {
+        map.mapValues { info in
+            guard info.fundingTypeRaw == shieldedFundingType, let raw43 = info.recipientRaw43,
+                  let address = Bech32m.shieldedDisplayAddress(raw43: raw43, mainnet: mainnet) else { return info }
+            var resolved = info
+            switch isOwn(info.walletId, raw43) {
+            case true?: resolved.recipient = .own
+            case false?: resolved.recipient = .external(address: address)
+            case nil: resolved.recipient = .undecided(address: address)
+            }
+            return resolved
+        }
+    }
+
     /// Publishes `map` as the snapshot. `refresh` is its only production
     /// caller; tests publish snapshots through it directly.
     @MainActor
@@ -2407,6 +2468,17 @@ final class ShieldedTxLookup {
         if changed {
             NotificationCenter.default.post(name: .shieldedTxLookupDidChange, object: self)
         }
+    }
+}
+
+extension Bech32m {
+    /// A 43-byte raw Orchard address in its DIP-0018 display form: HRP
+    /// `dash` on mainnet and `tdash` elsewhere (devnet uses the testnet
+    /// encoding), payload = 0x10 type byte + the raw bytes. Nil for any other
+    /// length.
+    static func shieldedDisplayAddress(raw43: Data, mainnet: Bool) -> String? {
+        guard raw43.count == 43 else { return nil }
+        return encode(hrp: platformHrp(mainnet: mainnet), data: Data([0x10]) + raw43)
     }
 }
 
