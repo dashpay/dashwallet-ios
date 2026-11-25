@@ -1186,6 +1186,9 @@ public final class SwiftDashSDKSPVCoordinator: NSObject, ObservableObject {
     @MainActor
     private func subscribeToManagerProgress(manager: PlatformWalletManager) {
         subscriptionsDetached = false
+        // The first value is the manager's current one, read before this
+        // subscription and through any app transition while it was detached.
+        paymentTipLifetime.invalidate(at: ProcessInfo.processInfo.systemUptime)
         progressCancellable = manager.$spvProgress
             .map { ($0, ProcessInfo.processInfo.systemUptime) }
             .receive(on: RunLoop.main)
@@ -1618,15 +1621,26 @@ enum SPVChainResyncMarker {
     }
 }
 
+/// Which progress ticks may stamp a contact payment. A tick is timed when the
+/// SDK publishes it, not when its poll read the client, so the first one after
+/// the app leaves or returns to the foreground may carry a read from before:
+/// it is refused. The SDK polls one read at a time, so the next tick was read
+/// after that one was published.
 struct ContactPaymentTipLifetime {
     private var invalidatedAt: TimeInterval = 0
+    private var awaitsFreshRead = false
 
     mutating func invalidate(at uptime: TimeInterval) {
         invalidatedAt = uptime
+        awaitsFreshRead = true
     }
 
-    func tip(_ height: UInt32?, observedAt: TimeInterval, isActive: Bool) -> UInt32? {
-        guard isActive, observedAt > invalidatedAt else { return nil }
-        return height
+    mutating func tip(_ height: UInt32?, observedAt: TimeInterval, isActive: Bool) -> UInt32? {
+        guard observedAt > invalidatedAt else { return nil }
+        guard !awaitsFreshRead else {
+            awaitsFreshRead = false
+            return nil
+        }
+        return isActive ? height : nil
     }
 }

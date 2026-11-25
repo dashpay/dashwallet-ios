@@ -451,7 +451,9 @@ final class DashPayWithdrawalStoreTests: XCTestCase {
             coreHeight: queuedBackgroundTip), .locked)
         XCTAssertEqual(try reopened.entries(scope: scope, contactIdentityId: contact).map(\.coreHeight), [nil])
 
-        let freshTip = lifetime.tip(Self.agedTip, observedAt: 5, isActive: true)
+        // Published after the resume, but possibly read before it.
+        XCTAssertNil(lifetime.tip(Self.agedTip, observedAt: 5, isActive: true))
+        let freshTip = lifetime.tip(Self.agedTip, observedAt: 6, isActive: true)
         XCTAssertEqual(freshTip, Self.agedTip)
         XCTAssertEqual(try reopened.lockState(
             scope: scope, contactIdentityId: contact, since: clockJump, coreHeight: freshTip), .locked)
