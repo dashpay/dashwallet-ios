@@ -450,7 +450,7 @@ final class HostRecoveryTests: XCTestCase {
         XCTAssertNil(SwiftDashSDKHost.keysFailure(in: swiftData))
     }
 
-    // AC-04 (PR review r10): two keychain failures while storing or reading
+    // Two keychain failures while storing or reading
     // the recovery phrase write their status numbers; any other error writes
     // the empty status marker.
     func testMnemonicKeychainFailuresShowTheirStatus() {
@@ -467,7 +467,7 @@ final class HostRecoveryTests: XCTestCase {
     }
 
     /// The recovery-phrase read before a wallet removal writes the same
-    /// status (AC-04); a source check, because the line needs a bound wallet.
+    /// status; a source check, because the line needs a bound wallet.
     func testWalletRemovalMnemonicReadFailureWritesItsStatus() throws {
         let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
         let text = try String(
@@ -475,7 +475,7 @@ final class HostRecoveryTests: XCTestCase {
             encoding: .utf8)
         // Both keychain reads on the removal path: the phrase read and the
         // last-wallet proof.
-        // The status rides in the Error summary (AC-04, PR review r11).
+        // The status rides in the Error summary.
         let status = ": \\(error)\")"
         for fragment in ["removeWallet mnemonic read failed", "last-wallet proof failed"] {
             let lines = text.split(separator: "\n").filter { $0.contains(fragment) }

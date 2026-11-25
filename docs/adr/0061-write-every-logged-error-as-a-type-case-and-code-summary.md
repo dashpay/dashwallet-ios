@@ -1,8 +1,8 @@
 # 0061 — Write every logged error as a type, case and code summary
 
 - **Status:** Proposed
-- **Date:** 2026-11-18 (decided by the owner on 2026-11-03, the broadcast exception on 2026-11-17;
-  implemented in PR #1303)
+- **Date:** 2026-11-18 (decided by the owner on 2026-11-03, the broadcast exception on 2026-11-17,
+  the asset-lock detail exception on 2026-11-25; implemented in PR #1303)
 - **Deciders:** romchornyi (author)
 
 ## Context
@@ -44,6 +44,13 @@ remove formats it knows about.
 **Exception:** a refused broadcast is written with the full transaction id and the rejection reason
 as the network returned it, because it is the only source that explains why the network refused a
 transaction and it carries no keys or seed material.
+
+**Exception:** an asset-lock retry failure keeps the wallet error's detail on the retry line and in
+the diagnostics bundle's `summary.txt`, as #1276 added it. The SDK's catch-all wallet-operation
+error has one summary for every cause, so without it two stuck locks look the same. The detail is
+curated: a recipient mismatch writes a fixed sentence instead of the SDK's text, which names
+addresses; a consensus rejection writes no detail, since its code and kind are in the summary; any
+other error writes none. The bundle already lists each lock's outpoint.
 
 ## Consequences
 

@@ -149,7 +149,7 @@ final class AppLoggerTests: XCTestCase {
         XCTAssertEqual(message.text, "<private>")
     }
 
-    // AC-03 (PR review r11): an error whose static type is erased (held in
+    // An error whose static type is erased (held in
     // `Any` or an optional) is still written as its summary, never as text.
     func testErasedErrorIsWrittenAsItsSummary() {
         let error = SampleError.failed(path: "/var/mobile/secret.sqlite")
@@ -171,7 +171,7 @@ final class AppLoggerTests: XCTestCase {
         XCTAssertEqual(privateOptional.text, "<private>")
     }
 
-    // AC-02, AC-08: the file has no level column, so warning, error and
+    // The file has no level column, so warning, error and
     // fault lines carry a text tag, written once; a fault is in the file
     // when the call returns.
     func testEachLevelIsWrittenOnceWithItsTag() throws {
@@ -199,7 +199,7 @@ final class AppLoggerTests: XCTestCase {
         XCTAssertEqual(lines.count, 5, "\(lines)")
     }
 
-    // AC-06: debug lines exist in developer builds only. The log level is a
+    // Debug lines exist in developer builds only. The log level is a
     // compile-time constant of DWLogger.h, so the release side is checked in
     // the source: the release level is Info, and a debug call goes through
     // CocoaLumberjack's debug flag, which Info does not include.
@@ -219,7 +219,7 @@ final class AppLoggerTests: XCTestCase {
             "+ (void)logDebug:(NSString *)message className:(NSString *)className {\n    DWLogDebug("))
     }
 
-    // AC-02, AC-06: each level reaches CocoaLumberjack with its own flag. A
+    // Each level reaches CocoaLumberjack with its own flag. A
     // debug line carries the debug flag, which the release level (Info, see
     // above) leaves out; written through the info flag it would be in a
     // release build's file.
@@ -241,7 +241,7 @@ final class AppLoggerTests: XCTestCase {
         XCTAssertEqual(capture.flags, [.debug, .info, .info, .warning, .error, .error])
     }
 
-    // AC-03: a consensus rejection adds its code and kind, never Platform's text.
+    // A consensus rejection adds its code and kind, never Platform's text.
     func testConsensusRejectionAddsItsCodeAndKind() {
         let error = PlatformWalletError.consensusRejection(
             PlatformConsensusError(code: 10534, kind: .basic), "asset lock transaction has too many inputs")
@@ -250,7 +250,7 @@ final class AppLoggerTests: XCTestCase {
         XCTAssertFalse(summary.contains("asset lock transaction"), summary)
     }
 
-    // AC-03 (PR review r11): an SDK consensus rejection keeps its code and
+    // An SDK consensus rejection keeps its code and
     // kind too, at the top and when wrapped; App Connect lines write the kind.
     func testSDKConsensusRejectionAddsItsCodeAndKind() {
         enum Envelope: Error { case wrap(Error) }
@@ -271,7 +271,7 @@ final class AppLoggerTests: XCTestCase {
         XCTAssertFalse(appConnect.contains("nonce"), appConnect)
     }
 
-    // AC-03: the error and up to three wrapped errors; the fourth is dropped.
+    // The error and up to three wrapped errors; the fourth is dropped.
     func testWrappedChainDeeperThanThreeIsCutAtThree() {
         enum Envelope: Error { case wrap(Error) }
         let innermost = SampleError.failed(path: "x")
@@ -281,7 +281,7 @@ final class AppLoggerTests: XCTestCase {
         XCTAssertFalse(summary.contains("SampleError"), summary)
     }
 
-    // AC-04 (PR review r11): the Error summary itself carries the keychain
+    // The Error summary itself carries the keychain
     // status, at the top and when wrapped, so every line that writes the
     // error tells two keychain failures apart.
     func testKeychainFailuresShowTheirStatusInTheSummary() {
@@ -306,7 +306,7 @@ final class AppLoggerTests: XCTestCase {
         XCTAssertEqual(line.components(separatedBy: "status=").count, 2, line)
     }
 
-    // AC-04 (PR review r11): keychain lines that wrote a code list or only a
+    // Keychain lines that wrote a code list or only a
     // count write the error summary, which carries the status.
     func testKeychainLinesWithoutTheSummaryNowWriteIt() throws {
         let host = "DashWallet/Sources/Infrastructure/SwiftDashSDK/SwiftDashSDKHost.swift"
@@ -323,7 +323,7 @@ final class AppLoggerTests: XCTestCase {
         }
     }
 
-    // AC-05: a Financial amount (a balance or a payment amount) is written as
+    // A Financial amount (a balance or a payment amount) is written as
     // <private>; fees and counts stay visible.
 
     #if DASHPAY
@@ -447,8 +447,8 @@ final class AppLoggerTests: XCTestCase {
     }
 
     /// The coordinator's entry lines also run before authorization (start,
-    /// retry, purchase, a rejected pairing), so they write no name either
-    /// (AC-10); its lines after authorization keep the label.
+    /// retry, purchase, a rejected pairing), so they write no name either;
+    /// its lines after authorization keep the label.
     func testRegistrationCoordinatorLinesBeforeAuthorizationWriteNoUsername() throws {
         let coordinator = "DashWallet/Sources/Infrastructure/SwiftDashSDK/Identity/DWIdentityRegistrationCoordinator.swift"
         for fragment in [
@@ -532,8 +532,7 @@ final class AppLoggerTests: XCTestCase {
     }
 
     /// Identity-registration lines keep the #1155 values except Financial
-    /// amounts (AC-10 as narrowed by the owner, 2026-11-18); the coordinator
-    /// needs a live identity to reach them.
+    /// amounts; the coordinator needs a live identity to reach them.
     func testIdentityRegistrationAmountsAreMarkedPrivate() throws {
         let coordinator = "DashWallet/Sources/Infrastructure/SwiftDashSDK/Identity/DWIdentityRegistrationCoordinator.swift"
         try assertPrivate(coordinator, line: ") identityFundingDuffs=", values: ["requiredIdentityFundingDuffs"])
@@ -554,7 +553,7 @@ final class AppLoggerTests: XCTestCase {
         try assertPrivate(coordinator, line: "IDENT-COORD :: purchased", values: ["priceCredits"])
     }
 
-    // AC-05: across every app log line, a public wallet, identity or contact
+    // Across every app log line, a public wallet, identity or contact
     // id is an Identifier prefix, and an address, a destination, a profile
     // field or the invitation scope key is never public (a masternode's
     // `displayName` is its type and index). The lines sit past
@@ -590,7 +589,7 @@ final class AppLoggerTests: XCTestCase {
         XCTAssertEqual(violations, [])
     }
 
-    // AC-10: the line families support searches by tag keep it; lines that
+    // The line families support searches by tag keep it; lines that
     // had no tag on develop (955db4018) are listed.
     func testMarkerLineFamiliesKeepTheirTags() throws {
         struct Family {
@@ -624,7 +623,7 @@ final class AppLoggerTests: XCTestCase {
         XCTAssertTrue(identity.contains(#"source=\(plan.source.logLabel, privacy: .public)""#))
     }
 
-    // AC-11: a refused or unconfirmed broadcast keeps the full txid and the
+    // A refused or unconfirmed broadcast keeps the full txid and the
     // network's reason as returned.
     func testBroadcastLinesKeepTheFullTxidAndTheReason() {
         let txid = String(repeating: "ab", count: 32)
@@ -687,7 +686,7 @@ final class AppLoggerTests: XCTestCase {
         }
     }
 
-    // AC-10 (PR review r10): a name that may never have been submitted
+    // A name that may never have been submitted
     // stays out of the Log export — the form and marketplace checks, the
     // contest bookmark made before the write, and its reconciliation.
     func testLinesAboutANameNotSubmittedYetWriteNoName() throws {
@@ -715,7 +714,7 @@ final class AppLoggerTests: XCTestCase {
         }
     }
 
-    // AC-10, AC-05, AC-03: the username form's legacy lines write no draft
+    // The username form's legacy lines write no draft
     // name, no required cost, no spendable balance and no error text.
     func testUsernameFormLinesWriteNoNameCostOrBalance() throws {
         let text = try sourceText("DashWallet/Sources/UI/DashPay/Setup/CreateUsername/CreateUsernameViewModel.swift")
@@ -741,7 +740,7 @@ final class AppLoggerTests: XCTestCase {
         XCTAssertTrue(failed.contains("AppLogMessage.errorSummary(error)"), failed)
     }
 
-    // AC-05 (owner, 2026-11-19): legacy DWLogger / DWLog lines take a finished
+    // Legacy DWLogger / DWLog lines take a finished
     // string, so no privacy marker applies; none of them may write a balance,
     // a payment amount or an address.
     func testLegacyDirectLinesWriteNoAmount() throws {
@@ -778,7 +777,7 @@ final class AppLoggerTests: XCTestCase {
         }
     }
 
-    // AC-03: the kept SHIELD-TX-REFRESH failure line carries the Error
+    // The kept SHIELD-TX-REFRESH failure line carries the Error
     // summary of the snapshot build, not the error's description.
     func testShieldRefreshFailureCarriesTheErrorSummary() throws {
         let text = try sourceText("DashWallet/Sources/Infrastructure/SwiftDashSDK/PlatformAddressSyncCoordinator.swift")
@@ -786,7 +785,7 @@ final class AppLoggerTests: XCTestCase {
         XCTAssertTrue(text.contains("errorDescription: AppLogMessage.errorSummary(error)"))
     }
 
-    // AC-05 (owner, 2026-11-19): no legacy DWLogger line writes an address.
+    // No legacy DWLogger line writes an address.
     // The rule over every call, not a list of lines.
     func testLegacyDirectLinesWriteNoAddress() throws {
         let marker = "DWLogger.log("
@@ -808,7 +807,7 @@ final class AppLoggerTests: XCTestCase {
         XCTAssertEqual(offenders, [], offenders.joined(separator: "\n"))
     }
 
-    // AC-11 (PR review r10): a failed part of a sweep keeps its txid and the
+    // A failed part of a sweep keeps its txid and the
     // network's reason; any other failure is its Error summary only.
     func testSweepPartFailureKeepsTheTxidAndTheReason() {
         typealias SendError = SwiftDashSDKTransactionSender.SendError
@@ -843,7 +842,7 @@ final class AppLoggerTests: XCTestCase {
         XCTAssertTrue(line.contains("AppLogMessage.caseName(of:"), line)
     }
 
-    // AC-03 (PR review r11): three direct lines next to fixed AppLogger
+    // Three direct lines next to fixed AppLogger
     // lines wrote the error's description; they write its summary.
     func testLegacyErrorLinesNextToFixedLinesWriteTheSummary() throws {
         let lines = [
@@ -862,12 +861,12 @@ final class AppLoggerTests: XCTestCase {
         }
     }
 
-    // AC-03 (PR review r11): one consensus extractor; no other copy matches
+    // One consensus extractor; no other copy matches
     // the rejection case by hand.
     func testConsensusRejectionIsExtractedInOnePlace() throws {
         let dataSource = try sourceText("DashWallet/Sources/Models/DashConnect/PlatformDashConnectDataSource.swift")
         XCTAssertTrue(dataSource.contains("PlatformRefusal.consensusError(in: error)"))
-        // The one top-level switch lives in PlatformRefusal (PR review r13).
+        // The one top-level switch lives in PlatformRefusal.
         for (path, text) in try appSources() where !path.hasSuffix("/PlatformRefusal.swift") {
             XCTAssertFalse(text.contains("case let error as SDKError: error.consensusError"), path)
             XCTAssertFalse(text.contains("SwiftDashSDKErrorDetail.consensusRejection"), path)
@@ -878,7 +877,7 @@ final class AppLoggerTests: XCTestCase {
         XCTAssertFalse(logger.contains("case .consensusRejection(let consensus"))
     }
 
-    // AC-04 (PR review r12): every unreadable recovery phrase reaches the
+    // Every unreadable recovery phrase reaches the
     // log with its summary, also when none is readable and the screen ends
     // with the generic error.
     func testUnreadableRecoveryPhrasesWriteTheirStatusEvenWhenNoneIsReadable() throws {
@@ -908,7 +907,7 @@ final class AppLoggerTests: XCTestCase {
         XCTAssertEqual(flow.components(separatedBy: "unreadable recovery-phrase").count - 1, 1)
     }
 
-    // AC-04 (PR review r12): the other readers of every stored recovery
+    // The other readers of every stored recovery
     // phrase write the summary of each one they cannot read.
     func testOtherRecoveryPhraseInventoryReadersWriteTheReadFailure() throws {
         let coordinator = try sourceText(
@@ -926,7 +925,7 @@ final class AppLoggerTests: XCTestCase {
         XCTAssertTrue(body.contains("AppLogMessage.errorSummary"), body)
     }
 
-    // AC-03, AC-04 (PR review r12): the recovery harness compiles the
+    // The recovery harness compiles the
     // production logger without SwiftDashSDK, so AppLogger names no SDK type;
     // SDK error detail comes through `AppLogErrorDetail`. A write decision
     // reads `PlatformRefusal`'s consensus extractor (the one switch, PR
@@ -950,7 +949,7 @@ final class AppLoggerTests: XCTestCase {
         }
     }
 
-    // AC-05 (PR review r11): App Connect preview lines, written before the
+    // App Connect preview lines, written before the
     // Wallet user approved the request, name no contract or token position.
     func testAppConnectPreviewLinesWriteNoContractId() throws {
         let path = "DashWallet/Sources/Models/DashConnect/PlatformDashConnectDataSource.swift"
@@ -972,6 +971,21 @@ final class AppLoggerTests: XCTestCase {
 
     private func sourceText(_ path: String) throws -> String {
         try String(contentsOf: repositoryRoot.appendingPathComponent(path), encoding: .utf8)
+    }
+
+    // Comments say what a test protects; a review-round or acceptance-
+    // criterion tag names a list outside the repository.
+    func testLoggingTestsCarryNoReviewDiaryTags() throws {
+        let pattern = try NSRegularExpression(pattern: #"PR review r\d|\bAC-\d{2}\b|\(owner, 20\d\d"#)
+        for path in ["DashWalletTests/AppLoggerTests.swift", "DashWalletTests/AssetLockDiagnosticsTests.swift",
+                     "DashWalletTests/HostRecoveryTests.swift"] {
+            for line in try sourceText(path).split(separator: "\n") where line.contains("//") {
+                guard let start = line.range(of: "//")?.lowerBound else { continue }
+                let comment = String(line[start...])
+                let range = NSRange(comment.startIndex..., in: comment)
+                XCTAssertNil(pattern.firstMatch(in: comment, range: range), "\(path): \(line)")
+            }
+        }
     }
 
     /// Every Swift file under `DashWallet/Sources`, by repository path.

@@ -30,9 +30,13 @@ registration with a local helper; this change fixes it for the whole app.
   rejection's code and kind, and the same for up to three wrapped errors — never its description
   ([ADR-0061](../../adr/0061-write-every-logged-error-as-a-type-case-and-code-summary.md)). A
   failed key migration also writes the keychain `status=` number. Asset-lock retry failures are
-  written, and stored for the diagnostics bundle, as their case and error summary.
+  written, and stored for the diagnostics bundle, as their case and error summary, plus a wallet
+  error's detail (see the exceptions).
 - **Stated exceptions.** Transaction ids stay in full, and a refused broadcast keeps the network's
-  rejection reason as returned, so support can follow a payment and see why it was refused.
+  rejection reason as returned, so support can follow a payment and see why it was refused. An
+  asset-lock retry failure keeps the wallet error's detail (`detail=`, from #1276), because the SDK's
+  catch-all wallet error has one summary for every cause; a recipient mismatch writes a fixed
+  sentence instead of the SDK's text, and a consensus rejection writes its code and kind only.
 - **Marker lines kept.** The lines support searches by tag (`IDENT-COORD`, `TXSEND`, `KEYMIG`,
   chain sync) keep their tags and wording; `CoordinatorLog` from #1155 is replaced by `AppLogger`. Lines written
   before the PIN prompt of a username registration or purchase, and lines about a name that may not have been
@@ -52,8 +56,12 @@ registration with a local helper; this change fixes it for the whole app.
 
 ## Operational notes
 
-- No migration. An asset-lock failure record gains an optional `summary`; records stored before it
-  are written as their case only.
+- No migration. An asset-lock failure record gains an optional `summary` and `writtenDetail`;
+  records stored before them are written as their case only.
+- A failed network switch on a Platform address sync error writes `Platform address sync failed`
+  without the SDK's message. The same message is in the SwiftDashSDK session log the export
+  attaches: a `WARN` line `Platform address sync failed for wallet …` in `platform_wallet/run.log`,
+  matched to the app line by time.
 - Console.app lines from the app no longer carry the app's subsystem and per-file categories; the
   category is part of the line text instead.
 
