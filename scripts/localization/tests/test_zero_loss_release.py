@@ -166,17 +166,22 @@ class ReleaseCannotRunTests(ReleaseCase):
         os.remove(self.map_path)
         self.assert_cannot_run(self.release(), "key map")
 
-    def moved_aside(self, path):
-        aside = os.path.join(os.path.dirname(path), "." + os.path.basename(path) + ".abc123.aside")
-        os.rename(path, aside)
-        return aside
-
     def test_a_missing_key_map_with_a_moved_aside_file_names_it(self):
-        aside = self.moved_aside(self.map_path)
+        aside = self.moved_aside(KEY_MAP)
         self.assert_cannot_run(self.release(), aside)
 
+    def test_a_catalog_another_process_is_publishing_is_waited_for(self):
+        with self.publication_in_progress(CATALOG):
+            res = self.release()
+        self.assertEqual(res.returncode, 0, res.stdout + res.stderr)
+
+    def test_a_key_map_another_process_is_publishing_is_waited_for(self):
+        with self.publication_in_progress(KEY_MAP):
+            res = self.release()
+        self.assertEqual(res.returncode, 0, res.stdout + res.stderr)
+
     def test_a_missing_catalog_with_a_moved_aside_file_names_it(self):
-        aside = self.moved_aside(os.path.join(self.repo, CATALOG))
+        aside = self.moved_aside(CATALOG)
         self.assert_cannot_run(self.release(), aside)
 
     def test_unreadable_key_map(self):

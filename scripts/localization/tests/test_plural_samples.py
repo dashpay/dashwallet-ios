@@ -131,7 +131,7 @@ class SlovenianFewTests(unittest.TestCase):
         os.makedirs(os.path.join(self.repo, "DashWallet"), exist_ok=True)
         catalog_io.write_catalog(os.path.join(self.repo, zl.CATALOG), current)
         _, findings, _ = zl.release_wording_check(self.repo, self.rev, {"%d requests": ["%d requests"]},
-                                                  self.base, ["sl"])
+                                                  self.base, ["sl"], catalog_io.read_bytes(os.path.join(self.repo, zl.CATALOG)))
         return findings
 
     def test_unchanged_entry_passes(self):
@@ -182,7 +182,8 @@ class SwappedArgumentsTests(unittest.TestCase):
     def findings_for(self, current):
         os.makedirs(os.path.join(self.repo, "DashWallet"), exist_ok=True)
         catalog_io.write_catalog(os.path.join(self.repo, zl.CATALOG), current)
-        _, findings, _ = zl.release_wording_check(self.repo, self.rev, {KEY: [KEY]}, self.base, ["en"])
+        _, findings, _ = zl.release_wording_check(self.repo, self.rev, {KEY: [KEY]}, self.base, ["en"],
+                                                  catalog_io.read_bytes(os.path.join(self.repo, zl.CATALOG)))
         return findings
 
     def test_unchanged_two_plural_entry_passes(self):

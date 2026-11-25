@@ -12,6 +12,7 @@ the publication stays (at `path`, or in a conflict file the error names) and Cat
 publish_text(path, text, expect) stages `text` and publishes it with want=expect[path].
 No staging or moved-aside file is left behind.
 """
+import ast
 import json
 import os
 import shutil
@@ -442,6 +443,44 @@ class WritersGoThroughPublishTextTest(unittest.TestCase):
         with self.assertRaises(catalog_io.CatalogIOError) as cm:
             catalog_io.refuse_leftover(self.catalog)
         self.assertIn(own, str(cm.exception))
+
+    def test_the_key_map_is_published_after_a_catalog_publication_in_progress_ends(self):
+        # publish_text holds the lock of each folder it watches: the Catalog, missing for a moment while
+        # another process publishes it, is compared once that publication is done.
+        import fcntl
+        import threading
+        import time
+        lock = os.open(os.path.dirname(self.catalog), os.O_RDONLY)
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        aside = self.catalog + ".moving"
+        os.rename(self.catalog, aside)
+
+        def finish():
+            time.sleep(1.0)
+            os.rename(aside, self.catalog)
+            os.close(lock)
+        other = threading.Thread(target=finish)
+        other.start()
+        try:
+            self.zl.write_key_map(self.repo, "0" * 40, {"a": ["a"]}, self.read_before)
+        finally:
+            other.join()
+        with open(self.key_map, encoding="utf-8") as f:
+            self.assertEqual(json.load(f)["keys"], {"a": ["a"]})
+
+    def test_the_tools_read_published_files_only_through_read_published(self):
+        # One choke point for "is it missing": read under the publishers' lock (catalog_io.read_published).
+        for name in ("zero_loss_check.py", "baseline_plural_forms.py"):
+            with open(os.path.join(os.path.dirname(HERE), name), encoding="utf-8") as f:
+                tree = ast.parse(f.read())
+            called = {n.func.attr for n in ast.walk(tree)
+                      if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                      and isinstance(n.func.value, ast.Name) and n.func.value.id == "catalog_io"}
+            with self.subTest(name=name):
+                self.assertEqual(called & {"read_bytes", "read_catalog", "refuse_leftover"}, set())
+            source = ast.unparse(tree)
+            with self.subTest(name=name, what="no live Catalog compile"):
+                self.assertNotIn("compile_catalog(os.path.join(repo, CATALOG)", source)
 
     def test_every_writer_publishes_through_publish_file(self):
         # One choke point: no tool writes a checkout file by os.replace or an open() for writing.

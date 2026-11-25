@@ -28,7 +28,6 @@ Without CONFIGURATION (the script run by hand or by its tests) it syncs.
 SYNC_CATALOG_PATH (optional) overrides the Catalog path; used to try the script on a copy.
 Errors go to stderr as `error: ...` with a non-zero exit, so Xcode shows them.
 """
-import fcntl
 import hashlib
 import os
 import re
@@ -206,13 +205,11 @@ def main(argv=None):
         if not os.path.isdir(catalog_dir):
             print("note: %s not found; Catalog sync skipped" % catalog)
             return 0
-        # Two builds of one checkout sync one at a time: the lock is on the Catalog's folder, so it adds
-        # no file to the checkout. It is held from the first look at the Catalog: another build's
-        # publication moves the Catalog aside for a moment, and only under the lock is a missing Catalog
-        # or a moved-aside file not that moment.
-        lock = os.open(catalog_dir, os.O_RDONLY)
-        try:
-            fcntl.flock(lock, fcntl.LOCK_EX)
+        # Two builds of one checkout sync one at a time: the publishers' lock on the Catalog's folder
+        # (catalog_io.folder_lock, which the zero-loss check takes too) is held from the first look at
+        # the Catalog. Another build's publication moves the Catalog aside for a moment, and only under
+        # the lock is a missing Catalog or a moved-aside file not that moment.
+        with catalog_io.folder_lock(catalog):
             if not os.path.isfile(catalog):
                 # A moved-aside file here is an interrupted publication's and may hold the only copy.
                 catalog_io.refuse_leftover(catalog)
@@ -255,8 +252,6 @@ def main(argv=None):
                 processed = synced if changed else snapshot
                 stale = count_stale(processed)
                 done = fingerprint(processed, states)
-        finally:
-            os.close(lock)
         with open(stamp, "w", encoding="utf-8") as f:
             f.write(done + "\n")
         print("Catalog sync: %d compiler + %d legacy .stringsdata (%d Swift, %d ObjC files), "

@@ -22,6 +22,8 @@ Choices where ZERO_LOSS_CHECK.md is silent (the implementation must follow them 
   * with `--baseline <rev>` the header parenthesis starts with `--baseline `.
 """
 import ast
+import contextlib
+import fcntl
 import json
 import os
 import re
@@ -29,6 +31,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import unittest
 
@@ -193,6 +196,34 @@ class ZeroLossCase(unittest.TestCase):
         self.assertEqual(res.returncode, 1, res.stdout + res.stderr)
         self.assertEqual(len(self.findings(res)), count, res.stdout)
         self.assertIn("RESULT: FAIL (%d findings)" % count, res.stdout.splitlines()[-1])
+
+    def moved_aside(self, rel):
+        """Move `rel` aside the way a publication killed in its window leaves it; return the aside path."""
+        path = os.path.join(self.repo, rel)
+        aside = os.path.join(os.path.dirname(path), "." + os.path.basename(path) + ".abc123.aside")
+        os.rename(path, aside)
+        return aside
+
+    @contextlib.contextmanager
+    def publication_in_progress(self, rel):
+        """Another process publishing `rel`: it holds the folder lock with the file moved aside and puts
+        it back a second later."""
+        path = os.path.join(self.repo, rel)
+        lock = os.open(os.path.dirname(path), os.O_RDONLY)
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        aside = self.moved_aside(rel)
+
+        def finish():
+            time.sleep(1.0)
+            os.link(aside, path)
+            os.remove(aside)
+            os.close(lock)
+        other = threading.Thread(target=finish)
+        other.start()
+        try:
+            yield
+        finally:
+            other.join()
 
     def assert_cannot_run(self, res, *words):
         self.assertEqual(res.returncode, 2, res.stdout + res.stderr)
@@ -670,12 +701,10 @@ class CannotRunTests(ZeroLossCase):
         self.assert_cannot_run(res, "older", "DashWallet/Sources/Send.swift")
         self.assertFalse(os.path.exists(os.path.join(self.repo, KEY_MAP)))
 
-    def moved_aside(self, rel):
-        """Move `rel` aside the way a publication killed in its window leaves it; return the aside path."""
-        path = os.path.join(self.repo, rel)
-        aside = os.path.join(os.path.dirname(path), "." + os.path.basename(path) + ".abc123.aside")
-        os.rename(path, aside)
-        return aside
+    def test_a_catalog_another_process_is_publishing_is_waited_for(self):
+        with self.publication_in_progress(CATALOG):
+            res = self.run_cli()
+        self.assertEqual(res.returncode, 0, res.stdout + res.stderr)
 
     def test_a_missing_catalog_with_a_moved_aside_file_names_it(self):
         aside = self.moved_aside(CATALOG)

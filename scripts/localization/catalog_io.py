@@ -5,6 +5,7 @@ newline) is produced by catalog_writer.swift, compiled once for the macOS host
 into a cache directory outside the repository (override with CATALOG_WRITER_CACHE).
 """
 import contextlib
+import fcntl
 import json
 import os
 import signal
@@ -45,17 +46,51 @@ def read_bytes(path):
         return None
 
 
+@contextlib.contextmanager
+def folder_lock(*paths):
+    """Hold the publishers' lock (flock on the folder, so it adds no file) of each folder of `paths`, in
+    a fixed order. A publication holds it from its first comparison to its end, and a missing file is
+    judged only under it: while another process publishes, the path is missing for a moment and its old
+    bytes are in a moved-aside file. Not re-entrant: a process that holds a folder's lock never takes
+    it again."""
+    with contextlib.ExitStack() as stack:
+        for folder in sorted({os.path.dirname(os.path.abspath(p)) for p in paths}):
+            fd = os.open(folder, os.O_RDONLY)
+            stack.callback(os.close, fd)
+            fcntl.flock(fd, fcntl.LOCK_EX)
+        yield
+
+
+def read_published(path):
+    """The bytes of a file the tools publish, or None when it does not exist, read under folder_lock so
+    a publication in progress is waited for. When it is missing and a moved-aside file of an
+    interrupted publication is next to it, raise CatalogIOError naming that file (refuse_leftover)."""
+    if not os.path.isdir(os.path.dirname(os.path.abspath(path))):
+        return None
+    with folder_lock(path):
+        data = read_bytes(path)
+        if data is None:
+            refuse_leftover(path)
+        return data
+
+
 def publish_text(path, text, expect):
     """Write `text` to `path` through publish_file, over the bytes expect[path] (the caller must have read
     the target too), only while every other file in `expect` ({path: the bytes the caller read, or None
-    for a file that did not exist}) still holds them; otherwise raise CatalogIOError."""
+    for a file that did not exist}) still holds them; otherwise raise CatalogIOError. Holds folder_lock
+    of every file in `expect` throughout."""
     want = expect[path]
     directory = os.path.dirname(os.path.abspath(path))
     os.makedirs(directory, exist_ok=True)
     with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=directory,
                                      prefix="." + os.path.basename(path) + ".", delete=False) as f:
         f.write(text)
-    publish_file(path, f.name, want, {p: b for p, b in expect.items() if p != path})
+    try:
+        with folder_lock(*expect):
+            publish_file(path, f.name, want, {p: b for p, b in expect.items() if p != path})
+    finally:
+        if os.path.exists(f.name):
+            os.remove(f.name)
 
 
 def _changed(path, what):
@@ -63,7 +98,8 @@ def _changed(path, what):
 
 
 def publish_file(path, staged, want, watched=None):
-    """Put the finished file `staged` (in the folder of `path`; always removed) at `path`, only over the
+    """The caller holds folder_lock(path, *watched) (publish_text takes it; the sync phase holds it for its run).
+    Put the finished file `staged` (in the folder of `path`; always removed) at `path`, only over the
     bytes `want` (None: `path` must not exist) and only while every file in `watched` ({path: bytes})
     still holds the bytes the caller read; otherwise raise CatalogIOError.
 
@@ -110,8 +146,9 @@ def publish_file(path, staged, want, watched=None):
 
 def refuse_leftover(path):
     """Raise CatalogIOError naming a moved-aside file that an interrupted publication of `path` left next
-    to it; it may hold the only copy of the file. publish_file calls it first, and a reader that finds
-    `path` missing calls it before it reports the file as absent."""
+    to it; it may hold the only copy of the file. publish_file calls it first, and so does a reader that
+    finds `path` missing (read_published); both hold folder_lock, so another process's publication in
+    progress is never taken for an interrupted one."""
     directory = os.path.dirname(os.path.abspath(path))
     prefix = "." + os.path.basename(path) + "."
     for name in sorted(n for n in os.listdir(directory) if n.startswith(prefix) and n.endswith(".aside")):

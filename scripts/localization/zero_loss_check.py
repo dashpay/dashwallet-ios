@@ -312,9 +312,10 @@ def compile_catalog(catalog_path, out_dir):
         raise CannotRun("xcstringstool compile failed: %s" % res.stderr.strip())
 
 
-def compare_wording(repo, rev, pairs, base_catalog, locales):
+def compare_wording(repo, rev, pairs, base_catalog, locales, catalog_bytes):
     """Format both sides of each (baseline key, current key, tag) pair in each locale the Baseline key
-    translated: [(tag, baseline key, current key, locale, None if equal else (expected, actual))].
+    translated: [(tag, baseline key, current key, locale, None if equal else (expected, actual))]. The
+    current side is the Catalog bytes the run read (`catalog_bytes`), never the live file again.
     A Baseline translation that takes an argument as the wrong type gives (DEFECT, its text) instead."""
     specs = counted_specs(repo, rev, locales)
     base_strings = base_catalog["strings"]
@@ -332,7 +333,12 @@ def compare_wording(repo, rev, pairs, base_catalog, locales):
         subprocess.run(["tar", "-x", "-C", base_root], input=tar, check=True)
         cur_root = os.path.join(tmp, "current")
         os.makedirs(cur_root)
-        compile_catalog(os.path.join(repo, CATALOG), cur_root)
+        # Named as the live Catalog: the compiled table takes its name from the file.
+        cur_catalog = os.path.join(tmp, "read", os.path.basename(CATALOG))
+        os.makedirs(os.path.dirname(cur_catalog))
+        with open(cur_catalog, "wb") as f:
+            f.write(catalog_bytes)
+        compile_catalog(cur_catalog, cur_root)
 
         base_reqs, cur_keys = [], []
         for b, c, tag, locale, spec in jobs:
@@ -364,12 +370,12 @@ def compare_wording(repo, rev, pairs, base_catalog, locales):
     return results
 
 
-def wording_check(repo, rev, pairs, base_catalog, locales):
+def wording_check(repo, rev, pairs, base_catalog, locales, catalog_bytes):
     """Check 3: (rows {locale: [places, same]}, place findings, sorted baseline-defect lines)."""
     rows = {locale: [0, 0] for locale in locales}
     findings, defects = [], []
     for (b, c), _, _, locale, diff in compare_wording(repo, rev, [(b.key, c.key, (b, c)) for b, c in pairs],
-                                                     base_catalog, locales):
+                                                     base_catalog, locales, catalog_bytes):
         if diff is not None and diff[0] is DEFECT:
             defects.append(((c.file, c.line, locale, b.key), "DEFECT %s:%d locale=%s baseline_key=%s translation=%s" % (
                 c.file, c.line, locale, dump(b.key), dump(diff[1]))))
@@ -384,14 +390,14 @@ def wording_check(repo, rev, pairs, base_catalog, locales):
     return rows, findings, [text for _, text in sorted(defects)]
 
 
-def release_wording_check(repo, rev, key_map, base_catalog, locales):
+def release_wording_check(repo, rev, key_map, base_catalog, locales, catalog_bytes):
     """Release key check: (rows {locale: [keys, same]}, key findings, sorted baseline-defect lines);
     a Baseline key counts once per locale."""
     rows = {locale: [0, 0] for locale in locales}
     findings, defects = [], set()
     differs = set()
     results = compare_wording(repo, rev, [(b, c, None) for b, cs in sorted(key_map.items()) for c in cs],
-                              base_catalog, locales)
+                              base_catalog, locales, catalog_bytes)
     for _, b, c, locale, diff in results:
         if diff is not None and diff[0] is DEFECT:
             defects.add((b, locale, diff[1]))
@@ -513,11 +519,11 @@ def render(baseline, how, rows, unused, unmapped, watch, findings, mode="pre-mer
     return "\n".join(lines) + "\n"
 
 
-def refuse_leftover(path):
-    """CannotRun naming a moved-aside file that an interrupted publication of `path` left
-    (catalog_io.refuse_leftover); it may hold the only copy. Called wherever `path` is found missing."""
+def read_published(path):
+    """catalog_io.read_published with its error as CannotRun: the bytes of `path`, or None when it does
+    not exist, read under the publishers' lock; a moved-aside file of an interrupted publication is named."""
     try:
-        catalog_io.refuse_leftover(path)
+        return catalog_io.read_published(path)
     except catalog_io.CatalogIOError as e:
         raise CannotRun(str(e))
 
@@ -539,12 +545,10 @@ def load_key_map(repo):
     """read_key_map plus the bytes it parsed, for a writer that derives a file from them."""
     path = os.path.join(repo, KEY_MAP)
     try:
-        with open(path, "rb") as f:
-            raw = f.read()
+        raw = read_published(path)
+        if raw is None:
+            raise CannotRun("key map %s is missing; run the pre-merge check with --write-key-map" % KEY_MAP)
         data = json.loads(raw.decode("utf-8"))
-    except FileNotFoundError as e:
-        refuse_leftover(path)
-        raise CannotRun("key map %s is missing (%s); run the pre-merge check with --write-key-map" % (KEY_MAP, e))
     except (OSError, ValueError) as e:
         raise CannotRun("key map %s is missing or unreadable (%s); run the pre-merge check with --write-key-map"
                         % (KEY_MAP, e))
@@ -563,15 +567,14 @@ def check_release(args):
     if git(repo, "rev-parse", "--verify", "--quiet", baseline + "^{commit}").returncode != 0:
         raise CannotRun("the key map's baseline commit %s is not in this repository" % baseline)
     check_formatter()
-    catalog_path = os.path.join(repo, CATALOG)
-    if not os.path.isfile(catalog_path):
-        refuse_leftover(catalog_path)
+    catalog_bytes = read_published(os.path.join(repo, CATALOG))
+    if catalog_bytes is None:
         raise CannotRun("no Catalog at %s" % CATALOG)
-    cur_strings = catalog_io.read_catalog(catalog_path)["strings"]
+    cur_strings = json.loads(catalog_bytes.decode("utf-8"))["strings"]
     base_catalog = baseline_lists.build_catalog(repo, baseline)
     locales = sorted(baseline_lists.locale_files(repo, baseline))
 
-    rows, wording, defects = release_wording_check(repo, baseline, key_map, base_catalog, locales)
+    rows, wording, defects = release_wording_check(repo, baseline, key_map, base_catalog, locales, catalog_bytes)
     missing, _ = key_set_check(base_catalog["strings"], cur_strings, {k: set(v) for k, v in key_map.items()})
     checked, lost, unused = unused_check(base_catalog["strings"], cur_strings)
     u_checked, u_lost, unmapped = unmapped_check(base_catalog["strings"], cur_strings, set(key_map))
@@ -594,16 +597,10 @@ def check(args):
     check_build(repo, derived)
     check_formatter()
     catalog_path = os.path.join(repo, CATALOG)
-    if not os.path.isfile(catalog_path):
-        refuse_leftover(catalog_path)
-        raise CannotRun("no Catalog at %s" % CATALOG)
     # Read once: the key map is derived from these bytes and is written only while they are on disk.
-    read_before = {catalog_path: catalog_io.read_bytes(catalog_path),
-                   os.path.join(repo, KEY_MAP): catalog_io.read_bytes(os.path.join(repo, KEY_MAP))}
-    if read_before[os.path.join(repo, KEY_MAP)] is None:
-        refuse_leftover(os.path.join(repo, KEY_MAP))
+    read_before = {catalog_path: read_published(catalog_path),
+                   os.path.join(repo, KEY_MAP): read_published(os.path.join(repo, KEY_MAP))}
     if read_before[catalog_path] is None:
-        refuse_leftover(catalog_path)
         raise CannotRun("no Catalog at %s" % CATALOG)
     cur_strings = json.loads(read_before[catalog_path].decode("utf-8"))["strings"]
     base_catalog = baseline_lists.build_catalog(repo, baseline)
@@ -613,7 +610,7 @@ def check(args):
     pairs, mismatched = places.pair(places.baseline_places(repo, baseline, args.baseline_derived_data, baseline_root), current)
     findings = [("file-places", (f,), "FAIL file-places %s baseline=%d current=%d" % (f, b, c))
                 for f, b, c in mismatched]
-    rows, wording, defects = wording_check(repo, baseline, pairs, base_catalog, locales)
+    rows, wording, defects = wording_check(repo, baseline, pairs, base_catalog, locales, read_before[catalog_path])
     used = {}
     for b, c in pairs:
         used.setdefault(b.key, set()).add(c.key)
