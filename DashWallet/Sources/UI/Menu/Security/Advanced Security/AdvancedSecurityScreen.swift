@@ -277,12 +277,3 @@ final class AdvancedSecurityHostingController: UIHostingController<AdvancedSecur
             isInteractive: false))
     }
 }
-
-/// Builds the Advanced Security screen for Objective-C callers (onboarding),
-/// which can't see the generic hosting controller.
-@objc(DWAdvancedSecurityScreenFactory)
-final class AdvancedSecurityScreenFactory: NSObject {
-    @objc static func demoController() -> UIViewController {
-        AdvancedSecurityHostingController.demo()
-    }
-}

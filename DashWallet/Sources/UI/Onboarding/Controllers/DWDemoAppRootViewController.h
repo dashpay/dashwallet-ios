@@ -17,11 +17,10 @@
 
 #import "DWAppRootViewController.h"
 
-#import "dashwallet-Swift.h"
-
 NS_ASSUME_NONNULL_BEGIN
 
-@interface DWDemoAppRootViewController : DWAppRootViewController <DWNavigationFullscreenable>
+/// The app's root over stub models, played by the onboarding carousel.
+@interface DWDemoAppRootViewController : DWAppRootViewController
 
 @end
 
