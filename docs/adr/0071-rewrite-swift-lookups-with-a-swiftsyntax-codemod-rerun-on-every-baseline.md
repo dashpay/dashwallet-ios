@@ -1,6 +1,6 @@
 # 0071 — Rewrite Swift lookups with a SwiftSyntax codemod re-run on every Baseline
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-18
 - **Deciders:** Roman Chornyi (owner), with Claude during the design walk
 
