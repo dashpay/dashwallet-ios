@@ -266,7 +266,7 @@ final class QRScannerViewModel: ObservableObject {
                         self.finish(.payment(self.inputBuilder.paymentInput(withParsedURI: cleared, source: .scanQR)))
                     } else {
                         self.showInvalid(
-                            title: NSLocalizedString("Invalid Payment Request", comment: ""),
+                            title: String(localized: "Invalid Payment Request", comment: ""),
                             message: error?.localizedDescription)
                     }
                 } else {
@@ -312,8 +312,8 @@ final class QRScannerViewModel: ObservableObject {
             return
         }
         offer(.payment(parsed),
-              message: NSLocalizedString("This QR code is a Dash payment request.", comment: "QR scanner"),
-              actionTitle: NSLocalizedString("Open Send", comment: "QR scanner"))
+              message: String(localized: "This QR code is a Dash payment request.", comment: "QR scanner"),
+              actionTitle: String(localized: "Open Send", comment: "QR scanner"))
     }
 
     #if DASHPAY
@@ -335,15 +335,15 @@ final class QRScannerViewModel: ObservableObject {
             return
         }
         offer(.dashPayUser(link),
-              message: NSLocalizedString("This QR code is a DashPay user.", comment: "QR scanner"),
-              actionTitle: NSLocalizedString("View User", comment: "QR scanner"))
+              message: String(localized: "This QR code is a DashPay user.", comment: "QR scanner"),
+              actionTitle: String(localized: "View User", comment: "QR scanner"))
     }
 
     private func offerInvitationRedirect(_ url: URL) {
         guard !refusesWhileLocked(), !refusesInvitation(url) else { return }
         offer(.invitation(url),
-              message: NSLocalizedString("This QR code is a DashPay invitation.", comment: "QR scanner"),
-              actionTitle: NSLocalizedString("Claim Invitation", comment: "QR scanner"))
+              message: String(localized: "This QR code is a DashPay invitation.", comment: "QR scanner"),
+              actionTitle: String(localized: "Claim Invitation", comment: "QR scanner"))
     }
     #endif
 
@@ -400,7 +400,7 @@ final class QRScannerViewModel: ObservableObject {
         onResult?(result)
     }
 
-    private func showInvalid(title: String = NSLocalizedString("Invalid QR Code", comment: ""),
+    private func showInvalid(title: String = String(localized: "Invalid QR Code", comment: ""),
                              message: String?) {
         status = .invalid(title: title, message: message)
         UINotificationFeedbackGenerator().notificationOccurred(.error)
@@ -426,19 +426,19 @@ final class QRScannerViewModel: ObservableObject {
     /// "not a Dash QR code".
     private func invalidQRMessage(for parsed: ParsedPaymentURI) -> String {
         if parsed.scheme == "dash", parsed.hasInvalidAmount {
-            return NSLocalizedString("Invalid payment amount", comment: "")
+            return String(localized: "Invalid payment amount", comment: "")
         }
         if parsed.scheme == "dash", parsed.hasUnsupportedRequirement || (parsed.requiresRequest && parsed.rURL == nil) {
-            return NSLocalizedString("Invalid Payment Request", comment: "")
+            return String(localized: "Invalid Payment Request", comment: "")
         }
         if parsed.hasExplicitScheme, parsed.scheme == "dash", let address = parsed.address, address.count > 1 {
-            return "\(NSLocalizedString("Not a valid Dash address", comment: "")):\n\(address)"
+            return "\(String(localized: "Not a valid Dash address", comment: "")):\n\(address)"
         }
-        return NSLocalizedString("Not a Dash QR code", comment: "")
+        return String(localized: "Not a Dash QR code", comment: "")
     }
 
     private var notAUserQRMessage: String {
-        NSLocalizedString("This isn't a DashPay user QR code.", comment: "DashPay Contacts: scanned QR is a payment/invitation/foreign code")
+        String(localized: "This isn't a DashPay user QR code.", comment: "DashPay Contacts: scanned QR is a payment/invitation/foreign code")
     }
 
     /// Only a voucher the wallet has read as well formed is handed over; one
@@ -448,19 +448,19 @@ final class QRScannerViewModel: ObservableObject {
         case .valid:
             return false
         case .malformed:
-            showInvalid(title: NSLocalizedString("Invalid Invitation", comment: ""),
-                        message: NSLocalizedString("This invitation link is not valid.", comment: ""))
+            showInvalid(title: String(localized: "Invalid Invitation", comment: ""),
+                        message: String(localized: "This invitation link is not valid.", comment: ""))
         case .unavailable:
-            showInvalid(title: NSLocalizedString("Wallet is not ready", comment: "DashPay"), message: nil)
+            showInvalid(title: String(localized: "Wallet is not ready", comment: "DashPay"), message: nil)
         }
         return true
     }
 
     private var noIdentityMessage: String {
-        NSLocalizedString("No DashPay identity is registered", comment: "DashPay")
+        String(localized: "No DashPay identity is registered", comment: "DashPay")
     }
 
     private var notAnInvitationQRMessage: String {
-        NSLocalizedString("This isn't an invitation QR code.", comment: "DashPay Invitations")
+        String(localized: "This isn't an invitation QR code.", comment: "DashPay Invitations")
     }
 }

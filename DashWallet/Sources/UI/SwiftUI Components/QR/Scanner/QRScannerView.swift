@@ -40,7 +40,7 @@ struct QRScannerView: View {
             VStack(spacing: 0) {
                 HStack {
                     Button(action: { viewModel.cancel() }) {
-                        Text(NSLocalizedString("Cancel", comment: ""))
+                        Text(String(localized: "Cancel", comment: ""))
                             .font(.body)
                             .foregroundColor(.dash.whiteText)
                     }
@@ -54,8 +54,8 @@ struct QRScannerView: View {
                                 .font(.title3)
                         }
                         .accessibilityLabel(Text(viewModel.torchOn
-                            ? NSLocalizedString("Turn off flashlight", comment: "QR scanner")
-                            : NSLocalizedString("Turn on flashlight", comment: "QR scanner")))
+                            ? String(localized: "Turn off flashlight", comment: "QR scanner")
+                            : String(localized: "Turn on flashlight", comment: "QR scanner")))
                     }
                 }
                 .padding(.horizontal, 20)
@@ -67,7 +67,7 @@ struct QRScannerView: View {
                     .stroke(frameColor, lineWidth: 2)
                     .frame(width: 250, height: 250)
 
-                Text(NSLocalizedString("Scan QR Code", comment: ""))
+                Text(String(localized: "Scan QR Code", comment: ""))
                     .font(.subheadline.weight(.medium))
                     .foregroundColor(.dash.whiteText)
                     .padding(.top, 24)
@@ -87,15 +87,15 @@ struct QRScannerView: View {
         }
         .alert(isPresented: $showCameraAlert) {
             Alert(
-                title: Text(NSLocalizedString("Camera Unavailable", comment: "")),
-                message: Text(NSLocalizedString("Allow camera access in Settings", comment: "")),
-                primaryButton: .default(Text(NSLocalizedString("Settings", comment: ""))) {
+                title: Text(String(localized: "Camera Unavailable", comment: "")),
+                message: Text(String(localized: "Allow camera access in Settings", comment: "")),
+                primaryButton: .default(Text(String(localized: "Settings", comment: ""))) {
                     if let url = URL(string: UIApplication.openSettingsURLString) {
                         UIApplication.shared.open(url)
                     }
                     onCancel()
                 },
-                secondaryButton: .cancel(Text(NSLocalizedString("Cancel", comment: ""))) {
+                secondaryButton: .cancel(Text(String(localized: "Cancel", comment: ""))) {
                     onCancel()
                 }
             )
@@ -123,10 +123,10 @@ struct QRScannerView: View {
             card {
                 SwiftUI.ProgressView()
                     .padding(.bottom, 8)
-                Text(NSLocalizedString("Please Wait", comment: ""))
+                Text(String(localized: "Please Wait", comment: ""))
                     .font(.title3)
                     .foregroundColor(.dash.primaryText)
-                Text(NSLocalizedString("Connecting to payment server", comment: ""))
+                Text(String(localized: "Connecting to payment server", comment: ""))
                     .font(.body)
                     .foregroundColor(.dash.secondaryText)
             }
@@ -136,7 +136,7 @@ struct QRScannerView: View {
                 Text(title)
                     .font(.title3)
                     .foregroundColor(.dash.primaryText)
-                Text(message ?? NSLocalizedString("Please try scanning again", comment: ""))
+                Text(message ?? String(localized: "Please try scanning again", comment: ""))
                     .font(.body)
                     .foregroundColor(.dash.secondaryText)
             }
@@ -147,7 +147,7 @@ struct QRScannerView: View {
                     .font(.body)
                     .foregroundColor(.dash.primaryText)
                 HStack(spacing: 12) {
-                    offerButton(NSLocalizedString("Keep Scanning", comment: "QR scanner"),
+                    offerButton(String(localized: "Keep Scanning", comment: "QR scanner"),
                                 background: .dash.secondaryBackground,
                                 foreground: .dash.primaryText) {
                         viewModel.declineOffer()

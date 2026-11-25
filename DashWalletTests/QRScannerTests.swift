@@ -373,7 +373,7 @@ final class QRScannerTests: XCTestCase {
         processor.processPaymentInput(DWPaymentInputBuilder().paymentInput(withParsedURI: parsed, source: .scanQR))
         XCTAssertFalse(delegate.amountRequested)
         XCTAssertNotNil(delegate.failure?.error)
-        XCTAssertEqual(delegate.failure?.title, NSLocalizedString("Invalid payment amount", comment: ""))
+        XCTAssertEqual(delegate.failure?.title, String(localized: "Invalid payment amount", comment: ""))
     }
 
     /// An opened or scanned link that requires its merchant request goes to
@@ -437,7 +437,7 @@ final class QRScannerTests: XCTestCase {
                 XCTAssertFalse(delegate.amountRequested, code)
                 XCTAssertFalse(delegate.confirmed, code)
                 XCTAssertNotNil(delegate.failure?.error, code)
-                XCTAssertEqual(delegate.failure?.title, NSLocalizedString("Invalid Payment Request", comment: ""), code)
+                XCTAssertEqual(delegate.failure?.title, String(localized: "Invalid Payment Request", comment: ""), code)
             }
         }
     }
@@ -475,7 +475,7 @@ final class QRScannerTests: XCTestCase {
                 processor.processPaymentInput(DWPaymentInputBuilder().paymentInput(withParsedURI: parsed, source: source))
                 XCTAssertFalse(delegate.amountRequested, code)
                 XCTAssertFalse(delegate.confirmed, code)
-                XCTAssertEqual(delegate.failure?.title, NSLocalizedString("Invalid Payment Request", comment: ""), code)
+                XCTAssertEqual(delegate.failure?.title, String(localized: "Invalid Payment Request", comment: ""), code)
             }
         }
 
@@ -513,7 +513,7 @@ final class QRScannerTests: XCTestCase {
             processor.delegate = delegate
             if let input { processor.processPaymentInput(input) }
             XCTAssertFalse(delegate.confirmed)
-            XCTAssertEqual(delegate.failure?.title, NSLocalizedString("Invalid Payment Request", comment: ""))
+            XCTAssertEqual(delegate.failure?.title, String(localized: "Invalid Payment Request", comment: ""))
         }
     }
 
