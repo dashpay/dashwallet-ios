@@ -22,7 +22,6 @@ import SwiftData
 import SwiftDashSDK
 import UIKit
 
-private let kBaseBalanceHeaderHeight: CGFloat = 100
 private let kTimeskewTolerance: TimeInterval = 3600 // 1 hour
 private let maxShortcutsCount = 4
 
@@ -210,7 +209,6 @@ class HomeViewModel: ObservableObject {
     /// computed on each full reload.
     @Published private(set) var hasMasternodeHistory: Bool = false
 
-    @Published private(set) var headerHeight: CGFloat = kBaseBalanceHeaderHeight // TDOO: move back to HomeView when fully transitioned to SwiftUI
     @Published private(set) var showReclassifyTransaction: Transaction? = nil
     @Published var shouldShowShortcutBanner: Bool = false
     /// Drives the gift-card details sheet on the home screen — the single source of truth for
@@ -258,13 +256,8 @@ class HomeViewModel: ObservableObject {
     ) {
         self.transactionSource = transactionSource
         self.evonodeEpochBlocksMonitor = evonodeEpochBlocksMonitor
-        syncModel.networkStatusDidChange = { status in
-            self.recalculateHeight()
-        }
-
         self.setupMetadataProviders()
         self.onSyncStateChanged()
-        self.recalculateHeight()
 
         // First load right away — `onSyncStateChanged()` above only schedules
         // one behind its 0.5s debounce, which reads as a visibly empty list
@@ -1245,24 +1238,6 @@ class HomeViewModel: ObservableObject {
     }
     
     
-    private func recalculateHeight() {
-        var height = kBaseBalanceHeaderHeight
-        let hasNetwork = syncModel.networkStatus == .online
-
-        if !hasNetwork {
-            height += 85
-        }
-
-        if shouldShowShortcutBanner {
-            // Banner height + the gap between the bar and the banner (added via setCustomSpacing
-            // in HomeHeaderView). Without the gap term the fixed header height is too short and
-            // the .fill stack shrinks the bar, shifting its card upward.
-            height += 70 + HomeHeaderView.shortcutBarBannerSpacing
-        }
-
-        self.headerHeight = height
-    }
-    
     private func getDeviceTimeSkew(force: Bool) async -> (Bool, TimeInterval) {
         do {
             let timeSkew = try await TimeUtils.getTimeSkew(force: force)
@@ -1607,7 +1582,6 @@ extension HomeViewModel {
         let newValue = (options.shortcutBannerState == 2 && options.shortcuts == nil)
         if newValue != shouldShowShortcutBanner {
             shouldShowShortcutBanner = newValue
-            recalculateHeight()
         }
     }
 
@@ -1615,7 +1589,6 @@ extension HomeViewModel {
     func dismissShortcutBanner() {
         DWGlobalOptions.sharedInstance().shortcutBannerState = 3
         shouldShowShortcutBanner = false
-        recalculateHeight()
     }
 
     func reloadShortcuts() {

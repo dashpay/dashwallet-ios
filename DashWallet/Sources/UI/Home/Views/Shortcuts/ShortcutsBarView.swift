@@ -38,7 +38,7 @@ protocol ShortcutsActionDelegate: AnyObject {
 ///
 /// Data comes straight from `HomeViewModel.shortcutItems` (`@Published`), so the bar updates
 /// itself — no manual reload. Taps and long-presses are reported through plain closures, which
-/// `HomeHeaderView` adapts to the `ShortcutsActionDelegate` used by `HomeViewController`.
+/// `HomeView` adapts to the `ShortcutsActionDelegate` used by `HomeViewController`.
 struct ShortcutsBarView: View {
     @ObservedObject var viewModel: HomeViewModel
     let onSelect: (ShortcutAction) -> Void

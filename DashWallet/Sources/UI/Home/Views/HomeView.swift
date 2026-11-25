@@ -73,7 +73,6 @@ final class HomeView: UIView {
     private var cancellableBag = Set<AnyCancellable>()
     weak var delegate: HomeViewDelegate?
 
-    private(set) var headerView: HomeHeaderView!
     let viewModel: HomeViewModel
     #if DASHPAY
     let joinDPViewModel = JoinDashPayViewModel(initialState: .callToAction)
@@ -82,10 +81,9 @@ final class HomeView: UIView {
 
     var model: DWHomeProtocol?
 
-    weak var shortcutsDelegate: ShortcutsActionDelegate? {
-        get { headerView.shortcutsDelegate }
-        set { headerView.shortcutsDelegate = newValue }
-    }
+    /// Set by `HomeViewController` after this view is built; the header's
+    /// shortcut closures read it at tap time.
+    weak var shortcutsDelegate: ShortcutsActionDelegate?
 
     init(frame: CGRect, delegate: HomeViewDelegate?, viewModel: HomeViewModel) {
         self.viewModel = viewModel
@@ -101,9 +99,6 @@ final class HomeView: UIView {
     private func setupView() {
         backgroundColor = UIColor.dw_secondaryBackground()
 
-        headerView = HomeHeaderView(frame: CGRect.zero, viewModel: viewModel)
-        headerView.delegate = self
-        
         // Resolve the shortcuts delegate lazily (through the computed property)
         // rather than passing its current value: it is still nil here —
         // HomeViewController assigns it right after this init returns.
@@ -117,14 +112,14 @@ final class HomeView: UIView {
             pendingInvitationViewModel: self.pendingInvitationViewModel,
             delegate: self.delegate,
             performShortcut: performShortcut,
-            headerView: { UIViewWrapper(uiView: self.headerView) }
+            headerView: { self.makeHeaderView() }
         )
         #else
         let content = HomeViewContent(
             viewModel: self.viewModel,
             delegate: self.delegate,
             performShortcut: performShortcut,
-            headerView: { UIViewWrapper(uiView: self.headerView) }
+            headerView: { self.makeHeaderView() }
         )
         #endif
         let swiftUIController = UIHostingController(rootView: content)
@@ -142,6 +137,20 @@ final class HomeView: UIView {
                 
         swiftUIController.didMove(toParent: nil)
         configureObservers()
+    }
+
+    private func makeHeaderView() -> HomeHeaderView {
+        HomeHeaderView(
+            viewModel: viewModel,
+            onShortcut: { [weak self] action in
+                self?.shortcutsDelegate?.shortcutsView(didSelectAction: action, sender: nil)
+            },
+            onShortcutLongPress: { [weak self] position, action in
+                self?.shortcutsDelegate?.shortcutsView(didLongPressPosition: position, currentAction: action)
+            },
+            onRetrySync: { [weak self] in
+                self?.model?.retrySyncing()
+            })
     }
     
     private func configureObservers() {
@@ -202,18 +211,6 @@ final class HomeView: UIView {
     }
     
     #endif
-}
-
-// MARK: HomeHeaderViewDelegate
-
-extension HomeView: HomeHeaderViewDelegate {
-    func homeHeaderView(_ headerView: HomeHeaderView, retrySyncButtonAction sender: UIView) {
-        model?.retrySyncing()
-    }
-
-    func homeHeaderViewDidUpdateContents(_ view: HomeHeaderView) {
-        setNeedsLayout()
-    }
 }
 
 /// Scroll thresholds (pt scrolled down) for showing/hiding the
@@ -361,7 +358,6 @@ struct HomeViewContent<Content: View>: View {
                             .frame(height: 16)
 
                         headerView()
-                            .frame(height: viewModel.headerHeight)
                     }
                     
                     ProtocolCompatibilityBanner(controller: SwiftDashSDKHost.shared.protocolCompatibility)
