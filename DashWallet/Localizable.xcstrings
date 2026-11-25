@@ -12395,6 +12395,7 @@
       }
     },
     "%@ is not allowed to access the camera" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -103225,6 +103226,7 @@
       }
     },
     "Camera is required to scan QR codes." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -115846,6 +115848,9 @@
           }
         }
       }
+    },
+    "Claim Invitation" : {
+      "comment" : "QR scanner"
     },
     "Claimable balance" : {
       "comment" : "Masternodes",
@@ -274470,6 +274475,9 @@
         }
       }
     },
+    "Keep Scanning" : {
+      "comment" : "QR scanner"
+    },
     "Keep these coins private. Network and privacy fees apply." : {
       "comment" : "CoinJoin",
       "localizations" : {
@@ -362032,6 +362040,9 @@
           }
         }
       }
+    },
+    "Open Send" : {
+      "comment" : "QR scanner"
     },
     "Open Settings" : {
       "comment" : "Notifications",
@@ -575855,6 +575866,9 @@
         }
       }
     },
+    "This isn't an invitation QR code." : {
+      "comment" : "DashPay Invitations"
+    },
     "This kind of code is not accepted on mainnet. Ask the app for a DashPay connect link or code." : {
       "comment" : "DashConnect App Connect: a dash-key code scanned on mainnet",
       "localizations" : {
@@ -581907,6 +581921,15 @@
           }
         }
       }
+    },
+    "This QR code is a Dash payment request." : {
+      "comment" : "QR scanner"
+    },
+    "This QR code is a DashPay invitation." : {
+      "comment" : "QR scanner"
+    },
+    "This QR code is a DashPay user." : {
+      "comment" : "QR scanner"
     },
     "This QR code is not a DashConnect QR code." : {
       "comment" : "DashConnect error",
@@ -617400,6 +617423,12 @@
         }
       }
     },
+    "Turn off flashlight" : {
+      "comment" : "QR scanner"
+    },
+    "Turn on flashlight" : {
+      "comment" : "QR scanner"
+    },
     "Turned off in iOS Settings" : {
       "comment" : "Notifications",
       "localizations" : {
@@ -645268,6 +645297,9 @@
           }
         }
       }
+    },
+    "View User" : {
+      "comment" : "QR scanner"
     },
     "Vote" : {
       "comment" : "Voting",
