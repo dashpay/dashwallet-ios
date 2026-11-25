@@ -1015,16 +1015,14 @@ final class BIP70PaymentServiceTests: XCTestCase {
             .prepare(requestURL: url, scheme: "pay", callbackScheme: nil, network: .testnet)
     }
 
-    func testCoordinatorRefusesUnsignedRequestPayingTwoAddresses() async throws {
-        do {
-            _ = try await prepare(unsignedNamed(nil, outputs: twoAddresses))
-            XCTFail("expected a refusal")
-        } catch {
-            XCTAssertEqual(error as? BIP70InteractivePolicy.Violation, .unsignedMultipleRecipients)
-            XCTAssertTrue(BIP70InteractiveCoordinator.isRefusal(BIP70InteractiveCoordinator.nsError(error)))
-        }
-        let single = try await prepare(unsignedNamed(nil))
-        XCTAssertEqual(single.recipients.count, 1)
+    func testUnsignedRequestPayingTwoAddressesIsAllowedAndSaysSo() async throws {
+        let confirmation = try await prepare(unsignedNamed(nil, outputs: twoAddresses))
+        XCTAssertEqual(BIP70ConfirmationBox(confirmation).recipientCount, 2)
+
+        let output = try await paymentOutput(for: unsignedNamed(nil, outputs: twoAddresses))
+        XCTAssertNotNil(try addressRow(of: output))
+        let info = try XCTUnwrap(try rows(of: output).generalInfo?.plainDetail)
+        XCTAssertTrue(info.contains("This payment goes to 2 addresses."))
     }
 
     func testTwoOutputsToOneAddressCountAsOneAddress() async throws {

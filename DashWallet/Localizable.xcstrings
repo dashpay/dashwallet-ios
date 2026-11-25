@@ -580818,9 +580818,6 @@
         }
       }
     },
-    "This payment request is unsigned and pays more than one address." : {
-      "comment" : "Payment request refused"
-    },
     "This payment request uses an unsupported output type." : {
       "comment" : "BIP70 payment error",
       "localizations" : {

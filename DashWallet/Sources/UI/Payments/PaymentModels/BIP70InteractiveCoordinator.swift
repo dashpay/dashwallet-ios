@@ -32,19 +32,6 @@ final class BIP70ConfirmationBox: NSObject {
 /// in `BIP70PaymentService`. Kept out of the service on purpose: the headless gift-card
 /// purchase shares that service and shows no confirm screen, so these rules do not apply to it.
 enum BIP70InteractivePolicy {
-    enum Violation: LocalizedError, Equatable {
-        /// An unsigned request paying more than one address.
-        case unsignedMultipleRecipients
-
-        var errorDescription: String? {
-            switch self {
-            case .unsignedMultipleRecipients:
-                return String(localized: "This payment request is unsigned and pays more than one address.",
-                              comment: "Payment request refused")
-            }
-        }
-    }
-
     /// Debug builds may fetch over plain http, which the local test server in
     /// `BIP70_TESTING.md` uses.
     static var allowsInsecureTransport: Bool {
@@ -66,16 +53,12 @@ enum BIP70InteractivePolicy {
         Set(confirmation.recipients.map(\.address)).count
     }
 
-    /// Checked on the fetched and verified request, before the confirm screen. The screen shows
-    /// one address, and an unsigned request has no signer answering for the others. The
+    /// Checked on the fetched and verified request, before the confirm screen. The
     /// `payment_url` is checked here so an http one is refused before anything is built; the
     /// request URL and its hops are the transport's (`requiresHTTPS`). A `payment_url` that is
     /// present but does not parse is refused, so the request is never paid without the Payment
     /// message it asks for.
     static func check(_ confirmation: Confirmation, allowsInsecureTransport: Bool) throws {
-        if !confirmation.isSecure, addressCount(of: confirmation) > 1 {
-            throw Violation.unsignedMultipleRecipients
-        }
         if confirmation.paymentURL == nil, let raw = confirmation.request.details.paymentURL, !raw.isEmpty {
             throw BIP70Error.malformedRequest
         }
@@ -103,8 +86,8 @@ final class BIP70SendResultBox: NSObject {
 @objc(DWBIP70InteractiveCoordinator)
 final class BIP70InteractiveCoordinator: NSObject {
 
-    /// NSError code of a request the app refused by rule (not https, or unsigned and paying
-    /// more than one address), as opposed to one that failed to load or verify.
+    /// NSError code of a request the app refused by rule (not https), as opposed to one that
+    /// failed to load or verify.
     static let refusalErrorCode = 3
     private static let errorDomain = "org.dashfoundation.dash.bip70"
 
@@ -202,12 +185,6 @@ final class BIP70InteractiveCoordinator: NSObject {
             return NSError(domain: errorDomain,
                            code: bip == .insecureTransport ? refusalErrorCode : 1,
                            userInfo: [NSLocalizedDescriptionKey: bip.errorDescription
-                               ?? String(localized: "Payment failed", comment: "BIP70 payment error")])
-        }
-        if let violation = error as? BIP70InteractivePolicy.Violation {
-            return NSError(domain: errorDomain,
-                           code: refusalErrorCode,
-                           userInfo: [NSLocalizedDescriptionKey: violation.errorDescription
                                ?? String(localized: "Payment failed", comment: "BIP70 payment error")])
         }
         return error as NSError
