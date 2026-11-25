@@ -174,20 +174,44 @@ final class DashSpendPurchaseTests: XCTestCase {
         Task { try await viewModel.purchaseGiftCardAndPay(snapshot) }
     }
 
-    /// Waits for the purchase to end. One still waiting after `patience` fails the test and is
-    /// let go by declining whatever it waits for, so a regression fails here instead of
+    /// Thrown by `finish` when the purchase has not ended in time.
+    private struct StillWaiting: Error {}
+
+    /// Waits for the purchase to end, for at most `patience`. One still waiting then fails
+    /// the test; whatever it may wait for is declined, and this throws `StillWaiting`
+    /// without waiting for the purchase again, so a regression fails here instead of
     /// hanging the suite.
     private func finish(_ purchase: Task<Data, Error>, on viewModel: DashSpendPayViewModel,
                         file: StaticString = #filePath, line: UInt = #line) async throws -> Data {
-        let watchdog = Task {
-            try? await Task.sleep(nanoseconds: UInt64(Self.patience * 1_000_000_000))
-            guard !Task.isCancelled else { return }
-            XCTFail("the purchase is still waiting", file: file, line: line)
-            viewModel.resolvePriceChange(pay: false)
-            viewModel.purchaseSheetDidDismiss()
+        let waiter = Waiter()
+        return try await withCheckedThrowingContinuation { continuation in
+            waiter.continuation = continuation
+            let watchdog = Task { @MainActor in
+                try? await Task.sleep(nanoseconds: UInt64(Self.patience * 1_000_000_000))
+                guard !Task.isCancelled, waiter.continuation != nil else { return }
+                XCTFail("the purchase is still waiting", file: file, line: line)
+                viewModel.resolvePriceChange(pay: false)
+                viewModel.purchaseSheetDidDismiss()
+                waiter.resume(.failure(StillWaiting()))
+            }
+            Task { @MainActor in
+                let result = await purchase.result
+                watchdog.cancel()
+                waiter.resume(result)
+            }
         }
-        defer { watchdog.cancel() }
-        return try await purchase.value
+    }
+
+    /// Holds the continuation `finish` waits on, so it is resumed once: by the purchase
+    /// ending or by the timeout, whichever comes first.
+    @MainActor
+    private final class Waiter {
+        var continuation: CheckedContinuation<Data, Error>?
+
+        func resume(_ result: Result<Data, Error>) {
+            continuation?.resume(with: result)
+            continuation = nil
+        }
     }
 
     /// Returns the price change once the "Price updated" sheet is up, or nil, failing the
