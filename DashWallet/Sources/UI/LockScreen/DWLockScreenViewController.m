@@ -21,7 +21,6 @@
 #import "DWLockPinInputView.h"
 #import "DWLockScreenModel.h"
 #import "DWRecoverViewController.h"
-#import "DWSetPinViewController.h"
 #import "DWUIKit.h"
 #import "dashwallet-Swift.h"
 
@@ -299,7 +298,7 @@ static CGFloat ActionButtonsHeight(void) {
     // Forgot-PIN changes an existing PIN; the no-PIN-record path sets the
     // first one — same screen, honest title.
     const DWSetPinIntent intent =
-        self.model.hasPinSet ? DWSetPinIntent_ChangePin : DWSetPinIntent_SetPin;
+        self.model.hasPinSet ? DWSetPinIntentChangePin : DWSetPinIntentSetPin;
     DWSetPinViewController *controller =
         [DWSetPinViewController controllerWithIntent:intent];
     controller.delegate = self;

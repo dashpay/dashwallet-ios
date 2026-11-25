@@ -30289,6 +30289,17 @@
         }
       }
     },
+    "%lld of %lld digits entered" : {
+      "comment" : "Lock screen PIN, VoiceOver",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld digits entered"
+          }
+        }
+      }
+    },
     "%lld receive" : {
       "comment" : "Wallet accounts — address pool",
       "localizations" : {
@@ -169539,6 +169550,9 @@
         }
       }
     },
+    "Dash. Your money, your way." : {
+      "comment" : "Setup logo, VoiceOver"
+    },
     "DashConnect cannot publish from this wallet: the app runtime is on %@, which does not match the network DashConnect is configured for." : {
       "comment" : "DashConnect: the placeholder is the network name",
       "localizations" : {
@@ -176637,6 +176651,9 @@
           }
         }
       }
+    },
+    "Delete" : {
+      "comment" : "Number keyboard"
     },
     "Delete All" : {
       "localizations" : {

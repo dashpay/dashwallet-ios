@@ -19,7 +19,6 @@
 
 #import "DWLockScreenViewController.h"
 #import "DWRootModel.h"
-#import "DWSetupViewController.h"
 #import "DWUIKit.h"
 #import "DWURLParser.h"
 #import "DWURLRequestHandler.h"
