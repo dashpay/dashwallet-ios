@@ -81,7 +81,7 @@ private final class StubPayments: GiftCardPaying {
     var requestedByURL: UInt64 = 0
     /// Thrown in place of paying, once the amount has passed the caller's check.
     var failure: Error?
-    private(set) var urlPayments: [(url: String, amount: UInt64)] = []
+    private(set) var urlPayments: [(url: String, amount: UInt64, awaitAcceptance: Bool)] = []
     private(set) var addressPayments: [(address: String, amount: UInt64)] = []
 
     var isEmpty: Bool { urlPayments.isEmpty && addressPayments.isEmpty }
@@ -95,7 +95,7 @@ private final class StubPayments: GiftCardPaying {
             merchantData: nil, memo: nil, callbackScheme: nil,
             request: PaymentRequest(serializedDetails: Data())))
         if let failure { throw failure }
-        urlPayments.append((paymentUrlString, amount))
+        urlPayments.append((paymentUrlString, amount, awaitAcceptance))
         return Self.txidWire
     }
 
@@ -259,6 +259,8 @@ final class DashSpendPurchaseTests: XCTestCase {
         XCTAssertEqual(ctx.orders.map(\.fiatAmount), ["25.00"])
         XCTAssertEqual(payments.urlPayments.map(\.url), [StubCTXRepository.paymentURL])
         XCTAssertEqual(payments.urlPayments.map(\.amount), [Self.confirmedDuffs])
+        // CTX fulfils the order from the payment it acknowledged; the verdict is not awaited.
+        XCTAssertEqual(payments.urlPayments.map(\.awaitAcceptance), [false])
         XCTAssertTrue(payments.addressPayments.isEmpty)
         XCTAssertEqual(recorder.records, [GiftCardPurchaseRecord(
             txidWire: StubPayments.txidWire, provider: .ctx, merchantName: "Test Merchant", merchantUrl: nil,
@@ -277,7 +279,8 @@ final class DashSpendPurchaseTests: XCTestCase {
 
         XCTAssertEqual(change?.confirmedAmount, Self.confirmedDuffs)
         XCTAssertEqual(change?.requestedAmount, Self.higherDuffs)
-        XCTAssertTrue(payments.isEmpty, "paid before the buyer answered")
+        // Not asserted here that nothing is paid yet: the stub pays only once the check has
+        // returned, so that would hold whatever the view model did.
 
         viewModel.resolvePriceChange(pay: false)
         await assertCancelled(purchase, on: viewModel)
