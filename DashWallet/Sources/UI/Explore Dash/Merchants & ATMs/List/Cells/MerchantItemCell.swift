@@ -76,7 +76,7 @@ class MerchantItemCell: PointOfUseItemCell {
             savingsLabel.isHidden = false
             // Convert from basis points to percentage and round to nearest whole number (e.g., 400 -> 4%)
             let discountPercentage = round(Double(maxDiscountBasisPoints) / 100.0)
-            savingsLabel.text = String(format: NSLocalizedString("~%.0f%%", comment: "Savings percentage"), discountPercentage)
+            savingsLabel.text = String(format: String(localized: "~%.0f%%", comment: "Savings percentage"), discountPercentage)
         } else {
             savingsLabel.isHidden = true
         }

@@ -160,7 +160,7 @@ extension TransferAmountModel: ConverterViewDataSource {
 
     var coinbaseBalanceFormatted: String {
         guard let balance = Coinbase.shared.lastKnownBalance else {
-            return NSLocalizedString("Unknown Balance", comment: "Coinbase")
+            return String(localized: "Unknown Balance", comment: "Coinbase")
         }
 
         return balance.formattedDashAmount

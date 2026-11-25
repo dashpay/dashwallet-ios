@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>%d parcels</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key><string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key><string>d</string>
+			<key>one</key><string>%d посилка</string>
+			<key>few</key><string>%d посилки</string>
+			<key>many</key><string>%d посилок</string>
+			<key>other</key><string>%d посилки</string>
+		</dict>
+	</dict>
+	<key>Visited %1$d of %2$#@places@ today</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>Відвідано %1$d з %2$#@places@ сьогодні</string>
+		<key>places</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key><string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key><string>d</string>
+			<key>one</key><string>%d місце</string>
+			<key>few</key><string>%d місця</string>
+			<key>many</key><string>%d місць</string>
+			<key>other</key><string>%d місця</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

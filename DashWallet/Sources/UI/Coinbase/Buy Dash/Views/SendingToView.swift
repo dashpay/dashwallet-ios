@@ -46,7 +46,7 @@ final class SendingToView: UIView {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.textColor = .dw_secondaryText()
         titleLabel.font = .dw_font(forTextStyle: .footnote)
-        titleLabel.text = NSLocalizedString("Sending to:", comment: "Buy Dash")
+        titleLabel.text = String(localized: "Sending to:", comment: "Buy Dash")
         stackView.addArrangedSubview(titleLabel)
 
         let destinationStackView = UIStackView()
@@ -62,7 +62,7 @@ final class SendingToView: UIView {
         destinationLabel.translatesAutoresizingMaskIntoConstraints = false
         destinationLabel.textColor = .dw_label()
         destinationLabel.font = .dw_font(forTextStyle: .footnote)
-        destinationLabel.text = NSLocalizedString("Dash Wallet on this device", comment: "Buy Dash")
+        destinationLabel.text = String(localized: "Dash Wallet on this device", comment: "Buy Dash")
         destinationStackView.addArrangedSubview(destinationLabel)
 
         let hairline = HairlineView(frame: .zero)

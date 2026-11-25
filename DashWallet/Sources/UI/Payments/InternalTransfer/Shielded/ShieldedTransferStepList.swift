@@ -93,7 +93,7 @@ struct ShieldedTransferStepList: View {
         HStack(spacing: 12) {
             stepIndicator(state: state)
             Text(label)
-                .font(.system(size: 15, weight: state == .active ? .semibold : .regular))
+                .scaledSystemFont(size: 15, weight: state == .active ? .semibold : .regular, relativeTo: .subheadline)
                 .foregroundColor(state == .pending ? .dash.secondaryText : .dash.primaryText)
             Spacer()
             if state == .active {
@@ -126,7 +126,8 @@ struct ShieldedTransferStepList: View {
                     .fill(Color.dash.blue)
                     .frame(width: 20, height: 20)
                 Image(systemName: "checkmark")
-                    .font(.system(size: 11, weight: .bold))
+                    .scaledSystemFont(size: 11, weight: .bold, relativeTo: .caption2)
+                    .dynamicTypeSize(...DynamicTypeSize.xxxLarge) // drawn inside a fixed-size badge
                     .foregroundColor(Color.dash.whiteText)
             }
         }

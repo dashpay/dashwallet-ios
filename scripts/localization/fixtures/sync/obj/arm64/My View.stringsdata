@@ -1,0 +1,16 @@
+{
+  "source" : "@SRCROOT@/DashWallet/Sources/Some Dir/My View.swift",
+  "tables" : {
+    "Localizable" : [
+      {
+        "comment" : "greeting",
+        "key" : "Hello from Swift",
+        "location" : {
+          "startingColumn" : 12,
+          "startingLine" : 4
+        }
+      }
+    ]
+  },
+  "version" : 2
+}

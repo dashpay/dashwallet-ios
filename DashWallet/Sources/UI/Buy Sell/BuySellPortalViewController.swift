@@ -82,7 +82,7 @@ final class BuySellPortalViewController: UIViewController, NavigationBarDisplaya
                 
                 if isNeedToShowSignOutError {
                     DispatchQueue.main.asyncAfter(deadline: DispatchTime.now().advanced(by: .milliseconds(500))) {
-                        self.showAlert(with: NSLocalizedString("Error", comment: ""),
+                        self.showAlert(with: String(localized: "Error", comment: ""),
                                        message: Coinbase.Error.userSessionRevoked.localizedDescription,
                                        presentingViewController: self)
                     }
@@ -219,17 +219,17 @@ extension BuySellPortalViewController: DWLocationObserver {
     }
 
     private func requestLocation() {
-        let geoblockMessage = NSLocalizedString(
-            "Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features.",
+        let geoblockMessage = String(
+            localized: "Due to regulatory constraints, we need to verify that you are not in the UK.  We only check your location when you enter the Coinbase features.",
             comment: "Geoblock"
         )
 
         showModalDialog(
             style: .regular,
             icon: .system("location.fill"),
-            heading: NSLocalizedString("Location", comment: ""),
+            heading: String(localized: "Location", comment: ""),
             textBlock1: geoblockMessage,
-            positiveButtonText: NSLocalizedString("Continue", comment: ""),
+            positiveButtonText: String(localized: "Continue", comment: ""),
             positiveButtonAction: { [weak self] in
                 self?.locationRequested = true
 
@@ -243,28 +243,28 @@ extension BuySellPortalViewController: DWLocationObserver {
                     DWLocationManager.shared.requestAuthorization()
                 }
             },
-            negativeButtonText: NSLocalizedString("Cancel", comment: ""),
+            negativeButtonText: String(localized: "Cancel", comment: ""),
             buttonsOrientation: .horizontal
         )
     }
 
     private func informGeoblocked() {
-        let title = NSLocalizedString("Location", comment: "")
+        let title = String(localized: "Location", comment: "")
 
         if DWLocationManager.shared.authorizationStatus == .denied {
             showModalDialog(
                 style: .regular,
                 icon: .system("location.fill"),
                 heading: title,
-                textBlock1: NSLocalizedString("If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase", comment: "Geoblock"),
-                positiveButtonText: NSLocalizedString("OK", comment: "")
+                textBlock1: String(localized: "If you choose to grant permissions at a later time and you are not in the UK, you can use Coinbase", comment: "Geoblock"),
+                positiveButtonText: String(localized: "OK", comment: "")
             )
         } else {
             showModalDialog(
                 style: .warning,
                 icon: .system("exclamationmark.triangle.fill"),
-                heading: NSLocalizedString("Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK", comment: "Geoblock"),
-                positiveButtonText: NSLocalizedString("OK", comment: "")
+                heading: String(localized: "Due to regulatory constraints, you cannot use the Coinbase features while you are in the UK", comment: "Geoblock"),
+                positiveButtonText: String(localized: "OK", comment: "")
             )
         }
     }

@@ -55,7 +55,7 @@ enum TaxReportGenerator {
         guard SyncingActivityMonitor.shared.state == .syncDone else {
             let error = NSError(domain: "DashWallet",
                                 code: 500,
-                                userInfo: [NSLocalizedDescriptionKey: NSLocalizedString("Please wait until the wallet is fully synced before exporting your transaction history",
+                                userInfo: [NSLocalizedDescriptionKey: String(localized: "Please wait until the wallet is fully synced before exporting your transaction history",
                                                                                         comment: "")])
             errorHandler(error)
             return
@@ -78,8 +78,8 @@ enum TaxReportGenerator {
             guard let documentsDir = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first else {
                 errorHandler(NSError(domain: "DashWallet",
                                      code: 500,
-                                     userInfo: [NSLocalizedDescriptionKey: NSLocalizedString(
-                                         "Unable to locate document directory",
+                                     userInfo: [NSLocalizedDescriptionKey: String(
+                                         localized: "Unable to locate document directory",
                                          comment: "Tax report export error")]))
                 return
             }

@@ -118,8 +118,8 @@ final class ShieldedAssetLocksInFlight: ObservableObject, @unchecked Sendable {
     /// What a transfer, a recovery or a removal refused during a removal's
     /// reload tells the user.
     static var walletReloadingMessage: String {
-        NSLocalizedString(
-            "The wallet is reloading after a transaction was removed. Try again in a moment, or restart the app if it never finishes.",
+        String(
+            localized: "The wallet is reloading after a transaction was removed. Try again in a moment, or restart the app if it never finishes.",
             comment: "Refused while the wallet reloads after a removed transaction")
     }
 

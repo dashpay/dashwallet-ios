@@ -315,8 +315,8 @@ final class CoinJoinShieldPlannerTests: XCTestCase {
     /// Shielded retry and never offers the wallet destination again.
     func testCancelledPromptKeepsTheShieldedRetryWhileALockIsCommitted() {
         // Looked up the way the app does, so it holds in any locale.
-        let message = NSLocalizedString(
-            "Your mixed coins are locked for the Shielded balance. Please try again to finish moving them.",
+        let message = String(
+            localized: "Your mixed coins are locked for the Shielded balance. Please try again to finish moving them.",
             comment: "CoinJoin")
         XCTAssertEqual(
             CoinJoinMoveFundsViewModel.stageAfterAuthCancel(committedLock: true),

@@ -67,3 +67,36 @@ extension Font {
     /// Caption 2: 11pt Regular (line height: 13pt)
     public static let caption2: Font = .system(size: 11, weight: .regular)
 }
+
+// MARK: - Dynamic Type
+
+/// A system font that is `size` points at the default text size and scales
+/// with the user's text size the way `textStyle` does. SwiftUI has no
+/// `Font.system(size:relativeTo:)`; this is that, for designs whose sizes no
+/// Apple text style has at the default setting (14pt, 18pt, …).
+private struct ScaledSystemFont: ViewModifier {
+    @ScaledMetric private var size: CGFloat
+    private let weight: Font.Weight
+    private let design: Font.Design
+
+    init(size: CGFloat, weight: Font.Weight, design: Font.Design, relativeTo textStyle: Font.TextStyle) {
+        _size = ScaledMetric(wrappedValue: size, relativeTo: textStyle)
+        self.weight = weight
+        self.design = design
+    }
+
+    func body(content: Content) -> some View {
+        content.font(.system(size: size, weight: weight, design: design))
+    }
+}
+
+extension View {
+    /// `.font(.system(size:weight:design:))` that follows Dynamic Type: `size`
+    /// at the default text size, scaled like `textStyle` otherwise.
+    func scaledSystemFont(size: CGFloat,
+                          weight: Font.Weight = .regular,
+                          design: Font.Design = .default,
+                          relativeTo textStyle: Font.TextStyle) -> some View {
+        modifier(ScaledSystemFont(size: size, weight: weight, design: design, relativeTo: textStyle))
+    }
+}

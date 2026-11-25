@@ -48,7 +48,7 @@ class BuySellServiceItemCell: UICollectionViewCell {
 
             statusIcon.backgroundColor = .systemRed
 
-            statusLabel.text = NSLocalizedString("Disconnected", comment: "Buy Sell Portal")
+            statusLabel.text = String(localized: "Disconnected", comment: "Buy Sell Portal")
             statusLabel.textColor = .systemRed
 
             if let balance = item.balanceValue {
@@ -56,7 +56,7 @@ class BuySellServiceItemCell: UICollectionViewCell {
 
                 balanceLabel.attributedText = balance
 
-                balanceStatusLabel.text = NSLocalizedString("Last known balance", comment: "Buy Sell Portal")
+                balanceStatusLabel.text = String(localized: "Last known balance", comment: "Buy Sell Portal")
                 balanceStatusLabel.textColor = .systemRed
             } else {
                 balanceView.isHidden = true

@@ -21,7 +21,7 @@ import UIKit
 // MARK: - BuyDashViewController
 
 final class BuyDashViewController: CoinbaseAmountViewController {
-    override var actionButtonTitle: String? { NSLocalizedString("Continue", comment: "Buy Dash") }
+    override var actionButtonTitle: String? { String(localized: "Continue", comment: "Buy Dash") }
 
     override var amountInputStyle: AmountInputControl.Style { .oppositeAmount }
 
@@ -60,7 +60,7 @@ final class BuyDashViewController: CoinbaseAmountViewController {
         let titleLabel = UILabel()
         titleLabel.font = .dw_mediumFont(ofSize: 16)
         titleLabel.minimumScaleFactor = 0.5
-        titleLabel.text = NSLocalizedString("Buy Dash", comment: "Coinbase/Buy Dash")
+        titleLabel.text = String(localized: "Buy Dash", comment: "Coinbase/Buy Dash")
         titleViewStackView.addArrangedSubview(titleLabel)
 
         let dashPriceLabel = UILabel()
@@ -140,19 +140,19 @@ extension BuyDashViewController {
         
         switch error {
         case .general(.noCashAccount), .general(.noPaymentMethods):
-            title = error.failureReason ?? NSLocalizedString("Error", comment: "")
+            title = error.failureReason ?? String(localized: "Error", comment: "")
             message = error.localizedDescription
-            action = UIAlertAction(title: NSLocalizedString("Add", comment: "Coinbase"), style: .default) { [weak self] _ in
+            action = UIAlertAction(title: String(localized: "Add", comment: "Coinbase"), style: .default) { [weak self] _ in
                 self?.addPaymentMethod()
             }
         case .transactionFailed(.notEnoughFunds):
-            title = NSLocalizedString("You don’t have enough balance", comment: "Coinbase")
-            message = NSLocalizedString("Would you like to make a deposit for your purchase using a linked bank account?", comment: "Coinbase")
-            action = UIAlertAction(title: NSLocalizedString("Confirm", comment: "Coinbase"), style: .default) { [weak self] _ in
+            title = String(localized: "You don’t have enough balance", comment: "Coinbase")
+            message = String(localized: "Would you like to make a deposit for your purchase using a linked bank account?", comment: "Coinbase")
+            action = UIAlertAction(title: String(localized: "Confirm", comment: "Coinbase"), style: .default) { [weak self] _ in
                 self?.handleBuy(retryWithDeposit: true)
             }
         default:
-            title = error.failureReason ?? NSLocalizedString("Error", comment: "")
+            title = error.failureReason ?? String(localized: "Error", comment: "")
             message = error.localizedDescription
             action = nil
         }
@@ -162,7 +162,7 @@ extension BuyDashViewController {
             alert.addAction(action)
         }
 
-        let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel)
+        let cancelAction = UIAlertAction(title: String(localized: "Cancel", comment: ""), style: .cancel)
         alert.addAction(cancelAction)
         present(alert, animated: true)
     }

@@ -63,8 +63,8 @@ struct ExploreMenuScreen: View {
             }
 
             TopIntro(
-                title: NSLocalizedString("Explore Dash", comment: ""),
-                subtitle: NSLocalizedString("Find merchants who accept Dash and where to buy it.", comment: "")
+                title: String(localized: "Explore Dash", comment: ""),
+                subtitle: String(localized: "Find merchants who accept Dash and where to buy it.", comment: "")
             )
             .padding(.leading, 20)
             .padding(.trailing, 60)
@@ -75,8 +75,8 @@ struct ExploreMenuScreen: View {
             VStack(spacing: 2) {
                 if shouldShowGetTestDash {
                     MenuItem(
-                        title: NSLocalizedString("Get Test Dash", comment: ""),
-                        subtitle: NSLocalizedString("Test Dash is free and can be obtained from what is called a faucet.", comment: ""),
+                        title: String(localized: "Get Test Dash", comment: ""),
+                        subtitle: String(localized: "Test Dash is free and can be obtained from what is called a faucet.", comment: ""),
                         icon: .custom("dashCurrency", maxHeight: 30),
                         action: { getTestDashAction() }
                     )
@@ -84,32 +84,32 @@ struct ExploreMenuScreen: View {
                 }
 
                 MenuItem(
-                    title: NSLocalizedString("Buy & Sell Dash", comment: ""),
-                    subtitle: NSLocalizedString("Select a service to buy, sell, convert and transfer Dash", comment: "Buy Sell Dash"),
+                    title: String(localized: "Buy & Sell Dash", comment: ""),
+                    subtitle: String(localized: "Select a service to buy, sell, convert and transfer Dash", comment: "Buy Sell Dash"),
                     icon: .custom("image.buy.and.sell", maxHeight: 30),
                     action: { showBuySellPortal() }
                 )
                 .frame(minHeight: 56)
 
                 MenuItem(
-                    title: NSLocalizedString("Where to Spend?", comment: ""),
-                    subtitle: NSLocalizedString("Find merchants that accept Dash payments", comment: ""),
+                    title: String(localized: "Where to Spend?", comment: ""),
+                    subtitle: String(localized: "Find merchants that accept Dash payments", comment: ""),
                     icon: .custom("image-menu-merchant", maxHeight: 30),
                     action: { showWhereToSpend() }
                 )
                 .frame(minHeight: 56)
 
                 MenuItem(
-                    title: NSLocalizedString("Username Marketplace", comment: "Username marketplace"),
-                    subtitle: NSLocalizedString("Buy, sell and transfer DashPay usernames", comment: "Username marketplace: Explore row subtitle"),
+                    title: String(localized: "Username Marketplace", comment: "Username marketplace"),
+                    subtitle: String(localized: "Buy, sell and transfer DashPay usernames", comment: "Username marketplace: Explore row subtitle"),
                     icon: .system("at.circle.fill"),
                     action: { showUsernameMarketplace() }
                 )
                 .frame(minHeight: 56)
 
                 MenuItem(
-                    title: NSLocalizedString("ATMs", comment: ""),
-                    subtitle: NSLocalizedString("Find ATMs where you can buy or sell Dash", comment: ""),
+                    title: String(localized: "ATMs", comment: ""),
+                    subtitle: String(localized: "Find ATMs where you can buy or sell Dash", comment: ""),
                     icon: .custom("image-menu-atm", maxHeight: 30),
                     action: { showAtms() }
                 )
@@ -157,7 +157,7 @@ struct ExploreMenuScreen: View {
     private func showMerchants() {
         let merchantVC = MerchantListViewController()
         merchantVC.customNavBar = MerchantListViewController.CustomNavBarConfiguration(
-            title: NSLocalizedString("Where to Spend", comment: ""),
+            title: String(localized: "Where to Spend", comment: ""),
             onBack: { [weak merchantVC] in merchantVC?.closeOrPop() },
             onInfo: nil)
         merchantVC.payWithDashHandler = { onShowSendPayment() }

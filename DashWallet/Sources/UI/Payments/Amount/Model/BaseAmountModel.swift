@@ -279,7 +279,7 @@ extension BaseAmountModel {
         Self.fiatFormatted(duffs: walletBalance,
                            currencyCode: localCurrencyCode,
                            exchanger: Coinbase.shared.currencyExchanger,
-                           formatter: supplementaryNumberFormatter) ?? NSLocalizedString("Not available", comment: "Fiat amount")
+                           formatter: supplementaryNumberFormatter) ?? String(localized: "Not available", comment: "Fiat amount")
     }
 
     /// `duffs` converted to `currencyCode` and formatted by `formatter`,

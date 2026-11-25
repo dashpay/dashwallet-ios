@@ -21,7 +21,9 @@ struct IdentityStorageListView: View {
             }
         }
         .storageExplorerPage("Identities (\(records.count))")
-        .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "person.crop.circle") } }
+        .overlay {
+            if records.isEmpty { ContentUnavailableView("No Records" as String, systemImage: "person.crop.circle") }
+        }
     }
 }
 
@@ -41,7 +43,7 @@ struct DocumentStorageListView: View {
             }
         }
         .storageExplorerPage("Documents (\(records.count))")
-        .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "doc.text") } }
+        .overlay { if records.isEmpty { ContentUnavailableView("No Records" as String, systemImage: "doc.text") } }
     }
 }
 
@@ -61,7 +63,7 @@ struct DataContractStorageListView: View {
             }
         }
         .storageExplorerPage("Data Contracts (\(records.count))")
-        .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "doc.plaintext") } }
+        .overlay { if records.isEmpty { ContentUnavailableView("No Records" as String, systemImage: "doc.plaintext") } }
     }
 }
 
@@ -122,13 +124,13 @@ struct PublicKeyStorageListView: View {
         List(records) { record in
             StorageExplorerLink(destination: PublicKeyStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Key \(record.keyId)").font(.body)
-                    Text("\(record.purpose) / \(record.securityLevel)")
+                    Text(verbatim: "Key \(record.keyId.formatted())").font(.body)
+                    Text(verbatim: "\(record.purpose) / \(record.securityLevel)")
                         .font(.caption).foregroundColor(Color.dash.secondaryText)
                 }
             }
         }
-        .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "key") } }
+        .overlay { if records.isEmpty { ContentUnavailableView("No Records" as String, systemImage: "key") } }
         #if DASHPAY
         // Pull-to-refresh re-fetches every wallet-owned identity from
         // Platform so keys added on another device appear here — the
@@ -164,7 +166,9 @@ struct TokenStorageListView: View {
             }
         }
         .storageExplorerPage("Tokens (\(records.count))")
-        .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "circle.hexagongrid") } }
+        .overlay {
+            if records.isEmpty { ContentUnavailableView("No Records" as String, systemImage: "circle.hexagongrid") }
+        }
     }
 }
 
@@ -184,7 +188,7 @@ struct TokenBalanceStorageListView: View {
             }
         }
         .storageExplorerPage("Token Balances (\(records.count))")
-        .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "banknote") } }
+        .overlay { if records.isEmpty { ContentUnavailableView("No Records" as String, systemImage: "banknote") } }
     }
 }
 
@@ -204,7 +208,9 @@ struct TokenHistoryStorageListView: View {
             }
         }
         .storageExplorerPage("Token History (\(records.count))")
-        .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "clock.arrow.circlepath") } }
+        .overlay {
+            if records.isEmpty { ContentUnavailableView("No Records" as String, systemImage: "clock.arrow.circlepath") }
+        }
     }
 }
 
@@ -224,7 +230,9 @@ struct DocumentTypeStorageListView: View {
             }
         }
         .storageExplorerPage("Document Types (\(records.count))")
-        .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "list.bullet.rectangle") } }
+        .overlay {
+            if records.isEmpty { ContentUnavailableView("No Records" as String, systemImage: "list.bullet.rectangle") }
+        }
     }
 }
 
@@ -244,7 +252,7 @@ struct IndexStorageListView: View {
             }
         }
         .storageExplorerPage("Indices (\(records.count))")
-        .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "tablecells") } }
+        .overlay { if records.isEmpty { ContentUnavailableView("No Records" as String, systemImage: "tablecells") } }
     }
 }
 
@@ -264,7 +272,9 @@ struct PropertyStorageListView: View {
             }
         }
         .storageExplorerPage("Properties (\(records.count))")
-        .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "slider.horizontal.3") } }
+        .overlay {
+            if records.isEmpty { ContentUnavailableView("No Records" as String, systemImage: "slider.horizontal.3") }
+        }
     }
 }
 
@@ -281,7 +291,7 @@ struct KeywordStorageListView: View {
             }
         }
         .storageExplorerPage("Keywords (\(records.count))")
-        .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "tag") } }
+        .overlay { if records.isEmpty { ContentUnavailableView("No Records" as String, systemImage: "tag") } }
     }
 }
 
@@ -297,17 +307,19 @@ struct SyncStateStorageListView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.network.networkName.capitalized)
                         .font(.body)
-                    Text("Height \(record.syncHeight)")
+                    Text(verbatim: "Height \(record.syncHeight.formatted())")
                         .font(.caption)
                         .foregroundColor(Color.dash.secondaryText)
-                    Text("Updated \(record.lastUpdated, style: .relative)")
+                    (Text(verbatim: "Updated ") + Text(record.lastUpdated, style: .relative))
                         .font(.caption)
                         .foregroundColor(Color.dash.secondaryText)
                 }
             }
         }
         .storageExplorerPage("Sync State (\(records.count))")
-        .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "arrow.triangle.2.circlepath") } }
+        .overlay {
+            if records.isEmpty { ContentUnavailableView("No Records" as String, systemImage: "arrow.triangle.2.circlepath") }
+        }
     }
 }
 
@@ -323,13 +335,13 @@ struct WalletStorageListView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.name ?? record.walletId.map { String(format: "%02x", $0) }.prefix(16).joined())
                         .font(.body).lineLimit(1)
-                    Text("\(record.network) · height \(record.syncedHeight)")
+                    Text(verbatim: "\(record.network) · height \(record.syncedHeight.formatted())")
                         .font(.caption).foregroundColor(Color.dash.secondaryText)
                 }
             }
         }
         .storageExplorerPage("Wallets (\(records.count))")
-        .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "wallet.pass") } }
+        .overlay { if records.isEmpty { ContentUnavailableView("No Records" as String, systemImage: "wallet.pass") } }
     }
 }
 
@@ -362,7 +374,7 @@ struct AccountStorageListView: View {
                 Section(header: Text(walletHeader(for: wallet))) {
                     let sorted = sortedAccounts(wallet.accounts)
                     if sorted.isEmpty {
-                        Text("No accounts").font(.caption).foregroundColor(Color.dash.secondaryText)
+                        Text(verbatim: "No accounts").font(.caption).foregroundColor(Color.dash.secondaryText)
                     } else {
                         ForEach(sorted) { account in
                             StorageExplorerLink(destination: AccountStorageDetailView(record: account)) {
@@ -373,7 +385,7 @@ struct AccountStorageListView: View {
                 }
             }
             if !orphanAccounts.isEmpty {
-                Section(header: Text("Unlinked")) {
+                Section(header: Text(verbatim: "Unlinked")) {
                     ForEach(orphanAccounts) { account in
                         StorageExplorerLink(destination: AccountStorageDetailView(record: account)) {
                             accountRow(account)
@@ -385,7 +397,7 @@ struct AccountStorageListView: View {
         .storageExplorerPage("Accounts (\(totalAccountCount))")
         .overlay {
             if totalAccountCount == 0 {
-                ContentUnavailableView("No Records", systemImage: "person.2")
+                ContentUnavailableView("No Records" as String, systemImage: "person.2")
             }
         }
     }
@@ -411,7 +423,7 @@ struct AccountStorageListView: View {
     private func accountRow(_ record: PersistentAccount) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(record.accountTypeName).font(.body).lineLimit(1)
-            Text("Index \(record.accountIndex)")
+            Text(verbatim: "Index \(record.accountIndex.formatted())")
                 .font(.caption).foregroundColor(Color.dash.secondaryText)
         }
     }
@@ -440,7 +452,9 @@ struct TransactionStorageListView: View {
             }
         }
         .storageExplorerPage("Transactions (\(records.count))")
-        .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "arrow.left.arrow.right.circle") } }
+        .overlay {
+            if records.isEmpty { ContentUnavailableView("No Records" as String, systemImage: "arrow.left.arrow.right.circle") }
+        }
     }
 }
 
@@ -525,7 +539,7 @@ struct CoreAddressStorageListView: View {
         .overlay {
             if records.isEmpty {
                 ContentUnavailableView(
-                    "No Records",
+                    "No Records" as String,
                     systemImage: "square.and.pencil"
                 )
             }
@@ -568,9 +582,9 @@ struct CoreAddressStorageListView: View {
                 .lineLimit(1).truncationMode(.middle)
             HStack(spacing: 8) {
                 Text(record.poolTypeName)
-                Text("• #\(record.addressIndex)")
-                if record.isUsed { Text("• used") }
-                if record.balance > 0 { Text("• \(record.balance)") }
+                Text(verbatim: "• #\(record.addressIndex.formatted())")
+                if record.isUsed { Text(verbatim: "• used") }
+                if record.balance > 0 { Text(verbatim: "• \(record.balance.formatted())") }
             }
             .font(.caption2)
             .foregroundColor(Color.dash.secondaryText)
@@ -638,7 +652,7 @@ struct PlatformAddressStorageListView: View {
         .overlay {
             if records.isEmpty {
                 ContentUnavailableView(
-                    "No Records",
+                    "No Records" as String,
                     systemImage: "creditcard"
                 )
             }
@@ -672,9 +686,9 @@ struct PlatformAddressStorageListView: View {
                 .font(.system(.caption, design: .monospaced))
                 .lineLimit(1).truncationMode(.middle)
             HStack(spacing: 8) {
-                Text("#\(record.addressIndex)")
-                if record.isUsed { Text("• used") }
-                if record.balance > 0 { Text("• \(record.balance)") }
+                Text(verbatim: "#\(record.addressIndex.formatted())")
+                if record.isUsed { Text(verbatim: "• used") }
+                if record.balance > 0 { Text(verbatim: "• \(record.balance.formatted())") }
             }
             .font(.caption2)
             .foregroundColor(Color.dash.secondaryText)
@@ -701,14 +715,16 @@ struct UtxoStorageListView: View {
                         if record.isSpent {
                             Text("Spent").font(.caption2).foregroundColor(.red)
                         } else {
-                            Text("Unspent").font(.caption2).foregroundColor(.green)
+                            Text(verbatim: "Unspent").font(.caption2).foregroundColor(.green)
                         }
                     }
                 }
             }
         }
         .storageExplorerPage("UTXOs (\(records.count))")
-        .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "bitcoinsign.circle") } }
+        .overlay {
+            if records.isEmpty { ContentUnavailableView("No Records" as String, systemImage: "bitcoinsign.circle") }
+        }
     }
 }
 
@@ -723,13 +739,14 @@ struct WalletManagerMetadataStorageListView: View {
             StorageExplorerLink(destination: WalletManagerMetadataStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(record.network.networkName).font(.body)
-                    Text("Height \(record.combinedSyncHeight) · \(record.walletCount) wallets")
+                    Text(verbatim: "Height \(record.combinedSyncHeight.formatted()) · "
+                        + "\(record.walletCount.formatted()) wallets")
                         .font(.caption).foregroundColor(Color.dash.secondaryText)
                 }
             }
         }
         .storageExplorerPage("Manager Metadata (\(records.count))")
-        .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "gearshape.2") } }
+        .overlay { if records.isEmpty { ContentUnavailableView("No Records" as String, systemImage: "gearshape.2") } }
     }
 }
 
@@ -757,7 +774,7 @@ struct DPNSNameStorageListView: View {
         List(records) { record in
             StorageExplorerLink(destination: DPNSNameStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("\(record.label).\(record.parentDomainName)")
+                    Text(verbatim: "\(record.label).\(record.parentDomainName)")
                         .font(.body).lineLimit(1)
                     Text(record.identity.identityIdBase58)
                         .font(.caption).foregroundColor(Color.dash.secondaryText)
@@ -766,7 +783,7 @@ struct DPNSNameStorageListView: View {
             }
         }
         .storageExplorerPage("DPNS Names (\(records.count))")
-        .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "at") } }
+        .overlay { if records.isEmpty { ContentUnavailableView("No Records" as String, systemImage: "at") } }
     }
 }
 
@@ -791,7 +808,9 @@ struct DashpayProfileStorageListView: View {
             }
         }
         .storageExplorerPage("DashPay Profiles (\(records.count))")
-        .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "person.text.rectangle") } }
+        .overlay {
+            if records.isEmpty { ContentUnavailableView("No Records" as String, systemImage: "person.text.rectangle") }
+        }
     }
 }
 
@@ -815,7 +834,9 @@ struct DashpayContactProfileStorageListView: View {
             }
         }
         .storageExplorerPage("Contact Profiles (\(records.count))")
-        .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "person.crop.circle") } }
+        .overlay {
+            if records.isEmpty { ContentUnavailableView("No Records" as String, systemImage: "person.crop.circle") }
+        }
     }
 }
 
@@ -840,14 +861,14 @@ struct DashpayContactRequestStorageListView: View {
     var body: some View {
         List {
             if !outgoing.isEmpty {
-                Section("Outgoing (\(outgoing.count))") {
+                Section("Outgoing (\(outgoing.count.formatted()))" as String) {
                     ForEach(outgoing) { record in
                         contactRequestLink(record)
                     }
                 }
             }
             if !incoming.isEmpty {
-                Section("Incoming (\(incoming.count))") {
+                Section("Incoming (\(incoming.count.formatted()))" as String) {
                     ForEach(incoming) { record in
                         contactRequestLink(record)
                     }
@@ -857,7 +878,7 @@ struct DashpayContactRequestStorageListView: View {
         .storageExplorerPage("Contact Requests (\(records.count))")
         .overlay {
             if records.isEmpty {
-                ContentUnavailableView("No Records", systemImage: "person.crop.circle.badge.plus")
+                ContentUnavailableView("No Records" as String, systemImage: "person.crop.circle.badge.plus")
             }
         }
     }
@@ -869,7 +890,7 @@ struct DashpayContactRequestStorageListView: View {
                 Text(shortIdHex(record.contactIdentityId))
                     .font(.system(.body, design: .monospaced))
                     .lineLimit(1).truncationMode(.middle)
-                Text("from \(shortIdHex(record.ownerIdentityId))")
+                Text(verbatim: "from \(shortIdHex(record.ownerIdentityId))")
                     .font(.caption).foregroundColor(Color.dash.secondaryText)
                     .lineLimit(1).truncationMode(.middle)
             }
@@ -902,7 +923,9 @@ struct DashpayPaymentStorageListView: View {
             }
         }
         .storageExplorerPage("DashPay Payments (\(records.count))")
-        .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "arrow.left.arrow.right.circle") } }
+        .overlay {
+            if records.isEmpty { ContentUnavailableView("No Records" as String, systemImage: "arrow.left.arrow.right.circle") }
+        }
     }
 }
 
@@ -931,7 +954,9 @@ struct InvitationStorageListView: View {
             }
         }
         .storageExplorerPage("Sent Invitations (\(records.count))")
-        .overlay { if records.isEmpty { ContentUnavailableView("No Invitations", systemImage: "paperplane") } }
+        .overlay {
+            if records.isEmpty { ContentUnavailableView("No Invitations" as String, systemImage: "paperplane") }
+        }
     }
 }
 
@@ -946,7 +971,7 @@ struct DashpayIgnoredSenderStorageListView: View {
             StorageExplorerLink(destination: DashpayIgnoredSenderStorageDetailView(record: record)) {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
-                        Text("ignored sender")
+                        Text(verbatim: "ignored sender")
                             .font(.body)
                         Spacer()
                         Text(record.ignoredAt, style: .date)
@@ -959,6 +984,8 @@ struct DashpayIgnoredSenderStorageListView: View {
             }
         }
         .storageExplorerPage("Ignored Senders (\(records.count))")
-        .overlay { if records.isEmpty { ContentUnavailableView("No Records", systemImage: "person.crop.circle.badge.xmark") } }
+        .overlay {
+            if records.isEmpty { ContentUnavailableView("No Records" as String, systemImage: "person.crop.circle.badge.xmark") }
+        }
     }
 }

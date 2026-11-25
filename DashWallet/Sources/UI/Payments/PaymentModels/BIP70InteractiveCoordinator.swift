@@ -39,8 +39,8 @@ enum BIP70InteractivePolicy {
         var errorDescription: String? {
             switch self {
             case .unsignedMultipleRecipients:
-                return NSLocalizedString("This payment request is unsigned and pays more than one address.",
-                                         comment: "Payment request refused")
+                return String(localized: "This payment request is unsigned and pays more than one address.",
+                              comment: "Payment request refused")
             }
         }
     }
@@ -202,13 +202,13 @@ final class BIP70InteractiveCoordinator: NSObject {
             return NSError(domain: errorDomain,
                            code: bip == .insecureTransport ? refusalErrorCode : 1,
                            userInfo: [NSLocalizedDescriptionKey: bip.errorDescription
-                               ?? NSLocalizedString("Payment failed", comment: "BIP70 payment error")])
+                               ?? String(localized: "Payment failed", comment: "BIP70 payment error")])
         }
         if let violation = error as? BIP70InteractivePolicy.Violation {
             return NSError(domain: errorDomain,
                            code: refusalErrorCode,
                            userInfo: [NSLocalizedDescriptionKey: violation.errorDescription
-                               ?? NSLocalizedString("Payment failed", comment: "BIP70 payment error")])
+                               ?? String(localized: "Payment failed", comment: "BIP70 payment error")])
         }
         return error as NSError
     }

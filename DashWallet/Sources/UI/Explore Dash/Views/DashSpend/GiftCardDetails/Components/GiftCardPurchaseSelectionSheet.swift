@@ -57,14 +57,14 @@ struct GiftCardPurchaseSelectionSheet: View {
                     .scaleEffect(0.9)
             } else if loadingError != nil {
                 VStack(spacing: 6) {
-                    Text(NSLocalizedString("Could not load your gift card", comment: "DashSpend"))
+                    Text(String(localized: "Could not load your gift card", comment: "DashSpend"))
                         .font(.footnote)
                         .foregroundColor(.dash.red)
                         .multilineTextAlignment(.center)
 
                     if let onRetryLoading {
                         Button(action: onRetryLoading) {
-                            Text(NSLocalizedString("Retry", comment: "DashSpend"))
+                            Text(String(localized: "Retry", comment: "DashSpend"))
                                 .font(.footnote.weight(.medium))
                                 .foregroundColor(.dash.blue)
                         }
@@ -72,13 +72,13 @@ struct GiftCardPurchaseSelectionSheet: View {
                 }
                 .padding(.horizontal, 24)
             } else if hasBeenPollingForLongTime {
-                Text(NSLocalizedString("As soon as your code is generated, it will be displayed here", comment: "DashSpend"))
+                Text(String(localized: "As soon as your code is generated, it will be displayed here", comment: "DashSpend"))
                     .font(.footnote)
                     .foregroundColor(.dash.tertiaryText)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 24)
             } else {
-                Text(NSLocalizedString("Gift card is being prepared", comment: "DashSpend"))
+                Text(String(localized: "Gift card is being prepared", comment: "DashSpend"))
                     .font(.subheadline)
                     .foregroundColor(.dash.tertiaryText)
             }
@@ -98,7 +98,7 @@ struct GiftCardPurchaseSelectionSheet: View {
                     HStack(spacing: 20) {
                         HStack(spacing: 12) {
                             if cards.count > 2 {
-                                Text("\(index + 1)")
+                                Text(verbatim: "\((index + 1).formatted())")
                                     .font(.caption1.weight(.medium))
                                     .padding(.horizontal, 4)
                                     .background(Color.dash.gray50)

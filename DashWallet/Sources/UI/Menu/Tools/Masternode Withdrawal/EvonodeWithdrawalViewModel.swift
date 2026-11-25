@@ -137,7 +137,7 @@ final class EvonodeWithdrawalViewModel: ObservableObject {
     var destinationErrorMessage: String? {
         let trimmed = destinationText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty, !destinationIsValid else { return nil }
-        return NSLocalizedString("Not a valid Dash address for this network", comment: "Evonode withdrawal")
+        return String(localized: "Not a valid Dash address for this network", comment: "Evonode withdrawal")
     }
 
     func resetDestinationToPayoutAddress() {
@@ -222,21 +222,15 @@ final class EvonodeWithdrawalViewModel: ObservableObject {
         let credits = amountCredits
         guard credits > 0 else { return nil }
         if maxWithdrawableCredits == 0 {
-            return NSLocalizedString(
-                "The claimable balance is too small to cover the Platform withdrawal fee.",
+            return String(
+                localized: "The claimable balance is too small to cover the Platform withdrawal fee.",
                 comment: "Evonode withdrawal")
         }
         if credits > maxWithdrawableCredits {
-            return String(
-                format: NSLocalizedString(
-                    "You can withdraw up to %@ DASH — the rest stays to cover the Platform fee. Tap Max to use it.",
-                    comment: "Evonode withdrawal"),
-                maxWithdrawableDashFormatted)
+            return String(localized: "You can withdraw up to \(maxWithdrawableDashFormatted) DASH — the rest stays to cover the Platform fee. Tap Max to use it.", comment: "Evonode withdrawal")
         }
         if credits < Self.minWithdrawalCredits {
-            return String(
-                format: NSLocalizedString("The minimum withdrawal is %@ DASH.", comment: "Evonode withdrawal"),
-                (Self.minWithdrawalCredits / Self.creditsPerDuff).formattedDashAmountWithoutCurrencySymbol)
+            return String(localized: "The minimum withdrawal is \((Self.minWithdrawalCredits / Self.creditsPerDuff).formattedDashAmountWithoutCurrencySymbol) DASH.", comment: "Evonode withdrawal")
         }
         return nil
     }
@@ -308,17 +302,15 @@ final class EvonodeWithdrawalViewModel: ObservableObject {
     var signingKeyLabel: String {
         switch signingKey {
         case .transfer:
-            return NSLocalizedString("Payout address key", comment: "Evonode withdrawal signing key")
+            return String(localized: "Payout address key", comment: "Evonode withdrawal signing key")
         case .owner:
             let ownership = PersistentMasternode.keyOwnershipLabel(
                 inWallet: keys.ownerKeyInWallet,
                 accountType: 9,
                 index: keys.ownerKeyIndex ?? 0)
-            return String(
-                format: NSLocalizedString("Owner key (%@)", comment: "Evonode withdrawal signing key"),
-                ownership)
+            return String(localized: "Owner key (\(ownership))", comment: "Evonode withdrawal signing key")
         case nil:
-            return NSLocalizedString("Not available", comment: "")
+            return String(localized: "Not available", comment: "")
         }
     }
 
@@ -334,7 +326,7 @@ final class EvonodeWithdrawalViewModel: ObservableObject {
         guard canContinue, let signingKey else { return }
         guard let manager = SwiftDashSDKHost.shared.manager,
               let walletId = SwiftDashSDKHost.shared.wallet?.walletId else {
-            phase = .failed(NSLocalizedString("Wallet is not ready. Try again in a moment.", comment: "Evonode withdrawal"))
+            phase = .failed(String(localized: "Wallet is not ready. Try again in a moment.", comment: "Evonode withdrawal"))
             return
         }
 
@@ -354,7 +346,7 @@ final class EvonodeWithdrawalViewModel: ObservableObject {
             phase = .idle
             return
         case .failed, .timedOut:
-            phase = .failed(NSLocalizedString("Authentication failed", comment: ""))
+            phase = .failed(String(localized: "Authentication failed", comment: ""))
             return
         }
 

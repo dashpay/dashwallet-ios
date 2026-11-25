@@ -96,9 +96,9 @@ NS_ASSUME_NONNULL_BEGIN
     }
     UIViewController *settingsFixture = [DWSettingsRowsUITestFixture makeViewControllerIfRequested];
     if (settingsFixture != nil) {
-        self.window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
-        self.window.rootViewController = settingsFixture;
-        [self.window makeKeyAndVisible];
+        // Shown by `installWindowInScene:`, like the fixtures above: a window
+        // made here is replaced when the scene connects.
+        self.recoveryFixture = settingsFixture;
         return YES;
     }
 #endif

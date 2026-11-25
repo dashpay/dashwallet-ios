@@ -71,6 +71,35 @@ final class DWProfileUpdateCoordinator {
 
     // MARK: - Errors
 
+    /// The SDK's own refusal of an update for an identity with no profile
+    /// document, raised before anything is broadcast.
+    nonisolated static let noProfileToUpdateText = "No existing profile document found to update"
+
+    /// The words rs-dpp's `DuplicateUniqueIndexError` renders, matched only
+    /// when the error carries no consensus code.
+    nonisolated static let duplicateProfileText = "duplicate unique"
+
+    /// Whether `error` says the opposite verb is the right one: a create
+    /// refused because the identity already has a profile (the profile's
+    /// unique `$ownerId` index), or an update for a profile that is not there.
+    ///
+    /// TODO(platform-error-codes): the SDK reports a missing profile on
+    /// update as a generic error with no code, so its text is matched. A
+    /// duplicate profile on create has a code, but it is not confirmed that
+    /// the refusal always reaches Swift with it, so an error with no code is
+    /// matched by that text as well.
+    nonisolated static func isWrongVerb(_ error: Error, preferCreate: Bool) -> Bool {
+        let refusal = PlatformRefusal.of(error)
+        // An unconfirmed write may have landed: its text never flips the verb.
+        let readText = PlatformRefusal.textMayNameRefusal(error)
+        if preferCreate {
+            return refusal == .duplicateUniqueIndex
+                || (readText && String(describing: error).localizedCaseInsensitiveContains(duplicateProfileText))
+        }
+        return refusal == .documentNotFound
+            || (readText && String(describing: error).contains(noProfileToUpdateText))
+    }
+
     enum CoordinatorError: LocalizedError {
         case noWallet
         case noModelContainer
@@ -82,15 +111,15 @@ final class DWProfileUpdateCoordinator {
         var errorDescription: String? {
             switch self {
             case .noWallet:
-                return NSLocalizedString("Wallet is not ready", comment: "DashPay")
+                return String(localized: "Wallet is not ready", comment: "DashPay")
             case .noModelContainer:
-                return NSLocalizedString("Storage is not configured", comment: "DashPay")
+                return String(localized: "Storage is not configured", comment: "DashPay")
             case .noIdentity:
-                return NSLocalizedString("No DashPay identity is registered", comment: "DashPay")
+                return String(localized: "No DashPay identity is registered", comment: "DashPay")
             case .authCancelled:
-                return NSLocalizedString("Authentication cancelled", comment: "DashPay")
+                return String(localized: "Authentication cancelled", comment: "DashPay")
             case .authFailed:
-                return NSLocalizedString("Authentication failed", comment: "DashPay")
+                return String(localized: "Authentication failed", comment: "DashPay")
             case .profileWrite(let underlying):
                 return underlying.localizedDescription
             }
@@ -214,17 +243,12 @@ final class DWProfileUpdateCoordinator {
                     signer: signer)
             }
         } catch let firstError {
-            // Flip the verb only when the error string makes it
-            // unambiguous that we picked the wrong one. Transport /
-            // decoding / network errors are propagated as-is — they
-            // would fail the same way with the opposite verb and the
-            // resulting "duplicate" / "not found" noise on the fall-
-            // back would mask the real failure.
-            let errorText = String(describing: firstError).lowercased()
-            let wrongVerb = preferCreate
-                ? errorText.contains("duplicate unique") || errorText.contains("duplicate $ownerid")
-                : errorText.contains("not found") || errorText.contains("document not found")
-            if wrongVerb {
+            // Flip the verb only when the error makes it unambiguous
+            // that we picked the wrong one. Transport / decoding /
+            // network errors are propagated as-is — they would fail the
+            // same way with the opposite verb and the resulting noise on
+            // the fallback would mask the real failure.
+            if Self.isWrongVerb(firstError, preferCreate: preferCreate) {
                 Self.logger.warning("🪪 PROFILE-COORD :: \(preferCreate ? "create" : "update", privacy: .public) failed with wrong-verb signature; retrying with opposite verb")
                 do {
                     if preferCreate {

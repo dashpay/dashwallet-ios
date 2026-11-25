@@ -34,16 +34,16 @@ struct FundingLimitsInfoSheet: View {
         VStack(alignment: .leading, spacing: 0) {
             ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 6) {
-                Text(NSLocalizedString("What are identity funding limits?", comment: "DashConnect connection sheet"))
+                Text(String(localized: "What are identity funding limits?", comment: "DashConnect connection sheet"))
                     .dashFont(.title2)
                     .foregroundColor(Color.dash.primaryText)
-                Text(NSLocalizedString(
-                    "Your identity has its own balance, separate from the Dash on your wallet's home screen.",
+                Text(String(
+                    localized: "Your identity has its own balance, separate from the Dash on your wallet's home screen.",
                     comment: "DashConnect: what identity funding limits are"))
                     .dashFont(.subhead)
                     .foregroundColor(Color.dash.primaryText)
-                Text(NSLocalizedString(
-                    "It pays for actions on the Dash network, like updating your profile or using connected apps.",
+                Text(String(
+                    localized: "It pays for actions on the Dash network, like updating your profile or using connected apps.",
                     comment: "DashConnect: what identity funding limits are"))
                     .dashFont(.subhead)
                     .foregroundColor(Color.dash.primaryText)
@@ -58,7 +58,7 @@ struct FundingLimitsInfoSheet: View {
             .frame(maxHeight: textHeight)
 
             DashUIKit.DashButton(
-                text: NSLocalizedString("Got it", comment: "DashConnect"),
+                text: String(localized: "Got it", comment: "DashConnect"),
                 fillsWidth: true, size: .large, style: .tintedGray, action: onClose)
                 .padding(.horizontal, 40)
                 .padding(.vertical, 30)

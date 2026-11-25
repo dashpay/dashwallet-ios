@@ -87,7 +87,7 @@ class TxDetailModel: NSObject {
             return transaction.stateTitle
         }
         if let route = transaction.internalTransferRoute, route != .coreToCore {
-            return NSLocalizedString("Internal Transfer", comment: "Transaction within the wallet, transfer of own funds")
+            return String(localized: "Internal Transfer", comment: "Transaction within the wallet, transfer of own funds")
         }
         // A DashPay contact payment keeps the plain "Amount Sent" heading: the
         // counterparty is carried by the header avatar and named in full by
@@ -445,12 +445,12 @@ class TxDetailModel: NSObject {
         // Maya-routed legacy orders (retired for new swaps) link to the Maya explorer by Dash txid.
         if provider.contains("maya") || order.service == "maya" {
             return SwapExplorerLink(
-                title: NSLocalizedString("View Maya Explorer", comment: "Dash DEX / tx details action"),
+                title: String(localized: "View Maya Explorer", comment: "Dash DEX / tx details action"),
                 url: MayaConstants.mayaScanTransactionURL(txHash: dashTxId.uppercased()))
         }
 
         // NEAR intents: tracked by the deposit address, not the Dash txid.
-        let title = NSLocalizedString("View NEAR Explorer", comment: "Dash DEX / tx details action")
+        let title = String(localized: "View NEAR Explorer", comment: "Dash DEX / tx details action")
         if let deposit = order.depositAddress?.trimmingCharacters(in: .whitespacesAndNewlines), !deposit.isEmpty {
             return SwapExplorerLink(title: title, url: NearConstants.explorerTransactionURL(depositAddress: deposit))
         }
@@ -593,8 +593,8 @@ extension TxDetailModel {
     /// it replaces would have used.
     var contactRowTitle: String {
         contactParty?.isOutgoing == true
-            ? NSLocalizedString("Sent to", comment: "")
-            : NSLocalizedString("Received from", comment: "")
+            ? String(localized: "Sent to", comment: "")
+            : String(localized: "Received from", comment: "")
     }
 
     func inputAddresses(with font: UIFont) -> [DWTitleDetailItem] {
@@ -605,13 +605,13 @@ extension TxDetailModel {
         let title: String
         switch transaction.direction {
         case .sent:
-            title = NSLocalizedString("Sent from", comment: "");
+            title = String(localized: "Sent from", comment: "");
         case .received:
-            title = NSLocalizedString("Received from", comment: "");
+            title = String(localized: "Received from", comment: "");
         case .moved:
-            title = NSLocalizedString("Moved from", comment: "");
+            title = String(localized: "Moved from", comment: "");
         case .notAccountFunds:
-            title = NSLocalizedString("Registered from", comment: "");
+            title = String(localized: "Registered from", comment: "");
         }
 
         if hasSourceUser {
@@ -629,7 +629,7 @@ extension TxDetailModel {
             guard !address.isEmpty else { return [] }
             let detail = NSAttributedString.dashAddressAttributedString(address, with: font, showingLogo: false)
             return [DWTitleDetailCellModel(style: .truncatedSingleLine,
-                                           title: NSLocalizedString("Received at", comment: ""),
+                                           title: String(localized: "Received at", comment: ""),
                                            attributedDetail: detail, copyableData: address)]
         }
         if !shouldDisplayOutputAddresses {
@@ -639,11 +639,11 @@ extension TxDetailModel {
         let title: String
         switch transaction.direction {
         case .sent:
-            title = NSLocalizedString("Sent to", comment: "")
+            title = String(localized: "Sent to", comment: "")
         case .received:
-            title = NSLocalizedString("Received at", comment: "")
+            title = String(localized: "Received at", comment: "")
         case .moved:
-            title = NSLocalizedString("Internally moved to", comment: "")
+            title = String(localized: "Internally moved to", comment: "")
         case .notAccountFunds: // this should not be possible
             title = ""
         }
@@ -666,11 +666,11 @@ extension TxDetailModel {
             var title: String;
             switch type {
             case 0:
-                title = NSLocalizedString("Owner Address", comment: "")
+                title = String(localized: "Owner Address", comment: "")
             case 1:
-                title = NSLocalizedString("Provider Address", comment: "")
+                title = String(localized: "Provider Address", comment: "")
             case 2:
-                title = NSLocalizedString("Voting Address", comment: "")
+                title = String(localized: "Voting Address", comment: "")
             default:
                 title = ""
             }
@@ -689,63 +689,63 @@ extension TxDetailModel {
         if let swapOrderPlaceholder {
             return [DWTitleDetailCellModel(
                 style: .default,
-                title: NSLocalizedString("Status", comment: "Transaction details"),
+                title: String(localized: "Status", comment: "Transaction details"),
                 plainDetail: swapOrderPlaceholder.statusText)]
         }
-        let transparent = NSLocalizedString("Transparent balance", comment: "The transparent (Core) balance of the Dash Wallet")
-        let shielded = NSLocalizedString("Shielded balance", comment: "")
+        let transparent = String(localized: "Transparent balance", comment: "The transparent (Core) balance of the Dash Wallet")
+        let shielded = String(localized: "Shielded balance", comment: "")
         if transaction.isShieldedTransfer {
             let source = transaction.isCoinJoinFundedTransfer
-                ? NSLocalizedString("CoinJoin balance", comment: "The wallet's mixed (CoinJoin) funds as the source of an internal transfer")
+                ? String(localized: "CoinJoin balance", comment: "The wallet's mixed (CoinJoin) funds as the source of an internal transfer")
                 : transparent
             var rows: [DWTitleDetailItem] = [
-                DWTitleDetailCellModel(style: .default, title: NSLocalizedString("From", comment: ""), plainDetail: source),
-                DWTitleDetailCellModel(style: .default, title: NSLocalizedString("To", comment: ""), plainDetail: shielded),
+                DWTitleDetailCellModel(style: .default, title: String(localized: "From", comment: ""), plainDetail: source),
+                DWTitleDetailCellModel(style: .default, title: String(localized: "To", comment: ""), plainDetail: shielded),
             ]
             if let status = shieldedStatusText {
                 rows.append(DWTitleDetailCellModel(
                     style: .default,
-                    title: NSLocalizedString("Status", comment: "Transaction details"),
+                    title: String(localized: "Status", comment: "Transaction details"),
                     plainDetail: status))
             }
             return rows
         }
         if transaction.isShieldedWithdrawalReceipt {
             return [
-                DWTitleDetailCellModel(style: .default, title: NSLocalizedString("From", comment: ""), plainDetail: shielded),
-                DWTitleDetailCellModel(style: .default, title: NSLocalizedString("To", comment: ""), plainDetail: transparent),
+                DWTitleDetailCellModel(style: .default, title: String(localized: "From", comment: ""), plainDetail: shielded),
+                DWTitleDetailCellModel(style: .default, title: String(localized: "To", comment: ""), plainDetail: transparent),
             ]
         }
         if transaction.isPlatformFundingTransfer {
             var rows: [DWTitleDetailItem] = [
-                DWTitleDetailCellModel(style: .default, title: NSLocalizedString("From", comment: ""), plainDetail: transparent),
+                DWTitleDetailCellModel(style: .default, title: String(localized: "From", comment: ""), plainDetail: transparent),
                 DWTitleDetailCellModel(
                     style: .default,
-                    title: NSLocalizedString("To", comment: ""),
-                    plainDetail: NSLocalizedString("Platform balance", comment: "The Dash Platform credits balance")),
+                    title: String(localized: "To", comment: ""),
+                    plainDetail: String(localized: "Platform balance", comment: "The Dash Platform credits balance")),
             ]
             if let statusRaw = transaction.platformFundingLockInfo?.statusRaw,
                let status = Self.lockStatusText(statusRaw) {
                 rows.append(DWTitleDetailCellModel(
                     style: .default,
-                    title: NSLocalizedString("Status", comment: "Transaction details"),
+                    title: String(localized: "Status", comment: "Transaction details"),
                     plainDetail: status))
             }
             return rows
         }
         if transaction.isIdentityFundingTransfer {
             var rows: [DWTitleDetailItem] = [
-                DWTitleDetailCellModel(style: .default, title: NSLocalizedString("From", comment: ""), plainDetail: transparent),
+                DWTitleDetailCellModel(style: .default, title: String(localized: "From", comment: ""), plainDetail: transparent),
                 DWTitleDetailCellModel(
                     style: .default,
-                    title: NSLocalizedString("To", comment: ""),
-                    plainDetail: NSLocalizedString("Identity credits", comment: "Destination of an identity funding asset lock")),
+                    title: String(localized: "To", comment: ""),
+                    plainDetail: String(localized: "Identity credits", comment: "Destination of an identity funding asset lock")),
             ]
             if let statusRaw = transaction.identityFundingLockInfo?.statusRaw,
                let status = Self.lockStatusText(statusRaw) {
                 rows.append(DWTitleDetailCellModel(
                     style: .default,
-                    title: NSLocalizedString("Status", comment: "Transaction details"),
+                    title: String(localized: "Status", comment: "Transaction details"),
                     plainDetail: status))
             }
             return rows
@@ -771,7 +771,7 @@ extension TxDetailModel {
             // outpoint spent, which is not the same claim as this transfer
             // having completed — and it is the claim the toast and the bulk
             // summary already make. All three surfaces now say one thing.
-            return NSLocalizedString("Already spent — not verified", comment: "A restored asset lock the network reports spent, without a verifiable proof")
+            return String(localized: "Already spent — not verified", comment: "A restored asset lock the network reports spent, without a verifiable proof")
         }
         return Self.lockStatusText(statusRaw)
     }
@@ -796,11 +796,11 @@ extension TxDetailModel {
     static func lockStatusText(_ statusRaw: Int) -> String? {
         switch statusRaw {
         case 0, 1:
-            return NSLocalizedString("Broadcasting", comment: "")
+            return String(localized: "Broadcasting", comment: "")
         case 2, 3:
-            return NSLocalizedString("Funds locked — finishing transfer", comment: "Shielded transfer status")
+            return String(localized: "Funds locked — finishing transfer", comment: "Shielded transfer status")
         case 4, 6: // Consumed, or a Max drain recorded as completed
-            return NSLocalizedString("Completed", comment: "Shielded transfer status")
+            return String(localized: "Completed", comment: "Shielded transfer status")
         case 5:
             // RecoveredFromChain: the lock is final on Core, but whether it
             // completed on Platform is unknown after a restore or an
@@ -808,7 +808,7 @@ extension TxDetailModel {
             // "Pending" nor "Completed" is deliberate — the "Complete
             // Transfer" action below is what resolves the unknown, by asking
             // Platform rather than by guessing here.
-            return NSLocalizedString("Completion unknown", comment: "Status of a chain-locked asset lock whose Platform-side consumption cannot be authenticated")
+            return String(localized: "Completion unknown", comment: "Status of a chain-locked asset lock whose Platform-side consumption cannot be authenticated")
         default:
             return nil
         }
@@ -834,8 +834,8 @@ extension TxDetailModel {
         /// Platform side finished.
         var actionTitle: String {
             statusRaw <= 1
-                ? NSLocalizedString("Rebroadcast", comment: "Retry a stuck balance transfer whose transaction never confirmed")
-                : NSLocalizedString("Complete Transfer", comment: "Retry a stuck balance transfer whose transaction confirmed but whose Platform side never finished")
+                ? String(localized: "Rebroadcast", comment: "Retry a stuck balance transfer whose transaction never confirmed")
+                : String(localized: "Complete Transfer", comment: "Retry a stuck balance transfer whose transaction confirmed but whose Platform side never finished")
         }
 
         /// Local removal is offered only while the network has shown no
@@ -1007,7 +1007,7 @@ extension TxDetailModel {
     }
 
     func fee(with font: UIFont, tintColor: UIColor) -> DWTitleDetailItem {
-        let title = NSLocalizedString("Network fee", comment: "")
+        let title = String(localized: "Network fee", comment: "")
         if swapOrderPlaceholder != nil {
             return DWTitleDetailCellModel(style: .default, title: title, plainDetail: Self.missingValue)
         }
@@ -1018,7 +1018,7 @@ extension TxDetailModel {
         // their values — and with them the fee — are not recoverable here.
         // Say whose fee it was instead of printing a fabricated zero.
         if feeValue == nil, direction == .received {
-            let detail = NSLocalizedString("Paid by sender", comment: "Network fee on a received transaction")
+            let detail = String(localized: "Paid by sender", comment: "Network fee on a received transaction")
             return DWTitleDetailCellModel(style: .default, title: title, plainDetail: detail)
         }
 
@@ -1085,14 +1085,14 @@ extension TxDetailModel {
     }
 
     var date: DWTitleDetailCellModel {
-        let title = NSLocalizedString("Date", comment: "")
+        let title = String(localized: "Date", comment: "")
         let detail = DWDateFormatter.sharedInstance.longString(from: transaction.date)
         let model = DWTitleDetailCellModel(style: .default, title: title, plainDetail: detail)
         return model
     }
 
     var taxCategory: DWTitleDetailCellModel {
-        let title = NSLocalizedString("Tax Category", comment: "")
+        let title = String(localized: "Tax Category", comment: "")
         let detail = txTaxCategory.stringValue
         let model = DWTitleDetailCellModel(style: .default, title: title, plainDetail: detail)
         return model
