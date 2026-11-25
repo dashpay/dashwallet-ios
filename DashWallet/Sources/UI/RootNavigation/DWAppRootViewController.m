@@ -17,7 +17,6 @@
 
 #import "DWAppRootViewController.h"
 
-#import "DWLockScreenViewController.h"
 #import "DWRootModel.h"
 #import "DWSetupViewController.h"
 #import "DWUIKit.h"
@@ -593,7 +592,7 @@ static NSTimeInterval const UNLOCK_ANIMATION_DURATION = 0.25;
         return;
     }
 
-    [self showLockControllerWithMode:DWLockScreenViewControllerUnlockMode_Instantly];
+    [self showLockControllerWithMode:DWLockScreenViewControllerUnlockModeInstantly];
 }
 
 - (void)hideAndRemoveOverlayImageView {

@@ -282,44 +282,18 @@ final class AuthenticationService: NSObject, AuthenticationServiceProtocol {
         return Precheck(shouldContinueAuthentication: true, shouldLockout: false, attemptsMessage: nil)
     }
 
-    // MARK: Lock-screen ObjC facades (DWLockScreenModel / DWSetPinModel)
-
-    /// ObjC-visible box for `Precheck` (the struct can't cross into ObjC).
-    @objc(DWAuthPrecheck)
-    final class ObjCPrecheck: NSObject {
-        @objc let shouldContinueAuthentication: Bool
-        @objc let shouldLockout: Bool
-        @objc let attemptsMessage: String?
-        init(_ precheck: Precheck) {
-            shouldContinueAuthentication = precheck.shouldContinueAuthentication
-            shouldLockout = precheck.shouldLockout
-            attemptsMessage = precheck.attemptsMessage
-        }
-    }
-
-    @objc func authenticationPrecheckObjc() -> ObjCPrecheck {
-        ObjCPrecheck(authenticationPrecheck())
-    }
-
-    /// Whether `pin` matches (recording the failure/success as `verifyPin`
-    /// does). The lock screen only needs the boolean.
-    @objc(verifyPinString:)
-    func verifyPinObjc(_ pin: String) -> Bool {
-        verifyPin(pin) == .authenticated
-    }
+    // MARK: Lock screen
 
     /// Biometrics-only unlock (no PIN fallback) — the lock screen's
     /// Face/Touch ID button.
     @MainActor
-    @objc func authenticateUsingBiometricsOnly(_ completion: @escaping (Bool) -> Void) {
+    func authenticateUsingBiometricsOnly(_ completion: @escaping (Bool) -> Void) {
         Task { @MainActor in
             let result = await evaluateBiometrics()
             if case .success = result { didAuthenticate = true }
             completion(result == .success)
         }
     }
-
-    @objc var maxFailCount: UInt64 { LockoutPolicy.maxFailCount }
 
     // MARK: - Biometric capability (DSBiometricsAuthenticator replacement)
 

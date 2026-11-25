@@ -30289,6 +30289,17 @@
         }
       }
     },
+    "%lld of %lld digits entered" : {
+      "comment" : "Lock screen PIN, VoiceOver",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld digits entered"
+          }
+        }
+      }
+    },
     "%lld receive" : {
       "comment" : "Wallet accounts — address pool",
       "localizations" : {
@@ -176637,6 +176648,9 @@
           }
         }
       }
+    },
+    "Delete" : {
+      "comment" : "Number keyboard"
     },
     "Delete All" : {
       "localizations" : {
