@@ -19,6 +19,7 @@
 //  limitations under the License.
 //
 
+import DashUIKit
 import SwiftUI
 import UIKit
 
@@ -26,53 +27,41 @@ import UIKit
 
 struct KeysOverviewContentView: View {
     @StateObject private var viewModel = KeysOverviewViewModel()
-    /// Weak: this page sits in `navigationController`'s own stack.
-    private weak var navigationController: UINavigationController?
-
-    init(navigationController: UINavigationController? = nil) {
-        self.navigationController = navigationController
-    }
+    let onBack: () -> Void
+    let onOpenKey: (MNKey) -> Void
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                // Title
-                Text(NSLocalizedString("Masternode keys", comment: ""))
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(Color(uiColor: .dw_label()))
-                    .padding(.horizontal, 20)
+        VStack(spacing: 0) {
+            DashUIKit.NavigationBar(leading: {
+                DashUIKit.NavigationBarElement.back.button(action: onBack)
+            })
 
-                // Keys list container
-                VStack(spacing: kMenuVGap) {
-                    ForEach(viewModel.items) { item in
-                        KeyItemButton(item: item) {
-                            handleItemTap(item.key)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    // Title
+                    Text(NSLocalizedString("Masternode keys", comment: ""))
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundColor(Color(uiColor: .dw_label()))
+                        .padding(.horizontal, 20)
+
+                    // Keys list container
+                    VStack(spacing: kMenuVGap) {
+                        ForEach(viewModel.items) { item in
+                            KeyItemButton(item: item) {
+                                onOpenKey(item.key)
+                            }
                         }
                     }
+                    .padding(kMenuPadding)
+                    .background(Color(uiColor: .dw_background()))
+                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    .padding(.horizontal, 20)
                 }
-                .padding(kMenuPadding)
-                .background(Color(uiColor: .dw_background()))
-                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                .padding(.horizontal, 20)
-            }
-            .frame(maxWidth: .infinity, alignment: .topLeading)
-        }
-        .background(Color(uiColor: .dw_secondaryBackground()))
-    }
-
-    private func handleItemTap(_ item: MNKey) {
-        AuthenticationService.shared.authenticate(
-            withPrompt: nil,
-            usingBiometricAuthentication: false,
-            alertIfLockout: true
-        ) { [weak navigationController] authenticated, _, _ in
-            guard authenticated else { return }
-
-            DispatchQueue.main.async {
-                let vc = DerivationPathKeysViewController(with: item)
-                navigationController?.pushViewController(vc, animated: true)
+                .padding(.top, 10)
+                .frame(maxWidth: .infinity, alignment: .topLeading)
             }
         }
+        .background(Color(uiColor: .dw_secondaryBackground()).ignoresSafeArea())
     }
 }
 
@@ -147,5 +136,5 @@ class KeysOverviewViewModel: ObservableObject {
 // MARK: - Preview
 
 #Preview {
-    KeysOverviewContentView()
+    KeysOverviewContentView(onBack: {}, onOpenKey: { _ in })
 }
