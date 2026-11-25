@@ -5,7 +5,8 @@
 //  A gift card purchase run end to end in `DashSpendPayViewModel`, for each provider, with
 //  the provider's order response and the send service stubbed. These tests pin that the Dash
 //  amount a provider asks for is compared with the price the buyer confirmed before anything
-//  is paid: they fail when that comparison is left out of either provider's path.
+//  is paid: they fail when that comparison is left out of either provider's path. They also
+//  pin that a payment whose outcome is unknown is recorded as a purchase, for both providers.
 //
 //  The PiggyCards tests are not wrapped in `PIGGYCARDS_ENABLED`: the test target does not
 //  define it, and the `dashpay` host app these tests import is built with it in every
@@ -13,6 +14,7 @@
 //
 
 import Combine
+import SwiftDashSDK
 import XCTest
 @testable import dashpay
 
@@ -77,8 +79,10 @@ private final class StubPayments: GiftCardPaying {
 
     /// The Dash amount the payment request behind a payment URL asks for.
     var requestedByURL: UInt64 = 0
+    /// Thrown in place of paying, once the amount has passed the caller's check.
+    var failure: Error?
     private(set) var urlPayments: [(url: String, amount: UInt64, awaitAcceptance: Bool)] = []
-    private(set) var addressPayments: [(address: String, amount: UInt64, sessionAuthSufficient: Bool)] = []
+    private(set) var addressPayments: [(address: String, amount: UInt64)] = []
 
     var isEmpty: Bool { urlPayments.isEmpty && addressPayments.isEmpty }
 
@@ -90,12 +94,14 @@ private final class StubPayments: GiftCardPaying {
             amount: amount, estimatedFee: 0, network: .testnet, paymentURL: nil, scheme: "dash",
             merchantData: nil, memo: nil, callbackScheme: nil,
             request: PaymentRequest(serializedDetails: Data())))
+        if let failure { throw failure }
         urlPayments.append((paymentUrlString, amount, awaitAcceptance))
         return Self.txidWire
     }
 
-    func sendCoins(address: String, amount: UInt64, sessionAuthSufficient: Bool) async throws -> Data {
-        addressPayments.append((address, amount, sessionAuthSufficient))
+    func payGiftCardOrder(address: String, amount: UInt64) async throws -> Data {
+        if let failure { throw failure }
+        addressPayments.append((address, amount))
         return Self.txidWire
     }
 }
@@ -240,7 +246,7 @@ final class DashSpendPurchaseTests: XCTestCase {
         }
     }
 
-    // MARK: CTX
+    // MARK: CTX, the price
 
     func testCTXPurchaseAtTheConfirmedPriceIsPaidAndRecorded() async throws {
         let (viewModel, snapshot) = try viewModelWithConfirmSheet(provider: .ctx)
@@ -298,6 +304,73 @@ final class DashSpendPurchaseTests: XCTestCase {
         XCTAssertEqual(recorder.records.map(\.price), [25])
     }
 
+    // MARK: CTX, outcome unknown
+
+    private static let unknownTxid = Data(repeating: 0xC3, count: 32)
+
+    /// Runs a purchase at the confirmed price whose payment ends with `failure`, and returns
+    /// the error the purchase ended with.
+    private func purchase(provider: GiftCardProvider, endingWith failure: Error,
+                          file: StaticString = #filePath, line: UInt = #line) async throws -> Error? {
+        let (viewModel, snapshot) = try viewModelWithConfirmSheet(provider: provider)
+        payments.requestedByURL = Self.confirmedDuffs
+        piggyCards.quotedDash = try XCTUnwrap(Decimal(string: "0.625"))
+        payments.failure = failure
+
+        var thrown: Error?
+        do {
+            _ = try await finish(startPurchase(snapshot, on: viewModel), on: viewModel, file: file, line: line)
+            XCTFail("the purchase reported a payment", file: file, line: line)
+        } catch {
+            thrown = error
+        }
+        XCTAssertNil(viewModel.purchaseSheet, file: file, line: line)
+        XCTAssertFalse(viewModel.isProcessingPayment, file: file, line: line)
+        return thrown
+    }
+
+    /// The payment left the device and its acceptance was not seen. The order is recorded
+    /// against the transaction, and the error still says the outcome is unknown.
+    func testCTXPaymentWithAnUnknownOutcomeIsRecorded() async throws {
+        let thrown = try await purchase(
+            provider: .ctx,
+            endingWith: DashSpendError.paymentStatusUnknown(txIdWire: Self.unknownTxid, reason: "timeout"))
+
+        guard case DashSpendError.paymentStatusUnknown(let txid, _)? = thrown else {
+            return XCTFail("unexpected error: \(String(describing: thrown))")
+        }
+        XCTAssertEqual(txid, Self.unknownTxid)
+        XCTAssertEqual(recorder.records, [GiftCardPurchaseRecord(
+            txidWire: Self.unknownTxid, provider: .ctx, merchantName: "Test Merchant", merchantUrl: nil,
+            merchantIconUrl: "", price: 25, note: StubCTXRepository.orderId)])
+    }
+
+    /// The payment was posted to CTX and the connection was lost before its acknowledgement
+    /// was read. CTX may be fulfilling the order, so it is recorded against the transaction.
+    /// The error does not yet tell this apart from a post that never reached CTX (#1468).
+    func testCTXUnacknowledgedPaymentIsRecorded() async throws {
+        let thrown = try await purchase(
+            provider: .ctx,
+            endingWith: DashSpendError.paymentNotAcknowledged(
+                txIdWire: Self.unknownTxid, reason: "the connection was lost after the request was sent"))
+
+        guard case DashSpendError.paymentNotAcknowledged(let txid, _)? = thrown else {
+            return XCTFail("unexpected error: \(String(describing: thrown))")
+        }
+        XCTAssertEqual(txid, Self.unknownTxid)
+        XCTAssertEqual(recorder.records.map(\.txidWire), [Self.unknownTxid])
+        XCTAssertEqual(recorder.records.map(\.note), [StubCTXRepository.orderId])
+    }
+
+    func testCTXPaymentThatFailedIsNotRecorded() async throws {
+        let thrown = try await purchase(provider: .ctx, endingWith: DashSpendError.transactionRejected)
+
+        guard case DashSpendError.transactionRejected? = thrown else {
+            return XCTFail("unexpected error: \(String(describing: thrown))")
+        }
+        XCTAssertTrue(recorder.records.isEmpty)
+    }
+
     // MARK: PiggyCards
 
     private func orderNote(_ note: String?) throws -> (orderId: String?, cardAmounts: [String]?) {
@@ -317,8 +390,6 @@ final class DashSpendPurchaseTests: XCTestCase {
         XCTAssertEqual(piggyCards.orders.first?.map(\.quantity), [1])
         XCTAssertEqual(payments.addressPayments.map(\.address), [StubPiggyCardsRepository.paymentAddress])
         XCTAssertEqual(payments.addressPayments.map(\.amount), [Self.confirmedDuffs])
-        // The payment asks for the PIN: an earlier authentication does not stand in for it.
-        XCTAssertEqual(payments.addressPayments.map(\.sessionAuthSufficient), [false])
         XCTAssertTrue(payments.urlPayments.isEmpty)
 
         XCTAssertEqual(recorder.records.count, 1)
@@ -366,5 +437,197 @@ final class DashSpendPurchaseTests: XCTestCase {
 
         XCTAssertEqual(payments.addressPayments.map(\.amount), [Self.higherDuffs])
         XCTAssertEqual(recorder.records.map(\.price), [25])
+    }
+
+    /// The transaction was handed to the network and its acceptance was not seen. The order
+    /// is recorded against it, so a payment that goes through does not leave the buyer with
+    /// no card, and the error still says the outcome is unknown.
+    func testPiggyCardsPaymentWithAnUnknownOutcomeIsRecorded() async throws {
+        let thrown = try await purchase(
+            provider: .piggyCards,
+            endingWith: DashSpendError.paymentStatusUnknown(txIdWire: Self.unknownTxid, reason: "timeout"))
+
+        guard case DashSpendError.paymentStatusUnknown(let txid, _)? = thrown else {
+            return XCTFail("unexpected error: \(String(describing: thrown))")
+        }
+        XCTAssertEqual(txid, Self.unknownTxid)
+        XCTAssertEqual(recorder.records.count, 1)
+        let record = try XCTUnwrap(recorder.records.first)
+        XCTAssertEqual(record.txidWire, Self.unknownTxid)
+        XCTAssertEqual(record.provider, .piggyCards)
+        XCTAssertEqual(record.price, 25)
+        let note = try orderNote(record.note)
+        XCTAssertEqual(note.orderId, StubPiggyCardsRepository.orderId)
+        XCTAssertEqual(note.cardAmounts, ["25"])
+    }
+
+    /// A broadcast the network rejected: the error `WalletSendService` throws for it.
+    private func rejectedSendError() throws -> NSError {
+        let send = PreparedStandardSend(
+            txData: Data([0x01]), txHash: Data(repeating: 0xe1, count: 32), fee: 226,
+            address: "ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLr", amount: 100_000,
+            broadcastAction: { .rejected(txid: String(repeating: "e1", count: 32), reason: "not started") })
+        var thrown: Error?
+        XCTAssertThrowsError(try send.broadcast()) { thrown = $0 }
+        return try XCTUnwrap(thrown) as NSError
+    }
+
+    func testPiggyCardsPaymentThatWasRejectedIsNotRecorded() async throws {
+        let thrown = try await purchase(provider: .piggyCards, endingWith: try rejectedSendError())
+
+        XCTAssertTrue(WalletSendService.isBroadcastRejectedError(try XCTUnwrap(thrown) as NSError))
+        XCTAssertTrue(recorder.records.isEmpty)
+    }
+
+    // MARK: What the buyer is told
+
+    /// PiggyCards does not hold the signed transaction: the wallet is the only one that can
+    /// broadcast it, and only while the app is open. The buyer is told what every other send
+    /// with an unknown outcome tells them, before the card details.
+    func testPiggyCardsUnknownOutcomeCarriesTheDoNotSendAgainNotice() throws {
+        let (viewModel, _) = try viewModelWithConfirmSheet(provider: .piggyCards)
+
+        XCTAssertEqual(viewModel.unknownOutcomeNotice, WalletSendService.unknownBroadcastOutcomeNotice)
+        XCTAssertFalse(WalletSendService.unknownBroadcastOutcomeNotice.isEmpty)
+    }
+
+    /// The notice is the description of the error a send with this outcome throws.
+    func testTheNoticeIsTheCopyOfTheUnknownSendError() {
+        let send = PreparedStandardSend(
+            txData: Data([0x01]), txHash: Data(repeating: 0xe2, count: 32), fee: 226,
+            address: "ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLr", amount: 100_000,
+            broadcastAction: { .unknown(txid: String(repeating: "e2", count: 32), reason: "timeout") })
+
+        XCTAssertThrowsError(try send.broadcast()) {
+            XCTAssertEqual(($0 as NSError).localizedDescription, WalletSendService.unknownBroadcastOutcomeNotice)
+        }
+    }
+
+    func testCTXUnknownOutcomeGoesToTheCardWithoutANotice() throws {
+        let (viewModel, _) = try viewModelWithConfirmSheet(provider: .ctx)
+
+        XCTAssertNil(viewModel.unknownOutcomeNotice)
+    }
+}
+
+// MARK: - The txid of a send whose outcome is unknown
+
+/// `WalletSendService.send` reports an unknown broadcast outcome without a txid. The gift
+/// card payment goes through the variant that carries it, and `SendCoinsService` turns that
+/// into the gift card error a purchase is recorded from.
+final class GiftCardUnknownOutcomeTests: XCTestCase {
+    private func prepared(hashByte: UInt8,
+                          action: @escaping () throws -> CoreTransactionBroadcastOutcome) -> PreparedStandardSend {
+        PreparedStandardSend(
+            txData: Data([0x01]), txHash: Data(repeating: hashByte, count: 32), fee: 226,
+            address: "ybt3gVM6cM9WprG7bRTMst1YR2GnAbWGLr", amount: 100_000, broadcastAction: action)
+    }
+
+    func testAcceptedBroadcastReturnsTheTxid() throws {
+        let send = prepared(hashByte: 0xd1) { .accepted(txid: String(repeating: "d1", count: 32)) }
+
+        XCTAssertEqual(try WalletSendService.broadcastCarryingUnknownOutcome(send), send.txidWire)
+    }
+
+    func testUnknownOutcomeCarriesTheTxidAndTheSendError() {
+        let send = prepared(hashByte: 0xd2) {
+            .unknown(txid: String(repeating: "d2", count: 32), reason: "no acceptance signal")
+        }
+
+        var thrown: Error?
+        XCTAssertThrowsError(try WalletSendService.broadcastCarryingUnknownOutcome(send)) { thrown = $0 }
+        guard let unknown = thrown as? WalletSendService.BroadcastOutcomeUnknown else {
+            return XCTFail("unexpected error: \(String(describing: thrown))")
+        }
+        XCTAssertEqual(unknown.txidWire, send.txidWire)
+        XCTAssertTrue(WalletSendService.isBroadcastUnknownError(unknown.underlying))
+
+        // The error `send` rethrows is the one the prepared send keeps for this outcome.
+        var kept: Error?
+        XCTAssertThrowsError(try send.broadcast()) { kept = $0 }
+        XCTAssertEqual(kept as NSError?, unknown.underlying)
+    }
+
+    func testRejectedBroadcastIsThrownAsBefore() {
+        let send = prepared(hashByte: 0xd3) {
+            .rejected(txid: String(repeating: "d3", count: 32), reason: "not started")
+        }
+
+        XCTAssertThrowsError(try WalletSendService.broadcastCarryingUnknownOutcome(send)) { error in
+            XCTAssertFalse(error is WalletSendService.BroadcastOutcomeUnknown)
+            XCTAssertTrue(WalletSendService.isBroadcastRejectedError(error as NSError))
+        }
+    }
+
+    /// The gift card payment itself: an unknown outcome of the send it goes through comes
+    /// out as the gift card error a purchase is recorded from.
+    func testGiftCardPaymentReportsAnUnknownOutcomeWithTheTxid() async {
+        let send = prepared(hashByte: 0xd5) {
+            .unknown(txid: String(repeating: "d5", count: 32), reason: "no acceptance signal")
+        }
+        var paid: [(address: String, amount: UInt64, sessionAuthSufficient: Bool)] = []
+        let service = SendCoinsService(sendToAddress: { address, amount, sessionAuthSufficient in
+            paid.append((address, amount, sessionAuthSufficient))
+            return try WalletSendService.broadcastCarryingUnknownOutcome(send)
+        })
+
+        do {
+            _ = try await service.payGiftCardOrder(address: "yTestPaymentAddress", amount: 100_000)
+            XCTFail("the payment reported an accepted broadcast")
+        } catch DashSpendError.paymentStatusUnknown(let txid, let reason) {
+            XCTAssertEqual(txid, send.txidWire)
+            XCTAssertEqual(reason, "no acceptance signal")
+        } catch {
+            XCTFail("unexpected error: \(error)")
+        }
+        XCTAssertEqual(paid.map(\.address), ["yTestPaymentAddress"])
+        XCTAssertEqual(paid.map(\.amount), [100_000])
+    }
+
+    /// An unlocked app is not enough to pay for a gift card: the send is asked to prompt.
+    func testGiftCardPaymentAsksForThePIN() async throws {
+        let send = prepared(hashByte: 0xd7) { .accepted(txid: String(repeating: "d7", count: 32)) }
+        var sessionAuthSufficient: [Bool] = []
+        let service = SendCoinsService(sendToAddress: { _, _, flag in
+            sessionAuthSufficient.append(flag)
+            return try WalletSendService.broadcastCarryingUnknownOutcome(send)
+        })
+
+        let txid = try await service.payGiftCardOrder(address: "yTestPaymentAddress", amount: 100_000)
+
+        XCTAssertEqual(txid, send.txidWire)
+        XCTAssertEqual(sessionAuthSufficient, [false])
+    }
+
+    func testGiftCardPaymentThrowsARejectedSendAsItIs() async {
+        let send = prepared(hashByte: 0xd6) {
+            .rejected(txid: String(repeating: "d6", count: 32), reason: "not started")
+        }
+        let service = SendCoinsService(sendToAddress: { _, _, _ in
+            try WalletSendService.broadcastCarryingUnknownOutcome(send)
+        })
+
+        do {
+            _ = try await service.payGiftCardOrder(address: "yTestPaymentAddress", amount: 100_000)
+            XCTFail("the payment reported an accepted broadcast")
+        } catch {
+            XCTAssertTrue(WalletSendService.isBroadcastRejectedError(error as NSError), "\(error)")
+        }
+    }
+
+    func testUnknownOutcomeBecomesTheGiftCardErrorWithTheTxidAndTheDiagnostic() {
+        let send = prepared(hashByte: 0xd4) {
+            .unknown(txid: String(repeating: "d4", count: 32), reason: "no acceptance signal")
+        }
+
+        XCTAssertThrowsError(try WalletSendService.broadcastCarryingUnknownOutcome(send)) { error in
+            guard let unknown = error as? WalletSendService.BroadcastOutcomeUnknown,
+                  case .paymentStatusUnknown(let txid, let reason) = SendCoinsService.paymentStatusUnknown(from: unknown)
+            else {
+                return XCTFail("unexpected error: \(error)")
+            }
+            XCTAssertEqual(txid, send.txidWire)
+            XCTAssertEqual(reason, "no acceptance signal")
+        }
     }
 }

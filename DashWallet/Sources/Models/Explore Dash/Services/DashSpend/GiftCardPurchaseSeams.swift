@@ -49,11 +49,13 @@ protocol PiggyCardsGiftCardOrdering: GiftCardProviderSession {
 extension PiggyCardsRepository: PiggyCardsGiftCardOrdering {}
 
 /// The two ways a gift card order is paid: a payment request URL (CTX) and a plain address
-/// with an amount (PiggyCards). Both return the wire-order txid of the payment.
+/// with an amount (PiggyCards). Both return the wire-order txid of the payment, and both
+/// throw `DashSpendError.paymentStatusUnknown` with the txid when the payment was handed to
+/// the network and its outcome is unknown.
 protocol GiftCardPaying {
     func payWithDashUrl(url paymentUrlString: String, awaitAcceptance: Bool,
                         validate: @escaping (Confirmation) async throws -> Void) async throws -> Data
-    func sendCoins(address: String, amount: UInt64, sessionAuthSufficient: Bool) async throws -> Data
+    func payGiftCardOrder(address: String, amount: UInt64) async throws -> Data
 }
 
 extension SendCoinsService: GiftCardPaying {}

@@ -604,24 +604,28 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
                 throw GiftCardPaymentGuard.invalidAmountError
             }
 
-            // Compared here, before sendCoins prompts for the PIN: a declined quote shows no
+            // Compared here, before the payment asks for the PIN: a declined quote shows no
             // prompt. The payment address was validated when the order response was parsed.
             // The order states no expiry, so a higher price has to be accepted in limited time.
             try await confirmQuote(requested: dashAmountInSatoshis, approval: approval,
                                    answerWithin: GiftCardPaymentGuard.priceAnswerLimit)
 
-            // Use sendCoins directly with address and amount
-            // This will properly trigger PIN authorization
-
-            txidWire = try await dependencies.payments.sendCoins(
-                address: giftCardInfo.paymentAddress,
-                amount: dashAmountInSatoshis,
-                sessionAuthSufficient: false
-            )
-
-
             giftCardNote = buildPiggyOrderNote(
                 orderId: giftCardInfo.orderId, selectedQuantities: snapshot.quantities, cardValue: confirmedPrice)
+
+            // Paid to the order's address; this is where the PIN is asked.
+            do {
+                txidWire = try await dependencies.payments.payGiftCardOrder(
+                    address: giftCardInfo.paymentAddress, amount: dashAmountInSatoshis)
+            } catch DashSpendError.paymentStatusUnknown(let unconfirmedTxIdWire, let reason) {
+                // The transaction was handed to the network and no acceptance was seen in
+                // time; the wallet keeps trying while it is open. Record the order against
+                // the txid, as the CTX branch does: without the record a payment that goes
+                // through leaves the buyer with no card, and a second try pays twice.
+                DWLogger.log("Gift card payment status unknown, recording the order anyway: \(reason)")
+                recordPurchase(txidWire: unconfirmedTxIdWire, giftCardNote: giftCardNote, price: confirmedPrice)
+                throw DashSpendError.paymentStatusUnknown(txIdWire: unconfirmedTxIdWire, reason: reason)
+            }
         #endif
         }
 
@@ -647,6 +651,19 @@ class DashSpendPayViewModel: NSObject, ObservableObject, NetworkReachabilityHand
         dependencies.purchases.record(GiftCardPurchaseRecord(
             txidWire: txidWire, provider: provider, merchantName: merchantTitle, merchantUrl: merchantUrl,
             merchantIconUrl: merchantIconUrl, price: price, note: giftCardNote))
+    }
+
+    /// What the buyer is told, before the gift card details, when the payment was handed to
+    /// the network and its outcome is unknown; `nil` when nothing is shown.
+    ///
+    /// For PiggyCards this wallet is the only one that can broadcast the payment, and it
+    /// keeps trying only while the app is open, so the buyer is told what every other send
+    /// with this outcome tells them. CTX holds the signed transaction itself.
+    var unknownOutcomeNotice: String? {
+        #if PIGGYCARDS_ENABLED
+        if provider == .piggyCards { return WalletSendService.unknownBroadcastOutcomeNotice }
+        #endif
+        return nil
     }
 
     var contactSupportButtonText: String {

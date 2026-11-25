@@ -283,6 +283,11 @@ final class WalletSendService: NSObject {
     /// tests in other files can read it back.
     static let diagnosticKey = "org.dashfoundation.dash.send.diagnostic"
 
+    /// What the user is told when a send's broadcast outcome is unknown
+    /// (`BroadcastOutcomeCopy.unknown`): the description of the error `send` throws for
+    /// it, for a caller that shows it without that error in hand.
+    static var unknownBroadcastOutcomeNotice: String { BroadcastOutcomeCopy.unknown }
+
     /// See `RecentSendsRegistry` — the send-success screen's fallback source.
     let recentSends = RecentSendsRegistry()
     #if DASHPAY
@@ -354,12 +359,51 @@ final class WalletSendService: NSObject {
         amount: UInt64,
         sessionAuthSufficient: Bool = false
     ) async throws -> Data {
+        do {
+            return try await sendCarryingUnknownOutcome(
+                address: address, amount: amount, sessionAuthSufficient: sessionAuthSufficient)
+        } catch let unknown as BroadcastOutcomeUnknown {
+            throw unknown.underlying
+        }
+    }
+
+    /// A broadcast whose outcome is unknown, with the txid of the transaction it is about.
+    struct BroadcastOutcomeUnknown: Error {
+        /// Wire-order txid (`Transaction.txHashData` convention) of the transaction that
+        /// was handed to the network.
+        let txidWire: Data
+        /// The error `send` throws for this outcome (`isBroadcastUnknownError`).
+        let underlying: NSError
+    }
+
+    /// `send`, for a caller that records the payment against its txid: an unknown broadcast
+    /// outcome is thrown as `BroadcastOutcomeUnknown`, which carries the txid. Every other
+    /// failure is thrown as `send` throws it.
+    ///
+    /// - Returns: the wire-order txid of the broadcast transaction
+    ///   (`Transaction.txHashData` convention).
+    func sendCarryingUnknownOutcome(
+        address: String,
+        amount: UInt64,
+        sessionAuthSufficient: Bool = false
+    ) async throws -> Data {
         try Self.ensureInitialRestoreSyncCompleted()
         try Self.ensureOnline()
         let preparedSend = try await prepareStandardSendForConfirmation(
             address: address, amount: amount, sessionAuthSufficient: sessionAuthSufficient)
-        try preparedSend.broadcast()
-        return preparedSend.txidWire
+        return try Self.broadcastCarryingUnknownOutcome(preparedSend)
+    }
+
+    /// Broadcasts `prepared` and returns its wire-order txid. An unknown outcome is thrown as
+    /// `BroadcastOutcomeUnknown`; every other failure as `PreparedStandardSend.broadcast`
+    /// throws it.
+    static func broadcastCarryingUnknownOutcome(_ prepared: PreparedStandardSend) throws -> Data {
+        do {
+            try prepared.broadcast()
+        } catch let error as NSError where isBroadcastUnknownError(error) {
+            throw BroadcastOutcomeUnknown(txidWire: prepared.txidWire, underlying: error)
+        }
+        return prepared.txidWire
     }
 
     /// - Returns: the wire-order txid of the broadcast transaction
