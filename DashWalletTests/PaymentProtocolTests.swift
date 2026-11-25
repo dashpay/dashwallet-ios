@@ -1237,6 +1237,19 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertNotNil(try addressRow(of: output))
         let info = try XCTUnwrap(try rows(of: output).generalInfo?.plainDetail)
         XCTAssertTrue(info.contains("This payment goes to 2 addresses."))
+        // Each address is listed with the amount it receives.
+        let lines = BIP70ConfirmationBox(confirmation).recipientLines
+        XCTAssertEqual(lines.count, 2)
+        for (line, recipient) in zip(lines, confirmation.recipients) {
+            XCTAssertTrue(line.hasSuffix(" DASH: " + recipient.address))
+            XCTAssertTrue(info.contains(line))
+        }
+
+        // A signed request keeps the count line only: its signer answers for the outputs.
+        let signed = try await paymentOutput(for: unsignedNamed(nil, outputs: twoAddresses), isSecure: true)
+        let signedInfo = try XCTUnwrap(try rows(of: signed).generalInfo?.plainDetail)
+        XCTAssertTrue(signedInfo.contains("This payment goes to 2 addresses."))
+        XCTAssertFalse(signedInfo.contains(lines[0]))
     }
 
     func testTwoOutputsToOneAddressCountAsOneAddress() async throws {
@@ -1244,6 +1257,9 @@ final class BIP70PaymentServiceTests: XCTestCase {
         let confirmation = try await prepare(unsignedNamed(nil, outputs: sameAddress))
         XCTAssertEqual(confirmation.amount, 300_000)
         XCTAssertEqual(BIP70ConfirmationBox(confirmation).recipientCount, 1)
+        let subtotals = BIP70InteractivePolicy.subtotals(of: confirmation)
+        XCTAssertEqual(subtotals.count, 1)
+        XCTAssertEqual(subtotals.first?.amount, 300_000)
     }
 
     func testCoordinatorRefusesAnHTTPPaymentURLWhenHTTPSIsRequired() async throws {

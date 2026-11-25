@@ -235,6 +235,13 @@ static NSString *singleLineString(NSString *s, NSUInteger maxLength) {
             info = [info stringByAppendingString:@"\n"];
         }
         info = [info stringByAppendingFormat:NSLocalizedString(@"This payment goes to %ld addresses.", @"Payment confirmation: a payment request with several outputs"), (long)recipientCount];
+        if (!self.isSecure) {
+            // No signer answers for an unsigned request's outputs, so each address is listed
+            // with the amount it receives.
+            for (NSString *line in ((DWBIP70ConfirmationBox *)self.bip70Confirmation).recipientLines) {
+                info = [info stringByAppendingFormat:@"\n%@", line];
+            }
+        }
         hasInfo = YES;
     }
 

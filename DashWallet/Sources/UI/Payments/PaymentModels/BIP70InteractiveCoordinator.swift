@@ -26,6 +26,15 @@ final class BIP70ConfirmationBox: NSObject {
     @objc var memo: String? { confirmation.memo }
     /// How many different addresses the request pays. The confirm screen shows one address.
     @objc var recipientCount: Int { BIP70InteractivePolicy.addressCount(of: confirmation) }
+    /// One line per different address, in the request's order: the amount it receives (outputs
+    /// to the same address added up), then the address. The amount comes first so a wrapped
+    /// line breaks before the address, not inside the pair. The confirm screen lists these for an
+    /// unsigned request that pays more than one address.
+    @objc var recipientLines: [String] {
+        BIP70InteractivePolicy.subtotals(of: confirmation).map {
+            "\($0.amount.formattedDashAmountWithoutCurrencySymbol) DASH: \($0.address)"
+        }
+    }
 }
 
 /// What the interactive (scan / link / paste / NFC) flow refuses on top of the protocol rules
@@ -51,6 +60,17 @@ enum BIP70InteractivePolicy {
     /// Different addresses among the request's outputs.
     static func addressCount(of confirmation: Confirmation) -> Int {
         Set(confirmation.recipients.map(\.address)).count
+    }
+
+    /// The amount each different address receives, in the order the request first names it.
+    static func subtotals(of confirmation: Confirmation) -> [(address: String, amount: UInt64)] {
+        var order: [String] = []
+        var sums: [String: UInt64] = [:]
+        for recipient in confirmation.recipients {
+            if sums[recipient.address] == nil { order.append(recipient.address) }
+            sums[recipient.address, default: 0] += recipient.amount
+        }
+        return order.map { (address: $0, amount: sums[$0] ?? 0) }
     }
 
     /// Checked on the fetched and verified request, before the confirm screen. The
