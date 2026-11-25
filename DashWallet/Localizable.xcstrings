@@ -9503,7 +9503,7 @@
       }
     },
     "%@ DASH" : {
-      "comment" : "DashConnect funding limit keypad: a typed amount",
+      "comment" : "DashConnect funding limit keypad: a typed amount\nDashSpend: a Dash amount read by VoiceOver",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -105589,6 +105589,9 @@
         }
       }
     },
+    "Cancel purchase" : {
+      "comment" : "DashSpend"
+    },
     "Canceling this transaction does not cancel the trade order. You will receive DASH on your Coinbase account shortly." : {
       "comment" : "Coinbase/Buy Dash/Cancel Order",
       "localizations" : {
@@ -182415,6 +182418,9 @@
         }
       }
     },
+    "Difference" : {
+      "comment" : "DashSpend"
+    },
     "Differs from this evonode" : {
       "comment" : "Evonode status",
       "localizations" : {
@@ -216885,6 +216891,9 @@
         }
       }
     },
+    "Final price" : {
+      "comment" : "DashSpend"
+    },
     "Find" : {
       "comment" : "Add masternode",
       "localizations" : {
@@ -235032,6 +235041,7 @@
     },
     "Gift card amount is out of range" : {
       "comment" : "DashSpend",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -236342,6 +236352,9 @@
           }
         }
       }
+    },
+    "Gift card total" : {
+      "comment" : "DashSpend"
     },
     "Gift card types" : {
       "comment" : "Explore Dash/Merchants/Filters",
@@ -371217,6 +371230,9 @@
         }
       }
     },
+    "Pay %@" : {
+      "comment" : "DashSpend: pay the Dash amount that follows"
+    },
     "Pay and get paid instantly with easy to use payment flows" : {
       "localizations" : {
         "ar" : {
@@ -400653,6 +400669,9 @@
         }
       }
     },
+    "Price updated" : {
+      "comment" : "DashSpend"
+    },
     "Prices are at least 30 minutes old. Fiat values may be incorrect." : {
       "comment" : "Stale rates",
       "localizations" : {
@@ -406172,6 +406191,9 @@
           }
         }
       }
+    },
+    "Provider asks" : {
+      "comment" : "DashSpend"
     },
     "Provider transactions" : {
       "comment" : "Masternodes",
@@ -531831,6 +531853,9 @@
         }
       }
     },
+    "The exchange rate is unavailable, so this payment could not be checked. Nothing was sent. Please try again in a moment." : {
+      "comment" : "DashSpend"
+    },
     "The final amount you receive may differ from this estimate by up to %lld%% due to price slippage." : {
       "comment" : "Dash DEX",
       "localizations" : {
@@ -532618,6 +532643,9 @@
           }
         }
       }
+    },
+    "The gift card provider returned an invalid payment address. Nothing was sent. Please try again or contact support." : {
+      "comment" : "DashSpend"
     },
     "The identity top-up result could not be confirmed. Check your balances before continuing." : {
       "comment" : "Identity top-up second leg cancelled",
@@ -544475,6 +544503,9 @@
           }
         }
       }
+    },
+    "The price is %@ higher than expected" : {
+      "comment" : "DashSpend: the value is a percentage"
     },
     "The price moved too much. Please go back and try again." : {
       "comment" : "Dash DEX / dex_error_price_moved",
@@ -568978,6 +569009,9 @@
         }
       }
     },
+    "This can mean the market moved fast or the provider's price is wrong. If you're not sure, cancel and try again in a few minutes." : {
+      "comment" : "DashSpend"
+    },
     "This card works only in the United States." : {
       "comment" : "DashSpend",
       "localizations" : {
@@ -582395,7 +582429,7 @@
       }
     },
     "This quote expired. Please go back and try again." : {
-      "comment" : "Dash DEX / dex_error_quote_expired",
+      "comment" : "Dash DEX / dex_error_quote_expired\nDashSpend",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -686736,6 +686770,9 @@
           }
         }
       }
+    },
+    "You confirmed" : {
+      "comment" : "DashSpend"
     },
     "You do not have sufficient funds to complete this transaction" : {
       "comment" : "DashSpend",
