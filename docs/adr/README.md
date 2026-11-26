@@ -39,6 +39,7 @@ where they disagree, ADR-0001 wins.
 | [0031](0031-turn-off-unattributed-dashpay-profile-keys-with-any-disconnect.md) | Turn off unattributed DashPay profile keys with any disconnect | keys | Accepted | |
 | [0032](0032-pass-owners-read-from-platform-into-the-pure-projection.md) | Pass the owners read from Platform into the pure App Connect projection | platform | Accepted | |
 | [0033](0033-turn-off-only-the-unrecorded-keys-the-question-listed.md) | Turn off only the unrecorded keys the question listed | keys | Superseded | [0016](0016-turn-off-unrecorded-keys-on-disconnect-without-asking.md) |
+| [0034](0034-subtract-own-top-ups-via-a-typed-top-up-event.md) | Subtract own top-ups via a typed top-up event | ui | Proposed | |
 | [0035](0035-run-every-vote-through-a-pure-vote-attempt-state-machine.md) | Run every vote through a pure vote-attempt state machine | ui | Proposed | |
 | [0036](0036-ship-the-ios-screens-and-the-sdk-binding-as-two-surfaces.md) | Ship the iOS screens and the SDK binding as two surfaces | platform | Proposed | |
 | [0037](0037-cast-quick-voting-sequentially-under-one-authentication.md) | Cast Quick voting sequentially under one authentication | ui | Proposed | |
@@ -61,6 +62,7 @@ where they disagree, ADR-0001 wins.
 | [0058](0058-answer-a-login-without-a-username-with-the-pages-own-state.md) | Answer a login without a username with the page's own state, and open nothing | ui | Accepted | |
 | [0062](0062-decide-every-source-and-destination-pair-in-one-policy.md) | Decide every source and destination pair in one policy | payments | Proposed | |
 | [0063](0063-give-the-send-flow-one-typed-scan-input-one-lifecycle-owner-and-one-source-snapshot.md) | Give the send flow one typed scan input, one lifecycle owner and one source snapshot | payments | Proposed | |
+| [0064](0064-model-receive-options-as-a-receive-only-enum.md) | Model Receive options as a Receive-only enum | ui | Proposed | |
 | [0065](0065-recognize-platform-refusals-by-consensus-code-in-one-table.md) | Recognize Platform refusals by consensus code in one table | platform | Proposed | |
 | [0066](0066-build-external-send-as-a-new-module-over-the-existing-spend-seams.md) | Build external send as a new module over the existing spend seams | payments | Proposed | |
 

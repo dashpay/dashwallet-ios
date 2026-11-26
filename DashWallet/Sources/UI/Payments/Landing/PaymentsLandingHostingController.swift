@@ -54,6 +54,8 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     private var isPushingReceiveStep = false
     /// The specify-amount sheet while it is up, so a receipt can dismiss it.
     private weak var requestAmountController: RequestAmountHostingController?
+    /// The destination the Specify-amount step was opened for.
+    private var specifyAmountDestination: AmountRequestDestination?
     /// Kept apart from `cancellables`: these live exactly as long as that sheet
     /// does, and are dropped with it rather than for the screen's lifetime.
     private var requestAmountObservers = Set<AnyCancellable>()
@@ -84,17 +86,23 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     /// (the balance-row receive sheet shows two tabs), and `embedInternalTransfer`
     /// makes the Internal tab the transfer form itself rather than the
     /// action-row list.
+    ///
+    /// `viewModel` replaces the one built from the other arguments; the
+    /// controller tests pass a preview model.
     init(activeTab: PaymentsLandingTab,
          receiveNetwork: ChainNetwork = .core,
          visibleTabs: [PaymentsLandingTab] = PaymentsLandingTab.allCases,
          embedInternalTransfer: Bool = false,
          showsHeader: Bool = true,
-         allowsTransactionDetails: Bool = true) {
-        self.viewModel = PaymentsLandingViewModel(
+         allowsTransactionDetails: Bool = true,
+         isQuickReceive: Bool = false,
+         viewModel: PaymentsLandingViewModel? = nil) {
+        self.viewModel = viewModel ?? PaymentsLandingViewModel(
             activeTab: activeTab,
-            network: receiveNetwork,
+            network: ReceiveOption(receiveNetwork),
             visibleTabs: visibleTabs,
-            allowsTransactionDetails: allowsTransactionDetails)
+            allowsTransactionDetails: allowsTransactionDetails,
+            isQuickReceive: isQuickReceive)
         self.showsHeader = showsHeader
         let transferViewModel = InternalTransferViewModel()
         if embedInternalTransfer {
@@ -123,7 +131,8 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
             activeTab: .receive,
             visibleTabs: [.receive],
             showsHeader: false,
-            allowsTransactionDetails: false)
+            allowsTransactionDetails: false,
+            isQuickReceive: true)
         let navigationController = BaseNavigationController(rootViewController: controller)
         navigationController.isNavigationBarHidden = true
         navigationController.isModalInPresentation = false
@@ -160,7 +169,9 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         if transferReceivePinned {
             viewModel.$network
                 .receive(on: RunLoop.main)
-                .sink { [weak self] network in
+                .sink { [weak self] option in
+                    // Identity is not a transfer endpoint: the route stays on the last chain.
+                    guard let network = option.chainNetwork else { return }
                     self?.embeddedTransferViewModel.applyReceiveRoute(into: network)
                 }
                 .store(in: &cancellables)
@@ -258,7 +269,8 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
             })
     }
 
-    private func pushSpecifyAmount() {
+    func pushSpecifyAmount() {
+        specifyAmountDestination = viewModel.amountRequestDestination
         let specify = SpecifyAmountViewController.controller()
         specify.delegate = self
         isPushingReceiveStep = true
@@ -568,9 +580,34 @@ extension PaymentsLandingHostingController: SpecifyAmountViewControllerDelegate 
         // for. Nothing is lost either way — the session's baseline survives a
         // suspend — but the sheet could not say it was watching, and could not
         // get out of the way when the payment landed.
+        //
+        // Core's request follows the next unused address and carries fiat and
+        // username; the other options put the amount on the address or ID the
+        // card shows.
+        //
+        // The request goes only to the destination the amount was typed for.
+        // If the option or its address changed while the step was open, the
+        // user is taken back to the card, which shows the current one.
+        guard let destination = specifyAmountDestination,
+              destination == viewModel.amountRequestDestination else {
+            returnToLandingFromReceiveStep()
+            return
+        }
+        let model: DWReceiveModelProtocol
+        let addressCaption: String?
+        switch destination {
+        case .core:
+            model = DWReceiveModel(amount: amount)
+            addressCaption = nil
+        case let .option(option, address):
+            let optionRequest = OptionAmountRequestModel(address: address, amount: amount, option: option)
+            model = optionRequest
+            addressCaption = optionRequest.addressCaption
+        }
         let requestController = RequestAmountHostingController.present(
             from: self,
-            model: DWReceiveModel(amount: amount),
+            model: model,
+            addressCaption: addressCaption,
             delegate: self)
         requestAmountController = requestController
         requestController.setWatchingForReceipt(viewModel.isWatchingForReceipt)
