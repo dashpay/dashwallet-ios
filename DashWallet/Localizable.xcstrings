@@ -129521,6 +129521,9 @@
         }
       }
     },
+    "Connected to %@. Go back to your browser to continue." : {
+      "comment" : "DashConnect: an approved sign-in with no return link; the placeholder is the app's name"
+    },
     "connecting" : {
       "comment" : "About screen tech info: SPV state",
       "localizations" : {
