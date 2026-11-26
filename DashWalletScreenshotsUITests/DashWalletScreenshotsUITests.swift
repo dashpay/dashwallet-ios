@@ -48,7 +48,7 @@ class DashWalletScreenshotsUITests: XCTestCase {
             waitAndTap(app.buttons["tabbar_home_button"])
             waitAndTap(app.cells["shortcut_secure_wallet"])
             waitAndTap(app.buttons["show_recovery_button"])
-            waitAndTap(app.otherElements["seedphrase_checkbox"])
+            waitAndTap(app.buttons["seedphrase_checkbox"])
             waitAndTap(app.buttons["seedphrase_continue_button"])
             sleep(1)
             // Seed Phrase Backup

@@ -45,10 +45,7 @@ static const bool _SNAPSHOT = 0;
 #import "DWHomeModelStub.h"
 
 //MARK: Backup Wallet
-#import "DWPreviewSeedPhraseViewController.h"
 #import "DWSecureWalletDelegate.h"
-#import "DWPreviewSeedPhraseContentView.h"
-#import "DWPreviewSeedPhraseViewController+DWProtected.h"
 #import "DWVerifySeedPhraseViewController.h"
 
 //MARK: Payment flow
@@ -99,9 +96,9 @@ static const bool _SNAPSHOT = 0;
 #endif
 
 //MARK: Seed phrase and utilities
-#import "DWCheckbox.h"
 #import "DWPreviewSeedPhraseModel.h"
 #import "DWSeedPhraseModel.h"
+#import "DWSeedWordModel.h"
 #import "UIImage+Utils.h"
 
 //MARK: Tabbar
@@ -122,7 +119,6 @@ static const bool _SNAPSHOT = 0;
 #import "DWBiometricAuthModel.h"
 #import "DWRecoverModel.h"
 #import "DWPreviewSeedPhraseModel.h"
-#import "DWPreviewSeedPhraseViewController.h"
 #import "DWSecureWalletDelegate.h"
 #if SNAPSHOT
 #endif

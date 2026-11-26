@@ -715,9 +715,9 @@ enum RecoveryPhraseNavigation {
         delegate: DWSecureWalletDelegate?
     ) -> UIViewController {
         let model = DWPreviewSeedPhraseModel(existingSeedPhrase: presentation.mnemonic)
-        let controller = DWPreviewSeedPhraseViewController(model: model)
+        let controller = RecoveryPhraseViewController(model: model, mode: .preview)
         controller.delegate = delegate
-        controller.navigationItem.prompt = presentation.contextLabel
+        controller.prompt = presentation.contextLabel
         controller.hidesBottomBarWhenPushed = true
         return controller
     }

@@ -22,23 +22,35 @@ import UIKit
 // MARK: - SetupActionButtonStyle
 
 /// The wallet setup screens' main button: Dash blue, 54pt tall, outlined
-/// while pressed — as the UIKit action button they had.
+/// while pressed and grey while disabled — as the UIKit action button they had.
 struct SetupActionButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(.subheadline, weight: .medium))
-            .foregroundColor(configuration.isPressed ? Color.dash.blue : .white)
+            .foregroundColor(foreground(isPressed: configuration.isPressed))
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity, minHeight: 54)
             .background(
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .fill(configuration.isPressed ? Color.clear : Color.dash.blue)
+                    .fill(background(isPressed: configuration.isPressed))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
                     .strokeBorder(Color.dash.blue, lineWidth: configuration.isPressed ? 2 : 0)
             )
             .contentShape(Rectangle())
+    }
+
+    private func foreground(isPressed: Bool) -> Color {
+        guard isEnabled else { return Color("DisabledButtonTextColor") }
+        return isPressed ? Color.dash.blue : .white
+    }
+
+    private func background(isPressed: Bool) -> Color {
+        guard isEnabled else { return Color("DisabledButtonColor") }
+        return isPressed ? .clear : Color.dash.blue
     }
 }
 
