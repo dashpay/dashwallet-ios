@@ -442,6 +442,75 @@ final class PendingInvitationViewModelTests: XCTestCase {
         await settle { self.validator.calls.count == 2 }
     }
 
+    // MARK: - Non-final states of #1224
+
+    func testAPaidRegistrationKeepsTheInvitationAndShowsItsOwnState() async {
+        validator.results[linkA] = .pendingPaidRegistration
+        let viewModel = makeViewModel()
+        XCTAssertEqual(store.receive(linkA), .stored)
+        await settle { viewModel.cardState == .pendingPaidRegistration }
+        XCTAssertNotNil(store.pending, "kept until the paid registration is finished")
+        XCTAssertTrue(outcomes.isEmpty)
+    }
+
+    func testAnUnloadedOwnClaimKeepsTheInvitationAndShowsItsOwnState() async {
+        validator.results[linkA] = .ownClaimNotLoaded
+        let viewModel = makeViewModel()
+        XCTAssertEqual(store.receive(linkA), .stored)
+        await settle { viewModel.cardState == .ownClaimNotLoaded }
+        XCTAssertNotNil(store.pending)
+        XCTAssertTrue(outcomes.isEmpty)
+    }
+
+    // MARK: - The form's handoff
+
+    /// The claim proved this wallet cannot take the invitation: this
+    /// wallet's copy goes and Home explains why, as after the card's own
+    /// check.
+    func testTheFormsRefusalEndsTheInvitationItWasGiven() async throws {
+        validator.results[linkA] = valid
+        let viewModel = makeViewModel()
+        XCTAssertEqual(store.receive(linkA), .stored)
+        await settle { viewModel.cardState == .valid(amountDuffs: 3_000_000) }
+        let invitation = try XCTUnwrap(store.pending)
+
+        viewModel.concludeClaimRefusal(.alreadyHasOtherIdentity, for: invitation)
+        XCTAssertNil(store.pending)
+        XCTAssertEqual(outcomes, [.alreadyHasOtherIdentity])
+    }
+
+    /// The user switched wallet while the claim ran: the refusal is about
+    /// the wallet that is no longer active, so nothing is removed or shown.
+    func testTheFormsRefusalIsDroppedOutsideItsScope() async throws {
+        validator.results[linkA] = valid
+        let viewModel = makeViewModel()
+        XCTAssertEqual(store.receive(linkA), .stored)
+        await settle { viewModel.cardState == .valid(amountDuffs: 3_000_000) }
+        let invitation = try XCTUnwrap(store.pending)
+
+        activeScope = walletB
+        viewModel.concludeClaimRefusal(.alreadyHasOtherIdentity, for: invitation)
+        XCTAssertEqual(store.pending, invitation)
+        XCTAssertTrue(outcomes.isEmpty)
+    }
+
+    /// The card's own check ended A while its claim was still running, and
+    /// B took its place: A's late refusal must not become B's verdict.
+    func testALateRefusalLeavesTheShownInvitationsVerdict() async throws {
+        validator.results[linkA] = .alreadyClaimed(inviter: inviter)
+        validator.results[linkB] = valid
+        let viewModel = makeViewModel()
+        XCTAssertEqual(store.receive(linkA), .stored)
+        let claimed = try XCTUnwrap(store.pending)
+        await settle { !self.outcomes.isEmpty }
+        XCTAssertEqual(store.receive(linkB), .stored)
+        await settle { viewModel.cardState == .valid(amountDuffs: 3_000_000) }
+
+        viewModel.concludeClaimRefusal(.alreadyHasOtherIdentity, for: claimed)
+        XCTAssertEqual(store.pending?.rawLink, linkB)
+        XCTAssertEqual(viewModel.cardState, .valid(amountDuffs: 3_000_000))
+    }
+
     // MARK: - Wipe
 
     func testWipeDropsAnUndeliveredVerdict() async {

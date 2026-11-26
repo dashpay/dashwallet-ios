@@ -13,14 +13,16 @@ final class InvitationValidationPolicyTests: XCTestCase {
     private let minimum: UInt64 = 300_000
 
     private func status(
-        amount: UInt64, claimed: Bool = false, isInstant: Bool = true, isChainLocked: Bool = true
+        amount: UInt64, claimed: Bool = false, isInstant: Bool = true, isChainLocked: Bool = true,
+        ours: Bool? = nil
     ) -> ManagedPlatformWallet.InvitationClaimStatus {
         ManagedPlatformWallet.InvitationClaimStatus(
             prospectiveIdentityId: Data(repeating: 1, count: 32),
             amountDuffs: amount,
             isInstant: isInstant,
             isChainLocked: isChainLocked,
-            alreadyClaimed: claimed)
+            alreadyClaimed: claimed,
+            claimedByThisWallet: claimed ? ours : false)
     }
 
     private func verdict(_ status: ManagedPlatformWallet.InvitationClaimStatus) -> InvitationValidation {
@@ -120,20 +122,66 @@ final class InvitationValidationPolicyTests: XCTestCase {
     /// invitation's own identity and no name. That is a registration to
     /// finish, not "already claimed" and not "already has a username".
     func testOwnUnnamedIdentityResumesInsteadOfRefusing() {
-        let status = status(amount: 3_000_000, claimed: true)
+        let status = status(amount: 3_000_000, claimed: true, ours: true)
         let verdict = InvitationValidationPolicy.verdict(
             status: status, inviter: inviter, minimumDuffs: minimum,
-            localIdentityId: status.prospectiveIdentityId)
+            claim: .resumeOwnClaim(status.prospectiveIdentityId))
         XCTAssertEqual(verdict.amountDuffs, 3_000_000)
     }
 
     func testSomeOtherIdentityStillRefuses() {
         let verdict = InvitationValidationPolicy.verdict(
             status: status(amount: 3_000_000), inviter: inviter, minimumDuffs: minimum,
-            localIdentityId: Data(repeating: 9, count: 32))
+            claim: .otherIdentity)
         XCTAssertEqual(verdict, .alreadyHasOtherIdentity)
         XCTAssertTrue(verdict.isDefinitive)
         XCTAssertFalse(verdict.clearsEverywhere)
+    }
+
+    func testUnknownLocalAnswerIsUndetermined() {
+        let verdict = InvitationValidationPolicy.verdict(
+            status: status(amount: 3_000_000), inviter: inviter, minimumDuffs: minimum, claim: .undetermined)
+        XCTAssertEqual(verdict, .undetermined)
+    }
+
+    // MARK: - A paid registration with no identity
+
+    /// The paid registration is finished first, and only offered where the
+    /// ordinary recovery would finish it.
+    func testPaidRegistrationKeepsTheInvitationWhileItIsFinished() {
+        let pending = InvitationValidationPolicy.verdict(
+            status: status(amount: 3_000_000), inviter: inviter, minimumDuffs: minimum,
+            claim: .registrationPending, paidRegistrationRecovers: true)
+        XCTAssertEqual(pending, .pendingPaidRegistration)
+        XCTAssertFalse(pending.isDefinitive)
+        XCTAssertFalse(pending.clearsEverywhere)
+        XCTAssertNil(pending.amountDuffs, "Create stays off")
+        XCTAssertEqual(
+            InvitationValidationPolicy.verdict(
+                status: status(amount: 3_000_000), inviter: inviter, minimumDuffs: minimum,
+                claim: .registrationPending, paidRegistrationRecovers: false),
+            .undetermined)
+    }
+
+    // MARK: - Whose claim it was
+
+    func testClaimedByThisWalletButNotLoadedPointsAtFindIdentities() {
+        let verdict = verdict(status(amount: 3_000_000, claimed: true, ours: true))
+        XCTAssertEqual(verdict, .ownClaimNotLoaded)
+        XCTAssertFalse(verdict.isDefinitive, "kept until Find identities loads the identity")
+    }
+
+    /// Spent, whoever spent it: final, and every copy goes. The dialog says
+    /// how to restore the identity if it was this wallet's lost claim.
+    func testClaimedByAnUnknownOwnerIsFinalEverywhere() {
+        let verdict = verdict(status(amount: 3_000_000, claimed: true, ours: nil))
+        XCTAssertEqual(verdict, .alreadyClaimed(inviter: inviter))
+        XCTAssertTrue(verdict.isDefinitive)
+        XCTAssertTrue(verdict.clearsEverywhere)
+    }
+
+    func testUnclaimedIsValid() {
+        XCTAssertEqual(verdict(status(amount: 3_000_000, claimed: false)).amountDuffs, 3_000_000)
     }
 
     // MARK: - Claim failures arrive wrapped by the coordinator
@@ -180,18 +228,16 @@ final class InvitationValidationPolicyTests: XCTestCase {
     }
 
     /// A repeated claim is refused with one of two errors; both send the
-    /// coordinator to look for this wallet's identity, and only the wallet's
-    /// own record lets it retire the invitation.
+    /// coordinator to look for the invitation's own identity at the pinned
+    /// slot.
     func testARepeatedClaimIsRecognizedByItsTwoErrors() {
-        XCTAssertEqual(
-            InvitationClaimFailure.earlierClaim(PlatformWalletError.invitationClaimedByThisWallet(identityId: "id")),
-            .recordedByThisWallet)
-        XCTAssertEqual(
-            InvitationClaimFailure.earlierClaim(PlatformWalletError.assetLockAlreadyConsumed("voucher outpoint")),
-            .consumedByUnknownIdentity)
-        XCTAssertNil(InvitationClaimFailure.earlierClaim(PlatformWalletError.invalidNetwork("testnet")))
-        XCTAssertNil(InvitationClaimFailure.earlierClaim(PlatformWalletError.walletOperation("timeout")))
-        XCTAssertNil(InvitationClaimFailure.earlierClaim(PlatformWalletError.consensusRejection(
+        XCTAssertTrue(InvitationClaimFailure.isRepeatedClaim(
+            PlatformWalletError.invitationClaimedByThisWallet(identityId: "id")))
+        XCTAssertTrue(InvitationClaimFailure.isRepeatedClaim(
+            PlatformWalletError.assetLockAlreadyConsumed("voucher outpoint")))
+        XCTAssertFalse(InvitationClaimFailure.isRepeatedClaim(PlatformWalletError.invalidNetwork("testnet")))
+        XCTAssertFalse(InvitationClaimFailure.isRepeatedClaim(PlatformWalletError.walletOperation("timeout")))
+        XCTAssertFalse(InvitationClaimFailure.isRepeatedClaim(PlatformWalletError.consensusRejection(
             PlatformConsensusError(code: 10504, kind: .basic), "consumed")))
     }
 
@@ -223,63 +269,156 @@ final class InvitationValidationPolicyTests: XCTestCase {
     }
 
     func testStillConfirmingKeepsTheInvitation() {
-        let failure = InvitationClaimFailure.classify(wrapped(PlatformWalletError.walletOperation(
-            "invitation islock proof was rejected … the funding transaction is not yet chain-locked")))
+        let failure = InvitationClaimFailure.classify(wrapped(PlatformWalletError.assetLockNotChainLocked(
+            "the funding transaction is not yet chain-locked")))
         XCTAssertEqual(failure, .stillConfirming)
+        // The SDK reports it typed (code 66); its text alone no longer decides.
+        XCTAssertNil(InvitationClaimFailure.classify(wrapped(PlatformWalletError.walletOperation(
+            "the funding transaction is not yet chain-locked"))))
+    }
+
+    // MARK: - The claim's typed refusals become the coordinator's own
+
+    /// Before and after the PIN, a decision that stops the claim gives the
+    /// same typed error.
+    func testEachStoppingDecisionHasItsOwnError() {
+        typealias C = DWIdentityRegistrationCoordinator
+        let id = Data(repeating: 0x11, count: 32)
+        XCTAssertNil(C.invitationRefusal(.claim))
+        XCTAssertNil(C.invitationRefusal(.resumeOwnClaim(id)))
+        XCTAssertEqual("\(String(describing: C.invitationRefusal(.otherIdentity)))",
+                       "\(String(describing: C.CoordinatorError.invitationOtherIdentity as C.CoordinatorError?))")
+        XCTAssertEqual("\(String(describing: C.invitationRefusal(.registrationPending)))",
+                       "\(String(describing: C.CoordinatorError.invitationRegistrationPending as C.CoordinatorError?))")
+        XCTAssertEqual("\(String(describing: C.invitationRefusal(.undetermined)))",
+                       "\(String(describing: C.CoordinatorError.invitationUndetermined as C.CoordinatorError?))")
+    }
+
+    func testTypedClaimRefusalsAreMapped() {
+        typealias C = DWIdentityRegistrationCoordinator
+        XCTAssertEqual(
+            "\(C.invitationClaimFailure(PlatformWalletError.invitationKeysAlreadyRegistered(identityId: nil, consensus: nil)))",
+            "\(C.CoordinatorError.invitationKeysTaken)")
+        // Platform refused the broadcast: not proof-verified, so the SDK
+        // error stays and nothing ends the invitation.
+        let broadcastRefusal = C.invitationClaimFailure(PlatformWalletError.invitationKeysAlreadyRegistered(
+            identityId: nil, consensus: PlatformConsensusError(code: 40207, kind: .state)))
+        XCTAssertFalse(broadcastRefusal is C.CoordinatorError)
+        XCTAssertNil(InvitationClaimFailure.classify(broadcastRefusal))
+        XCTAssertEqual(
+            "\(C.invitationClaimFailure(PlatformWalletError.invitationClaimedByThisWallet(identityId: "x")))",
+            "\(C.CoordinatorError.invitationOwnClaimRecorded)")
+        XCTAssertEqual(
+            "\(C.invitationClaimFailure(PlatformWalletError.invitationNotReady("quorum")))",
+            "\(C.CoordinatorError.invitationNotSynced)")
+        // A spent voucher and one not chain-locked keep their SDK errors for
+        // `classify`, which the card's re-check then settles.
+        XCTAssertEqual(
+            InvitationClaimFailure.classify(C.invitationClaimFailure(PlatformWalletError.assetLockAlreadyConsumed("x"))),
+            .refused)
+        XCTAssertEqual(
+            InvitationClaimFailure.classify(C.invitationClaimFailure(PlatformWalletError.assetLockNotChainLocked("x"))),
+            .stillConfirming)
+    }
+
+    func testTheFormEndsOnlyThisWalletsCopyForAnotherIdentity() {
+        typealias C = DWIdentityRegistrationCoordinator.CoordinatorError
+        XCTAssertEqual(CreateUsernameViewModel.invitationOutcome(of: .invitationOtherIdentity), .endsThisWalletsCopy)
+        XCTAssertEqual(CreateUsernameViewModel.invitationOutcome(of: .invitationKeysTaken), .endsThisWalletsCopy)
+        for kept: C in [.invitationRegistrationPending, .invitationUndetermined, .invitationNotSynced,
+                        .invitationOwnClaimRecorded] {
+            XCTAssertEqual(CreateUsernameViewModel.invitationOutcome(of: kept), .recheck, "\(kept)")
+        }
+        XCTAssertNil(CreateUsernameViewModel.invitationOutcome(of: .authFailed))
     }
 
     // MARK: - The wallet's state is read again after the status query
 
-    private func state(identity: Data? = nil, loading: Bool = false) -> InvitationWalletState {
-        InvitationWalletState(
-            isLoading: loading, hasRegisteredUsername: false, hasPendingUsernameRequest: false, identityId: identity)
+    private func state(loading: Bool = false) -> InvitationWalletState {
+        InvitationWalletState(isLoading: loading, hasRegisteredUsername: false, hasPendingUsernameRequest: false)
+    }
+
+    private let noIdentity = InvitationClaimFacts(
+        identities: [], hasPaidRegistrationLock: false, snapshotIdentityId: nil, snapshotNeedsUsername: false)
+
+    @MainActor
+    private func decide(
+        state: @escaping @MainActor () -> InvitationWalletState,
+        facts: @escaping @MainActor () -> InvitationClaimFacts?,
+        recovers: Bool = false,
+        query: @escaping @MainActor (String) async throws -> ManagedPlatformWallet.InvitationClaimStatus
+    ) async -> InvitationValidation? {
+        await InvitationValidationPolicy.decide(
+            uri: "dashpay://invite?x",
+            previewIsValid: true,
+            inviter: inviter,
+            walletState: state,
+            claimFacts: facts,
+            paidRegistrationRecovers: { recovers },
+            queryStatus: query)
     }
 
     @MainActor
     func testOwnIdentityLearnedDuringTheQueryIsNotAlreadyClaimed() async {
-        let claimed = status(amount: 3_000_000, claimed: true)
-        var current = state()
-        let verdict = await InvitationValidationPolicy.decide(
-            uri: "dashpay://invite?x",
-            previewIsValid: true,
-            inviter: inviter,
-            walletState: { current },
-            queryStatus: { _ in
-                // The wallet finishes loading its own earlier claim while
-                // the query is in flight.
-                current = self.state(identity: claimed.prospectiveIdentityId)
-                return claimed
-            })
+        let claimed = status(amount: 3_000_000, claimed: true, ours: true)
+        var facts = noIdentity
+        let verdict = await decide(state: { self.state() }, facts: { facts }, query: { _ in
+            // The wallet finishes loading its own earlier claim while the
+            // query is in flight.
+            facts = InvitationClaimFacts(
+                identities: [.init(identityId: claimed.prospectiveIdentityId, identityIndex: 0)],
+                hasPaidRegistrationLock: false,
+                snapshotIdentityId: claimed.prospectiveIdentityId,
+                snapshotNeedsUsername: true)
+            return claimed
+        })
         XCTAssertEqual(verdict?.amountDuffs, 3_000_000, "our own claim resumes; it is not \"already claimed\"")
+    }
+
+    @MainActor
+    func testAnUnreadableStoreIsUndetermined() async {
+        let verdict = await decide(state: { self.state() }, facts: { nil }, query: { _ in
+            self.status(amount: 3_000_000)
+        })
+        XCTAssertEqual(verdict, .undetermined)
+    }
+
+    @MainActor
+    func testAPaidRegistrationTheRecoveryFinishesIsPending() async {
+        let paid = InvitationClaimFacts(
+            identities: [], hasPaidRegistrationLock: true, snapshotIdentityId: nil, snapshotNeedsUsername: false)
+        let verdict = await decide(state: { self.state() }, facts: { paid }, recovers: true, query: { _ in
+            self.status(amount: 3_000_000)
+        })
+        XCTAssertEqual(verdict, .pendingPaidRegistration)
+    }
+
+    /// Not a verdict: the card's bounded not-ready re-checks take over.
+    @MainActor
+    func testUnverifiedPlatformAnswersAreNotAVerdict() async {
+        let verdict = await decide(state: { self.state() }, facts: { self.noIdentity }, query: { _ in
+            throw PlatformWalletError.invitationNotReady("quorum not verified")
+        })
+        XCTAssertNil(verdict)
     }
 
     @MainActor
     func testUsernameRegisteredDuringTheQueryWins() async {
         var current = state()
-        let verdict = await InvitationValidationPolicy.decide(
-            uri: "dashpay://invite?x",
-            previewIsValid: true,
-            inviter: inviter,
-            walletState: { current },
-            queryStatus: { _ in
-                current.hasRegisteredUsername = true
-                return self.status(amount: 3_000_000)
-            })
+        let verdict = await decide(state: { current }, facts: { self.noIdentity }, query: { _ in
+            current.hasRegisteredUsername = true
+            return self.status(amount: 3_000_000)
+        })
         XCTAssertEqual(verdict, .alreadyHasIdentity)
     }
 
     @MainActor
     func testSnapshotReloadingDuringTheQueryIsNotAVerdict() async {
         var current = state()
-        let verdict = await InvitationValidationPolicy.decide(
-            uri: "dashpay://invite?x",
-            previewIsValid: true,
-            inviter: inviter,
-            walletState: { current },
-            queryStatus: { _ in
-                current.isLoading = true
-                return self.status(amount: 3_000_000, claimed: true)
-            })
+        let verdict = await decide(state: { current }, facts: { self.noIdentity }, query: { _ in
+            current.isLoading = true
+            return self.status(amount: 3_000_000, claimed: true)
+        })
         XCTAssertNil(verdict)
     }
 

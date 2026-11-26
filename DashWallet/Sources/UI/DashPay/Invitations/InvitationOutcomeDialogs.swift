@@ -32,7 +32,7 @@ enum InvitationOutcomeDialogs {
                 message: String(localized: "You cannot claim this invite since you have already requested a Dash username", comment: "DashPay Invitations"))
         case .alreadyClaimed(let inviter):
             return alreadyClaimed(inviter: inviter)
-        case .valid, .undetermined, .awaitingChainLock:
+        case .valid, .undetermined, .awaitingChainLock, .pendingPaidRegistration, .ownClaimNotLoaded:
             return nil
         }
     }
@@ -149,6 +149,15 @@ struct InvitationAlreadyClaimedDialog: View {
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
 
+                // Platform cannot tell whose claim it was: one this wallet
+                // made and lost (the app stopped before it saved it) looks
+                // the same as anyone else's.
+                Text(String(localized: "If this wallet claimed it before, turn on Advanced mode in Settings, then open More › Identities and tap Find identities to restore your identity.", comment: "DashPay Invitations"))
+                    .dashFont(.footnote)
+                    .foregroundColor(Color.dash.secondaryText)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+
                 DashUIKit.DashButton(
                     text: String(localized: "OK", comment: ""),
                     fillsWidth: true,
@@ -164,4 +173,21 @@ struct InvitationAlreadyClaimedDialog: View {
             .accessibilityLabel(String(localized: "Invitation already claimed", comment: ""))
         }
     }
+}
+
+#Preview("Already claimed") {
+    InvitationAlreadyClaimedDialog(
+        inviter: InvitationInviter(username: "alice", displayName: "Alice", avatarURL: nil))
+}
+
+#Preview("Already claimed, long sender name") {
+    InvitationAlreadyClaimedDialog(
+        inviter: InvitationInviter(
+            username: "averyveryverylongusernamefortesting",
+            displayName: "A Very Long Display Name That Wraps Across Lines",
+            avatarURL: nil))
+}
+
+#Preview("Already claimed, unknown sender") {
+    InvitationAlreadyClaimedDialog(inviter: .unknown)
 }

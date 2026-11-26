@@ -64,12 +64,20 @@ enum InvitationValidation: Equatable {
     /// whose funding transaction is not chain-locked yet. It cannot be
     /// claimed until it is; kept and checked again.
     case awaitingChainLock
+    /// The wallet has a paid Core registration with no identity yet. That
+    /// payment is finished first, through the ordinary recovery; the
+    /// invitation is kept and checked again afterwards.
+    case pendingPaidRegistration
+    /// Platform says this wallet made the claim, but the wallet's store does
+    /// not hold the identity. Find identities loads it; kept and checked
+    /// again.
+    case ownClaimNotLoaded
 
     /// A verdict that ends the invitation: shown once, then the invitation is
     /// forgotten.
     var isDefinitive: Bool {
         switch self {
-        case .valid, .undetermined, .awaitingChainLock: return false
+        case .valid, .undetermined, .awaitingChainLock, .pendingPaidRegistration, .ownClaimNotLoaded: return false
         case .invalid, .alreadyClaimed, .alreadyHasIdentity, .alreadyHasOtherIdentity, .alreadyRequestedUsername:
             return true
         }
@@ -91,7 +99,7 @@ enum InvitationValidation: Equatable {
         case .alreadyClaimed, .invalid(.malformed, _), .invalid(.belowMinimum, _):
             return true
         case .invalid(.wrongNetwork, _), .alreadyHasIdentity, .alreadyHasOtherIdentity, .alreadyRequestedUsername,
-             .valid, .undetermined, .awaitingChainLock:
+             .valid, .undetermined, .awaitingChainLock, .pendingPaidRegistration, .ownClaimNotLoaded:
             return false
         }
     }
@@ -104,8 +112,6 @@ struct InvitationWalletState: Equatable {
     var isLoading: Bool
     var hasRegisteredUsername: Bool
     var hasPendingUsernameRequest: Bool
-    /// This wallet's identity, when it has one without a username.
-    var identityId: Data?
 }
 
 /// Pure mapping from what the SDK reported to a verdict — no I/O, so it is
@@ -147,12 +153,22 @@ enum InvitationValidationPolicy {
     /// the wallet may have learned its own earlier claim's identity (or a
     /// username), and a verdict from the state before would turn that
     /// claim into "already claimed". nil when the wallet cannot answer.
+    ///
+    /// - Parameters:
+    ///   - claimFacts: the wallet's identities and paid registration, read
+    ///     after the query (`InvitationClaimEligibility.localFacts`); nil
+    ///     when the store cannot answer.
+    ///   - paidRegistrationRecovers: the ordinary registration recovery
+    ///     would finish the paid lock (`registrationRecovery()` answers
+    ///     `.pendingCoreAssetLock`).
     @MainActor
     static func decide(
         uri: String?,
         previewIsValid: Bool,
         inviter: InvitationInviter,
         walletState: @MainActor () -> InvitationWalletState,
+        claimFacts: @MainActor () -> InvitationClaimFacts?,
+        paidRegistrationRecovers: @MainActor () -> Bool,
         queryStatus: @MainActor (String) async throws -> ManagedPlatformWallet.InvitationClaimStatus
     ) async -> InvitationValidation? {
         func local(_ state: InvitationWalletState) -> InvitationValidation? {
@@ -179,32 +195,62 @@ enum InvitationValidationPolicy {
         if let verdict = local(after) { return verdict }
         switch result {
         case .success(let status):
+            guard let facts = claimFacts() else { return .undetermined }
+            let claim = InvitationClaimEligibility.decide(
+                facts,
+                prospectiveIdentityId: status.prospectiveIdentityId,
+                pinnedIndex: DWIdentityRegistrationCoordinator.pinnedIdentityIndex)
             return verdict(
                 status: status,
                 inviter: inviter,
                 minimumDuffs: ManagedPlatformWallet.minInvitationDuffs,
-                localIdentityId: after.identityId)
+                claim: claim,
+                paidRegistrationRecovers: claim == .registrationPending && paidRegistrationRecovers())
+        case .failure(PlatformWalletError.invitationNotReady):
+            // Platform's answers cannot be verified yet: the wallet is not
+            // ready, the same as a snapshot still loading.
+            return nil
         case .failure(let error):
             return verdict(error: error, inviter: inviter)
         }
     }
 
-    /// - Parameter localIdentityId: this wallet's identity when it has one
-    ///   (without a username — a username is settled locally). The identity
-    ///   this invitation created is ours to finish, not "already claimed";
-    ///   any other identity means the wallet cannot take an invitation.
+    /// - Parameters:
+    ///   - claim: what the wallet's local data allows
+    ///     (`InvitationClaimEligibility.decide`). Only `.claim` lets the
+    ///     status decide; the invitation's own identity is ours to finish,
+    ///     not "already claimed"; any other identity means the wallet
+    ///     cannot take an invitation.
+    ///   - paidRegistrationRecovers: for `.registrationPending`, whether the
+    ///     ordinary recovery would finish that payment.
     static func verdict(
         status: ManagedPlatformWallet.InvitationClaimStatus,
         inviter: InvitationInviter,
         minimumDuffs: UInt64,
-        localIdentityId: Data? = nil
+        claim: InvitationClaimDecision = .claim,
+        paidRegistrationRecovers: Bool = false
     ) -> InvitationValidation {
-        if let localIdentityId {
-            guard localIdentityId == status.prospectiveIdentityId else { return .alreadyHasOtherIdentity }
+        switch claim {
+        case .resumeOwnClaim:
             // Our own earlier claim: only the username is left to register.
             return .valid(amountDuffs: status.amountDuffs, inviter: inviter)
+        case .otherIdentity:
+            return .alreadyHasOtherIdentity
+        case .undetermined:
+            return .undetermined
+        case .registrationPending:
+            // Finish registration is offered only where it would work.
+            return paidRegistrationRecovers ? .pendingPaidRegistration : .undetermined
+        case .claim:
+            break
         }
-        if status.alreadyClaimed { return .alreadyClaimed(inviter: inviter) }
+        if status.alreadyClaimed {
+            // `true`: the wallet records the identity, yet the store has no
+            // identity, so its save failed. `nil` (or a contradictory
+            // `false`): spent, whoever spent it — the dialog says how to
+            // restore it if it was this wallet.
+            return status.claimedByThisWallet == true ? .ownClaimNotLoaded : .alreadyClaimed(inviter: inviter)
+        }
         if status.amountDuffs < minimumDuffs { return .invalid(.belowMinimum, inviter: inviter) }
         if !status.isInstant && !status.isChainLocked { return .awaitingChainLock }
         return .valid(amountDuffs: status.amountDuffs, inviter: inviter)
@@ -241,9 +287,10 @@ enum InvitationValidationPolicy {
 
 /// How a failed invitation claim ends — pure, so it is unit-testable.
 ///
-/// No claim error ends the invitation: the Home card's status query, which
-/// reads only the link and proof-verifies the voucher, is the one thing that
-/// removes it.
+/// No error Platform or a node reports ends the invitation: the Home card's
+/// status query, which reads only the link and proof-verifies the voucher,
+/// decides. The coordinator's own refusals, taken before anything is
+/// broadcast, are the exception (`CreateUsernameViewModel.invitationOutcome`).
 enum InvitationClaimFailure: Equatable {
     /// The claim was refused for a reason only the card's status query can
     /// settle:
@@ -268,6 +315,8 @@ enum InvitationClaimFailure: Equatable {
              PlatformWalletError.invalidParameter,
              PlatformWalletError.invalidNetwork:
             return .refused
+        case PlatformWalletError.assetLockNotChainLocked:
+            return .stillConfirming
         default:
             break
         }
@@ -279,41 +328,28 @@ enum InvitationClaimFailure: Equatable {
         // An error without a typed case or a consensus code: only its text
         // names the cause.
         // TODO(platform-error-codes): a spent report that reaches Swift with
-        // neither is matched by the consensus error's own wording, and the
-        // SDK's "not yet chain-locked" refusal has no result code of its own.
+        // neither is matched by the consensus error's own wording.
         let text = String(describing: underlying).lowercased()
         // An unconfirmed result's text is one attempt's diagnostic: it does
         // not report the invitation spent.
         if PlatformRefusal.textMayNameRefusal(underlying), text.contains("already completely used") {
             return .refused
         }
-        if text.contains("not yet chain-locked") {
-            return .stillConfirming
-        }
         return nil
     }
 
-    /// What a refused claim says about an earlier claim of the same voucher.
-    enum EarlierClaim: Equatable {
-        /// The wallet records the invitation's identity: the earlier claim
-        /// was this wallet's.
-        case recordedByThisWallet
-        /// The voucher is spent by an identity the wallet does not record:
-        /// someone else's, or this wallet's own claim whose result was lost.
-        case consumedByUnknownIdentity
-    }
-
     /// The two errors the SDK returns for a repeated claim in place of the
-    /// identity; nil for every other error. Only the claim's own error is
-    /// read, not one wrapped by the coordinator.
-    static func earlierClaim(_ error: Error) -> EarlierClaim? {
+    /// identity: claimed by this wallet, or consumed by an identity the
+    /// wallet does not record (someone else's, or this wallet's own claim
+    /// whose result was lost). Only the claim's own error is read, not one
+    /// wrapped by the coordinator.
+    static func isRepeatedClaim(_ error: Error) -> Bool {
         switch error {
-        case PlatformWalletError.invitationClaimedByThisWallet:
-            return .recordedByThisWallet
-        case PlatformWalletError.assetLockAlreadyConsumed:
-            return .consumedByUnknownIdentity
+        case PlatformWalletError.invitationClaimedByThisWallet,
+             PlatformWalletError.assetLockAlreadyConsumed:
+            return true
         default:
-            return nil
+            return false
         }
     }
 
@@ -402,11 +438,15 @@ enum InvitationValidator {
             previewIsValid: preview?.structurallyValid == true,
             inviter: InvitationValidationPolicy.inviter(from: preview),
             walletState: { currentWalletState() },
+            claimFacts: { claimFacts(walletId: wallet.walletId) },
+            paidRegistrationRecovers: {
+                DWIdentityRegistrationCoordinator.shared.registrationRecovery() == .pendingCoreAssetLock
+            },
             queryStatus: { uri in
                 do {
-                    let status = try await wallet.invitationClaimStatus(uri: uri)
-                    logger.info(
-                        "🎟️ INVITE :: status amount=\(status.amountDuffs, privacy: .public) claimed=\(status.alreadyClaimed, privacy: .public)")
+                    let status = try await wallet.invitationClaimStatusForThisWallet(uri: uri)
+                    DWLogger.log(
+                        "🎟️ INVITE :: status amount=\(status.amountDuffs) claimed=\(status.alreadyClaimed) ours=\(status.claimedByThisWallet.map(String.init(describing:)) ?? "unknown")")
                     return status
                 } catch {
                     logger.info("🎟️ INVITE :: status failed: \(String(describing: error), privacy: .public)")
@@ -415,13 +455,27 @@ enum InvitationValidator {
             })
     }
 
+    private static func claimFacts(walletId: Data) -> InvitationClaimFacts? {
+        guard let container = SwiftDashSDKHost.shared.modelContainer else { return nil }
+        let snapshot = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
+        do {
+            return try InvitationClaimEligibility.localFacts(
+                walletId: walletId,
+                pinnedIndex: DWIdentityRegistrationCoordinator.pinnedIdentityIndex,
+                modelContainer: container,
+                snapshot: snapshot)
+        } catch {
+            DWLogger.log("Invitations: local identity read failed (\(type(of: error))); verdict undetermined")
+            return nil
+        }
+    }
+
     private static func currentWalletState() -> InvitationWalletState {
         let identity = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
         return InvitationWalletState(
             isLoading: identity.isLoading,
             hasRegisteredUsername: identity.username?.isEmpty == false,
             hasPendingUsernameRequest: DWContestedNameStatusService.shared.pendingLabel != nil
-                || identity.pendingContestedName != nil,
-            identityId: identity.identityId)
+                || identity.pendingContestedName != nil)
     }
 }

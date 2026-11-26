@@ -1050,6 +1050,7 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		A11E57A70006C0DE0006B006 /* DWInvitationLinkNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E57A70001C0DE0001B001 /* DWInvitationLinkNormalizer.swift */; };
 		A11E57A70007C0DE0007B007 /* DWInvitationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11E57A70002C0DE0002B002 /* DWInvitationService.swift */; };
 		C85067CBF3243AC0B42E9A2C /* InvitationValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97944200EAC35405C7778C12 /* InvitationValidation.swift */; };
+		A9DD3CA8F21A6AF9B17371F0 /* InvitationClaimEligibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = D18AB96F36972776885CF319 /* InvitationClaimEligibility.swift */; };
 		C06663A389FD6AD6F63DFE14 /* PendingInvitationStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C55CC819E04C98DC75CE924C /* PendingInvitationStore.swift */; };
 		C8C7D78D54CAB7B2AAA05D48 /* InvitationEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56AE57329DB35B67B40C24B2 /* InvitationEntry.swift */; };
 		E677BB34463F6C9C80113AD5 /* InvitationOutcomeDialogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DFFABC94558CE29099DDF3D /* InvitationOutcomeDialogs.swift */; };
@@ -1267,6 +1268,7 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		C05FA6CE3DDE2D0327D334E5 /* CoinJoinRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = B478AD92C1F1C11D09645DF4 /* CoinJoinRecovery.swift */; };
 		C0DE5A0126C7000000000001 /* SwiftDashSDKCoreLifecycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */; };
 		2523A5799AB8F025BBFA7BEF /* InvitationValidationPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1C04D04FBAFFE0998528F13 /* InvitationValidationPolicyTests.swift */; };
+		21976CFA64624BC6FC7AE332 /* InvitationClaimEligibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC33608D68E8D42D6047697 /* InvitationClaimEligibilityTests.swift */; };
 		BABA10000000000000000044 /* MasternodeClaimableBalanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000043 /* MasternodeClaimableBalanceTests.swift */; };
 		BABA10000000000000000046 /* UsernameContestPrecheckTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000045 /* UsernameContestPrecheckTests.swift */; };
 		BABA1000000000000000003F /* ProfileWrongVerbTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000003E /* ProfileWrongVerbTests.swift */; };
@@ -3120,6 +3122,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		A11E57A70001C0DE0001B001 /* DWInvitationLinkNormalizer.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DWInvitationLinkNormalizer.swift; sourceTree = "<group>"; };
 		A11E57A70002C0DE0002B002 /* DWInvitationService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DWInvitationService.swift; sourceTree = "<group>"; };
 		97944200EAC35405C7778C12 /* InvitationValidation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InvitationValidation.swift; sourceTree = "<group>"; };
+		D18AB96F36972776885CF319 /* InvitationClaimEligibility.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InvitationClaimEligibility.swift; sourceTree = "<group>"; };
 		C55CC819E04C98DC75CE924C /* PendingInvitationStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PendingInvitationStore.swift; sourceTree = "<group>"; };
 		56AE57329DB35B67B40C24B2 /* InvitationEntry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InvitationEntry.swift; sourceTree = "<group>"; };
 		0DFFABC94558CE29099DDF3D /* InvitationOutcomeDialogs.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = InvitationOutcomeDialogs.swift; sourceTree = "<group>"; };
@@ -3271,6 +3274,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		C0D1A08496F925D17031493E /* OrderPreviewFeeRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OrderPreviewFeeRow.swift; sourceTree = "<group>"; };
 		C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKCoreLifecycleTests.swift; sourceTree = "<group>"; };
 		F1C04D04FBAFFE0998528F13 /* InvitationValidationPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationValidationPolicyTests.swift; sourceTree = "<group>"; };
+		5EC33608D68E8D42D6047697 /* InvitationClaimEligibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvitationClaimEligibilityTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000043 /* MasternodeClaimableBalanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasternodeClaimableBalanceTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000045 /* UsernameContestPrecheckTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsernameContestPrecheckTests.swift; sourceTree = "<group>"; };
 		BABA1000000000000000003E /* ProfileWrongVerbTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileWrongVerbTests.swift; sourceTree = "<group>"; };
@@ -7150,6 +7154,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				5798C63088F44013AEC5D85B /* ShieldedRecoveryControllerTests.swift */,
 				C0DE5A0126C7000000000002 /* SwiftDashSDKCoreLifecycleTests.swift */,
 				F1C04D04FBAFFE0998528F13 /* InvitationValidationPolicyTests.swift */,
+				5EC33608D68E8D42D6047697 /* InvitationClaimEligibilityTests.swift */,
 				BABA10000000000000000043 /* MasternodeClaimableBalanceTests.swift */,
 				BABA10000000000000000045 /* UsernameContestPrecheckTests.swift */,
 				BABA1000000000000000003E /* ProfileWrongVerbTests.swift */,
@@ -7372,6 +7377,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				A11E57A70001C0DE0001B001 /* DWInvitationLinkNormalizer.swift */,
 				A11E57A70002C0DE0002B002 /* DWInvitationService.swift */,
 				97944200EAC35405C7778C12 /* InvitationValidation.swift */,
+				D18AB96F36972776885CF319 /* InvitationClaimEligibility.swift */,
 				C55CC819E04C98DC75CE924C /* PendingInvitationStore.swift */,
 			);
 			path = Invitations;
@@ -10287,6 +10293,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				F0CAB696BC154E7EB3EC221D /* ShieldedRecoveryControllerTests.swift in Sources */,
 				C0DE5A0126C7000000000001 /* SwiftDashSDKCoreLifecycleTests.swift in Sources */,
 				2523A5799AB8F025BBFA7BEF /* InvitationValidationPolicyTests.swift in Sources */,
+				21976CFA64624BC6FC7AE332 /* InvitationClaimEligibilityTests.swift in Sources */,
 				BABA10000000000000000044 /* MasternodeClaimableBalanceTests.swift in Sources */,
 				BABA10000000000000000046 /* UsernameContestPrecheckTests.swift in Sources */,
 				BABA1000000000000000003F /* ProfileWrongVerbTests.swift in Sources */,
@@ -11175,6 +11182,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				A11E57A70006C0DE0006B006 /* DWInvitationLinkNormalizer.swift in Sources */,
 				A11E57A70007C0DE0007B007 /* DWInvitationService.swift in Sources */,
 				C85067CBF3243AC0B42E9A2C /* InvitationValidation.swift in Sources */,
+				A9DD3CA8F21A6AF9B17371F0 /* InvitationClaimEligibility.swift in Sources */,
 				C06663A389FD6AD6F63DFE14 /* PendingInvitationStore.swift in Sources */,
 				C8C7D78D54CAB7B2AAA05D48 /* InvitationEntry.swift in Sources */,
 				E677BB34463F6C9C80113AD5 /* InvitationOutcomeDialogs.swift in Sources */,
