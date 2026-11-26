@@ -19,7 +19,7 @@ import UIKit
 
 /// Hosts `VerifyRecoveryPhraseView`. Once the phrase is verified, it tells the
 /// delegate and goes on to "Verified Successfully".
-final class VerifyRecoveryPhraseViewController: UIViewController {
+final class VerifyRecoveryPhraseViewController: SetupScreenViewController {
     weak var delegate: DWSecureWalletDelegate?
 
     private let viewModel: VerifyRecoveryPhraseViewModel
@@ -41,7 +41,7 @@ final class VerifyRecoveryPhraseViewController: UIViewController {
 
         view.backgroundColor = UIColor(named: "SecondaryBackgroundColor")
         viewModel.onVerified = { [weak self] in self?.didVerify() }
-        embedSwiftUI(VerifyRecoveryPhraseView(viewModel: viewModel))
+        embedScreen(VerifyRecoveryPhraseView(viewModel: viewModel))
     }
 
     override func viewDidAppear(_ animated: Bool) {
