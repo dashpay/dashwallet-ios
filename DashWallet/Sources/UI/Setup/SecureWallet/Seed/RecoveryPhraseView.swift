@@ -216,19 +216,22 @@ struct RecoveryPhraseWords: View {
         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(String(localized: "Recovery Phrase", comment: ""))
-        .accessibilityValue(words.joined(separator: ", "))
+        // Only the words shown so far: while verifying, the rest are still
+        // to be picked.
+        .accessibilityValue(words.prefix(visibleWords).joined(separator: ", "))
     }
 }
 
 /// Lays the words out in rows, each centred and holding as many words as
-/// fit, up to `maxPerRow`.
+/// fit, up to `maxPerRow`, `spacing` apart both ways.
 struct RecoveryPhraseRowsLayout: Layout {
     var maxPerRow: Int
+    var spacing: CGFloat = 0
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
         let width = proposal.width ?? .infinity
         let rows = rows(for: subviews, width: width)
-        let height = rows.reduce(0) { $0 + $1.height }
+        let height = rows.reduce(0) { $0 + $1.height } + spacing * CGFloat(max(rows.count - 1, 0))
         let widest = rows.map(\.width).max() ?? 0
         return CGSize(width: proposal.width ?? widest, height: height)
     }
@@ -239,9 +242,9 @@ struct RecoveryPhraseRowsLayout: Layout {
             var x = bounds.minX + (bounds.width - row.width) / 2
             for (index, size) in zip(row.indices, row.sizes) {
                 subviews[index].place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(size))
-                x += size.width
+                x += size.width + spacing
             }
-            y += row.height
+            y += row.height + spacing
         }
     }
 
@@ -258,13 +261,14 @@ struct RecoveryPhraseRowsLayout: Layout {
         for index in subviews.indices {
             var size = subviews[index].sizeThatFits(.unspecified)
             size.width = min(size.width, width)
-            if !row.indices.isEmpty && (row.indices.count == maxPerRow || row.width + size.width > width) {
+            if !row.indices.isEmpty
+                && (row.indices.count == maxPerRow || row.width + spacing + size.width > width) {
                 rows.append(row)
                 row = Row()
             }
+            row.width += row.indices.isEmpty ? size.width : spacing + size.width
             row.indices.append(index)
             row.sizes.append(size)
-            row.width += size.width
             row.height = max(row.height, size.height)
         }
         if !row.indices.isEmpty { rows.append(row) }
