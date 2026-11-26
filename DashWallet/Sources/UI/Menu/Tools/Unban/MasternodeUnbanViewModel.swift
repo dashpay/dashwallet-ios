@@ -340,7 +340,7 @@ final class MasternodeUnbanViewModel: ObservableObject {
                 "The masternode list hasn't synced yet. Wait for sync to finish and try again.",
                 comment: "Masternode unban")
             phase = .ready
-        case .invalidParameter(let message) where message.contains("operator reward"):
+        case .invalidParameter(let message, _) where message.contains("operator reward"):
             // TODO(platform-error-codes): the payout-address confirmation
             // is a generic invalid-parameter failure with no result code of
             // its own, so its text is matched.

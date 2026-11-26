@@ -86,7 +86,7 @@ final class AssetLockDiagnosticsTests: XCTestCase {
                 throw PlatformWalletError.walletOperation("definite refusal")
             }
             XCTFail("Expected refusal")
-        } catch PlatformWalletError.walletOperation(let message) {
+        } catch PlatformWalletError.walletOperation(let message, _) {
             XCTAssertEqual(message, "definite refusal")
         } catch {
             XCTFail("Changed the definite error: \(error)")

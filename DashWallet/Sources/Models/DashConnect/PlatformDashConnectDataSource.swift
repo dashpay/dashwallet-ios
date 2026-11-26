@@ -2465,14 +2465,12 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
             }
             let executor = makeExecutor { [self] _ in
                 guard let context, let signer else { throw UnroutedWrite() }
-                let signingKeyId = try selectDocumentSigningKeyId(wallet: context.wallet, identityId: context.identityId)
                 _ = try await context.wallet.deleteDocument(
                     ownerIdentityId: context.identityId,
                     contractId: responseContractId,
                     documentType: AppConnect.documentType,
                     documentId: found.documentId,
                     propertiesJSON: propertiesJSON,
-                    signingKeyId: signingKeyId,
                     signer: signer)
             }
             if await Self.deleteResponse(

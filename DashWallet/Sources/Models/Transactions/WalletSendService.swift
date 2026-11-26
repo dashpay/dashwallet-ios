@@ -1070,7 +1070,7 @@ private extension WalletSendService {
         // of the app — the amount step's terminal state included — recognises
         // it only in this service's domain, the same codes a standard send gets.
         switch error as? PlatformWalletError {
-        case .transactionBroadcastUnconfirmed(let reason):
+        case .transactionBroadcastUnconfirmed(let reason, _):
             return makeError(
                 code: .broadcastUnknown,
                 description: String(
@@ -1079,7 +1079,7 @@ private extension WalletSendService {
                         comment: "Send: broadcast outcome unknown; the argument is the SDK's reason"),
                     reason)
             )
-        case .transactionBroadcastRejected(let reason):
+        case .transactionBroadcastRejected(let reason, _):
             return makeError(
                 code: .broadcastRejected,
                 description: String(
