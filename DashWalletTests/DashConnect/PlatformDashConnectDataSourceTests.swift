@@ -1014,6 +1014,9 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         viewModel.approvePendingRequest()
         await waitUntil { viewModel.pendingRequest == nil }
         XCTAssertEqual(spy.approvedConsents.count, 1)
+        // The page cannot show an alert while the approve sheet is still up.
+        XCTAssertNil(viewModel.message, "nothing is said before the sheet has gone")
+        viewModel.approveSheetDismissed()
         return (opened.urls, viewModel.pendingReturn, viewModel.message)
     }
 
@@ -1052,6 +1055,8 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         await waitUntil { spy.approvedConsents.count == 1 && !viewModel.isApproving }
 
         XCTAssertNotNil(viewModel.pendingRequest, "the sheet stays up")
+        viewModel.denyPendingRequest(asksToReturn: false)
+        viewModel.approveSheetDismissed()
         XCTAssertNil(viewModel.message)
     }
 
