@@ -142,6 +142,9 @@ struct AppConnectApproveSheet: View {
         VStack(spacing: 0) {
             content
             DashConnectInlineErrorToast(message: viewModel.anotherRequestNote)
+                // Its whole height, so the sheet grows to the full text
+                // instead of cutting it to one line.
+                .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, 20)
                 .padding(.bottom, viewModel.anotherRequestNote == nil ? 0 : 20)
         }
