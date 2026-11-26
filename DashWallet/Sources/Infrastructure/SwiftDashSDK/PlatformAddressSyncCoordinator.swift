@@ -2145,6 +2145,9 @@ final class ShieldedTxLookup {
 
     /// `AssetLockAddressTopUp` — the Core → Platform address funding lock.
     private static let platformFundingType = 4
+    /// `AssetLockFundingType::IdentityTopUpNotBound`: a top-up that records the identity it pays, which need not be
+    /// one of the wallet's.
+    private static let unboundIdentityTopUpFundingType = 2
 
     /// Identity funding locks: 0 = IdentityRegistration, 1 = IdentityTopUp,
     /// 2 = IdentityTopUpNotBound, 3 = IdentityInvitation.
@@ -2182,6 +2185,12 @@ final class ShieldedTxLookup {
         /// to pay (`PersistentAssetLock.shieldedRecipientRaw43`); nil for other
         /// types and for locks tracked before the SDK recorded it.
         var recipientRaw43: Data? = nil
+        /// The 32-byte identity an unbound identity top-up (type 2) records it pays
+        /// (`PersistentAssetLock.identityRecipient`); nil for other types.
+        var identityRecipient: Data?
+        /// A Platform-address funding (type 4) that recorded its recipients, which the SDK does only for
+        /// `fundFromAssetLockExternal`.
+        var hasPlatformAddressRecipients: Bool = false
         /// Whose the recorded recipient is (`resolvingRecipients`). Nil for a
         /// lock without a recorded recipient (tracked before the SDK recorded
         /// it) and for other types, which keep the Internal Transfer reading.
@@ -2233,6 +2242,15 @@ final class ShieldedTxLookup {
         /// own Orchard addresses; nil when that cannot be told now.
         var isOwnShieldedRecipient: @MainActor @Sendable (_ walletId: Data, _ raw43: Data) -> Bool? = { _, _ in nil }
         var isMainnet: @MainActor @Sendable () -> Bool = { WalletEnvironment.isMainnet }
+        /// Whether an identity is one this wallet manages; nil when that cannot be told now.
+        var isOwnIdentity: @MainActor @Sendable (_ walletId: Data, _ identityId: Data) -> Bool? = { _, _ in nil }
+        /// The recipients with an explicit amount that a Platform-address funding recorded, as 21-byte storage bytes
+        /// (type + hash); nil when they cannot be read now.
+        var platformRecipients: @MainActor @Sendable (_ txidHex: String, _ vout: UInt32) -> [Data]? = { _, _ in nil }
+        /// Whether a Platform address (storage bytes) is one of this wallet's; nil when that cannot be told now.
+        var isOwnPlatformAddress: @MainActor @Sendable (_ walletId: Data, _ storageBytes: Data) -> Bool? = { _, _ in
+            nil
+        }
 
         /// The running wallet's container, read through SwiftData in a
         /// detached task.
@@ -2246,6 +2264,33 @@ final class ShieldedTxLookup {
             isOwnShieldedRecipient: { walletId, raw43 in
                 guard let manager = SwiftDashSDKHost.shared.manager else { return nil }
                 return (try? manager.isOwnShieldedAddress(walletId: walletId, raw43: raw43)) ?? nil
+            },
+            isOwnIdentity: { walletId, identityId in
+                guard let container = SwiftDashSDKHost.shared.modelContainer else { return nil }
+                var descriptor = FetchDescriptor<PersistentIdentity>(
+                    predicate: #Predicate { $0.identityId == identityId })
+                descriptor.fetchLimit = 1
+                guard let rows = try? container.mainContext.fetch(descriptor) else { return nil }
+                return rows.first?.wallet?.walletId == walletId
+            },
+            platformRecipients: { txidHex, vout in
+                guard let wallet = SwiftDashSDKHost.shared.wallet,
+                      let display = Data(hex: txidHex), display.count == 32,
+                      let recipients = try? wallet.assetLockPlatformAddressRecipients(
+                          txid: Data(display.reversed()), vout: vout)
+                else { return nil }
+                return recipients.filter { $0.credits != nil }.map { Data([$0.addressType]) + $0.hash }
+            },
+            isOwnPlatformAddress: { walletId, storageBytes in
+                guard let container = SwiftDashSDKHost.shared.modelContainer, storageBytes.count == 21 else {
+                    return nil
+                }
+                let hash = Data(storageBytes.dropFirst())
+                var descriptor = FetchDescriptor<PersistentPlatformAddress>(
+                    predicate: #Predicate { $0.addressHash == hash })
+                descriptor.fetchLimit = 1
+                guard let rows = try? container.mainContext.fetch(descriptor) else { return nil }
+                return rows.first?.walletId == walletId
             })
     }
 
@@ -2320,6 +2365,8 @@ final class ShieldedTxLookup {
             walletId: entry.walletId,
             drainOperation: entry.drainOperation,
             recipientRaw43: entry.recipientRaw43,
+            identityRecipient: entry.identityRecipient,
+            hasPlatformAddressRecipients: entry.hasPlatformAddressRecipients,
             recipient: entry.recipient)
     }
 
@@ -2380,13 +2427,25 @@ final class ShieldedTxLookup {
         }
 
         guard let built = result.map else { return }
-        let map = Self.resolvingRecipients(of: built, mainnet: source.isMainnet()) { walletId, raw43 in
-            let key = walletId + raw43
+        // One cache for every recorded recipient: the keys cannot collide, as a raw Orchard address (43 bytes), an
+        // identity id (32) and a Platform address (21) differ in length.
+        func cachedOwnership(_ walletId: Data, _ recipient: Data, _ ask: @MainActor (Data, Data) -> Bool?) -> Bool? {
+            let key = walletId + recipient
             if let known = ownRecipientAnswers[key] { return known }
-            let answer = source.isOwnShieldedRecipient(walletId, raw43)
+            let answer = ask(walletId, recipient)
             if let answer { ownRecipientAnswers[key] = answer }
             return answer
         }
+        let mainnet = source.isMainnet()
+        let shieldedResolved = Self.resolvingRecipients(of: built, mainnet: mainnet) { walletId, raw43 in
+            cachedOwnership(walletId, raw43, source.isOwnShieldedRecipient)
+        }
+        let map = Self.resolvingIdentityAndPlatformRecipients(
+            of: shieldedResolved,
+            mainnet: mainnet,
+            isOwnIdentity: { cachedOwnership($0, $1, source.isOwnIdentity) },
+            platformRecipients: source.platformRecipients,
+            isOwnPlatformAddress: { cachedOwnership($0, $1, source.isOwnPlatformAddress) })
         store(map)
         Self.logger.info(
             "🛡️ SHIELD-TX :: snapshot \(map.count, privacy: .public) funding tx(s) (shielded + platform)")
@@ -2433,7 +2492,11 @@ final class ShieldedTxLookup {
                     fundingTypeRaw: row.fundingTypeRaw,
                     walletId: row.walletId,
                     drainOperation: CoreShieldedDrainRowIdentity(operationIdBytes: row.operationId).operation,
-                    recipientRaw43: row.fundingTypeRaw == shieldedFundingType ? row.shieldedRecipientRaw43 : nil)
+                    recipientRaw43: row.fundingTypeRaw == shieldedFundingType ? row.shieldedRecipientRaw43 : nil,
+                    identityRecipient: row.fundingTypeRaw == unboundIdentityTopUpFundingType
+                        ? row.identityRecipient : nil,
+                    hasPlatformAddressRecipients: row.fundingTypeRaw == platformFundingType
+                        && row.platformAddressRecipients != nil)
                 func rank(_ statusRaw: Int) -> Int {
                     statusRaw == AssetLockRecoveryService.consumedStatus ? .max : statusRaw
                 }
@@ -2484,12 +2547,46 @@ final class ShieldedTxLookup {
             guard info.fundingTypeRaw == shieldedFundingType, let raw43 = info.recipientRaw43,
                   let address = Bech32m.shieldedDisplayAddress(raw43: raw43, mainnet: mainnet) else { return info }
             var resolved = info
-            switch isOwn(info.walletId, raw43) {
-            case true?: resolved.recipient = .own
-            case false?: resolved.recipient = .external(address: address)
-            case nil: resolved.recipient = .undecided(address: address)
-            }
+            resolved.recipient = recipient(address: address, isOwn: isOwn(info.walletId, raw43))
             return resolved
+        }
+    }
+
+    /// The same rule as `resolvingRecipients` for the other locks that record whom they pay: an unbound identity
+    /// top-up (type 2) and a Platform-address funding that recorded its recipients (type 4, the address with the
+    /// explicit amount). Own, someone else's or undecided by the wallet's answer; a lock whose recipient was not
+    /// recorded, or whose recorded Platform recipients cannot be read now, keeps no answer.
+    @MainActor
+    static func resolvingIdentityAndPlatformRecipients(
+        of map: [String: ShieldedLockInfo],
+        mainnet: Bool,
+        isOwnIdentity: (_ walletId: Data, _ identityId: Data) -> Bool?,
+        platformRecipients: (_ txidHex: String, _ vout: UInt32) -> [Data]?,
+        isOwnPlatformAddress: (_ walletId: Data, _ storageBytes: Data) -> Bool?
+    ) -> [String: ShieldedLockInfo] {
+        var resolved = map
+        for (txidHex, info) in map where info.recipient == nil {
+            if info.fundingTypeRaw == unboundIdentityTopUpFundingType,
+               let identityId = info.identityRecipient, identityId.count == 32 {
+                resolved[txidHex]?.recipient = recipient(
+                    address: ScriptAddressCodec.base58Encode(identityId),
+                    isOwn: isOwnIdentity(info.walletId, identityId))
+            } else if info.fundingTypeRaw == platformFundingType, info.hasPlatformAddressRecipients,
+                      let storage = platformRecipients(txidHex, info.vout)?.first,
+                      let address = Bech32m.bech32mPayload(fromStorageBytes: storage)
+                          .flatMap({ Bech32m.encode(hrp: Bech32m.platformHrp(mainnet: mainnet), data: $0) }) {
+                resolved[txidHex]?.recipient = recipient(
+                    address: address, isOwn: isOwnPlatformAddress(info.walletId, storage))
+            }
+        }
+        return resolved
+    }
+
+    private static func recipient(address: String, isOwn: Bool?) -> ShieldedLockInfo.Recipient {
+        switch isOwn {
+        case true?: return .own
+        case false?: return .external(address: address)
+        case nil: return .undecided(address: address)
         }
     }
 

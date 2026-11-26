@@ -83,7 +83,7 @@ class TxDetailModel: NSObject {
         // actually happened. Identity fundings name their purpose (matching
         // the home row); other transfer routes read "Internal Transfer" with
         // the From/To/Status rows naming the route.
-        if transaction.isIdentityFundingTransfer {
+        if transaction.isIdentityFundingTransfer && transaction.assetLockRecipientAddress == nil {
             return transaction.stateTitle
         }
         if let route = transaction.internalTransferRoute, route != .coreToCore {
@@ -741,7 +741,8 @@ extension TxDetailModel {
                 DWTitleDetailCellModel(
                     style: .default,
                     title: String(localized: "To", comment: ""),
-                    plainDetail: String(localized: "Platform balance", comment: "The Dash Platform credits balance")),
+                    plainDetail: transaction.assetLockRecipientAddress
+                        ?? String(localized: "Platform balance", comment: "The Dash Platform credits balance")),
             ]
             if let statusRaw = transaction.platformFundingLockInfo?.statusRaw,
                let status = Self.lockStatusText(statusRaw) {
@@ -758,7 +759,8 @@ extension TxDetailModel {
                 DWTitleDetailCellModel(
                     style: .default,
                     title: String(localized: "To", comment: ""),
-                    plainDetail: String(localized: "Identity credits", comment: "Destination of an identity funding asset lock")),
+                    plainDetail: transaction.assetLockRecipientAddress ?? String(
+                        localized: "Identity credits", comment: "Destination of an identity funding asset lock")),
             ]
             if let statusRaw = transaction.identityFundingLockInfo?.statusRaw,
                let status = Self.lockStatusText(statusRaw) {
