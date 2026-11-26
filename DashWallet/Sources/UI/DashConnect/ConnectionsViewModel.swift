@@ -618,20 +618,6 @@ final class ConnectionsViewModel: ObservableObject {
         // Read before the request: the page shows whether to create a
         // username, and a request needs one unless it is a state transition.
         refreshUsername()
-        // Without a username only a `dash-st:` request goes on. A key
-        // registration runs: it completes a two-QR login this wallet
-        // approved already, and fails without that approved row
-        // (`pendingApprovedConnectionForKeyRegistration`). A token purchase
-        // is refused once parsed, before the network is read for it
-        // (`handleStateTransition`). Any other request is not approved
-        // (`answerWithoutUsername`).
-        if needsUsername || usernameUnknown,
-           !DashConnectUri.isStUri(content.trimmingCharacters(in: .whitespacesAndNewlines)) {
-            DWLogger.log("🔗 DASHCONNECT :: request not taken: \(needsUsername ? "no username" : "username not read yet")")
-            answerWithoutUsername()
-            return
-        }
-
         // A request the user is already looking at owns the screen until they
         // answer it. Both sheets count: `pendingRequest` presents the connection
         // approval (and stays set while an approval is in flight), and
@@ -643,6 +629,9 @@ final class ConnectionsViewModel: ObservableObject {
         //
         // The refusal has to appear where the user is looking: the sheet
         // covers the screen, and a screen-level `.alert` cannot show over it.
+        // So this comes before the username check, whose answer goes to the
+        // page: a username lost or unread while a sheet is up still gets the
+        // newcomer refused on that sheet.
         guard pendingRequest == nil, pendingTokenPurchase == nil else {
             DWLogger.log("🔗 DASHCONNECT :: request not taken: another one is on screen")
             let refusal = String(localized: "Another DashConnect request arrived. Finish this one first, then try again.",
@@ -656,6 +645,20 @@ final class ConnectionsViewModel: ObservableObject {
             } else {
                 approveError = refusal
             }
+            return
+        }
+
+        // Without a username only a `dash-st:` request goes on. A key
+        // registration runs: it completes a two-QR login this wallet
+        // approved already, and fails without that approved row
+        // (`pendingApprovedConnectionForKeyRegistration`). A token purchase
+        // is refused once parsed, before the network is read for it
+        // (`handleStateTransition`). Any other request is not approved
+        // (`answerWithoutUsername`).
+        if needsUsername || usernameUnknown,
+           !DashConnectUri.isStUri(content.trimmingCharacters(in: .whitespacesAndNewlines)) {
+            DWLogger.log("🔗 DASHCONNECT :: request not taken: \(needsUsername ? "no username" : "username not read yet")")
+            answerWithoutUsername()
             return
         }
 

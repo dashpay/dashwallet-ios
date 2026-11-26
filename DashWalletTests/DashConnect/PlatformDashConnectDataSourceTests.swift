@@ -6980,6 +6980,28 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
         XCTAssertEqual(viewModel.approveError, ConnectionsViewModel.usernameUnreadText)
     }
 
+    /// The page's alert cannot show over the approve sheet: a request that
+    /// comes while the sheet is up is refused on the sheet, even when the
+    /// username was lost or became unread meanwhile (#1517).
+    func testARequestOverTheSheetIsRefusedOnItWhateverTheUsername() async {
+        for lost in [ConnectionsViewModel.UsernameState.missing, .unknown] {
+            var username = ConnectionsViewModel.UsernameState.present
+            let shown = Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)
+            let spy = LoginApprovalSpy(shown: [shown])
+            let viewModel = ConnectionsViewModel(
+                dataSource: spy, featureUnavailable: false, usernameState: { username }, now: { Self.phone })
+            viewModel.onQRScanned("login")
+            await waitUntil { viewModel.pendingRequest != nil }
+
+            username = lost
+            viewModel.onURIReceived("second")
+
+            XCTAssertEqual(viewModel.pendingRequest, shown, "\(lost)")
+            XCTAssertEqual(viewModel.approveError?.contains("Another DashConnect request arrived"), true, "\(lost)")
+            XCTAssertNil(viewModel.message, "\(lost): nothing goes to the page under the sheet")
+        }
+    }
+
     func testTheUsernameIsReadAgainOnceTheNamesLoad() async {
         var username = ConnectionsViewModel.UsernameState.unknown
         let center = NotificationCenter()
