@@ -1043,6 +1043,7 @@ struct GiftCardDetailsSheet: View {
                     isLoadingCardDetails: viewModel.uiState.isLoadingCardDetails,
                     hasBeenPollingForLongTime: viewModel.uiState.hasBeenPollingForLongTime,
                     loadingError: viewModel.uiState.loadingError,
+                    orderEndedMessage: viewModel.uiState.orderEndedMessage,
                     onRetryLoading: viewModel.uiState.canRetryLoading ? { viewModel.retryLoadingCardDetails() } : nil,
                     onSelectCard: { index in
                         selectedCardIndex = index

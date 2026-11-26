@@ -15,6 +15,8 @@ struct GiftCardPurchaseSelectionSheet: View {
     /// Set once the poller gave up on a run of failures — without it this sheet keeps promising
     /// a card that nothing is fetching any more.
     var loadingError: Error? = nil
+    /// Shown instead of the generic failure text when the order ended without a card.
+    var orderEndedMessage: String? = nil
     /// Offered alongside `loadingError`; nil hides the affordance.
     var onRetryLoading: (() -> Void)? = nil
 
@@ -57,7 +59,7 @@ struct GiftCardPurchaseSelectionSheet: View {
                     .scaleEffect(0.9)
             } else if loadingError != nil {
                 VStack(spacing: 6) {
-                    Text(NSLocalizedString("Could not load your gift card", comment: "DashSpend"))
+                    Text(orderEndedMessage ?? NSLocalizedString("Could not load your gift card", comment: "DashSpend"))
                         .font(.footnote)
                         .foregroundColor(.dash.red)
                         .multilineTextAlignment(.center)
@@ -161,6 +163,34 @@ struct GiftCardPurchaseSelectionSheet: View {
         ],
         isLoadingCardDetails: false,
         hasBeenPollingForLongTime: false,
+        onSelectCard: { _ in }
+    )
+}
+
+#Preview("Order ended") {
+    GiftCardPurchaseSelectionSheet(
+        merchantIcon: UIImage(systemName: "cart.fill"),
+        merchantName: "Amazon",
+        provider: "CTX",
+        cards: [],
+        isLoadingCardDetails: false,
+        hasBeenPollingForLongTime: false,
+        loadingError: DashSpendError.customError("Gift card order expired. Please contact support."),
+        orderEndedMessage: "Gift card order expired. Please contact support.",
+        onSelectCard: { _ in }
+    )
+}
+
+#Preview("Failed with retry") {
+    GiftCardPurchaseSelectionSheet(
+        merchantIcon: UIImage(systemName: "cart.fill"),
+        merchantName: "Amazon",
+        provider: "CTX",
+        cards: [],
+        isLoadingCardDetails: false,
+        hasBeenPollingForLongTime: false,
+        loadingError: DashSpendError.networkError,
+        onRetryLoading: {},
         onSelectCard: { _ in }
     )
 }
