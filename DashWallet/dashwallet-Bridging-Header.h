@@ -46,7 +46,6 @@ static const bool _SNAPSHOT = 0;
 
 //MARK: Backup Wallet
 #import "DWSecureWalletDelegate.h"
-#import "DWVerifySeedPhraseViewController.h"
 
 //MARK: Payment flow
 #import "DWQRScanModel.h"

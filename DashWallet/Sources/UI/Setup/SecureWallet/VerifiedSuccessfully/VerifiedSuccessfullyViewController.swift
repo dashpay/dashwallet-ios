@@ -1,6 +1,6 @@
 //
-//  Created by Andrei Ashikhmin
-//  Copyright © 2022 Dash Core Group. All rights reserved.
+//  Created by Dash Core Group
+//  Copyright © 2026 Dash Core Group. All rights reserved.
 //
 //  Licensed under the MIT License (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,52 +15,91 @@
 //  limitations under the License.
 //
 
-import Foundation
+import SwiftUI
 
-// MARK: - VerifiedSuccessfullyViewController
+// MARK: - VerifiedSuccessfullyView
 
-@objc(DWVerifiedSuccessfullyViewController)
-final class VerifiedSuccessfullyViewController : UIViewController, NavigationFullscreenable {
-    let requiresNoNavigationBar = true
-    override var preferredStatusBarStyle: UIStatusBarStyle { .default }
-    @objc public weak var delegate: DWSecureWalletDelegate? = nil
+/// The end of the backup: the recovery phrase has been verified.
+struct VerifiedSuccessfullyView: View {
+    var onContinue: () -> Void = { }
 
-    @IBOutlet var scrollView: UIScrollView!
-    @IBOutlet var securityImageView: UIImageView!
-    @IBOutlet var titleLabel: UILabel!
-    @IBOutlet var descriptionLabel: UILabel!
-    @IBOutlet var continueButton: UIButton!
+    var body: some View {
+        GeometryReader { proxy in
+            ScrollView {
+                VStack(spacing: 0) {
+                    Image("icon_security")
+                        .resizable()
+                        .scaledToFit()
+                        .foregroundColor(Color.dash.blue)
+                        .frame(width: 75, height: 96)
+                        .accessibilityHidden(true)
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupView()
-    }
+                    Text(String(localized: "Verified Successfully", comment: ""))
+                        .font(.system(.title3))
+                        .foregroundColor(Color("DarkTitleColor"))
+                        .accessibilityAddTraits(.isHeader)
+                        .padding(.top, 28)
 
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        scrollView.flashScrollIndicators()
-    }
+                    Text(String(localized: "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device.",
+                                comment: ""))
+                        .font(.system(.callout))
+                        .foregroundColor(Color("SecondaryTextColor"))
+                        .padding(.top, 14)
 
-    @objc
-    static func controller() -> VerifiedSuccessfullyViewController {
-        let storyboard = UIStoryboard(name: "VerifiedSuccessfully", bundle: nil)
-        return storyboard.instantiateInitialViewController() as! VerifiedSuccessfullyViewController
-    }
-
-    @IBAction
-    func continueButtonAction() {
-        delegate?.secureWalletRoutineDidFinish(self)
+                    Button(String(localized: "Continue", comment: ""), action: onContinue)
+                        .buttonStyle(VerifiedContinueButtonStyle())
+                        .padding(.top, 24)
+                }
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                // Centred on the screen, scrolling when it does not fit.
+                .frame(maxWidth: .infinity, minHeight: proxy.size.height)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+        }
+        .padding(.horizontal, 16)
+        .background(Color("SecondaryBackgroundColor").ignoresSafeArea())
     }
 }
 
-extension VerifiedSuccessfullyViewController {
-    private func setupView() {
-        securityImageView.tintColor = UIColor.dw_dashBlue()
-        titleLabel.text = String(localized: "Verified Successfully", comment: "");
-        descriptionLabel.text = String(localized: "Your wallet is secured now. You can use your recovery phrase anytime to recover your account on another device.", comment: "")
-        continueButton.setTitle(String(localized: "Continue", comment: ""), for: .normal)
+/// The compact Dash blue button the screen had: as wide as its title.
+private struct VerifiedContinueButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaledSystemFont(size: 15, weight: .medium, relativeTo: .subheadline)
+            .foregroundColor(configuration.isPressed ? Color.dash.blue : .white)
+            .padding(.horizontal, 12)
+            .frame(minWidth: 44, minHeight: 39)
+            .background(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(configuration.isPressed ? Color.clear : Color.dash.blue)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .strokeBorder(Color.dash.blue, lineWidth: configuration.isPressed ? 2 : 0)
+            )
+            .contentShape(Rectangle())
+    }
+}
 
-        titleLabel.font = UIFont.dw_font(forTextStyle: UIFont.TextStyle.title3)
-        descriptionLabel.font = UIFont.dw_font(forTextStyle: UIFont.TextStyle.callout)
+// MARK: - VerifiedSuccessfullyViewController
+
+/// Hosts `VerifiedSuccessfullyView`; Continue hands back to the delegate.
+@objc(DWVerifiedSuccessfullyViewController)
+final class VerifiedSuccessfullyViewController: UIViewController, NavigationFullscreenable {
+    @objc weak var delegate: DWSecureWalletDelegate?
+
+    var requiresNoNavigationBar: Bool { true }
+
+    override var preferredStatusBarStyle: UIStatusBarStyle { .default }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        view.backgroundColor = UIColor(named: "SecondaryBackgroundColor")
+        embedSwiftUI(VerifiedSuccessfullyView(onContinue: { [weak self] in
+            guard let self else { return }
+            self.delegate?.secureWalletRoutineDidFinish(self)
+        }))
     }
 }

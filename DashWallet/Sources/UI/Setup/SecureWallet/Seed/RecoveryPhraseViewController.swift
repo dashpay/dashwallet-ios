@@ -69,7 +69,7 @@ final class RecoveryPhraseViewController: SetupScreenViewController {
     private func continueAction() {
         switch viewModel.mode {
         case .backup:
-            let controller = DWVerifySeedPhraseViewController(seedPhrase: viewModel.seedPhrase)
+            let controller = VerifyRecoveryPhraseViewController(seedPhrase: viewModel.seedPhrase)
             controller.delegate = delegate
             navigationController?.pushViewController(controller, animated: true)
         case .preview:
