@@ -329428,6 +329428,7 @@
     },
     "No enabled AUTHENTICATION ECDSA key is available for this identity." : {
       "comment" : "DashConnect",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {

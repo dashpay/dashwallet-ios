@@ -71,73 +71,6 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
         }
     }
 
-    func testSelectDocumentSigningKeyIdPrefersHighOverMaster() throws {
-        let selected = try PlatformDashConnectDataSource.selectDocumentSigningKeyId(
-            from: [
-                makeSigningCandidate(keyId: 1, securityLevel: .master),
-                makeSigningCandidate(keyId: 2, securityLevel: .high),
-            ]
-        )
-
-        XCTAssertEqual(selected, 2)
-    }
-
-    func testSelectDocumentSigningKeyIdFallsBackToCriticalWhenHighMissing() throws {
-        let selected = try PlatformDashConnectDataSource.selectDocumentSigningKeyId(
-            from: [
-                makeSigningCandidate(keyId: 1, securityLevel: .master),
-                makeSigningCandidate(keyId: 3, securityLevel: .critical),
-            ]
-        )
-
-        XCTAssertEqual(selected, 3)
-    }
-
-    func testSelectDocumentSigningKeyIdPrefersHighOverCritical() throws {
-        let selected = try PlatformDashConnectDataSource.selectDocumentSigningKeyId(
-            from: [
-                makeSigningCandidate(keyId: 1, securityLevel: .master),
-                makeSigningCandidate(keyId: 4, securityLevel: .critical),
-                makeSigningCandidate(keyId: 5, securityLevel: .high),
-            ]
-        )
-
-        XCTAssertEqual(selected, 5)
-    }
-
-    func testSelectDocumentSigningKeyIdThrowsWhenOnlyMasterExists() {
-        XCTAssertThrowsError(
-            try PlatformDashConnectDataSource.selectDocumentSigningKeyId(
-                from: [makeSigningCandidate(keyId: 1, securityLevel: .master)]
-            )
-        ) { error in
-            XCTAssertEqual(error as? DashConnectPlatformError, .noAuthenticationKey)
-        }
-    }
-
-    func testSelectDocumentSigningKeyIdIgnoresDisabledEligibleKeys() throws {
-        let selected = try PlatformDashConnectDataSource.selectDocumentSigningKeyId(
-            from: [
-                makeSigningCandidate(keyId: 1, securityLevel: .high, disabledAt: 123),
-                makeSigningCandidate(keyId: 2, securityLevel: .critical),
-            ]
-        )
-
-        XCTAssertEqual(selected, 2)
-    }
-
-    func testSelectDocumentSigningKeyIdBreaksTiesByLowestKeyId() throws {
-        let selected = try PlatformDashConnectDataSource.selectDocumentSigningKeyId(
-            from: [
-                makeSigningCandidate(keyId: 9, securityLevel: .high),
-                makeSigningCandidate(keyId: 4, securityLevel: .high),
-                makeSigningCandidate(keyId: 7, securityLevel: .high),
-            ]
-        )
-
-        XCTAssertEqual(selected, 4)
-    }
-
     func testMakeConnectionRequestCarriesExistingConnectionForMatchingContract() async {
         let existing = DAppConnection(
             id: "EWR695MsqPUuW8EnTbYzD4KybNQD5n7CUDWydJYNg63F",
@@ -544,22 +477,6 @@ final class PlatformDashConnectDataSourceTests: XCTestCase {
             contractId: contractId,
             label: label,
             network: .testnet
-        )
-    }
-
-    private func makeSigningCandidate(
-        keyId: UInt32,
-        securityLevel: SecurityLevel,
-        purpose: KeyPurpose = .authentication,
-        keyType: KeyType = .ecdsaSecp256k1,
-        disabledAt: Int64? = nil
-    ) -> PlatformDashConnectDataSource.DocumentSigningKeyCandidate {
-        PlatformDashConnectDataSource.DocumentSigningKeyCandidate(
-            keyId: keyId,
-            purpose: purpose,
-            securityLevel: securityLevel,
-            keyType: keyType,
-            disabledAt: disabledAt
         )
     }
 
