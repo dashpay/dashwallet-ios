@@ -42,7 +42,7 @@ enum PlatformPaymentIdentityFundingPolicy {
     func topUpIdentityWithFunding(identityId: Data, amountDuffs: UInt64, accountIndex: Int) async throws -> UInt64 {
         throw TestBoundaryError.unusedRoute
     }
-    func topUpFromAddresses(
+    func topUpIdentityFromAddresses(
         identityId: Data, inputs: [IdentityAddressInput], addressSigner: KeychainSigner
     ) async throws -> UInt64 {
         topUpCalls += 1

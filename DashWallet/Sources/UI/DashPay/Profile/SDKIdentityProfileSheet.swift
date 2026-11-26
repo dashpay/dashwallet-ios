@@ -485,10 +485,10 @@ struct SDKIdentityProfileSheet: View {
 ///   to the wallet's own next Platform receive address
 ///   (`shieldedUnshield`, proven execution). Step 2 claims the landed
 ///   credits minus the policy fee headroom from that address into an
-///   IdentityTopUp (`topUpFromAddresses` — its fee comes out of the
+///   IdentityTopUp (`topUpIdentityFromAddresses` — its fee comes out of the
 ///   supplied credits, so the identity receives "most" of the amount and
 ///   the unclaimed headroom stays in the Platform balance).
-/// - `.platform`: one `topUpFromAddresses` over inputs selected by
+/// - `.platform`: one `topUpIdentityFromAddresses` over inputs selected by
 ///   `PlatformPaymentIdentityFundingPolicy` (same policy the registration
 ///   coordinator uses).
 /// - `.transparent`: one Core asset lock + IdentityTopUp
@@ -644,7 +644,7 @@ final class IdentityTopUpViewModel: ObservableObject {
                     candidates: candidates,
                     targetCredits: credits)
                 let signer = KeychainSigner(modelContainer: modelContainer)
-                return try await wallet.topUpFromAddresses(
+                return try await wallet.topUpIdentityFromAddresses(
                     identityId: identityId,
                     inputs: inputs,
                     addressSigner: signer)
@@ -736,7 +736,7 @@ final class IdentityTopUpViewModel: ObservableObject {
         let signer = KeychainSigner(modelContainer: modelContainer)
         let newBalance: UInt64
         do {
-            newBalance = try await wallet.topUpFromAddresses(
+            newBalance = try await wallet.topUpIdentityFromAddresses(
                 identityId: identityId,
                 inputs: [input],
                 addressSigner: signer)

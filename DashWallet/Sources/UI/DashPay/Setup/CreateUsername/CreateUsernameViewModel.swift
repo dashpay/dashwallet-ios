@@ -1309,7 +1309,7 @@ class CreateUsernameViewModel: ObservableObject {
         // What each source spends: Core, BIP44 UTXOs via
         // `registerIdentityWithFunding` (or `topUpIdentityWithFunding`);
         // Platform Payment, DIP-17 credits via `registerIdentityFromAddresses`
-        // (or `topUpFromAddresses`); Shielded, a fixed exit denomination via
+        // (or `topUpIdentityFromAddresses`); Shielded, a fixed exit denomination via
         // `shieldedIdentityCreateFromPool`, viable only when its readiness
         // gates (funding, maturity, pool) all pass — and never for a top-up.
         // All three are measured here; `activeFundingSource` decides which
