@@ -247730,6 +247730,9 @@
         }
       }
     },
+    "Identity → Shielded" : {
+      "comment" : "Transfer of the wallet's identity credits into its private shielded balance"
+    },
     "Identity Account Balance" : {
       "comment" : "SDK identity profile sheet — the identity's credit balance",
       "localizations" : {
@@ -478607,6 +478610,9 @@
         }
       }
     },
+    "Shielded → Identity" : {
+      "comment" : "Transfer of own funds from the private shielded balance to the wallet's identity"
+    },
     "Shielded → Platform" : {
       "comment" : "Transfer of own funds from the private shielded balance to the Platform balance",
       "localizations" : {
@@ -705149,7 +705155,7 @@
       }
     },
     "Your identity" : {
-      "comment" : "External send"
+      "comment" : "External send\nShielded activity: the wallet's identity as the destination of an internal move"
     },
     "Your Identity balance can't cover this amount plus the network fee. Enter a smaller amount and try again." : {
       "comment" : "Identity withdrawal — Platform refused the amount as more than the balance can cover",
