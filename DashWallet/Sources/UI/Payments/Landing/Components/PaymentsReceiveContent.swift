@@ -18,8 +18,8 @@
 import SwiftUI
 import DashUIKit
 
-/// The Receive tab: the balance toggle, the QR for its address, and the two
-/// actions on that address.
+/// The Receive tab: the balance toggle, the QR for its address, the username
+/// when the Current identity has one, and the two actions on that address.
 ///
 /// Takes the view model rather than a resolved address, because the toggle
 /// writes back to it and the placeholder wording depends on which balance is
@@ -30,7 +30,7 @@ struct PaymentsReceiveContent: View {
     var onCopyAddress: () -> Void
     var onShareAddress: () -> Void
     var onSpecifyAmount: () -> Void
-    /// Copies the Identity option's username; the host shows the toast.
+    /// Copies the Current identity's username; the host shows the toast.
     var onCopyUsername: () -> Void = {}
     /// Opens the transaction behind a receipt. Passed through rather than
     /// acted on — which controller presents the details is the host's.
@@ -212,68 +212,81 @@ struct PaymentsReceiveContent: View {
         }
     }
 
-    /// The selected chain option: the QR, the address and the actions on it.
+    /// The selected chain option: the QR, the username when there is one, the
+    /// address and the actions on it.
     private var addressCardBody: some View {
         VStack(alignment: .leading, spacing: 0) {
 
                 VStack(alignment: .center, spacing: 20) {
                     qrCard
 
-                    // 12, not 40: the address needs every point it can get to
-                    // stay on one line, and the gap was spending them on
-                    // nothing. `maxWidth: .infinity` on the text column is what
-                    // keeps the copy button on the trailing edge now that the
-                    // gap no longer pushes it there.
-                    HStack(spacing: 12) {
-                        if let address = viewModel.currentAddress {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(NSLocalizedString("Your DASH address", comment: "Payments"))
-                                    .dashFont(.footnote)
-                                    .foregroundStyle(Color.dash.secondaryText)
-
-                                // One line, and cut in the middle when it does
-                                // not fit. A Dash address is a single token the
-                                // user reads across to check; broken over two
-                                // lines it reads as two. Cutting the tail hides
-                                // the half people actually check — the last
-                                // characters are what gets compared against the
-                                // sender's screen — so both ends stay.
-                                Text(address)
-                                    .dashFont(.subhead)
-                                    .foregroundColor(.dash.primaryText)
-                                    .lineLimit(1)
-                                    .truncationMode(.middle)
-                                    .multilineTextAlignment(.leading)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            // The address is the thing the user is reaching
-                            // for; the button beside it is the affordance, not
-                            // the only target. Tapping the text copies too.
-                            .contentShape(Rectangle())
-                            .onTapGesture { onCopyAddress() }
-                            .accessibilityElement(children: .combine)
-                            .accessibilityAddTraits(.isButton)
-                            .accessibilityHint(Text(NSLocalizedString("Copy", comment: "")))
-                        } else {
-                            // Same full-width, leading slot the address takes,
-                            // so the copy button stays on the trailing edge
-                            // instead of the pair centring in the row.
-                            Text(NSLocalizedString("No address available", comment: "Payments"))
-                                .font(.footnote)
-                                .foregroundColor(Color.dash.secondaryText)
-                                .frame(maxWidth: .infinity, alignment: .leading)
+                    VStack(spacing: 12) {
+                        // The same Username row as the Identity card, on every
+                        // option, whenever the Current identity has a username.
+                        if let username = viewModel.shownUsername {
+                            copyRow(
+                                label: NSLocalizedString("Username", comment: ""),
+                                value: username,
+                                copyLabel: NSLocalizedString("Copy username", comment: "Receive, Identity option"),
+                                action: onCopyUsername)
                         }
 
+                        // 12, not 40: the address needs every point it can get to
+                        // stay on one line, and the gap was spending them on
+                        // nothing. `maxWidth: .infinity` on the text column is what
+                        // keeps the copy button on the trailing edge now that the
+                        // gap no longer pushes it there.
+                        HStack(spacing: 12) {
+                            if let address = viewModel.currentAddress {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(NSLocalizedString("Your DASH address", comment: "Payments"))
+                                        .dashFont(.footnote)
+                                        .foregroundStyle(Color.dash.secondaryText)
 
-                        DashUIKit.DashButton(
-                            leadingIcon: .custom(DashIcon.Icons.copyOutline.rawValue, bundle: .dashUIKit),
-                            isEnabled: hasAddress,
-                            size: .medium,
-                            style: .tintedGray,
-                            action: onCopyAddress
-                        )
+                                    // One line, and cut in the middle when it does
+                                    // not fit. A Dash address is a single token the
+                                    // user reads across to check; broken over two
+                                    // lines it reads as two. Cutting the tail hides
+                                    // the half people actually check — the last
+                                    // characters are what gets compared against the
+                                    // sender's screen — so both ends stay.
+                                    Text(address)
+                                        .dashFont(.subhead)
+                                        .foregroundColor(.dash.primaryText)
+                                        .lineLimit(1)
+                                        .truncationMode(.middle)
+                                        .multilineTextAlignment(.leading)
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                // The address is the thing the user is reaching
+                                // for; the button beside it is the affordance, not
+                                // the only target. Tapping the text copies too.
+                                .contentShape(Rectangle())
+                                .onTapGesture { onCopyAddress() }
+                                .accessibilityElement(children: .combine)
+                                .accessibilityAddTraits(.isButton)
+                                .accessibilityHint(Text(NSLocalizedString("Copy", comment: "")))
+                            } else {
+                                // Same full-width, leading slot the address takes,
+                                // so the copy button stays on the trailing edge
+                                // instead of the pair centring in the row.
+                                Text(NSLocalizedString("No address available", comment: "Payments"))
+                                    .font(.footnote)
+                                    .foregroundColor(Color.dash.secondaryText)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+
+
+                            DashUIKit.DashButton(
+                                leadingIcon: .custom(DashIcon.Icons.copyOutline.rawValue, bundle: .dashUIKit),
+                                isEnabled: hasAddress,
+                                size: .medium,
+                                style: .tintedGray,
+                                action: onCopyAddress
+                            )
+                        }
+                        .padding(.vertical, 6)
                     }
-                    .padding(.vertical, 6)
                 }
                 // Stretches the QR/address block across the card. Without it
                 // the block sizes to its content and the leading-aligned card
@@ -326,7 +339,7 @@ struct PaymentsReceiveContent: View {
                 VStack(spacing: 12) {
                     copyRow(
                         label: NSLocalizedString("Username", comment: ""),
-                        value: viewModel.receiveIdentity?.username,
+                        value: viewModel.shownUsername,
                         copyLabel: NSLocalizedString("Copy username", comment: "Receive, Identity option"),
                         action: onCopyUsername)
 
@@ -640,6 +653,26 @@ private func receiveSample(
 
 private let previewIdentity = ReceiveIdentity(
     identityId: Data((1...32).map { UInt8($0) }), username: "alice")
+
+/// The username row sits above the address on every option, Advanced Mode or not.
+@available(iOS 17, *)
+#Preview("Core, username") {
+    receiveSample(identity: previewIdentity)
+}
+
+@available(iOS 17, *)
+#Preview("Platform, username") {
+    receiveSample(network: .platform, isAdvancedMode: true, identity: previewIdentity)
+}
+
+/// A long username is cut in the middle and keeps its copy button.
+@available(iOS 17, *)
+#Preview("Core, long username") {
+    receiveSample(identity: ReceiveIdentity(
+        identityId: Data((1...32).map { UInt8($0) }),
+        username: "a-very-long-username-that-does-not-fit-on-one-line"))
+        .frame(width: 375)
+}
 
 @available(iOS 17, *)
 #Preview("Three options") {

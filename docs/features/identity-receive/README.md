@@ -20,6 +20,8 @@ where a Payer is pointed to, and gave no feedback when credits landed.
   that most exchanges and many wallets send only to Core.
 - **Specify amount on Identity:** the request is `dash:<Identity ID>?amount=<DASH>`, the same
   shape as Shielded and Platform, with no fiat or username parameters.
+- **The username on every option:** Core, Shielded and Platform show the same Username row as
+  the Identity card, above the address, whenever the Current identity has a username.
 - **A Receipt when credits arrive:** while the card is on screen and the app is in the foreground,
   the wallet reads the identity's credits every 5 s, starting from a fresh read made on opening.
   A rise shows a Receipt (amount in Dash and local currency, «Identity», «Received»).
@@ -46,7 +48,7 @@ where a Payer is pointed to, and gave no feedback when credits landed.
   not say it is watching; credits that land during a gap after the starting balance was read show at
   the next successful check, while credits that land before the first successful read become part
   of the starting balance and raise no Receipt.
-- **AC-09** With Advanced Mode off, Receive is unchanged and shows no Identity ID.
+- **AC-09** With Advanced Mode off, Receive offers only Core and Shielded and shows no Identity ID.
 - **AC-10** Without an identity, a username, or with a registration in progress, there is no
   Identity option.
 - **AC-11** Turning Advanced Mode off while on Identity moves Receive to Core.
@@ -56,6 +58,8 @@ where a Payer is pointed to, and gave no feedback when credits landed.
   the previous identity's ID never shows and raises no Receipt.
 - **AC-14** When the username is lost the option disappears; when it changes the card shows the
   new one.
+- **AC-15** Core, Shielded and Platform show the username above the address, with its own copy
+  button, whenever the Current identity has one, with Advanced Mode on or off.
 
 ## Known limits
 
