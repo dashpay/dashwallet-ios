@@ -15,14 +15,15 @@ private enum SampleError: Error {
     case failed(path: String)
 }
 
-/// Records the flag and text of every log message that holds `marker`, in order.
-private final class CapturingLogger: DDAbstractLogger, @unchecked Sendable {
+/// Records the flag and text of every log message that holds `marker`, in order; with no
+/// marker, of every message.
+final class CapturingLogger: DDAbstractLogger, @unchecked Sendable {
     private let marker: String
     private let lock = NSLock()
     private var captured: [DDLogFlag] = []
     private var capturedTexts: [String] = []
 
-    init(marker: String) {
+    init(marker: String = "") {
         self.marker = marker
         super.init()
     }
@@ -41,7 +42,7 @@ private final class CapturingLogger: DDAbstractLogger, @unchecked Sendable {
 
     @objc(logMessage:)
     func log(message logMessage: DDLogMessage) {
-        guard logMessage.message.contains(marker) else { return }
+        guard marker.isEmpty || logMessage.message.contains(marker) else { return }
         lock.lock()
         captured.append(logMessage.flag)
         capturedTexts.append(logMessage.message)
@@ -808,6 +809,15 @@ final class AppLoggerTests: XCTestCase {
                       "Attempting to purchase gift card", "Gift card saved"] {
             XCTAssertTrue(calls.contains { $0.contains(event) }, event)
         }
+    }
+
+    // A purchase that fails outside DashSpend's own errors (build, sign, auth) writes the
+    // Error summary: the wallet's text can name the available and required amounts.
+    func testGiftCardPurchaseFailureWritesTheErrorSummary() throws {
+        let line = try sourceLine("DashWallet/Sources/UI/Explore Dash/Views/DashSpend/DashSpendPayScreen.swift",
+                                  containing: "\"Gift card purchase failed with error")
+        XCTAssertTrue(line.contains("AppLogMessage.errorSummary(error)"), line)
+        XCTAssertFalse(line.contains("\\(error)") || line.contains("localizedDescription"), line)
     }
 
     // The kept SHIELD-TX-REFRESH failure line carries the Error
