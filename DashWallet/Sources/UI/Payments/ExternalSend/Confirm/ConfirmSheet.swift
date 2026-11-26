@@ -173,10 +173,19 @@ struct ConfirmSheet: View {
 /// a form sheet on iPad, a short window), and the sheet's layout cannot tell, since it is measured unconstrained:
 /// the body reads how far it reaches below the sheet's visible area and lowers its bound by that, so the end of its
 /// scroll is the bottom of what the holder sees. A new content height starts again from DashUIKit's cap.
+///
+/// Only an overflow that lasts counts: the sheet first shows at a provisional height (`.medium` before DashUIKit has
+/// measured the body) and grows to the body's height a moment later. Lowering the bound to that provisional height
+/// would keep the sheet there, with the buttons below its edge.
 struct CappedSheetBody<Content: View>: View {
     @ViewBuilder let content: Content
     @State private var contentHeight: CGFloat = 0
     @State private var fittedHeight: CGFloat?
+    @State private var overflowCheck: Task<Void, Never>?
+
+    /// How long an overflow must last before the bound is lowered: longer than the sheet's growth to its measured
+    /// height.
+    static var overflowSettleDelay: Duration { .milliseconds(600) }
 
     var body: some View {
         let height = min(contentHeight, fittedHeight ?? Self.maxHeight)
@@ -189,9 +198,15 @@ struct CappedSheetBody<Content: View>: View {
         .scrollBounceBehavior(.basedOnSize)
         .frame(height: height)
         .background(SheetOverflowReader { overflow in
+            overflowCheck?.cancel()
             guard overflow > 0.5 else { return }
-            fittedHeight = max(0, height - overflow)
+            overflowCheck = Task { @MainActor in
+                try? await Task.sleep(for: Self.overflowSettleDelay)
+                guard !Task.isCancelled else { return }
+                fittedHeight = max(0, height - overflow)
+            }
         })
+        .onDisappear { overflowCheck?.cancel() }
     }
 
     /// DashUIKit's cap (95% of the window, measured without the home-indicator inset), less what `BottomSheet` puts
@@ -211,7 +226,7 @@ struct CappedSheetBody<Content: View>: View {
 
 /// Reports how far the view it backs reaches below the visible area of the sheet it is shown in: the presented
 /// view's height less its bottom safe-area inset, in the presented view's own coordinates, so the presentation's
-/// slide-in does not count. Reported on every layout of the view or of the sheet.
+/// slide-in does not count. Reported on every layout of the view or of the sheet, zero or less when it fits.
 private struct SheetOverflowReader: UIViewRepresentable {
     let onOverflow: (CGFloat) -> Void
 
@@ -250,7 +265,7 @@ private struct SheetOverflowReader: UIViewRepresentable {
             guard let sheet = presentedView else { return }
             let bottom = convert(bounds, to: sheet).maxY
             let overflow = bottom - (sheet.bounds.height - sheet.safeAreaInsets.bottom)
-            guard overflow > 0.5 else { return }
+            // Reported when it is gone too, so a pending check for an overflow the sheet's growth ended is dropped.
             DispatchQueue.main.async { [onOverflow] in onOverflow?(overflow) }
         }
 
