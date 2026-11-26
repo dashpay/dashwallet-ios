@@ -59,7 +59,7 @@ this section describes the flow as it works once all three are in.
 
 | Source ↓ / Destination → | Core address | Platform address | Shielded address | Identity ID |
 |---|---|---|---|---|
-| Core | send (a payment request: Core only) | unavailable until [dashpay/platform#5824](https://github.com/dashpay/platform/issues/5824); the holder's own Platform address is funded from Internal Transfer | shield | own Current identity: top-up; others unavailable |
+| Core | send (a payment request: Core only) | asset lock that records its recipients ([dashpay/platform#5930](https://github.com/dashpay/platform/pull/5930)); key-form addresses only, a script-form one is unavailable | shield | own Current identity: top-up; someone else's: top-up through a lock that records the identity ([dashpay/platform#5931](https://github.com/dashpay/platform/pull/5931)) |
 | Shielded | unshield to Core (withdrawal) | unshield | shielded transfer | top-up in one step ([ADR-0044](../../adr/0044-top-up-an-identity-from-shielded-in-one-step.md)) |
 | Platform | withdrawal | transfer; script form unavailable | shield | top-up of any existing identity ([ADR-0045](../../adr/0045-add-an-external-identity-top-up-and-a-non-blocking-identity-read-to-the-sdk.md)) |
 | Identity | withdrawal | credit transfer | unavailable (ADR-0041) | credit transfer; own Current identity unavailable |
@@ -118,10 +118,14 @@ Code comments name the screens by these ids.
 
 ## Known limits
 
-- **Core → a Platform address is unavailable** until the SDK stores who an asset lock pays with
-  the lock before broadcast ([dashpay/platform#5824](https://github.com/dashpay/platform/issues/5824)):
-  without that record, a payment interrupted after its lock was broadcast cannot be finished to its
-  recipient. The holder's own Platform address is funded from Internal Transfer.
+- **Core → a script-form Platform address is unavailable**: the SDK's external funding takes P2PKH
+  recipients only.
+- **A Core payment to someone else's identity whose lock records no identity** (a lock rebuilt from
+  the chain after a restore) cannot be finished from the app yet: the SDK needs a recipient assigned
+  first (`assignTopUpRecipient`), and the app has no screen for that.
+- **History shows the lock amount** of a Core payment to someone else (the amount plus the Platform
+  fee reserve), as for a Shielded recipient. For a Platform address the unused reserve returns to the
+  holder's own Platform address.
 - No progress view while a Core payment locks, and no pending or failed sends in History; deferred
   like on Android.
 - The old Send screen stays: send to a username and the older Payments screens still use it.
