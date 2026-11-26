@@ -526,18 +526,6 @@
         }
       }
     },
-    "Core can't pay this kind of Platform address" : {
-      "comment" : "External send"
-    },
-    "Identity can't pay a Shielded address until Shielded is set up" : {
-      "comment" : "External send"
-    },
-    "Identity can't pay this wallet's own Shielded address" : {
-      "comment" : "External send"
-    },
-    "The amount is outside the limits for a withdrawal to Core. Your funds were not sent." : {
-      "comment" : "External send"
-    },
     "—" : {
 
     },
@@ -141191,6 +141179,9 @@
     "Core address" : {
       "comment" : "External send"
     },
+    "Core can't pay this kind of Platform address" : {
+      "comment" : "External send"
+    },
     "Core chain-locked height" : {
       "comment" : "Evonode status",
       "localizations" : {
@@ -248265,6 +248256,12 @@
         }
       }
     },
+    "Identity can't pay a Shielded address until Shielded is set up" : {
+      "comment" : "External send"
+    },
+    "Identity can't pay this wallet's own Shielded address" : {
+      "comment" : "External send"
+    },
     "Identity can't top up itself" : {
       "comment" : "External send"
     },
@@ -250900,6 +250897,9 @@
           }
         }
       }
+    },
+    "Identity transfer" : {
+      "comment" : "Transaction to an identity whose owner the wallet cannot tell now"
     },
     "Identity verification is not available on this network." : {
       "comment" : "Usernames",
@@ -390796,6 +390796,9 @@
         }
       }
     },
+    "Platform transfer" : {
+      "comment" : "Transaction to a Platform address whose owner the wallet cannot tell now"
+    },
     "Platform wallet manager unavailable" : {
       "comment" : "InternalTransfer",
       "localizations" : {
@@ -519890,6 +519893,9 @@
           }
         }
       }
+    },
+    "The amount is outside the limits for a withdrawal to Core. Your funds were not sent." : {
+      "comment" : "External send"
     },
     "The amount is set by the payment request." : {
       "comment" : "External send"
