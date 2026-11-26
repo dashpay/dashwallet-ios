@@ -22,6 +22,8 @@ enum SendRoute: Equatable {
     case coreToShielded
     /// Core asset lock, then the Platform step (a top-up of the Current identity).
     case coreToIdentity
+    /// Core asset lock paying someone else's Platform address; the lock records its recipients (platform#5930).
+    case coreToPlatform
     case shieldedToCore
     case shieldedToShielded
     case shieldedToPlatform
@@ -42,7 +44,7 @@ extension SendRoute {
     /// The source the route spends from.
     var source: SendSource {
         switch self {
-        case .coreToCore, .coreToShielded, .coreToIdentity: return .core
+        case .coreToCore, .coreToShielded, .coreToIdentity, .coreToPlatform: return .core
         case .shieldedToCore, .shieldedToShielded, .shieldedToPlatform, .shieldedToIdentity: return .shielded
         case .platformToCore, .platformToShielded, .platformToPlatform, .platformToIdentity: return .platform
         case .identityToCore, .identityToPlatform, .identityToIdentity, .identityToShielded: return .identity

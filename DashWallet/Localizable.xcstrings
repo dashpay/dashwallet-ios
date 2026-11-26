@@ -526,6 +526,9 @@
         }
       }
     },
+    "Core can't pay this kind of Platform address" : {
+      "comment" : "External send"
+    },
     "Identity can't pay a Shielded address until Shielded is set up" : {
       "comment" : "External send"
     },
@@ -141186,12 +141189,6 @@
       }
     },
     "Core address" : {
-      "comment" : "External send"
-    },
-    "Core can't pay a Platform address yet" : {
-      "comment" : "External send"
-    },
-    "Core can't pay someone else's identity" : {
       "comment" : "External send"
     },
     "Core chain-locked height" : {

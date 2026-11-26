@@ -941,6 +941,37 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         Task { await self.syncNow() }
     }
 
+    /// Pay someone else's Platform address (P2PKH `recipientHash`) from Core: the lock pays `recipientAmountDuffs`
+    /// to it and the rest to one of this wallet's addresses. The SDK records the recipients with the lock before it
+    /// is broadcast, so an interrupted payment resumes only to them (dashpay/platform#5930).
+    public func fundExternalFromCore(
+        recipientHash: Data,
+        recipientAmountDuffs: UInt64,
+        lockValueDuffs: UInt64,
+        onAssetLockBuilt: AssetLockBuiltHandler? = nil
+    ) async throws {
+        let env = try resolveFundEnvironment(recipientAmountDuffs: recipientAmountDuffs)
+        let signer = KeychainSigner(modelContainer: env.container, network: env.network)
+        guard let own = env.recipients.first(where: { $0.credits != nil }),
+              let remainder = env.recipients.first(where: { $0.credits == nil })
+        else { throw SendError.invalidAmount }
+        let external = ManagedPlatformAddressWallet.FundFromAssetLockRecipient(
+            addressType: 0, hash: recipientHash, credits: own.credits)
+
+        DWLogger.log("PLATFORM-FUND: core to another Platform address, lock=\(lockValueDuffs)")
+
+        let updated = try await env.addressWallet.fundFromAssetLockExternal(
+            amountDuffs: lockValueDuffs,
+            fundingAccountIndex: 0,
+            platformAccountIndex: env.accountIndex,
+            recipients: [external, remainder],
+            signer: signer,
+            onAssetLockBuilt: onAssetLockBuilt)
+
+        applyUpdatedBalances(updated, context: env.container.mainContext)
+        Task { await self.syncNow() }
+    }
+
     /// Resume a stuck Core → Platform funding whose asset lock is committed
     /// on-chain (Broadcast/IS-locked/CL-locked) but whose address-funding
     /// state transition never landed. Sibling of `fundFromCore` — picks up
@@ -957,12 +988,23 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
         Self.logger.info("🛰️ PLATFORM-FUND :: resume core → platform vout=\(outPointVout)")
 
-        let updated = try await env.addressWallet.resumeFundFromAssetLock(
-            outPointTxid: outPointTxid,
-            outPointVout: outPointVout,
-            platformAccountIndex: env.accountIndex,
-            recipients: env.recipients,
-            signer: signer)
+        // A lock that recorded its recipients pays someone else's Platform address (dashpay/platform#5930): it
+        // resumes only to them, never to this wallet's addresses, which the SDK would refuse anyway.
+        let recorded = try SwiftDashSDKHost.shared.wallet?.assetLockPlatformAddressRecipients(
+            txid: outPointTxid, vout: outPointVout)
+        let updated: [ManagedPlatformAddressWallet.UpdatedBalance]
+        if recorded != nil {
+            DWLogger.log("PLATFORM-FUND: resume to the recorded recipients of another Platform address")
+            updated = try await env.addressWallet.resumeFundFromAssetLockToRecordedRecipients(
+                outPointTxid: outPointTxid, outPointVout: outPointVout, signer: signer)
+        } else {
+            updated = try await env.addressWallet.resumeFundFromAssetLock(
+                outPointTxid: outPointTxid,
+                outPointVout: outPointVout,
+                platformAccountIndex: env.accountIndex,
+                recipients: env.recipients,
+                signer: signer)
+        }
 
         applyUpdatedBalances(updated, context: env.container.mainContext)
         await ShieldedTxLookup.shared.refresh(reason: "platform-fund-resume-completed")
