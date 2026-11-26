@@ -30,8 +30,11 @@ public final class SendCoinsService: NSObject {
     ///   - makeBIP70Service: builds the service `payWithDashUrl` pays through.
     ///   - sendToAddress: the send `payGiftCardOrder` pays through; `nil` for
     ///     `WalletSendService.sendCarryingUnknownOutcome`.
-    init(makeBIP70Service: @escaping () -> BIP70PaymentService = BIP70PaymentService.makeForCurrentWallet,
-         sendToAddress: AddressSend? = nil) {
+    init(makeBIP70Service: @escaping () -> BIP70PaymentService = {
+        // The headless gift-card purchase keeps its own transport rule; https is required
+        // only on the interactive path (`BIP70InteractiveCoordinator`).
+        BIP70PaymentService.makeForCurrentWallet(requiresHTTPS: false)
+    }, sendToAddress: AddressSend? = nil) {
         self.makeBIP70Service = makeBIP70Service
         self.sendToAddress = sendToAddress ?? { address, amount, sessionAuthSufficient in
             try await WalletSendService.shared.sendCarryingUnknownOutcome(
