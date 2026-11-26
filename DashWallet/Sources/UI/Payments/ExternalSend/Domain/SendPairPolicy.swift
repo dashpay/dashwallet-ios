@@ -49,7 +49,6 @@ struct SendPairFacts: Equatable {
 }
 
 enum UnavailableReason: Equatable, Hashable {
-    case coreToOtherIdentity
     case coreToPlatformAddress
     case platformToScriptFormPlatformAddress
     case identityToOwnIdentity
@@ -61,10 +60,8 @@ enum UnavailableReason: Equatable, Hashable {
 
     var localizedMessage: String {
         switch self {
-        case .coreToOtherIdentity:
-            return String(localized: "Core can't pay someone else's identity", comment: "External send")
         case .coreToPlatformAddress:
-            return String(localized: "Core can't pay a Platform address yet", comment: "External send")
+            return String(localized: "Core can't pay this kind of Platform address", comment: "External send")
         case .platformToScriptFormPlatformAddress:
             return String(localized: "Platform can't pay this kind of Platform address", comment: "External send")
         case .identityToOwnIdentity:
@@ -125,12 +122,13 @@ enum SendPairPolicy {
         switch destination.type {
         case .coreAddress, .paymentRequest: return .route(.coreToCore)
         case .shieldedAddress: return .route(.coreToShielded)
-        // Until dashpay/platform#5824 the SDK does not record who an asset lock pays, so a payment interrupted after
-        // its lock is broadcast cannot be finished to the right recipient; the holder's own Platform address is
-        // funded from Internal Transfer.
-        case .platformAddress: return .unavailable(.coreToPlatformAddress)
+        // The lock records the addresses it pays (dashpay/platform#5930), so an interrupted payment resumes only to
+        // them. The SDK's external funding takes P2PKH recipients only.
+        case .platformAddress:
+            return destination.isScriptForm ? .unavailable(.coreToPlatformAddress) : .route(.coreToPlatform)
         case .identityID:
-            return isOwnIdentity(destination, facts) ? .route(.coreToIdentity) : .unavailable(.coreToOtherIdentity)
+            // Someone else's identity is paid through a lock that records it (dashpay/platform#5931).
+            return .route(.coreToIdentity)
         }
     }
 

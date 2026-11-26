@@ -69,9 +69,9 @@ final class SendPairPolicyTests: XCTestCase {
         let table: [PairCase] = [
             PairCase("core -> core", .core, core, .route(.coreToCore)),
             PairCase("core -> shielded", .core, shielded, .route(.coreToShielded)),
-            PairCase("core -> platform", .core, platform, .unavailable(.coreToPlatformAddress)),
+            PairCase("core -> platform", .core, platform, .route(.coreToPlatform)),
             PairCase("core -> own identity (top-up)", .core, ownIdentity, .route(.coreToIdentity)),
-            PairCase("core -> other identity", .core, otherIdentity, .unavailable(.coreToOtherIdentity)),
+            PairCase("core -> other identity", .core, otherIdentity, .route(.coreToIdentity)),
 
             PairCase("shielded -> core", .shielded, core, .route(.shieldedToCore)),
             PairCase("shielded -> shielded", .shielded, shielded, .route(.shieldedToShielded)),
@@ -97,13 +97,13 @@ final class SendPairPolicyTests: XCTestCase {
         }
     }
 
-    /// Until dashpay/platform#5824, Core pays no Platform address, in either form.
-    func testCoreToAnyPlatformAddressIsUnavailable() {
-        for script in [false, true] {
-            XCTAssertEqual(decide(.core, destination(.platformAddress, script: script)),
-                           .unavailable(.coreToPlatformAddress), "script: \(script)")
-        }
-        XCTAssertEqual(UnavailableReason.coreToPlatformAddress.localizedMessage, "Core can't pay a Platform address yet")
+    /// Core pays someone else's key-form Platform address through a lock that records it (dashpay/platform#5930); the
+    /// SDK's external funding takes no script-form recipient.
+    func testCorePaysOnlyAKeyFormPlatformAddress() {
+        XCTAssertEqual(decide(.core, destination(.platformAddress, script: false)), .route(.coreToPlatform))
+        XCTAssertEqual(decide(.core, destination(.platformAddress, script: true)), .unavailable(.coreToPlatformAddress))
+        XCTAssertEqual(UnavailableReason.coreToPlatformAddress.localizedMessage,
+                       "Core can't pay this kind of Platform address")
     }
 
     /// The Platform transfer's FFI takes only P2PKH outputs (`p2shNotSupported`); the unshield and the identity
@@ -172,9 +172,9 @@ final class SendPairPolicyTests: XCTestCase {
     }
 
     func testAnotherIdentityOfTheSameWalletCountsAsSomeoneElses() {
-        // Not the Current identity, even if the wallet owns it: Core cannot pay it.
+        // Not the Current identity, even if the wallet owns it: Core pays it as someone else's (dashpay/platform#5931).
         let sibling = destination(.identityID, text: "second-identity-of-this-wallet")
-        XCTAssertEqual(decide(.core, sibling), .unavailable(.coreToOtherIdentity))
+        XCTAssertEqual(decide(.core, sibling), .route(.coreToIdentity))
         XCTAssertEqual(decide(.platform, sibling), .route(.platformToIdentity))
     }
 
@@ -188,7 +188,7 @@ final class SendPairPolicyTests: XCTestCase {
         let noOwn = SendPairFacts(ownIdentityID: nil)
         let dest = destination(.identityID, text: ownID)
         XCTAssertEqual(SendPairPolicy.decide(source: .core, destination: dest, facts: noOwn),
-                       .unavailable(.coreToOtherIdentity))
+                       .route(.coreToIdentity))
         XCTAssertEqual(SendPairPolicy.decide(source: .platform, destination: dest, facts: noOwn),
                        .route(.platformToIdentity))
     }
@@ -268,7 +268,7 @@ final class SendPairPolicyTests: XCTestCase {
     }
 
     func testUnavailableReasonsAreDistinctAndCarryText() {
-        let reasons: [UnavailableReason] = [.coreToOtherIdentity, .coreToPlatformAddress,
+        let reasons: [UnavailableReason] = [.coreToPlatformAddress,
                                             .platformToScriptFormPlatformAddress, .identityToOwnIdentity,
                                             .identityWithoutShieldedAccount, .identityToOwnShieldedAddress,
                                             .paymentRequestCoreOnly, .noCurrentIdentity]
@@ -305,11 +305,15 @@ final class SendPairPolicyTests: XCTestCase {
     }
 
     func testStartingSourceSkipsASourceThatCannotPayTheDestination() {
-        // Core holds the most but cannot pay someone else's Identity ID; Shielded and Platform can.
-        let dest = destination(.identityID, text: otherID)
-        XCTAssertEqual(start(dest, balances(9, 0, 5)).source, .platform)
+        // Core holds the most but cannot pay a script-form Platform address; only Shielded can.
+        let dest = destination(.platformAddress, script: true)
         XCTAssertEqual(start(dest, balances(9, 3, 5)).source, .shielded)
         XCTAssertEqual(start(destination(.identityID, text: ownID), balances(0, 0, 5)).source, .platform)
+    }
+
+    /// Core pays someone else's Identity ID (dashpay/platform#5931), so a funded Core is picked first.
+    func testStartingSourcePicksAFundedCoreForSomeoneElsesIdentity() {
+        XCTAssertEqual(start(destination(.identityID, text: otherID), balances(9, 0, 5)).source, .core)
     }
 
     /// Only Shielded among the auto-picked sources can pay a script-form Platform address.
@@ -320,14 +324,14 @@ final class SendPairPolicyTests: XCTestCase {
         XCTAssertEqual(start(dest, balances(9, 3, 4)).source, .shielded)
     }
 
-    /// Core cannot pay a Platform address (dashpay/platform#5824), so a funded Core is skipped for one.
-    func testStartingSourceSkipsCoreForAPlatformAddress() {
+    /// Core pays a key-form Platform address (dashpay/platform#5930), so a funded Core is picked and a pin kept.
+    func testStartingSourcePicksAFundedCoreForAKeyFormPlatformAddress() {
         let dest = destination(.platformAddress)
-        XCTAssertEqual(start(dest, balances(9, 0, 4)).source, .platform)
-        XCTAssertEqual(start(dest, balances(9, 3, 4)).source, .shielded)
+        XCTAssertEqual(start(dest, balances(9, 3, 4)).source, .core)
+        XCTAssertEqual(start(dest, balances(0, 3, 4)).source, .shielded)
         let pinned = start(dest, balances(9, 0, 4), pinned: .core)
-        XCTAssertEqual(pinned.source, .platform)
-        XCTAssertTrue(pinned.sourceChanged)
+        XCTAssertEqual(pinned.source, .core)
+        XCTAssertFalse(pinned.sourceChanged)
     }
 
     func testStartingSourceNeverPicksIdentity() {
@@ -343,8 +347,9 @@ final class SendPairPolicyTests: XCTestCase {
         XCTAssertEqual(start(destination(.coreAddress), zero).source, .core)
         XCTAssertEqual(start(destination(.shieldedAddress), zero).source, .core)
         XCTAssertEqual(start(destination(.identityID, text: ownID), zero).source, .core)
-        // Core cannot pay these, so the first that can is Shielded, at 0.
-        XCTAssertEqual(start(destination(.identityID, text: otherID), zero).source, .shielded)
+        XCTAssertEqual(start(destination(.identityID, text: otherID), zero).source, .core)
+        XCTAssertEqual(start(destination(.platformAddress), zero).source, .core)
+        // Core cannot pay this one, so the first that can is Shielded, at 0.
         XCTAssertEqual(start(destination(.platformAddress, script: true), zero).source, .shielded)
     }
 
@@ -372,8 +377,8 @@ final class SendPairPolicyTests: XCTestCase {
         XCTAssertFalse(result.sourceChanged)
     }
 
-    func testPinnedCoreWithSomeoneElsesIdentityIDIsReplacedAndFlagged() {
-        let dest = destination(.identityID, text: otherID)
+    func testPinnedCoreWithAScriptFormPlatformAddressIsReplacedAndFlagged() {
+        let dest = destination(.platformAddress, script: true)
         let result = start(dest, balances(9, 2, 5), pinned: .core)
         XCTAssertEqual(result.source, .shielded)
         XCTAssertTrue(result.sourceChanged)
