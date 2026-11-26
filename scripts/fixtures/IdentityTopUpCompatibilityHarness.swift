@@ -121,6 +121,20 @@ enum SwiftDashSDKTransactionSender {
 
 enum CoinJoinShieldPlanner { static let maxAssetLockInputs = 100 }
 
+// History's record of a credit send runs the spend it wraps; recording it is not under test here.
+enum CreditSendSource { case platform, identity }
+enum CreditSendDestinationKind { case core, platform, identity }
+struct CreditSend {
+    let source: CreditSendSource
+    let destinationKind: CreditSendDestinationKind
+    let destination: String
+    let amountDuffs: UInt64
+}
+enum CreditSendLedger {
+    static func recording<T>(_ send: CreditSend, _ spend: () async throws -> T) async throws -> T { try await spend() }
+}
+extension Data { func toBase58String() -> String { base64EncodedString() } }
+
 // The runner's post-authorization identity dispatch and outcome handling are
 // production methods; request metadata irrelevant to that dispatch is omitted.
 enum ChainNetwork { case core, platform, shielded }
