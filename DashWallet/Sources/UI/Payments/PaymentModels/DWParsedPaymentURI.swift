@@ -131,7 +131,7 @@ final class ParsedPaymentURI: NSObject {
     /// scheme whose request the wallet fetches. Cleartext is not: nothing would vouch for the
     /// request it returns.
     @objc var isWholeRequestURL: Bool {
-        scheme == "https" && rURL.map(PaymentProtocolTransport.isSecure) == true
+        scheme == "https" && PaymentProtocolTransport.isHTTPS(rURL)
     }
 
     /// Whether copied text mentions a payment link (`dash:`, `pay:`, `dashwallet:`, `bitcoin:`), a

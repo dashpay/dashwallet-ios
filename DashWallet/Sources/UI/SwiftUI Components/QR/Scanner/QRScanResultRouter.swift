@@ -76,6 +76,10 @@ enum QRScanResultRouter {
             }
         #endif
 
+        case .dashConnect(let uri):
+            // Where a tapped DashConnect link goes, but as a scan.
+            mainTabbar()?.openDashConnect(uri, scanned: true)
+
         case .text:
             break
         }
@@ -114,7 +118,6 @@ enum QRScanResultRouter {
         presenter.topController().present(navigationController, animated: true)
     }
 
-    #if DASHPAY
     /// The app's tab controller, searched down from the window's root
     /// through children and presentations alike. Walking up from the
     /// presenter misses it whenever the scan came from a sheet presented
@@ -123,7 +126,6 @@ enum QRScanResultRouter {
     private static func mainTabbar() -> MainTabbarController? {
         appRootController?.dw_firstTabBarController() as? MainTabbarController
     }
-    #endif
 }
 
 /// The UIKit controller a SwiftUI screen lives in, so a flow the screen's

@@ -178,16 +178,16 @@ final class BIP70InteractiveCoordinator: NSObject {
                         completion: @escaping (BIP70ConfirmationBox?, NSError?) -> Void) {
         let service = service
         let allowsInsecureTransport = allowsInsecureTransport
+        fetchTask?.cancel()
         fetchTask = Task {
             do {
                 let network = try PaymentNetworkResolver.current()
-                let confirmation = try await Self.prepare(service: service,
-                                                          allowsInsecureTransport: allowsInsecureTransport,
-                                                          requestURL: requestURL, scheme: scheme,
-                                                          callbackScheme: callbackScheme, network: network)
+                let confirmation = try await BIP70InteractiveCoordinator.prepare(
+                    service: service, allowsInsecureTransport: allowsInsecureTransport,
+                    requestURL: requestURL, scheme: scheme, callbackScheme: callbackScheme, network: network)
                 await MainActor.run { completion(BIP70ConfirmationBox(confirmation), nil) }
             } catch {
-                await MainActor.run { completion(nil, Self.nsError(error)) }
+                await MainActor.run { completion(nil, BIP70InteractiveCoordinator.nsError(error)) }
             }
         }
     }

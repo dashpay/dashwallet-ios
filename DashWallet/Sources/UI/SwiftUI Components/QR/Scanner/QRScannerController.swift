@@ -22,6 +22,9 @@ final class QRScannerController: UIViewController {
     /// receives every result and cross-context routing is the caller's
     /// job; when nil, non-payment results are routed automatically.
     var onResult: ((QRScanResult) -> Void)?
+    /// A payment scanner that hands DashConnect codes to the router instead
+    /// of refusing them. Set before presenting.
+    @objc var readsDashConnectCodes = false
 
     private let mode: QRScannerMode
 
@@ -66,6 +69,7 @@ final class QRScannerController: UIViewController {
 
         let scannerView = QRScannerView(
             mode: mode,
+            readsDashConnect: readsDashConnectCodes,
             onResult: { [weak self] result in
                 self?.handleResult(result)
             },

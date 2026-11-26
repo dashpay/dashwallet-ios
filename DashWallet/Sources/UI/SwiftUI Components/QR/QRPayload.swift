@@ -62,6 +62,9 @@ enum QRScanResult {
     case dashPayUser(DashPayUserLink)
     case invitation(URL)
     #endif
+    /// A DashConnect request (`dash-key:`, `dash-st:` or `dashpay://connect`).
+    /// Only a payment scanner that reads them produces one: Home's.
+    case dashConnect(String)
     /// Raw captured string — only produced by `.addressInput` and
     /// `.rawText` scanners.
     case text(String)

@@ -72,6 +72,7 @@ NS_ASSUME_NONNULL_BEGIN
              self.presentedViewController);
 
     DWQRScannerController *controller = [DWQRScannerController paymentScanner];
+    controller.readsDashConnectCodes = self.readsDashConnectCodes;
     __weak typeof(self) weakSelf = self;
     controller.onPaymentInput = ^(DWPaymentInput *paymentInput) {
         [weakSelf didScanPaymentInput:paymentInput];
@@ -80,6 +81,10 @@ NS_ASSUME_NONNULL_BEGIN
         [weakSelf dismissViewControllerAnimated:YES completion:nil];
     };
     [self presentViewController:controller animated:YES completion:nil];
+}
+
+- (BOOL)readsDashConnectCodes {
+    return NO;
 }
 
 - (void)performPayToPasteboardAction {

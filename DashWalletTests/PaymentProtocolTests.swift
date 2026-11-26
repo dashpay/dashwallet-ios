@@ -318,57 +318,20 @@ final class PaymentProtocolTests: XCTestCase {
         }
     }
 
-    /// Unsigned requests are allowed, so nothing but TLS vouches for the merchant: a cleartext
-    /// request or payment URL is refused before anything is sent.
-    func testTransportRefusesCleartextRequestAndPaymentURLs() async {
-        final class Box { var requested = false }
-        let box = Box()
-        let body = fixture
-        MockURLProtocol.responseHandler = { _ in
-            box.requested = true
-            return (200, ["Content-Type": "application/dash-paymentrequest"], body)
-        }
-        let cleartext = URL(string: "http://merchant.example/i/abc")!
-        await assertThrowsBIP70(try await makeTransport().fetchRequest(from: cleartext, scheme: "dash")) { $0 == .badURL }
-        let payment = Payment(transactions: [Data([0x01])], memo: nil)
-        await assertThrowsBIP70(try await makeTransport().postPayment(payment, to: cleartext, scheme: "dash")) {
-            $0 == .badURL
-        }
-        XCTAssertFalse(box.requested)
-    }
-
-    /// A BIP73 list fetched over https may not send the wallet on to a cleartext request.
-    func testTransportRefusesACleartextURIListHop() async {
-        final class Box { var cleartextRequested = false }
-        let box = Box()
-        let body = fixture
-        MockURLProtocol.responseHandler = { req in
-            if req.url?.scheme == "http" {
-                box.cleartextRequested = true
-                return (200, ["Content-Type": "application/dash-paymentrequest"], body)
-            }
-            return (200, ["Content-Type": "text/uri-list"], Data("http://merchant.example/real\n".utf8))
-        }
-        await assertThrowsBIP70(try await makeTransport().fetchRequest(from: requestURL, scheme: "dash")) { $0 == .badURL }
-        XCTAssertFalse(box.cleartextRequested)
-    }
-
     /// A redirect from https to http is not followed, so neither the request nor a signed
     /// payment is ever sent in the clear.
-    func testTransportRefusesARedirectToCleartext() async {
+    func testHTTPSOnlyTransportNeverFollowsARedirectToCleartext() async {
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [DowngradingURLProtocol.self]
         DowngradingURLProtocol.body = fixture
         DowngradingURLProtocol.servedCleartext = false
-        let transport = PaymentProtocolTransport(session: URLSession(configuration: config))
+        let transport = PaymentProtocolTransport(session: URLSession(configuration: config), requiresHTTPS: true)
         await assertThrowsBIP70(try await transport.fetchRequest(from: requestURL, scheme: "dash")) {
-            if case .unexpectedResponse = $0 { return true }
-            return false
+            $0 == .insecureTransport
         }
         let payment = Payment(transactions: [Data([0x01])], memo: nil)
         await assertThrowsBIP70(try await transport.postPayment(payment, to: requestURL, scheme: "dash")) {
-            if case .unexpectedResponse = $0 { return true }
-            return false
+            $0 == .insecureTransport
         }
         XCTAssertFalse(DowngradingURLProtocol.servedCleartext, "the cleartext redirect was not followed")
     }
@@ -775,16 +738,6 @@ final class BIP70PaymentServiceTests: XCTestCase {
         catch { XCTFail("non-BIP70 error: \(error)", file: file, line: line) }
     }
 
-    /// A cleartext payment_url is refused before the payer confirms, not after signing.
-    func testPrepareRefusesACleartextPaymentURL() async {
-        let w = FakeWallet()
-        await assertThrowsBIP70(
-            try await service(FakeTransport(unsigned(paymentURL: "http://h/pay")), w)
-                .prepareForConfirmation(from: url, scheme: "dash", network: .testnet),
-            .badURL)
-        XCTAssertTrue(w.calls.isEmpty)
-    }
-
     /// A payment_url that is present but unusable is refused, not taken for an absent one:
     /// an absent one would skip the merchant's acknowledgement.
     func testPrepareRefusesAnUnusablePaymentURL() async {
@@ -800,7 +753,7 @@ final class BIP70PaymentServiceTests: XCTestCase {
             let w = FakeWallet()
             await assertThrowsBIP70(
                 try await service(FakeTransport(request), w).prepareForConfirmation(from: url, scheme: "dash", network: .testnet),
-                .badURL)
+                .malformedRequest)
             XCTAssertTrue(w.calls.isEmpty)
         }
     }

@@ -21,9 +21,10 @@ struct QRScannerView: View {
     private let torchAvailable = AVCaptureDevice.default(for: .video)?.hasTorch ?? false
 
     init(mode: QRScannerMode,
+         readsDashConnect: Bool = false,
          onResult: @escaping (QRScanResult) -> Void,
          onCancel: @escaping () -> Void) {
-        _viewModel = StateObject(wrappedValue: QRScannerViewModel(mode: mode))
+        _viewModel = StateObject(wrappedValue: QRScannerViewModel(mode: mode, readsDashConnect: readsDashConnect))
         self.onResult = onResult
         self.onCancel = onCancel
     }

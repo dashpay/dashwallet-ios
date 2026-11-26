@@ -60,6 +60,9 @@ final class QRScannerViewModel: ObservableObject {
     private static let declineCooldown: Duration = .seconds(2.5)
 
     let mode: QRScannerMode
+    /// Whether a payment scanner hands a DashConnect code over instead of
+    /// calling it "Not a Dash QR code". Only Home's scanner does.
+    let readsDashConnect: Bool
     @Published private(set) var status: Status = .searching
     @Published var torchOn = false
 
@@ -88,10 +91,12 @@ final class QRScannerViewModel: ObservableObject {
 
     /// The closures are for tests; the app reads the real wallet state.
     init(mode: QRScannerMode,
+         readsDashConnect: Bool = false,
          isWalletLocked: (@MainActor () -> Bool)? = nil,
          hasDashPayIdentity: (@MainActor () -> Bool)? = nil,
          checkInvitation: (@MainActor (URL) -> QRScanResultRouter.InvitationCheck)? = nil) {
         self.mode = mode
+        self.readsDashConnect = readsDashConnect
         self.isWalletLocked = isWalletLocked ?? { QRScanResultRouter.isWalletLocked() }
         self.hasDashPayIdentity = hasDashPayIdentity ?? { QRScanResultRouter.hasDashPayIdentity() }
         self.checkInvitation = checkInvitation ?? { QRScanResultRouter.checkInvitation($0) }
@@ -141,7 +146,13 @@ final class QRScannerViewModel: ObservableObject {
             finish(.text(value))
 
         case .payment:
-            processForPayment(QRPayload.classify(value))
+            // A DashConnect request is not a payment: it goes over whole, before the payment
+            // parse rejects it. The Connections screen reports a malformed one, as for a link.
+            if readsDashConnect, let uri = DashConnectDeepLink.uri(from: value) {
+                if !refusesWhileLocked() { finish(.dashConnect(uri)) }
+            } else {
+                processForPayment(QRPayload.classify(value))
+            }
 
         #if DASHPAY
         case .dashPayUser:
@@ -213,6 +224,9 @@ final class QRScannerViewModel: ObservableObject {
                 // A BIP73 http(s) request URL scanned whole → fetch it. A
                 // foreign scheme's `r=` is that currency's request, not Dash's.
                 fetchBIP70(parsed: parsed, fallBackToEmbeddedAddress: false)
+            } else if parsed.scheme == "http", parsed.rURL != nil {
+                // A cleartext request URL is refused before it is fetched, whatever the build.
+                showInvalid(message: BIP70Error.insecureTransport.errorDescription)
             } else {
                 showInvalid(message: invalidQRMessage(for: parsed))
             }
@@ -269,6 +283,9 @@ final class QRScannerViewModel: ObservableObject {
                             title: String(localized: "Invalid Payment Request", comment: ""),
                             message: error?.localizedDescription)
                     }
+                } else if let error, BIP70InteractiveCoordinator.isRefusal(error) {
+                    // A request the app refused by rule says why.
+                    self.showInvalid(message: error.localizedDescription)
                 } else {
                     self.showInvalid(message: self.invalidQRMessage(for: parsed))
                 }
@@ -302,7 +319,7 @@ final class QRScannerViewModel: ObservableObject {
     /// Send. A bare request URL is not offered.
     nonisolated static func isOfferablePayment(_ parsed: ParsedPaymentURI) -> Bool {
         guard parsed.isValidDashPaymentIntent else { return false }
-        if let request = parsed.rURL, PaymentProtocolTransport.isSecure(request) { return true }
+        if let request = parsed.rURL, PaymentProtocolTransport.isHTTPS(request) { return true }
         return parsed.isAddressPayableForCurrentNetwork && !parsed.hasInvalidAmount && !parsed.requiresRequest
     }
 

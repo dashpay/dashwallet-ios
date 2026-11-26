@@ -44,13 +44,14 @@ final class QRScannerTests: XCTestCase {
     }
 
     private func makeScanner(_ mode: QRScannerMode,
+                             readsDashConnect: Bool = false,
                              locked: @escaping @MainActor () -> Bool = { false },
                              hasIdentity: @escaping @MainActor () -> Bool = { true },
                              invitation: @escaping @MainActor (URL) -> QRScanResultRouter.InvitationCheck = { _ in .valid })
         -> (QRScannerViewModel, Recorder) {
         let recorder = Recorder()
-        let viewModel = QRScannerViewModel(mode: mode, isWalletLocked: locked, hasDashPayIdentity: hasIdentity,
-                                           checkInvitation: invitation)
+        let viewModel = QRScannerViewModel(mode: mode, readsDashConnect: readsDashConnect, isWalletLocked: locked,
+                                           hasDashPayIdentity: hasIdentity, checkInvitation: invitation)
         viewModel.onResult = { recorder.results.append($0) }
         return (viewModel, recorder)
     }
@@ -196,6 +197,40 @@ final class QRScannerTests: XCTestCase {
             XCTAssertTrue(recorder.results.isEmpty, code)
             XCTAssertTrue(isInvalid(scanner.status), code)
         }
+    }
+
+    // MARK: DashConnect codes
+
+    private static let dashConnectCodes = ["dash-key:example", "dash-st:example", "dashpay://connect?example"]
+
+    func testHomeScannerHandsOverADashConnectCode() {
+        for code in Self.dashConnectCodes {
+            let (scanner, recorder) = makeScanner(.payment, readsDashConnect: true)
+            scanner.didDetectCodes([" \(code)\n"])
+            guard case .dashConnect(let uri) = recorder.results.first else {
+                return XCTFail("Home's scanner hands \(code) to the Connections screen")
+            }
+            XCTAssertEqual(uri, code)
+        }
+    }
+
+    func testOtherPaymentScannersCallADashConnectCodeNotDash() {
+        for code in Self.dashConnectCodes {
+            let (scanner, recorder) = makeScanner(.payment)
+            scanner.didDetectCodes([code])
+            XCTAssertTrue(recorder.results.isEmpty, code)
+            guard case .invalid(_, let message) = scanner.status else {
+                return XCTFail("\(code) is not a payment")
+            }
+            XCTAssertEqual(message, String(localized: "Not a Dash QR code", comment: ""), code)
+        }
+    }
+
+    func testHomeScannerRefusesADashConnectCodeWhileLocked() {
+        let (scanner, recorder) = makeScanner(.payment, readsDashConnect: true, locked: { true })
+        scanner.didDetectCodes([Self.dashConnectCodes[0]])
+        XCTAssertTrue(recorder.results.isEmpty)
+        XCTAssertTrue(isInvalid(scanner.status))
     }
 
     /// The lock screen's own purpose — Scan to Pay — keeps working.
@@ -862,19 +897,21 @@ final class QRScannerTests: XCTestCase {
             let parsed = ParsedPaymentURI.parse(paymentString: "dash:\(Self.address)?amount=1&req-r=\(request)")
             return DWPaymentInputBuilder().paymentInput(withParsedURI: parsed, source: .deepLink)
         }
-        // The stale request goes out to the network; its replacement is refused before any, with
-        // a different error, so the answer that arrives says whose it is.
-        processor.processPaymentInput(required("https%3A%2F%2F127.0.0.1%3A1%2Fstale"))
-        processor.reset()
-        processor.processPaymentInput(required("http%3A%2F%2F127.0.0.1%3A1%2Fcurrent"))
-
         let failed = expectation(description: "the current request fails")
         failed.assertForOverFulfill = false
         var failures: [String?] = []
         delegate.onFailure = { failures.append(delegate.failure?.error?.localizedDescription); failed.fulfill() }
+
+        // The stale request goes out to the network; its replacement is refused before any (it
+        // names a requirement the wallet doesn't know), so the answer that arrives says whose it is.
+        processor.processPaymentInput(required("https%3A%2F%2F127.0.0.1%3A1%2Fstale"))
+        processor.reset()
+        processor.processPaymentInput(required("https%3A%2F%2F127.0.0.1%3A1%2Fcurrent&req-foo=1"))
+
         wait(for: [failed], timeout: 40)
         RunLoop.main.run(until: Date().addingTimeInterval(3))
-        XCTAssertEqual(failures, [BIP70Error.badURL.errorDescription], "only the current request's answer is delivered")
+        XCTAssertEqual(failures, [String(localized: "Invalid Payment Request", comment: "")],
+                       "only the current request's answer is delivered")
         XCTAssertFalse(delegate.confirmed)
     }
 
@@ -954,7 +991,10 @@ final class QRScannerTests: XCTestCase {
         let (scanner, recorder) = makeScanner(.payment)
         scanner.didDetectCodes(["http://merchant.invalid/pr"])
         if case .connecting = scanner.status { XCTFail("a cleartext request is not fetched") }
-        XCTAssertTrue(isInvalid(scanner.status))
+        guard case .invalid(_, let message) = scanner.status else {
+            return XCTFail("a cleartext request is refused")
+        }
+        XCTAssertEqual(message, BIP70Error.insecureTransport.errorDescription, "the scanner says why")
         XCTAssertTrue(recorder.results.isEmpty)
         XCTAssertFalse(ParsedPaymentURI.parse(paymentString: "http://merchant.invalid/pr").isWholeRequestURL)
     }

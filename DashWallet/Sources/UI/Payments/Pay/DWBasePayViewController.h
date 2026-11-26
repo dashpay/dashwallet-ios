@@ -33,6 +33,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) BOOL locksBalance;
 
+/// Whether this screen's scanner opens the Connections screen with a scanned
+/// DashConnect code. NO here; Home says YES, so the lock screen and the Send
+/// scanners keep treating these codes as not-a-payment.
+@property (readonly, nonatomic) BOOL readsDashConnectCodes;
+
 - (void)performScanQRCodeAction;
 /// Assume pasteboard contains needed data and pay
 - (void)performPayToPasteboardAction;
