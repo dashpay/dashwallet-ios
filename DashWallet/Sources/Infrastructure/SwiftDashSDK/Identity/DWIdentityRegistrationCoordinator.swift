@@ -1041,13 +1041,34 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             guard let invitationURI else {
                 throw CoordinatorError.missingInvitation
             }
-            let managed = try await wallet.claimInvitation(
-                uri: invitationURI,
-                identityIndex: Self.pinnedIdentityIndex,
-                identityPubkeys: pubkeys,
-                signer: signer,
-                nowUnix: UInt32(Date().timeIntervalSince1970))
-            identityId = try managed.getId()
+            do {
+                let managed = try await wallet.claimInvitation(
+                    uri: invitationURI,
+                    identityIndex: Self.pinnedIdentityIndex,
+                    identityPubkeys: pubkeys,
+                    signer: signer,
+                    nowUnix: UInt32(Date().timeIntervalSince1970))
+                identityId = try managed.getId()
+            } catch let claimError {
+                // The SDK refuses a repeated claim instead of adopting the
+                // identity an earlier claim created. When that earlier claim
+                // was this wallet's and its result was lost before the
+                // identity was stored, the identity sits at the pinned slot:
+                // probe it and continue as an existing-identity recovery.
+                guard let landed = InvitationClaimFailure.earlierClaim(claimError),
+                      let existingId = try? await wallet.loadIdentity(atIndex: Self.pinnedIdentityIndex)
+                else {
+                    throw claimError
+                }
+                Self.logger.info("🪪 IDENT-COORD :: invitation claim refused, identity found at index \(Self.pinnedIdentityIndex) — recovering it")
+                // Only the wallet's own record says this voucher paid for the
+                // identity. A bare "consumed" report leaves the invitation to
+                // the Home card's status query.
+                if landed == .recordedByThisWallet {
+                    PendingInvitationStore.shared.retireConsumed(normalizedURI: invitationURI)
+                }
+                return existingId
+            }
             // The voucher is spent now, whatever happens to the username
             // next: from here on this is an ordinary "identity exists,
             // username required" recovery, not an invitation. Cleared by the
