@@ -751,7 +751,6 @@ final class AppLoggerTests: XCTestCase {
             let forbidden: [String]
         }
         let swap = "UI/Swap/SwapFlowCoordinator.swift"
-        let giftCard = "UI/Explore Dash/Views/DashSpend/DashSpendPayViewModel.swift"
         let checks = [
             Check(path: "UI/Home/Views/HomeViewModel.swift", fragment: "sweep dialog check",
                   forbidden: ["\\(balance)", "kOneDash"]),
@@ -766,14 +765,48 @@ final class AppLoggerTests: XCTestCase {
             Check(path: "UI/Payments/Receive/Models/DWReceiveModel.m", fragment: "DWReceiveModel: Received",
                   forbidden: ["total"]),
             Check(path: swap, fragment: "Swap: Buy receive", forbidden: ["sellAmount", "depositAddress"]),
-            Check(path: giftCard, fragment: "Attempting to purchase gift card", forbidden: ["\\(amount)"]),
-            Check(path: giftCard, fragment: "Gift card saved", forbidden: ["giftCardNote"]),
         ]
         for check in checks {
             let line = try sourceLine(sources + check.path, containing: check.fragment)
             for value in check.forbidden {
                 XCTAssertFalse(line.contains(value), "\(check.path): \(line)")
             }
+        }
+    }
+
+    // No gift-card log line writes a price, a quote, a card value or the
+    // order's payment note, also for a purchase the buyer declines. The rule
+    // over every DWLogger call of the DashSpend views and services; the
+    // events themselves stay logged.
+    func testGiftCardLinesWriteNoAmount() throws {
+        let folders = ["DashWallet/Sources/UI/Explore Dash/Views/DashSpend/",
+                       "DashWallet/Sources/Models/Explore Dash/Services/DashSpend/"]
+        let forbidden = ["amount", "price", "value", "duff", "fiat", "note", "requested", "confirmed", "quote"]
+        var calls: [String] = []
+        for (path, text) in try appSources() where folders.contains(where: { path.hasPrefix($0) }) {
+            var rest = text[...]
+            while let start = rest.range(of: "DWLogger.log") {
+                var depth = 0
+                var end = start.upperBound
+                for index in rest[start.upperBound...].indices {
+                    if rest[index] == "(" { depth += 1 }
+                    if rest[index] == ")" { depth -= 1 }
+                    end = rest.index(after: index)
+                    if depth == 0, rest[index] == ")" { break }
+                }
+                calls.append("\(path): \(rest[start.lowerBound..<end])")
+                rest = rest[end...]
+            }
+        }
+        let offenders = calls.filter { call in
+            call.components(separatedBy: "\\(").dropFirst()
+                .map { $0.prefix(while: { $0 != ")" }).lowercased() }
+                .contains { name in forbidden.contains { name.contains($0) } }
+        }
+        XCTAssertEqual(offenders, [], offenders.joined(separator: "\n"))
+        for event in ["Gift card price changed", "Gift card price change accepted",
+                      "Attempting to purchase gift card", "Gift card saved"] {
+            XCTAssertTrue(calls.contains { $0.contains(event) }, event)
         }
     }
 
