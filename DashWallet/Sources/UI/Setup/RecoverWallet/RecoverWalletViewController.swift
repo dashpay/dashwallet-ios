@@ -36,7 +36,7 @@ protocol RecoverWalletViewControllerDelegate: NSObjectProtocol {
 
 /// Hosts `RecoverWalletView`. Set `action` before the screen loads.
 @objc(DWRecoverViewController)
-final class RecoverWalletViewController: UIViewController {
+final class RecoverWalletViewController: SetupScreenViewController {
     @objc var action: DWRecoverAction = .recover
     @objc weak var delegate: RecoverWalletViewControllerDelegate?
 
@@ -77,7 +77,7 @@ final class RecoverWalletViewController: UIViewController {
 
         title = viewModel.title
         view.backgroundColor = UIColor(named: "SecondaryBackgroundColor")
-        embedSwiftUI(RecoverWalletView(viewModel: viewModel))
+        embedScreen(RecoverWalletView(viewModel: viewModel))
     }
 
     override func viewDidAppear(_ animated: Bool) {
