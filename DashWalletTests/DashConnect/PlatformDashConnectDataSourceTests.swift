@@ -1,5 +1,6 @@
 import Combine
 import Foundation
+import UIKit
 import XCTest
 @testable import dashpay
 @testable import SwiftDashSDK
@@ -7136,5 +7137,92 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
         while !condition(), Date() < deadline {
             try? await Task.sleep(nanoseconds: 2_000_000)
         }
+    }
+}
+
+// MARK: - A link over the Connections screen (#1517)
+
+/// A DashConnect link that reaches an open Connections screen leaves the
+/// screen's own sheet up and answers on it; anything else over the screen is
+/// closed so the request can show. Driven through
+/// `DashConnectHostingController.route`, the path every link takes, in a real
+/// window so the approval sheet is presented the way the app presents it.
+extension ConnectionsViewModelTermsTests {
+    func testALinkOverTheApprovalSheetKeepsItAndSaysWhyOnIt() async throws {
+        let shown = Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)
+        let spy = LoginApprovalSpy(shown: [shown])
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, openURL: { _ in }, now: { Self.phone })
+        let (window, tabBar, menuNav) = try Self.connectionsWindow(viewModel: viewModel)
+        defer { window.isHidden = true }
+
+        viewModel.onURIReceived("login")
+        await waitUntil(timeout: 10) { tabBar.presentedViewController != nil }
+        let sheet = try XCTUnwrap(tabBar.presentedViewController, "the approval sheet never showed")
+        // On screen, not still sliding in: a dismiss during the transition is not carried out.
+        await waitUntil(timeout: 10) {
+            !sheet.isBeingPresented && sheet.transitionCoordinator == nil && sheet.view.window != nil
+        }
+
+        Self.route("second", tabBar: tabBar, menuNav: menuNav)
+        await waitUntil { viewModel.approveError != nil }
+        // A sheet closed behind SwiftUI's back goes after the current pass.
+        try await Task.sleep(nanoseconds: 500_000_000)
+
+        XCTAssertTrue(tabBar.presentedViewController === sheet, "the link closed the approval sheet")
+        XCTAssertEqual(viewModel.pendingRequest, shown)
+        XCTAssertEqual(viewModel.approveError?.contains("Another DashConnect request arrived"), true)
+        XCTAssertEqual(spy.parseCount, 1)
+        XCTAssertFalse(viewModel.mayScan(), "the request on screen is still the one being answered")
+
+        // Answered, the screen takes scans again.
+        viewModel.denyPendingRequest(asksToReturn: false)
+        XCTAssertTrue(viewModel.mayScan())
+    }
+
+    func testALinkClosesWhatAnotherFlowPutOverTheScreenAndShowsItsRequest() async throws {
+        let shown = Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)
+        let spy = LoginApprovalSpy(shown: [shown])
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, openURL: { _ in }, now: { Self.phone })
+        let (window, tabBar, menuNav) = try Self.connectionsWindow(viewModel: viewModel)
+        defer { window.isHidden = true }
+
+        let other = UIViewController()
+        await withCheckedContinuation { done in tabBar.present(other, animated: false) { done.resume() } }
+        await waitUntil { other.view.window != nil }
+        XCTAssertTrue(tabBar.presentedViewController === other)
+
+        Self.route("login", tabBar: tabBar, menuNav: menuNav)
+        await waitUntil(timeout: 10) {
+            viewModel.pendingRequest != nil && tabBar.presentedViewController.map { $0 !== other } == true
+        }
+
+        XCTAssertEqual(viewModel.pendingRequest, shown)
+        XCTAssertNotNil(tabBar.presentedViewController, "the approval sheet never showed")
+        XCTAssertFalse(tabBar.presentedViewController === other, "the other flow's screen still covers the request")
+    }
+
+    private static func route(_ uri: String, tabBar: UITabBarController, menuNav: UINavigationController) {
+        DashConnectHostingController.route(
+            uri, tabBar: tabBar, menuNav: menuNav, moreTabIndex: 0,
+            makeScreen: { XCTFail("a second Connections screen was pushed"); return DashConnectHostingController(navigationController: menuNav) })
+    }
+
+    /// A tab bar whose only tab shows Connections on `viewModel`, in a key window.
+    private static func connectionsWindow(
+        viewModel: ConnectionsViewModel
+    ) throws -> (UIWindow, UITabBarController, UINavigationController) {
+        let menuNav = UINavigationController()
+        let screen = DashConnectHostingController(navigationController: menuNav, viewModel: viewModel)
+        menuNav.viewControllers = [screen]
+        let tabBar = UITabBarController()
+        tabBar.viewControllers = [menuNav]
+        let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first)
+        let window = UIWindow(windowScene: scene)
+        window.rootViewController = tabBar
+        window.makeKeyAndVisible()
+        screen.loadViewIfNeeded()
+        return (window, tabBar, menuNav)
     }
 }

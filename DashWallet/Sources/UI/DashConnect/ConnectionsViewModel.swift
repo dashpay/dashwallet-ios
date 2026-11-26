@@ -421,6 +421,14 @@ final class ConnectionsViewModel: ObservableObject {
     /// running or about to show: a disconnect waits for it.
     private var isBusyWithAnotherRequest: Bool { isBusySigning || isResolvingRequest }
 
+    /// Whether the screen has a sheet of its own up: an approval or its
+    /// return step, a purchase, or a connection's sheet. A link for the
+    /// screen is answered on that sheet; closing it from outside would leave
+    /// this model holding a request nobody sees.
+    var showsOwnSheet: Bool {
+        pendingRequest != nil || pendingReturn != nil || pendingTokenPurchase != nil || shownConnection != nil
+    }
+
     /// Something signs, or an approval is on screen. A request still
     /// resolving is not counted here: a newer scan supersedes it.
     private var isBusySigning: Bool {
@@ -619,6 +627,7 @@ final class ConnectionsViewModel: ObservableObject {
         // (`answerWithoutUsername`).
         if needsUsername || usernameUnknown,
            !DashConnectUri.isStUri(content.trimmingCharacters(in: .whitespacesAndNewlines)) {
+            DWLogger.log("🔗 DASHCONNECT :: request not taken: \(needsUsername ? "no username" : "username not read yet")")
             answerWithoutUsername()
             return
         }
@@ -635,6 +644,7 @@ final class ConnectionsViewModel: ObservableObject {
         // The refusal has to appear where the user is looking: the sheet
         // covers the screen, and a screen-level `.alert` cannot show over it.
         guard pendingRequest == nil, pendingTokenPurchase == nil else {
+            DWLogger.log("🔗 DASHCONNECT :: request not taken: another one is on screen")
             let refusal = String(localized: "Another DashConnect request arrived. Finish this one first, then try again.",
                                             comment: "DashConnect: a second request arrived while one was on screen")
             // Onto the sheet that is actually up: the purchase sheet reads
@@ -650,6 +660,7 @@ final class ConnectionsViewModel: ObservableObject {
         }
 
         guard !isProcessingStateTransition, !isDisconnecting else {
+            DWLogger.log("🔗 DASHCONNECT :: request not taken: \(isDisconnecting ? "a disconnect" : "a key registration") is running")
             let refusal = ConnectionsScreenMessage(
                 kind: .error,
                 text: String(localized: "Finish the current DashConnect request first, then try again.",
@@ -698,6 +709,7 @@ final class ConnectionsViewModel: ObservableObject {
                     pendingRequestArrivedByLink = byLink
                     pendingFailureStatus = nil
                     pendingRequest = connectionRequest
+                    DWLogger.log("🔗 DASHCONNECT :: login request shown (\(byLink ? "link" : "scan"))")
                 case let .stateTransition(request):
                     guard generation == requestGeneration else { return }
                     await closeConnectionSheet()
@@ -732,6 +744,7 @@ final class ConnectionsViewModel: ObservableObject {
                 }
             } catch {
                 guard generation == requestGeneration else { return }
+                DWLogger.log("🔗 DASHCONNECT :: request not read: \(type(of: error))")
                 let failure = ConnectionsScreenMessage(
                     kind: .error,
                     text: String(localized: "Could not complete the DashConnect request: \(error.localizedDescription)", comment: "DashConnect")

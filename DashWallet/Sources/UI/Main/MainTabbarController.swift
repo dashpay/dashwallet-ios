@@ -550,22 +550,18 @@ extension MainTabbarController {
     /// `moreTabIndex` rather than from the tab enum.
     @objc
     public func openDashConnect(_ uri: String) {
-        dismiss(animated: false, completion: nil)
-
-        guard let menuNav = menuNavigationController?.navigationController else { return }
-
-        if let moreTabIndex {
-            selectedIndex = moreTabIndex
-        }
-
-        if let connections = menuNav.topViewController as? DashConnectHostingController {
-            connections.handle(uri: uri)
+        guard let menuNav = menuNavigationController?.navigationController else {
+            dismiss(animated: false, completion: nil)
+            DWLogger.log("🔗 DASHCONNECT :: link dropped: no More tab")
             return
         }
 
-        let controller = DashConnectHostingController(
-            navigationController: menuNav, uri: uri, dashPayModel: homeModel?.dashPayModel)
-        menuNav.pushViewController(controller, animated: true)
+        DashConnectHostingController.route(
+            uri, tabBar: self, menuNav: menuNav, moreTabIndex: moreTabIndex,
+            makeScreen: {
+                DashConnectHostingController(
+                    navigationController: menuNav, uri: uri, dashPayModel: homeModel?.dashPayModel)
+            })
     }
 
     @objc
