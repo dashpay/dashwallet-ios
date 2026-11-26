@@ -15,6 +15,7 @@
 //  limitations under the License.
 //
 
+import DashUIKit
 import SwiftUI
 import UIKit
 
@@ -201,5 +202,93 @@ extension UIViewController {
         ])
         hosting.didMove(toParent: self)
         return hosting
+    }
+}
+
+// MARK: - SetupScreenViewController
+
+/// What DashUIKit's bar shows over a setup screen. The controller fills it in.
+@MainActor
+final class SetupNavigationBarModel: ObservableObject {
+    @Published var title = ""
+    /// A line over the title, such as which wallet the screen is about.
+    @Published var prompt: String?
+    @Published var back: (() -> Void)?
+    @Published var close: (() -> Void)?
+}
+
+/// A setup screen: SwiftUI content under DashUIKit's navigation bar, which
+/// takes the place of the system one. Back shows when the screen was pushed;
+/// close shows when the presenter sets `closeHandler`.
+class SetupScreenViewController: UIViewController, NavigationFullscreenable {
+    let navigationBar = SetupNavigationBarModel()
+
+    /// Shown as the close element, top right. For a screen at the root of a
+    /// modal navigation stack.
+    @objc var closeHandler: (() -> Void)? {
+        didSet { navigationBar.close = closeHandler }
+    }
+
+    override var title: String? {
+        didSet { navigationBar.title = title ?? "" }
+    }
+
+    /// The line over the title, in place of the navigation item's prompt.
+    var prompt: String? {
+        get { navigationBar.prompt }
+        set { navigationBar.prompt = newValue }
+    }
+
+    var requiresNoNavigationBar: Bool { true }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        let isPushed = navigationController.map { $0.viewControllers.first !== self } ?? false
+        navigationBar.back = isPushed
+            ? { [weak self] in self?.navigationController?.popViewController(animated: true) }
+            : nil
+    }
+
+    /// Embeds `content` full screen under the bar.
+    @discardableResult
+    func embedScreen(_ content: some View) -> UIViewController {
+        embedSwiftUI(SetupScreen(navigationBar: navigationBar, content: content))
+    }
+}
+
+private struct SetupScreen<Content: View>: View {
+    @ObservedObject var navigationBar: SetupNavigationBarModel
+    let content: Content
+
+    var body: some View {
+        VStack(spacing: 0) {
+            DashUIKit.NavigationBar(
+                leading: {
+                    if let back = navigationBar.back {
+                        DashUIKit.NavigationBarElement.back.button(action: back)
+                    }
+                },
+                central: {
+                    VStack(spacing: 2) {
+                        if let prompt = navigationBar.prompt {
+                            Text(prompt)
+                                .dashFont(.caption1)
+                                .foregroundColor(.dash.secondaryText)
+                        }
+                        Text(navigationBar.title)
+                            .dashFont(.subheadMedium)
+                            .foregroundColor(.dash.primaryText)
+                            .accessibilityAddTraits(.isHeader)
+                    }
+                },
+                trailing: {
+                    if let close = navigationBar.close {
+                        DashUIKit.NavigationBarElement.close.button(action: close)
+                    }
+                })
+
+            content
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
     }
 }

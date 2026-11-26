@@ -37,7 +37,7 @@ protocol SetPinViewControllerDelegate: AnyObject {
 /// Hosts `SetPinView`, pushed in wallet setup and presented from Security
 /// and the lock screen.
 @objc(DWSetPinViewController)
-final class SetPinViewController: UIViewController {
+final class SetPinViewController: SetupScreenViewController {
     @objc weak var delegate: SetPinViewControllerDelegate?
 
     private let viewModel = SetPinViewModel()
@@ -77,6 +77,6 @@ final class SetPinViewController: UIViewController {
             guard let self else { return }
             self.delegate?.setPinViewControllerDidCancel(self)
         }
-        embedSwiftUI(SetPinView(viewModel: viewModel))
+        embedScreen(SetPinView(viewModel: viewModel))
     }
 }
