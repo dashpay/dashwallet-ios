@@ -293,6 +293,30 @@ enum InvitationClaimFailure: Equatable {
         return nil
     }
 
+    /// What a refused claim says about an earlier claim of the same voucher.
+    enum EarlierClaim: Equatable {
+        /// The wallet records the invitation's identity: the earlier claim
+        /// was this wallet's.
+        case recordedByThisWallet
+        /// The voucher is spent by an identity the wallet does not record:
+        /// someone else's, or this wallet's own claim whose result was lost.
+        case consumedByUnknownIdentity
+    }
+
+    /// The two errors the SDK returns for a repeated claim in place of the
+    /// identity; nil for every other error. Only the claim's own error is
+    /// read, not one wrapped by the coordinator.
+    static func earlierClaim(_ error: Error) -> EarlierClaim? {
+        switch error {
+        case PlatformWalletError.invitationClaimedByThisWallet:
+            return .recordedByThisWallet
+        case PlatformWalletError.assetLockAlreadyConsumed:
+            return .consumedByUnknownIdentity
+        default:
+            return nil
+        }
+    }
+
     /// The user-facing wording.
     var message: String {
         switch self {
