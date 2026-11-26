@@ -106,7 +106,9 @@ static const bool _SNAPSHOT = 0;
 
 //MARK: Home
 #import "DWHomeModel.h"
-#import "DWRecoverViewController.h"
+#import "DWRecoverAction.h"
+#import "DWRecoverWalletCommand.h"
+#import "DWSecureAllocator.h"
 #import "DWSecureWalletDelegate.h"
 #import "DWBasePayViewController.h"
 #import "DWHomeProtocol.h"

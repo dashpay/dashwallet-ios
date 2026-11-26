@@ -20,7 +20,8 @@
 #import "DWAppRootViewController.h"
 #import "DWGlobalOptions.h"
 #import "DWOnboardingViewController.h"
-#import "DWRecoverViewController.h"
+#import "DWRecoverAction.h"
+#import "DWRecoverWalletCommand.h"
 #import "DWUIKit.h"
 #import "dashwallet-Swift.h"
 
@@ -158,11 +159,10 @@ NS_ASSUME_NONNULL_BEGIN
     DWRecoverViewController *controller = [[DWRecoverViewController alloc] init];
     controller.action = DWRecoverAction_SupportWipe;
     controller.delegate = self;
-    UIBarButtonItem *cancelButton =
-        [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
-                                                      target:self
-                                                      action:@selector(reinstallSupportWipeCancelAction:)];
-    controller.navigationItem.rightBarButtonItem = cancelButton;
+    __weak typeof(self) weakSelf = self;
+    controller.closeHandler = ^{
+        [weakSelf reinstallSupportWipeCancelAction:nil];
+    };
 
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];

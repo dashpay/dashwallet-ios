@@ -7,8 +7,8 @@
 //  `wordIsLocal:`, `wordIsValid:`) to SwiftDashSDK's `Mnemonic`. Replaces the
 //  DashSync `DSBIP39Mnemonic` calls that previously lived in `DWRecoverModel.m`
 //  — migration row #4 (validation) plus its sister word helpers, now on
-//  SwiftDashSDK. Phrase-repair (`DWPhraseRepairViewController`) stays on
-//  DashSync (no SDK equivalent).
+//  SwiftDashSDK. Phrase repair (`PhraseRepairViewModel`) goes through
+//  `SwiftDashSDKPhraseRepairer`.
 //
 
 import Foundation

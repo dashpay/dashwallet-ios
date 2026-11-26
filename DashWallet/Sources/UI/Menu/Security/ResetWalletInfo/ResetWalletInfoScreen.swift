@@ -87,7 +87,7 @@ struct ResetWalletInfoScreen: View {
 /// is the delegate of the recovery-phrase screen it pushes, forwarding a
 /// completed wipe to `wipeDelegate`.
 final class ResetWalletInfoHostingController: UIHostingController<ResetWalletInfoScreen>,
-    DWRecoverViewControllerDelegate {
+    RecoverWalletViewControllerDelegate {
 
     /// Lets the screen's buttons, built before `super.init`, reach the
     /// controller without a strong reference back to it.
@@ -112,20 +112,20 @@ final class ResetWalletInfoHostingController: UIHostingController<ResetWalletInf
     }
 
     private func showRecoveryPhraseCheck() {
-        let controller = DWRecoverViewController()
+        let controller = RecoverWalletViewController()
         controller.action = .wipe
         controller.delegate = self
         navigationController?.pushViewController(controller, animated: true)
     }
 
-    // MARK: - DWRecoverViewControllerDelegate
+    // MARK: - RecoverWalletViewControllerDelegate
 
-    func recoverViewControllerDidRecoverWallet(_ controller: DWRecoverViewController,
+    func recoverViewControllerDidRecoverWallet(_ controller: RecoverWalletViewController,
                                                recover recoverCommand: DWRecoverWalletCommand) {
         assertionFailure("The wipe flow never recovers a wallet")
     }
 
-    func recoverViewControllerDidWipe(_ controller: DWRecoverViewController) {
+    func recoverViewControllerDidWipe(_ controller: RecoverWalletViewController) {
         wipeDelegate?.didWipeWallet()
     }
 }

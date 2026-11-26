@@ -20,7 +20,8 @@
 #import "DWLockActionButton.h"
 #import "DWLockPinInputView.h"
 #import "DWLockScreenModel.h"
-#import "DWRecoverViewController.h"
+#import "DWRecoverAction.h"
+#import "DWRecoverWalletCommand.h"
 #import "DWUIKit.h"
 #import "dashwallet-Swift.h"
 
@@ -199,14 +200,11 @@ static CGFloat ActionButtonsHeight(void) {
     DWRecoverViewController *controller = [[DWRecoverViewController alloc] init];
     controller.action = DWRecoverAction_ResetPin;
     controller.delegate = self;
-    UIBarButtonItem *cancelButton =
-        [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
-                                                      target:self
-                                                      action:@selector(forgotPinRecoveryCancelAction:)];
-    // This controller is the root of a modal navigation stack. Our shared
-    // navigation controller clears left-side items for root controllers (to
-    // suppress a back button), so keep the modal escape action on the right.
-    controller.navigationItem.rightBarButtonItem = cancelButton;
+    // The root of a modal navigation stack: the close element leaves it.
+    __weak typeof(self) weakSelf = self;
+    controller.closeHandler = ^{
+        [weakSelf forgotPinRecoveryCancelAction:nil];
+    };
 
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
@@ -242,11 +240,10 @@ static CGFloat ActionButtonsHeight(void) {
     DWRecoverViewController *controller = [[DWRecoverViewController alloc] init];
     controller.action = DWRecoverAction_SupportWipe;
     controller.delegate = self;
-    UIBarButtonItem *cancelButton =
-        [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
-                                                      target:self
-                                                      action:@selector(forgotPinRecoveryCancelAction:)];
-    controller.navigationItem.rightBarButtonItem = cancelButton;
+    __weak typeof(self) weakSelf = self;
+    controller.closeHandler = ^{
+        [weakSelf forgotPinRecoveryCancelAction:nil];
+    };
 
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
