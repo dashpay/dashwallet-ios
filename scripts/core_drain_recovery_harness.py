@@ -426,6 +426,11 @@ typealias AssetLockProbeStore = UnrelatedPerWalletState
 enum GeneratedWalletIdentityMarker { static func clear(walletId: Data) {} }
 enum DashConnectStores { static func removeAll(walletIdHex: String, in defaults: UserDefaults) {} }
 enum SPVChainStoreRebuild { static func finish(walletIds: [Data], scope: String) {} }
+final class CreditSendActivityDAO {
+    static let shared = CreditSendActivityDAO()
+    func delete(walletId: Data) {}
+    func deleteAll() {}
+}
 @MainActor enum SwiftDashSDKWalletWiper {
     static let logger = Logger(subsystem: "core-drain-tests", category: "deletion")
 ''' + deletion + "\n}\n")
