@@ -832,6 +832,16 @@ final class ConnectionsViewModel: ObservableObject {
                 self.pendingRequest = nil
                 self.pendingLoginRequest = nil
                 self.approveError = nil
+                // With no return to ask about (a scanned code, or a link
+                // with no callback), the app is on another screen: the user
+                // is told to go back to it.
+                if pendingReturn == nil {
+                    message = ConnectionsScreenMessage(
+                        kind: .success,
+                        text: String(
+                            localized: "Connected to \(consent.resolvedAppLabel). Go back to your browser to continue.",
+                            comment: "DashConnect: an approved sign-in with no return link; the placeholder is the app's name"))
+                }
             } catch DashConnectPlatformError.approvalOutOfDate {
                 Self.logApprovalStopped(DashConnectPlatformError.approvalOutOfDate)
                 // Another identity, wallet or network became active, or the
