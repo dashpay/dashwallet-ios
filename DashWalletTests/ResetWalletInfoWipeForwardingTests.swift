@@ -26,7 +26,7 @@ final class ResetWalletInfoWipeForwardingTests: XCTestCase {
         let spy = WipeDelegateSpy()
         let controller = ResetWalletInfoHostingController(wipeDelegate: spy)
 
-        controller.recoverViewControllerDidWipe(DWRecoverViewController())
+        controller.recoverViewControllerDidWipe(RecoverWalletViewController())
 
         XCTAssertEqual(spy.didWipeCount, 1)
     }
@@ -40,6 +40,6 @@ final class ResetWalletInfoWipeForwardingTests: XCTestCase {
 
         XCTAssertNil(weakSpy, "The controller must hold its wipe delegate weakly, like the Objective-C screen it replaces")
         // With the delegate gone a completed wipe is a no-op, not a crash.
-        controller.recoverViewControllerDidWipe(DWRecoverViewController())
+        controller.recoverViewControllerDidWipe(RecoverWalletViewController())
     }
 }

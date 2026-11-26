@@ -72,7 +72,7 @@ final class SetupViewController: UIViewController, NavigationFullscreenable {
     private func recoverWallet() {
         flow.startRecovering()
 
-        let controller = DWRecoverViewController()
+        let controller = RecoverWalletViewController()
         controller.action = .recover
         controller.delegate = self
         navigationController?.pushViewController(controller, animated: true)
@@ -143,15 +143,15 @@ extension SetupViewController: BackupInfoViewControllerDelegate {
     }
 }
 
-// MARK: - DWRecoverViewControllerDelegate
+// MARK: - RecoverWalletViewControllerDelegate
 
-extension SetupViewController: DWRecoverViewControllerDelegate {
-    func recoverViewControllerDidRecoverWallet(_ controller: DWRecoverViewController,
+extension SetupViewController: RecoverWalletViewControllerDelegate {
+    func recoverViewControllerDidRecoverWallet(_ controller: RecoverWalletViewController,
                                                recover recoverCommand: DWRecoverWalletCommand) {
         show(flow.didEnterRecoveryPhrase { recoverCommand.execute() })
     }
 
-    func recoverViewControllerDidWipe(_ controller: DWRecoverViewController) {
+    func recoverViewControllerDidWipe(_ controller: RecoverWalletViewController) {
         navigationController?.popViewController(animated: true)
     }
 }

@@ -20,7 +20,8 @@
 #import "DWLockActionButton.h"
 #import "DWLockPinInputView.h"
 #import "DWLockScreenModel.h"
-#import "DWRecoverViewController.h"
+#import "DWRecoverAction.h"
+#import "DWRecoverWalletCommand.h"
 #import "DWUIKit.h"
 #import "dashwallet-Swift.h"
 

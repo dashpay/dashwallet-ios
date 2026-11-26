@@ -20,7 +20,8 @@
 #import "DWAppRootViewController.h"
 #import "DWGlobalOptions.h"
 #import "DWOnboardingViewController.h"
-#import "DWRecoverViewController.h"
+#import "DWRecoverAction.h"
+#import "DWRecoverWalletCommand.h"
 #import "DWUIKit.h"
 #import "dashwallet-Swift.h"
 
