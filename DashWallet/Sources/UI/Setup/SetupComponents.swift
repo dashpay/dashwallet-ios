@@ -89,9 +89,11 @@ struct PinBoxes: View {
     }
 }
 
-/// Moves a view side to side, three times per bump of `shakes`.
-struct PinShakeEffect: GeometryEffect {
+/// Moves a view side to side, `oscillations` times per bump of `shakes`: the
+/// rejection shake of PIN entry and of a wrong pick.
+struct ShakeEffect: GeometryEffect {
     var shakes: CGFloat
+    var oscillations: CGFloat = 3
 
     var animatableData: CGFloat {
         get { shakes }
@@ -99,7 +101,7 @@ struct PinShakeEffect: GeometryEffect {
     }
 
     func effectValue(size: CGSize) -> ProjectionTransform {
-        ProjectionTransform(CGAffineTransform(translationX: 10 * sin(shakes * .pi * 6), y: 0))
+        ProjectionTransform(CGAffineTransform(translationX: 10 * sin(shakes * .pi * 2 * oscillations), y: 0))
     }
 }
 
@@ -156,10 +158,7 @@ struct PinKeypad: View {
     }
 
     private func key(action: @escaping () -> Void, @ViewBuilder label: () -> some View) -> some View {
-        Button {
-            UIDevice.current.playInputClick()
-            action()
-        } label: {
+        Button(action: action) {
             label()
                 .font(.system(.title3))
                 .frame(maxWidth: 115, maxHeight: 50)

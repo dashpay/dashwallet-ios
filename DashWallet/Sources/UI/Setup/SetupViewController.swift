@@ -22,17 +22,14 @@ protocol SetupViewControllerDelegate: AnyObject {
     func setupViewControllerDidFinish(_ controller: SetupViewController)
 }
 
-/// Wallet setup for `DWAppRootViewController`: hosts `SetupView` and runs
-/// what follows Create a New Wallet or Recover Wallet — Set PIN, then Face ID
-/// or Touch ID, then backing up the recovery phrase — each step replacing the
-/// one before it.
+/// Wallet setup for `DWAppRootViewController`: hosts `SetupView` and shows
+/// the steps `SetupFlowModel` picks after Create a New Wallet or Recover
+/// Wallet, each replacing the one before it.
 @objc(DWSetupViewController)
 final class SetupViewController: UIViewController, NavigationFullscreenable {
     @objc weak var delegate: SetupViewControllerDelegate?
 
-    /// Recovering waits for the PIN: the wallet is created from the phrase
-    /// only once a PIN protects it.
-    private var recoverWalletCommand: DWRecoverWalletCommand?
+    private let flow = SetupFlowModel()
     private var launchingWasDeferred = false
 
     @objc
@@ -65,18 +62,15 @@ final class SetupViewController: UIViewController, NavigationFullscreenable {
     // MARK: Actions
 
     private func createWallet() {
-        recoverWalletCommand = nil
-        DWGlobalOptions.sharedInstance().walletNeedsBackup = true
-
-        guard let next = nextController() else {
+        guard let step = flow.createWallet() else {
             assertionFailure("A new wallet always has a setup step left")
             return
         }
-        navigationController?.setViewControllers([self, next], animated: true)
+        navigationController?.setViewControllers([self, controller(for: step)], animated: true)
     }
 
     private func recoverWallet() {
-        recoverWalletCommand = nil
+        flow.startRecovering()
 
         let controller = DWRecoverViewController()
         controller.action = .recover
@@ -86,30 +80,32 @@ final class SetupViewController: UIViewController, NavigationFullscreenable {
 
     // MARK: Steps
 
-    private func nextController() -> UIViewController? {
-        if SetPinViewModel.shouldSetPin {
+    private func controller(for step: SetupFlowModel.Step) -> UIViewController {
+        switch step {
+        case .setPin:
             let controller = SetPinViewController(intent: .createNewWallet)
             controller.delegate = self
             return controller
-        }
-        if BiometricAuthViewModel.shouldOffer {
+        case .biometrics:
             let controller = BiometricAuthViewController()
-            controller.onFinish = { [weak self] in self?.continueOrCompleteSetup() }
+            controller.onFinish = { [weak self] in
+                guard let self else { return }
+                self.show(self.flow.nextStep())
+            }
             return controller
-        }
-        if DWPreviewSeedPhraseModel.shouldVerifyPassphrase {
+        case .backup:
             let controller = BackupInfoViewController.controller(with: .setup)
             controller.delegate = self
             controller.isCloseButtonHidden = true
             controller.isSkipButtonHidden = false
             return controller
         }
-        return nil
     }
 
-    private func continueOrCompleteSetup() {
-        if let next = nextController() {
-            navigationController?.setViewControllers([self, next], animated: true)
+    /// Shows `step`, or completes setup when there is none left.
+    private func show(_ step: SetupFlowModel.Step?) {
+        if let step {
+            navigationController?.setViewControllers([self, controller(for: step)], animated: true)
         } else {
             completeSetup()
         }
@@ -124,16 +120,12 @@ final class SetupViewController: UIViewController, NavigationFullscreenable {
 
 extension SetupViewController: SetPinViewControllerDelegate {
     func setPinViewControllerDidCancel(_ controller: SetPinViewController) {
-        recoverWalletCommand = nil
+        flow.didCancelPin()
         navigationController?.popViewController(animated: true)
     }
 
     func setPinViewControllerDidSetPin(_ controller: SetPinViewController) {
-        // Recovering: the wallet is created now that a PIN protects it.
-        recoverWalletCommand?.execute()
-        recoverWalletCommand = nil
-
-        continueOrCompleteSetup()
+        show(flow.didSetPin())
     }
 }
 
@@ -156,12 +148,7 @@ extension SetupViewController: BackupInfoViewControllerDelegate {
 extension SetupViewController: DWRecoverViewControllerDelegate {
     func recoverViewControllerDidRecoverWallet(_ controller: DWRecoverViewController,
                                                recover recoverCommand: DWRecoverWalletCommand) {
-        // Recovering waits for a PIN; the phrase was just entered, so there is
-        // nothing to back up.
-        recoverWalletCommand = recoverCommand
-        DWGlobalOptions.sharedInstance().walletNeedsBackup = false
-
-        continueOrCompleteSetup()
+        show(flow.didEnterRecoveryPhrase { recoverCommand.execute() })
     }
 
     func recoverViewControllerDidWipe(_ controller: DWRecoverViewController) {

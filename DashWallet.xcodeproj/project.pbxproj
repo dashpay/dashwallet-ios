@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		61CA559204E6AAAC7AC5E374 /* SetPinViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1478DF69237649F246F8071A /* SetPinViewModelTests.swift */; };
+		731D8FAD8E979EA9648F9B28 /* SetupFlowModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6DCA16BEE4C8BE4470C010C /* SetupFlowModelTests.swift */; };
+		7BEEE829C66286C1640FE677 /* SetupFlowModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2E3CBE65116C7ACDAB73E17 /* SetupFlowModel.swift */; };
+		2F0C172A2ADDCA4C922DC782 /* SetupFlowModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2E3CBE65116C7ACDAB73E17 /* SetupFlowModel.swift */; };
 		453241B2C2ADAA94676338D2 /* BiometricAuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C563BA28FF43DA2621F9651 /* BiometricAuthView.swift */; };
 		7D340EFC13A61D6D8EC4ADE5 /* BiometricAuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C563BA28FF43DA2621F9651 /* BiometricAuthView.swift */; };
 		7170180A5362B8E156BE6E42 /* SetPinViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D4C4EEC31AAA2FEDF008DC3 /* SetPinViewController.swift */; };
@@ -2109,6 +2113,9 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1478DF69237649F246F8071A /* SetPinViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetPinViewModelTests.swift; sourceTree = "<group>"; };
+		A6DCA16BEE4C8BE4470C010C /* SetupFlowModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupFlowModelTests.swift; sourceTree = "<group>"; };
+		D2E3CBE65116C7ACDAB73E17 /* SetupFlowModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupFlowModel.swift; sourceTree = "<group>"; };
 		5C563BA28FF43DA2621F9651 /* BiometricAuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BiometricAuthView.swift; sourceTree = "<group>"; };
 		2D4C4EEC31AAA2FEDF008DC3 /* SetPinViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetPinViewController.swift; sourceTree = "<group>"; };
 		06363C84C583CD27370ADA0A /* SetPinView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetPinView.swift; sourceTree = "<group>"; };
@@ -4417,6 +4424,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		2A4430E922CBB98D009BAF7F /* Setup */ = {
 			isa = PBXGroup;
 			children = (
+				D2E3CBE65116C7ACDAB73E17 /* SetupFlowModel.swift */,
 				DA40F4639073CBBA115CE494 /* SetupComponents.swift */,
 				A2ADCE57B337C00995F78FEE /* SetupViewController.swift */,
 				3A5FDAEEFBC4B8C788E5ABDB /* SetupView.swift */,
@@ -7048,6 +7056,8 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		75D5F3EC191EC270004AB296 /* DashWalletTests */ = {
 			isa = PBXGroup;
 			children = (
+				1478DF69237649F246F8071A /* SetPinViewModelTests.swift */,
+				A6DCA16BEE4C8BE4470C010C /* SetupFlowModelTests.swift */,
 				E12F7F1F376A7ED784840839 /* ShieldedWithdrawalHistoryTests.swift */,
 				A11C00001274000000000031 /* AssetLockInputPolicyTests.swift */,
 				47A184E4299CC19A0017E32C /* rates.json */,
@@ -9341,6 +9351,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7BEEE829C66286C1640FE677 /* SetupFlowModel.swift in Sources */,
 				7D340EFC13A61D6D8EC4ADE5 /* BiometricAuthView.swift in Sources */,
 				8E78990E60B40715C5B03971 /* SetPinViewController.swift in Sources */,
 				93AACF242CB32B5D8807DB43 /* SetPinView.swift in Sources */,
@@ -10180,6 +10191,8 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				61CA559204E6AAAC7AC5E374 /* SetPinViewModelTests.swift in Sources */,
+				731D8FAD8E979EA9648F9B28 /* SetupFlowModelTests.swift in Sources */,
 				AE4A372E7EC798A350694542 /* ShieldedWithdrawalHistoryTests.swift in Sources */,
 				A11C00001274000000000032 /* AssetLockInputPolicyTests.swift in Sources */,
 				1FED152A2C6BCE50AFB0445B /* WalletProtocolCompatibilityTests.swift in Sources */,
@@ -10333,6 +10346,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2F0C172A2ADDCA4C922DC782 /* SetupFlowModel.swift in Sources */,
 				453241B2C2ADAA94676338D2 /* BiometricAuthView.swift in Sources */,
 				7170180A5362B8E156BE6E42 /* SetPinViewController.swift in Sources */,
 				B56DBAE02F71F8E530A2A760 /* SetPinView.swift in Sources */,

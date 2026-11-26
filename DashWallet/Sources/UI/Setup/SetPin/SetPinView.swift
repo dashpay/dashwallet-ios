@@ -44,11 +44,18 @@ final class SetPinViewModel: ObservableObject {
     /// Cancel on Set PIN, or saving the PIN failed.
     var onCancel: (() -> Void)?
 
-    private let service: AuthenticationService
+    /// Saves the PIN; false when it could not be saved.
+    private let savePin: (String) -> Bool
+    /// Runs `work` after `delay`, once a slide or a shake is over.
+    private let schedule: (_ delay: TimeInterval, _ work: @escaping () -> Void) -> Void
     private let feedback = UINotificationFeedbackGenerator()
 
-    init(service: AuthenticationService = .shared) {
-        self.service = service
+    init(savePin: @escaping (String) -> Bool = { AuthenticationService.shared.setupNewPin($0) },
+         schedule: @escaping (_ delay: TimeInterval, _ work: @escaping () -> Void) -> Void = { delay, work in
+             DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
+         }) {
+        self.savePin = savePin
+        self.schedule = schedule
     }
 
     /// Whether the wallet still needs its first PIN.
@@ -101,7 +108,7 @@ final class SetPinViewModel: ObservableObject {
         withAnimation(.spring(response: 0.35, dampingFraction: 1)) {
             self.step = step
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
+        schedule(0.35) { [weak self] in
             self?.isInputEnabled = true
         }
     }
@@ -112,7 +119,7 @@ final class SetPinViewModel: ObservableObject {
         guard confirmation == pin else {
             feedback.notificationOccurred(.error)
             rejections += 1
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in
+            schedule(0.4) { [weak self] in
                 guard let self else { return }
                 self.confirmation = ""
                 self.isInputEnabled = true
@@ -121,10 +128,13 @@ final class SetPinViewModel: ObservableObject {
             return
         }
 
-        feedback.notificationOccurred(.success)
-        if service.setupNewPin(pin) {
+        // Success only once the PIN is saved. Failing to save leaves, as
+        // Cancel does, so the PIN can be set again.
+        if savePin(pin) {
+            feedback.notificationOccurred(.success)
             onSet?()
         } else {
+            feedback.notificationOccurred(.error)
             onCancel?()
         }
     }
@@ -140,26 +150,10 @@ struct SetPinView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            VStack(spacing: 16) {
-                ZStack {
-                    if viewModel.step == .set {
-                        step(title: String(localized: "Set PIN", comment: ""), filled: viewModel.pin.count)
-                            .transition(.asymmetric(insertion: .move(edge: .leading), removal: .move(edge: .leading)))
-                    } else {
-                        step(title: String(localized: "Confirm PIN", comment: ""), filled: viewModel.confirmation.count)
-                            .modifier(PinShakeEffect(shakes: CGFloat(viewModel.rejections)))
-                            .animation(.linear(duration: 0.4), value: viewModel.rejections)
-                            .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .trailing)))
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                .clipped()
-
-                Text(String(localized: "This PIN will be required to unlock your app every time when you use it.", comment: ""))
-                    .font(.system(.callout))
-                    .foregroundColor(Color("SecondaryTextColor"))
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
+            // Scrolls only when the largest text sizes do not fit.
+            ViewThatFits(in: .vertical) {
+                entry
+                ScrollView { entry }
             }
             .frame(maxHeight: .infinity)
 
@@ -170,7 +164,8 @@ struct SetPinView: View {
                 onDigit: viewModel.enter(digit:),
                 onDelete: viewModel.deleteBackward
             )
-            .padding(.bottom, 4)
+            // More room on iPad, as the screen had.
+            .padding(.bottom, UIDevice.isIpad ? 24 : 4)
         }
         .padding(.horizontal, 16)
         .background(Color("SecondaryBackgroundColor").ignoresSafeArea())
@@ -178,7 +173,8 @@ struct SetPinView: View {
         .focusable()
         .focused($hasKeyboardFocus)
         .focusEffectDisabled()
-        .onKeyPress(characters: .decimalDigits) { press in
+        // Fresh presses only: a held key must not fill in Confirm PIN too.
+        .onKeyPress(characters: .decimalDigits, phases: .down) { press in
             guard let digit = press.characters.first?.wholeNumberValue else { return .ignored }
             viewModel.enter(digit: digit)
             return .handled
@@ -188,6 +184,31 @@ struct SetPinView: View {
             return .handled
         }
         .onAppear { hasKeyboardFocus = true }
+    }
+
+    private var entry: some View {
+        VStack(spacing: 16) {
+            ZStack {
+                if viewModel.step == .set {
+                    step(title: String(localized: "Set PIN", comment: ""), filled: viewModel.pin.count)
+                        .transition(.asymmetric(insertion: .move(edge: .leading), removal: .move(edge: .leading)))
+                } else {
+                    step(title: String(localized: "Confirm PIN", comment: ""), filled: viewModel.confirmation.count)
+                        .modifier(ShakeEffect(shakes: CGFloat(viewModel.rejections)))
+                        .animation(.linear(duration: 0.4), value: viewModel.rejections)
+                        .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .trailing)))
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .clipped()
+
+            Text(String(localized: "This PIN will be required to unlock your app every time when you use it.", comment: ""))
+                .font(.system(.callout))
+                .foregroundColor(Color("SecondaryTextColor"))
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity)
     }
 
     private func step(title: String, filled: Int) -> some View {
