@@ -137,7 +137,7 @@ struct LiveSendMaxPlanner: SendMaxPlanning {
         case .shieldedToCore, .shieldedToPlatform, .shieldedToShielded, .shieldedToIdentity, .identityToCore,
              .identityToPlatform, .identityToIdentity, .identityToShielded:
             return nil
-        case .coreToIdentity:
+        case .coreToIdentity, .coreToPlatform:
             return await balanceLessFee(route)
         }
     }

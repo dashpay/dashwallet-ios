@@ -32,6 +32,7 @@ final class ExternalSendFeeEstimatorTests: XCTestCase {
             .shieldFromIdentity: 15_000_005
         ]
         var withdrawalFeeCredits: UInt64? = 3_000_001
+        var addressFundingCredits: UInt64? = 12_345_678
         private(set) var coreAmounts: [UInt64] = []
         private(set) var shieldedCalls: [(kind: PlatformWalletManager.ShieldedFeeKind, numActions: Int)] = []
         private(set) var withdrawalReads = 0
@@ -51,6 +52,12 @@ final class ExternalSendFeeEstimatorTests: XCTestCase {
             return fee
         }
 
+        func addressFundingFeeCredits() async throws -> UInt64 {
+            totalReads += 1
+            guard let addressFundingCredits else { throw EdgeError.noAnswer }
+            return addressFundingCredits
+        }
+
         func platformWithdrawalFeeCredits() async throws -> UInt64 {
             totalReads += 1
             withdrawalReads += 1
@@ -62,11 +69,12 @@ final class ExternalSendFeeEstimatorTests: XCTestCase {
             coreFeeDuffs = nil
             shieldedFeeCredits = [:]
             withdrawalFeeCredits = nil
+            addressFundingCredits = nil
         }
     }
 
     private let allRoutes: [SendRoute] = [
-        .coreToCore, .coreToShielded, .coreToIdentity,
+        .coreToCore, .coreToShielded, .coreToIdentity, .coreToPlatform,
         .shieldedToCore, .shieldedToShielded, .shieldedToPlatform, .shieldedToIdentity,
         .platformToCore, .platformToShielded, .platformToPlatform, .platformToIdentity,
         .identityToCore, .identityToPlatform, .identityToIdentity, .identityToShielded
@@ -105,6 +113,17 @@ final class ExternalSendFeeEstimatorTests: XCTestCase {
         XCTAssertGreaterThan(fee - minerFee, 0, "the sender pays the Platform side, not the identity")
     }
 
+    /// Core → someone else's Platform address: the two-output address-funding fee, rounded up to duffs, rides in the
+    /// lock on top of the amount, plus the lock's L1 miner fee.
+    func testCoreToPlatformIsTheAddressFundingFeePlusTheL1MinerFee() async {
+        let result = await estimate(.coreToPlatform, FakeSources())
+        XCTAssertEqual(result, .fee(12_346 + 2_250, assetLockMinerFee: 2_250))
+        let sources = FakeSources()
+        sources.addressFundingCredits = nil
+        let unreadable = await estimate(.coreToPlatform, sources)
+        XCTAssertEqual(unreadable, .unavailable)
+    }
+
     /// Platform's `IdentityTopUpTransition::calculate_min_required_fee` (v1): `identity_topup_base_cost` 500_000
     /// credits + `required_asset_lock_duff_balance_for_processing_start_for_identity_top_up` 50_000 duffs.
     func testTheTopUpPlatformFeeIsPlatformsMinimumTopUpFee() {
@@ -112,7 +131,7 @@ final class ExternalSendFeeEstimatorTests: XCTestCase {
     }
 
     func testCoreAssetLockRoutesWithoutAnL1FeeAreUnavailable() async {
-        for route in [SendRoute.coreToShielded, .coreToIdentity] {
+        for route in [SendRoute.coreToShielded, .coreToIdentity, .coreToPlatform] {
             let sources = FakeSources()
             sources.coreFeeDuffs = nil
             let result = await estimate(route, sources)
@@ -121,7 +140,7 @@ final class ExternalSendFeeEstimatorTests: XCTestCase {
     }
 
     func testOnlyCoreAssetLockRoutesCarryAnAssetLockMinerFee() async {
-        for route in allRoutes where ![.coreToShielded, .coreToIdentity].contains(route) {
+        for route in allRoutes where ![.coreToShielded, .coreToIdentity, .coreToPlatform].contains(route) {
             let result = await estimate(route, FakeSources())
             XCTAssertEqual(result.assetLockMinerFee, 0, "\(route)")
         }

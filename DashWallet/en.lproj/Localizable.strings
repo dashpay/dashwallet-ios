@@ -1454,10 +1454,7 @@
 "Core address" = "Core address";
 
 /* External send */
-"Core can't pay a Platform address yet" = "Core can't pay a Platform address yet";
-
-/* External send */
-"Core can't pay someone else's identity" = "Core can't pay someone else's identity";
+"Core can't pay this kind of Platform address" = "Core can't pay this kind of Platform address";
 
 /* Evonode status */
 "Core chain-locked height" = "Core chain-locked height";

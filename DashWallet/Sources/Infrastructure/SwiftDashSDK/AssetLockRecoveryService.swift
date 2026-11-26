@@ -166,8 +166,11 @@ struct AssetLockRecoveryService {
         Self.logger.info("🔁 LOCK-RETRY :: type=\(fundingTypeRaw, privacy: .public) vout=\(vout, privacy: .public)")
         let outcome: Outcome
         switch fundingTypeRaw {
-        case 1, 2:
+        case 1:
             outcome = try await retryIdentityTopUp(
+                txidWire: txidWire, vout: vout, retryUnverifiedConsumption: retryUnverifiedConsumption)
+        case 2:
+            outcome = try await retryUnboundIdentityTopUp(
                 txidWire: txidWire, vout: vout, retryUnverifiedConsumption: retryUnverifiedConsumption)
         case 4, 5:
             // Both coordinator routes report their outcome through the
@@ -733,6 +736,24 @@ struct AssetLockRecoveryService {
         }
         DWCurrentUserIdentityInfo.shared.refreshFromSDK()
         return outcome
+    }
+
+    /// Unbound identity top-up resume (type 2, a top-up of someone else's identity from Core): the lock pays the
+    /// identity its row recorded (dashpay/platform#5931), which the caller does not name, so a recovery never pays
+    /// it into this wallet's identity. A lock that records no identity is refused by the SDK
+    /// (`assetLockRecipientUnknown`).
+    private func retryUnboundIdentityTopUp(
+        txidWire: Data, vout: UInt32, retryUnverifiedConsumption: Bool
+    ) async throws -> Outcome {
+        guard let wallet = SwiftDashSDKHost.shared.wallet else { throw RecoveryError.notReady }
+        let walletIdHex = wallet.walletId.map { String(format: "%02x", $0) }.joined()
+        try await DWIdentityAuthorizer().authorize()
+        return try await identityTopUpResumeOutcome(
+            txidWire: txidWire, vout: vout, walletIdHex: walletIdHex,
+            retryUnverifiedConsumption: retryUnverifiedConsumption
+        ) {
+            _ = try await wallet.resumeTopUpToRecordedRecipient(outPointTxid: txidWire, outPointVout: vout)
+        }
     }
 
     /// Classify the network call separately from authorization and readiness refusals.

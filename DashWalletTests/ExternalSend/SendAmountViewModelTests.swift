@@ -49,6 +49,12 @@ final class SendAmountViewModelTests: XCTestCase {
                     amountDuffs: amountDuffs, paymentRequestURL: requestURL)
     }
 
+    /// A script-form Platform address: the one destination Core still cannot pay (the SDK's external Platform-address
+    /// funding takes P2PKH recipients only), so it exercises a pinned or picked Core being replaced.
+    private var scriptPlatformAddress: Destination {
+        Destination(type: .platformAddress, text: "tdash1script", isScriptForm: true)
+    }
+
     // MARK: - Fakes
 
     private final class FakeBalances: ExternalSendBalanceReading {
@@ -374,17 +380,27 @@ final class SendAmountViewModelTests: XCTestCase {
 
     func testNoFundedSourceStartsAtTheFirstPayableSourceAtZeroAndBlocksContinue() async {
         balances.table = [.core: 0, .shielded: 0, .platform: 0, .identity: identityCredits]
-        let vm = await makeVM(destination(.identityID, text: otherID))
-        XCTAssertEqual(vm.source, .shielded, "Core cannot pay someone else's identity")
+        let vm = await makeVM(scriptPlatformAddress)
+        XCTAssertEqual(vm.source, .shielded, "Core cannot pay a script-form Platform address")
         XCTAssertEqual(vm.sourceBalanceDuffs, 0)
         XCTAssertEqual(vm.state, .notEnough)
         XCTAssertFalse(vm.isContinueEnabled)
     }
 
     func testSkipsASourceThatCannotPayTheDestination() async {
-        let vm = await makeVM(destination(.identityID, text: otherID))
+        let vm = await makeVM(scriptPlatformAddress)
         XCTAssertEqual(vm.source, .shielded)
-        XCTAssertEqual(vm.route, .shieldedToIdentity)
+        XCTAssertEqual(vm.route, .shieldedToPlatform)
+    }
+
+    /// Core pays someone else's identity (dashpay/platform#5931) and Platform address (#5930).
+    func testCorePaysSomeoneElsesIdentityAndPlatformAddress() async {
+        let identity = await makeVM(destination(.identityID, text: otherID), recipient: recipient())
+        XCTAssertEqual(identity.source, .core)
+        XCTAssertEqual(identity.route, .coreToIdentity)
+        let platform = await makeVM(Destination(type: .platformAddress, text: "tdash1key", isScriptForm: false))
+        XCTAssertEqual(platform.source, .core)
+        XCTAssertEqual(platform.route, .coreToPlatform)
     }
 
     // MARK: - AC-11: DASH and local currency
@@ -883,6 +899,7 @@ final class SendAmountViewModelTests: XCTestCase {
             func shieldedFeeCredits(kind: PlatformWalletManager.ShieldedFeeKind, numActions: Int) async throws
                 -> UInt64 { throw CancellationError() }
             func platformWithdrawalFeeCredits() async throws -> UInt64 { throw CancellationError() }
+            func addressFundingFeeCredits() async throws -> UInt64 { throw CancellationError() }
         }
         balances.table = [.core: 5_000_000]
         let live = LiveSendMaxPlanner(fees: ExternalSendFeeEstimator(sources: MinerFeeOnly()), balances: balances,
@@ -1794,7 +1811,7 @@ final class SendAmountViewModelTests: XCTestCase {
     }
 
     func testPickingAnUnavailableSourceChangesNothing() async {
-        let vm = await makeVM(destination(.identityID, text: otherID))
+        let vm = await makeVM(scriptPlatformAddress)
         XCTAssertEqual(vm.source, .shielded)
         await vm.pickSource(.core)
         XCTAssertEqual(vm.source, .shielded)
@@ -2180,7 +2197,7 @@ final class SendAmountViewModelTests: XCTestCase {
     func testAnotherIdentityOfTheSameWalletIsTreatedAsSomeoneElses() async {
         let sibling = recipient("SiblingIdentityIDxxxxxxxxxxxxxxxxxxxxxxxxxxx", username: "alice2")
         let vm = await makeVM(destination(.identityID, text: sibling.id), recipient: sibling)
-        XCTAssertEqual(vm.source, .shielded, "Core cannot pay it")
+        XCTAssertEqual(vm.route, .coreToIdentity, "Core pays it as someone else's")
         XCTAssertEqual(vm.recipientName, "alice2")
     }
 
@@ -2217,22 +2234,22 @@ final class SendAmountViewModelTests: XCTestCase {
         XCTAssertNil(vm.sourceChangedNotice)
     }
 
-    func testAPinnedCoreCannotPaySomeoneElsesIdentityAndIsReplacedWithTheNotice() async {
-        let vm = await makeVM(destination(.identityID, text: otherID), pinned: .core, recipient: recipient())
+    func testAPinnedCoreCannotPayAScriptFormPlatformAddressAndIsReplacedWithTheNotice() async {
+        let vm = await makeVM(scriptPlatformAddress, pinned: .core)
         XCTAssertEqual(vm.source, .shielded)
-        XCTAssertEqual(vm.route, .shieldedToIdentity)
+        XCTAssertEqual(vm.route, .shieldedToPlatform)
         XCTAssertEqual(vm.sourceChangedNotice,
-                       "Core can't pay someone else's identity, so the source was changed to Shielded.")
+                       "Core can't pay this kind of Platform address, so the source was changed to Shielded.")
     }
 
     func testTheSourceChangedNoticeShowsWithoutARecipientStatement() async {
-        let vm = await makeVM(destination(.identityID, text: otherID), pinned: .core, recipient: recipient())
+        let vm = await makeVM(scriptPlatformAddress, pinned: .core)
         XCTAssertNotNil(vm.sourceChangedNotice)
     }
 
     func testAReplacedPinIsNeverIdentityEvenWhenOnlyItIsFunded() async {
         balances.table = [.core: 0, .shielded: 0, .platform: 0, .identity: identityCredits]
-        let vm = await makeVM(destination(.identityID, text: otherID), pinned: .core, recipient: recipient())
+        let vm = await makeVM(scriptPlatformAddress, pinned: .core)
         XCTAssertEqual(vm.source, .shielded)
         XCTAssertNotNil(vm.sourceChangedNotice)
     }
@@ -2246,7 +2263,7 @@ final class SendAmountViewModelTests: XCTestCase {
     }
 
     func testChangingTheSourceAfterAReplacementClearsTheNotice() async {
-        let vm = await makeVM(destination(.identityID, text: otherID), pinned: .core, recipient: recipient())
+        let vm = await makeVM(scriptPlatformAddress, pinned: .core)
         XCTAssertNotNil(vm.sourceChangedNotice)
         await vm.pickSource(.identity)
         XCTAssertEqual(vm.source, .identity)

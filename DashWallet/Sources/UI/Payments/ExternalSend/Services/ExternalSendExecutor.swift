@@ -16,6 +16,7 @@
 //
 
 import Foundation
+import OSLog
 import SwiftDashSDK
 
 /// Why `prepare` produced nothing. Each case sends the user back to Send (or blocks Confirm) with nothing broadcast.
@@ -498,7 +499,7 @@ final class ExternalSendExecutor: ExternalSendExecuting {
                 return try await preparePaymentRequest(request, amount: amount, isMax: isMax)
             }
             return try await prepareStandard(destination: destination, amount: amount, isMax: isMax)
-        case .coreToShielded, .coreToIdentity,
+        case .coreToShielded, .coreToIdentity, .coreToPlatform,
              .shieldedToCore, .shieldedToShielded, .shieldedToPlatform, .shieldedToIdentity,
              .platformToCore, .platformToShielded, .platformToPlatform, .platformToIdentity,
              .identityToCore, .identityToPlatform, .identityToIdentity, .identityToShielded:
@@ -761,7 +762,7 @@ final class ExternalSendExecutor: ExternalSendExecuting {
         }
         guard isStillPreparedFor(prepared) else { return SendDecision(.notSent(.failed), cause: "contextChanged") }
         switch prepared.route {
-        case .coreToShielded, .coreToIdentity:
+        case .coreToShielded, .coreToIdentity, .coreToPlatform:
             return await runTwoStep(prepared, destination: destination)
         case .platformToIdentity:
             return await runCredits {
@@ -1126,6 +1127,8 @@ struct LiveCoreTwoStepSend: CoreTwoStepSending {
             return await toShielded(destination: destination, amount: amount, feeDuffs: bindingFeeDuffs, isMax: isMax)
         case .coreToIdentity:
             return await toIdentity(destination: destination, amount: amount, platformFeeDuffs: bindingFeeDuffs)
+        case .coreToPlatform:
+            return await toPlatformAddress(destination: destination, amount: amount, platformFeeDuffs: bindingFeeDuffs)
         default:
             preconditionFailure("\(route) is not a Core asset-lock route")
         }
@@ -1253,17 +1256,86 @@ struct LiveCoreTwoStepSend: CoreTwoStepSending {
         }
         let check = AssetLockInputLimit.Check(
             amountDuffs: lockDuffs, inputBudget: AssetLockInputPolicy.platformInputBudget)
+        let isOwnIdentity = await WalletCurrentIdentityReader().currentIdentity()?.id == destination.text
+        guard !isOwnIdentity else {
+            do {
+                try AssetLockInputLimit.requireFits(check)
+                _ = try await AssetLockInputLimit.mappingRefusal(check) {
+                    try await wallet.topUpIdentityWithFunding(
+                        identityId: identityId, amountDuffs: lockDuffs, accountIndex: 0)
+                }
+                return .completed
+            } catch {
+                return Self.identityTopUpFailure(after: error)
+            }
+        }
+        // Someone else's identity: the lock records the identity it pays (dashpay/platform#5931), and the SDK reports
+        // its outpoint once built, so a failure after it is known to hold the money in the lock.
+        let built = OSAllocatedUnfairLock<AssetLockBuiltOutPoint?>(initialState: nil)
         do {
             try AssetLockInputLimit.requireFits(check)
             _ = try await AssetLockInputLimit.mappingRefusal(check) {
-                try await wallet.topUpIdentityWithFunding(
-                    identityId: identityId, amountDuffs: lockDuffs, accountIndex: 0)
+                try await wallet.topUpExternalIdentityWithFunding(
+                    identityId: identityId, amountDuffs: lockDuffs, accountIndex: 0,
+                    onAssetLockBuilt: { outPoint in built.withLock { $0 = outPoint } })
             }
             return .completed
         } catch {
+            if let outPoint = built.withLock({ $0 }) {
+                DWLogger.log("External send: Core top-up of another identity failed after its asset lock was built")
+                return .lockHeld(
+                    HeldAssetLock(fundingTypeRaw: Self.unboundIdentityTopUpFundingType,
+                                  txidWire: outPoint.txid, vout: outPoint.vout),
+                    after: error)
+            }
             return Self.identityTopUpFailure(after: error)
         }
     }
+
+    /// Someone else's Platform address: the lock pays `amount` to it and the reserve to this wallet's remainder
+    /// address, and records both before it is broadcast (dashpay/platform#5930).
+    @MainActor
+    private func toPlatformAddress(destination: Destination, amount: UInt64, platformFeeDuffs: UInt64) async
+        -> CoreTwoStepResult {
+        guard ShieldedAssetLocksInFlight.shared.beginFundingCall() else {
+            return .failed(CoordinatorError.walletReloading, assetLockRecorded: false)
+        }
+        defer { ShieldedAssetLocksInFlight.shared.endFundingCall() }
+        guard let decoded = DashAddressClassifier.decodeBech32m(destination.text),
+              case .platform(false, let hash) = decoded.form else {
+            return .failed(PlatformAddressSyncCoordinator.SendError.invalidDestination, assetLockRecorded: false)
+        }
+        let (lockDuffs, overflow) = amount.addingReportingOverflow(platformFeeDuffs)
+        guard !overflow else {
+            return .failed(PlatformAddressSyncCoordinator.SendError.invalidAmount, assetLockRecorded: false)
+        }
+        let check = AssetLockInputLimit.Check(
+            amountDuffs: lockDuffs, inputBudget: AssetLockInputPolicy.platformInputBudget)
+        let built = OSAllocatedUnfairLock<AssetLockBuiltOutPoint?>(initialState: nil)
+        do {
+            try AssetLockInputLimit.requireFits(check)
+            _ = try await AssetLockInputLimit.mappingRefusal(check) {
+                try await PlatformAddressSyncCoordinator.shared.fundExternalFromCore(
+                    recipientHash: hash, recipientAmountDuffs: amount, lockValueDuffs: lockDuffs,
+                    onAssetLockBuilt: { outPoint in built.withLock { $0 = outPoint } })
+            }
+            return .completed
+        } catch {
+            if let outPoint = built.withLock({ $0 }) {
+                DWLogger.log("External send: Core payment to another Platform address failed after its lock was built")
+                return .lockHeld(
+                    HeldAssetLock(fundingTypeRaw: Self.platformAddressFundingType,
+                                  txidWire: outPoint.txid, vout: outPoint.vout),
+                    after: error)
+            }
+            return .failed(error, assetLockRecorded: Self.lockMayExist(after: error))
+        }
+    }
+
+    /// `PersistentAssetLock.fundingTypeRaw` of the two external Core locks: an unbound identity top-up and a
+    /// Platform-address funding. Their resume pays the recipients the lock recorded.
+    static let unboundIdentityTopUpFundingType = 2
+    static let platformAddressFundingType = 4
 
     static let coreTopUpMinimumRefusal = MinimumAmountRefusal(
         minimumCredits: DWIdentityRegistrationCoordinator.minimumCoreTopUpDuffs

@@ -26,7 +26,8 @@ struct MinimumAmountRefusal: Error {
 /// A Core asset lock a send broadcast and recorded whose Platform step did not finish: the outpoint and route that
 /// `AssetLockRecoveryService.retry` resumes.
 struct HeldAssetLock: Equatable {
-    /// `PersistentAssetLock.fundingTypeRaw` of the lock: 5 for Core to Shielded, the two-step route External Send has.
+    /// `PersistentAssetLock.fundingTypeRaw` of the lock: 5 for Core to Shielded, 2 for Core to someone else's
+    /// identity, 4 for Core to someone else's Platform address. Each resumes to the recipient the lock recorded.
     let fundingTypeRaw: Int
     let txidWire: Data
     let vout: UInt32
