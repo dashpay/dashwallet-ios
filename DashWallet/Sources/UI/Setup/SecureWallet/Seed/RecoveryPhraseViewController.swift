@@ -21,7 +21,7 @@ import UIKit
 /// phrase; viewing it again, Done hands back to the delegate. Either way the
 /// screen warns on a screenshot and closes when the app leaves the
 /// foreground, so the phrase is not left on screen.
-final class RecoveryPhraseViewController: UIViewController {
+final class RecoveryPhraseViewController: SetupScreenViewController {
     weak var delegate: DWSecureWalletDelegate?
 
     private let viewModel: RecoveryPhraseViewModel
@@ -48,7 +48,7 @@ final class RecoveryPhraseViewController: UIViewController {
         super.viewDidLoad()
 
         view.backgroundColor = UIColor(named: "SecondaryBackgroundColor")
-        embedSwiftUI(RecoveryPhraseView(
+        embedScreen(RecoveryPhraseView(
             viewModel: viewModel,
             onContinue: { [weak self] in self?.continueAction() },
             onWhyNoScreenshot: { [weak self] in self?.showWhyNoScreenshot() }
