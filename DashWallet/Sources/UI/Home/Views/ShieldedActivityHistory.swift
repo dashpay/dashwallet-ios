@@ -52,6 +52,8 @@ struct ShieldedActivityItem: Identifiable {
         case withdrawal = 5          // shielded → Core L1 (Core leg shown instead)
         case identityCreate = 6
         case shieldedSpend = 7       // restore-path residual
+        case shieldFromIdentity = 8  // identity credits → shielded
+        case identityTopUp = 9       // shielded → identity credits
     }
 
     enum Direction: Int {
@@ -179,6 +181,11 @@ struct ShieldedActivityItem: Identifiable {
             return String(localized: "Identity registration", comment: "Asset lock funding a DashPay identity registration")
         case .shieldedSpend:
             return String(localized: "Shielded Spend", comment: "Shielded activity: a spend restored from on-chain data whose exact type is unknown")
+        case .shieldFromIdentity, .identityTopUp:
+            return isExternalDestination
+                ? String(localized: "Sent", comment: "")
+                : String(localized: "Internal Transfer",
+                         comment: "Transaction within the wallet, transfer of own funds")
         }
     }
 
@@ -190,7 +197,7 @@ struct ShieldedActivityItem: Identifiable {
         switch kind {
         case .shield, .shieldFromAssetLock:
             return String(localized: "Platform → Shielded", comment: "Transfer of own funds from the Platform balance into the private shielded balance")
-        case .unshield, .withdrawal, .sent:
+        case .unshield, .withdrawal, .sent, .shieldFromIdentity, .identityTopUp:
             if isExternalDestination {
                 // External destination: show where the money went,
                 // shortened to row-pill size (the detail sheet carries
@@ -205,6 +212,14 @@ struct ShieldedActivityItem: Identifiable {
                 return String(localized: "Shielded → Platform", comment: "Transfer of own funds from the private shielded balance to the Platform balance")
             case .withdrawal:
                 return String(localized: "Shielded → Transparent", comment: "Transfer of own funds from the private shielded balance back to the transparent wallet")
+            case .identityTopUp:
+                return String(
+                    localized: "Shielded → Identity",
+                    comment: "Transfer of own funds from the private shielded balance to the wallet's identity")
+            case .shieldFromIdentity:
+                return String(
+                    localized: "Identity → Shielded",
+                    comment: "Transfer of the wallet's identity credits into its private shielded balance")
             default:
                 // A Sent row whose recipient couldn't be decoded.
                 return String(localized: "Shielded", comment: "Shielded activity: funds moved into the private shielded balance")
@@ -231,6 +246,10 @@ struct ShieldedActivityItem: Identifiable {
             return isExternalDestination ? "arrow.up" : "d.circle.fill"
         case .identityCreate: return "person.crop.circle.fill"
         case .shieldedSpend: return "questionmark"
+        case .identityTopUp:
+            return isExternalDestination ? "arrow.up" : "person.crop.circle.fill"
+        case .shieldFromIdentity:
+            return isExternalDestination ? "arrow.up" : nil
         case .shield, .shieldFromAssetLock: return nil
         }
     }
@@ -246,7 +265,7 @@ struct ShieldedActivityItem: Identifiable {
         switch kind {
         case .shield, .shieldFromAssetLock:
             return true
-        case .unshield, .withdrawal:
+        case .unshield, .withdrawal, .shieldFromIdentity, .identityTopUp:
             return !isExternalDestination
         case .received, .sent, .identityCreate, .shieldedSpend:
             return false
@@ -283,6 +302,20 @@ struct ShieldedActivityItem: Identifiable {
             // rather than claiming a destination we don't know.
             guard let destinationAddress else { return nil }
             return (shielded, destinationAddress)
+        case .identityTopUp:
+            let identity = String(
+                localized: "Your identity",
+                comment: "Shielded activity: the wallet's identity as the destination of an internal move")
+            guard isExternalDestination else { return (shielded, identity) }
+            guard let destinationAddress else { return nil }
+            return (shielded, destinationAddress)
+        case .shieldFromIdentity:
+            let identity = String(
+                localized: "Your identity",
+                comment: "Shielded activity: the wallet's identity as the destination of an internal move")
+            guard isExternalDestination else { return (identity, shielded) }
+            guard let destinationAddress else { return nil }
+            return (identity, destinationAddress)
         case .received, .identityCreate, .shieldedSpend: return nil
         }
     }
@@ -292,7 +325,9 @@ struct ShieldedActivityItem: Identifiable {
     /// `showsDirectionSign`) — own funds moved, not gained or lost.
     var signedDashAmount: Int64 {
         let magnitude = amountDuffs > UInt64(Int64.max) ? Int64.max : Int64(amountDuffs)
-        return direction == .outgoing && showsDirectionSign ? -magnitude : magnitude
+        // An identity's credits shielded to someone else leave the wallet whatever direction the pool recorded.
+        let leaves = direction == .outgoing || (kind == .shieldFromIdentity && isExternalDestination)
+        return leaves && showsDirectionSign ? -magnitude : magnitude
     }
 
     var fiatAmount: String {

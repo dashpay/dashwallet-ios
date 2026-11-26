@@ -2102,6 +2102,7 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		E97F36169DF0F8814359881A /* WalletProtocolCompatibilityController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465C77403526106317A41475 /* WalletProtocolCompatibilityController.swift */; };
 		2277460A914F0ECDB760DE7B /* ShieldedWithdrawalHistoryFixture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E6EC867403319C64E4E6101 /* ShieldedWithdrawalHistoryFixture.swift */; };
 		AE4A372E7EC798A350694542 /* ShieldedWithdrawalHistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E12F7F1F376A7ED784840839 /* ShieldedWithdrawalHistoryTests.swift */; };
+		E5E0D1B70000000000000002 /* ShieldedIdentityActivityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D1B70000000000000001 /* ShieldedIdentityActivityTests.swift */; };
 		6E2230E18A5A739428FB9172 /* ShieldedWithdrawalHistoryUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17AA5286B0A6B87FBDBFECF4 /* ShieldedWithdrawalHistoryUITests.swift */; };
 		74648FE9B1A4F560BD376049 /* ShieldedWithdrawalHistoryFixture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E6EC867403319C64E4E6101 /* ShieldedWithdrawalHistoryFixture.swift */; };
 		E5E0D0D10000000000000002 /* SendOutcomeRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0D10000000000000001 /* SendOutcomeRouter.swift */; };
@@ -3920,6 +3921,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		E28E4AA75ADC1A7BAAA6C5E7 /* ProtocolCompatibilityBanner.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ProtocolCompatibilityBanner.swift; path = DashWallet/Sources/UI/Main/ProtocolCompatibilityBanner.swift; sourceTree = "<group>"; };
 		0E6EC867403319C64E4E6101 /* ShieldedWithdrawalHistoryFixture.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedWithdrawalHistoryFixture.swift; sourceTree = "<group>"; };
 		E12F7F1F376A7ED784840839 /* ShieldedWithdrawalHistoryTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedWithdrawalHistoryTests.swift; sourceTree = "<group>"; };
+		E5E0D1B70000000000000001 /* ShieldedIdentityActivityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedIdentityActivityTests.swift; sourceTree = "<group>"; };
 		17AA5286B0A6B87FBDBFECF4 /* ShieldedWithdrawalHistoryUITests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShieldedWithdrawalHistoryUITests.swift; sourceTree = "<group>"; };
 		E5E0D0D10000000000000001 /* SendOutcomeRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendOutcomeRouter.swift; sourceTree = "<group>"; };
 		E5E0D0F30000000000000001 /* ExternalSendHostController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalSendHostController.swift; sourceTree = "<group>"; };
@@ -7344,6 +7346,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			isa = PBXGroup;
 			children = (
 				E12F7F1F376A7ED784840839 /* ShieldedWithdrawalHistoryTests.swift */,
+				E5E0D1B70000000000000001 /* ShieldedIdentityActivityTests.swift */,
 				A11C00001274000000000031 /* AssetLockInputPolicyTests.swift */,
 				47A184E4299CC19A0017E32C /* rates.json */,
 				AA0010102CA0B10001A0B110 /* swapkit_quote_response.json */,
@@ -10519,6 +10522,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			buildActionMask = 2147483647;
 			files = (
 				AE4A372E7EC798A350694542 /* ShieldedWithdrawalHistoryTests.swift in Sources */,
+				E5E0D1B70000000000000002 /* ShieldedIdentityActivityTests.swift in Sources */,
 				A11C00001274000000000032 /* AssetLockInputPolicyTests.swift in Sources */,
 				1FED152A2C6BCE50AFB0445B /* WalletProtocolCompatibilityTests.swift in Sources */,
 				2A2120EC22145CAE009906DC /* DWAmountInputValidatorTests.m in Sources */,
