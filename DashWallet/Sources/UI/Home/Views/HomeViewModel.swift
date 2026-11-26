@@ -2330,6 +2330,29 @@ class SwiftDashSDKWalletSource: TransactionSource {
                     amountCreditsOverride: reconstructedAmountCredits,
                     destinationAddress: address,
                     isExternalDestination: address != nil && !isOwnDestination))
+            case ShieldedActivityItem.Kind.identityTopUp.rawValue:
+                // Shielded → an identity: the row names the credited identity. Someone else's is money leaving;
+                // one of the wallet's own is an Internal Transfer.
+                let identityId = row.identityId.count == 32 ? row.identityId : nil
+                let isExternal = identityId.map {
+                    !isActiveWalletIdentity($0, walletId: walletId, in: context)
+                } ?? false
+                items.append(ShieldedActivityItem(
+                    row: row,
+                    amountCreditsOverride: reconstructedAmountCredits,
+                    destinationAddress: identityId.map(ScriptAddressCodec.base58Encode),
+                    isExternalDestination: isExternal))
+            case ShieldedActivityItem.Kind.shieldFromIdentity.rawValue:
+                // An identity's credits shielded: to the wallet's own Shielded balance an Internal Transfer, to
+                // someone else's Shielded address (the counterparty) a send, as a Shielded → Shielded one reads.
+                let address = shieldedDestinationAddress(counterparty: row.counterparty)
+                let isOwnDestination = receivedEntryIds.contains(row.entryId)
+                    || (ownShieldedRaw43 != nil && row.counterparty == ownShieldedRaw43)
+                items.append(ShieldedActivityItem(
+                    row: row,
+                    amountCreditsOverride: reconstructedAmountCredits,
+                    destinationAddress: address,
+                    isExternalDestination: address != nil && !isOwnDestination))
             default:
                 items.append(ShieldedActivityItem(
                     row: row,
@@ -2603,11 +2626,16 @@ class SwiftDashSDKWalletSource: TransactionSource {
             return isActiveWalletPlatformAddress(send.destination, walletId: walletId, in: context)
         case .identity:
             guard let identityId = ScriptAddressCodec.base58Decode(send.destination) else { return false }
-            var descriptor = FetchDescriptor<PersistentIdentity>(
-                predicate: #Predicate { $0.identityId == identityId })
-            descriptor.fetchLimit = 1
-            return (try? context.fetch(descriptor))?.first?.wallet?.walletId == walletId
+            return isActiveWalletIdentity(identityId, walletId: walletId, in: context)
         }
+    }
+
+    /// Whether `identityId` is one of the active wallet's identities.
+    private static func isActiveWalletIdentity(_ identityId: Data, walletId: Data, in context: ModelContext) -> Bool {
+        var descriptor = FetchDescriptor<PersistentIdentity>(
+            predicate: #Predicate { $0.identityId == identityId })
+        descriptor.fetchLimit = 1
+        return (try? context.fetch(descriptor))?.first?.wallet?.walletId == walletId
     }
 
     /// Decode a withdrawal entry's counterparty (a Core scriptPubKey)

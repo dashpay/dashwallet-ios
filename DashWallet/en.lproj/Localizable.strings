@@ -2751,6 +2751,9 @@
 /* Usernames */
 "Identity verification is not available on this network." = "Identity verification is not available on this network.";
 
+/* Transfer of the wallet's identity credits into its private shielded balance */
+"Identity → Shielded" = "Identity → Shielded";
+
 /* About screen tech info: SPV state */
 "idle" = "idle";
 
@@ -5428,6 +5431,9 @@
 
 /* No comment provided by engineer. */
 "Shielded wallet starting…" = "Shielded wallet starting…";
+
+/* Transfer of own funds from the private shielded balance to the wallet's identity */
+"Shielded → Identity" = "Shielded → Identity";
 
 /* Transfer of own funds from the private shielded balance back to the transparent wallet */
 "Shielded → Platform" = "Shielded → Platform";
