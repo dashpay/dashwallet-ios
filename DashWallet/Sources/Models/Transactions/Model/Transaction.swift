@@ -226,8 +226,8 @@ class Transaction: TransactionDataItem, Identifiable {
             return payment.isOutgoing ? .sent : .received
         }
         // The net-change view reads an asset lock as a move of own funds; one
-        // that pays someone else's Shielded address is money leaving.
-        if isExternalShieldedSend { return .sent }
+        // that pays someone else is money leaving.
+        if isExternalAssetLockSend { return .sent }
         return _direction
     }
     private lazy var _direction: TransactionDirection = {
@@ -316,6 +316,18 @@ class Transaction: TransactionDataItem, Identifiable {
     var externalShieldedRecipient: String? { shieldedLockInfo?.externalRecipientAddress }
 
     var isExternalShieldedSend: Bool { externalShieldedRecipient != nil }
+
+    /// The recipient of an asset lock that pays someone else — a Shielded address, a Platform address or an
+    /// identity — in its display form; nil for a lock that funds the wallet's own balance or identity (also when the
+    /// lock recorded no recipient or its owner could not be told) and for every other transaction. The one read that
+    /// decides "Sent" over "Internal Transfer" / "Identity top-up" for an asset lock.
+    var externalAssetLockRecipient: String? {
+        externalShieldedRecipient
+            ?? platformFundingLockInfo?.externalRecipientAddress
+            ?? identityFundingLockInfo?.externalRecipientAddress
+    }
+
+    var isExternalAssetLockSend: Bool { externalAssetLockRecipient != nil }
 
     /// Live info for this tx as a Core → Platform address funding (a Type-8
     /// asset lock with funding type 4). Same live-read rationale as
@@ -416,8 +428,8 @@ class Transaction: TransactionDataItem, Identifiable {
         case .identity?: return .identityToCore
         case nil: break
         }
-        if isPlatformFundingTransfer { return .coreToPlatform }
-        if isIdentityFundingTransfer { return .coreToIdentity }
+        if isPlatformFundingTransfer { return isExternalAssetLockSend ? nil : .coreToPlatform }
+        if isIdentityFundingTransfer { return isExternalAssetLockSend ? nil : .coreToIdentity }
         if direction == .moved { return .coreToCore }
         return nil
     }
@@ -658,7 +670,8 @@ class Transaction: TransactionDataItem, Identifiable {
     var stateTitle: String {
         // Identity funding locks name their purpose — they buy identity
         // credits rather than moving between the wallet's balances.
-        if let identityType = identityFundingLockInfo?.fundingTypeRaw {
+        // A top-up of someone else's identity is a payment, not a purchase of the wallet's own credits.
+        if let identityType = identityFundingLockInfo?.fundingTypeRaw, !isExternalAssetLockSend {
             switch identityType {
             case 0:
                 return NSLocalizedString("Identity registration", comment: "Asset lock funding a DashPay identity registration")

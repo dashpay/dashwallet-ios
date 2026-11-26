@@ -2159,6 +2159,9 @@ final class ShieldedTxLookup {
 
     /// `AssetLockAddressTopUp` — the Core → Platform address funding lock.
     private static let platformFundingType = 4
+    /// `AssetLockFundingType::IdentityTopUpNotBound`: a top-up that records the identity it pays, which need not be
+    /// one of the wallet's.
+    private static let unboundIdentityTopUpFundingType = 2
 
     /// Identity funding locks: 0 = IdentityRegistration, 1 = IdentityTopUp,
     /// 2 = IdentityTopUpNotBound, 3 = IdentityInvitation.
@@ -2196,6 +2199,12 @@ final class ShieldedTxLookup {
         /// to pay (`PersistentAssetLock.shieldedRecipientRaw43`); nil for other
         /// types and for locks tracked before the SDK recorded it.
         var recipientRaw43: Data? = nil
+        /// The 32-byte identity an unbound identity top-up (type 2) records it pays
+        /// (`PersistentAssetLock.identityRecipient`); nil for other types.
+        var identityRecipient: Data? = nil
+        /// A Platform-address funding (type 4) that recorded its recipients, which the SDK does only for a payment to
+        /// someone else's Platform address (`fundFromAssetLockExternal`).
+        var hasPlatformAddressRecipients: Bool = false
         /// The recipient's display address when it is provably not the
         /// wallet's own (`resolvingRecipients`): the lock is a send to someone
         /// else's Shielded address, not a transfer of own funds. Nil for an own,
@@ -2240,6 +2249,13 @@ final class ShieldedTxLookup {
         /// own Orchard addresses; nil when that cannot be told now.
         var isOwnShieldedRecipient: @MainActor @Sendable (_ walletId: Data, _ raw43: Data) -> Bool? = { _, _ in nil }
         var isMainnet: @MainActor @Sendable () -> Bool = { WalletEnvironment.isMainnet }
+        /// Whether an identity is one this wallet manages; nil when that cannot be told now.
+        var isOwnIdentity: @MainActor @Sendable (_ walletId: Data, _ identityId: Data) -> Bool? = { _, _ in nil }
+        /// The Platform address(es) with an explicit amount that an external Platform-address funding recorded, in
+        /// display form; nil when they cannot be read now.
+        var externalPlatformRecipients: @MainActor @Sendable (_ txidHex: String, _ vout: UInt32) -> [String]? = {
+            _, _ in nil
+        }
 
         /// The running wallet's container, read through SwiftData in a
         /// detached task.
@@ -2253,6 +2269,26 @@ final class ShieldedTxLookup {
             isOwnShieldedRecipient: { walletId, raw43 in
                 guard let manager = SwiftDashSDKHost.shared.manager else { return nil }
                 return (try? manager.isOwnShieldedAddress(walletId: walletId, raw43: raw43)) ?? nil
+            },
+            isOwnIdentity: { walletId, identityId in
+                guard let container = SwiftDashSDKHost.shared.modelContainer else { return nil }
+                var descriptor = FetchDescriptor<PersistentIdentity>(
+                    predicate: #Predicate { $0.identityId == identityId })
+                descriptor.fetchLimit = 1
+                guard let rows = try? container.mainContext.fetch(descriptor) else { return nil }
+                return rows.first?.wallet?.walletId == walletId
+            },
+            externalPlatformRecipients: { txidHex, vout in
+                guard let wallet = SwiftDashSDKHost.shared.wallet,
+                      let display = Data(hex: txidHex), display.count == 32,
+                      let recipients = try? wallet.assetLockPlatformAddressRecipients(
+                          txid: Data(display.reversed()), vout: vout)
+                else { return nil }
+                let hrp = Bech32m.platformHrp(mainnet: WalletEnvironment.isMainnet)
+                return recipients.filter { $0.credits != nil }.compactMap { recipient in
+                    Bech32m.bech32mPayload(fromStorageBytes: Data([recipient.addressType]) + recipient.hash)
+                        .flatMap { Bech32m.encode(hrp: hrp, data: $0) }
+                }
             })
     }
 
@@ -2327,6 +2363,8 @@ final class ShieldedTxLookup {
             walletId: entry.walletId,
             drainOperation: entry.drainOperation,
             recipientRaw43: entry.recipientRaw43,
+            identityRecipient: entry.identityRecipient,
+            hasPlatformAddressRecipients: entry.hasPlatformAddressRecipients,
             externalRecipientAddress: entry.externalRecipientAddress)
     }
 
@@ -2387,13 +2425,23 @@ final class ShieldedTxLookup {
         }
 
         guard let built = result.map else { return }
-        let map = Self.resolvingRecipients(of: built, mainnet: source.isMainnet()) { walletId, raw43 in
+        let shieldedResolved = Self.resolvingRecipients(of: built, mainnet: source.isMainnet()) { walletId, raw43 in
             let key = walletId + raw43
             if let known = ownRecipientAnswers[key] { return known }
             let answer = source.isOwnShieldedRecipient(walletId, raw43)
             if let answer { ownRecipientAnswers[key] = answer }
             return answer
         }
+        let map = Self.resolvingIdentityAndPlatformRecipients(
+            of: shieldedResolved,
+            isOwnIdentity: { walletId, identityId in
+                let key = walletId + identityId
+                if let known = ownRecipientAnswers[key] { return known }
+                let answer = source.isOwnIdentity(walletId, identityId)
+                if let answer { ownRecipientAnswers[key] = answer }
+                return answer
+            },
+            platformRecipients: { txidHex, vout in source.externalPlatformRecipients(txidHex, vout) })
         store(map)
         Self.logger.info(
             "🛡️ SHIELD-TX :: snapshot \(map.count, privacy: .public) funding tx(s) (shielded + platform)")
@@ -2440,7 +2488,11 @@ final class ShieldedTxLookup {
                     fundingTypeRaw: row.fundingTypeRaw,
                     walletId: row.walletId,
                     drainOperation: CoreShieldedDrainRowIdentity(operationIdBytes: row.operationId).operation,
-                    recipientRaw43: row.fundingTypeRaw == shieldedFundingType ? row.shieldedRecipientRaw43 : nil)
+                    recipientRaw43: row.fundingTypeRaw == shieldedFundingType ? row.shieldedRecipientRaw43 : nil,
+                    identityRecipient: row.fundingTypeRaw == unboundIdentityTopUpFundingType
+                        ? row.identityRecipient : nil,
+                    hasPlatformAddressRecipients: row.fundingTypeRaw == platformFundingType
+                        && row.platformAddressRecipients != nil)
                 func rank(_ statusRaw: Int) -> Int {
                     statusRaw == AssetLockRecoveryService.consumedStatus ? .max : statusRaw
                 }
@@ -2495,6 +2547,30 @@ final class ShieldedTxLookup {
             resolved.externalRecipientAddress = Bech32m.shieldedDisplayAddress(raw43: raw43, mainnet: mainnet)
             return resolved
         }
+    }
+
+    /// The same rule as `resolvingRecipients` for the other locks that can pay someone else: an unbound identity
+    /// top-up whose recorded identity is provably not one of the wallet's, and a Platform-address funding that
+    /// recorded its recipients (the SDK records them only for a payment to someone else's address). Every other lock,
+    /// and one whose recipient cannot be told now, keeps the Internal Transfer reading.
+    @MainActor
+    static func resolvingIdentityAndPlatformRecipients(
+        of map: [String: ShieldedLockInfo],
+        isOwnIdentity: (_ walletId: Data, _ identityId: Data) -> Bool?,
+        platformRecipients: (_ txidHex: String, _ vout: UInt32) -> [String]?
+    ) -> [String: ShieldedLockInfo] {
+        var resolved = map
+        for (txidHex, info) in map where info.externalRecipientAddress == nil {
+            if info.fundingTypeRaw == unboundIdentityTopUpFundingType,
+               let identityId = info.identityRecipient, identityId.count == 32,
+               isOwnIdentity(info.walletId, identityId) == false {
+                resolved[txidHex]?.externalRecipientAddress = ScriptAddressCodec.base58Encode(identityId)
+            } else if info.fundingTypeRaw == platformFundingType, info.hasPlatformAddressRecipients,
+                      let first = platformRecipients(txidHex, info.vout)?.first {
+                resolved[txidHex]?.externalRecipientAddress = first
+            }
+        }
+        return resolved
     }
 
     /// Publishes `map` as the snapshot. `refresh` is its only production

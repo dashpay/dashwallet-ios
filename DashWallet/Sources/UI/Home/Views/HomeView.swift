@@ -1273,9 +1273,9 @@ enum HomeTransactionRoute {
     /// Platform"), shown in the small badge next to the time. Nil for plain
     /// self-sends and non-transfers.
     static func details(of txItem: Transaction) -> String? {
-        // A send to someone else's Shielded address names where the money went,
-        // as the Shielded history's Sent rows do.
-        if let recipient = txItem.externalShieldedRecipient {
+        // A send to someone else (Shielded or Platform address, identity) names
+        // where the money went, as the Shielded history's Sent rows do.
+        if let recipient = txItem.externalAssetLockRecipient {
             return ShieldedActivityItem.shortAddress(recipient)
         }
         switch txItem.internalTransferRoute {
