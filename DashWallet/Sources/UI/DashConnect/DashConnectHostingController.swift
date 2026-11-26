@@ -112,8 +112,8 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
     ///
     /// Only a new screen clears what `tabBar` presents. The open screen
     /// decides that itself (`handle(uri:)`): dismissing from here closed its
-    /// approval sheet behind SwiftUI's back, and the screen then refused
-    /// every scan until it was left (#1517).
+    /// approval sheet, which declined the request on it without a word, and
+    /// the newcomer was refused onto the closed sheet (#1517).
     static func route(
         _ uri: String,
         tabBar: UITabBarController,
@@ -121,7 +121,8 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
         moreTabIndex: Int?,
         makeScreen: () -> DashConnectHostingController
     ) {
-        let scheme = uri.prefix { $0 != ":" }
+        // The scheme only: a string with no `:` would be the payload itself.
+        let scheme = uri.contains(":") ? String(uri.prefix { $0 != ":" }) : "unknown"
 
         if let connections = menuNav.topViewController as? DashConnectHostingController {
             DWLogger.log("🔗 DASHCONNECT :: link (\(scheme)) to the open Connections screen")
@@ -143,27 +144,37 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
     /// Handles a link that arrived for a screen that is already on the stack.
     ///
     /// A sheet of the screen's own stays up and answers the link: closed
-    /// from UIKit, SwiftUI never hears of it, so the model would keep a
-    /// request nobody sees and refuse every scan after it. Anything else
+    /// from UIKit, it goes the way a swipe-down takes it, declining the
+    /// request on it without a word (`ConnectionsViewModel.showsOwnSheet`).
+    /// Anything else
     /// over the screen (the scanner, another flow's screen, an alert) is
-    /// closed first, so the request can show.
+    /// closed first, so the request can show. That comes before the window
+    /// check: a full-screen flow takes the screen out of the window, and the
+    /// request would wait until the user closed that flow.
     func handle(uri: String) {
         pendingURI = uri
 
-        guard isViewLoaded, view.window != nil else { return }
+        guard isViewLoaded else { return }
 
         // What covers the screen is presented over the tab bar.
         let presenter: UIViewController = tabBarController ?? self
         if viewModel.showsOwnSheet || presenter.presentedViewController == nil {
-            consumePendingURI()
+            consumePendingURIIfOnScreen()
             return
         }
 
         presenter.dismiss(animated: false) { [weak self] in
             // The page's alert, if that was it, is gone now.
             self?.viewModel.message = nil
-            self?.consumePendingURI()
+            self?.consumePendingURIIfOnScreen()
         }
+    }
+
+    /// The approval sheet cannot be presented off screen; `viewDidAppear`
+    /// takes the request then.
+    private func consumePendingURIIfOnScreen() {
+        guard view.window != nil else { return }
+        consumePendingURI()
     }
 
     private func consumePendingURI() {

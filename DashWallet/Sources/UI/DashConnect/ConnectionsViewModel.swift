@@ -423,8 +423,10 @@ final class ConnectionsViewModel: ObservableObject {
 
     /// Whether the screen has a sheet of its own up: an approval or its
     /// return step, a purchase, or a connection's sheet. A link for the
-    /// screen is answered on that sheet; closing it from outside would leave
-    /// this model holding a request nobody sees.
+    /// screen is answered on that sheet. Closed from outside, the sheet
+    /// would go the way a swipe-down takes it: the request on it declined
+    /// without a word, and the newcomer's refusal written to a sheet that
+    /// is gone.
     var showsOwnSheet: Bool {
         pendingRequest != nil || pendingReturn != nil || pendingTokenPurchase != nil || shownConnection != nil
     }
@@ -634,8 +636,7 @@ final class ConnectionsViewModel: ObservableObject {
         // newcomer refused on that sheet.
         guard pendingRequest == nil, pendingTokenPurchase == nil else {
             DWLogger.log("🔗 DASHCONNECT :: request not taken: another one is on screen")
-            let refusal = String(localized: "Another DashConnect request arrived. Finish this one first, then try again.",
-                                            comment: "DashConnect: a second request arrived while one was on screen")
+            let refusal = Self.anotherRequestArrivedText
             // Onto the sheet that is actually up: the purchase sheet reads
             // `purchaseApproveError` alone, so a refusal parked in
             // `approveError` while a purchase is on screen is invisible — the
@@ -671,11 +672,7 @@ final class ConnectionsViewModel: ObservableObject {
             )
             // A disconnect runs from its connection's sheet, which the
             // page's alert cannot show over.
-            if shownConnection != nil {
-                connectionSheetMessage = refusal
-            } else {
-                message = refusal
-            }
+            answerWhereShown(refusal)
             return
         }
 
@@ -753,12 +750,8 @@ final class ConnectionsViewModel: ObservableObject {
                     text: String(localized: "Could not complete the DashConnect request: \(error.localizedDescription)", comment: "DashConnect")
                 )
                 // A request that did not read leaves an open connection's
-                // sheet up, and says so on it.
-                if shownConnection != nil {
-                    connectionSheetMessage = failure
-                } else {
-                    message = failure
-                }
+                // sheet, or the return step, up, and says so on it.
+                answerWhereShown(failure)
             }
         }
     }
@@ -770,16 +763,37 @@ final class ConnectionsViewModel: ObservableObject {
     /// request's sheet, so its return address was not shown to anyone.
     private func answerWithoutUsername() {
         guard let refusal = usernameRefusal else { return }
-        guard pendingReturn == nil else {
-            returnStepNote = refusal
-            return
+        // The create-username page says it by itself; the return step and a
+        // page that may show connections say it where the user is looking.
+        if pendingReturn != nil || usernameUnknown || hasConnectedOrHistory || !hasReadRows {
+            answerWhereShown(ConnectionsScreenMessage(kind: .error, text: refusal))
         }
-        // The create-username page says it by itself; a page that may show
-        // connections says it where the user is looking.
-        if usernameUnknown || hasConnectedOrHistory || !hasReadRows {
-            let note = ConnectionsScreenMessage(kind: .error, text: refusal)
-            if shownConnection != nil { connectionSheetMessage = note } else { message = note }
+    }
+
+    /// An answer to a request goes where the user is looking: the page's
+    /// alert cannot show over the return step or a connection's sheet. The
+    /// approve and purchase sheets have their own notes (`receive`).
+    private func answerWhereShown(_ note: ConnectionsScreenMessage) {
+        if pendingReturn != nil {
+            returnStepNote = note.text
+        } else if shownConnection != nil {
+            connectionSheetMessage = note
+        } else {
+            message = note
         }
+    }
+
+    static var anotherRequestArrivedText: String {
+        String(
+            localized: "Another DashConnect request arrived. Finish this one first, then try again.",
+            comment: "DashConnect: a second request arrived while one was on screen")
+    }
+
+    /// The refusal of a request that came while the approval was up, for a
+    /// sheet over the approval (its funding limit, expiry or an info sheet)
+    /// to say too: the approval's own note is under that sheet.
+    var anotherRequestNote: String? {
+        approveError == Self.anotherRequestArrivedText ? approveError : nil
     }
 
     static var usernameNeededText: String {

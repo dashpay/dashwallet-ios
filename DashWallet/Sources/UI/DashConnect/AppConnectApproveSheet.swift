@@ -114,24 +114,36 @@ struct AppConnectApproveSheet: View {
         .sheet(item: $termsSheet) { sheet in
             switch sheet {
             case .funding:
-                FundingLimitSheet(viewModel: viewModel, onClose: { termsSheet = nil })
+                withAnotherRequestNote(FundingLimitSheet(viewModel: viewModel, onClose: { termsSheet = nil }))
                     .selfSizingSheet(
                         fallback: .greatestFiniteMagnitude, background: Color.dash.secondaryBackground,
                         animatesHeightChanges: true)
             case .expiry:
-                ExpirySheet(viewModel: viewModel, onClose: { termsSheet = nil })
+                withAnotherRequestNote(ExpirySheet(viewModel: viewModel, onClose: { termsSheet = nil }))
                     .selfSizingSheet(
                         fallback: .greatestFiniteMagnitude, background: Color.dash.secondaryBackground,
                         animatesHeightChanges: true)
             case .fundingInfo:
-                FundingLimitsInfoSheet(onClose: { termsSheet = nil })
+                withAnotherRequestNote(FundingLimitsInfoSheet(onClose: { termsSheet = nil }))
                     .selfSizingSheet(fallback: .greatestFiniteMagnitude, background: Color.dash.secondaryBackground)
                     .presentationDragIndicator(.visible)
             case .spendableInfo:
-                SpendableDashInfoSheet(onClose: { termsSheet = nil })
+                withAnotherRequestNote(SpendableDashInfoSheet(onClose: { termsSheet = nil }))
                     .selfSizingSheet(fallback: .greatestFiniteMagnitude, background: Color.dash.secondaryBackground)
                     .presentationDragIndicator(.visible)
             }
+        }
+    }
+
+    /// A request that came while a terms sheet is up is refused onto the
+    /// approval under it; the sheet on top says so too, and keeps what the
+    /// user was entering.
+    private func withAnotherRequestNote(_ content: some View) -> some View {
+        VStack(spacing: 0) {
+            content
+            DashConnectInlineErrorToast(message: viewModel.anotherRequestNote)
+                .padding(.horizontal, 20)
+                .padding(.bottom, viewModel.anotherRequestNote == nil ? 0 : 20)
         }
     }
 

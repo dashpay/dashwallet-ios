@@ -6999,7 +6999,26 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
             XCTAssertEqual(viewModel.pendingRequest, shown, "\(lost)")
             XCTAssertEqual(viewModel.approveError?.contains("Another DashConnect request arrived"), true, "\(lost)")
             XCTAssertNil(viewModel.message, "\(lost): nothing goes to the page under the sheet")
+            // A terms sheet over the approval says it too.
+            XCTAssertEqual(viewModel.anotherRequestNote, ConnectionsViewModel.anotherRequestArrivedText, "\(lost)")
         }
+    }
+
+    /// Only the refusal of another request is repeated on a terms sheet: the
+    /// approval's other notes are about the request under it.
+    func testATermsSheetRepeatsOnlyTheRefusalOfAnotherRequest() async {
+        var username = ConnectionsViewModel.UsernameState.present
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, usernameState: { username }, now: { Self.phone })
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        XCTAssertNil(viewModel.anotherRequestNote)
+
+        username = .unknown
+        viewModel.approvePendingRequest()
+        XCTAssertEqual(viewModel.approveError, ConnectionsViewModel.usernameUnreadText)
+        XCTAssertNil(viewModel.anotherRequestNote)
     }
 
     func testTheUsernameIsReadAgainOnceTheNamesLoad() async {
@@ -7146,10 +7165,13 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
 
         spy.parseFailure = DashConnectPlatformError.noIdentity
         viewModel.onURIReceived("not a request")
-        await waitUntil { viewModel.message != nil }
+        await waitUntil { viewModel.returnStepNote != nil }
         XCTAssertEqual(spy.parseCount, 2)
 
         XCTAssertEqual(viewModel.pendingReturn, asked)
+        // The page's alert cannot show over the return step: the failure is said on it.
+        XCTAssertEqual(viewModel.returnStepNote?.contains("Could not complete the DashConnect request"), true)
+        XCTAssertNil(viewModel.message)
     }
 
     private static var platformNow: UInt64 { AppConnect.milliseconds(phone) }
@@ -7188,7 +7210,7 @@ extension ConnectionsViewModelTermsTests {
 
         Self.route("second", tabBar: tabBar, menuNav: menuNav)
         await waitUntil { viewModel.approveError != nil }
-        // A sheet closed behind SwiftUI's back goes after the current pass.
+        // A sheet closed from UIKit goes after the current pass.
         try await Task.sleep(nanoseconds: 500_000_000)
 
         XCTAssertTrue(tabBar.presentedViewController === sheet, "the link closed the approval sheet")
@@ -7203,6 +7225,25 @@ extension ConnectionsViewModelTermsTests {
     }
 
     func testALinkClosesWhatAnotherFlowPutOverTheScreenAndShowsItsRequest() async throws {
+        try await assertALinkCloses(presentedAs: .pageSheet)
+    }
+
+    /// A full-screen flow takes Connections out of the window; the link
+    /// still closes it rather than waiting for the user to.
+    func testALinkClosesAFullScreenFlowOverTheScreenAndShowsItsRequest() async throws {
+        try await assertALinkCloses(presentedAs: .fullScreen)
+    }
+
+    /// The page's own scanner is presented from the More navigation
+    /// controller, not from the tab bar.
+    func testALinkClosesWhatThePagePresentedFromItsNavigationAndShowsItsRequest() async throws {
+        try await assertALinkCloses(presentedAs: .pageSheet, fromNavigation: true)
+    }
+
+    private func assertALinkCloses(
+        presentedAs style: UIModalPresentationStyle,
+        fromNavigation: Bool = false
+    ) async throws {
         let shown = Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)
         let spy = LoginApprovalSpy(shown: [shown])
         let viewModel = ConnectionsViewModel(
@@ -7211,9 +7252,14 @@ extension ConnectionsViewModelTermsTests {
         defer { window.isHidden = true }
 
         let other = UIViewController()
-        await withCheckedContinuation { done in tabBar.present(other, animated: false) { done.resume() } }
+        other.modalPresentationStyle = style
+        let presenter: UIViewController = fromNavigation ? menuNav : tabBar
+        await withCheckedContinuation { done in presenter.present(other, animated: false) { done.resume() } }
         await waitUntil { other.view.window != nil }
-        XCTAssertTrue(tabBar.presentedViewController === other)
+        if style == .fullScreen {
+            await waitUntil { menuNav.topViewController?.view.window == nil }
+            XCTAssertNil(menuNav.topViewController?.view.window, "a full-screen flow takes the screen out of the window")
+        }
 
         Self.route("login", tabBar: tabBar, menuNav: menuNav)
         await waitUntil(timeout: 10) {
@@ -7223,6 +7269,7 @@ extension ConnectionsViewModelTermsTests {
         XCTAssertEqual(viewModel.pendingRequest, shown)
         XCTAssertNotNil(tabBar.presentedViewController, "the approval sheet never showed")
         XCTAssertFalse(tabBar.presentedViewController === other, "the other flow's screen still covers the request")
+        XCTAssertNil(other.presentingViewController, "the other flow's screen was not closed")
     }
 
     private static func route(_ uri: String, tabBar: UITabBarController, menuNav: UINavigationController) {
