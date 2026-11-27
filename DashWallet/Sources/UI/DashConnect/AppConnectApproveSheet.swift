@@ -137,16 +137,18 @@ struct AppConnectApproveSheet: View {
 
     /// A request that came while a terms sheet is up is refused onto the
     /// approval under it; the sheet on top says so too, and keeps what the
-    /// user was entering.
+    /// user was entering. The note goes first: the sheet's height is capped
+    /// and its content is top-aligned, so with large text a note under the
+    /// editor could fall below the sheet, where nothing scrolls to it.
     private func withAnotherRequestNote(_ content: some View) -> some View {
         VStack(spacing: 0) {
-            content
             DashConnectInlineErrorToast(message: viewModel.anotherRequestNote)
                 // Its whole height, so the sheet grows to the full text
                 // instead of cutting it to one line.
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, 20)
-                .padding(.bottom, viewModel.anotherRequestNote == nil ? 0 : 20)
+                .padding(.top, viewModel.anotherRequestNote == nil ? 0 : 20)
+            content
         }
     }
 
