@@ -798,6 +798,14 @@ final class ConnectionsViewModel: ObservableObject {
         approveError == Self.anotherRequestArrivedText ? approveError : nil
     }
 
+    /// The user closed the refusal of another request. It only tells them
+    /// why a link did nothing, so it may go; any other note on the approval
+    /// explains why Approve did not go through and stays.
+    func dismissAnotherRequestNote() {
+        guard anotherRequestNote != nil else { return }
+        approveError = nil
+    }
+
     static var usernameNeededText: String {
         String(
             localized: "Create a username to connect apps, then ask the app for a new code.",

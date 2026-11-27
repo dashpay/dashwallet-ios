@@ -102,7 +102,11 @@ struct AppConnectApproveSheet: View {
                     .bottom, (viewModel.approveError ?? viewModel.approveDisabledReason) == nil ? 0 : 72,
                     for: .scrollContent)
                 // Over the end of the scrolling content, above the buttons.
-                .dashConnectErrorToast(viewModel.approveError ?? viewModel.approveDisabledReason)
+                // The refusal of another request can be closed; a note on
+                // why Approve did not go stays until the user acts on it.
+                .dashConnectErrorToast(
+                    viewModel.approveError ?? viewModel.approveDisabledReason,
+                    onDismiss: viewModel.anotherRequestNote == nil ? nil : { viewModel.dismissAnotherRequestNote() })
 
                 footer
             }
@@ -142,7 +146,9 @@ struct AppConnectApproveSheet: View {
     /// editor could fall below the sheet, where nothing scrolls to it.
     private func withAnotherRequestNote(_ content: some View) -> some View {
         VStack(spacing: 0) {
-            DashConnectInlineErrorToast(message: viewModel.anotherRequestNote)
+            DashConnectInlineErrorToast(
+                message: viewModel.anotherRequestNote,
+                onDismiss: { viewModel.dismissAnotherRequestNote() })
                 // Its whole height, so the sheet grows to the full text
                 // instead of cutting it to one line.
                 .fixedSize(horizontal: false, vertical: true)

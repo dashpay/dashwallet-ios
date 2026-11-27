@@ -7070,6 +7070,29 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
         XCTAssertNil(viewModel.anotherRequestNote)
     }
 
+    func testTheRefusalOfAnotherRequestCanBeClosedAndNothingElse() async {
+        var username = ConnectionsViewModel.UsernameState.present
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, usernameState: { username }, now: { Self.phone })
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        let shown = viewModel.pendingRequest
+        viewModel.onQRScanned("second")
+        await waitUntil { viewModel.anotherRequestNote != nil }
+
+        viewModel.dismissAnotherRequestNote()
+        XCTAssertNil(viewModel.approveError)
+        XCTAssertNil(viewModel.anotherRequestNote)
+        XCTAssertEqual(viewModel.pendingRequest, shown, "closing the note keeps the request on the sheet")
+
+        // Any other note on the sheet stays: it explains why Approve did not go.
+        username = .unknown
+        viewModel.approvePendingRequest()
+        viewModel.dismissAnotherRequestNote()
+        XCTAssertEqual(viewModel.approveError, ConnectionsViewModel.usernameUnreadText)
+    }
+
     func testTheUsernameIsReadAgainOnceTheNamesLoad() async {
         var username = ConnectionsViewModel.UsernameState.unknown
         let center = NotificationCenter()

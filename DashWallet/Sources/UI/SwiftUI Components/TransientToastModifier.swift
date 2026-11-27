@@ -51,13 +51,15 @@ extension View {
     ///
     /// The sibling above is for a moment that has already passed and needs a
     /// timer to clear it; this one is for a condition that clears itself — a
-    /// sync finishing, a connection returning.
+    /// sync finishing, a connection returning. With `onDismiss` the toast
+    /// shows a close button that calls it.
     func conditionToast(
         isVisible: Bool,
         style: ToastStyle,
-        message: String
+        message: String,
+        onDismiss: (() -> Void)? = nil
     ) -> some View {
-        modifier(ConditionToastModifier(isVisible: isVisible, style: style, message: message))
+        modifier(ConditionToastModifier(isVisible: isVisible, style: style, message: message, onDismiss: onDismiss))
     }
 }
 
@@ -65,12 +67,13 @@ private struct ConditionToastModifier: ViewModifier {
     let isVisible: Bool
     let style: ToastStyle
     let message: String
+    let onDismiss: (() -> Void)?
 
     func body(content: Content) -> some View {
         content
             .overlay(alignment: .bottom) {
                 if isVisible {
-                    DashUIKit.Toast(style: style, message: message)
+                    DashUIKit.Toast(style: style, message: message, onDismiss: onDismiss)
                         .padding(.horizontal, 20)
                         .padding(.bottom, 16)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
