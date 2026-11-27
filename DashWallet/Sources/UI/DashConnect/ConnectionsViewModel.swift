@@ -224,8 +224,18 @@ final class ConnectionsViewModel: ObservableObject {
     @Published var pendingTokenPurchase: DashConnectTokenPurchaseRequest? {
         didSet { if pendingTokenPurchase == nil, pendingRequest == nil { anotherRequestNote = nil } }
     }
-    @Published var isApproving = false
-    @Published var isApprovingPurchase = false
+    /// An approval or a retry of the request on screen in flight. Its
+    /// start and its end both clear the refusal of another request: what
+    /// the user's action does shows, including a refusal set while it was
+    /// out.
+    @Published var isApproving = false {
+        didSet { if isApproving != oldValue { anotherRequestNote = nil } }
+    }
+    /// The token purchase on screen in flight; clears the refusal of
+    /// another request as `isApproving` does.
+    @Published var isApprovingPurchase = false {
+        didSet { if isApprovingPurchase != oldValue { anotherRequestNote = nil } }
+    }
     @Published var isProcessingStateTransition = false
     /// A disconnect in progress, from the tap until it has ended and the
     /// local history shows its result, whether or not it signs an identity
@@ -807,6 +817,13 @@ final class ConnectionsViewModel: ObservableObject {
         anotherRequestNote = nil
     }
 
+    /// Whether the approval and its terms sheets show their header close.
+    /// Not while the refusal of another request shows its own close: VoiceOver
+    /// would read two buttons named "Close", and the approval's declines the
+    /// request. Deny (or Back and swiping down) stays; closing the refusal
+    /// brings the header close back.
+    var showsSheetCloseButton: Bool { anotherRequestNote == nil }
+
     /// For a sheet with one note line and no way to close it: the refusal
     /// of another request and the approval's own note both show, so neither
     /// hides the other.
@@ -849,7 +866,8 @@ final class ConnectionsViewModel: ObservableObject {
         guard var consent = pendingRequest, consent.login.isApprovable,
               let pendingLoginRequest, !isApproving, !isResolvingRequest, !approveNeedsTopUp else { return }
         // The user acts on the request on screen: what Approve does next
-        // shows, not the refusal of another one.
+        // shows, not the refusal of another one. Here too, not only in
+        // `isApproving`: a tap stopped before the approval starts shows why.
         anotherRequestNote = nil
         // Read again: the active identity may have lost its username, or
         // another one become active, since the request came.
@@ -993,7 +1011,6 @@ final class ConnectionsViewModel: ObservableObject {
     func retryPendingRequest() {
         guard pendingRequest != nil, let pendingLoginRequest, !isApproving, !isResolvingRequest else { return }
 
-        anotherRequestNote = nil
         isApproving = true
         approveError = nil
 
@@ -1340,7 +1357,6 @@ final class ConnectionsViewModel: ObservableObject {
     func approvePendingTokenPurchase() {
         guard let purchase = pendingTokenPurchase, !isApprovingPurchase else { return }
 
-        anotherRequestNote = nil
         isApprovingPurchase = true
         purchaseApproveError = nil
 

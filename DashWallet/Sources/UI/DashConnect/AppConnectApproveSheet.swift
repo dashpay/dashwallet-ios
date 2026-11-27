@@ -48,6 +48,7 @@ struct AppConnectApproveSheet: View {
         DashUIKit.BottomSheet(
             showBackButton: .constant(false),
             isDismissalEnabled: .constant(!viewModel.isApproving),
+            showsCloseButton: viewModel.showsSheetCloseButton,
             isCloseButtonEnabled: !viewModel.isApproving,
             onClose: { viewModel.denyPendingRequest(asksToReturn: true) },
             background: Color.dash.secondaryBackground
@@ -385,6 +386,7 @@ struct FundingLimitSheet: View {
                 : String(localized: "Identity funding limits", comment: "DashConnect funding limit presets"),
             showBackButton: .constant(isTyping),
             onBackButtonPressed: { withAnimation(.smooth(duration: 0.3)) { isTyping = false } },
+            showsCloseButton: viewModel.showsSheetCloseButton,
             onClose: onClose,
             fillsHeight: false,
             background: Color.dash.secondaryBackground
@@ -486,6 +488,7 @@ struct ExpirySheet: View {
                 : String(localized: "Connection expiration period", comment: "DashConnect expiry presets"),
             showBackButton: .constant(isPickingDate),
             onBackButtonPressed: { withAnimation(.smooth(duration: 0.3)) { isPickingDate = false } },
+            showsCloseButton: viewModel.showsSheetCloseButton,
             onClose: onClose,
             fillsHeight: false,
             background: Color.dash.secondaryBackground

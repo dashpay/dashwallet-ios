@@ -639,6 +639,26 @@ final class ConnectionsViewModelPurchaseTests: XCTestCase {
         XCTAssertEqual(spy.approveCallCount, 1)
     }
 
+    /// A link that comes while the purchase is out is refused onto its
+    /// sheet; what the purchase then did shows, not that refusal.
+    func testWhatThePurchaseDidSupersedesARefusalThatCameWhileItWasOut() async {
+        let spy = PurchaseApprovalSpy()
+        spy.suspendsUntilReleased = true
+        spy.failure = DashConnectTokenPurchaseFailure.beforeSubmission(PurchaseSpyError.refused)
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false)
+        viewModel.pendingTokenPurchase = PlatformDashConnectDataSourceTests.purchaseRequest(credits: 1)
+
+        viewModel.approvePendingTokenPurchase()
+        await waitUntil { spy.isSuspended }
+        viewModel.onURIReceived("second")
+        XCTAssertEqual(viewModel.anotherRequestNote, ConnectionsViewModel.anotherRequestArrivedText)
+
+        spy.release()
+        await waitUntil { !viewModel.isApprovingPurchase }
+        XCTAssertNil(viewModel.anotherRequestNote)
+        XCTAssertEqual(viewModel.purchaseApproveError?.contains("spy refused"), true)
+    }
+
     func testASecondApproveWhileTheFirstIsInFlightSubmitsOnlyOnce() async {
         let spy = PurchaseApprovalSpy()
         spy.suspendsUntilReleased = true
@@ -1472,8 +1492,35 @@ private final class LoginApprovalSpy: DashConnectDataSource {
         return parsed ?? .login(loginRequest)
     }
 
+    private var storedHoldsRebuild = false
+    private var rebuildGate: CheckedContinuation<Void, Never>?
+
+    /// When true, `makeConnectionRequest` suspends until `releaseRebuild()`.
+    var holdsRebuild: Bool {
+        get { lock.withLock { storedHoldsRebuild } }
+        set { lock.withLock { storedHoldsRebuild = newValue } }
+    }
+
+    /// Whether a rebuild is suspended right now.
+    var isRebuildSuspended: Bool { lock.withLock { rebuildGate != nil } }
+
+    /// Lets a suspended `makeConnectionRequest` finish.
+    func releaseRebuild() {
+        let waiting = lock.withLock { () -> CheckedContinuation<Void, Never>? in
+            let waiting = rebuildGate
+            rebuildGate = nil
+            return waiting
+        }
+        waiting?.resume()
+    }
+
     func makeConnectionRequest(from loginRequest: DashKeyRequest) async -> ConnectionRequest {
-        lock.withLock { shown.count > 1 ? shown.removeFirst() : shown[0] }
+        if holdsRebuild {
+            await withCheckedContinuation { continuation in
+                lock.withLock { rebuildGate = continuation }
+            }
+        }
+        return lock.withLock { shown.count > 1 ? shown.removeFirst() : shown[0] }
     }
 
     func approveLogin(_ request: DashKeyRequest, consent: ConnectionRequest) async throws -> DAppConnection {
@@ -7180,6 +7227,66 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
                 localized: "This expiry has passed. Pick another one, then approve.",
                 comment: "DashConnect approve sheet: the chosen expiry is in the past"))
         XCTAssertNotNil(viewModel.pendingRequest)
+    }
+
+    /// A link that comes while Approve is out is refused onto the sheet;
+    /// what Approve then did shows, not that refusal (here: Platform
+    /// refused the expiry, and the sheet says to pick another one).
+    func testWhatApproveDidSupersedesARefusalThatCameWhileItWasOut() async {
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        spy.approveFailures = [DashConnectPlatformError.approvalTermsExpired]
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, now: { Self.phone })
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        spy.suspendsApproval = true
+
+        viewModel.approvePendingRequest()
+        await waitUntil { spy.isApprovalSuspended }
+        viewModel.onURIReceived("second")
+        XCTAssertEqual(viewModel.anotherRequestNote, ConnectionsViewModel.anotherRequestArrivedText)
+
+        spy.releaseApproval()
+        await waitUntil { !viewModel.isApproving }
+        XCTAssertNil(viewModel.anotherRequestNote)
+        XCTAssertNil(viewModel.termsAppliedPlan)
+        XCTAssertNotNil(viewModel.approveDisabledReason)
+    }
+
+    /// The same for "Try again" on a sheet that could not tell which login
+    /// it would run: the rebuilt sheet shows, not the refusal.
+    func testWhatTryAgainDidSupersedesARefusalThatCameWhileItWasOut() async {
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, now: { Self.phone })
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        spy.holdsRebuild = true
+
+        viewModel.retryPendingRequest()
+        await waitUntil { spy.isRebuildSuspended }
+        viewModel.onURIReceived("second")
+        XCTAssertEqual(viewModel.anotherRequestNote, ConnectionsViewModel.anotherRequestArrivedText)
+
+        spy.releaseRebuild()
+        await waitUntil { !viewModel.isApproving }
+        XCTAssertNil(viewModel.anotherRequestNote)
+        XCTAssertNotNil(viewModel.pendingRequest)
+    }
+
+    /// The approval and its terms sheets hide their header close while the
+    /// refusal of another request shows its own: two buttons VoiceOver reads
+    /// as "Close", one of them declining the request.
+    func testTheSheetsHeaderCloseIsHiddenWhileTheRefusalShowsItsOwn() async {
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, now: { Self.phone })
+        viewModel.onQRScanned("login")
+        await waitUntil { viewModel.pendingRequest != nil }
+        XCTAssertTrue(viewModel.showsSheetCloseButton)
+
+        viewModel.onURIReceived("second")
+        XCTAssertFalse(viewModel.showsSheetCloseButton)
+
+        viewModel.dismissAnotherRequestNote()
+        XCTAssertTrue(viewModel.showsSheetCloseButton)
     }
 
     // MARK: Balance
