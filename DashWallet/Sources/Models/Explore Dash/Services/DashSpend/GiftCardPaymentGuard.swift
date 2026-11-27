@@ -159,25 +159,9 @@ enum GiftCardPaymentGuard {
     }
 
     /// The Dash amount a provider wrote into its payment request, or nil unless the whole
-    /// string is plain decimal digits with at most one decimal point ("1", "0.25").
-    /// `Decimal(string:)` alone reads a leading number and ignores what follows it, so the
-    /// string is checked first. Signs, exponents, grouping separators and whitespace are
-    /// refused, as is anything longer than `Decimal` can hold exactly.
-    ///
-    /// The check reads UTF-8 bytes, not `Character`s: a digit followed by a combining mark
-    /// is one `Character` that sorts between "0" and "9".
+    /// string is a plain decimal number (`GiftCardCurrency.plainDecimal`).
     static func dashAmount(fromQuotedString string: String) -> Decimal? {
-        let bytes = string.utf8
-        guard bytes.count <= 30 else { return nil }
-
-        let asciiDigits = UInt8(ascii: "0")...UInt8(ascii: "9")
-        let parts = bytes.split(separator: UInt8(ascii: "."), omittingEmptySubsequences: false)
-        guard (1...2).contains(parts.count),
-              parts.allSatisfy({ part in !part.isEmpty && part.allSatisfy { asciiDigits.contains($0) } }) else {
-            return nil
-        }
-
-        return Decimal(string: string, locale: Locale(identifier: "en_US_POSIX"))
+        GiftCardCurrency.plainDecimal(string)
     }
 
     /// `true` when the wallet's exchange rate was retrieved within the app's stale-rate

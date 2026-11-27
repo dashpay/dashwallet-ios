@@ -24,15 +24,15 @@ struct DashSpendFixedContent: View {
     let onAction: () -> Void
 
     private var total: String {
-        let formatter = NumberFormatter()
-        formatter.minimumFractionDigits = 0
-        formatter.maximumFractionDigits = 2
-        let sum = quantities.reduce(Decimal(0)) { $0 + $1.key * Decimal($1.value) }
-        return formatter.string(from: NSDecimalNumber(decimal: sum)) ?? "0"
+        viewModel.plainAmount(quantities.reduce(Decimal(0)) { $0 + $1.key * Decimal($1.value) })
     }
 
-    private var denominations: [Decimal] {
-        viewModel.denominations.map { Decimal($0) }
+    /// The cards chosen. A provider that sells one card per order keeps the last one chosen.
+    private var selection: Binding<[Decimal: Int]> {
+        guard !viewModel.supportsMultipleMode else { return $quantities }
+        return Binding(
+            get: { quantities },
+            set: { quantities = CTXGiftCardOrder.singleCard(from: quantities, to: $0) })
     }
 
     private var actionEnabled: Bool {
@@ -63,8 +63,9 @@ struct DashSpendFixedContent: View {
             .padding(.top, 10)
 
             DashSpendMultiplePanel(
-                denominations: denominations,
-                quantities: $quantities,
+                denominations: viewModel.denominations,
+                cardValueLabel: { viewModel.cardValueLabel($0) },
+                quantities: selection,
                 actionEnabled: actionEnabled,
                 inProgress: viewModel.isProcessingPayment,
                 error: viewModel.error,
@@ -72,7 +73,8 @@ struct DashSpendFixedContent: View {
                 costMessage: viewModel.costMessage,
                 inventoryLimits: viewModel.denominationInventory.reduce(into: [:]) { $0[Decimal($1.key)] = $1.value },
                 onContinue: onAction,
-                onReset: { quantities.removeAll() }
+                onReset: { quantities.removeAll() },
+                onRetry: viewModel.canRetryMerchantLoad ? { viewModel.retryMerchantLoad() } : nil
             )
             .onChange(of: quantities) { newQuantities in
                 let total = newQuantities.reduce(Decimal(0)) { $0 + $1.key * Decimal($1.value) }

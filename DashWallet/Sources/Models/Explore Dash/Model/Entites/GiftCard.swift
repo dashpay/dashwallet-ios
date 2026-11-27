@@ -32,6 +32,9 @@ struct GiftCard: RowDecodable {
     let note: String?
     let provider: String?
     let redeemUrlChallenge: String?
+    /// ISO 4217 code of the currency `price` is in; nil for a card saved before cards had
+    /// one, when every card was USD (`GiftCardCurrency.ofSavedCard`).
+    let currency: String?
 
     static let table = Table("gift_cards")
     static let txId = SQLite.Expression<Data>("txId")
@@ -45,6 +48,7 @@ struct GiftCard: RowDecodable {
     static let note = SQLite.Expression<String?>("note")
     static let provider = SQLite.Expression<String?>("provider")
     static let redeemUrlChallenge = SQLite.Expression<String?>("redeemUrlChallenge")
+    static let currency = SQLite.Expression<String?>("currency")
     
     init(row: Row) {
         self.txId = row[GiftCard.txId]
@@ -59,11 +63,12 @@ struct GiftCard: RowDecodable {
         // Safely handle provider column that may not exist yet
         self.provider = try? row.get(GiftCard.provider)
         self.redeemUrlChallenge = try? row.get(GiftCard.redeemUrlChallenge)
+        self.currency = try? row.get(GiftCard.currency)
     }
 
     init(txId: Data, merchantName: String, merchantUrl: String?, price: Decimal, number: String? = nil,
          pin: String? = nil, barcodeValue: String? = nil, barcodeFormat: String? = nil, note: String? = nil, provider: String? = nil,
-         redeemUrlChallenge: String? = nil) {
+         redeemUrlChallenge: String? = nil, currency: String? = nil) {
         self.txId = txId
         self.merchantName = merchantName
         self.merchantUrl = merchantUrl
@@ -75,5 +80,6 @@ struct GiftCard: RowDecodable {
         self.note = note
         self.provider = provider
         self.redeemUrlChallenge = redeemUrlChallenge
+        self.currency = currency
     }
 } 

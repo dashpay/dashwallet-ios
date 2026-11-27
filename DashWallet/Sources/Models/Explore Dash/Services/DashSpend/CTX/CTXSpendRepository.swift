@@ -132,7 +132,7 @@ class CTXSpendRepository: CTXSpendTokenProvider, DashSpendRepository {
     
     // MARK: - Gift Card Methods
     
-    func purchaseGiftCard(merchantId: String, fiatAmount: String, fiatCurrency: String = "USD", cryptoCurrency: String = "DASH") async throws -> GiftCardResponse {
+    func purchaseGiftCard(merchantId: String, fiatAmount: String, fiatCurrency: String, cryptoCurrency: String = "DASH") async throws -> GiftCardResponse {
         let request = PurchaseGiftCardRequest(
             cryptoCurrency: cryptoCurrency,
             fiatCurrency: fiatCurrency,

@@ -22,16 +22,16 @@ import DashUIKit
 /// prices, the difference, and the choice to pay the new price or cancel.
 struct DashSpendPriceUpdatedDialog: View {
     let change: GiftCardPaymentGuard.PriceChange
+    /// The currency the buyer confirmed the price in.
+    let currency: String
     /// The most height the dialog may take; `nil` for its natural height. When the content
     /// is taller, the prices and the warning scroll and the buttons stay in place below them.
     var maxHeight: CGFloat? = nil
     let onPay: () -> Void
     let onCancel: () -> Void
 
-    private let fiatFormatter = NumberFormatter.fiatFormatter(currencyCode: kDefaultCurrencyCode)
-
     private func fiat(_ amount: Decimal) -> String {
-        fiatFormatter.string(from: NSDecimalNumber(decimal: amount)) ?? ""
+        GiftCardCurrency.string(amount, currency: currency)
     }
 
     private var approximateRequestedFiat: String { "≈ " + fiat(change.requestedFiat) }
@@ -164,7 +164,7 @@ struct DashSpendPriceUpdatedDialog: View {
         change: GiftCardPaymentGuard.PriceChange(
             confirmedAmount: 493_700_000, confirmedFiat: 192.50,
             requestedAmount: 513_440_000, requestedFiat: 200.20, needsWarning: false),
-        onPay: {}, onCancel: {})
+        currency: "USD", onPay: {}, onCancel: {})
         .background(Color.dash.primaryBackground)
 }
 
@@ -173,6 +173,6 @@ struct DashSpendPriceUpdatedDialog: View {
         change: GiftCardPaymentGuard.PriceChange(
             confirmedAmount: 493_700_000, confirmedFiat: 192.50,
             requestedAmount: 552_940_000, requestedFiat: 215.60, needsWarning: true),
-        onPay: {}, onCancel: {})
+        currency: "USD", onPay: {}, onCancel: {})
         .background(Color.dash.primaryBackground)
 }

@@ -117,6 +117,9 @@ struct DashSpendPayScreen: View {
         .onDisappear {
             viewModel.unsubscribeFromAll()
         }
+        .onChange(of: viewModel.selectionResets) { _ in
+            quantities.removeAll()
+        }
         .onChange(of: viewModel.isUserSignedIn) { isSignedIn in
             if !isSignedIn {
                 presentationMode.wrappedValue.dismiss()
@@ -374,6 +377,7 @@ private struct DashSpendPurchaseSheet: View {
                 merchantName: viewModel.merchantTitle,
                 merchantIconUrl: viewModel.merchantIconUrl,
                 originalPrice: snapshot.price,
+                currency: snapshot.currency,
                 discount: snapshot.discount,
                 dashAmount: snapshot.approval.amount,
                 quantities: snapshot.quantities.isEmpty ? nil : snapshot.quantities,
@@ -385,6 +389,7 @@ private struct DashSpendPurchaseSheet: View {
         case .priceUpdated(let change):
             DashSpendPriceUpdatedDialog(
                 change: change,
+                currency: viewModel.purchaseCurrency,
                 maxHeight: contentHeightLimit,
                 onPay: { viewModel.resolvePriceChange(pay: true) },
                 onCancel: { viewModel.resolvePriceChange(pay: false) }

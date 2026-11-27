@@ -20,6 +20,8 @@ import DashUIKit
 
 struct DashSpendMultiplePanel: View {
     let denominations: [Decimal]
+    /// A card value, formatted in the card currency.
+    let cardValueLabel: (Decimal) -> String
     @Binding var quantities: [Decimal: Int]
     let actionEnabled: Bool
     let inProgress: Bool
@@ -29,6 +31,8 @@ struct DashSpendMultiplePanel: View {
     let inventoryLimits: [Decimal: Int]
     let onContinue: () -> Void
     let onReset: () -> Void
+    /// Loads the merchant again; set when the error on screen is one a new load may clear.
+    var onRetry: (() -> Void)? = nil
 
     private var inventoryWarning: String? {
         for (denomination, count) in quantities where count > 0 {
@@ -44,6 +48,7 @@ struct DashSpendMultiplePanel: View {
             ZStack(alignment: .bottom) {
                 DenominationCard(
                     denominations: denominations,
+                    cardValueLabel: cardValueLabel,
                     quantities: $quantities,
                     inventoryLimits: inventoryLimits,
                     onReset: onReset
@@ -72,6 +77,10 @@ struct DashSpendMultiplePanel: View {
                         .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity)
                         .padding(.bottom, 4)
+
+                    if let onRetry {
+                        DashSpendRetryButton(action: onRetry)
+                    }
                 } else if showCost {
                     Text(costMessage)
                         .font(.subhead)
@@ -96,6 +105,7 @@ struct DashSpendMultiplePanel: View {
 
 private struct DenominationCard: View {
     let denominations: [Decimal]
+    let cardValueLabel: (Decimal) -> String
     @Binding var quantities: [Decimal: Int]
     let inventoryLimits: [Decimal: Int]
     let onReset: () -> Void
@@ -104,7 +114,7 @@ private struct DenominationCard: View {
         VStack(spacing: 10) {
             ForEach(denominations, id: \.self) { denomination in
                 DashSpendDenominationRow(
-                    denomination: denomination,
+                    label: cardValueLabel(denomination),
                     count: Binding(
                         get: { quantities[denomination] ?? 0 },
                         set: { newValue in
@@ -152,6 +162,7 @@ private struct DashSpendMultiplePanelPreview: View {
 
             DashSpendMultiplePanel(
                 denominations: [5, 10, 50, 100],
+                cardValueLabel: { "$\($0)" },
                 quantities: $quantities,
                 actionEnabled: !quantities.isEmpty,
                 inProgress: false,

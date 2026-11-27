@@ -19,22 +19,17 @@ import SwiftUI
 import DashUIKit
 
 struct DashSpendDenominationRow: View {
-    let denomination: Decimal
+    /// The card value, formatted in the card currency.
+    let label: String
     @Binding var count: Int
     var inventoryLimit: Int? = nil
-
-    private let fiatFormatter: NumberFormatter = {
-        let formatter = NumberFormatter.fiatFormatter(currencyCode: kDefaultCurrencyCode)
-        formatter.minimumFractionDigits = 0
-        return formatter
-    }()
 
     var body: some View {
         HStack {
             HStack(spacing: 12) {
                 Icon(name: .custom("icon-gift_card-piggy_cards", maxHeight: 26))
 
-                Text(fiatFormatter.string(from: NSDecimalNumber(decimal: denomination)) ?? "")
+                Text(label)
                     .font(.headline)
                     .fontWeight(.semibold)
                     .foregroundColor(.dash.primaryText)
@@ -48,9 +43,9 @@ struct DashSpendDenominationRow: View {
 
 #Preview {
     VStack(spacing: 10) {
-        DashSpendDenominationRowPreview(denomination: 5)
-        DashSpendDenominationRowPreview(denomination: 25)
-        DashSpendDenominationRowPreview(denomination: 100)
+        DashSpendDenominationRowPreview(label: "$5")
+        DashSpendDenominationRowPreview(label: "$25")
+        DashSpendDenominationRowPreview(label: "$100")
     }
     .padding(20)
     .background(Color.dash.secondaryBackground)
@@ -59,12 +54,12 @@ struct DashSpendDenominationRow: View {
 }
 
 private struct DashSpendDenominationRowPreview: View {
-    let denomination: Decimal
+    let label: String
     @State private var count = 0
 
     var body: some View {
         DashSpendDenominationRow(
-            denomination: denomination,
+            label: label,
             count: $count
         )
     }

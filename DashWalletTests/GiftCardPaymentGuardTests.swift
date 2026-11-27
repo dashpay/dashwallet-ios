@@ -422,7 +422,8 @@ final class DashSpendPayApprovalTests: XCTestCase {
         // Retrieved at the view model's own clock: a rate stamped by the real clock can be a
         // second ahead of a clock the test froze earlier, and a rate from the future is stale.
         let rate = rate ?? GiftCardPaymentGuard.ExchangeRate(price: 40, retrievedAt: Int(now().timeIntervalSince1970))
-        let viewModel = DashSpendPayViewModel(merchant: merchant, provider: provider, exchangeRate: { rate }, now: now)
+        let viewModel = DashSpendPayViewModel(merchant: merchant, provider: provider, confirmedCurrency: "USD",
+                                              exchangeRate: { _ in rate }, now: now)
         // No sheet is on screen in these tests, so nothing reports its dismissal.
         viewModel.sheetDismissalWait = 0.01
         return viewModel
@@ -546,8 +547,8 @@ final class DashSpendPayApprovalTests: XCTestCase {
     func testPurchaseStopsBeforeTheProviderWhenTheConfirmedRateWentStale() async throws {
         var clock = Date()
         let rate = GiftCardPaymentGuard.ExchangeRate(price: 40, retrievedAt: Int(clock.timeIntervalSince1970))
-        let viewModel = DashSpendPayViewModel(merchant: merchant, provider: .ctx,
-                                              exchangeRate: { rate }, now: { clock })
+        let viewModel = DashSpendPayViewModel(merchant: merchant, provider: .ctx, confirmedCurrency: "USD",
+                                              exchangeRate: { _ in rate }, now: { clock })
         try viewModel.beginPurchase(price: 25)
         guard case .confirm(let snapshot)? = viewModel.purchaseSheet else {
             return XCTFail("the Confirm sheet did not open")
@@ -973,12 +974,13 @@ final class DashSpendPurchaseSheetLayoutTests: XCTestCase {
             confirmedAmount: 493_700_000, confirmedFiat: 192.50,
             requestedAmount: warning ? 552_940_000 : 513_440_000,
             requestedFiat: warning ? 215.60 : 200.20, needsWarning: warning)
-        return height(of: DashSpendPriceUpdatedDialog(change: change, maxHeight: maxHeight, onPay: {}, onCancel: {}))
+        return height(of: DashSpendPriceUpdatedDialog(
+            change: change, currency: "USD", maxHeight: maxHeight, onPay: {}, onCancel: {}))
     }
 
     private func confirm(maxHeight: CGFloat?, quantities: [Decimal: Int]?) -> CGFloat {
         height(of: DashSpendConfirmationDialog(
-            merchantName: "Merchant", merchantIconUrl: "", originalPrice: 200, discount: 0.0375,
+            merchantName: "Merchant", merchantIconUrl: "", originalPrice: 200, currency: "USD", discount: 0.0375,
             dashAmount: 493_700_000, quantities: quantities, isWaiting: false, maxHeight: maxHeight,
             onConfirm: {}, onCancel: {}))
     }

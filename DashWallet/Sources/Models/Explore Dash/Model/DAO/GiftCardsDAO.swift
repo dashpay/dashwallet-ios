@@ -31,6 +31,8 @@ protocol GiftCardsDAO {
     func updateCardDetails(txId: Data, number: String, pin: String?) async
     func updateBarcode(txId: Data, value: String, format: String) async
     func updateRedeemUrl(txId: Data, url: String, challenge: String?) async
+    /// Records the currency of a card that has none. A stored currency is never replaced.
+    func backfillCurrency(txId: Data, currency: String) async
     func delete(byTxId txId: Data) async
     func all() async -> [GiftCard]
 }
@@ -38,7 +40,8 @@ protocol GiftCardsDAO {
 // MARK: - GiftCardsDAOImpl
 
 class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
-    private var db: Connection { DatabaseConnection.shared.db }
+    private let connection: Connection?
+    private var db: Connection { connection ?? DatabaseConnection.shared.db }
     private var cache: [String: GiftCard] = [:]
     // `cache` is read/written from several concurrent async contexts (DB continuations resume on a
     // global queue, the details-screen ticker and loadGiftCard run in parallel). A plain Dictionary
@@ -73,7 +76,9 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
     
     static let shared = GiftCardsDAOImpl()
     
-    override init() {
+    /// - Parameter connection: the database to use; `nil` for the app's shared one.
+    init(connection: Connection? = nil) {
+        self.connection = connection
         super.init()
         Task {
             await loadAllCards()
@@ -93,10 +98,15 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
                                               GiftCard.barcodeFormat <- dto.barcodeFormat,
                                               GiftCard.note <- dto.note,
                                               GiftCard.provider <- dto.provider,
-                                              GiftCard.redeemUrlChallenge <- dto.redeemUrlChallenge)
+                                              GiftCard.redeemUrlChallenge <- dto.redeemUrlChallenge,
+                                              GiftCard.currency <- Self.currencyToStore(for: dto))
             try await execute(insert)
-            let key = dto.txId.hexEncodedString()
-            cacheSet(dto, forKey: key)
+            if dto.currency == nil {
+                // The row may have kept a currency the DTO does not carry.
+                _ = await get(byTxId: dto.txId)
+            } else {
+                cacheSet(dto, forKey: dto.txId.hexEncodedString())
+            }
             self.giftCardTxId = dto.txId
             updateAllCardsSubject()
         } catch {
@@ -149,7 +159,8 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
                     barcodeFormat: existingCard.barcodeFormat,
                     note: nil,
                     provider: existingCard.provider,
-                    redeemUrlChallenge: existingCard.redeemUrlChallenge
+                    redeemUrlChallenge: existingCard.redeemUrlChallenge,
+                    currency: existingCard.currency
                 )
                 let key = txId.hexEncodedString()
                 cacheSet(updatedCard, forKey: key)
@@ -181,7 +192,8 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
                     barcodeFormat: format,
                     note: existingCard.note,
                     provider: existingCard.provider,
-                    redeemUrlChallenge: existingCard.redeemUrlChallenge
+                    redeemUrlChallenge: existingCard.redeemUrlChallenge,
+                    currency: existingCard.currency
                 )
                 let key = txId.hexEncodedString()
                 cacheSet(updatedCard, forKey: key)
@@ -212,7 +224,8 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
                     barcodeFormat: existingCard.barcodeFormat,
                     note: existingCard.note,
                     provider: existingCard.provider,
-                    redeemUrlChallenge: challenge
+                    redeemUrlChallenge: challenge,
+                    currency: existingCard.currency
                 )
                 let key = txId.hexEncodedString()
                 cacheSet(updatedCard, forKey: key)
@@ -224,6 +237,29 @@ class GiftCardsDAOImpl: NSObject, GiftCardsDAO {
         }
     }
     
+    func backfillCurrency(txId: Data, currency: String) async {
+        do {
+            let update = GiftCard.table.filter(GiftCard.txId == txId && GiftCard.currency == nil)
+                .update(GiftCard.currency <- currency)
+            try await execute(update)
+
+            if await get(byTxId: txId) != nil {
+                self.giftCardTxId = txId
+                updateAllCardsSubject()
+            }
+        } catch {
+            print(error)
+        }
+    }
+
+    /// The currency a full-row write stores: the DTO's, or the one the row already has. A
+    /// writer that does not know the currency must not put a stored one back to NULL.
+    private static func currencyToStore(for dto: GiftCard) -> SQLite.Expression<String?> {
+        SQLite.Expression<String?>(
+            "COALESCE(?, (SELECT \"currency\" FROM \"gift_cards\" WHERE \"txId\" = ?))",
+            [dto.currency, dto.txId.datatypeValue])
+    }
+
     func delete(byTxId txId: Data) async {
         let key = txId.hexEncodedString()
         cacheSet(nil, forKey: key)

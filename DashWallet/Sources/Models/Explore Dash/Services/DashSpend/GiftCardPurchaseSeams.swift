@@ -70,6 +70,8 @@ struct GiftCardPurchaseRecord: Equatable {
     let merchantIconUrl: String
     /// The card value the buyer confirmed, stored as the card's price.
     let price: Decimal
+    /// The currency the order was made in.
+    let currency: String
     /// The order id, or the order metadata, the details poller reads.
     let note: String
 }
@@ -128,7 +130,8 @@ final class GiftCardPurchaseStore: GiftCardPurchaseRecording {
             merchantUrl: purchase.merchantUrl,
             price: purchase.price,
             note: purchase.note,
-            provider: purchase.provider.displayName)
+            provider: purchase.provider.displayName,
+            currency: purchase.currency)
         let giftCardsDao = giftCardsDao
         Task {
             await giftCardsDao.create(dto: giftCard)
