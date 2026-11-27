@@ -139558,6 +139558,9 @@
         }
       }
     },
+    "Copy Identity ID" : {
+      "comment" : "Receive, Identity option"
+    },
     "Copy Logs" : {
       "comment" : "Log export",
       "localizations" : {
@@ -140608,6 +140611,9 @@
           }
         }
       }
+    },
+    "Copy username" : {
+      "comment" : "Receive, Identity option"
     },
     "Copyright © 2026 Dash Core Group" : {
       "comment" : "AboutDash",
@@ -231626,6 +231632,9 @@
         }
       }
     },
+    "Funds sent to your identity pay for Dash apps and usernames." : {
+      "comment" : "Receive, Identity option warning"
+    },
     "Funds will be traceable to your username" : {
       "comment" : "Usernames",
       "localizations" : {
@@ -247626,7 +247635,7 @@
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ідентично"
+            "value" : "Ідентифікатор"
           }
         },
         "vi" : {
@@ -313392,6 +313401,9 @@
           }
         }
       }
+    },
+    "Most exchanges and many wallets can send only to Core addresses" : {
+      "comment" : "Receive, Identity option warning"
     },
     "Move %@ from shielded balance" : {
       "comment" : "Masternode unban",
@@ -477696,6 +477708,9 @@
           }
         }
       }
+    },
+    "Share ID" : {
+      "comment" : "Receive, Identity option"
     },
     "Share key" : {
       "localizations" : {

@@ -39,6 +39,7 @@ where they disagree, ADR-0001 wins.
 | [0031](0031-turn-off-unattributed-dashpay-profile-keys-with-any-disconnect.md) | Turn off unattributed DashPay profile keys with any disconnect | keys | Superseded | [0075](0075-turn-off-unattributed-dashpay-profile-keys-except-keys-that-cannot-be-checked.md) |
 | [0032](0032-pass-owners-read-from-platform-into-the-pure-projection.md) | Pass the owners read from Platform into the pure App Connect projection | platform | Accepted | |
 | [0033](0033-turn-off-only-the-unrecorded-keys-the-question-listed.md) | Turn off only the unrecorded keys the question listed | keys | Superseded | [0016](0016-turn-off-unrecorded-keys-on-disconnect-without-asking.md) |
+| [0034](0034-subtract-own-top-ups-via-a-typed-top-up-event.md) | Subtract own top-ups via a typed top-up event | ui | Accepted | |
 | [0035](0035-run-every-vote-through-a-pure-vote-attempt-state-machine.md) | Run every vote through a pure vote-attempt state machine | ui | Proposed | |
 | [0037](0037-cast-quick-voting-sequentially-under-one-authentication.md) | Cast Quick voting sequentially under one authentication | ui | Proposed | |
 | [0038](0038-let-only-the-voting-store-write-the-remembered-node-choice.md) | Let only the voting store write the remembered node choice | ui | Proposed | |
@@ -54,6 +55,7 @@ where they disagree, ADR-0001 wins.
 | [0059](0059-route-every-app-log-line-through-dwlogger-with-an-os-logger-shaped-applogger.md) | Route every app log line through DWLogger with an os.Logger-shaped AppLogger | logging | Proposed | |
 | [0060](0060-redact-log-values-at-interpolation-with-os-logger-privacy-defaults.md) | Redact log values at interpolation with os.Logger's privacy defaults | logging | Proposed | |
 | [0061](0061-write-every-logged-error-as-a-type-case-and-code-summary.md) | Write every logged error as a type, case and code summary | logging | Proposed | |
+| [0064](0064-model-receive-options-as-a-receive-only-enum.md) | Model Receive options as a Receive-only enum | ui | Accepted | |
 | [0065](0065-recognize-platform-refusals-by-consensus-code-in-one-table.md) | Recognize Platform refusals by consensus code in one table | platform | Proposed | |
 | [0066](0066-declare-the-app-and-the-zero-loss-check-as-the-feature-surfaces.md) | Declare the app and the zero-loss check as the feature's surfaces | l10n | Accepted | |
 | [0067](0067-generate-the-catalog-from-the-baseline-lists-with-a-repository-script.md) | Generate the Catalog from the Baseline lists with a repository script | l10n | Accepted | |

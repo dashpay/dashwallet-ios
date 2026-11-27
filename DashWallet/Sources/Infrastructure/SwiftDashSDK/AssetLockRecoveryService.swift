@@ -707,10 +707,24 @@ struct AssetLockRecoveryService {
             txidWire: txidWire, vout: vout, walletIdHex: walletIdHex,
             retryUnverifiedConsumption: retryUnverifiedConsumption
         ) {
-            _ = try await wallet.resumeTopUpWithAssetLock(
-                identityId: identityId,
-                outPointTxid: txidWire,
-                outPointVout: vout)
+            // Announced like every other own top-up (ADR-0034), so the watched
+            // Identity card raises no Receipt for it. The lock's value is the
+            // most it can add.
+            if let network = SwiftDashSDKHost.shared.runningNetwork,
+               let container = SwiftDashSDKHost.shared.modelContainer,
+               let lock = try? Self.persistedLock(txidWire: txidWire, vout: vout, in: container.mainContext),
+               lock.amountDuffs > 0 {
+                _ = try await IdentityTopUpDidComplete.announcing(
+                    walletId: wallet.walletId, network: network, identityId: identityId,
+                    suppliedCredits: UInt64(lock.amountDuffs) * PlatformPaymentIdentityFundingPolicy.creditsPerDuff) {
+                    try await wallet.resumeTopUpWithAssetLock(
+                        identityId: identityId, outPointTxid: txidWire, outPointVout: vout)
+                }
+            } else {
+                // top-up not announced: without the lock row or a network nothing true can be said about its credits.
+                _ = try await wallet.resumeTopUpWithAssetLock(
+                    identityId: identityId, outPointTxid: txidWire, outPointVout: vout)
+            }
         }
         DWCurrentUserIdentityInfo.shared.refreshFromSDK()
         return outcome

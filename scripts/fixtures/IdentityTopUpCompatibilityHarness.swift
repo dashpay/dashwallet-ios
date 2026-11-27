@@ -77,8 +77,10 @@ enum PlatformPaymentIdentityFundingPolicy {
     var wallet: ManagedPlatformWallet? = ManagedPlatformWallet()
     var manager: NativeManager? = NativeManager()
     var modelContainer: ModelContainer? = ModelContainer()
-
+    var runningNetwork: Network? = .testnet
 }
+
+enum Network: Hashable { case testnet }
 
 @MainActor final class PlatformAddressSyncCoordinator {
     struct Address { let address: String }

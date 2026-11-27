@@ -51,6 +51,10 @@ jobs:
       - run: python3 scripts/ci/test_check_no_old_swift_lookup.py
       - run: python3 scripts/ci/check_no_old_swift_lookup.py
       - run: python3 scripts/test_convert_strings_to_utf8.py
+      # Every identity top-up is announced as the wallet's own (ADR-0034), so
+      # Receive raises no Receipt for it.
+      - run: python3 scripts/ci/test_check_identity_top_up_announced.py
+      - run: python3 scripts/ci/check_identity_top_up_announced.py
 
   test:
     name: DashWalletTests on simulator
