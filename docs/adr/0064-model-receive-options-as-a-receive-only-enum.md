@@ -1,6 +1,6 @@
 # 0064 — Model Receive options as a Receive-only enum
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-09
 - **Deciders:** Roman Chornyi (owner), with Claude during the design pass. Becomes Accepted only on a non-author Reviewer's approval of the PR that carries it (ADR-0001 rule 3).
 
