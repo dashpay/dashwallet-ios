@@ -65,6 +65,7 @@ where they disagree, ADR-0001 wins.
 | [0073](0073-make-the-sync-phase-write-the-same-catalog-as-the-xcode-app.md) | Make the sync phase write the same Catalog as the Xcode app, and compile only the shipped locales | l10n | Accepted | |
 | [0074](0074-report-a-kept-response-from-the-write-point-or-from-a-failed-lookup.md) | Report a kept response from the write point, or from the same predicate when the lookup fails | platform | Accepted | |
 | [0075](0075-turn-off-unattributed-dashpay-profile-keys-except-keys-that-cannot-be-checked.md) | Turn off unattributed DashPay profile keys with any disconnect, except keys that cannot be checked | keys | Accepted | |
+| [0077](0077-store-a-gift-cards-currency-in-a-nullable-column-where-null-means-usd.md) | Store a gift card's currency in a nullable column where NULL means USD | storage | Proposed | |
 
 Areas: `spv`, `platform`, `keys`, `storage`, `coinjoin`, `payments`, `swap`, `ui`, `l10n`, `build`, `process`, `logging`. Each ADR takes one; a new
 Area is added to this list in the PR that first needs it.
