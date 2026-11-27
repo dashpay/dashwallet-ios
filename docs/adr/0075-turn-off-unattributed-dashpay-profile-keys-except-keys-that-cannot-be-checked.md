@@ -55,7 +55,8 @@ accounts for is access nobody can see or end otherwise.
 - The disconnect plans its writes from the read after the PIN. A profile key that lands after
   that read (another device approving during the disconnect) is not in the plan and stays on.
   When the read after the writes sees it, the result counts it as still live and the alert says
-  not every key was turned off. The next disconnect on the identity plans it.
+  not every key was turned off; when that read fails, the result does not count it and no alert
+  names it. The next disconnect on the identity plans it.
 - An open intent of the app on another identity of the wallet does not hold the profile keys
   back. After the writes, the result counts the keys still live and the fences missing, from the
   read after the writes or, when that read fails, from what the submission reported. With neither
@@ -81,11 +82,12 @@ accounts for is access nobody can see or end otherwise.
 **Positive**
 - Once any app on the active identity is disconnected, no profile key in App Connect's shape is
   left on that no connection accounts for, with two exceptions. A key whose bound the wallet
-  cannot read yet is left on and counted as not checked. A key that landed after the disconnect's
-  read is left on until the next disconnect on the identity, and is counted as still live when the
-  read after the writes sees it. When the disconnect returns its result, the
-  alert says some keys were left on; when it ends with `grantOnAnotherIdentity`, the user sees
-  that error instead and not the count.
+  cannot read yet is left on, counted as not checked, and named in the alert. A key that landed
+  after the disconnect's read is left on until the next disconnect on the identity; the alert
+  names it only when the read after the writes sees it and the result counts it as still live.
+  When that read fails, the result counts from what the submission reported, which cannot include
+  the key, so a disconnect with nothing else to report shows no alert. When the disconnect ends
+  with `grantOnAnotherIdentity`, the user sees that error instead and not the count.
 - No second question: the disconnect the user confirmed is the whole decision.
 
 **Negative**
