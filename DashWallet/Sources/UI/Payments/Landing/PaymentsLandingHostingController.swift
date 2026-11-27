@@ -343,21 +343,40 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
             .sink { [weak self] _ in
                 guard let self else { return }
                 self.receiveStepObservers.removeAll()
-
-                guard let sheet = self.requestAmountController else {
-                    self.returnToLandingFromReceiveStep()
-                    return
-                }
-                // The sheet first, then the step under it — dismissing and
-                // popping in the same turn runs the two animations over each
-                // other.
-                self.requestAmountObservers.removeAll()
-                self.requestAmountController = nil
-                sheet.dismiss(animated: true) { [weak self] in
-                    self?.returnToLandingFromReceiveStep()
-                }
+                self.leaveReceiveStep()
             }
             .store(in: &receiveStepObservers)
+
+        // The step and its request sheet are for the destination captured on
+        // the push. When the option or its address changes under them (a
+        // wallet, network or identity change, or a Platform address rotation
+        // without a session), they leave too: the sheet's QR would still show
+        // the old address while the watch follows the new one, so a payment to
+        // it could raise no Receipt. The toast says why the amount is gone.
+        viewModel.objectWillChange
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self, self.specifyAmountDestination != self.viewModel.amountRequestDestination else { return }
+                self.receiveStepObservers.removeAll()
+                self.leaveReceiveStep()
+                self.viewModel.showsDestinationChangedToast = true
+            }
+            .store(in: &receiveStepObservers)
+    }
+
+    /// Close the request sheet, if one is up, then pop back to the landing.
+    private func leaveReceiveStep() {
+        guard let sheet = requestAmountController else {
+            returnToLandingFromReceiveStep()
+            return
+        }
+        // The sheet first, then the step under it — dismissing and popping in
+        // the same turn runs the two animations over each other.
+        requestAmountObservers.removeAll()
+        requestAmountController = nil
+        sheet.dismiss(animated: true) { [weak self] in
+            self?.returnToLandingFromReceiveStep()
+        }
     }
 
     /// The base class routes a scanned payment straight into the payment

@@ -313,22 +313,28 @@ final class ReceiveAmountRequestTests: XCTestCase {
         }
     }
 
-    /// A destination that changed under the amount step presents no request,
-    /// returns to the landing and says why; an unchanged one raises no toast.
+    /// A destination that changes under the amount step or its request sheet
+    /// closes both, returns to the landing and says why; an unchanged one
+    /// raises no toast.
     func testAChangedDestinationReturnsToTheLandingWithAToast() async throws {
         let unchanged = try landing(on: .shielded)
         try await openRequest(unchanged.0, unchanged.1)
         XCTAssertFalse(unchanged.2.showsDestinationChangedToast)
         unchanged.3.isHidden = true
 
-        let (landing, navigation, model, window) = try landing(on: .shielded)
-        try await pushAmountStep(landing, navigation)
-        let step = try XCTUnwrap(navigation.topViewController as? SpecifyAmountViewController)
-        model.network = .platform
-        landing.specifyAmountViewController(step, didInput: 100_000_000)
-        try await waitUntilBackOnLanding(landing, navigation, "changed destination")
-        XCTAssertTrue(model.showsDestinationChangedToast)
-        window.isHidden = true
+        let onStep = try landing(on: .shielded)
+        try await pushAmountStep(onStep.0, onStep.1)
+        onStep.2.network = .platform
+        try await waitUntilBackOnLanding(onStep.0, onStep.1, "changed on the amount step")
+        XCTAssertTrue(onStep.2.showsDestinationChangedToast)
+        onStep.3.isHidden = true
+
+        let onSheet = try landing(on: .shielded)
+        try await openRequest(onSheet.0, onSheet.1)
+        onSheet.2.network = .platform
+        try await waitUntilBackOnLanding(onSheet.0, onSheet.1, "changed under the request sheet")
+        XCTAssertTrue(onSheet.2.showsDestinationChangedToast)
+        onSheet.3.isHidden = true
     }
 
     func testAReceiptOnTheAmountStepReturnsToTheLandingOnEveryNewOption() async throws {
