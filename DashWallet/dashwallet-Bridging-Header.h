@@ -58,7 +58,6 @@ static const bool _SNAPSHOT = 0;
 #import "DWPayModelProtocol.h"
 #import "DWReceiveModelProtocol.h"
 #import "DWReceiveModel.h"
-#import "DWQRScanViewController.h"
 #import "UIViewController+DWShareReceiveInfo.h"
 #import "DWPaymentProcessor.h"
 #import "DWPaymentOutput.h"

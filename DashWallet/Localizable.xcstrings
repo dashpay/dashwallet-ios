@@ -222941,6 +222941,9 @@
         }
       }
     },
+    "Flashlight" : {
+      "comment" : "QR scanner"
+    },
     "Flexible amounts" : {
       "comment" : "DashSpend\nExplore Dash: Filters",
       "localizations" : {
