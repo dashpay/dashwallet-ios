@@ -637,9 +637,10 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
                 comment: "DashConnect App Connect v2"))), nil)
         }
         do {
-            // The request's age is judged by the block time of a proved read.
+            // The request's age is judged by the wallet's clock and the block time of a proved read.
             let (snapshot, _) = try await identitySnapshot(context: context)
-            var plan = try AppConnect.grantPlan(for: uri, blockTimeMs: snapshot.platformTime)
+            var plan = try AppConnect.grantPlan(
+                for: uri, blockTimeMs: snapshot.platformTime, deviceNowMs: AppConnect.milliseconds(now()))
             if let hint = plan.identityHint, hint != context.identityId {
                 return (.refused(AppConnect.Refusal(.invalid, String(
                     localized: "This sign-in is for another identity. Switch to it in this wallet and ask the app again.",
@@ -1335,7 +1336,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         }
         let (snapshot, currentPublicKeys) = try await identitySnapshot(context: context)
         // The app stops looking for an answer ten minutes after it asked.
-        try Self.requireFreshRequest(age: uri.request.age(blockTimeMs: snapshot.platformTime))
+        try Self.requireFreshRequest(
+            age: uri.request.age(blockTimeMs: snapshot.platformTime, deviceNowMs: AppConnect.milliseconds(now())))
         // The PIN prompt can outlast the expiry the user chose (a date ends
         // at 23:59:59 of its day): checked again at Platform's time now,
         // before any key is made.
@@ -1365,7 +1367,8 @@ final class PlatformDashConnectDataSource: DashConnectDataSource {
         let latest = try await identitySnapshot(context: context).snapshot
         let platformNow = [latest.platformTime, read.platformTime, snapshot.platformTime].compactMap { $0 }.max()
         // The app's ten-minute window can pass during this work as well.
-        try Self.requireFreshRequest(age: request.age(blockTimeMs: platformNow))
+        try Self.requireFreshRequest(
+            age: request.age(blockTimeMs: platformNow, deviceNowMs: AppConnect.milliseconds(now())))
         if let failure = AppConnect.termsFailure(of: plan, platformTimeMs: platformNow) {
             throw failure
         }

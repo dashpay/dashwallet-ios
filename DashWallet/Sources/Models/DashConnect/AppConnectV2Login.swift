@@ -256,9 +256,9 @@ extension AppConnect {
         case failed
     }
 
-    /// Why a request dated ahead of the network's time is refused.
+    /// Why a request dated ahead of the wallet's clock is refused.
     static var futureRequestMessage: String {
-        String(localized: "This sign-in request is dated ahead of the network's time. Ask the app for a new code.",
+        String(localized: "This sign-in request is dated ahead of this device's clock. Check this device's date and time, then ask the app for a new code.",
                           comment: "DashConnect App Connect v2")
     }
 
@@ -284,19 +284,21 @@ extension AppConnect {
     }
 
     /// The plan for `uri`: every binding granted, the proposals clamped to
-    /// the caps. The request's age, whether a key it asks for has already
-    /// expired, and the default and longest expiry of a granted key are all
-    /// told from `blockTimeMs`, the block time Platform proved, never from
-    /// the phone's clock; without a block time it throws
-    /// `requestAgeUncheckable`. A wallet may lower a proposal but must never drop
-    /// a limit the app asked for, and every key gets an expiry.
+    /// the caps. The request's age is told from the wallet's clock
+    /// `deviceNowMs` and `blockTimeMs`, the block time Platform proved
+    /// (`AppConnectRequest.age`). Whether a key it asks for has already
+    /// expired, and the default and longest expiry of a granted key, are
+    /// told from the block time alone, never from the phone's clock; without
+    /// a block time it throws `requestAgeUncheckable`. A wallet may lower a
+    /// proposal but must never drop a limit the app asked for, and every key
+    /// gets an expiry.
     ///
     /// A renewal (`MODE = 1`) is answered as a new login carrying the same
     /// connection id, which supersedes the old keys (the profile's phase-1
     /// renewal); raising the limits of existing keys is not implemented.
-    static func grantPlan(for uri: AppConnectUri, blockTimeMs: UInt64?) throws -> GrantPlan {
+    static func grantPlan(for uri: AppConnectUri, blockTimeMs: UInt64?, deviceNowMs: UInt64) throws -> GrantPlan {
         let request = uri.request
-        switch request.age(blockTimeMs: blockTimeMs) {
+        switch request.age(blockTimeMs: blockTimeMs, deviceNowMs: deviceNowMs) {
         case .fresh: break
         case .stale: throw Refusal(.stale, String(
                 localized: "The sign-in request is more than 10 minutes old.",

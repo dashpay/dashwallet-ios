@@ -19,7 +19,7 @@ enum AppConnectRequestError: Error, Equatable {
 /// the known types only the two bindings repeat. Integers are big-endian.
 ///
 /// This type only decodes and checks the format. The rules a wallet applies
-/// before it grants what a request asks for are `AppConnect.grantPlan(for:blockTimeMs:)`.
+/// before it grants what a request asks for are `AppConnect.grantPlan(for:blockTimeMs:deviceNowMs:)`.
 struct AppConnectRequest: Equatable {
     /// Wire tags, equal to Platform's `ContractBounds` bincode tags.
     enum BindingKind: UInt8 {
@@ -62,9 +62,10 @@ struct AppConnectRequest: Equatable {
 
     enum Age: Equatable {
         case fresh
-        /// Created more than `maxAge` before the proved block time.
+        /// Created more than `maxAge` before the wallet's clock or the proved
+        /// block time, whichever is later.
         case stale
-        /// Created more than `maxClockSkew` after it.
+        /// Created more than `maxClockSkew` after the wallet's clock.
         case future
         /// No proved block time to judge by.
         case uncheckable
@@ -93,12 +94,15 @@ struct AppConnectRequest: Equatable {
     /// Milliseconds since the epoch.
     let createdAt: UInt64
 
-    /// The request's age at the block time Platform proved, in milliseconds
-    /// since the epoch; the phone's clock plays no part.
-    func age(blockTimeMs: UInt64?) -> Age {
+    /// The request's age per the App Connect DIP, judged by the wallet's
+    /// clock `deviceNowMs`, in milliseconds since the epoch. The proved block
+    /// time `blockTimeMs` lags real time, so it is never what makes a request
+    /// future; it only keeps a clock set back from keeping a request fresh.
+    func age(blockTimeMs: UInt64?, deviceNowMs: UInt64) -> Age {
         guard let blockTimeMs else { return .uncheckable }
-        if blockTimeMs > createdAt, blockTimeMs - createdAt > UInt64(Self.maxAge * 1000) { return .stale }
-        if createdAt > blockTimeMs, createdAt - blockTimeMs > UInt64(Self.maxClockSkew * 1000) { return .future }
+        let latest = max(blockTimeMs, deviceNowMs)
+        if latest > createdAt, latest - createdAt > UInt64(Self.maxAge * 1000) { return .stale }
+        if createdAt > deviceNowMs, createdAt - deviceNowMs > UInt64(Self.maxClockSkew * 1000) { return .future }
         return .fresh
     }
 }

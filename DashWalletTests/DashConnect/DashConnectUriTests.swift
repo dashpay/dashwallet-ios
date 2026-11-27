@@ -786,18 +786,36 @@ final class DashConnectUriTests: XCTestCase {
         let created = AppConnectVector.createdAt
         let minute: UInt64 = 60 * 1000
 
-        XCTAssertEqual(request.age(blockTimeMs: created), .fresh)
-        XCTAssertEqual(request.age(blockTimeMs: created + 10 * minute), .fresh)
-        XCTAssertEqual(request.age(blockTimeMs: created + 10 * minute + 1), .stale)
-        XCTAssertEqual(request.age(blockTimeMs: created - 2 * minute), .fresh)
-        XCTAssertEqual(request.age(blockTimeMs: created - 2 * minute - 1), .future)
+        for now in [created, created + 10 * minute, created - 2 * minute] {
+            XCTAssertEqual(request.age(blockTimeMs: now, deviceNowMs: now), .fresh, "\(now)")
+        }
+        let late = created + 10 * minute + 1
+        XCTAssertEqual(request.age(blockTimeMs: late, deviceNowMs: late), .stale)
+        let early = created - 2 * minute - 1
+        XCTAssertEqual(request.age(blockTimeMs: early, deviceNowMs: early), .future)
+    }
+
+    /// The wallet's clock decides, per the DIP; a lagging block time never
+    /// makes a request future, and a block time later than the phone's clock
+    /// still makes it stale.
+    func testAppConnectRequestAgeIsJudgedByTheWalletsClock() throws {
+        let request = try AppConnectRequest.decode(AppConnectVector.requestBytes)
+        let created = AppConnectVector.createdAt
+        let minute: UInt64 = 60 * 1000
+
+        let lagging = created - 5 * minute
+        XCTAssertEqual(request.age(blockTimeMs: lagging, deviceNowMs: created), .fresh)
+        XCTAssertEqual(request.age(blockTimeMs: lagging, deviceNowMs: created - 2 * minute - 1), .future)
+        XCTAssertEqual(request.age(blockTimeMs: lagging, deviceNowMs: created + 10 * minute + 1), .stale)
+        XCTAssertEqual(request.age(blockTimeMs: created + 10 * minute + 1, deviceNowMs: created), .stale)
+        XCTAssertEqual(request.age(blockTimeMs: created, deviceNowMs: created - 2 * minute - 1), .future)
     }
 
     /// Without a proved block time the age is not judged: not fresh, and not
     /// stale or future either, so the wallet can offer to try again.
     func testAppConnectRequestAgeIsUncheckableWithoutABlockTime() throws {
         let request = try AppConnectRequest.decode(AppConnectVector.requestBytes)
-        XCTAssertEqual(request.age(blockTimeMs: nil), .uncheckable)
+        XCTAssertEqual(request.age(blockTimeMs: nil, deviceNowMs: AppConnectVector.createdAt), .uncheckable)
     }
 }
 

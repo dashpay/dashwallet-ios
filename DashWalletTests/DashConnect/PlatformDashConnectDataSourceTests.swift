@@ -4039,11 +4039,10 @@ extension PlatformDashConnectDataSourceTests {
         XCTAssertNotNil(future, "a future-dated request is a typed refusal")
         let text = future?.reason.lowercased() ?? ""
         XCTAssertFalse(text.contains("expired"), text)
-        XCTAssertFalse(text.contains("clock"), text)
         XCTAssertTrue(text.contains("new"), "it asks the app for a new code: \(text)")
         XCTAssertNotEqual(future?.reason, stale?.reason)
         XCTAssertTrue(text.contains("ahead"), "it gives the reason, the request is dated ahead: \(text)")
-        XCTAssertTrue(text.contains("network"), "it names the network's time: \(text)")
+        XCTAssertTrue(text.contains("device's clock"), "it names the device's clock: \(text)")
     }
 }
 
