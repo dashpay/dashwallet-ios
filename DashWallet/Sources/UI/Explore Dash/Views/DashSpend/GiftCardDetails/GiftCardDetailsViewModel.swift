@@ -108,7 +108,7 @@ enum CTXGiftCardDelivery: Equatable {
 
     /// Whether there is an order to ask the provider about. A PiggyCards row needs its order reference.
     /// A CTX row without one is asked for by transaction id only when its number was written blank and
-    /// it holds nothing else: a row with a PIN or a barcode is a card as it stands.
+    /// it holds no barcode. A PIN alone redeems nothing, so a row holding only a PIN is still fetched.
     static func hasOrderToFetch(provider: String?,
                                 hasOrderReference: Bool,
                                 number: String?,
@@ -119,7 +119,12 @@ enum CTXGiftCardDelivery: Equatable {
         }
         return provider != "PiggyCards"
             && number != nil
-            && !GiftCardDetailsCardItem.hasStoredDetails(number: number, pin: pin, barcodeValue: barcodeValue)
+            && !GiftCardDetailsCardItem.hasStoredDetails(number: number, pin: nil, barcodeValue: barcodeValue)
+    }
+
+    /// Whether the order cannot be asked for until the user signs in to the provider.
+    static func isSignInRequired(isSignedIn: Bool, hasOrderToFetch: Bool) -> Bool {
+        hasOrderToFetch && !isSignedIn
     }
 
     /// The count of fulfilled answers without a number or a link in a row, after one more answer.
@@ -137,6 +142,11 @@ enum CTXGiftCardDelivery: Equatable {
     /// A delivered PIN, or else the stored one, so an answer without a PIN does not erase it.
     static func pinToStore(delivered: String?, stored: String?) -> String? {
         GiftCardDetailsCardItem.nonBlank(delivered) ?? GiftCardDetailsCardItem.nonBlank(stored)
+    }
+
+    /// A delivered challenge code, or else the stored one, so a link without one does not erase it.
+    static func challengeToStore(delivered: String?, stored: String?) -> String? {
+        GiftCardDetailsCardItem.trimmedOrNil(delivered) ?? GiftCardDetailsCardItem.nonBlank(stored)
     }
 }
 
@@ -157,6 +167,8 @@ struct GiftCardDetailsUIState {
     var hasBeenPollingForLongTime: Bool = false
     /// The poller stopped on a run of failures and the sheet may offer to start it again.
     var canRetryLoading: Bool = false
+    /// The poller stopped because the user is signed out of the provider.
+    var needsSignIn: Bool = false
     var provider: String? = nil
     var cards: [GiftCardDetailsCardItem] = []
 }
@@ -337,6 +349,7 @@ class GiftCardDetailsViewModel: ObservableObject {
         uiState.isLoadingCardDetails = true
         uiState.loadingError = nil
         uiState.canRetryLoading = false
+        uiState.needsSignIn = false
 
         Task {
             await fetchGiftCardInfo()
@@ -410,8 +423,14 @@ class GiftCardDetailsViewModel: ObservableObject {
     }
 
     private func fetchCTXGiftCardInfo() async {
-        guard let giftCard = await giftCardsDAO.get(byTxId: txId),
-              ctxSpendRepository.isUserSignedIn else {
+        guard let giftCard = await giftCardsDAO.get(byTxId: txId) else {
+            stopTicker()
+            return
+        }
+
+        if CTXGiftCardDelivery.isSignInRequired(isSignedIn: ctxSpendRepository.isUserSignedIn,
+                                                hasOrderToFetch: hasOrderToFetch(giftCard)) {
+            uiState.needsSignIn = true
             stopTicker()
             return
         }
@@ -466,7 +485,10 @@ class GiftCardDetailsViewModel: ObservableObject {
                     await giftCardsDAO.updateRedeemUrl(
                         txId: txId,
                         url: redeemUrl,
-                        challenge: challenge
+                        challenge: CTXGiftCardDelivery.challengeToStore(
+                            delivered: challenge,
+                            stored: giftCard.redeemUrlChallenge
+                        )
                     )
                     stopTicker()
                     DWLogger.log("DashSpend: Gift card redeem URL fetched successfully")

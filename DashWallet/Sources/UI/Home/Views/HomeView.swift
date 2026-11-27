@@ -1044,6 +1044,7 @@ struct GiftCardDetailsSheet: View {
                     hasBeenPollingForLongTime: viewModel.uiState.hasBeenPollingForLongTime,
                     loadingError: viewModel.uiState.loadingError,
                     onRetryLoading: viewModel.uiState.canRetryLoading ? { viewModel.retryLoadingCardDetails() } : nil,
+                    needsSignIn: viewModel.uiState.needsSignIn,
                     onSelectCard: { index in
                         selectedCardIndex = index
                         showBackButton = true

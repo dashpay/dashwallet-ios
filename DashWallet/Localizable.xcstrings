@@ -485350,6 +485350,9 @@
         }
       }
     },
+    "Sign in to DashSpend and reopen this purchase to see your gift card." : {
+      "comment" : "DashSpend"
+    },
     "Signed with" : {
       "comment" : "Evonode withdrawal",
       "localizations" : {

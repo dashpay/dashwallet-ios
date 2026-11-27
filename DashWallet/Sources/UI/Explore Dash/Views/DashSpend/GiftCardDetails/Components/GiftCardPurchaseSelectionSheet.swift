@@ -17,6 +17,7 @@ struct GiftCardPurchaseSelectionSheet: View {
     var loadingError: Error? = nil
     /// Offered alongside `loadingError`; nil hides the affordance.
     var onRetryLoading: (() -> Void)? = nil
+    var needsSignIn: Bool = false
 
     let onSelectCard: (Int) -> Void
 
@@ -55,6 +56,15 @@ struct GiftCardPurchaseSelectionSheet: View {
                 SwiftUI.ProgressView()
                     .progressViewStyle(CircularProgressViewStyle())
                     .scaleEffect(0.9)
+            } else if needsSignIn {
+                Text(String(
+                    localized: "Sign in to DashSpend and reopen this purchase to see your gift card.",
+                    comment: "DashSpend"
+                ))
+                .font(.subheadline)
+                .foregroundColor(.dash.tertiaryText)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
             } else if loadingError != nil {
                 VStack(spacing: 6) {
                     Text(String(localized: "Could not load your gift card", comment: "DashSpend"))

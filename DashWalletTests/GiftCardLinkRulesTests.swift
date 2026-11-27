@@ -214,10 +214,11 @@ final class GiftCardLinkRulesTests: XCTestCase {
         XCTAssertTrue(hasOrderToFetch(provider: "PiggyCards", hasOrderReference: true, number: nil))
     }
 
-    func testBlankRowWithoutAnOrderReferenceIsFetchedOnlyWhenItHoldsNothing() {
+    func testBlankRowWithoutAnOrderReferenceIsFetchedUnlessItHoldsABarcode() {
         XCTAssertTrue(hasOrderToFetch(number: "  "))
         XCTAssertTrue(hasOrderToFetch(provider: nil, number: "", barcodeValue: ""))
-        XCTAssertFalse(hasOrderToFetch(number: "  ", pin: "1234"))
+        XCTAssertTrue(hasOrderToFetch(number: "  ", pin: "1234"))
+        XCTAssertFalse(hasOrderToFetch(number: "  ", pin: "1234", barcodeValue: "6006491234567890"))
         XCTAssertFalse(hasOrderToFetch(number: "  ", barcodeValue: "6006491234567890"))
         XCTAssertFalse(hasOrderToFetch(number: nil))
         XCTAssertFalse(hasOrderToFetch(number: "6006491234567890"))
@@ -233,6 +234,20 @@ final class GiftCardLinkRulesTests: XCTestCase {
         XCTAssertEqual(CTXGiftCardDelivery.fulfilledAnswersWithoutDetails(after: 59, isFulfilled: true), 60)
         XCTAssertEqual(CTXGiftCardDelivery.fulfilledAnswersWithoutDetails(after: 59, isFulfilled: false), 0)
         XCTAssertEqual(CTXGiftCardDelivery.fulfilledAnswersWithoutDetails(after: 0, isFulfilled: false), 0)
+    }
+
+    func testALinkWithoutAChallengeKeepsTheStoredOne() {
+        XCTAssertEqual(CTXGiftCardDelivery.challengeToStore(delivered: "A1B2C3D4E5", stored: "OLD"), "A1B2C3D4E5")
+        XCTAssertEqual(CTXGiftCardDelivery.challengeToStore(delivered: nil, stored: "A1B2C3D4E5"), "A1B2C3D4E5")
+        XCTAssertEqual(CTXGiftCardDelivery.challengeToStore(delivered: " \n", stored: "A1B2C3D4E5"), "A1B2C3D4E5")
+        XCTAssertNil(CTXGiftCardDelivery.challengeToStore(delivered: nil, stored: "  "))
+        XCTAssertNil(CTXGiftCardDelivery.challengeToStore(delivered: nil, stored: nil))
+    }
+
+    func testSignInIsRequiredOnlyForAnOrderThatWouldBeFetched() {
+        XCTAssertTrue(CTXGiftCardDelivery.isSignInRequired(isSignedIn: false, hasOrderToFetch: true))
+        XCTAssertFalse(CTXGiftCardDelivery.isSignInRequired(isSignedIn: true, hasOrderToFetch: true))
+        XCTAssertFalse(CTXGiftCardDelivery.isSignInRequired(isSignedIn: false, hasOrderToFetch: false))
     }
 
     func testAnAnswerWithoutAPinKeepsTheStoredOne() {
