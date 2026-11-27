@@ -465868,7 +465868,7 @@
       }
     },
     "Send" : {
-      "comment" : "Send Dash\nSend Screen\nTranslate it as short as possible! (24 symbols max)",
+      "comment" : "Send Dash\nTranslate it as short as possible! (24 symbols max)",
       "localizations" : {
         "ar" : {
           "stringUnit" : {

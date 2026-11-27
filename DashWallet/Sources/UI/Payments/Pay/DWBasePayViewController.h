@@ -43,8 +43,8 @@ NS_ASSUME_NONNULL_BEGIN
 ///
 /// Deliberately not `performPayToURL:` with a `dash:…?amount=` string: that
 /// classifies a URI carrying a valid address as a DEEP LINK, and the processor
-/// answers a deep link by pushing the legacy amount screen — prefilled with the
-/// number the caller already collected. This routes straight to the
+/// answers a deep link by asking for an amount — opening the Send flow again
+/// for the number the caller already collected. This routes straight to the
 /// confirmation with the real fee instead.
 - (void)performPayToAddress:(NSString *)address amount:(uint64_t)amount;
 

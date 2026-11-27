@@ -32,6 +32,11 @@ protocol PaymentControllerDelegate: AnyObject {
     func paymentControllerDidFinishTransaction(_ controller: PaymentController, txidWire: Data)
     func paymentControllerDidCancelTransaction(_ controller: PaymentController)
     func paymentControllerDidFailTransaction(_ controller: PaymentController)
+    /// The input named a recipient but no amount — a bare address scanned,
+    /// pasted, read over NFC or opened from a `dash:` link. The amount is
+    /// asked for in the Send flow, which the delegate opens prefilled with
+    /// `address`; this controller's part of the payment ends here.
+    @objc optional func paymentController(_ controller: PaymentController, needsAmountForAddress address: String)
 }
 
 // MARK: - PaymentControllerPresentationContextProviding
@@ -40,10 +45,6 @@ protocol PaymentControllerDelegate: AnyObject {
 protocol PaymentControllerPresentationContextProviding: AnyObject {
     func presentationAnchorForPaymentController(_ controller: PaymentController) -> PaymentControllerPresentationAnchor
 }
-
-// MARK: - AmountProviding
-
-protocol AmountProviding: ActivityIndicatorPreviewing, ErrorPresentable, PaymentControllerPresentationAnchor { }
 
 // MARK: - PaymentController
 
@@ -57,7 +58,6 @@ final class PaymentController: NSObject {
     private var fiatCurrency: String = App.fiatCurrency
     private weak var paymentOutput: DWPaymentOutput?
     private weak var confirmViewController: ConfirmPaymentViewController?
-    private weak var provideAmountViewController: AmountProviding?
 
     static func shouldReenableSending(after error: NSError) -> Bool {
         !WalletSendService.isBroadcastUnknownError(error)
@@ -84,7 +84,7 @@ final class PaymentController: NSObject {
 
 extension PaymentController {
     var presentationAnchor: PaymentControllerPresentationAnchor? {
-        provideAmountViewController ?? presentationContextProvider?.presentationAnchorForPaymentController(self)
+        presentationContextProvider?.presentationAnchorForPaymentController(self)
     }
 
     private func showAlert(with title: String?, message: String?) {
@@ -112,7 +112,6 @@ extension PaymentController: ConfirmPaymentViewControllerDelegate {
     }
 
     func confirmPaymentViewControllerDidCancel(_ controller: ConfirmPaymentViewController) {
-        provideAmountViewController?.hideActivityIndicator()
         delegate?.paymentControllerDidCancelTransaction(self)
     }
 }
@@ -121,15 +120,19 @@ extension PaymentController: ConfirmPaymentViewControllerDelegate {
 
 extension PaymentController: DWPaymentProcessorDelegate {
     func paymentProcessor(_ processor: DWPaymentProcessor, requestAmountWithDestination sendingDestination: String, amount: UInt64) {
-        provideAmountViewController = nil
-        let vc = ProvideAmountViewController(address: sendingDestination, amount: amount)
-        vc.locksBalance = locksBalance
-        vc.delegate = self
-        vc.hidesBottomBarWhenPushed = true
-        vc.definesPresentationContext = true
-        // vc.demoMode = self.demoMode; //TODO: demoMode
-        presentationAnchor!.navigationController?.pushViewController(vc, animated: true)
-        provideAmountViewController = vc
+        // The processor asks only when the input carried no amount, so
+        // `amount` is 0 here. The Send flow collects it and comes back with
+        // an address and an amount together, as a new payment.
+        processor.reset()
+
+        guard let handler = delegate?.paymentController(_:needsAmountForAddress:) else {
+            // Every host that can receive an amount-less input opens the Send
+            // flow. Coinbase's transfer always passes an amount.
+            assertionFailure("PaymentController delegate can't ask for an amount")
+            delegate?.paymentControllerDidFailTransaction(self)
+            return
+        }
+        handler(self, sendingDestination)
     }
 
     func paymentProcessor(_ processor: DWPaymentProcessor, confirmPaymentOutput paymentOutput: DWPaymentOutput) {
@@ -149,7 +152,6 @@ extension PaymentController: DWPaymentProcessorDelegate {
     }
 
     func paymentProcessorDidCancelTransactionSigning(_ processor: DWPaymentProcessor) {
-        provideAmountViewController?.hideActivityIndicator()
         delegate?.paymentControllerDidCancelTransaction(self)
         confirmViewController?.isSendingEnabled = true
     }
@@ -163,7 +165,6 @@ extension PaymentController: DWPaymentProcessorDelegate {
         }
 
         presentationAnchor?.topController().view.dw_hideProgressHUD()
-        provideAmountViewController?.hideActivityIndicator()
 
         confirmViewController?.isSendingEnabled =
             Self.shouldReenableSending(after: error as NSError)
@@ -175,16 +176,6 @@ extension PaymentController: DWPaymentProcessorDelegate {
         presentationAnchor?.topController().view.dw_hideProgressHUD()
 
         let finishBlock = {
-            // The pop is for the LEGACY amount screen, which the redesigned
-            // send flow never pushes: it collects the amount on its own step
-            // and hands the processor an address and a value together. Telling
-            // the delegate the send finished is not conditional on that screen
-            // — it used to sit inside this check, so a flow without one sent
-            // successfully and then showed nothing at all.
-            if let vc = self.presentationAnchor?.navigationController?.topViewController as? AmountProviding {
-                vc.navigationController?.popViewController(animated: true)
-            }
-
             DispatchQueue.main.async {
                 self.delegate?.paymentControllerDidFinishTransaction(self, txidWire: txidWire)
             }
@@ -206,14 +197,5 @@ extension PaymentController: DWPaymentProcessorDelegate {
 
     func paymentProcessor(_ processor: DWPaymentProcessor, showProgressHUDWithMessage message: String?) {
         presentationAnchor?.topController().view.dw_showProgressHUD(withMessage: message)
-    }
-}
-
-// MARK: ProvideAmountViewControllerDelegate
-
-extension PaymentController: ProvideAmountViewControllerDelegate {
-    func provideAmountViewControllerDidInput(amount: UInt64, selectedCurrency: String) {
-        fiatCurrency = selectedCurrency
-        paymentProcessor.provideAmount(amount)
     }
 }

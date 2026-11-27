@@ -195,7 +195,7 @@ NS_ASSUME_NONNULL_BEGIN
                                  // scans keep the legacy processor path unchanged.
                                  DWParsedPaymentURI *parsed = paymentInput.parsedURI;
                                  if (parsed.requiresSendScreenRouting && parsed.address != nil) {
-                                     [self routeScannedBech32Address:parsed];
+                                     [self routeAddressIntoSendScreen:parsed.address amount:parsed.amount];
                                  }
                                  else {
                                      [self processPaymentInput:paymentInput];
@@ -205,18 +205,20 @@ NS_ASSUME_NONNULL_BEGIN
                              }];
 }
 
-/// Present the Send screen prefilled with a scanned bech32m destination —
-/// same presentation chrome as the payments landing (hidden-bar navigation
-/// controller, full screen; the screen draws its own X/title header).
+/// Present the Send screen prefilled with a destination that came from
+/// outside the flow — a scanned bech32m address, or any address that arrived
+/// without an amount (scan, paste, NFC, `dash:` link). Same presentation
+/// chrome as the payments landing (hidden-bar navigation controller, full
+/// screen; the screen draws its own X/title header).
 ///
-/// Opened on the From picker, with the address step behind it: the scan named
-/// the recipient, so that step has nothing left to ask, and a BIP21 amount
-/// does not become visible until the step after it. Same rule as the landing's
-/// own scan (`pushScannedSend`). An address that did not decode stays on the
-/// address step, which is the screen that says so.
-- (void)routeScannedBech32Address:(DWParsedPaymentURI *)parsed {
+/// Opened on the From picker, with the address step behind it: the input
+/// named the recipient, so that step has nothing left to ask, and a BIP21
+/// amount does not become visible until the step after it. Same rule as the
+/// landing's own scan (`pushScannedSend`). An address that did not decode
+/// stays on the address step, which is the screen that says so.
+- (void)routeAddressIntoSendScreen:(NSString *)address amount:(uint64_t)amount {
     DWSendScreenViewController *controller = [[DWSendScreenViewController alloc] init];
-    [controller prefillWithAddress:parsed.address amountDuffs:parsed.amount];
+    [controller prefillWithAddress:address amountDuffs:amount];
     DWNavigationController *navigationController =
         [[DWNavigationController alloc] initWithRootViewController:controller];
     if (controller.hasResolvedDestination) {
@@ -238,6 +240,10 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (void)paymentControllerDidFailTransaction:(PaymentController *)controller {
+}
+
+- (void)paymentController:(PaymentController *)controller needsAmountForAddress:(NSString *)address {
+    [self routeAddressIntoSendScreen:address amount:0];
 }
 
 - (void)paymentControllerDidFinishTransaction:(PaymentController *_Nonnull)controller txidWire:(NSData *_Nonnull)txidWire {
