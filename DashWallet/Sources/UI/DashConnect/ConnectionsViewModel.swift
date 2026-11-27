@@ -707,6 +707,8 @@ final class ConnectionsViewModel: ObservableObject {
                     guard generation == requestGeneration else { return }
                     pendingLoginRequest = request
                     pendingRequestArrivedByLink = byLink
+                    // What an earlier approval left unsaid is about another request.
+                    messageAfterApproveSheet = nil
                     pendingFailureStatus = nil
                     pendingRequest = connectionRequest
                     DWLogger.log("🔗 DASHCONNECT :: login request shown (\(byLink ? "link" : "scan"))")
@@ -862,6 +864,16 @@ final class ConnectionsViewModel: ObservableObject {
                 self.pendingRequest = nil
                 self.pendingLoginRequest = nil
                 self.approveError = nil
+                // With no return to ask about (a scanned code, or a link
+                // with no callback), the app is on another screen: the user
+                // is told to go back to it, once the sheet has gone.
+                if pendingReturn == nil {
+                    messageAfterApproveSheet = ConnectionsScreenMessage(
+                        kind: .success,
+                        text: String(
+                            localized: "Connected to \(consent.resolvedAppLabel). Go back to your browser to continue.",
+                            comment: "DashConnect: an approved sign-in with no return link; the placeholder is the app's name"))
+                }
             } catch DashConnectPlatformError.approvalOutOfDate {
                 Self.logApprovalStopped(DashConnectPlatformError.approvalOutOfDate)
                 // Another identity, wallet or network became active, or the
@@ -1479,6 +1491,17 @@ final class ConnectionsViewModel: ObservableObject {
 
     /// A page message waiting for the connection's sheet to go.
     private var messageAfterSheet: ConnectionsScreenMessage?
+
+    /// A page message waiting for the approve sheet to go: the page cannot
+    /// show an alert while that sheet is still up.
+    private var messageAfterApproveSheet: ConnectionsScreenMessage?
+
+    /// The approve sheet has gone: says what an approval left to say.
+    func approveSheetDismissed() {
+        guard let waiting = messageAfterApproveSheet else { return }
+        messageAfterApproveSheet = nil
+        message = waiting
+    }
 
     /// Waits with `message` for the sheet to go, after any already waiting.
     private func holdForAfterSheet(_ message: ConnectionsScreenMessage) {

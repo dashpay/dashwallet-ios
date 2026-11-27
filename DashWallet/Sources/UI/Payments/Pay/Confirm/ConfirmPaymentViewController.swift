@@ -241,6 +241,16 @@ private struct ConfirmPaymentSheet: View {
     /// that names the wrong fee is worse than one that names a long number.
     private static let dashFractionDigits = 8
 
+    /// The tallest the opening untitled rows are drawn before they scroll: a share of
+    /// the screen that leaves room for the amount above them and for the titled rows
+    /// and the buttons below.
+    private static let maxNotesHeight = UIScreen.main.bounds.height * 0.3
+
+    /// The untitled rows the list opens with, up to its first titled row.
+    private var leadingNotes: [DWTitleDetailItem] {
+        Array(state.items.prefix { ($0.title ?? "").isEmpty })
+    }
+
     var onCancel: () -> Void
     var onConfirm: () -> Void
 
@@ -255,8 +265,24 @@ private struct ConfirmPaymentSheet: View {
                 .frame(maxWidth: .infinity)
                 .padding(.top, 14)
 
+            // The untitled rows that open the list (a payment request's recipient name,
+            // its note and its list of addresses) scroll once they are taller than
+            // `maxNotesHeight`. The titled rows under them (the address, the fee, the
+            // total) and the buttons stay in place, so a long list cannot push them off
+            // the sheet. A list that opens with a titled row has no scroll view at all.
             VStack(spacing: 0) {
-                ForEach(Array(state.items.enumerated()), id: \.offset) { _, item in
+                if !leadingNotes.isEmpty {
+                    ScrollView {
+                        VStack(spacing: 0) {
+                            ForEach(Array(leadingNotes.enumerated()), id: \.offset) { _, item in
+                                untitledRow(item)
+                            }
+                        }
+                    }
+                    .scrollBounceBehavior(.basedOnSize)
+                    .frame(maxHeight: Self.maxNotesHeight)
+                }
+                ForEach(Array(state.items.dropFirst(leadingNotes.count).enumerated()), id: \.offset) { _, item in
                     if let title = item.title, !title.isEmpty {
                         DashUIKit.MenuItem(
                             title: title,

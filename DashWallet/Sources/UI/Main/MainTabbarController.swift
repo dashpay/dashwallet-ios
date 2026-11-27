@@ -545,22 +545,29 @@ extension MainTabbarController {
 
     /// Opens the Connections screen for a `dash-key:`, `dash-st:` or
     /// `dashpay://connect` link.
+    @objc
+    public func openDashConnect(_ uri: String) {
+        openDashConnect(uri, scanned: false)
+    }
+
+    /// Opens the Connections screen for a DashConnect request: a link, or
+    /// with `scanned` a code the Home scanner read.
     ///
     /// The More tab's index moves with the DashPay layout, so it comes from
     /// `moreTabIndex` rather than from the tab enum.
-    @objc
-    public func openDashConnect(_ uri: String) {
+    func openDashConnect(_ uri: String, scanned: Bool) {
         guard let menuNav = menuNavigationController?.navigationController else {
             dismiss(animated: false, completion: nil)
-            DWLogger.log("🔗 DASHCONNECT :: link dropped: no More tab")
+            DWLogger.log("🔗 DASHCONNECT :: \(scanned ? "scan" : "link") dropped: no More tab")
             return
         }
 
         DashConnectHostingController.route(
-            uri, tabBar: self, menuNav: menuNav, moreTabIndex: moreTabIndex,
+            uri, scanned: scanned, tabBar: self, menuNav: menuNav, moreTabIndex: moreTabIndex,
             makeScreen: {
                 DashConnectHostingController(
-                    navigationController: menuNav, uri: uri, dashPayModel: homeModel?.dashPayModel)
+                    navigationController: menuNav, uri: uri, scanned: scanned,
+                    dashPayModel: homeModel?.dashPayModel)
             })
     }
 

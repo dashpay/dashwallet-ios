@@ -104,7 +104,9 @@ struct ConnectionsScreen: View {
                 }
             )
         }
-        .sheet(isPresented: isApproveSheetPresented) {
+        .sheet(isPresented: isApproveSheetPresented, onDismiss: {
+            viewModel.approveSheetDismissed()
+        }) {
             if let request = viewModel.pendingRequest {
                 approveSheet(for: request)
             } else if viewModel.pendingReturn != nil {

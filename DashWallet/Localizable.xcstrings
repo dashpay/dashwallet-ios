@@ -126366,7 +126366,7 @@
       }
     },
     "Confirmation pending" : {
-      "comment" : "Identity transfer result unknown\nUsername purchase result unknown",
+      "comment" : "Gift card payment result unknown\nIdentity transfer result unknown\nUsername purchase result unknown",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -129520,6 +129520,9 @@
           }
         }
       }
+    },
+    "Connected to %@. Go back to your browser to continue." : {
+      "comment" : "DashConnect: an approved sign-in with no return link; the placeholder is the app's name"
     },
     "connecting" : {
       "comment" : "About screen tech info: SPV state",
@@ -467440,6 +467443,9 @@
         }
       }
     },
+    "Send to (1 of %ld)" : {
+      "comment" : "Payment confirmation: title of the address row when a payment request pays several addresses; the row shows the first one"
+    },
     "Send to a username you can actually remember and verify." : {
       "comment" : "DashPay intro: feature body",
       "localizations" : {
@@ -580320,6 +580326,9 @@
         }
       }
     },
+    "This payment goes to %ld addresses." : {
+      "comment" : "Payment confirmation: a payment request with several outputs"
+    },
     "This payment is already being processed." : {
       "comment" : "BIP70 payment error",
       "localizations" : {
@@ -580582,6 +580591,9 @@
           }
         }
       }
+    },
+    "This payment request does not use a secure connection." : {
+      "comment" : "Payment request refused"
     },
     "This payment request has expired." : {
       "comment" : "BIP70 payment error",
@@ -629743,6 +629755,15 @@
           }
         }
       }
+    },
+    "Unverified note: %@" : {
+      "comment" : "Payment confirmation: note supplied by an unsigned payment request"
+    },
+    "Unverified recipient" : {
+      "comment" : "Payment confirmation: unsigned payment request without a name"
+    },
+    "Unverified recipient: %@" : {
+      "comment" : "Payment confirmation: name supplied by an unsigned payment request"
     },
     "Up to 10 minutes to spend" : {
       "localizations" : {

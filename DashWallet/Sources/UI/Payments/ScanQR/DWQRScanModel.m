@@ -192,6 +192,22 @@ NS_ASSUME_NONNULL_END
     NSAssert(![NSThread isMainThread], nil);
 
     NSString *addr = [codeObject.stringValue stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+
+    // A DashConnect request is not a payment: hand it over whole before the payment parse below
+    // rejects it. Malformed payloads are reported by the Connections screen, as for a tapped link.
+    NSString *dashConnectURI = addr ? [DWDashConnectDeepLink uriFromString:addr] : nil;
+    if (dashConnectURI && [self.delegate respondsToSelector:@selector(qrScanModel:didScanDashConnectURI:)]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            QRCodeObject *qrCodeObject = [[QRCodeObject alloc] initWithMetadataObject:codeObject];
+            [qrCodeObject setValid];
+            self.qrCodeObject = qrCodeObject;
+
+            [self.delegate qrScanModel:self didScanDashConnectURI:dashConnectURI];
+        });
+
+        return;
+    }
+
     DWParsedPaymentURI *parsed = [DWParsedPaymentURI parsePaymentString:addr];
     // The URI parse, `pay:` normalization and address validity are app-side now (the box). (Paper-wallet
     // sweep — the old WIF/BIP38 arm — was dropped in C8 step 5.)
@@ -281,7 +297,11 @@ NS_ASSUME_NONNULL_END
                                                [strongSelf.delegate qrScanModel:strongSelf didScanPaymentInput:paymentInput];
                                            }
                                            else {
-                                               [strongSelf.qrCodeObject setInvalidWithErrorMessage:[strongSelf invalidQRErrorMessageForURI:parsed]];
+                                               // A request the app refused by rule says why; any other failure keeps the generic text.
+                                               NSString *message = (error && [DWBIP70InteractiveCoordinator isRefusalError:error])
+                                                                       ? error.localizedDescription
+                                                                       : [strongSelf invalidQRErrorMessageForURI:parsed];
+                                               [strongSelf.qrCodeObject setInvalidWithErrorMessage:message];
                                                [strongSelf performSelector:@selector(resumeQRCodeSearch)
                                                                 withObject:nil
                                                                 afterDelay:kResumeSearchTimeInterval];

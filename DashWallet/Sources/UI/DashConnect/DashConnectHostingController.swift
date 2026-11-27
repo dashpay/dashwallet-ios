@@ -21,13 +21,17 @@ import SwiftUI
 import UIKit
 
 /// Hosts `ConnectionsScreen` and keeps a handle on its view model, so a
-/// `dash-key:` / `dash-st:` link that arrives while the screen is already on
-/// the stack is routed into it instead of pushing a second copy.
+/// DashConnect request that arrives while the screen is already on the stack
+/// is routed into it instead of pushing a second copy.
 final class DashConnectHostingController: UIHostingController<ConnectionsScreen> {
     private let viewModel: ConnectionsViewModel
     /// Held until `viewDidAppear`: the approval sheet is presented from the
     /// screen, which cannot present while it is still being pushed.
     private var pendingURI: String?
+    /// Whether `pendingURI` was read off a QR code rather than opened as a
+    /// link. A scanned code goes in as a scan, the way the screen's own
+    /// scanner hands one over.
+    private var pendingURIWasScanned = false
 
     /// `dashPayModel` tells whether the wallet has a username and starts
     /// creating one; without it the page does not ask. `viewModel` is for
@@ -35,6 +39,7 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
     init(
         navigationController: UINavigationController,
         uri: String? = nil,
+        scanned: Bool = false,
         dashPayModel: DWDashPayProtocol? = nil,
         viewModel: ConnectionsViewModel? = nil
     ) {
@@ -42,6 +47,7 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
             usernameState: { dashPayModel == nil ? .present : Self.activeIdentityUsernameState() })
         self.viewModel = viewModel
         pendingURI = uri
+        pendingURIWasScanned = scanned
 
         super.init(rootView: ConnectionsScreen(
             vc: navigationController,
@@ -107,7 +113,8 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
         consumePendingURI()
     }
 
-    /// Opens a DashConnect link on the Connections screen of the More tab:
+    /// Opens a DashConnect request (a link, or with `scanned` a code the Home
+    /// scanner read) on the Connections screen of the More tab:
     /// the one on top of `menuNav`, or a new one (`makeScreen`) pushed there.
     ///
     /// Only a new screen clears what `tabBar` presents. The open screen
@@ -116,6 +123,7 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
     /// the newcomer was refused onto the closed sheet (#1517).
     static func route(
         _ uri: String,
+        scanned: Bool,
         tabBar: UITabBarController,
         menuNav: UINavigationController,
         moreTabIndex: Int?,
@@ -123,17 +131,18 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
     ) {
         // The scheme only: a string with no `:` would be the payload itself.
         let scheme = uri.contains(":") ? String(uri.prefix { $0 != ":" }) : "unknown"
+        let source = scanned ? "scan" : "link"
 
         if let connections = menuNav.topViewController as? DashConnectHostingController {
-            DWLogger.log("🔗 DASHCONNECT :: link (\(scheme)) to the open Connections screen")
+            DWLogger.log("🔗 DASHCONNECT :: \(source) (\(scheme)) to the open Connections screen")
             if let moreTabIndex {
                 tabBar.selectedIndex = moreTabIndex
             }
-            connections.handle(uri: uri)
+            connections.handle(uri: uri, scanned: scanned)
             return
         }
 
-        DWLogger.log("🔗 DASHCONNECT :: link (\(scheme)) opens Connections")
+        DWLogger.log("🔗 DASHCONNECT :: \(source) (\(scheme)) opens Connections")
         tabBar.dismiss(animated: false, completion: nil)
         if let moreTabIndex {
             tabBar.selectedIndex = moreTabIndex
@@ -141,7 +150,8 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
         menuNav.pushViewController(makeScreen(), animated: true)
     }
 
-    /// Handles a link that arrived for a screen that is already on the stack.
+    /// Handles a request that arrived for a screen that is already on the
+    /// stack: a link, or with `scanned` a code another screen's scanner read.
     ///
     /// A sheet of the screen's own stays up and answers the link: closed
     /// from UIKit, it goes the way a swipe-down takes it, declining the
@@ -151,8 +161,9 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
     /// closed first, so the request can show. That comes before the window
     /// check: a full-screen flow takes the screen out of the window, and the
     /// request would wait until the user closed that flow.
-    func handle(uri: String) {
+    func handle(uri: String, scanned: Bool = false) {
         pendingURI = uri
+        pendingURIWasScanned = scanned
 
         guard isViewLoaded else { return }
 
@@ -180,6 +191,10 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
     private func consumePendingURI() {
         guard let uri = pendingURI else { return }
         pendingURI = nil
-        viewModel.onURIReceived(uri)
+        if pendingURIWasScanned {
+            viewModel.onQRScanned(uri)
+        } else {
+            viewModel.onURIReceived(uri)
+        }
     }
 }
