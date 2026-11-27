@@ -198,6 +198,10 @@ final class PaymentsLandingViewModel: ObservableObject {
     @Published private(set) var displayedAddress: String? = nil
     @Published private(set) var receipt: ReceiveReceipt? = nil
     @Published private(set) var isWatchingForReceipt = false
+    /// Raised when an amount request is dropped because its option or address
+    /// changed while the amount was typed; the landing shows a toast and the
+    /// toast lowers it.
+    @Published var showsDestinationChangedToast = false
 
     let allowsTransactionDetails: Bool
 

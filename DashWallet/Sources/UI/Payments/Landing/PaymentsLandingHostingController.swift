@@ -692,10 +692,12 @@ extension PaymentsLandingHostingController: SpecifyAmountViewControllerDelegate 
         //
         // The request goes only to the destination the amount was typed for.
         // If the option or its address changed while the step was open, the
-        // user is taken back to the card, which shows the current one.
+        // user is taken back to the card, which shows the current one, and a
+        // toast says why the typed amount is gone.
         guard let destination = specifyAmountDestination,
               destination == viewModel.amountRequestDestination else {
             returnToLandingFromReceiveStep()
+            viewModel.showsDestinationChangedToast = true
             return
         }
         let model: DWReceiveModelProtocol

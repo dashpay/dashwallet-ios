@@ -313,6 +313,24 @@ final class ReceiveAmountRequestTests: XCTestCase {
         }
     }
 
+    /// A destination that changed under the amount step presents no request,
+    /// returns to the landing and says why; an unchanged one raises no toast.
+    func testAChangedDestinationReturnsToTheLandingWithAToast() async throws {
+        let unchanged = try landing(on: .shielded)
+        try await openRequest(unchanged.0, unchanged.1)
+        XCTAssertFalse(unchanged.2.showsDestinationChangedToast)
+        unchanged.3.isHidden = true
+
+        let (landing, navigation, model, window) = try landing(on: .shielded)
+        try await pushAmountStep(landing, navigation)
+        let step = try XCTUnwrap(navigation.topViewController as? SpecifyAmountViewController)
+        model.network = .platform
+        landing.specifyAmountViewController(step, didInput: 100_000_000)
+        try await waitUntilBackOnLanding(landing, navigation, "changed destination")
+        XCTAssertTrue(model.showsDestinationChangedToast)
+        window.isHidden = true
+    }
+
     func testAReceiptOnTheAmountStepReturnsToTheLandingOnEveryNewOption() async throws {
         for option in [ReceiveOption.shielded, .platform, .identity] {
             let (landing, navigation, model, window) = try landing(on: option)

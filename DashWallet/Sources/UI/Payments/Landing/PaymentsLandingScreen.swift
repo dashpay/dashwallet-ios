@@ -185,6 +185,12 @@ struct PaymentsLandingScreen: View {
             isPresented: $showsCopiedToast,
             style: .copied,
             message: String(localized: "Copied", comment: ""))
+        .transientToast(
+            isPresented: $viewModel.showsDestinationChangedToast,
+            style: .info,
+            message: String(
+                localized: "The receive address changed. Enter the amount again.",
+                comment: "Receive — toast after an amount request was dropped because the address changed while the amount was typed"))
     }
 
     // MARK: - Swipe between tabs
