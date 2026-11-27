@@ -352,12 +352,32 @@ enum PlatformAddressActivityRecorder {
     /// many minutes after the operation (next full rescan).
     private static let ownOperationWindow: TimeInterval = 6 * 60 * 60
 
+    /// The recipients a Platform-address funding lock recorded (`credits == nil` for the wallet's own remainder
+    /// address), by its wire-order txid and vout; nil when the lock recorded none or they cannot be read now.
+    typealias RecordedLockRecipients = @MainActor (_ txidWire: Data, _ vout: UInt32)
+        -> [ManagedPlatformAddressWallet.FundFromAssetLockRecipient]?
+
+    static func liveRecordedLockRecipients(txidWire: Data, vout: UInt32)
+        -> [ManagedPlatformAddressWallet.FundFromAssetLockRecipient]? {
+        try? SwiftDashSDKHost.shared.wallet?.assetLockPlatformAddressRecipients(txid: txidWire, vout: vout)
+    }
+
+    /// Locks whose remainder already explained an increase, by outpoint: one remainder hides one increase, so a
+    /// later payment to the same address still reads as received.
+    ///
+    /// Known limits: the claims live in memory only, so after a restart within `ownOperationWindow` an unrelated
+    /// increase on that remainder address no bigger than the lock's reserve can be hidden as the remainder. Two
+    /// remainders that land on one address in the same sync pass exceed each lock's reserve and are recorded as
+    /// Received.
+    private static var claimedRemainders: Set<String> = []
+
     static func observe(
         addresses: [DerivedPlatformAddress],
         walletId: Data,
         network: Network,
         container: ModelContainer,
-        creditSends: CreditSendActivityDAO = .shared
+        creditSends: CreditSendActivityDAO = .shared,
+        recordedLockRecipients: RecordedLockRecipients = { liveRecordedLockRecipients(txidWire: $0, vout: $1) }
     ) {
         guard !addresses.isEmpty else { return }
         let networkRaw = Int64(network.rawValue)
@@ -412,7 +432,7 @@ enum PlatformAddressActivityRecorder {
                     walletId: walletId, network: network, container: container)
                 || matchesOwnAssetLockTopUp(
                     address: increase.address, deltaDuffs: increase.delta,
-                    walletId: walletId, container: container)
+                    walletId: walletId, container: container, recordedLockRecipients: recordedLockRecipients)
                 // A Platform or identity send to this own address: History shows it as the send's row.
                 || creditSends.claimIncrease(
                     walletId: walletId, networkRaw: networkRaw, address: increase.address,
@@ -475,16 +495,17 @@ enum PlatformAddressActivityRecorder {
         return false
     }
 
-    /// Match against an own Transparent → Platform top-up: the asset
-    /// lock stores the recipient's 20-byte platform address hash, so the
-    /// address match is exact; the credited amount is the lock value
-    /// minus a small conversion fee, so the delta only has to fit under
-    /// the lock value.
+    /// Match against an own Platform-address funding lock (type 4). An own Transparent → Platform top-up stores
+    /// the recipient's 20-byte platform address hash, so the address match is exact; the credited amount is the lock
+    /// value minus a small conversion fee, so the delta only has to fit under the lock value. A payment to someone
+    /// else's Platform address returns the unspent fee reserve to one of the wallet's own addresses, the recorded
+    /// recipient without an amount (`ownRemainderMatches`): that increase is the send's own, not a receipt.
     private static func matchesOwnAssetLockTopUp(
         address: String,
         deltaDuffs: Int64,
         walletId: Data,
-        container: ModelContainer
+        container: ModelContainer,
+        recordedLockRecipients: RecordedLockRecipients
     ) -> Bool {
         guard let storageBytes = AddressTransformer.parseAddress(address),
               storageBytes.count == 21 else { return false }
@@ -496,9 +517,48 @@ enum PlatformAddressActivityRecorder {
                 $0.walletId == walletId && $0.fundingTypeRaw == topUpType && $0.updatedAt >= cutoff
             })
         guard let rows = try? container.mainContext.fetch(descriptor) else { return false }
-        return rows.contains { lock in
+        if rows.contains(where: { lock in
             lock.recipientPlatformAddressHash == Data(addressHash)
                 && deltaDuffs <= lock.amountDuffs
+        }) {
+            return true
         }
+        for lock in rows where lock.platformAddressRecipients != nil
+            && !claimedRemainders.contains(lock.outPointHex) {
+            guard let colon = lock.outPointHex.firstIndex(of: ":"),
+                  let vout = UInt32(lock.outPointHex[lock.outPointHex.index(after: colon)...]),
+                  let displayTxid = Data(hex: String(lock.outPointHex[..<colon])), displayTxid.count == 32
+            else { continue }
+            guard let recipients = recordedLockRecipients(Data(displayTxid.reversed()), vout) else {
+                DWLogger.log("PLATFORM-ACTIVITY: recorded recipients of lock \(lock.outPointHex.prefix(8)) unreadable")
+                continue
+            }
+            if ownRemainderMatches(
+                addressStorageBytes: storageBytes, deltaDuffs: deltaDuffs,
+                lockDuffs: lock.amountDuffs, recipients: recipients) {
+                claimedRemainders.insert(lock.outPointHex)
+                DWLogger.log("PLATFORM-ACTIVITY: +\(deltaDuffs) duffs is the remainder of own lock "
+                    + "\(lock.outPointHex.prefix(8)), no Received row")
+                return true
+            }
+        }
+        return false
+    }
+
+    /// Whether an increase on an own address is the remainder of a lock that paid someone else's Platform address:
+    /// the address is the recorded recipient without an amount, and the increase fits in what the lock kept beyond
+    /// the explicit amounts (the reserve the remainder comes out of).
+    static func ownRemainderMatches(
+        addressStorageBytes: Data,
+        deltaDuffs: Int64,
+        lockDuffs: Int64,
+        recipients: [ManagedPlatformAddressWallet.FundFromAssetLockRecipient]
+    ) -> Bool {
+        guard recipients.contains(where: {
+            $0.credits == nil && Data([$0.addressType]) + $0.hash == addressStorageBytes
+        }) else { return false }
+        let explicitDuffs = recipients.compactMap(\.credits)
+            .reduce(Int64(0)) { $0 + PlatformAddressActivityUnitPolicy.duffs(fromCredits: $1) }
+        return deltaDuffs <= lockDuffs - explicitDuffs
     }
 }

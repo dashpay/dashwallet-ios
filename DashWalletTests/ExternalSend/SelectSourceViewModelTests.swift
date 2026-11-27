@@ -136,9 +136,14 @@ final class SelectSourceViewModelTests: XCTestCase {
         XCTAssertFalse(r.isSelected, file: file, line: line)
     }
 
-    func testCoreToSomeoneElsesIdentityIDIsUnavailableButListed() async throws {
+    func testCorePaysSomeoneElsesIdentityID() async throws {
         let vm = await makeVM(destination(.identityID, text: otherID), selected: .shielded)
-        try assertUnavailable(.core, .coreToOtherIdentity, "Core can't pay someone else's identity", in: vm)
+        XCTAssertTrue(try row(.core, in: vm).isSelectable)
+    }
+
+    func testCoreToAScriptFormPlatformAddressIsUnavailableButListed() async throws {
+        let vm = await makeVM(destination(.platformAddress, isScriptForm: true), selected: .shielded)
+        try assertUnavailable(.core, .coreToPlatformAddress, "Core can't pay this kind of Platform address", in: vm)
         XCTAssertEqual(vm.rows.count, 4, "dimmed, not hidden")
     }
 
@@ -150,7 +155,7 @@ final class SelectSourceViewModelTests: XCTestCase {
 
     func testCoreAndPlatformToScriptFormPlatformAddressAreUnavailable() async throws {
         let vm = await makeVM(destination(.platformAddress, isScriptForm: true), selected: .shielded)
-        try assertUnavailable(.core, .coreToPlatformAddress, "Core can't pay a Platform address yet", in: vm)
+        try assertUnavailable(.core, .coreToPlatformAddress, "Core can't pay this kind of Platform address", in: vm)
         try assertUnavailable(.platform, .platformToScriptFormPlatformAddress,
                               "Platform can't pay this kind of Platform address", in: vm)
         XCTAssertTrue(try row(.shielded, in: vm).isSelectable)
@@ -197,14 +202,14 @@ final class SelectSourceViewModelTests: XCTestCase {
     }
 
     func testTappingAnUnavailableRowShowsItsReasonAndChangesNothing() async throws {
-        let vm = await makeVM(destination(.identityID, text: otherID), selected: .shielded)
+        let vm = await makeVM(destination(.platformAddress, isScriptForm: true), selected: .shielded)
         XCTAssertNil(vm.toastMessage)
         vm.tap(.core)
-        XCTAssertEqual(vm.toastMessage, "Core can't pay someone else's identity")
+        XCTAssertEqual(vm.toastMessage, "Core can't pay this kind of Platform address")
         XCTAssertTrue(picked.isEmpty)
         XCTAssertEqual(vm.selected, .shielded)
         XCTAssertEqual(vm.rows.filter(\.isSelected).map(\.source), [.shielded])
-        try assertUnavailable(.core, .coreToOtherIdentity, "Core can't pay someone else's identity", in: vm)
+        try assertUnavailable(.core, .coreToPlatformAddress, "Core can't pay this kind of Platform address", in: vm)
     }
 
     // MARK: - AC-07: Identity only with a Current identity that has a username

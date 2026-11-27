@@ -45,7 +45,7 @@ extension SendRoute {
         case .platformToCore, .platformToPlatform, .platformToIdentity, .identityToCore, .identityToPlatform,
              .identityToIdentity, .identityToShielded:
             return true
-        case .coreToCore, .coreToShielded, .coreToIdentity, .shieldedToCore, .shieldedToShielded,
+        case .coreToCore, .coreToShielded, .coreToIdentity, .coreToPlatform, .shieldedToCore, .shieldedToShielded,
              .shieldedToPlatform, .shieldedToIdentity, .platformToShielded:
             return false
         }
@@ -57,6 +57,9 @@ protocol SendFeeSourcing: Sendable {
     func coreSendFeeDuffs(amountDuffs: UInt64) async throws -> UInt64
     func shieldedFeeCredits(kind: PlatformWalletManager.ShieldedFeeKind, numActions: Int) async throws -> UInt64
     func platformWithdrawalFeeCredits() async throws -> UInt64
+    /// Platform's minimum fee for an address funding from an asset lock with two outputs (the recipient and the
+    /// sender's remainder), in credits.
+    func addressFundingFeeCredits() async throws -> UInt64
 }
 
 struct ExternalSendFeeEstimator: SendFeeEstimating {
@@ -71,7 +74,7 @@ struct ExternalSendFeeEstimator: SendFeeEstimating {
     func estimate(route: SendRoute, amount: UInt64) async -> SendFeeEstimate {
         do {
             switch route {
-            case .coreToShielded, .coreToIdentity:
+            case .coreToShielded, .coreToIdentity, .coreToPlatform:
                 return try await assetLockEstimate(route: route, amount: amount)
             case .identityToShielded:
                 // The consensus admission floor of the identity shield, in credits; the charged fee never exceeds it.
@@ -101,7 +104,7 @@ struct ExternalSendFeeEstimator: SendFeeEstimating {
         switch route {
         case .coreToCore:
             return try await sources.coreSendFeeDuffs(amountDuffs: amount)
-        case .coreToShielded, .coreToIdentity, .identityToShielded:
+        case .coreToShielded, .coreToIdentity, .coreToPlatform, .identityToShielded:
             preconditionFailure("\(route) is estimated in estimate(route:amount:)")
         case .shieldedToCore, .shieldedToShielded, .shieldedToPlatform, .shieldedToIdentity:
             return try await shieldedSourceFee(route: route)
@@ -148,6 +151,10 @@ struct ExternalSendFeeEstimator: SendFeeEstimating {
                 .map(CoreToShieldedAmountPolicy.poolFeeDuffs(poolFeeCredits:))
         case .coreToIdentity:
             return Self.coreTopUpPlatformFeeDuffs
+        case .coreToPlatform:
+            // The address-funding reserve for two outputs (recipient + own remainder), rounded up to duffs; the
+            // unused part stays on the sender's remainder address.
+            return try await CoreToPlatformAmountPolicy.reserveDuffs(reserveCredits: sources.addressFundingFeeCredits())
         default:
             preconditionFailure("\(route) is not a Core asset-lock route")
         }
@@ -195,5 +202,12 @@ struct LiveSendFeeSources: SendFeeSourcing {
 
     func platformWithdrawalFeeCredits() async throws -> UInt64 {
         try await PlatformAddressSyncCoordinator.shared.preflightWithdrawal().estimatedFee
+    }
+
+    func addressFundingFeeCredits() async throws -> UInt64 {
+        try await MainActor.run {
+            guard let credits = CoreToPlatformAmountPolicy.currentReserveCredits else { throw Unavailable() }
+            return credits
+        }
     }
 }

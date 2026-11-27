@@ -41,7 +41,7 @@ final class ExternalSendExecutorTests: XCTestCase {
     private static let coreFee: UInt64 = 226
     private static let twoStepFee: UInt64 = 4_100
 
-    private let twoStepRoutes: [SendRoute] = [.coreToShielded, .coreToIdentity]
+    private let twoStepRoutes: [SendRoute] = [.coreToShielded, .coreToIdentity, .coreToPlatform]
 
     /// Routes the coordinator's `perform*` calls carry. A Platform-source Identity destination goes through the
     /// identity top-up.
@@ -435,7 +435,7 @@ final class ExternalSendExecutorTests: XCTestCase {
         switch route {
         case .coreToShielded, .shieldedToShielded, .platformToShielded:
             return Destination(type: .shieldedAddress, text: "dash1-shielded-recipient")
-        case .shieldedToPlatform, .platformToPlatform, .identityToPlatform:
+        case .coreToPlatform, .shieldedToPlatform, .platformToPlatform, .identityToPlatform:
             return Destination(type: .platformAddress, text: "dash1-platform-recipient")
         case .coreToIdentity, .shieldedToIdentity, .platformToIdentity, .identityToIdentity:
             return Destination(type: .identityID, text: "identity-id-recipient")

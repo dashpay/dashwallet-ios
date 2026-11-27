@@ -526,15 +526,6 @@
         }
       }
     },
-    "Identity can't pay a Shielded address until Shielded is set up" : {
-      "comment" : "External send"
-    },
-    "Identity can't pay this wallet's own Shielded address" : {
-      "comment" : "External send"
-    },
-    "The amount is outside the limits for a withdrawal to Core. Your funds were not sent." : {
-      "comment" : "External send"
-    },
     "—" : {
 
     },
@@ -141188,10 +141179,7 @@
     "Core address" : {
       "comment" : "External send"
     },
-    "Core can't pay a Platform address yet" : {
-      "comment" : "External send"
-    },
-    "Core can't pay someone else's identity" : {
+    "Core can't pay this kind of Platform address" : {
       "comment" : "External send"
     },
     "Core chain-locked height" : {
@@ -247742,6 +247730,9 @@
         }
       }
     },
+    "Identity → Shielded" : {
+      "comment" : "Transfer of the wallet's identity credits into its private shielded balance"
+    },
     "Identity Account Balance" : {
       "comment" : "SDK identity profile sheet — the identity's credit balance",
       "localizations" : {
@@ -248267,6 +248258,12 @@
           }
         }
       }
+    },
+    "Identity can't pay a Shielded address until Shielded is set up" : {
+      "comment" : "External send"
+    },
+    "Identity can't pay this wallet's own Shielded address" : {
+      "comment" : "External send"
     },
     "Identity can't top up itself" : {
       "comment" : "External send"
@@ -250903,6 +250900,9 @@
           }
         }
       }
+    },
+    "Identity transfer" : {
+      "comment" : "Transaction to an identity whose owner the wallet cannot tell now"
     },
     "Identity verification is not available on this network." : {
       "comment" : "Usernames",
@@ -390799,6 +390799,9 @@
         }
       }
     },
+    "Platform transfer" : {
+      "comment" : "Transaction to a Platform address whose owner the wallet cannot tell now"
+    },
     "Platform wallet manager unavailable" : {
       "comment" : "InternalTransfer",
       "localizations" : {
@@ -478607,6 +478610,9 @@
         }
       }
     },
+    "Shielded → Identity" : {
+      "comment" : "Transfer of own funds from the private shielded balance to the wallet's identity"
+    },
     "Shielded → Platform" : {
       "comment" : "Transfer of own funds from the private shielded balance to the Platform balance",
       "localizations" : {
@@ -519893,6 +519899,9 @@
           }
         }
       }
+    },
+    "The amount is outside the limits for a withdrawal to Core. Your funds were not sent." : {
+      "comment" : "External send"
     },
     "The amount is set by the payment request." : {
       "comment" : "External send"
@@ -705146,7 +705155,7 @@
       }
     },
     "Your identity" : {
-      "comment" : "External send"
+      "comment" : "External send\nShielded activity: the wallet's identity as the destination of an internal move"
     },
     "Your Identity balance can't cover this amount plus the network fee. Enter a smaller amount and try again." : {
       "comment" : "Identity withdrawal — Platform refused the amount as more than the balance can cover",

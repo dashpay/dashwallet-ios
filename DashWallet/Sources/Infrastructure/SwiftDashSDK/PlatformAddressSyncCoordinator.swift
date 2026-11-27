@@ -27,6 +27,7 @@
 //
 
 import Combine
+import CoreData
 import Foundation
 import OSLog
 import SwiftDashSDK
@@ -941,6 +942,37 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         Task { await self.syncNow() }
     }
 
+    /// Pay someone else's Platform address (P2PKH `recipientHash`) from Core: the lock pays `recipientAmountDuffs`
+    /// to it and the rest to one of this wallet's addresses. The SDK records the recipients with the lock before it
+    /// is broadcast, so an interrupted payment resumes only to them (dashpay/platform#5930).
+    public func fundExternalFromCore(
+        recipientHash: Data,
+        recipientAmountDuffs: UInt64,
+        lockValueDuffs: UInt64,
+        onAssetLockBuilt: AssetLockBuiltHandler? = nil
+    ) async throws {
+        let env = try resolveFundEnvironment(recipientAmountDuffs: recipientAmountDuffs)
+        let signer = KeychainSigner(modelContainer: env.container, network: env.network)
+        guard let own = env.recipients.first(where: { $0.credits != nil }),
+              let remainder = env.recipients.first(where: { $0.credits == nil })
+        else { throw SendError.invalidAmount }
+        let external = ManagedPlatformAddressWallet.FundFromAssetLockRecipient(
+            addressType: 0, hash: recipientHash, credits: own.credits)
+
+        DWLogger.log("PLATFORM-FUND: core to another Platform address, lock=\(lockValueDuffs)")
+
+        let updated = try await env.addressWallet.fundFromAssetLockExternal(
+            amountDuffs: lockValueDuffs,
+            fundingAccountIndex: 0,
+            platformAccountIndex: env.accountIndex,
+            recipients: [external, remainder],
+            signer: signer,
+            onAssetLockBuilt: onAssetLockBuilt)
+
+        applyUpdatedBalances(updated, context: env.container.mainContext)
+        Task { await self.syncNow() }
+    }
+
     /// Resume a stuck Core → Platform funding whose asset lock is committed
     /// on-chain (Broadcast/IS-locked/CL-locked) but whose address-funding
     /// state transition never landed. Sibling of `fundFromCore` — picks up
@@ -957,12 +989,23 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
 
         Self.logger.info("🛰️ PLATFORM-FUND :: resume core → platform vout=\(outPointVout)")
 
-        let updated = try await env.addressWallet.resumeFundFromAssetLock(
-            outPointTxid: outPointTxid,
-            outPointVout: outPointVout,
-            platformAccountIndex: env.accountIndex,
-            recipients: env.recipients,
-            signer: signer)
+        // A lock that recorded its recipients pays someone else's Platform address (dashpay/platform#5930): it
+        // resumes only to them, never to this wallet's addresses, which the SDK would refuse anyway.
+        let recorded = try SwiftDashSDKHost.shared.wallet?.assetLockPlatformAddressRecipients(
+            txid: outPointTxid, vout: outPointVout)
+        let updated: [ManagedPlatformAddressWallet.UpdatedBalance]
+        if recorded != nil {
+            DWLogger.log("PLATFORM-FUND: resume to the recorded recipients of another Platform address")
+            updated = try await env.addressWallet.resumeFundFromAssetLockToRecordedRecipients(
+                outPointTxid: outPointTxid, outPointVout: outPointVout, signer: signer)
+        } else {
+            updated = try await env.addressWallet.resumeFundFromAssetLock(
+                outPointTxid: outPointTxid,
+                outPointVout: outPointVout,
+                platformAccountIndex: env.accountIndex,
+                recipients: env.recipients,
+                signer: signer)
+        }
 
         applyUpdatedBalances(updated, context: env.container.mainContext)
         await ShieldedTxLookup.shared.refresh(reason: "platform-fund-resume-completed")
@@ -1661,6 +1704,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         // persisted. Each completed pass above refreshes it again — a new
         // "to Shielded" transfer's asset lock lands around the same time its
         // note shows up in the balance.
+        ShieldedTxLookup.shared.refreshOnAssetLockSaves()
         await ShieldedTxLookup.shared.refresh(reason: "manager-subscribe")
 
         // Keep a low-overhead guard around the SDK's regular polling. Healthy
@@ -2103,6 +2147,9 @@ final class ShieldedTxLookup {
 
     /// `AssetLockAddressTopUp` — the Core → Platform address funding lock.
     private static let platformFundingType = 4
+    /// `AssetLockFundingType::IdentityTopUpNotBound`: a top-up that records the identity it pays, which need not be
+    /// one of the wallet's.
+    private static let unboundIdentityTopUpFundingType = 2
 
     /// Identity funding locks: 0 = IdentityRegistration, 1 = IdentityTopUp,
     /// 2 = IdentityTopUpNotBound, 3 = IdentityInvitation.
@@ -2140,6 +2187,12 @@ final class ShieldedTxLookup {
         /// to pay (`PersistentAssetLock.shieldedRecipientRaw43`); nil for other
         /// types and for locks tracked before the SDK recorded it.
         var recipientRaw43: Data? = nil
+        /// The 32-byte identity an unbound identity top-up (type 2) records it pays
+        /// (`PersistentAssetLock.identityRecipient`); nil for other types.
+        var identityRecipient: Data?
+        /// A Platform-address funding (type 4) that recorded its recipients, which the SDK does only for
+        /// `fundFromAssetLockExternal`.
+        var hasPlatformAddressRecipients: Bool = false
         /// Whose the recorded recipient is (`resolvingRecipients`). Nil for a
         /// lock without a recorded recipient (tracked before the SDK recorded
         /// it) and for other types, which keep the Internal Transfer reading.
@@ -2191,6 +2244,15 @@ final class ShieldedTxLookup {
         /// own Orchard addresses; nil when that cannot be told now.
         var isOwnShieldedRecipient: @MainActor @Sendable (_ walletId: Data, _ raw43: Data) -> Bool? = { _, _ in nil }
         var isMainnet: @MainActor @Sendable () -> Bool = { WalletEnvironment.isMainnet }
+        /// Whether an identity is one this wallet manages; nil when that cannot be told now.
+        var isOwnIdentity: @MainActor @Sendable (_ walletId: Data, _ identityId: Data) -> Bool? = { _, _ in nil }
+        /// The recipients with an explicit amount that a Platform-address funding recorded, as 21-byte storage bytes
+        /// (type + hash); nil when they cannot be read now.
+        var platformRecipients: @MainActor @Sendable (_ txidHex: String, _ vout: UInt32) -> [Data]? = { _, _ in nil }
+        /// Whether a Platform address (storage bytes) is one of this wallet's; nil when that cannot be told now.
+        var isOwnPlatformAddress: @MainActor @Sendable (_ walletId: Data, _ storageBytes: Data) -> Bool? = { _, _ in
+            nil
+        }
 
         /// The running wallet's container, read through SwiftData in a
         /// detached task.
@@ -2204,6 +2266,33 @@ final class ShieldedTxLookup {
             isOwnShieldedRecipient: { walletId, raw43 in
                 guard let manager = SwiftDashSDKHost.shared.manager else { return nil }
                 return (try? manager.isOwnShieldedAddress(walletId: walletId, raw43: raw43)) ?? nil
+            },
+            isOwnIdentity: { walletId, identityId in
+                guard let container = SwiftDashSDKHost.shared.modelContainer else { return nil }
+                var descriptor = FetchDescriptor<PersistentIdentity>(
+                    predicate: #Predicate { $0.identityId == identityId })
+                descriptor.fetchLimit = 1
+                guard let rows = try? container.mainContext.fetch(descriptor) else { return nil }
+                return rows.first?.wallet?.walletId == walletId
+            },
+            platformRecipients: { txidHex, vout in
+                guard let wallet = SwiftDashSDKHost.shared.wallet,
+                      let display = Data(hex: txidHex), display.count == 32,
+                      let recipients = try? wallet.assetLockPlatformAddressRecipients(
+                          txid: Data(display.reversed()), vout: vout)
+                else { return nil }
+                return recipients.filter { $0.credits != nil }.map { Data([$0.addressType]) + $0.hash }
+            },
+            isOwnPlatformAddress: { walletId, storageBytes in
+                guard let container = SwiftDashSDKHost.shared.modelContainer, storageBytes.count == 21 else {
+                    return nil
+                }
+                let hash = Data(storageBytes.dropFirst())
+                var descriptor = FetchDescriptor<PersistentPlatformAddress>(
+                    predicate: #Predicate { $0.addressHash == hash })
+                descriptor.fetchLimit = 1
+                guard let rows = try? container.mainContext.fetch(descriptor) else { return nil }
+                return rows.first?.walletId == walletId
             })
     }
 
@@ -2278,8 +2367,53 @@ final class ShieldedTxLookup {
             walletId: entry.walletId,
             drainOperation: entry.drainOperation,
             recipientRaw43: entry.recipientRaw43,
+            identityRecipient: entry.identityRecipient,
+            hasPlatformAddressRecipients: entry.hasPlatformAddressRecipients,
             recipient: entry.recipient)
     }
+
+    /// The save observer `refreshOnAssetLockSaves` installed, and the center it is on.
+    @MainActor private var assetLockSaveObserver: (center: NotificationCenter, token: NSObjectProtocol)?
+
+    /// Re-reads the snapshot whenever a SwiftData save touches an asset-lock row. The SDK saves a lock, with the
+    /// recipient it pays, before it broadcasts the funding transaction, so History reads a Core payment to someone
+    /// else as Sent from the lock's own save instead of from the next shielded sync, which was the only refresh that
+    /// read a new lock of those routes. Idempotent.
+    @MainActor
+    func refreshOnAssetLockSaves(from center: NotificationCenter = .default) {
+        guard assetLockSaveObserver == nil else { return }
+        // The lookup guards its state itself (the lock, the main actor), so a weak reference may cross threads.
+        struct WeakLookup: @unchecked Sendable { weak var lookup: ShieldedTxLookup? }
+        let weakSelf = WeakLookup(lookup: self)
+        let saved = Notification.Name.NSManagedObjectContextDidSave
+        let token = center.addObserver(forName: saved, object: nil, queue: nil) { notification in
+            // Inspected on the posting thread: the userInfo object sets belong to it.
+            guard Self.saveTouchesAssetLocks(notification) else { return }
+            Task { @MainActor in
+                await weakSelf.lookup?.refresh(reason: "asset-lock-saved")
+            }
+        }
+        assetLockSaveObserver = (center, token)
+    }
+
+    @MainActor
+    func stopRefreshingOnAssetLockSaves() {
+        guard let observer = assetLockSaveObserver else { return }
+        observer.center.removeObserver(observer.token)
+        assetLockSaveObserver = nil
+    }
+
+    /// Whether a SwiftData save inserted, changed or deleted an asset-lock row. Fails closed: a save it cannot
+    /// inspect is left to the other refresh triggers.
+    static func saveTouchesAssetLocks(_ notification: Notification) -> Bool {
+        guard let userInfo = notification.userInfo else { return false }
+        return [NSInsertedObjectsKey, NSUpdatedObjectsKey, NSDeletedObjectsKey].contains { key in
+            (userInfo[key] as? Set<NSManagedObject>)?
+                .contains { $0.entity.name == assetLockEntityName } ?? false
+        }
+    }
+
+    private static let assetLockEntityName = String(describing: PersistentAssetLock.self)
 
     /// Records that a transfer consumed the asset lock funded by `txidWire`,
     /// before the store and the next snapshot show it: the SDK can flush the
@@ -2338,18 +2472,36 @@ final class ShieldedTxLookup {
         }
 
         guard let built = result.map else { return }
-        let map = Self.resolvingRecipients(of: built, mainnet: source.isMainnet()) { walletId, raw43 in
-            let key = walletId + raw43
+        // One cache for every recorded recipient: the keys cannot collide, as a raw Orchard address (43 bytes), an
+        // identity id (32) and a Platform address (21) differ in length.
+        func cachedOwnership(_ walletId: Data, _ recipient: Data, _ ask: @MainActor (Data, Data) -> Bool?) -> Bool? {
+            let key = walletId + recipient
             if let known = ownRecipientAnswers[key] { return known }
-            let answer = source.isOwnShieldedRecipient(walletId, raw43)
+            let answer = ask(walletId, recipient)
             if let answer { ownRecipientAnswers[key] = answer }
             return answer
         }
+        let mainnet = source.isMainnet()
+        let shieldedResolved = Self.resolvingRecipients(of: built, mainnet: mainnet) { walletId, raw43 in
+            cachedOwnership(walletId, raw43, source.isOwnShieldedRecipient)
+        }
+        let map = Self.resolvingIdentityAndPlatformRecipients(
+            of: shieldedResolved,
+            mainnet: mainnet,
+            isOwnIdentity: { cachedOwnership($0, $1, source.isOwnIdentity) },
+            platformRecipients: source.platformRecipients,
+            isOwnPlatformAddress: { cachedOwnership($0, $1, source.isOwnPlatformAddress) })
         store(map)
         Self.logger.info(
             "🛡️ SHIELD-TX :: snapshot \(map.count, privacy: .public) funding tx(s) (shielded + platform)")
+        let external = map.values.filter {
+            if case .external? = $0.recipient { return true }
+            return false
+        }.count
         DWLogger.log(
-            "🛡️ SHIELD-TX-REFRESH [\(refreshID)] finish in \(elapsedMS)ms reason=\(reason) offMain=\(result.workerRanOffMain) rows=\(result.assetLockCount) snapshot=\(map.count) uncovered=\(result.uncoveredTxids.count)")
+            "🛡️ SHIELD-TX-REFRESH [\(refreshID)] finish in \(elapsedMS)ms reason=\(reason) "
+                + "offMain=\(result.workerRanOffMain) rows=\(result.assetLockCount) snapshot=\(map.count) "
+                + "external=\(external) uncovered=\(result.uncoveredTxids.count)")
 
         if !result.uncoveredTxids.isEmpty {
             Self.logger.error(
@@ -2391,7 +2543,11 @@ final class ShieldedTxLookup {
                     fundingTypeRaw: row.fundingTypeRaw,
                     walletId: row.walletId,
                     drainOperation: CoreShieldedDrainRowIdentity(operationIdBytes: row.operationId).operation,
-                    recipientRaw43: row.fundingTypeRaw == shieldedFundingType ? row.shieldedRecipientRaw43 : nil)
+                    recipientRaw43: row.fundingTypeRaw == shieldedFundingType ? row.shieldedRecipientRaw43 : nil,
+                    identityRecipient: row.fundingTypeRaw == unboundIdentityTopUpFundingType
+                        ? row.identityRecipient : nil,
+                    hasPlatformAddressRecipients: row.fundingTypeRaw == platformFundingType
+                        && row.platformAddressRecipients != nil)
                 func rank(_ statusRaw: Int) -> Int {
                     statusRaw == AssetLockRecoveryService.consumedStatus ? .max : statusRaw
                 }
@@ -2442,12 +2598,46 @@ final class ShieldedTxLookup {
             guard info.fundingTypeRaw == shieldedFundingType, let raw43 = info.recipientRaw43,
                   let address = Bech32m.shieldedDisplayAddress(raw43: raw43, mainnet: mainnet) else { return info }
             var resolved = info
-            switch isOwn(info.walletId, raw43) {
-            case true?: resolved.recipient = .own
-            case false?: resolved.recipient = .external(address: address)
-            case nil: resolved.recipient = .undecided(address: address)
-            }
+            resolved.recipient = recipient(address: address, isOwn: isOwn(info.walletId, raw43))
             return resolved
+        }
+    }
+
+    /// The same rule as `resolvingRecipients` for the other locks that record whom they pay: an unbound identity
+    /// top-up (type 2) and a Platform-address funding that recorded its recipients (type 4, the address with the
+    /// explicit amount). Own, someone else's or undecided by the wallet's answer; a lock whose recipient was not
+    /// recorded, or whose recorded Platform recipients cannot be read now, keeps no answer.
+    @MainActor
+    static func resolvingIdentityAndPlatformRecipients(
+        of map: [String: ShieldedLockInfo],
+        mainnet: Bool,
+        isOwnIdentity: (_ walletId: Data, _ identityId: Data) -> Bool?,
+        platformRecipients: (_ txidHex: String, _ vout: UInt32) -> [Data]?,
+        isOwnPlatformAddress: (_ walletId: Data, _ storageBytes: Data) -> Bool?
+    ) -> [String: ShieldedLockInfo] {
+        var resolved = map
+        for (txidHex, info) in map where info.recipient == nil {
+            if info.fundingTypeRaw == unboundIdentityTopUpFundingType,
+               let identityId = info.identityRecipient, identityId.count == 32 {
+                resolved[txidHex]?.recipient = recipient(
+                    address: ScriptAddressCodec.base58Encode(identityId),
+                    isOwn: isOwnIdentity(info.walletId, identityId))
+            } else if info.fundingTypeRaw == platformFundingType, info.hasPlatformAddressRecipients,
+                      let storage = platformRecipients(txidHex, info.vout)?.first,
+                      let address = Bech32m.bech32mPayload(fromStorageBytes: storage)
+                          .flatMap({ Bech32m.encode(hrp: Bech32m.platformHrp(mainnet: mainnet), data: $0) }) {
+                resolved[txidHex]?.recipient = recipient(
+                    address: address, isOwn: isOwnPlatformAddress(info.walletId, storage))
+            }
+        }
+        return resolved
+    }
+
+    private static func recipient(address: String, isOwn: Bool?) -> ShieldedLockInfo.Recipient {
+        switch isOwn {
+        case true?: return .own
+        case false?: return .external(address: address)
+        case nil: return .undecided(address: address)
         }
     }
 

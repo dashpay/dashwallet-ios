@@ -228,7 +228,7 @@ class Transaction: TransactionDataItem, Identifiable {
         // The net-change view reads an asset lock as a move of own funds; one
         // whose recipient is not provably the wallet's own is money leaving
         // the Transparent balance.
-        if shieldedRecipientAddress != nil { return .sent }
+        if assetLockRecipientAddress != nil { return .sent }
         return _direction
     }
     private lazy var _direction: TransactionDirection = {
@@ -325,6 +325,23 @@ class Transaction: TransactionDataItem, Identifiable {
     var isExternalShieldedSend: Bool {
         if case .external? = shieldedLockInfo?.recipient { return true }
         return false
+    }
+
+    /// Whose the recorded recipient of this tx's asset lock is — a Shielded address, a Platform address (type 4) or
+    /// an identity (type 2), resolved by `ShieldedTxLookup`; nil for a lock without a recorded recipient and for
+    /// every other transaction.
+    var assetLockRecipient: ShieldedTxLookup.ShieldedLockInfo.Recipient? {
+        shieldedLockInfo?.recipient ?? platformFundingLockInfo?.recipient ?? identityFundingLockInfo?.recipient
+    }
+
+    /// The recorded recipient of an asset lock, in its display form, when it is not provably the wallet's own:
+    /// someone else's, or one whose owner cannot be told now. Nil for an own recipient, a lock that recorded none,
+    /// and every other transaction. The one read that takes any asset lock out of its own-transfer reading.
+    var assetLockRecipientAddress: String? {
+        switch assetLockRecipient {
+        case .external(let address)?, .undecided(let address)?: return address
+        case .own?, nil: return nil
+        }
     }
 
     /// Live info for this tx as a Core → Platform address funding (a Type-8
@@ -426,8 +443,8 @@ class Transaction: TransactionDataItem, Identifiable {
         case .identity?: return .identityToCore
         case nil: break
         }
-        if isPlatformFundingTransfer { return .coreToPlatform }
-        if isIdentityFundingTransfer { return .coreToIdentity }
+        if isPlatformFundingTransfer { return assetLockRecipientAddress != nil ? nil : .coreToPlatform }
+        if isIdentityFundingTransfer { return assetLockRecipientAddress != nil ? nil : .coreToIdentity }
         if direction == .moved { return .coreToCore }
         return nil
     }
@@ -668,7 +685,8 @@ class Transaction: TransactionDataItem, Identifiable {
     var stateTitle: String {
         // Identity funding locks name their purpose — they buy identity
         // credits rather than moving between the wallet's balances.
-        if let identityType = identityFundingLockInfo?.fundingTypeRaw {
+        // A top-up of an identity that is not provably the wallet's is not a purchase of its own credits.
+        if let identityType = identityFundingLockInfo?.fundingTypeRaw, assetLockRecipientAddress == nil {
             switch identityType {
             case 0:
                 return String(localized: "Identity registration", comment: "Asset lock funding a DashPay identity registration")
@@ -698,12 +716,24 @@ class Transaction: TransactionDataItem, Identifiable {
         // own: Core confirms the lock before Platform credits the recipient, so
         // "Sent" waits for Platform to consume the lock. An undecided owner is
         // named neither a payment nor an own transfer.
-        switch shieldedLockInfo?.recipient {
+        // The same holds for a lock paying an identity or a Platform address.
+        switch assetLockRecipient {
         case .external?:
-            return shieldedLockInfo?.statusRaw == AssetLockRecoveryService.consumedStatus
+            let statusRaw = (shieldedLockInfo ?? platformFundingLockInfo ?? identityFundingLockInfo)?.statusRaw
+            return statusRaw == AssetLockRecoveryService.consumedStatus
                 ? String(localized: "Sent", comment: "")
                 : String(localized: "Sending", comment: "")
         case .undecided?:
+            if isPlatformFundingTransfer {
+                return String(
+                    localized: "Platform transfer",
+                    comment: "Transaction to a Platform address whose owner the wallet cannot tell now")
+            }
+            if isIdentityFundingTransfer {
+                return String(
+                    localized: "Identity transfer",
+                    comment: "Transaction to an identity whose owner the wallet cannot tell now")
+            }
             return String(localized: "Shielded transfer", comment: "Transaction to a Shielded address whose owner the wallet cannot tell now")
         case .own?, nil:
             break
