@@ -818,12 +818,19 @@ struct IdentityCreditsTopUp {
         let signer = KeychainSigner(modelContainer: modelContainer)
         // Kept alive until the awaited top-up returned (dashpay/platform#5939).
         defer { withExtendedLifetime(signer) {} }
+        // The second leg spends the own Platform address's credits: recorded like the Platform route above, so History
+        // shows it and the identity's rise does not read as Received (ADR-0077).
+        let send = CreditSend(
+            source: .platform, destinationKind: .identity, destination: identityId.toBase58String(),
+            amountDuffs: claim / PlatformPaymentIdentityFundingPolicy.creditsPerDuff)
         let newBalance: UInt64
         do {
-            newBalance = try await wallet.topUpFromAddresses(
-                identityId: identityId,
-                inputs: [input],
-                addressSigner: signer)
+            newBalance = try await CreditSendLedger.recording(send) {
+                try await wallet.topUpFromAddresses(
+                    identityId: identityId,
+                    inputs: [input],
+                    addressSigner: signer)
+            }
         } catch {
             // An ambiguous second leg may already have credited the identity.
             // Never suggest another top-up when its result is unknown.

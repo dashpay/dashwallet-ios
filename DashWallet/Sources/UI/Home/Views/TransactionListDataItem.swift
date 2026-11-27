@@ -33,6 +33,8 @@ enum TransactionListDataItem {
     case platformActivity(PlatformAddressActivityItem)
     /// A Platform-address or identity credit send the app recorded (`CreditSendActivityStore`).
     case creditSend(CreditSendActivityItem)
+    /// Credits someone else sent to the Current identity (`IdentityCreditActivityStore`).
+    case identityCredit(IdentityCreditActivityItem)
     case coinjoin(CoinJoinMixingTxSet)
     case coinjoinWithdrawal(CoinJoinWithdrawalTxSet)
     /// A Buy swap order whose deposit is on record and whose Dash transaction is not in the
@@ -55,6 +57,8 @@ extension TransactionListDataItem: Identifiable {
             return item.id
         case .creditSend(let item):
             return item.id
+        case .identityCredit(let item):
+            return item.id
         case .swapOrder(let item):
             return item.id
         }
@@ -73,6 +77,8 @@ extension TransactionListDataItem: Identifiable {
         case .platformActivity(let item):
             return item.date
         case .creditSend(let item):
+            return item.date
+        case .identityCredit(let item):
             return item.date
         case .swapOrder(let item):
             return item.date

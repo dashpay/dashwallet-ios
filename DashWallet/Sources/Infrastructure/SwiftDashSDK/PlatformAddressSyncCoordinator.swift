@@ -1883,6 +1883,10 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
                 addresses: derivedAddresses, walletId: walletId,
                 network: network, container: container)
         }
+        #if DASHPAY
+        // Each pass also reads the Current identity's credits for History's Received rows (ADR-0077).
+        Task { await IdentityCreditActivityMonitor.shared.check(reason: "platform-sync") }
+        #endif
     }
 
     private enum LocalPlatformReadOutcome: String {

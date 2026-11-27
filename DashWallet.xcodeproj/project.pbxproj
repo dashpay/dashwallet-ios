@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C5E5D0010000000000000141 /* IdentityCreditActivityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5E5D0010000000000000140 /* IdentityCreditActivityTests.swift */; };
+		C5E5D0010000000000000131 /* IdentityCreditActivityMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5E5D0010000000000000130 /* IdentityCreditActivityMonitor.swift */; };
+		C5E5D0010000000000000122 /* IdentityCreditHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5E5D0010000000000000120 /* IdentityCreditHistory.swift */; };
+		C5E5D0010000000000000121 /* IdentityCreditHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5E5D0010000000000000120 /* IdentityCreditHistory.swift */; };
+		C5E5D0010000000000000112 /* IdentityCreditActivityStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5E5D0010000000000000110 /* IdentityCreditActivityStore.swift */; };
+		C5E5D0010000000000000111 /* IdentityCreditActivityStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5E5D0010000000000000110 /* IdentityCreditActivityStore.swift */; };
 		E5E0D0C90000000000000002 /* ConfirmViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0C90000000000000001 /* ConfirmViewModel.swift */; };
 		E5E0D0CA0000000000000002 /* ConfirmSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0CA0000000000000001 /* ConfirmSheet.swift */; };
 		E5E0D0C90000000000000003 /* ConfirmViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5E0D0C90000000000000001 /* ConfirmViewModel.swift */; };
@@ -2226,6 +2232,10 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		C5E5D0010000000000000140 /* IdentityCreditActivityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityCreditActivityTests.swift; sourceTree = "<group>"; };
+		C5E5D0010000000000000130 /* IdentityCreditActivityMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityCreditActivityMonitor.swift; sourceTree = "<group>"; };
+		C5E5D0010000000000000120 /* IdentityCreditHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityCreditHistory.swift; sourceTree = "<group>"; };
+		C5E5D0010000000000000110 /* IdentityCreditActivityStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityCreditActivityStore.swift; sourceTree = "<group>"; };
 		757E09971ADB8EEB006FD352 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		E5E0D0C90000000000000001 /* ConfirmViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmViewModel.swift; sourceTree = "<group>"; };
 		E5E0D0CA0000000000000001 /* ConfirmSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmSheet.swift; sourceTree = "<group>"; };
@@ -4200,6 +4210,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				E5E0D1B50000000000000001 /* ExternalShieldedSendHistoryTests.swift */,
 				E5E0D1B60000000000000001 /* ExternalAssetLockSendHistoryTests.swift */,
 				C5E5D0010000000000000070 /* CreditSendHistoryTests.swift */,
+				C5E5D0010000000000000140 /* IdentityCreditActivityTests.swift */,
 				E5E0D00B0000000000000001 /* ExternalSendExecutorTests.swift */,
 				E5E0D0010000000000000004 /* DestinationParserTests.swift */,
 				E5E0D0010000000000000050 /* SendOutcomeMappingTests.swift */,
@@ -4727,6 +4738,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				5A1EC0FE2E29A30000000031 /* CoinJoinMoveFunds */,
 				5A1EC0FE2E29A20000000014 /* PlatformAddressHistory.swift */,
 				C5E5D0010000000000000040 /* CreditSendHistory.swift */,
+				C5E5D0010000000000000120 /* IdentityCreditHistory.swift */,
 				75D657662DF579F300ACE570 /* TransactionFilterDialog.swift */,
 				4E55DD28C4EBE049216291A2 /* HomeUsernameRow.swift */,
 			);
@@ -6978,6 +6990,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			children = (
 				5A1EC0FE2E29A20000000011 /* PlatformAddressActivityStore.swift */,
 				C5E5D0010000000000000010 /* CreditSendActivityStore.swift */,
+				C5E5D0010000000000000110 /* IdentityCreditActivityStore.swift */,
 			);
 			path = PlatformAddress;
 			sourceTree = "<group>";
@@ -7606,6 +7619,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				BABA10000000000000000001 /* DWIdentityBalanceRefresh.swift */,
 				BABA10000000000000000101 /* IdentityTopUpDidComplete.swift */,
 				BABA10000000000000000201 /* IdentityTopUpsInFlight.swift */,
+				C5E5D0010000000000000130 /* IdentityCreditActivityMonitor.swift */,
 				D54F8E662513F09BA840FB94 /* DWIdentityRegistrationBridge.swift */,
 				5B30DA60B985C3CC3ED05B64 /* DWCurrentUserIdentityInfo.swift */,
 				82926C69F3BB675BEF1A1FFD /* DWProfileUpdateCoordinator.swift */,
@@ -9698,6 +9712,8 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C5E5D0010000000000000121 /* IdentityCreditHistory.swift in Sources */,
+				C5E5D0010000000000000111 /* IdentityCreditActivityStore.swift in Sources */,
 				2277460A914F0ECDB760DE7B /* ShieldedWithdrawalHistoryFixture.swift in Sources */,
 				A11C00001274000000000022 /* CoreCoinConsolidationSheet.swift in Sources */,
 				A11C00001274000000000012 /* CoreCoinConsolidationViewModel.swift in Sources */,
@@ -10576,6 +10592,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C5E5D0010000000000000141 /* IdentityCreditActivityTests.swift in Sources */,
 				AE4A372E7EC798A350694542 /* ShieldedWithdrawalHistoryTests.swift in Sources */,
 				E5E0D1B70000000000000002 /* ShieldedIdentityActivityTests.swift in Sources */,
 				88399D869E853C74B86302A0 /* ShieldedActivityOwnRecipientTests.swift in Sources */,
@@ -10761,6 +10778,9 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C5E5D0010000000000000131 /* IdentityCreditActivityMonitor.swift in Sources */,
+				C5E5D0010000000000000122 /* IdentityCreditHistory.swift in Sources */,
+				C5E5D0010000000000000112 /* IdentityCreditActivityStore.swift in Sources */,
 				74648FE9B1A4F560BD376049 /* ShieldedWithdrawalHistoryFixture.swift in Sources */,
 				A11C00001274000000000023 /* CoreCoinConsolidationSheet.swift in Sources */,
 				A11C00001274000000000013 /* CoreCoinConsolidationViewModel.swift in Sources */,

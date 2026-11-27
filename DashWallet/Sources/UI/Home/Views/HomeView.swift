@@ -668,6 +668,7 @@ struct HomeViewContent<Content: View>: View {
             viewModel.checkJoinDashPay()
             joinDPViewModel.checkUsername()
             refreshUsernameRow()
+            Task { await IdentityCreditActivityMonitor.shared.check(reason: "home-appear") }
             #endif
         }
     }
@@ -951,6 +952,21 @@ struct HomeViewContent<Content: View>: View {
             }
             .frame(minHeight: 66)
 
+        case .identityCredit(let item):
+            DashUIKit.TransactionView(
+                iconView: transferRouteIcon("person.crop.circle.fill"),
+                secondaryIcon: DashIconSource.system("arrow.down"),
+                title: item.title,
+                subtitle: item.shortTimeString,
+                details: item.detailsText,
+                dashAmount: item.signedDashAmount,
+                amountSign: .always,
+                fiat: item.fiatAmount
+            ) {
+                self.selectedTxDataItem = txDataItem
+            }
+            .frame(minHeight: 66)
+
         case .swapOrder(let item):
             DashUIKit.TransactionView(
                 icon: DashIcon.Transaction.convert.source,
@@ -1183,6 +1199,8 @@ struct TransactionDetailsSheet: View {
             PlatformAddressActivityDetailsView(item: item)
         case .creditSend(let item):
             CreditSendActivityDetailsView(item: item)
+        case .identityCredit(let item):
+            IdentityCreditActivityDetailsView(item: item)
         case .swapOrder(let item):
             // No Dash transaction yet: the standard screen, with what the order knows.
             TXDetailVCWrapper(swapOrder: item, navigateBack: .constant(false))
