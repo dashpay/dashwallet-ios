@@ -1348,6 +1348,23 @@ final class BIP70PaymentServiceTests: XCTestCase {
         XCTAssertEqual(uri?.amount, 150_000_000)
     }
 
+    /// dashpay/dashwallet-ios#1383: Receive's payment requests on Platform, Shielded and Identity carry a bech32m
+    /// address or a bare Base58 Identity ID before `?amount=`; the URI hands it over whole, with the amount.
+    func testURICarriesABech32mAddressOrAnIdentityIDWithItsAmount() throws {
+        let platform = try XCTUnwrap(Bech32m.encode(
+            hrp: Bech32m.platformHrp(mainnet: false), data: Data([0xb0] + Array(repeating: 0x02, count: 20))))
+        let shielded = try XCTUnwrap(Bech32m.encode(
+            hrp: Bech32m.platformHrp(mainnet: false), data: Data([0x10] + Array(repeating: 0x07, count: 43))))
+        let identityID = ScriptAddressCodec.base58Encode(Data((1 ... 32).map { UInt8($0 * 3) }))
+
+        for address in [platform, shielded, identityID] {
+            let uri = BIP70URI("dash:\(address)?amount=0.1")
+            XCTAssertEqual(uri?.address, address)
+            XCTAssertEqual(uri?.amount, 10_000_000)
+            XCTAssertEqual(uri?.isBIP70, false)
+        }
+    }
+
     func testURIRejectsNonPaymentScheme() {
         XCTAssertNil(BIP70URI("http://foo"))
     }
@@ -1369,6 +1386,217 @@ final class BIP70PaymentServiceTests: XCTestCase {
 
     func testURIAmountNegativeIsAbsent() {
         XCTAssertNil(BIP70URI("dash:X?amount=-5")?.amount)
+    }
+
+    func testURIAmountPresenceIsKeptApartFromItsValue() {
+        for value in ["-5", "abc", "", "1e30", "184467440738"] {
+            let uri = BIP70URI("dash:X?amount=\(value)")
+            XCTAssertNil(uri?.amount, value)
+            XCTAssertEqual(uri?.hasInvalidAmount, true, value)
+        }
+        XCTAssertEqual(BIP70URI("dash:X")?.hasInvalidAmount, false)
+        XCTAssertEqual(BIP70URI("dash:X?amount=1")?.hasInvalidAmount, false)
+        XCTAssertEqual(BIP70URI("dash:X?amount=184467440737.09551615")?.amount, UInt64.max)
+    }
+
+    func testURIRequiredFields() {
+        XCTAssertEqual(BIP70URI("dash:X?req-foo=1&req-amount=1&req-r=https://a.b/c")?.requiredFields, ["foo", "amount", "r"])
+        XCTAssertEqual(BIP70URI("dash:X?amount=1")?.requiredFields, [])
+    }
+
+    func testURIAmountMustParseWhollyAndOnce() {
+        for value in ["1abc", "1,5", "1.2.3", "1e", "1e3x", "+1", "."] {
+            let uri = BIP70URI("dash:X?amount=\(value)")
+            XCTAssertNil(uri?.amount, value)
+            XCTAssertEqual(uri?.hasInvalidAmount, true, value)
+        }
+        let repeated = BIP70URI("dash:X?req-amount=-1&amount=1")
+        XCTAssertNil(repeated?.amount)
+        XCTAssertEqual(repeated?.hasInvalidAmount, true)
+        XCTAssertEqual(BIP70URI("dash:X?amount=.5")?.amount, 50_000_000)
+    }
+
+    /// O53: a payment page that repeats the link's own amount still means that amount; two different amounts, or an
+    /// invalid one next to a valid one in either order, leave it open.
+    func testURIRepeatedAmountIsKeptOnlyWhenEqual() {
+        for link in ["dash:X?amount=1&amount=1", "dash:X?amount=1&req-amount=1.0", "dash:X?req-amount=1&amount=1e0"] {
+            let uri = BIP70URI(link)
+            XCTAssertEqual(uri?.amount, 100_000_000, link)
+            XCTAssertEqual(uri?.hasInvalidAmount, false, link)
+        }
+        for link in ["dash:X?amount=1&amount=2", "dash:X?amount=1&amount=-1", "dash:X?amount=abc&amount=1",
+                     "dash:X?amount=1&amount=1&amount=2"] {
+            let uri = BIP70URI(link)
+            XCTAssertNil(uri?.amount, link)
+            XCTAssertEqual(uri?.hasInvalidAmount, true, link)
+        }
+    }
+
+    /// O53: the existing Send prefills a repeated amount and rejects a link whose amount is invalid instead of
+    /// opening it with no amount.
+    func testParsedBoxKeepsARepeatedAmountAndRejectsAnInvalidOne() {
+        let address = "yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW"
+        let repeated = ParsedPaymentURI.parse(paymentString: "dash:\(address)?amount=1&amount=1")
+        XCTAssertEqual(repeated.amount, 100_000_000)
+        XCTAssertEqual(repeated.address, address)
+
+        let omitted = ParsedPaymentURI.parse(paymentString: "dash:\(address)")
+        XCTAssertEqual(omitted.amount, 0)
+        XCTAssertEqual(omitted.address, address)
+
+        for link in ["dash:\(address)?amount=1&amount=2", "dash:\(address)?amount=-1"] {
+            let box = ParsedPaymentURI.parse(paymentString: link)
+            XCTAssertNil(box.address, link)
+            XCTAssertFalse(box.isAddressPayableForCurrentNetwork, link)
+        }
+    }
+
+    /// O56: `sender` and `req-sender` with different values leave the app to call back open; the same value is kept.
+    func testURIConflictingCallbackIsFlaggedNotReplaced() {
+        let conflicting = BIP70URI("dash:X?req-sender=shopapp&sender=other")
+        XCTAssertEqual(conflicting?.hasConflictingCallback, true)
+        XCTAssertNil(conflicting?.callbackScheme)
+        let reversed = BIP70URI("dash:X?sender=other&req-sender=shopapp")
+        XCTAssertEqual(reversed?.hasConflictingCallback, true)
+        XCTAssertNil(reversed?.callbackScheme)
+        let same = BIP70URI("dash:X?sender=shopapp&req-sender=shopapp")
+        XCTAssertEqual(same?.hasConflictingCallback, false)
+        XCTAssertEqual(same?.callbackScheme, "shopapp")
+        XCTAssertEqual(BIP70URI("dash:X?req-sender=shopapp")?.callbackScheme, "shopapp")
+        // The box drops the address on every network; the payable verdict alone would pass on mainnet for this
+        // testnet address.
+        let box = ParsedPaymentURI.parse(paymentString: "dash:yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW?sender=a&sender=b")
+        XCTAssertNil(box.address)
+        XCTAssertFalse(box.isAddressPayableForCurrentNetwork)
+    }
+
+    /// O76: URL schemes are case-insensitive, so `sender=ShopApp` and `req-sender=shopapp` name one app.
+    func testURICallbacksDifferingOnlyInCaseAreOneCallback() {
+        for link in ["dash:X?sender=ShopApp&req-sender=shopapp", "dash:X?req-sender=shopapp&sender=ShopApp"] {
+            let uri = BIP70URI(link)
+            XCTAssertEqual(uri?.hasConflictingCallback, false, link)
+            XCTAssertEqual(uri?.callbackScheme?.lowercased(), "shopapp", link)
+        }
+        XCTAssertEqual(BIP70URI("dash:X?sender=ShopApp&req-sender=otherapp")?.hasConflictingCallback, true)
+    }
+
+    /// Many repeats of a callback after a long first value are compared with that value normalized once, and not at
+    /// all after the first conflict: the deep-link path parses on the main thread. The test checks the verdict, not
+    /// the time it takes, so a paused simulator cannot fail it.
+    func testURIRepeatedCallbacksAreComparedWithTheFirstNormalizedOnce() {
+        let long = String(repeating: "A", count: 200_000)
+        let repeats = Array(repeating: "sender=b", count: 20_000).joined(separator: "&")
+        let uri = BIP70URI("dash:X?sender=\(long)&\(repeats)")
+        XCTAssertEqual(uri?.hasConflictingCallback, true)
+        XCTAssertNil(uri?.callbackScheme)
+        let same = BIP70URI("dash:X?sender=ShopApp&" + Array(repeating: "req-sender=shopapp", count: 3).joined(separator: "&"))
+        XCTAssertEqual(same?.hasConflictingCallback, false)
+        XCTAssertEqual(same?.callbackScheme, "ShopApp")
+    }
+
+    /// A field name is checked for whitespace as it is read, decoded: `req%20r` is as broken as `req r`. An encoded
+    /// space in a value is a value.
+    func testURIFieldNameWithEncodedWhitespaceIsMalformed() {
+        for link in ["dash:X?amount=1&req%20r=https://h.example/pr", "dash:X?amount=1&req%0Ar=https://h.example/pr",
+                     "dash:X?amount=1&req r=https://h.example/pr"] {
+            XCTAssertEqual(BIP70URI(link)?.hasMalformedQuery, true, link)
+            XCTAssertNil(BIP70URI(link)?.amountSource, link)
+        }
+        XCTAssertEqual(BIP70URI("dash:X?label=Coffee%20Shop&amount=1")?.hasMalformedQuery, false)
+    }
+
+    /// The one judgement of a link's terms: the link's own amount, the request's when the optional amount is malformed
+    /// beside one fetchable request, otherwise nothing.
+    func testURIAmountSource() {
+        let cases: [(String, BIP70URI.AmountSource?)] = [
+            ("dash:X?amount=1", .link),
+            ("dash:X", .link),
+            ("dash:X?amount=abc&r=https://h.example/pr", .paymentRequest),
+            ("dash:X?amount=1&amount=2&r=https://h.example/pr", .paymentRequest),
+            ("dash:X?amount=abc", nil),
+            ("dash:X?amount=abc&r=ftp://h.example/pr", nil),
+            ("dash:X?req-amount=abc&r=https://h.example/pr", nil),
+            ("dash:X?amount=abc&r=https://a.example/pr&r=https://b.example/pr", nil),
+            ("dash:X?amount=1&r=https://a.example/pr&req-r=https://b.example/pr", nil),
+            ("dash:X?amount=1&r=https://h.example/pr&req-r=https://h.example/pr", .link),
+            ("dash:X?amount=abc&r=https://h.example/pr&req-r=https://h.example/pr", .paymentRequest),
+            ("dash:X?sender=a&sender=b", nil),
+            ("dash:X?req-label=a&label=b", nil),
+        ]
+        for (link, expected) in cases {
+            XCTAssertEqual(BIP70URI(link)?.amountSource, expected, link)
+        }
+    }
+
+    /// The scanner and deep links refuse an invoice with competing payment requests whatever its amount, as the new
+    /// Send and DashSpend do: which request it means is open.
+    func testParsedBoxRejectsCompetingPaymentRequests() {
+        let address = "yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW"
+        for amount in ["amount=abc", "amount=1"] {
+            let box = ParsedPaymentURI.parse(
+                paymentString: "dash:\(address)?\(amount)&r=https%3A%2F%2Fa.example%2Fpr&r=https%3A%2F%2Fb.example%2Fpr")
+            XCTAssertNil(box.rURL, amount)
+            XCTAssertNil(box.address, amount)
+            XCTAssertFalse(box.isValidDashPaymentIntent, amount)
+        }
+    }
+
+    /// The scanner and deep links fetch an invoice that names the same request in `r` and `req-r`: one request, no
+    /// choice to make.
+    func testParsedBoxFetchesAnInvoiceThatRepeatsItsRequest() {
+        let address = "yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW"
+        let request = "https%3A%2F%2Fh.example%2Fpr"
+        for amount in ["amount=abc", "amount=1"] {
+            let box = ParsedPaymentURI.parse(paymentString: "dash:\(address)?\(amount)&r=\(request)&req-r=\(request)")
+            XCTAssertEqual(box.rURL?.absoluteString, "https://h.example/pr", amount)
+            XCTAssertTrue(box.isValidDashPaymentIntent, amount)
+        }
+    }
+
+    /// O73: a scanned merchant invoice with a malformed optional amount keeps its request URL, so the scanner fetches
+    /// it, and loses its address, so a failed fetch never pays the address instead. Off a request, the link stays
+    /// rejected.
+    func testParsedBoxKeepsTheRequestAndDropsTheAddressBesideAMalformedOptionalAmount() {
+        let address = "yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW"
+        for amount in ["amount=abc", "amount=1&amount=2"] {
+            let box = ParsedPaymentURI.parse(paymentString: "dash:\(address)?\(amount)&r=https%3A%2F%2Fh.example%2Fpr")
+            XCTAssertEqual(box.rURL?.absoluteString, "https://h.example/pr", amount)
+            XCTAssertNil(box.address, amount)
+            XCTAssertTrue(box.isValidDashPaymentIntent, amount)
+            XCTAssertFalse(box.byClearingRequestURL().isValidDashPaymentIntent, amount)
+        }
+        for link in ["dash:\(address)?req-amount=abc&r=https%3A%2F%2Fh.example%2Fpr", "dash:\(address)?amount=abc"] {
+            let box = ParsedPaymentURI.parse(paymentString: link)
+            XCTAssertNil(box.rURL, link)
+            XCTAssertNil(box.address, link)
+        }
+    }
+
+    /// O74 / O77: the box rejects a link whose query is broken across lines or words, or whose required label is
+    /// given twice with different values, as the new Send's parser does.
+    func testParsedBoxRejectsABrokenQueryAndAConflictingRequiredLabel() {
+        let address = "yRpspK93iBf5kASFGCnmkJ1VFGo2tCdFSW"
+        for link in ["dash:\(address)?amount=1&\nreq-r=https://h.example/pr", "dash:\(address)?amount=1& req-r=https://h.example/pr",
+                     "dash:\(address)?req-label=Invoice&label=Personal"] {
+            let box = ParsedPaymentURI.parse(paymentString: link)
+            XCTAssertNil(box.address, link)
+            XCTAssertNil(box.rURL, link)
+        }
+    }
+
+    /// Payment requests are counted by value, whether or not it parses: the same URL in `r` and `req-r` is one request
+    /// (required), two different ones are two.
+    func testURICountsPaymentRequestsWhetherOrNotTheyParse() {
+        XCTAssertEqual(BIP70URI("dash:X?amount=1")?.paymentRequestCount, 0)
+        let unparseable = BIP70URI("dash:X?r=https://[")
+        XCTAssertNil(unparseable?.r)
+        XCTAssertEqual(unparseable?.paymentRequestCount, 1)
+        let repeated = BIP70URI("dash:X?r=https://a.b/c&req-r=https://a.b/c")
+        XCTAssertEqual(repeated?.paymentRequestCount, 1)
+        XCTAssertEqual(repeated?.fetchableRequestURL?.absoluteString, "https://a.b/c")
+        XCTAssertEqual(repeated?.requiredFields.contains("r"), true)
+        XCTAssertEqual(BIP70URI("dash:X?r=https://a.b/c&req-r=https://a.b/d")?.paymentRequestCount, 2)
+        XCTAssertEqual(BIP70URI("dash:X?r=https://[&r=https://a.b/c")?.paymentRequestCount, 2)
     }
 
     func testURIAmountExponent() {
