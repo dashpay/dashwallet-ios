@@ -214,4 +214,123 @@ final class ExternalAssetLockSendHistoryTests: XCTestCase {
         XCTAssertEqual(lookup.identityFundingInfo(forTxidHex: identityTxid)?.recipient,
                        .external(address: identityAddress))
     }
+
+    // MARK: - The remainder of a payment to someone else's Platform address
+
+    private typealias Recipient = ManagedPlatformAddressWallet.FundFromAssetLockRecipient
+
+    /// The pair run's numbers: a 0.01 DASH payment in a 0.01062 lock, of which 0.00046 came back.
+    private let lockDuffs: Int64 = 1_062_000
+    private let paidCredits: UInt64 = 1_000_000 * 1_000
+    private let remainderCredits: UInt64 = 46_000 * 1_000
+    /// Two of the wallet's own P2PKH Platform addresses, encoded the way the wallet derives them.
+    private let ownAddresses = [UInt8(0xA1), 0xA2].map { byte in
+        Bech32m.bech32mPayload(fromStorageBytes: Data([0]) + Data(repeating: byte, count: 20))
+            .flatMap { Bech32m.encode(hrp: Bech32m.platformHrp(mainnet: false), data: $0) } ?? ""
+    }
+
+    private func storage(_ address: String) throws -> Data {
+        try XCTUnwrap(AddressTransformer.parseAddress(address))
+    }
+
+    /// Someone else's address gets the amount, `remainderTo` the rest.
+    private func recipients(remainderTo address: String) throws -> [Recipient] {
+        let own = try storage(address)
+        return [Recipient(addressType: 0, hash: Data(repeating: 0xEE, count: 20), credits: paidCredits),
+                Recipient(addressType: own[0], hash: own.dropFirst(), credits: nil)]
+    }
+
+    private struct RemainderWallet {
+        let walletId = Data((0..<32).map { _ in UInt8.random(in: 0...255) })
+        let container: ModelContainer
+        var balances: [String: UInt64] = [:]
+        var lockRecipients: [String: [ManagedPlatformAddressWallet.FundFromAssetLockRecipient]] = [:]
+
+        var received: [Int64] {
+            PlatformAddressActivityDAO.shared
+                .activities(walletId: walletId, networkRaw: Int64(Network.testnet.rawValue))
+                .map(\.amountDuffs).sorted()
+        }
+    }
+
+    @MainActor
+    private func remainderWallet(addresses: [String]) throws -> RemainderWallet {
+        let schema = DashModelContainer.schema
+        var wallet = RemainderWallet(container: try ModelContainer(
+            for: schema,
+            configurations: [ModelConfiguration(schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)]))
+        for address in addresses { wallet.balances[address] = 0 }
+        observe(&wallet, [:]) // seeds the baseline
+        return wallet
+    }
+
+    /// A lock that paid someone else's Platform address and recorded `recipients`.
+    @MainActor
+    private func addLock(_ wallet: inout RemainderWallet, txidByte: UInt8, recipients: [Recipient]) throws {
+        let txidWire = Data(repeating: txidByte, count: 32)
+        let outPoint = "\(Transaction.displayHex(txidWire)):0"
+        wallet.container.mainContext.insert(PersistentAssetLock(
+            outPointHex: outPoint, walletId: wallet.walletId, transactionBytes: Data(), fundingTypeRaw: 4,
+            identityIndexRaw: 0, amountDuffs: lockDuffs, statusRaw: 4, platformAddressRecipients: Data([1])))
+        try wallet.container.mainContext.save()
+        wallet.lockRecipients[txidWire.base64EncodedString()] = recipients
+    }
+
+    /// One BLAST pass that adds `increases` (credits) to the wallet's addresses.
+    @MainActor
+    private func observe(_ wallet: inout RemainderWallet, _ increases: [String: UInt64]) {
+        for (address, credits) in increases { wallet.balances[address, default: 0] += credits }
+        let lockRecipients = wallet.lockRecipients
+        PlatformAddressActivityRecorder.observe(
+            addresses: wallet.balances.map { address, balance in
+                DerivedPlatformAddress(
+                    address: address, accountIndex: 0, addressIndex: 0, isUsed: true, balance: balance)
+            },
+            walletId: wallet.walletId, network: .testnet, container: wallet.container,
+            recordedLockRecipients: { txid, _ in lockRecipients[txid.base64EncodedString()] })
+    }
+
+    @MainActor
+    func testTheRemainderOfAPaymentToAnotherPlatformAddressIsNoReceipt() throws {
+        var wallet = try remainderWallet(addresses: [ownAddresses[0]])
+        try addLock(&wallet, txidByte: 0x41, recipients: recipients(remainderTo: ownAddresses[0]))
+        observe(&wallet, [ownAddresses[0]: remainderCredits])
+        XCTAssertEqual(wallet.received, [], "the lock's own remainder adds no Received row")
+    }
+
+    @MainActor
+    func testTheRecipientOfSuchAPaymentStillReceivesIt() throws {
+        // The receiving wallet holds no lock of the payment.
+        var wallet = try remainderWallet(addresses: [ownAddresses[1]])
+        observe(&wallet, [ownAddresses[1]: paidCredits])
+        XCTAssertEqual(wallet.received, [1_000_000])
+
+        // Nor does a lock whose remainder went to another address explain it.
+        var sender = try remainderWallet(addresses: ownAddresses)
+        try addLock(&sender, txidByte: 0x42, recipients: recipients(remainderTo: ownAddresses[0]))
+        observe(&sender, [ownAddresses[1]: remainderCredits])
+        XCTAssertEqual(sender.received, [46_000])
+    }
+
+    @MainActor
+    func testAnUnrelatedIncreaseOnTheRemainderAddressIsStillReceived() throws {
+        var wallet = try remainderWallet(addresses: [ownAddresses[0]])
+        try addLock(&wallet, txidByte: 0x43, recipients: recipients(remainderTo: ownAddresses[0]))
+        observe(&wallet, [ownAddresses[0]: 100_000 * 1_000])
+        XCTAssertEqual(wallet.received, [100_000], "more than the lock kept beyond the payment")
+
+        observe(&wallet, [ownAddresses[0]: remainderCredits])
+        observe(&wallet, [ownAddresses[0]: remainderCredits])
+        XCTAssertEqual(wallet.received, [46_000, 100_000], "one remainder hides one increase")
+    }
+
+    @MainActor
+    func testTwoLocksHideTheirOwnRemaindersOnly() throws {
+        var wallet = try remainderWallet(addresses: ownAddresses)
+        try addLock(&wallet, txidByte: 0x44, recipients: recipients(remainderTo: ownAddresses[0]))
+        try addLock(&wallet, txidByte: 0x45, recipients: recipients(remainderTo: ownAddresses[1]))
+        observe(&wallet, [ownAddresses[0]: remainderCredits, ownAddresses[1]: remainderCredits + 1_000])
+        observe(&wallet, [ownAddresses[0]: remainderCredits])
+        XCTAssertEqual(wallet.received, [46_000], "each lock hides one remainder; the third increase is received")
+    }
 }
