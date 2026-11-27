@@ -293,6 +293,17 @@ final class RedeemLinkPolicyTests: XCTestCase {
         XCTAssertFalse(canLeave("https://www.spend.ctx.com./gift-cards/abc/redeem?token=a b"))
     }
 
+    func testRedeemLinkOpensInAppOnlyWhereUploadsCanBeRefused() {
+        let link = "https://spend.ctx.com/gift-cards/abc/redeem"
+        let supplierLink = "https://piggy.cards/claim/abc"
+
+        XCTAssertTrue(RedeemLinkPolicy.shouldOpenInApp(link, ctxBaseURL: prodBase, canRefuseUploads: true))
+        XCTAssertFalse(RedeemLinkPolicy.shouldOpenInApp(link, ctxBaseURL: prodBase, canRefuseUploads: false))
+        XCTAssertTrue(RedeemLinkPolicy.canOpenExternally(link, ctxBaseURL: prodBase))
+        XCTAssertFalse(RedeemLinkPolicy.shouldOpenInApp(supplierLink, ctxBaseURL: prodBase, canRefuseUploads: true))
+        XCTAssertFalse(RedeemLinkPolicy.shouldOpenInApp(nil, ctxBaseURL: prodBase, canRefuseUploads: true))
+    }
+
     func testOtherAppLinksAreNeverANavigation() {
         let links = [
             "mailto:help@storedvalue.com",

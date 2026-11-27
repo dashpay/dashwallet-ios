@@ -45,6 +45,12 @@ enum RedeemLinkPolicy {
         inAppURL(link, ctxBaseURL: ctxBaseURL) != nil
     }
 
+    /// Whether the redeem screen is used for the link. It is not where the OS cannot refuse a page's
+    /// file upload panel; the link then goes to the system browser.
+    static func shouldOpenInApp(_ link: String?, ctxBaseURL: String, canRefuseUploads: Bool) -> Bool {
+        canRefuseUploads && canOpenInApp(link, ctxBaseURL: ctxBaseURL)
+    }
+
     static func isAllowedNavigation(_ url: String?, isMainFrame: Bool) -> Bool {
         guard let url else { return false }
 

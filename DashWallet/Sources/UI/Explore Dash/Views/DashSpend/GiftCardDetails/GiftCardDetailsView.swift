@@ -204,8 +204,11 @@ struct GiftCardDetailsView: View {
     private func redeem(_ link: String) {
         let ctxBaseURL = CTXConstants.baseURI
 
-        let opensInApp = GiftCardRedeemWebViewModel.canRefuseUploads
-            && RedeemLinkPolicy.canOpenInApp(link, ctxBaseURL: ctxBaseURL)
+        let opensInApp = RedeemLinkPolicy.shouldOpenInApp(
+            link,
+            ctxBaseURL: ctxBaseURL,
+            canRefuseUploads: GiftCardRedeemWebViewModel.canRefuseUploads
+        )
 
         if opensInApp {
             setMaxBrightness(false)
