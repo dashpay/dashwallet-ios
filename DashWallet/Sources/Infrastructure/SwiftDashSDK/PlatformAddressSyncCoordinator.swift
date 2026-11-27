@@ -27,6 +27,7 @@
 //
 
 import Combine
+import CoreData
 import Foundation
 import OSLog
 import SwiftDashSDK
@@ -1703,6 +1704,7 @@ public final class PlatformAddressSyncCoordinator: NSObject, ObservableObject {
         // persisted. Each completed pass above refreshes it again — a new
         // "to Shielded" transfer's asset lock lands around the same time its
         // note shows up in the balance.
+        ShieldedTxLookup.shared.refreshOnAssetLockSaves()
         await ShieldedTxLookup.shared.refresh(reason: "manager-subscribe")
 
         // Keep a low-overhead guard around the SDK's regular polling. Healthy
@@ -2370,6 +2372,49 @@ final class ShieldedTxLookup {
             recipient: entry.recipient)
     }
 
+    /// The save observer `refreshOnAssetLockSaves` installed, and the center it is on.
+    @MainActor private var assetLockSaveObserver: (center: NotificationCenter, token: NSObjectProtocol)?
+
+    /// Re-reads the snapshot whenever a SwiftData save touches an asset-lock row. The SDK saves a lock, with the
+    /// recipient it pays, before it broadcasts the funding transaction, so History reads a Core payment to someone
+    /// else as Sent from the lock's own save instead of from the next shielded sync, which was the only refresh that
+    /// read a new lock of those routes. Idempotent.
+    @MainActor
+    func refreshOnAssetLockSaves(from center: NotificationCenter = .default) {
+        guard assetLockSaveObserver == nil else { return }
+        // The lookup guards its state itself (the lock, the main actor), so a weak reference may cross threads.
+        struct WeakLookup: @unchecked Sendable { weak var lookup: ShieldedTxLookup? }
+        let weakSelf = WeakLookup(lookup: self)
+        let saved = Notification.Name.NSManagedObjectContextDidSave
+        let token = center.addObserver(forName: saved, object: nil, queue: nil) { notification in
+            // Inspected on the posting thread: the userInfo object sets belong to it.
+            guard Self.saveTouchesAssetLocks(notification) else { return }
+            Task { @MainActor in
+                await weakSelf.lookup?.refresh(reason: "asset-lock-saved")
+            }
+        }
+        assetLockSaveObserver = (center, token)
+    }
+
+    @MainActor
+    func stopRefreshingOnAssetLockSaves() {
+        guard let observer = assetLockSaveObserver else { return }
+        observer.center.removeObserver(observer.token)
+        assetLockSaveObserver = nil
+    }
+
+    /// Whether a SwiftData save inserted, changed or deleted an asset-lock row. Fails closed: a save it cannot
+    /// inspect is left to the other refresh triggers.
+    static func saveTouchesAssetLocks(_ notification: Notification) -> Bool {
+        guard let userInfo = notification.userInfo else { return false }
+        return [NSInsertedObjectsKey, NSUpdatedObjectsKey, NSDeletedObjectsKey].contains { key in
+            (userInfo[key] as? Set<NSManagedObject>)?
+                .contains { $0.entity.name == assetLockEntityName } ?? false
+        }
+    }
+
+    private static let assetLockEntityName = String(describing: PersistentAssetLock.self)
+
     /// Records that a transfer consumed the asset lock funded by `txidWire`,
     /// before the store and the next snapshot show it: the SDK can flush the
     /// lock's final status after its call returns, and a refresh can be
@@ -2449,8 +2494,14 @@ final class ShieldedTxLookup {
         store(map)
         Self.logger.info(
             "🛡️ SHIELD-TX :: snapshot \(map.count, privacy: .public) funding tx(s) (shielded + platform)")
+        let external = map.values.filter {
+            if case .external? = $0.recipient { return true }
+            return false
+        }.count
         DWLogger.log(
-            "🛡️ SHIELD-TX-REFRESH [\(refreshID)] finish in \(elapsedMS)ms reason=\(reason) offMain=\(result.workerRanOffMain) rows=\(result.assetLockCount) snapshot=\(map.count) uncovered=\(result.uncoveredTxids.count)")
+            "🛡️ SHIELD-TX-REFRESH [\(refreshID)] finish in \(elapsedMS)ms reason=\(reason) "
+                + "offMain=\(result.workerRanOffMain) rows=\(result.assetLockCount) snapshot=\(map.count) "
+                + "external=\(external) uncovered=\(result.uncoveredTxids.count)")
 
         if !result.uncoveredTxids.isEmpty {
             Self.logger.error(

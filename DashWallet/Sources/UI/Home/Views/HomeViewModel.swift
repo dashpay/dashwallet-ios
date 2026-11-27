@@ -481,6 +481,15 @@ class HomeViewModel: ObservableObject {
             }
             .store(in: &cancellableBag)
 
+        // A lock read anew (a payment to someone else, a consumed lock) changes how its row reads without a save of
+        // the row itself.
+        NotificationCenter.default.publisher(for: .shieldedTxLookupDidChange, object: ShieldedTxLookup.shared)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.txReloadRequests.send()
+            }
+            .store(in: &cancellableBag)
+
         // The platform-address recorder inserts into the app's SQLite —
         // invisible to the SwiftData save trigger above — so it posts its
         // own signal when a received row lands.
