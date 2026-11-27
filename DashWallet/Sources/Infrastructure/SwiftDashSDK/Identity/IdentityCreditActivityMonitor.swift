@@ -22,7 +22,7 @@ import SwiftDashSDK
 import SwiftData
 
 /// Reads the Current identity's balance from the network and hands it to `IdentityCreditActivityRecorder`
-/// (ADR-0017). Asked after each Platform-address sync pass (`PlatformAddressSyncCoordinator`) and when Home appears.
+/// (ADR-0077). Asked after each Platform-address sync pass (`PlatformAddressSyncCoordinator`) and when Home appears.
 ///
 /// Shared because both callers must go through one in-flight guard: two reads answered out of order would compare a
 /// newer baseline with an older balance.
@@ -42,6 +42,10 @@ final class IdentityCreditActivityMonitor {
         isReading = true
         defer { isReading = false }
 
+        // Taken before the read: a trace written while it runs counts for the next read, and a wipe during it
+        // drops its answer.
+        let readStart = Date()
+        let generation = IdentityCreditActivityDAO.shared.generation
         let balance: UInt64
         do {
             balance = try await wallet.refreshIdentityBalance(identityId: identityId)
@@ -60,9 +64,10 @@ final class IdentityCreditActivityMonitor {
         var ownCount = 0
         let outcome = IdentityCreditActivityRecorder.observe(
             balanceCredits: balance, identityId: identityId, walletId: walletId, networkRaw: networkRaw,
-            ownCredits: { since in
+            readStart: readStart, generation: generation,
+            ownCredits: { after in
                 let credits = IdentityCreditActivityRecorder.ownCredits(
-                    identityId: identityId, walletId: walletId, networkRaw: networkRaw, since: since,
+                    identityId: identityId, walletId: walletId, networkRaw: networkRaw, after: after,
                     container: container)
                 ownCount = credits.count
                 return credits
@@ -73,8 +78,12 @@ final class IdentityCreditActivityMonitor {
         case .unchanged:
             break
         case .received(let duffs):
-            DWLogger.log("IDENTITY-CREDITS: Received row +\(duffs) duffs, own operations in window: \(ownCount) "
-                + "(\(reason))")
+            DWLogger.log("IDENTITY-CREDITS: Received row +\(duffs) duffs, own operations since the previous read: "
+                + "\(ownCount) (\(reason))")
+        case .failed:
+            DWLogger.log("IDENTITY-CREDITS: store write failed, baseline kept (\(reason))")
+        case .dropped:
+            DWLogger.log("IDENTITY-CREDITS: read dropped, the wallet's history was deleted during it (\(reason))")
         }
     }
 }

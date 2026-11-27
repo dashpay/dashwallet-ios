@@ -17,7 +17,7 @@
 //  limitations under the License.
 //
 //  Credits someone else sent to the Current identity, in the home history: the list item projected from
-//  `IdentityCreditActivityRecord` and the detail sheet a tapped row opens (ADR-0017).
+//  `IdentityCreditActivityRecord` and the detail sheet a tapped row opens (ADR-0077).
 //
 
 import DashUIKit

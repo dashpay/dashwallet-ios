@@ -21,7 +21,7 @@ import SwiftDashSDK
 import SwiftData
 import XCTest
 
-/// AC-21b (ADR-0017): a rise of the Current identity's balance that the wallet's own operations do not explain is one
+/// AC-21b (ADR-0077): a rise of the Current identity's balance that the wallet's own operations do not explain is one
 /// Received row with the unexplained amount; the wallet's own credits to the identity never are.
 @MainActor
 final class IdentityCreditActivityTests: XCTestCase {
@@ -47,20 +47,25 @@ final class IdentityCreditActivityTests: XCTestCase {
     @discardableResult
     private func observe(
         _ duffs: UInt64, own: [IdentityOwnCredit] = [], walletId: Data? = nil, networkRaw: Int64? = nil,
-        at date: Date? = nil, dao: IdentityCreditActivityDAO
+        at date: Date? = nil, generation: UInt64? = nil, dao: IdentityCreditActivityDAO
     ) -> IdentityCreditActivityRecorder.Outcome {
+        // The traces the wallet holds; the recorder asks for those written after a date, as the store does.
         IdentityCreditActivityRecorder.observe(
             balanceCredits: duffs * creditsPerDuff, identityId: identityId, walletId: walletId ?? self.walletId,
-            networkRaw: networkRaw ?? self.networkRaw, ownCredits: { _ in own }, dao: dao, now: date ?? now)
+            networkRaw: networkRaw ?? self.networkRaw, readStart: date ?? now,
+            generation: generation ?? dao.generation, ownCredits: { after in own.filter { $0.date > after } },
+            dao: dao)
     }
 
     private func rows(_ dao: IdentityCreditActivityDAO, walletId: Data? = nil) -> [Int64] {
         dao.activities(walletId: walletId ?? self.walletId, networkRaw: networkRaw).map(\.amountDuffs)
     }
 
-    private func own(_ key: String, _ duffs: Int64, minutesAgo: Double = 1) -> IdentityOwnCredit {
-        IdentityOwnCredit(key: key, amountDuffs: duffs, date: now.addingTimeInterval(-minutesAgo * 60))
+    private func own(_ key: String, _ duffs: Int64, at date: Date, pending: Bool = false) -> IdentityOwnCredit {
+        IdentityOwnCredit(key: key, amountDuffs: duffs, date: date, isPending: pending)
     }
+
+    private func minutes(_ value: Double) -> Date { now.addingTimeInterval(value * 60) }
 
     // MARK: - Recorder
 
@@ -73,94 +78,143 @@ final class IdentityCreditActivityTests: XCTestCase {
 
     func testARiseNoOwnOperationExplainsIsOneReceivedRowWithTheAmountAndTheBalanceAfter() throws {
         let dao = try makeDAO()
-        observe(5_000, dao: dao)
+        observe(5_000, at: minutes(-1), dao: dao)
         XCTAssertEqual(observe(6_042, dao: dao), .received(duffs: 1_042))
         let record = try XCTUnwrap(dao.activities(walletId: walletId, networkRaw: networkRaw).first)
         XCTAssertEqual(record.amountDuffs, 1_042)
         XCTAssertEqual(record.balanceAfterDuffs, 6_042)
         XCTAssertEqual(record.identityId, identityId)
         XCTAssertEqual(record.observedAt, now)
-        XCTAssertEqual(observe(6_042, dao: dao), .unchanged, "the same balance read again adds nothing")
+        XCTAssertEqual(observe(6_042, at: minutes(1), dao: dao), .unchanged, "the same balance read again adds nothing")
         XCTAssertEqual(rows(dao), [1_042])
     }
 
     func testAFallMovesTheBaselineSilentlyAndTheNextRiseCountsFromIt() throws {
         let dao = try makeDAO()
-        observe(5_000, dao: dao)
-        XCTAssertEqual(observe(3_000, dao: dao), .unchanged, "an own spend has its own row")
+        observe(5_000, at: minutes(-2), dao: dao)
+        XCTAssertEqual(observe(3_000, at: minutes(-1), dao: dao), .unchanged, "an own spend has its own row")
         XCTAssertEqual(observe(3_500, dao: dao), .received(duffs: 500))
         XCTAssertEqual(rows(dao), [500])
     }
 
-    func testAnOwnCreditThatCoversTheRiseHidesItAndIsUsedOnce() throws {
+    func testAnOwnCreditBetweenTheTwoReadsHidesTheRise() throws {
         let dao = try makeDAO()
-        observe(5_000, dao: dao)
-        let topUp = own("lock:aa:0", 1_000)
-        XCTAssertEqual(observe(6_000, own: [topUp], dao: dao), .unchanged, "the wallet's own top-up")
-        XCTAssertEqual(observe(7_000, own: [topUp], dao: dao), .received(duffs: 1_000),
-                       "a claimed top-up does not explain a second rise")
-        XCTAssertEqual(rows(dao), [1_000])
-    }
-
-    func testAnOwnCoreTopUpAboveTheCreditedAmountStillHidesTheRise() throws {
+        observe(5_000, at: minutes(-10), dao: dao)
         // A lock's value exceeds the credits Platform grants by the processing fee.
-        let dao = try makeDAO()
-        observe(5_000, dao: dao)
-        XCTAssertEqual(observe(5_990, own: [own("lock:aa:0", 1_000)], dao: dao), .unchanged)
+        XCTAssertEqual(observe(5_990, own: [own("lock:aa:0", 1_000, at: minutes(-5))], dao: dao), .unchanged)
         XCTAssertEqual(rows(dao), [])
     }
 
     func testARiseAboveTheOwnCreditsRecordsOnlyTheRemainder() throws {
         let dao = try makeDAO()
-        observe(5_000, dao: dao)
-        XCTAssertEqual(
-            observe(8_000, own: [own("ledger:op1", 1_000), own("shielded:0:ab", 500)], dao: dao),
-            .received(duffs: 1_500), "someone else's credits read together with the wallet's own")
+        observe(5_000, at: minutes(-10), dao: dao)
+        let own = [own("ledger:op1", 1_000, at: minutes(-5)), own("shielded:0:ab", 500, at: minutes(-3))]
+        XCTAssertEqual(observe(8_000, own: own, dao: dao), .received(duffs: 1_500),
+                       "someone else's credits read together with the wallet's own")
         XCTAssertEqual(rows(dao), [1_500])
     }
 
-    func testOwnCreditsStayUnclaimedWhileTheBalanceDoesNotRise() throws {
-        // An own top-up whose credit has not reached the balance yet explains the rise that follows.
+    func testAnOwnCreditCountsForOneReadOnlyEvenWhenItsTraceIsReDated() throws {
+        // The SDK stamps its rows again on every write: a counted trace dated after the next read stays counted.
         let dao = try makeDAO()
-        observe(5_000, dao: dao)
-        let topUp = own("lock:aa:0", 1_000)
-        XCTAssertEqual(observe(5_000, own: [topUp], dao: dao), .unchanged)
-        XCTAssertFalse(dao.isClaimed(walletId: walletId, networkRaw: networkRaw, key: topUp.key))
-        XCTAssertEqual(observe(6_000, own: [topUp], dao: dao), .unchanged)
+        observe(5_000, at: minutes(-10), dao: dao)
+        XCTAssertEqual(observe(6_000, own: [own("lock:aa:0", 1_000, at: minutes(-5))], at: minutes(-1), dao: dao),
+                       .unchanged)
+        XCTAssertEqual(observe(7_000, own: [own("lock:aa:0", 1_000, at: minutes(-0.5))], dao: dao),
+                       .received(duffs: 1_000))
+    }
+
+    func testATraceWrittenDuringTheReadCountsForTheNextOne() throws {
+        let dao = try makeDAO()
+        observe(5_000, at: minutes(-10), dao: dao)
+        let topUp = own("lock:aa:0", 1_000, at: minutes(-4))
+        // The read started before the top-up and its answer does not hold it yet.
+        XCTAssertEqual(observe(5_000, own: [topUp], at: minutes(-5), dao: dao), .unchanged)
+        XCTAssertEqual(observe(6_000, own: [topUp], dao: dao), .unchanged, "the top-up lands in the next read")
         XCTAssertEqual(rows(dao), [])
     }
 
-    func testOnlyTheOwnCreditsTheRiseNeedsAreClaimedOldestFirst() throws {
+    func testAnOwnCreditAlreadyInTheSeededBalanceDoesNotHideALaterPayment() throws {
         let dao = try makeDAO()
-        observe(5_000, dao: dao)
-        let older = own("ledger:old", 1_000, minutesAgo: 30)
-        let newer = own("ledger:new", 1_000, minutesAgo: 5)
-        XCTAssertEqual(observe(6_000, own: [newer, older], dao: dao), .unchanged)
-        XCTAssertTrue(dao.isClaimed(walletId: walletId, networkRaw: networkRaw, key: older.key))
-        XCTAssertFalse(dao.isClaimed(walletId: walletId, networkRaw: networkRaw, key: newer.key))
-        XCTAssertEqual(observe(7_000, own: [newer, older], dao: dao), .unchanged, "the newer one explains the next")
+        let topUp = own("lock:aa:0", 1_000, at: minutes(-30))
+        XCTAssertEqual(observe(6_000, own: [topUp], at: minutes(-20), dao: dao), .seeded)
+        XCTAssertEqual(observe(6_800, own: [topUp], dao: dao), .received(duffs: 800))
     }
 
-    func testOwnCreditsAreLookedUpFromThePreviousReadOfTheIdentity() throws {
-        // The Current identity switched away and back: its top-ups made in between, long ago, are still its own.
+    func testAnOwnCreditOutweighedByASpendDoesNotHideALaterPayment() throws {
+        let dao = try makeDAO()
+        let topUp = own("lock:aa:0", 1_000, at: minutes(-15))
+        observe(5_000, at: minutes(-20), dao: dao)
+        XCTAssertEqual(observe(4_500, own: [topUp], at: minutes(-10), dao: dao), .unchanged,
+                       "a top-up of 1 000 and a spend of 1 500")
+        XCTAssertEqual(observe(5_300, own: [topUp], dao: dao), .received(duffs: 800))
+    }
+
+    func testAnUnconfirmedSendExplainsTheFirstRiseAfterItOnly() throws {
+        // Submitted, its result unknown: its credit may come after the next read.
+        let dao = try makeDAO()
+        let pending = own("ledger:op", 1_000, at: minutes(-30), pending: true)
+        observe(5_000, at: minutes(-40), dao: dao)
+        XCTAssertEqual(observe(5_000, own: [pending], at: minutes(-20), dao: dao), .unchanged)
+        XCTAssertFalse(dao.isClaimed(walletId: walletId, networkRaw: networkRaw, key: pending.key))
+        XCTAssertEqual(observe(6_000, own: [pending], at: minutes(-10), dao: dao), .unchanged, "it executed")
+        XCTAssertEqual(observe(7_000, own: [pending], dao: dao), .received(duffs: 1_000))
+    }
+
+    func testAnUnconfirmedSendOlderThanTheWindowExplainsNothing() throws {
+        let dao = try makeDAO()
+        let window = IdentityCreditActivityRecorder.pendingWindow
+        observe(5_000, at: now.addingTimeInterval(-window - 600), dao: dao)
+        let pending = own("ledger:op", 1_000, at: now.addingTimeInterval(-window - 60), pending: true)
+        XCTAssertEqual(observe(6_000, own: [pending], dao: dao), .received(duffs: 1_000))
+    }
+
+    func testOwnCreditsAreAskedForFromThePreviousReadOfTheIdentity() throws {
+        // The Current identity switched away and back: its top-ups made in between are still its own.
         let dao = try makeDAO()
         let dayAgo = now.addingTimeInterval(-24 * 60 * 60)
         observe(5_000, at: dayAgo, dao: dao)
         var asked: Date?
         let outcome = IdentityCreditActivityRecorder.observe(
             balanceCredits: 6_000 * creditsPerDuff, identityId: identityId, walletId: walletId, networkRaw: networkRaw,
-            ownCredits: { since in
-                asked = since
-                return since <= dayAgo ? [IdentityOwnCredit(key: "lock:aa:0", amountDuffs: 1_000, date: dayAgo)] : []
+            readStart: now, generation: dao.generation,
+            ownCredits: { after in
+                asked = after
+                return [IdentityOwnCredit(key: "lock:aa:0", amountDuffs: 1_000, date: dayAgo.addingTimeInterval(60))]
             },
-            dao: dao, now: now)
+            dao: dao)
         XCTAssertEqual(outcome, .unchanged)
-        XCTAssertEqual(asked, dayAgo.addingTimeInterval(-IdentityCreditActivityRecorder.ownOperationWindow))
+        XCTAssertEqual(asked, dayAgo)
     }
 
-    func testRowsBaselinesAndClaimsBelongToOneWalletAndNetwork() throws {
+    func testAReadAnsweredAfterTheHistoryWasDeletedWritesNothing() throws {
         let dao = try makeDAO()
-        observe(5_000, dao: dao)
+        observe(5_000, at: minutes(-2), dao: dao)
+        let before = dao.generation
+        try dao.delete(walletId: walletId)
+        XCTAssertEqual(observe(6_000, generation: before, dao: dao), .dropped)
+        XCTAssertNil(dao.baseline(walletId: walletId, networkRaw: networkRaw, identityId: identityId))
+        XCTAssertEqual(rows(dao), [])
+    }
+
+    func testAFailedWriteKeepsTheBaselineSoTheNextReadSeesTheRiseAgain() throws {
+        let connection = try Connection(.inMemory)
+        try AddIdentityCreditActivityTables().migrateDatabase(connection)
+        let dao = IdentityCreditActivityDAO(connection: { connection })
+        observe(5_000, at: minutes(-1), dao: dao)
+        try connection.run(IdentityCreditActivitySchema.activity.drop())
+
+        XCTAssertEqual(observe(6_000, dao: dao), .failed)
+        XCTAssertEqual(dao.baseline(walletId: walletId, networkRaw: networkRaw, identityId: identityId), 5_000,
+                       "the row and the baseline are written together or not at all")
+
+        try AddIdentityCreditActivityTables().migrateDatabase(connection)
+        XCTAssertEqual(observe(6_000, at: minutes(1), dao: dao), .received(duffs: 1_000))
+    }
+
+    func testRowsAndBaselinesBelongToOneWalletAndNetwork() throws {
+        let dao = try makeDAO()
+        observe(5_000, at: minutes(-1), dao: dao)
         observe(6_000, dao: dao)
         XCTAssertEqual(observe(9_000, walletId: otherWalletId, dao: dao), .seeded,
                        "another wallet has its own baseline")
@@ -172,26 +226,29 @@ final class IdentityCreditActivityTests: XCTestCase {
 
     func testRemovingAWalletDeletesItsRowsBaselineAndClaimsOnly() throws {
         let dao = try makeDAO()
-        observe(5_000, dao: dao)
-        observe(6_000, own: [own("ledger:a", 500)], dao: dao)
-        observe(5_000, walletId: otherWalletId, dao: dao)
+        observe(5_000, at: minutes(-2), dao: dao)
+        observe(5_500, own: [own("ledger:a", 1_000, at: minutes(-1.5))], at: minutes(-1), dao: dao)
+        XCTAssertTrue(dao.isClaimed(walletId: walletId, networkRaw: networkRaw, key: "ledger:a"))
+        observe(6_000, dao: dao)
+        observe(5_000, walletId: otherWalletId, at: minutes(-1), dao: dao)
         observe(5_200, walletId: otherWalletId, dao: dao)
 
-        dao.delete(walletId: walletId)
+        try dao.delete(walletId: walletId)
 
         XCTAssertEqual(rows(dao), [])
         XCTAssertNil(dao.baseline(walletId: walletId, networkRaw: networkRaw, identityId: identityId))
         XCTAssertFalse(dao.isClaimed(walletId: walletId, networkRaw: networkRaw, key: "ledger:a"))
         XCTAssertEqual(rows(dao, walletId: otherWalletId), [200])
-        XCTAssertEqual(observe(7_000, dao: dao), .seeded, "a restored wallet starts from its balance again")
+        XCTAssertEqual(observe(7_000, at: minutes(1), dao: dao), .seeded, "a restored wallet starts from its balance")
 
-        dao.deleteAll()
+        try dao.deleteAll()
         XCTAssertEqual(rows(dao, walletId: otherWalletId), [])
+        XCTAssertNil(dao.baseline(walletId: otherWalletId, networkRaw: networkRaw, identityId: identityId))
     }
 
     func testAReceivedRowPostsTheHistoryReloadSignal() throws {
         let dao = try makeDAO()
-        observe(5_000, dao: dao)
+        observe(5_000, at: minutes(-1), dao: dao)
         let posted = expectation(forNotification: .identityCreditActivityRecorded, object: nil)
         observe(5_100, dao: dao)
         wait(for: [posted], timeout: 1)
@@ -223,20 +280,24 @@ final class IdentityCreditActivityTests: XCTestCase {
 
     private func shielded(
         _ entry: UInt8, kind: Int = 9, status: Int = 1, credits: UInt64 = 500_000, identity: Data? = nil,
-        at date: Date? = nil
+        confirmedAt date: Date? = nil
     ) -> PersistentShieldedActivity {
-        PersistentShieldedActivity(
+        let row = PersistentShieldedActivity(
             walletId: walletId, accountIndex: 0, entryId: Data(repeating: entry, count: 32), kindTag: kind,
             direction: 1, status: status, amount: credits, fee: 0, hasFee: false, blockHeight: 0,
-            hasBlockHeight: false, createdAtMs: UInt64((date ?? now).timeIntervalSince1970 * 1000),
+            hasBlockHeight: false, createdAtMs: UInt64(after.addingTimeInterval(-3600).timeIntervalSince1970 * 1000),
             identityId: identity ?? identityId, counterparty: Data(), memo: Data(), noteCmxs: Data(),
             spentNullifiers: Data())
+        row.lastUpdated = date ?? now
+        return row
     }
+
+    /// The previous read: traces up to it are in its balance.
+    private var after: Date { now.addingTimeInterval(-600) }
 
     private func ownCredits(container: ModelContainer, ledger: CreditSendActivityDAO) -> [String: Int64] {
         let credits = IdentityCreditActivityRecorder.ownCredits(
-            identityId: identityId, walletId: walletId, networkRaw: networkRaw,
-            since: now.addingTimeInterval(-IdentityCreditActivityRecorder.ownOperationWindow),
+            identityId: identityId, walletId: walletId, networkRaw: networkRaw, after: after,
             container: container, creditSends: ledger)
         return Dictionary(uniqueKeysWithValues: credits.map { ($0.key, $0.amountDuffs) })
     }
@@ -245,7 +306,7 @@ final class IdentityCreditActivityTests: XCTestCase {
         let container = try makeContainer()
         let ledger = try makeLedger()
         let context = container.mainContext
-        let tooOld = now.addingTimeInterval(-IdentityCreditActivityRecorder.ownOperationWindow - 60)
+        let tooOld = after // credited by the previous read: in its balance already
 
         // Core: a consumed top-up lock for the identity's index.
         context.insert(lock("aa:0"))
@@ -258,9 +319,10 @@ final class IdentityCreditActivityTests: XCTestCase {
         // Shielded: the pool's identity top-up for this identity.
         context.insert(shielded(0x01))
         context.insert(shielded(0x02, status: 2)) // failed
+        context.insert(shielded(0x06, status: 0)) // pending: not credited yet
         context.insert(shielded(0x03, kind: 3)) // an ordinary shielded send
         context.insert(shielded(0x04, identity: Data(repeating: 0x22, count: 32)))
-        context.insert(shielded(0x05, at: tooOld))
+        context.insert(shielded(0x05, confirmedAt: tooOld))
         try context.save()
 
         // Platform or another identity: the ledger's send to this identity.
@@ -277,6 +339,10 @@ final class IdentityCreditActivityTests: XCTestCase {
         send("op-platform", .platform, "tdash1krma5z0gmqlwsr8c7n8ac8c3g2xk9ns0ue2k9yh")
         send("op-old", .identity, destination, at: tooOld)
 
+        let found = IdentityCreditActivityRecorder.ownCredits(
+            identityId: identityId, walletId: walletId, networkRaw: networkRaw, after: after,
+            container: container, creditSends: ledger)
+        XCTAssertEqual(found.filter(\.isPending).map(\.key), ["ledger:op-pending"])
         XCTAssertEqual(ownCredits(container: container, ledger: ledger), [
             "lock:aa:0": 1_000,
             "ledger:op-sent": 700,

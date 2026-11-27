@@ -16,16 +16,18 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  App-owned record of credits the Current identity received from someone else (ADR-0017).
+//  App-owned record of credits the Current identity received from someone else (ADR-0077).
 //
 //  Platform reports an identity's balance, not the transitions that credited it, so the app compares each network
-//  read of the balance with its own baseline. A rise the wallet's own operations do not explain is one Received
-//  row. Own operations are recognised by the traces they already leave: a consumed identity top-up asset lock for the
-//  identity's index, a credit send to the identity in `CreditSendActivityStore`, and a shielded identity top-up
-//  activity. Each trace explains one rise once (`identity_credit_claim`).
+//  read of the balance with its own baseline. A rise is one Received row for the part the wallet's own operations
+//  do not explain. Own operations are recognised by the traces they leave once the credit exists: a consumed
+//  identity top-up asset lock for the identity's index, a credit send to the identity in `CreditSendActivityStore`,
+//  and a confirmed shielded identity top-up activity. A trace counts for the read that started after it and before
+//  which the previous read started, and only once (`identity_credit_claim`): the SDK re-dates its rows on every
+//  write. A send whose result was unconfirmed counts for the first rise within `pendingWindow` after it.
 //
 //  Limits, by design: rows carry the read time, not the arrival time; arrivals between two reads merge into one
-//  row; the sender is unknown.
+//  row; the sender is unknown; an own spend in the same interval (a DashPay fee) lowers the rise and so the row.
 //
 
 import Foundation
@@ -57,17 +59,28 @@ struct IdentityOwnCredit: Equatable {
     /// Stable id of the trace: `lock:<outpoint>`, `ledger:<operation id>` or `shielded:<account>:<entry id hex>`.
     let key: String
     let amountDuffs: Int64
+    /// When the trace was written: the lock consumed, the send returned or failed unconfirmed, the shielded top-up
+    /// confirmed.
     let date: Date
+    /// A send submitted with its result unconfirmed: the credit may come later than the trace.
+    let isPending: Bool
+
+    init(key: String, amountDuffs: Int64, date: Date, isPending: Bool = false) {
+        self.key = key
+        self.amountDuffs = amountDuffs
+        self.date = date
+        self.isPending = isPending
+    }
 }
 
 // MARK: - Tables
 
 enum IdentityCreditActivitySchema {
-    /// Latest balance per (wallet, network, identity), in duffs: the base each read is compared with.
+    /// Latest balance per (wallet, network, identity), in duffs, and when the read that gave it started.
     static let baseline = Table("identity_credit_baseline")
     /// Received rows (append-only).
     static let activity = Table("identity_credit_activity")
-    /// Own-operation traces that already explained a rise.
+    /// Own-operation traces that already counted for a read.
     static let claim = Table("identity_credit_claim")
 
     static let colId = SQLite.Expression<Int64>("id")
@@ -123,6 +136,8 @@ final class IdentityCreditActivityDAO {
     static let shared = IdentityCreditActivityDAO()
 
     private let connection: () -> Connection
+    private let lock = NSLock()
+    private var deletions: UInt64 = 0
 
     init(connection: @escaping () -> Connection = { DatabaseConnection.shared.db }) {
         self.connection = connection
@@ -130,12 +145,19 @@ final class IdentityCreditActivityDAO {
 
     private var db: Connection { connection() }
 
+    /// Changes on every deletion: a read started before a wipe or a wallet removal must not write after it.
+    var generation: UInt64 {
+        lock.lock(); defer { lock.unlock() }
+        return deletions
+    }
+
     /// The baseline in duffs; nil when the identity was never read on this wallet and network.
     func baseline(walletId: Data, networkRaw: Int64, identityId: Data) -> Int64? {
         baselineRow(walletId: walletId, networkRaw: networkRaw, identityId: identityId)?.balance
     }
 
-    /// The baseline and when it was read; nil when the identity was never read on this wallet and network.
+    /// The baseline and when the read that gave it started; nil when the identity was never read on this wallet and
+    /// network.
     func baselineRow(walletId: Data, networkRaw: Int64, identityId: Data) -> (balance: Int64, readAt: Date)? {
         typealias S = IdentityCreditActivitySchema
         let query = S.baseline.select(S.colBalance, S.colUpdatedAt)
@@ -144,28 +166,47 @@ final class IdentityCreditActivityDAO {
         return (row[S.colBalance], Date(timeIntervalSince1970: row[S.colUpdatedAt]))
     }
 
-    func setBaseline(walletId: Data, networkRaw: Int64, identityId: Data, balanceDuffs: Int64, at date: Date) {
+    func isClaimed(walletId: Data, networkRaw: Int64, key: String) -> Bool {
         typealias S = IdentityCreditActivitySchema
-        _ = try? db.run(S.baseline.insert(
-            or: .replace,
-            S.colWalletId <- walletId,
-            S.colNetwork <- networkRaw,
-            S.colIdentityId <- identityId,
-            S.colBalance <- balanceDuffs,
-            S.colUpdatedAt <- date.timeIntervalSince1970))
+        let query = S.claim.select(S.colKey)
+            .filter(S.colWalletId == walletId && S.colNetwork == networkRaw && S.colKey == key)
+        return (try? db.pluck(query)) != nil
     }
 
-    func insertActivity(
-        walletId: Data, networkRaw: Int64, identityId: Data, amountDuffs: Int64, balanceAfterDuffs: Int64, at date: Date
-    ) {
+    /// Moves the baseline to `balanceDuffs` read at `date`, marks `claims` counted and, when `receivedDuffs` is set,
+    /// writes its Received row, in one transaction: a failure leaves none of them, so the next read sees the same rise
+    /// again.
+    func record(
+        walletId: Data, networkRaw: Int64, identityId: Data, balanceDuffs: Int64, claims: [String],
+        receivedDuffs: Int64?, at date: Date
+    ) throws {
         typealias S = IdentityCreditActivitySchema
-        _ = try? db.run(S.activity.insert(
-            S.colWalletId <- walletId,
-            S.colNetwork <- networkRaw,
-            S.colIdentityId <- identityId,
-            S.colAmount <- amountDuffs,
-            S.colBalanceAfter <- balanceAfterDuffs,
-            S.colObservedAt <- date.timeIntervalSince1970))
+        try db.transaction {
+            try db.run(S.baseline.insert(
+                or: .replace,
+                S.colWalletId <- walletId,
+                S.colNetwork <- networkRaw,
+                S.colIdentityId <- identityId,
+                S.colBalance <- balanceDuffs,
+                S.colUpdatedAt <- date.timeIntervalSince1970))
+            for key in claims {
+                try db.run(S.claim.insert(
+                    or: .ignore,
+                    S.colWalletId <- walletId,
+                    S.colNetwork <- networkRaw,
+                    S.colKey <- key,
+                    S.colUpdatedAt <- date.timeIntervalSince1970))
+            }
+            if let receivedDuffs {
+                try db.run(S.activity.insert(
+                    S.colWalletId <- walletId,
+                    S.colNetwork <- networkRaw,
+                    S.colIdentityId <- identityId,
+                    S.colAmount <- receivedDuffs,
+                    S.colBalanceAfter <- balanceDuffs,
+                    S.colObservedAt <- date.timeIntervalSince1970))
+            }
+        }
     }
 
     /// The wallet's Received rows on `networkRaw`, newest first.
@@ -187,38 +228,32 @@ final class IdentityCreditActivityDAO {
         }
     }
 
-    func isClaimed(walletId: Data, networkRaw: Int64, key: String) -> Bool {
+    /// Removes one wallet's baselines, rows and claims in one transaction (the per-wallet Remove flow and each
+    /// deletion of the full wipe).
+    func delete(walletId: Data) throws {
         typealias S = IdentityCreditActivitySchema
-        let query = S.claim.select(S.colKey)
-            .filter(S.colWalletId == walletId && S.colNetwork == networkRaw && S.colKey == key)
-        return (try? db.pluck(query)) != nil
+        bumpGeneration()
+        try db.transaction {
+            try db.run(S.baseline.filter(S.colWalletId == walletId).delete())
+            try db.run(S.activity.filter(S.colWalletId == walletId).delete())
+            try db.run(S.claim.filter(S.colWalletId == walletId).delete())
+        }
     }
 
-    func claim(walletId: Data, networkRaw: Int64, key: String, at date: Date) {
+    /// Removes every wallet's baselines, rows and claims in one transaction (the full wipe).
+    func deleteAll() throws {
         typealias S = IdentityCreditActivitySchema
-        _ = try? db.run(S.claim.insert(
-            or: .ignore,
-            S.colWalletId <- walletId,
-            S.colNetwork <- networkRaw,
-            S.colKey <- key,
-            S.colUpdatedAt <- date.timeIntervalSince1970))
+        bumpGeneration()
+        try db.transaction {
+            try db.run(S.baseline.delete())
+            try db.run(S.activity.delete())
+            try db.run(S.claim.delete())
+        }
     }
 
-    /// Removes one wallet's baselines, rows and claims (the per-wallet Remove flow and each deletion of the full
-    /// wipe).
-    func delete(walletId: Data) {
-        typealias S = IdentityCreditActivitySchema
-        _ = try? db.run(S.baseline.filter(S.colWalletId == walletId).delete())
-        _ = try? db.run(S.activity.filter(S.colWalletId == walletId).delete())
-        _ = try? db.run(S.claim.filter(S.colWalletId == walletId).delete())
-    }
-
-    /// Removes every wallet's baselines, rows and claims (the full wipe).
-    func deleteAll() {
-        typealias S = IdentityCreditActivitySchema
-        _ = try? db.run(S.baseline.delete())
-        _ = try? db.run(S.activity.delete())
-        _ = try? db.run(S.claim.delete())
+    private func bumpGeneration() {
+        lock.lock(); defer { lock.unlock() }
+        deletions &+= 1
     }
 }
 
@@ -226,9 +261,8 @@ final class IdentityCreditActivityDAO {
 
 @MainActor
 enum IdentityCreditActivityRecorder {
-    /// How long before the previous read an own operation may have started and still be credited after it: a
-    /// shielded top-up is recorded when it starts, before its proof is built.
-    static let ownOperationWindow: TimeInterval = 6 * 60 * 60
+    /// How long a send whose result was unconfirmed may still explain a rise.
+    static let pendingWindow: TimeInterval = 6 * 60 * 60
 
     enum Outcome: Equatable {
         /// First read of this identity on this wallet and network: the baseline, no row.
@@ -237,69 +271,85 @@ enum IdentityCreditActivityRecorder {
         case unchanged
         /// A Received row of this many duffs.
         case received(duffs: Int64)
+        /// The store could not be written; the baseline stays, so the next read compares with it again.
+        case failed
+        /// The wallet's history was deleted while the balance was read; nothing was written.
+        case dropped
     }
 
-    /// The part of `deltaDuffs` that `ownCredits` (oldest first) do not explain, and the traces that explain the
-    /// rest. Traces are taken only while some of the rise is unexplained, so one that has not reached the balance
-    /// yet stays for a later rise.
-    static func split(deltaDuffs: Int64, ownCredits: [IdentityOwnCredit]) -> (receivedDuffs: Int64, claimed: [String]) {
-        var remaining = deltaDuffs
-        var claimed: [String] = []
-        for credit in ownCredits.sorted(by: { $0.date < $1.date }) where remaining > 0 {
-            claimed.append(credit.key)
-            remaining -= credit.amountDuffs
+    /// The traces that count for a read started at `readStart` when the previous one started at `previousStart`:
+    /// a written-after-the-credit trace between the two, and a pending one within `pendingWindow`, which counts only
+    /// on a rise (its credit may still be ahead).
+    static func counted(
+        _ credits: [IdentityOwnCredit], previousStart: Date, readStart: Date, isRise: Bool
+    ) -> [IdentityOwnCredit] {
+        credits.filter { credit in
+            guard credit.date <= readStart else { return false }
+            if credit.isPending {
+                return isRise && credit.date > readStart.addingTimeInterval(-pendingWindow)
+            }
+            return credit.date > previousStart
         }
-        return (max(0, remaining), claimed)
     }
 
     /// Compares one network read of the identity's balance with the baseline and records what someone else sent.
-    /// `ownCredits` returns the own operations that credited the identity since a date: the previous read of this
-    /// identity less `ownOperationWindow`, so an identity read again after a long pause (a Current identity switched
-    /// back) still recognises the top-ups made meanwhile.
+    /// `readStart` is when the read was sent; `ownCredits` returns the wallet's own credits to the identity written
+    /// after a date. `generation` is the store's generation taken before the read.
     @discardableResult
     static func observe(
         balanceCredits: UInt64,
         identityId: Data,
         walletId: Data,
         networkRaw: Int64,
-        ownCredits: (_ since: Date) -> [IdentityOwnCredit],
-        dao: IdentityCreditActivityDAO = .shared,
-        now: Date = Date()
+        readStart: Date,
+        generation: UInt64,
+        ownCredits: (_ after: Date) -> [IdentityOwnCredit],
+        dao: IdentityCreditActivityDAO = .shared
     ) -> Outcome {
+        guard dao.generation == generation else { return .dropped }
         let balance = PlatformAddressActivityUnitPolicy.duffs(fromCredits: balanceCredits)
-        guard let (baseline, readAt) = dao.baselineRow(
+        guard let (baseline, previousStart) = dao.baselineRow(
             walletId: walletId, networkRaw: networkRaw, identityId: identityId) else {
-            dao.setBaseline(walletId: walletId, networkRaw: networkRaw, identityId: identityId, balanceDuffs: balance,
-                            at: now)
-            return .seeded
+            return write(.seeded, balance: balance, claims: [], received: nil, identityId: identityId,
+                         walletId: walletId, networkRaw: networkRaw, at: readStart, dao: dao)
         }
-        // A lower balance is an own spend, which has its own row.
-        dao.setBaseline(walletId: walletId, networkRaw: networkRaw, identityId: identityId, balanceDuffs: balance,
-                        at: now)
+        // A lower balance is an own spend, which has its own row; it only moves the baseline.
         let delta = balance - baseline
-        guard delta > 0 else { return .unchanged }
-
-        let since = readAt.addingTimeInterval(-ownOperationWindow)
-        let unclaimed = ownCredits(since).filter {
+        let earliest = min(previousStart, readStart.addingTimeInterval(-pendingWindow))
+        let unclaimed = ownCredits(earliest).filter {
             !dao.isClaimed(walletId: walletId, networkRaw: networkRaw, key: $0.key)
         }
-        let (received, claimed) = split(deltaDuffs: delta, ownCredits: unclaimed)
-        for key in claimed {
-            dao.claim(walletId: walletId, networkRaw: networkRaw, key: key, at: now)
-        }
-        guard received > 0 else { return .unchanged }
-        dao.insertActivity(walletId: walletId, networkRaw: networkRaw, identityId: identityId, amountDuffs: received,
-                           balanceAfterDuffs: balance, at: now)
-        NotificationCenter.default.post(name: .identityCreditActivityRecorded, object: nil)
-        return .received(duffs: received)
+        let own = counted(unclaimed, previousStart: previousStart, readStart: readStart, isRise: delta > 0)
+        let unexplained = delta - own.reduce(Int64(0)) { $0 + $1.amountDuffs }
+        let received = delta > 0 && unexplained > 0 ? unexplained : nil
+        return write(received.map { .received(duffs: $0) } ?? .unchanged, balance: balance, claims: own.map(\.key),
+                     received: received, identityId: identityId, walletId: walletId, networkRaw: networkRaw,
+                     at: readStart, dao: dao)
     }
 
-    /// The own operations since `since` that credited `identityId`, from the traces they leave.
+    // swiftlint:disable:next function_parameter_count
+    private static func write(
+        _ outcome: Outcome, balance: Int64, claims: [String], received: Int64?, identityId: Data, walletId: Data,
+        networkRaw: Int64, at date: Date, dao: IdentityCreditActivityDAO
+    ) -> Outcome {
+        do {
+            try dao.record(walletId: walletId, networkRaw: networkRaw, identityId: identityId, balanceDuffs: balance,
+                           claims: claims, receivedDuffs: received, at: date)
+        } catch {
+            return .failed
+        }
+        if received != nil {
+            NotificationCenter.default.post(name: .identityCreditActivityRecorded, object: nil)
+        }
+        return outcome
+    }
+
+    /// The own operations that credited `identityId`, by traces written after `after`.
     static func ownCredits(
         identityId: Data,
         walletId: Data,
         networkRaw: Int64,
-        since: Date,
+        after: Date,
         container: ModelContainer,
         creditSends: CreditSendActivityDAO = .shared
     ) -> [IdentityOwnCredit] {
@@ -319,7 +369,7 @@ enum IdentityCreditActivityRecorder {
             let locks = FetchDescriptor<PersistentAssetLock>(
                 predicate: #Predicate {
                     $0.walletId == walletId && $0.fundingTypeRaw == topUpType && $0.statusRaw == consumed
-                        && $0.identityIndexRaw == index && $0.updatedAt >= since
+                        && $0.identityIndexRaw == index && $0.updatedAt > after
                 })
             for lock in (try? context.fetch(locks)) ?? [] {
                 credits.append(.init(key: "lock:\(lock.outPointHex)", amountDuffs: lock.amountDuffs,
@@ -327,29 +377,31 @@ enum IdentityCreditActivityRecorder {
             }
         }
 
-        // Platform or another identity: the send the ledger recorded to this identity.
+        // Platform or another identity: the send the ledger recorded to this identity, including one submitted with
+        // its result unconfirmed.
         let destination = identityId.toBase58String()
         for record in creditSends.records(walletId: walletId, networkRaw: networkRaw)
             where record.send.destinationKind == .identity && record.send.destination == destination
-            && record.sentAt >= since {
+            && record.sentAt > after {
             credits.append(.init(key: "ledger:\(record.operationId)",
-                                 amountDuffs: Int64(clamping: record.send.amountDuffs), date: record.sentAt))
+                                 amountDuffs: Int64(clamping: record.send.amountDuffs), date: record.sentAt,
+                                 isPending: record.status == .pending))
         }
 
-        // Shielded: the pool's identity top-up activity, unless it failed.
+        // Shielded: the pool's identity top-up activity, once confirmed; the row is written when the top-up starts,
+        // so its confirmation is when the credit existed.
         let shieldedTopUp = 9 // ShieldedActivityKind::IdentityTopUp
-        let failed = 2
-        let sinceMs = UInt64(max(0, since.timeIntervalSince1970) * 1000)
+        let confirmed = 1
         let shielded = FetchDescriptor<PersistentShieldedActivity>(
             predicate: #Predicate {
                 $0.walletId == walletId && $0.kindTag == shieldedTopUp && $0.identityId == identityId
-                    && $0.status != failed && $0.createdAtMs >= sinceMs
+                    && $0.status == confirmed && $0.lastUpdated > after
             })
         for row in (try? context.fetch(shielded)) ?? [] {
             credits.append(.init(
                 key: "shielded:\(row.accountIndex):\(row.entryId.map { String(format: "%02x", $0) }.joined())",
                 amountDuffs: PlatformAddressActivityUnitPolicy.duffs(fromCredits: row.amount),
-                date: Date(timeIntervalSince1970: TimeInterval(row.createdAtMs) / 1000)))
+                date: row.lastUpdated))
         }
         return credits
     }

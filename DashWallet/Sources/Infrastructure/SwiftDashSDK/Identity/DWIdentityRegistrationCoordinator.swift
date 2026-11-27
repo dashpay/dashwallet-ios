@@ -1469,10 +1469,17 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                     walletId: wallet.walletId,
                     modelContainer: plan.modelContainer,
                     targetCredits: topUpDuffs * PlatformPaymentIdentityFundingPolicy.creditsPerDuff)
-                _ = try await wallet.topUpFromAddresses(
-                    identityId: identityId,
-                    inputs: inputs,
-                    addressSigner: signer)
+                // Recorded like every other spend of Platform credits: History's row, and the trace that keeps the
+                // identity's rise from reading as Received (ADR-0077).
+                let send = CreditSend(
+                    source: .platform, destinationKind: .identity, destination: identityId.toBase58String(),
+                    amountDuffs: topUpDuffs)
+                _ = try await CreditSendLedger.recording(send) {
+                    try await wallet.topUpFromAddresses(
+                        identityId: identityId,
+                        inputs: inputs,
+                        addressSigner: signer)
+                }
                 SwiftDashSDKWalletState.shared.refreshPlatformPaymentCredits()
             case .shielded:
                 throw CoordinatorError.shieldedTopUpUnavailable(neededDuffs: topUpDuffs)
