@@ -244,14 +244,15 @@ final class ReceiveAmountRequestTests: XCTestCase {
         }
     }
 
-    private func receipt(on option: ReceiveOption) -> ReceiveReceipt {
+    private func receipt(on option: ReceiveOption, id: String = "first") -> ReceiveReceipt {
         ReceiveReceipt(
-            id: "receipt-\(option)", rail: option, amountDuffs: 100_000_000,
+            id: "receipt-\(option)-\(id)", rail: option, amountDuffs: 100_000_000,
             receivedAt: Date(timeIntervalSince1970: 1_793_000_000), memo: nil, transactionId: nil)
     }
 
-    /// Pushes the amount step and submits an amount: the request sheet opens.
-    private func openRequest(
+    /// Pushes the amount step and waits until its push has finished: UIKit
+    /// drops a pop sent while the push is still running.
+    private func pushAmountStep(
         _ landing: PaymentsLandingHostingController,
         _ navigation: UINavigationController
     ) async throws {
@@ -259,6 +260,29 @@ final class ReceiveAmountRequestTests: XCTestCase {
         try await waitUntil("amount step") {
             navigation.topViewController is SpecifyAmountViewController && navigation.transitionCoordinator == nil
         }
+    }
+
+    /// The request sheet is gone and the pop back to the landing has finished:
+    /// UIKit drops a push sent while a transition is still running.
+    private func waitUntilBackOnLanding(
+        _ landing: PaymentsLandingHostingController,
+        _ navigation: UINavigationController,
+        _ message: String,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) async throws {
+        try await waitUntil("sheet closed, \(message)", file: file, line: line) { navigation.presentedViewController == nil }
+        try await waitUntil("back on the landing, \(message)", file: file, line: line) {
+            navigation.topViewController === landing && navigation.transitionCoordinator == nil
+        }
+    }
+
+    /// Pushes the amount step and submits an amount: the request sheet opens.
+    private func openRequest(
+        _ landing: PaymentsLandingHostingController,
+        _ navigation: UINavigationController
+    ) async throws {
+        try await pushAmountStep(landing, navigation)
         let step = try XCTUnwrap(navigation.topViewController as? SpecifyAmountViewController)
         landing.specifyAmountViewController(step, didInput: 100_000_000)
         // Fully on screen: a dismiss sent while the sheet is still being
@@ -275,18 +299,16 @@ final class ReceiveAmountRequestTests: XCTestCase {
             try await openRequest(landing, navigation)
 
             model.acceptReceipt(receipt(on: option))
-            try await waitUntil("sheet closed, \(option)") { navigation.presentedViewController == nil }
-            // The pop must also have finished: UIKit drops a push sent while
-            // a transition is still running.
-            try await waitUntil("back on the landing, \(option)") {
-                navigation.topViewController === landing && navigation.transitionCoordinator == nil
-            }
+            try await waitUntilBackOnLanding(landing, navigation, "first receipt, \(option)")
 
-            // With the receipt dealt with, the request opens again: the
-            // observers the receipt removed are armed anew.
+            // With the receipt dealt with, the request opens again, and the
+            // observers the receipt removed are armed anew: a second receipt
+            // closes the reopened request too.
             model.finishReceiving()
             try await openRequest(landing, navigation)
             XCTAssertNil(model.receipt, "\(option)")
+            model.acceptReceipt(receipt(on: option, id: "second"))
+            try await waitUntilBackOnLanding(landing, navigation, "second receipt, \(option)")
             window.isHidden = true
         }
     }
@@ -294,12 +316,15 @@ final class ReceiveAmountRequestTests: XCTestCase {
     func testAReceiptOnTheAmountStepReturnsToTheLandingOnEveryNewOption() async throws {
         for option in [ReceiveOption.shielded, .platform, .identity] {
             let (landing, navigation, model, window) = try landing(on: option)
-            landing.pushSpecifyAmount()
-            try await waitUntil("amount step, \(option)") { navigation.topViewController is SpecifyAmountViewController }
-
+            try await pushAmountStep(landing, navigation)
             model.acceptReceipt(receipt(on: option))
-            try await waitUntil("back on the landing, \(option)") { navigation.topViewController === landing }
-            XCTAssertNil(navigation.presentedViewController, "\(option)")
+            try await waitUntilBackOnLanding(landing, navigation, "first receipt, \(option)")
+
+            // The amount step opened again arms its observer anew.
+            model.finishReceiving()
+            try await pushAmountStep(landing, navigation)
+            model.acceptReceipt(receipt(on: option, id: "second"))
+            try await waitUntilBackOnLanding(landing, navigation, "second receipt, \(option)")
             window.isHidden = true
         }
     }
