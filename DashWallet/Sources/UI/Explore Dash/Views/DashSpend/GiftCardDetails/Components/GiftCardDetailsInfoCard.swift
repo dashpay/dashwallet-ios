@@ -26,7 +26,7 @@ struct GiftCardDetailsInfoCard: View {
     let loadingError: Error?
     /// Offered when the poller gave up on a run of failures; nil hides the affordance.
     var onRetryLoading: (() -> Void)? = nil
-    let onOpenClaimLink: (String) -> Void
+    let onRedeemLink: (String) -> Void
     let onCopy: (String) -> Void
 
     private var isClaimLink: Bool { card?.isClaimLink ?? false }
@@ -92,29 +92,27 @@ struct GiftCardDetailsInfoCard: View {
     @ViewBuilder
     private var detailsRowsSection: some View {
         if isClaimLink {
-            let actionConfig: (actionName: String, action: () -> Void)? = {
-                guard let claimLink = card?.cardNumber else { return nil }
-
-                return (
-                    actionName: String(localized: "See card details", comment: "DashSpend"),
-                    action: { onOpenClaimLink(claimLink) }
-                )
-            }()
-
             VStack(spacing: 20) {
                 textValueRow(
                     title: String(localized: "Original Price", comment: "DashSpend"),
-                    value: formattedPrice,
-                    actionConfig: actionConfig
+                    value: formattedPrice
                 )
 
-                if let redeemUrlChallenge = card?.redeemUrlChallenge, !redeemUrlChallenge.isEmpty {
+                if let challengeCode = card?.challengeCode {
                     cardValueRow(
                         title: String(localized: "Challenge", comment: "DashSpend"),
-                        value: redeemUrlChallenge,
+                        value: challengeCode,
                         onCopy: {
-                            onCopy(redeemUrlChallenge)
+                            onCopy(challengeCode)
                         }
+                    )
+                }
+
+                if let redeemLink = card?.redeemLink {
+                    DashButton(
+                        text: String(localized: "Redeem gift card", comment: "DashSpend"),
+                        style: .filledBlue,
+                        action: { onRedeemLink(redeemLink) }
                     )
                 }
             }
@@ -160,11 +158,7 @@ struct GiftCardDetailsInfoCard: View {
         }
     }
 
-    private func textValueRow(
-        title: String,
-        value: String,
-        actionConfig: (actionName: String, action: () -> Void)? = nil
-    ) -> some View {
+    private func textValueRow(title: String, value: String) -> some View {
         HStack(alignment: .top, spacing: 0) {
             Text(title)
                 .font(.subheadMedium)
@@ -172,23 +166,10 @@ struct GiftCardDetailsInfoCard: View {
 
             Spacer()
 
-            VStack(alignment: .trailing, spacing: 0) {
-                Text(value)
-                    .font(.subhead)
-                    .foregroundColor(.dash.primaryText)
-
-                if let actionConfig {
-                    Button(action: actionConfig.action) {
-                        Text(actionConfig.actionName)
-                            .font(.footnote)
-                            .fontWeight(.medium)
-                            .foregroundColor(.dash.blue)
-                            .padding(.vertical, 4)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .trailing)
+            Text(value)
+                .font(.subhead)
+                .foregroundColor(.dash.primaryText)
+                .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .padding(.vertical, 12)
     }
@@ -247,7 +228,7 @@ struct GiftCardDetailsInfoCard: View {
         isLoadingCardDetails: false,
         hasBeenPollingForLongTime: false,
         loadingError: nil,
-        onOpenClaimLink: { _ in },
+        onRedeemLink: { _ in },
         onCopy: { _ in }
     )
     .padding()
@@ -269,7 +250,7 @@ struct GiftCardDetailsInfoCard: View {
         isLoadingCardDetails: false,
         hasBeenPollingForLongTime: false,
         loadingError: nil,
-        onOpenClaimLink: { _ in },
+        onRedeemLink: { _ in },
         onCopy: { _ in }
     )
     .padding()
@@ -283,7 +264,7 @@ struct GiftCardDetailsInfoCard: View {
         isLoadingCardDetails: true,
         hasBeenPollingForLongTime: true,
         loadingError: nil,
-        onOpenClaimLink: { _ in },
+        onRedeemLink: { _ in },
         onCopy: { _ in }
     )
     .padding()

@@ -75,6 +75,15 @@ NSTimeInterval const DW_INFO_HUD_DISPLAY_TIME = 3.5;
     [self dw_showInfoHUDWithText:text offsetForNavBar:NO];
 }
 
+/// Takes down the showing info HUD at once and drops the queued ones.
+- (void)dw_hideInfoHUD {
+    NSArray<MBProgressHUD *> *huds = [[self dw_infoHUDQueue] copy];
+    [[self dw_infoHUDQueue] removeAllObjects];
+    for (MBProgressHUD *hud in huds) {
+        [hud hideAnimated:NO];
+    }
+}
+
 - (void)dw_showInfoHUDWithText:(NSString *)text offsetForNavBar:(BOOL)shouldOffset {
     MBProgressHUD *hud = [MBProgressHUD showHUDAddedTo:self animated:YES];
     hud.removeFromSuperViewOnHide = YES;

@@ -109274,6 +109274,9 @@
         }
       }
     },
+    "Challenge code" : {
+      "comment" : "DashSpend"
+    },
     "Change" : {
       "comment" : "DashConnect approve sheet\nMasternode unban",
       "localizations" : {
@@ -139557,6 +139560,9 @@
           }
         }
       }
+    },
+    "Copy challenge code" : {
+      "comment" : "DashSpend"
     },
     "Copy Logs" : {
       "comment" : "Log export",
@@ -200600,6 +200606,9 @@
         }
       }
     },
+    "Enter the challenge code" : {
+      "comment" : "DashSpend"
+    },
     "Enter the core block height to re-check filters from." : {
       "comment" : "SPV diagnostics",
       "localizations" : {
@@ -208481,6 +208490,9 @@
           }
         }
       }
+    },
+    "External website. Dash will never ask for your wallet PIN or recovery phrase here." : {
+      "comment" : "DashSpend"
     },
     "Face ID limit" : {
       "localizations" : {
@@ -252920,6 +252932,9 @@
           }
         }
       }
+    },
+    "If the page asks for a challenge code, enter the one shown for this card." : {
+      "comment" : "DashSpend"
     },
     "If the swap fails, your %@ will be returned to this address. Make sure it's a %@ address from a wallet you control.\n\nYour swap cannot be processed without a refund address." : {
       "comment" : "Dash DEX / dex_refund_address_description",
@@ -362034,6 +362049,9 @@
         }
       }
     },
+    "Open in browser" : {
+      "comment" : "DashSpend"
+    },
     "Open Settings" : {
       "comment" : "Notifications",
       "localizations" : {
@@ -362296,6 +362314,9 @@
           }
         }
       }
+    },
+    "Open the link" : {
+      "comment" : "DashSpend"
     },
     "Open Wallets" : {
       "comment" : "Security — reset wallet",
@@ -422492,6 +422513,9 @@
         }
       }
     },
+    "Redeem gift card" : {
+      "comment" : "DashSpend"
+    },
     "Refresh" : {
       "localizations" : {
         "ar" : {
@@ -458509,6 +458533,7 @@
     },
     "See card details" : {
       "comment" : "DashSpend",
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -513719,6 +513744,9 @@
           }
         }
       }
+    },
+    "Tap Redeem gift card to open the page where the card is claimed." : {
+      "comment" : "DashSpend"
     },
     "Tap the address from the clipboard to paste it" : {
       "extractionState" : "stale",
@@ -576385,6 +576413,9 @@
         }
       }
     },
+    "This link can't be opened here." : {
+      "comment" : "DashSpend"
+    },
     "This link needs a newer version of the wallet." : {
       "comment" : "DashConnect",
       "localizations" : {
@@ -580329,6 +580360,12 @@
           }
         }
       }
+    },
+    "This page could not be loaded." : {
+      "comment" : "DashSpend"
+    },
+    "This page says" : {
+      "comment" : "DashSpend"
     },
     "This payment goes to %ld addresses." : {
       "comment" : "Payment confirmation: a payment request with several outputs"

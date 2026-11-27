@@ -27,6 +27,63 @@ struct GiftCardDetailsCardItem: Identifiable {
     let redeemUrlChallenge: String?
     let barcodeImage: UIImage?
     let isClaimLink: Bool
+
+    /// The link a claim-link card is redeemed at; such a card keeps it in `cardNumber`.
+    var redeemLink: String? {
+        isClaimLink ? Self.trimmedOrNil(cardNumber) : nil
+    }
+
+    var challengeCode: String? {
+        Self.trimmedOrNil(redeemUrlChallenge)
+    }
+
+    static func trimmedOrNil(_ value: String?) -> String? {
+        guard let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines), !trimmed.isEmpty else {
+            return nil
+        }
+        return trimmed
+    }
+
+    /// Whether a stored card number is in fact the card's link. Rows stored by earlier versions
+    /// may hold it untrimmed.
+    static func isLink(_ storedNumber: String?) -> Bool {
+        guard let value = trimmedOrNil(storedNumber)?.lowercased() else { return false }
+        return value.hasPrefix("https://") || value.hasPrefix("http://")
+    }
+
+    /// The card of an order stored without a per-card payload.
+    static func stored(formattedPrice: String,
+                       number: String?,
+                       pin: String?,
+                       redeemUrlChallenge: String?,
+                       barcodeImage: UIImage?) -> GiftCardDetailsCardItem {
+        GiftCardDetailsCardItem(
+            id: "legacy-0",
+            formattedPrice: formattedPrice,
+            cardNumber: number,
+            cardPin: pin,
+            redeemUrlChallenge: redeemUrlChallenge,
+            barcodeImage: barcodeImage,
+            isClaimLink: isLink(number)
+        )
+    }
+}
+
+/// What a fulfilled CTX order delivered. A card number wins over a redeem link; a blank one of either is none.
+enum CTXGiftCardDelivery: Equatable {
+    case number(String, pin: String?)
+    case link(String, challenge: String?)
+    case nothingYet
+
+    init(cardNumber: String?, cardPin: String?, redeemUrl: String?, redeemUrlChallenge: String?) {
+        if let cardNumber = GiftCardDetailsCardItem.trimmedOrNil(cardNumber) {
+            self = .number(cardNumber, pin: cardPin)
+        } else if let link = GiftCardDetailsCardItem.trimmedOrNil(redeemUrl) {
+            self = .link(link, challenge: GiftCardDetailsCardItem.trimmedOrNil(redeemUrlChallenge))
+        } else {
+            self = .nothingYet
+        }
+    }
 }
 
 struct GiftCardDetailsUIState {
@@ -169,7 +226,7 @@ class GiftCardDetailsViewModel: ObservableObject {
 
         let formattedPrice = currencyFormatter.string(from: card.price as NSDecimalNumber) ?? "$0.00"
         let displayCards = buildDisplayCards(from: card, fallbackFormattedPrice: formattedPrice)
-        let isClaimLink = displayCards.first?.isClaimLink ?? (card.number?.starts(with: "http") ?? false)
+        let isClaimLink = displayCards.first?.isClaimLink ?? GiftCardDetailsCardItem.isLink(card.number)
         let barcodeImage = displayCards.first?.barcodeImage ?? imageFromBarcode(value: card.barcodeValue, format: card.barcodeFormat)
 
         await MainActor.run {
@@ -311,11 +368,19 @@ class GiftCardDetailsViewModel: ObservableObject {
 
             switch response.status {
             case "fulfilled":
-                if let cardNumber = response.cardNumber, !cardNumber.isEmpty {
+                let delivery = CTXGiftCardDelivery(
+                    cardNumber: response.cardNumber,
+                    cardPin: response.cardPin,
+                    redeemUrl: response.redeemUrl,
+                    redeemUrlChallenge: response.redeemUrlChallenge
+                )
+
+                switch delivery {
+                case .number(let cardNumber, let pin):
                     await giftCardsDAO.updateCardDetails(
                         txId: txId,
                         number: cardNumber,
-                        pin: response.cardPin
+                        pin: pin
                     )
 
                     if !cardNumber.isEmpty {
@@ -329,14 +394,16 @@ class GiftCardDetailsViewModel: ObservableObject {
                     }
                     stopTicker()
                     DWLogger.log("DashSpend: Gift card details fetched successfully")
-                } else if let redeemUrl = response.redeemUrl, !redeemUrl.isEmpty {
+                case .link(let redeemUrl, let challenge):
                     await giftCardsDAO.updateRedeemUrl(
                         txId: txId,
                         url: redeemUrl,
-                        challenge: response.redeemUrlChallenge
+                        challenge: challenge
                     )
                     stopTicker()
                     DWLogger.log("DashSpend: Gift card redeem URL fetched successfully")
+                case .nothingYet:
+                    break
                 }
 
             case "rejected":
@@ -542,14 +609,12 @@ class GiftCardDetailsViewModel: ObservableObject {
 
         if card.number != nil || card.pin != nil || card.barcodeValue != nil {
             return [
-                GiftCardDetailsCardItem(
-                    id: "legacy-0",
+                GiftCardDetailsCardItem.stored(
                     formattedPrice: fallbackFormattedPrice,
-                    cardNumber: card.number,
-                    cardPin: card.pin,
+                    number: card.number,
+                    pin: card.pin,
                     redeemUrlChallenge: card.redeemUrlChallenge,
-                    barcodeImage: imageFromBarcode(value: card.barcodeValue, format: card.barcodeFormat),
-                    isClaimLink: card.number?.starts(with: "http") ?? false
+                    barcodeImage: imageFromBarcode(value: card.barcodeValue, format: card.barcodeFormat)
                 )
             ]
         }
