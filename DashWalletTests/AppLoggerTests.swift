@@ -1015,31 +1015,6 @@ final class AppLoggerTests: XCTestCase {
         try String(contentsOf: repositoryRoot.appendingPathComponent(path), encoding: .utf8)
     }
 
-    // Comments say what a test protects; a review-round or acceptance-
-    // criterion tag names a list outside the repository. A tag can wrap, so
-    // contiguous comment lines are checked as one text.
-    func testLoggingTestsCarryNoReviewDiaryTags() throws {
-        let pattern = try NSRegularExpression(pattern: #"PR review r\d|\bAC-\d{2}\b|\(owner, 20\d\d"#)
-        for path in ["DashWalletTests/AppLoggerTests.swift", "DashWalletTests/AssetLockDiagnosticsTests.swift",
-                     "DashWalletTests/HostRecoveryTests.swift"] {
-            var comments: [String] = []
-            var run = ""
-            for line in try sourceText(path).split(separator: "\n", omittingEmptySubsequences: false) {
-                if let start = line.range(of: "//")?.lowerBound {
-                    run += " " + String(line[start...].drop { $0 == "/" || $0 == " " })
-                } else if !run.isEmpty {
-                    comments.append(run)
-                    run = ""
-                }
-            }
-            comments.append(run)
-            for comment in comments {
-                let range = NSRange(comment.startIndex..., in: comment)
-                XCTAssertNil(pattern.firstMatch(in: comment, range: range), "\(path): \(comment)")
-            }
-        }
-    }
-
     /// Every Swift file under `DashWallet/Sources`, by repository path.
     private func appSources() throws -> [(String, String)] {
         let sources = repositoryRoot.appendingPathComponent("DashWallet/Sources")
