@@ -208494,7 +208494,7 @@
         }
       }
     },
-    "External website. Dash will never ask for your wallet PIN or recovery phrase here." : {
+    "External website. Parts of this page may come from other sites. Dash will never ask for your wallet PIN or recovery phrase here." : {
       "comment" : "DashSpend"
     },
     "Face ID limit" : {

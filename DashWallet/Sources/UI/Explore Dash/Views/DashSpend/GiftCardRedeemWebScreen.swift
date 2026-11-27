@@ -143,7 +143,7 @@ struct GiftCardRedeemWebScreen: View {
                 .accessibilityHidden(viewModel.host == nil)
 
             Text(String(
-                localized: "External website. Dash will never ask for your wallet PIN or recovery phrase here.",
+                localized: "External website. Parts of this page may come from other sites. Dash will never ask for your wallet PIN or recovery phrase here.",
                 comment: "DashSpend"
             ))
             .font(.footnote)
