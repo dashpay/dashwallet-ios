@@ -438,6 +438,7 @@ final class RecoveryPhraseRoutingTests: XCTestCase {
 
         XCTAssertEqual(result.entries.map(\.walletId), [walletA])
         XCTAssertEqual(result.skippedWalletIds, [walletB])
+        XCTAssertEqual(result.skippedErrors.count, 1)
     }
 
     func testInvalidNeighborDoesNotHideTwoReadableWallets() throws {

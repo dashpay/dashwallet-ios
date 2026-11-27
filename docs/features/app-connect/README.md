@@ -37,9 +37,12 @@ one-scan login possible, and with it DashConnect on mainnet once mainnet runs pr
   turned off with it, without a question
   ([ADR-0016](../../adr/0016-turn-off-unrecorded-keys-on-disconnect-without-asking.md), which
   supersedes the confirmation in
-  [ADR-0031](../../adr/0031-turn-off-unattributed-dashpay-profile-keys-with-any-disconnect.md)),
+  [ADR-0033](../../adr/0033-turn-off-only-the-unrecorded-keys-the-question-listed.md); for the
+  profile keys
+  [ADR-0075](../../adr/0075-turn-off-unattributed-dashpay-profile-keys-except-keys-that-cannot-be-checked.md)),
   and the result says how many there were. Keys it could not check, keys another app of the same
-  owner may hold, and keys still live after a failed write are left on and named in the result; a
+  owner may hold, keys still live after a failed write, and keys that landed after the
+  disconnect's read and that the read after the writes sees are left on and named in the result; a
   failure keeps the row and Disconnect can run again.
 - **DashConnect on mainnet.** The Connections page uses the real data source on every network. A
   request on a network below protocol 14 is refused; on mainnet a `dash-key:` v2 code is refused and
@@ -62,7 +65,7 @@ one-scan login possible, and with it DashConnect on mainnet once mainnet runs pr
   and offers ([ADR-0019](../../adr/0019-let-one-state-table-decide-what-a-connection-shows-and-offers.md)).
   A request's age is judged by the wallet's clock, with Platform's proved block time also making it
   stale, and a connection's expiry by the block time
-  ([ADR-0074](../../adr/0074-judge-request-age-by-the-wallets-clock-and-expiry-by-block-time.md)); a
+  ([ADR-0079](../../adr/0079-judge-request-age-by-the-wallets-clock-and-expiry-by-block-time.md)); a
   request is answered at most once
   ([ADR-0017](../../adr/0017-answer-an-app-connect-request-at-most-once.md)). A disconnect turns
   off everything that may give the app access without a further question
@@ -82,13 +85,14 @@ one-scan login possible, and with it DashConnect on mainnet once mainnet runs pr
   wallet knows its document, or it is 48 hours old in proved Platform block time
   ([ADR-0050](../../adr/0050-bound-an-unresolved-publish-by-48-hours-of-proved-platform-block-time.md)),
   no operation records the response removed
-  ([ADR-0052](../../adr/0052-refuse-response-removed-at-its-one-write-point-while-the-publish-is-unresolved.md)).
+  ([ADR-0074](../../adr/0074-report-a-kept-response-from-the-write-point-or-from-a-failed-lookup.md)).
   A publish Platform refused (a consensus rejection) leaves nothing to wait for; any other error
   keeps it unresolved. A submit that ends late is only logged; the next read decides.
   A disconnect in that window still turns the keys off at once and says the response may still
   appear; the Disconnected row shows "Response may still be on Platform". Opening Connections
-  finds a late response without the PIN, and the next approval or disconnect on the identity
-  deletes it.
+  finds a late response without the PIN. The next disconnect on the identity that has something to
+  sign and whose key updates do not stop, and the next approval whose read of the identity after it
+  succeeds, look the response up again and try to delete it.
 
 ## What it guarantees
 

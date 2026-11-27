@@ -1,6 +1,6 @@
 # 0020 — Judge request age and expiry by proved Platform block time
 
-- **Status:** Superseded by ADR-0074
+- **Status:** Superseded by ADR-0079
 - **Date:** 2026-11-09
 - **Deciders:** romchornyi (ADR author)
 

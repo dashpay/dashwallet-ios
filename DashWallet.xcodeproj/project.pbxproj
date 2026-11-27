@@ -1026,6 +1026,7 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		973AD0F3986AFFDBA78ED560 /* CoinJoinWithdrawalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B208A9A34D0FFEEC796752C /* CoinJoinWithdrawalStore.swift */; };
 		7A30002230A1000000000022 /* AssetLockProbeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30002130A1000000000021 /* AssetLockProbeStore.swift */; };
 		BABA1000000000000000001C /* AssetLockFailureStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000001B /* AssetLockFailureStore.swift */; };
+		BABA10000000000000000F02 /* SwiftDashSDKErrorDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000F01 /* SwiftDashSDKErrorDetail.swift */; };
 		BABA1000000000000000003A /* PlatformRefusal.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000039 /* PlatformRefusal.swift */; };
 		97C1167F9600BF7E489A8545 /* SwapTransactionStatusHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B5469F5588395FA0668C4B /* SwapTransactionStatusHostingController.swift */; };
 		97E0FFBBAFFB7394F6841B61 /* DWPreviewSeedPhraseModel+Mnemonic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48D8BC6623C81DD3F008A668 /* DWPreviewSeedPhraseModel+Mnemonic.swift */; };
@@ -1123,6 +1124,7 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		AA00100B2CA0B10001A0B10B /* SwapKitAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00100A2CA0B10001A0B10A /* SwapKitAPIService.swift */; };
 		AA00100C2CA0B10001A0B10C /* SwapKitAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00100A2CA0B10001A0B10A /* SwapKitAPIService.swift */; };
 		AA00100E2CA0B10001A0B10E /* SwapKitQuoteDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00100D2CA0B10001A0B10D /* SwapKitQuoteDecodingTests.swift */; };
+		C7C3D0DE1F0A4B2C8D9E7A02 /* CTXMerchantResponseDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7C3D0DE1F0A4B2C8D9E7A01 /* CTXMerchantResponseDecodingTests.swift */; };
 		C5A11E000000000000000005 /* SwapRouteAvailabilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5A11E000000000000000004 /* SwapRouteAvailabilityTests.swift */; };
 		AA00100F2CA0B10001A0B10F /* swapkit_quote_response.json in Resources */ = {isa = PBXBuildFile; fileRef = AA0010102CA0B10001A0B110 /* swapkit_quote_response.json */; };
 		AA0010122CA0B10001A0B112 /* SwapKitSwapProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0010112CA0B10001A0B111 /* SwapKitSwapProvider.swift */; };
@@ -1247,7 +1249,9 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		BAE12C061B2DEEF700895CC5 /* DWTodayViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = BAE12C051B2DEEF700895CC5 /* DWTodayViewController.m */; };
 		BB0000012DUMMYID001234567 /* DashSpend/DashSpendError.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000072DUMMYID001234567 /* DashSpend/DashSpendError.swift */; };
 		6C1F7A00000000000000A001 /* DashSpend/GiftCardPaymentGuard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1F7A00000000000000A003 /* DashSpend/GiftCardPaymentGuard.swift */; };
+		6C1F7A00000000000000B001 /* DashSpend/GiftCardPurchaseSeams.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1F7A00000000000000B003 /* DashSpend/GiftCardPurchaseSeams.swift */; };
 		6C1F7A00000000000000A002 /* DashSpend/GiftCardPaymentGuard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1F7A00000000000000A003 /* DashSpend/GiftCardPaymentGuard.swift */; };
+		6C1F7A00000000000000B002 /* DashSpend/GiftCardPurchaseSeams.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1F7A00000000000000B003 /* DashSpend/GiftCardPurchaseSeams.swift */; };
 		BB0000022DUMMYID001234567 /* DashSpend/DashSpendError.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000072DUMMYID001234567 /* DashSpend/DashSpendError.swift */; };
 		BB0000032DUMMYID001234567 /* DashSpend/DashSpendRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000082DUMMYID001234567 /* DashSpend/DashSpendRepository.swift */; };
 		BB0000042DUMMYID001234567 /* DashSpend/DashSpendRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0000082DUMMYID001234567 /* DashSpend/DashSpendRepository.swift */; };
@@ -1845,6 +1849,7 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		D60828F846490A6462E351E9 /* CoinJoinWithdrawalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B208A9A34D0FFEEC796752C /* CoinJoinWithdrawalStore.swift */; };
 		7A30002330A1000000000023 /* AssetLockProbeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A30002130A1000000000021 /* AssetLockProbeStore.swift */; };
 		BABA1000000000000000001D /* AssetLockFailureStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000001B /* AssetLockFailureStore.swift */; };
+		BABA10000000000000000F03 /* SwiftDashSDKErrorDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000F01 /* SwiftDashSDKErrorDetail.swift */; };
 		BABA1000000000000000003B /* PlatformRefusal.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000039 /* PlatformRefusal.swift */; };
 		D6C0C001D6C0C001D6C0C001 /* GiftCardDetailsInfoCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C0B001D6C0B001D6C0B001 /* GiftCardDetailsInfoCard.swift */; };
 		D6C0C002D6C0C002D6C0C002 /* GiftCardDetailsMerchantHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C0B002D6C0B002D6C0B002 /* GiftCardDetailsMerchantHeader.swift */; };
@@ -1897,6 +1902,7 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		F264E9A940EF10070D2F941E /* libPods-WatchApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DC11A0747AD00DA7524204A /* libPods-WatchApp.a */; };
 		F2A3B4C5D6E7F8091A2B3C4D /* TransferAmountHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C9D0E1F2A3B4C5D6E7F809 /* TransferAmountHostingController.swift */; };
 		F4202BDB27E7066201C23A58 /* DWIdentityRegistrationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D826C39F49D5CD6EC19C8C8E /* DWIdentityRegistrationCoordinator.swift */; };
+		9CF7E38ADBDD66CB317E0DD5 /* AppLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51E2693039F322E5326196F0 /* AppLogger.swift */; };
 		F498EAE11BC0B3684DBABCC7 /* DiagnosticLogExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0448A6769BCF20987BE9960C /* DiagnosticLogExporter.swift */; };
 		F4C406090000000100000001 /* AddRedeemUrlChallengeToGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C406090000000100000003 /* AddRedeemUrlChallengeToGiftCardsTable.swift */; };
 		F4C406090000000100000002 /* AddRedeemUrlChallengeToGiftCardsTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C406090000000100000003 /* AddRedeemUrlChallengeToGiftCardsTable.swift */; };
@@ -1909,6 +1915,7 @@ F992AE17D040F0C0E6E79AF7 /* QuickVotingSheet.swift in Sources */ = {isa = PBXBui
 		FB66977F212C0B940034BE4F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB66977E212C0B940034BE4F /* LaunchScreen.storyboard */; };
 		FB8ACEB622E0502200EE5035 /* DWUpholdMainnetConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = FB8ACEB522E0502100EE5035 /* DWUpholdMainnetConstants.m */; };
 		FBE008F4BBBA9CC7BF299B93 /* PaymentProtocolTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE3B307E94B354351D4E3D3B /* PaymentProtocolTransport.swift */; };
+		9CE54A8994E0E12E6391BED4 /* AppLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51E2693039F322E5326196F0 /* AppLogger.swift */; };
 		FCDF0FF6DC442DBE3C9713FD /* DiagnosticLogExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0448A6769BCF20987BE9960C /* DiagnosticLogExporter.swift */; };
 		FF0000012DUMMYID001234567 /* DashSpend/PiggyCardsConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000042DUMMYID001234567 /* DashSpend/PiggyCardsConstants.swift */; };
 		FF0000022DUMMYID001234567 /* DashSpend/PiggyCardsConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF0000042DUMMYID001234567 /* DashSpend/PiggyCardsConstants.swift */; };
@@ -2008,9 +2015,11 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		BABA10000000000000000008 /* DiagnosticLogExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000007 /* DiagnosticLogExporterTests.swift */; };
 		BABA1000000000000000000A /* PaymentProtocolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000009 /* PaymentProtocolTests.swift */; };
 		6C1F7A00000000000000A004 /* GiftCardPaymentGuardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1F7A00000000000000A005 /* GiftCardPaymentGuardTests.swift */; };
+		6C1F7A00000000000000B004 /* DashSpendPurchaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1F7A00000000000000B005 /* DashSpendPurchaseTests.swift */; };
 		BABA1000000000000000000C /* PhraseRepairEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000000B /* PhraseRepairEngineTests.swift */; };
 		BABA1000000000000000000E /* WalletLifecycleTransitionStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000000D /* WalletLifecycleTransitionStateTests.swift */; };
 		BABA10000000000000000010 /* WalletLocalStoreResetterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA1000000000000000000F /* WalletLocalStoreResetterTests.swift */; };
+		D8347606677417243367A4CA /* AppLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BB875070A5292690CD7B554 /* AppLoggerTests.swift */; };
 		BABA10000000000000000012 /* WalletPreparationFailureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000011 /* WalletPreparationFailureTests.swift */; };
 		BABA10000000000000000014 /* HostRecoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000013 /* HostRecoveryTests.swift */; };
 		BABA1000000000000000001A /* PlatformProtocolVersionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABA10000000000000000019 /* PlatformProtocolVersionTests.swift */; };
@@ -2141,6 +2150,7 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		02357928871603392E797C9A /* SwiftDashSDKContactsService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKContactsService.swift; sourceTree = "<group>"; };
 		5ADPR0012E4A0000000000F1 /* DashPayContactAddressReadiness.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DashPayContactAddressReadiness.swift; sourceTree = "<group>"; };
 		0286D4D1CADBBD51F09BE8E8 /* SwapMenuStyles.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwapMenuStyles.swift; sourceTree = "<group>"; };
+		51E2693039F322E5326196F0 /* AppLogger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppLogger.swift; sourceTree = "<group>"; };
 		0448A6769BCF20987BE9960C /* DiagnosticLogExporter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DiagnosticLogExporter.swift; sourceTree = "<group>"; };
 		C017200000000000000CA1 /* ShieldedRecoverySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedRecoverySheet.swift; sourceTree = "<group>"; };
 		C017200000000000000DA1 /* ShieldedTransferStepList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShieldedTransferStepList.swift; sourceTree = "<group>"; };
@@ -2159,6 +2169,7 @@ FF9D88432B0292498590D377 /* QuickVotingViewModelTests.swift in Sources */ = {isa
 		0B208A9A34D0FFEEC796752C /* CoinJoinWithdrawalStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoinJoinWithdrawalStore.swift; sourceTree = "<group>"; };
 		7A30002130A1000000000021 /* AssetLockProbeStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AssetLockProbeStore.swift; sourceTree = "<group>"; };
 		BABA1000000000000000001B /* AssetLockFailureStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AssetLockFailureStore.swift; sourceTree = "<group>"; };
+		BABA10000000000000000F01 /* SwiftDashSDKErrorDetail.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SwiftDashSDKErrorDetail.swift; sourceTree = "<group>"; };
 		BABA10000000000000000039 /* PlatformRefusal.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PlatformRefusal.swift; sourceTree = "<group>"; };
 		0C1D2D397047E72188C90FAE /* DWAboutModel+MasternodeSync.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "DWAboutModel+MasternodeSync.swift"; sourceTree = "<group>"; };
 		0CE6B29178211061196A0936 /* Pods-WatchApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WatchApp.debug.xcconfig"; path = "Target Support Files/Pods-WatchApp/Pods-WatchApp.debug.xcconfig"; sourceTree = "<group>"; };
@@ -3167,6 +3178,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		AA0010072CA0B10001A0B107 /* SwapKitModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapKitModels.swift; sourceTree = "<group>"; };
 		AA00100A2CA0B10001A0B10A /* SwapKitAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapKitAPIService.swift; sourceTree = "<group>"; };
 		AA00100D2CA0B10001A0B10D /* SwapKitQuoteDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapKitQuoteDecodingTests.swift; sourceTree = "<group>"; };
+		C7C3D0DE1F0A4B2C8D9E7A01 /* CTXMerchantResponseDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CTXMerchantResponseDecodingTests.swift; sourceTree = "<group>"; };
 		C5A11E000000000000000004 /* SwapRouteAvailabilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapRouteAvailabilityTests.swift; sourceTree = "<group>"; };
 		AA0010102CA0B10001A0B110 /* swapkit_quote_response.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = swapkit_quote_response.json; sourceTree = "<group>"; };
 		AA0010112CA0B10001A0B111 /* SwapKitSwapProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwapKitSwapProvider.swift; sourceTree = "<group>"; };
@@ -3259,6 +3271,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		BAE12C051B2DEEF700895CC5 /* DWTodayViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DWTodayViewController.m; sourceTree = "<group>"; };
 		BB0000072DUMMYID001234567 /* DashSpend/DashSpendError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/DashSpendError.swift; sourceTree = "<group>"; };
 		6C1F7A00000000000000A003 /* DashSpend/GiftCardPaymentGuard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/GiftCardPaymentGuard.swift; sourceTree = "<group>"; };
+		6C1F7A00000000000000B003 /* DashSpend/GiftCardPurchaseSeams.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/GiftCardPurchaseSeams.swift; sourceTree = "<group>"; };
 		BB0000082DUMMYID001234567 /* DashSpend/DashSpendRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/DashSpendRepository.swift; sourceTree = "<group>"; };
 		BB0000092DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpend/DashSpendRepositoryFactory.swift; sourceTree = "<group>"; };
 		BCD0199D74601A6150ABC8D1 /* WalletAccountDetailViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WalletAccountDetailViewModel.swift; sourceTree = "<group>"; };
@@ -3767,9 +3780,11 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 		BABA10000000000000000007 /* DiagnosticLogExporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticLogExporterTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000009 /* PaymentProtocolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentProtocolTests.swift; sourceTree = "<group>"; };
 		6C1F7A00000000000000A005 /* GiftCardPaymentGuardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GiftCardPaymentGuardTests.swift; sourceTree = "<group>"; };
+		6C1F7A00000000000000B005 /* DashSpendPurchaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashSpendPurchaseTests.swift; sourceTree = "<group>"; };
 		BABA1000000000000000000B /* PhraseRepairEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhraseRepairEngineTests.swift; sourceTree = "<group>"; };
 		BABA1000000000000000000D /* WalletLifecycleTransitionStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletLifecycleTransitionStateTests.swift; sourceTree = "<group>"; };
 		BABA1000000000000000000F /* WalletLocalStoreResetterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletLocalStoreResetterTests.swift; sourceTree = "<group>"; };
+		9BB875070A5292690CD7B554 /* AppLoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLoggerTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000011 /* WalletPreparationFailureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletPreparationFailureTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000013 /* HostRecoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostRecoveryTests.swift; sourceTree = "<group>"; };
 		BABA10000000000000000019 /* PlatformProtocolVersionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformProtocolVersionTests.swift; sourceTree = "<group>"; };
@@ -6042,6 +6057,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				026DD8B86018AC05DE749DD4 /* RetiredCrowdNodeDefaults.swift */,
 				E70A780D1543343311C16402 /* Authentication */,
 				7FA744C4A6023E26A3B5B860 /* DWLogger.h */,
+				51E2693039F322E5326196F0 /* AppLogger.swift */,
 				0448A6769BCF20987BE9960C /* DiagnosticLogExporter.swift */,
 				9A461F75E1E170FFE3294337 /* DWAvatarUploadClient.swift */,
 			);
@@ -6168,6 +6184,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				754565C72DAA52A000DA4E8E /* DashSpend/CTX/CTXSpendRepository.swift */,
 				BB0000072DUMMYID001234567 /* DashSpend/DashSpendError.swift */,
 				6C1F7A00000000000000A003 /* DashSpend/GiftCardPaymentGuard.swift */,
+				6C1F7A00000000000000B003 /* DashSpend/GiftCardPurchaseSeams.swift */,
 				BB0000082DUMMYID001234567 /* DashSpend/DashSpendRepository.swift */,
 				BB0000092DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift */,
 				GG0000032DUMMYID001234567 /* GeoRestrictionService.swift */,
@@ -7107,9 +7124,11 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				BABA10000000000000000007 /* DiagnosticLogExporterTests.swift */,
 				BABA10000000000000000009 /* PaymentProtocolTests.swift */,
 				6C1F7A00000000000000A005 /* GiftCardPaymentGuardTests.swift */,
+				6C1F7A00000000000000B005 /* DashSpendPurchaseTests.swift */,
 				BABA1000000000000000000B /* PhraseRepairEngineTests.swift */,
 				BABA1000000000000000000D /* WalletLifecycleTransitionStateTests.swift */,
 				BABA1000000000000000000F /* WalletLocalStoreResetterTests.swift */,
+				9BB875070A5292690CD7B554 /* AppLoggerTests.swift */,
 				BABA10000000000000000011 /* WalletPreparationFailureTests.swift */,
 				BABA10000000000000000013 /* HostRecoveryTests.swift */,
 				BABA10000000000000000019 /* PlatformProtocolVersionTests.swift */,
@@ -7187,6 +7206,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				5A7E0C1D2E3F405162738498 /* VotingKeyImportTests.swift */,
 				AA00F1002FF0A10000A1B402 /* ExchangeAddressLookupContextTests.swift */,
 				AA00100D2CA0B10001A0B10D /* SwapKitQuoteDecodingTests.swift */,
+				C7C3D0DE1F0A4B2C8D9E7A01 /* CTXMerchantResponseDecodingTests.swift */,
 				C5A11E000000000000000004 /* SwapRouteAvailabilityTests.swift */,
 				5EAD222130A0000000A1B202 /* DashAmountFormatterTests.swift */,
 				DA57A1010000000000000001 /* PastedAmountNormalizationTests.swift */,
@@ -7238,6 +7258,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				A1FA10C10000000000000001 /* ShieldedAssetLocksInFlight.swift */,
 				7A30002130A1000000000021 /* AssetLockProbeStore.swift */,
 				BABA1000000000000000001B /* AssetLockFailureStore.swift */,
+				BABA10000000000000000F01 /* SwiftDashSDKErrorDetail.swift */,
 				BABA10000000000000000039 /* PlatformRefusal.swift */,
 				UTR0B0002FA0000000000001 /* UnconfirmedTransactionRemover.swift */,
 				INSGT0001000000000000001 /* InsightExplorerAPI.swift */,
@@ -9737,6 +9758,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				AA0000042DUMMYID001234567 /* DashSpend/GiftCardProvider.swift in Sources */,
 				BB0000012DUMMYID001234567 /* DashSpend/DashSpendError.swift in Sources */,
 				6C1F7A00000000000000A001 /* DashSpend/GiftCardPaymentGuard.swift in Sources */,
+				6C1F7A00000000000000B001 /* DashSpend/GiftCardPurchaseSeams.swift in Sources */,
 				BB0000032DUMMYID001234567 /* DashSpend/DashSpendRepository.swift in Sources */,
 				BB0000052DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift in Sources */,
 				GG0000012DUMMYID001234567 /* GeoRestrictionService.swift in Sources */,
@@ -10180,6 +10202,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				D60828F846490A6462E351E9 /* CoinJoinWithdrawalStore.swift in Sources */,
 				7A30002330A1000000000023 /* AssetLockProbeStore.swift in Sources */,
 				BABA1000000000000000001D /* AssetLockFailureStore.swift in Sources */,
+				BABA10000000000000000F03 /* SwiftDashSDKErrorDetail.swift in Sources */,
 				BABA1000000000000000003B /* PlatformRefusal.swift in Sources */,
 				950A3F8FA0D89530F227FE25 /* CoinJoinWithdrawalTxSet.swift in Sources */,
 				99FAE80A3A63E073A2EB5209 /* PaymentProtocolWireFormat.swift in Sources */,
@@ -10200,6 +10223,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				6FAE60AB81526ADAE67D1BE7 /* BIP70PaymentService+App.swift in Sources */,
 				06E16A070A3C48883BBDA137 /* BIP70InteractiveCoordinator.swift in Sources */,
 				3B9C0EAAC6DE69DBF8271920 /* BIP70PaymentOutputFactory.swift in Sources */,
+				9CF7E38ADBDD66CB317E0DD5 /* AppLogger.swift in Sources */,
 				F498EAE11BC0B3684DBABCC7 /* DiagnosticLogExporter.swift in Sources */,
 				197F19679BBAABA2E99503B8 /* DWAvatarUploadClient.swift in Sources */,
 				47B81672DEBF6B7B565F0AC8 /* HomeUsernameRow.swift in Sources */,
@@ -10241,9 +10265,11 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				BABA10000000000000000008 /* DiagnosticLogExporterTests.swift in Sources */,
 				BABA1000000000000000000A /* PaymentProtocolTests.swift in Sources */,
 				6C1F7A00000000000000A004 /* GiftCardPaymentGuardTests.swift in Sources */,
+				6C1F7A00000000000000B004 /* DashSpendPurchaseTests.swift in Sources */,
 				BABA1000000000000000000C /* PhraseRepairEngineTests.swift in Sources */,
 				BABA1000000000000000000E /* WalletLifecycleTransitionStateTests.swift in Sources */,
 				BABA10000000000000000010 /* WalletLocalStoreResetterTests.swift in Sources */,
+				D8347606677417243367A4CA /* AppLoggerTests.swift in Sources */,
 				BABA10000000000000000012 /* WalletPreparationFailureTests.swift in Sources */,
 				BABA10000000000000000014 /* HostRecoveryTests.swift in Sources */,
 				BABA1000000000000000001A /* PlatformProtocolVersionTests.swift in Sources */,
@@ -10321,6 +10347,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				5A7E0C1D2E3F405162738497 /* VotingKeyImportTests.swift in Sources */,
 				AA00F1012FF0A10000A1B402 /* ExchangeAddressLookupContextTests.swift in Sources */,
 				AA00100E2CA0B10001A0B10E /* SwapKitQuoteDecodingTests.swift in Sources */,
+				C7C3D0DE1F0A4B2C8D9E7A02 /* CTXMerchantResponseDecodingTests.swift in Sources */,
 				C5A11E000000000000000005 /* SwapRouteAvailabilityTests.swift in Sources */,
 				5EAD222230A0000000A1B202 /* DashAmountFormatterTests.swift in Sources */,
 				DA57A1010000000000000002 /* PastedAmountNormalizationTests.swift in Sources */,
@@ -10790,6 +10817,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				AA0000052DUMMYID001234567 /* DashSpend/GiftCardProvider.swift in Sources */,
 				BB0000022DUMMYID001234567 /* DashSpend/DashSpendError.swift in Sources */,
 				6C1F7A00000000000000A002 /* DashSpend/GiftCardPaymentGuard.swift in Sources */,
+				6C1F7A00000000000000B002 /* DashSpend/GiftCardPurchaseSeams.swift in Sources */,
 				BB0000042DUMMYID001234567 /* DashSpend/DashSpendRepository.swift in Sources */,
 				BB0000062DUMMYID001234567 /* DashSpend/DashSpendRepositoryFactory.swift in Sources */,
 				GG0000022DUMMYID001234567 /* GeoRestrictionService.swift in Sources */,
@@ -11279,6 +11307,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				973AD0F3986AFFDBA78ED560 /* CoinJoinWithdrawalStore.swift in Sources */,
 				7A30002230A1000000000022 /* AssetLockProbeStore.swift in Sources */,
 				BABA1000000000000000001C /* AssetLockFailureStore.swift in Sources */,
+				BABA10000000000000000F02 /* SwiftDashSDKErrorDetail.swift in Sources */,
 				BABA1000000000000000003A /* PlatformRefusal.swift in Sources */,
 				931B18EAFD7F2563BFAAF21E /* CoinJoinWithdrawalTxSet.swift in Sources */,
 				2556F3C5C72D70A771C6C61A /* PaymentProtocolWireFormat.swift in Sources */,
@@ -11305,6 +11334,7 @@ B5308C627D8AF2254F41BB6A /* QuickVotingSheet.swift */ = {isa = PBXFileReference;
 				6A41B9080AA4477194582230 /* CreateInstantUsernameSheet.swift in Sources */,
 				4EBBA2659FFA168700F2242C /* UsernameFundingPrivacyScreen.swift in Sources */,
 				4836792999634AC6B1D00392 /* VerifyIdentityOfferSheet.swift in Sources */,
+				9CE54A8994E0E12E6391BED4 /* AppLogger.swift in Sources */,
 				FCDF0FF6DC442DBE3C9713FD /* DiagnosticLogExporter.swift in Sources */,
 				4720E26BFE56A4559C602ED5 /* ShieldedIdentityFundingReadiness.swift in Sources */,
 				C0F1E5ED0A14B2C3D4E5F601 /* ContestedUsernameFee.swift in Sources */,

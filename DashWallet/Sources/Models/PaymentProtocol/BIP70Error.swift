@@ -27,6 +27,9 @@ enum BIP70CertificateFailure: Equatable {
 enum BIP70Error: Error, Equatable {
     /// The payment-request / payment URL was missing or unparseable.
     case badURL
+    /// https was required and a URL on the way was not https: the request URL, a BIP73
+    /// uri-list target, the `payment_url`, or an HTTP redirect from any of them.
+    case insecureTransport
     /// HTTP failure: non-2xx status, missing/non-HTTP response, or wrong content type.
     case unexpectedResponse(host: String?)
     /// Response body exceeded the 50 KB BIP70 cap.
@@ -73,6 +76,8 @@ extension BIP70Error: LocalizedError {
         switch self {
         case .badURL:
             return String(localized: "Invalid payment request URL.", comment: "BIP70 payment error")
+        case .insecureTransport:
+            return String(localized: "This payment request does not use a secure connection.", comment: "Payment request refused")
         case let .unexpectedResponse(host):
             guard let host else {
                 return String(localized: "Unexpected response from the payment server.", comment: "BIP70 payment error")

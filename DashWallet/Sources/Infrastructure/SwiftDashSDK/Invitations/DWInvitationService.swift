@@ -21,7 +21,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 @MainActor
@@ -42,9 +41,7 @@ final class DWInvitationService: DWInvitationServicing {
 
     static let shared = DWInvitationService()
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.invitations")
+    private static let logger = AppLogger(category: "swift-sdk-migration.invitations")
 
     enum ServiceError: LocalizedError {
         case noWallet

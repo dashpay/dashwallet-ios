@@ -13,7 +13,6 @@
 //
 
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 enum InvitationTier: Equatable {
@@ -293,6 +292,30 @@ enum InvitationClaimFailure: Equatable {
         return nil
     }
 
+    /// What a refused claim says about an earlier claim of the same voucher.
+    enum EarlierClaim: Equatable {
+        /// The wallet records the invitation's identity: the earlier claim
+        /// was this wallet's.
+        case recordedByThisWallet
+        /// The voucher is spent by an identity the wallet does not record:
+        /// someone else's, or this wallet's own claim whose result was lost.
+        case consumedByUnknownIdentity
+    }
+
+    /// The two errors the SDK returns for a repeated claim in place of the
+    /// identity; nil for every other error. Only the claim's own error is
+    /// read, not one wrapped by the coordinator.
+    static func earlierClaim(_ error: Error) -> EarlierClaim? {
+        switch error {
+        case PlatformWalletError.invitationClaimedByThisWallet:
+            return .recordedByThisWallet
+        case PlatformWalletError.assetLockAlreadyConsumed:
+            return .consumedByUnknownIdentity
+        default:
+            return nil
+        }
+    }
+
     /// The user-facing wording.
     var message: String {
         switch self {
@@ -350,9 +373,7 @@ enum InvitationNotReadyPolicy {
 @MainActor
 enum InvitationValidator {
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.invitations")
+    private static let logger = AppLogger(category: "swift-sdk-migration.invitations")
 
     /// nil when the wallet is not ready to be asked (not hydrated yet), or
     /// when the active wallet or network is no longer the invitation's — the
@@ -382,10 +403,10 @@ enum InvitationValidator {
                 do {
                     let status = try await wallet.invitationClaimStatus(uri: uri)
                     logger.info(
-                        "🎟️ INVITE :: status amount=\(status.amountDuffs, privacy: .public) claimed=\(status.alreadyClaimed, privacy: .public)")
+                        "🎟️ INVITE :: status amount=\(status.amountDuffs, privacy: .private) claimed=\(status.alreadyClaimed, privacy: .public)")
                     return status
                 } catch {
-                    logger.info("🎟️ INVITE :: status failed: \(String(describing: error), privacy: .public)")
+                    logger.info("🎟️ INVITE :: status failed: \(error)")
                     throw error
                 }
             })

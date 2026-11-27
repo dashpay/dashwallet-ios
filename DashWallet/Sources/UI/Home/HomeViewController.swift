@@ -355,7 +355,7 @@ class HomeViewController: DWBasePayViewController, NavigationBarDisplayable {
             textBlock1: String(localized: "You have \(amount) in CoinJoin mixed coins. CoinJoin is no longer supported — move them to your spendable balance.", comment: "CoinJoin"),
             positiveButtonText: String(localized: "Move funds", comment: "CoinJoin"),
             positiveButtonAction: {
-                DWLogger.log("HomeViewController: sweep invoked from Home popup (\(amount))")
+                DWLogger.log("HomeViewController: sweep invoked from Home popup")
                 self.viewModel.showCoinJoinSweepDialog = false
                 Task { @MainActor in
                     // The post-sync popup (LegacyModalDialog) is mid-dismissal here —
@@ -582,6 +582,24 @@ extension HomeViewController: ShortcutsActionDelegate {
             showBackupWarningThenSelect(position: position)
         } else {
             presentShortcutSelection(for: position)
+        }
+    }
+}
+
+// MARK: - DWQRScanModelDelegate
+
+extension HomeViewController {
+    /// The Home scanner (the Scan shortcut, `dashwallet://scanqr`) also reads
+    /// DashConnect codes, and opens the Connections screen with them: the
+    /// same place a tapped DashConnect link goes, but as a scan.
+    ///
+    /// The scan delegate is `DWBasePayViewController`; only Home answers this
+    /// optional half, so the lock screen and the Send scanners keep treating
+    /// these codes as not-a-payment.
+    @objc(qrScanModel:didScanDashConnectURI:)
+    func qrScanModel(_ viewModel: DWQRScanModel, didScanDashConnectURI uri: String) {
+        dismiss(animated: true) { [weak self] in
+            (self?.tabBarController as? MainTabbarController)?.openDashConnect(uri, scanned: true)
         }
     }
 }

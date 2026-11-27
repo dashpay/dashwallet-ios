@@ -28,6 +28,9 @@ struct DashSpendPayScreen: View {
     @State var showConfirmToast: Bool
     @State private var showErrorDialog = false
     @State private var showCustomErrorDialog = false
+    /// A recorded purchase whose payment outcome is unknown, shown with a notice before
+    /// its gift card details.
+    @State private var pendingPurchase: PendingPurchase?
     @State private var errorMessage = ""
     @State private var errorTitle = ""
     @State private var quantities: [Decimal: Int] = [:]
@@ -97,6 +100,8 @@ struct DashSpendPayScreen: View {
                     )
                 }
             }
+            // The notice covers the form on screen; VoiceOver must not reach Pay behind it.
+            .accessibilityHidden(pendingPurchase != nil)
             overlays
         }
         .background(Color.dash.primaryBackground)
@@ -163,6 +168,24 @@ struct DashSpendPayScreen: View {
             .edgesIgnoringSafeArea(.all)
         }
 
+        if let pendingPurchase {
+            LegacyModalDialog(
+                style: .warning,
+                icon: .system("exclamationmark.triangle.fill"),
+                heading: String(localized: "Confirmation pending", comment: "Gift card payment result unknown"),
+                textBlock1: pendingPurchase.notice,
+                positiveButtonText: String(localized: "OK", comment: ""),
+                positiveButtonAction: {
+                    self.pendingPurchase = nil
+                    presentationMode.wrappedValue.dismiss()
+                    onPurchaseSuccess?(pendingPurchase.txId)
+                }
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.dash.backgroundOverlay)
+            .edgesIgnoringSafeArea(.all)
+        }
+
         if showCustomErrorDialog {
             LegacyModalDialog(
                 style: .error,
@@ -184,6 +207,9 @@ struct DashSpendPayScreen: View {
     }
 
     private func handlePayAction() {
+        // A purchase whose payment outcome is unknown is waiting for its notice to be read:
+        // no second order from this screen.
+        guard pendingPurchase == nil else { return }
         if !viewModel.isUserSignedIn { showSignInError(); return }
         let snapshotQuantities = quantities.filter { $0.value > 0 }
         let snapshotTotal = snapshotQuantities.reduce(Decimal(0)) { $0 + $1.key * Decimal($1.value) }
@@ -227,8 +253,13 @@ struct DashSpendPayScreen: View {
                 // its poller is what turns the pending order into a card. Reporting "Purchase
                 // Failed" here is what previously left customers paying for an invisible card.
                 DWLogger.log("Gift card purchase pending network confirmation: \(reason)")
-                presentationMode.wrappedValue.dismiss()
-                onPurchaseSuccess?(txId)
+                if let notice = viewModel.unknownOutcomeNotice {
+                    // The buyer reads the notice first; its OK goes on to the card details.
+                    pendingPurchase = PendingPurchase(txId: txId, notice: notice)
+                } else {
+                    presentationMode.wrappedValue.dismiss()
+                    onPurchaseSuccess?(txId)
+                }
             } catch {
                 showPurchaseError(error)
             }
@@ -250,7 +281,7 @@ struct DashSpendPayScreen: View {
             errorMessage = error.localizedDescription
             showErrorDialog = true
 
-            DWLogger.log("Gift card purchase failed with error: \(error)")
+            DWLogger.log("Gift card purchase failed with error: \(AppLogMessage.errorSummary(error))")
         }
     }
 
@@ -259,6 +290,13 @@ struct DashSpendPayScreen: View {
         errorMessage = String(localized: "You need to sign in to DashSpend to purchase gift cards.", comment: "DashSpend")
         showErrorDialog = true
     }
+}
+
+/// A purchase recorded against `txId` whose payment outcome is unknown, with what the buyer
+/// is told about it.
+private struct PendingPurchase {
+    let txId: Data
+    let notice: String
 }
 
 /// The purchase sheet: the Confirm sheet, which stays up with a spinner while the provider

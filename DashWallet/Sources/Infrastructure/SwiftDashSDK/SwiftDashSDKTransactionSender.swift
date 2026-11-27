@@ -25,7 +25,6 @@
 
 import CommonCrypto
 import Foundation
-import OSLog
 import SwiftDashSDK
 
 @objc(DWSwiftDashSDKTransactionSender)
@@ -33,9 +32,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
 
     // MARK: - Logging
 
-    private static let logger = Logger(
-        subsystem: "org.dashfoundation.dash",
-        category: "swift-sdk-migration.transaction-sender")
+    private static let logger = AppLogger(category: "swift-sdk-migration.transaction-sender")
 
     // MARK: - CoinJoin sweep constants (documented mirrors; core is the backstop)
 
@@ -375,8 +372,7 @@ final class SwiftDashSDKTransactionSender: NSObject {
                 } else {
                     firstOther = firstOther ?? error
                 }
-                Self.logger.error(
-                    "💸 TXSEND :: \(label, privacy: .public) chunk \(index + 1, privacy: .public) failed to broadcast, continuing: \(String(describing: error), privacy: .public)")
+                Self.logger.error(Self.sweepChunkFailureLine(label: label, index: index, error: error))
             }
         }
         if txids.isEmpty, let firstUnknown {
@@ -967,15 +963,39 @@ final class SwiftDashSDKTransactionSender: NSObject {
             outcome = try captured.get()
         }
 
-        switch outcome {
-        case .accepted(let txid):
-            logger.info("💸 TXSEND :: broadcast accepted — sdkTxid=\(txid, privacy: .public) txHash=\(displayHash, privacy: .public)")
-        case .rejected(let txid, let reason):
-            logger.error("💸 TXSEND :: broadcast rejected — sdkTxid=\(txid, privacy: .public) txHash=\(displayHash, privacy: .public) reason=\(reason, privacy: .public)")
-        case .unknown(let txid, let reason):
-            logger.error("💸 TXSEND :: broadcast unknown — sdkTxid=\(txid, privacy: .public) txHash=\(displayHash, privacy: .public) reason=\(reason, privacy: .public)")
+        if case .accepted = outcome {
+            logger.info(broadcastLine(outcome, displayHash: displayHash))
+        } else {
+            logger.error(broadcastLine(outcome, displayHash: displayHash))
         }
         return outcome
+    }
+
+    /// The TXSEND line for a broadcast outcome: the full txid and hash, and
+    /// the network's reason as returned (owner decision, spec §1).
+    static func broadcastLine(_ outcome: CoreTransactionBroadcastOutcome, displayHash: String) -> AppLogMessage {
+        switch outcome {
+        case .accepted(let txid):
+            "💸 TXSEND :: broadcast accepted — sdkTxid=\(txid, privacy: .public) txHash=\(displayHash, privacy: .public)"
+        case .rejected(let txid, let reason):
+            "💸 TXSEND :: broadcast rejected — sdkTxid=\(txid, privacy: .public) txHash=\(displayHash, privacy: .public) reason=\(reason, privacy: .public)"
+        case .unknown(let txid, let reason):
+            "💸 TXSEND :: broadcast unknown — sdkTxid=\(txid, privacy: .public) txHash=\(displayHash, privacy: .public) reason=\(reason, privacy: .public)"
+        }
+    }
+
+    /// The sweep loop's line for one failed part.
+    /// A refused or unconfirmed part keeps its txid and the network's reason
+    /// (ADR-0061, like `broadcastLine`); any other failure is its Error summary.
+    static func sweepChunkFailureLine(label: String, index: Int, error: Error) -> AppLogMessage {
+        switch error {
+        case let SendError.transactionRejected(txid, reason):
+            "💸 TXSEND :: \(label, privacy: .public) chunk \(index + 1, privacy: .public) rejected — txid=\(txid, privacy: .public) reason=\(reason, privacy: .public)"
+        case let SendError.transactionStatusUnknown(txid, reason):
+            "💸 TXSEND :: \(label, privacy: .public) chunk \(index + 1, privacy: .public) unknown — txid=\(txid, privacy: .public) reason=\(reason, privacy: .public)"
+        default:
+            "💸 TXSEND :: \(label, privacy: .public) chunk \(index + 1, privacy: .public) failed to broadcast, continuing: \(error)"
+        }
     }
 
     /// Require a positive Core acceptance verdict for programmatic send paths
