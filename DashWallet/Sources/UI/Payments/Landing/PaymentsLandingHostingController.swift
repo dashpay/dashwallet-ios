@@ -72,6 +72,10 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
     /// Set by `didEnterBackground`: only a return from the background is a
     /// gain of focus, not `willResignActive` (Control Center, banners).
     private var wentToBackground = false
+    /// True between `viewDidAppear` and `viewWillDisappear`, pushed step
+    /// included: a return from the background begins a session only while
+    /// Receive is on screen.
+    private var isSurfaceOnScreen = false
 
     @objc
     init(activeTab: Int) {
@@ -273,6 +277,7 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
         // here as well so returning from transaction details can resume the
         // same receive session (or start a fresh "Receive another" session).
         viewModel.setReceiptWatchingObscured(false)
+        isSurfaceOnScreen = true
         isPushingReceiveStep = false
         receiveStepObservers.removeAll()
         viewModel.setReceiveSurfaceVisible(true)
@@ -284,6 +289,7 @@ final class PaymentsLandingHostingController: DWBasePayViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        isSurfaceOnScreen = false
         // Stepping deeper into the receive flow is not leaving it. Everything
         // else — a tab change, a dismissal, a pop — still puts the session to
         // sleep.

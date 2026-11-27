@@ -975,9 +975,9 @@ final class SwiftDashSDKTransactionSender: NSObject {
         switch outcome {
         case .accepted(let txid):
             logger.info("💸 TXSEND :: broadcast accepted — sdkTxid=\(txid, privacy: .public) txHash=\(displayHash, privacy: .public)")
-        case .rejected(let txid, let reason):
+        case .rejected(let txid, let reason, _):
             logger.error("💸 TXSEND :: broadcast rejected — sdkTxid=\(txid, privacy: .public) txHash=\(displayHash, privacy: .public) reason=\(reason, privacy: .public)")
-        case .unknown(let txid, let reason):
+        case .unknown(let txid, let reason, _):
             logger.error("💸 TXSEND :: broadcast unknown — sdkTxid=\(txid, privacy: .public) txHash=\(displayHash, privacy: .public) reason=\(reason, privacy: .public)")
         }
         return outcome
@@ -992,9 +992,9 @@ final class SwiftDashSDKTransactionSender: NSObject {
         switch outcome {
         case .accepted(let txid):
             return txid
-        case .rejected(let txid, let reason):
+        case .rejected(let txid, let reason, _):
             throw SendError.transactionRejected(txid: txid, reason: reason)
-        case .unknown(let txid, let reason):
+        case .unknown(let txid, let reason, _):
             throw SendError.transactionStatusUnknown(txid: txid, reason: reason)
         }
     }
