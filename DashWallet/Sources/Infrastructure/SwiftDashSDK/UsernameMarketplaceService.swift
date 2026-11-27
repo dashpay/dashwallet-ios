@@ -575,7 +575,7 @@ struct UsernameMarketplaceService {
                 return String(localized: "This username is not for sale.", comment: "Username marketplace")
             case .priceChanged:
                 return String(localized: "The seller changed the price before your purchase was accepted. Review the new price and try again.", comment: "Username marketplace")
-            case let .insufficientIdentityCredits(_, required, available):
+            case let .insufficientIdentityCredits(_, required, available, _):
                 return String(localized: "Your identity balance can't cover this purchase: \((required / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH needed (including a fee reserve), \((available / 1000).dashAmount.formattedDashAmountWithoutCurrencySymbol) DASH available. Top up your identity balance and try again.", comment: "Username marketplace")
             case .contestedNameNotTradable:
                 return String(localized: "This name is in an active network vote and can't be traded until the contest ends.", comment: "Username marketplace")
