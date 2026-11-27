@@ -1228,9 +1228,17 @@ struct LiveShieldedPlatformSend: ShieldedPlatformSending {
     }
 }
 
-/// The identity top-up from Platform credits (`IdentityCreditsTopUp.fromPlatform`, the core of the Top Up sheet). A
+/// The identity top-up from Platform credits (`IdentityCreditsTopUp.fromPlatform`, the core of the Top Up sheet). Every
+/// identity, the holder's Current one too, takes the SDK's top-up for any identity (dashpay/platform#5929): it reads
+/// the identity from Platform, so one Platform does not show yet is `identityNotFound` before anything is signed. A
 /// failure before any credits moved is `notStarted`.
 struct LiveIdentityTopUpFromCredits: IdentityTopUpFromCreditsSending {
+    /// The wallet or its store is not open, so nothing was planned or sent.
+    struct WalletNotOpen: Error {}
+
+    /// Tops up `identityId` with `amountDuffs` from the Platform addresses.
+    var topUp: @MainActor (_ identityId: Data, _ amountDuffs: UInt64) async throws -> Void = Self.topUpFromPlatform
+
     func run(
         route: SendRoute, destination: Destination, amount: UInt64, bindingFeeDuffs: UInt64
     ) async -> CreditsSendResult {
@@ -1239,20 +1247,33 @@ struct LiveIdentityTopUpFromCredits: IdentityTopUpFromCreditsSending {
 
     @MainActor
     private func topUp(route: SendRoute, destination: Destination, amount: UInt64) async -> CreditsSendResult {
-        guard let wallet = SwiftDashSDKHost.shared.wallet,
-              let modelContainer = SwiftDashSDKHost.shared.modelContainer,
-              let identityId = ScriptAddressCodec.base58Decode(destination.text), identityId.count == 32
+        guard let identityId = ScriptAddressCodec.base58Decode(destination.text), identityId.count == 32
         else { return .notStarted }
         precondition(route == .platformToIdentity, "\(route) is not an identity top-up from credits route")
         do {
-            _ = try await IdentityCreditsTopUp().fromPlatform(
-                identityId: identityId, amountDuffs: amount, wallet: wallet, modelContainer: modelContainer)
+            try await topUp(identityId, amount)
             return .completed
         } catch is PlatformPaymentIdentityFundingPolicy.PlanningError {
+            return .notStarted
+        } catch is WalletNotOpen {
+            return .notStarted
+        } catch PlatformWalletError.notFound {
+            // FFI 98 here is `WalletRemovedBeforeSend`: the wallet was removed or re-created before the top-up was
+            // broadcast (signing may already have run), so nothing was sent and the send starts over from preparation.
             return .notStarted
         } catch {
             return .failed(error, handedOver: false)
         }
+    }
+
+    @MainActor
+    private static func topUpFromPlatform(identityId: Data, amountDuffs: UInt64) async throws {
+        guard let wallet = SwiftDashSDKHost.shared.wallet,
+              let modelContainer = SwiftDashSDKHost.shared.modelContainer
+        else { throw WalletNotOpen() }
+        _ = try await IdentityCreditsTopUp().fromPlatform(
+            identityId: identityId, amountDuffs: amountDuffs, wallet: wallet, modelContainer: modelContainer,
+            anyIdentity: true)
     }
 }
 

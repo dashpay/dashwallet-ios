@@ -310315,6 +310315,9 @@
         }
       }
     },
+    "Message in the link: %@" : {
+      "comment" : "External send"
+    },
     "Min limit is %@" : {
       "comment" : "DashConnect funding limit keypad: the smallest limit with its unit",
       "localizations" : {
@@ -386309,9 +386312,6 @@
           }
         }
       }
-    },
-    "Platform can't pay someone else's identity yet" : {
-      "comment" : "External send"
     },
     "Platform can't pay this kind of Platform address" : {
       "comment" : "External send"
@@ -572312,6 +572312,9 @@
         }
       }
     },
+    "This identity could not be found. Your funds were not sent." : {
+      "comment" : "External send"
+    },
     "This identity is being used for your pending username request." : {
       "comment" : "Identities",
       "localizations" : {
@@ -572574,9 +572577,6 @@
           }
         }
       }
-    },
-    "This identity was not found in your wallet. Your funds were not sent." : {
-      "comment" : "External send"
     },
     "This invitation couldn't be used. Check it on the Home screen." : {
       "comment" : "DashPay Invitations",

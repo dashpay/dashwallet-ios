@@ -128,9 +128,13 @@ enum SendOutcome {
         // Refusals of an asset lock's coin selection: nothing was built or broadcast.
         case .assetLockInsufficientFunds, .noSelectableInputs, .assetLockTooManyInputs:
             return .notSent(.failed)
-        // The only producer of this code is the FFI's `identity_manager_remove_identity`, which no send calls.
+        // The external identity top-up throws it, before anything is signed, for an identity Platform does not know.
         case .identityNotFound:
             return .notSent(.identityNotFound)
+        // The address top-ups read the identity from Platform before they sign (dashpay/platform#5860): a failed
+        // read (80) sent nothing.
+        case .identityLookupFailed:
+            return .notSent(.failed)
         // The Platform withdrawal's address network check runs before signing; the Platform-to-shielded capacity
         // checks run during input selection and the input fetch, before the proof is built.
         case .invalidNetwork, .shieldedInsufficientBalance:
@@ -211,7 +215,7 @@ enum NotSentReason {
                 comment: "External send")
         case .identityNotFound:
             return String(
-                localized: "This identity was not found in your wallet. Your funds were not sent.",
+                localized: "This identity could not be found. Your funds were not sent.",
                 comment: "External send")
         case .belowMinimum:
             return String(

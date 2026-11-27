@@ -47,11 +47,14 @@ and fixes the freeze where it comes from, with the existing `nonisolated documen
 - Android can bind the same operation later.
 
 **Negative**
-- Two more platform PRs and a `.platform-ref` bump; until they merge the app PR cannot use them.
+- Two more platform PRs and a `.platform-ref` bump. They merged (dashpay/platform#5860, #5862, #5929), and
+  the app pins `v5.2-dev` at `59fd81f181`.
 - The external top-up fetches the identity on every send (one more Platform request).
 
 **Neutral**
-- The holder's own identity keeps the existing managed path.
+- The send pays the holder's own identity the same way: dashpay/platform#5929 merged the managed and the
+  external address top-ups into one top-up for any identity, which the send calls for every identity. The
+  Top Up sheet keeps the managed path.
 - Together with ADR-0043 and the Identity → Shielded binding of ADR-0036, the feature's platform
   surface grows from one binding to several PRs; ADR-0036's two-surface decision holds.
 

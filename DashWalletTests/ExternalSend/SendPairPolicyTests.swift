@@ -75,7 +75,7 @@ final class SendPairPolicyTests: XCTestCase {
             PairCase("platform -> shielded", .platform, shielded, .route(.platformToShielded)),
             PairCase("platform -> platform", .platform, platform, .route(.platformToPlatform)),
             PairCase("platform -> own identity", .platform, ownIdentity, .route(.platformToIdentity)),
-            PairCase("platform -> other identity", .platform, otherIdentity, .unavailable(.platformToOtherIdentity)),
+            PairCase("platform -> other identity", .platform, otherIdentity, .route(.platformToIdentity)),
 
             PairCase("identity -> core", .identity, core, .route(.identityToCore)),
             PairCase("identity -> shielded (ADR-0041)", .identity, shielded, .unavailable(.notSupportedYet)),
@@ -167,17 +167,13 @@ final class SendPairPolicyTests: XCTestCase {
         // Not the Current identity, even if the wallet owns it: Core cannot pay it.
         let sibling = destination(.identityID, text: "second-identity-of-this-wallet")
         XCTAssertEqual(decide(.core, sibling), .unavailable(.coreToOtherIdentity))
-        XCTAssertEqual(decide(.platform, sibling), .unavailable(.platformToOtherIdentity))
+        XCTAssertEqual(decide(.platform, sibling), .route(.platformToIdentity))
     }
 
-    /// At the pinned SDK the top-up from Platform addresses refuses an identity the wallet does not manage
-    /// (`IdentityNotFound`), so only the holder's own Current identity is payable from Platform.
-    func testPlatformPaysOnlyTheOwnCurrentIdentity() {
+    /// The holder's own Current identity and someone else's are the same route.
+    func testPlatformPaysTheOwnAndSomeoneElsesIdentity() {
         XCTAssertEqual(decide(.platform, destination(.identityID, text: ownID)), .route(.platformToIdentity))
-        XCTAssertEqual(decide(.platform, destination(.identityID, text: otherID)),
-                       .unavailable(.platformToOtherIdentity))
-        XCTAssertEqual(UnavailableReason.platformToOtherIdentity.localizedMessage,
-                       "Platform can't pay someone else's identity yet")
+        XCTAssertEqual(decide(.platform, destination(.identityID, text: otherID)), .route(.platformToIdentity))
     }
 
     func testWithoutACurrentIdentityEveryIdentityIDIsSomeoneElses() {
@@ -186,7 +182,7 @@ final class SendPairPolicyTests: XCTestCase {
         XCTAssertEqual(SendPairPolicy.decide(source: .core, destination: dest, facts: noOwn),
                        .unavailable(.coreToOtherIdentity))
         XCTAssertEqual(SendPairPolicy.decide(source: .platform, destination: dest, facts: noOwn),
-                       .unavailable(.platformToOtherIdentity))
+                       .route(.platformToIdentity))
     }
 
     /// AC-07: without a Current identity the Identity source cannot pay anything, whatever reads the decision
@@ -221,10 +217,10 @@ final class SendPairPolicyTests: XCTestCase {
     func testUnavailableReasonsAreDistinctAndCarryText() {
         let reasons: [UnavailableReason] = [.coreToOtherIdentity, .coreToPlatformAddress,
                                             .platformToScriptFormPlatformAddress, .identityToOwnIdentity,
-                                            .notSupportedYet, .paymentRequestCoreOnly, .platformToOtherIdentity,
+                                            .notSupportedYet, .paymentRequestCoreOnly,
                                             .noCurrentIdentity]
-        XCTAssertEqual(Set(reasons).count, 8)
-        XCTAssertEqual(Set(reasons.map(\.localizedMessage)).count, 8)
+        XCTAssertEqual(Set(reasons).count, 7)
+        XCTAssertEqual(Set(reasons.map(\.localizedMessage)).count, 7)
         for reason in reasons {
             XCTAssertFalse(reason.localizedMessage.isEmpty, "\(reason)")
         }
@@ -256,9 +252,9 @@ final class SendPairPolicyTests: XCTestCase {
     }
 
     func testStartingSourceSkipsASourceThatCannotPayTheDestination() {
-        // Core and Platform hold the most but cannot pay someone else's Identity ID.
+        // Core holds the most but cannot pay someone else's Identity ID; Shielded and Platform can.
         let dest = destination(.identityID, text: otherID)
-        XCTAssertEqual(start(dest, balances(9, 0, 5)).source, .shielded)
+        XCTAssertEqual(start(dest, balances(9, 0, 5)).source, .platform)
         XCTAssertEqual(start(dest, balances(9, 3, 5)).source, .shielded)
         XCTAssertEqual(start(destination(.identityID, text: ownID), balances(0, 0, 5)).source, .platform)
     }
@@ -331,10 +327,10 @@ final class SendPairPolicyTests: XCTestCase {
         XCTAssertNotEqual(result.source, .identity)
     }
 
-    func testPinnedPlatformWithSomeoneElsesIdentityIDIsReplacedAndFlagged() {
+    func testPinnedPlatformWithSomeoneElsesIdentityIDIsKept() {
         let result = start(destination(.identityID, text: otherID), balances(0, 2, 9), pinned: .platform)
-        XCTAssertEqual(result.source, .shielded)
-        XCTAssertTrue(result.sourceChanged)
+        XCTAssertEqual(result.source, .platform)
+        XCTAssertFalse(result.sourceChanged)
     }
 
     func testPinnedCoreWithScriptFormPlatformAddressIsReplacedAndFlagged() {

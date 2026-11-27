@@ -1878,6 +1878,15 @@ final class ExternalSendExecutorTests: XCTestCase {
         XCTAssertTrue(logged.last.map { isNotSent($0, "identityNotFound") } ?? false)
     }
 
+    /// Platform could not be asked for the identity (code 80), so nothing was signed: Send failed with Retry, never
+    /// the "Send in progress" Toast.
+    func testPlatformToIdentityIdentityLookupFailureIsNotSent() async throws {
+        identityTopUp.result = .failed(PlatformWalletError.identityLookupFailed("raw"), handedOver: false)
+        let executor = makeExecutor()
+        let outcome = await executor.send(try await prepare(executor, .platformToIdentity))
+        XCTAssertTrue(isNotSent(outcome, "failed"), "\(outcome)")
+    }
+
     func testPlatformToIdentityFailureAfterTheMoneyWasHandedOverIsInFlightEvenForAPreBroadcastError() async throws {
         identityTopUp.result = .failed(CoordinatorError.noWallet, handedOver: true)
         let executor = makeExecutor()
@@ -2723,6 +2732,68 @@ extension BIP70ConfirmationBox {
             amount: amount, estimatedFee: 226, network: .testnet, paymentURL: nil, scheme: "dash",
             merchantData: nil, memo: memo, callbackScheme: callbackScheme,
             request: PaymentRequest(serializedDetails: details.encoded())))
+    }
+}
+
+/// The identity top-up from Platform credits takes the SDK's top-up for any identity, for the holder's Current identity
+/// and for someone else's alike (dashpay/platform#5929).
+extension ExternalSendExecutorTests {
+    private struct TopUpCall: Equatable {
+        let identityId: Data
+        let amountDuffs: UInt64
+    }
+
+    private final class TopUpCalls {
+        var calls: [TopUpCall] = []
+    }
+
+    private static let ownIdentityId = Data(repeating: 0x11, count: 32)
+    private static let otherIdentityId = Data(repeating: 0x22, count: 32)
+
+    private func makeTopUp(_ recorder: TopUpCalls, error: Error? = nil) -> LiveIdentityTopUpFromCredits {
+        LiveIdentityTopUpFromCredits(
+            topUp: { identityId, amountDuffs in
+                recorder.calls.append(TopUpCall(identityId: identityId, amountDuffs: amountDuffs))
+                if let error { throw error }
+            })
+    }
+
+    private func run(_ topUp: LiveIdentityTopUpFromCredits, to identityId: Data) async -> CreditsSendResult {
+        await topUp.run(route: .platformToIdentity,
+                        destination: Destination(type: .identityID, text: identityId.toBase58String()),
+                        amount: 50_000, bindingFeeDuffs: 100)
+    }
+
+    /// The route hands every identity, the holder's own too, to the top-up; which SDK call that top-up takes is
+    /// checked over the SDK's fake in `scripts/test_identity_top_up_compatibility.py`.
+    func testEveryIdentityTakesTheTopUpForAnyIdentity() async {
+        for identityId in [Self.ownIdentityId, Self.otherIdentityId] {
+            let recorder = TopUpCalls()
+            let result = await run(makeTopUp(recorder), to: identityId)
+
+            XCTAssertEqual(recorder.calls, [TopUpCall(identityId: identityId, amountDuffs: 50_000)])
+            guard case .completed = result else { return XCTFail("\(result)") }
+        }
+    }
+
+    /// The SDK's `WalletRemovedBeforeSend` (FFI 98) comes before the broadcast, even when signing already ran: nothing
+    /// was sent, and the send starts over.
+    func testAWalletRemovedBeforeTheBroadcastIsNotStarted() async {
+        let result = await run(makeTopUp(TopUpCalls(), error: PlatformWalletError.notFound("removed")),
+                               to: Self.otherIdentityId)
+
+        guard case .notStarted = result else { return XCTFail("\(result)") }
+    }
+
+    func testIdentityPlatformDoesNotKnowIsNotSentAsNotFound() async {
+        let topUp = makeTopUp(TopUpCalls(), error: PlatformWalletError.identityNotFound("gone"))
+        let result = await run(topUp, to: Self.otherIdentityId)
+
+        guard case .failed(let error, let handedOver) = result else { return XCTFail("\(result)") }
+        XCTAssertFalse(handedOver)
+        guard case .notSent(.identityNotFound) = SendOutcome(error: error) else {
+            return XCTFail("\(SendOutcome(error: error))")
+        }
     }
 }
 
