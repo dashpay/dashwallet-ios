@@ -258,7 +258,19 @@ class MainTabbarController: UITabBarController {
 
 // MARK: - Private
 extension MainTabbarController {
-    private func configureControllers() {
+    /// The More tab's navigation: `previous` with `menu` as its new root and
+    /// every screen pushed over the old one kept, or a new one.
+    static func moreNavigation(
+        menu: UIViewController, keepingStackOf previous: BaseNavigationController?
+    ) -> BaseNavigationController {
+        guard let previous else { return BaseNavigationController(rootViewController: menu) }
+        previous.setViewControllers([menu] + previous.viewControllers.dropFirst(), animated: false)
+        return previous
+    }
+
+    /// With `previousMore`, the More tab keeps that navigation controller and
+    /// the screens pushed on it; only its menu is built anew.
+    private func configureControllers(keepingMoreStackOf previousMore: BaseNavigationController? = nil) {
         var viewControllers: [UIViewController] = []
         // The bar is hidden by children — the payments landing does it while it
         // is up — and hiding outlives the child that asked for it. A rebuild
@@ -352,7 +364,7 @@ extension MainTabbarController {
         menuVC.delegate = self
         menuNavigationController = menuVC
 
-        nvc = BaseNavigationController(rootViewController: menuVC)
+        nvc = Self.moreNavigation(menu: menuVC, keepingStackOf: previousMore)
         nvc.tabBarItem = item
         moreTabIndex = viewControllers.count
         viewControllers.append(nvc)
@@ -412,10 +424,13 @@ extension MainTabbarController {
         view.layoutIfNeeded()
     }
 
+    /// The same wallet gains its DashPay tabs: a screen open on More (a
+    /// DashConnect page holding a login until the names are read) stays.
     private func reconfigureDashPayTabsPreservingSelection() {
         let previousIndex = selectedIndex
         pendingDashPayTabReconfiguration = false
-        configureControllers()
+        let previousMore = viewControllers?.first { $0 === menuNavigationController?.navigationController } as? BaseNavigationController
+        configureControllers(keepingMoreStackOf: previousMore)
         selectedIndex = previousIndex == 0 ? 0 : previousIndex + 2
         view.setNeedsLayout()
         view.layoutIfNeeded()

@@ -1,5 +1,6 @@
 import Combine
 import Foundation
+import UIKit
 import XCTest
 @testable import dashpay
 @testable import SwiftDashSDK
@@ -1558,6 +1559,24 @@ final class ConnectionsViewModelStatusTests: XCTestCase {
 
         XCTAssertEqual(viewModel.rows(for: .active).map(\.id), ["active", "confirming", "undelivered"])
         XCTAssertEqual(viewModel.rows(for: .active).map(\.status), [.active, .confirming, .undelivered])
+    }
+
+    func testALoginWithUnreadNamesIsNotHeldBehindAConnectionSheet() async {
+        let spy = ConnectionStatusSpy(rows: [Self.row("app", .active)], history: [])
+        let viewModel = ConnectionsViewModel(dataSource: spy, featureUnavailable: false, usernameState: { .unknown })
+        await waitUntil { !viewModel.connections.isEmpty }
+        viewModel.showConnection(viewModel.rows(for: .active)[0])
+        viewModel.onURIReceived("dash-key:anything")
+
+        XCTAssertFalse(viewModel.isWaitingForUsername, "the open sheet answers it")
+        XCTAssertEqual(viewModel.connectionSheetMessage?.text, ConnectionsViewModel.usernameUnreadText)
+        XCTAssertEqual(viewModel.shownConnection?.id, "app")
+        XCTAssertNil(viewModel.message)
+
+        // Still going away: the same.
+        viewModel.hideConnection()
+        viewModel.onURIReceived("dash-key:anything")
+        XCTAssertFalse(viewModel.isWaitingForUsername)
     }
 
     func testARequestThatDoesNotReadLeavesTheConnectionSheetUp() async {
@@ -7023,7 +7042,10 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
     }
 
     func testALinkThatColdStartsTheWalletIsTakenOnceTheNamesAreRead() async {
-        for signal in [Notification.Name.DWDashPayRegistrationStatusUpdated, SwiftDashSDKHost.runtimeDidStartNotification] {
+        for signal in [
+            Notification.Name.DWDashPayRegistrationStatusUpdated, SwiftDashSDKHost.runtimeDidStartNotification,
+            DWSameSeedIdentityRecoveryCoordinator.didSettleNotification,
+        ] {
             var username = ConnectionsViewModel.UsernameState.unknown
             let center = NotificationCenter()
             let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
@@ -7063,6 +7085,19 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
         XCTAssertFalse(viewModel.isWaitingForUsername)
     }
 
+    func testAHeldLinkStartsTheNamesReadAgain() async {
+        var rereads = 0
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, usernameState: { .unknown }, rereadUsername: { rereads += 1 },
+            now: { Self.phone })
+
+        viewModel.onURIReceived("first")
+        XCTAssertEqual(rereads, 1, "a read that failed before is not left to retry by itself")
+        viewModel.onURIReceived("second")
+        XCTAssertEqual(rereads, 2, "every held request has a read on its way")
+    }
+
     func testANewerLinkReplacesTheHeldOne() async {
         var username = ConnectionsViewModel.UsernameState.unknown
         let center = NotificationCenter()
@@ -7080,14 +7115,43 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
         XCTAssertEqual(spy.parsedContents, ["second"])
     }
 
-    func testAnIdentityNotLoadedYetIsUnknownNotMissing() {
+    func testAnIdentityNotKnownYetIsUnknownNotMissing() {
         typealias Host = DashConnectHostingController
-        XCTAssertEqual(Host.usernameState(isLoading: true, hasIdentity: false, namesAreLoaded: false, hasUsernames: false), .unknown,
+        func state(loading: Bool = false, recovering: Bool = false, identity: Bool, loaded: Bool, names: Bool)
+            -> ConnectionsViewModel.UsernameState {
+            Host.usernameState(
+                isLoading: loading, recoveryPending: recovering, hasIdentity: identity, namesAreLoaded: loaded,
+                hasUsernames: names)
+        }
+        XCTAssertEqual(state(loading: true, identity: false, loaded: false, names: false), .unknown,
                        "the SDK has not started: the identity is not known to be absent")
-        XCTAssertEqual(Host.usernameState(isLoading: true, hasIdentity: true, namesAreLoaded: false, hasUsernames: false), .unknown)
-        XCTAssertEqual(Host.usernameState(isLoading: false, hasIdentity: false, namesAreLoaded: false, hasUsernames: false), .missing)
-        XCTAssertEqual(Host.usernameState(isLoading: false, hasIdentity: true, namesAreLoaded: true, hasUsernames: false), .missing)
-        XCTAssertEqual(Host.usernameState(isLoading: false, hasIdentity: true, namesAreLoaded: true, hasUsernames: true), .present)
+        XCTAssertEqual(state(recovering: true, identity: false, loaded: false, names: false), .unknown,
+                       "a restored wallet's identity row comes with recovery")
+        XCTAssertEqual(state(loading: true, identity: true, loaded: false, names: false), .unknown)
+        XCTAssertEqual(state(identity: false, loaded: false, names: false), .missing)
+        XCTAssertEqual(state(recovering: true, identity: true, loaded: true, names: true), .present,
+                       "an identity row in hand does not wait for recovery")
+        XCTAssertEqual(state(identity: true, loaded: true, names: false), .missing)
+        XCTAssertEqual(state(identity: true, loaded: true, names: true), .present)
+    }
+
+    func testAHeldLinkIsNotTakenUnderAnotherWallet() async {
+        var username = ConnectionsViewModel.UsernameState.unknown
+        var wallet = "testnet:a"
+        let center = NotificationCenter()
+        let spy = LoginApprovalSpy(shown: [Self.request(platformTimeMs: Self.platformNow, expiresAt: Self.platformNow + 3_600_000)])
+        let viewModel = ConnectionsViewModel(
+            dataSource: spy, featureUnavailable: false, usernameState: { username }, walletScope: { wallet },
+            now: { Self.phone }, notificationCenter: center)
+        viewModel.onURIReceived("login")
+
+        wallet = "testnet:b"
+        username = .present
+        center.post(name: SwiftDashSDKHost.runtimeDidStartNotification, object: nil)
+        await waitUntil { !viewModel.isWaitingForUsername }
+
+        XCTAssertEqual(spy.parseCount, 0, "a request is answered only under the wallet it came to")
+        XCTAssertNil(viewModel.pendingRequest)
     }
 
     func testALoginIsNotApprovedWhileTheUsernameIsUnread() async {
@@ -7262,5 +7326,26 @@ final class ConnectionsViewModelTermsTests: XCTestCase {
         while !condition(), Date() < deadline {
             try? await Task.sleep(nanoseconds: 2_000_000)
         }
+    }
+}
+
+@MainActor
+final class MainTabbarMoreStackTests: XCTestCase {
+    func testAddingTabsKeepsTheScreensOpenOnMore() {
+        let oldMenu = UIViewController()
+        let connections = UIViewController()
+        let more = BaseNavigationController(rootViewController: oldMenu)
+        more.pushViewController(connections, animated: false)
+        let newMenu = UIViewController()
+
+        let kept = MainTabbarController.moreNavigation(menu: newMenu, keepingStackOf: more)
+
+        XCTAssertTrue(kept === more, "the screens' own references to their navigation stay valid")
+        XCTAssertEqual(kept.viewControllers, [newMenu, connections])
+    }
+
+    func testANewLayoutStartsAtTheMenu() {
+        let menu = UIViewController()
+        XCTAssertEqual(MainTabbarController.moreNavigation(menu: menu, keepingStackOf: nil).viewControllers, [menu])
     }
 }

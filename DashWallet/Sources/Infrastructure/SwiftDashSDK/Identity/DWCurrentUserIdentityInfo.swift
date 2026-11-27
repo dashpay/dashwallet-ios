@@ -1204,6 +1204,12 @@ enum StartupIdentityRecoveryPolicy {
 final class DWSameSeedIdentityRecoveryCoordinator {
     static let shared = DWSameSeedIdentityRecoveryCoordinator()
 
+    /// Posted on the main actor when a recovery run ends, whatever it
+    /// found: a reader that waited for it (a held DashConnect login) reads
+    /// the identity again. An adopted identity also posts the registration
+    /// update (`reconcileRecoveredIdentity`).
+    static let didSettleNotification = Notification.Name("org.dashfoundation.dash.identityRecoveryDidSettle")
+
     private static let logger = Logger(
         subsystem: "org.dashfoundation.dash",
         category: "swift-sdk-migration.identity-recovery")
@@ -1246,6 +1252,14 @@ final class DWSameSeedIdentityRecoveryCoordinator {
     /// on wallet deletion: walletIds are deterministic per mnemonic+network,
     /// so a phrase removed and re-imported must not inherit a settled
     /// context.
+    /// Whether this process has settled `walletId`'s identity on `network`:
+    /// found one, or proved there is none. Until then a wallet without an
+    /// identity row may still own one (a restore, a reinstall), and a failed
+    /// run leaves it unsettled.
+    func isSettled(walletId: Data, network: Network) -> Bool {
+        completedContexts.contains(Self.contextKey(walletId: walletId, network: network))
+    }
+
     func forgetWallet(walletId: Data) {
         let suffix = ":" + walletId.hexEncodedString()
         completedContexts = completedContexts.filter { !$0.hasSuffix(suffix) }
@@ -1306,6 +1320,7 @@ final class DWSameSeedIdentityRecoveryCoordinator {
             hasLocalIdentity: Self.hasLocalIdentity(walletId: walletId, modelContainer: modelContainer)) {
         case .skipSettled:
             completedContexts.insert(contextKey)
+            NotificationCenter.default.post(name: Self.didSettleNotification, object: nil)
             Self.logger.info(
                 "🪪 IDENT-RECOVERY :: skipped — startup readiness proved this seed owns no identity")
             return
@@ -1332,7 +1347,10 @@ final class DWSameSeedIdentityRecoveryCoordinator {
         }
 
         activeContexts.insert(contextKey)
-        defer { activeContexts.remove(contextKey) }
+        defer {
+            activeContexts.remove(contextKey)
+            NotificationCenter.default.post(name: Self.didSettleNotification, object: nil)
+        }
 
         // DWLogger, unlike `Self.logger`, reaches the diagnostic log export.
         let logTag = "🪪 IDENT-RECOVERY [\(walletHex.prefix(8))]"

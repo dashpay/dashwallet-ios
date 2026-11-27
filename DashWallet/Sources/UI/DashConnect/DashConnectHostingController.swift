@@ -42,7 +42,9 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
         dashPayModel: DWDashPayProtocol? = nil
     ) {
         let viewModel = ConnectionsViewModel(
-            usernameState: { dashPayModel == nil ? .present : Self.activeIdentityUsernameState() })
+            usernameState: { dashPayModel == nil ? .present : Self.activeIdentityUsernameState() },
+            rereadUsername: { if dashPayModel != nil { Self.rereadActiveIdentityNames() } },
+            walletScope: { "\(String(describing: WalletEnvironment.network)):\(WalletEnvironment.activeWalletIdHex ?? "")" })
         self.viewModel = viewModel
         pendingURI = uri
         pendingURIWasScanned = scanned
@@ -63,21 +65,35 @@ final class DashConnectHostingController: UIHostingController<ConnectionsScreen>
     private static func activeIdentityUsernameState() -> ConnectionsViewModel.UsernameState {
         #if DASHPAY
         let identity = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
+        let recoveryPending = SwiftDashSDKHost.shared.wallet.flatMap { wallet in
+            SwiftDashSDKHost.shared.runningNetwork.map {
+                !DWSameSeedIdentityRecoveryCoordinator.shared.isSettled(walletId: wallet.walletId, network: $0)
+            }
+        } ?? true
         return usernameState(
-            isLoading: identity.isLoading, hasIdentity: identity.hasIdentity,
+            isLoading: identity.isLoading, recoveryPending: recoveryPending, hasIdentity: identity.hasIdentity,
             namesAreLoaded: identity.namesAreLoaded, hasUsernames: !identity.usernames.isEmpty)
         #else
         return .present
         #endif
     }
 
-    /// No identity counts as missing only once the snapshot is read: while
-    /// it loads (the SDK not started yet on a cold start from a link) the
-    /// identity is not known to be absent, so the state is unknown.
+    @MainActor
+    private static func rereadActiveIdentityNames() {
+        #if DASHPAY
+        DWCurrentUserIdentityInfo.shared.syncFromNetwork()
+        #endif
+    }
+
+    /// No identity counts as missing only once the snapshot is read and
+    /// identity recovery has settled: while either is pending (the SDK not
+    /// started yet on a cold start from a link; a restored wallet whose
+    /// identity row is not recovered yet) the identity is not known to be
+    /// absent, so the state is unknown.
     nonisolated static func usernameState(
-        isLoading: Bool, hasIdentity: Bool, namesAreLoaded: Bool, hasUsernames: Bool
+        isLoading: Bool, recoveryPending: Bool, hasIdentity: Bool, namesAreLoaded: Bool, hasUsernames: Bool
     ) -> ConnectionsViewModel.UsernameState {
-        guard hasIdentity else { return isLoading ? .unknown : .missing }
+        guard hasIdentity else { return isLoading || recoveryPending ? .unknown : .missing }
         guard namesAreLoaded else { return .unknown }
         return hasUsernames ? .present : .missing
     }

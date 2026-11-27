@@ -50,7 +50,7 @@ where they disagree, ADR-0001 wins.
 | [0055](0055-keep-the-app-connect-rules-in-swift-until-android-shares-the-platform-wallet.md) | Keep the App Connect rules in Swift until Android shares the platform wallet | platform | Accepted | |
 | [0056](0056-know-no-app-and-ask-before-returning-to-one.md) | Know no app: show every app as unknown and ask before returning to it | ui | Accepted | |
 | [0057](0057-tell-a-connection-sheet-from-one-basis-and-placed-keys-only.md) | Tell a connection sheet from one basis, and claim access only from placed keys | ui | Accepted | |
-| [0058](0058-answer-a-login-without-a-username-with-the-pages-own-state.md) | Answer a login without a username with the page's own state, and open nothing | ui | Accepted | |
+| [0058](0058-answer-a-login-without-a-username-with-the-pages-own-state.md) | Answer a login without a username with the page's own state, and open nothing | ui | Superseded | [0078](0078-hold-a-login-while-the-username-is-unknown-and-answer-it-once-read.md) |
 | [0065](0065-recognize-platform-refusals-by-consensus-code-in-one-table.md) | Recognize Platform refusals by consensus code in one table | platform | Proposed | |
 | [0066](0066-declare-the-app-and-the-zero-loss-check-as-the-feature-surfaces.md) | Declare the app and the zero-loss check as the feature's surfaces | l10n | Accepted | |
 | [0067](0067-generate-the-catalog-from-the-baseline-lists-with-a-repository-script.md) | Generate the Catalog from the Baseline lists with a repository script | l10n | Accepted | |
@@ -60,6 +60,7 @@ where they disagree, ADR-0001 wins.
 | [0071](0071-rewrite-swift-lookups-with-a-swiftsyntax-codemod-rerun-on-every-baseline.md) | Rewrite Swift lookups with a SwiftSyntax codemod re-run on every Baseline | l10n | Accepted | |
 | [0072](0072-check-releases-through-the-key-map.md) | Check releases through the key map instead of pairing code places | l10n | Accepted | |
 | [0073](0073-make-the-sync-phase-write-the-same-catalog-as-the-xcode-app.md) | Make the sync phase write the same Catalog as the Xcode app, and compile only the shipped locales | l10n | Accepted | |
+| [0078](0078-hold-a-login-while-the-username-is-unknown-and-answer-it-once-read.md) | Hold a login while the username is unknown, and answer it once the names are read | ui | Proposed | |
 
 Areas: `spv`, `platform`, `keys`, `storage`, `coinjoin`, `payments`, `swap`, `ui`, `l10n`, `build`, `process`. Each ADR takes one; a new
 Area is added to this list in the PR that first needs it.
