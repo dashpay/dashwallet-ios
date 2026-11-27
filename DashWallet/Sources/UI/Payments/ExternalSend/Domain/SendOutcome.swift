@@ -160,6 +160,13 @@ enum SendOutcome {
         // Stays maybe-sent: the SDK's coming Rust-owned delivery class (dashpay/platform#5928) classes it so.
         case .addressNonceMismatch:
             return .inFlight
+        // Refusals of a Shielded spend's plan, before any note is reserved or anything built.
+        case .shieldedPlanChanged:
+            return .notSent(.balanceChanged)
+        case .shieldedWithdrawalAmountOutOfRange:
+            return .notSent(.amountOutOfRange)
+        case .shieldedSpendTooManyNotes:
+            return .notSent(.failed)
         default:
             return .inFlight
         }
@@ -269,8 +276,13 @@ enum NotSentReason {
     case signingKeyUnavailable
     case identityNotFound
     case belowMinimum
+    /// A Shielded withdrawal's amount is outside what Platform accepts for its Core fee.
+    case amountOutOfRange
+    /// The balance no longer covers the amount and the fee; Confirm sends the holder back to Send.
+    case balanceNotEnough
     case expired
-    /// The balance a whole-balance send pays changed after Confirm showed it; nothing was sent, Send plans Max again.
+    /// The balance a send pays changed after Confirm showed it (a whole-balance send, or the notes a Shielded spend
+    /// was planned with); nothing was sent, and Confirm sends the holder back to Send.
     case balanceChanged
     case failed
 
@@ -282,6 +294,8 @@ enum NotSentReason {
         case .signingKeyUnavailable: return "signingKeyUnavailable"
         case .identityNotFound: return "identityNotFound"
         case .belowMinimum: return "belowMinimum"
+        case .amountOutOfRange: return "amountOutOfRange"
+        case .balanceNotEnough: return "balanceNotEnough"
         case .expired: return "expired"
         case .balanceChanged: return "balanceChanged"
         case .failed: return "failed"
@@ -314,6 +328,12 @@ enum NotSentReason {
             return String(
                 localized: "The amount is below the minimum for this payment. Your funds were not sent.",
                 comment: "External send")
+        case .amountOutOfRange:
+            return String(
+                localized: "The amount is outside the limits for a withdrawal to Core. Your funds were not sent.",
+                comment: "External send")
+        case .balanceNotEnough:
+            return String(localized: "Balance not enough", comment: "External send")
         case .expired:
             return String(
                 localized: "The payment request has expired. Your funds were not sent.",

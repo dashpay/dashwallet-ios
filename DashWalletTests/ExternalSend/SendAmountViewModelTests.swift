@@ -79,6 +79,14 @@ final class SendAmountViewModelTests: XCTestCase {
         }
     }
 
+    private final class FakeShieldedAccount: OwnShieldedAddressReading {
+        var raw43: Data? = Data(repeating: 0x5a, count: 43)
+
+        func ownShieldedAddress() async -> Data? {
+            raw43
+        }
+    }
+
     private final class FakeEstimator: SendFeeEstimating {
         var defaultResult: SendFeeEstimate = .fee(1_000)
         var results: [SendRoute: SendFeeEstimate] = [:]
@@ -205,6 +213,7 @@ final class SendAmountViewModelTests: XCTestCase {
 
     private let balances = FakeBalances()
     private let identity = FakeIdentity()
+    private let shieldedAccount = FakeShieldedAccount()
     private let estimator = FakeEstimator()
     private let planner = FakeMaxPlanner()
     private let converter = FakeConverter()
@@ -271,6 +280,7 @@ final class SendAmountViewModelTests: XCTestCase {
                                      recipient: recipient,
                                      balances: balances, feeEstimator: estimator, maxPlanner: planner,
                                      converter: converter, currentIdentity: identity,
+                                     ownShieldedAddress: shieldedAccount,
                                      initialRestoreSync: restoreSync(startingAt: restoreSyncBlocks),
                                      decimalSeparator: decimalSeparator)
         vm.onContinue = { [unowned self] request in continued.append(request) }
@@ -874,15 +884,35 @@ final class SendAmountViewModelTests: XCTestCase {
         XCTAssertEqual(lock.map { $0 + 2_250 }, 5_000_000)
     }
 
-    /// Shielded to an Identity ID is sized like the other Shielded routes, by the sweep plan of the pool top-up, so
-    /// the Send screen's fee estimate is never asked for it.
+    /// Shielded to an Identity ID is sized like the other Shielded routes, by the SDK's sweep plan of the pool top-up,
+    /// so the Send screen's fee estimate is never asked for it.
     func testTheLivePlannerSizesShieldedToIdentityByTheSweepPlanNotTheBalanceLessTheFee() async {
         balances.table = [.shielded: 3_000_000]
         estimator.results = [.shieldedToIdentity: .fee(13_001)]
-        let live = livePlanner()
+        let planner = SweepPlanner(sweepCredits: 2_900_000_500)
+        let live = LiveSendMaxPlanner(
+            fees: estimator, balances: balances, fundingCandidates: fundingCandidates, shieldedPlans: planner)
         let plan = await live.maxPlan(route: .shieldedToIdentity)
-        XCTAssertNotEqual(plan?.duffs, 3_000_000 - 13_001)
+        XCTAssertEqual(plan, SendMaxPlan(duffs: 2_900_000, sweepCredits: 2_900_000_500))
         XCTAssertTrue(estimator.calls.isEmpty, "\(estimator.calls)")
+    }
+
+    /// The SDK plans every Shielded Max as a sweep of the route's own spend; a sweep the notes cannot pay has no Max.
+    func testTheLivePlannerAsksTheSDKForASweepOnEveryShieldedRoute() async {
+        let routes: [SendRoute] = [.shieldedToCore, .shieldedToShielded, .shieldedToPlatform, .shieldedToIdentity]
+        let planner = SweepPlanner(sweepCredits: 50_000_000_000_000)
+        let live = LiveSendMaxPlanner(
+            fees: estimator, balances: balances, fundingCandidates: fundingCandidates, shieldedPlans: planner)
+        for route in routes {
+            let plan = await live.maxPlan(route: route)
+            XCTAssertEqual(plan?.sweepCredits, 50_000_000_000_000, "\(route)")
+        }
+        XCTAssertEqual(planner.calls.map(\.route), routes)
+        XCTAssertTrue(planner.calls.allSatisfy { $0.amount == .sweepAll })
+
+        planner.error = PlatformWalletError.walletOperation("notes cannot pay the fee")
+        let none = await live.maxPlan(route: .shieldedToCore)
+        XCTAssertNil(none)
     }
 
     func testTheLivePlannerHasNoMaxWithoutABalanceOrAFeeAndZeroWhenTheFeeEatsTheBalance() async {
@@ -2004,6 +2034,37 @@ final class SendAmountViewModelTests: XCTestCase {
         XCTAssertEqual(continued.last?.route, .identityToCore)
     }
 
+    /// ADR-0012: the Identity source pays someone else's Shielded address; its Max is the same Identity rule with the
+    /// recipient shield's fee (AC-09).
+    func testIdentityToShieldedMaxIsTheCreditsLessTheShieldFeeAndTheDashPayReserve() async {
+        let shieldFeeCredits: UInt64 = 150_000_000
+        estimator.results[.identityToShielded] = .fee(shieldFeeCredits)
+        let dest = destination(.shieldedAddress, text: "shielded-" + coreText)
+        let vm = await makeVM(dest, pinned: .identity)
+        XCTAssertEqual(vm.source, .identity)
+        XCTAssertNil(vm.sourceChangedNotice)
+        XCTAssertEqual(vm.route, .identityToShielded)
+        XCTAssertEqual(vm.fee, shieldFeeCredits)
+
+        await vm.tapMax()
+
+        let expected = AmountRules.dashValue(of: identityCredits - shieldFeeCredits - reserveCredits)
+        XCTAssertEqual(vm.amountDuffs, expected)
+        XCTAssertTrue(planner.requested.isEmpty, "the Identity Max is AmountRules.identityMax, not a route planner")
+        XCTAssertEqual(vm.state, .ready)
+        await vm.proceed()
+        XCTAssertEqual(continued.last, SendAmountRequest(route: .identityToShielded, destination: dest,
+                                                         amount: expected, isMax: true))
+    }
+
+    func testAPinnedIdentityWithoutAShieldedAccountIsReplacedWithTheReason() async {
+        shieldedAccount.raw43 = nil
+        let vm = await makeVM(destination(.shieldedAddress, text: "shielded-" + coreText), pinned: .identity)
+        XCTAssertEqual(vm.source, .core)
+        XCTAssertEqual(vm.sourceChangedNotice, "Identity can't pay a Shielded address until Shielded is set up, "
+            + "so the source was changed to Core.")
+    }
+
     /// A Max carried from Core to Identity is planned with the Identity fee in credits, not the Core fee in duffs,
     /// so it still leaves the DashPay reserve.
     func testAMaxCarriedToTheIdentitySourceIsPlannedWithTheIdentityFee() async {
@@ -2231,5 +2292,25 @@ final class SendAmountViewModelTests: XCTestCase {
         let vm = await makeVM(pinned: .shielded)
         await vm.pickSource(.platform)
         XCTAssertEqual(vm.source, .platform)
+    }
+}
+
+/// Stands for the SDK's Shielded planner: every sweep plans `sweepCredits`.
+private final class SweepPlanner: ShieldedSpendPlanning {
+    let sweepCredits: UInt64
+    var error: Error?
+    private(set) var calls: [(route: SendRoute, amount: ShieldedSpendAmount)] = []
+
+    init(sweepCredits: UInt64) {
+        self.sweepCredits = sweepCredits
+    }
+
+    func plan(route: SendRoute, amount: ShieldedSpendAmount) async throws -> PlannedShieldedSpend {
+        calls.append((route, amount))
+        if let error { throw error }
+        return PlannedShieldedSpend(
+            amountCredits: sweepCredits, recipientCredits: sweepCredits, feeCredits: 1,
+            totalDebitedCredits: sweepCredits + 1,
+            digest: Data(count: 32))
     }
 }

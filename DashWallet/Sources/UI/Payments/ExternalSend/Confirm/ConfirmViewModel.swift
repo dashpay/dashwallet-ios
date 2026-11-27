@@ -73,6 +73,9 @@ final class ConfirmViewModel: ObservableObject {
     @Published private(set) var isRecipientExpanded = false
     /// The binding fee in DASH (an identity's credits converted); nil until prepared.
     @Published private var feeDuffs: UInt64?
+    /// What the recipient receives in DASH once prepared: less than the amount for a Shielded withdrawal, whose Core
+    /// fee comes out of it.
+    @Published private var recipientDuffs: UInt64?
 
     /// Called when the sheet closes onto Send.
     var onBackToSend: ((BackToSend) -> Void)?
@@ -102,9 +105,9 @@ final class ConfirmViewModel: ObservableObject {
 
     // MARK: - What the sheet shows
 
-    var amountText: String { request.amount.formattedDashAmount }
-    var amountDuffs: Int64 { Int64(clamping: request.amount) }
-    var amountFiatText: String? { converter.fiatText(forDuffs: request.amount) }
+    var amountText: String { shownAmount.formattedDashAmount }
+    var amountDuffs: Int64 { Int64(clamping: shownAmount) }
+    var amountFiatText: String? { converter.fiatText(forDuffs: shownAmount) }
     var fromText: String {
         request.route.source == .shielded
             ? String(localized: "Shielded balance", comment: "External send")
@@ -131,12 +134,12 @@ final class ConfirmViewModel: ObservableObject {
     }
 
     var totalText: String? {
-        feeDuffs.map { estimateMark + (request.amount + $0).formattedDashAmount }
+        feeDuffs.map { estimateMark + (shownAmount + $0).formattedDashAmount }
     }
 
     /// What VoiceOver reads for the fee and the total: "about" in place of "~".
     var feeAccessibilityValue: String { spoken(feeDuffs, feeRowText) }
-    var totalAccessibilityValue: String { spoken(feeDuffs.map { request.amount + $0 }, totalRowText) }
+    var totalAccessibilityValue: String { spoken(feeDuffs.map { shownAmount + $0 }, totalRowText) }
 
     var feeRowText: String { feeText ?? Self.calculating }
     var totalRowText: String { totalText ?? Self.calculating }
@@ -168,10 +171,13 @@ final class ConfirmViewModel: ObservableObject {
         prepared.onSlowNetwork = { [weak self] in self?.isWaitingForNetwork = true }
         let outcome = await executor.send(prepared)
         guard !isReleasedWhileSending else { return }
-        if case .notSent(.balanceChanged) = outcome {
-            // Nothing was sent: Send plans Max again against the balance as it is now.
+        switch outcome {
+        case .notSent(.balanceChanged), .notSent(.balanceNotEnough):
+            // Nothing was sent: Send plans again against the balance and notes as they are now.
             onBackToSend?(.balanceNotEnough)
             return
+        default:
+            break
         }
         onOutcome?(outcome)
     }
@@ -217,6 +223,8 @@ final class ConfirmViewModel: ObservableObject {
         return name + " · " + address
     }
 
+    private var shownAmount: UInt64 { recipientDuffs ?? request.amount }
+
     private var estimateMark: String { isFeeExact ? "" : "~ " }
 
     private func spoken(_ duffs: UInt64?, _ shown: String) -> String {
@@ -248,6 +256,7 @@ final class ConfirmViewModel: ObservableObject {
                 onBackToSend?(reserveCheck == nil ? .feeFailed : .balanceNotEnough)
                 return
             }
+            if !isIdentitySource { recipientDuffs = result.recipientAmount }
             warningItems = makeWarnings(reserveCheck: reserveCheck)
             guard !isClosed else { return }
             state = .ready
@@ -269,6 +278,8 @@ final class ConfirmViewModel: ObservableObject {
             onBackToSend?(.feeFailed)
         case .initialRestoreSync:
             onBackToSend?(.initialRestoreSync)
+        case .amountOutOfRange:
+            onOutcome?(.notSent(.amountOutOfRange))
         }
     }
 

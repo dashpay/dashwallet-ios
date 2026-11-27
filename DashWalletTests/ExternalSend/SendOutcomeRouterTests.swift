@@ -25,7 +25,8 @@ final class SendOutcomeRouterTests: XCTestCase {
     private let router = SendOutcomeRouter()
 
     private let allReasons: [NotSentReason] = [
-        .offline, .rejected, .earlierPaymentPending, .signingKeyUnavailable, .belowMinimum, .failed
+        .offline, .rejected, .earlierPaymentPending, .signingKeyUnavailable, .belowMinimum, .amountOutOfRange,
+        .balanceNotEnough, .failed
     ]
 
     // `SendRoute` is not `CaseIterable`; the list is explicit so a new route is a conscious test change.
@@ -33,7 +34,7 @@ final class SendOutcomeRouterTests: XCTestCase {
         .coreToCore, .coreToShielded, .coreToIdentity,
         .shieldedToCore, .shieldedToShielded, .shieldedToPlatform, .shieldedToIdentity,
         .platformToCore, .platformToShielded, .platformToPlatform, .platformToIdentity,
-        .identityToCore, .identityToPlatform, .identityToIdentity
+        .identityToCore, .identityToPlatform, .identityToIdentity, .identityToShielded
     ]
 
     // MARK: - Fixtures

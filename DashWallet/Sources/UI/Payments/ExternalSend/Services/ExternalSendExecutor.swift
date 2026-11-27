@@ -29,6 +29,8 @@ enum ExternalSendError: Error, Equatable {
     case balanceUnavailable
     /// A restored wallet's first sync is still running, so no Core-funded send starts.
     case initialRestoreSync
+    /// A Shielded withdrawal's amount is outside what Platform accepts for its Core fee rate; nothing was built.
+    case amountOutOfRange
 }
 
 /// The Core standard send: authenticates, then builds and signs without broadcasting.
@@ -108,13 +110,81 @@ enum CreditsSendResult {
     case notStarted
 }
 
+/// A Shielded spend the SDK planned at Continue (`PlatformWalletManager.shieldedPlanSpend`), in credits: the notes it
+/// selects, named by `digest`, and their exact fee. `amountCredits` is what the spend reserves for the recipient (a
+/// withdrawal's reserve for Core), `recipientCredits` what the recipient receives after a withdrawal's Core fee.
+struct PlannedShieldedSpend: Equatable, Sendable {
+    let amountCredits: UInt64
+    let recipientCredits: UInt64
+    let feeCredits: UInt64
+    /// What leaves the pool: the amount and the fee.
+    let totalDebitedCredits: UInt64
+    let digest: Data
+    /// The plan the spend runs; nil only for a plan a test made, which the live seam refuses to spend.
+    let sdkPlan: ShieldedSpendPlan?
+
+    init(amountCredits: UInt64, recipientCredits: UInt64, feeCredits: UInt64, totalDebitedCredits: UInt64,
+         digest: Data, sdkPlan: ShieldedSpendPlan? = nil) {
+        self.amountCredits = amountCredits
+        self.recipientCredits = recipientCredits
+        self.feeCredits = feeCredits
+        self.totalDebitedCredits = totalDebitedCredits
+        self.digest = digest
+        self.sdkPlan = sdkPlan
+    }
+
+    init(_ plan: ShieldedSpendPlan) {
+        self.init(
+            amountCredits: plan.amount, recipientCredits: plan.recipientAmount, feeCredits: plan.fee,
+            totalDebitedCredits: plan.totalDebited, digest: plan.digest, sdkPlan: plan)
+    }
+}
+
+/// Plans a Shielded-source spend with the SDK. Throws what `shieldedPlanSpend` throws.
+protocol ShieldedSpendPlanning {
+    func plan(route: SendRoute, amount: ShieldedSpendAmount) async throws -> PlannedShieldedSpend
+}
+
+/// The SDK planner over the active wallet's account 0, the account the coordinator spends from. A withdrawal is
+/// planned at the Core fee rate the coordinator withdraws with.
+struct LiveShieldedSpendPlanner: ShieldedSpendPlanning {
+    func plan(route: SendRoute, amount: ShieldedSpendAmount) async throws -> PlannedShieldedSpend {
+        try await planOnMain(route: route, amount: amount)
+    }
+
+    @MainActor
+    private func planOnMain(route: SendRoute, amount: ShieldedSpendAmount) async throws -> PlannedShieldedSpend {
+        guard let manager = SwiftDashSDKHost.shared.manager else {
+            throw ShieldedTransferCoordinator.CoordinatorError.noManager
+        }
+        guard let wallet = SwiftDashSDKHost.shared.wallet else {
+            throw ShieldedTransferCoordinator.CoordinatorError.noWallet
+        }
+        let kind = Self.kind(of: route)
+        let plan = try await manager.shieldedPlanSpend(
+            walletId: wallet.walletId, account: 0, kind: kind, amount: amount,
+            coreFeePerByte: kind == .withdrawal ? ShieldedTransferCoordinator.withdrawalCoreFeePerByte : nil)
+        return PlannedShieldedSpend(plan)
+    }
+
+    private static func kind(of route: SendRoute) -> ShieldedSpendKind {
+        switch route {
+        case .shieldedToCore: return .withdrawal
+        case .shieldedToShielded: return .transfer
+        case .shieldedToPlatform: return .unshield
+        case .shieldedToIdentity: return .identityTopUp
+        default: preconditionFailure("\(route) is not a Shielded-source route")
+        }
+    }
+}
+
 /// The Shielded-source routes and the Platform-source routes to Core, Shielded and Platform destinations.
-/// `sweepCredits` is the Shielded sweep plan's exact amount on a Shielded Max, sent in place of `amount`; nil
-/// otherwise.
+/// `shieldedPlan` is the SDK plan prepared at Continue for a Shielded source, which the spend runs exactly; nil for a
+/// Platform source.
 protocol ShieldedPlatformSending {
     func run(
         route: SendRoute, destination: Destination, amount: UInt64, bindingFeeDuffs: UInt64, isMax: Bool,
-        sweepCredits: UInt64?
+        shieldedPlan: PlannedShieldedSpend?
     ) async -> CreditsSendResult
 }
 
@@ -133,6 +203,12 @@ protocol IdentityCreditsSending {
         route: SendRoute, destination: Destination, identityId: Data, amountCredits: UInt64, bindingFeeCredits: UInt64,
         isMax: Bool
     ) async -> CreditsSendResult
+}
+
+/// Identity to someone else's Shielded address: `identityId`'s credits shielded to `recipientRaw43`
+/// (`shieldedShieldFromIdentityToRecipient`, no memo), signed by `KeychainSigner`. Throws what the SDK throws.
+protocol IdentityToShieldedSending {
+    func shield(identityId: Data, recipientRaw43: Data, amountCredits: UInt64) async throws
 }
 
 /// The funds of a source the send is checked against, in the unit `AmountRules` counts for that source; nil when
@@ -243,12 +319,15 @@ final class PreparedExternalSend {
 
     let route: SendRoute
     let amount: UInt64
+    /// What the recipient receives, in duffs: `amount`, except for a Shielded withdrawal, whose Core fee comes out of
+    /// it.
+    let recipientAmount: UInt64
     let fee: UInt64
     /// The part of `fee` a Core asset lock pays the L1 miners; 0 on every other route.
     let assetLockMinerFee: UInt64
     let isMax: Bool
-    /// The Shielded sweep plan's exact credits on a Shielded Max; nil otherwise.
-    let sweepCredits: UInt64?
+    /// The SDK plan of a Shielded-source spend; nil on every other route.
+    let shieldedPlan: PlannedShieldedSpend?
     /// The Core to Core transaction's wire-order txid, read when the send is prepared so it outlives the plan;
     /// nil for the routed sends.
     let txidWire: Data?
@@ -264,14 +343,15 @@ final class PreparedExternalSend {
     /// Whether a `send` took the plan, as opposed to `discard`.
     private var planTakenBySend = false
 
-    init(route: SendRoute, amount: UInt64, fee: UInt64, assetLockMinerFee: UInt64 = 0, isMax: Bool,
-         sweepCredits: UInt64? = nil, plan: Plan) {
+    init(route: SendRoute, amount: UInt64, recipientAmount: UInt64? = nil, fee: UInt64, assetLockMinerFee: UInt64 = 0,
+         isMax: Bool, shieldedPlan: PlannedShieldedSpend? = nil, plan: Plan) {
         self.route = route
         self.amount = amount
+        self.recipientAmount = recipientAmount ?? amount
         self.fee = fee
         self.assetLockMinerFee = assetLockMinerFee
         self.isMax = isMax
-        self.sweepCredits = sweepCredits
+        self.shieldedPlan = shieldedPlan
         switch plan {
         case .standard(let transaction, _): txidWire = transaction.txidWire
         case .paymentRequest(let request): txidWire = request.txidWire
@@ -321,7 +401,7 @@ protocol ExternalSendExecuting: AnyObject {
 }
 
 /// Authenticates on Continue, prepares the exact send with its binding fee, and broadcasts only in `send`.
-/// Every route with a source is wired; Identity to Shielded and Identity to its own identity have no route (ADR-0041).
+/// Every route with a source is wired; Identity to its own identity has no route.
 @MainActor
 final class ExternalSendExecutor: ExternalSendExecuting {
     private let standardSend: CoreStandardSending
@@ -330,7 +410,9 @@ final class ExternalSendExecutor: ExternalSendExecuting {
     private let creditsSend: ShieldedPlatformSending
     private let identityTopUp: IdentityTopUpFromCreditsSending
     private let identityCredits: IdentityCreditsSending
+    private let identityShield: IdentityToShieldedSending
     private let fees: SendFeeEstimating
+    private let shieldedPlans: ShieldedSpendPlanning
     private let balances: ExternalSendBalanceReading
     private let identityNetworkBalance: IdentityNetworkBalanceReading
     private let drainPreview: CoreDrainPreviewing
@@ -351,7 +433,9 @@ final class ExternalSendExecutor: ExternalSendExecuting {
         creditsSend: ShieldedPlatformSending = LiveShieldedPlatformSend(),
         identityTopUp: IdentityTopUpFromCreditsSending = LiveIdentityTopUpFromCredits(),
         identityCredits: IdentityCreditsSending = LiveIdentityCreditsSend(),
+        identityShield: IdentityToShieldedSending = LiveIdentityToShieldedSend(),
         fees: SendFeeEstimating = ExternalSendFeeEstimator(),
+        shieldedPlans: ShieldedSpendPlanning = LiveShieldedSpendPlanner(),
         balances: ExternalSendBalanceReading = LiveExternalSendBalances(),
         identityNetworkBalance: IdentityNetworkBalanceReading = LiveIdentityNetworkBalance(),
         drainPreview: CoreDrainPreviewing = LiveCoreDrainPreview(),
@@ -374,7 +458,9 @@ final class ExternalSendExecutor: ExternalSendExecuting {
         self.creditsSend = creditsSend
         self.identityTopUp = identityTopUp
         self.identityCredits = identityCredits
+        self.identityShield = identityShield
         self.fees = fees
+        self.shieldedPlans = shieldedPlans
         self.balances = balances
         self.identityNetworkBalance = identityNetworkBalance
         self.drainPreview = drainPreview
@@ -415,7 +501,7 @@ final class ExternalSendExecutor: ExternalSendExecuting {
         case .coreToShielded, .coreToIdentity,
              .shieldedToCore, .shieldedToShielded, .shieldedToPlatform, .shieldedToIdentity,
              .platformToCore, .platformToShielded, .platformToPlatform, .platformToIdentity,
-             .identityToCore, .identityToPlatform, .identityToIdentity:
+             .identityToCore, .identityToPlatform, .identityToIdentity, .identityToShielded:
             return try await prepareRouted(
                 route: route, destination: destination, amount: amount, isMax: isMax, sweepCredits: sweepCredits)
         }
@@ -553,6 +639,11 @@ final class ExternalSendExecutor: ExternalSendExecuting {
         case .failed, .timedOut: throw ExternalSendError.authenticationFailed
         }
 
+        if route.source == .shielded {
+            return try await prepareShielded(
+                route: route, destination: destination, amount: amount, isMax: isMax, sweepCredits: sweepCredits)
+        }
+
         guard case .fee(var fee, var minerFee) = await fees.estimate(route: route, amount: amount) else {
             throw ExternalSendError.feeUnavailable
         }
@@ -574,7 +665,43 @@ final class ExternalSendExecutor: ExternalSendExecuting {
         }
         return PreparedExternalSend(
             route: route, amount: amount, fee: fee, assetLockMinerFee: minerFee, isMax: isMax,
-            sweepCredits: sweepCredits, plan: .routed(destination: destination))
+            plan: .routed(destination: destination))
+    }
+
+    /// The SDK plans the spend for the exact credits (a Max's carried sweep credits); its fee is the one the spend
+    /// pays, and its note check replaces the balance check. A withdrawal's fee also carries the Core fee taken from
+    /// the reserve, so Confirm shows what the recipient receives and the total that leaves the pool.
+    private func prepareShielded(
+        route: SendRoute, destination: Destination, amount: UInt64, isMax: Bool, sweepCredits: UInt64?
+    ) async throws -> PreparedExternalSend {
+        let (amountCredits, overflow) = amount.multipliedReportingOverflow(
+            by: PlatformPaymentIdentityFundingPolicy.creditsPerDuff)
+        guard !overflow else { throw ExternalSendError.balanceNotEnough }
+        let plan: PlannedShieldedSpend
+        do {
+            plan = try await shieldedPlans.plan(route: route, amount: .exact(sweepCredits ?? amountCredits))
+        } catch {
+            throw Self.planningError(error)
+        }
+        let recipientDuffs = plan.recipientCredits / PlatformPaymentIdentityFundingPolicy.creditsPerDuff
+        let feeDuffs = CoreToShieldedAmountPolicy.poolFeeDuffs(
+            poolFeeCredits: plan.totalDebitedCredits - plan.recipientCredits)
+        return PreparedExternalSend(
+            route: route, amount: amount, recipientAmount: recipientDuffs, fee: feeDuffs, isMax: isMax,
+            shieldedPlan: plan, plan: .routed(destination: destination))
+    }
+
+    /// The plan reads the notes: those that cannot pay the amount and its fee (`walletOperation`) or need more than
+    /// one transition carries are a balance that is not enough.
+    private static func planningError(_ error: Error) -> ExternalSendError {
+        switch error as? PlatformWalletError {
+        case .walletOperation?, .shieldedSpendTooManyNotes?:
+            return .balanceNotEnough
+        case .shieldedWithdrawalAmountOutOfRange?:
+            return .amountOutOfRange
+        default:
+            return .feeUnavailable
+        }
     }
 
     /// The wallet, network and (for an Identity source) Current identity are still the ones the send was prepared for.
@@ -652,11 +779,13 @@ final class ExternalSendExecutor: ExternalSendExecuting {
                     route: prepared.route, destination: destination, identityId: identityId,
                     amountCredits: prepared.amount, bindingFeeCredits: prepared.fee, isMax: prepared.isMax)
             }
+        case .identityToShielded:
+            return await runIdentityShield(prepared, destination: destination)
         default:
             return await runCredits {
                 await creditsSend.run(
                     route: prepared.route, destination: destination, amount: prepared.amount,
-                    bindingFeeDuffs: prepared.fee, isMax: prepared.isMax, sweepCredits: prepared.sweepCredits)
+                    bindingFeeDuffs: prepared.fee, isMax: prepared.isMax, shieldedPlan: prepared.shieldedPlan)
             }
         }
     }
@@ -693,6 +822,55 @@ final class ExternalSendExecutor: ExternalSendExecuting {
             return .decided(by: error, after: .lockHeld(lock))
         case let .failed(error, recorded):
             return .decided(by: error, after: recorded ? .assetLockRecorded : nil)
+        }
+    }
+
+    /// Re-reads the identity's credits first: a short balance would be refused only after the SDK armed its
+    /// identity-debit guard, which then blocks every later identity shield (ADR-0012).
+    private func runIdentityShield(_ prepared: PreparedExternalSend, destination: Destination) async -> SendDecision {
+        guard let raw43 = ShieldedDestination.raw43(destination.text) else {
+            return SendDecision(.notSent(.failed), cause: "recipientUnreadable")
+        }
+        // `send` refuses an Identity-source send prepared without a Current identity.
+        guard let identityId = prepared.sourceIdentityId else {
+            return SendDecision(.notSent(.failed), cause: "noSourceIdentity")
+        }
+        guard let balance = await balances.spendableBalance(of: .identity) else {
+            return SendDecision(.notSent(.failed), cause: "identityBalanceUnreadable")
+        }
+        let (needed, overflow) = prepared.amount.addingReportingOverflow(prepared.fee)
+        guard !overflow, balance >= needed else {
+            return SendDecision(.notSent(.balanceNotEnough), cause: "identityBalanceShort")
+        }
+        let failure: Error? = await DWIdentityAuthorizer.preauthorized {
+            do {
+                try await identityShield.shield(
+                    identityId: identityId, recipientRaw43: raw43, amountCredits: prepared.amount)
+                return nil
+            } catch {
+                return error
+            }
+        }
+        guard let failure else { return SendDecision(.sent) }
+        return SendDecision(Self.identityShieldOutcome(failure), cause: SendDecision.errorName(failure))
+    }
+
+    /// The identity shield's own map (ADR-0012): it hands over once, so only the refusals before that are notSent;
+    /// code 18 and every other error are inFlight.
+    private static func identityShieldOutcome(_ error: Error) -> SendOutcome {
+        if error is LiveIdentityToShieldedSend.WalletNotOpen { return .notSent(.failed) }
+        switch error as? PlatformWalletError {
+        case .shieldedIdentityDebitPending?:
+            return .notSent(.earlierPaymentPending)
+        case .signingKeyUnavailable?:
+            return .notSent(.signingKeyUnavailable)
+        case .insufficientIdentityCredits?:
+            return .notSent(.balanceNotEnough)
+        case .walletOperation?, .invalidHandle?, .invalidParameter?, .nullPointer?, .shieldedRecoveryCorrupted?,
+             .shieldedRecoveryKeysRequired?:
+            return .notSent(.failed)
+        default:
+            return .inFlight
         }
     }
 
@@ -736,16 +914,11 @@ final class ExternalSendExecutor: ExternalSendExecuting {
         return MinimumAmountRefusal(minimumCredits: minimum)
     }
 
-    /// A Max send on these routes spends the whole balance (the sweep, the AUTO full withdrawal), so the seam works
-    /// out the amount itself. A check here would refuse it: in duffs the balance rounds down and the fee rounds up.
-    /// The Core wallet drain is handled in `prepareRouted`, which also sets the fee it takes.
+    /// A Max send on this route spends the whole balance (the AUTO full withdrawal), so the seam works out the amount
+    /// itself. A check here would refuse it: in duffs the balance rounds down and the fee rounds up. The Core wallet
+    /// drain is handled in `prepareRouted`, which also sets the fee it takes; a Shielded source is planned by the SDK.
     nonisolated static func seamSpendsWholeBalance(_ route: SendRoute) -> Bool {
-        switch route {
-        case .shieldedToCore, .shieldedToShielded, .shieldedToPlatform, .shieldedToIdentity, .platformToCore:
-            return true
-        default:
-            return false
-        }
+        route == .platformToCore
     }
 
     /// The balance check above counts the aggregate and the estimated fee; the funding step checks what the route
@@ -1147,21 +1320,23 @@ struct LiveShieldedPlatformSend: ShieldedPlatformSending {
         /// The binding fee, held back from a full Platform withdrawal.
         let feeHeadroomCredits: UInt64
         let isMax: Bool
+        let shieldedPlan: PlannedShieldedSpend?
     }
 
     func run(
         route: SendRoute, destination: Destination, amount: UInt64, bindingFeeDuffs: UInt64, isMax: Bool,
-        sweepCredits: UInt64?
+        shieldedPlan: PlannedShieldedSpend?
     ) async -> CreditsSendResult {
         let perDuff = PlatformPaymentIdentityFundingPolicy.creditsPerDuff
         let (amountCredits, amountOverflow) = amount.multipliedReportingOverflow(by: perDuff)
-        let credits = sweepCredits ?? amountCredits
+        let credits = shieldedPlan?.amountCredits ?? amountCredits
         let (headroom, feeOverflow) = bindingFeeDuffs.multipliedReportingOverflow(by: perDuff)
         guard !amountOverflow, !feeOverflow else {
             return .failed(PlatformAddressSyncCoordinator.SendError.invalidAmount, handedOver: false)
         }
         return await perform(Request(
-            route: route, destination: destination, credits: credits, feeHeadroomCredits: headroom, isMax: isMax))
+            route: route, destination: destination, credits: credits, feeHeadroomCredits: headroom, isMax: isMax,
+            shieldedPlan: shieldedPlan))
     }
 
     @MainActor
@@ -1185,29 +1360,36 @@ struct LiveShieldedPlatformSend: ShieldedPlatformSending {
         }
     }
 
-    /// Runs the Shielded-source coordinator call; a result when the call could not be made.
+    /// Runs the Shielded-source coordinator call against the SDK plan prepared at Continue; a result when the call
+    /// could not be made. Without an SDK plan nothing is spent.
     @MainActor
     private func performShielded(
         _ coordinator: ShieldedTransferCoordinator, _ request: Request
     ) async -> CreditsSendResult? {
         let destination = request.destination
+        let plan = request.shieldedPlan?.sdkPlan
         switch request.route {
         case .shieldedToShielded:
             guard let raw43 = shieldedRaw43(destination) else { return noShieldedAddress }
+            guard let plan else { return .notStarted }
             await coordinator.performShieldedTransfer(
-                amountCredits: request.credits, sweepAll: request.isMax, recipientRaw43: raw43)
+                amountCredits: request.credits, sweepAll: request.isMax, recipientRaw43: raw43, plan: plan)
         case .shieldedToCore:
+            guard let plan else { return .notStarted }
             await coordinator.performWithdraw(
-                amountCredits: request.credits, sweepAll: request.isMax, toCoreAddress: destination.text)
+                amountCredits: request.credits, sweepAll: request.isMax, toCoreAddress: destination.text, plan: plan)
         case .shieldedToPlatform:
+            guard let plan else { return .notStarted }
             await coordinator.performUnshield(
-                amountCredits: request.credits, sweepAll: request.isMax, toPlatformAddress: destination.text)
+                amountCredits: request.credits, sweepAll: request.isMax, toPlatformAddress: destination.text,
+                plan: plan)
         case .shieldedToIdentity:
             guard let identityId = ScriptAddressCodec.base58Decode(destination.text), identityId.count == 32 else {
                 return .failed(PlatformAddressSyncCoordinator.SendError.invalidDestination, handedOver: false)
             }
+            guard let plan else { return .notStarted }
             await coordinator.performIdentityTopUpFromPool(
-                amountCredits: request.credits, sweepAll: request.isMax, identityId: identityId)
+                amountCredits: request.credits, sweepAll: request.isMax, identityId: identityId, plan: plan)
         default:
             preconditionFailure("\(request.route) is not a Shielded-source coordinator route")
         }
@@ -1291,6 +1473,27 @@ struct LiveIdentityTopUpFromCredits: IdentityTopUpFromCreditsSending {
         _ = try await IdentityCreditsTopUp().fromPlatform(
             identityId: identityId, amountDuffs: amountDuffs, wallet: wallet, modelContainer: modelContainer,
             anyIdentity: true)
+    }
+}
+
+/// `shieldedShieldFromIdentityToRecipient` from the identity the send was prepared for, in the active wallet at
+/// Shielded account 0, signed by `KeychainSigner` as the other identity spends are.
+struct LiveIdentityToShieldedSend: IdentityToShieldedSending {
+    /// The wallet or its store is not open, so nothing was signed or sent.
+    struct WalletNotOpen: Error {}
+
+    @MainActor
+    func shield(identityId: Data, recipientRaw43: Data, amountCredits: UInt64) async throws {
+        guard let manager = SwiftDashSDKHost.shared.manager,
+              let wallet = SwiftDashSDKHost.shared.wallet,
+              let modelContainer = SwiftDashSDKHost.shared.modelContainer
+        else { throw WalletNotOpen() }
+        let signer = KeychainSigner(modelContainer: modelContainer)
+        // The SDK hands the signer's unretained callback context to the FFI; keep it alive until the call returned.
+        defer { withExtendedLifetime(signer) {} }
+        _ = try await manager.shieldedShieldFromIdentityToRecipient(
+            walletId: wallet.walletId, shieldedAccount: 0, identityId: identityId, recipientRaw43: recipientRaw43,
+            amount: amountCredits, memo: nil, identitySigner: signer)
     }
 }
 

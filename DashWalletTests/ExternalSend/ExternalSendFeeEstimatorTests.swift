@@ -28,7 +28,8 @@ final class ExternalSendFeeEstimatorTests: XCTestCase {
     private final class FakeSources: SendFeeSourcing, @unchecked Sendable {
         var coreFeeDuffs: UInt64? = 2_250
         var shieldedFeeCredits: [PlatformWalletManager.ShieldedFeeKind: UInt64] = [
-            .transfer: 7_000_001, .unshield: 9_000_002, .withdrawal: 11_000_003, .identityTopUpFromPool: 13_000_004
+            .transfer: 7_000_001, .unshield: 9_000_002, .withdrawal: 11_000_003, .identityTopUpFromPool: 13_000_004,
+            .shieldFromIdentity: 15_000_005
         ]
         var withdrawalFeeCredits: UInt64? = 3_000_001
         private(set) var coreAmounts: [UInt64] = []
@@ -68,7 +69,7 @@ final class ExternalSendFeeEstimatorTests: XCTestCase {
         .coreToCore, .coreToShielded, .coreToIdentity,
         .shieldedToCore, .shieldedToShielded, .shieldedToPlatform, .shieldedToIdentity,
         .platformToCore, .platformToShielded, .platformToPlatform, .platformToIdentity,
-        .identityToCore, .identityToPlatform, .identityToIdentity
+        .identityToCore, .identityToPlatform, .identityToIdentity, .identityToShielded
     ]
     private let amount: UInt64 = 123_456
 
@@ -196,6 +197,23 @@ final class ExternalSendFeeEstimatorTests: XCTestCase {
     func testIdentityToIdentityIsTheCreditTransferMinimumInCredits() async {
         let result = await estimate(.identityToIdentity, FakeSources())
         XCTAssertEqual(result, .fee(100_000)) // STATE_TRANSITION_MIN_FEES_VERSION1 credit_transfer
+    }
+
+    /// ADR-0012: the consensus admission floor of the identity shield, which the charged fee never exceeds; credits, as
+    /// the Identity source counts them.
+    func testIdentityToShieldedIsTheShieldFromIdentityFloorOfTwoActionsInCredits() async {
+        let sources = FakeSources()
+        let result = await estimate(.identityToShielded, sources)
+        XCTAssertEqual(result, .fee(15_000_005))
+        XCTAssertEqual(sources.shieldedCalls.map(\.kind), [.shieldFromIdentity])
+        XCTAssertEqual(sources.shieldedCalls.map(\.numActions), [2])
+    }
+
+    func testIdentityToShieldedIsUnavailableWhenTheShieldFeeCannotBeRead() async {
+        let sources = FakeSources()
+        sources.shieldedFeeCredits[.shieldFromIdentity] = nil
+        let result = await estimate(.identityToShielded, sources)
+        XCTAssertEqual(result, .unavailable)
     }
 
     func testEveryRouteGivesAFeeWhenTheEdgeAnswers() async {

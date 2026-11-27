@@ -17,7 +17,6 @@
 import Foundation
 
 /// One case per payable source and destination pair; the case names the call the executor makes.
-/// There is no Identity to Shielded case: that pair stays unavailable (ADR-0041).
 enum SendRoute: Equatable {
     case coreToCore
     case coreToShielded
@@ -34,6 +33,9 @@ enum SendRoute: Equatable {
     case identityToCore
     case identityToPlatform
     case identityToIdentity
+    /// The Current identity's credits shielded to someone else's Shielded address (the feature's ADR-0012 in
+    /// docs/features/external-send-redesign/adr, which supersedes ADR-0041).
+    case identityToShielded
 }
 
 extension SendRoute {
@@ -43,11 +45,12 @@ extension SendRoute {
         case .coreToCore, .coreToShielded, .coreToIdentity: return .core
         case .shieldedToCore, .shieldedToShielded, .shieldedToPlatform, .shieldedToIdentity: return .shielded
         case .platformToCore, .platformToShielded, .platformToPlatform, .platformToIdentity: return .platform
-        case .identityToCore, .identityToPlatform, .identityToIdentity: return .identity
+        case .identityToCore, .identityToPlatform, .identityToIdentity, .identityToShielded: return .identity
         }
     }
 
-    /// Whether the fee prepared at Continue is the fee the send pays (ADR-0043). Only Core → Core, which also carries
-    /// BIP70 payment requests, is built and signed at Continue; every other route's fee is an estimate.
-    var isFeeExact: Bool { self == .coreToCore }
+    /// Whether the fee prepared at Continue is the fee the send pays (ADR-0043): Core → Core (which also carries
+    /// BIP70 payment requests) is built and signed at Continue, and a Shielded source runs the SDK plan made there.
+    /// Every other route's fee is an estimate.
+    var isFeeExact: Bool { self == .coreToCore || source == .shielded }
 }
