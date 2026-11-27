@@ -1,6 +1,6 @@
 # 0075 — Turn off unattributed DashPay profile keys with any disconnect, except keys that cannot be checked
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-23
 - **Deciders:** romchornyi (ADR author); the product owner's decision from ADR-0031 (no profile key left on that no connection accounts for) is carried over. The exceptions below record what the code does; they are not part of that decision
 

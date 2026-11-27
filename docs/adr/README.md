@@ -60,8 +60,8 @@ where they disagree, ADR-0001 wins.
 | [0071](0071-rewrite-swift-lookups-with-a-swiftsyntax-codemod-rerun-on-every-baseline.md) | Rewrite Swift lookups with a SwiftSyntax codemod re-run on every Baseline | l10n | Accepted | |
 | [0072](0072-check-releases-through-the-key-map.md) | Check releases through the key map instead of pairing code places | l10n | Accepted | |
 | [0073](0073-make-the-sync-phase-write-the-same-catalog-as-the-xcode-app.md) | Make the sync phase write the same Catalog as the Xcode app, and compile only the shipped locales | l10n | Accepted | |
-| [0074](0074-report-a-kept-response-from-the-write-point-or-from-a-failed-lookup.md) | Report a kept response from the write point, or from the same predicate when the lookup fails | platform | Proposed | |
-| [0075](0075-turn-off-unattributed-dashpay-profile-keys-except-keys-that-cannot-be-checked.md) | Turn off unattributed DashPay profile keys with any disconnect, except keys that cannot be checked | keys | Proposed | |
+| [0074](0074-report-a-kept-response-from-the-write-point-or-from-a-failed-lookup.md) | Report a kept response from the write point, or from the same predicate when the lookup fails | platform | Accepted | |
+| [0075](0075-turn-off-unattributed-dashpay-profile-keys-except-keys-that-cannot-be-checked.md) | Turn off unattributed DashPay profile keys with any disconnect, except keys that cannot be checked | keys | Accepted | |
 
 Areas: `spv`, `platform`, `keys`, `storage`, `coinjoin`, `payments`, `swap`, `ui`, `l10n`, `build`, `process`. Each ADR takes one; a new
 Area is added to this list in the PR that first needs it.

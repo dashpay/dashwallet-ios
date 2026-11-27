@@ -1,6 +1,6 @@
 # 0074 — Report a kept response from the write point, or from the same predicate when the lookup fails
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-23
 - **Deciders:** romchornyi (ADR author)
 
