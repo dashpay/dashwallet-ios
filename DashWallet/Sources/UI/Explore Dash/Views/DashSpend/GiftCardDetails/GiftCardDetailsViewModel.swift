@@ -44,6 +44,17 @@ struct GiftCardDetailsCardItem: Identifiable {
         return trimmed
     }
 
+    /// The value as it is, or nil when it is blank. Rows stored by earlier versions may hold a blank
+    /// number or PIN, which is a missing one.
+    static func nonBlank(_ value: String?) -> String? {
+        trimmedOrNil(value) == nil ? nil : value
+    }
+
+    /// Whether a stored row holds anything to show as a card.
+    static func hasStoredDetails(number: String?, pin: String?, barcodeValue: String?) -> Bool {
+        nonBlank(number) != nil || nonBlank(pin) != nil || barcodeValue != nil
+    }
+
     /// Whether a stored card number is in fact the card's link. Rows stored by earlier versions
     /// may hold it untrimmed.
     static func isLink(_ storedNumber: String?) -> Bool {
@@ -60,8 +71,8 @@ struct GiftCardDetailsCardItem: Identifiable {
         GiftCardDetailsCardItem(
             id: "legacy-0",
             formattedPrice: formattedPrice,
-            cardNumber: number,
-            cardPin: pin,
+            cardNumber: nonBlank(number),
+            cardPin: nonBlank(pin),
             redeemUrlChallenge: redeemUrlChallenge,
             barcodeImage: barcodeImage,
             isClaimLink: isLink(number)
@@ -77,12 +88,17 @@ enum CTXGiftCardDelivery: Equatable {
 
     init(cardNumber: String?, cardPin: String?, redeemUrl: String?, redeemUrlChallenge: String?) {
         if let cardNumber = GiftCardDetailsCardItem.trimmedOrNil(cardNumber) {
-            self = .number(cardNumber, pin: cardPin)
+            self = .number(cardNumber, pin: GiftCardDetailsCardItem.nonBlank(cardPin))
         } else if let link = GiftCardDetailsCardItem.trimmedOrNil(redeemUrl) {
             self = .link(link, challenge: GiftCardDetailsCardItem.trimmedOrNil(redeemUrlChallenge))
         } else {
             self = .nothingYet
         }
+    }
+
+    /// Whether a stored CTX row still waits for what its order delivers.
+    static func isAwaited(storedNumber: String?) -> Bool {
+        GiftCardDetailsCardItem.nonBlank(storedNumber) == nil
     }
 }
 
@@ -259,7 +275,7 @@ class GiftCardDetailsViewModel: ObservableObject {
             return !hasDisplayCards
         }
 
-        return card.number == nil
+        return CTXGiftCardDelivery.isAwaited(storedNumber: card.number)
     }
 
     private func startTicker() {
@@ -607,7 +623,9 @@ class GiftCardDetailsViewModel: ObservableObject {
             }
         }
 
-        if card.number != nil || card.pin != nil || card.barcodeValue != nil {
+        if GiftCardDetailsCardItem.hasStoredDetails(number: card.number,
+                                                    pin: card.pin,
+                                                    barcodeValue: card.barcodeValue) {
             return [
                 GiftCardDetailsCardItem.stored(
                     formattedPrice: fallbackFormattedPrice,

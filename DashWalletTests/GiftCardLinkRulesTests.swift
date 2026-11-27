@@ -21,11 +21,11 @@ final class GiftCardLinkRulesTests: XCTestCase {
     private let ctxLink = "https://spend.ctx.com/gift-cards/abc/redeem"
 
     /// A card as the sheet builds it from a stored gift card row.
-    private func stored(number: String?, challenge: String? = nil) -> GiftCardDetailsCardItem {
+    private func stored(number: String?, pin: String? = nil, challenge: String? = nil) -> GiftCardDetailsCardItem {
         GiftCardDetailsCardItem.stored(
             formattedPrice: "$10.00",
             number: number,
-            pin: nil,
+            pin: pin,
             redeemUrlChallenge: challenge,
             barcodeImage: nil
         )
@@ -92,8 +92,6 @@ final class GiftCardLinkRulesTests: XCTestCase {
             "httpx-1234",
             "https:1234",
             "http",
-            "   ",
-            "",
         ]
 
         for number in numbers {
@@ -104,6 +102,31 @@ final class GiftCardLinkRulesTests: XCTestCase {
             XCTAssertEqual(card.cardNumber, number)
         }
         XCTAssertFalse(stored(number: nil).isClaimLink)
+    }
+
+    func testBlankStoredNumberIsNoNumber() {
+        for number in ["", "   ", " \n\t"] {
+            let card = stored(number: number)
+
+            XCTAssertNil(card.cardNumber, number)
+            XCTAssertFalse(card.isClaimLink, number)
+            XCTAssertNil(card.redeemLink, number)
+        }
+    }
+
+    func testBlankStoredPinIsNoPinAndAValidOneIsKeptAsStored() {
+        XCTAssertNil(stored(number: "6006491234567890", pin: "").cardPin)
+        XCTAssertNil(stored(number: "6006491234567890", pin: " \n").cardPin)
+        XCTAssertEqual(stored(number: "6006491234567890", pin: "0042").cardPin, "0042")
+        XCTAssertEqual(stored(number: "6006491234567890", pin: " 12 34 ").cardPin, " 12 34 ")
+    }
+
+    func testBlankStoredRowShowsNoCard() {
+        XCTAssertFalse(GiftCardDetailsCardItem.hasStoredDetails(number: nil, pin: nil, barcodeValue: nil))
+        XCTAssertFalse(GiftCardDetailsCardItem.hasStoredDetails(number: "  \n", pin: " ", barcodeValue: nil))
+        XCTAssertTrue(GiftCardDetailsCardItem.hasStoredDetails(number: "6006491234567890", pin: nil, barcodeValue: nil))
+        XCTAssertTrue(GiftCardDetailsCardItem.hasStoredDetails(number: " ", pin: "1234", barcodeValue: nil))
+        XCTAssertTrue(GiftCardDetailsCardItem.hasStoredDetails(number: nil, pin: nil, barcodeValue: "6006491234567890"))
     }
 
     func testPayloadCardFollowsItsOwnFlag() {
@@ -144,6 +167,20 @@ final class GiftCardLinkRulesTests: XCTestCase {
             .link("https://spend.ctx.com/gift-cards/abc/redeem", challenge: nil)
         )
         XCTAssertEqual(delivery(number: " ", pin: "1234"), .nothingYet)
+    }
+
+    func testBlankPinIsNoPinAndAValidOneIsKeptAsDelivered() {
+        XCTAssertEqual(delivery(number: "6006491234567890", pin: ""), .number("6006491234567890", pin: nil))
+        XCTAssertEqual(delivery(number: "6006491234567890", pin: " \n"), .number("6006491234567890", pin: nil))
+        XCTAssertEqual(delivery(number: "6006491234567890", pin: " 0042 "), .number("6006491234567890", pin: " 0042 "))
+    }
+
+    func testStoredRowWithABlankNumberIsStillAwaited() {
+        XCTAssertTrue(CTXGiftCardDelivery.isAwaited(storedNumber: nil))
+        XCTAssertTrue(CTXGiftCardDelivery.isAwaited(storedNumber: ""))
+        XCTAssertTrue(CTXGiftCardDelivery.isAwaited(storedNumber: " \n"))
+        XCTAssertFalse(CTXGiftCardDelivery.isAwaited(storedNumber: "6006491234567890"))
+        XCTAssertFalse(CTXGiftCardDelivery.isAwaited(storedNumber: " https://spend.ctx.com/gift-cards/abc/redeem "))
     }
 
     func testBlankLinkKeepsWaiting() {
