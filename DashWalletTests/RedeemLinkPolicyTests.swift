@@ -324,31 +324,36 @@ final class RedeemLinkPolicyTests: XCTestCase {
     private let cancelled = NSError(domain: NSURLErrorDomain, code: NSURLErrorCancelled)
     private let stoppedByPolicy = NSError(domain: "WebKitErrorDomain", code: 102)
 
-    private func isFatal(_ error: NSError, first: Bool, committed: Bool) -> Bool {
-        RedeemLinkPolicy.isFatalLoadFailure(error, isFirstNavigation: first, hasCommittedPage: committed)
+    private func isFatal(_ error: NSError, _ stage: RedeemLinkPolicy.LoadFailureStage) -> Bool {
+        RedeemLinkPolicy.isFatalLoadFailure(error, stage: stage)
     }
 
     func testAnyFailureBeforeTheFirstCommitIsFatal() {
         for error in [connectionLost, cancelled, stoppedByPolicy] {
-            XCTAssertTrue(isFatal(error, first: true, committed: false), "\(error.code)")
-            XCTAssertTrue(isFatal(error, first: false, committed: false), "\(error.code)")
+            XCTAssertTrue(isFatal(error, .beforeCommit(hasCommittedPage: false)), "\(error.code)")
         }
     }
 
-    func testAFailureOfTheFirstNavigationAfterItCommittedIsFatal() {
-        XCTAssertTrue(isFatal(connectionLost, first: true, committed: true))
-        XCTAssertTrue(isFatal(NSError(domain: "WebKitErrorDomain", code: 101), first: true, committed: true))
-        XCTAssertTrue(isFatal(NSError(domain: "Other", code: NSURLErrorCancelled), first: true, committed: true))
-    }
-
-    func testACancelledFirstNavigationKeepsItsCommittedPage() {
-        XCTAssertFalse(isFatal(cancelled, first: true, committed: true))
-        XCTAssertFalse(isFatal(stoppedByPolicy, first: true, committed: true))
-    }
-
-    func testALaterNavigationThatFailsKeepsTheCommittedPage() {
+    func testALoadThatFailsBeforeItCommitsKeepsTheCommittedPage() {
         for error in [connectionLost, cancelled, stoppedByPolicy] {
-            XCTAssertFalse(isFatal(error, first: false, committed: true), "\(error.code)")
+            XCTAssertFalse(isFatal(error, .beforeCommit(hasCommittedPage: true)), "\(error.code)")
+        }
+    }
+
+    func testAFailureOfTheShowingPageAfterItCommittedIsFatal() {
+        XCTAssertTrue(isFatal(connectionLost, .afterCommit(isShowingPage: true)))
+        XCTAssertTrue(isFatal(NSError(domain: "WebKitErrorDomain", code: 101), .afterCommit(isShowingPage: true)))
+        XCTAssertTrue(isFatal(NSError(domain: "Other", code: NSURLErrorCancelled), .afterCommit(isShowingPage: true)))
+    }
+
+    func testACancellationOfTheShowingPageIsNotFatal() {
+        XCTAssertFalse(isFatal(cancelled, .afterCommit(isShowingPage: true)))
+        XCTAssertFalse(isFatal(stoppedByPolicy, .afterCommit(isShowingPage: true)))
+    }
+
+    func testAFailureOfAPageNoLongerShowingIsNotFatal() {
+        for error in [connectionLost, cancelled, stoppedByPolicy] {
+            XCTAssertFalse(isFatal(error, .afterCommit(isShowingPage: false)), "\(error.code)")
         }
     }
 }

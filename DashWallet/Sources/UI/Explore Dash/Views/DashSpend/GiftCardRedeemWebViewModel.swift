@@ -32,7 +32,7 @@ final class GiftCardRedeemWebViewModel: NSObject, ObservableObject {
     private let ctxBaseURL: String
     private var isAwaitingFirstRequest = false
     private var hasCommittedPage = false
-    private var firstNavigation: WKNavigation?
+    private var committedNavigation: WKNavigation?
     private var scriptDialogCount = 0
     private var blockedNoticeShown = false
     private var observations = Set<AnyCancellable>()
@@ -86,7 +86,7 @@ final class GiftCardRedeemWebViewModel: NSObject, ObservableObject {
                 self?.canGoBack = canGoBack
             }
             .store(in: &observations)
-        firstNavigation = view.load(URLRequest(url: url))
+        view.load(URLRequest(url: url))
     }
 
     func tearDown() {
@@ -163,7 +163,7 @@ final class GiftCardRedeemWebViewModel: NSObject, ObservableObject {
         dismissScriptDialog()
         observations.removeAll()
         canGoBack = false
-        firstNavigation = nil
+        committedNavigation = nil
 
         if let webView {
             webView.stopLoading()
@@ -226,16 +226,6 @@ final class GiftCardRedeemWebViewModel: NSObject, ObservableObject {
         guard !blockedNoticeShown else { return }
         blockedNoticeShown = true
         showBlockedNotice()
-    }
-
-    private func failIfNoUsablePage(_ error: Error, in navigation: WKNavigation?) {
-        let isFirstNavigation = navigation != nil && navigation === firstNavigation
-
-        if RedeemLinkPolicy.isFatalLoadFailure(error,
-                                               isFirstNavigation: isFirstNavigation,
-                                               hasCommittedPage: hasCommittedPage) {
-            fail()
-        }
     }
 
     private func showBlockedNotice() {
@@ -323,6 +313,7 @@ extension GiftCardRedeemWebViewModel: WKNavigationDelegate {
         // Not every navigation asks for a policy decision first, so check what was committed too.
         if RedeemLinkPolicy.isAllowedNavigation(url, isMainFrame: true) {
             hasCommittedPage = true
+            committedNavigation = navigation
         } else {
             fail()
         }
@@ -334,12 +325,19 @@ extension GiftCardRedeemWebViewModel: WKNavigationDelegate {
                  didFailProvisionalNavigation navigation: WKNavigation!,
                  withError error: Error) {
         guard webView === self.webView else { return }
-        failIfNoUsablePage(error, in: navigation)
+
+        if RedeemLinkPolicy.isFatalLoadFailure(error, stage: .beforeCommit(hasCommittedPage: hasCommittedPage)) {
+            fail()
+        }
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
         guard webView === self.webView else { return }
-        failIfNoUsablePage(error, in: navigation)
+        let isShowingPage = navigation != nil && navigation === committedNavigation
+
+        if RedeemLinkPolicy.isFatalLoadFailure(error, stage: .afterCommit(isShowingPage: isShowingPage)) {
+            fail()
+        }
     }
 
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {

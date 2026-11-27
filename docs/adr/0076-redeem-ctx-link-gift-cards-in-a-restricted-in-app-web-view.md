@@ -99,14 +99,16 @@ versions the web view is not used.
   the cover.
 - Closing discards the web view and its data store. Opening the card again starts from the redeem
   link.
-- A failed load shows an error state with "Try again" and "Open in browser" in two cases: no page
-  has committed yet, or the first navigation (the one the screen started from the redeem link)
-  fails after it committed. A cancellation of that committed first navigation is not a failure;
-  WebKit reports one when the next navigation replaces the load or a policy decision stops it.
-- Once a page has committed, a later navigation that fails leaves the committed page in place, with
-  what the user typed into it. This holds even when that page never finished loading, for example
-  because one of its frames or resources hangs. "Try again" starts over and applies the same rule
-  to the new first navigation.
+- A load that fails before it commits (no response, a dropped connection before the first bytes)
+  shows the error state only when no page has committed yet. Once a page has committed, such a
+  failure leaves that page in place with what the user typed into it, even when the page never
+  finished loading because one of its frames or resources hangs.
+- A load that fails after it committed has already replaced the page before it and is incomplete.
+  When it is the page showing, the error state takes its place, on the first page and on every
+  later one. A cancellation is not a failure: WebKit reports one when the next navigation replaces
+  the load or a policy decision stops it.
+- The error state offers "Try again" and "Open in browser". "Try again" starts over from the redeem
+  link in a new web view; the wallet never repeats a page's form submission by itself.
 - A terminated web process always shows the error state.
 
 ### When the system browser is used

@@ -84,23 +84,31 @@ enum RedeemLinkPolicy {
         externalURL(link, ctxBaseURL: ctxBaseURL) != nil
     }
 
-    /// Whether a failed load leaves no usable page, so the error state takes its place. With no page
-    /// committed every failure does. Once a page has committed, only the first navigation's own failure
-    /// does, and not its cancellation: WebKit reports a load replaced by the next one, or stopped by a
-    /// policy decision, as a failure too. A later navigation that fails leaves the committed page, and
-    /// what the user typed into it, in place.
-    static func isFatalLoadFailure(_ error: Error, isFirstNavigation: Bool, hasCommittedPage: Bool) -> Bool {
-        if !hasCommittedPage {
-            return true
-        }
-        if !isFirstNavigation {
-            return false
-        }
+    enum LoadFailureStage {
+        case beforeCommit(hasCommittedPage: Bool)
+        case afterCommit(isShowingPage: Bool)
+    }
 
+    /// Whether a failed load leaves no usable page, so the error state takes its place. A load that
+    /// fails before it commits leaves the page before it, and what the user typed there, in place, so
+    /// it counts only with no page committed. A load that fails after it committed has replaced that
+    /// page with an incomplete one, so it counts when it is the page showing, unless it is a
+    /// cancellation: WebKit reports a load replaced by the next one, or stopped by a policy decision,
+    /// as a failure too.
+    static func isFatalLoadFailure(_ error: Error, stage: LoadFailureStage) -> Bool {
+        switch stage {
+        case .beforeCommit(let hasCommittedPage):
+            return !hasCommittedPage
+        case .afterCommit(let isShowingPage):
+            return isShowingPage && !isCancellation(error)
+        }
+    }
+
+    private static func isCancellation(_ error: Error) -> Bool {
         let error = error as NSError
         let isCancelled = error.domain == NSURLErrorDomain && error.code == NSURLErrorCancelled
         let isStoppedByPolicy = error.domain == webKitErrorDomain && error.code == frameLoadInterruptedByPolicyChange
-        return !isCancelled && !isStoppedByPolicy
+        return isCancelled || isStoppedByPolicy
     }
 
     /// The whole host: the app ships no public-suffix list to cut it down to the registrable domain.
