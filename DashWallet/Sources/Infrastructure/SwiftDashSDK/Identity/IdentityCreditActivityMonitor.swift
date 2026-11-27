@@ -78,7 +78,8 @@ final class IdentityCreditActivityMonitor {
         case .unchanged:
             break
         case .received(let duffs):
-            DWLogger.log("IDENTITY-CREDITS: Received row +\(duffs) duffs, own operations since the previous read: "
+            // The traces looked at, counted ones included: those that explained part of the rise are not in `duffs`.
+            DWLogger.log("IDENTITY-CREDITS: Received row +\(duffs) duffs, own-operation traces looked at: "
                 + "\(ownCount) (\(reason))")
         case .failed:
             DWLogger.log("IDENTITY-CREDITS: store write failed, baseline kept (\(reason))")
