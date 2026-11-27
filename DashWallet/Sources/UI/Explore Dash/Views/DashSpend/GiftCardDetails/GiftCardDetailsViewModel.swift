@@ -52,7 +52,7 @@ struct GiftCardDetailsCardItem: Identifiable {
 
     /// Whether a stored row holds anything to show as a card.
     static func hasStoredDetails(number: String?, pin: String?, barcodeValue: String?) -> Bool {
-        nonBlank(number) != nil || nonBlank(pin) != nil || barcodeValue != nil
+        nonBlank(number) != nil || nonBlank(pin) != nil || nonBlank(barcodeValue) != nil
     }
 
     /// Whether a stored card number is in fact the card's link. Rows stored by earlier versions

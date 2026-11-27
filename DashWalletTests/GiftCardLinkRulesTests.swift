@@ -124,6 +124,8 @@ final class GiftCardLinkRulesTests: XCTestCase {
     func testBlankStoredRowShowsNoCard() {
         XCTAssertFalse(GiftCardDetailsCardItem.hasStoredDetails(number: nil, pin: nil, barcodeValue: nil))
         XCTAssertFalse(GiftCardDetailsCardItem.hasStoredDetails(number: "  \n", pin: " ", barcodeValue: nil))
+        XCTAssertFalse(GiftCardDetailsCardItem.hasStoredDetails(number: "  ", pin: nil, barcodeValue: ""))
+        XCTAssertFalse(GiftCardDetailsCardItem.hasStoredDetails(number: nil, pin: nil, barcodeValue: " \n"))
         XCTAssertTrue(GiftCardDetailsCardItem.hasStoredDetails(number: "6006491234567890", pin: nil, barcodeValue: nil))
         XCTAssertTrue(GiftCardDetailsCardItem.hasStoredDetails(number: " ", pin: "1234", barcodeValue: nil))
         XCTAssertTrue(GiftCardDetailsCardItem.hasStoredDetails(number: nil, pin: nil, barcodeValue: "6006491234567890"))
