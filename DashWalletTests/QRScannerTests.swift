@@ -873,7 +873,7 @@ final class QRScannerTests: XCTestCase {
 
     /// Offers use the ranking's verdict: a required request the transport
     /// would refuse is not offered, while an optional one with a payable
-    /// address still is.
+    /// address still is, and accepting it pays that address without a fetch.
     func testOfferNeedsAUsableRequestOrAPayableFallback() {
         let cleartext = "http%3A%2F%2Fmerchant.invalid%2Fpr"
         let (required, requiredRecorder) = makeScanner(.addressInput(expectsDashAddress: false))
@@ -882,9 +882,17 @@ final class QRScannerTests: XCTestCase {
         XCTAssertTrue(isInvalid(required.status))
         XCTAssertTrue(requiredRecorder.results.isEmpty)
 
-        let (optional, _) = makeScanner(.addressInput(expectsDashAddress: false))
+        let (optional, optionalRecorder) = makeScanner(.addressInput(expectsDashAddress: false))
         optional.didDetectCodes(["dash:\(Self.address)?amount=1&r=\(cleartext)"])
         XCTAssertTrue(isOffer(optional.status))
+
+        optional.acceptOffer()
+        if case .connecting = optional.status { XCTFail("the refused request is not fetched") }
+        guard case .payment(let input) = optionalRecorder.results.first else {
+            return XCTFail("an accepted offer pays the embedded address")
+        }
+        XCTAssertEqual(input.parsedURI?.address, Self.address)
+        XCTAssertNil(input.parsedURI?.rURL)
     }
 
     /// A superseded payment's merchant answer is ignored: only the current

@@ -246,7 +246,8 @@ final class BIP70PaymentService {
         var paymentURL: URL?
         if let raw = details.paymentURL {
             // Taken as written: a URL Foundation had to repair is not the merchant's endpoint.
-            guard let url = URL(string: raw), url.absoluteString == raw, url.host?.isEmpty == false else {
+            guard let url = URL(string: raw), url.absoluteString == raw, url.host?.isEmpty == false,
+                  ["http", "https"].contains(url.scheme?.lowercased()) else {
                 throw BIP70Error.malformedRequest
             }
             paymentURL = url

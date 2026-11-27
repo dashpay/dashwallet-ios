@@ -328,7 +328,10 @@ final class QRScannerViewModel: ObservableObject {
             showInvalid(message: fallbackMessage ?? invalidQRMessage(for: parsed))
             return
         }
-        offer(.payment(parsed),
+        // An optional request the transport would refuse is dropped: the address qualified the offer.
+        var offered = parsed
+        if let request = parsed.rURL, !PaymentProtocolTransport.isHTTPS(request) { offered = parsed.byClearingRequestURL() }
+        offer(.payment(offered),
               message: String(localized: "This QR code is a Dash payment request.", comment: "QR scanner"),
               actionTitle: String(localized: "Open Send", comment: "QR scanner"))
     }

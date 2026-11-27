@@ -741,7 +741,7 @@ final class BIP70PaymentServiceTests: XCTestCase {
     /// A payment_url that is present but unusable is refused, not taken for an absent one:
     /// an absent one would skip the merchant's acknowledgement.
     func testPrepareRefusesAnUnusablePaymentURL() async {
-        var requests = ["https:///pay", "not a url", "", "https://h/pay me"].map { unsigned(paymentURL: $0) }
+        var requests = ["https:///pay", "not a url", "", "https://h/pay me", "//h/pay", "ftp://h/pay"].map { unsigned(paymentURL: $0) }
         let noURL = unsigned(paymentURL: nil)
         let malformedPath = Data("https://h/pay".utf8) + Data([0xff, 0xfe])
         for bytes in [Data([0xff]), malformedPath] {
