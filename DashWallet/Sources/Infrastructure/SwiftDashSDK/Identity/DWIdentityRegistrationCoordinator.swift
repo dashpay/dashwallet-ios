@@ -836,10 +836,12 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
     static func invitationIdentityStillUnnamed(
         _ identityId: Identifier,
         readNamesFromPlatform: () async throws -> Void,
+        hasNameRequestOnPlatform: () async throws -> Bool,
         localFacts: () -> InvitationClaimFacts?
     ) async -> Bool {
         do {
             try await readNamesFromPlatform()
+            if try await hasNameRequestOnPlatform() { return false }
         } catch {
             Self.logger.warning("🪪 IDENT-COORD :: invitation name check — Platform read failed (\(String(describing: type(of: error)), privacy: .public))")
             return false
@@ -850,6 +852,40 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             == .resumeOwnClaim(identityId)
     }
 
+    /// Whether `identityId` is a contender in any DPNS contest being voted
+    /// on now. Every contest's vote state must be read: one that cannot be
+    /// read throws instead of counting as no request. The SDK's contested
+    /// sync leaves such a contest out and still succeeds, so it cannot
+    /// answer this on its own.
+    nonisolated static func contendsInACurrentContest(
+        _ identityId: Identifier,
+        currentContests: () async throws -> [String],
+        contenderIds: @escaping @Sendable (String) async throws -> [String]
+    ) async throws -> Bool {
+        let wanted = identityId.toBase58String()
+        let names = try await currentContests()
+        return try await withThrowingTaskGroup(of: Bool.self) { group in
+            var next = names.makeIterator()
+            func addNext() -> Bool {
+                guard let name = next.next() else { return false }
+                group.addTask { try await contenderIds(name).contains(wanted) }
+                return true
+            }
+            for _ in 0..<contestReadConcurrency where !addNext() { break }
+            while let contends = try await group.next() {
+                if contends {
+                    group.cancelAll()
+                    return true
+                }
+                _ = addNext()
+            }
+            return false
+        }
+    }
+
+    /// How many contest vote states the invitation check reads at once.
+    private static let contestReadConcurrency = 8
+
     private func invitationIdentityStillUnnamed(
         _ identityId: Identifier, wallet: ManagedPlatformWallet, network: Network, modelContainer: ModelContainer
     ) async -> Bool {
@@ -859,7 +895,25 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 try await DWCurrentUserIdentityInfo.shared.refreshNames(
                     wallet: wallet, network: network, container: modelContainer, identityId: identityId)
             },
+            hasNameRequestOnPlatform: {
+                guard let sdk = SwiftDashSDKHost.shared.sdk else { throw CoordinatorError.noSDK }
+                return try await Self.contendsInACurrentContest(
+                    identityId,
+                    currentContests: { Array(try await sdk.dpnsGetCurrentContests().keys) },
+                    contenderIds: { name in
+                        let state = try await sdk.dpnsGetContestedVoteState(name: name)
+                        guard let contenders = state["contenders"] as? [[String: Any]] else {
+                            throw InvitationNameCheckError.unreadableContest
+                        }
+                        return contenders.compactMap { $0["identifier"] as? String }
+                    })
+            },
             localFacts: { invitationLocalFacts(wallet: wallet, modelContainer: modelContainer) })
+    }
+
+    /// A contest's vote state came back without its contender list.
+    private enum InvitationNameCheckError: Error {
+        case unreadableContest
     }
 
     /// The wallet's invitation facts as they are now; nil while the current

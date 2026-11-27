@@ -330,8 +330,9 @@ final class InvitationValidationPolicyTests: XCTestCase {
 
     /// After the PIN, both invitation paths (the resume and the refused
     /// repeated claim) name the invitation's identity only when Platform,
-    /// read in that check, shows it unnamed. A name that landed after an
-    /// earlier empty read stops it; so does a read that fails.
+    /// read in that check, shows it with no name and no request. A name or
+    /// request that landed after an earlier empty read stops it; so does a
+    /// read that fails.
     @MainActor
     func testAnInvitationsNameGoesOnOnlyAfterAFreshPlatformReadShowsNone() async {
         typealias C = DWIdentityRegistrationCoordinator
@@ -345,7 +346,8 @@ final class InvitationValidationPolicyTests: XCTestCase {
         struct ReadFailed: Error {}
 
         var stillUnnamed = await C.invitationIdentityStillUnnamed(
-            own, readNamesFromPlatform: {}, localFacts: { facts(needsUsername: true) })
+            own, readNamesFromPlatform: {}, hasNameRequestOnPlatform: { false },
+            localFacts: { facts(needsUsername: true) })
         XCTAssertTrue(stillUnnamed)
 
         // The local cache said "no name"; Platform, read now, holds one.
@@ -354,21 +356,75 @@ final class InvitationValidationPolicyTests: XCTestCase {
         stillUnnamed = await C.invitationIdentityStillUnnamed(
             own,
             readNamesFromPlatform: { read = true; nameOnPlatform = true },
+            hasNameRequestOnPlatform: { false },
             localFacts: { facts(needsUsername: !nameOnPlatform) })
         XCTAssertTrue(read)
         XCTAssertFalse(stillUnnamed, "a name another device registered since the earlier read")
 
         stillUnnamed = await C.invitationIdentityStillUnnamed(
-            own, readNamesFromPlatform: { throw ReadFailed() }, localFacts: { facts(needsUsername: true) })
+            own, readNamesFromPlatform: {}, hasNameRequestOnPlatform: { true },
+            localFacts: { facts(needsUsername: true) })
+        XCTAssertFalse(stillUnnamed, "a request another device submitted since the earlier read")
+
+        stillUnnamed = await C.invitationIdentityStillUnnamed(
+            own, readNamesFromPlatform: { throw ReadFailed() }, hasNameRequestOnPlatform: { false },
+            localFacts: { facts(needsUsername: true) })
         XCTAssertFalse(stillUnnamed, "the names could not be read")
 
         stillUnnamed = await C.invitationIdentityStillUnnamed(
-            own, readNamesFromPlatform: {}, localFacts: { nil })
+            own, readNamesFromPlatform: {}, hasNameRequestOnPlatform: { throw ReadFailed() },
+            localFacts: { facts(needsUsername: true) })
+        XCTAssertFalse(stillUnnamed, "the requests could not be read")
+
+        stillUnnamed = await C.invitationIdentityStillUnnamed(
+            own, readNamesFromPlatform: {}, hasNameRequestOnPlatform: { false }, localFacts: { nil })
         XCTAssertFalse(stillUnnamed, "the wallet could not be read, or the names are still loading")
 
         stillUnnamed = await C.invitationIdentityStillUnnamed(
-            other, readNamesFromPlatform: {}, localFacts: { facts(needsUsername: true) })
+            other, readNamesFromPlatform: {}, hasNameRequestOnPlatform: { false },
+            localFacts: { facts(needsUsername: true) })
         XCTAssertFalse(stillUnnamed, "not the invitation's identity")
+    }
+
+    /// A request is found in any current contest that lists the identity,
+    /// and a contest whose vote state cannot be read fails the check
+    /// instead of counting as no request.
+    func testANameRequestIsReadFromEveryCurrentContest() async throws {
+        typealias C = DWIdentityRegistrationCoordinator
+        let own = Data(repeating: 0x11, count: 32)
+        let ownId = own.toBase58String()
+        let otherId = Data(repeating: 0x22, count: 32).toBase58String()
+        struct ReadFailed: Error {}
+        let contests = (0..<20).map { "name\($0)" }
+
+        var contends = try await C.contendsInACurrentContest(
+            own, currentContests: { contests }, contenderIds: { _ in [otherId] })
+        XCTAssertFalse(contends)
+
+        contends = try await C.contendsInACurrentContest(
+            own, currentContests: { contests },
+            contenderIds: { $0 == "name17" ? [otherId, ownId] : [otherId] })
+        XCTAssertTrue(contends, "the identity contends in a later contest")
+
+        contends = try await C.contendsInACurrentContest(
+            own, currentContests: { [] }, contenderIds: { _ in throw ReadFailed() })
+        XCTAssertFalse(contends, "no contest is being voted on")
+
+        do {
+            _ = try await C.contendsInACurrentContest(
+                own, currentContests: { contests },
+                contenderIds: { name in
+                    if name == "name13" { throw ReadFailed() }
+                    return [otherId]
+                })
+            XCTFail("an unreadable contest is not proof of no request")
+        } catch is ReadFailed {}
+
+        do {
+            _ = try await C.contendsInACurrentContest(
+                own, currentContests: { throw ReadFailed() }, contenderIds: { _ in [] })
+            XCTFail("the contest list could not be read")
+        } catch is ReadFailed {}
     }
 
     func testTypedClaimRefusalsAreMapped() {
