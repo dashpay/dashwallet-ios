@@ -828,19 +828,50 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         }
     }
 
-    /// After a refused repeated claim: the identity at the pinned slot gets
-    /// the invitation's username only when it is the invitation's own and
-    /// the wallet, read again, would resume it (names loaded, none, no
-    /// request). nil stops the claim.
-    nonisolated static func repeatedClaimIdentity(
-        found: Identifier, prospective: Data, facts: InvitationClaimFacts?
-    ) -> Identifier? {
-        guard found == prospective, let facts,
-              InvitationClaimEligibility.decide(
-                  facts, prospectiveIdentityId: prospective, pinnedIndex: pinnedIdentityIndex)
-                  == .resumeOwnClaim(prospective)
-        else { return nil }
-        return found
+    /// After the PIN, before an invitation's username is written: the
+    /// invitation's identity gets it only when its names and name requests,
+    /// read from Platform now, show none, and the wallet would resume it.
+    /// An earlier local read is not enough: another device may have named
+    /// the identity since. A failed read stops the claim.
+    static func invitationIdentityStillUnnamed(
+        _ identityId: Identifier,
+        readNamesFromPlatform: () async throws -> Void,
+        localFacts: () -> InvitationClaimFacts?
+    ) async -> Bool {
+        do {
+            try await readNamesFromPlatform()
+        } catch {
+            Self.logger.warning("🪪 IDENT-COORD :: invitation name check — Platform read failed (\(String(describing: type(of: error)), privacy: .public))")
+            return false
+        }
+        guard let facts = localFacts() else { return false }
+        return InvitationClaimEligibility.decide(
+            facts, prospectiveIdentityId: identityId, pinnedIndex: pinnedIdentityIndex)
+            == .resumeOwnClaim(identityId)
+    }
+
+    private func invitationIdentityStillUnnamed(
+        _ identityId: Identifier, wallet: ManagedPlatformWallet, network: Network, modelContainer: ModelContainer
+    ) async -> Bool {
+        await Self.invitationIdentityStillUnnamed(
+            identityId,
+            readNamesFromPlatform: {
+                try await DWCurrentUserIdentityInfo.shared.refreshNames(
+                    wallet: wallet, network: network, container: modelContainer, identityId: identityId)
+            },
+            localFacts: { invitationLocalFacts(wallet: wallet, modelContainer: modelContainer) })
+    }
+
+    /// The wallet's invitation facts as they are now; nil while the current
+    /// identity's names are still loading or the store cannot answer.
+    private func invitationLocalFacts(
+        wallet: ManagedPlatformWallet, modelContainer: ModelContainer
+    ) -> InvitationClaimFacts? {
+        let snapshot = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
+        guard !snapshot.isLoading else { return nil }
+        return try? InvitationClaimEligibility.localFacts(
+            walletId: wallet.walletId, pinnedIndex: Self.pinnedIdentityIndex,
+            modelContainer: modelContainer, snapshot: snapshot)
     }
 
     /// The error for a decision that stops an invitation claim; nil for the
@@ -865,11 +896,7 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
         invitationURI: String, wallet: ManagedPlatformWallet, network: Network, modelContainer: ModelContainer
     ) async throws -> InvitationClaimDecision {
         func readFacts() -> InvitationClaimFacts? {
-            let snapshot = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
-            guard !snapshot.isLoading else { return nil }
-            return try? InvitationClaimEligibility.localFacts(
-                walletId: wallet.walletId, pinnedIndex: Self.pinnedIdentityIndex,
-                modelContainer: modelContainer, snapshot: snapshot)
+            invitationLocalFacts(wallet: wallet, modelContainer: modelContainer)
         }
         guard let before = readFacts() else { return .undetermined }
         var prospectiveIdentityId: Data?
@@ -1217,23 +1244,18 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
                 else {
                     throw Self.invitationClaimFailure(claimError)
                 }
-                // The same rule as a resume before the PIN: the name goes on
-                // only while the identity's names are loaded and it has none
-                // and no request. Another device may have named it already,
-                // and a just-loaded identity's names are usually not read
-                // yet: the card's next check then decides.
-                let snapshot = DWCurrentUserIdentityInfo.shared.refreshedSnapshot()
-                let facts = snapshot.isLoading ? nil : try? InvitationClaimEligibility.localFacts(
-                    walletId: wallet.walletId, pinnedIndex: Self.pinnedIdentityIndex,
-                    modelContainer: modelContainer, snapshot: snapshot)
-                guard let recovered = Self.repeatedClaimIdentity(
-                    found: existingId, prospective: prospectiveId, facts: facts)
+                // The same rule as a resume after the PIN: the name goes on
+                // only while Platform, read now, shows the identity has none
+                // and no request. Another device may have named it already;
+                // when that cannot be read, the card's next check decides.
+                guard await invitationIdentityStillUnnamed(
+                    existingId, wallet: wallet, network: context.network, modelContainer: modelContainer)
                 else {
                     Self.logger.info("🪪 IDENT-COORD :: invitation claim refused; the invitation's identity is not known to need a name — not registering")
                     throw CoordinatorError.invitationOwnClaimRecorded
                 }
                 Self.logger.info("🪪 IDENT-COORD :: invitation claim refused, the invitation's identity found at index \(Self.pinnedIdentityIndex) — recovering it")
-                identityId = recovered
+                identityId = existingId
             }
             // The voucher is spent now, whatever happens to the username
             // next: from here on this is an ordinary "identity exists,
@@ -1444,9 +1466,10 @@ final class DWIdentityRegistrationCoordinator: ObservableObject {
             newController.enterFailed(lastErrorMessage ?? "")
             throw CoordinatorError.authFailed
         }
-        if requiresUnnamed, !DWCurrentUserIdentityInfo.shared.refreshedSnapshot().needsUsername {
-            // A name or request appeared during the PIN prompt (another
-            // device): the invitation's username does not go on top of it.
+        if requiresUnnamed, !(await invitationIdentityStillUnnamed(
+            identityId, wallet: wallet, network: network, modelContainer: container)) {
+            // A name or request appeared on Platform (another device), or it
+            // could not be read: the invitation's username does not go on.
             Self.logger.info("🪪 IDENT-COORD :: invitation resume — the identity is no longer known to need a name; not registering")
             lastErrorMessage = CoordinatorError.invitationOwnClaimRecorded.localizedDescription
             newController.enterFailed(lastErrorMessage ?? "")

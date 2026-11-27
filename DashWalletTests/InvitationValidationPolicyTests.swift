@@ -328,24 +328,47 @@ final class InvitationValidationPolicyTests: XCTestCase {
                        "\(String(describing: C.CoordinatorError.invitationUndetermined as C.CoordinatorError?))")
     }
 
-    /// A refused repeated claim continues only on the invitation's own
-    /// identity, and only when the wallet would resume it.
-    func testARepeatedClaimContinuesOnlyOnTheInvitationsUnnamedIdentity() {
+    /// After the PIN, both invitation paths (the resume and the refused
+    /// repeated claim) name the invitation's identity only when Platform,
+    /// read in that check, shows it unnamed. A name that landed after an
+    /// earlier empty read stops it; so does a read that fails.
+    @MainActor
+    func testAnInvitationsNameGoesOnOnlyAfterAFreshPlatformReadShowsNone() async {
         typealias C = DWIdentityRegistrationCoordinator
         let own = Data(repeating: 0x11, count: 32)
         let other = Data(repeating: 0x22, count: 32)
-        func facts(snapshot: Data?, needsUsername: Bool) -> InvitationClaimFacts {
+        func facts(needsUsername: Bool) -> InvitationClaimFacts {
             InvitationClaimFacts(
                 identities: [.init(identityId: own, identityIndex: C.pinnedIdentityIndex)],
-                hasPaidRegistrationLock: false, snapshotIdentityId: snapshot, snapshotNeedsUsername: needsUsername)
+                hasPaidRegistrationLock: false, snapshotIdentityId: own, snapshotNeedsUsername: needsUsername)
         }
-        let unnamed = facts(snapshot: own, needsUsername: true)
-        XCTAssertEqual(C.repeatedClaimIdentity(found: own, prospective: own, facts: unnamed), own)
-        XCTAssertNil(C.repeatedClaimIdentity(found: other, prospective: own, facts: unnamed), "not the invitation's identity")
-        XCTAssertNil(C.repeatedClaimIdentity(
-            found: own, prospective: own, facts: facts(snapshot: own, needsUsername: false)),
-            "already named, or its names are not read yet")
-        XCTAssertNil(C.repeatedClaimIdentity(found: own, prospective: own, facts: nil), "the wallet could not be read")
+        struct ReadFailed: Error {}
+
+        var stillUnnamed = await C.invitationIdentityStillUnnamed(
+            own, readNamesFromPlatform: {}, localFacts: { facts(needsUsername: true) })
+        XCTAssertTrue(stillUnnamed)
+
+        // The local cache said "no name"; Platform, read now, holds one.
+        var nameOnPlatform = false
+        var read = false
+        stillUnnamed = await C.invitationIdentityStillUnnamed(
+            own,
+            readNamesFromPlatform: { read = true; nameOnPlatform = true },
+            localFacts: { facts(needsUsername: !nameOnPlatform) })
+        XCTAssertTrue(read)
+        XCTAssertFalse(stillUnnamed, "a name another device registered since the earlier read")
+
+        stillUnnamed = await C.invitationIdentityStillUnnamed(
+            own, readNamesFromPlatform: { throw ReadFailed() }, localFacts: { facts(needsUsername: true) })
+        XCTAssertFalse(stillUnnamed, "the names could not be read")
+
+        stillUnnamed = await C.invitationIdentityStillUnnamed(
+            own, readNamesFromPlatform: {}, localFacts: { nil })
+        XCTAssertFalse(stillUnnamed, "the wallet could not be read, or the names are still loading")
+
+        stillUnnamed = await C.invitationIdentityStillUnnamed(
+            other, readNamesFromPlatform: {}, localFacts: { facts(needsUsername: true) })
+        XCTAssertFalse(stillUnnamed, "not the invitation's identity")
     }
 
     func testTypedClaimRefusalsAreMapped() {
